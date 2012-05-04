@@ -1422,7 +1422,7 @@ public class Erddap extends HttpServlet {
     }
 
     /**
-     * This responds by sending out the "Computer Programs"/REST information Html page.
+     * This responds by sending out the "RESTful Web Services" information Html page.
      *
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      */
@@ -1431,7 +1431,7 @@ public class Erddap extends HttpServlet {
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         OutputStream out = getHtmlOutputStream(request, response);
-        Writer writer = getHtmlWriter(loggedInAs, "Computer Programs", out);
+        Writer writer = getHtmlWriter(loggedInAs, "RESTful Web Services", out);
         try {
             String htmlQueryUrl = tErddapUrl + "/search/index.html?" +
                 EDStatic.encodedDefaultPIppQuery + "&amp;searchFor=temperature";

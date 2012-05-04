@@ -4047,8 +4047,28 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             Test.ensureEqual(results.substring(0, expected.length()), expected, 
                 "RESULTS=\n" + results.substring(0, nb));
 
-            //conclusion: NDBC doesn't seem to have a limit on time range,
-            //but the data just doesn't go back nearly as far as cwwcNDBCMet.
+/* 2012-04-25
+Error from http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0&request=GetObservation&offering=urn:ioos:station:wmo:41012&observedProperty=http://mmisw.org/ont/cf/parameter/sea_water_temperature&responseFormat=text/csv&eventTime=2006-07-27T21:10:00Z/2012-04-25T19:07:11Z
+<ExceptionReport>
+  atts=xmlns="http://www.opengis.net/ows/1.1", xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance", xsi:schemaLocation="http://www.opengis
+.net/ows/1.1 owsExceptionReport.xsd", version="1.0.0", xml:lang="en"
+<ExceptionReport><Exception>
+  atts=exceptionCode="InvalidParameterValue", locator="eventTime"
+<ExceptionReport><Exception><ExceptionText>
+<ExceptionReport><Exception></ExceptionText>
+  content=No more than thirty days of data can be requested.
+  ERROR is from requestUrl=http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0&request=GetObservation&offering=urn:ioos:station:wmo:41012&observedProperty=http://mmisw.org/ont/cf/parameter/sea_water_temperature&responseFormat=text/csv&eventTime=2006-07-27T21:10:00Z/2012-04-25T19:07:11Z
+
+java.lang.RuntimeException: Source Exception="InvalidParameterValue: eventTime: No more than thirty days of data can be requested.".
+ at gov.noaa.pfel.erddap.dataset.EDDTableFromSOS.readFromIOOS(EDDTableFromSOS.java:1392)
+ at gov.noaa.pfel.erddap.dataset.EDDTableFromSOS.getDataForDapQuery(EDDTableFromSOS.java:1231)
+ at gov.noaa.pfel.erddap.dataset.EDDTable.respondToDapQuery(EDDTable.java:2266)
+ at gov.noaa.pfel.erddap.dataset.EDD.lowMakeFileForDapQuery(EDD.java:2354)
+ at gov.noaa.pfel.erddap.dataset.EDD.makeNewFileForDapQuery(EDD.java:2273)
+ at gov.noaa.pfel.erddap.dataset.EDDTableFromSOS.testNdbcSosLongTime(EDDTableFromSOS.java:4028)
+ at gov.noaa.pfel.erddap.dataset.EDDTableFromSOS.test(EDDTableFromSOS.java:7077)
+ at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:1417)    
+*/
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
                 "\n\nAs of 2012-04-09, this fails because requests again limited to 30 days." +
@@ -4917,6 +4937,9 @@ So I will make ERDDAP able to read
   Goomoos sos server (strict! to comply with ogc tests)
   and neracoos sos server (older version, less strict)
 2010-04-29
+2012-04-30 Server has been unavailable.  Eric restarted it on new server:
+  was http://www.gomoos.org/cgi-bin/sos/V1.0/oostethys_sos.cgi 
+  now http://oceandata.gmri.org/cgi-bin/sos/V1.0/oostethys_sos.cgi
 */
         try {
         String2.log("\n*** testOostethys");
@@ -7071,7 +7094,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         // usually run
 /* */
         testOostethys(); //gomoosBuoy   gone! starting ~2012-04-18       //TimeSeriesProfile
-        testNeracoos(); 
+     /*   testNeracoos(); 
 
         testNdbcSosCurrents("");      //TimeSeriesProfile
         testNdbcSosLongTime("");

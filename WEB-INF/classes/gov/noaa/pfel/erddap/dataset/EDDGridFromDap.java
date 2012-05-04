@@ -1303,12 +1303,20 @@ public class EDDGridFromDap extends EDDGrid {
                         extraGlobalAtts[cLevel].add("suffixForTitle", sft);
 
                         if (alreadyDone.add(tUrlPath)) {
-                            if (justURLs) 
+                            String tName = File2.getNameAndExtension(tUrlPath);
+                            if (tName.startsWith("catalog") && tName.endsWith(".html")) {
+                                //UAF clean catalog has these when no valid dataset in directory
+                                String ts = indent[cLevel] + "  Skipping UAF catalog.html dataset: " + tUrlPath + "\n";
+                                summary.append(ts);
+                                System.out.print(ts);
+                            } else if (justURLs) {
                                 results.write(tUrlPath + "\n");
-                            else safelyGenerateDatasetsXml(tUrlPath, 
-                                tReloadEveryNMinutes, extraGlobalAtts[cLevel], 
-                                results, summary, indent[cLevel] + "  ", 
-                                datasetSuccessTimes, datasetFailureTimes);
+                            } else {
+                                safelyGenerateDatasetsXml(tUrlPath, 
+                                    tReloadEveryNMinutes, extraGlobalAtts[cLevel], 
+                                    results, summary, indent[cLevel] + "  ", 
+                                    datasetSuccessTimes, datasetFailureTimes);
+                            }
                         } else {
                             String ts = indent[cLevel] + "  Dataset already done: " + tUrlPath + "\n";
                             summary.append(ts);
@@ -1847,8 +1855,8 @@ String expected2 =
 //0
     "http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml", //erd
     "http://thredds1.pfeg.noaa.gov/thredds/catalog/catalog.xml",  //erd
-    //start of GeoIde
-    "./NVODS/catalog.xml",  //not yet
+    //2012-04-30: test of new clean catalog from catalog cleaner
+    "http://ferret.pmel.noaa.gov/geoide/catalog/geoide/dunkel.pmel.noaa.gov_8787/thredds/geoIDECleanCatalog.xml",  
     "http://data1.gfdl.noaa.gov:8380/thredds/ipcc/all_ipcc.xml",
     "http://cwcgom.aoml.noaa.gov/thredds/catalog.xml",
 //5
