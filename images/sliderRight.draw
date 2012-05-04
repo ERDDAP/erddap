@@ -1,0 +1,36 @@
+CoPlot.drawVersion(6.300);
+setDrawingBackgroundColor(Color2.notDrawn);
+setFont(0,"helvet");
+setFont(1,"tmsrmn");
+setFont(2,"cour");
+setFont(3,"marker");
+setFont(4,"greek");
+setFont(5,"");
+setFont(6,"");
+setFont(7,"");
+setFont(8,"");
+setFont(9,"");
+setFont(10,"");
+setFont(11,"");
+setFont(12,"");
+setFont(13,"");
+setFont(14,"");
+setUnitsName("pixels");
+setXBounds(0, 14);
+setYBounds(0, 16);
+setScale(100);
+setGridSize(1);
+setLeftMargin(4.175);
+setBottomMargin(5.415);
+setSmoothing(0);
+setGraphArrayX("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
+setGraphArrayY("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
+
+setGroup(0);
+setCharacters("C:/content/icons/bob2/sliderRight.gif");
+newImage();
+image.setSize(15);
+image.setBackgroundColor(Color2.white);
+create("image", "7.5, 7.5");
+
+endOfFile();

@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!-- 
+This is the set up file for a NetCheck installation. 
+
+NetCheck is a program which periodically does functional tests of network 
+resources and sends emails to various subscribers whenever there is a change
+in the status of a test (when a test initially fails, or when the nature of
+the failure changes, or when a test that had been failing now passes). 
+Currently, NetCheck can run three types of tests:
+  * HttpTest tests if the content retrieved from a URL includes various desired
+    text strings and doesn't include various undesired text strings.
+  * SftpTest tests if a file can be uploaded to another computer, renamed, and 
+    downloaded via sftp.
+  * OpendapTest tests if information can be obtained from a gridded data file 
+    served by OPeNDAP. 
+
+Installation:
+  * Because NetCheck is designed to test the availability of network resources,
+    it should be installed on a computer other than the computers providing
+    the services you want to test. Also, it should be on a computer that can
+    be left on all of the time so that NetCheck can do its tests day and night.
+    Ideally, it should be on the computer with the best battery backup, so
+    that it is the least likely to have trouble if the power goes out for a
+    while.
+
+What you need to do:
+  * Modify this file so that it does the tests you want to do.
+    * Like other XML files, this file contains information stored in a
+      hierarchy of XML start tags (for example, "<setup>") and XML end tags 
+      (for example, "</setup>"). At the lowest levels, values are stored
+      between the start and end tags (for example, 
+      "<minutesBetweenTests>5</minutesBetweenTests>".
+    * There are comments throughout this file to help you figure things out.
+    * When modifying this file, you may:
+      * Change some of the values between existing tags.
+      * Delete some of the tags (for example, you may not want to 
+        emailPeriodicHeadlines to anyone).
+      * Make copies of some of the tags, including all of the enclosed tags
+        (for example, you may want to set up more than one httpTest).
+    * If you just want to see if things work, here is a minimalist approach:
+      * Enter the email server information for all of the <setup><smtpXxx> tags.
+        Use the information you used when you set up your email client program.
+      * Save your changes and try to run "NetCheck -testmode" (see below).
+        * When you are prompted for the email password, enter the password
+          for your email account.
+        * When you are prompted for the password for the sftp test,
+          enter any text. The resulting test will fail, but you'll get
+          to see a test fail.
+  * Run NetCheck.bat (for Windows) or NetCheck (for Unix/Linux/Mac) 
+    from a command-line window.
+    * On Unix/Linux/Mac, to make the NetCheck shell script executable, type 
+      "chmod +x NetCheck" at the command line.
+    * NetCheck requires a modern version of Java. It has been tested with
+      a couple of versions of 1.5.x, but should work with earlier versions
+      (like 1.4.x). Java versions before 1.5 had a security problem,
+      so it is best to have at least Java 1.5.0.
+    * If anything in this XML file is not valid, NetCheck will display
+      an error message and stop.
+    * NetCheck will run forever (until you press Ctrl-C or the computer 
+      crashes). It is good to let NetCheck run day and night, monitoring 
+      your network and sending emails to various subscribers whenever there 
+      is a change in the status of a test. So, it is best to lock your computer
+      (with the Windows-L key combination on Windows computers), 
+      not put the computer to sleep or turn the computer off.
+    * Log File: NetCheck will create a log file in the same directory and with 
+      the same name as this .xml file, but will the additional extension .log,
+      for example, C:\Program Files\netcheck\NetCheck.xml.log .
+    * If you include "-testmode" on the command line, NetCheck will send
+      an email to the system administrator showing the results of all of 
+      the tests each time the tests are done, and will not send emails to
+      any one else for any reason.
+
+External Testing: 
+If NetCheck is run from a computer at the same site as many of the 
+computers it is testing, it is also good to have some way to check that 
+your site is available from external locations. Ideally, you would run
+NetCheck at some remote site, but that makes it harder to administer and
+may be difficult to arrange. Instead, you can use a simple service like 
+the service offered by http://www.siteuptime.com to ping your site 
+periodically and make sure it is still accessible from outside of your site.
+
+New version of NetCheck:
+If you install a new version of NetCheck, be sure to save this .xml file
+temporarily with a different name or in a different directory so that the
+standard .xml file in the new version of NetCheck won't overwrite your
+.xml file. After installation, rename the standard .xml file (so you can
+read the comments in it) and rename your .xml file to its original name.
+
+License information for software included with NetCheck: 
+  * The com/cohort/util utilities are from the EMA project 
+    from CoHort Software (http://www.cohort.com)
+    which has an MIT/X-like license (see classes/com/cohort/ema/LICENSE.txt).
+  * SftpTest uses code from the J2SSH project which is distributed by   
+    SSHTools (see http://sourceforge.net/projects/sshtools/) 
+    (version 0.2.2, which is old (2003) but the most recent available)
+    which has an Apache license.
+    It is based on c:\programs\j2ssh.examples\SftpConnect.java (License=LGPL)
+    which is Copyright (C) 2002 Lee David Painter <lee@sshtools.com>.
+  * OPeNDAP (http://www.opendap.org) data is read from an OPeNDAP server using
+    Java DAP 1.1.7 (http://www.opendap.org/download/index.html)
+    which has an LGPL license.
+  * NetCDF files (.nc) and GMT-style NetCDF files (.grd) are read and written 
+    with code in the NetCDF Java Library 
+    (http://www.unidata.ucar.edu/software/netcdf-java/index.htm)
+    from Unidata (http://www.unidata.ucar.edu/)
+    which has an LGPL license.
+  * The NetCDF Java Library uses code from several .jar files from the 
+    Apache project (http://www.apache.org/):
+    commons-httpclient (http://hc.apache.org/httpcomponents-client-ga/), 
+    commons-codec (http://commons.apache.org/codec/), and 
+    commons-logging (<a href="http://commons.apache.org/logging/)
+    (license: Apache (http://www.apache.org/licenses/LICENSE-2.0)).
+  * Emails are sent with the JavaMail API from Sun 
+    (http://java.sun.com/products/javamail/)
+    which has a BSD license (http://kenai.com/projects/javamail).
+  * JavaMail uses activation.jar from the JavaBeans Activation Framework
+    (http://www.oracle.com/technetwork/java/jaf11-139815.html)
+    which uses Oracle's Open Source License 
+    (http://www.java.com/en/download/license.jsp).
+  * The remaining NetCheck code is a product of the  
+    NOAA CoastWatch West Coast Regional Node (http://coastwatch.pfel.noaa.gov/)
+    by Bob Simons (bob.simons@noaa.gov) in 2005 and is copyrighted open source 
+    (see classes/gov/noaa/pfel/coastwatch/netcheck/LICENSE.txt). 
+
+Disclaimers: 
+  * DISCLAIMER OF ENDORSEMENT 
+    Any reference obtained from this server to a specific commercial product, 
+    process, or service does not constitute or imply an endorsement by CoastWatch,
+    NOAA, or the United States Government of the product, process, or service, or 
+    its producer or provider. The views and opinions expressed in any referenced 
+    document do not necessarily state or reflect those of CoastWatch,
+    NOAA, or the United States Government.
+  * DISCLAIMER FOR EXTERNAL LINKS
+    The appearance of external links on this World Wide Web site does not
+    constitute endorsement by the Department of Commerce / National 
+    Oceanic and Atmospheric Administration of external Web sites or the 
+    information, products or services contained therein. For other than 
+    authorized activities the Department of Commerce/NOAA does not
+    exercise any editorial control over the information you may find at these 
+    locations. These links are provided consistent with the stated purpose of 
+    this Department of Commerce/NOAA Web site.
+  * DISCLAIMER OF LIABILITY
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+    SOFTWARE.
+
+Questions? Comments? Suggestions? Please email bob.simons@noaa.gov .
+-->
+<netCheck>
+
+  <!-- The required "setup" section sets up things related to all of the tests. 
+       There must be just one "setup" section.
+       -->
+  <setup>                                                                  
+    <!-- All of the tests are run every few minutes. 
+         "minutesBetweenTests defines the default for all of the individual tests. 
+         "minutesBetweenTests" is optional. The default value is 5. -->
+    <minutesBetweenTests>5</minutesBetweenTests>
+    <!-- Status reports are sent to periodically, regardless of the 
+         results of the tests. The default value is 240 (6 hours). -->
+    <minutesBetweenStatusReports>240</minutesBetweenStatusReports>                  
+
+    <!-- Each test must respond within some number of seconds (although 
+         individual tests can override this). 
+         "mustRespondWithinSeconds is optional. The default value is 30. -->
+    <mustRespondWithinSeconds>30</mustRespondWithinSeconds>               
+
+    <!-- Reports with the results of the tests are emailed to subscribers. 
+         You need to specify information about the email account to be used to 
+         send the emails. 
+         All of these tags are required, except "smtpPort" which has a default 
+         value of 25. When you run NetCheck you will be prompted for the 
+         email account password for 'smtpFromAddres'. 
+         
+         emailProperties is a list of additional properties in the form 
+           prop1|value1|prop2|value2
+         For example, gmail accounts need 
+           mail.smtp.starttls.enable|true
+         The default is nothing.
+         (And for gmail, use smtpPort 587.)
+
+         If you can't get ERDDAP to send emails (error = "Connection refused")
+         and you are using anti-virus software (e.g., McAfee) make sure McAfee 
+         "Virus Scan Console : Access Protection Properties : 
+         Anti Virus Standard Protections : 
+         Prevent mass mailing worms from sending mail" is un-checked.         
+         -->
+    <smtpServer>sunfish.noaa.gov</smtpServer> 
+    <smtpPort>25</smtpPort>
+    <smtpProperties></smtpProperties>
+    <smtpUser>john.administrator</smtpUser>
+    <smtpFromAddress>john.administrator@noaa.gov</smtpFromAddress> 
+
+    <!-- The email options here in "setup" let people subscribe to reports 
+         with the results of all of the tests. 
+         * There are four types of subscriptions. You may create any number 
+           (0 or more) of each type of subscription.
+         * The "Headline" options send very brief reports and so are suitable 
+           for cell phone SMS email addresses. 
+         * The "Status" subscribers just get reports about the tests every  
+           minutesBetweenStatusReports minutes (default = 240) after the 
+           program is started. 
+         * The "Changes" subscribers get reports every time the results of a 
+           test change, for example, success becomes failure.  
+           "Changes" subscribers automatically get the "Status" reports. 
+         -->
+    <emailStatusTo>john.subscriber1@noaa.gov</emailStatusTo>                  
+    <emailStatusHeadlinesTo>8315551212@cingularme.com</emailStatusHeadlinesTo>
+    <emailChangesTo>john.subscriber2@noaa.gov</emailChangesTo>              
+    <emailChangeHeadlinesTo>8315551212@cingularme.com</emailChangeHeadlinesTo>
+
+    <!-- In testMode is set to true, every set of tests sends an email
+         to the smtpFromAddress with the results, and no emails will be 
+         sent to any of the email subscribers. The testMode tag is
+         optional. If present, it overrides the command line "-testmode"
+         setting. -->
+    <!-- <testMode>true</testMode> -->
+
+    <!-- It a test times out, there is a small memory leak. So if lots
+         of tests time out, the memory leak is substantial. If the memory
+         usege gets above memoryWarningMB (e.g., 50) megabytes, an email
+         will be sent to the smtpFromAddress. -->
+    <memoryWarningMB>50</memoryWarningMB>
+  </setup>                                                                  
+
+  <!-- In an httpTest, the http's response is tested against an expected 
+       response. 
+       You may create any number (0 or more) of httpTest's. 
+       -->
+  <httpTest> 
+    <!-- Set up the test. Each of these tags is required. 
+         These sample values should work on any computer.
+         -->
+    <title>PFEL</title> 
+    <url>http://www.pfeg.noaa.gov/</url> 
+
+    <!-- You can test the response speed and check for text which must 
+         (or must not) be in the response.
+           * "mustRespondWithinSeconds" is optional (there can be 0 or 1 
+             instances of this tag).  The default value is set in "setup" above.
+           * There can be any number (0 or more) of "responseMustInclude" and 
+             "responseMustNotInclude" tags.
+           * The values for "responseMustInclude" and "responseMustNotInclude":
+             * Must encode '&', '<', and '>' as '&amp;', '&lt;', '&gt;'.
+             * May span more than one line.
+         These sample values should work on any computer.
+         -->
+    <mustRespondWithinSeconds>4.5</mustRespondWithinSeconds>
+    <responseMustInclude>Disclaimer and Privacy Policy</responseMustInclude>
+    <responseMustNotInclude>Exception</responseMustNotInclude>
+
+    <!-- The email options here let people subscribe to reports with the
+         results from this test. 
+         * There are four types of subscriptions. You may create any number 
+           (0 or more) of each type of subscription.
+         * The "Headline" options send very brief reports and so are suitable  
+           for cell phone SMS email addresses. 
+         * The "Status" subscribers just get reports about the tests (pass or 
+           fail) every 24 hours. 
+         * The "Changes" subscribers get reports every time the results of a 
+           test change, e.g., success becomes failure.  "Changes" subscribers 
+           automatically get the "Status" reports. 
+         -->
+    <emailStatusTo>john.subscriber3@noaa.gov</emailStatusTo> 
+    <emailStatusHeadlinesTo>6125551212@vtext.com</emailStatusHeadlinesTo>
+    <emailChangesTo>john.subscriber4@noaa.gov</emailChangesTo>
+    <emailChangeHeadlinesTo>6235551212@messaging.nextel.com</emailChangeHeadlinesTo> 
+
+  </httpTest>                          
+
+
+  <!-- In an sftpTest, a file is uploaded, renamed, and downloaded via sftp and
+       must complete these tasks correctly in a limited amount of time. 
+       You may create any number (0 or more) of sftpTest's. 
+       The sample values for this test need to be modified to work on your 
+       computer. When you run NetCheck you will be prompted for the password
+       for the 'userName' on the 'hostName'.
+       -->
+  <sftpTest> 
+    <!-- Set up the test. All of these tags are required. -->
+    <title>Orpheus SFTP</title>  
+    <hostName>http://orpheus.pfeg.noaa.gov/</hostName> 
+    <userName>userName</userName> 
+    <localDirectory>classes/gov/noaa/pfel/coastwatch/netcheck/</localDirectory> 
+    <remoteDirectory>/home/cwatch/</remoteDirectory> 
+    <fileName>SftpTestFile</fileName>  
+
+    <!-- The only thing that can be tested is the speed of the test. 
+         "mustRespondWithinSeconds" is an optional tag.
+         The default value for "mustRespondWithinSeconds" is set in "setup" 
+         above.
+         -->
+    <mustRespondWithinSeconds>5</mustRespondWithinSeconds> 
+
+    <!-- The email options here let people subscribe to reports with the
+         results from this test. 
+         * There are four types of subscriptions. You may create any number 
+           (0 or more) of each type of subscription.
+         * The "Headline" options send very brief reports and so are suitable  
+           for cell phone SMS email addresses. 
+         * The "Status" subscribers just get reports about the tests (pass or 
+           fail) every 24 hours. 
+         * The "Changes" subscribers get reports every time the results of a 
+           test change, e.g., success becomes failure.  "Changes" subscribers 
+           automatically get the "Status" reports. 
+         -->
+    <emailStatusTo>john.subscriber5@noaa.gov</emailStatusTo> 
+    <emailStatusHeadlinesTo>4155551212@vtext.com</emailStatusHeadlinesTo> 
+    <emailChangesTo>john.subscriber6@noaa.gov</emailChangesTo> 
+    <emailChangeHeadlinesTo>4155551212@messaging.nextel.com</emailChangeHeadlinesTo>
+  </sftpTest>                          
+
+
+  <!-- In an opendapTest, information is obtained from a gridded data file 
+       served by OPeNDAP. 
+       You may create any number (0 or more) of sftpTest's. 
+       -->
+  <opendapTest> 
+    <!-- Set up the test. Each of these tags is required. 
+         These sample values should work on any computer.
+         -->
+    <title>OceanWatch OPeNDAP</title> 
+    <url>http://las.pfeg.noaa.gov/cgi-bin/nph-dods/data/oceanwatch/nrt/gac/AG1day.nc</url> 
+    <variableName>ssta</variableName> 
+    <minMaxXY>225, 255, 22, 50</minMaxXY> <!-- the desired minX, maxX, minY, maxY -->
+    <missingValue>-1.0e34</missingValue> 
+    <offsetDate>1985-01-01</offsetDate> 
+
+    <!-- These tags identify the information you want to test. 
+         Several pieces of infomation about the data can be tested. 
+         Each of these is optional (there can be 0 or 1 of each of these tags).
+         The default value for "mustRespondWithinSeconds" is set in "setup" above.
+         These sample values should work on any computer.
+         -->
+    <mustRespondWithinSeconds>5</mustRespondWithinSeconds> 
+    <dasMustContain>String Unlimited_Dimension "time_series";</dasMustContain> 
+    <ddsMustContain>Float32 ssta[time_series = 60][lat = 1501][lon = 3601];</ddsMustContain>
+    <gridNLonValues>3601</gridNLonValues> 
+    <gridNLatValues>1501</gridNLatValues>
+
+    <!-- The email options here let people subscribe to reports with the
+         results from this test. 
+         * There are four types of subscriptions. You may create any number 
+           (0 or more) of each type of subscription.
+         * The "Headline" options send very brief reports and so are suitable  
+           for cell phone SMS email addresses. 
+         * The "Status" subscribers just get reports about the tests (pass or 
+           fail) every 24 hours. 
+         * The "Changes" subscribers get reports every time the results of a 
+           test change, e.g., success becomes failure.  "Changes" subscribers 
+           automatically get the "Status" reports. 
+         -->
+    <emailStatusTo>john.subscriber7@noaa.gov</emailStatusTo> 
+    <emailStatusHeadlinesTo>4155551212@vtext.com</emailStatusHeadlinesTo> 
+    <emailChangesTo>john.subscriber8@noaa.gov</emailChangesTo>
+    <emailChangeHeadlinesTo>4155551212@messaging.nextel.com</emailChangeHeadlinesTo> 
+  </opendapTest>
+
+
+  <!-- In an pauseTest, NetCheck doesn't actually test anything; it just
+       pauses between tests. 
+       -->
+  <pauseTest> 
+    <!-- Set up the test. Each of these tags is required.
+         Only these tags are allowed.
+         -->
+    <title>Pause for 10 Seconds</title> 
+    <nSeconds>10</nSeconds> 
+  </pauseTest>                          
+
+
+
+</netCheck>
+
+<!-- This is the end of the NetCheck.xml file. -->

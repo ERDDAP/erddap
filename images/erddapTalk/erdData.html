@@ -1,0 +1,784 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Bob's Guidelines for Data Distribution Systems</title>
+<link rel="shortcut icon" href="http://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
+<link href="../images/erddap.css" rel="stylesheet" type="text/css">
+</head>
+
+<body> 
+<table style="width:640px; border-style:outset; border-width:0px; padding:0px; " 
+  cellspacing="0"> 
+<tr>
+<td>
+<form action="">
+<input type="button" value="Back" onClick="history.go(-1);return true;">
+</form>
+
+<h1 align="center">Bob's Guidelines for<br>Data Distribution Systems</h1>
+
+[The opinions expressed in this document are Bob Simons' personal opinions (email: bob dot simons at noaa dot gov) and do not necessarily reflect any position of my coworkers, bosses, ERD, the National Oceanic and Atmospheric 
+Administration, or the U.S. Government.]
+
+<p>The NOAA NMFS SWFSC 
+<a href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">Environmental
+Research Division (ERD)</a> 
+and the NOAA NESDIS
+<a href="http://coastwatch.pfeg.noaa.gov/">CoastWatch West Coast Regional Node</a>
+are working on ways to improve how scientific data is distributed.
+We have evolved a set of "best practice" guidelines related to data distribution systems that
+  we have found to be useful. 
+These guidelines also help us evaluate systems.  For example, if a system isn't 
+  <a href="#fast">fast</a>, that's a problem.
+These are guidelines, not hard and fast rules.  If you want to do something else, that's your choice.
+We didn't invent any of these guidelines. We looked at many guidelines and kept the ones that made sense and worked for us.
+There are probably lots of other useful guidelines, but this is our current list:
+
+<ul>
+<li><a href="#theProblem">The Problem</a>
+<li><a href="#users">Focus on the User's Point of View</a>
+<li><a href="#diverse">Clients Have Diverse Needs</a>
+<li><a href="#webPages">Web Pages</a>
+<li><a href="#webServices">Web Services</a>
+<li><a href="#federations">Federations of Web Services</a>
+<li><a href="#onTop">Building Web Pages and Web Services on Top of Other Web Services</a>
+<li><a href="#pushPull">Data Dissemination / Data Distribution Networks: Push and Pull Technologies</a>
+<li><a href="#url">URLs and RESTful Systems</a>
+<li><a href="#simple">Keep It Simple</a>
+<li><a href="#fast">Make It Fast</a>
+<li><a href="#success">Plan for Success</a>
+<li><a href="#failure">Plan for Failures</a>
+<li><a href="#check">Check Your Work</a>
+<li><a href="#agile">Agile Software Development</a>
+<li><a href="#reusable">Reusable Software</a>
+<li><a href="#rule8020">The 80/20 Rule</a>
+<!-- li><a href="#openSource">Open Source</a -->
+<li><a href="#perfection">The One Perfect System</a>
+<li><a href="#stovepipes">Stovepipes</a>
+<li><a href="#interoperability">Interoperability</a>
+<li><a href="#standards">Standards</a>
+<li><a href="#experts">Keep the Experts Close To and In Charge Of Their Datasets</a>
+<li><a href="#provenance">Provenance</a>
+</ul>
+
+<a href="#contact">Comments? Questions? Suggestions?</a>
+<br>See also the <a href="#disclaimer">Disclaimer</a>.
+<small><br>Created: 2009-07-19
+<br>Last modified: 2011-03-23</small>
+
+<hr noshade> 
+
+<h2><a name="theProblem">What is the Problem We Are Trying To Solve?</a></h2>
+We are trying to find best practices for distributing scientific data.
+At ERD, we work with oceanographic data from buoys, cruises, tags, satellites, computer models, etc.
+In general, we want to distribute the data via <a href="#webPages">web pages</a>
+   and <a href="#webServices">web services</a>.
+Features to consider:
+<ul>
+<li>Some of the data is relatively static. Some of it is changing frequently (near-real-time).
+<li>Some of the data is publicly available. Some of it has restricted access.
+<li>Some of the data is stored locally in various formats. 
+    Some of it is stored remotely and accessible via a web page or web service.
+    Unfortunately, some of it is privately held and not accessible.
+<li>Some of the datasets are very small (e.g., a table with a few columns and rows).
+  Some are very large (e.g., satellite and model datasets spanning years, with &gt;1 TB of data).
+<li>A user may make one or many small data requests (e.g., one value from one sensor) or 
+  one or many large data requests (e.g., &gt;1 GB chunks of satellite or model data).
+</ul>
+While the best practices here may substantially overlap with the best practices for other problems,
+it is important to separate them. If you are trying to solve a different problem,
+these best practices may or may not apply.
+
+
+<h2><a name="users">Focus on the User's Point of View</a></h2>
+Since we are thinking about how to <b>distribute</b> data, it is easy to forget (or minimize)
+the user's point of view: "How do I <b>get</b> the data?". 
+That would be a serious mistake. 
+In the end, if a system doesn't meet the user's needs, 
+doesn't fit into the user's work flow, or isn't easy to use,
+the user won't use it and all our work will be for naught.
+The user experience must be a primary focus.
+
+<p>So when you are designing, developing, and using your system, think from the user's point of view:
+<ul>
+<li>Is the system easy for the user to install?   
+  Better yet, can you design a system where the users don't have to install anything?
+  No-installation, server-based solutions have the additional advantage that users 
+      always use the latest version, starting the instant you release it.
+<li>Is the system reasonably easy for a new user to get started with?
+<li>Does the system have helpful information to help the user learn more?
+<li>Does the system allow advanced users to work efficiently (and not get in their way)?
+<li>Does the system make common tasks easy to do and less common tasks at least possible (ideally easy, too)?
+<li>Does the system minimize the effort and thought needed to use it?
+  Some user interface designers advocate counting the clicks needed to complete each task.
+</ul>
+For more info, see 
+<a href="http://www.amazon.com/exec/obidos/ASIN/0201924781/conslockltdsoftf">Software for Use</a>
+by Larry L. Constantine and Lucy A.D. Lockwood (especially the Five Rules of Usability and Six Principles of Usability in Appendix B) and
+<a href="http://www.useit.com/papers/heuristic/heuristic_list.html">Ten Usability Heuristics</a>
+by <a href="http://www.useit.com/">Jakob Nielsen</a>.
+
+<p>If you keep the user's point of view in mind when writing data distribution software,
+if will be easier to make your software <a href="#fast">fast</a>. 
+Speed and efficiency will be a requirement, not an afterthought.
+
+
+<h2><a name="diverse">Clients Have Diverse Needs</a></h2>
+Clients are diverse: scientists working in their discipline, 
+scientists in related disciplines, decision makers, teachers, students, fisherman, 
+surfers, other members of the public, etc.
+And clients within a given group are diverse: one scientist may want
+to bring data into Matlab for analysis, another into R (a statistics program), 
+another into ArcGIS, and another into a custom FORTRAN modelling program, etc.
+Some will be interested in forecasts, some in the latest data, 
+and others in long historic time series.
+Some will be interested in just their local area; others in the whole world.
+
+<p>We need to design systems with these diverse needs in mind.
+And we need to accept that new clients and new needs will appear
+as time goes by. The system needs to be able to evolve.
+
+<p>In fact, we probably won't be able to predict all of our clients needs.
+So it is probably best to make our systems (at least some of them) as
+flexible as possible.
+
+<h2><a name="webPages">Web Pages</a></h2>
+When thinking about clients' needs, 
+there is an important distinction between humans working with a web browser 
+and automated computer programs.
+The qualities of a system interface that a human wants 
+when searching for and requesting data via a web browser 
+are usually different from the qualities of a system interface that
+a computer program needs when it is gathering and processing data.
+
+<p>Humans using web browsers like nice web pages. Humans can read and understand information 
+and make decisions. Humans can read directions and follow them (although they might not like to).
+Humans like a rich browsing experience: for example, interesting images and sophisticated user interface widgets.
+
+
+<h2><a name="webServices">Web Services</a></h2>
+Compared to humans using web browsers, computer programs don't care about a rich browsing experience
+and they often can't interact with sophisticated user interface widgets.
+They don't understand directions or other information on a web page, 
+but they are really good at following pre-defined instructions to do simple, well-defined tasks.
+
+<p>Since it is easier to write computer programs when the
+task to be done is simple, 
+it is easier to write computer programs to access data from very well-defined,
+very well structured, and very simple web services.
+Computer programs need an easy way to 
+find out what data is available (in some standardized format), 
+generate requests for subsets of data, get the response, 
+easily parse the response, and process the response.
+
+<p>Note that a system can offer web pages (for humans) and 
+web services (for computers). For example, most 
+<a href="http://opendap.org/">DAP servers</a> offer a 
+Data Access Form, which is a web page 
+<a href="http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.html">like this</a>,
+for every dataset. 
+When the user fills out the form, the web page reformats 
+the request into a URL, which is sent to the server (the web service) and returns the
+requested data (usually in a human-readable format).
+But a computer program or script could generate those URLs
+and just use the web service parts of the system.
+
+
+<h2><a name="federations">Federations of Web Services</a></h2>
+One nice feature of many data servers that offer web services is that they have a way
+to get data from similar remote web services. 
+For example, a 
+<a href="http://www.unidata.ucar.edu/projects/THREDDS/">THREDDS</a>
+server can serve datasets from another THREDDS server.
+And <a href="http://coastwatch.pfeg.noaa.gov/erddap">ERDDAP</a>
+can get data from several types of remote web services (for example, DAP, SOS, OBIS, and other ERDDAP's).
+(See
+<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/grids.html">our plan for federations of ERDDAPs and other data servers</a>.)
+
+<p>Such federations of data servers make it easy for one site to serve data from multiple remote servers, 
+as if all of the data were on the aggregating server.
+Users can get data from lots of datasets just by going to that aggregating server.
+Federations can also <a href="#pushPull">disseminate data via push and pull technologies</a>.
+
+<p>If a dataset is only available via web pages, not web services,
+such federations are not possible.
+User's have to go to one web page to get data from one dataset
+and another web page (perhaps at another web site) to get data from another dataset, etc.
+
+
+<h2><a name="onTop">Building Web Pages and Web Services on Top of Other Web Services</a></h2>
+It is extremely useful if every dataset is at least available via a web service,
+because other web pages and web services
+can be built on top of the original web service.
+For example, this makes 
+<a href="#interoperability">interoperable data servers</a> like 
+<a href="http://coastwatch.pfeg.noaa.gov/erddap">ERDDAP</a> possible.
+ERDDAP can get data from several types of remote web services (for example, DAP, SOS, OBIS, and other ERDDAP's)
+and make it available to users via other protocols (for example,
+the user can make a DAP request to get data from a SOS server).
+
+<p>Or, anyone can create a new web page (using data from a remote web service) 
+to simplify a given task for a group of users.
+The web service may be one-size-fits all, but the web services and web pages
+that are built on top can be highly customized.
+An example of this is Cara Wilson's
+<a href="http://www.pfeg.noaa.gov/~cwilson/bloom/BW_08.html">BloomWatch</a>
+web page. The page has HTML image tags that refer to ERDDAP URLs that
+request an image to be generated from the latest data available
+for a specific dataset, for a specific geographic region. Thus, the images aren't static images.
+Whenever a user visits the BloomWatch page, the user sees the latest images,
+generated automatically by ERDDAP.
+
+<p>Best of all, the authors of the web pages and web services that are built on top
+of the original web service don't need to coordinate with the administrators of the original web service.
+<ul>
+<li>The original web service makes the data available.
+<li>The new web pages or web services use the data.
+<li>They communicate through the original web service's interface, thus they are
+  <a href="http://en.wikipedia.org/wiki/Loose_coupling">Loosely Coupled Systems</a>. 
+<li>This allows new products, highly customized to user's needs,
+  to be made in ways that the original web service's designers might never have imagined.
+<li>This decentralized approach to collaboration is a good way to deal with the fact that
+<a href="#diverse">Clients Have Diverse Needs</a>.
+<li>It allows anyone to participate in the data distribution process, 
+  leads to solutions that are tailored to the user's needs, and minimizes the
+  bureaucratic overhead.
+</ul>
+
+
+<h2><a name="pushPull">Data Dissemination / Data Distribution Networks: Push and Pull Technology</a></h2>
+Some data servers distribute data that is stored locally.
+Other data servers (e.g., THREDDS, LAS, and ERDDAP) can distribute data that is stored locally or remotely.
+A potential problem with remote data is that access to it may be slow. 
+The solution is to make a local copy of the data.
+<br><a href="http://en.wikipedia.org/wiki/Pull_technology">Pull Technology</a>: 
+  Some data servers (e.g., ERDDAP) have the ability to actively get all of the 
+  available data from a remote data source and 
+<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">store 
+a local copy of the data</a>.
+<br><a href="http://en.wikipedia.org/wiki/Push_technology">Push Technology</a>: 
+  There are also systems designed to actively push data to remote servers
+  as soon as new data is available
+  (e.g., Unidata's <a href="http://www.unidata.ucar.edu/software/idd/">Internet 
+  Data Distribution System</a>).
+
+<p>Similarly, but not as full-featured, ERDDAP's <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGridFromErddap</a> uses ERDDAP's subscription system and flag system so that it will be notified immediately when new data 
+is available. 
+<ul>
+<li>By combining ERDDAP's EDDGridCopy and EDDGridFromErddap, data can be efficiently pushed between ERDDAPs.
+<li>Push technologies disseminate data very quickly (within seconds).
+<li><a href="#webServices">Web services</a> 
+  make data dissemination via push and pull technologies possible.
+<li>This architecture puts each ERDDAP administrator in charge of determining where the data 
+  for his/her ERDDAP comes from.
+<li>Other ERDDAP administrators can do the same.  There is no need for coordination 
+  between administrators.
+<li>If many ERDDAP administrators link to each other's ERDDAPs, a data distribution network 
+  is formed.
+<li>Data will be quickly, efficiently, and automatically disseminated from data sources 
+  (ERDDAPs and other servers)
+  to data re-distribution sites (ERDDAPs) anywhere in the network.
+<li>A given ERDDAP can be both a source of data for some datasets and a re-distribution site 
+  for other datasets.
+<li>The resulting network is roughly similar to data distribution networks set up with 
+  programs like 
+  <a href="http://www.unidata.ucar.edu/software/idd/">Unidata's IDD/IDM</a>, but less rigidly structured.
+</ul>
+
+<h2><a name="url">URLs and RESTful Systems</a></h2>
+In the most common and simple sense, the web works when a computer
+program (such as a web browser) sends a request to a specific URL
+(the address of some resource on the web) and gets a response (for example, a web page
+or a file).
+This is the essence of a
+<a href="http://en.wikipedia.org/wiki/Representational_State_Transfer">RESTful</a>
+system.
+Because this approach is so fundamental to the way the web works, 
+almost all types of computer programs 
+and computer languages have the ability to contact a URL and get the response.
+
+<p>As a result, it is very convenient (though not essential) if
+a data distribution system uses URLs to specify the data being requested.
+<ul>
+<li>The URL can completely specify what is being requested: which subset of which dataset, 
+  and the file type for the response.
+<li>Humans are comfortable working with the URLs.
+<li>Computer programs (web browsers, Matlab, R, Excel, ArcGIS, shell scripts, etc.) 
+  and computer languages (C, Java, Python, etc.) are good at getting data via URLs.
+<li>You can email URLs to co-workers, bookmark URLs, write URLs in your notes, etc.
+  That's a lot easier than dealing with directions like: click on this, then click on that,
+     then down at the bottom click on ...
+<li>Web pages can embed image URLs in &lt;img&gt; tags.
+<li>Web services that use URLs for data requests make it easy to 
+   build other web pages or web services on top of them.
+</ul>
+URLs are great.
+
+<p>What about XML?! 
+<br>Some people advocate XML-based systems which require that the requests and responses to be formatted as XML.
+The idea is that XML could be the lingua franca for Internet communications, particularly 
+  between computer programs.
+While we believe that there are some good uses for XML (for example, configuration files),
+we are not convinced that XML has been an unqualified success for requesting and receiving data.
+The big potential problems are:
+<ul>
+<li>XML-based systems are often very verbose, so transmission is slow when a lot of data is sent.
+<li>Because of the difficulty in forming requests and parsing responses,
+   XML-based systems rely on custom computer programs to send and receive information, 
+   so they usually require that custom software to be installed on the client's computer.
+<li>Because of the difficulty in forming requests and parsing responses,
+   XML is usually only a solution for <a href="#webServices">Web Services</a>, 
+   not <a href="#webPages">Web Pages</a>.
+   So XML-based systems generally aren't useful for handling the end-user's-needs part of
+   a data distribution system.
+<li>XML-based systems seem to quickly become very complex.
+  It would be okay if they just used a few schemas, but systems often grow to use dozens
+    or even hundreds of schemas.
+  The resulting systems may be precisely defined (or not!), but writing a client
+    to convert the XML to some other format can become very difficult.
+  See <a href="#simple">Keep It Simple</a> for reasons to avoid complex systems.
+</ul>
+See L. Richardson and Sam Ruby's 
+  <a href="http://www.crummy.com/writing/RESTful-Web-Services/">RESTful Web Services</a>
+  (the web page and the book) for a discussion of RESTful vs. XML-based services.
+
+
+<h2><a name="simple">Keep It Simple</a></h2>
+In keeping with the guideline <a href="#users">Focus on the User's Point of View</a>,
+it is important to make it easy for users to get started with and use your system.
+There is a great book on designing web sites called 
+<a href="http://www.amazon.com/Think-Common-Sense-Approach-Usability/dp/0789723107">Don't Make Me Think!</a>
+by Steve Krug that makes that point that both human clients and computer clients appreciate 
+easy-to-use web pages and web services.
+For users, if it isn't simple, they won't use it (or they'll grumble if they have to use it).
+
+<p>It is also best if the system architecture is simple.
+Simple systems are easier to design, build, use, and maintain.
+They are less prone to bugs. They are more efficient.
+That is why 
+<a href="http://en.wikipedia.org/wiki/KISS_principle">KISS</a> 
+(Keep it Simple Stupid) is a venerable design principle.
+Over time, systems seem to become complex all by themselves,
+so you need to make a constant effort to keep them simple.
+See <a href="http://en.wikipedia.org/wiki/Systemantics">SystemANTICS</a> 
+(<a href="http://www.amazon.com/gp/product/0961825170">the book</a>) 
+for more thoughts about simple vs. complex systems.
+
+<p>Anders Hejlsberg, the author of Turbo Pascal and Delphi, and now the lead architect of
+Microsoft's C#, said,
+"I think simplicity is always a winner. If you can find a simpler solution to 
+something -- that has certainly for me been a guiding principle. Always try to make it simpler."
+
+<h2><a name="fast">Make It Fast</a></h2>
+Speed matters, from a user stand point and from a cost standpoint. 
+<ul>
+<li>If the system is slow (for example, takes more than about 8 seconds to respond), 
+  people will think it isn't working and give up.
+<li>If the system is slow, then a large number of requests 
+  (notably from a computer program or another web service)
+  will overwhelm your service and you'll have to buy additional, faster computers
+  to meet the demand. That's expensive.
+<li>If the system is even a little slow, people won't enjoy working with it.
+<li>If they don't enjoy working with it, they are less likely to use it.
+</ul>
+
+<p>Don't measure the system's speed just as the CPU time to process the request.
+<br>Start timing when the user sends the request; 
+<br>&nbsp;&nbsp;consider the time until the user first starts to see the response;
+<br>&nbsp;&nbsp;stop timing when the user has received and parsed the entire response.
+<br>For XML-based systems in particular, the transmission and parsing times 
+   may be long if lots of data is being transmitted.
+
+
+<h2><a name="success">Plan for Success</a></h2>
+Your system might be a success. People might actually use it.
+Do capacity planning ahead of time 
+so you have a plan for expanding the system to meet the needs of more and more users.
+(See 
+<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/grids.html">our plan for scaling up ERDDAP</a> 
+to meet the needs of a large number of users.)
+For general information on designing scalable, high capacity, fault-tolerant systems, 
+see Michael T. Nygard's book 
+<a href="http://www.amazon.com/Release-Production-Ready-Software-Pragmatic-Programmers/dp/0978739213">Release It</a>.
+
+<h2><a name="failure">Plan for Failure</a></h2>
+Murphy's Law ("Anything that can go wrong, will go wrong") applies to Data Distribution Systems.
+Remote data sources will fail in all sorts of ways. 
+Local servers and disk drives (even RAIDs) will fail.
+Networks will slow to a crawl, behave erratically, and fail. 
+If a system is designed to properly handle 99.999% of
+all situations, you can be sure that the 0.001% situations will also occur.
+If a certain type of error can only happen if two or more unrelated, unlikely events occur
+simultaneously (leading you to believe the error will never occur in reality), be assured
+that the error is more likely to occur than you think.
+Since things are going to fail, <a href="#check">check your work</a>.
+See <a href="http://en.wikipedia.org/wiki/Black_swan_theory">The Black Swan</a> 
+(<a href="http://www.amazon.com/Black-Swan-Improbable-Robustness-Fragility/dp/081297381X/">the
+book</a>, not 
+<a href="http://en.wikipedia.org/wiki/Black_Swan_(film)">the movie</a>) 
+for a more thorough discussion.
+
+<p>We may wish to design a system that tries to overcome these failures (retry!).  
+But that just leads to a system that where one failure causes
+a cascade of other failures, as uncompleted tasks pile up in the system. Instead, it is 
+better to accept that some datasets are currently unavailable and that some requests can't be 
+fulfilled right now. Systems (e.g., ERDDAP) may have extensive error checking and error handling
+routines, but the system will fail in ways that the designers hadn't even thought of.
+History is full of examples.
+See <a href="http://en.wikipedia.org/wiki/Systemantics">SystemANTICS</a> 
+(<a href="http://www.amazon.com/gp/product/0961825170">the book</a>) 
+for a more thorough discussion.
+
+
+<h2><a name="check">Check Your Work</a></h2>
+If you are developing software, use automated unit and system tests internally during development. 
+Automated tests can catch most (but not all) bugs before the software is released.
+
+<p>If you are the administrator of a data distribution system, test your system.
+  Test every dataset at least once. 
+Is all of the metadata appearing correctly?
+  Can you send a request and get the correct response reasonably quickly?
+
+<p>If you have a server-based data distribution system, 
+it is great that when clients access your system they always use the latest version of the software.
+But the downside is that if the server is down, nobody can use your system.
+Systems will <a href=#failure>fail</a> in all sorts of ways, expected and unexpected.
+So it makes sense to have a system that checks if your system is functioning correctly.
+
+<p>At ERD, we wrote and use
+  <a href="http://coastwatch.pfeg.noaa.gov/coastwatch/NetCheck.html">NetCheck</a>,
+  The Network Resource Checker, which is freely available, but alternatives are available. 
+Every few minutes NetCheck gets the responses from URLs for all of our services
+  and looks for specific text strings in the responses (for example, the names of all of the datasets).
+If a response is too slow or the required text strings aren't present, NetCheck
+  sends an email to people who have subscribed to that test.
+Our systems may go down sometimes (don't they all?), but at least we find out about it quickly
+  so that we can react quickly.
+The NetCheck tests are also very useful when we make changes to the system, 
+  to make sure we didn't break anything.
+
+
+<h2><a name="agile">Agile Software Development</a></h2>
+Since we know that user's needs are diverse and changing,
+it makes sense to use a software design and development process 
+that is well suited to this, such as the 
+<a href="http://en.wikipedia.org/wiki/Agile_software_development">Agile Software Development</a> 
+process.
+Some of the principles of Agile Software Development are:
+<ul>
+<li>Sufficient (not excessive) planning.  Most importantly, plan on the system changing over time.
+<li>Sufficient (not excessive) documentation.
+<li>Frequent (every month or two?) releases of working software.
+  <ul>
+  <li>The initial releases will be simple and not have all of the features you want, 
+    but they should meet some of the more important needs of the clients. 
+    As additional versions of the software are released, additional features can
+    be added to meet additional needs of the clients.
+  <li>You always have working software, starting very early on.
+  <li>You can adjust course after every release
+      via a dialog between software developers, users, and decision-makers.
+      This lets the system evolve as needs and priorities change.
+  <li>Frequent releases facilitate 
+    <a href="http://en.wikipedia.org/wiki/Continuous_Improvement_Process">Continuous Improvement</a>,
+    which is part of 
+    <a href="http://en.wikipedia.org/wiki/W._Edwards_Deming">W.E. Deming's</a>
+    highly successful system to improve the quality and efficiency of products.
+  </ul>
+</ul>
+
+<p>It is important to contrast this approach with attempting to 
+completely design the system before building anything.
+Although planning is important, it can become paralyzing if one tries to build the perfection plan.
+There is a danger of planning and planning and planning and never 
+actually building a system that does anything.
+As Voltaire said, "The perfect is the enemy of the good."
+
+<p>Planning large systems is very difficult. 
+As one works with a large problem like data distribution, one learns more 
+about the problem. One thinks of other solutions to parts of the problem. 
+And the problem often evolves over time as new requirements are added 
+(for example, when a new client program like Google Earth appears).
+Agile development takes advantage of this, allowing the system (and the system's design) to evolve 
+as our understanding of the problem evolves.
+
+
+<h2><a name="reusable">Reusable Systems</a></h2>
+The software used for data distribution systems can be reusable, or custom made for a specific site.
+Both have advantages and disadvantages.
+<ul>
+<li>Because custom systems are tailor made for their situation, they can be highly optimized
+for the data that will be served and to meet the needs of specific groups of users. 
+But custom systems take time, money, and expertise (programmers) to develop.
+<li>Because reusable systems are reused, it makes sense to put (relatively) 
+more time and money into developing them because the fruits of the effort are
+enjoyed by many sites, which magnifies the return-on-investment by the number of installations (10x? 100x?).  
+When a site chooses to use an existing reusable system, 
+they can be up and running in a day and at no cost if the system is open source.
+In many cases, reusable systems can be somewhat customized for a given site,
+giving you the best of both worlds.
+<li>As a result, reusable systems are preferred unless the need for special 
+features and the availability of time, money, and expertise make a custom
+system worth the extra cost.
+</ul>
+
+
+<h2><a name="rule8020">The 80/20 Rule</a></h2>
+The <a href="#agile">Agile Software Development</a> Process seems to have been designed 
+with a deep appreciation of the
+<a href="http://en.wikipedia.org/wiki/Pareto_principle">Pareto Principle</a>
+(also known as the 80/20 rule), 
+which basically says that some things are more important than others, 
+so it makes sense to work on the most important things first.
+At the start of work on each version of the software (every month or two?),
+you can decide what features are most important to work on next. 
+By taking this approach, you can usually get the most important features implemented first.
+Clients get a useful system soon, rather than having to wait a long, long time until the software 
+is "finished". 
+
+<p>One interpretation of the 80/20 rule for software development is 
+that you can implement the most important 80% of the desired
+features for 20% of the total effort. The remaining 20% of the features may be harder 
+to implement and require the remaining 80% of the total effort.
+You can quibble with the percentages, but the idea is sound.
+It makes sense to work initially toward meeting the most important needs of most of the clients. 
+Work on the important things first.
+
+
+<!-- <p>This also highlights the advantages of breaking a large problem into 
+smaller problems. A collection of small tools is more adaptable to changing
+needs than a single, monolithic, tool. -->
+
+
+<h2><a name="perfection">The One Perfect System</a></h2>
+Given that <a href="#diverse">Clients Have Diverse Needs</a> 
+(really diverse when you consider human clients and computer program clients), 
+it seems unlikely that one data distribution system will meet everyone's needs.
+It seems more likely that a one-size-fits-all solution won't be the perfect solution for everyone.
+
+<p>If you want to work toward building the one great system, great.
+Good luck to you.  (Really!)  But beware of these dangers: 
+<ul>
+<li>The Needs Problem: it is unlikely that you have thought of everyone's
+needs. 
+
+<li>The Geared-Towards Problem: given that diverse clients have diverse needs,
+it is seems unlikely that your system can be the optimal system for all users.
+It seems more likely that it will be geared toward a few types of users 
+or a few tasks, and that it will be mediocre (or bad) at other tasks.
+
+<li>The Planning Paralysis Problem: 
+Although planning is important, it can become paralyzing if one tries to plan the perfect system.
+There is a danger of planning and planning and planning and never 
+actually building a system that does anything.
+
+<li>The Double-Edged-Sword Problem: if you build a system that
+is really good in one respect, that strength is often also the system's 
+greatest weakness. For example, if you design a file structure that is so 
+sophisticated that it can handle the most complex data structures that you
+could possibly imagine (HDF5 comes to mind), that's great. Really. But then you 
+have to write computer programs to process each of those amazingly complex data 
+structures to get the data into your client program (for example, Matlab, R, Excel, ArcGIS)
+if that can even be done. Good luck with that.
+
+<li>The Switch-Over Problem: Even if you could design and build a perfect system, it is unlikely
+that you could convince all of the administrators of all of the existing data servers and all of the clients 
+to dump their existing solutions and switch to the new system. 
+Lots of people have lots of effort invested in the current systems
+(which is why 
+<a href="#onTop">Building Web Pages and Web Services on Top of Other Web Services</a>
+is so interesting -- it doesn't require any changes to existing web services).
+
+<li>The Big-World Problem: Even if a large institution (NOAA?) built a really great system designed 
+to satisfy everyone's needs and even if they mandated that everyone in the institution
+switch to the new system, there would still be a whole world of other data servers
+and clients outside of that institution.
+</ul>
+
+
+<p>It would be great if you could build a perfect system that would meet everyone's needs
+and then have everyone switch to it.
+But that seems exceedingly unlikely.
+Perhaps it is better to accept that a given data server may serve the needs of a 
+given community (or part of that community) well, 
+but not be well suited to some other community. 
+Perhaps it is better to accept that the world of data servers will (and should) remain heterogeneous.  
+
+<h2><a name="stovepipes">Stovepipes</a></h2>
+Okay. The world has lots of types of data servers and probably always will.
+<br>The problem is that most are 
+  stovepipes, 
+  unable to make their data available to other types of client programs.
+<br>DAP client software works with DAP servers, but not SOS or OBIS servers.
+<br>SOS client software works with SOS servers, but not DAP or OBIS servers.
+<br>OBIS client software works with OBIS servers, but not DAP or SOS servers.
+<br>Some programs (notably Matlab) allow plug-ins to be added to enable
+   requesting data from additional types of data servers, but that is the exception to the rule.
+<br>The general situation is: different types of data servers aren't interoperable.
+<br>That's a problem. 
+<br>The solution is <a href="#interoperability">interoperability</a>.
+<!-- put an image here? -->
+
+<h2><a name="interoperability">Interoperability</a></h2>
+The reality is, the world has lots of types of data servers and, in general,
+each client program can only get data from one type of data server, not others.
+
+<p>A partial solution is a system that seeks to make different data servers interoperable.
+<a href="http://coastwatch.pfeg.noaa.gov/erddap">ERDDAP</a> is one such system. ERDDAP can read data from
+several types of data servers (DAP, OBIS, SOS, SOAP, databases, and local files). 
+ERDDAP can act as a DAP or a WMS server, to serve data in different ways to different clients. 
+And ERDDAP can return data in lots of different data (file) formats
+(for example, .asc, .csv, .dods, ESRI .asc (for ArcGIS), HTML Table, .json, .mat, .nc, .tsv, .xhtml)
+and image file formats (for example, .geotif, Google Earth .kml, .pdf, .png, and transparent .png).
+ERDDAP is a good example of <a href="#onTop">Building Web Pages and Web Services on Top of Other Web Services</a>. ERDDAP is built to get data from existing web services.
+And as a web service itself, other web pages and services can be built on top of ERDDAP
+(for example, <a href="http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">The CoastWatch Browser</a>,
+which gets data from an ERDDAP installation).
+
+<!-- put an image here? -->
+
+<p><a href="http://www.unidata.ucar.edu/projects/THREDDS/">THREDDS</a> 
+has also made a few steps in this direction. 
+It can read data from several types of data files. 
+It can act as a DAP, WCS, and WMS server to serve the data in different ways to different clients.
+
+<p>And there are solutions that are more limited in scope (but are useful), such as 
+ERD's <a href="http://www.pfeg.noaa.gov/products/EDC/">EDC</a>, 
+which makes it easy to access data from a THREDDS server from within ArcGIS.
+
+
+<h2><a name="standards">Standards</a></h2>
+An important barrier to full interoperability is inconsistency.
+It is hard to work with two datasets that use different metadata standards,
+use different variable names for the same types of information, 
+or use different units for the same type of information.
+For example:
+<ul>
+<li>Searches for datasets with similar information may fail if different names are used.
+   For example, if you search for "sea_surface_temperature", the program may not find
+  datasets that just have "temp", Temperature", or "SST".
+<li>Comparing the time values in different datasets is a particularly challenging problem 
+  because times are expressed in different ways
+  in different datasets: days since 1954-01-01, seconds since 1970-01-01, 17Jan1985, 
+  Day 17 in 1985, 1985.06456345, with different (sometimes implicit) time zones, etc.
+<li>Comparable information in different datasets may use different units.
+  For example, if you want to compare data using degrees_F and data using degrees_C,
+  you have to convert one of them first.
+<li>Some datasets use longitude values from -180 to 180, others use 0 to 360.
+  This makes it hard to compare values from the two datasets.
+  Some software programs (for example, ArcGIS) insist on -180 to 180.
+</ul>
+
+<p>A partial solution is to use standards whenever possible.
+Perhaps someday there will be unified standards that meet everyone's needs.
+But for now, different communities have different standards and they are very useful. 
+For example,
+<ul>
+<li><a name="CF">The</a> <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions">NetCDF Climate 
+  and Forecast (CF) Metadata Conventions</a> define a metadata standard which is 
+  widely used throughout the Climate and Forecast community.
+<li>The CF standard also defines a list of 
+  <a href="http://cf-pcmdi.llnl.gov/documents/cf-standard-names/">CF standard names</a> 
+  so that variables with the same type of information will be consistently labeled
+  in all datasets.
+<li>The <a href="http://www.iso.org/iso/date_and_time_format">ISO 8601:2004 "extended" format time string</a> 
+  (<span style="white-space: nowrap;">YYYY-MM-DDThh:mm:ssZ</span>, for example,
+  <span style="white-space: nowrap;">1985-01-02T00:00:00Z</span>)
+  is a great way to format times.
+<li>The <a href="http://www.unidata.ucar.edu/software/udunits/">UDUnits</a> standard 
+  offers a standard way to abbreviate and format units of measure,
+  and even interconvert compatible units (for example, degrees_F to degrees_C).
+</ul>
+
+<p>Another partial solution: Building systems that can convert metadata from one standard
+into metadata from another standard. Unfortunately, there are inherent limitations with this. 
+It would be surprising if the metadata used for one metadata standard 
+had all of the information needed, and at the correct level of detail,
+to convert to another metadata standard.
+For example, one standard might have a Contact attribute, while 
+another might have ContactName, ContactEmail, ContactPhone, and ContactAddress.
+
+<p>Another partial solution: Interoperability programs like 
+<a href="http://coastwatch.pfeg.noaa.gov/erddap">ERDDAP</a> 
+give the administrator the opportunity to add or modify each dataset's metadata.
+So, for example, all units metadata could be converted to UDUnits.
+ERDDAP also deals with the time units problem by converting all times to 
+UDUnits-compatible "seconds since 1970-01-01T00:00:00Z" (when formatting times as numbers), 
+or <a href="http://www.iso.org/iso/date_and_time_format">ISO 8601:2004 "extended" format</a>, 
+for example, 1985-01-17T12:00:00Z (when formatting times as Strings).
+
+
+<h2><a name="experts">Keep the Experts Close To and In Charge Of Their Datasets</a></h2>
+It is tempting to wish that datasets will be forever unchanged after they are 
+assembled, quality checked, and released. In practice, datasets are often revised in major
+and minor ways. For this reason, it is useful to keep the expert(s) who created the dataset 
+relatively close to the dataset's initial distribution server so that they can
+remain in charge of it. That doesn't mean that the dataset can't be re-served by other
+servers, just that the connection between the expert and their data shouldn't be broken.
+That brings up the issue of <a href="#provenance">provenance</a>.
+
+<h2><a name="provenance">Provenance</a></h2>
+Even with very detailed metadata, questions about datasets will arise that
+can't be answered by reading the metadata.  For this reason, it is important that
+the metadata include provenance information -- the steps the dataset took to 
+get to where the user found it. In the <a href="#CF">CF standard</a>, for example,
+provenance information can be stored in the "history" attribute,
+with one line for each processing step. The "summary" attribute may also 
+include contact information. With this information, the user can contact
+the <a href="#experts">expert</a> in charge of the dataset when they have questions.
+
+
+<!-- This document is an example of many of these ideas. 
+  It is an example of minimal documentation (Agile)
+  Its location is defined by a URL (URL).
+     where you can always find the latest version
+     since it is evolving over time (Agile).
+  It doesn't require specific software to be used/read (for example, PowerPoint) (User).
+  It has a simple structure (Simple)
+  It's short, so it's a quick read (Fast)
+-->
+
+<br>&nbsp;
+<hr noshade> 
+
+<h2><a name="contact">Comments? Questions? Suggestions?</a></h2>
+Please email <tt>bob dot simons at noaa dot gov</tt>.
+
+
+<h2><a name="disclaimer">Disclaimer</a></h2>
+
+The opinions expressed in this document are Bob Simons' personal opinions (email: bob dot simons at noaa dot gov) and do not necessarily reflect any position of my coworkers, bosses, ERD, the National Oceanic and Atmospheric 
+Administration, or the U.S. Government.
+
+<p>DISCLAIMER OF ENDORSEMENT
+<br>Any reference obtained from this server to a specific commercial product, 
+process, or service does not constitute or imply an endorsement by CoastWatch,
+NOAA, or the United States Government of the product, process, or service, or 
+its producer or provider. The views and opinions expressed in any referenced 
+document do not necessarily state or reflect those of CoastWatch, ERD,
+NOAA, or the United States Government.
+
+<p>DISCLAIMER FOR EXTERNAL LINKS
+<!-- see http://swfsc.nmfs.noaa.gov/disclaimer.htm -->
+<br>The appearance of external links on this World Wide Web site does not
+constitute endorsement by the 
+<a href="http://www.doc.gov">Department of Commerce</a>/<a href="http://www.noaa.gov">National 
+Oceanic and Atmospheric Administration</a> 
+of external Web sites or the information, products or services contained
+therein. For other than authorized activities, the Department of Commerce/NOAA does not
+exercise any editorial control over the information you may find at these locations. These
+links are provided consistent with the stated purpose of this Department of Commerce/NOAA
+Web site.
+
+<p>DISCLAIMER OF LIABILITY
+<br>Neither the data providers, ERD, CoastWatch, NOAA, nor the United States Government,
+nor any of their employees or contractors, makes any warranty, express or implied,
+including warranties of merchantability and fitness for a particular purpose,
+or assumes any legal liability for the accuracy, completeness, or usefulness,
+of any information at this site.
+
+</td>
+</tr>
+</table>
+</body>
+</html>

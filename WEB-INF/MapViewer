@@ -1,0 +1,22 @@
+#!/bin/csh
+#
+# usage: MapViewer <in>  
+# <in> must be the complete directory + name + extension of a
+# .hdf, .nc, or .grd gridded data file, where the x and y values represent
+# lon and lat.
+# The file can be zipped, but the name of the .zip file must be the
+# name of the data file + ".zip".
+#
+# This script reads the data, plots it on a map, and pops up a JFrame
+# to display the image.
+# To make this Linux/Unix script executable, use "chmod +x MapViewer".
+#
+# 2006-03-14
+# CoastWatch/Bob Simons  bob.simons@noaa.gov
+#
+
+set commandLine=$0
+set thisDir=`echo commandLine | dirname $0`
+java -cp $thisDir/classes:$thisDir/lib/netcdfAll-latest.jar:$thisDir/lib/slf4j-jdk14.jar:$thisDir/lib/itext-1.3.1.jar:$thisDir/lib/activation.jar:$thisDir/lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.sgt.SgtMap $1 $2 $3 $4 $5
+
+# finished 

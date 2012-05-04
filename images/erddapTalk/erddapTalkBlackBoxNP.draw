@@ -1,0 +1,298 @@
+CoPlot.drawVersion(6.300);
+setDrawingBackgroundColor(Color2.orange0);
+setFont(0,"helvet");
+setFont(1,"tmsrmn");
+setFont(2,"cour");
+setFont(3,"marker");
+setFont(4,"greek");
+setFont(5,"");
+setFont(6,"");
+setFont(7,"");
+setFont(8,"");
+setFont(9,"");
+setFont(10,"");
+setFont(11,"");
+setFont(12,"");
+setFont(13,"");
+setFont(14,"");
+setYBounds(0, 6);
+setGridSize(0.05);
+setGroupForNewObjects(5);
+setSmoothing(0);
+setGraphArrayX("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
+setGraphArrayY("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
+
+setGroup(4);
+setBackgroundColor(Color2.sky0);
+setLineColor(Color2.black);
+setLineType(0);
+setLineDashsize(0.01);
+setLineWidth(0.0015);
+setTextColor(Color2.black);
+setTextFont(0);
+setTextHeight(0.09);
+setTextPosition(3);
+setShapeType(34);
+setShapeHAlign(4);
+setShapeVAlign(10);
+setShapeWidth(7.7);
+setShapeHeight(2.5);
+setShapeBorder(1);
+setShapeAngle(0);
+setShapeShadow(0);
+setCharacters("");
+create("text", "4, 3");
+
+setBackgroundColor(Color2.gray1);
+setShapeWidth(3.85);
+setShapeHeight(1.4);
+setCharacters("");
+create("text", "4.15, 3");
+
+setBackgroundColor(Color2.notDrawn);
+setLineColor(Color2.notDrawn);
+setTextHeight(0.18);
+setTextPosition(4);
+setShapeWidth(.);
+setShapeHeight(.);
+setCharacters("<b>Internet Data Source Types");
+create("text", "4, 5.5");
+
+setCharacters("<b>Internet Data Client Types");
+create("text", "4, 0.5");
+
+setTextHeight(0.09);
+setShapeVAlign(9);
+setCharacters("DiGIR/<br>OBIS<br>&circf;");
+create("text", "2.5500000000000007, 3.65");
+
+setCharacters("SOS<br>&circf;");
+create("text", "3.05, 3.65");
+
+setCharacters("Text<br>&circf;");
+create("text", "4.05, 3.65");
+
+setCharacters("Database<br>+DAP<br>&circf;");
+create("text", "4.550000000000001, 3.65");
+
+setCharacters("netCDF<br>+DAP<br>&circf;");
+create("text", "5.050000000000001, 3.65");
+
+setCharacters("...<br>&circf;");
+create("text", "5.550000000000001, 3.65");
+
+setShapeVAlign(5);
+setCharacters("&circf;<br>.kml,<br>.json,<br>...");
+create("text", "5.95, 2.3000000000000003");
+
+setCharacters("&circf;<br>Program<br>(DAP)");
+create("text", "5.550000000000001, 2.3000000000000003");
+
+setCharacters("&circf;<br>R");
+create("text", "5.050000000000001, 2.3000000000000003");
+
+setCharacters("&circf;<br>Matlab");
+create("text", "4.55, 2.3000000000000003");
+
+setCharacters("&circf;<br>Program<br>(text or...)");
+create("text", "4.05, 2.3000000000000003");
+
+setCharacters("&circf;<br>SOS");
+create("text", "3.05, 2.3000000000000003");
+
+setCharacters("&circf;<br>DiGIR/<br>OBIS");
+create("text", "2.55, 2.3000000000000003");
+
+setTextPosition(3);
+setShapeVAlign(10);
+setCharacters("Internet");
+create("text", "5.8, 2.55");
+
+setFillColor(Color2.notDrawn);
+setLineColor(Color2.black);
+setArrowTypeStart(0);
+setArrowTypeFinish(0);
+setMarkerColor(Color2.notDrawn);
+setPathType(0);
+create("path", "2.55, 3.7, 2.55, 2.3000000000000003");
+
+create("path", "3.05, 2.3000000000000003, 3.05, 3.7");
+
+create("path", "4.05, 3.7, 4.05, 2.3000000000000003");
+
+create("path", "5.550000000000001, 3.7, 5.550000000000001, 2.3000000000000003");
+
+create("path", "4.05, 3.7, 4.55, 2.3000000000000003");
+
+create("path", "4.05, 3.7, 5.05, 2.3000000000000003");
+
+create("path", "5.05, 3.7, 5.550000000000001, 2.3000000000000003");
+
+setLineColor(Color2.notDrawn);
+setTextPosition(4);
+setShapeVAlign(9);
+setCharacters("W<subsup1>F<subsup2>C<subsup3>S/<br>ArcGIS<br>&circf;");
+create("text", "3.55, 3.65");
+
+setShapeVAlign(5);
+setCharacters("&circf;<br>W<subsup1>F<subsup2>C<subsup3>S/<br>ArcGIS");
+create("text", "3.55, 2.3000000000000003");
+
+setLineColor(Color2.black);
+create("path", "3.55, 3.7, 3.55, 2.3000000000000003");
+
+create("path", "4.550000000000001, 2.3000000000000003, 5.550000000000001, 3.7");
+
+setGroup(5);
+create("path", "2.55, 3.65, 3.05, 2.3000000000000003, "+
+  "3.55, 3.7, 4.05, 2.35, "+
+  "4.550000000000001, 3.7, 5.050000000000001, 2.3000000000000003, "+
+  "5.550000000000001, 3.7");
+
+create("path", "2.55, 2.3000000000000003, 3.05, 3.7, "+
+  "3.55, 2.3000000000000003, 4.05, 3.7, "+
+  "5.550000000000001, 2.3000000000000003, 4.550000000000001, 3.7, "+
+  "3.55, 2.3000000000000003, 2.55, 3.7, "+
+  "4.05, 2.3000000000000003, 5.050000000000001, 3.7, "+
+  "4.550000000000001, 2.3000000000000003, 3.55, 3.7, "+
+  "2.55, 2.3000000000000003, 4.05, 3.7");
+
+create("path", "2.55, 3.7, 4.550000000000001, 2.3000000000000003");
+
+create("path", "3.05, 3.7, 4.05, 2.3000000000000003, "+
+  "5.550000000000001, 3.7, 2.55, 2.3000000000000003, "+
+  "4.550000000000001, 3.7, 3.05, 2.3000000000000003, "+
+  "5.050000000000001, 3.7, 3.55, 2.3000000000000003, "+
+  "5.550000000000001, 3.7");
+
+create("path", "5.550000000000001, 2.3000000000000003, 2.55, 3.7");
+
+create("path", "3.05, 2.3000000000000003, 5.550000000000001, 3.7");
+
+create("path", "2.55, 2.3000000000000003, 5.050000000000001, 3.7");
+
+create("path", "2.55, 3.7, 5.050000000000001, 2.3000000000000003");
+
+create("path", "5.050000000000001, 3.7, 5.050000000000001, 2.3000000000000003");
+
+create("path", "5.050000000000001, 2.3000000000000003, 3.55, 3.7");
+
+create("path", "3.55, 3.7, 5.550000000000001, 2.3000000000000003");
+
+create("path", "3.05, 3.7, 4.550000000000001, 2.3000000000000003");
+
+create("path", "3.05, 3.7, 5.050000000000001, 2.3000000000000003");
+
+create("path", "3.05, 3.7, 5.550000000000001, 2.3000000000000003");
+
+create("path", "4.05, 3.7, 3.05, 2.3000000000000003");
+
+create("path", "4.550000000000001, 3.7, 4.550000000000001, 2.3000000000000003");
+
+setLineColor(Color2.notDrawn);
+setTextColor(Color2.blue4);
+setTextHeight(0.18);
+setCharacters("<b>Inside the<br>Black Box");
+create("text", "1.1500000000000001, 5.7");
+
+setLineColor(Color2.black);
+create("path", "2.55, 3.7, 5.95, 2.3000000000000003, "+
+  "3.05, 3.7");
+
+create("path", "3.55, 3.7, 5.95, 2.3000000000000003, "+
+  "4.05, 3.7");
+
+create("path", "4.550000000000001, 3.7, 5.95, 2.3000000000000003, "+
+  "5.050000000000001, 3.7");
+
+create("path", "5.550000000000001, 3.7, 5.95, 2.3000000000000003");
+
+setGroup(4);
+setLineColor(Color2.notDrawn);
+setTextColor(Color2.black);
+setShapeVAlign(9);
+setCharacters("DiGIR/<br>OBIS<br>&circf;");
+create("text", "0.7000000000000015, 4.349999999999999");
+
+setCharacters("SOS<br>&circf;");
+create("text", "1.6999999999999997, 4.349999999999999");
+
+setCharacters("Text<br>&circf;");
+create("text", "3.6999999999999997, 4.349999999999999");
+
+setCharacters("Database<br>+DAP<br>&circf;");
+create("text", "4.700000000000001, 4.349999999999999");
+
+setCharacters("netCDF<br>+DAP<br>&circf;");
+create("text", "5.700000000000001, 4.349999999999999");
+
+setCharacters("...<br>&circf;");
+create("text", "6.700000000000001, 4.349999999999999");
+
+setCharacters("W<subsup1>F<subsup2>C<subsup3>S/<br>ArcGIS<br>&circf;");
+create("text", "2.6999999999999997, 4.349999999999999");
+
+setShapeVAlign(5);
+setCharacters("&circf;<br>.kml,<br>.json,<br>...");
+create("text", "7.6000000000000005, 1.55");
+
+setCharacters("&circf;<br>Program<br>(DAP)");
+create("text", "6.650000000000002, 1.55");
+
+setCharacters("&circf;<br>R");
+create("text", "5.650000000000002, 1.55");
+
+setCharacters("&circf;<br>Matlab");
+create("text", "4.65, 1.55");
+
+setCharacters("&circf;<br>Program<br>(text or...)");
+create("text", "3.65, 1.55");
+
+setCharacters("&circf;<br>SOS");
+create("text", "1.65, 1.55");
+
+setCharacters("&circf;<br>DiGIR/<br>OBIS");
+create("text", "0.6500000000000001, 1.55");
+
+setCharacters("&circf;<br>W<subsup1>F<subsup2>C<subsup3>S/<br>ArcGIS");
+create("text", "2.65, 1.55");
+
+setGroup(5);
+setLineColor(Color2.black);
+create("path", "0.65, 1.55, 2.5500000000000003, 2.3000000000000003");
+
+create("path", "1.6500000000000001, 1.55, 3.0500000000000003, 2.3000000000000003");
+
+create("path", "2.6500000000000004, 1.55, 3.5500000000000003, 2.3000000000000003");
+
+create("path", "3.6500000000000004, 1.55, 4.05, 2.3000000000000003");
+
+create("path", "4.65, 1.55, 4.55, 2.3000000000000003");
+
+create("path", "5.65, 1.55, 5.050000000000001, 2.3000000000000003");
+
+create("path", "6.65, 1.55, 5.550000000000001, 2.3000000000000003");
+
+create("path", "7.6000000000000005, 1.55, 5.95, 2.3000000000000003");
+
+create("path", "0.7000000000000001, 4.45, 2.5500000000000003, 3.7");
+
+create("path", "1.7000000000000002, 4.45, 3.0500000000000003, 3.7");
+
+create("path", "2.7, 4.45, 3.5500000000000003, 3.7");
+
+create("path", "3.7, 4.45, 4.05, 3.7");
+
+create("path", "4.7, 4.45, 4.55, 3.7");
+
+create("path", "5.7, 4.45, 5.050000000000001, 3.7");
+
+create("path", "6.7, 4.45, 5.550000000000001, 3.7");
+
+setLineColor(Color2.notDrawn);
+setTextColor(Color2.red4);
+setShapeHAlign(5);
+setCharacters("<i>We just moved the complexity into our black box!");
+create("text", "7.75, 0.2");
+
+endOfFile();

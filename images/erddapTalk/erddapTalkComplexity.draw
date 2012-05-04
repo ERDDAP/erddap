@@ -1,0 +1,78 @@
+CoPlot.drawVersion(6.300);
+setDrawingBackgroundColor(Color2.orange0);
+setFont(0,"helvet");
+setFont(1,"tmsrmn");
+setFont(2,"cour");
+setFont(3,"marker");
+setFont(4,"greek");
+setFont(5,"");
+setFont(6,"");
+setFont(7,"");
+setFont(8,"");
+setFont(9,"");
+setFont(10,"");
+setFont(11,"");
+setFont(12,"");
+setFont(13,"");
+setFont(14,"");
+setYBounds(0, 6);
+setGridSize(0.1);
+setGroupForNewObjects(5);
+setSmoothing(0);
+setGraphArrayX("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
+setGraphArrayY("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
+
+setGroup(5);
+setBackgroundColor(Color2.notDrawn);
+setLineColor(Color2.notDrawn);
+setTextColor(Color2.blue4);
+setTextFont(0);
+setTextHeight(0.2);
+setTextPosition(4);
+setShapeType(34);
+setShapeHAlign(3);
+setShapeVAlign(10);
+setShapeWidth(.);
+setShapeHeight(.);
+setShapeBorder(1);
+setShapeAngle(0);
+setShapeShadow(0);
+setCharacters("<b>The Problem: <color=Color2.red4>Complexity");
+create("text", "0.4000000000000001, 5.300000000000001");
+
+setTextColor(Color2.black);
+setTextHeight(0.18);
+setTextPosition(3);
+setCharacters("\"Controlling complexity is the essence of computer programming.\"");
+create("text", "0.4, 4.9");
+
+setTextPosition(4);
+setCharacters("\"Make everything as simple as possible, but not simpler.\"");
+create("text", "0.4, 2.1");
+
+setTextColor(Color2.blue4);
+setTextHeight(0.2);
+setTextPosition(5);
+setCharacters("<b>The Solution: <color=Color2.green4>A Simplifying Assumption &nbsp; <br>(Similarities? Superclass?)");
+create("text", "0.4, 2.7");
+
+setTextColor(Color2.black);
+setTextHeight(0.18);
+setTextPosition(4);
+setShapeVAlign(5);
+setCharacters("-- Brian Kernighan<br>Co-author of C");
+create("text", "4.5, 4.5");
+
+setShapeVAlign(10);
+setCharacters("--  Albert Einstein");
+create("text", "4.6, 1.7");
+
+setCharacters("C:/content/erddapTalk/einstein.jpg");
+newImage();
+create("image", "7.2, 1.2");
+
+setCharacters("C:/content/erddapTalk/kernighan.jpg");
+newImage();
+create("image", "7.2, 4");
+
+endOfFile();

@@ -1,0 +1,168 @@
+/* 
+ * SSH2 Copyright 2005, NOAA.
+ * See the LICENSE.txt file in this file's directory.
+ */
+package gov.noaa.pfel.coastwatch.util;
+
+//ssh: try http://www.ganymed.ethz.ch/ssh2/ build 207 (BSD-style license)
+//I copied source files from C:\programs\ganymed-ssh2-build207\src\ch\ethz\ssh2
+//to <tomcat>...<classes>\ch\ethz\ssh2
+import ch.ethz.ssh2.Connection;
+import ch.ethz.ssh2.ServerHostKeyVerifier;
+import ch.ethz.ssh2.Session;
+
+import com.cohort.util.String2;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+/**
+ * THIS WORKS BUT IS NOT CURRENTLY BEING USED: SEE SSR.sftp() INSTEAD.
+ * This classes creates a secure shell connection.
+ *
+ * This class is based on info in SSH2Demo1.
+ * 
+ * @author Christian Plattner, plattner@inf.ethz.ch
+ * @version $Id: SSH2Demo1.java,v 1.3 2005/07/21 15:17:49 cplattne Exp $
+ * 
+ */
+public class SSH2 implements ServerHostKeyVerifier {
+
+    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
+    public final static String ERROR = String2.ERROR;
+
+    private Connection connection;
+
+    /**
+     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * if you want lots of diagnostic messages sent to String2.log.
+     */
+    public static boolean verbose = false;
+
+    /**
+     * This opens a secure socket shell connection.
+     * When you are done using it, call ssh.disconnect();
+     * 
+     * See the "import com.sshtools.j2ssh...." statements.
+     * Based on c:\programs\j2ssh.examples\SftpConnect.java (License=LGPL)
+     * which is Copyright (C) 2002 Lee David Painter (lee@sshtools.com).
+     *
+     * @param hostName
+     * @param port usually 22
+     * @param userName
+     * @param password
+     * @throws Exception if trouble
+     */
+    public SSH2(String hostName, int port, String userName, String password)
+         throws Exception {
+
+        //connect and register callback
+        connection = new Connection(hostName, port);
+        connection.connect(this);
+
+        //authenticate with password 
+        boolean result = connection.authenticateWithPassword(userName, password);
+		if (result == false) {
+            throw new IOException(ERROR + " in SSH2 constructor: authentication failed.");
+        }
+	}
+
+    /**
+     * This is used as a callback for the connection.
+     */
+    public boolean verifyServerHostKey(String hostname, int port, 
+        String serverHostKeyAlgorithm, byte[] serverHostKey) {
+
+        if (verbose) String2.log("SSH2.verifyServerHostKey: Checking key from " + 
+            hostname + ":" + port);
+        
+        //Should keep a database of already collected keys and always compare.
+        return true;
+    }
+
+    /**
+     * This closes the connection.
+     */
+    public void close() {
+        if (connection != null) {
+            connection.close();
+            connection = null;
+        }
+    }
+
+    /**
+     * This is called by the garbage collector when there are no more references
+     * to this object.
+     */
+    protected void finalize() {
+        close();
+    }
+
+    /* *
+     * Given a secure socket shell connection, this sends and/or receives files via secure ftp.
+     * 
+     * See the "import com.sshtools.j2ssh...." statements.
+     * Based on c:\programs\j2ssh.examples\SftpConnect.java (License=LGPL)
+     * which is Copyright (C) 2002 Lee David Painter (lee@sshtools.com).
+     * 
+     * @param ssh
+     * @param localDir
+     * @param remoteDir
+     * @param filesToSend an array of file names to be sent from localDir to remoteDir
+     *    (use null for none)
+     * @param filesToReceive an array of file names to be gotten from remoteDir 
+     *    and put into localDir (use null for none)
+     * @throws Exception if trouble
+     */
+/*    public void sftp(SshClient ssh, String localDir, String remoteDir, 
+        String[] filesToSend, String[] filesToReceive) throws Exception {
+
+        SftpClient sftp = ssh.openSftpClient();
+
+        //change directories
+        sftp.cd(remoteDir);
+        sftp.lcd(localDir);
+
+        //send files
+        if (filesToSend != null)
+            for (int i = 0; i < filesToSend.length; i++)
+                sftp.put(filesToSend[i]);
+
+        //receive files
+        if (filesToReceive != null)
+            for (int i = 0; i < filesToReceive.length; i++)
+                sftp.get(filesToReceive[i]);
+
+        sftp.quit();
+    }
+*/
+
+    public Connection getConnection() { return connection; }
+
+    public static void main(String args[]) throws Exception {
+        String password = String2.getPasswordFromSystemIn("cwatch password? ");
+        SSH2 ssh2 = new SSH2("coastwatch.pfel.noaa.gov", 22, "cwatch", password);
+
+        //create a session
+        Session session = ssh2.getConnection().openSession();
+
+        //request a dumb terminal and execute "ls -la" */
+        session.requestDumbPTY();
+        session.execCommand("ls -la");
+
+        //we assume here that a PTY will never send us data on the stderr
+        //channel (stderr will be "mixed" into the terminal screen).
+        InputStream is = session.getStdout();
+        while (true) {
+            int c = is.read(); //doing it 1 byte at a time is really inefficient
+            if (c == -1)
+                break;
+            System.out.print((char) c); 
+        }
+
+        //show exit code, if available (may be NULL if the server did not
+        //send it, happens occasionally with OpenSSH).
+        System.out.println("\nExitCode: " + session.getExitStatus());
+    }
+
+}

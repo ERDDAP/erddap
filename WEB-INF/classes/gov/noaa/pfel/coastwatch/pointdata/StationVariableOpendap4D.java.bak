@@ -1,0 +1,889 @@
+/* 
+ * StationVariableOpendap4D Copyright 2006, NOAA.
+ * See the LICENSE.txt file in this file's directory.
+ */
+package gov.noaa.pfel.coastwatch.pointdata;
+
+import com.cohort.array.Attributes;
+import com.cohort.array.PrimitiveArray;
+import com.cohort.array.StringArray;
+import com.cohort.util.Calendar2;
+import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
+import com.cohort.util.String2;
+import com.cohort.util.Test;
+
+import gov.noaa.pfel.coastwatch.griddata.DataHelper;
+
+import java.util.ArrayList;
+//import java.util.Calendar;
+//import java.util.GregorianCalendar;
+import java.util.List;
+//import java.util.Vector;
+
+/**
+ * Get netcdf-X.X.XX.jar from http://www.unidata.ucar.edu/software/netcdf-java/index.htm
+ * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
+ * Get slf4j-jdk14.jar from 
+ * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
+ * and copy it to <context>/WEB-INF/lib.
+ * Put both of these .jar files in the classpath for the compiler and for Java.
+ */
+//import ucar.nc2.*;
+//import ucar.nc2.dataset.NetcdfDataset;
+//import ucar.nc2.dods.*;
+//import ucar.nc2.util.*;
+//import ucar.ma2.*;
+
+/** The Java DAP classes.  */
+import dods.dap.*;
+
+/** 
+ * THIS WORKED BUT IS NOT ACTIVE.
+ * IT SHOULD BE REVAMPED TO BE MORE EFFICIENT IN CONSTRUCTION, LIKE NC4D.
+ * BUT THE BIGGER PROBLEM IS THAT IT IS TOO SLOW TO ACCESS DATA FROM INDIVIDUAL 
+ *   STATIONS AND THE RESULTING SEPARATE OPENDAP CALL FOR EACH STATION.
+ * This class provides access to one variable from one station,
+ * where the data is available via a 4D opendap array
+ * (with point_spacing="even" time values).
+ * 
+ * The constructor searches for available data.
+ *
+ * @author Bob Simons (bob.simons@noaa.gov) 2006-07-20
+ */
+public class StationVariableOpendap4D  extends GroupVariable { 
+
+    private String url;
+    private String inFileVariableName;
+
+    /**
+     * Given several opendap data sources, each representing a station with
+     * several variables, 
+     * this makes several PointDataSetStationVariables 
+     * (several PointDataSets each holding several StationVariables), 
+     * one for each inFileVariableName.
+     *
+     * <p>All variables for a given station must use the same time, altitude, 
+     * lat and lon variables.
+     * (This restriction could be worked around, but construction is much faster 
+     * this way.)
+     * <br>Time must have standard udUnits units, e.g., "seconds since 1970-01-01 00:00:00Z".
+     * <br>Z must have "meters", "meter", or "m" (upper or lower case) units.
+     *    Z can have an attribute 'positive' with a value of 'down', 
+     *     but I will store z as positive=up values.
+     * <br>Y must have "degrees_north" units.
+     * <br>X must have "degrees_east" units.
+     * 
+     * @param list the list to which PointDataSetStationVariables will be added
+     * @param internalDataSetBaseName e.g., PMB  (first letter is always 'P')
+     * @param userDataSetBaseName the name common to all these datasets 
+     *    that will be shown to users e.g., "MBARI" 
+     * @param stationInfo has a String for each station, internally separated by "`",
+     *   e.g., "MO` http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM0.nc".
+     *   Its components are 
+     *   <ol>
+     *   <li>stationNames: the station names that will be shown to users 
+     *      (e.g., "M0", "M1", ...)
+     *   <li>stationUrls: the base urls, one for each station, e.g.,
+     *     "http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM0.nc"
+     *     and ..."M1.nc", ..."M2.nc".
+     *   </ol>
+     * @param variableInfo has a String for each variable, internally separated by "`",
+     *    e.g., "AIR_TEMPERATURE_HR`  atmp` Air Temperature`   Rainbow`      Linear` -10`  40` degree_C".
+     *    Its components are:
+     *    <ol>
+     *    <li> inFileVariableNames the names of the variables, each of which is in 
+     *      each station's file (e.g., "AIR_TEMPERATURE_HR", )
+     *    <li> internalVariableNames the 4 character internal variable names
+     *      (e.g., "atmp")
+     *    <li> userVariableNames the names of the variables that will be shown to users
+     *      (e.g., "Air Temperature", ...).
+     *      It is useful if they match values for other similar pointDatasets (e.g, from NDBC).
+     *    <li> variablePalette the palette for each variable (e.g., "Rainbow")
+     *      (must be one of palettes available to PointDataSets in the browser)
+     *    <li> variableScale the scale for the colorbar for each variable 
+     *      (e.g., "Linear" or "Log")
+     *    <li> variableFactor the factor needed to get the raw data into standard udUnits.
+     *    <li> variablePaletteMin the low value for the colorbar for each variable.
+     *      It is useful if they match values for other similar pointDatasets (e.g, from NDBC).
+     *    <li> variablePaletteMax the high value for the colorbar for each variable.
+     *      It is useful if they match values for other similar pointDatasets (e.g, from NDBC).
+     *    <li>variableUdUnits the udUnits for each variable  
+     *       They could be gotten from the file,
+     *       but variableFactor may be not 1 or the file may have non-udUnits units.
+     *       Also, useful if the units exactly match the udUnits for other similar 
+     *       pointDatasets (e.g, NDBC).
+     *       See http://www.unidata.ucar.edu/software/udunits/udunits.txt .
+     *     </ol>
+     * @param courtesy  the group to credit for this data (25 char or less)
+     * @param minStationX the minimum acceptable station lon  (may be 0 - 360 or -180 - 180).
+     *    min/maxStationX/Y only restrict which stations are used.
+     *    Data can still be accessed with lon values of 0 - 360 or -180 - 180.
+     * @param maxStationX the maximum acceptable station lon  (may be 0 - 360 or -180 - 180).
+     * @param minStationY the minimum acceptable station lat.
+     * @param maxStationY the maximum acceptable station lat.
+     * @return PointDataSetStationVariables 
+     * @throws Exception if procedural trouble (like incorrect number of items
+     *     in stationInfo or variableInfo).
+     *     This doesn't throw Exception if an opendap source isn't accessible.
+     */
+    public static void addPointDataSetStationVariables(
+        List list, String internalDataSetBaseName, String userDataSetBaseName, 
+        String stationInfo[], String variableInfo[], String courtesy, 
+        double minStationX, double maxStationX, double minStationY, double maxStationY) {
+
+        int originalListSize = list.size();
+        if (verbose) String2.log("*** start StationVariableOpendap4D.addPointDataSetStationVariables " + 
+            internalDataSetBaseName);
+        String errorInMethod = String2.ERROR + 
+            " in StationVariableOpendap4D.makePointDataSetStationVariables(" + 
+            userDataSetBaseName + "):\n";
+
+        //parse the stationInfo
+        //a String[] of, e.g.: "MO` http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM0.nc"
+        int nStations = stationInfo.length;
+        String stationNames[] = new String[nStations];
+        String stationUrls[]  = new String[nStations]; 
+        for (int station = 0; station < nStations; station++) {
+            String tList[] = String2.split(stationInfo[station], '`');
+            Test.ensureEqual(tList.length, 2, 
+                errorInMethod + "stationInfo[" + station + "] doesn't have 2 items:\ninfo=" +
+                    stationInfo[station]);
+            for (int i = 0; i < 2; i++)
+                Test.ensureNotEqual(tList[i].length(), 0, 
+                    errorInMethod + "stationInfo[" + station + "] has no info for item " + i + ".\ninfo=" +
+                    stationInfo[station]);
+            stationNames[station] = tList[0];
+            stationUrls[ station] = tList[1];
+        }
+
+        //parse the variableInfo
+        //a String[] of, e.g.: "AIR_TEMPERATURE_HR`  atmp` Air Temperature`   Rainbow`      Linear` -10`  40` degree_C"
+        int nVars = variableInfo.length;
+        String inFileVariableNames[]   = new String[nVars];
+        String internalVariableNames[] = new String[nVars]; 
+        String userVariableNames[]     = new String[nVars]; 
+        String variablePalette[]       = new String[nVars];
+        String variableScale[]         = new String[nVars]; 
+        double variableFactor[]        = new double[nVars];
+        double variablePaletteMin[]    = new double[nVars]; 
+        double variablePaletteMax[]    = new double[nVars];
+        String variableUdUnits[]       = new String[nVars]; 
+        for (int var = 0; var < nVars; var++) {
+            String tList[] = String2.split(variableInfo[var], '`');
+            Test.ensureEqual(tList.length, 9, 
+                errorInMethod + "variableInfo[" + var + "] doesn't have 8 items:\n" +
+                    variableInfo[var]);
+            for (int i = 0; i < 9; i++)
+                Test.ensureNotEqual(tList[i].length(), 0, 
+                    errorInMethod + "variableInfo[" + var + "] has no info for item " + i + ".\ninfo=" +
+                    variableInfo[var]);
+            inFileVariableNames[var]   = tList[0];
+            internalVariableNames[var] = tList[1]; 
+            userVariableNames[var]     = tList[2]; 
+            variablePalette[var]       = tList[3];
+            variableScale[var]         = tList[4]; 
+            variableFactor[var]        = String2.parseDouble(tList[5]); 
+            variablePaletteMin[var]    = String2.parseDouble(tList[6]); //bad values will be caught
+            variablePaletteMax[var]    = String2.parseDouble(tList[7]);
+            variableUdUnits[var]       = tList[8]; 
+        }
+
+        long time = System.currentTimeMillis();
+
+        //*** for each station
+        DConnect dConnect[] = new DConnect[nStations]; 
+        DAS das[] = new DAS[nStations];
+        DDS dds[] = new DDS[nStations];
+        double timeBaseSeconds[] = new double[nStations];
+        double timeFactorToGetSeconds[] = new double[nStations];
+        double timeIncrementInSeconds[] = new double[nStations];
+        double minT[] = new double[nStations];
+        double maxT[] = new double[nStations];
+        double stationDepth[] = new double[nStations]; 
+        boolean stationZUp[] = new boolean[nStations];
+        double stationY[] = new double[nStations];
+        double stationX[] = new double[nStations]; //in-file x, not adjusted
+        String tName[] = new String[nStations];
+        String zName[] = new String[nStations];
+        String yName[] = new String[nStations];
+        String xName[] = new String[nStations];
+        for (int station = 0; station < nStations; station++) {
+            try {
+                long stationTime = System.currentTimeMillis();
+
+                //make the dConnect's
+                boolean acceptDeflate = true;
+                dConnect[station] = new DConnect(stationUrls[station], acceptDeflate);
+                if (verbose) String2.log(
+                    "\n  station=" + userDataSetBaseName + " " + stationNames[station] + 
+                    "\n    " + stationUrls[station]);  
+
+                //get the das and dds
+                long tTime = System.currentTimeMillis();
+                das[station] = dConnect[station].getDAS();
+                if (verbose) String2.log("    getDAS time=" + (System.currentTimeMillis() - tTime));  
+
+                tTime = System.currentTimeMillis();
+                dds[station] = dConnect[station].getDDS();
+                if (verbose) String2.log("    getDDS time=" + (System.currentTimeMillis() - tTime));  
+
+                //*** get the first dataVariable 
+                //(other variables use this info and must match this info)
+                //tTime = System.currentTimeMillis();
+                DGrid dGrid = (DGrid)dds[station].getVariable(inFileVariableNames[0]);  //throws exception if not found
+                ArrayList variablesElements = String2.toArrayList(dGrid.getVariables());
+                DArray dataDArray = (DArray)variablesElements.get(0); //first element is always main array
+                //time always 0 ms   if (verbose) String2.log("    get dGrid time=" + (System.currentTimeMillis() - tTime));  
+
+                //get the axis DArray's
+                DArray timeDArray = (DArray)variablesElements.get(1); 
+                DArray zDArray = (DArray)variablesElements.get(2); 
+                DArray yDArray = (DArray)variablesElements.get(3); 
+                DArray xDArray = (DArray)variablesElements.get(4); 
+
+                //get the axis names
+                tName[station] = timeDArray.getName();
+                zName[station] = zDArray.getName();
+                yName[station] = yDArray.getName();
+                xName[station] = xDArray.getName();
+
+                //get axis attributes
+                Attributes tAttributes = new Attributes();
+                Attributes zAttributes = new Attributes();
+                Attributes yAttributes = new Attributes();
+                Attributes xAttributes = new Attributes();
+                DataHelper.getOpendapAttributes(das[station], tName[station], tAttributes);
+                DataHelper.getOpendapAttributes(das[station], zName[station], zAttributes);   
+                DataHelper.getOpendapAttributes(das[station], yName[station], yAttributes);   
+                DataHelper.getOpendapAttributes(das[station], xName[station], xAttributes);   
+
+
+                //*** get the t information
+                Test.ensureTrue(tName[station].toLowerCase().indexOf("time") >= 0,
+                    errorInMethod + "The timeDArray's name (" + tName[station] +
+                        ") doesn't contain \"time\".");
+
+                //how many times are there?
+                DArrayDimension timeDimension = timeDArray.getFirstDimension();
+                int nTimes = timeDimension.getSize();
+                if (verbose) String2.log("    nTimes=" + nTimes);
+
+                //ensure time is evenly spaced
+                String tEven = tAttributes.getString("point_spacing");
+                Test.ensureEqual(tEven, "even", 
+                    errorInMethod + "time point_spacing (" + tEven + ") isn't \"even\".)");            
+
+                //how is time encoded?
+                PrimitiveArray timeUnits = tAttributes.get("units");
+                Test.ensureNotNull(timeUnits, errorInMethod + "timeUnits is null.");
+                Test.ensureNotEqual(timeUnits.size(), 0, errorInMethod + "timeUnits.size is 0.");
+                double bAndF[] = Calendar2.getTimeBaseAndFactor(timeUnits.getString(0)); 
+                timeBaseSeconds[station] = bAndF[0];
+                timeFactorToGetSeconds[station] = bAndF[1];
+                if (verbose) String2.log("    timeBaseSeconds=" + timeBaseSeconds[station] + 
+                    " timeFactorToGetSeconds=" + timeFactorToGetSeconds[station]);
+
+                //verify that time is evenly spaced
+                //get the first 2 and last 1 time values  -- also used to get 0th x,y,z values below
+//FUTURE: opendap commands can be combined with comma:   url?cmd1,cmd2
+                PrimitiveArray dataResultsAr[] = DataHelper.getPrimitiveArrays(dConnect[station], 
+                    "?" + inFileVariableNames[0] + "[0:1:1][0:1:0][0:1:0][0:1:0]"); //t(first 2),z,y,x
+                minT[station] = dataResultsAr[1].getDouble(0);  //[1] has the time values
+                double t1     = dataResultsAr[1].getDouble(1);
+                maxT[station] = DataHelper.getDoubleArray(dConnect[station], 
+                    "?" + tName[station] + "[" + (nTimes - 1) + ":1:" + (nTimes - 1) + "]")[0];
+                minT[station] = timeBaseSeconds[station] + minT[station] * timeFactorToGetSeconds[station];
+                t1   = timeBaseSeconds[station] + t1   * timeFactorToGetSeconds[station];
+                maxT[station] = timeBaseSeconds[station] + maxT[station] * timeFactorToGetSeconds[station];
+                timeIncrementInSeconds[station] = t1 - minT[station];
+                if (verbose) String2.log(
+                    "    minT=" + Calendar2.epochSecondsToIsoStringT(minT[station]) +
+                       " maxT=" + Calendar2.epochSecondsToIsoStringT(maxT[station]));  
+
+                //check "even" by checking that time.length is appropriate for 0th, 1st, and last times
+                double expectedNTimes = ((maxT[station] - minT[station]) / timeIncrementInSeconds[station]) + 1;
+                Test.ensureEqual(nTimes, expectedNTimes, 
+                    errorInMethod + "times not evenly spaced: nTimes != expectedNTimes.  minT=" + minT[station] + 
+                        " maxT=" + maxT[station] + " timeIncrementInSeconds=" + timeIncrementInSeconds[station]);
+
+
+                //*** get the z information
+                String zUnits = zAttributes.getString("units");
+                Test.ensureTrue(
+                    zUnits.toLowerCase().equals("meters") || 
+                    zUnits.toLowerCase().equals("meter") || 
+                    zUnits.toLowerCase().equals("m"), 
+                    errorInMethod + "For station " + stationNames[station] + ", the z units aren't 'meters' or 'm': " + zUnits);
+                String positive = zAttributes.getString("positive");
+                stationZUp[station] = !(positive != null && positive.equals("down"));
+                if (verbose) String2.log("    stationZUp=" + stationZUp[station]);
+                
+                //get the first z value (should be the only one)
+                stationDepth[station] = dataResultsAr[2].getDouble(0);  //[2] has the time values
+                if (!stationZUp[station] && stationDepth[station] != 0) //2nd part: I had trouble with -0.0
+                    stationDepth[station] *= -1;
+
+
+                //*** get the y information
+                Test.ensureEqual(
+                    yAttributes.getString("units"), "degrees_north", 
+                    errorInMethod + "For station " + stationNames[station] + ", the y units aren't 'degrees_north'.");
+
+                //get the first y value (should be the only one)
+                stationY[station] = dataResultsAr[3].getDouble(0);  //[3] has the time values
+
+
+                //*** get the x information
+                Test.ensureEqual(
+                    xAttributes.getString("units"), "degrees_east", 
+                    errorInMethod + "For station " + stationNames[station] + ", the x units aren't 'degrees_east'.");
+
+                //get the first x value (should be the only one)
+                stationX[station] = dataResultsAr[4].getDouble(0);  //[4] has the time values
+
+
+                //reject the station based on min/maxStationX/Y?
+                double adjustX = Double.NaN;
+                if (stationX[station] >= minStationX && stationX[station] <= maxStationX)
+                    adjustX = 0;
+                else if (stationX[station] + 360 >= minStationX && stationX[station] + 360 <= maxStationX)
+                    adjustX = 360;
+                else if (stationX[station] - 360 >= minStationX && stationX[station] - 360 <= maxStationX)
+                    adjustX = -360;
+                if (Double.isNaN(adjustX) ||
+                    stationY[station] < minStationY || stationY[station] > maxStationY) {
+                    //reject
+                    String2.log("rejecting station " + stationNames[station] + 
+                        " because stationX=" + stationX + " stationY=" + stationY);
+                    stationNames[station] = null;
+                }
+
+                //dConnect doesn't need to be closed
+
+                if (verbose)
+                    String2.log("    station " + stationNames[station] + 
+                        " x=" + stationX[station] + " y=" + stationY[station] + " z=" + stationDepth[station] +
+                        " totalTime=" + (System.currentTimeMillis() - stationTime));  
+
+
+            } catch (Throwable t) {
+                String2.log(errorInMethod + MustBe.throwableToString(t));
+
+                //dConnect doesn't need to be closed
+
+                //flag stationFileNames -- don't use this station
+                stationNames[station] = null;
+            }
+        }
+
+        //*** for each, variable
+        for (int var = 0; var < nVars; var++) {
+            //gather the stationVariables for this variable for all stations
+            ArrayList stationVariables = new ArrayList();
+            Attributes globalAttributes = new Attributes();
+            Attributes xAttributes = new Attributes();
+            Attributes yAttributes = new Attributes();
+            Attributes zAttributes = new Attributes();
+            Attributes tAttributes = new Attributes();
+            Attributes idAttributes = new Attributes();
+            Attributes dataAttributes = new Attributes();
+            boolean needAttributes = true;
+            for (int station = 0; station < nStations; station++) {
+                try {
+                    if (stationNames[station] == null) 
+                        continue;
+
+                    //make the stationVariable (holds info for one variable from one station)
+                    StationVariableOpendap4D stationVariable = 
+                        new StationVariableOpendap4D(stationUrls[station],
+                            dConnect[station], das[station], dds[station], 
+                            inFileVariableNames[var], userVariableNames[var], 
+                            userDataSetBaseName + " " + stationNames[station],
+                            variableFactor[var], 
+                            stationX[station], stationY[station], stationDepth[station], 
+                            stationZUp[station], 
+                            timeBaseSeconds[station], timeFactorToGetSeconds[station],
+                            timeIncrementInSeconds[station], 
+                            minT[station], maxT[station], 
+                            xName[station], yName[station], zName[station], tName[station]);
+                    stationVariables.add(stationVariable);
+
+                    //get the metadata
+                    if (needAttributes) { 
+                        DataHelper.getOpendapAttributes(das[station], "GLOBAL", globalAttributes); 
+                        DataHelper.getOpendapAttributes(das[station], xName[station], xAttributes); 
+                        DataHelper.getOpendapAttributes(das[station], yName[station], yAttributes); 
+                        DataHelper.getOpendapAttributes(das[station], zName[station], zAttributes); 
+                        DataHelper.getOpendapAttributes(das[station], tName[station], tAttributes); 
+                        //no way to get/set idAttributes 
+                        DataHelper.getOpendapAttributes(das[station], inFileVariableNames[var], dataAttributes); 
+
+                        needAttributes = false;
+                    }
+
+                } catch (Throwable t) {
+                    String2.log(errorInMethod + MustBe.throwableToString(t));
+                }
+            }
+
+            //modify the attributes
+            globalAttributes.remove("observationDimension");
+
+            xAttributes.set("_CoordinateAxisType", "Lon");
+            xAttributes.set("long_name", "Longitude"); 
+            xAttributes.set("standard_name", "longitude"); 
+            xAttributes.set("units", "degrees_east");
+            xAttributes.remove("modulo");
+            xAttributes.remove("point_spacing");
+
+            yAttributes.set("_CoordinateAxisType", "Lat");
+            yAttributes.set("long_name", "Latitude"); 
+            yAttributes.set("standard_name", "latitude"); 
+            yAttributes.set("units", "degrees_north");
+            yAttributes.remove("modulo");
+            yAttributes.remove("point_spacing");
+
+            zAttributes.set("_CoordinateAxisType", "Height");
+            zAttributes.set("long_name", "Altitude"); 
+            zAttributes.set("standard_name", "altitude"); 
+            zAttributes.set("positive", "up"); //special
+            zAttributes.set("units", "meters");
+            zAttributes.remove("point_spacing");
+
+            tAttributes.set("_CoordinateAxisType", "Time");
+            tAttributes.set("long_name", "Time"); 
+            tAttributes.set("standard_name", "time"); 
+            tAttributes.set("units", DataHelper.SECONDS_SINCE_1970);
+            tAttributes.remove("time_origin");
+            tAttributes.remove("point_spacing");
+
+            idAttributes.set("long_name", "Station Identifier"); 
+            idAttributes.set("units", DataHelper.UNITLESS);
+
+            dataAttributes.set("long_name", userVariableNames[var]);
+
+
+            //make a PointDataSet for this variable
+            if (stationVariables.size() > 0) {
+                try {
+                    //gather the stationVariables in an array
+                    StationVariableOpendap4D stationVariablesAr[] = 
+                        new StationVariableOpendap4D[stationVariables.size()];
+                    for (int i = 0; i < stationVariables.size(); i++) 
+                        stationVariablesAr[i] = 
+                            (StationVariableOpendap4D)stationVariables.get(i);
+                
+                    //make a PointDataSet
+                    PointDataSet pointDataSet = 
+                        new PointDataSetStationVariables( //throws Exception if trouble
+                            internalDataSetBaseName + internalVariableNames[var],
+                            inFileVariableNames[var],
+                            stationVariablesAr, 
+                            userVariableNames[var] + " (" + userDataSetBaseName + ")", 
+                            courtesy,
+                            variablePalette[var], 
+                            variablePaletteMin[var], 
+                            variablePaletteMax[var], 
+                            variableScale[var], 
+                            variableUdUnits[var],
+                            globalAttributes, xAttributes, yAttributes,
+                            zAttributes, tAttributes, idAttributes,
+                            dataAttributes); 
+                    pointDataSet.ensureValid(); //throws Exception if trouble
+                    list.add(pointDataSet);
+                } catch (Throwable t) {
+                    String2.log(errorInMethod + MustBe.throwableToString(t));
+                }               
+            }
+        }
+
+        if (verbose) String2.log("\n*** StationVariableOpendap4D.makePointDataSetStationVariables " +
+            "\n  finished successfully  nPointDataSets=" + (list.size() - originalListSize) + 
+            " time=" + (System.currentTimeMillis() - time));  
+    }
+    
+    
+    /**
+     * The constructor.
+     * Since this is a station, the following will be true: minX=maxX, minY=maxY, minDepth=maxDepth.
+     *
+     * @param url
+     * @param dConnect the dConnect from the url
+     * @param das the das from the dConnect
+     * @param dds the dds from the dConnect
+     * @param inFileVariableName the name of the variable, e.g., "AIR_TEMPERATURE_HR"
+     * @param variableName the nice variable name that will be displayed to users 
+     *    (when groupName is added), e.g., "Air Temperature"
+     * @param groupName the nice groupName that will be displayed to users, e.g., "MBARI M0"
+     * @param standardUnitsFactor the factor needed to convert raw data to udUnits.
+     * @param stationX the longitude of the station
+     * @param stationY the latitude of the station
+     * @param stationDepth the depth of the station (with positive values indicated depth)
+     * @param stationZUp is true if positive depth is "up" for the source data, false if positive depth is "down"
+     * @param timeBaseSeconds  the base time (seconds since 1970-01-01Z)
+     * @param timeFactorToGetSeconds  e.g., if time stored in hours, this is 3600
+     * @param timeIncrementInSeconds is the time between readings (e.g., 3600 = every hour)
+     * @param minT the seconds since 1970-01-01Z of the first observation
+     * @param maxT the seconds since 1970-01-01Z of the last observation
+     * @param xName the name of the x Dimension    (to verify that the var uses the expected xName)
+     * @param yName the name of the y Dimension    (to verify that the var uses the expected yName) 
+     * @param zName the name of the z Dimension    (to verify that the var uses the expected zName)
+     * @param tName the name of the time Dimension (to verify that the var uses the expected tName)
+     * @throws Exception if trouble or no data
+     */
+    public StationVariableOpendap4D(String url, DConnect dConnect, 
+            DAS das, DDS dds, String inFileVariableName, 
+            String variableName, String groupName, 
+            double standardUnitsFactor, 
+            double stationX, double stationY, double stationDepth, boolean stationZUp,
+            double timeBaseSeconds, double timeFactorToGetSeconds,
+            double timeIncrementInSeconds, double minT, double maxT,
+            String xName, String yName, String zName, String tName) throws Exception {
+        this.url = url;
+        this.inFileVariableName = inFileVariableName;
+        this.variableName = variableName;
+        this.groupName = groupName;
+        this.standardUnitsFactor = standardUnitsFactor;
+        this.timeBaseSeconds = timeBaseSeconds;
+        this.timeFactorToGetSeconds = timeFactorToGetSeconds;
+        this.timeIncrementInSeconds = timeIncrementInSeconds;
+        this.minT = minT;
+        this.maxT = maxT;
+        this.minDepth = stationDepth;
+        this.maxDepth = stationDepth;
+        this.minY = stationY;
+        this.maxY = stationY;
+        this.minX = stationX;
+        this.maxX = stationX;
+        this.sourceZUp = stationZUp;
+
+all of this should be moved to addPointDataSetStationVariables like StationVariableNc4D
+
+        String errorInMethod = String2.ERROR + 
+            " in StationVariableOpendap4D.constructor(inFile=" + inFileVariableName + 
+            "\n  group=" + groupName + " variable=" + variableName + "):\n";
+        if (verbose) 
+            String2.log("\nStationVariableOpendap4D(inFile=" + inFileVariableName + 
+                "\n  group=" + groupName + 
+                " variable=" + variableName + ").constructor");
+        long time = System.currentTimeMillis();
+
+
+        //*** get info via JDAP library
+        //get the dataVariable
+        DGrid dGrid = (DGrid)dds.getVariable(inFileVariableName);  //throws exception if not found
+        ArrayList variablesElements = String2.toArrayList(dGrid.getVariables());
+        DArray dataDArray = (DArray)variablesElements.get(0); //first element is always main array
+
+        //ensure nDimensions = 4
+        Test.ensureEqual(dataDArray.numDimensions(), 4, errorInMethod + "nDimensions not 4.");
+
+
+        //*** time, y, x information already gotten
+        //but verify that time, y, x dimension names are same
+        DArray tDArray = (DArray)variablesElements.get(1);
+        Test.ensureEqual(tDArray.getName(), tName, errorInMethod + "Unexpected time dimension name.");
+
+        DArray zDArray = (DArray)variablesElements.get(2);
+        Test.ensureEqual(zDArray.getName(), zName, errorInMethod + "Unexpected z dimension name.");
+
+        DArray yDArray = (DArray)variablesElements.get(3);
+        Test.ensureEqual(yDArray.getName(), yName, errorInMethod + "Unexpected y dimension name.");
+
+        DArray xDArray = (DArray)variablesElements.get(4);
+        Test.ensureEqual(xDArray.getName(), xName, errorInMethod + "Unexpected x dimension name.");
+
+
+        //***ensure valid
+        ensureValid();  //this prints toString
+        if (verbose)
+            String2.log("StationVariableOpendap4D.constructor finished successfully  totalTime=" +
+                (System.currentTimeMillis() - time) + " ms");
+
+
+
+        /*
+        //*** get info via java netcdf library: approach works but is very slow!  DataHelper.openOpendap(url); takes 6 s!
+        //get netcdfDataset  do this before try{}
+        NetcdfDataset netcdfDataset = DataHelper.openOpendapAsNetcdfDataset(url);
+        if (verbose)   //for test(), this is 99% of the time, 6 seconds!   if after dConnect: 3.5 s
+            String2.log("  timeToOpenDataset=" + (System.currentTimeMillis() - time));  
+
+        try {
+            //get the dataVariable
+            Variable dataVariable = DataHelper.findNcVariable(netcdfDataset, inFileVariableName);
+            Test.ensureNotNull(dataVariable, errorInMethod + " dimensionList.length not 4.");
+
+            //get data attributes
+            DataHelper.getNcVariableAttributes(dataVariable, dataAttributes);
+
+            //get the variable's dimensions
+            List dimensionList = dataVariable.getDimensions();
+            Test.ensureEqual(dimensionList.size(), 4, 
+                errorInMethod + " dimensionList.length not 4.");
+
+            //get the time dimension
+            Dimension timeDimension = (Dimension)dimensionList.get(0);
+            Test.ensureTrue(timeDimension.getName().toLowerCase().indexOf("time") >= 0,
+                errorInMethod + "The timeDimension's name (" + timeDimension.getName() +
+                    ") doesn't contain \"time\".");
+            int nTimes = timeDimension.getLength();
+
+
+            //*** get the t information
+            List timeCoordinateVariables  = timeDimension.getCoordinateVariables();
+            Test.ensureNotEqual(timeCoordinateVariables.size(), 0,
+                errorInMethod + "timeCoordinateVariable.size is 0.");
+            Variable timeVariable = (Variable)timeCoordinateVariables.get(0);
+
+            //get time attributes
+            DataHelper.getNcVariableAttributes(timeVariable, tAttributes);
+
+            //how is time encoded?
+            PrimitiveArray timeUnits = tAttributes.get("units");
+            Test.ensureNotNull(timeUnits, errorInMethod + "timeUnits is null.");
+            Test.ensureNotEqual(timeUnits.size(), 0, errorInMethod + "timeUnits.size is 0.");
+            double bAndF[] = Calendar2.getTimeBaseAndFactor(timeUnits.getString(0)); 
+            timeBaseSeconds = bAndF[0];
+            timeFactorToGetSeconds = bAndF[1];
+
+            //get the first and last time values
+            minT      = DataHelper.getNcValues(timeVariable, 0, 0).getDouble(0);
+            double t1 = DataHelper.getNcValues(timeVariable, 1, 1).getDouble(0);
+            maxT      = DataHelper.getNcValues(timeVariable, nTimes - 1, nTimes - 1).getDouble(0);
+            minT = timeBaseSeconds + minT * timeFactorToGetSeconds;
+            t1   = timeBaseSeconds + t1   * timeFactorToGetSeconds;
+            maxT = timeBaseSeconds + maxT * timeFactorToGetSeconds;
+            timeIncrementInSeconds = t1 - minT;
+
+            //check that time point_spacing is "even"
+            PrimitiveArray pointSpacing = tAttributes.get("point_spacing");
+            Test.ensureNotNull(pointSpacing, errorInMethod + "pointSpacing is null.");
+            Test.ensureNotEqual(pointSpacing.size(), 0, errorInMethod + "ponitSpacing.size is 0.");
+            Test.ensureEqual(pointSpacing.getString(0), "even", 
+                errorInMethod + "time point_spacing (" + pointSpacing.getString(0) + ") isn't \"even\".)");
+
+            //check "even" by checking that time.length is appropriate for 0th, 1st, and last times
+            double expectedNTimes = ((maxT - minT) / timeIncrementInSeconds) + 1;
+            Test.ensureEqual(nTimes, expectedNTimes, 
+                errorInMethod + "times not evenly spaced: nTimes != expectedNTimes.  minT=" + minT + 
+                    " maxT=" + maxT + " timeIncrementInSeconds=" + timeIncrementInSeconds);
+
+
+            //*** get the z information
+            Dimension zDimension = (Dimension)dimensionList.get(1);
+            Test.ensureTrue(
+                zDimension.getName().toLowerCase().indexOf("altitude") >= 0 ||
+                zDimension.getName().toLowerCase().indexOf("depth") >= 0,
+                errorInMethod + "The zDimension's name (" + zDimension.getName() +
+                    ") doesn't contain \"altitude\" or \"depth\".");
+            int nZ = zDimension.getLength();
+
+            //get the related coordinateVariable
+            List zCoordinateVariables  = zDimension.getCoordinateVariables();
+            Test.ensureNotEqual(zCoordinateVariables.size(), 0,
+                errorInMethod + "zCoordinateVariable.size is 0.");
+            Variable zVariable = (Variable)zCoordinateVariables.get(0);
+
+            //get z attributes
+            DataHelper.getNcVariableAttributes(zVariable, zAttributes);
+
+            //!!!for now, just get the first z value
+            minDepth = DataHelper.getNcValues(zVariable, 0, 0).getDouble(0);
+            maxDepth = minDepth;
+
+
+            //*** get the y information
+            Dimension yDimension = (Dimension)dimensionList.get(2);
+            Test.ensureTrue(yDimension.getName().toLowerCase().indexOf("lat") >= 0,
+                errorInMethod + "The yDimension's name (" + yDimension.getName() +
+                    ") doesn't contain \"lat\".");
+            int nY = yDimension.getLength();
+
+            //get the related coordinateVariable
+            List yCoordinateVariables  = yDimension.getCoordinateVariables();
+            Test.ensureNotEqual(yCoordinateVariables.size(), 0,
+                errorInMethod + "yCoordinateVariable.size is 0.");
+            Variable yVariable = (Variable)yCoordinateVariables.get(0);
+
+            //get y attributes
+            DataHelper.getNcVariableAttributes(yVariable, yAttributes);
+
+            //!!!for now, just get the first y value (there should be just 1 value)
+            minY = DataHelper.getNcValues(yVariable, 0, 0).getDouble(0);
+            maxY = minY;
+
+
+            //*** get the x information
+            Dimension xDimension = (Dimension)dimensionList.get(3);
+            Test.ensureTrue(xDimension.getName().toLowerCase().indexOf("lon") >= 0,
+                errorInMethod + "The xDimension's name (" + xDimension.getName() +
+                    ") doesn't contain \"lon\".");
+            int nX = xDimension.getLength();
+
+            //get the related coordinateVariable
+            List xCoordinateVariables  = xDimension.getCoordinateVariables();
+            Test.ensureNotEqual(xCoordinateVariables.size(), 0,
+                errorInMethod + "xCoordinateVariable.size is 0.");
+            Variable xVariable = (Variable)xCoordinateVariables.get(0);
+
+            //get x attributes
+            DataHelper.getNcVariableAttributes(xVariable, xAttributes);
+
+            //!!!for now, just get the first x value (there should be just 1 value)
+            minX = DataHelper.getNcValues(xVariable, 0, 0).getDouble(0);
+            maxX = minX;
+
+
+            //explicitly close the netcdfDataset
+            netcdfDataset.close();
+            netcdfDataset = null; //to indicate it doesn't need to be closed again
+
+            //ensure valid
+            ensureValid();  //this prints toString
+            if (verbose)
+                String2.log("StationVariableOpendap4D.constructor finished successfully  totalTime=" +
+                    (System.currentTimeMillis() - time) + " ms");
+
+            //return
+            return;
+
+        } catch (Exception e) {
+            //make extra effort to ensure netcdfDataset is explicitly closed
+            if (netcdfDataset != null) 
+                netcdfDataset.close();
+
+            //log the error
+            String2.log(errorInMethod + MustBe.throwableToString(e));
+
+            //rethrow it
+            throw e;
+        }
+        */
+
+    }
+
+    /**
+     * This generates a string representation of this GroupVariable.
+     *
+     * @throws Exception if trouble
+     */
+    public String toString() {
+        return super.toString() + 
+            "\n  url=" + url +
+            "\n  inFileVariableName=" + inFileVariableName +
+            "\n  timeIncrementInSeconds=" + timeIncrementInSeconds;
+    }
+
+    /**
+     * This adds relevant data from this GroupVariable to the table.
+     * <p>If this station is in the x,y,z range, but not the t range,
+     *   a row with data=mv is added for this station.
+     *
+     * @param minX the minimum acceptable longitude (degrees_east, may be  -180 to 180 or 0 to 360)
+     * @param maxX the maximum acceptable longitude (degrees_east, may be  -180 to 180 or 0 to 360)
+     * @param minY the minimum acceptable latitude (degrees_north)
+     * @param maxY the maximum acceptable latitude (degrees_north)
+     * @param minDepth the minimum acceptable depth (meters, down is positive)
+     * @param maxDepth the maximum acceptable depth (meters, down is positive)
+     * @param minT the minimum acceptable time in seconds since 1970-01-01T00:00:00Z.
+     *   If this GroupVariable has evenly spaced times, minT and maxT
+     *   should already be rounded to a multiple of timeIncrementSeconds.
+     *   This method just works literally with minT and maxT.
+     * @param maxT the maximum acceptable time in seconds since 1970-01-01T00:00:00Z
+     * @param missingValue the raw data value to be converted to NaN  (or NaN if already NaN)
+     * @param table the Table with 6 columns to be appended: 
+     *    "LON" (units=degrees_east, with values made relevant to the desired minX maxX), 
+     *    "LAT" (units=degrees_north), 
+     *    "DEPTH" (units=meters, positive=down), 
+     *    "TIME" (units=seconds since 1970-01-01T00:00:00Z), 
+     *    "ID" (String data), data (unpacked, in standard units).
+     *   Id will be a String column; the others are numeric PrimitiveArrays 
+     *   (not necessarily DoubleArray).
+     *   Rows with missing values are NOT removed.
+     *   No metadata will be added to the column variables. 
+     * @throws Exception if trouble
+     */
+    public void addToSubset(double minX, double maxX,
+            double minY, double maxY, double minDepth, double maxDepth,
+            double minT, double maxT, double missingValue, Table table) throws Exception {
+
+        //quick reject?
+        //since this subclass is for stations, this is the only test needed for x,y,z
+        //quick reject based on y, z, t?
+        if ((float)this.maxY < (float)minY || (float)this.minY > (float)maxY ||
+            (float)this.maxDepth < (float)minDepth || (float)this.minDepth > (float)maxDepth ||
+            (float)this.maxT < (float)minT || (float)this.minT > (float)maxT) {
+            //String2.log("  reject based on y,z,t\n" +
+            //    "\n  minY=" + minY + " maxY=" + maxY + " this.maxY=" + this.maxY + 
+            //    "\n  minDepth=" + minDepth + " maxDepth=" + maxDepth + " this.maxDepth=" + this.maxDepth + 
+            //    "\n  minT=" + minT + " maxT=" + maxT + " this.maxT=" + this.maxT);
+            return;
+        }
+see revised reject (and additional mv row if in x,y,x range) in StationVariableNc4D
+
+        //quick reject based on x?
+        //see if x is in range with various adjustments
+        double xAdjust = Double.NaN;
+        float fMinX = (float)minX;
+        float fMaxX = (float)maxX;
+        float fThisMinX = (float)this.minX;
+        float fThisMaxX = (float)this.maxX;
+        if      (fThisMaxX       >= fMinX && fThisMinX       <= fMaxX) xAdjust = 0;
+        else if (fThisMaxX + 360 >= fMinX && fThisMinX + 360 <= fMaxX) xAdjust = 360;
+        else if (fThisMaxX - 360 >= fMinX && fThisMinX - 360 <= fMaxX) xAdjust = -360;
+   
+        if (Double.isNaN(xAdjust)) {
+            //String2.log("  reject based on minX=" + minX + " maxX=" + maxX + " this.maxX=" + this.maxX);
+            return;
+        }
+
+        //trim to valid t range
+        if (maxT > this.maxT) maxT = this.maxT;
+        if (minT < this.minT) minT = this.minT;
+        
+        //find the first and last rows (based on minT and maxT)  -- round to nearest
+        int firstRow = Math2.roundToInt((minT - this.minT) / timeIncrementInSeconds);
+        int lastRow  = Math2.roundToInt((maxT - this.minT) / timeIncrementInSeconds);
+
+        //get the data
+        DConnect dConnect = new DConnect(url); 
+        String query = "?" + inFileVariableName + "[" + firstRow + ":1:" + lastRow + "][0][0][0]"; //[t][z][y][x]
+        String2.log("StationVariableOpendap4D.addToSubset\n" + 
+            "  url=" + url);
+        PrimitiveArray paAr[] = DataHelper.getPrimitiveArrays(dConnect, query);
+        PrimitiveArray data = paAr[0];
+        int n = data.size();
+
+        //verify dimension data
+        Test.ensureEqual(paAr[1].getDouble(0), minT, "Unexpected time value."); 
+        Test.ensureEqual(paAr[2].getDouble(0), (sourceZUp? -1 : 1) * this.minDepth, "Unexpected z value."); 
+        Test.ensureEqual(paAr[3].getDouble(0), this.minY, "Unexpected y value."); 
+        Test.ensureEqual(paAr[4].getDouble(0), this.minX, "Unexpected x value."); 
+        Test.ensureEqual(n, lastRow - firstRow + 1, "Unexpected n.");
+        Test.ensureEqual(paAr[1].size(), n, "Unexpected time.size.");
+
+        //convert mv data to NaN
+        if (!Double.isNaN(missingValue))
+            for (int i = 0; i < n; i++)
+                if (data.getDouble(i) == missingValue)
+                    data.setDouble(i, Double.NaN);
+
+        //convert data to standard units
+        data.scaleAddOffset(standardUnitsFactor, 0);
+
+        //add the data to the columns
+        PrimitiveArray column;
+        column = table.getColumn(0); column.append(PrimitiveArray.factory(column.getElementType(), n, "" + (this.minX + xAdjust)));
+        column = table.getColumn(1); column.append(PrimitiveArray.factory(column.getElementType(), n, "" + this.minY));
+        column = table.getColumn(2); column.append(PrimitiveArray.factory(column.getElementType(), n, "" + this.minDepth));
+        column = table.getColumn(3); column.append(paAr[1]);
+        column = table.getColumn(4); column.append(PrimitiveArray.factory(column.getElementType(), n, groupName));
+        column = table.getColumn(5); column.append(data);
+
+    }      
+
+
+//see test in PointDataSetStationVariables
+}

@@ -1,0 +1,509 @@
+	    Scientific Graphics Toolkit (sgt) Version 3.0
+                      SGT Beans Initial Release
+			    Release Notes
+
+$Id: RELEASE-NOTES-3.0.txt,v 1.4 2003/09/19 23:14:24 dwd Exp $
+
+Introduction:
+-------------
+
+This document describes the changes in the Scientific Graphics Toolkit
+from version 2.1 to 3.0 and introduces the first release of SGT Beans.
+
+Bug reports, comments, and suggestions can be sent to
+Donald.W.Denbo@noaa.gov, sgt@epic.noaa.gov or preferrably reported 
+using the Mantis system at http://heron.pmel.noaa.gov:8082/mantis. 
+
+New Features:
+-------------
+
+The biggest new feature is the initial delivery of SGT Beans. The
+three main beans Page, PanelModel, and DataModel can be used to
+produce graphics more easily. These beans also enable a user to more
+easily change the layout of existing graphics. [I will be making a
+tutorial available in about 2 months.] 
+
+New classes have been added to support graphical annotation.  And a
+new GeoDateArray class has been added to improve performance.
+
+Bug Fixes:
+----------
+
+To many to list.  The major fixes include using repaint() internally
+to make the drawing more robust. Problems with placing multiple JPanes
+in a single JFrame have been addressed and printing has been updated
+to work after the above bug fixes :-).  
+
+Known Existing Problems:
+------------------------
+
+SGT Beans require jdk 1.4.  This requirement is because I use
+XMLEncoder to serialize SGT Beans.
+
+The JRealTimeDemo demonstrates a problem that occurs when SGT is
+forced to redraw too rapidly.  On Solaris, the JPanel goes blank until
+the repainting is done.
+
+Printing SGT Beans with titled borders cause the graphic to be shifted
+down but not rescaled.  The result is the border overplot on the
+graphic.
+
+The Page SGT Bean doesn't account for the extra space a pixel
+rendering requires, causing the pixels to overlap the axes.
+
+Future Features:
+---------------
+
+Presently SGT Beans don't use a LayoutManager to position Panels on
+the Page.  I will be developing the interface and visual customization
+classes necessary to support SpringLayout. Eventually :-(.
+
+Deprecated Classes:
+------------------
+
+The following classes are now deprecated and will be removed at some
+future sgt release.
+
+gov.noaa.pmel.sgt.Pane -- use gov.noaa.pmel.sgt.JPane
+gov.noaa.pmel.sgt.swing.JLineProfileLayout -- use gov.noaa.pmel.sgt.swing.JPlotLayout
+
+in gov.noaa.pmel.util:
+
+SoTRange.GeoDate -- use SoTRange.Time
+SoTValue.GeoDate -- use SoTValue.Time
+TimePoint -- use SoTPoint
+TimeRange -- use SoTRange
+
+New Packages:
+-------------
+
+gov.noaa.pmel.sgt.beans
+
+New Classes:
+------------
+For details see the JavaDoc.
+
+gov.noaa.pmel.sgt
+	AnnotationCartesianRenderer
+	AttributeChangeEvent
+	DataKey
+	LayerControl
+	NegativeLogException
+
+gov.noaa.pmel.sgt.demo
+	JLogLogDemo
+	BeanDemo
+
+gov.noaa.pmel.sgt.dm
+	Annotation
+	Annote
+	SGT3DVector
+
+gov.noaa.pmel.sgt.swing.prop
+	ColorDialog
+	ColorEntryPanel
+	RulerDialog
+
+gov.noaa.pmel.swing
+	FocusableSwatch
+	MRJUtil
+	Swatch
+	SwatchGroup
+	ThreeDotsButton
+	ThreeDotsIcon
+
+gov.noaa.pmel.util
+	EPICSystem
+	GeoDateArray
+	SimpleFileFilter
+
+New Methods and Constructors:
+-----------------------------
+For details see the JavaDoc.
+
+gov.noaa.pmel.sgt
+	AbstractPane 
+	  new fields
+            DEFAULT_SCALE
+	    TO_FIT
+	    SHRINK_TO_FIT
+	  new methods
+	    Object[] getObjectsAt(int x,int y),
+	    Object[] getObjectsAt(Point pt)
+	    Point getZoomStart()
+	    void setMouseEventsEnabled(boolean en)
+	    boolean isMouseEventsEnabled()
+	    void setPageScaleMode(int mode)
+	    int getPageScaleMode()
+
+	Attribute
+	  new methods
+	    void setId(String id)
+	    String getId()
+	    void setBatch(boolean batch)
+	    void setBatch(boolean batch, boolean local)
+	    boolean isBatch()
+
+	Axis	    
+          new methods
+	    void setLineColor(Color color)
+	    Color getLineColor()
+
+	AxisTransform
+	  new constructors
+	    AxisTransform(double p1, double p2, long t1, long t2)
+	  new methods
+	    double getTransP(long t)
+	    long getLongTimeTransU(double p)
+
+	CLIndexedColorMap
+	  new methods
+	    Color getColorByIndex(int indx)
+
+	CartesianGraph
+	  new methods
+	    void setClip(long tmin, long tmax, double min, double max)
+	    double getXUtoD2(double u)
+	    double getYUtoD2(double u)
+	    double getXUtoP(long t)
+	    double getYUtoP(long t)
+	    int getXUtoD(long t)
+	    int getYUtoD(long t)
+	    double getXUtoD2(GeoDate t)
+	    double getYUtoD2(GeoDate t)
+	    double getXUtoD2(long t)
+	    double getYUtoD2(long t)
+	    int getXUtoD(SoTValue val)
+	    int getYUtoD(SoTValue val)
+	    double getXUtoD2(SoTValue val)
+	    double getYUtoD2(SoTValue val)
+	    double getXUtoP(SoTValue val)
+	    double getYUtoP(SoTValue val)
+	    SoTValue getXPtoSoT(double p)
+	    SoTValue getYPtoSoT(double p)
+	    long getXPtoLongTime(double p)
+	    long getYPtoLongTime(double p)
+	    SoTPoint getPtoU(Point2D.Double loc)
+	    SGTData getDataAt(Point pt)
+
+	CartesianRenderer
+	  new methdos
+	    SGTData getDataAt(int x, int y)
+	    SGTData getDataAt(Point pt)
+
+	ColorKey
+	  Fixed vertical orientation.
+	  new constructor
+	    ColorKey(Point2D.Double pt, Dimension2D size, int valign, int halign)
+	  new methods
+	    void addGraph(CartesianRenderer rend, SGLabel label)
+	    void setColumns(int col)
+	    void setLineLengthP(double len)
+
+	ColorMap
+	  new methods
+	    void setBatch(boolean batch)
+	    void setBatch(boolean batch, boolean local)
+	    boolean isBatch()
+
+	Graph
+	  new methods
+	    SGTData getDataAt(Point pt)
+
+	GridAttribute
+	  new methods
+	    void setId(String id)
+	    String getId()
+	    void setBatch(boolean batch)
+	    void setBatch(boolean batch, boolean local)
+	    boolean isBatch()
+
+	GridCartesianRenderer
+	  new methdos
+	    SGTData getDataAt(Point pt) - unimplemented
+
+	IndexedColor
+	  new methods
+	    Color getColorByIndex(int index)
+
+	IndexedColorMap
+	  new methods
+	    Color getColorByIndex(int index)
+
+	JPane
+	  new methods
+	    String getVersion()
+	    Point getZoomStart()
+	    Object[] getObjectsAt(int x, int y)
+	    Object[] getObjectsAt(Point pt)
+	    void setMouseEventsEnabled(boolean enable)
+	    boolean isMouseEventsEnabled()
+	    void setPageScaleMode(int mode)
+	    int getPageScaleMode()
+
+	Layer
+	  new methods
+	    double getXPtoD2(double xp)
+	    double getYPtoD2(double yp)
+	    LayerChild findChild(String id)
+	    Iterator childIterator()
+	    LayerChild[] getChildren()
+	    Object[] getObjectsAt(int x, int y, boolean check)
+
+	LayerContainer - unimplemented
+
+	LayerStack - unimplemented
+
+	LineAttribute
+	  new methods
+	    boolean  equals(Object obj)
+	    void setId(String id)
+	    String getId()
+	    void setBatch(boolean batch)
+	    void setBatch(boolean batch, boolean local)
+	    boolean isBatch()
+
+	LineCartesianRenderer
+	  new methods
+	    SGTData getDataAt(Point pt) - unimplemented
+
+	LineKey
+	  new methods
+	    void addGraph(CartesianRenderer rend, SGLabel label)
+
+	LinearTransform
+	  new methods
+	    double getTransP(long t)
+	    long  getLongTimeTransU(double p)
+
+	LogAxis - new implementation
+
+	LogTransform - new implementation
+
+	Pane
+	  mew methods
+	    String getVersion()
+	    Point getZoomStart()
+	    Object[] getObjectsAt(int x, int y)
+	    Object[] getObjectsAt(point pt)
+	    void setMouseEventsEnabled(boolean enable)
+	    boolean isMouseEventsEnabled()
+	    void setPageScaleMode(int mode)
+	    int getPageScaleMode()
+
+	PaneProxy
+	  new methods
+	    String getVersion()
+	    Object[] getObjectsAt(int x, int y)
+	    void setMouseEventsEnabled(boolean enable)
+	    boolean isMouseEventsEnabled()
+
+	PointAttribute
+	  new methods
+	    boolean equals(Object obj)
+	    void setId(String id)
+	    String getId()
+	    void setBatch(boolean batch)
+	    void setBatch(boolean batch, boolean local)
+	    boolean isBatch()
+
+	PointCartesianRenderer
+	  new methods
+	    SGTData getDataAt(Point pt) - unimplemented
+
+	PointCollectionKey
+	  new methods
+	    void addGraph(CartesianRenderer rend, SGLabel label)
+
+	Ruler
+	  new methods
+	    int getLabelInterval()
+	    void setLabelInterval(int interval)
+	    int getSignificantDigits()
+	    void setSignificantDigist(int sig)
+	    String getLabelFormat()
+	    void setLabelFormat(String format)
+	    Color getLabelColor()
+	    void setLabelColor(Color color)
+	    Color getLineColor()
+	    void setLineColor(Color color)
+
+	SGLabel
+	  new methods
+	    boolean equals(Object obj)
+
+	VectorAttribute
+	  new methods
+	    void setId(String id)
+	    String getId()
+	    void setBatch(boolean batch)
+	    void setBatch(boolean batch, boolean local)
+	    boolean isBatch()
+
+	VectorCartesianRenderer
+	  new methods
+	    SGTData getDataAt(Point pt) - unimplemented
+
+	VectorKey
+	  new methods
+	    void setLineLengthP(double len)
+	    void addGraph(CartesianRenderer rend, SGLabel label)
+
+gov.noaa.pmel.sgt.beans
+	all new package
+
+gov.noaa.pmel.sgt.contour
+
+gov.noaa.pmel.sgt.demo
+
+gov.noaa.pmel.sgt.dm
+	SGTGrid
+	  new methods
+	    GeoDateArray getGeoDateArray()
+	    GeoDateArray getGeoDateArrayEdges()
+
+	SGTLine
+	  new methods
+	    GeoDateArray getGeoDateArray()
+
+	SGTPoint
+	  new methods
+	    long getLongTime()
+
+	SGTTuple
+
+	SGTVector
+
+	SimpleGrid
+	  new methods
+	    GeoDateArray getGeoDateArray()
+	    GeoDateArray getGeoDateArrayEdges()
+	    void setTimeEdges(GeoDateArray tarray)
+	    void setTimeArray(GeoDateArray tarray)
+
+	SimpleLine
+	  new constructor
+	    SimpleLine(GeoDateArray tloc, double[] yloc, String title)
+	    SimpleLine(double[] xloc, GeoDateArray tloc, String title)
+	  new methods
+	    GeoDateArray getGeoDateArray()
+	    void setTimeArray(GeodDateArray tarray)
+
+	SimplePoint
+	  new constructor
+	    SimplePoint(SoTPoint loc, String title)
+	  new methods
+	    long getLongTime()
+	    void setTime(GeoDate date)
+	    void setTime(long t)
+
+	SimpleTuple
+	  new methods
+	    void setXArray(GeoDateArray tArray)
+	    void setYArray(GeoDateArray tArray)
+	    GeoDateArray getGeoDateArray()
+
+gov.noaa.pmel.sgt.swing
+	Draggable
+	  new method
+	    void setLocation(Point loc, boolean fireEvent)
+
+	JGraphicLayout
+	  new methods
+	    Attribute findAttribute(String id)
+	    void setAllClip(long tmin, long tmax, double min, double max)
+
+	JPlotLayout
+	  new methods
+	    SoTDomain getGraphDomain()
+
+	UserIcon
+	  new methods
+	    SoTPoint getLocationU()
+	    void setLocationUNoVeto(SoTPoint loc)
+	    void setLocationU(SoTPoint loc)
+
+	ValueIcon
+	  new methods
+	    SoTPoint getLocationU()
+	    void setLocationUNoVeto(SoTPoint loc)
+	    void setLocationU(SoTPoint loc)
+
+	ValueIconFormat
+	  new methods
+	    void setTimeFormat(String tfrmt)
+	    String format(SoTPoint pt)
+
+gov.noaa.pmel.sgt.swing.prop
+
+gov.noaa.pmel.swing
+	SelectTimeDialog
+	  new method
+	    void setRange(long min, long max)
+
+gov.noaa.pmel.util
+	Domain
+	  new constructors
+	    Domain(Range2D xRange, Range2D yrange, boolean xRev, boolean yRev)
+	    Domain(TimeRange tRange, Range2D yRange, boolean xRev, boolean yRev)
+	    Domain(Range2D xRange, TimeRange tRange, boolean xRev, boolean yRev)
+	  new methods
+	    void setYReversed(boolean rev)
+	    boolean isYReversed()
+	    void setXReversed(boolean rev)
+	    boolean isXReversed()
+
+	Point2D
+	  new methods
+	    boolean equals(Object obj)
+	    Point2D copy()
+
+	Rectangle2D
+	  new subclass
+  	    Rectangle2D.Float
+	  new methods
+	    void setWidth(double w)
+	    double getWidth()
+	    void setHeight(double h)
+	    double getHeight()
+	    void setX(double x)
+	    double getX()
+	    void setY(double y)
+	    double getY()
+	    Rectangle2D copy()
+
+	SoTDomain
+	  new constructor
+	    SoTDomain(SoTRange xRange, SoTRange yRange, boolean xRev, boolean yRev)
+	  new methods
+	    SoTPoint getCenter()
+	    void setXReversed(boolean rev)
+	    boolean isXReversed()
+	    void setYReversed(boolean rev)
+	    boolean isYReversed()
+
+	SoTPoint
+	  new constructors
+	    SoTPoint(double x, long y)
+	    SoTPoint(long x, double y)
+	  new methods
+	    void setX(SoTValue x)
+	    void setY(SoTValue y)
+	    void add(SoTPoint point)
+	    SoTPoint copy()
+
+	SoTRange
+	  new subclass
+	    SoTRange.Time
+
+	SoTValue
+	  new sublcass
+	    SoTValue.Time
+	  new methods
+	    void add(SoTValue val)
+	    long getLongTime()
+	    GeoDate getGeoDate()
+
+	TimeRange
+	  new constructor
+	    TimeRange(long start, long end, long delta)

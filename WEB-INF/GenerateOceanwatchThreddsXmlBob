@@ -1,0 +1,51 @@
+#!/bin/csh
+#
+# usage: GenerateOceanwatchThreddsXmlBob
+#
+# GenerateOceanwatchThreddsXml is a version of GenerateThreddsXml specifically
+# for use on the oceanwatch computer at ERD.
+# It specifies all the paramaters, so you don't need to supply any.
+# See GenerateThreddsXml for more general information.
+#
+# The four parameters which are hard-coded below are:
+#   'dataMainDir': the base data directory, e.g., /u00/ .
+#   'dataSubDir': the subdirectory of dataMainDir, 
+#      e.g., satellite/, which has subdirectories
+#      like AT/ssta/1day with .nc data files.
+#      Only the dataSubDir (not the dataMainDir) is used for the 
+#      catalog.xml file's ID and urlPath attributes of the 'dataset' tag.
+#   'incompleteMainCatalog' is the full name of the 
+#      incomplete main catalog.xml file which has "[Insert datasets here.]"
+#      where the satellite and HF Radar dataset tags with the inserted.
+#   'xmlMainDir': the directory which will be created to hold 
+#      the results.
+#      It will have a new main catalog.xml file and subdirectories
+#      with the new dataset catalog.xml files. 
+#      Datasets with 'C' as the first letter of the twoName
+#      are assumed to be HF Radar datasets and their catalog.xml files are 
+#      stored in the Hfradar/aggreghfradar'twoName' subdirectory of xmlMainDir.
+#      All other datasets 
+#      are assumed to be Satellite datasets and their catalog.xml files are 
+#      stored in the Satellite/aggregsat'twoName' subdirectory of xmlMainDir.
+#      Only this subdirectory name (not the xmlMainDir) appears in the 
+#      resulting main catalog.xml's xlink:href attribute of the catalogRef tag.
+#
+# To make this Linux/Unix script executable, use 
+#    chmod +x GenerateOceanwatchThreddsXml
+#
+# originally written 2007-01-22
+# last updated 2007-12-06
+# NOAA/Bob Simons  bob.simons@noaa.gov
+#
+
+set commandLine=$0
+set thisDir=`echo commandLine | dirname $0`
+set dataMainDir=/u00/ 
+set dataSubDir=satellite/ 
+set incomplete=/u00/tomcat6.0.14_thredds/content/thredds/GeneratedXml/incompleteMainCatalog.xml 
+set xmlMainDir=/home/cwatch/bin/GeneratedXml
+
+java -cp $thisDir/classes:$thisDir/lib/netcdfAll-latest.jar:$thisDir/lib/slf4j-jdk14.jar:$thisDir/lib/activation.jar:$thisDir/lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.GenerateThreddsXml $dataMainDir $dataSubDir $incomplete $xmlMainDir
+
+
+# finished 

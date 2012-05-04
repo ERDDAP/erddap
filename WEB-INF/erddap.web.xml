@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+  Copyright 2004 The Apache Software Foundation
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+    version="2.4">
+
+    <display-name>ERDDAP</display-name>
+    <description>ERDDAP lets humans and computer programs download gridded data and tabular data in common file formats.</description>
+
+	<filter>
+        <filter-name>OpenIdFilter</filter-name>
+        <description>This filter (for Consumer side) automatically parses OpenID responses and sets the user's identity in the session.</description>
+        <filter-class>org.verisign.joid.consumer.OpenIdFilter</filter-class>
+		<init-param>
+			<param-name>saveInCookie</param-name>
+			<param-value>true</param-value>
+			<description>Optional. Will store the identity url in a cookie under "openid.identity" if set to true.</description>
+		</init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>OpenIdFilter</filter-name>
+        <url-pattern>/login.html</url-pattern> 
+    </filter-mapping>
+
+<!-- JSPC servlet mappings start -->
+
+    <servlet>
+        <servlet-name>ERDDAP</servlet-name>
+        <servlet-class>gov.noaa.pfel.erddap.Erddap</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ERDDAP</servlet-name>
+        <url-pattern>/*</url-pattern>  <!-- this works for ERDDAP and ERDDAP2 -->
+    </servlet-mapping>
+
+<!-- JSPC servlet mappings end -->
+
+</web-app>

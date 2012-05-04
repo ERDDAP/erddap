@@ -1,0 +1,75 @@
+/* CSS Style Settings for ERDDAP 
+
+Styles with '.' (e.g., font.successColor) only apply to specific instances 
+  of the tag (<font class="successColor">).
+Styles without '.' (e.g., hr) apply to all instances of an HTML tag (<hr>).
+See a CSS tutorial (e.g., http://www.w3schools.com/css/) for other details.
+If you make changes other than colors, be sure to check the appearance 
+  in all common browsers on Linux, Mac, and Windows computers.
+
+To use this file:
+1) One time: rename this file to <tomcat>/content/erddap/images/erddap.css
+2) Make changes to the file.
+3) To apply the changes:
+ 2a) Restart ERDDAP. 
+     ERDDAP will copy erddap.css to <tomcat>/webapps/erddap/images.
+ 2b) Or, you can copy erddap.css to <tomcat>/webapps/erddap/images while
+     ERDDAP is running.  Then, you don't need to restart ERDDAP. 
+	 But clients need to reload an ERDDAP web page or clear their 
+	 browser's cache to replace the old, cached erddap.css with the new one.
+*/
+body {background-color:white; color:black;
+      font-family:Arial,Helvetica,sans-serif; font-size:85%; line-height:130%;}
+
+/* You probably don't need to change the font colors below because they work 
+with a wide range of background-colors and other style settings. 
+
+font.highlightColor (medium blue) needs to be subtly but noticeably different from black,
+e.g., for the Categorize web pages. */
+font.highlightColor {color:#3333cc; } 
+
+/* font.standoutColor  (orange?)    e.g., for the dataset's title on a Data Access Form. */
+font.standoutColor {color:#dd5500; }
+
+/* font.subduedColor   (gray?)      e.g., for aside messages on .subset forms. */
+font.subduedColor {color:#777777; }
+
+/* font.successColor   (green?)     e.g., for a success message to the current user.
+       For example, for successful login and subscription attempts. */
+font.successColor {color:#008800; }
+
+/* font.warningColor   (red?)       e.g., for a warning/error message to the current user. 
+       For example, for failed login and subscription attempts. */
+font.warningColor {color:red; }
+
+h1, h2, h3 {line-height:130%; }
+
+hr {color:#bbbbbb; background-color:#bbbbbb; height:1px; border:none; }
+
+img {border:0px; }
+
+/* Small input items let more be shown on one screen (esp. Chrome and Safari).
+   Google Chrome and Safari have default margin 2px, while others are 0.  So set all to 0.
+   .skinny is used e.g., for the buttons above the image on a Make A Graph page. */
+input[type=button], input[type=submit], button {margin:0px; padding:0px 3px; }
+input[type=checkbox], input[type=password], input[type=text], select, textarea {
+  margin:0px; padding:0px; }
+input[type=radio] {margin:0px 2px; padding:0px; }
+input.skinny {padding:0px 1px; }
+
+pre, tt {font-family: "Courier New",Courier,FreeMono,monospace; 
+  font-size:100%; line-height:130%;}
+
+/* table.commonBGColor and table.erd are widely used for the HTML table style 
+with the yellow (currently) background color.  */
+table.commonBGColor {background-color:#ffffcc; }
+table.erd {border-collapse:collapse; border:1px solid #bbbbbb; }
+table.erd th, table.erd td {padding:2px 4px; border:1px solid #bbbbbb; }
+
+/* This is used in the middle of the screen on the ERDDAP home page. */
+td.verticalLine {width:1px; background-color:#bbbbbb; }
+
+/* This is used on the /info/[datasetID]/index.html pages to highlight a cell or row. */
+td.highlightBGColor {background-color:#cceecc; }
+tr.highlightBGColor {background-color:#cceecc; }
+

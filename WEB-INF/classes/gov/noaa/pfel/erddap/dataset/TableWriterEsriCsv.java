@@ -1,0 +1,227 @@
+/* 
+ * TableWriterEsriCsv Copyright 2010, NOAA.
+ * See the LICENSE.txt file in this file's directory.
+ */
+package gov.noaa.pfel.erddap.dataset;
+
+import com.cohort.util.Calendar2;
+import com.cohort.util.SimpleException;
+import com.cohort.util.String2;
+import com.cohort.util.XML;
+
+import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.variable.EDV;
+
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.util.HashSet;
+
+/**
+ * TableWriterEsriCsv provides a way to write an ESRI ArcGIS compatible
+ * comma separated value ASCII 
+ * outputStream in chunks so that the whole table doesn't have to be in memory 
+ * at one time.
+ * This is used by EDDTable.
+ * The outputStream isn't obtained until the first call to writeSome().
+ *
+ * Column names are truncated at 9 characters.  (B, C, ... are appended to avoid duplicate names)
+ * <br>"longitude" is renamed "X". "latitude" is renamed "Y".
+ * <br>Missing numeric values are all written as -9999.
+ * <br>Double quotes in strings are double quoted.
+ * <br>Timestamp columns are separated into date and time columns.
+ * <br>This doesn't yet truncate strings to 255 chars. (Hopefully ArcGIS does this.)
+ * <br>This doesn't deal with non-ASCII chars (about which ArcGIS is vague).
+ *
+ * @author Bob Simons (bob.simons@noaa.gov) 2010-07-20
+ */
+public class TableWriterEsriCsv extends TableWriter {
+
+    //set by constructor
+    protected String separator = ", ";
+    protected boolean quoted = true;
+    //search for "default esri" in
+    //http://www.stata-journal.com/sjpdf.html?articlenum=dm0014
+    //or http://docs.google.com/viewer?a=v&q=cache:iwbmxvE9DvIJ:www.stata-journal.com/sjpdf.html%3Farticlenum%3Ddm0014+esri+default+missing+value&hl=en&gl=us&pid=bl&srcid=ADGEESjrRrmh7PoDFjjsViKg06rNXFvycmSNw4U_D9Y2ZpwrS_M6D1KFokTG6UFPQmi1MbkvDtwSRw4f60ui0QXp4Tf0kIL2lVD4ykiei66-N4gZPyq7Jr4FW0N4cZH85iboEUI30AEW&sig=AHIEtbTtN5tHnXlQcP_6Nu8HZXlFHzH56w
+    //Int and Float are treated differently, so ArcGIS can determine the type of data.
+    protected String nanIString = "-9999";
+    protected String nanFString = "-9999.0";
+
+    //set by firstTime
+    protected boolean isTimeStamp[];
+    protected boolean isString[];
+    protected boolean isFloat[];
+    protected HashSet uniqueColNames = new HashSet();
+    protected BufferedWriter writer;
+
+    /**
+     * The constructor.
+     *
+     * @param tOutputStreamSource  the source of an outputStream that receives the 
+     *     results, usually already buffered.
+     *     The ouputStream is not procured until there is data to be written.
+     */
+    public TableWriterEsriCsv(OutputStreamSource tOutputStreamSource) {
+        super(tOutputStreamSource);
+    }
+
+    /**
+     * This adds the current contents of table (a chunk of data) to the OutputStream.
+     * This calls ensureCompatible each time it is called.
+     * If this is the first time this is called, this does first time things
+     *   (e.g., call OutputStreamSource.outputStream() and write file header).
+     * The number of columns, the column names, and the types of columns 
+     *   must be the same each time this is called.
+     *
+     * <p>The table should have missing values stored as destinationMissingValues
+     * or destinationFillValues.
+     * This implementation converts them to NaNs and then to -9999 or -9999.0.
+     *
+     * @param table with destinationValues
+     * @throws Throwable if trouble
+     */
+    public void writeSome(Table table) throws Throwable {
+        if (table.nRows() == 0) 
+            return;
+
+        //ensure the table's structure is the same as before
+        boolean firstTime = columnNames == null;
+        ensureCompatible(table);
+
+        //do firstTime stuff
+        int nColumns = table.nColumns();
+        if (firstTime) {
+            //write the header
+            writer = new BufferedWriter(new OutputStreamWriter(
+                outputStreamSource.outputStream("UTF-8"), "UTF-8"));
+
+            //write the column names   
+            isFloat = new boolean[nColumns];
+            isString = new boolean[nColumns];
+            isTimeStamp = new boolean[nColumns];
+            for (int col = 0; col < nColumns; col++) {
+                Class elementClass = table.getColumn(col).elementClass();
+                isFloat[col] = (elementClass == float.class) || (elementClass == double.class);
+                isString[col] = elementClass == String.class;
+                String u = table.columnAttributes(col).getString("units");
+                isTimeStamp[col] = u != null && 
+                    (u.equals(EDV.TIME_UNITS) || u.equals(EDV.TIME_UCUM_UNITS));
+
+                //shapefile colNames limited to 10 char
+                //colName shortening here is crude -- may sometimes result in columns with same names!
+                String colName = table.getColumnName(col);
+                if (isTimeStamp[col]) {
+                    //split into date column and time column
+                    if (colName.equals(EDV.TIME_NAME)) {
+                         writer.write(makeUnique("date") + separator + 
+                                      makeUnique(EDV.TIME_NAME));
+                    } else {
+                        //make 8char+(D|T), then makeUnique
+                        if (colName.length() > 8)
+                            colName = colName.substring(0, 8);
+                        writer.write(makeUnique(colName + "D") + separator + 
+                                     makeUnique(colName + "T"));
+                    }
+                } else {
+                    if (colName.equals(EDV.LON_NAME)) colName = "X";
+                    if (colName.equals(EDV.LAT_NAME)) colName = "Y";
+                    writer.write(makeUnique(colName));
+                }
+                writer.write(col == nColumns - 1? "\n" : separator);
+            }
+        }
+
+        //*** do everyTime stuff
+        convertToStandardMissingValues(table);  //NaNs; not the method in Table, so metadata is unchanged
+
+        //write the data
+        int nRows = table.nRows();
+        for (int row = 0; row < nRows; row++) {
+            for (int col = 0; col < nColumns; col++) {
+                if (isTimeStamp[col]) {
+                    //split into date column 2010-07-20 and time column 07:45:00
+                    double d = table.getDoubleData(col, row);
+                    String iso = Calendar2.safeEpochSecondsToIsoStringTZ(d, "");
+                    
+                    if (iso.length() >= 19) {
+                        //"1/20/2006 9:00:00 pm"
+                        String usStyle = Calendar2.formatAsUSSlashAmPm(
+                            Calendar2.epochSecondsToGc(d));
+                        int spo = usStyle.indexOf(' '); 
+                        writer.write(iso.substring(0, 10) + separator + 
+                            (spo < 0? "" : usStyle.substring(spo + 1))); //spo < 0 shouldn't ever happen
+                    } else {
+                        //missing value
+                        writer.write(separator); //mv on either side
+                    }
+                } else if (isString[col]) {
+                    //quoteIfNeeded converts carriageReturns/newlines to (char)166; //'¦'  (#166)
+                    writer.write(String2.quoteIfNeeded(quoted, table.getStringData(col, row)));
+                } else {
+                    //numeric
+                    String s = table.getStringData(col, row);
+                    writer.write(s.length() == 0? 
+                        (isFloat[col]? nanFString : nanIString) : 
+                        s); 
+                }
+                writer.write(col == nColumns -1? "\n" : separator);
+            }
+        }       
+
+        //ensure it gets to user right away
+        if (nRows > 1) //some callers work one row at a time; avoid excessive flushing
+            writer.flush(); 
+    }
+
+    protected String makeUnique(String colName) {
+        if (colName.length() > 10)
+            colName = colName.substring(0, 10);
+        if (uniqueColNames.add(colName)) 
+            return colName;
+
+        if (colName.length() > 9)
+            colName = colName.substring(0, 9);
+        int ch = 65;
+        while (!uniqueColNames.add(colName + (char)ch))
+            ch++;
+        return colName + (char)ch;
+    }
+        
+
+    
+    /**
+     * This writes any end-of-file info to the stream and flush the stream.
+     *
+     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     */
+    public void finish() throws Throwable {
+        //check for EDStatic.THERE_IS_NO_DATA
+        if (writer == null)
+            throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+
+        writer.flush(); //essential
+
+        //diagnostic
+        if (verbose)
+            String2.log("TableWriterEsriCsv done. TIME=" + 
+                (System.currentTimeMillis() - time) + "\n");
+
+    }
+
+
+    /**
+     * This is a convenience method to write an entire table in one step.
+     *
+     * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
+     */
+    public static void writeAllAndFinish(Table table, OutputStreamSource tOutputStreamSource) 
+        throws Throwable {
+
+        TableWriterEsriCsv twsv = new TableWriterEsriCsv(tOutputStreamSource);
+        twsv.writeAllAndFinish(table);
+    }
+
+}
+
+
+

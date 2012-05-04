@@ -1,0 +1,51 @@
+			   JPlotPane Notes
+
+			      11/30/2000
+
+* Create JPlotPane
+  1) create and initealizes managers. (Print, DnD, Layer, ...)
+  2) other initialization efforts.
+  3) clear pane?
+
+* addData(SGTData, PlotLayerHints) to JPlotPane
+  1) create PlotLayer (data, hints)
+     - create Graph
+     - create Renderer and bind data
+  2) invoke PlotLayerManager
+      as newLayer(PlotLayer) or reLayout() <-  is this needed?
+
+      - if newLayer
+	+ get X-Y types (space/time, units)
+	+ using hints match with existing LayerStack
+	+ if needed create new LayerStack & add to JPlotPane
+	  else find stack to add layer to...
+	+ create new transform if needed or bind to existing transform
+	+ create new axes if needed
+
+      - if modified Layer
+	+ check for X-Y axes owner
+	+ check for transforms
+	+ update Key
+	  (once a PlotLayer is assigned to a LayerStack it
+	   stays there unless explictly moved)
+
+* hints (should hints include values?)
+  1) Keys  (location- on layer, new layer, table, popup; position)
+  2) Transforms (scale/offset, share, new)
+  3) Axes (share, new, location)
+  4) PlotLayer ...
+
+* modes
+  1) Zoom
+  2) Object Select
+  3) Data Select
+  4) Layer DnD (LayerStack is DnD client/server?)
+  5) Default (none? Zoom?)
+
+
+* LayerManager
+  1) LayerManager should have its rules about what can be overlayed!
+     For example, raster grid should not be over a contour grid! 
+  2) LayerManager should be able to re-order the Layers in a
+     LayerStack?
+ 

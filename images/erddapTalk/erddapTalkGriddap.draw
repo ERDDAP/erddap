@@ -1,0 +1,70 @@
+CoPlot.drawVersion(6.300);
+setDrawingBackgroundColor(Color2.orange0);
+setFont(0,"helvet");
+setFont(1,"tmsrmn");
+setFont(2,"cour");
+setFont(3,"marker");
+setFont(4,"greek");
+setFont(5,"");
+setFont(6,"");
+setFont(7,"");
+setFont(8,"");
+setFont(9,"");
+setFont(10,"");
+setFont(11,"");
+setFont(12,"");
+setFont(13,"");
+setFont(14,"");
+setYBounds(0, 6);
+setGridSize(0.1);
+setGroupForNewObjects(5);
+setSmoothing(0);
+setGraphArrayX("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
+setGraphArrayY("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
+
+setGroup(5);
+setCharacters("C:/content/erddapTalk/erdBAssta5day.png");
+newImage();
+image.setSize(2.4);
+image.setTopMargin(15);
+create("image", "6.7, 1.5");
+
+setBackgroundColor(Color2.notDrawn);
+setLineColor(Color2.notDrawn);
+setTextColor(Color2.blue4);
+setTextFont(0);
+setTextHeight(0.18);
+setTextPosition(4);
+setShapeType(34);
+setShapeHAlign(3);
+setShapeVAlign(10);
+setShapeWidth(.);
+setShapeHeight(.);
+setShapeBorder(1);
+setShapeAngle(0);
+setShapeShadow(0);
+setCharacters("<b>Griddap - grid data and graphs via DAP hyperslab requests");
+create("text", "0.2, 5.6");
+
+setTextColor(Color2.black);
+setTextPosition(3);
+setShapeVAlign(5);
+setCharacters("&bull;The URL specifies everything: dataset, response file type, subset:<br>&nbsp; <color=Color2.red4>http://coastwatch.pfel.noaa.gov<color=Color2.orange4>/erddap<color=Color2.yellow7>/griddap<color=Color2.green4>/erdBAssta5day<color=Color2.cyan4>.html<br>&nbsp; <color=Color2.black>?<color=Color2.sky4>sst<color=Color2.blue4>[(2007-10-21T00:00:00)]<color=Color2.purple4>[0]<color=Color2.magenta4>[(-75):100:(75)]<color=Color2.maroon4>[(180):100:(360)]");
+create("text", "0.2, 4.6");
+
+setCharacters("You can request data via a specially formed URLs.");
+create("text", "0.2, 5.1");
+
+setCharacters("&bull;If time is <tt>last</tt>, you will get the latest data.");
+create("text", "0.2, 0.5");
+
+setCharacters("&bull;Data file types: .asc, .csv, .das, .dds, .dods,<br>&nbsp;  .esriAscii, .htmlTable, .json, .mat, .nc,<br>&nbsp; .ncHeader, .tsv, .xhtml. ");
+create("text", "0.2, 2.9");
+
+setCharacters("&bull;Image file types: .geotif, .kml, .smallPdf,<br>&nbsp; .pdf, .largePdf, .smallPng, .png, .largePng,<br>&nbsp; .transparentPng.");
+create("text", "0.2, 1.7");
+
+setCharacters("&bull;Special file types: .html (Data Access Form), .graph (graphical form)");
+create("text", "0.2, 3.4");
+
+endOfFile();

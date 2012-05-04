@@ -1,0 +1,60 @@
+CoPlot.drawVersion(6.300);
+setDrawingBackgroundColor(Color2.orange0);
+setFont(0,"helvet");
+setFont(1,"tmsrmn");
+setFont(2,"cour");
+setFont(3,"marker");
+setFont(4,"greek");
+setFont(5,"");
+setFont(6,"");
+setFont(7,"");
+setFont(8,"");
+setFont(9,"");
+setFont(10,"");
+setFont(11,"");
+setFont(12,"");
+setFont(13,"");
+setFont(14,"");
+setYBounds(0, 6);
+setGridSize(0.1);
+setVisibleGroups("1");
+setGroupForNewObjects(1);
+setSmoothing(0);
+setGraphArrayX("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
+setGraphArrayY("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
+
+setGroup(1);
+setBackgroundColor(Color2.notDrawn);
+setLineColor(Color2.notDrawn);
+setTextColor(Color2.blue4);
+setTextFont(0);
+setTextHeight(0.7);
+setTextPosition(4);
+setShapeType(34);
+setShapeHAlign(4);
+setShapeVAlign(10);
+setShapeWidth(.);
+setShapeHeight(.);
+setShapeBorder(1);
+setShapeAngle(0);
+setShapeShadow(0);
+setCharacters("<b>ERDDAP");
+create("text", "4, 5.2");
+
+setTextHeight(0.18);
+setCharacters("NOAA Environmental Research Division's<br>Data Access Program");
+create("text", "4, 4.3");
+
+setTextColor(Color2.black);
+setCharacters("Bob Simons (bob.simons@noaa.gov)<br>Roy Mendelssohn (roy.mendelssohn@noaa.gov)");
+create("text", "4, 1.0000000000000002");
+
+setCharacters("C:/content/erddapTalk/erd.jpg");
+newImage();
+image.setSize(3.5);
+create("image", "4, 2.7");
+
+setCharacters("(Special thanks to Dave Foley)");
+create("text", "6.2, 0.30000000000000004");
+
+endOfFile();

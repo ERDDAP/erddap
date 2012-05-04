@@ -1,0 +1,218 @@
+/* 
+ * PointDataSetNdbc Copyright 2005, NOAA.
+ * See the LICENSE.txt file in this file's directory.
+ */
+package gov.noaa.pfel.coastwatch.pointdata;
+
+import com.cohort.array.PrimitiveArray;
+import com.cohort.array.StringArray;
+import com.cohort.util.Calendar2;
+import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
+import com.cohort.util.String2;
+import com.cohort.util.Test;
+
+import gov.noaa.pfel.coastwatch.griddata.DataHelper;
+
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Vector;
+
+/** 
+ * This class represents one point dataset (for one variable from the various
+ * NDBC buoys) for CWBrowser.
+ * It determine the dates for which data is available and
+ * it can generate a table with the data for a specific time period.
+ * 
+ * The constructor searches for available data.
+ *
+ * @author Bob Simons (bob.simons@noaa.gov) 2005-05-01
+ */
+public class PointDataSetNdbc extends PointDataSet{ 
+
+    private NdbcMetStation ndbc;
+    private int columnIndex;
+
+    /**
+     * The constructor (used by NdbcMetStation.addPointDataSets).
+     *
+     * @param ndbc
+     * @param columnIndex (e.g., NdbcMetStation.wtmpIndex)
+     */
+    public PointDataSetNdbc(NdbcMetStation ndbc, int columnIndex) throws Exception {
+        this.ndbc = ndbc;
+        this.columnIndex = columnIndex;
+
+        //determine firstTime and lastTime
+        double stats[] = ndbc.stationTable().getColumn(
+            NdbcMetStation.stationTimeCoverageStartIndex).calculateStats();
+        firstTime = Calendar2.newGCalendarZulu(Math2.roundToLong(stats[PrimitiveArray.STATS_MIN]) * 1000);
+
+        stats = ndbc.stationTable().getColumn(
+            NdbcMetStation.stationTimeCoverageEndIndex).calculateStats();
+        lastTime = Calendar2.newGCalendarZulu(Math2.roundToLong(stats[PrimitiveArray.STATS_MAX]) * 1000);
+
+        //set the standard attributes
+        altScaleFactor = 1.0; 
+        altOffset = 0.0; 
+        //altPalette, altPaletteMin/Max not used
+        boldTitle = NdbcMetStation.longNames[columnIndex] + " (NDBC Meteorological)"; 
+        courtesy = "NOAA NDBC and Other Station Owners/Operators"; //impossible to credit all specific owners/operators
+        defaultUnits = 'S'; //for now, never 'A'
+        internalName = NdbcMetStation.internalNames[columnIndex]; 
+        monthsTillDataAccessAllowed = -1;
+        option = boldTitle;
+        palette = NdbcMetStation.palettes[columnIndex]; 
+        paletteMin = NdbcMetStation.paletteMin[columnIndex]; 
+        paletteMax = NdbcMetStation.paletteMax[columnIndex]; 
+        scale = "Linear"; 
+        tooltip = NdbcMetStation.comments[columnIndex]; 
+        unitsOptions = new String[]{DataHelper.makeUdUnitsReadable(NdbcMetStation.units[columnIndex])}; //just standard, no alternate
+
+        //ensure these values are valid
+        ensureValid();
+
+    } 
+
+    /**
+     * Make a Table with a specific subset of the data.
+     *
+     * @param minX the minimum acceptable longitude (degrees_east, may be  -180 to 180 or 0 to 360)
+     * @param maxX the maximum acceptable longitude (degrees_east, may be  -180 to 180 or 0 to 360)
+     * @param minY the minimum acceptable latitude (degrees_north)
+     * @param maxY the maximum acceptable latitude (degrees_north)
+     * @param minZ the minimum acceptable altitude (meters, up is positive)
+     * @param maxZ the maximum acceptable altitude (meters, up is positive)
+     * @param isoMinT an ISO format date/time for the minimum ok time.
+     *    isoMinT and isoMaxT are rounded to be a multiple of the frequency 
+     *    of the data's collection.  For example, if the data is hourly, 
+     *    they are rounded to the nearest hour.
+     * @param isoMaxT an ISO format date/time for the maximum ok time
+     * @return a Table with 6 columns: 
+     *    "longitude" (units=degrees_east, with values made relevant to the desired minX maxX), 
+     *    "latitude" (units=degrees_north), 
+     *    "altitude" (units=meters, positive=up), 
+     *    "time" (units=seconds since 1970-01-01T00:00:00Z), 
+     *    "ID" (String data), data (unpacked, in standard units).
+     *   Id will be a StringArray; the other are numeric PrimitiveArrays 
+     *   (not necessarily DoubleArray).
+     *   Rows with missing values are NOT removed.
+     *   The column actual_range and global bounding box metadata will 
+     *   be correct. Other metadata is just passed through from the
+     *   original matadata in the file. 
+     *   The table may have 0 rows or 0 columns
+     * @throws Exception
+     */
+    public Table makeSubset(double minX, double maxX,
+            double minY, double maxY, double minZ, double maxZ,
+            String isoMinT, String isoMaxT) throws Exception {
+        if (minZ > 0 || maxZ < 0) {
+            Table table = new Table();
+            return table;
+        }
+
+        //get the data
+        Table table = ndbc.getGeoTimeData(minX, maxX, minY, maxY,  
+            isoMinT, isoMaxT,
+            new int[]{
+                NdbcMetStation.lonIndex, 
+                NdbcMetStation.latIndex, 
+                NdbcMetStation.altitudeIndex, 
+                NdbcMetStation.timeIndex,
+                NdbcMetStation.idIndex,
+                columnIndex});
+       
+
+        //setActualRangeAndBoundingBox
+        //All of the _CoordinateAxisType columns are present in the file,
+        //  so the global bounding box info will all be set correctly
+        //  (even if the file is later averaged or variables are removed).
+        //Set ActualRange
+        table.setActualRangeAndBoundingBox(0, 1, 2, 3);  
+
+        //change other metadata
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10) + "Z";
+        table.globalAttributes().set("date_created", today);
+        table.globalAttributes().set("date_issued", today);
+        table.columnAttributes(3).remove("point_spacing");
+
+        //return the results
+        return table;
+    }
+
+    /**
+     * This appends data about stations 
+     * (which have data within an x,y,z,t bounding box)
+     * to a table of stations.
+     *
+     * <p>Typical use of this is:
+     * <ol>
+     * <li> Table stations = PointDataSet.getEmptyStationTable(
+     *     0, 360, -90, 90, -100, 100, "1900-01-01", "3000-01-01");
+     * <li> pointDataSets[i].addStationsToTable(
+            0, 360, -90, 90, -100, 100, "1900-01-01", "3000-01-01", stations);
+     * <li> stations.setActualRangeAndBoundingBox(0,1,2,3);
+     * </ol>
+     *
+     * @param minX  the minimum acceptable longitude (degrees_east).
+     *    minX and maxX may be -180 to 180, or 0 to 360.
+     * @param maxX  the maximum acceptable longitude (degrees_east)
+     * @param minY  the minimum acceptable latitude (degrees_north)
+     * @param maxY  the maximum acceptable latitude (degrees_north)
+     * @param minZ  the minumum acceptable altitude (meters, positive=up)
+     * @param maxZ  the maxumum acceptable altitude (meters, positive=up)
+     * @param isoMinT an ISO format date/time for the minimum acceptable time  
+     * @param isoMaxT an ISO format date/time for the maximum acceptable time  
+     * @param stations a Table with 3 columns (lon, lat, altitude, id),
+     *    where lat is in degrees_east adjusted to be in the minX maxX range,
+     *    lon is in degrees_north, altitude is in meters up,
+     *    and stations is a string suitable for sorting (e.g., MBARI MO).
+     */
+    public void addStationsToTable(double minX, double maxX,
+        double minY, double maxY, double minZ, double maxZ, 
+        String isoMinT, String isoMaxT, Table stations) {
+
+        //deal with z constraint
+        //currently, all ndbc station's treated as altitude = 0
+        if (minZ > 0 || maxZ < 0)
+            return;
+
+        int nRows = stations.nRows();
+        try {
+
+            //ndbc stations are stored lonPM180
+
+            //get as many stations as possible in their native -180 to 180
+            if (minX <= 180) {
+                Table rawStations = ndbc.getStationTable(minX, Math.min(180, maxX), 
+                    minY, maxY, isoMinT, isoMaxT);
+                stations.getColumn(0).append(rawStations.getColumn(NdbcMetStation.stationLonIndex));
+                stations.getColumn(1).append(rawStations.getColumn(NdbcMetStation.stationLatIndex));
+                PrimitiveArray zCol = stations.getColumn(2); //all altitudes are 0 for ndbc
+                zCol.append(PrimitiveArray.factory(zCol.getElementType(), rawStations.nRows(), "0"));
+                stations.getColumn(3).append(rawStations.getColumn(NdbcMetStation.stationIDIndex));
+            }
+
+            //get the stations in their native 180 to 360
+            //Eeek! how avoid catching station right at 180 twice?
+            if (maxX > 180) {
+                Table rawStations = ndbc.getStationTable(
+                    Math.max(minX - 360, -180), maxX - 360, //adjust search range lons
+                    minY, maxY, isoMinT, isoMaxT);
+                PrimitiveArray xCol = rawStations.getColumn(NdbcMetStation.stationLonIndex);
+                xCol.scaleAddOffset(0, 360); //adjust found station's lons
+                stations.getColumn(0).append(xCol);
+                stations.getColumn(1).append(rawStations.getColumn(NdbcMetStation.stationLatIndex));
+                PrimitiveArray zCol = stations.getColumn(2); //all altitudes are 0 for ndbc
+                zCol.append(PrimitiveArray.factory(zCol.getElementType(), rawStations.nRows(), "0"));
+                stations.getColumn(3).append(rawStations.getColumn(NdbcMetStation.stationIDIndex));
+            }
+
+        } catch (Exception e) {
+            stations.removeRows(nRows, Integer.MAX_VALUE);
+        }
+
+    }
+
+
+}

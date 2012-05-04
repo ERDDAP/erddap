@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog xmlns="http://www.unidata.ucar.edu/namespaces/thredds/InvCatalog/v1.0" xmlns:xlink="http://www.w3.org/1999/xlink" name="ERD THREDDS Data Server" version="1.0.1">
+
+  <dataset name="ERD THREDDS Data Server">
+    <!-- 
+    <dataset name="RDBMS PaCOOS Datasets">
+      <catalogRef xlink:href="PaCOOS/GLOBEC/catalog.xml" xlink:title="GLOBEC NEP Data" name=""/>
+      <catalogRef xlink:href="PaCOOS/CalCOFI/catalog.xml" xlink:title="CalCOFI Data" name=""/>
+      <catalogRef xlink:href="PaCOOS/Rockfish/catalog.xml" xlink:title="Mid Water Trawl Juvenile Rockfish Survey" name=""/>
+      <catalogRef xlink:href="PaCOOS/PRD/catalog.xml" xlink:title="Protected Resources Division CTD data" name=""/>
+      <dataset name="NWFSC Data">    
+        <catalogRef xlink:href="PaCOOS/NWFSC/Hake/catalog.xml" xlink:title="Hake Survey ADCP data" name=""/>
+        <catalogRef xlink:href="PaCOOS/NWFSC/HUD/catalog.xml" xlink:title="HUD data" name=""/>
+      </dataset> 
+    </dataset>
+    -->
+      
+    <!--  
+    <dataset name="Aggregation Test PaCOOS Datasets">
+      <catalogRef xlink:href="PaCOOS/aggreg/catalog.xml" xlink:title="Satellite aggregation" name=""/>
+    </dataset> 
+    -->
+
+           
+[Insert datasets here.]
+
+    <!--
+    <dataset name="Test remote AUV data TDS">
+       <dataset name="Aggregation MBARI AUV Datasets">
+          <catalogRef xlink:href="AUV/catalog.xml" xlink:title="Near-Real Time Data" name=""/>
+       </dataset>
+    </dataset>
+    <dataset name="Remote PISCO data aggregation">
+      <dataset name="ADCP PISCO Datasets">
+        <catalogRef xlink:href="PISCO/adcp/BAY/catalog.xml" xlink:title="San Miguel Island (North side), CA" name=""/>
+        <catalogRef xlink:href="PISCO/adcp/SMS/catalog.xml" xlink:title="San Miguel Island (South side), CA" name=""/>
+        <catalogRef xlink:href="PISCO/adcp/BEA/catalog.xml" xlink:title="Santa Rosa Island, CA" name=""/>
+        <catalogRef xlink:href="PISCO/adcp/PEL/catalog.xml" xlink:title="Santa Cruz Island (Pelican Bay), CA" name=""/> 
+        <catalogRef xlink:href="PISCO/adcp/VAL/catalog.xml" xlink:title="Santa Cruz Island (Valley Anchorage), CA" name=""/>
+      </dataset>
+      <dataset name="Moored Temperature PISCO Datasets">
+        <catalogRef xlink:href="PISCO/temp/ANO001/catalog.xml" xlink:title="Point Ano Nuevo, CA" name=""/>
+        <catalogRef xlink:href="PISCO/temp/BIG001/catalog.xml" xlink:title="Big Creek, CA" name=""/>
+        <catalogRef xlink:href="PISCO/temp/ESA001/catalog.xml" xlink:title="Esalen, CA" name=""/>
+        <catalogRef xlink:href="PISCO/temp/JOE001/catalog.xml" xlink:title="Point Joe, CA" name=""/>
+        <catalogRef xlink:href="PISCO/temp/LAC001/catalog.xml" xlink:title="La Cruz Rock, CA" name=""/>
+        <catalogRef xlink:href="PISCO/temp/LOP001/catalog.xml" xlink:title="Lopez Rock, CA" name=""/>
+        <catalogRef xlink:href="PISCO/temp/PIG001/catalog.xml" xlink:title="Pigeon Point, CA" name=""/>
+        <catalogRef xlink:href="PISCO/temp/SEF001/catalog.xml" xlink:title="Southeast Farallon Island, CA" name=""/>
+        <catalogRef xlink:href="PISCO/temp/SRS/catalog.xml" xlink:title="Santa Rosa Island, CA" name=""/>
+        <catalogRef xlink:href="PISCO/temp/SUN001/catalog.xml" xlink:title="Sunset Point, CA" name=""/>
+        <catalogRef xlink:href="PISCO/temp/TPT001/catalog.xml" xlink:title="Terrace Point (nearshore), CA" name=""/>
+        <catalogRef xlink:href="PISCO/temp/TPT007/catalog.xml" xlink:title="Terrace Point (5km offshore), CA" name=""/>
+        <catalogRef xlink:href="PISCO/temp/TPT008/catalog.xml" xlink:title="Terrace Point (10km offshore), CA" name=""/>
+        <catalogRef xlink:href="PISCO/temp/WES001/catalog.xml" xlink:title="Weston Beach, CA" name=""/>
+      </dataset>
+    </dataset>
+
+    <dataset name="Remote test to Nomads THREDDS catalog">
+      <catalogRef xlink:href="http://nomads.ncdc.noaa.gov:8085/thredds/OceanWinds.xml" xlink:title="Blended Ocean Winds" name=""/>
+      <catalogRef xlink:href="http://nomads.ncdc.noaa.gov:8085/thredds/oisst/oisstAggs.xml" xlink:title="Optimum Interpolation Sea Surface Temperatures" name=""/>
+    </dataset>
+    -->
+
+  </dataset> 
+</catalog>
