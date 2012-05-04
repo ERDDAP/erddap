@@ -126,7 +126,7 @@ public class SgtUtil  {
             Test.error(ERROR + " in SgtUtil.getFont: " + fontFamily + " not available.\n" +
                 String2.javaInfo() + "\n" +
                 "Fonts available: " + 
-                String2.noLongLinesAtSpace(String2.toCSVString(
+                String2.noLongLinesAtSpace(String2.toCSSVString(
                     GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()),
                     80, "  "));
         return font;

@@ -513,7 +513,7 @@ public abstract class TableDataSet implements Comparable {
     public String toString() {
         return "TableDataSet " + internalName + " datasetName=" + datasetName + 
             "\n  individuals[0]=" + individuals[0] +
-            "\n  dataVariableNames=" + String2.toCSVString(dataVariableNames); 
+            "\n  dataVariableNames=" + String2.toCSSVString(dataVariableNames); 
     }
 
     /**
@@ -1107,7 +1107,7 @@ public abstract class TableDataSet implements Comparable {
         idAttributes.set("units", DataHelper.UNITLESS);
         
         Attributes globalAttributes = stations.globalAttributes();
-        globalAttributes.set("Conventions", "CF-1.4");
+        globalAttributes.set("Conventions", "CF-1.6");
         String title = "Station Locations" +
             " (minX=" + minX + 
             ", maxX=" + maxX + 
@@ -1118,7 +1118,7 @@ public abstract class TableDataSet implements Comparable {
             ", minT=" + isoMinT + 
             ", maxT=" + isoMaxT + ")";
         globalAttributes.set("title",  title);
-        globalAttributes.set("keywords", "EARTH SCIENCE > Oceans"); //part of line from http://gcmd.gsfc.nasa.gov/Resources/valids/gcmd_parameters.html
+        globalAttributes.set("keywords", "Oceans"); //part of line from http://gcmd.gsfc.nasa.gov/Resources/valids/gcmd_parameters.html
         //skip keywords vocabulary since not using it strictly
         globalAttributes.set("id", title);
         globalAttributes.set("naming_authority", "gov.noaa.pfel.coastwatch");

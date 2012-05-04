@@ -23,14 +23,14 @@
     <display-name>ERDDAP</display-name>
     <description>ERDDAP lets humans and computer programs download gridded data and tabular data in common file formats.</description>
 
+<!-- This filter (for Consumer side) automatically parses OpenID responses and sets the user's identity in the session. -->
 	<filter>
         <filter-name>OpenIdFilter</filter-name>
-        <description>This filter (for Consumer side) automatically parses OpenID responses and sets the user's identity in the session.</description>
         <filter-class>org.verisign.joid.consumer.OpenIdFilter</filter-class>
 		<init-param>
 			<param-name>saveInCookie</param-name>
+			<!-- If param-value is true, the identity url will be stored in a cookie under "openid.identity". -->
 			<param-value>true</param-value>
-			<description>Optional. Will store the identity url in a cookie under "openid.identity" if set to true.</description>
 		</init-param>
     </filter>
     <filter-mapping>

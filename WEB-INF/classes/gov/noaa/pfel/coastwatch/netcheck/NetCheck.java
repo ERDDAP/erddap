@@ -62,7 +62,7 @@ import java.util.HashSet;
  * and can be redistributed freely.
  *
  * <p>WARNING! When a test times out, its thread is stopped which may
- * cause a memory leak. If the memory use goes over 100 MB, an email
+ * cause a memory leak. If the memory use goes over memoryWarningMB, an email
  * will be sent to the administrator.
  *
  * <p>The pass% reported in the status reports (every minutesBetweenStatusReports)
@@ -221,6 +221,9 @@ public class NetCheck  {
             else if (tags.equals("<netCheck><setup><smtpUser>")) {} 
             else if (tags.equals("<netCheck><setup></smtpUser>"))
                 smtpUser = xmlReader.content();
+            else if (tags.equals("<netCheck><setup><smtpPassword>")) {} 
+            else if (tags.equals("<netCheck><setup></smtpPassword>"))
+                smtpPassword = xmlReader.content();
             else if (tags.equals("<netCheck><setup><smtpFromAddress>")) {} 
             else if (tags.equals("<netCheck><setup></smtpFromAddress>")) 
                 smtpFromAddress = xmlReader.content();
@@ -286,30 +289,24 @@ public class NetCheck  {
             smtpPort = 25; //the default
 
         //ensure that required items were set
-        Test.ensureEqual(smtpServer == null || smtpServer.length() == 0, false,
+        Test.ensureTrue(smtpServer != null && smtpServer.length() > 0,
             errorIn + "<netCheck><setup><smtpServer> was not specified.\n");
-        Test.ensureEqual(smtpUser == null || smtpUser.length() == 0, false,
+        Test.ensureTrue(smtpUser != null && smtpUser.length() > 0, 
             errorIn + "<netCheck><setup><smtpUser> was not specified.\n");
-        Test.ensureEqual(smtpFromAddress == null || smtpFromAddress.length() == 0, false,
+        Test.ensureTrue(smtpFromAddress != null && smtpFromAddress.length() > 0, 
             errorIn + "<netCheck><setup><smtpFromAddress> was not specified.\n");
         //emailStatusTo.size()             == 0) {} //not required
         //emailStatusHeadlinesTo.size()    == 0) {} //not required
         //emailChangesTo.size()          == 0) {} //not required
         //emailChangeHeadlinesTo.size() == 0) {} //not required
 
-        //verify smtp info, get smtpPassword
-        String tAddress = String2.getPasswordFromSystemIn(
-            "Email account address (default=" + smtpFromAddress + ")? "); 
-        if (tAddress.length() > 0)
-            smtpFromAddress = tAddress;
-        String tUser = String2.getPasswordFromSystemIn(
-            "Email account user (default=" + smtpUser + ")? "); 
-        if (tUser.length() > 0)
-            smtpUser = tUser;
-        smtpPassword = String2.getPasswordFromSystemIn(
-            "Email account password? "); 
-        Test.ensureEqual(smtpPassword.length() == 0, false,
-            errorIn + "You must specify a password.\n");
+        //ask for password if it wasn't specified
+        if (smtpPassword == null || smtpPassword.length() == 0) {
+            smtpPassword = String2.getPasswordFromSystemIn(
+                "Email account password? "); 
+            Test.ensureTrue(smtpPassword.length() > 0, 
+                errorIn + "You must specify a password here or in netcheck.xml's <smtpPassword>.\n");
+        }
 
         //set up info arrays (initial values are important)
         lastResult = new String[netCheckTests.size()]; 

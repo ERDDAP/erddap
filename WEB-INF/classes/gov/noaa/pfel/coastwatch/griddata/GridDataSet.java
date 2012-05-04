@@ -313,9 +313,9 @@ public abstract class GridDataSet {
      */
     public String toString() {
         return "gridDataSet " + internalName + ": " + option + 
-            "\n  activeTimePeriodOptions=" + String2.toCSVString(activeTimePeriodOptions) +
-            "\n  activeTimePeriodTitles=" + String2.toCSVString(activeTimePeriodTitles) +
-            "\n  activeTimePeriodNHours=" + String2.toCSVString(activeTimePeriodNHours) +
+            "\n  activeTimePeriodOptions=" + String2.toCSSVString(activeTimePeriodOptions) +
+            "\n  activeTimePeriodTitles=" + String2.toCSSVString(activeTimePeriodTitles) +
+            "\n  activeTimePeriodNHours=" + String2.toCSSVString(activeTimePeriodNHours) +
             "\n  activeTimePeriodOpendapUrls=" + String2.toNewlineString(activeTimePeriodOpendapUrls) +
             //don't show: lots of activeTimePeriodTimes stored in a Vector()
             "  altContourLinesAt=" + altContourLinesAt + //gets \n from toNewlineString above
@@ -330,7 +330,7 @@ public abstract class GridDataSet {
             "\n  courtesy=" + courtesy + 
             //dataSetRB2
             "\n  defaultUnits=" + defaultUnits +
-            "\n  fgdcSubstitutions=" + String2.toCSVString(fgdcSubstitutions) +
+            "\n  fgdcSubstitutions=" + String2.toCSSVString(fgdcSubstitutions) +
             //fileNameUtility
             "\n  internalName=" + internalName +
             "\n  keywords=" + keywords +
@@ -344,7 +344,7 @@ public abstract class GridDataSet {
             "\n  references=" + references +
             "\n  summary=" + summary +
             "\n  udUnits=" + udUnits +
-            "\n  unitsOptions=" + String2.toCSVString(unitsOptions) +
+            "\n  unitsOptions=" + String2.toCSSVString(unitsOptions) +
             "\n"; 
     }
 
@@ -573,7 +573,7 @@ public abstract class GridDataSet {
      *
      * <p>!!!LIMITATION: this method cleans up the attributes from the
      * metadata standards that I am familiar with 
-     * (COARDS, CF-1.4, Unidata Dataset Discovery v1.0, CWHDF).
+     * (COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF).
      * But there is no way it can clean up other metadata from other standards
      * that I don't know about.
      * Hence, metadata that is passed through may be incorrect (e.g., the 

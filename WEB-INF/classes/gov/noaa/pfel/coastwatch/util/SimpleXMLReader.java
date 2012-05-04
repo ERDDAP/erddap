@@ -182,8 +182,9 @@ public class SimpleXMLReader {
      * So this is normally called right after an end tag.
      *
      * @return the content from right before the end tag (or null if end-of-file).
-     *   Common entities (&amp; &lt; &gt; &quot; &nbsp) are converted
+     *   Common entities (&amp;amp; &amp;lt; &amp;gt; &amp;quot;) are converted
      *   to the original characters.
+     *   &amp;nbsp; is converted to a regular space.   
      *   All CR (#13) are removed. All LF (#10) are intact.
      *   If no content, this will be "" (not null).
      */
@@ -459,8 +460,9 @@ public class SimpleXMLReader {
             allTags.append("<" + tagString + ">");
             stack.add(tagString);
         }
+        //trim then decode, not the other way around 
+        //(decode converts nbsp to ' ', and trim would remove the spaces at beginning or end)
         content = XML.decodeEntities(String2.trim(contentBuffer).toString());
-
 
     }
 

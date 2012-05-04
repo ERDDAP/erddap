@@ -135,8 +135,8 @@ public class HdfVGroup extends HdfTag {
             "[tagType=0x" + Integer.toHexString(tagType) +
             ", referenceNumber=" + referenceNumber +
             ", nelt=" + nelt +
-            ", tag_n=" + String2.toHexCSVString(tag_n) +
-            ", ref_n=" + String2.toCSVString(ref_n) +
+            ", tag_n=" + String2.toHexCSSVString(tag_n) +
+            ", ref_n=" + String2.toCSSVString(ref_n) +
             ", name=" + String2.annotatedString(name) +
             ", className=" + String2.annotatedString(className) +
             ", extag=" + extag +

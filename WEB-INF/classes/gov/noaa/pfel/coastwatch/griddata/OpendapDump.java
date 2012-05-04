@@ -72,7 +72,7 @@ public class OpendapDump {
                     //Values which really are Strings have " as first and list character.
                     Attribute a = at.getAttribute((String)e.nextElement());
                     String2.log(indentation(indent + 2) + a.getName() + " = " +
-                       String2.toCSVString(String2.toArrayList(a.getValues()).toArray()));
+                       String2.toCSSVString(String2.toArrayList(a.getValues()).toArray()));
                 }
                 //or use String sa[]=String2.toStringArray(String2.toArrayList(at.getAttribute("range")).toArray());
                 //or use String sa[]=String2.toIntArray(String2.toArrayList(at.getAttribute("range")).toArray());

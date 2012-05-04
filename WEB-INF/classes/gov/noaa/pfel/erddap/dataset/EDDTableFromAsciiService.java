@@ -66,6 +66,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         String tLocalSourceUrl = null;
 
         String tBeforeData[] = new String[10];   //[0..9] correspond to beforeData1..10
@@ -130,6 +132,11 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
             else if (localTags.equals("</onChange>")) 
                 tOnChange.add(content); 
 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+
             else xmlReader.unexpectedTagException();
         }
         int ndv = tDataVariables.size();
@@ -140,7 +147,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         if (tDatasetType.equals("EDDTableFromAsciiServiceNOS")) { 
 
             return new EDDTableFromAsciiServiceNOS(tDatasetID, tAccessibleTo,
-                tOnChange, tGlobalAttributes,
+                tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
                 tAltitudeMetersPerSourceUnit,
                 ttDataVariables,
                 tReloadEveryNMinutes, tLocalSourceUrl,
@@ -170,6 +177,11 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tAddGlobalAttributes are global attributes which will
      *   be added to (and take precedence over) the data source's global attributes.
      *   This may be null if you have nothing to add.
@@ -184,8 +196,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
      *   <li> "cdm_data_type" - one of the EDD.CDM_xxx options
      *   </ul>
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
-     *   Special case: if addGlobalAttributes name="license" value="[standard]",
-     *     the EDStatic.standardLicense will be used.
+     *   Special case: if combinedGlobalAttributes name="license", any instance of "[standard]"
+     *     will be converted to the EDStatic.standardLicense.
      * @param tAltMetersPerSourceUnit the factor needed to convert the source
      *    alt values to/from meters above sea level.
      * @param tDataVariables is an Object[nDataVariables][3]: 
@@ -219,7 +231,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
      */
     public EDDTableFromAsciiService(String tDatasetType, 
         String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
@@ -238,13 +250,11 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
-        String tLicense = addGlobalAttributes.getString("license");
-        if (tLicense != null)
-            addGlobalAttributes.set("license", 
-                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
         localSourceUrl = tLocalSourceUrl;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
@@ -259,6 +269,10 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
 
         //get global attributes
         combinedGlobalAttributes = new Attributes(addGlobalAttributes); 
+        String tLicense = combinedGlobalAttributes.getString("license");
+        if (tLicense != null)
+            combinedGlobalAttributes.set("license", 
+                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         combinedGlobalAttributes.removeValue("null");
 
         //create structures to hold the sourceAttributes temporarily
@@ -349,8 +363,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
 
         }
         if (verbose) String2.log(
-            "responseSubstringStart=" + String2.toCSVString(responseSubstringStart) + "\n" +
-            "responseSubstringEnd  =" + String2.toCSVString(responseSubstringEnd));
+            "responseSubstringStart=" + String2.toCSSVString(responseSubstringStart) + "\n" +
+            "responseSubstringEnd  =" + String2.toCSSVString(responseSubstringEnd));
 
 
         //ensure the setup is valid
@@ -526,7 +540,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
             //String2.log(s);
         }
 
-        //String2.log(table.dataToCsvString());
+        //String2.log(table.dataToCSVString());
         return table;
     }
 

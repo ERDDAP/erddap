@@ -23,12 +23,11 @@ setGraphArrayX("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
 setGraphArrayY("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
 
 setGroup(5);
-setCharacters("C:/content/erddapTalk/pmelTao.png");
+setCharacters("C:/content/erddapTalk/tabledap3.png");
 newImage();
-image.setSize(3.6);
-image.setTopMargin(10);
-image.setBottomMargin(145);
-create("image", "6.1, 1.5");
+image.setSize(3.5);
+image.setTopMargin(20);
+create("image", "6.1, 1.7");
 
 setBackgroundColor(Color2.notDrawn);
 setLineColor(Color2.notDrawn);
@@ -45,24 +44,24 @@ setShapeBorder(1);
 setShapeAngle(0);
 setShapeShadow(0);
 setCharacters("<b>Tabledap - tabular data and graphs via DAP constraint requests");
-create("text", "0.2, 5.6");
+create("text", "0.2, 5.7");
 
 setTextColor(Color2.black);
 setTextPosition(3);
 setShapeVAlign(5);
-setCharacters("&bull;The URL specifies everything: dataset, response file type, subset:<br>&nbsp; <color=Color2.red4>http://coastwatch.pfel.noaa.gov<color=Color2.orange4>/erddap<color=Color2.yellow7>/tabledap<color=Color2.green4>/pmelTao<color=Color2.cyan4>.html<br>&nbsp; <color=Color2.black>?<color=Color2.sky4>longitude,latitude,sea_surface_temperature,time<br>&nbsp; <color=Color2.blue4>&time=2007-06-02T12:00:00");
-create("text", "0.2, 4.6");
+setCharacters("&bull;The URL specifies everything: dataset, response file type, subset:<br>&nbsp; <color=Color2.red4>http://coastwatch.pfel.noaa.gov<color=Color2.orange4>/erddap<color=Color2.yellow7>/tabledap<color=Color2.green4>/pmelTaoDySst<color=Color2.cyan4>.html<br>&nbsp; <color=Color2.black>?<color=Color2.sky4>longitude,latitude,T_25,time<color=Color2.blue4>&amp;time=2011-08-10T12:00:00");
+create("text", "0.2, 4.7");
 
-setCharacters("You can request data via a specially formed URLs.");
-create("text", "0.2, 5.1");
+setCharacters("You can request data via a specially formed URL.");
+create("text", "0.2, 5.2");
 
 setCharacters("&bull;Data file types: .asc, .csv, .das,<br>&nbsp; .dds, .dods, .geoJson, .htmlTable,<br>&nbsp; .json, .mat, .nc, .ncHeader, .tsv,<br>&nbsp; .xhtml.");
-create("text", "0.2, 2.7");
+create("text", "0.2, 3.100000000000001");
 
 setCharacters("&bull;Image file types: .kml, .smallPdf,<br>&nbsp; .pdf, .largePdf, .smallPng, .png,<br>&nbsp; .largePng.");
-create("text", "0.2, 1.2000000000000002");
+create("text", "0.2, 1.600000000000001");
 
 setCharacters("&bull;Special file types: .html (Data Access Form), .graph (graphical form)");
-create("text", "0.2, 3.2");
+create("text", "0.2, 3.600000000000001");
 
 endOfFile();

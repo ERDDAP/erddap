@@ -65,7 +65,7 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
      * The constructor. See EDDTableFromDatabase for details.
      */
     public EDDTableFromPostDatabase(String tDatasetID, String tAccessibleTo, 
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
@@ -78,7 +78,8 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
         boolean tSourceNeedsExpandedFP_EQ
         ) throws Throwable {
 
-        super(tDatasetID, tAccessibleTo, tOnChange, tAddGlobalAttributes,
+        super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
+            tAddGlobalAttributes,
             tAltMetersPerSourceUnit, tDataVariables, tReloadEveryNMinutes,
             tDataSourceName,
             tLocalSourceUrl, tDriverName, tConnectionProperties,
@@ -149,7 +150,7 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
             int passwordColumn = table.findColumnNumber(EDStatic.PostPasswordColumnName);
             String notFoundIn = "\" not found in userTable=\"" + EDStatic.PostUserTableName + 
                 "\" in POST database:\n" +
-                table.getColumnNamesCSVString();
+                table.getColumnNamesCSSVString();
             if (nameColumn < 0)
                 throw new RuntimeException("nameColumnName=\"" + EDStatic.PostNameColumnName + notFoundIn);
             if (passwordColumn < 0)
@@ -215,7 +216,7 @@ else if (verbose) String2.log("name=" + name);
             int roleColumn = table.findColumnNumber(EDStatic.PostRoleColumnName);
             notFoundIn = "\" not found in roleTable=\"" + EDStatic.PostRoleTableName + 
                 "\" in POST database:\n" +
-                table.getColumnNamesCSVString();
+                table.getColumnNamesCSSVString();
             if (nameColumn < 0)
                 throw new RuntimeException("nameColumnName=\"" + EDStatic.PostNameColumnName + notFoundIn); 
             if (roleColumn < 0)
@@ -315,7 +316,7 @@ boolean addTestPostUser = false;
     }
 
     /** 
-     * This returns the name of the file in datasetInfoDir()
+     * This returns the name of the file in datasetDir()
      * which has all of the distinct data combinations for the current subsetVariables.
      * The file is deleted by setSubsetVariablesCSV(), which is called whenever
      * the dataset is reloaded.
@@ -331,7 +332,7 @@ boolean addTestPostUser = false;
     }
 
     /** 
-     * This returns the name of the file in datasetInfoDir()
+     * This returns the name of the file in datasetDir()
      * which has all of the distinct values for the current subsetVariables.
      * The file is deleted by setSubsetVariablesCSV(), which is called whenever
      * the dataset is reloaded.
@@ -385,7 +386,7 @@ boolean addTestPostUser = false;
 
         if (loggedInAs == null || !loggedInAs.equals(EDStatic.loggedInAsSuperuser)) {
             //ensure userDapQuery includes PostRoleColumnName and PostDatePublicColumnName
-            String parts[] = getUserQueryParts(userDapQuery); //always at least 1 part (may be "")
+            String parts[] = getUserQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
             if (parts[0].equals("") || parts[0].startsWith("&")) {
                 //all variables are already selected
             } else {
@@ -445,7 +446,7 @@ boolean addTestPostUser = false;
 
         String notFoundIn = "\" not found in roleTable=\"" + EDStatic.PostRoleTableName + 
             "\" in POST database:\n" +
-            table.getColumnNamesCSVString();
+            table.getColumnNamesCSSVString();
 
         //get the role column from the table if loggedInAs != null
         StringArray rolePa = null;
@@ -755,7 +756,7 @@ boolean addTestPostUser = false;
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Point\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"" + today + " (source database)\n" +
@@ -818,7 +819,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
 "In this dataset, for rows of data where the date_public is in the future, access to this data is restricted to users who are logged in and have the appropriate role.  Such data may only be used in accordance with the terms specified by the owner of the data. Contact the owner for details.\n" +
 "\n" +
 "In this dataset, for rows of data where the date_public is in the past, the data is publicly available and may be used freely; although for scientific papers, you must reference the source of the data.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String sourceUrl \"(source database)\";\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String summary \"This dataset has animal tagging surgery records from the Pacific Ocean \n" +
@@ -1120,7 +1121,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Point\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"" + today + " (source database)\n" +
@@ -1182,7 +1183,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet3.das\";\n" +
 "In this dataset, for rows of data where the date_public is in the future, access to this data is restricted to users who are logged in and have the appropriate role.  Such data may only be used in accordance with the terms specified by the owner of the data. Contact the owner for details.\n" +
 "\n" +
 "In this dataset, for rows of data where the date_public is in the past, the data is publicly available and may be used freely; although for scientific papers, you must reference the source of the data.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String sourceUrl \"(source database)\";\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String summary \"This dataset has tag detection records from the Pacific Ocean \n" +
@@ -1406,14 +1407,14 @@ String2.log("\n" + results.substring(0, 4000) + "\n");
             table = new Table();
             table.readFlatNc(dir + tName, null, 1);
             table.removeRows(5, Math.max(5, table.nRows()));
-            results = table.dataToCsvString();
+            results = table.dataToCSVString();
             expected = 
-"unique_tag_id, PI, longitude, latitude, time, activation_time, channel, code_label, comments, common_name, date_public, delay_max, delay_min, delay_start, delay_type, dna_sampled, est_tag_life, frequency, implant_type, project, provenance, role, scientific_name, stock, surgery_id, surgery_location, surgery_longitude, surgery_latitude, surgery_time, tag_id_code, tagger, treatment_type, water_temp\n" +
-"1000_A69-1204_1030201, DAVID WELCH, -121.0529, 49.8615, 1.1165265E9, 1.1152512E9, D, A69-1204, ADIPOSE FIN CLIPPED, COHO, 1.222730913E9, 90, 30, 0, RANDOM, 0, , , INTERNAL, KINTAMA RESEARCH, HATCHERY, WELCH_DAVID_ONCORHYNCHUS_KISUTCH_SPIUSCREEK, ONCORHYNCHUS KISUTCH, SPIUS CREEK, 1148, SPIUS CREEK HATCHERY, -121.0253, 50.1415, 1.116288E9, 1000, MELINDA JACOBS, NOT ENTERED, 7.5\n" +
-"1000_A69-1204_1032813, DAVID WELCH, -115.93472, 46.12972, 1.1471112E9, 1.1447136E9, D, A69-1204, VERY TIGHT FIT, CHINOOK, 1.222730938E9, 90, 30, 0, RANDOM, 0, 486.4, , INTERNAL, KINTAMA RESEARCH, HATCHERY, WELCH_DAVID_ONCORHYNCHUS_TSHAWYTSCHA_DWORSHAK, ONCORHYNCHUS TSHAWYTSCHA, DWORSHAK, 3808, KOOSKIA NATIONAL FISH HATCHERY, -115.93472, 46.12972, 1.1447136E9, 1000, ADRIAN LADOUCEUR, ROR, 12.9\n" +
-"1001_A69-1204_1030202, DAVID WELCH, -121.0529, 49.8615, 1.1165265E9, 1.1152512E9, D, A69-1204, \"ADDED 10 ML MS222, ADIPOSE FIN CLIPPED\", COHO, 1.222730913E9, 90, 30, 0, RANDOM, 0, , , INTERNAL, KINTAMA RESEARCH, HATCHERY, WELCH_DAVID_ONCORHYNCHUS_KISUTCH_SPIUSCREEK, ONCORHYNCHUS KISUTCH, SPIUS CREEK, 1149, SPIUS CREEK HATCHERY, -121.0253, 50.1415, 1.116288E9, 1001, MELINDA JACOBS, NOT ENTERED, 7.6\n" +
-"1001_A69-1204_1032814, DAVID WELCH, -115.93472, 46.12972, 1.1471112E9, 1.1447136E9, D, A69-1204, , CHINOOK, 1.222730938E9, 90, 30, 0, RANDOM, 0, 486.4, , INTERNAL, KINTAMA RESEARCH, HATCHERY, WELCH_DAVID_ONCORHYNCHUS_TSHAWYTSCHA_DWORSHAK, ONCORHYNCHUS TSHAWYTSCHA, DWORSHAK, 3809, KOOSKIA NATIONAL FISH HATCHERY, -115.93472, 46.12972, 1.1447136E9, 1001, ADRIAN LADOUCEUR, ROR, 12.8\n" +
-"1001_A69-1204_9174D, DAVID WELCH, -120.850361111111, 50.1459722222222, 1.0825668E9, 1.0816416E9, D, A69-1204, , CHINOOK, 1.222730904E9, 90, 30, 0, RANDOM, 0, , , INTERNAL, KINTAMA RESEARCH, HATCHERY, WELCH_DAVID_ONCORHYNCHUS_TSHAWYTSCHA_NICOLARIVER, ONCORHYNCHUS TSHAWYTSCHA, NICOLA RIVER, 152, SPIUS CREEK HATCHERY, -121.0253, 50.1415, 1.0818144E9, 1001, MELINDA JACOBS, NOT ENTERED, 7.1\n";
+"unique_tag_id,PI,longitude,latitude,time,activation_time,channel,code_label,comments,common_name,date_public,delay_max,delay_min,delay_start,delay_type,dna_sampled,est_tag_life,frequency,implant_type,project,provenance,role,scientific_name,stock,surgery_id,surgery_location,surgery_longitude,surgery_latitude,surgery_time,tag_id_code,tagger,treatment_type,water_temp\n" +
+"1000_A69-1204_1030201,DAVID WELCH,-121.0529,49.8615,1.1165265E9,1.1152512E9,D,A69-1204,ADIPOSE FIN CLIPPED,COHO,1.222730913E9,90,30,0,RANDOM,0,,,INTERNAL,KINTAMA RESEARCH,HATCHERY,WELCH_DAVID_ONCORHYNCHUS_KISUTCH_SPIUSCREEK,ONCORHYNCHUS KISUTCH,SPIUS CREEK,1148,SPIUS CREEK HATCHERY,-121.0253,50.1415,1.116288E9,1000,MELINDA JACOBS,NOT ENTERED,7.5\n" +
+"1000_A69-1204_1032813,DAVID WELCH,-115.93472,46.12972,1.1471112E9,1.1447136E9,D,A69-1204,VERY TIGHT FIT,CHINOOK,1.222730938E9,90,30,0,RANDOM,0,486.4,,INTERNAL,KINTAMA RESEARCH,HATCHERY,WELCH_DAVID_ONCORHYNCHUS_TSHAWYTSCHA_DWORSHAK,ONCORHYNCHUS TSHAWYTSCHA,DWORSHAK,3808,KOOSKIA NATIONAL FISH HATCHERY,-115.93472,46.12972,1.1447136E9,1000,ADRIAN LADOUCEUR,ROR,12.9\n" +
+"1001_A69-1204_1030202,DAVID WELCH,-121.0529,49.8615,1.1165265E9,1.1152512E9,D,A69-1204,\"ADDED 10 ML MS222,ADIPOSE FIN CLIPPED\",COHO,1.222730913E9,90,30,0,RANDOM,0,,,INTERNAL,KINTAMA RESEARCH,HATCHERY,WELCH_DAVID_ONCORHYNCHUS_KISUTCH_SPIUSCREEK,ONCORHYNCHUS KISUTCH,SPIUS CREEK,1149,SPIUS CREEK HATCHERY,-121.0253,50.1415,1.116288E9,1001,MELINDA JACOBS,NOT ENTERED,7.6\n" +
+"1001_A69-1204_1032814,DAVID WELCH,-115.93472,46.12972,1.1471112E9,1.1447136E9,D,A69-1204,,CHINOOK,1.222730938E9,90,30,0,RANDOM,0,486.4,,INTERNAL,KINTAMA RESEARCH,HATCHERY,WELCH_DAVID_ONCORHYNCHUS_TSHAWYTSCHA_DWORSHAK,ONCORHYNCHUS TSHAWYTSCHA,DWORSHAK,3809,KOOSKIA NATIONAL FISH HATCHERY,-115.93472,46.12972,1.1447136E9,1001,ADRIAN LADOUCEUR,ROR,12.8\n" +
+"1001_A69-1204_9174D,DAVID WELCH,-120.850361111111,50.1459722222222,1.0825668E9,1.0816416E9,D,A69-1204,,CHINOOK,1.222730904E9,90,30,0,RANDOM,0,,,INTERNAL,KINTAMA RESEARCH,HATCHERY,WELCH_DAVID_ONCORHYNCHUS_TSHAWYTSCHA_NICOLARIVER,ONCORHYNCHUS TSHAWYTSCHA,NICOLA RIVER,152,SPIUS CREEK HATCHERY,-121.0253,50.1415,1.0818144E9,1001,MELINDA JACOBS,NOT ENTERED,7.1\n";
 
             Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -1426,12 +1427,12 @@ String2.log("\n" + results.substring(0, 4000) + "\n");
                     dir, tedd.className() + "_ps3_tag" + tag, ".nc"); 
                 Table table2 = new Table();
                 table2.readFlatNc(dir + tName, null, 1);
-                results = table.dataToCsvString();
+                results = table.dataToCSVString();
 
                 Table table1 = (Table)table.clone();
                 table1.removeRows(0, tag);
                 table1.removeRows(tag + 1, table1.nRows());
-                expected = table.dataToCsvString();
+                expected = table.dataToCSVString();
 
                 Test.ensureEqual(results, expected, "tag=" + tag + " results=\n" + results);
             }

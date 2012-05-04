@@ -393,16 +393,10 @@ public class String2 {
      */
     public static int indexOf(int[] iArray, int i, int fromIndex) {
         int iArrayLength = iArray.length;
-        if (iArrayLength == 0)
-            return -1;
-
-        int index = Math.max(fromIndex, 0);
-        while (index < iArrayLength) {
+        for (int index = Math.max(fromIndex, 0); index < iArrayLength; index++) {
             if (iArray[index] == i) 
                 return index;
-            index++;
         }
-
         return -1;
     }
 
@@ -418,6 +412,53 @@ public class String2 {
     }
 
     /**
+     * Finds the first instance of c at or after fromIndex (0.. ) in cArray.
+     *
+     * @param cArray
+     * @param c the char you want to find
+     * @param fromIndex the index number of the position to start the search
+     * @return The first instance of c. If not found, it returns -1.
+     */
+    public static int indexOf(char[] cArray, char c, int fromIndex) {
+        int cArrayLength = cArray.length;
+        for (int index = Math.max(fromIndex, 0); index < cArrayLength; index++) {
+            if (cArray[index] == c) 
+                return index;
+        }
+        return -1;
+    }
+
+    /**
+     * Finds the first instance of c in cArray.
+     *
+     * @param cArray
+     * @param c the char you want to find
+     * @return The first instance of c. If not found, it returns -1.
+     */
+    public static int indexOf(char[] cArray, char c) {
+        return indexOf(cArray, c, 0);
+    }
+
+    /**
+     * This indexOf is a little different: it finds the first instance in s of any char in car.
+     *
+     * @param s a string 
+     * @param car the chars you want to find any of (perhaps from charListString.toCharArray())
+     * @param fromIndex the index number of the position to start the search
+     * @return The first instance in s of any char in car. If not found, it returns -1.
+     */
+    public static int indexOf(String s, char[] car, int fromIndex) {
+        int sLength = s.length();
+        for (int index = Math.max(fromIndex, 0); index < sLength; index++) {
+            if (indexOf(car, s.charAt(index)) >= 0)
+                return index;
+        }
+        return -1;
+    }
+    
+
+
+    /**
      * Finds the first instance of d at or after fromIndex (0.. ) in dArray
      * (tested with Math2.almostEqual5).
      *
@@ -428,16 +469,10 @@ public class String2 {
      */
     public static int indexOf(double[] dArray, double d, int fromIndex) {
         int dArrayLength = dArray.length;
-        if (dArrayLength == 0)
-            return -1;
-
-        int index = Math.max(fromIndex, 0);
-        while (index < dArrayLength) {
+        for (int index = Math.max(fromIndex, 0); index < dArrayLength; index++) {
             if (Math2.almostEqual(5, dArray[index], d)) 
                 return index;
-            index++;
         }
-
         return -1;
     }
 
@@ -452,6 +487,9 @@ public class String2 {
     public static int indexOf(double[] dArray, double d) {
         return indexOf(dArray, d, 0);
     }
+
+    /**
+     
 
     /**
      * This is a variant of readFromFile that uses the default character set 
@@ -571,7 +609,7 @@ public class String2 {
         }
 
         //return results
-        //String2.log("  String2.readFromFile " + fileName + " time=" + 
+        //log("  String2.readFromFile " + fileName + " time=" + 
         //    (System.currentTimeMillis() - time));
         return results;
     }
@@ -838,6 +876,17 @@ public class String2 {
         return false;
     }
 
+    /** Returns true if all of the characters in s are printable */
+    public static final boolean isPrintable(String s) {
+        if (s == null)
+            return false;
+        int sLength = s.length();
+        for (int i = 0; i < sLength; i++)
+            if (!isPrintable(s.charAt(i)))
+                return false;
+        return true;
+    }
+
     /**
      * This returns the string with all non-isPrintable characters removed.
      *
@@ -935,6 +984,28 @@ public class String2 {
         //(This isn't perfect, but it is probably good enough.)
         return email.matches("[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}");
     }
+
+    /**
+     * This indicates if 'url' is probably a valid url.
+     *
+     * @param url a possible url
+     * @return true if 'url' is a probably a valid url.
+     */
+    public static boolean isUrl(String url) {
+        if (!isPrintable(url) ||
+            url.length() == 0 ||
+            url.indexOf(' ') >= 0)
+            return false;
+        url = url.toLowerCase();
+        return 
+            url.startsWith("file://") ||
+            url.startsWith("ftp://") ||
+            url.startsWith("http://") ||
+            url.startsWith("https://") ||
+            url.startsWith("sftp://") ||
+            url.startsWith("smb://");
+    }
+
 
     /**
      * This indicates if s has just file-name-safe characters (0-9, A-Z, a-z, _, -, .).
@@ -1217,6 +1288,7 @@ public class String2 {
      * null is returned as null.
      *
      * @param s
+     * @return the JSON-encoded string surrounded by "'s.
      */
     public static String toJson(String s) {
         if (s == null)
@@ -1227,14 +1299,14 @@ public class String2 {
         int start = 0;
         for (int i = 0; i < sLength; i++) {
             char ch = s.charAt(i);
-            if (ch < 32) {
+            if (ch < 32 || ch > 255) {
                 sb.append(s.substring(start, i));  
                 start = i + 1;
                 if      (ch == '\f') sb.append("\\f");
                 else if (ch == '\n') sb.append("\\n");
                 else if (ch == '\r') sb.append("\\r");
                 else if (ch == '\t') sb.append("\\t");
-                //else lose it
+                else sb.append("\\u" + String2.zeroPad(Integer.toHexString(ch), 4)); 
             } else if (ch == '\\') {
                 sb.append(s.substring(start, i));  
                 start = i + 1;
@@ -1298,7 +1370,7 @@ public class String2 {
 
                         sb.append((char)Integer.parseInt(os, 8));
                     } catch (Exception e) {      
-                        String2.log("ERROR in fromJson: invalid escape sequence \\" + os);
+                        log("ERROR in fromJson: invalid escape sequence \\" + os);
                         //falls through
                     }
                     
@@ -1311,7 +1383,7 @@ public class String2 {
 
                         sb.append((char)Integer.parseInt(os, 16));
                     } catch (Exception e) {      
-                        String2.log("ERROR in fromJson: invalid escape sequence \\x" + os);
+                        log("ERROR in fromJson: invalid escape sequence \\x" + os);
                         //falls through
                     }
                     
@@ -1324,14 +1396,14 @@ public class String2 {
 
                         sb.append((char)Integer.parseInt(os, 16));
                     } catch (Exception e) {      
-                        String2.log("ERROR in fromJson: invalid escape sequence \\u" + os);
+                        log("ERROR in fromJson: invalid escape sequence \\u" + os);
                         //falls through
                     }                    
                    
                 } else { 
                     //this shouldn't happen, but be forgiving
                     //before 2009-02-27, this tossed the \    is this the best solution?
-                    String2.log("ERROR in fromJson: invalid escape sequence \\" + ch);
+                    log("ERROR in fromJson: invalid escape sequence \\" + ch);
                     sb.append('\\'); 
                     sb.append(ch); 
                 } 
@@ -1452,27 +1524,29 @@ public class String2 {
     }
 
     /**
-     * Generates a comma-separated-value string.  
+     * Generates a Comma-Space-Separated-Value (CSSV) string.  
      * <p>WARNING: This does not have a sychronized block: if your enumeration
      *   needs thread-safety, wrap this call in somthing like 
      *   <tt>synchronized (enum) {String2.toArrayList(enum); }</tt>.
      * <p>CHANGED: before 2011-03-06, this didn't do anything special for 
      *   strings with internal commas or quotes. Now it uses toJson for that string.
+     * <p>CHANGED: before 2011-09-04, this was called toCSVString.
      *
      * @param en an enumeration of objects
-     * @return a CSV String with the values with ", " after
+     * @return a CSSV String with the values with ", " after
      *    all but the last value.
      *    Returns null if ar is null.
      *    null elements are represented as "[null]".
      */
-    public static String toCSVString(Enumeration en) {
+    public static String toCSSVString(Enumeration en) {
         return toSVString(toArrayList(en).toArray(), ", ", false);
     }
 
     /**
-     * Generates a comma-separated-value string.  
+     * Generates a Comma-Space-Separated-Value (CSSV) string.  
      * <p>CHANGED: before 2011-03-06, this didn't do anything special for 
      *   strings with internal commas or quotes. Now it uses toJson for that string.
+     * <p>CHANGED: before 2011-09-04, this was called toCSVString.
      *
      * @param al an arrayList of objects
      * @return a CSV String with the values with ", " after
@@ -1480,37 +1554,38 @@ public class String2 {
      *    Returns null if ar is null.
      *    null elements are represented as "[null]".
      */
-    public static String toCSVString(ArrayList al) {
+    public static String toCSSVString(ArrayList al) {
         return toSVString(al.toArray(), ", ", false);
     }
 
     /**
-     * Generates a comma-separated-value string.  
+     * Generates a Comma-Space-Separated-Value (CSSV) string.  
      * <p>CHANGED: before 2011-03-06, this didn't do anything special for 
      *   strings with internal commas or quotes. Now it uses toJson for that string.
      *
      * @param v a vector of objects
-     * @return a CSV String with the values with ", " after
+     * @return a CSSV String with the values with ", " after
      *    all but the last value.
      *    Returns null if ar is null.
      *    null elements are represented as "[null]".
      */
-    public static String toCSVString(Vector v) {
+    public static String toCSSVString(Vector v) {
         return toSVString(v.toArray(), ", ", false);
     }
 
     /**
-     * Generates a comma-separated-value string.  
+     * Generates a Comma-Space-Separated-Value (CSSV) string.  
      * <p>CHANGED: before 2011-03-06, this didn't do anything special for 
      *   strings with internal commas or quotes. Now it uses toJson for that string.
+     * <p>CHANGED: before 2011-09-04, this was called toCSVString.
      *
      * @param ar an array of objects
-     * @return a CSV String with the values with ", " after
+     * @return a CSSV String with the values with ", " after
      *    all but the last value.
      *    Returns null if ar is null.
      *    null elements are represented as "[null]".
      */
-    public static String toCSVString(Object ar[]) {
+    public static String toCSSVString(Object ar[]) {
         return toSVString(ar, ", ", false);
     }
 
@@ -1602,12 +1677,13 @@ public class String2 {
     }
 
     /**
-     * This generates a CSV String from the array.
+     * This generates a Comma-Space-Separated-Value (CSSV) String from the array.
+     * <p>CHANGED: before 2011-09-04, this was called toCSVString.
      *
      * @param ar an array of boolean
-     * @return a CSV String (or null if ar is null)
+     * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSVString(boolean ar[]) {
+    public static String toCSSVString(boolean ar[]) {
         if (ar == null) 
             return null;
         int n = ar.length;
@@ -1622,12 +1698,13 @@ public class String2 {
     }
 
     /**
-     * This generates a CSV String from the array.
+     * This generates a Comma-Space-Separated-Value (CSSV) String from the array.
+     * <p>CHANGED: before 2011-09-04, this was called toCSVString.
      *
      * @param ar an array of bytes
-     * @return a CSV String (or null if ar is null)
+     * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSVString(byte ar[]) {
+    public static String toCSSVString(byte ar[]) {
         if (ar == null) 
             return null;
         int n = ar.length;
@@ -1642,13 +1719,14 @@ public class String2 {
     }
 
     /**
-     * This generates a CSV String from the array.
+     * This generates a Comma-Space-Separated-Value (CSSV) String from the array.
      * (chars are treated as unsigned shorts).
+     * <p>CHANGED: before 2011-09-04, this was called toCSVString.
      *
      * @param ar an array of char
-     * @return a CSV String (or null if ar is null)
+     * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSVString(char ar[]) {
+    public static String toCSSVString(char ar[]) {
         if (ar == null) 
             return null;
         int n = ar.length;
@@ -1663,13 +1741,14 @@ public class String2 {
     }
 
     /**
-     * This generates a hexadecimal CSV String from the array.
+     * This generates a hexadecimal Comma-Space-Separated-Value (CSSV) String from the array.
      * Negative numbers are twos compliment, e.g., -4 -> 0xfc.
+     * <p>CHANGED: before 2011-09-04, this was called toHexCSVString.
      *
      * @param ar an array of bytes
-     * @return a CSV String (or null if ar is null)
+     * @return a CSSV String (or null if ar is null)
      */
-    public static String toHexCSVString(byte ar[]) {
+    public static String toHexCSSVString(byte ar[]) {
         if (ar == null) 
             return null;
         int n = ar.length;
@@ -1687,12 +1766,13 @@ public class String2 {
     }
 
     /**
-     * This generates a CSV String from the array.
+     * This generates a Comma-Space-Separated-Value (CSSV) String from the array.
+     * <p>CHANGED: before 2011-09-04, this was called toCSVString.
      *
      * @param ar an array of shorts
-     * @return a CSV String (or null if ar is null)
+     * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSVString(short ar[]) {
+    public static String toCSSVString(short ar[]) {
         if (ar == null) 
             return null;
         int n = ar.length;
@@ -1707,13 +1787,14 @@ public class String2 {
     }
 
     /**
-     * This generates a hexadecimal CSV String from the array.
+     * This generates a hexadecimal Comma-Space-Separated-Value (CSSV) String from the array.
      * Negative numbers are twos compliment, e.g., -4 -> 0xfffc.
+     * <p>CHANGED: before 2011-09-04, this was called toHexCSVString.
      *
      * @param ar an array of short
-     * @return a CSV String (or null if ar is null)
+     * @return a CSSV String (or null if ar is null)
      */
-    public static String toHexCSVString(short ar[]) {
+    public static String toHexCSSVString(short ar[]) {
         if (ar == null) 
             return null;
         int n = ar.length;
@@ -1731,12 +1812,13 @@ public class String2 {
     }
 
     /**
-     * This generates a CSV String from the array.
+     * This generates a Comma-Space-Separated-Value (CSSV) String from the array.
+     * <p>CHANGED: before 2011-09-04, this was called toCSVString.
      *
      * @param ar an array of ints
-     * @return a CSV String (or null if ar is null)
+     * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSVString(int ar[]) {
+    public static String toCSSVString(int ar[]) {
         if (ar == null) 
             return null;
         int n = ar.length;
@@ -1751,13 +1833,14 @@ public class String2 {
     }
 
     /**
-     * This generates a hexadecimal CSV String from the array.
+     * This generates a hexadecimal Comma-Space-Separated-Value (CSSV) String from the array.
      * Negative numbers are twos compliment, e.g., -4 -> 0xfffffffc.
+     * <p>CHANGED: before 2011-09-04, this was called toHexCSVString.
      *
      * @param ar an array of ints
-     * @return a CSV String (or null if ar is null)
+     * @return a CSSV String (or null if ar is null)
      */
-    public static String toHexCSVString(int ar[]) {
+    public static String toHexCSSVString(int ar[]) {
         if (ar == null) 
             return null;
         int n = ar.length;
@@ -1772,12 +1855,13 @@ public class String2 {
     }
 
     /**
-     * This generates a CSV String from the array.
+     * This generates a Comma-Space-Separated-Value (CSSV) String from the array.
+     * <p>CHANGED: before 2011-09-04, this was called toCSVString.
      *
      * @param ar an array of longs
-     * @return a CSV String (or null if ar is null)
+     * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSVString(long ar[]) {
+    public static String toCSSVString(long ar[]) {
         if (ar == null) 
             return null;
         int n = ar.length;
@@ -1792,12 +1876,13 @@ public class String2 {
     }
 
     /**
-     * This generates a CSV String from the array.
+     * This generates a Comma-Space-Separated-Value (CSSV) String from the array.
+     * <p>CHANGED: before 2011-09-04, this was called toCSVString.
      *
      * @param ar an array of float
-     * @return a CSV String (or null if ar is null)
+     * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSVString(float ar[]) {
+    public static String toCSSVString(float ar[]) {
         if (ar == null) 
             return null;
         int n = ar.length;
@@ -1812,12 +1897,13 @@ public class String2 {
     }
 
     /**
-     * This generates a CSV String from the array.
+     * This generates a Comma-Space-Separated-Value (CSSV) String from the array.
+     * <p>CHANGED: before 2011-09-04, this was called toCSVString.
      *
      * @param ar an array of double
-     * @return a CSV String (or null if ar is null)
+     * @return a CSSV String (or null if ar is null)
      */
-    public static String toCSVString(double ar[]) {
+    public static String toCSSVString(double ar[]) {
         if (ar == null) 
             return null;
         int n = ar.length;
@@ -1926,10 +2012,11 @@ public class String2 {
 
     /**
      * This displays the contents of a map as a String.
+     * See also StringArray(Map)
      *
      * @param map  if it needs to be thread-safe, use ConcurrentHashMap
      * @return the corresponding String, with one entry on each line 
-     *    (<key> = <value>)
+     *    (<key> = <value>) sorted (case insensitive) by key
      */
     public static String toString(Map map) {
         if (map == null)
@@ -1964,7 +2051,7 @@ public class String2 {
             sb.append("    ");
             sb.append(arrayList.get(i).toString());
             sb.append('=');
-            sb.append(arrayToCSVString(arrayList.get(i+1)));
+            sb.append(arrayToCSSVString(arrayList.get(i+1)));
             sb.append('\n');
         }
         return sb.toString();
@@ -2055,18 +2142,19 @@ public class String2 {
     /**
      * This returns a nice String representation of the attribute value
      * (which should be a String or an array of primitives).
+     * <p>CHANGED: before 2011-09-04, this was called toCSVString.
      *
      * @param value
      * @return a nice String representation
      */
-    public static String arrayToCSVString(Object value) {
-        if (value instanceof byte[])   return toCSVString((byte[])value);
-        if (value instanceof char[])   return toCSVString((char[])value);
-        if (value instanceof short[])  return toCSVString((short[])value);
-        if (value instanceof int[])    return toCSVString((int[])value);
-        if (value instanceof long[])   return toCSVString((long[])value);
-        if (value instanceof float[])  return toCSVString((float[])value);
-        if (value instanceof double[]) return toCSVString((double[])value);
+    public static String arrayToCSSVString(Object value) {
+        if (value instanceof byte[])   return toCSSVString((byte[])value);
+        if (value instanceof char[])   return toCSSVString((char[])value);
+        if (value instanceof short[])  return toCSSVString((short[])value);
+        if (value instanceof int[])    return toCSSVString((int[])value);
+        if (value instanceof long[])   return toCSSVString((long[])value);
+        if (value instanceof float[])  return toCSSVString((float[])value);
+        if (value instanceof double[]) return toCSSVString((double[])value);
         return value.toString();
     }
 
@@ -3229,7 +3317,7 @@ public class String2 {
 
 
     /**
-     * If lines in s are >=maxLength characters, this inserts "\n"+spaces at the
+     * If lines in s are &gt;=maxLength characters, this inserts "\n"+spaces at the
      * previous non-DigitLetter + DigitLetter; or if none, this inserts "\n"+spaces at maxLength.
      * Useful keywords for searching for this method: longer, longest, noLongerThan.
      *
@@ -3625,6 +3713,40 @@ public class String2 {
         while (po > 0 && isWhite(sb.charAt(po - 1))) po--;
         sb.delete(po, sb.length());
         return sb;
+    }
+
+    /**
+     * This trims just the start of the string.
+     * 
+     * @param s
+     * @return s with just the start of the string trim'd.
+     *    If s == null, this returns null.
+     */
+    public static String trimStart(String s) {
+        if (s == null)
+            return s;
+        int sLength = s.length();
+        int po = 0;
+        while (po < sLength && String2.isWhite(s.charAt(po))) 
+            po++;
+        return po > 0? s.substring(po) : s;
+    }
+
+    /**
+     * This trims just the end of the string.
+     * 
+     * @param s
+     * @return s with just the end of the string trim'd.
+     *    If s == null, this returns null.
+     */
+    public static String trimEnd(String s) {
+        if (s == null)
+            return s;
+        int sLength = s.length();
+        int po = sLength;
+        while (po > 0 && String2.isWhite(s.charAt(po - 1))) 
+            po--;
+        return po < sLength? s.substring(0, po) : s;
     }
 
     /**
@@ -4147,7 +4269,7 @@ public class String2 {
      * <br>See posix fully portable file names at http://en.wikipedia.org/wiki/Filename .
      * <br>When the encoding is more than 25 characters, this stops encoding and 
      *   adds "xh" and the hash code for the entire original string,
-     *   so the result will always be less than ~40 characters.
+     *   so the result will always be less than ~41 characters.
      *
      * <p>THIS WON'T BE CHANGED. FILE NAMES CREATED FOR EDDGridCopy and EDDTableCopy 
      *  DEPEND ON SAME ENCODING OVER TIME.
@@ -4172,6 +4294,54 @@ public class String2 {
             char ch = s.charAt(i);
 
             if (ch != 'x' && String2.isFileNameSafe(ch)) {
+                sb.append(ch);
+            } else if (ch <= 255) {
+                sb.append("x" + String2.zeroPad(Integer.toHexString(ch), 2));
+            } else {
+                sb.append("xx" + String2.zeroPad(Integer.toHexString(ch), 4));
+            }
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * This is like encodeFileNameSafe, but further restricts the name to
+     * <ul>
+     * <li>first character must be A-Z, a-z, _.
+     * <li>subsequent characters must be A-Z, a-z, _, 0-9.
+     * <ul>
+     * <br>'x' and non-safe characters are CONVERTED to 'x' plus their 
+     *   2 lowercase hexadecimalDigit number or "xx" + their 4 hexadecimalDigit number.
+     * <br>See posix fully portable file names at http://en.wikipedia.org/wiki/Filename .
+     * <br>When the encoding is more than 25 characters, this stops encoding and 
+     *   adds "xh" and the hash code for the entire original string,
+     *   so the result will always be less than ~41 characters.
+     *
+     * <p>THIS WON'T BE CHANGED. FILE NAMES CREATED FOR EDDGridFromFile and EDDTableFromFile 
+     *  DEPEND ON SAME ENCODING OVER TIME.
+     *
+     * @param s  
+     * @return s with all of the non-variableNameSafe characters changed.
+     *    <br>If s is null, this returns "x_1".
+     *    <br>If s is "", this returns "x_0".
+     */
+    public static String encodeVariableNameSafe(String s) {
+        if (s == null)
+            return "x_1";
+        int n = s.length();
+        if (n == 0)
+            return "x_0";
+        StringBuilder sb = new StringBuilder(n / 3 * 4);
+        for (int i = 0; i < n; i++) {
+            if (sb.length() >= 25) {
+                sb.append("xh" + md5Hex12(s)); //was Math2.reduceHashCode(s.hashCode()));
+                break;
+            }
+            char ch = s.charAt(i);
+
+            if (ch != 'x' && String2.isFileNameSafe(ch) && ch != '-' && ch != '.' &&
+                (i > 0 || ((ch >= 'A' && ch <= 'Z') || (ch >='a' && ch <='z') || (ch == '_')))) {
                 sb.append(ch);
             } else if (ch <= 255) {
                 sb.append("x" + String2.zeroPad(Integer.toHexString(ch), 2));

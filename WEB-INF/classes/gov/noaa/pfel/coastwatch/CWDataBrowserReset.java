@@ -105,10 +105,10 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
             dataSetOptions.length != dataSetRegexs.length;
         if (verbose || trouble) {
             runInfo.append("baseDataDirectory: " + baseDataDirectory + "\n");
-            runInfo.append("dataSetOptions: " + String2.toCSVString(dataSetOptions) + "\n");
+            runInfo.append("dataSetOptions: " + String2.toCSSVString(dataSetOptions) + "\n");
             runInfo.append("dataSetTitles: " + String2.toNewlineString(dataSetTitles) + "\n");
-            runInfo.append("dataSetDirectories: " + String2.toCSVString(dataSetDirectories) + "\n");
-            runInfo.append("dataSetRegexs: " + String2.toCSVString(dataSetRegexs) + "\n");
+            runInfo.append("dataSetDirectories: " + String2.toCSSVString(dataSetDirectories) + "\n");
+            runInfo.append("dataSetRegexs: " + String2.toCSSVString(dataSetRegexs) + "\n");
             if (trouble) 
                 throw new RuntimeException(ERROR + ": CWDataBrowser.reset " +
                     "nDataSetOptions " + dataSetOptions.length + 
@@ -127,9 +127,9 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
             regionOptions.length != regionRegexs.length ||
             regionOptions.length != regionCoordinates.length;
         if (verbose || trouble) {
-            runInfo.append("regionOptions: " + String2.toCSVString(regionOptions) + "\n");
+            runInfo.append("regionOptions: " + String2.toCSSVString(regionOptions) + "\n");
             runInfo.append("regionTitles: " + String2.toNewlineString(regionTitles) + "\n");
-            runInfo.append("regionRegexs: " + String2.toCSVString(regionRegexs) + "\n");
+            runInfo.append("regionRegexs: " + String2.toCSSVString(regionRegexs) + "\n");
             if (trouble) 
                 throw new RuntimeException(ERROR + ": CWDataBrowser.reset " +
                     "nRegionOptions " + regionOptions.length + 
@@ -147,9 +147,9 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
             timePeriodOptions.length != (timePeriodTitles.length-1) || //1 extra title (main)
             timePeriodOptions.length != timePeriodDirectories.length;
         if (verbose || trouble) {
-            runInfo.append("timePeriodOptions: " + String2.toCSVString(timePeriodOptions) + "\n");
+            runInfo.append("timePeriodOptions: " + String2.toCSSVString(timePeriodOptions) + "\n");
             runInfo.append("timePeriodTitles: " + String2.toNewlineString(timePeriodTitles) + "\n");
-            runInfo.append("timePeriodDirectories: " + String2.toCSVString(timePeriodDirectories) + "\n");
+            runInfo.append("timePeriodDirectories: " + String2.toCSSVString(timePeriodDirectories) + "\n");
             if (trouble) 
                 throw new RuntimeException(ERROR + ": CWDataBrowser.reset " +
                     "nTimePeriodOptions " + timePeriodOptions.length + 
@@ -170,10 +170,10 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
             getOptions.length != getRegexs.length ||
             getOptions.length != getExtensions.length;
         if (verbose || trouble) {
-            runInfo.append("getOptions: " + String2.toCSVString(getOptions) + "\n");
-            runInfo.append("getDirectories: " + String2.toCSVString(getDirectories) + "\n");
-            runInfo.append("getExtensions: " + String2.toCSVString(getExtensions) + "\n");
-            runInfo.append("getRegexs: " + String2.toCSVString(getRegexs) + "\n");
+            runInfo.append("getOptions: " + String2.toCSSVString(getOptions) + "\n");
+            runInfo.append("getDirectories: " + String2.toCSSVString(getDirectories) + "\n");
+            runInfo.append("getExtensions: " + String2.toCSSVString(getExtensions) + "\n");
+            runInfo.append("getRegexs: " + String2.toCSSVString(getRegexs) + "\n");
             if (trouble) 
                 throw new RuntimeException(ERROR + ": CWDataBrowser.reset \n" +
                     "nGetOptions " + getOptions.length + 

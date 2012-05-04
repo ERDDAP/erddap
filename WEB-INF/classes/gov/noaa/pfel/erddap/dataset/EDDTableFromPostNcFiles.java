@@ -58,15 +58,21 @@ public class EDDTableFromPostNcFiles extends EDDTableFromNcFiles {
      *
      * <p>After construction, EDDTableCopyPost will call setSourceEdd
      *
+     * <p>The sortedColumnSourceName can't be for a char/String variable
+     *   because NcHelper binary searches are currently set up for numeric vars only.
+     *
      * @param tAccessibleTo is a comma separated list of 0 or more
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * <p>The sortedColumnSourceName can't be for a char/String variable
-     *   because NcHelper binary searches are currently set up for numeric vars only.
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      */
     public EDDTableFromPostNcFiles(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
@@ -79,7 +85,7 @@ public class EDDTableFromPostNcFiles extends EDDTableFromNcFiles {
         boolean tSourceNeedsExpandedFP_EQ) 
         throws Throwable {
 
-        super(tDatasetID, tAccessibleTo, tOnChange, 
+        super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
             tAddGlobalAttributes, tAltMetersPerSourceUnit, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
@@ -121,7 +127,7 @@ public class EDDTableFromPostNcFiles extends EDDTableFromNcFiles {
     }
 
     /** 
-     * This returns the name of the file in datasetInfoDir()
+     * This returns the name of the file in datasetDir()
      * which has all of the distinct data combinations for the current subsetVariables.
      * The file is deleted by setSubsetVariablesCSV(), which is called whenever
      * the dataset is reloaded.
@@ -137,7 +143,7 @@ public class EDDTableFromPostNcFiles extends EDDTableFromNcFiles {
     }
 
     /** 
-     * This returns the name of the file in datasetInfoDir()
+     * This returns the name of the file in datasetDir()
      * which has all of the distinct values for the current subsetVariables.
      * The file is deleted by setSubsetVariablesCSV(), which is called whenever
      * the dataset is reloaded.

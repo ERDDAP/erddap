@@ -1055,10 +1055,28 @@ public class TestUtil {
 
         String2.log(results +
             "So it seems close to the number of characters printed with newline taking longer.\n" +
-            "And there is a penalty for longer strings!");
+            "And there is a penalty for longer strings!\n" +
+            "NOTE: this is for log to file and screen. I think screen is very slow and blocks.\n" +
+            "Because file write times are very fast (see testWriteToFileSpeed()).");
     }
 
 
+    /**
+     * Test String2LogOutputStream.
+     */
+    public static void testString2LogOutputStream() throws Exception {
+        String2.log("***************************************** testString2LogOutputStream");
+
+        String2LogOutputStream out = new String2LogOutputStream();
+        out.write('a');
+        out.write(new byte[]{(byte)'b', (byte)'c', (byte)13, (byte)10, (byte)'a'});
+        out.write(new byte[]{(byte)'b', (byte)'c', (byte)13, (byte)10, (byte)'a'});
+        out.close();
+        String2.log("It should have just logged \"abc\" twice.");
+    }
+        
+
+    
     /**
      * Test the methods in String2.
      */
@@ -1150,7 +1168,7 @@ public class TestUtil {
             "getStringFromSystemIn: Enter a string (it will be echoed): ");
         String2.log("You entered: " + s);
         Math2.incgc(3000);
-        
+
         //binaryFindLastLE
         String tsar[] = {"abc", "bcd", "bcj"};
         String dupSar[] = {"ac", "bc", "bc", "bc", "bc", "bc", "cc"};
@@ -1247,8 +1265,8 @@ public class TestUtil {
 
         //toJson
         String2.log("test toJson");
-        String a = "\\ \f\n\r\t\" zÿ";
-        String b = "\"\\\\ \\f\\n\\r\\t\\\" zÿ\"";
+        String a = "\\ \f\n\r\t\" z\u0000\uffffÿ";
+        String b = "\"\\\\ \\f\\n\\r\\t\\\" z\\u0000\\uffffÿ\"";
         Test.ensureEqual(String2.toJson(a),   b, "");
         Test.ensureEqual(String2.fromJson(b), a, "");
         Test.ensureEqual(String2.fromJson("\\?\\'"), "?'", "");
@@ -1282,8 +1300,8 @@ public class TestUtil {
         regex = "url=\".+?\"";
         sar = String2.extractAllRegexes(
             "junk url=\"first\"  curl=\"second\" junk", regex);
-        Test.ensureEqual(String2.toCSVString(sar), 
-            "\"url=\\\"first\\\"\", \"url=\\\"second\\\"\"", "sar=" + String2.toCSVString(sar));
+        Test.ensureEqual(String2.toCSSVString(sar), 
+            "\"url=\\\"first\\\"\", \"url=\\\"second\\\"\"", "sar=" + String2.toCSSVString(sar));
 
         //indexOfIgnoreCase(s)
         String2.log("test indexOfIgnoreCase(s)");
@@ -1317,6 +1335,17 @@ public class TestUtil {
         Test.ensureEqual(String2.indexOf(iar, 6, -1),  0, "f");
         Test.ensureEqual(String2.indexOf(iar, 4,  3), -1, "g");
 
+        //indexOf(char[])
+        String2.log("test indexOf(char[])");
+        char[] car = new char[]{'c', 'b', 'a'};
+        Test.ensureEqual(String2.indexOf(car, 'c',  0),  0, "a");
+        Test.ensureEqual(String2.indexOf(car, 'b',  0),  1, "b");
+        Test.ensureEqual(String2.indexOf(car, 'a',  0),  2, "c");
+        Test.ensureEqual(String2.indexOf(car, 'c',  1), -1, "d");
+        Test.ensureEqual(String2.indexOf(car, 'b',  1),  1, "e");
+        Test.ensureEqual(String2.indexOf(car, 'c', -1),  0, "f");
+        Test.ensureEqual(String2.indexOf(car, 'a',  3), -1, "g");
+
         //indexOf(double[])
         String2.log("test indexOf(double[])");
         dar = new double[]{6, 5.1, 4};
@@ -1327,6 +1356,21 @@ public class TestUtil {
         Test.ensureEqual(String2.indexOf(dar, 5.1,  1),  1, "e");
         Test.ensureEqual(String2.indexOf(dar, 6,   -1),  0, "f");
         Test.ensureEqual(String2.indexOf(dar, 4,    3), -1, "g");
+
+        //indexOf(s, char[])
+        String2.log("test indexOf(s, char[])");
+        car = new char[]{'c', 'b', 'a'};
+        Test.ensureEqual(String2.indexOf("czz", car,  0),  0, "a");
+        Test.ensureEqual(String2.indexOf("zcz", car,  0),  1, "b");
+        Test.ensureEqual(String2.indexOf("zzc", car,  0),  2, "c");
+        Test.ensureEqual(String2.indexOf("azz", car,  0),  0, "a");
+        Test.ensureEqual(String2.indexOf("zaz", car,  0),  1, "b");
+        Test.ensureEqual(String2.indexOf("zza", car,  0),  2, "c");
+
+        Test.ensureEqual(String2.indexOf("czz", car,  1), -1, "d");
+        Test.ensureEqual(String2.indexOf("aaz", car,  1),  1, "e");
+        Test.ensureEqual(String2.indexOf("abc", car, -1),  0, "f");
+        Test.ensureEqual(String2.indexOf("abc", car,  3), -1, "g");
 
         //writeToFile
         String2.log("test writeToFile");
@@ -1490,6 +1534,7 @@ public class TestUtil {
         Test.ensureTrue(!String2.isEmailAddress("john@smith@company.com"), "");
         Test.ensureTrue(!String2.isEmailAddress("@company.com"), "");
         Test.ensureTrue(!String2.isEmailAddress("john.smith@.com"), "");
+        Test.ensureTrue(!String2.isEmailAddress("john smith@.com"), "");
         Test.ensureTrue(!String2.isEmailAddress("john.smith@"), "");
 
         //replaceAll
@@ -1557,13 +1602,13 @@ public class TestUtil {
 
         //toCSVString
         String2.log("test toCSVString");
-        Test.ensureEqual(String2.toCSVString(new String[]{}), "", "a");
-        Test.ensureEqual(String2.toCSVString(new String[]{"a", null, "ccc"}), "a, [null], ccc", "b");
+        Test.ensureEqual(String2.toCSSVString(new String[]{}), "", "a");
+        Test.ensureEqual(String2.toCSSVString(new String[]{"a", null, "ccc"}), "a, [null], ccc", "b");
         ArrayList al = new ArrayList(); //this is also used in the next few tests
         al.add("1");
         al.add(null);
         al.add("333");
-        Test.ensureEqual(String2.toCSVString(al.toArray()), "1, [null], 333", "c");
+        Test.ensureEqual(String2.toCSSVString(al.toArray()), "1, [null], 333", "c");
         
         //toSSVString
         String2.log("test toSSVString");
@@ -1586,43 +1631,43 @@ public class TestUtil {
         
         //toCSVString(byte[])
         String2.log("test toCSVString(byte[])");
-        Test.ensureEqual(String2.toCSVString(new byte[]{}), "", "a");
-        Test.ensureEqual(String2.toCSVString(new byte[]{1, 55, -4}), "1, 55, -4", "b");
+        Test.ensureEqual(String2.toCSSVString(new byte[]{}), "", "a");
+        Test.ensureEqual(String2.toCSSVString(new byte[]{1, 55, -4}), "1, 55, -4", "b");
 
         //toHexCSVString(short[])
         String2.log("test toHexCSVString(byte[])");
-        Test.ensureEqual(String2.toHexCSVString(new byte[]{}), "", "a");
-        Test.ensureEqual(String2.toHexCSVString(new byte[]{15, 60, -4}), "0xf, 0x3c, 0xfc", "b");
+        Test.ensureEqual(String2.toHexCSSVString(new byte[]{}), "", "a");
+        Test.ensureEqual(String2.toHexCSSVString(new byte[]{15, 60, -4}), "0xf, 0x3c, 0xfc", "b");
 
         //toCSVString(short[])
         String2.log("test toCSVString(short[])");
-        Test.ensureEqual(String2.toCSVString(new short[]{}), "", "a");
-        Test.ensureEqual(String2.toCSVString(new short[]{1, 55, -4}), "1, 55, -4", "b");
+        Test.ensureEqual(String2.toCSSVString(new short[]{}), "", "a");
+        Test.ensureEqual(String2.toCSSVString(new short[]{1, 55, -4}), "1, 55, -4", "b");
 
         //toHexCSVString(short[])
         String2.log("test toHexCSVString(short[])");
-        Test.ensureEqual(String2.toHexCSVString(new short[]{}), "", "a");
-        Test.ensureEqual(String2.toHexCSVString(new short[]{15, 60, -4}), "0xf, 0x3c, 0xfffc", "b");
+        Test.ensureEqual(String2.toHexCSSVString(new short[]{}), "", "a");
+        Test.ensureEqual(String2.toHexCSSVString(new short[]{15, 60, -4}), "0xf, 0x3c, 0xfffc", "b");
 
         //toCSVString(int[])
         String2.log("test toCSVString(int[])");
-        Test.ensureEqual(String2.toCSVString(new int[]{}), "", "a");
-        Test.ensureEqual(String2.toCSVString(new int[]{1, 55, -4}), "1, 55, -4", "b");
+        Test.ensureEqual(String2.toCSSVString(new int[]{}), "", "a");
+        Test.ensureEqual(String2.toCSSVString(new int[]{1, 55, -4}), "1, 55, -4", "b");
 
         //toHexCSVString(int[])
         String2.log("test toHexCSVString(int[])");
-        Test.ensureEqual(String2.toHexCSVString(new int[]{}), "", "a");
-        Test.ensureEqual(String2.toHexCSVString(new int[]{15, 60, -4}), "0xf, 0x3c, 0xfffffffc", "b");
+        Test.ensureEqual(String2.toHexCSSVString(new int[]{}), "", "a");
+        Test.ensureEqual(String2.toHexCSSVString(new int[]{15, 60, -4}), "0xf, 0x3c, 0xfffffffc", "b");
 
         //toCSVString(float[])
         String2.log("test toCSVString(float[])");
-        Test.ensureEqual(String2.toCSVString(new float[]{}), "", "a");
-        Test.ensureEqual(String2.toCSVString(new float[]{1f, 55.5f, -4.4f}), "1.0, 55.5, -4.4", "b");
+        Test.ensureEqual(String2.toCSSVString(new float[]{}), "", "a");
+        Test.ensureEqual(String2.toCSSVString(new float[]{1f, 55.5f, -4.4f}), "1.0, 55.5, -4.4", "b");
 
         //toCSVString(double[])
         String2.log("test toCSVString(double[])");
-        Test.ensureEqual(String2.toCSVString(new double[]{}), "", "a");
-        Test.ensureEqual(String2.toCSVString(new double[]{1, 55.5, -4.4}), "1.0, 55.5, -4.4", "b");
+        Test.ensureEqual(String2.toCSSVString(new double[]{}), "", "a");
+        Test.ensureEqual(String2.toCSSVString(new double[]{1, 55.5, -4.4}), "1.0, 55.5, -4.4", "b");
 
         //toNewlineString(int[])
         String2.log("test toNewlineString(int[])");
@@ -1653,14 +1698,14 @@ public class TestUtil {
         //toByteArray(s)
         String2.log("test toByteArray(s)");
         s = "ABCDEFGHIJKLMNOPÀÁÂ";
-        Test.ensureEqual(String2.toCSVString(String2.toByteArray(s)),
+        Test.ensureEqual(String2.toCSSVString(String2.toByteArray(s)),
             "65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, -64, -63, -62",
             "a");
 
         //toByteArray(sb)
         String2.log("test toByteArray(s)");
         sb = new StringBuilder("ABCDEFGHIJKLMNOPÀÁÂ");
-        Test.ensureEqual(String2.toCSVString(String2.toByteArray(sb)),
+        Test.ensureEqual(String2.toCSSVString(String2.toByteArray(sb)),
             "65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, -64, -63, -62",
             "a");
 
@@ -1716,67 +1761,67 @@ public class TestUtil {
         String2.log("test splitToArrayList");
         Test.ensureEqual(String2.splitToArrayList(null, '\t'), null, "a");
         Test.ensureEqual(String2.splitToArrayList("", '\t').toArray(), new String[]{""}, "a");
-        Test.ensureEqual(String2.toCSVString(String2.splitToArrayList(" b \t b", '\t').toArray()), "b, b", "b");
-        Test.ensureEqual(String2.toCSVString(String2.splitToArrayList("ab\tcd\t", '\t').toArray()), "ab, cd, ", "c");
+        Test.ensureEqual(String2.toCSSVString(String2.splitToArrayList(" b \t b", '\t').toArray()), "b, b", "b");
+        Test.ensureEqual(String2.toCSSVString(String2.splitToArrayList("ab\tcd\t", '\t').toArray()), "ab, cd, ", "c");
 
         //split to String[]
         String2.log("test split to String[]");
         Test.ensureEqual(String2.split(null, '\t'), null, "a");
         Test.ensureEqual(String2.split("", '\t'), new String[]{""}, "a");
-        Test.ensureEqual(String2.toCSVString(String2.split(" b \t b", '\t')), "b, b", "b");
-        Test.ensureEqual(String2.toCSVString(String2.split("ab\tcd\t", '\t')), "ab, cd, ", "c");
+        Test.ensureEqual(String2.toCSSVString(String2.split(" b \t b", '\t')), "b, b", "b");
+        Test.ensureEqual(String2.toCSSVString(String2.split("ab\tcd\t", '\t')), "ab, cd, ", "c");
 
         //toIntArray(I[])
         String2.log("test toIntArray(I[])");
         Integer Iar[] = {new Integer(1), new Integer(333)};
-        Test.ensureEqual(String2.toCSVString(String2.toIntArray(Iar)), "1, 333", "a");
+        Test.ensureEqual(String2.toCSSVString(String2.toIntArray(Iar)), "1, 333", "a");
         Object oar[] = {new Integer(-1), " -333 ", "b"};
-        Test.ensureEqual(String2.toCSVString(String2.toIntArray(oar)), "-1, -333, 2147483647", "b");
+        Test.ensureEqual(String2.toCSSVString(String2.toIntArray(oar)), "-1, -333, 2147483647", "b");
 
         //toFloatArray(F[])
         String2.log("test toFloatArray(F[])");
         Float Far[] = {new Float(1.1f), new Float(333.3f)};
-        Test.ensureEqual(String2.toCSVString(String2.toFloatArray(Far)), "1.1, 333.3", "a");
+        Test.ensureEqual(String2.toCSSVString(String2.toFloatArray(Far)), "1.1, 333.3", "a");
         oar = new Object[] {new Float(-1.1f), " -333.3 ", "b"};
-        Test.ensureEqual(String2.toCSVString(String2.toFloatArray(oar)), "-1.1, -333.3, NaN", "b");
+        Test.ensureEqual(String2.toCSSVString(String2.toFloatArray(oar)), "-1.1, -333.3, NaN", "b");
 
         //toDoubleArray(D[])
         String2.log("test toDoubleArray(D[])");
         Double Dar[] = {new Double(1.1), new Double(333.3)};
-        Test.ensureEqual(String2.toCSVString(String2.toDoubleArray(Dar)), "1.1, 333.3", "a");
+        Test.ensureEqual(String2.toCSSVString(String2.toDoubleArray(Dar)), "1.1, 333.3", "a");
         oar = new Object[] {new Double(-1.1), " -333.3 ", "b"};
-        Test.ensureEqual(String2.toCSVString(String2.toDoubleArray(oar)), "-1.1, -333.3, NaN", "b");
+        Test.ensureEqual(String2.toCSSVString(String2.toDoubleArray(oar)), "-1.1, -333.3, NaN", "b");
 
         //toIntArray(arrayList)
         String2.log("test toIntArray(arrayList)");
         al = new ArrayList();
         al.add(new Integer(1));
         al.add(new Integer(333));
-        Test.ensureEqual(String2.toCSVString(String2.toIntArray(al)), "1, 333", "a");
+        Test.ensureEqual(String2.toCSSVString(String2.toIntArray(al)), "1, 333", "a");
 
         //toFloatArray(arrayList)
         String2.log("test toFloatArray(arrayList)");
         al = new ArrayList();
         al.add(new Float(1.1f));
         al.add(new Float(333.3f));
-        Test.ensureEqual(String2.toCSVString(String2.toFloatArray(al)), "1.1, 333.3", "a");
+        Test.ensureEqual(String2.toCSSVString(String2.toFloatArray(al)), "1.1, 333.3", "a");
 
         //toDoubleArray(arrayList)
         String2.log("test toDoubleArray(arrayList)");
         al = new ArrayList();
         al.add(new Double(1.1));
         al.add(new Double(333.3));
-        Test.ensureEqual(String2.toCSVString(String2.toDoubleArray(al)), "1.1, 333.3", "a");
+        Test.ensureEqual(String2.toCSSVString(String2.toDoubleArray(al)), "1.1, 333.3", "a");
 
         //justFiniteValues(int[])
         String2.log("test justFiniteValues(int[])");
         iar = new int[] {2147483647, 2, 2147483647, 444, 2147483647};
-        Test.ensureEqual(String2.toCSVString(String2.justFiniteValues(iar)), "2, 444", "a");
+        Test.ensureEqual(String2.toCSSVString(String2.justFiniteValues(iar)), "2, 444", "a");
 
         //justFiniteValues(double[])
         String2.log("test justFiniteValues(double[])");
         dar = new double[]{Double.NaN, 2.2, Double.POSITIVE_INFINITY, 444.4, Double.NEGATIVE_INFINITY};
-        Test.ensureEqual(String2.toCSVString(String2.justFiniteValues(dar)), "2.2, 444.4", "a");
+        Test.ensureEqual(String2.toCSSVString(String2.justFiniteValues(dar)), "2.2, 444.4", "a");
 
         //removeNull
         String2.log("test removeNull");
@@ -1792,14 +1837,14 @@ public class TestUtil {
 
         //csvToIntArray
         String2.log("test csvToIntArray");
-        Test.ensureEqual(String2.toCSVString(String2.csvToIntArray("5, a, -9")), "5, 2147483647, -9", "a");
+        Test.ensureEqual(String2.toCSSVString(String2.csvToIntArray("5, a, -9")), "5, 2147483647, -9", "a");
         Test.ensureEqual(String2.csvToIntArray("5"), new int[]{5}, "b");
         Test.ensureEqual(String2.csvToIntArray("a"), new int[]{Integer.MAX_VALUE}, "c");
         Test.ensureEqual(String2.csvToIntArray(""), new int[]{Integer.MAX_VALUE}, "d");
 
         //csvToDoubleArray
         String2.log("test csvToDoubleArray");
-        Test.ensureEqual(String2.toCSVString(String2.csvToDoubleArray("5.5, a, -9.9")), "5.5, NaN, -9.9", "a");
+        Test.ensureEqual(String2.toCSSVString(String2.csvToDoubleArray("5.5, a, -9.9")), "5.5, NaN, -9.9", "a");
         Test.ensureEqual(String2.csvToDoubleArray("5.5"), new double[]{5.5}, "b");
         Test.ensureEqual(String2.csvToDoubleArray("a"), new double[]{Double.NaN}, "c");
         Test.ensureEqual(String2.csvToDoubleArray(""), new double[]{Double.NaN}, "a");
@@ -2085,6 +2130,21 @@ public class TestUtil {
         sb = new StringBuilder(" \t c \t");   Test.ensureEqual(String2.trim(sb).toString(), "c", "c");
         sb = new StringBuilder(" \t\r\n\t "); Test.ensureEqual(String2.trim(sb).toString(), "",  "");
 
+        //trimStart
+        Test.ensureEqual(String2.trimStart("\n A\n "), "A\n ",   "");  
+        Test.ensureEqual(String2.trimStart("\n \n "),  "",   "");  
+        Test.ensureEqual(String2.trimStart("AB"),      "AB",   "");  
+        Test.ensureEqual(String2.trimStart(""),        "",   "");  
+        Test.ensureEqual(String2.trimStart(null),      null,   "");  
+
+        //trimEnd
+        Test.ensureEqual(String2.trimEnd("\n A\n "), "\n A",   "");  
+        Test.ensureEqual(String2.trimEnd("\n \n "),  "",   "");  
+        Test.ensureEqual(String2.trimEnd("AB"),      "AB",   "");  
+        Test.ensureEqual(String2.trimEnd(""),        "",   "");  
+        Test.ensureEqual(String2.trimEnd(null),      null,   "");  
+        
+
         //alternate
         String2.log("test alternate");
         Test.ensureEqual(String2.alternateToString(null), "    [null]\n", "test a");
@@ -2144,6 +2204,29 @@ public class TestUtil {
         Test.ensureEqual(String2.encodeFileNameSafe(
             "This is really too long for a file name and so is shortened."),   
             "Thisx20isx20reallyx20toox20xhec4d_3575_a772", "");
+        Test.ensureEqual(String2.encodeFileNameSafe("1"), "1", "");
+        Test.ensureEqual(String2.encodeFileNameSafe("."), ".", "");
+        Test.ensureEqual(String2.encodeFileNameSafe("aBc"), "aBc", "");
+        Test.ensureEqual(String2.encodeFileNameSafe(
+            "-._ abxA&°\u1234"), 
+            "-._x20abx78Ax26xb0xx1234", "");
+        Test.ensureEqual(String2.encodeFileNameSafe(
+            "ThisIsReallyLongThisIsReallyLongThisIsReallyLong"), 
+            "ThisIsReallyLongThisIsReaxhdce7_15a4_56ff", "");
+
+        //encodeVariableNameSafe
+        String2.log("test String2.encodeVariableNameSafe");
+        Test.ensureEqual(String2.encodeVariableNameSafe(null), "x_1", "");
+        Test.ensureEqual(String2.encodeVariableNameSafe(""), "x_0", "");
+        Test.ensureEqual(String2.encodeVariableNameSafe("1z"), "x31z", "");
+        Test.ensureEqual(String2.encodeVariableNameSafe(".z"), "x2ez", "");
+        Test.ensureEqual(String2.encodeVariableNameSafe("aBc"), "aBc", "");
+        Test.ensureEqual(String2.encodeVariableNameSafe(
+            "1-._ xA&°\u1234"), 
+            "x31x2dx2e_x20x78Ax26xb0xx1234", "");
+        Test.ensureEqual(String2.encodeVariableNameSafe(
+            "ThisIsReallyLongThisIsReallyLongThisIsReallyLong"), 
+            "ThisIsReallyLongThisIsReaxhdce7_15a4_56ff", "");
 
 
         //toTitleCase
@@ -2439,22 +2522,6 @@ public class TestUtil {
         } catch (Exception e) {
         }
 
-        s = "1999-12-31 23:59";
-        Test.ensureEqual(Calendar2.formatAsIsoDateHM(Calendar2.parseISODateTime(localGC, s)), s, "qL");
-        Test.ensureEqual(Calendar2.formatAsIsoDateHM(Calendar2.parseISODateTime( zuluGC, s)), s, "qZ");
-        Test.ensureEqual(Calendar2.formatAsIsoDateHM(Calendar2.parseISODateTime( zuluGC, "1999-12-31-23:59")), s, "qZ2"); //other connecting char allowed
-        s = "0001-12-31 23:59";
-        Test.ensureEqual(Calendar2.formatAsIsoDateHM(Calendar2.parseISODateTimeZulu(s)), s, "qL");
-        s = "0000-12-31 23:59";
-        Test.ensureEqual(Calendar2.formatAsIsoDateHM(Calendar2.parseISODateTimeZulu(s)), s, "qL");
-        s = "-0001-12-31 23:59";
-        Test.ensureEqual(Calendar2.formatAsIsoDateHM(Calendar2.parseISODateTimeZulu(s)), s, "qL");
-        try {
-            Calendar2.formatAsIsoDateHM(null); 
-            String2.log("Shouldn't get here.29"); Math2.sleep(60000);
-        } catch (Exception e) {
-        }
-
         Test.ensureEqual(Calendar2.formatAsISODate(Calendar2.newGCalendarLocal(2003, 365)), "2003-12-31", "cL");
         Test.ensureEqual(Calendar2.formatAsISODate(Calendar2.newGCalendarZulu( 2003, 365)), "2003-12-31", "cZ");
         Test.ensureEqual(Calendar2.formatAsISODate(Calendar2.newGCalendarLocal(2004, 365)), "2004-12-30", "dL");
@@ -2484,11 +2551,6 @@ public class TestUtil {
             String2.log("Shouldn't get here.33"); Math2.sleep(60000);
         } catch (Exception e) {
         }
-        Test.ensureEqual(Calendar2.formatAsIsoDateHM(Calendar2.newGCalendarLocal(2003, 1, 2, 3, 4, 5, 6)), "2003-01-02 03:04", "gL");
-        Test.ensureEqual(Calendar2.formatAsIsoDateHM(Calendar2.newGCalendarZulu( 2003, 1, 2, 3, 4, 5, 6)), "2003-01-02 03:04", "gZ");
-        Test.ensureEqual(Calendar2.formatAsIsoDateHM(Calendar2.newGCalendarZulu(    1, 1, 2, 3, 4, 5, 6)), "0001-01-02 03:04", "gZ");
-        Test.ensureEqual(Calendar2.formatAsIsoDateHM(Calendar2.newGCalendarZulu(    0, 1, 2, 3, 4, 5, 6)), "0000-01-02 03:04", "gZ");
-        Test.ensureEqual(Calendar2.formatAsIsoDateHM(Calendar2.newGCalendarZulu(   -1, 1, 2, 3, 4, 5, 6)), "-0001-01-02 03:04", "gZ");
 
         Test.ensureEqual(Calendar2.formatAsCompactDateTime(Calendar2.newGCalendarLocal(2003, 1, 2, 3, 4, 5, 6)), "20030102030405", "hL");
         Test.ensureEqual(Calendar2.formatAsCompactDateTime(Calendar2.newGCalendarZulu( 2003, 1, 2, 3, 4, 5, 6)), "20030102030405", "hZ");
@@ -3178,7 +3240,7 @@ public class TestUtil {
         String defaultArray[] = new String[]{"a", "b"};
         Test.ensureEqual(rb2.getStringArray("StringArray", defaultArray), new String[]{"line 1", "line 2", "line 3"}, "StringArray");
         Test.ensureEqual(rb2.getStringArray("StringArraX", defaultArray), defaultArray, "StringArray");
-        Test.ensureEqual(String2.toCSVString(rb2.getKeys()), 
+        Test.ensureEqual(String2.toCSSVString(rb2.getKeys()), 
             "boolean, double, int, long, String, StringArray", "");
 
         //test 2 resource bundles
@@ -3191,7 +3253,7 @@ public class TestUtil {
         Test.ensureEqual(rb2.getInt("int3", 999), 33333, "");
         //not in either
         Test.ensureEqual(rb2.getInt("inX", 999), 999, "");
-        Test.ensureEqual(String2.toCSVString(rb2.getKeys()), 
+        Test.ensureEqual(String2.toCSSVString(rb2.getKeys()), 
             "boolean, double, int, int, int3, long, String, StringArray", "");
 
     }
@@ -3640,7 +3702,7 @@ public class TestUtil {
     }
 
 
-    /** Test the speed of reading to hard drive. Does it block? */
+    /** Test the speed of reading to hard drive. */
     public static void testReadFromFileSpeed() throws Exception {
         String fileName = "f:/temp/TestUtilTestFileSpeed.txt";
         long time = System.currentTimeMillis();
@@ -3666,6 +3728,7 @@ public class TestUtil {
         testString2();
         testString2canonical();
         testString2canonical2();
+        testString2LogOutputStream();
         testByteIndexOf();
         testFile2();
         XML.test();

@@ -78,14 +78,12 @@ public class DasDds {
                 datasetID);
             if (datasetID == null) return;
 
-            //delete the datasetInfo files (in case incorrect info)       
+            //delete the datasetInfo files for this datasetID (in case incorrect info)       
             try {
-                String regex = datasetID + "\\..*";
-                println("datasetInfo dir=" + EDStatic.fullDatasetInfoDirectory + "\n" +
-                    "datasetInfo regex=" + regex + "\n" +
-                    "datasetInfo n files not deleted = " +
-                    RegexFilenameFilter.regexDelete(
-                        EDStatic.fullDatasetInfoDirectory, regex, false));
+                String dir = EDD.datasetDir(datasetID);
+                println("dataset dir=" + dir + "\n" +
+                    "dataset n files not deleted = " +
+                    RegexFilenameFilter.regexDelete(dir, ".*", false));
 
             } catch (Throwable t) {
                 println("\n*** An error occurred while trying to load the " + datasetID + " dataset:\n" +

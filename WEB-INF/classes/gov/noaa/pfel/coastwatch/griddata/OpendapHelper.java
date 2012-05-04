@@ -6,6 +6,7 @@ package gov.noaa.pfel.coastwatch.griddata;
 
 import com.cohort.array.*;
 import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
@@ -184,50 +185,65 @@ public class OpendapHelper  {
         while (names.hasMoreElements()) {
             String name = (String)names.nextElement();            
             dods.dap.Attribute attribute = attributeTable.getAttribute(name);
-            //If an attribute isContainer, then attribute.getValues() will fail. e.g.,
-            //http://dm1.caricoos.org/thredds/dodsC/content/wrf_archive/wrfout_d01_2009-09-25_12_00_00.nc.das
-            String[] sar;
             if (attribute.isContainer()) {
-                sar = new String[0];
-                if (verbose)
-                    String2.log("WARNING: OpendapHelper attributeName=" + name + 
-                        " isContainer!  So the attributes weren't read.");
+                //process an attribute that isContainer by flattening it (name_subname=...)
+                //http://dm1.caricoos.org/thredds/dodsC/content/wrf_archive/wrfout_d01_2009-09-25_12_00_00.nc.das
+                //this works recursively, so should handle containers of containers of ...
+                Attributes tAttributes = new Attributes();
+                getAttributes(attribute.getContainer(), tAttributes);
+                String tNames[] = tAttributes.getNames();
+                String startName = name.trim() + "_";
+                int ntNames = tNames.length;
+                for (int tni = 0; tni < ntNames; tni++)
+                    attributes.add(startName + tNames[tni].trim(), tAttributes.get(tNames[tni]));
+
             } else {
-                sar = String2.toStringArray(String2.toArrayList(attribute.getValues()).toArray());
+                //process a simple attribute
+                String[] sar = String2.toStringArray(
+                    String2.toArrayList(attribute.getValues()).toArray());
+
+                //remove enclosing quotes from strings
+                for (int i = 0; i < sar.length; i++) {
+                    int sariLength = sar[i].length();
+                    if (sariLength >= 2 && 
+                        sar[i].charAt(0) == '"' && sar[i].charAt(sariLength - 1) == '"')
+                        sar[i] = sar[i].substring(1, sariLength - 1);
+                }
+                StringArray sa = new StringArray(sar);
+
+                //store values in the appropriate type of PrimitiveArray
+                //dilemma: store unsigned values as if signed, or in larger data type?
+                //   decision: for now, store uint16 and uint32 as int
+                PrimitiveArray pa = null;
+                int type = attribute.getType();
+                if       (type == dods.dap.Attribute.FLOAT32) pa = new FloatArray(); 
+                else if  (type == dods.dap.Attribute.FLOAT64) pa = new DoubleArray();
+                else if  (type == dods.dap.Attribute.INT16 ||
+                          type == dods.dap.Attribute.UINT16)  pa = new ShortArray();
+                else if  (type == dods.dap.Attribute.INT32 ||
+                          type == dods.dap.Attribute.UINT32)  pa = new IntArray();
+                //ignore STRING, URL, UNKNOWN, etc. (keep as StringArray)
+
+                //move the sa data into pa
+                if (pa == null) {
+                    //pa will be the StringArray
+                    pa = sa;
+                    //trim first part of first string and end of last string
+                    if (sa.size() == 1) {
+                        sa.set(0, sa.get(0).trim());
+                    } else if (sa.size() > 1) {
+                        sa.set(0, String2.trimStart(sa.get(0)));
+                        sa.set(sa.size() - 1, String2.trimEnd(sa.get(sa.size() - 1)));
+                    }
+
+                } else {
+                    //convert to other data type
+                    pa.append(sa);
+                }
+
+                //store name,pa in attributes
+                attributes.set(name.trim(), pa);
             }
-
-            //remove enclosing quotes from strings
-            for (int i = 0; i < sar.length; i++) {
-                int sariLength = sar[i].length();
-                if (sariLength >= 2 && 
-                    sar[i].charAt(0) == '"' && sar[i].charAt(sariLength - 1) == '"')
-                    sar[i] = sar[i].substring(1, sariLength - 1);
-            }
-            StringArray sa = new StringArray(sar);
-
-            //store values in the appropriate type of PrimitiveArray
-            //dilemma: store unsigned values as if signed, or in larger data type?
-            //   decision: for now, store uint16 and uint32 as int
-            PrimitiveArray pa = null;
-            int type = attribute.getType();
-            if       (type == dods.dap.Attribute.FLOAT32) pa = new FloatArray(); 
-            else if  (type == dods.dap.Attribute.FLOAT64) pa = new DoubleArray();
-            else if  (type == dods.dap.Attribute.INT16 ||
-                      type == dods.dap.Attribute.UINT16)  pa = new ShortArray();
-            else if  (type == dods.dap.Attribute.INT32 ||
-                      type == dods.dap.Attribute.UINT32)  pa = new IntArray();
-            //ignore STRING, URL, UNKNOWN, etc. (keep as StringArray)
-
-            //move the sa data into pa
-            if (pa == null) {
-                pa = sa;
-            } else {
-                //convert to other data type
-                pa.append(sa);
-            }
-
-            //store name,pa in attributes
-            attributes.set(name, pa);
         }
     }
 
@@ -299,6 +315,105 @@ public class OpendapHelper  {
     }
 
     /**
+     * Given a projection constraint ("[0:5][1][0:2:10]"), this 
+     * returns an array with start,stride,stop for all the dimensions.
+     * 
+     * @param p   a projection e.g., [0:5][1][0:2:10]
+     * @return an array with start,stride,stop for all the dimensions.
+     *     This returns [0] if projection is null or "".
+     *     This throws runtime exception if invalid syntax.
+     */
+    public static int[] parseStartStrideStop(String p) {
+        if (p == null)
+            return new int[0];
+        int pLength = p.length();
+        int po = 0;
+        IntArray ia = new IntArray();
+        String beginError = "ERROR parsing OPENDAP constraint=\"" + p + "\": ";
+        while (po < pLength) {
+            if (p.charAt(po) != '[')
+                throw new RuntimeException(beginError + 
+                    "'[' expected at projection position #" + po);
+            po++;
+            int colonPo1 = p.indexOf(':', po);
+            if (colonPo1 < 0) 
+                colonPo1 = pLength;
+            int colonPo2 = colonPo1 == pLength? pLength : p.indexOf(':', colonPo1+1);
+            if (colonPo2 < 0)
+                colonPo2 = pLength;
+            int endPo    = p.indexOf(']', po);
+            if (endPo < 0)
+                throw new RuntimeException(beginError +
+                    "End ']' not found.");
+
+            if (colonPo1 > endPo) {
+                // [4]
+                int start = Integer.parseInt(p.substring(po, endPo));
+                if (start < 0)
+                    throw new RuntimeException(beginError + 
+                        "Negative number=" + start + " at projection position #" + po);
+                ia.add(start); ia.add(1); ia.add(start);
+
+            } else if (colonPo2 > endPo) {
+                // [3:4]
+                int start = Integer.parseInt(p.substring(po, colonPo1));
+                if (start < 0)
+                    throw new RuntimeException(beginError + 
+                        "Negative number=" + start + " at projection position #" + po);
+                int stop = Integer.parseInt(p.substring(colonPo1 + 1, endPo));
+                if (stop < 0)
+                    throw new RuntimeException(beginError + 
+                        "Negative number=" + stop + " at projection position #" + (colonPo1 + 1));
+                if (start > stop)
+                    throw new RuntimeException(beginError + 
+                        "start=" + start + " must be less than or equal to stop=" + stop);
+                ia.add(start); ia.add(1); ia.add(stop);
+
+            } else {
+                // [3:4:5]
+                int start = Integer.parseInt(p.substring(po, colonPo1));
+                if (start < 0)
+                    throw new RuntimeException(beginError + 
+                        "Negative number=" + start + " at projection position #" + po);
+                int stride = Integer.parseInt(p.substring(colonPo1 + 1, colonPo2));
+                if (stride < 0)
+                    throw new RuntimeException(beginError + 
+                        "Negative number=" + stride + " at projection position #" + (colonPo1 + 1));
+                int stop = Integer.parseInt(p.substring(colonPo2 + 1, endPo));
+                if (stop < 0)
+                    throw new RuntimeException(beginError + 
+                        "Negative number=" + stop + " at projection position #" + (colonPo2 + 1));
+                if (start > stop)
+                    throw new RuntimeException(beginError + 
+                        "start=" + start + " must be less than or equal to stop=" + stop);
+                ia.add(start); ia.add(stride); ia.add(stop);
+            }
+            po = endPo + 1;
+        }
+        return ia.toArray();
+    }
+
+    /**
+     * Given start, stride, stop, this returns the actual number of points that will be found.
+     *
+     * @param start 
+     * @param stride  (must be >= 1)
+     * @param stop 
+     * @return the actual number of points that will be found.
+     */
+    public static int calculateNValues(int start, int stride, int stop) {
+        if (start > stop)
+            throw new RuntimeException( 
+                "start=" + start + " must be less than or equal to stop=" + stop);
+        if (stride < 1)
+            throw new RuntimeException( 
+                "stride=" + stride + " must be greater than 0");
+
+        return 1 + (stop - start) / stride;
+    }
+
+
+    /**
      * Get the PrimitiveVector from an opendap query.
      * 
      * @param dConnect
@@ -343,8 +458,7 @@ public class OpendapHelper  {
         DataDDS dataDds = dConnect.getData(query, null);
         if (verbose)
             String2.log("    OpendapHelper.getPrimitiveArrays done. TIME=" + 
-                (System.currentTimeMillis() - time) +
-                "\n      query=" + query);      
+                (System.currentTimeMillis() - time));      
         BaseType bt = (BaseType)dataDds.getVariables().nextElement(); //first element is always main array
         if (bt instanceof DGrid) {
             ArrayList al = String2.toArrayList( ((DGrid)bt).getVariables() ); //enumeration -> arraylist
@@ -603,7 +717,7 @@ public class OpendapHelper  {
                 for (int pai = 0; pai < paSize; pai++) {
                     String ts = pa.getString(pai);
                     if (encodeAsHTML) {
-                        ts = String2.noLongLines(ts, 78, "");
+                        ts = String2.noLongLinesAtSpace(ts, 78, "");
                         if (ts.indexOf('\n') >= 0)
                             sb.append('\n'); //start on new line, so first line isn't super long
                     }
@@ -819,15 +933,1321 @@ public class OpendapHelper  {
         throw new Exception(ERROR + ": Unknown PrimitiveVector (" + pv + ").");
     }
 
+    /** 
+     * This finds vars with the same dimensions.
+     * This finds the vars with the most dimensions.
+     * If there are more than 1 groups with the same number of dimensions,
+     * but different dimensions, the first group will be be found.
+     *
+     * <p>Currently, this won't find variables in a sequence.
+     *
+     * @param dds
+     * @return String varNames[]
+     * @param throws Exception if trouble
+     */
+    public static String[] findVarsWithSharedDimensions(DDS dds) 
+        throws Exception {
+  
+        Enumeration en = dds.getVariables();
+        StringArray dimNames = new StringArray();
+        StringArray varNames = new StringArray(); //vars with same dimNames
+        while (en.hasMoreElements()) {
+            BaseType baseType = (BaseType)en.nextElement();
+            DArray dArray;
+            if (baseType instanceof DGrid) {
+                //dGrid has main dArray + dimensions
+                DGrid dGrid = (DGrid)baseType;
+                dArray = (DArray)dGrid.getVar(0);                    
+            } else if (baseType instanceof DArray) {
+                //dArray is usually 1 dim, but may be multidimensional
+                dArray = (DArray)baseType;
+            } else {
+                continue;
+            }
+            int nDim = dArray.numDimensions();
+            //I'm confused. See 'flag' in first test of this method -- no stringLength dim!
+            //if (getElementClass(dArray.getPrimitiveVector()) == String.class)
+            //    nDim--; 
+            if (nDim == 0 || nDim < dimNames.size()) 
+                continue;
+            if (nDim > dimNames.size()) {
+                //switch to this set of dims
+                varNames.clear();
+                varNames.add(baseType.getName());
+                dimNames.clear();
+                for (int d = 0; d < nDim; d++) 
+                    dimNames.add(dArray.getDimension(d).getName());
+            } else { 
+                //nDim == dimNames.size() and it is >0
+                //does this var shar the same dims?                    
+                boolean allSame = true;
+                for (int d = 0; d < nDim; d++) {
+                    if (!dArray.getDimension(d).getName().equals(dimNames.get(d))) {
+                        allSame = false;
+                        break;
+                    }
+                }
+                if (allSame)
+                    varNames.add(baseType.getName());
+            }
+        }
+        return varNames.toArray();
+    }
+
+    /** This tests findVarsWithSharedDimensions. */
+    public static void testFindVarsWithSharedDimensions() throws Throwable {
+        String2.log("\n\n*** OpendapHelper.findVarsWithSharedDimensions");
+        String expected, results;      
+        DConnect dConnect;
+        DDS dds;
+
+        /*
+        //test of Sequence DAP dataset        
+        String2.log("\n*** test of Sequence DAP dataset");
+        String sequenceUrl = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1";
+        dConnect = new DConnect(sequenceUrl, true, 1, 1);
+        dds = dConnect.getDDS(DEFAULT_TIMEOUT);
+        results = String2.toCSSVString(findVarsWithSharedDimensions(dds));
+        expected = 
+"zztop";
+        Test.ensureEqual(results, expected, "results=" + results);
+        */
+
+
+        //test of DArray DAP dataset
+        String2.log("\n*** test of DArray DAP dataset");
+        String dArrayUrl = "http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+        dConnect = new DConnect(dArrayUrl, true, 1, 1);
+        dds = dConnect.getDDS(DEFAULT_TIMEOUT);
+        results = String2.toCSSVString(findVarsWithSharedDimensions(dds));
+        expected = 
+"time, lat, lon, PL_HD, PL_CRS, DIR, PL_WDIR, PL_SPD, SPD, PL_WSPD, P, T, RH, date, time_of_day, flag";
+        Test.ensureEqual(results, expected, "results=" + results);
+
+
+        //***** test of DGrid DAP dataset
+        String2.log("\n*** test of DGrid DAP dataset");
+        String dGridUrl = "http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday";
+        dConnect = new DConnect(dGridUrl, true, 1, 1);
+        dds = dConnect.getDDS(DEFAULT_TIMEOUT);
+        results = String2.toCSSVString(findVarsWithSharedDimensions(dds));
+        expected = 
+"x_wind, y_wind, divw, mod";
+        Test.ensureEqual(results, expected, "results=" + results);
+
+
+        /* */
+        String2.log("\n*** OpendapHelper.findVarsWithSharedDimensions finished.");
+
+    }
+
+
+    /**
+     * Get data from a common type of Opendap grid request and save in .nc file.
+     * <p>Currently, this won't work with variables in a sequence.
+     *
+     * @param dapUrl       the base DAP URL
+     * @param varNames     the DGrid or DArray var names (which must share the same dimensions)
+     *   <br>If a var isn't present, it is skipped.
+     *   <br>If some vars are multidimensional, 1D vars are removed 
+     *   (they'll be downloaded as dimensions of the multidimensional vars).
+     *   <br>If varNames is null or varNames.length==0, the vars which share 
+     *       the most dimensions will be found and used.
+     * @param projection   e.g., [17][0][0:179][0:2:359]  (or null or "" for all) 
+     * @param fullFileName the complete name
+     * @param jplMode use for requests for jplG1SST data (to enable lat chunking)
+     *   when the projection is [0][0:15999][0:35999]
+     */
+    public static void dapToNc(String dapUrl, String varNames[], String projection, 
+        String fullFileName, boolean jplMode) throws Throwable {
+
+        //constants for jpl
+        int jplLonSize = 36000;
+        int jplLatSize = 16000;
+        int jplLatChunk = 2000;
+        int jplNChunks = jplLatSize / jplLatChunk;
+        int jplLatDim = 1;  //[time][lat][lon]
+        FloatArray jplLatPa = null;
+        if (jplMode) {
+            jplLatPa = new FloatArray(jplLatSize, true);
+            for (int i = 0; i < jplLatSize; i++)
+                jplLatPa.setDouble(i, -79.995 + i * 0.01);
+        }
+        int jplChunkShape[] = {1, jplLatChunk, jplLonSize};
+
+        String beginError = "OpendapHelper.dapToNc" +
+            "\n  url=" + dapUrl + 
+            "\n  varNames=" + 
+                (varNames == null? "null" : String2.toSVString(varNames, ",", false)) + 
+                "  projection=" + projection +
+            "\n  file=" + fullFileName;
+        if (verbose) String2.log(beginError); 
+        beginError = "ERROR in " + beginError + "\n"; 
+        long time = System.currentTimeMillis();
+
+        //get dConnect.  If this fails, no clean up needed.
+        DConnect dConnect = new DConnect(dapUrl, true, 1, 1);
+        DAS das = dConnect.getDAS(DEFAULT_TIMEOUT);
+        DDS dds = dConnect.getDDS(DEFAULT_TIMEOUT);
+
+        if (varNames == null || varNames.length == 0) {
+            //find the vars which share the most dimensions
+            varNames = findVarsWithSharedDimensions(dds);
+            if (varNames.length == 0)
+                throw new RuntimeException(beginError + 
+                    "No variables with dimensions were found!");
+
+        } else {
+            //check if varNames exist (if not, set var[v] = null) 
+            //also, check if there are vars with nDim>1
+            boolean dim1Vars[] = new boolean[varNames.length]; //all false
+            boolean someMultiDimVars = false;
+            for (int v = 0; v < varNames.length; v++) {
+                try {
+                    BaseType baseType = dds.getVariable(varNames[v]);
+                    DArray dArray;
+                    if (baseType instanceof DGrid) {
+                        //dGrid has main dArray + dimensions
+                        DGrid dGrid = (DGrid)baseType;
+                        dArray = (DArray)dGrid.getVar(0);                    
+                    } else if (baseType instanceof DArray) {
+                        //dArray is usually 1 dim, but may be multidimensional
+                        dArray = (DArray)baseType;
+                    } else {
+                        continue;
+                    }
+                    if (dArray.numDimensions() <= 1)
+                        dim1Vars[v] = true;
+                    else someMultiDimVars = true;
+
+                } catch (Throwable t) {
+                    varNames[v] = null;
+                    if (verbose) String2.log("  removing variable: " + t.toString());
+                    continue;
+                }
+            }
+
+            //if someMultiDimVars, remove any dim1Vars (they'll be downloaded as dimensions)
+            if (someMultiDimVars) 
+                for (int v = 0; v < varNames.length; v++) 
+                    if (dim1Vars[v]) 
+                        varNames[v] = null;
+
+            //are there validVars remaining? 
+            boolean someValidVars = false;
+            for (int v = 0; v < varNames.length; v++) {
+                if (varNames[v] != null) {
+                    someValidVars = true;
+                    break;
+                }
+            }
+            if (!someValidVars)
+                throw new RuntimeException(beginError + "None of the varNames were found!");
+        }
+
+
+        //if projection is null or "", figure out the projection 
+        if (projection == null || projection.length() == 0) {
+            StringBuilder sb = new StringBuilder();
+            BUILD_PROJECTION:
+            for (int v = 0; v < varNames.length; v++) {
+                if (varNames[v] == null)
+                    continue;
+                BaseType baseType = dds.getVariable(varNames[v]);
+                DArray dArray;
+                if (baseType instanceof DGrid) {
+                    //dGrid has main dArray + dimensions
+                    DGrid dGrid = (DGrid)baseType;
+                    dArray = (DArray)dGrid.getVar(0);
+                } else if (baseType instanceof DArray) {
+                    //dArray is usually 1 dim, but may be multidimensional
+                    dArray = (DArray)baseType;
+                } else {
+                    throw new RuntimeException(beginError + 
+                        "var=" + varNames[v] + " has unexpected baseType=" + 
+                        baseType.getClass().getName());
+                }
+                int nDim = dArray.numDimensions();
+                if (nDim == 0) 
+                    throw new RuntimeException(beginError + 
+                        "var=" + varNames[v] + " is a DArray with 0 dimensions.");
+                for (int d = 0; d < nDim; d++) {//0..
+                    sb.append("[0:" + (dArray.getDimension(d).getSize() - 1) + "]");
+                }
+                break;
+            }
+
+            if (sb.length() == 0) 
+                throw new RuntimeException(beginError + 
+                    "File not created!  None of the requested varNames were found.");
+            projection = sb.toString();
+            if (verbose) String2.log("  created projection=" + projection);
+        }
+        int sss[] = parseStartStrideStop(projection); //throws Exception if trouble
+        //if (true) throw new RuntimeException("stop here");
+
+        //delete any existing file
+        File2.delete(fullFileName);
+
+        //If procedure fails half way through, there won't be a half-finished file.
+        int randomInt = Math2.random(Integer.MAX_VALUE);
+
+        //*Then* make ncOut.    If createNew fails, no clean up needed.
+        File2.makeDirectory(File2.getDirectory(fullFileName));
+        ucar.nc2.NetcdfFileWriteable ncOut =
+            ucar.nc2.NetcdfFileWriteable.createNew(fullFileName + randomInt,
+                false); //false says: create a new file and don't fill with missing_values
+
+        try {
+
+            //define the data variables in ncOut
+            int nVars = varNames.length;
+            Attributes varAtts[] = new Attributes[nVars];
+            ucar.nc2.Dimension varCharDims[][] = new ucar.nc2.Dimension[nVars][];
+            int varCharShapes[][] = new int[nVars][];
+
+            boolean firstValidVar = true;
+            int nDims = sss.length / 3;
+            ucar.nc2.Dimension dims[] = new ucar.nc2.Dimension[nDims];
+            int shape[] = new int[nDims];
+            boolean isDGrid = true; //change if false
+
+            for (int v = 0; v < nVars; v++) {
+                //String2.log("  create var=" + varNames[v]);
+                if (varNames[v] == null) 
+                    continue;
+                varAtts[v] = new Attributes();
+                getAttributes(das, varNames[v], varAtts[v]);
+
+                BaseType baseType = dds.getVariable(varNames[v]);
+                if (baseType instanceof DGrid) {
+                    //dGrid has main dArray + dimensions
+                    if (firstValidVar) {
+                    } else {
+                        if (!isDGrid) 
+                            throw new RuntimeException(beginError + "var=" + varNames[v] + 
+                                " is a DGrid but the previous vars are DArrays.");
+                    }                        
+                    DGrid dGrid = (DGrid)baseType;
+                    if (dGrid.elementCount(true)-1 != nDims)
+                        throw new RuntimeException(beginError + "var=" + varNames[v] + 
+                            " has a different nDimensions than projection=\"" + 
+                            projection + "\".");
+                    for (int d = 0; d < nDims; d++) {
+                        String dimName = dGrid.getVar(d + 1).getName();
+                        if (firstValidVar) {
+                            //define the dimensions and their variables
+                            int dimSize = calculateNValues(sss[d*3], sss[d*3+1], sss[d*3+2]);
+                            //String2.log("    dim#" + d + "=" + dimName + " size=" + dimSize);
+                            shape[d] = dimSize;
+                            dims[d] = ncOut.addDimension(dimName, dimSize, true, false, false);
+                            PrimitiveVector pv = ((DVector)dds.getVariable(dimName)).getPrimitiveVector(); //has no data
+                            ncOut.addVariable(dimName, 
+                                NcHelper.getDataType(getElementClass(pv)), 
+                                new ucar.nc2.Dimension[]{dims[d]}); 
+                        } else {
+                            //check that dimension names are the same
+                            if (!dimName.equals(dims[d].getName()))
+                                throw new RuntimeException(beginError + "var=" + varNames[v] + 
+                                    " has different dimensions than previous vars.");
+                        }
+                    }
+                    firstValidVar = false;
+
+                    //make the dataVariable
+                    PrimitiveVector pv = ((DArray)dGrid.getVar(0)).getPrimitiveVector(); //has no data
+                    Class tClass = getElementClass(pv);
+                    //String2.log("pv=" + pv.toString() + " tClass=" + tClass);
+                    ncOut.addVariable(varNames[v], NcHelper.getDataType(tClass), dims);
+
+                } else if (baseType instanceof DArray) {
+                    //dArray is usually 1 dim, but may be multidimensional
+                    if (firstValidVar) {
+                        isDGrid = false;
+                    } else {
+                        if (isDGrid)
+                            throw new RuntimeException(beginError + "var=" + varNames[v] + 
+                                " is a DArray but the previous vars are DGrids.");
+                    }
+                    DArray dArray = (DArray)baseType;
+                    if (dArray.numDimensions() != nDims)
+                        throw new RuntimeException(beginError + "var=" + varNames[v] + 
+                            " has a different nDimensions than projection=\"" + 
+                            projection + "\".");
+                    for (int d = 0; d < nDims; d++) {//0..
+                        DArrayDimension dim = dArray.getDimension(d);
+                        String dimName = dim.getName();
+                        if (firstValidVar) {
+                            //define the dimensions
+                            int dimSize = calculateNValues(sss[d*3], sss[d*3+1], sss[d*3+2]);
+                            //String2.log("    DArray dim#" + d + "=" + dimName + " size=" + dimSize);
+                            shape[d] = dimSize;
+                            dims[d] = ncOut.addDimension(dimName, dimSize, 
+                                true, false, false);
+                            //don't make a related variable
+                        } else {
+                            //check that dimension names are the same
+                            if (!dimName.equals(dims[d].getName()))
+                                throw new RuntimeException(beginError + "var=" + varNames[v] + 
+                                    " has different dimensions than previous vars.");
+                        }
+                    }
+                    firstValidVar = false;
+
+                    //make the dataVariable
+                    PrimitiveVector pv = dArray.getPrimitiveVector(); //has no data
+                    Class tClass = getElementClass(pv);
+                    //String2.log("  pv tClass=" + tClass);
+
+                    if (tClass == String.class) {
+                        //a String variable.  Add a dim for nchars
+                        varCharDims[v] = new ucar.nc2.Dimension[nDims + 1];
+                        varCharShapes[v] = new int[nDims + 1];
+                        System.arraycopy(dims,  0, varCharDims[v],   0, nDims);
+                        System.arraycopy(shape, 0, varCharShapes[v], 0, nDims);
+                        int nChars = varAtts[v].getInt("DODS_strlen");
+                        if (nChars == Integer.MAX_VALUE) {
+                            if (verbose) String2.log(beginError + "String var=" + varNames[v] + 
+                                " has no DODS_strlen attribute.");
+                            varNames[v] = null;
+                            continue;
+                        }
+                        varCharDims[v][nDims] = ncOut.addDimension(varNames[v] + "StringLength", 
+                            nChars, true, false, false);
+                        varCharShapes[v][nDims] = nChars;
+
+                        ncOut.addVariable(varNames[v], ucar.ma2.DataType.CHAR, varCharDims[v]);
+
+                    } else {
+                        //a regular variable
+                        ncOut.addVariable(varNames[v], NcHelper.getDataType(tClass), dims);
+                    }
+
+                } else {
+                   throw new RuntimeException(beginError + 
+                       "var=" + varNames[v] + " has unexpected baseType=" + 
+                        baseType.getClass().getName());
+                }
+            }
+
+            //write global attributes in ncOut
+            Attributes tAtts = new Attributes();
+            getAttributes(das, "GLOBAL", tAtts);
+            NcHelper.setAttributes(ncOut, "NC_GLOBAL", tAtts);
+
+            //write dimension attributes in ncOut
+            if (isDGrid) {
+                for (int dim = 0; dim < nDims; dim++) {
+                    String dimName = dims[dim].getName();               
+                    tAtts.clear();
+                    getAttributes(das, dimName, tAtts);
+                    NcHelper.setAttributes(ncOut, dimName, tAtts);
+                }
+            }
+
+            //write data variable attributes in ncOut
+            for (int v = 0; v < nVars; v++) {
+                if (varNames[v] == null)
+                    continue;
+                NcHelper.setAttributes(ncOut, varNames[v], varAtts[v]);
+            }
+
+            //leave "define" mode in ncOut
+            ncOut.create();
+
+            //read and write the dimensions
+            if (isDGrid) {
+                for (int d = 0; d < nDims; d++) {
+                    String tProjection = "[" + sss[d*3] + ":" + sss[d*3+1] + ":" + sss[d*3+2] + "]"; 
+                    PrimitiveArray pas[] = getPrimitiveArrays(dConnect, 
+                        "?" + dims[d].getName() + tProjection); 
+                    pas[0].trimToSize(); //so underlying array is exact size
+                    ncOut.write(dims[d].getName(), 
+                        ucar.ma2.Array.factory(pas[0].toObjectArray()));
+                }
+            }
+
+            //read and write the data variables
+            firstValidVar = true;
+            for (int v = 0; v < nVars; v++) {
+                if (varNames[v] == null)
+                    continue;
+                long vTime = System.currentTimeMillis();
+
+                if (jplMode) {
+                    //read in chunks
+                    int origin[] = {0, 0, 0}; //nc uses: start stop! stride
+                    for (int chunk = 0; chunk < jplNChunks; chunk++) {
+                        int base = chunk * jplLatChunk;
+                        origin[1] = base;
+                        //change that lat part of the projection
+                        String tProjection = String2.replaceAll(projection, 
+                            "[0:" + (jplLatSize - 1) + "]", 
+                            "[" + base + ":" + (base + jplLatChunk - 1) + "]");
+                        PrimitiveArray pas[] = getPrimitiveArrays(
+                            dConnect, "?" + varNames[v] + tProjection); 
+                        pas[0].trimToSize(); //so underlying array is exact size
+                        //String2.log("pas[0]=" + pas[0].toString());
+                        ncOut.write(varNames[v], origin,
+                            ucar.ma2.Array.factory(pas[0].elementClass(), 
+                                jplChunkShape, pas[0].toObjectArray()));
+                    }
+                } else {
+                    //DGrid and DArray: read it, write it
+
+                    PrimitiveArray pas[] = getPrimitiveArrays(
+                        dConnect, "?" + varNames[v] + projection); 
+                    pas[0].trimToSize(); //so underlying array is exact size
+                    //String2.log("pas[0].size=" + pas[0].size());
+                    if (varCharShapes[v] == null) {
+                        //non-String variable
+                        ncOut.write(varNames[v], 
+                            ucar.ma2.Array.factory(pas[0].elementClass(), 
+                                shape, pas[0].toObjectArray()));
+                    } else {
+                        //String variable
+                        int n = pas[0].size();
+                        ucar.ma2.ArrayObject.D1 ao = new 
+                            ucar.ma2.ArrayObject.D1(String.class, n); 
+                        for (int i = 0; i < n; i++)
+                            ao.set(i, pas[0].getString(i));
+                        ncOut.writeStringData(varNames[v], ao);
+                    }
+                }
+
+                firstValidVar = false;
+                if (verbose) String2.log("  v#" + v + "=" + varNames[v] + " finished. time=" + 
+                    Calendar2.elapsedTimeString(System.currentTimeMillis() - vTime));
+            }
+
+            //if close throws Throwable, it is trouble
+            ncOut.close(); //it calls flush() and doesn't like flush called separately
+
+            //rename the file to the specified name
+            File2.rename(fullFileName + randomInt, fullFileName);
+
+            //diagnostic
+            if (verbose) String2.log("  OpendapHelper.dapToNc finished.  TIME=" + 
+                Calendar2.elapsedTimeString(System.currentTimeMillis() - time) + "\n");
+            //String2.log(NcHelper.dumpString(fullFileName, false));
+
+        } catch (Throwable t) {
+            //try to close the file
+            try {
+                ncOut.close(); //it calls flush() and doesn't like flush called separately
+            } catch (Throwable t2) {
+                //don't care
+            }
+
+            //delete the partial file
+            File2.delete(fullFileName + randomInt);
+
+            throw t;
+        }
+    }
+
+    /** This tests getting attibutes, notably the DODS_strlen attribute. */
+    public static void testGetAttributes() throws Throwable {
+
+        String2.log("\n* OpendapHelper.testGetAttributes");
+        String url = "http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+        DConnect dConnect = new DConnect(url, true, 1, 1);
+        DAS das = dConnect.getDAS(DEFAULT_TIMEOUT);
+        Attributes atts = new Attributes();
+        getAttributes(das, "flag", atts);
+
+        String results = atts.toString();
+        String expected = //the DODS_ attributes are from an attribute that is a  container.
+"    A=\"Units added\"\n" +
+"    B=\"Data out of range\"\n" +
+"    C=\"Non-sequential time\"\n" +
+"    D=\"Failed T>=Tw>=Td\"\n" +
+"    DODS_dimName=\"f_string\"\n" +
+"    DODS_strlen=13\n" +
+"    E=\"True wind error\"\n" +
+"    F=\"Velocity unrealistic\"\n" +
+"    G=\"Value > 4 s. d. from climatology\"\n" +
+"    H=\"Discontinuity\"\n" +
+"    I=\"Interesting feature\"\n" +
+"    J=\"Erroneous\"\n" +
+"    K=\"Suspect - visual\"\n" +
+"    L=\"Ocean platform over land\"\n" +
+"    long_name=\"quality control flags\"\n" +
+"    M=\"Instrument malfunction\"\n" +
+"    N=\"In Port\"\n" +
+"    O=\"Multiple original units\"\n" +
+"    P=\"Movement uncertain\"\n" +
+"    Q=\"Pre-flagged as suspect\"\n" +
+"    R=\"Interpolated data\"\n" +
+"    S=\"Spike - visual\"\n" +
+"    T=\"Time duplicate\"\n" +
+"    U=\"Suspect - statistial\"\n" +
+"    V=\"Spike - statistical\"\n" +
+"    X=\"Step - statistical\"\n" +
+"    Y=\"Suspect between X-flags\"\n" +
+"    Z=\"Good data\"\n";
+        Test.ensureEqual(results, expected, "results=" + results);
+    }
+
+
+    /** This tests dapToNc DArray. */
+    public static void testDapToNcDArray() throws Throwable {
+        String2.log("\n\n*** OpendapHelper.testDapToNcDArray");
+        String fileName, expected, results;      
+        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+
+        fileName = SSR.getTempDirectory() + "testDapToNcDArray.nc";
+        String dArrayUrl = "http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+        dapToNc(dArrayUrl, 
+            //note that request for zztop is ignored (because not found)
+            new String[] {"zztop", "time", "lat", "lon", "PL_HD", "flag"}, null, //projection
+            fileName, false); //jplMode
+        results = NcHelper.dumpString(fileName, true); //printData
+        expected = 
+"netcdf testDapToNcDArray.nc {\n" +
+" dimensions:\n" +
+"   time = 144;\n" +
+"   flagStringLength = 13;\n" +
+" variables:\n" +
+"   int time(time=144);\n" +
+"     :actual_range = 16870896, 16871039; // int\n" +
+"     :data_interval = 60; // int\n" +
+"     :long_name = \"time\";\n" +
+"     :observation_type = \"calculated\";\n" +
+"     :original_units = \"hhmmss UTC\";\n" +
+"     :qcindex = 1; // int\n" +
+"     :units = \"minutes since 1-1-1980 00:00 UTC\";\n" +
+"   float lat(time=144);\n" +
+"     :actual_range = 44.6f, 44.75f; // float\n" +
+"     :average_center = \"time at end of period\";\n" +
+"     :average_length = 60S; // short\n" +
+"     :average_method = \"average\";\n" +
+"     :data_precision = -9999.0f; // float\n" +
+"     :instrument = \"unknown\";\n" +
+"     :long_name = \"latitude\";\n" +
+"     :observation_type = \"measured\";\n" +
+"     :original_units = \"degrees (+N)\";\n" +
+"     :qcindex = 2; // int\n" +
+"     :sampling_rate = 1.0f; // float\n" +
+"     :units = \"degrees (+N)\";\n" +
+"   float lon(time=144);\n" +
+"     :actual_range = 235.82f, 235.95f; // float\n" +
+"     :average_center = \"time at end of period\";\n" +
+"     :average_length = 60S; // short\n" +
+"     :average_method = \"average\";\n" +
+"     :data_precision = -9999.0f; // float\n" +
+"     :instrument = \"unknown\";\n" +
+"     :long_name = \"longitude\";\n" +
+"     :observation_type = \"measured\";\n" +
+"     :original_units = \"degrees (-W/+E)\";\n" +
+"     :qcindex = 3; // int\n" +
+"     :sampling_rate = 1.0f; // float\n" +
+"     :units = \"degrees (+E)\";\n" +
+"   float PL_HD(time=144);\n" +
+"     :actual_range = 37.89f, 355.17f; // float\n" +
+"     :average_center = \"time at end of period\";\n" +
+"     :average_length = 60S; // short\n" +
+"     :average_method = \"average\";\n" +
+"     :data_precision = -9999.0f; // float\n" +
+"     :instrument = \"unknown\";\n" +
+"     :long_name = \"platform heading\";\n" +
+"     :missing_value = -9999.0f; // float\n" +
+"     :observation_type = \"calculated\";\n" +
+"     :original_units = \"degrees (clockwise towards true north)\";\n" +
+"     :qcindex = 4; // int\n" +
+"     :sampling_rate = 1.0f; // float\n" +
+"     :special_value = -8888.0f; // float\n" +
+"     :units = \"degrees (clockwise towards true north)\";\n" +
+"   char flag(time=144, flagStringLength=13);\n" +
+"     :A = \"Units added\";\n" +
+"     :B = \"Data out of range\";\n" +
+"     :C = \"Non-sequential time\";\n" +
+"     :D = \"Failed T>=Tw>=Td\";\n" +
+"     :DODS_dimName = \"f_string\";\n" +
+"     :DODS_strlen = 13; // int\n" +
+"     :E = \"True wind error\";\n" +
+"     :F = \"Velocity unrealistic\";\n" +
+"     :G = \"Value > 4 s. d. from climatology\";\n" +
+"     :H = \"Discontinuity\";\n" +
+"     :I = \"Interesting feature\";\n" +
+"     :J = \"Erroneous\";\n" +
+"     :K = \"Suspect - visual\";\n" +
+"     :L = \"Ocean platform over land\";\n" +
+"     :long_name = \"quality control flags\";\n" +
+"     :M = \"Instrument malfunction\";\n" +
+"     :N = \"In Port\";\n" +
+"     :O = \"Multiple original units\";\n" +
+"     :P = \"Movement uncertain\";\n" +
+"     :Q = \"Pre-flagged as suspect\";\n" +
+"     :R = \"Interpolated data\";\n" +
+"     :S = \"Spike - visual\";\n" +
+"     :T = \"Time duplicate\";\n" +
+"     :U = \"Suspect - statistial\";\n" +
+"     :V = \"Spike - statistical\";\n" +
+"     :X = \"Step - statistical\";\n" +
+"     :Y = \"Suspect between X-flags\";\n" +
+"     :Z = \"Good data\";\n" +
+"\n" +
+" :contact_email = \"samos@coaps.fsu.edu\";\n" +
+" :contact_info = \"Center for Ocean-Atmospheric Prediction Studies, The Florida State University, Tallahassee, FL, 32306-2840, USA\";\n" +
+" :Cruise_id = \"Cruise_id undefined for now\";\n" +
+" :Data_modification_date = \"02/07/2012 10:03:37 EST\";\n" +
+" :data_provider = \"Timothy Salisbury\";\n" +
+" :elev = 0S; // short\n" +
+" :end_date_time = \"2012/01/28 -- 23:59  UTC\";\n" +
+" :EXPOCODE = \"EXPOCODE undefined for now\";\n" +
+" :facility = \"NOAA\";\n" +
+" :fsu_version = \"300\";\n" +
+" :ID = \"WTEP\";\n" +
+" :IMO = \"009270335\";\n" +
+" :Metadata_modification_date = \"02/07/2012 10:03:37 EST\";\n" +
+" :platform = \"SCS\";\n" +
+" :platform_version = \"4.0\";\n" +
+" :receipt_order = \"01\";\n" +
+" :site = \"OSCAR DYSON\";\n" +
+" :start_date_time = \"2012/01/28 -- 21:36  UTC\";\n" +
+" :title = \"OSCAR DYSON Meteorological Data\";\n" +
+" data:\n" +
+"time =\n" +
+"  {16870896, 16870897, 16870898, 16870899, 16870900, 16870901, 16870902, 16870903, 16870904, 16870905, 16870906, 16870907, 16870908, 16870909, 16870910, 16870911, 16870912, 16870913, 16870914, 16870915, 16870916, 16870917, 16870918, 16870919, 16870920, 16870921, 16870922, 16870923, 16870924, 16870925, 16870926, 16870927, 16870928, 16870929, 16870930, 16870931, 16870932, 16870933, 16870934, 16870935, 16870936, 16870937, 16870938, 16870939, 16870940, 16870941, 16870942, 16870943, 16870944, 16870945, 16870946, 16870947, 16870948, 16870949, 16870950, 16870951, 16870952, 16870953, 16870954, 16870955, 16870956, 16870957, 16870958, 16870959, 16870960, 16870961, 16870962, 16870963, 16870964, 16870965, 16870966, 16870967, 16870968, 16870969, 16870970, 16870971, 16870972, 16870973, 16870974, 16870975, 16870976, 16870977, 16870978, 16870979, 16870980, 16870981, 16870982, 16870983, 16870984, 16870985, 16870986, 16870987, 16870988, 16870989, 16870990, 16870991, 16870992, 16870993, 16870994, 16870995, 16870996, 16870997, 16870998, 16870999, 16871000, 16871001, 16871002, 16871003, 16871004, 16871005, 16871006, 16871007, 16871008, 16871009, 16871010, 16871011, 16871012, 16871013, 16871014, 16871015, 16871016, 16871017, 16871018, 16871019, 16871020, 16871021, 16871022, 16871023, 16871024, 16871025, 16871026, 16871027, 16871028, 16871029, 16871030, 16871031, 16871032, 16871033, 16871034, 16871035, 16871036, 16871037, 16871038, 16871039}\n" +
+"lat =\n" +
+"  {44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.62, 44.62, 44.62, 44.62, 44.62, 44.62, 44.62, 44.61, 44.61, 44.61, 44.61, 44.61, 44.61, 44.61, 44.61, 44.6, 44.6, 44.6, 44.6, 44.6, 44.6, 44.61, 44.61, 44.61, 44.61, 44.62, 44.62, 44.62, 44.62, 44.63, 44.63, 44.63, 44.64, 44.64, 44.64, 44.65, 44.65, 44.65, 44.66, 44.66, 44.66, 44.67, 44.67, 44.67, 44.68, 44.68, 44.68, 44.69, 44.69, 44.69, 44.7, 44.7, 44.7, 44.71, 44.71, 44.71, 44.72, 44.72, 44.72, 44.73, 44.73, 44.73, 44.73, 44.74, 44.74, 44.74, 44.75}\n" +
+"lon =\n" +
+"  {235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.94, 235.94, 235.94, 235.94, 235.94, 235.94, 235.93, 235.93, 235.93, 235.92, 235.92, 235.92, 235.91, 235.91, 235.91, 235.9, 235.9, 235.9, 235.89, 235.89, 235.88, 235.88, 235.88, 235.88, 235.88, 235.88, 235.87, 235.87, 235.87, 235.87, 235.87, 235.87, 235.87, 235.86, 235.86, 235.86, 235.86, 235.86, 235.86, 235.86, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.85, 235.84, 235.84, 235.84, 235.84, 235.84, 235.84, 235.83, 235.83, 235.83, 235.83, 235.83, 235.82, 235.82, 235.82, 235.82, 235.82, 235.82, 235.82}\n" +
+"PL_HD =\n" +
+"  {75.53, 75.57, 75.97, 76.0, 75.81, 75.58, 75.99, 75.98, 75.77, 75.61, 75.72, 75.75, 75.93, 75.96, 76.01, 75.64, 75.65, 75.94, 75.93, 76.12, 76.65, 76.42, 76.25, 75.81, 76.5, 76.09, 76.35, 76.0, 76.16, 76.36, 76.43, 75.99, 75.93, 76.41, 75.85, 76.07, 76.15, 76.33, 76.7, 76.37, 76.58, 76.89, 77.14, 76.81, 74.73, 75.24, 74.52, 81.04, 80.64, 73.21, 63.34, 37.89, 347.02, 309.93, 290.99, 285.0, 279.38, 276.45, 270.26, 266.33, 266.49, 266.08, 263.59, 261.41, 259.05, 259.82, 260.35, 262.78, 258.73, 249.71, 246.52, 245.78, 246.16, 245.88, 243.52, 231.62, 223.09, 221.08, 221.01, 221.08, 220.81, 223.64, 234.12, 239.55, 241.08, 242.09, 242.04, 242.33, 242.06, 242.22, 242.11, 242.3, 242.07, 247.35, 285.6, 287.02, 287.96, 288.37, 321.32, 344.82, 346.91, 344.78, 347.95, 344.75, 344.66, 344.78, 344.7, 344.76, 343.89, 336.73, 334.01, 340.23, 344.76, 348.25, 348.74, 348.63, 351.97, 344.55, 343.77, 343.71, 347.04, 349.06, 349.45, 349.79, 349.66, 349.7, 349.74, 344.2, 343.22, 341.79, 339.11, 334.12, 334.47, 334.62, 334.7, 334.66, 327.06, 335.74, 348.25, 351.05, 355.17, 343.66, 346.85, 347.28}\n" +
+"flag =\"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZEZZSZZZZ\", \"ZZZZZEZZSZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\"\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "results=" + results);
+        File2.delete(fileName);
+
+        //test subset
+        try {
+            String2.log("\n* testDapToNcDArray Subset");
+            fileName = SSR.getTempDirectory() + "testDapToNcDArraySubset.nc";
+            String dArraySubsetUrl = "http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+            dapToNc(dArraySubsetUrl, 
+                new String[] {"zztop", "time", "lat", "lon", "PL_HD", "flag"}, "[0:10:99]", //projection
+                fileName, false); //jplMode
+            results = NcHelper.dumpString(fileName, true); //printData
+            expected = 
+"netcdf testDapToNcDArraySubset.nc {\n" +
+" dimensions:\n" +
+"   time = 10;\n" +
+" variables:\n" +
+"   int time(time=10);\n" +
+"     :actual_range = 16870896, 16871039; // int\n" +
+"     :data_interval = 60; // int\n" +
+"     :long_name = \"time\";\n" +
+"     :observation_type = \"calculated\";\n" +
+"     :original_units = \"hhmmss UTC\";\n" +
+"     :qcindex = 1; // int\n" +
+"     :units = \"minutes since 1-1-1980 00:00 UTC\";\n" +
+"   float lat(time=10);\n" +
+"     :actual_range = 44.6f, 44.75f; // float\n" +
+"     :average_center = \"time at end of period\";\n" +
+"     :average_length = 60S; // short\n" +
+"     :average_method = \"average\";\n" +
+"     :data_precision = -9999.0f; // float\n" +
+"     :instrument = \"unknown\";\n" +
+"     :long_name = \"latitude\";\n" +
+"     :observation_type = \"measured\";\n" +
+"     :original_units = \"degrees (+N)\";\n" +
+"     :qcindex = 2; // int\n" +
+"     :sampling_rate = 1.0f; // float\n" +
+"     :units = \"degrees (+N)\";\n" +
+"   float lon(time=10);\n" +
+"     :actual_range = 235.82f, 235.95f; // float\n" +
+"     :average_center = \"time at end of period\";\n" +
+"     :average_length = 60S; // short\n" +
+"     :average_method = \"average\";\n" +
+"     :data_precision = -9999.0f; // float\n" +
+"     :instrument = \"unknown\";\n" +
+"     :long_name = \"longitude\";\n" +
+"     :observation_type = \"measured\";\n" +
+"     :original_units = \"degrees (-W/+E)\";\n" +
+"     :qcindex = 3; // int\n" +
+"     :sampling_rate = 1.0f; // float\n" +
+"     :units = \"degrees (+E)\";\n" +
+"   float PL_HD(time=10);\n" +
+"     :actual_range = 37.89f, 355.17f; // float\n" +
+"     :average_center = \"time at end of period\";\n" +
+"     :average_length = 60S; // short\n" +
+"     :average_method = \"average\";\n" +
+"     :data_precision = -9999.0f; // float\n" +
+"     :instrument = \"unknown\";\n" +
+"     :long_name = \"platform heading\";\n" +
+"     :missing_value = -9999.0f; // float\n" +
+"     :observation_type = \"calculated\";\n" +
+"     :original_units = \"degrees (clockwise towards true north)\";\n" +
+"     :qcindex = 4; // int\n" +
+"     :sampling_rate = 1.0f; // float\n" +
+"     :special_value = -8888.0f; // float\n" +
+"     :units = \"degrees (clockwise towards true north)\";\n" +
+"\n" +
+" :contact_email = \"samos@coaps.fsu.edu\";\n" +
+" :contact_info = \"Center for Ocean-Atmospheric Prediction Studies, The Florida State University, Tallahassee, FL, 32306-2840, USA\";\n" +
+" :Cruise_id = \"Cruise_id undefined for now\";\n" +
+" :Data_modification_date = \"02/07/2012 10:03:37 EST\";\n" +
+" :data_provider = \"Timothy Salisbury\";\n" +
+" :elev = 0S; // short\n" +
+" :end_date_time = \"2012/01/28 -- 23:59  UTC\";\n" +
+" :EXPOCODE = \"EXPOCODE undefined for now\";\n" +
+" :facility = \"NOAA\";\n" +
+" :fsu_version = \"300\";\n" +
+" :ID = \"WTEP\";\n" +
+" :IMO = \"009270335\";\n" +
+" :Metadata_modification_date = \"02/07/2012 10:03:37 EST\";\n" +
+" :platform = \"SCS\";\n" +
+" :platform_version = \"4.0\";\n" +
+" :receipt_order = \"01\";\n" +
+" :site = \"OSCAR DYSON\";\n" +
+" :start_date_time = \"2012/01/28 -- 21:36  UTC\";\n" +
+" :title = \"OSCAR DYSON Meteorological Data\";\n" +
+" data:\n" +
+"time =\n" +
+"  {16870896, 16870906, 16870916, 16870926, 16870936, 16870946, 16870956, 16870966, 16870976, 16870986}\n" +
+"lat =\n" +
+"  {44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.62, 44.61}\n" +
+"lon =\n" +
+"  {235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.94, 235.91}\n" +
+"PL_HD =\n" +
+"  {75.53, 75.72, 76.65, 76.43, 76.58, 63.34, 266.49, 246.52, 220.81, 242.11}\n" +
+"}\n";
+/* from
+http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc.ascii?time[0:10:99],lat[0:10:99],lon[0:10:99],PL_HD[0:10:99]
+time[10]  16870896, 16870906, 16870916, 16870926, 16870936, 16870946, 16870956, 16870966, 16870976, 16870986
+lat[10]   44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.63, 44.62, 44.61
+lon[10]   235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.95, 235.94, 235.91
+PL_HD[10] 75.53, 75.72, 76.65, 76.43, 76.58, 63.34, 266.49, 246.52, 220.81, 242.11
+*/
+            Test.ensureEqual(results, expected, "results=" + results);
+            File2.delete(fileName);
+            if (true) throw new RuntimeException("shouldn't get here");
+        } catch (OutOfMemoryError oome) {
+            String2.log(
+"\n" +
+"2012-03-02 Currently, this fails with OutOfMemoryError (from problem in TDS?).\n" +
+"I reported problem to John Caron.\n" +
+                MustBe.throwableToString(oome));
+//OpendapHelper.getPrimitiveArrays ?flag[0:10:99]
+//Exception in thread "main" java.lang.OutOfMemoryError: Java heap space
+//        at dods.dap.BaseTypePrimitiveVector.setLength(BaseTypePrimitiveVector.java:69)
+//        at dods.dap.DVector.deserialize(DVector.java:221)
+//        at dods.dap.DataDDS.readData(DataDDS.java:75)
+//        at dods.dap.DConnect.getDataFromUrl(DConnect.java:523)
+//        at dods.dap.DConnect.getData(DConnect.java:450)
+//        at dods.dap.DConnect.getData(DConnect.java:633)
+//        at gov.noaa.pfel.coastwatch.griddata.OpendapHelper.getPrimitiveArrays(OpendapHelper.java:458)
+//        at gov.noaa.pfel.coastwatch.griddata.OpendapHelper.dapToNc(OpendapHelper.java:1398)
+//        at gov.noaa.pfel.coastwatch.griddata.OpendapHelper.testDapToNcDArray(OpendapHelper.java:1628)
+//        at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:723)
+            String2.getStringFromSystemIn(
+                "Press ^C to stop or Enter to continue..."); 
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                "\nUnexpected error.   OutOfMememoryError from TDS bug was expected." + 
+                "\nPress ^C to stop or Enter to continue..."); 
+        }
+
+
+        //test DArray error caused by history having different dimensions
+        String2.log("\n*** test DArray error cause by history having different dimensions");
+        try {
+            dapToNc(dArrayUrl,
+                new String[] {"zztop", "time", "lat", "lon", "PL_HD", "history"}, null, //projection
+                fileName, false); //jplMode
+            Test.ensureEqual(0, 1, "");
+        } catch (Throwable t) {
+            results = t.toString();
+expected = 
+"java.lang.RuntimeException: ERROR in OpendapHelper.dapToNc\n" +
+"  url=http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc\n" +
+"  varNames=zztop,time,lat,lon,PL_HD,history  projection=null\n" +
+"  file=C:/programs/tomcat/webapps/cwexperimental/WEB-INF/temp/testDapToNcDArraySubset.nc\n" +
+"var=history has different dimensions than previous vars.";
+            Test.ensureEqual(results, expected, "results=" + results);
+        }
+
+        String2.log("\n*** OpendapHelper.testDapToNcDArray finished.");
+    }
+
+
+    /** This tests dapToNc DGrid. */
+    public static void testDapToNcDGrid() throws Throwable {
+        String2.log("\n\n*** OpendapHelper.testDapToNcDGrid");
+        String fileName, expected, results;      
+        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+
+        fileName = SSR.getTempDirectory() + "testDapToNcDGrid.nc";
+        String dGridUrl = "http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday";
+        dapToNc(dGridUrl, 
+            //note that request for zztop is ignored (because not found)
+            new String[] {"zztop", "x_wind", "y_wind"}, "[5][0][0:200:1200][0:200:2880]", //projection
+            fileName, false); //jplMode
+        results = NcHelper.dumpString(fileName, true); //printData
+        expected = 
+"netcdf testDapToNcDGrid.nc {\n" +
+" dimensions:\n" +
+"   time = 1;\n" +
+"   altitude = 1;\n" +
+"   latitude = 7;\n" +
+"   longitude = 15;\n" +
+" variables:\n" +
+"   double time(time=1);\n" +
+"     :_CoordinateAxisType = \"Time\";\n" +
+"     :actual_range = 9.348048E8, 1.2556944E9; // double\n" +
+"     :axis = \"T\";\n" +
+"     :fraction_digits = 0; // int\n" +
+"     :ioos_category = \"Time\";\n" +
+"     :long_name = \"Centered Time\";\n" +
+"     :standard_name = \"time\";\n" +
+"     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"   double altitude(altitude=1);\n" +
+"     :_CoordinateAxisType = \"Height\";\n" +
+"     :_CoordinateZisPositive = \"up\";\n" +
+"     :actual_range = 0.0, 0.0; // double\n" +
+"     :axis = \"Z\";\n" +
+"     :fraction_digits = 0; // int\n" +
+"     :ioos_category = \"Location\";\n" +
+"     :long_name = \"Altitude\";\n" +
+"     :positive = \"up\";\n" +
+"     :standard_name = \"altitude\";\n" +
+"     :units = \"m\";\n" +
+"   double latitude(latitude=7);\n" +
+"     :_CoordinateAxisType = \"Lat\";\n" +
+"     :actual_range = -75.0, 75.0; // double\n" +
+"     :axis = \"Y\";\n" +
+"     :coordsys = \"geographic\";\n" +
+"     :fraction_digits = 2; // int\n" +
+"     :ioos_category = \"Location\";\n" +
+"     :long_name = \"Latitude\";\n" +
+"     :point_spacing = \"even\";\n" +
+"     :standard_name = \"latitude\";\n" +
+"     :units = \"degrees_north\";\n" +
+"   double longitude(longitude=15);\n" +
+"     :_CoordinateAxisType = \"Lon\";\n" +
+"     :actual_range = 0.0, 360.0; // double\n" +
+"     :axis = \"X\";\n" +
+"     :coordsys = \"geographic\";\n" +
+"     :fraction_digits = 2; // int\n" +
+"     :ioos_category = \"Location\";\n" +
+"     :long_name = \"Longitude\";\n" +
+"     :point_spacing = \"even\";\n" +
+"     :standard_name = \"longitude\";\n" +
+"     :units = \"degrees_east\";\n" +
+"   float x_wind(time=1, altitude=1, latitude=7, longitude=15);\n" +
+"     :_FillValue = -9999999.0f; // float\n" +
+"     :colorBarMaximum = 15.0; // double\n" +
+"     :colorBarMinimum = -15.0; // double\n" +
+"     :coordsys = \"geographic\";\n" +
+"     :fraction_digits = 1; // int\n" +
+"     :ioos_category = \"Wind\";\n" +
+"     :long_name = \"Zonal Wind\";\n" +
+"     :missing_value = -9999999.0f; // float\n" +
+"     :standard_name = \"x_wind\";\n" +
+"     :units = \"m s-1\";\n" +
+"   float y_wind(time=1, altitude=1, latitude=7, longitude=15);\n" +
+"     :_FillValue = -9999999.0f; // float\n" +
+"     :colorBarMaximum = 15.0; // double\n" +
+"     :colorBarMinimum = -15.0; // double\n" +
+"     :coordsys = \"geographic\";\n" +
+"     :fraction_digits = 1; // int\n" +
+"     :ioos_category = \"Wind\";\n" +
+"     :long_name = \"Meridional Wind\";\n" +
+"     :missing_value = -9999999.0f; // float\n" +
+"     :standard_name = \"y_wind\";\n" +
+"     :units = \"m s-1\";\n" +
+"\n" +
+" :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
+" :cdm_data_type = \"Grid\";\n" +
+" :composite = \"true\";\n" +
+" :contributor_name = \"Remote Sensing Systems, Inc.\";\n" +
+" :contributor_role = \"Source of level 2 data.\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+" :creator_email = \"dave.foley@noaa.gov\";\n" +
+" :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
+" :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
+" :date_created = \"2010-04-18Z\";\n" +
+" :date_issued = \"2010-04-18Z\";\n" +
+" :Easternmost_Easting = 360.0; // double\n" +
+" :geospatial_lat_max = 75.0; // double\n" +
+" :geospatial_lat_min = -75.0; // double\n" +
+" :geospatial_lat_resolution = 0.125; // double\n" +
+" :geospatial_lat_units = \"degrees_north\";\n" +
+" :geospatial_lon_max = 360.0; // double\n" +
+" :geospatial_lon_min = 0.0; // double\n" +
+" :geospatial_lon_resolution = 0.125; // double\n" +
+" :geospatial_lon_units = \"degrees_east\";\n" +
+" :geospatial_vertical_max = 0.0; // double\n" +
+" :geospatial_vertical_min = 0.0; // double\n" +
+" :geospatial_vertical_positive = \"up\";\n" +
+" :geospatial_vertical_units = \"m\";\n" +
+" :history = \"Remote Sensing Systems, Inc.\n" +
+"2010-04-18T02:00:49Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
+today + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
+today + " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
+" :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
+" :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
+" :keywords = \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
+"Oceans > Ocean Winds > Surface Winds,\n" +
+"atmosphere, atmospheric, coastwatch, degrees, global, level, monthly, noaa, ocean, oceans, quality, quikscat, science, science quality, seawinds, surface wcn, wind, winds, x_wind, zonal\";\n" +
+" :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
+" :license = \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+" :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
+" :Northernmost_Northing = 75.0; // double\n" +
+" :origin = \"Remote Sensing Systems, Inc.\";\n" +
+" :processing_level = \"3\";\n" +
+" :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
+" :projection = \"geographic\";\n" +
+" :projection_type = \"mapped\";\n" +
+" :references = \"RSS Inc. Winds: http://www.remss.com/ .\";\n" +
+" :satellite = \"QuikSCAT\";\n" +
+" :sensor = \"SeaWinds\";\n" +
+" :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
+" :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\";\n" +
+" :Southernmost_Northing = -75.0; // double\n" +
+" :standard_name_vocabulary = \"CF-12\";\n" +
+" :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
+" :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
+" :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +
+" :title = \"Wind, QuikSCAT, Global, Science Quality (Monthly Composite)\";\n" +
+" :Westernmost_Easting = 0.0; // double\n" +
+" data:\n" +
+"time =\n" +
+"  {9.48024E8}\n" +
+"altitude =\n" +
+"  {0.0}\n" +
+"latitude =\n" +
+"  {-75.0, -50.0, -25.0, 0.0, 25.0, 50.0, 75.0}\n" +
+"longitude =\n" +
+"  {0.0, 25.0, 50.0, 75.0, 100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0, 325.0, 350.0}\n" +
+"x_wind =\n" +
+"  {\n" +
+"    {\n" +
+"      {\n" +
+"        {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 0.76867574, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0},\n" +
+"        {6.903795, 7.7432585, 8.052648, 7.375461, 8.358787, 7.5664454, 4.537408, 4.349131, 2.4506109, 2.1340106, 6.4230127, 8.5656395, 5.679372, 5.775274, 6.8520603},\n" +
+"        {-3.513153, -9999999.0, -5.7222853, -4.0249896, -4.6091595, -9999999.0, -9999999.0, -3.9060166, -1.821446, -2.0546885, -2.349195, -4.2188687, -9999999.0, -0.7905332, -3.715024},\n" +
+"        {0.38850072, -9999999.0, -2.8492346, 0.7843591, -9999999.0, -0.353197, -0.93183184, -5.3337674, -7.8715024, -5.2341905, -2.1567967, 0.46681255, -9999999.0, -3.7223456, -1.3264368},\n" +
+"        {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -4.250928, -1.9779109, -2.3081408, -6.070514, -3.4209945, 2.3732827, -3.4732149, -3.2282434, -3.99131, -9999999.0},\n" +
+"        {2.3816996, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 1.9863724, 1.746363, 5.305478, 2.3346918, -9999999.0, -9999999.0, 2.0079596, 3.4320266, 1.8692436},\n" +
+"        {0.83961326, -3.4395192, -3.1952338, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -2.9099085}\n" +
+"      }\n" +
+"    }\n" +
+"  }\n" +
+"y_wind =\n" +
+"  {\n" +
+"    {\n" +
+"      {\n" +
+"        {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 3.9745862, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0},\n" +
+"        {-1.6358501, -2.1310546, -1.672539, -2.8083494, -1.7282568, -2.5679686, -0.032763753, 0.6524638, 0.9784334, -2.4545083, 0.6344165, -0.5887741, -0.6837046, -0.92711323, -1.9981208},\n" +
+"        {3.7522712, -9999999.0, -0.04178731, 1.6603879, 5.321683, -9999999.0, -9999999.0, 1.5633415, -0.50912154, -2.964269, -0.92438585, 3.959174, -9999999.0, -2.2249718, 0.46982485},\n" +
+"        {4.8992314, -9999999.0, -4.7178936, -3.2770228, -9999999.0, -2.8111093, -0.9852706, 0.46997508, 0.0683085, 0.46172503, 1.2998049, 3.5235379, -9999999.0, 1.1354263, 4.7139735},\n" +
+"        {-9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -5.092368, -3.3667018, -0.60028434, -0.7609817, -1.114303, -3.6573937, -0.934499, -0.40036556, -2.5770886, -9999999.0},\n" +
+"        {0.56877106, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -3.2394278, 0.45922723, -0.8394715, 0.7333555, -9999999.0, -9999999.0, -2.3936603, 3.725975, 0.09879057},\n" +
+"        {-6.128998, 2.379096, 7.463917, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -11.026609}\n" +
+"      }\n" +
+"    }\n" +
+"  }\n" +
+"}\n";
+/*From .asc request:
+http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.asc?x_wind[5][0][0:200:1200][0:200:2880],y_wind[5][0][0:200:1200][0:200:2880]
+x_wind.x_wind[1][1][7][15]
+[0][0][0], -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 0.76867574, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0
+[0][0][1], 6.903795, 7.7432585, 8.052648, 7.375461, 8.358787, 7.5664454, 4.537408, 4.349131, 2.4506109, 2.1340106, 6.4230127, 8.5656395, 5.679372, 5.775274, 6.8520603
+[0][0][2], -3.513153, -9999999.0, -5.7222853, -4.0249896, -4.6091595, -9999999.0, -9999999.0, -3.9060166, -1.821446, -2.0546885, -2.349195, -4.2188687, -9999999.0, -0.7905332, -3.715024
+[0][0][3], 0.38850072, -9999999.0, -2.8492346, 0.7843591, -9999999.0, -0.353197, -0.93183184, -5.3337674, -7.8715024, -5.2341905, -2.1567967, 0.46681255, -9999999.0, -3.7223456, -1.3264368
+[0][0][4], -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -4.250928, -1.9779109, -2.3081408, -6.070514, -3.4209945, 2.3732827, -3.4732149, -3.2282434, -3.99131, -9999999.0
+[0][0][5], 2.3816996, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 1.9863724, 1.746363, 5.305478, 2.3346918, -9999999.0, -9999999.0, 2.0079596, 3.4320266, 1.8692436
+[0][0][6], 0.83961326, -3.4395192, -3.1952338, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -2.9099085
+y_wind.y_wind[1][1][7][15]
+[0][0][0], -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 3.9745862, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0
+[0][0][1], -1.6358501, -2.1310546, -1.672539, -2.8083494, -1.7282568, -2.5679686, -0.032763753, 0.6524638, 0.9784334, -2.4545083, 0.6344165, -0.5887741, -0.6837046, -0.92711323, -1.9981208
+[0][0][2], 3.7522712, -9999999.0, -0.04178731, 1.6603879, 5.321683, -9999999.0, -9999999.0, 1.5633415, -0.50912154, -2.964269, -0.92438585, 3.959174, -9999999.0, -2.2249718, 0.46982485
+[0][0][3], 4.8992314, -9999999.0, -4.7178936, -3.2770228, -9999999.0, -2.8111093, -0.9852706, 0.46997508, 0.0683085, 0.46172503, 1.2998049, 3.5235379, -9999999.0, 1.1354263, 4.7139735
+[0][0][4], -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -5.092368, -3.3667018, -0.60028434, -0.7609817, -1.114303, -3.6573937, -0.934499, -0.40036556, -2.5770886, -9999999.0
+[0][0][5], 0.56877106, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -3.2394278, 0.45922723, -0.8394715, 0.7333555, -9999999.0, -9999999.0, -2.3936603, 3.725975, 0.09879057
+[0][0][6], -6.128998, 2.379096, 7.463917, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -11.026609
+*/
+        Test.ensureEqual(results, expected, "results=" + results);
+        File2.delete(fileName);
+
+        //test 1D var should be ignored if others are 2+D
+        String2.log("\n*** test 1D var should be ignored if others are 2+D");
+        fileName = SSR.getTempDirectory() + "testDapToNcDGrid1D2D.nc";
+        dapToNc(dGridUrl,
+            new String[] {"zztop", "x_wind", "y_wind", "latitude"}, 
+            "[5][0][0:200:1200][0:200:2880]", //projection
+            fileName, false); //jplMode
+        results = NcHelper.dumpString(fileName, false); //printData
+        expected = 
+"netcdf testDapToNcDGrid1D2D.nc {\n" +
+" dimensions:\n" +
+"   time = 1;\n" +
+"   altitude = 1;\n" +
+"   latitude = 7;\n" +
+"   longitude = 15;\n" +
+" variables:\n" +
+"   double time(time=1);\n" +
+"     :_CoordinateAxisType = \"Time\";\n" +
+"     :actual_range = 9.348048E8, 1.2556944E9; // double\n" +
+"     :axis = \"T\";\n" +
+"     :fraction_digits = 0; // int\n" +
+"     :ioos_category = \"Time\";\n" +
+"     :long_name = \"Centered Time\";\n" +
+"     :standard_name = \"time\";\n" +
+"     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"   double altitude(altitude=1);\n" +
+"     :_CoordinateAxisType = \"Height\";\n" +
+"     :_CoordinateZisPositive = \"up\";\n" +
+"     :actual_range = 0.0, 0.0; // double\n" +
+"     :axis = \"Z\";\n" +
+"     :fraction_digits = 0; // int\n" +
+"     :ioos_category = \"Location\";\n" +
+"     :long_name = \"Altitude\";\n" +
+"     :positive = \"up\";\n" +
+"     :standard_name = \"altitude\";\n" +
+"     :units = \"m\";\n" +
+"   double latitude(latitude=7);\n" +
+"     :_CoordinateAxisType = \"Lat\";\n" +
+"     :actual_range = -75.0, 75.0; // double\n" +
+"     :axis = \"Y\";\n" +
+"     :coordsys = \"geographic\";\n" +
+"     :fraction_digits = 2; // int\n" +
+"     :ioos_category = \"Location\";\n" +
+"     :long_name = \"Latitude\";\n" +
+"     :point_spacing = \"even\";\n" +
+"     :standard_name = \"latitude\";\n" +
+"     :units = \"degrees_north\";\n" +
+"   double longitude(longitude=15);\n" +
+"     :_CoordinateAxisType = \"Lon\";\n" +
+"     :actual_range = 0.0, 360.0; // double\n" +
+"     :axis = \"X\";\n" +
+"     :coordsys = \"geographic\";\n" +
+"     :fraction_digits = 2; // int\n" +
+"     :ioos_category = \"Location\";\n" +
+"     :long_name = \"Longitude\";\n" +
+"     :point_spacing = \"even\";\n" +
+"     :standard_name = \"longitude\";\n" +
+"     :units = \"degrees_east\";\n" +
+"   float x_wind(time=1, altitude=1, latitude=7, longitude=15);\n" +
+"     :_FillValue = -9999999.0f; // float\n" +
+"     :colorBarMaximum = 15.0; // double\n" +
+"     :colorBarMinimum = -15.0; // double\n" +
+"     :coordsys = \"geographic\";\n" +
+"     :fraction_digits = 1; // int\n" +
+"     :ioos_category = \"Wind\";\n" +
+"     :long_name = \"Zonal Wind\";\n" +
+"     :missing_value = -9999999.0f; // float\n" +
+"     :standard_name = \"x_wind\";\n" +
+"     :units = \"m s-1\";\n" +
+"   float y_wind(time=1, altitude=1, latitude=7, longitude=15);\n" +
+"     :_FillValue = -9999999.0f; // float\n" +
+"     :colorBarMaximum = 15.0; // double\n" +
+"     :colorBarMinimum = -15.0; // double\n" +
+"     :coordsys = \"geographic\";\n" +
+"     :fraction_digits = 1; // int\n" +
+"     :ioos_category = \"Wind\";\n" +
+"     :long_name = \"Meridional Wind\";\n" +
+"     :missing_value = -9999999.0f; // float\n" +
+"     :standard_name = \"y_wind\";\n" +
+"     :units = \"m s-1\";\n" +
+"\n" +
+" :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
+" :cdm_data_type = \"Grid\";\n" +
+" :composite = \"true\";\n" +
+" :contributor_name = \"Remote Sensing Systems, Inc.\";\n" +
+" :contributor_role = \"Source of level 2 data.\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+" :creator_email = \"dave.foley@noaa.gov\";\n" +
+" :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
+" :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
+" :date_created = \"2010-04-18Z\";\n" +
+" :date_issued = \"2010-04-18Z\";\n" +
+" :Easternmost_Easting = 360.0; // double\n" +
+" :geospatial_lat_max = 75.0; // double\n" +
+" :geospatial_lat_min = -75.0; // double\n" +
+" :geospatial_lat_resolution = 0.125; // double\n" +
+" :geospatial_lat_units = \"degrees_north\";\n" +
+" :geospatial_lon_max = 360.0; // double\n" +
+" :geospatial_lon_min = 0.0; // double\n" +
+" :geospatial_lon_resolution = 0.125; // double\n" +
+" :geospatial_lon_units = \"degrees_east\";\n" +
+" :geospatial_vertical_max = 0.0; // double\n" +
+" :geospatial_vertical_min = 0.0; // double\n" +
+" :geospatial_vertical_positive = \"up\";\n" +
+" :geospatial_vertical_units = \"m\";\n" +
+" :history = \"Remote Sensing Systems, Inc.\n" +
+"2010-04-18T02:00:49Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
+today + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
+today + " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
+" :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
+" :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
+" :keywords = \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
+"Oceans > Ocean Winds > Surface Winds,\n" +
+"atmosphere, atmospheric, coastwatch, degrees, global, level, monthly, noaa, ocean, oceans, quality, quikscat, science, science quality, seawinds, surface wcn, wind, winds, x_wind, zonal\";\n" +
+" :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
+" :license = \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+" :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
+" :Northernmost_Northing = 75.0; // double\n" +
+" :origin = \"Remote Sensing Systems, Inc.\";\n" +
+" :processing_level = \"3\";\n" +
+" :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
+" :projection = \"geographic\";\n" +
+" :projection_type = \"mapped\";\n" +
+" :references = \"RSS Inc. Winds: http://www.remss.com/ .\";\n" +
+" :satellite = \"QuikSCAT\";\n" +
+" :sensor = \"SeaWinds\";\n" +
+" :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
+" :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\";\n" +
+" :Southernmost_Northing = -75.0; // double\n" +
+" :standard_name_vocabulary = \"CF-12\";\n" +
+" :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
+" :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
+" :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +
+" :title = \"Wind, QuikSCAT, Global, Science Quality (Monthly Composite)\";\n" +
+" :Westernmost_Easting = 0.0; // double\n" +
+" data:\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "results=" + results);
+        File2.delete(fileName);
+
+
+
+        /* */
+        String2.log("\n*** OpendapHelper.testDapToNcDGrid finished.");
+
+    }
+
+    
+
+    /** This tests parseStartStrideStop and throws exception if trouble.*/
+    public static void testParseStartStrideStop() {
+
+        Test.ensureEqual(String2.toCSSVString(parseStartStrideStop(null)), "", ""); 
+        Test.ensureEqual(String2.toCSSVString(parseStartStrideStop("")), "", ""); 
+        Test.ensureEqual(String2.toCSSVString(parseStartStrideStop("[6:7:8]")), 
+            "6, 7, 8", ""); 
+        Test.ensureEqual(String2.toCSSVString(parseStartStrideStop("[5][3:4][6:7:8]")), 
+            "5, 1, 5, 3, 1, 4, 6, 7, 8", ""); 
+        try {
+            parseStartStrideStop("a");
+            Test.ensureEqual(0, 1, "");
+        } catch (Throwable t) {
+            Test.ensureEqual(t.toString(), 
+                "java.lang.RuntimeException: ERROR parsing OPENDAP constraint=\"a\": '[' expected at projection position #0", 
+                ""); 
+        }
+        try {
+            parseStartStrideStop("[");
+            Test.ensureEqual(0, 1, "");
+        } catch (Throwable t) {
+            Test.ensureEqual(t.toString(), 
+                "java.lang.RuntimeException: ERROR parsing OPENDAP constraint=\"[\": End ']' not found.", 
+                ""); 
+        }
+        try {
+            parseStartStrideStop("[5");
+            Test.ensureEqual(0, 1, "");
+        } catch (Throwable t) {
+            Test.ensureEqual(t.toString(), 
+                "java.lang.RuntimeException: ERROR parsing OPENDAP constraint=\"[5\": End ']' not found.", 
+                ""); 
+        }
+        try {
+            parseStartStrideStop("[5:t]");
+            Test.ensureEqual(0, 1, "");
+        } catch (Throwable t) {
+            Test.ensureEqual(t.toString(), 
+                "java.lang.NumberFormatException: For input string: \"t\"", 
+                ""); 
+        }
+        try {
+            parseStartStrideStop("[-1]");
+            Test.ensureEqual(0, 1, "");
+        } catch (Throwable t) {
+            Test.ensureEqual(t.toString(), 
+                "java.lang.RuntimeException: ERROR parsing OPENDAP constraint=\"[-1]\": Negative number=-1 at projection position #1", 
+                ""); 
+        }
+        try {
+            parseStartStrideStop("[0:1:2:3]");
+            Test.ensureEqual(0, 1, "");
+        } catch (Throwable t) {
+            Test.ensureEqual(t.toString(), 
+                "java.lang.NumberFormatException: For input string: \"2:3\"", 
+                ""); 
+        }
+        try {
+            parseStartStrideStop("[4:3]");
+            Test.ensureEqual(0, 1, "");
+        } catch (Throwable t) {
+            Test.ensureEqual(t.toString(), 
+                "java.lang.RuntimeException: ERROR parsing OPENDAP constraint=\"[4:3]\": start=4 must be less than or equal to stop=3", 
+                ""); 
+        }
+        try {
+            parseStartStrideStop("[4:2:3]");
+            Test.ensureEqual(0, 1, "");
+        } catch (Throwable t) {
+            Test.ensureEqual(t.toString(), 
+                "java.lang.RuntimeException: ERROR parsing OPENDAP constraint=\"[4:2:3]\": start=4 must be less than or equal to stop=3", 
+                ""); 
+        }
+
+        //test calculateNValues
+        Test.ensureEqual(calculateNValues(1, 1, 3), 3, "");
+        Test.ensureEqual(calculateNValues(1, 2, 3), 2, "");
+        Test.ensureEqual(calculateNValues(1, 2, 4), 2, "");
+        try {
+            calculateNValues(4,2,3);
+            Test.ensureEqual(0, 1, "");
+        } catch (Throwable t) {
+            Test.ensureEqual(t.toString(), 
+                "java.lang.RuntimeException: start=4 must be less than or equal to stop=3", 
+                ""); 
+        }
+        try {
+            calculateNValues(3,0,5);
+            Test.ensureEqual(0, 1, "");
+        } catch (Throwable t) {
+            Test.ensureEqual(t.toString(), 
+                "java.lang.RuntimeException: stride=0 must be greater than 0", 
+                ""); 
+        }       
+    }
+
     /**
      * This tests the methods in this class.
-     * Currently, all tests are done in other classes (at a higher level).
      */
-    public static void test() {
+    public static void test() throws Throwable{
         String2.log("\n*** OpendapHelper.test...");
 
-        //done
-        String2.log("\n***** Opendap.test finished successfully");
+        /* */
+        testGetAttributes();
+        testParseStartStrideStop();
+        testFindVarsWithSharedDimensions();
+        testDapToNcDArray();
+        testDapToNcDGrid();
+
+        String2.log("\n***** OpendapHelper.test finished successfully");
         Math2.incgc(2000);
     } 
 

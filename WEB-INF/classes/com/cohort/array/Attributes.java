@@ -31,7 +31,7 @@ public class Attributes {
     public final static String ERROR = String2.ERROR; 
 
     /** The backing data structure.  It is thread-safe. */
-    private ConcurrentHashMap hashmap = new ConcurrentHashMap();
+    private ConcurrentHashMap hashmap = new ConcurrentHashMap(16, 0.75f, 4);
 
     /**
      * This constructs a new, empty Attributes object.
@@ -657,6 +657,32 @@ public class Attributes {
         }
     }
 
+    /**
+     * This trim()s all names/keys and trim()s all 1 String values.
+     */
+    public void trim() {
+        Iterator it = hashmap.keySet().iterator(); 
+        while (it.hasNext()) {
+            String name = (String)it.next();
+            String tName = name.trim();
+            PrimitiveArray pa = null;
+            if (!name.equals(tName)) {
+                //switch to trim'd name
+                pa = remove(name);
+                set(name = tName, pa);
+            } else {
+                pa = get(name);
+            }
+
+            //trim value?
+            if (pa instanceof StringArray && pa.size() > 0) {
+                pa.setString(0, String2.trimStart(pa.getString(0)));
+                pa.setString(pa.size() - 1, String2.trimEnd(pa.getString(pa.size() - 1)));
+            }
+        }
+
+    }
+
 
 
     /**
@@ -833,6 +859,21 @@ public class Attributes {
             "    a=1\n" +
             "    c=3.0\n",
             "");
+
+        //trim
+        atts.clear();
+        atts.add(" a ", " A ");
+        atts.add("b ", "B");
+        atts.add("c",  "C");
+        atts.add("d",  4);
+        atts.trim();
+        Test.ensureEqual(atts.toString(), 
+            "    a=\"A\"\n" +
+            "    b=\"B\"\n" +
+            "    c=\"C\"\n" +
+            "    d=4\n",
+            "");
+
 
 
 

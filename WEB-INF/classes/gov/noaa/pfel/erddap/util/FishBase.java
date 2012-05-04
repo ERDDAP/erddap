@@ -91,7 +91,7 @@ public class FishBase  {
             gatts.set("id", "null");
             gatts.set("observationDimension", "null");
             gatts.set("cdm_data_type", "Other");
-            gatts.set("Conventions", "COARDS, CF-1.4, Unidata Dataset Discovery v1.0");
+            gatts.set("Conventions", "COARDS, CF-1.6, Unidata Dataset Discovery v1.0");
             gatts.set("history", "The FishBase 2004 DVD\n" +
                 today + " Reformatted for ERDDAP at NOAA SWFSC ERD by bob.simons@noaa.gov");
             gatts.set("infoUrl", "http://www.fishbase.org");
@@ -101,7 +101,7 @@ public class FishBase  {
 "DISCLAIMER: We cannot guarantee the accuracy or completeness of the information in FishBase. Neither ICLARM nor any of its collaborators will be liable for any direct or indirect damage arising out of the use of FishBase.\n" +
 "\n" +
 EDStatic.standardLicense);
-            gatts.set("Metadata_Conventions", "COARDS, CF-1.4, Unidata Dataset Discovery v1.0");
+            gatts.set("Metadata_Conventions", "COARDS, CF-1.6, Unidata Dataset Discovery v1.0");
             gatts.set("sourceUrl", "(local files)");
             gatts.set("standard_name_vocabulary", "CF-12");
             String startReference = "To give due credit to the original authors, please cite:\n" +

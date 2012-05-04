@@ -241,7 +241,7 @@ public class EDVTimeStamp extends EDV {
     }
 
     /**
-     * This converts a destination double value to an ISO string
+     * This converts a destination double value to an ISO string with "Z".
      * NaN returns "".
      *
      * @param destD

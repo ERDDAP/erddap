@@ -76,7 +76,7 @@ public class HdfScientificData extends HdfTag {
      * @return a string describing this object
      */
     public String toString() {
-        String s = String2.toHexCSVString(data);
+        String s = String2.toHexCSSVString(data);
         return "HdfScientificData" +
             "[tagType=0x" + Integer.toHexString(tagType) +
             ", referenceNumber=" + referenceNumber +

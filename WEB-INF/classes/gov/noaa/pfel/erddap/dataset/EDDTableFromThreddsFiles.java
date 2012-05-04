@@ -15,34 +15,48 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
+import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.XML;
 
 /** The Java DAP classes.  */
 import dods.dap.*;
 
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
 import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.util.TaskThread;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 
 
 /** 
- * This class represents a directory tree with a collection of n-dimensional (1,2,3,4,...) 
- * opendap files, each of which is flattened into a table.
+ * This class downloads data from a THREDDS data server with lots of files 
+ * into .nc files in the [bigParentDirectory]/copy/datasetID, 
+ * and then uses superclass EDDTableFromFiles methods to read/serve data 
+ * from the .nc files. So don't wrap this class in EDDTableCopy.
+ * 
+ * <p>The TDS files can be n-dimensional (1,2,3,4,...) DArray or DGrid
+ * OPeNDAP files, each of which is flattened into a table.
  * For example, http://biloxi-bay.ssc.hpc.msstate.edu/dods-bin/nph-dods/WCOS/nmsp/wcos/ 
  * (the four dimensions there are e.g., time,depth,lat,lon).
  *
- * @author Bob Simons (bob.simons@noaa.gov) 2009-06-08
+ * <p>This class is very similar to EDDTableFromHyraxFiles.
+ *
+ * @author Bob Simons (bob.simons@noaa.gov) originally 2009-06-08;
+ * modified extensively (copy the files first) 2012-02-21.
  */
 public class EDDTableFromThreddsFiles extends EDDTableFromFiles { 
 
@@ -50,27 +64,26 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      * It is unlikely anyone would want to change this. */
     public static boolean acceptDeflate = true;
 
-    //info from last getFileNames
-    private StringArray lastFileDirs;
-    //these three are have matching values for each file:
-    private ShortArray  lastFileDirIndex; 
-    private StringArray lastFileName; 
-    private LongArray   lastFileLastMod; 
 
-    private String[] sourceAxisNames;
 
     /** 
      * The constructor just calls the super constructor. 
+     *
+     * <p>The sortedColumnSourceName can't be for a char/String variable
+     *   because NcHelper binary searches are currently set up for numeric vars only.
      *
      * @param tAccessibleTo is a comma separated list of 0 or more
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * <p>The sortedColumnSourceName can't be for a char/String variable
-     *   because NcHelper binary searches are currently set up for numeric vars only.
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      */
     public EDDTableFromThreddsFiles(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
@@ -80,13 +93,15 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ) 
-        throws Throwable {
+        boolean tSourceNeedsExpandedFP_EQ) throws Throwable {
 
-        super("EDDTableFromThreddsFiles", false, tDatasetID, tAccessibleTo, tOnChange, 
+        super("EDDTableFromThreddsFiles", true, //isLocal is now set to true (copied files)
+            tDatasetID, tAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File,
             tAddGlobalAttributes, tAltMetersPerSourceUnit, 
             tDataVariables, tReloadEveryNMinutes,
-            tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
+            EDStatic.fullCopyDirectory + tDatasetID + "/", //force fileDir to be the copyDir 
+            tRecursive, tFileNameRegex, tMetadataFrom,
             tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
@@ -95,81 +110,327 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
     }
 
     /**
-     * This gets the fileNames from a thredds catalog.
-     * This overrides the superclass version of this method.
-     *
-     * @param fileDir for this version of this method, fileDir is the
-     *  url of the base catalog.xml file, e.g.,
-     *  http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml
-     *
-     * @returns an array with a list of full file names 
-     * @throws Throwable if trouble
+     * Create tasks to download files.
+     * If getThreddsFileInfo is completelySuccessful, local files that
+     * aren't mentioned on the server will be deleted.
+     * 
+     * @param catalogUrl  should have /catalog/ in the middle and 
+     *    catalog.html or catalog.xml at the end
+     * This won't throw an exception.
      */
-    public String[] getFileNames(String fileDir, String fileNameRegex, boolean recursive) throws Throwable {
-        if (reallyVerbose) String2.log("EDDTableFromThreddsFiles getFileNames");
-        //clear the stored file info
-        lastFileDirs     = new StringArray();
-        lastFileDirIndex = new ShortArray(); 
-        lastFileName     = new StringArray(); 
-        lastFileLastMod  = new LongArray(); 
+    public static void makeDownloadFileTasks(String tDatasetID, 
+        String catalogUrl, 
+        String fileNameRegex, boolean recursive, StringArray vars) {
 
-        //call the recursive method
-        getFileNameInfo(fileDir, fileNameRegex, recursive);
-
-        //assemble the fileNames
-        int n = lastFileDirIndex.size();
-        String tNames[] = new String[n];
-        for (int i = 0; i < n; i++) 
-            tNames[i] = lastFileDirs.array[lastFileDirIndex.array[i]] + lastFileName.array[i];
-        return tNames;
-    }
-
-    /**
-     * This does the work for getFileNames.
-     * This calls itself recursively, adding into to fileNameInfo as it is found.
-     *
-     * @param url the url of the current Thredds catalog xml, e.g.,
-     *    http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/catalog.xml
-     *    which leads to unaggregated datasets (each from a file) like
-          http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080429.nc(.html)
-     * @throws Throwable if trouble, e.g., if url doesn't respond
-     */
-    private void getFileNameInfo(String url, String fileNameRegex, boolean recursive) throws Throwable {
-        if (reallyVerbose) String2.log("\n<<< getFileNameInfo url=" + url + " regex=" + fileNameRegex);
-
-        int po = url.indexOf("/thredds/");
-        Test.ensureTrue(po > 0, "'/thredds/' not found in url=" + url);
-        String threddsBase = url.substring(0, po);  //no /thredds/..., no trailing /
-        String serviceBase = "/thredds/dodsC/"; //default
-        po = url.indexOf("/thredds/catalog/");
-        String catalogBase = po > 0? File2.getDirectory(url) : threddsBase + "/thredds/catalog/";
-        if (reallyVerbose) String2.log("threddsBase=" + threddsBase + "\ncatalogBase=" + catalogBase);
-        long time = System.currentTimeMillis();
-
-        String names[] = new String[5];
-        String datasetTags[] = {
-            "won't match",
-            "<catalog><dataset>",
-            "<catalog><dataset><dataset>",
-            "<catalog><dataset><dataset><dataset>",
-            "<catalog><dataset><dataset><dataset><dataset>"};
-        String endDatasetTags[] = {
-            "won't match",
-            "<catalog></dataset>",
-            "<catalog><dataset></dataset>",
-            "<catalog><dataset><dataset></dataset>",
-            "<catalog><dataset><dataset><dataset></dataset>"};
-        String endDateTags[] = {
-            "won't match",
-            "<catalog><dataset></date>",
-            "<catalog><dataset><dataset></date>",
-            "<catalog><dataset><dataset><dataset></date>",
-            "<catalog><dataset><dataset><dataset><dataset></date>"};
+        if (verbose) String2.log("* " + tDatasetID + " makeDownloadTasks from " + catalogUrl +
+            "\nfileNameRegex=" + fileNameRegex + " vars=" + vars.toString());
+        long startTime = System.currentTimeMillis();
 
         try {
-            //I could get inputStream from url, but then (via recursion) perhaps lots of streams open.
+            //if previous tasks are still running, return
+            EDStatic.ensureTaskThreadIsRunningIfNeeded();  //ensure info is up-to-date
+            Integer lastAssignedTask = (Integer)EDStatic.lastAssignedTask.get(tDatasetID);
+            if (lastAssignedTask != null &&  //previous tasks
+                EDStatic.lastFinishedTask < lastAssignedTask.intValue()) { //tasks are all done
+                if (verbose) 
+                    String2.log(tDatasetID + ": previously assigned tasks haven't been completed: " +
+                        EDStatic.lastFinishedTask + " < " + lastAssignedTask.intValue());
+                return;
+            }
+
+            //mimic the remote directory structure (there may be 10^6 files in many dirs)
+            //catalogUrl = http://data.nodc.noaa.gov/thredds/catalog /nmsp/wcos/ catalog.xml
+            //remoteBase = http://data.nodc.noaa.gov/thredds/dodsC   /nmsp/wcos/ 
+            //e.g., a URL  http://data.nodc.noaa.gov/thredds/dodsC   /nmsp/wcos/ WES001/2008/WES001_030MTBD029R00_20080429.nc
+            if (catalogUrl == null || catalogUrl.length() == 0)
+                throw new RuntimeException("ERROR: <sourceUrl>http://.../catalog.html</sourceUrl> " +
+                    "must be in the addGlobalAttributes section of the datasets.xml " +
+                    "for datasetID=" + tDatasetID);
+            if (catalogUrl.endsWith("/catalog.html"))
+                catalogUrl = File2.forceExtension(catalogUrl, ".xml");
+            String lookFor = File2.getDirectory(catalogUrl); //e.g., /nmsp/wcos/ , always at least /
+            int po = lookFor.indexOf("/catalog/"); 
+            if (po >= 0) {
+                lookFor = lookFor.substring(po + 8);  //8, not 9, so starts with /
+            } else {
+                po = lookFor.indexOf("/dodsC/"); 
+                if (po >= 0) 
+                    lookFor = lookFor.substring(po + 6);  //6, not 7, so starts with /
+                else throw new RuntimeException(
+                    "ERROR: <sourceUrl>" + catalogUrl + "</sourceUrl> " +
+                    "in datasets.xml for datasetID=" + tDatasetID +
+                    " must have /catalog/ in the middle.");
+            }
+            int lookForLength = lookFor.length();
+
+            //mimic the remote dir structure in baseDir
+            String baseDir = EDStatic.fullCopyDirectory + tDatasetID + "/";
+            //e.g. localFile EDStatic.fullCopyDirectory + tDatasetID +  / WES001/2008/WES001_030MTBD029R00_20080429.nc
+            File2.makeDirectory(baseDir);
+
+            //gather all sourceFile info
+            StringArray sourceFileDir   = new StringArray();
+            StringArray sourceFileName  = new StringArray();
+            LongArray sourceFileLastMod = new LongArray();             
+            boolean completelySuccessful = getThreddsFileInfo(
+                catalogUrl, fileNameRegex, recursive,
+                sourceFileDir, sourceFileName, sourceFileLastMod);
+
+            //Delete local files that shouldn't exist?
+            //If getThreddsFileInfo is completelySuccessful and found some files, 
+            //local files that aren't mentioned on the server will be deleted.
+            //If not completelySuccessful, perhaps the server is down temporarily,
+            //so no files will be deleted.
+            //!!! This is imperfect. If a remote sub webpage always fails, then
+            //  no local files will ever be deleted.
+            if (completelySuccessful && sourceFileName.size() > 0) {
+                //make a hashset of theoretical local fileNames that will exist 
+                //  after copying based on getThreddsFileInfo
+                HashSet hashset = new HashSet();
+                int nFiles = sourceFileName.size();
+                for (int f = 0; f < nFiles; f++) {
+                    String sourceDir = sourceFileDir.get(f);
+                    po = sourceDir.lastIndexOf(lookFor);
+                    if (po >= 0) {
+                        //String2.log("po=" + po + " lookForLength=" + lookForLength + " sourceDir.length=" + sourceDir.length());
+                        String willExist = baseDir + sourceDir.substring(po + lookForLength) + 
+                            sourceFileName.get(f);
+                        hashset.add(willExist);
+                        //String2.log("  willExist=" + willExist);
+                    } //else continue;
+                }
+
+                //get all the existing local files
+                String localFiles[] = recursive?
+                    RegexFilenameFilter.recursiveFullNameList(baseDir, fileNameRegex, false) : //directoriesToo
+                    RegexFilenameFilter.fullNameList(baseDir, fileNameRegex);
+
+                //delete local files not in the hashset of files that will exist
+                int nLocalFiles = localFiles.length;
+                int nDeleted = 0;
+                if (reallyVerbose) String2.log("Looking for local files to delete because the " +
+                    "datasource no longer has the corresponding file...");
+                for (int f = 0; f < nLocalFiles; f++) {
+                    //if a localFile isn't in hashset of willExist files, it shouldn't exist
+                    if (!hashset.remove(localFiles[f])) {
+                        nDeleted++;
+                        if (reallyVerbose) String2.log("  deleting " + localFiles[f]);
+                        File2.simpleDelete(localFiles[f]);
+                    }
+                    localFiles[f] = null; //allow gc    (as does remove() above)
+                }
+                if (verbose) String2.log(nDeleted + 
+                    " local files were deleted because the datasource no longer has " +
+                      "the corresponding file.\n" +
+                    (nLocalFiles - nDeleted) + " files remain.");
+
+                //if 0 files remain (e.g., from significant change), delete empty subdir
+                //get all the existing local files
+                if (nLocalFiles - nDeleted == 0) {
+                    try {
+                        RegexFilenameFilter.recursiveDelete(baseDir);
+                        if (verbose) String2.log(tDatasetID + " copyDirectory is completely empty.");
+                    } catch (Throwable t) {
+                        String2.log(MustBe.throwableToString(t));
+                    }
+                }
+            }
+
+            //make tasks to download files
+            int taskNumber = -1; //i.e. unused
+            int nTasksCreated = 0;
+            boolean remoteErrorLogged = false;  //just display 1st offender
+            boolean fileErrorLogged   = false;  //just display 1st offender
+            int nFiles = sourceFileName.size();
+            for (int f = 0; f < nFiles; f++) {
+                String sourceDir  = sourceFileDir.get(f);
+                String sourceName = sourceFileName.get(f);
+                po = sourceDir.lastIndexOf(lookFor);
+                if (po < 0) {
+                    if (!remoteErrorLogged) {
+                        String2.log(
+                            "ERROR! lookFor=" + lookFor + " wasn't in sourceDir=" + sourceDir);
+                        remoteErrorLogged = true;
+                    }
+                    continue;
+                }
+
+                //see if up-to-date localFile exists  (keep name identical; don't add .nc)
+                String localFile = baseDir + sourceDir.substring(po + lookForLength) + 
+                    sourceName;
+                String reason = "";
+                try {
+                    //don't use File2 so more efficient for current purpose
+                    File file = new File(localFile);
+                    if (!file.isFile())
+                        reason = "new file";
+                    else if (file.lastModified() != sourceFileLastMod.get(f))
+                        reason = "lastModified changed";
+                    else 
+                        continue; //up-to-date file already exists
+                } catch (Exception e) {
+                    if (!fileErrorLogged) {
+                        String2.log(
+                              "ERROR checking localFile=" + localFile +
+                            "\n" + MustBe.throwableToString(e));
+                        fileErrorLogged = true;
+                    }
+                }
+
+                //make a task to download sourceFile to localFile
+                // taskOA[1]=dapUrl, taskOA[2]=StringArray(vars), taskOA[3]=projection, 
+                // taskOA[4]=fullFileName, taskOA[5]=jplMode (Boolean.TRUE|FALSE),
+                // taskOA[6]=lastModified (Long)
+                Object taskOA[] = new Object[7];
+                taskOA[0] = TaskThread.TASK_DAP_TO_NC;
+                taskOA[1] = sourceDir + sourceName;
+                taskOA[2] = vars;
+                taskOA[3] = ""; //projection
+                taskOA[4] = localFile;
+                taskOA[5] = false; //jplMode
+                taskOA[6] = new Long(sourceFileLastMod.get(f));
+                int tTaskNumber = EDStatic.addTask(taskOA);
+                if (tTaskNumber >= 0) {
+                    nTasksCreated++;
+                    taskNumber = tTaskNumber;
+                    if (reallyVerbose)
+                        String2.log("  task#" + taskNumber + " TASK_DAP_TO_NC reason=" + reason +
+                            "\n    from=" + sourceDir + sourceName +
+                            "\n    to=" + localFile);
+                }
+            }
+
+            //create task to flag dataset to be reloaded
+            if (taskNumber > -1) {
+                Object taskOA[] = new Object[2];
+                taskOA[0] = TaskThread.TASK_SET_FLAG;
+                taskOA[1] = tDatasetID;
+                taskNumber = EDStatic.addTask(taskOA); //TASK_SET_FLAG will always be added
+                nTasksCreated++;
+                if (reallyVerbose)
+                    String2.log("  task#" + taskNumber + " TASK_SET_FLAG " + tDatasetID);
+            }
+
+            if (verbose) String2.log("* " + tDatasetID + " makeDownloadTasks finished." +
+                " nTasksCreated=" + nTasksCreated + 
+                " time=" + (System.currentTimeMillis() - startTime));
+
+        } catch (Throwable t) {
+            if (verbose)
+                String2.log("ERROR in makeDownloadTasks for datasetID=" + tDatasetID + "\n" +
+                    MustBe.throwableToString(t));
+        }
+    }
+
+
+    /**
+     * This gathers file information from a THREDDS file-directory-like catalog that shows 
+     * directories with lists of files, each of which MUST have a lastModified date 
+     * (or it is ignored).
+     * This calls itself recursively, adding info to fileDir, fileName and fileLastMod
+     * as files are found.
+     *
+     * @param catalogUrl the url of the current Thredds catalog xml, e.g.,
+     *    http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/catalog.xml
+     *    which leads to unaggregated datasets (each from a file) like
+     *     http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080429.nc(.html)
+     *    catalogUrl SHOULD have /catalog/, but sometimes that can be worked around.
+     * @param fileNameRegex  to be accepted, a fileName (without dir) must
+     *   match this regex, e.g., ".*\\.nc"
+     * @param recursive if the method whould descend to subdirectories
+     * @param fileDir receives fileDir Url for each accepted file
+     * @param fileName receives fileName for each accepted file
+     * @param fileLastMod receives lastModified time of each accepted file
+     * @returns true if the search was completely successful (no failure
+     *   to get any page).
+     * @throws RuntimeException if trouble.
+     *    Url not responding is not an error.
+     */
+    public static boolean getThreddsFileInfo(String catalogUrl, String fileNameRegex, 
+        boolean recursive,
+        StringArray fileDir, StringArray fileName, LongArray fileLastMod) {
+
+        if (reallyVerbose) String2.log("\n<<< getThreddsFileInfo catalogUrl=" + 
+            catalogUrl + " regex=" + fileNameRegex);
+        boolean completelySuccessful = true;
+        long time = System.currentTimeMillis();
+
+        try {
+            int catPo = catalogUrl.indexOf( "/catalog/");
+            if (catPo < 0) {
+                if (verbose) String2.log("  WARNING: '/catalog/' not found in" +
+                    //e.g., http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/
+                    //        ncep.reanalysis.dailyavgs/surface/catalog.xml
+                    "\n    catalogUrl=" + catalogUrl);
+                int tPod = catalogUrl.indexOf("/thredds/dodsC/");
+                int tPo  = catalogUrl.indexOf("/thredds/");
+                if (tPod > 0)
+                    catalogUrl = catalogUrl.substring(0, tPo + 9) + 
+                        "catalog/" + catalogUrl.substring(tPo + 15);
+                else if (tPo > 0)
+                    catalogUrl = catalogUrl.substring(0, tPo + 9) + 
+                        "catalog/" + catalogUrl.substring(tPo + 9);
+                else 
+                    catalogUrl = File2.getDirectory(catalogUrl) + 
+                        "catalog/" + File2.getNameAndExtension(catalogUrl);
+                //e.g., http://www.esrl.noaa.gov/psd/thredds/catalog/Datasets/
+                //        ncep.reanalysis.dailyavgs/surface/catalog.xml
+                if (verbose) String2.log("    so trying catalogUrl=" + catalogUrl);
+                catPo = catalogUrl.indexOf( "/catalog/");
+            }       
+            String catalogBase = catalogUrl.substring(0, catPo + 9); //ends in "/catalog/";
+            if (reallyVerbose) String2.log("  catalogBase=" + catalogBase);
+
+            //e.g., threddsName is usually "thredds"
+            String threddsName = File2.getNameAndExtension(catalogUrl.substring(0, catPo)); 
+            int ssPo = catalogUrl.indexOf("//");
+            if (ssPo < 0) 
+                throw new SimpleException("'//' not found in catalogUrl=" + catalogUrl);
+            int sPo = catalogUrl.indexOf('/', ssPo + 2);
+            if (sPo < 0) 
+                throw new SimpleException("'/' not found in catalogUrl=" + catalogUrl);
+            //e.g., threddsBase=http://www.esrl.noaa.gov
+            String threddsBase = catalogUrl.substring(0, sPo);
+            if (reallyVerbose) String2.log("  threddsBase=" + threddsBase);
+
+            String serviceBase = "/" + threddsName + "/dodsC/"; //default
+            if (reallyVerbose) String2.log("threddsName=" + threddsName + 
+                " threddsBase=" + threddsBase + "\ncatalogBase=" + catalogBase);
+            int nLogged = 0;
+
+            String datasetTags[] = {
+                "won't match",
+                "<catalog><dataset>",
+                "<catalog><dataset><dataset>",
+                "<catalog><dataset><dataset><dataset>",
+                "<catalog><dataset><dataset><dataset><dataset>",
+                "<catalog><dataset><dataset><dataset><dataset><dataset>",
+                "<catalog><dataset><dataset><dataset><dataset><dataset><dataset>",
+                "<catalog><dataset><dataset><dataset><dataset><dataset><dataset><dataset>"};
+            String endDatasetTags[] = {
+                "won't match",
+                "<catalog></dataset>",
+                "<catalog><dataset></dataset>",
+                "<catalog><dataset><dataset></dataset>",
+                "<catalog><dataset><dataset><dataset></dataset>",
+                "<catalog><dataset><dataset><dataset><dataset></dataset>",
+                "<catalog><dataset><dataset><dataset><dataset><dataset></dataset>",
+                "<catalog><dataset><dataset><dataset><dataset><dataset><dataset></dataset>"};
+            String endDateTags[] = {
+                "won't match",
+                "<catalog><dataset></date>",
+                "<catalog><dataset><dataset></date>",
+                "<catalog><dataset><dataset><dataset></date>",
+                "<catalog><dataset><dataset><dataset><dataset></date>",
+                "<catalog><dataset><dataset><dataset><dataset><dataset></date>",
+                "<catalog><dataset><dataset><dataset><dataset><dataset><dataset></date>",
+                "<catalog><dataset><dataset><dataset><dataset><dataset><dataset><dataset></date>"};
+            int nNames = datasetTags.length;
+            String names[] = new String[nNames];
+
+            //I could get inputStream from catalogUrl, but then (via recursion) perhaps lots of streams open.
             //I think better to get the entire response (succeed or fail *now*).
-            byte bytes[] = SSR.getUrlResponseBytes(url);
+            byte bytes[] = SSR.getUrlResponseBytes(catalogUrl);
             SimpleXMLReader xmlReader = new SimpleXMLReader(new ByteArrayInputStream(bytes));
             while (true) {
                 xmlReader.nextTag();
@@ -182,12 +443,18 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 if (recursive && tags.endsWith("<catalogRef>")) {
                     String href = xmlReader.attributeValue("xlink:href");
                     if (href != null) { //look for /...
-                        if (!href.startsWith("http")) {  //if not a complete url
-                            if (href.startsWith("/thredds/catalog/"))
+                        if (!href.startsWith("http")) {  //if not a complete catalogUrl
+                            if (href.startsWith("/" + threddsName + "/catalog/"))
                                 href = threddsBase + href;
-                            else href = catalogBase + href; 
+                            else if (href.startsWith("./")) 
+                                href = File2.getDirectory(catalogUrl) + href.substring(2);
+                            else if (!href.startsWith("/")) 
+                                href = File2.getDirectory(catalogUrl) + href;
+                            else href = catalogBase + href.substring(1); //href starts with /
                         }
-                        getFileNameInfo(href, fileNameRegex, recursive);
+                    if (!getThreddsFileInfo(href, fileNameRegex, recursive,
+                        fileDir, fileName, fileLastMod))
+                        completelySuccessful = false;
                     }
 
                 //<dataset name="WES001_030MTBD029R00_20080613.nc" ID="nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc" urlPath="nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc">
@@ -195,8 +462,14 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 //</dataset> 
                 } else if (whichDatasetTag > 0) {
                     String tName = xmlReader.attributeValue("name");
-                    if (tName != null && tName.matches(fileNameRegex)) {
-                        names[whichDatasetTag] = tName;
+                    if (tName != null) {
+                        boolean matches = tName.matches(fileNameRegex);
+                        if ((verbose && nLogged < 5) || reallyVerbose) {
+                            String2.log("  tName=" + tName + " matches=" + matches);
+                            nLogged++;
+                        }
+                        if (matches)
+                            names[whichDatasetTag] = tName;
                     }
 
                 } else if (whichEndDatasetTag > 0) {
@@ -206,21 +479,20 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                     //"<catalog><dataset><dataset></date>"
                     String isoTime = xmlReader.content();
                     double epochSeconds = Calendar2.safeIsoStringToEpochSeconds(isoTime);
-                    if (!Double.isNaN(epochSeconds)) {
+                    if (Double.isNaN(epochSeconds)) {
+                        if ((verbose && nLogged < 5) || reallyVerbose) 
+                            String2.log("    isoTime=" + isoTime + " evaluates to NaN");
+                    } else {
 
                         //add to file list
-                        String dodsUrl = String2.replaceAll(File2.getDirectory(url), 
-                            "/thredds/catalog/", "/thredds/dodsC/");
+                        String dodsUrl = String2.replaceAll(File2.getDirectory(catalogUrl), 
+                            "/" + threddsName + "/catalog/", "/" + threddsName + "/dodsC/");
                         if (reallyVerbose) String2.log("    found " + 
                             dodsUrl + names[whichEndDateTag] + "   " + isoTime);
-                        int tDirIndex = lastFileDirs.indexOf(dodsUrl);
-                        if (tDirIndex == -1) {
-                            tDirIndex = lastFileDirs.size();
-                            lastFileDirs.add(dodsUrl);
-                        }
-                        lastFileDirIndex.add((short)tDirIndex);
-                        lastFileName.add(names[whichEndDateTag]); 
-                        lastFileLastMod.add(Math2.roundToLong(epochSeconds * 1000));
+
+                        fileDir.add(dodsUrl);
+                        fileName.add(names[whichEndDateTag]); 
+                        fileLastMod.add(Math2.roundToLong(epochSeconds * 1000));
                     }
 
                 } else if (tags.equals("</catalog>")) {
@@ -230,40 +502,18 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             }
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
+            completelySuccessful = false;
         }
-        if (reallyVerbose) String2.log("\n>>> leaving getFileNameInfo time=" +
-            (System.currentTimeMillis() - time) + "\n" +
-            "  url=" + url);
-    }
-
-    /**
-     * This overrides the superclass's version and returns info for files/urls from last getFileNames.
-     *
-     * @return the time (millis since the start of the Unix epoch) 
-     *    the file was last modified 
-     *    (or 0 if trouble)
-     */
-    public long getFileLastModified(String tDir, String tName) {
-        int dirIndex = lastFileDirs.indexOf(tDir);
-        if (dirIndex < 0) {
-            if (verbose) String2.log("EDDTableFromThreddsFiles.getFileLastModified can't find dir=" + tDir);
-            return 0;
-        }
-
-        //linear search through fileNames
-        int n = lastFileDirIndex.size();
-        for (int i = 0; i < n; i++) {
-            if (lastFileDirIndex.array[i] == dirIndex &&
-                lastFileName.array[i].equals(tName)) 
-                return lastFileLastMod.array[i];
-        }
-        if (verbose) String2.log("EDDTableFromThreddsFiles.getFileLastModified can't find file=" + tName );
-        return 0;
+        if (reallyVerbose) String2.log("\n>>> leaving getThreddsFileInfo" +
+            " nFiles=" + fileName.size() + 
+            " completelySuccessful=" + completelySuccessful + 
+            " time=" + (System.currentTimeMillis() - time));
+        return completelySuccessful;
     }
 
 
     /**
-     * This gets source data from one file.
+     * This gets source data from one copied .nc file.
      * See documentation in EDDTableFromFiles.
      *
      */
@@ -273,246 +523,19 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
 
-        if (reallyVerbose) String2.log("getSourceDataFromFile " + fileDir + fileName);
-        DConnect dConnect = new DConnect(fileDir + fileName, acceptDeflate, 1, 1);
-        DAS das = null;
-        DDS dds = null;
+        //Future: more efficient if !mustGetData is handled differently
+
+        //read the file
         Table table = new Table();
-        if (getMetadata) {
-            if (das == null)
-                das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
-            OpendapHelper.getAttributes(das, "GLOBAL", table.globalAttributes());
-        }
+        table.readNDNc(fileDir + fileName, sourceDataNames.toArray(),
+            sortedSpacing >= 0 && !Double.isNaN(minSorted)? sortedColumnSourceName : null,
+                minSorted, maxSorted, 
+            getMetadata);
+        //String2.log("  EDDTableFromNcFiles.getSourceDataFromFile table.nRows=" + table.nRows());
 
-        //first time: get axisVariables, ensure all vars use same sourceAxisNames
-        if (sourceAxisNames == null) {
-            if (reallyVerbose) String2.log("one time: getSourceAxisNames");
-            if (dds == null)
-                dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
-            for (int v = 0; v < sourceDataNames.size(); v++) {
-                //find a multidimensional var
-                String tSourceAxisNames[] = null;
-                String tName = sourceDataNames.get(v);
-                BaseType baseType = dds.getVariable(tName);
-                if (baseType instanceof DGrid) {
-                    //dGrid has main dArray + dimensions
-                    DGrid dGrid = (DGrid)baseType;
-                    int nEl = dGrid.elementCount(true);
-                    tSourceAxisNames = new String[nEl - 1];
-                    for (int el = 1; el < nEl; el++) //1..
-                        tSourceAxisNames[el - 1] = dGrid.getVar(el).getName();
-                } else if (baseType instanceof DArray) {
-                    //dArray is usually 1 dim, but may be multidimensional
-                    DArray dArray = (DArray)baseType;
-                    int nDim = dArray.numDimensions();
-                    if (nDim > 1) {
-                        tSourceAxisNames = new String[nDim];
-                        for (int d = 0; d < nDim; d++) {//0..
-                            tSourceAxisNames[d] = dArray.getDimension(d).getName();
-                            if (tSourceAxisNames[d] == null || tSourceAxisNames[d].equals(""))
-                                tSourceAxisNames[d] = "" + dArray.getDimension(d).getSize();
-                        }
-                    }
-                }
-
-                //ok?
-                if (tSourceAxisNames == null) {
-                    //this var isn't multidimensional
-                } else if (sourceAxisNames == null) {
-                    //first multidimensional var; use its sourceAxisNames
-                    sourceAxisNames = tSourceAxisNames; 
-                } else {
-                    //verify same
-                    Test.ensureEqual(tSourceAxisNames, sourceAxisNames, 
-                        "The dimensions for all multidimensional variables must be the same (" +
-                        tName + " is different)."); 
-
-                }
-            }
-            if (sourceAxisNames == null)
-                throw new RuntimeException("Error: no multidimensional variables in initial data request.");
-            if (!sourceAxisNames[0].equals(sortedColumnSourceName))
-                throw new RuntimeException("Error: sortedColumnSourceName must be axisVariable[0]'s name.");
-        }
-
-        //if don't have to get actual data, just get all values of axis0, min,max of other axes, and mv for others
-        int tNDim = -1;
-        if (!mustGetData) {
-            if (dds == null)
-                dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
-
-            //get all the axis values at once
-            PrimitiveArray axisPa[] = OpendapHelper.getAxisValues(dConnect, sourceAxisNames, "");
-
-            //go through the sourceDataNames
-            for (int dv = 0; dv < sourceDataNames.size(); dv++) {
-                String tName = sourceDataNames.get(dv);
-                BaseType baseType;
-                try {
-                    baseType = dds.getVariable(tName);
-                } catch (Throwable t) {
-                    if (verbose) String2.log("variable=" + tName + " not found in this file.");
-                    continue;
-                }
-                Attributes atts = new Attributes();
-                if (getMetadata)
-                    OpendapHelper.getAttributes(das, tName, atts);
-                PrimitiveArray pa;
-                int po = String2.indexOf(sourceAxisNames, tName);
-                if (po >= 0) {
-                    pa = axisPa[po];
-                } else if (tName.equals(sortedColumnSourceName)) {
-                    //sortedColumn    get all values
-                    pa = OpendapHelper.getPrimitiveArray(dConnect, "?" + tName);
-                } else if (baseType instanceof DGrid) {
-                    //multidimensional   don't get any values
-                    pa = PrimitiveArray.factory(PrimitiveArray.elementStringToClass(sourceDataTypes[dv]), 2, false);
-                    pa.addString(pa.minValue());
-                    pa.addString(pa.maxValue());
-                } else if (baseType instanceof DArray) {                   
-                    DArray dArray = (DArray)baseType;
-                    if (dArray.numDimensions() == 1) {
-                        //if 1 dimension, get min and max
-                        //This didn't work: tSize was 0!
-                        //int tSize = dArray.getDimension(0).getSize();
-                        //String query = "?" + tName + "[0:" + (tSize - 1) + ":" + (tSize - 1) + "]";
-                        //so get all values
-                        String query = "?" + tName;
-                        if (reallyVerbose) String2.log("  query=" + query);
-                        pa = OpendapHelper.getPrimitiveArray(dConnect, query);
-                    } else {
-                        //if multidimensional   don't get any values
-                        pa = PrimitiveArray.factory(PrimitiveArray.elementStringToClass(sourceDataTypes[dv]), 2, false);
-                        pa.addString(pa.minValue());
-                        pa.addString(pa.maxValue());
-                    }
-                } else {
-                    String2.log("Ignoring variable=" + tName + " because of unexpected baseType=" + baseType);
-                    continue;
-                }
-                //String pas = pa.toString();
-                //String2.log("\n" + tName + "=" + pas.substring(0, Math.min(pas.length(), 60)));
-                table.addColumn(table.nColumns(), tName, pa, atts);
-            }
-            table.makeColumnsSameSize(); //deals with axes with 1 value, or var not in this file
-            //String2.log(table.toString("row", 5));            
-            return table;        
-        }
-
-        //need to get the requested data
-        //calculate firstRow, lastRow of leftmost axis from minSorted, maxSorted
-        int firstRow = 0;
-        int lastRow = -1; 
-        if (sortedSpacing >= 0 && !Double.isNaN(minSorted)) {
-            //min/maxSorted is active       
-            //get axis0 values
-            PrimitiveArray pa = OpendapHelper.getPrimitiveArray(dConnect, "?" + sourceAxisNames[0]);
-            firstRow = pa.binaryFindClosest(minSorted);
-            lastRow = minSorted == maxSorted? firstRow : pa.binaryFindClosest(maxSorted);
-            if (reallyVerbose) String2.log("  binaryFindClosest n=" + pa.size() + 
-                " reqMin=" + minSorted + " firstRow=" + firstRow + 
-                " reqMax=" + maxSorted + " lastRow=" + lastRow);
-        } else {
-            if (reallyVerbose) String2.log("  getting all rows since sortedSpacing=" + 
-                sortedSpacing + " and minSorted=" + minSorted);
-        }
-
-        //dds is always needed for stuff below
-        if (dds == null)
-            dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
-
-        //build String form of the constraint
-        String axis0Constraint = lastRow == -1? "" : "[" + firstRow + ":" + lastRow + "]";
-        StringBuilder constraintSB = new StringBuilder();
-        if (lastRow != -1) {
-            constraintSB.append(axis0Constraint);
-            for (int av = 1; av < sourceAxisNames.length; av++) {
-                //dap doesn't allow requesting all via [], so get each dim's size
-                //String2.log("  dds.getVar " + sourceAxisNames[av]);
-                BaseType bt = dds.getVariable(sourceAxisNames[av]);
-                DArray dArray = (DArray)bt;
-                constraintSB.append("[0:" + (dArray.getDimension(0).getSize()-1) + "]");
-            }
-        }
-        String constraint = constraintSB.toString();
-
-        //get non-axis variables
-        for (int dv = 0; dv < sourceDataNames.size(); dv++) {
-            //???why not get all the dataVariables at once?
-            //thredds has (and other servers may have) limits to the size of a given request
-            //so breaking into parts avoids the problem.
-            //Also, I check if each var is in this file. Var missing from a given file is allowed.
-            String tName = sourceDataNames.get(dv);
-            if (String2.indexOf(sourceAxisNames, tName) >= 0)
-                continue;
-
-            //ensure the variable is in this file
-            try {
-                BaseType baseType = dds.getVariable(tName);
-            } catch (Throwable t) {
-                if (verbose) String2.log("variable=" + tName + " not found.");
-                continue;
-            }
-
-            //get the data
-            PrimitiveArray pa[] = OpendapHelper.getPrimitiveArrays(dConnect, 
-                "?" + tName + constraint);
-
-            if (table.nColumns() == 0) {
-                //first var: make axis columns
-                int shape[] = new int[sourceAxisNames.length];
-                for (int av = 0; av < sourceAxisNames.length; av++) {
-                    String aName = sourceAxisNames[av];
-                    Attributes atts = new Attributes();
-                    if (getMetadata)
-                        OpendapHelper.getAttributes(das, aName, atts);
-                    shape[av] = pa[av+1].size();
-                    table.addColumn(av, aName, 
-                        PrimitiveArray.factory(pa[av+1].elementClass(), 128, false), atts);
-                }
-                //expand axis values into results table via NDimensionalIndex
-                NDimensionalIndex ndIndex = new NDimensionalIndex(shape);
-                int current[] = ndIndex.getCurrent();
-                while (ndIndex.increment()) {
-                    for (int av = 0; av < sourceAxisNames.length; av++) 
-                        table.getColumn(av).addDouble(pa[av+1].getDouble(current[av]));
-                }
-            }  //subsequent vars: I could check that axis values are consistent
-
-            //store dataVar column
-            if (pa[0].size() != table.nRows()) 
-                throw new RuntimeException("Data source error: nValues returned for " + tName + 
-                    " wasn't expectedNValues=" + table.nRows());
-            Attributes atts = new Attributes();
-            if (getMetadata)
-                OpendapHelper.getAttributes(das, tName, atts);
-            table.addColumn(table.nColumns(), tName, pa[0], atts);
-        }
-        if (table.nColumns() > 0)
-            return table;
-
-        //no data vars? create a table with columns for sourceAxisNames only
-        PrimitiveArray axisPa[] = OpendapHelper.getAxisValues(dConnect, sourceAxisNames, axis0Constraint);
-        int shape[] = new int[sourceAxisNames.length];
-        for (int av = 0; av < sourceAxisNames.length; av++) {
-            String aName = sourceAxisNames[av];
-            Attributes atts = new Attributes();
-            if (getMetadata)
-                OpendapHelper.getAttributes(das, aName, atts);
-            shape[av] = axisPa[av].size();
-            table.addColumn(av, aName, 
-                PrimitiveArray.factory(axisPa[av].elementClass(), 128, false), atts);
-        }
-        //expand axis values into results table via NDimensionalIndex
-        NDimensionalIndex ndIndex = new NDimensionalIndex(shape);
-        int current[] = ndIndex.getCurrent();
-        while (ndIndex.increment()) {
-            for (int av = 0; av < sourceAxisNames.length; av++) 
-                table.getColumn(av).addDouble(axisPa[av].getDouble(current[av]));
-        }
         return table;
-
     }
+
 
 
     /** 
@@ -546,79 +569,43 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         String2.log("EDDTableFromThreddsFiles.generateDatasetsXml" +
             "\n  dirUrl=" + tLocalDirUrl + 
             "\n  oneFileDapUrl=" + oneFileDapUrl);
+
         String tPublicDirUrl = convertToPublicSourceUrl(tLocalDirUrl);
+        String tPublicDirUrlHtml = tPublicDirUrl;
+        String tDatasetID = suggestDatasetID(tPublicDirUrl + tFileNameRegex);
+        String dir = EDStatic.fullTestCacheDirectory;
+        int po1, po2;
+
+        //download the 1 file     
+        //URL may not have .nc at end.  I think that's okay.  Keep exact file name from URL.
+        String ncFileName = File2.getNameAndExtension(oneFileDapUrl);
+        OpendapHelper.dapToNc(oneFileDapUrl, 
+            null, "", //vars, projection, 
+            dir + ncFileName, false); //jplMode       
 
         //*** basically, make a table to hold the sourceAttributes 
         //and a parallel table to hold the addAttributes
         Table dataSourceTable = new Table();
+        dataSourceTable.readNDNc(dir + ncFileName, null,
+            "", Double.NaN, Double.NaN, //constraints
+            true); //getMetadata
+
         Table dataAddTable = new Table();
-        DConnect dConnect = new DConnect(oneFileDapUrl, acceptDeflate, 1, 1);
-        DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);;
-        DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
+        for (int c = 0; c < dataSourceTable.nColumns(); c++) {
+            String colName = dataSourceTable.getColumnName(c);
+            Attributes sourceAtts = dataSourceTable.columnAttributes(c);
+            dataAddTable.addColumn(c, colName,
+                dataSourceTable.getColumn(c),
+                makeReadyToUseAddVariableAttributesForDatasetsXml(
+                    sourceAtts, colName, true, true)); //addColorBarMinMax, tryToFindLLAT
 
-        //global metadata
-        OpendapHelper.getAttributes(das, "GLOBAL", dataSourceTable.globalAttributes());
-        if (externalAddGlobalAttributes == null)
-            externalAddGlobalAttributes = new Attributes();
-        externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", tPublicDirUrl);
-        //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
-        dataAddTable.globalAttributes().set(
-            makeReadyToUseAddGlobalAttributesForDatasetsXml(
-                dataSourceTable.globalAttributes(), 
-                //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataAddTable)? "Point" : "Other",
-                tLocalDirUrl, externalAddGlobalAttributes));
-
-        //variables
-//!!!Isn't this simplistic??? Doesn't it assume all Grid/Arrays have same dimensions? How does this class work?
-        Enumeration en = dds.getVariables();
-        while (en.hasMoreElements()) {
-            BaseType baseType = (BaseType)en.nextElement();
-            String varName = baseType.getName();
-            Attributes sourceAtts = new Attributes();
-            OpendapHelper.getAttributes(das, varName, sourceAtts);
-            PrimitiveVector pv = null; //for determining data type
-            if (baseType instanceof DGrid) {   //for multidim vars
-                DGrid dGrid = (DGrid)baseType;
-                BaseType bt0 = dGrid.getVar(0); //holds the data
-                pv = bt0 instanceof DArray? ((DArray)bt0).getPrimitiveVector() : bt0.newPrimitiveVector();
-            } else if (baseType instanceof DArray) {  //for the dimension vars
-                DArray dArray = (DArray)baseType;
-                pv = dArray.getPrimitiveVector();
-            } else {
-                if (verbose) String2.log("  baseType=" + baseType.toString() + " isn't supported yet.\n");
-            }
-            if (pv != null) {
-                dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, 
-                    PrimitiveArray.factory(OpendapHelper.getElementClass(pv), 2, false),
-                    sourceAtts);
-                dataAddTable.addColumn(dataAddTable.nColumns(), varName, 
-                    PrimitiveArray.factory(OpendapHelper.getElementClass(pv), 2, false),
-                    makeReadyToUseAddVariableAttributesForDatasetsXml(
-                        sourceAtts, varName, true)); //addColorBarMinMax
-
-                //if a variable has timeUnits, files are likely sorted by time
-                //and no harm if files aren't sorted that way
-                if (tSortedColumnSourceName.length() == 0 && 
-                    EDVTimeStamp.hasTimeUnits(sourceAtts, null))
-                    tSortedColumnSourceName = varName;
-            }
+            //if a variable has timeUnits, files are likely sorted by time
+            //and no harm if files aren't sorted that way
+            if (tSortedColumnSourceName.length() == 0 && 
+                EDVTimeStamp.hasTimeUnits(sourceAtts, null))
+                tSortedColumnSourceName = colName;
         }
 
-        //global metadata
-        OpendapHelper.getAttributes(das, "GLOBAL", dataSourceTable.globalAttributes());
-        if (externalAddGlobalAttributes == null)
-            externalAddGlobalAttributes = new Attributes();
-        externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", tPublicDirUrl);
-        //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
-        dataAddTable.globalAttributes().set(
-            makeReadyToUseAddGlobalAttributesForDatasetsXml(
-                dataSourceTable.globalAttributes(), 
-                //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataAddTable)? "Point" : "Other",
-                tLocalDirUrl, externalAddGlobalAttributes));
-
-        //suggest tFileNameRegex
         if (tFileNameRegex == null || tFileNameRegex.length() == 0) {
             String tExt = File2.getExtension(oneFileDapUrl);
             if (tExt == null || tExt.length() == 0)
@@ -636,18 +623,32 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(   0, tColumnNameForExtract, new StringArray(), atts);
         }
 
+        //global metadata
+        if (externalAddGlobalAttributes == null)
+            externalAddGlobalAttributes = new Attributes();
+        externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", tPublicDirUrl);
+        //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
+        //after dataVariables known, add global attributes in the axisAddTable
+        dataAddTable.globalAttributes().set(
+            makeReadyToUseAddGlobalAttributesForDatasetsXml(
+                dataSourceTable.globalAttributes(), 
+                //another cdm_data_type could be better; this is ok
+                probablyHasLonLatTime(dataAddTable)? "Point" : "Other",
+                tLocalDirUrl, externalAddGlobalAttributes, 
+                suggestKeywords(dataSourceTable, dataAddTable)));
+
         //write the information
         StringBuilder sb = new StringBuilder();
         if (tSortFilesBySourceNames.length() == 0)
-            tSortFilesBySourceNames = tColumnNameForExtract + 
-                (tSortedColumnSourceName.length() == 0? "" : " " + tSortedColumnSourceName);
+            tSortFilesBySourceNames = (tColumnNameForExtract + 
+                (tSortedColumnSourceName.length() == 0? "" : " " + tSortedColumnSourceName)).trim();
         sb.append(
             directionsForGenerateDatasetsXml() +
             "-->\n\n" +
             "<dataset type=\"EDDTableFromThreddsFiles\" datasetID=\"" + 
-                suggestDatasetID(tPublicDirUrl + tFileNameRegex) + "\" active=\"true\">\n" +
+                tDatasetID + "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
-            "    <fileDir>" + tLocalDirUrl + "</fileDir>\n" +
+            "    <fileDir></fileDir>  <!-- automatically set to [bigParentDirectory]/copy/" + tDatasetID + "/ -->\n" +
             "    <recursive>true</recursive>\n" +
             "    <fileNameRegex>" + tFileNameRegex + "</fileNameRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
@@ -662,7 +663,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToCatchLLAT, questionDestinationName
+        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
             "dataVariable", true, true, false));
         sb.append(
@@ -711,7 +712,7 @@ directionsForGenerateDatasetsXml() +
 "\n" +
 "<dataset type=\"EDDTableFromThreddsFiles\" datasetID=\"noaa_nodc_8fcf_be37_cbe4\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <fileDir>http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml</fileDir>\n" +
+"    <fileDir></fileDir>  <!-- automatically set to [bigParentDirectory]/copy/noaa_nodc_8fcf_be37_cbe4/ -->\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*MTBD.*\\.nc</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
@@ -724,7 +725,7 @@ directionsForGenerateDatasetsXml() +
 "    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"Conventions\">CF-1.4</att>\n" +
-"        <att name=\"History\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2010/00/10 03:00 CST. Original dataset URL: </att>\n" +
+"        <att name=\"History\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2010/00/10 03:00 CST. Original dataset URL:</att>\n" +
 "        <att name=\"Mooring_ID\">WES001</att>\n" +
 "        <att name=\"Version\">2</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -734,13 +735,17 @@ directionsForGenerateDatasetsXml() +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
-"        <att name=\"Conventions\">CF-1.4, COARDS, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">CF-1.6, COARDS, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"History\">null</att>\n" +
-"        <att name=\"history\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2010/00/10 03:00 CST. Original dataset URL: </att>\n" +
+"        <att name=\"history\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2010/00/10 03:00 CST. Original dataset URL:</att>\n" +
 "        <att name=\"infoUrl\">http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
 "        <att name=\"institution\">NOAA NODC</att>\n" +
+"        <att name=\"keywords\">\n" +
+"Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
+"altitudes, day, depth, expressed, flag, identifier, negative, noaa, nodc, ocean, oceans, quality, sea, sea_water_temperature, sea_water_temperature status_flag, seawater, station, status, temperature, time, water, wes001, year, yearday</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">CF-1.4, COARDS, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Metadata_Conventions\">CF-1.6, COARDS, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"sourceUrl\">http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
 "        <att name=\"summary\">NOAA NODC data from http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
@@ -755,32 +760,6 @@ directionsForGenerateDatasetsXml() +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Station ID</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>yearday</sourceName>\n" +
-"        <destinationName>yearday</destinationName>\n" +
-"        <dataType>float</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"long_name\">Day of the year</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Time</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>Latitude</sourceName>\n" +
-"        <destinationName>latitude</destinationName>\n" +
-"        <dataType>double</dataType>\n" +
-"        <!-- sourceAttributes>\n" +
-"            <att name=\"long_name\">latitude</att>\n" +
-"            <att name=\"standard_name\">latitude</att>\n" +
-"            <att name=\"units\">degree_north</att>\n" +
-"        </sourceAttributes -->\n" +
-"        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Location</att>\n" +
-"            <att name=\"long_name\">Latitude</att>\n" +
-"            <att name=\"units\">degrees_north</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -810,7 +789,27 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"units\">meter</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"colorBarPalette\">OceanDepth</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>Latitude</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"long_name\">latitude</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degree_north</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -823,9 +822,22 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"units\">degree_east</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Longitude</att>\n" +
 "            <att name=\"units\">degrees_east</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>yearday</sourceName>\n" +
+"        <destinationName>yearday</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"long_name\">Day of the year</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -838,7 +850,9 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"standard_name\">sea_water_temperature status_flag</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">128.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -868,7 +882,9 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"long_name\">Yearday flag</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">128.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
@@ -878,13 +894,15 @@ directionsForGenerateDatasetsXml() +
             //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
             //    expected, "");
 
+            /* This won't work because sample file is in testCacheDir (not regular cache dir)
             //ensure it is ready-to-use by making a dataset from it
             EDD edd = oneFromXmlFragment(results);
             Test.ensureEqual(edd.datasetID(), "noaa_nodc_8fcf_be37_cbe4", "");
             Test.ensureEqual(edd.title(), "WES001 2008", "");
-            Test.ensureEqual(String2.toCSVString(edd.dataVariableDestinationNames()), 
+            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "stationID, yearday, latitude, time, Depth, longitude, Temperature_flag, " +
                 "Temperature, yearday_flag", "");
+            */
 
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -914,9 +932,9 @@ directionsForGenerateDatasetsXml() +
 
         String id = "nmspWcosTemp";
         if (deleteCachedInfo) {
-            File2.delete(datasetInfoDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + BADFILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
         }
         EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
 
@@ -980,6 +998,7 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  Temperature {\n" +
 "    Float64 _FillValue 9999.0;\n" +
+"    Float64 actual_range 6.68, 38.25;\n" +
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Temperature\";\n" +
@@ -989,8 +1008,9 @@ directionsForGenerateDatasetsXml() +
 "    String units \"degree_C\";\n" +
 "  }\n" +
 "  Temperature_flag {\n" +
+"    Byte actual_range 0, 9;\n" +
 "    String description \"flag for data column, 0: no problems, 1: bad data due to malfunction or fouling, 2: suspicious data, 9: missing data\";\n" +
-"    String ioos_category \"Temperature\";\n" +
+"    String ioos_category \"Quality\";\n" +
 "    String long_name \"Temperature Flag\";\n" +
 "    String standard_name \"sea_water_temperature status_flag\";\n" +
 "  }\n" +
@@ -999,8 +1019,9 @@ directionsForGenerateDatasetsXml() +
 "    String cdm_data_type \"TimeSeriesProfile\";\n" +
 "    String cdm_profile_variables \"time\";\n" +
 "    String cdm_timeseries_variables \"station, longitude, latitude\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting -119.66934;\n" +
+"    String featureType \"TimeSeriesProfile\";\n" +
 "    Float64 geospatial_lat_max 48.325001;\n" +
 "    Float64 geospatial_lat_min 33.89511;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -1011,11 +1032,13 @@ directionsForGenerateDatasetsXml() +
 "    Float64 geospatial_vertical_min -99.0;\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"Created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2009/00/04 10:00 CST.\n" +
-today + " http://data.nodc.noaa.gov/opendap/nmsp/wcos/\n" +
+"    String history \"Created by the NCDDC PISCO Temperature Profile to NetCDF converter.\n" +
+today + " http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\n" +
 today + " http://127.0.0.1:8080/cwexperimental/tabledap/nmspWcosTemp.das\";\n" +
 "    String infoUrl \"http://www.ncddc.noaa.gov/activities/wcos\";\n" +
 "    String institution \"NOAA NMSP\";\n" +
+"    String keywords \"Oceans > Ocean Temperature > Water Temperature\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -1023,9 +1046,9 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/nmspWcosTemp.das\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 48.325001;\n" +
-"    String sourceUrl \"http://data.nodc.noaa.gov/opendap/nmsp/wcos/\";\n" +
+"    String sourceUrl \"http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\";\n" +
 "    Float64 Southernmost_Northing 33.89511;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String subsetVariables \"station, longitude, latitude\";\n" +
@@ -1133,11 +1156,11 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/nmspWcosTemp.das\";\n" +
 //Lat, 37.13015 Time=1122592440 depth=-12 Lon=-122.361253    
 // yearday 208.968,  temp_flag 0, temp 10.66, yeardayflag  0
         expected = 
-"station, longitude, latitude, time, altitude, Temperature, Temperature_flag\n" +
-", degrees_east, degrees_north, UTC, m, degree_C, \n" +
-"ANO001, -122.361253, 37.13015, 2005-07-28T23:14:00Z, -4.0, 12.04, 0\n" +
-"ANO001, -122.361253, 37.13015, 2005-07-28T23:14:00Z, -12.0, 10.66, 0\n" +
-"ANO001, -122.361253, 37.13015, 2005-07-28T23:14:00Z, -20.0, 10.51, 0\n";
+"station,longitude,latitude,time,altitude,Temperature,Temperature_flag\n" +
+",degrees_east,degrees_north,UTC,m,degree_C,\n" +
+"ANO001,-122.361253,37.13015,2005-07-28T23:14:00Z,-4.0,12.04,0\n" +
+"ANO001,-122.361253,37.13015,2005-07-28T23:14:00Z,-12.0,10.66,0\n" +
+"ANO001,-122.361253,37.13015,2005-07-28T23:14:00Z,-20.0,10.51,0\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
@@ -1178,51 +1201,726 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 */
 
 
-    public static void testGetSize() throws Throwable {
-        try {
-            DConnect dConnect = new DConnect(
-//"http://data.nodc.noaa.gov/opendap/nmsp/wcos/ANO001/2005/ANO001_021MTBD000R00_20050617.nc", //lon lat reversed!
-//"http://edac-dap.northerngulfinstitute.org/dods-bin/nph-dods/WCOS/nmsp/wcos/ANO001/2005/ANO001_021MTBD000R00_20050617.nc", 
-"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/WES001/2008/WES001_030MTBD029R00_20080613.nc",
-                  acceptDeflate, 1, 1);
-            DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
-            BaseType bt = dds.getVariable("Time");
-            DArray dArray = (DArray)bt;
-            String2.log("nDim=" + dArray.numDimensions());
-            DArrayDimension dim = dArray.getDimension(0);
-            int n = dim.getSize();
-            String2.log("n=" + n);
-            Test.ensureTrue(n > 10, "n=" + n);
 
+
+    /**
+     * This tests the methods in this class.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testShipWTEP(boolean deleteCachedInfo) throws Throwable {
+        String2.log("\n****************** EDDTableFromThreddsFiles.testShipWTEP() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        int po;
+        EDV edv;
+
+        try {
+
+        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+
+        String id = "fsuNoaaShipWTEP";
+        if (deleteCachedInfo) {
+            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
+        }
+        EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
+
+        //*** test getting das for entire dataset
+        try {
+        String2.log("\n****************** EDDTableFromThreddsFiles testShipWTEP das and dds for entire dataset\n");
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddTable.className() + "_ShipEntire", ".das"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Attributes {\n" +
+" s {\n" +
+"  cruise_id {\n" +
+"    String ioos_category \"Identifier\";\n" +
+"  }\n" +
+"  expocode {\n" +
+"    String ioos_category \"Identifier\";\n" +
+"  }\n" +
+"  facility {\n" +
+"    String ioos_category \"Identifier\";\n" +
+"  }\n" +
+"  ID {\n" +
+"    String ioos_category \"Identifier\";\n" +
+"  }\n" +
+"  IMO {\n" +
+"    String ioos_category \"Identifier\";\n" +
+"  }\n" +
+"  platform {\n" +
+"    String ioos_category \"Identifier\";\n" +
+"  }\n" +
+"  platform_version {\n" +
+"    String ioos_category \"Identifier\";\n" +
+"  }\n" +
+"  site {\n" +
+"    String ioos_category \"Identifier\";\n" +
+"  }\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.32778656e+9, 1.32788154e+9;\n" +
+"    String axis \"T\";\n" +
+"    Int32 data_interval 60;\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time\";\n" +
+"    String observation_type \"calculated\";\n" +
+"    Int32 qcindex 1;\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float32 actual_range 44.6, 48.48;\n" +
+"    String average_center \"time at end of period\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    String axis \"Y\";\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String observation_type \"measured\";\n" +
+"    String original_units \"degrees (+N)\";\n" +
+"    Int32 qcindex 2;\n" +
+"    Float32 sampling_rate 1.0;\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 actual_range 234.53, 236.09;\n" +
+"    String average_center \"time at end of period\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    String axis \"X\";\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String observation_type \"measured\";\n" +
+"    String original_units \"degrees (-W/+E)\";\n" +
+"    Int32 qcindex 3;\n" +
+"    Float32 sampling_rate 1.0;\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  airPressure {\n" +
+"    Float32 _FillValue -8888.0;\n" +
+"    Float32 actual_range 1006.25, 1025.6;\n" +
+"    String average_center \"time at end of period\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    Float32 centerline_offset -9999.0;\n" +
+"    Float64 colorBarMaximum 1030.0;\n" +
+"    Float64 colorBarMinimum 970.0;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    Float32 distance_from_bow -9999.0;\n" +
+"    Float32 height -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
+"    String ioos_category \"Pressure\";\n" +
+"    String long_name \"Atmospheric Pressure\";\n" +
+"    Float32 missing_value -9999.0;\n" +
+"    String mslp_indicator \"at sensor height\";\n" +
+"    String observation_type \"measured\";\n" +
+"    String original_units \"hectopascal\";\n" +
+"    Int32 qcindex 11;\n" +
+"    Float32 sampling_rate 0.1;\n" +
+"    Float32 special_value -8888.0;\n" +
+"    String standard_name \"air_pressure\";\n" +
+"    String units \"millibar\";\n" +
+"  }\n" +
+"  airTemperature {\n" +
+"    Float32 _FillValue -8888.0;\n" +
+"    Float32 actual_range 7.6, 17.25;\n" +
+"    String average_center \"time at end of period\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    Float32 centerline_offset -9999.0;\n" +
+"    Float64 colorBarMaximum 40.0;\n" +
+"    Float64 colorBarMinimum -10.0;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    Float32 distance_from_bow -9999.0;\n" +
+"    Float32 height -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Air Temperature\";\n" +
+"    Float32 missing_value -9999.0;\n" +
+"    String observation_type \"measured\";\n" +
+"    String original_units \"celsius\";\n" +
+"    Int32 qcindex 12;\n" +
+"    Float32 sampling_rate 1.0;\n" +
+"    Float32 special_value -8888.0;\n" +
+"    String standard_name \"air_temperature\";\n" +
+"    String units \"celsius\";\n" +
+"  }\n" +
+"  conductivity {\n" +
+"    Float32 _FillValue -8888.0;\n" +
+"    Float32 actual_range 0.0, 3.83;\n" +
+"    String average_center \"unknown\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    Float32 centerline_offset -9999.0;\n" +
+"    Float64 colorBarMaximum 4.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    Float32 distance_from_bow -9999.0;\n" +
+"    Float32 height -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
+"    String ioos_category \"Salinity\";\n" +
+"    String long_name \"Conductivity\";\n" +
+"    Float32 missing_value -9999.0;\n" +
+"    String observation_type \"measured\";\n" +
+"    String original_units \"siemens meter-1\";\n" +
+"    Int32 qcindex 16;\n" +
+"    Float32 sampling_rate -9999.0;\n" +
+"    Float32 special_value -8888.0;\n" +
+"    String standard_name \"sea_water_electrical_conductivity\";\n" +
+"    String units \"siemens meter-1\";\n" +
+"  }\n" +
+"  relativeHumidity {\n" +
+"    Float32 _FillValue -8888.0;\n" +
+"    Float32 actual_range 35.0, 101.0;\n" +
+"    String average_center \"time at end of period\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    Float32 centerline_offset -9999.0;\n" +
+"    Float64 colorBarMaximum 100.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    Float32 distance_from_bow -9999.0;\n" +
+"    Float32 height -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
+"    String ioos_category \"Meteorology\";\n" +
+"    String long_name \"Relative Humidity\";\n" +
+"    Float32 missing_value -9999.0;\n" +
+"    String observation_type \"measured\";\n" +
+"    String original_units \"percent\";\n" +
+"    Int32 qcindex 13;\n" +
+"    Float32 sampling_rate 1.0;\n" +
+"    Float32 special_value -8888.0;\n" +
+"    String standard_name \"relative_humidity\";\n" +
+"    String units \"percent\";\n" +
+"  }\n" +
+"  salinity {\n" +
+"    Float32 _FillValue -8888.0;\n" +
+"    Float32 actual_range 0.02, 32.56;\n" +
+"    String average_center \"unknown\";\n" +
+"    Int16 average_length -9999;\n" +
+"    String average_method \"average\";\n" +
+"    Float32 centerline_offset -9999.0;\n" +
+"    Float64 colorBarMaximum 37.0;\n" +
+"    Float64 colorBarMinimum 32.0;\n" +
+"    Int32 data_interval 60;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    Float32 distance_from_bow -9999.0;\n" +
+"    Float32 height -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
+"    String ioos_category \"Salinity\";\n" +
+"    String long_name \"Salinity\";\n" +
+"    Float32 missing_value -9999.0;\n" +
+"    String observation_type \"calculated\";\n" +
+"    String original_units \"PSU\";\n" +
+"    Int32 qcindex 15;\n" +
+"    Float32 sampling_rate -9999.0;\n" +
+"    Float32 special_value -8888.0;\n" +
+"    String standard_name \"sea_water_salinity\";\n" +
+"    String units \"PSU\";\n" +
+"  }\n" +
+"  seaTemperature {\n" +
+"    Float32 _FillValue -8888.0;\n" +
+"    Float32 actual_range 8.12, 16.75;\n" +
+"    String average_center \"time at end of period\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    Float32 centerline_offset -9999.0;\n" +
+"    Float64 colorBarMaximum 40.0;\n" +
+"    Float64 colorBarMinimum -10.0;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    Float32 distance_from_bow -9999.0;\n" +
+"    Float32 height -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Sea Water Temperature\";\n" +
+"    Float32 missing_value -9999.0;\n" +
+"    String observation_type \"measured\";\n" +
+"    String original_units \"celsius\";\n" +
+"    Int32 qcindex 14;\n" +
+"    Float32 sampling_rate 1.0;\n" +
+"    Float32 special_value -8888.0;\n" +
+"    String standard_name \"sea_water_temperature\";\n" +
+"    Int16 ts_sensor_category 12;\n" +
+"    String units \"celsius\";\n" +
+"  }\n" +
+"  windDirection {\n" +
+"    Float32 _FillValue -8888.0;\n" +
+"    Float32 actual_range 46.75, 301.77;\n" +
+"    String average_center \"time at end of period\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    Float32 centerline_offset -9999.0;\n" +
+"    Float64 colorBarMaximum 360.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    Int32 data_interval -9999;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    Float32 distance_from_bow -9999.0;\n" +
+"    Float32 height -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Earth Relative Wind Direction\";\n" +
+"    Float32 missing_value -9999.0;\n" +
+"    String observation_type \"calculated\";\n" +
+"    String original_units \"degrees (clockwise from true north)\";\n" +
+"    Int32 qcindex 6;\n" +
+"    Float32 sampling_rate 1.0;\n" +
+"    Float32 special_value -8888.0;\n" +
+"    String standard_name \"wind_from_direction\";\n" +
+"    String units \"degrees (clockwise from true north)\";\n" +
+"  }\n" +
+"  windSpeed {\n" +
+"    Float32 _FillValue -8888.0;\n" +
+"    Float32 actual_range 0.545264, 13.2921;\n" +
+"    String average_center \"time at end of period\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    Float32 centerline_offset -9999.0;\n" +
+"    Float64 colorBarMaximum 15.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    Int32 data_interval -9999;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    Float32 distance_from_bow -9999.0;\n" +
+"    Float32 height -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Earth Relative Wind Speed\";\n" +
+"    Float32 missing_value -9999.0;\n" +
+"    String observation_type \"calculated\";\n" +
+"    String original_units \"knot\";\n" +
+"    Int32 qcindex 9;\n" +
+"    Float32 sampling_rate 1.0;\n" +
+"    Float32 special_value -8888.0;\n" +
+"    String standard_name \"wind_speed\";\n" +
+"    String units \"meter second-1\";\n" +
+"  }\n" +
+"  platformCourse {\n" +
+"    Float32 _FillValue -8888.0;\n" +
+"    Float32 actual_range 0.03, 359.17;\n" +
+"    String average_center \"time at end of period\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    Float64 colorBarMaximum 360.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Platform Course\";\n" +
+"    Float32 missing_value -9999.0;\n" +
+"    String observation_type \"calculated\";\n" +
+"    String original_units \"degrees (clockwise towards true north)\";\n" +
+"    Int32 qcindex 5;\n" +
+"    Float32 sampling_rate 1.0;\n" +
+"    Float32 special_value -8888.0;\n" +
+"    String units \"degrees_true\";\n" +
+"  }\n" +
+"  platformHeading {\n" +
+"    Float32 _FillValue -8888.0;\n" +
+"    Float32 actual_range 0.55, 359.04;\n" +
+"    String average_center \"time at end of period\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    Float64 colorBarMaximum 360.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Platform Heading\";\n" +
+"    Float32 missing_value -9999.0;\n" +
+"    String observation_type \"calculated\";\n" +
+"    String original_units \"degrees (clockwise towards true north)\";\n" +
+"    Int32 qcindex 4;\n" +
+"    Float32 sampling_rate 1.0;\n" +
+"    Float32 special_value -8888.0;\n" +
+"    String units \"degrees_true\";\n" +
+"  }\n" +
+"  platformSpeed {\n" +
+"    Float32 _FillValue -8888.0;\n" +
+"    Float32 actual_range 0.0, 6.862096;\n" +
+"    String average_center \"time at end of period\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    Float64 colorBarMaximum 10.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
+"    String ioos_category \"Other\";\n" +
+"    String long_name \"Platform Speed Over Ground\";\n" +
+"    Float32 missing_value -9999.0;\n" +
+"    String observation_type \"calculated\";\n" +
+"    String original_units \"knot\";\n" +
+"    Int32 qcindex 8;\n" +
+"    Float32 sampling_rate 0.5;\n" +
+"    Float32 special_value -8888.0;\n" +
+"    String units \"meter second-1\";\n" +
+"  }\n" +
+"  platformWindDirection {\n" +
+"    Float32 _FillValue -8888.0;\n" +
+"    Float32 actual_range 0.1, 359.8;\n" +
+"    String average_center \"time at end of period\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    Float32 centerline_offset -9999.0;\n" +
+"    Float64 colorBarMaximum 360.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    Int32 data_interval -9999;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    Float32 distance_from_bow -9999.0;\n" +
+"    Float32 height -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Platform Relative Wind Direction\";\n" +
+"    Float32 missing_value -9999.0;\n" +
+"    String observation_type \"measured\";\n" +
+"    String original_units \"degrees (clockwise from bow)\";\n" +
+"    Int32 qcindex 7;\n" +
+"    Float32 sampling_rate 1.0;\n" +
+"    Float32 special_value -8888.0;\n" +
+"    String standard_name \"wind_from_direction\";\n" +
+"    String units \"degrees (clockwise from bow)\";\n" +
+"    Float32 zero_line_reference -9999.0;\n" +
+"  }\n" +
+"  platformWindSpeed {\n" +
+"    Float32 _FillValue -8888.0;\n" +
+"    Float32 actual_range 0.0, 13.85794;\n" +
+"    String average_center \"time at end of period\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    Float32 centerline_offset -9999.0;\n" +
+"    Float64 colorBarMaximum 15.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    Int32 data_interval -9999;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    Float32 distance_from_bow -9999.0;\n" +
+"    Float32 height -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Platform Relative Wind Speed\";\n" +
+"    Float32 missing_value -9999.0;\n" +
+"    String observation_type \"measured\";\n" +
+"    String original_units \"knot\";\n" +
+"    Int32 qcindex 10;\n" +
+"    Float32 sampling_rate 1.0;\n" +
+"    Float32 special_value -8888.0;\n" +
+"    String standard_name \"wind_speed\";\n" +
+"    String units \"meter second-1\";\n" +
+"  }\n" +
+"  flag {\n" +
+"    String A \"Units added\";\n" +
+"    String B \"Data out of range\";\n" +
+"    String C \"Non-sequential time\";\n" +
+"    String D \"Failed T>=Tw>=Td\";\n" +
+"    String DODS_dimName \"f_string\";\n" +
+"    Int32 DODS_strlen 16;\n" +
+"    String E \"True wind error\";\n" +
+"    String F \"Velocity unrealistic\";\n" +
+"    String G \"Value > 4 s. d. from climatology\";\n" +
+"    String H \"Discontinuity\";\n" +
+"    String I \"Interesting feature\";\n" +
+"    String ioos_category \"Quality\";\n" +
+"    String J \"Erroneous\";\n" +
+"    String K \"Suspect - visual\";\n" +
+"    String L \"Ocean platform over land\";\n" +
+"    String long_name \"Quality Control Flags\";\n" +
+"    String M \"Instrument malfunction\";\n" +
+"    String N \"In Port\";\n" +
+"    String O \"Multiple original units\";\n" +
+"    String P \"Movement uncertain\";\n" +
+"    String Q \"Pre-flagged as suspect\";\n" +
+"    String R \"Interpolated data\";\n" +
+"    String S \"Spike - visual\";\n" +
+"    String T \"Time duplicate\";\n" +
+"    String U \"Suspect - statistial\";\n" +
+"    String V \"Spike - statistical\";\n" +
+"    String X \"Step - statistical\";\n" +
+"    String Y \"Suspect between X-flags\";\n" +
+"    String Z \"Good data\";\n" +
+"  }\n" +
+" }\n" +
+"  NC_GLOBAL {\n" +
+"    String cdm_data_type \"Point\";\n" +
+"    String contact_email \"samos@coaps.fsu.edu\";\n" +
+"    String contact_info \"Center for Ocean-Atmospheric Prediction Studies, The Florida State University, Tallahassee, FL, 32306-2840, USA\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String creator_email \"samos@coaps.fsu.edu\";\n" +
+"    String creator_name \"Shipboard Automated Meteorological and Oceanographic System (SAMOS)\";\n" +
+"    String creator_url \"http://samos.coaps.fsu.edu/html/\";\n" +
+"    String Data_modification_date \"02/08/2012 10:23:10 EST\";\n" +
+"    String data_provider \"Timothy Salisbury\";\n" +
+"    Float64 Easternmost_Easting 236.09;\n" +
+"    Int16 elev 0;\n" +
+"    String end_date_time \"2012/01/29 -- 23:59  UTC\";\n" +
+"    String featureType \"Point\";\n" +
+"    String fsu_version \"300\";\n" +
+"    Float64 geospatial_lat_max 48.48;\n" +
+"    Float64 geospatial_lat_min 44.6;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 236.09;\n" +
+"    Float64 geospatial_lon_min 234.53;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String history \"" + today + " http://coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\n" +
+today + " http://127.0.0.1:8080/cwexperimental/tabledap/fsuNoaaShipWTEP.das\";\n" +
+"    String infoUrl \"http://samos.coaps.fsu.edu/html/\";\n" +
+"    String institution \"FSU\";\n" +
+"    String keywords \"Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements,\n" +
+"Atmosphere > Atmospheric Pressure > Sea Level Pressure,\n" +
+"Atmosphere > Atmospheric Pressure > Static Pressure,\n" +
+"Atmosphere > Atmospheric Temperature > Air Temperature,\n" +
+"Atmosphere > Atmospheric Temperature > Surface Air Temperature,\n" +
+"Atmosphere > Atmospheric Water Vapor > Humidity,\n" +
+"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
+"Oceans > Salinity/Density > Conductivity,\n" +
+"Oceans > Salinity/Density > Salinity,\n" +
+"air, air_pressure, air_temperature, atmosphere, atmospheric, calender, conductivity, control, course, data, date, day, density, direction, dyson, earth, electrical, file, flags, from, fsu, ground, heading, history, humidity, information, level, measurements, meteorological, meteorology, oceans, oscar, over, platform, pressure, quality, relative, relative_humidity, salinity, sea, sea_water_electrical_conductivity, sea_water_salinity, seawater, speed, static, surface, temperature, time, vapor, water, wind, wind_from_direction, wind_speed, winds\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_modification_date \"02/08/2012 10:23:10 EST\";\n" +
+"    Float64 Northernmost_Northing 48.48;\n" +
+"    String publisher_email \"Lynn.Dewitt@noaa.gov\";\n" +
+"    String publisher_name \"Lynn Dewitt\";\n" +
+"    String receipt_order \"01\";\n" +
+"    String sourceUrl \"http://coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\";\n" +
+"    Float64 Southernmost_Northing 44.6;\n" +
+"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String start_date_time \"2012/01/29 -- 00:00  UTC\";\n" +
+"    String subsetVariables \"cruise_id, expocode, facility, ID, IMO, platform, platform_version, site\";\n" +
+"    String summary \"NOAA Ship Oscar Dyson Underway Meteorological Data (updated daily) are from the Shipboard Automated Meteorological and Oceanographic System (SAMOS) program.\n" +
+"\n" +
+"Quality Flags: Each data variable's metadata includes a qcindex which points to a character number in the flag data.  ALWAYS check the flag data for each row of data to see which data is good (flag='Z') and which data isn't.\";\n" +
+"    String time_coverage_end \"2012-01-29T23:59:00Z\";\n" +
+"    String time_coverage_start \"2012-01-28T21:36:00Z\";\n" +
+"    String title \"NOAA Ship Oscar Dyson Underway Meteorological Data\";\n" +
+"    Float64 Westernmost_Easting 234.53;\n" +
+"  }\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error." +
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
         }
 
-    }
+        //*** test getting dds for entire dataset
+        try{
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddTable.className() + "_ShipEntire", ".dds"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Dataset {\n" +
+"  Sequence {\n" +
+"    String cruise_id;\n" +
+"    String expocode;\n" +
+"    String facility;\n" +
+"    String ID;\n" +
+"    String IMO;\n" +
+"    String platform;\n" +
+"    String platform_version;\n" +
+"    String site;\n" +
+"    Float64 time;\n" +
+"    Float32 latitude;\n" +
+"    Float32 longitude;\n" +
+"    Float32 airPressure;\n" +
+"    Float32 airTemperature;\n" +
+"    Float32 conductivity;\n" +
+"    Float32 relativeHumidity;\n" +
+"    Float32 salinity;\n" +
+"    Float32 seaTemperature;\n" +
+"    Float32 windDirection;\n" +
+"    Float32 windSpeed;\n" +
+"    Float32 platformCourse;\n" +
+"    Float32 platformHeading;\n" +
+"    Float32 platformSpeed;\n" +
+"    Float32 platformWindDirection;\n" +
+"    Float32 platformWindSpeed;\n" +
+"    String flag;\n" +
+"  } s;\n" +
+"} s;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+        }
 
-    public static void testGetAxisValues() throws Throwable {
+        //*** test make data files
+        String2.log("\n****************** EDDTableFromThreddsFiles.testShipWTEP make DATA FILES\n");       
+
+        //.csv    for one lat,lon,time
         try {
-            DConnect dConnect = new DConnect(
-//"http://data.nodc.noaa.gov/opendap/nmsp/wcos/ANO001/2005/ANO001_021MTBD000R00_20050617.nc", //lon lat reversed!
-//"http://edac-dap.northerngulfinstitute.org/dods-bin/nph-dods/WCOS/nmsp/wcos/ANO001/2005/ANO001_021MTBD000R00_20050617.nc",       
-"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/ANO001/2005/ANO001_021MTBD000R00_20050617.nc",
-                acceptDeflate, 1, 1);
-            PrimitiveArray pa[] = OpendapHelper.getAxisValues(dConnect, 
-                new String[]{"Time","Latitude","Longitude","Depth"}, "[11:15]");
-            for (int i = 0; i < pa.length; i++)
-                String2.log("pa[" + i + "]=" + pa[i].toString());
-            Test.ensureEqual(pa[0].toString(), "1.1189748E9, 1.11897504E9, 1.11897528E9, 1.11897552E9, 1.11897576E9", "");
-            Test.ensureEqual(pa[1].toString(), "37.13015", "");      //lat
-            Test.ensureEqual(pa[2].toString(), "-122.361253", "");   //lon
-            Test.ensureEqual(pa[3].toString(), "0.0", "");
+        userDapQuery = "cruise_id&distinct()";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            eddTable.className() + "_ShipCruiseList", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"cruise_id\n" +
+"\n" +
+"Cruise_id undefined for now\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
                 "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
         }
+
+        //.csv    
+        userDapQuery = "time,latitude,longitude,airPressure,airTemperature,flag&time%3E=2012-01-29T19:30:00Z&time%3C=2012-01-29T19:34:00Z";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            eddTable.className() + "_Ship1StationGTLT", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);   
+        expected = 
+"time,latitude,longitude,airPressure,airTemperature,flag\n" +
+"UTC,degrees_north,degrees_east,millibar,celsius,\n" +
+"2012-01-29T19:30:00Z,48.47,235.11,1009.1,9.01,ZZZZZZZZZZZZBZZZ\n" +
+"2012-01-29T19:31:00Z,48.47,235.11,1009.05,8.94,ZZZZZZZZZZZZBZZZ\n" +
+"2012-01-29T19:32:00Z,48.47,235.12,1009.03,8.9,ZZZZZZZZZZZZBZZZ\n" +
+"2012-01-29T19:33:00Z,48.47,235.12,1009.03,8.93,ZZZZZZZZZZZZBZZZ\n" +
+"2012-01-29T19:34:00Z,48.47,235.13,1009.02,8.96,ZZZZZZZZZZZZBZZZ\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+        }
+
     }
+
+    /**
+     * This tests getThreddsFileInfo.
+     * @throws Throwable if trouble
+     */
+    public static void testGetThreddsFileInfo() throws Throwable {
+
+        String2.log("\n*** EDDTableFromThredds.testGetThreddsFileInfo");
+        String results, expected;
+        
+        StringArray fileDir     = new StringArray();
+        StringArray fileName    = new StringArray();
+        LongArray   fileLastMod = new LongArray();
+
+        //*** test http://coaps.fsu.edu/thredds/catalog/samos/data/quick/WTEP/2011/catalog.html
+        if (true) {
+        getThreddsFileInfo(
+            "http://coaps.fsu.edu/thredds/catalog/samos/data/quick/WTEP/catalog.xml", 
+            "WTEP_2011082.*\\.nc", true, //recursive
+            fileDir, fileName, fileLastMod);
+
+        results = fileDir.toNewlineString();
+        expected = 
+"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n" +
+"http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2011/\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        results = fileName.toNewlineString();
+        expected = 
+"WTEP_20110821v10001.nc\n" +
+"WTEP_20110822v10001.nc\n" +
+"WTEP_20110823v10001.nc\n" +
+"WTEP_20110824v10001.nc\n" +
+"WTEP_20110825v10001.nc\n" +
+"WTEP_20110826v10001.nc\n" +
+"WTEP_20110827v10001.nc\n" +
+"WTEP_20110828v10001.nc\n" +
+"WTEP_20110829v10001.nc\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < fileLastMod.size(); i++)
+            sb.append(Calendar2.millisToIsoZuluString(fileLastMod.get(i)) + "\n");
+        results = sb.toString();
+        expected = 
+"2011-08-22T00:02:00\n" +
+"2011-08-23T00:03:13\n" +
+"2011-08-24T00:04:06\n" +
+"2011-08-25T00:02:02\n" +
+"2011-08-26T00:03:13\n" +
+"2011-08-27T00:04:46\n" +
+"2011-08-28T00:05:25\n" +
+"2011-08-29T00:03:35\n" +
+"2011-08-30T00:05:39\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        }
+
+
+        //*** test http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/SMS/catalog.xml
+        if (true) {
+        fileDir.clear();
+        fileName.clear();
+        fileLastMod.clear();        
+        getThreddsFileInfo(
+            "http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/SMS/catalog.xml", 
+            "SMS.*_2004.*\\.nc", true, //recursive
+            fileDir, fileName, fileLastMod);
+
+        results = fileDir.toNewlineString();
+        expected = 
+"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
+"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
+"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
+"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
+"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
+"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n" +
+"http://data.nodc.noaa.gov/thredds/dodsC/nmsp/wcos/SMS/2004/\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        results = fileName.toNewlineString();
+        expected = 
+"SMSXXX_015ADCP015R00_20041130.nc\n" +
+"SMSXXX_015MTBD003R00_20041011.nc\n" +
+"SMSXXX_015MTBD003R00_20041122.nc\n" +
+"SMSXXX_015MTBD009R00_20041011.nc\n" +
+"SMSXXX_015MTBD009R00_20041122.nc\n" +
+"SMSXXX_015MTBD014R00_20041011.nc\n" +
+"SMSXXX_015MTBD014R00_20041122.nc\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < fileLastMod.size(); i++)
+            sb.append(Calendar2.millisToIsoZuluString(fileLastMod.get(i)) + "\n");
+        results = sb.toString();
+        expected = 
+"2009-09-28T06:45:08\n" +
+"2010-01-05T09:16:32\n" +
+"2010-01-07T21:55:36\n" +
+"2010-01-09T22:13:44\n" +
+"2010-01-10T21:16:10\n" +
+"2010-01-10T21:35:00\n" +
+"2009-10-02T05:01:10\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        }
+
+        String2.log("\n*** EDDTableFromThredds.testGetThreddsFileInfo finished.");
+    }
+
+
 
 
     /**
@@ -1233,11 +1931,12 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
     public static void test(boolean deleteCachedInfo) throws Throwable {
 
         //usually run
-        testGetSize();
-        testGetAxisValues();
-        testWcosTemp(deleteCachedInfo);  
+/* */
+        testGetThreddsFileInfo();
         testGenerateDatasetsXml();
-
+        testWcosTemp(deleteCachedInfo);  
+        testShipWTEP(deleteCachedInfo);
+ 
         //not usually run
 
     }

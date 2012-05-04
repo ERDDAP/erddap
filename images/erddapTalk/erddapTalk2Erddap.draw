@@ -41,7 +41,7 @@ setShapeBorder(1);
 setShapeAngle(0);
 setShapeShadow(0);
 setCharacters("");
-create("text", "4, 3.6");
+create("text", "4, 3.6999999999999997");
 
 setBackgroundColor(Color2.notDrawn);
 setLineColor(Color2.notDrawn);
@@ -50,51 +50,51 @@ setShapeVAlign(9);
 setShapeWidth(.);
 setShapeHeight(.);
 setCharacters("...");
-create("text", "7.5, 4.6");
+create("text", "7.5, 4.499999999999999");
 
 setShapeVAlign(10);
-setCharacters("<b>Internet Data Source Types");
-create("text", "4, 5.5");
+setCharacters("<b>Internet Data Server Types");
+create("text", "4, 5.3");
 
 setCharacters("<b>Internet Data Client Types");
-create("text", "4, 1.8");
+create("text", "4, 2");
 
 setShapeVAlign(9);
 setCharacters("DiGIR/<br>OBIS<br>&circf;");
-create("text", "0.5, 4.3");
+create("text", "0.5, 4.199999999999999");
 
 setCharacters("SOS<br>&circf;");
-create("text", "1.5, 4.3");
+create("text", "1.5, 4.199999999999999");
 
 setCharacters("Text<br>File<br>&circf;");
-create("text", "3.5, 4.3");
+create("text", "3.5, 4.199999999999999");
 
 setCharacters("Database<br>+DAP<br>&circf;");
-create("text", "4.5, 4.3");
+create("text", "4.5, 4.199999999999999");
 
 setCharacters("Grids<br>+DAP<br>&circf;");
-create("text", "5.5, 4.3");
+create("text", "5.5, 4.199999999999999");
 
 setShapeVAlign(5);
 setCharacters("...");
-create("text", "7.5, 2.5");
+create("text", "7.5, 2.7");
 
 setCharacters("&circf;<br>Web<br>Browser");
-create("text", "6.500000000000001, 2.8000000000000003");
+create("text", "6.500000000000001, 3.0000000000000004");
 
 setCharacters("&circf;<br>Program<br>(Java?)");
-create("text", "3.5, 2.8000000000000003");
+create("text", "3.5, 3.0000000000000004");
 
 setCharacters("&circf;<br>SOS");
-create("text", "1.5, 2.8000000000000003");
+create("text", "1.5, 3.0000000000000004");
 
 setCharacters("&circf;<br>DiGIR/<br>OBIS");
-create("text", "0.5000000000000001, 2.8");
+create("text", "0.5000000000000001, 3");
 
 setTextPosition(3);
 setShapeVAlign(10);
 setCharacters("Internet");
-create("text", "7.3, 3.2");
+create("text", "7.3, 3.4000000000000004");
 
 setFillColor(Color2.notDrawn);
 setLineColor(Color2.black);
@@ -104,51 +104,49 @@ setArrowTypeStart(0);
 setArrowTypeFinish(0);
 setMarkerColor(Color2.notDrawn);
 setPathType(0);
-create("path", "1.5, 2.8000000000000003, 4, 3.6");
+create("path", "1.5, 3.0000000000000004, 4, 3.6999999999999997");
 
 setLineType(0);
 setLineDashsize(0.02);
-create("path", "4, 3.6, 6.500000000000001, 2.8000000000000003");
+create("path", "4, 3.6999999999999997, 6.500000000000001, 3.0000000000000004");
 
 setLineColor(Color2.notDrawn);
 setTextPosition(4);
 setShapeVAlign(9);
 setCharacters("WMS<br>&circf;");
-create("text", "2.4999999999999996, 4.3");
+create("text", "2.4999999999999996, 4.199999999999999");
 
 setLineColor(Color2.black);
-create("path", "4, 3.6, 2.4999999999999996, 2.8");
+create("path", "4, 3.6999999999999997, 2.4999999999999996, 3");
 
 setLineColor(Color2.notDrawn);
 setShapeVAlign(5);
 setCharacters("&circf;<br>DAP");
-create("text", "4.5, 2.8000000000000003");
+create("text", "4.5, 3.0000000000000004");
 
 setGroup(5);
 setLineColor(Color2.black);
-create("path", "4, 3.6, 3.5, 2.8000000000000003");
+create("path", "4, 3.6999999999999997, 3.5, 3.0000000000000004");
 
-create("path", "4, 3.6, 4.5, 2.8000000000000003");
+create("path", "4, 3.6999999999999997, 4.5, 3.0000000000000004");
 
-create("path", "4, 3.6, 4.5, 2.8000000000000003");
+create("path", "4, 3.6999999999999997, 4.5, 3.0000000000000004");
 
-create("path", "4, 3.6, 3, 1.2");
+create("path", "4, 3.6999999999999997, 3, 1.2");
 
-create("path", "4, 3.6, 4, 1.2");
+create("path", "4, 3.6999999999999997, 4, 1.2");
 
 setLineColor(Color2.notDrawn);
 setTextColor(Color2.blue4);
-setCharacters("<b>Getting Data<br>with ERDDAP");
-create("text", "1.3, 5.7");
+setCharacters("<b><big>Getting Data with ERDDAP");
+create("text", "4, 5.7");
 
 setTextColor(Color2.green6);
-setShapeHAlign(3);
-setCharacters("<i>You can get data into many common programs and file types.");
-create("text", "0.3, 0.2");
+setCharacters("You can get data into many common programs and file types.");
+create("text", "4, 0.19999999999999998");
 
 setGroup(4);
 setTextColor(Color2.black);
-setShapeHAlign(4);
 setCharacters("&circf;<br>Matlab");
 create("text", "3, 1.2");
 
@@ -160,11 +158,11 @@ create("text", "2, 1.2");
 
 setShapeVAlign(9);
 setCharacters("Web<br>Pages<br>&circf;");
-create("text", "6.5, 4.3");
+create("text", "6.5, 4.199999999999999");
 
 setShapeVAlign(5);
 setCharacters("&circf;<br>WMS");
-create("text", "2.5, 2.8000000000000003");
+create("text", "2.5, 3.0000000000000004");
 
 setCharacters("&circf;<br>.json");
 create("text", "5, 1.2");
@@ -172,42 +170,33 @@ create("text", "5, 1.2");
 setCharacters("&circf;<br>ArcGIS");
 create("text", "1, 1.2");
 
-setGroup(5);
-setTextColor(Color2.green6);
-setShapeHAlign(3);
-setCharacters("<i>You can use your preferred client to get data from many sources.");
-create("text", "0.3, 1.5");
-
-setGroup(4);
-setTextColor(Color2.black);
-setShapeHAlign(4);
 setCharacters("&circf;<br>ODV");
 create("text", "6, 1.2");
 
 setGroup(5);
 setLineColor(Color2.black);
-create("path", "0.5, 4.4, 4, 3.6");
+create("path", "0.5, 4.3, 4, 3.6999999999999997");
 
-create("path", "1.5, 4.4, 4, 3.6");
+create("path", "1.5, 4.3, 4, 3.6999999999999997");
 
-create("path", "3.5, 4.4, 4, 3.6");
+create("path", "3.5, 4.3, 4, 3.6999999999999997");
 
-create("path", "4.5, 4.4, 4, 3.6");
+create("path", "4.5, 4.3, 4, 3.6999999999999997");
 
-create("path", "5.5, 4.4, 4, 3.6");
+create("path", "5.5, 4.3, 4, 3.6999999999999997");
 
 setLineType(9);
 setLineDashsize(0.014);
-create("path", "6.5, 4.4, 4, 3.6");
+create("path", "6.5, 4.3, 4, 3.6999999999999997");
 
 setLineType(0);
-create("path", "4, 3.6, 1, 1.2000000000000002");
+create("path", "4, 3.6999999999999997, 1, 1.2000000000000002");
 
-create("path", "4, 3.6, 2, 1.2000000000000002");
+create("path", "4, 3.6999999999999997, 2, 1.2000000000000002");
 
-create("path", "4, 3.6, 5, 1.2000000000000002");
+create("path", "4, 3.6999999999999997, 5, 1.2000000000000002");
 
-create("path", "4, 3.6, 6, 1.2000000000000002");
+create("path", "4, 3.6999999999999997, 6, 1.2000000000000002");
 
 setGroup(4);
 setLineColor(Color2.notDrawn);
@@ -216,23 +205,23 @@ create("text", "7.1, 1.2");
 
 setGroup(5);
 setLineColor(Color2.black);
-create("path", "4, 3.6, 7.1000000000000005, 1.2000000000000002");
+create("path", "4, 3.6999999999999997, 7.1000000000000005, 1.2000000000000002");
 
-create("path", "4, 3.6, 5.5, 2.8000000000000003");
+create("path", "4, 3.6999999999999997, 5.5, 3.0000000000000004");
 
 setBackgroundColor(Color2.orange1);
 setLineColor(Color2.notDrawn);
 setShapeHeight(0.25);
 setShapeBorder(0.45);
 setCharacters("ERDDAP");
-create("text", "4, 3.6");
+create("text", "4, 3.6999999999999997");
 
 setGroup(4);
 setBackgroundColor(Color2.notDrawn);
 setShapeHeight(.);
 setShapeBorder(1);
 setCharacters("&circf;<br>NetCDF<br>.nc");
-create("text", "5.5, 2.8");
+create("text", "5.5, 3");
 
 setGroup(5);
 setLineColor(Color2.green6);
@@ -240,10 +229,20 @@ setArrowTypeFinish(1);
 setArrowAngle(45);
 setArrowHeadsize(0.16);
 setPathType(1);
-create("path", "7.7, 1.5, 7.7, 1.7, "+
-  "7.6, 1.9, 7.4, 2.1");
+create("path", "7.7, 1.7000000000000002, 7.7, 1.9000000000000004, "+
+  "7.6, 2.1, 7.4, 2.3000000000000003");
 
-create("path", "7.8, 0.2, 7.8, 0.4, "+
+create("path", "7.6, 0.2, 7.7, 0.4, "+
   "7.7, 0.6, 7.5, 0.8");
+
+setLineColor(Color2.notDrawn);
+setTextColor(Color2.green6);
+setCharacters("You can use your favorite client to get data from many sources.");
+create("text", "4, 1.7000000000000002");
+
+setShapeHAlign(3);
+setShapeVAlign(3);
+setCharacters("ERDDAP acts as<br>a middleman.");
+create("text", "0.4, 4");
 
 endOfFile();

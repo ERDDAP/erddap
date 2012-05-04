@@ -119,7 +119,7 @@ public class Grd {
                 File2.rename(workDir, outName + randomInt + ".grd", outName + ".grd");
 
                 String2.log( 
-                    //String2.toCSVString(cShell("grdinfo " + workDir + outName + ".grd -C").toArray()) + "\n" + //dianostic 
+                    //String2.toCSSVString(cShell("grdinfo " + workDir + outName + ".grd -C").toArray()) + "\n" + //dianostic 
                     "subsampleGrdFile " + outName + " time=" + 
                     (System.currentTimeMillis() - time) + " ms");
             }
@@ -267,7 +267,7 @@ public class Grd {
                     //info:  name w e s n z0 z1 dx dy nx ny 
                     ArrayList al = SSR.cShell("grdinfo " + fullGrdName + " -C"); 
                     String[] info = String2.split((String)al.get(0), '\t'); 
-                    //String2.log("grdinfo = " + String2.toCSVString(info));
+                    //String2.log("grdinfo = " + String2.toCSSVString(info));
 
                     //write the header and the data
                     String error = String2.writeToFile(fullResultName + randomInt + ".asc", 
@@ -346,7 +346,7 @@ public class Grd {
                     s = reader.readLine(); double lat0 = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
                     s = reader.readLine(); double incr = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
                     s = reader.readLine(); String mv = s.substring(s.indexOf(' ') + 1);
-                    //String2.log("grdinfo = " + String2.toCSVString(info));
+                    //String2.log("grdinfo = " + String2.toCSSVString(info));
 
                     //retrieve an instance of an H4File
                     FileFormat fileFormat = FileFormat.getFileFormat(FileFormat.FILE_TYPE_HDF4);
@@ -454,7 +454,7 @@ public class Grd {
                     s = reader.readLine(); double lat0 = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
                     s = reader.readLine(); double incr = String2.parseDouble(s.substring(s.indexOf(' ') + 1));
                     s = reader.readLine(); String mv = s.substring(s.indexOf(' ') + 1);
-                    //String2.log("grdinfo = " + String2.toCSVString(info));
+                    //String2.log("grdinfo = " + String2.toCSSVString(info));
 
                     //open a dataOutputStream 
                     DataOutputStream dos = DataStream.getDataOutputStream(resultDir + name + randomInt + ".mat");
@@ -1143,8 +1143,8 @@ public class Grd {
                        
             String2.log("imagick test TIME=" + 
                 (System.currentTimeMillis() - imagickTime) + " ms" +
-                "\nImageReaders: " + String2.toCSVString(ImageIO.getReaderFormatNames()) +
-                "\nImageWriters: " + String2.toCSVString(ImageIO.getWriterFormatNames())
+                "\nImageReaders: " + String2.toCSSVString(ImageIO.getReaderFormatNames()) +
+                "\nImageWriters: " + String2.toCSSVString(ImageIO.getWriterFormatNames())
                 );
 //*/
 

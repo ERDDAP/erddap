@@ -190,18 +190,18 @@ public class HdfVDataDescription extends HdfTag {
             ", nvert=" + nvert +
             ", ivsize=" + ivsize +
             ", nfields=" + nfields +
-            ", type_n=" + String2.toCSVString(type_n) +
-            ", isize_n=" + String2.toCSVString(isize_n) +
-            ", offset_n=" + String2.toCSVString(offset_n) +
-            ", order_n=" + String2.toCSVString(order_n) +
-            ", fldnm_n=" + String2.annotatedString(String2.toCSVString(fldnm_n)) +
+            ", type_n=" + String2.toCSSVString(type_n) +
+            ", isize_n=" + String2.toCSSVString(isize_n) +
+            ", offset_n=" + String2.toCSSVString(offset_n) +
+            ", order_n=" + String2.toCSSVString(order_n) +
+            ", fldnm_n=" + String2.annotatedString(String2.toCSSVString(fldnm_n)) +
             ", name=" + String2.annotatedString(name) +
             ", className=" + String2.annotatedString(className) +
             ", extag=" + extag +
             ", exref=" + exref +
             ", version=" + version +
             ", unused=" + unused +
-            ", junk=" + String2.toCSVString(junk) + 
+            ", junk=" + String2.toCSSVString(junk) + 
             "]";
     }
 }

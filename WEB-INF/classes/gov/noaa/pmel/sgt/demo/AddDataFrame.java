@@ -752,7 +752,7 @@ class AddDataFrame extends JFrame {
 
       GeoDate start = null;
       GeoDate end = null;
-      String format = "yyyy-MM-dd HH:mm";
+      String format = "yyyy-MM-dd'T'HH:mm";
       String min1 = min1TTF.getText();
       String max1 = max1TTF.getText();
       try {
@@ -787,7 +787,8 @@ class AddDataFrame extends JFrame {
 
       GeoDate start = null;
       GeoDate end = null;
-      String format = "yyyy-MM-dd HH:mm";
+      //bob changed space to 'T' (and hh to HH?)
+      String format = "yyyy-MM-dd'T'HH:mm";
       String min1 = min22TTF.getText();
       String max1 = max22TTF.getText();
       try {

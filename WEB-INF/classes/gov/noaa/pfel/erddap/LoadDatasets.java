@@ -31,12 +31,28 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
+
+//import org.apache.lucene.analysis.Analyzer;
+//import org.apache.lucene.analysis.standard.StandardAnalyzer;
+//import org.apache.lucene.document.Document;
+//import org.apache.lucene.document.Field;
+//import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
+//import org.apache.lucene.queryParser.ParseException;
+//import org.apache.lucene.queryParser.QueryParser;
+//import org.apache.lucene.search.TopDocs;
+//import org.apache.lucene.search.IndexSearcher;
+//import org.apache.lucene.search.Query;
+//import org.apache.lucene.store.Directory;
+//import org.apache.lucene.store.SimpleFSDirectory;
+//import org.apache.lucene.util.Version;
 
 /**
  * This class is run in a separate thread to load datasets for ERDDAP.
@@ -81,6 +97,11 @@ public class LoadDatasets extends Thread {
     private String datasetsRegex;
     private InputStream inputStream;
     private boolean majorLoad;
+    private long lastLuceneUpdate;
+
+    private static long MAX_MILLIS_BEFORE_LUCENE_UPDATE = 5 * Calendar2.MILLIS_PER_MINUTE;
+    private final static boolean ADD = true;
+    private final static boolean REMOVE = false;
 
     /* This is set by run if there is an unexpected error. */   
     public String unexpectedError = ""; 
@@ -93,9 +114,9 @@ public class LoadDatasets extends Thread {
     public StringBuilder warningsFromLoadDatasets = new StringBuilder();
 
     /** 
-     * An alternate constructor that lets the caller provide the datasetx.xml inputStream.
+     * The constructor.
      *
-     * @param erddap  run() places results back in erddap as they become available
+     * @param erddap  Calling run() places results back in erddap as they become available
      * @param datasetsRegex  usually either EDStatic.datasetsRegex or a custom regex for flagged datasets.
      * @param inputStream with the datasets.xml information.
      *     There is no need to wrap this in a buffered InputStream -- that will be done here.
@@ -112,6 +133,7 @@ public class LoadDatasets extends Thread {
         this.inputStream = inputStream;
         this.majorLoad = majorLoad;
         setName("LoadDatasets");
+        lastLuceneUpdate = System.currentTimeMillis();
     }
 
     /**
@@ -120,6 +142,7 @@ public class LoadDatasets extends Thread {
      */
     public void run() {
         SimpleXMLReader xmlReader = null;
+        StringArray changedDatasetIDs = new StringArray();
         try {
             String2.log("\n" + String2.makeString('*', 80) +  
                 "\nLoadDatasets.run EDStatic.developmentMode=" + EDStatic.developmentMode + 
@@ -174,6 +197,7 @@ public class LoadDatasets extends Thread {
                     String2.log("*** The LoadDatasets thread was interrupted at " + 
                         Calendar2.getCurrentISODateTimeStringLocal());
                     xmlReader.close();
+                    updateLucene(changedDatasetIDs);
                     return;
                 }
 
@@ -221,13 +245,19 @@ public class LoadDatasets extends Thread {
                         boolean tActive = tActiveString != null && tActiveString.equals("false")? false : true; 
                         if (!tActive) {
                             //marked not active now; was it active?
-                            if (erddap.gridDatasetHashMap.remove( tId) != null ||
-                                erddap.tableDatasetHashMap.remove(tId) != null) {
+                            EDD oldEdd = (EDD)erddap.gridDatasetHashMap.remove(tId);
+                            if (oldEdd == null) 
+                                oldEdd = (EDD)erddap.tableDatasetHashMap.remove(tId);
+                            if (oldEdd != null) {
                                 //it was active; finish removing it
-                                //do in quick succession...   (could be synchronized on erddap)
+                                //do in quick succession...   (???synchronized on ?)
                                 String2.log("*** removing datasetID=" + tId + " because active=\"false\".");
-                                erddap.categoryInfo = copyCatInfoMinusId(erddap.categoryInfo, tId);
-                                File2.deleteAllFiles(EDStatic.fullCacheDirectory + tId);
+                                addRemoveDatasetInfo(REMOVE, erddap.categoryInfo, oldEdd); 
+                                File2.deleteAllFiles(EDD.cacheDirectory(tId));
+                                changedDatasetIDs.add(tId);
+                                if (System.currentTimeMillis() - lastLuceneUpdate >
+                                    MAX_MILLIS_BEFORE_LUCENE_UPDATE)
+                                    updateLucene(changedDatasetIDs);
                             }
                             skip = true;
                         }
@@ -249,29 +279,62 @@ public class LoadDatasets extends Thread {
                         nTry++;
                         String change = "";
                         EDD dataset = null, oldDataset = null;
+                        boolean oldCatInfoRemoved = false;
                         long timeToLoadThisDataset = System.currentTimeMillis();
                         try {
                             dataset = EDD.fromXml(xmlReader.attributeValue("type"), xmlReader);
-                            Map newCategoryInfo = copyCatInfoMinusId(erddap.categoryInfo, tId);
-                            addDatasetInfo(newCategoryInfo, dataset); //make changes to the copy
 
                             //check for interruption right before making changes to Erddap
                             if (isInterrupted()) { //this is a likely place to catch interruption
                                 String2.log("*** The LoadDatasets thread was interrupted at " + 
                                     Calendar2.getCurrentISODateTimeStringLocal());
                                 xmlReader.close();
+                                updateLucene(changedDatasetIDs);
                                 return;
                             }
 
-                            //do in quick succession...   (could be synchronized on erddap)
-                            //hashMap.put atomically replaces old version with new
-                            oldDataset = dataset instanceof EDDGrid?
-                                (EDD)(erddap.gridDatasetHashMap.put( dataset.datasetID(), dataset)) :
-                                (EDD)(erddap.tableDatasetHashMap.put(dataset.datasetID(), dataset));
-                            erddap.categoryInfo = newCategoryInfo;
+                            //do several things in quick succession...
+                            //(??? synchronize on (?) if really need avoid inconsistency)
+
+                            //was there a dataset by the same name?
+                            oldDataset = (EDD)(erddap.gridDatasetHashMap.get(tId));
+                            if (oldDataset == null)
+                                oldDataset = (EDD)(erddap.tableDatasetHashMap.get(tId));
+
+                            //if oldDataset existed, remove its info from categoryInfo
+                            //(check now, before put dataset in place, in case EDDGrid <--> EDDTable)
+                            if (oldDataset != null) {
+                                addRemoveDatasetInfo(REMOVE, erddap.categoryInfo, oldDataset); 
+                                oldCatInfoRemoved = true;
+                            }
+
+                            //put dataset in place
+                            //(hashMap.put atomically replaces old version with new)
+                            if ((oldDataset == null || oldDataset instanceof EDDGrid) &&
+                                                          dataset instanceof EDDGrid) {
+                                erddap.gridDatasetHashMap.put(tId, dataset);  //was/is grid
+
+                            } else if ((oldDataset == null || oldDataset instanceof EDDTable) &&
+                                                                 dataset instanceof EDDTable) {
+                                erddap.tableDatasetHashMap.put(tId, dataset); //was/is table 
+
+                            } else if (dataset instanceof EDDGrid) {
+                                if (oldDataset != null)
+                                    erddap.tableDatasetHashMap.remove(tId);   //was table
+                                erddap.gridDatasetHashMap.put(tId, dataset);  //now grid
+
+                            } else if (dataset instanceof EDDTable) {
+                                if (oldDataset != null)
+                                    erddap.gridDatasetHashMap.remove(tId);    //was grid
+                                erddap.tableDatasetHashMap.put(tId, dataset); //now table
+                            }
+
+                            //add new info to categoryInfo
+                            addRemoveDatasetInfo(ADD, erddap.categoryInfo, dataset); 
+
                             //clear the dataset's cache 
                             //since axis values may have changed and "last" may have changed
-                            File2.deleteAllFiles(EDStatic.fullCacheDirectory + dataset.datasetID());                           
+                            File2.deleteAllFiles(dataset.cacheDirectory());                           
                        
                             change = dataset.changed(oldDataset);
                             if (change.length() == 0 && dataset instanceof EDDTable)
@@ -279,8 +342,6 @@ public class LoadDatasets extends Thread {
 
                         } catch (Throwable t) {
                             dataset = null;
-                            //if oldDataset exists, remove it
-                            Map newCategoryInfo = copyCatInfoMinusId(erddap.categoryInfo, tId); //slow, so do first
                             timeToLoadThisDataset = System.currentTimeMillis() - timeToLoadThisDataset;
 
                             //check for interruption right before making changes to Erddap
@@ -290,16 +351,22 @@ public class LoadDatasets extends Thread {
                                 String2.log(tError2);
                                 warningsFromLoadDatasets.append(tError2 + "\n\n");
                                 xmlReader.close();
+                                updateLucene(changedDatasetIDs);
                                 return;
                             }
 
-                            //do in quick succession...   (could be synchronized on erddap)
+
+                            //actually remove old dataset (if any existed)
                             EDD tDataset = (EDD)erddap.gridDatasetHashMap.remove(tId); //always ensure it was removed
                             if (tDataset == null)
                                 tDataset = (EDD)erddap.tableDatasetHashMap.remove(tId);
                             if (oldDataset == null)
                                 oldDataset = tDataset;
-                            erddap.categoryInfo = newCategoryInfo; 
+
+                            //if oldDataset existed, remove it from categoryInfo
+                            if (oldDataset != null && !oldCatInfoRemoved)
+                                addRemoveDatasetInfo(REMOVE, erddap.categoryInfo, oldDataset); 
+
                             String tError = startError + xmlReader.lineNumber() + "\n" + 
                                 "While trying to load datasetID=" + tId + " (after " +
                                     timeToLoadThisDataset + " ms)\n" +
@@ -330,6 +397,12 @@ public class LoadDatasets extends Thread {
                                 change = tError;
                         }
                         if (verbose) String2.log("change=" + change);
+
+                        //whether succeeded (new or swapped in) or failed (removed), it was changed
+                        changedDatasetIDs.add(tId);
+                        if (System.currentTimeMillis() - lastLuceneUpdate >
+                            MAX_MILLIS_BEFORE_LUCENE_UPDATE)
+                            updateLucene(changedDatasetIDs);
 
                         //trigger subscription and dataset.onChange actions (after new dataset is in place)
                         EDD cooDataset = dataset == null? oldDataset : dataset; //currentOrOld, may be null
@@ -418,8 +491,8 @@ public class LoadDatasets extends Thread {
                                     "    <link>" + EDStatic.publicErddapUrl(cooDataset.getAccessibleTo() == null) +
                                         "/" + cooDataset.dapProtocol() + "/" + tId;
                                 rss.append(
-                                    "<?xml version=\"1.0\"?>\n" +
-                                    "<rss version=\"2.0\">\n" +
+                                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                    "<rss version=\"2.0\" xmlns=\"http://backend.userland.com/rss2\">\n" +
                                     "  <channel>\n" +
                                     "    <title>ERDDAP: " + XML.encodeAsXML(cooDataset.title()) + "</title>\n" +
                                     "    <description>This RSS feed changes when the dataset changes.</description>\n" +      
@@ -443,7 +516,6 @@ public class LoadDatasets extends Thread {
                                 EDStatic.email(EDStatic.emailEverythingTo, subject, content);
                             }
                         }
-
                     }
 
                 } else if (tags.equals("<erddapDatasets><subscriptionEmailBlacklist>")) {
@@ -482,7 +554,7 @@ public class LoadDatasets extends Thread {
                                 " in datasets.xml had fewer than 7 characters.\n\n");
                         } else {
                             Arrays.sort(tRoles);
-                            if (reallyVerbose) String2.log("user=" + tUser + " roles=" + String2.toCSVString(tRoles));
+                            if (reallyVerbose) String2.log("user=" + tUser + " roles=" + String2.toCSSVString(tRoles));
                             Object o = tUserHashMap.put(tUser, new Object[]{tPassword, tRoles});
                             if (o != null)
                                 warningsFromLoadDatasets.append(
@@ -502,6 +574,7 @@ public class LoadDatasets extends Thread {
             }
             xmlReader.close();
             xmlReader = null;
+            updateLucene(changedDatasetIDs);
 
             //atomic swap into place
             EDStatic.setUserHashMap(tUserHashMap); 
@@ -612,6 +685,8 @@ public class LoadDatasets extends Thread {
                     EDStatic.tally.remove("Log out (since last daily report)");
                     EDStatic.tally.remove("Main Resources List (since last daily report)");
                     EDStatic.tally.remove("MemoryInUse > MaxSafeMemory (since last daily report)");
+                    EDStatic.tally.remove("Metadata requests (since last daily report)");
+                    EDStatic.tally.remove("OpenSearch For (since last daily report)");
                     EDStatic.tally.remove("POST (since last daily report)");
                     EDStatic.tally.remove("Protocol (since last daily report)");
                     EDStatic.tally.remove("Requester Is Logged In (since last daily report)");
@@ -656,7 +731,7 @@ public class LoadDatasets extends Thread {
                     //since log may be seen by clients if displayDiagnosticInfo is true
                     contentSB.append("\n" + stars + 
                         "\nsetDatasetFlag URLs can be used to force a dataset to be reloaded (treat as confidential information)\n\n");
-                    StringArray datasetIDs = erddap.allDatasetIDs(false);
+                    StringArray datasetIDs = erddap.allDatasetIDs();
                     datasetIDs.sortIgnoreCase();
                     for (int ds = 0; ds < datasetIDs.size(); ds++) {
                         contentSB.append(EDD.flagUrl(datasetIDs.get(ds)));
@@ -740,6 +815,87 @@ public class LoadDatasets extends Thread {
 
     }
 
+    /** 
+     * Update the Lucene indices for these datasets.
+     *
+     * @param datasetIDs
+     */
+    public void updateLucene(StringArray datasetIDs) {
+
+        //update dataset's Document in Lucene Index
+        int nDatasetIDs = datasetIDs.size();
+        if (EDStatic.useLuceneSearchEngine && nDatasetIDs > 0) {
+
+            try {
+                //gc to avoid out-of-memory
+                Math2.gc(500);
+
+                String2.log("start updateLucene()"); 
+                if (EDStatic.luceneIndexWriter == null) //if trouble last time
+                    EDStatic.createLuceneIndexWriter(false); //throws exception if trouble
+
+                //update the datasetIDs
+                long tTime = System.currentTimeMillis();
+                for (int idi = 0; idi < nDatasetIDs; idi++) {
+                    String tDatasetID = datasetIDs.get(idi); 
+                    EDD edd = (EDD)erddap.gridDatasetHashMap.get(tDatasetID);
+                    if (edd == null) 
+                        edd = (EDD)erddap.tableDatasetHashMap.get(tDatasetID);
+                    if (edd == null) {
+                        //remove it from Lucene
+                        EDStatic.luceneIndexWriter.deleteDocuments(
+                            new Term("datasetID", tDatasetID));
+                    } else {
+                        //update it in Lucene
+                        EDStatic.luceneIndexWriter.updateDocument(
+                            new Term("datasetID", tDatasetID),
+                            edd.searchDocument());                                    
+                    }
+                }
+
+                //commit the changes  (recommended over close+reopen)
+                EDStatic.luceneIndexWriter.commit();
+
+                String2.log("updateLucene() finished." + 
+                    " nDocs=" + EDStatic.luceneIndexWriter.numDocs() + 
+                    " nChanged=" + nDatasetIDs + 
+                    " time=" + (System.currentTimeMillis() - tTime));
+            } catch (Throwable t) {
+
+                //any exception is pretty horrible
+                //  e.g., out of memory, index corrupt, IO exception
+                String subject = String2.ERROR + " in updateLucene()";
+                String content = MustBe.throwableToString(t); 
+                String2.log(subject + ":\n" + content);
+                EDStatic.email(EDStatic.emailEverythingTo, subject, content);
+
+                //abandon the changes and the indexWriter
+                if (EDStatic.luceneIndexWriter != null) {
+                    //close luceneIndexWriter  (see indexWriter javaDocs)
+                    try {
+                        //abandon pending changes
+                        EDStatic.luceneIndexWriter.close(true);
+                        Math2.gc(500);
+                    } catch (Throwable t2) {
+                        String2.log(MustBe.throwableToString(t2));
+                    }
+
+                    //trigger creation of another indexWriter next time updateLucene is called
+                    EDStatic.luceneIndexWriter = null;
+                }
+            }
+
+            //last: update indexReader+indexSearcher 
+            //(might as well take the time to do it in this thread,
+            //rather than penalize next search request)
+            EDStatic.needNewLuceneIndexReader = true; 
+            EDStatic.luceneIndexSearcher();
+        }
+        datasetIDs.clear();
+        lastLuceneUpdate = System.currentTimeMillis();
+    }
+
+
     /** Given a newline separated string in sb, this keeps the newest approximately keepLines. */
     static void removeOldLines(StringBuffer sb, int keepLines, int lineLength) {
         if (sb.length() > (keepLines+1) * lineLength) {
@@ -749,7 +905,7 @@ public class LoadDatasets extends Thread {
         }
     }
 
-    /**
+    /* * 2011-01-12 INACTIVE because *very* inefficient if 10^6 datasets. see removeIdFromCatInfo.
      * This makes a copy of catInfo, minus any references to id.
      * (Work on a copy of categoryInfo so "erddap.categoryInfo = newCatInfo"
      *    can be done in an instant.)
@@ -758,19 +914,20 @@ public class LoadDatasets extends Thread {
      * @param id the datasetID that should be removed from catInfo
      * @return a copy of catInfo, minus any references to id.
      */
+     /*  
     protected static Map copyCatInfoMinusId(Map oCatInfo, String id) {
         //Note that oCatInfo (erddap.categoryInfo) is only read from, never written to
 
         //make new catInfo (always with first level hashMaps)
         int nCat = EDStatic.categoryAttributes.length;
-        Map nCatInfo = new HashMap(nCat * 5 / 3);  //will be 60% full (<75% load factor)
+        Map nCatInfo = new HashMap(Math2.roundToInt(1.4 * nCat)); 
         for (int cat = 0; cat < nCat; cat++) {
             String catName = EDStatic.categoryAttributes[cat];
             HashMap oHm = (HashMap)oCatInfo.get(catName);  
 
             //make new HashMap for a catName (e.g. institution)
             //no need for synchronized: constructed in one thread, then read but never written to
-            HashMap nHm = new HashMap(oHm.size() * 5 / 3);  //will be 60% full (<75% load factor)
+            HashMap nHm = new HashMap(Math2.roundToInt(1.4 * oHm.size()));
             nCatInfo.put(catName, nHm);
 
             //get old HashMap for a catName (e.g. institution)
@@ -793,93 +950,171 @@ public class LoadDatasets extends Thread {
         return nCatInfo;
     }
 
+    /* * 2011-01-13 INACTIVE because inefficient if 10^6 datasets. see addRemoveDatasetInfo(REMOVE).
+     * This removes all references to id in catInfo.
+     * This is cruder and much slower than  
+     * addRemoveDatasetInfo(REMOVE).
+     *
+     * @param catInfo ConcurrentHashMap (key is an attribute) 
+     *   of ConcurrentHashMaps (key is a value) 
+     *   of ConcurrentHashMaps (key is id, value is Boolean.TRUE)
+     * @param id the datasetID that should be removed from catInfo
+     * @return a copy of catInfo, minus any references to id.
+     */
+    /*protected static void removeIdFromCatInfo(ConcurrentHashMap catInfo, String id) {
+
+        int nCat = EDStatic.categoryAttributes.length;
+        for (int cat = 0; cat < nCat; cat++) {
+            //get hm1 HashMap for a catName (e.g. institution)
+            String catName = EDStatic.categoryAttributes[cat];
+            ConcurrentHashMap hm1 = (ConcurrentHashMap)catInfo.get(catName);  
+
+            //go through its values
+            Iterator it = hm1.entrySet().iterator();
+            while (it.hasNext()) {
+                //get hm2 HashMap for a catAtt (e.g., ndbc)
+                Map.Entry me = (Map.Entry)it.next();
+                Object catAtt = me.getKey();
+                ConcurrentHashMap hm2 = (ConcurrentHashMap)me.getValue();
+                Object removed = hm2.remove(id);
+                 
+                //if no more entries, remove it from hm1
+                if (removed != null && hm2.size() == 0)
+                    hm1.remove(catAtt);
+            }
+        }
+    } */
+
+
 
     /**
-     * This adds the dataset's datasetID to the proper places in catInfo.
+     * This adds or removes the dataset's datasetID to the proper places in catInfo.
      *
+     * @param add determines whether datasetID references will be ADDed or REMOVEd
      * @param catInfo the new categoryInfo hashMap of hashMaps of hashSets
      * @param edd the dataset who's info should be added to catInfo
      */
-    protected static void addDatasetInfo(Map catInfo, EDD edd) {
+    protected static void addRemoveDatasetInfo(boolean add, 
+        ConcurrentHashMap catInfo, EDD edd) {
 
         //go through the gridDatasets
         String id = edd.datasetID();
 
-        //institution is a special case since it is a dataset attribute
-        categorizeGlobalAtts(catInfo, edd, id);
+        //globalAtts
+        categorizeGlobalAtts(add, catInfo, edd, id);
 
         //go through data variables
         int nd = edd.dataVariables().length;
         for (int dv = 0; dv < nd; dv++) 
-            categorizeVariableAtts(catInfo, edd.dataVariables()[dv], id);
+            categorizeVariableAtts(add, catInfo, edd.dataVariables()[dv], id);
         
         if (edd instanceof EDDGrid) {
             EDDGrid eddGrid = (EDDGrid)edd;
             //go through axis variables
             int na = eddGrid.axisVariables().length;
             for (int av = 0; av < na; av++) 
-                categorizeVariableAtts(catInfo, eddGrid.axisVariables()[av], id);
+                categorizeVariableAtts(add, catInfo, eddGrid.axisVariables()[av], id);
         }
     }
 
     /** 
-     * This categorizes the global attributes of an EDD. 
+     * This adds or removes the global attribute categories of an EDD. 
      *
+     * <p>"global:keywords" is treated specially: the value is split by "\n" or ",",
+     * then each keyword is added separately.
+     *
+     * @param add determines whether datasetID references will be ADDed or REMOVEd
      * @param catInfo the new categoryInfo
      * @param edd 
      * @param id the edd.datasetID()
      */
-    protected static void categorizeGlobalAtts(Map catInfo, EDD edd, String id) {
+    protected static void categorizeGlobalAtts(boolean add,
+        ConcurrentHashMap catInfo, EDD edd, String id) {
+
         Attributes atts = edd.combinedGlobalAttributes();
         int nCat = EDStatic.categoryAttributes.length;
         for (int cat = 0; cat < nCat; cat++) {
             if (EDStatic.categoryIsGlobal[cat]) {
-                String catName = EDStatic.categoryAttributes[cat]; //e.g., institution
-                String catAtt = String2.modifyToBeFileNameSafe(  //e.g., ndbc
-                    atts.getString(catName)).toLowerCase();
-                addIdToCatInfo(catInfo, catName, catAtt, id);
+                String catName = EDStatic.categoryAttributes[cat]; //e.g., global:institution
+                String value = atts.getString(catName);
+                //String2.log("catName=" + catName + " value=" + String2.toJson(value));
+
+                if (value != null && catName.equals("keywords")) {
+                    //split keywords, then add/remove
+                    StringArray vals = StringArray.fromCSVNoBlanks(value);
+                    for (int i = 0; i < vals.size(); i++) {
+                        //remove outdated "earth science > "
+                        String s = vals.get(i).toLowerCase();
+                        if (s.startsWith("earth science > "))
+                            s = s.substring(16);
+                        //String2.log("  " + i + "=" + vals[i]);
+                        addRemoveIdToCatInfo(add, catInfo, catName, 
+                            String2.modifyToBeFileNameSafe(s), id);
+                    }
+                } else {
+                    //add/remove the single value
+                    addRemoveIdToCatInfo(add, catInfo, catName, 
+                        String2.modifyToBeFileNameSafe(value).toLowerCase(), id);
+                }
             }
         }
     }
 
     /** 
-     * This categorizes the attributes of an EDV. 
+     * This adds or removes the attributes category references of an EDV. 
      *
+     * @param add determines whether datasetID references will be ADDed or REMOVEd
      * @param catInfo the new categoryInfo
      * @param edv 
      * @param id the edd.datasetID()
      */
-    protected static void categorizeVariableAtts(Map catInfo, EDV edv, String id) {
+    protected static void categorizeVariableAtts(boolean add,
+        ConcurrentHashMap catInfo, EDV edv, String id) {
+
         Attributes atts = edv.combinedAttributes();
         int nCat = EDStatic.categoryAttributes.length;
         for (int cat = 0; cat < nCat; cat++) {
             if (!EDStatic.categoryIsGlobal[cat]) {
                 String catName = EDStatic.categoryAttributes[cat]; //e.g., standard_name
-                String catAtt = String2.modifyToBeFileNameSafe(  //e.g., sea_water_temperature
-                    atts.getString(catName)).toLowerCase();
-                addIdToCatInfo(catInfo, catName, catAtt, id);
+                String catAtt = cat == EDStatic.variableNameCategoryAttributeIndex? //special case
+                    edv.destinationName() :
+                    atts.getString(catName);
+                addRemoveIdToCatInfo(add, catInfo, catName, 
+                    String2.modifyToBeFileNameSafe(catAtt).toLowerCase(), //e.g., sea_water_temperature
+                    id);
             }
         }
     }
 
     /**
-     * This adds a datasetID to a categorization.
+     * This adds or removes a datasetID to a categorization.
      * 
+     * @param add determines whether datasetID references will be ADDed or REMOVEd
      * @param catInfo the new categoryInfo
      * @param catName e.g., institution
      * @param catAtt e.g., NDBC
      * @param id  the edd.datasetID() e.g., ndbcCWind41002
      */
-    protected static void addIdToCatInfo(Map catInfo, 
+    protected static void addRemoveIdToCatInfo(boolean add, ConcurrentHashMap catInfo, 
         String catName, String catAtt, String id) {
 
-        HashMap hm = (HashMap)(catInfo.get(catName));
-        HashSet hs = (HashSet)hm.get(catAtt);
+        if (catAtt.length() == 0)
+            return;
+
+        ConcurrentHashMap hm = (ConcurrentHashMap)(catInfo.get(catName));  //e.g., for institution
+        ConcurrentHashMap hs = (ConcurrentHashMap)hm.get(catAtt);  //e.g., for NDBC,  acts as hashset
         if (hs == null) {
-            hs = new HashSet();
+            if (!add) //remove mode and reference isn't there, so we're done
+                return;
+            hs = new ConcurrentHashMap(16, 0.75f, 4);
             hm.put(catAtt, hs);
         }
-        hs.add(id);
+        if (add) {
+            hs.put(id, Boolean.TRUE);  //Boolean.TRUE is just something to fill the space
+        } else {
+            if (hs.remove(id) != null && hs.size() == 0) 
+                hm.remove(catAtt);
+        }
     }
 
 

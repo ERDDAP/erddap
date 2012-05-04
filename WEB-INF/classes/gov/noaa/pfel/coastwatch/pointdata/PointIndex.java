@@ -247,8 +247,8 @@ public class PointIndex  {
 
         long time = System.currentTimeMillis();
         if (verbose) String2.log("PointIndex.subset " + 
-            " desiredMin=" + String2.toCSVString(desiredMin) + 
-            " desiredMax=" + String2.toCSVString(desiredMax)); 
+            " desiredMin=" + String2.toCSSVString(desiredMin) + 
+            " desiredMax=" + String2.toCSSVString(desiredMax)); 
 
         //set up the bitSet
         BitSet rowOk = new BitSet(nDataRows); //initially all false

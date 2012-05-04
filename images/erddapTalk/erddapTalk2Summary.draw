@@ -52,12 +52,12 @@ setShapeHeight(.);
 setShapeBorder(1);
 setShapeAngle(0);
 setShapeShadow(0);
-setCharacters("<b>ERDDAP</b><br>Environmental Research Division's Data Access Program");
+setCharacters("<b><big>ERDDAP</big></b><br>Environmental Research Division's Data Access Program");
 create("text", "4, 5.1");
 
 setGroup(5);
 setShapeVAlign(5);
-setCharacters("ERDDAP is a data server designed to help you get data<br>from any data server into your favorite client software.");
+setCharacters("<b><color=Color2.blue4>ERDDAP is a data server designed to help you get data<br>from any data server into your favorite client software.</color>");
 create("text", "4, 4.3");
 
 setTextPosition(0);
@@ -120,7 +120,7 @@ setShapeBorder(0.5);
 setCharacters("Hyrax");
 create("text", "4.6000000000000005, 3.4000000000000004");
 
-setCharacters("Dapper");
+setCharacters("WaterML");
 create("text", "5.800000000000001, 3.4000000000000004");
 
 setBackgroundColor(Color2.orange1);

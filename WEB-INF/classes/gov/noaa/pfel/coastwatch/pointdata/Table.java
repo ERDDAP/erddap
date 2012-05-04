@@ -1118,54 +1118,54 @@ public class Table  {
     }
 
     /**
-     * This prints the metadata and the data to a crude table.
+     * This prints the metadata and the data to a CSV table.
      * 
      */
-    public String toCsvString() {
-        return toCsvString(Integer.MAX_VALUE);
+    public String toCSVString() {
+        return toCSVString(Integer.MAX_VALUE);
     }
 
     /**
-     * This prints the metadata and the data to a crude table.
+     * This prints the metadata and the data to a CSV table.
      * 
      * @param showFirstNRows  use Integer.MAX_VALUE for all rows.
      */
-    public String toCsvString(int showFirstNRows) {
+    public String toCSVString(int showFirstNRows) {
         if (showFirstNRows < 0) 
             return "";
-        return getNCHeader("row") + dataToCsvString(showFirstNRows);
+        return getNCHeader("row") + dataToCSVString(showFirstNRows);
     }
 
     /**
-     * This is convenience for dataToCsvString(showAllRows, don't showRowNumbers).
+     * This is convenience for dataToCSVString(showAllRows, don't showRowNumbers).
      */
-    public String dataToCsvString() {
-        return dataToCsvString(Integer.MAX_VALUE, false);
+    public String dataToCSVString() {
+        return dataToCSVString(Integer.MAX_VALUE, false);
     }
 
     /**
-     * This is convenience for dataToCsvString(int showFirstNRows, showRowNumber=true).
+     * This is convenience for dataToCSVString(int showFirstNRows, showRowNumber=true).
      */
-    public String dataToCsvString(int showFirstNRows) {
-        return dataToCsvString(showFirstNRows, true);
+    public String dataToCSVString(int showFirstNRows) {
+        return dataToCSVString(showFirstNRows, true);
     }
 
     /**
-     * This prints the data to a crude table.
+     * This prints the data to a CSV table.
      * 
      * @param showFirstNRows  use Integer.MAX_VALUE for all rows.
      */
-    public String dataToCsvString(int showFirstNRows, boolean showRowNumber) {
+    public String dataToCSVString(int showFirstNRows, boolean showRowNumber) {
         if (showFirstNRows < 0) 
             return "";
         StringBuilder sb = new StringBuilder();
         int nCols = nColumns();
         showFirstNRows = Math.min(showFirstNRows, nRows());
-        sb.append((showRowNumber? "row, " : "") + 
+        sb.append((showRowNumber? "row," : "") + 
             getColumnNamesCSVString() + "\n");
         for (int row = 0; row < showFirstNRows; row++) {
             if (showRowNumber)
-                sb.append(row + ", ");
+                sb.append(row + ",");
             for (int col = 0; col < nCols; col++) {
                 String s = getStringData(col, row);
                 if (s.indexOf(',')  >= 0 || s.indexOf('"')  >= 0 || 
@@ -1173,9 +1173,9 @@ public class Table  {
                     s = String2.toJson(s);
                 sb.append(s);
                 if (col == nCols - 1)
-                    sb.append("\n");
+                    sb.append('\n');
                 else 
-                    sb.append(", ");
+                    sb.append(",");
             }
         }
         return sb.toString();
@@ -1210,11 +1210,20 @@ public class Table  {
     }
 
     /**
-     * This returns a csv string with the names of the columns.
+     * This returns a Comma Separated Value (CSV) string with the names of the columns.
      *
      * @return a csv string with the column names.
      */
     public String getColumnNamesCSVString() {
+        return columnNames.toCSVString();
+    }
+
+    /**
+     * This returns a Comma Space Separated Value (CSSV) string with the names of the columns.
+     *
+     * @return a csv string with the column names.
+     */
+    public String getColumnNamesCSSVString() {
         return columnNames.toString();
     }
 
@@ -1315,7 +1324,7 @@ public class Table  {
      * @param keywordsVocabulary e.g., "GCMD Science Keywords"
      * @param keywords  e.g., a keyword string from 
      *    http://gcmd.gsfc.nasa.gov/Resources/valids/gcmd_parameters.html
-     *    e.g., "EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature"
+     *    e.g., "Oceans > Ocean Temperature > Sea Surface Temperature"
      * @param references
      * @param summary a longer description of this data
      * @param courtesy   e.g., "Channel Islands National Park (David Kushner)"
@@ -1336,8 +1345,8 @@ public class Table  {
         trySet(globalAttributes, "contributor_name", courtesy);
         trySet(globalAttributes, "contributor_role", "Source of data."); 
         //Unidata Observation Dataset v1.0?
-        trySet(globalAttributes, "Conventions",          "COARDS, CF-1.4, Unidata Dataset Discovery v1.0"); //unidata-related
-        trySet(globalAttributes, "Metadata_Conventions", "COARDS, CF-1.4, Unidata Dataset Discovery v1.0"); //unidata-related
+        trySet(globalAttributes, "Conventions",          "COARDS, CF-1.6, Unidata Dataset Discovery v1.0"); //unidata-related
+        trySet(globalAttributes, "Metadata_Conventions", "COARDS, CF-1.6, Unidata Dataset Discovery v1.0"); //unidata-related
         trySet(globalAttributes, "creator_email", creatorEmail);
         trySet(globalAttributes, "creator_name", creatorName);
         trySet(globalAttributes, "creator_url", creatorUrl);
@@ -1958,7 +1967,7 @@ public class Table  {
                 items = StringArray.arrayFromCSV(oneLine);  //does handle "'d phrases
             else items = String2.split(oneLine, colSeparator);
             //if (verbose) String2.log("row=" + row + " nItems=" + items.length + 
-            //    "\nitems=" + String2.toCSVString(items));
+            //    "\nitems=" + String2.toCSSVString(items));
 
             //one time things 
             if (row == 0) {
@@ -1995,7 +2004,7 @@ public class Table  {
                         loadColumnNumbers[col] = po;
                     }
                 }
-                //if (verbose) String2.log("loadColumnNumbers=" + String2.toCSVString(loadColumnNumbers));
+                //if (verbose) String2.log("loadColumnNumbers=" + String2.toCSSVString(loadColumnNumbers));
 
                 //generate the Table's columnNames which will be loaded
                 //and create the primitiveArrays in data
@@ -2037,9 +2046,9 @@ public class Table  {
                         String2.log("nonfatal " + errorInMethod + "itemNumber " + 
                             itemNumber + " not present starting on row " + (dataStartLine + row) + ".\n" +
                             "fileColNames=" + fileColumnNames + "\n" +
-                            "loadColumnNumbers=" + String2.toCSVString(loadColumnNumbers) + "\n" +
+                            "loadColumnNumbers=" + String2.toCSSVString(loadColumnNumbers) + "\n" +
                             "line=" + String2.annotatedString(oneLine) + "\n" +
-                            "items=" + String2.toCSVString(items));
+                            "items=" + String2.toCSSVString(items));
                         missingItemNoted = true;
                     }
                     loadColumnSA[col].addNotCanonical(""); //missing value
@@ -2048,9 +2057,9 @@ public class Table  {
                         errorInMethod + "itemNumber " + 
                         itemNumber + " not present starting on row " + (dataStartLine + row) + ".\n" +
                         "fileColNames=" + fileColumnNames + "\n" +
-                        "loadColumnNumbers=" + String2.toCSVString(loadColumnNumbers) + "\n" +
+                        "loadColumnNumbers=" + String2.toCSSVString(loadColumnNumbers) + "\n" +
                         "line=" + String2.annotatedString(oneLine) + "\n" +
-                        "items=" + String2.toCSVString(items));
+                        "items=" + String2.toCSSVString(items));
                 }
             }
         }
@@ -2161,7 +2170,7 @@ public class Table  {
                        "loadColumn '" + loadColumns[col] + "' not found.");
                 loadColumnNumbers[col] = po;
             }
-            //if (verbose) String2.log("loadColumnNumbers=" + String2.toCSVString(loadColumnNumbers));
+            //if (verbose) String2.log("loadColumnNumbers=" + String2.toCSSVString(loadColumnNumbers));
         }
 
         //remove empty rows at end
@@ -2196,7 +2205,7 @@ public class Table  {
                 //break the lines into items
                 String tItems[] = String2.split(oneLine, colSeparator);
                 int ntItems = tItems.length;
-                if (debug) String2.log("row=" + (row-1) + " ntItems=" + ntItems + " tItems=" + String2.toCSVString(tItems));
+                if (debug) String2.log("row=" + (row-1) + " ntItems=" + ntItems + " tItems=" + String2.toCSSVString(tItems));
                 
                 if (items == null) {
                     items = tItems; 
@@ -2507,7 +2516,7 @@ public class Table  {
         int timeColumn, String url, String resources[], String querySummary) {
 
         String courtesy = "OBIS, and the Darwin and OBIS Data Providers (" + 
-            url + " : " + String2.toCSVString(resources) + ")";
+            url + " : " + String2.toCSSVString(resources) + ")";
         String disCit = 
             "users acknowledge the OBIS disclaimer (http://www.iobis.org/data/policy/disclaimer/) " +
             "and agree to follow the OBIS citation policy (http://www.iobis.org/data/policy/citation/).";
@@ -2522,10 +2531,10 @@ public class Table  {
             DataHelper.ERD_CREATOR_NAME,
             DataHelper.ERD_CREATOR_URL,
             DataHelper.ERD_PROJECT,
-            "OBIS_" + String2.md5Hex12(url + String2.toCSVString(resources) + querySummary), 
+            "OBIS_" + String2.md5Hex12(url + String2.toCSSVString(resources) + querySummary), 
             "GCMD Science Keywords",
-            "EARTH SCIENCE > Oceans > Marine Biology", //not correct if a darwin provider searched for non-oceanography data
-            "http://www.iobis.org/ and " + url + " (" + String2.toCSVString(resources) + ")", //references,   
+            "Oceans > Marine Biology", //not correct if a darwin provider searched for non-oceanography data
+            "http://www.iobis.org/ and " + url + " (" + String2.toCSSVString(resources) + ")", //references,   
             //summary  from http://www.iobis.org/about/     //not appropriate if non-obis
             "The Ocean Biogeographic Information System (OBIS) is the information " +
             "component of the Census of Marine Life (CoML), a growing network of " +
@@ -2603,16 +2612,16 @@ public class Table  {
 
         Test.ensureTrue(nRows() >= 30, "nRows=" + nRows());
         Test.ensureEqual(nColumns(), 9, "");
-        if (String2.toCSVString(getColumnNames()).equals(
+        if (String2.toCSSVString(getColumnNames()).equals(
             "LON, LAT, DEPTH, TIME, ID, " +
             "darwin:InstitutionCode, darwin:CollectionCode, " +
             "darwin:ScientificName, obis:Temperature")) {
-        } else if (String2.toCSVString(getColumnNames()).equals(
+        } else if (String2.toCSSVString(getColumnNames()).equals(
             "LON, LAT, DEPTH, TIME, ID, " +
             "Institutioncode, Collectioncode, " +
             "Scientificname, Temperature")) {
         } else throw new RuntimeException(
-            "Unexpected col names: " + String2.toCSVString(getColumnNames()));
+            "Unexpected col names: " + String2.toCSSVString(getColumnNames()));
 
         //!!!note that from GHMP request, rows of data are in pairs of almost duplicates
         //and CollectionCode includes 2 sources -- 1 I requested and another one (both served by GHMP?)
@@ -3401,6 +3410,9 @@ Dataset {
      * <li>nRows=0 and nColumns=0 is not an error.
      * <li>XML.decodeEntities is applied to data in String columns,
      *   so there may be HTML tags if the data is HTML.
+     *   Common entities (&amp;amp; &amp;lt; &amp;gt; &amp;quot;) are converted
+     *   to the original characters.
+     *   &amp;nbsp; is converted to a regular space.   
      * </ul>
      *
      * @param fullFileName just for diagnostics
@@ -3916,7 +3928,7 @@ Dataset {
             loadVariableNames = new String[0];
         if (verbose) String2.log("Table.readNDNc " + fullName);
         if (reallyVerbose) String2.log(
-            "  loadVars:" + String2.toCSVString(loadVariableNames) +
+            "  loadVars:" + String2.toCSSVString(loadVariableNames) +
             (constraintAxisVarName == null? "" :
                 "\n  constrain:" + constraintAxisVarName + " >=" + constraintMin + " <=" + constraintMax)); 
         long time = System.currentTimeMillis();
@@ -4249,7 +4261,7 @@ Dataset {
         //test  no vars specified,  4D,  only 2nd dim has >1 value,  getMetadata
         String fiName = "c:/u00/data/points/erdCalcofiSubsurface/1950/subsurface_19500106_69_144.nc";
         table.readNDNc(fiName, null,    null, 0, 0, true);
-        results = table.toCsvString();
+        results = table.toCSVString();
         expected = 
 "{\n" +
 "dimensions:\n" +
@@ -4383,28 +4395,28 @@ Dataset {
 "\t\t:history = \"created by ERD from Matlab database created by Andrew Leising  from the CalCOFI Physical data\" ;\n" +
 "\t\t:title = \"CalCOFI Physical Observations, 1949-2001\" ;\n" +
 "}\n" +
-"row, time, depth, lat, lon, stationyear, stationmonth, stationday, stime, stationline, stationnum, temperature, salinity, pressure, oxygen, po4, silicate, no2, no3, nh3, chl, dark, primprod, lightpercent\n" +
-"0, 6.3612E7, 0.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 16.19, 33.6, -999.0, 5.3, 0.42, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"1, 6.3612E7, 22.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 16.18, 33.6, -999.0, 5.26, 0.38, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"2, 6.3612E7, 49.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 16.2, 33.6, -999.0, 5.3, 0.36, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"3, 6.3612E7, 72.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 14.95, 33.58, -999.0, 5.51, 0.37, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"4, 6.3612E7, 98.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 13.02, 33.35, -999.0, 5.35, 0.45, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"5, 6.3612E7, 147.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 11.45, 33.36, -999.0, 4.99, 0.81, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"6, 6.3612E7, 194.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 9.32, 33.55, -999.0, 4.47, 1.19, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"7, 6.3612E7, 241.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 8.51, 33.85, -999.0, 4.02, 1.51, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"8, 6.3612E7, 287.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 7.74, 33.95, -999.0, 3.48, 1.76, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"9, 6.3612E7, 384.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 6.42, 33.97, -999.0, 2.55, 2.15, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"10, 6.3612E7, 477.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 5.35, 34.04, -999.0, 1.29, 2.48, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"11, 6.3612E7, 576.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 4.83, 34.14, -999.0, 0.73, 2.73, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"12, 6.3612E7, 673.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 4.44, 34.22, -999.0, 0.48, 2.9, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"13, 6.3612E7, 768.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 4.15, 34.31, -999.0, 0.37, 2.87, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"14, 6.3612E7, 969.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 3.67, 34.43, -999.0, 0.49, 2.8, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"15, 6.3612E7, 1167.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 3.3, 34.49, -999.0, 0.66, 2.7, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n";
+"row,time,depth,lat,lon,stationyear,stationmonth,stationday,stime,stationline,stationnum,temperature,salinity,pressure,oxygen,po4,silicate,no2,no3,nh3,chl,dark,primprod,lightpercent\n" +
+"0,6.3612E7,0.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,16.19,33.6,-999.0,5.3,0.42,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"1,6.3612E7,22.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,16.18,33.6,-999.0,5.26,0.38,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"2,6.3612E7,49.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,16.2,33.6,-999.0,5.3,0.36,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"3,6.3612E7,72.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,14.95,33.58,-999.0,5.51,0.37,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"4,6.3612E7,98.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,13.02,33.35,-999.0,5.35,0.45,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"5,6.3612E7,147.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,11.45,33.36,-999.0,4.99,0.81,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"6,6.3612E7,194.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,9.32,33.55,-999.0,4.47,1.19,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"7,6.3612E7,241.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,8.51,33.85,-999.0,4.02,1.51,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"8,6.3612E7,287.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,7.74,33.95,-999.0,3.48,1.76,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"9,6.3612E7,384.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,6.42,33.97,-999.0,2.55,2.15,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"10,6.3612E7,477.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,5.35,34.04,-999.0,1.29,2.48,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"11,6.3612E7,576.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,4.83,34.14,-999.0,0.73,2.73,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"12,6.3612E7,673.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,4.44,34.22,-999.0,0.48,2.9,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"13,6.3612E7,768.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,4.15,34.31,-999.0,0.37,2.87,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"14,6.3612E7,969.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,3.67,34.43,-999.0,0.49,2.8,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"15,6.3612E7,1167.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,3.3,34.49,-999.0,0.66,2.7,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test same but !getMetadata
         table.readNDNc(fiName, null,    null, 0, 0, false);
-        results = table.toCsvString();
+        results = table.toCSVString();
         expected = 
 "{\n" +
 "dimensions:\n" +
@@ -4436,61 +4448,61 @@ Dataset {
 "\n" +
 "// global attributes:\n" +
 "}\n" +
-"row, time, depth, lat, lon, stationyear, stationmonth, stationday, stime, stationline, stationnum, temperature, salinity, pressure, oxygen, po4, silicate, no2, no3, nh3, chl, dark, primprod, lightpercent\n" +
-"0, 6.3612E7, 0.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 16.19, 33.6, -999.0, 5.3, 0.42, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"1, 6.3612E7, 22.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 16.18, 33.6, -999.0, 5.26, 0.38, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"2, 6.3612E7, 49.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 16.2, 33.6, -999.0, 5.3, 0.36, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"3, 6.3612E7, 72.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 14.95, 33.58, -999.0, 5.51, 0.37, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"4, 6.3612E7, 98.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 13.02, 33.35, -999.0, 5.35, 0.45, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"5, 6.3612E7, 147.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 11.45, 33.36, -999.0, 4.99, 0.81, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"6, 6.3612E7, 194.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 9.32, 33.55, -999.0, 4.47, 1.19, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"7, 6.3612E7, 241.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 8.51, 33.85, -999.0, 4.02, 1.51, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"8, 6.3612E7, 287.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 7.74, 33.95, -999.0, 3.48, 1.76, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"9, 6.3612E7, 384.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 6.42, 33.97, -999.0, 2.55, 2.15, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"10, 6.3612E7, 477.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 5.35, 34.04, -999.0, 1.29, 2.48, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"11, 6.3612E7, 576.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 4.83, 34.14, -999.0, 0.73, 2.73, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"12, 6.3612E7, 673.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 4.44, 34.22, -999.0, 0.48, 2.9, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"13, 6.3612E7, 768.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 4.15, 34.31, -999.0, 0.37, 2.87, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"14, 6.3612E7, 969.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 3.67, 34.43, -999.0, 0.49, 2.8, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n" +
-"15, 6.3612E7, 1167.0, 33.31667, -128.53333, 1950, 1, 6, 600, 69.0, 144.0, 3.3, 34.49, -999.0, 0.66, 2.7, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0, -999.0\n";
+"row,time,depth,lat,lon,stationyear,stationmonth,stationday,stime,stationline,stationnum,temperature,salinity,pressure,oxygen,po4,silicate,no2,no3,nh3,chl,dark,primprod,lightpercent\n" +
+"0,6.3612E7,0.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,16.19,33.6,-999.0,5.3,0.42,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"1,6.3612E7,22.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,16.18,33.6,-999.0,5.26,0.38,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"2,6.3612E7,49.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,16.2,33.6,-999.0,5.3,0.36,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"3,6.3612E7,72.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,14.95,33.58,-999.0,5.51,0.37,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"4,6.3612E7,98.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,13.02,33.35,-999.0,5.35,0.45,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"5,6.3612E7,147.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,11.45,33.36,-999.0,4.99,0.81,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"6,6.3612E7,194.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,9.32,33.55,-999.0,4.47,1.19,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"7,6.3612E7,241.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,8.51,33.85,-999.0,4.02,1.51,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"8,6.3612E7,287.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,7.74,33.95,-999.0,3.48,1.76,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"9,6.3612E7,384.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,6.42,33.97,-999.0,2.55,2.15,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"10,6.3612E7,477.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,5.35,34.04,-999.0,1.29,2.48,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"11,6.3612E7,576.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,4.83,34.14,-999.0,0.73,2.73,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"12,6.3612E7,673.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,4.44,34.22,-999.0,0.48,2.9,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"13,6.3612E7,768.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,4.15,34.31,-999.0,0.37,2.87,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"14,6.3612E7,969.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,3.67,34.43,-999.0,0.49,2.8,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n" +
+"15,6.3612E7,1167.0,33.31667,-128.53333,1950,1,6,600,69.0,144.0,3.3,34.49,-999.0,0.66,2.7,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0,-999.0\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test specify vars (including out-of-order axis var, and nonsense var), !getMetadata
         table.readNDNc(fiName, new String[]{"temperature", "lat", "salinity", "junk"},  "depth", 100, 200, false);
-        results = table.dataToCsvString(Integer.MAX_VALUE);
+        results = table.dataToCSVString(Integer.MAX_VALUE);
         expected = 
-"row, time, depth, lat, lon, temperature, salinity\n" +
-"0, 6.3612E7, 147.0, 33.31667, -128.53333, 11.45, 33.36\n" +
-"1, 6.3612E7, 194.0, 33.31667, -128.53333, 9.32, 33.55\n";
+"row,time,depth,lat,lon,temperature,salinity\n" +
+"0,6.3612E7,147.0,33.31667,-128.53333,11.45,33.36\n" +
+"1,6.3612E7,194.0,33.31667,-128.53333,9.32,33.55\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test String vars 
         fiName = "f:/u00/cwatch/erddap2/copy/cPostDet3/BARBARAx20BLOCK/LAMNAx20DITROPIS/Nx2fA/52038_A69-1303_1059305.nc";
         table.readNDNc(fiName, null,  null, 0, 0, false);
-        results = table.dataToCsvString(4);
+        results = table.dataToCSVString(4);
         expected = 
-"row, row, unique_tag_id, PI, longitude, latitude, time, bottom_depth, common_name, date_public, line, position_on_subarray, project, riser_height, role, scientific_name, serial_number, stock, surgery_time, surgery_location, tagger\n" +
-"0, 0, 52038_A69-1303_1059305, BARBARA BLOCK, -146.1137, 60.7172, 1.2192849E9, , SALMON SHARK, 1.273271649385E9, , , HOPKINS MARINE STATION, , BLOCK_BARBARA_LAMNA_DITROPIS_N/A, LAMNA DITROPIS, 1059305, N/A, 1.2192156E9, \"PORT GRAVINA, PRINCE WILLIAM SOUND\", \n" +
-"1, 1, 52038_A69-1303_1059305, BARBARA BLOCK, -146.32355, 60.66713, 1.233325298E9, 127.743902439024, SALMON SHARK, 1.273271649385E9, PORT GRAVINA, 6, HOPKINS MARINE STATION, , BLOCK_BARBARA_LAMNA_DITROPIS_N/A, LAMNA DITROPIS, 1059305, N/A, 1.2192156E9, \"PORT GRAVINA, PRINCE WILLIAM SOUND\", \n" +
-"2, 2, 52038_A69-1303_1059305, BARBARA BLOCK, -146.32355, 60.66713, 1.233325733E9, 127.743902439024, SALMON SHARK, 1.273271649385E9, PORT GRAVINA, 6, HOPKINS MARINE STATION, , BLOCK_BARBARA_LAMNA_DITROPIS_N/A, LAMNA DITROPIS, 1059305, N/A, 1.2192156E9, \"PORT GRAVINA, PRINCE WILLIAM SOUND\", \n" +
-"3, 3, 52038_A69-1303_1059305, BARBARA BLOCK, -146.32355, 60.66713, 1.233325998E9, 127.743902439024, SALMON SHARK, 1.273271649385E9, PORT GRAVINA, 6, HOPKINS MARINE STATION, , BLOCK_BARBARA_LAMNA_DITROPIS_N/A, LAMNA DITROPIS, 1059305, N/A, 1.2192156E9, \"PORT GRAVINA, PRINCE WILLIAM SOUND\", \n";
+"row,row,unique_tag_id,PI,longitude,latitude,time,bottom_depth,common_name,date_public,line,position_on_subarray,project,riser_height,role,scientific_name,serial_number,stock,surgery_time,surgery_location,tagger\n" +
+"0,0,52038_A69-1303_1059305,BARBARA BLOCK,-146.1137,60.7172,1.2192849E9,,SALMON SHARK,1.273271649385E9,,,HOPKINS MARINE STATION,,BLOCK_BARBARA_LAMNA_DITROPIS_N/A,LAMNA DITROPIS,1059305,N/A,1.2192156E9,\"PORT GRAVINA, PRINCE WILLIAM SOUND\",\n" +
+"1,1,52038_A69-1303_1059305,BARBARA BLOCK,-146.32355,60.66713,1.233325298E9,127.743902439024,SALMON SHARK,1.273271649385E9,PORT GRAVINA,6,HOPKINS MARINE STATION,,BLOCK_BARBARA_LAMNA_DITROPIS_N/A,LAMNA DITROPIS,1059305,N/A,1.2192156E9,\"PORT GRAVINA, PRINCE WILLIAM SOUND\",\n" +
+"2,2,52038_A69-1303_1059305,BARBARA BLOCK,-146.32355,60.66713,1.233325733E9,127.743902439024,SALMON SHARK,1.273271649385E9,PORT GRAVINA,6,HOPKINS MARINE STATION,,BLOCK_BARBARA_LAMNA_DITROPIS_N/A,LAMNA DITROPIS,1059305,N/A,1.2192156E9,\"PORT GRAVINA, PRINCE WILLIAM SOUND\",\n" +
+"3,3,52038_A69-1303_1059305,BARBARA BLOCK,-146.32355,60.66713,1.233325998E9,127.743902439024,SALMON SHARK,1.273271649385E9,PORT GRAVINA,6,HOPKINS MARINE STATION,,BLOCK_BARBARA_LAMNA_DITROPIS_N/A,LAMNA DITROPIS,1059305,N/A,1.2192156E9,\"PORT GRAVINA, PRINCE WILLIAM SOUND\",\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test 4D but request axis vars only, with constraints
         fiName = "/u00/data/points/ndbcMet/NDBC_51001_met.nc"; //implied c:
         table.readNDNc(fiName, new String[]{"LON", "LAT", "TIME"},  "TIME", 1.2051936e9, 1.20528e9, false);
-        results = table.dataToCsvString(4);
+        results = table.dataToCSVString(4);
         expected = 
 //"row, LON, LAT, TIME\n" +   //pre 2011-07-28
 //"0, -162.21, 23.43, 1.2051828E9\n" +
 //"1, -162.21, 23.43, 1.2051864E9\n" +
 //"2, -162.21, 23.43, 1.20519E9\n" +
 //"3, -162.21, 23.43, 1.2051936E9\n";
-"row, LON, LAT, TIME\n" +
-"0, -162.279, 23.445, 1.2051828E9\n" +
-"1, -162.279, 23.445, 1.2051864E9\n" +
-"2, -162.279, 23.445, 1.20519E9\n" +
-"3, -162.279, 23.445, 1.2051936E9\n";
+"row,LON,LAT,TIME\n" +
+"0,-162.279,23.445,1.2051828E9\n" +
+"1,-162.279,23.445,1.2051864E9\n" +
+"2,-162.279,23.445,1.20519E9\n" +
+"3,-162.279,23.445,1.2051936E9\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         } catch (Throwable t) {
@@ -4513,7 +4525,7 @@ Dataset {
 
         //test  no vars specified
         table.readNDNc(fiName, null, null, 0, 0, true);
-        results = table.toCsvString();
+        results = table.toCSVString();
         expected = 
 "{\n" +
 "dimensions:\n" +
@@ -4605,23 +4617,23 @@ Dataset {
 "\t\t:Metadata_Conventions = \"Unidata Dataset Discovery v1.0\" ;\n" +
 "\t\t:standard_name_vocabulary = \"CF-1.5\" ;\n" +
 "}\n" +
-"row, z, Temperature, Temperature_sigfigs, Temperature_WODflag, WOD_cruise_identifier, wod_unique_cast, lat, lon, time, date, GMT_time, Access_no, Project, dataset, ARGOS_last_fix, ARGOS_next_fix, crs, profile, WODf, WODfp, WODfd\n" +
-"0, 0.0, 7.9, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"1, 10.0, 7.9, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"2, 42.0, 7.8, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"3, 76.0, 7.8, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"4, 120.0, 7.8, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"5, 166.0, 7.5, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"6, 212.0, 7.0, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"7, 260.0, 6.5, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"8, 308.0, 5.8, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"9, 354.0, 5.2, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"10, 402.0, 4.9, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n";
+"row,z,Temperature,Temperature_sigfigs,Temperature_WODflag,WOD_cruise_identifier,wod_unique_cast,lat,lon,time,date,GMT_time,Access_no,Project,dataset,ARGOS_last_fix,ARGOS_next_fix,crs,profile,WODf,WODfp,WODfd\n" +
+"0,0.0,7.9,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"1,10.0,7.9,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"2,42.0,7.8,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"3,76.0,7.8,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"4,120.0,7.8,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"5,166.0,7.5,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"6,212.0,7.0,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"7,260.0,6.5,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"8,308.0,5.8,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"9,354.0,5.2,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"10,402.0,4.9,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test same but !getMetadata
         table.readNDNc(fiName, null, null, 0, 0, false);
-        results = table.toCsvString();
+        results = table.toCSVString();
         expected = 
 "{\n" +
 "dimensions:\n" +
@@ -4654,56 +4666,56 @@ Dataset {
 "\n" +
 "// global attributes:\n" +
 "}\n" +
-"row, z, Temperature, Temperature_sigfigs, Temperature_WODflag, WOD_cruise_identifier, wod_unique_cast, lat, lon, time, date, GMT_time, Access_no, Project, dataset, ARGOS_last_fix, ARGOS_next_fix, crs, profile, WODf, WODfp, WODfd\n" +
-"0, 0.0, 7.9, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"1, 10.0, 7.9, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"2, 42.0, 7.8, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"3, 76.0, 7.8, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"4, 120.0, 7.8, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"5, 166.0, 7.5, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"6, 212.0, 7.0, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"7, 260.0, 6.5, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"8, 308.0, 5.8, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"9, 354.0, 5.2, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n" +
-"10, 402.0, 4.9, 2, 0, US025547, 8015632, 45.28, -142.24, 83369.90625, 19980403, 21.81665, 573, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES), animal mounted, 4.836731, 14.149658, -2147483647, -2147483647, -2147483647, -2147483647, -2147483647\n";
+"row,z,Temperature,Temperature_sigfigs,Temperature_WODflag,WOD_cruise_identifier,wod_unique_cast,lat,lon,time,date,GMT_time,Access_no,Project,dataset,ARGOS_last_fix,ARGOS_next_fix,crs,profile,WODf,WODfp,WODfd\n" +
+"0,0.0,7.9,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"1,10.0,7.9,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"2,42.0,7.8,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"3,76.0,7.8,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"4,120.0,7.8,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"5,166.0,7.5,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"6,212.0,7.0,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"7,260.0,6.5,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"8,308.0,5.8,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"9,354.0,5.2,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n" +
+"10,402.0,4.9,2,0,US025547,8015632,45.28,-142.24,83369.90625,19980403,21.81665,573,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES),animal mounted,4.836731,14.149658,-2147483647,-2147483647,-2147483647,-2147483647,-2147483647\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test specify 0D and 1D data vars (out-of-order, implied axis var, and nonsense var), !getMetadata
         table.readNDNc(fiName, new String[]{
             "lon", "lat", "time", "Temperature", "WOD_cruise_identifier", "junk"},  "z", 100, 200, false);
-        results = table.dataToCsvString(Integer.MAX_VALUE);
+        results = table.dataToCSVString(Integer.MAX_VALUE);
         expected = 
-"row, z, Temperature, WOD_cruise_identifier, lat, lon, time\n" +
-"0, 120.0, 7.8, US025547, 45.28, -142.24, 83369.90625\n" +
-"1, 166.0, 7.5, US025547, 45.28, -142.24, 83369.90625\n";
+"row,z,Temperature,WOD_cruise_identifier,lat,lon,time\n" +
+"0,120.0,7.8,US025547,45.28,-142.24,83369.90625\n" +
+"1,166.0,7.5,US025547,45.28,-142.24,83369.90625\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //request axis vars only, with constraints
         table.readNDNc(fiName, new String[]{"z"},  "z", 100, 200, false);
-        results = table.dataToCsvString(4);
+        results = table.dataToCSVString(4);
         expected = 
-"row, z\n" +
-"0, 120.0\n" +
-"1, 166.0\n";
+"row,z\n" +
+"0,120.0\n" +
+"1,166.0\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         
         //request 0D vars only, with constraints (ignored)
         table.readNDNc(fiName, new String[]{
             "WOD_cruise_identifier", "Project", "junk", "lon", "lat"},  "z", 100, 200, false);
-        results = table.dataToCsvString(4);
+        results = table.dataToCSVString(4);
         expected = 
-"row, WOD_cruise_identifier, lat, lon, Project\n" +
-"0, US025547, 45.28, -142.24, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES)\n";
+"row,WOD_cruise_identifier,lat,lon,Project\n" +
+"0,US025547,45.28,-142.24,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES)\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         
         //request axis var and 0D vars only, with constraints
         table.readNDNc(fiName, new String[]{
             "WOD_cruise_identifier", "Project", "z", "junk", "lon", "lat"},  "z", 100, 200, false);
-        results = table.dataToCsvString(4);
+        results = table.dataToCSVString(4);
         expected = 
-"row, z, WOD_cruise_identifier, lat, lon, Project\n" +
-"0, 120.0, US025547, 45.28, -142.24, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES)\n" +
-"1, 166.0, US025547, 45.28, -142.24, AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES)\n";
+"row,z,WOD_cruise_identifier,lat,lon,Project\n" +
+"0,120.0,US025547,45.28,-142.24,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES)\n" +
+"1,166.0,US025547,45.28,-142.24,AUTONOMOUS PINNIPED ENVIRONMENTAL SAMPLERS (APES)\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         
     }
@@ -5087,8 +5099,8 @@ Dataset {
 
         //make hashtable of keys->new Integer(row#) in lookUpTable
         //so join is fast with any number of rows in lookUpTable
-        HashMap hashMap = new HashMap();
         int lutNRows = lutKeyPA[0].size();
+        HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * lutNRows));
         for (int row = 0; row < lutNRows; row++) {
             StringBuilder sb = new StringBuilder(lutKeyPA[0].getString(row));
             for (int key = 1; key < nKeys; key++) 
@@ -5210,7 +5222,7 @@ Dataset {
         }
 
         //make hashmap of this table's key values to row#
-        HashMap rowHash = new HashMap();
+        HashMap rowHash = new HashMap(Math2.roundToInt(1.4 * nRows));
         for (int row = 0; row < nRows; row++) {
             StringBuilder sb = new StringBuilder();
             for (int key = 0; key < nKeyCols; key++) 
@@ -5345,10 +5357,10 @@ Dataset {
 
         //if (verbose) String2.log(File2.hexDump(fullFileName, 300));
         if (verbose) String2.log("Table.readNetCDF" +
-            "\n  testColumns=" + String2.toCSVString(testColumns) + 
-            "\n  testMin=" + String2.toCSVString(testMin) + 
-            "\n  testMax=" + String2.toCSVString(testMax) + 
-            "\n  loadColumns=" + String2.toCSVString(loadColumns)); 
+            "\n  testColumns=" + String2.toCSSVString(testColumns) + 
+            "\n  testMin=" + String2.toCSSVString(testMin) + 
+            "\n  testMax=" + String2.toCSSVString(testMax) + 
+            "\n  loadColumns=" + String2.toCSSVString(loadColumns)); 
         
         //setup
         long time = System.currentTimeMillis();
@@ -5867,7 +5879,7 @@ Dataset {
     public static void forceLonPM180(PrimitiveArray lonArray, boolean pm180) {
         double stats[] = lonArray.calculateStats();
         int nRows = lonArray.size();
-        String2.log("forceLon stats=" + String2.toCSVString(stats));
+        String2.log("forceLon stats=" + String2.toCSSVString(stats));
         if (pm180 && stats[PrimitiveArray.STATS_MAX] > 180) {
             String2.log("  force >");
             for (int row = 0; row < nRows; row++) {
@@ -7037,7 +7049,8 @@ Dataset {
                 String tColName = getColumnNameWithoutSpaces(col);
                 if (type == String.class) {
                     int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nc libs want at least 1; 0 happens if no data
-                    Dimension lengthDimension  = nc.addDimension(tColName + "StringLength", max);
+                    Dimension lengthDimension = nc.addDimension(
+                        tColName + NcHelper.StringLength, max);
                     nc.addVariable(tColName, DataType.CHAR, 
                         new Dimension[]{dimension, lengthDimension}); 
                 } else {
@@ -7295,7 +7308,8 @@ Dataset {
                     if (type == String.class) {
                         int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nc libs want at least 1; 0 happens if no data
                         stringLength[col] = max;
-                        Dimension lengthDimension  = nc.addDimension(tColName + "StringLength", max);
+                        Dimension lengthDimension = nc.addDimension(
+                            tColName + NcHelper.StringLength, max);
                         nc.addVariable(tColName, DataType.CHAR, 
                             new Dimension[]{aDimension, lengthDimension}); 
                     } else {
@@ -7311,7 +7325,8 @@ Dataset {
                     if (type == String.class) {
                         int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nc libs want at least 1; 0 happens if no data
                         stringLength[col] = max;
-                        Dimension lengthDimension  = nc.addDimension(tColName + "StringLength", max);
+                        Dimension lengthDimension  = nc.addDimension(
+                            tColName + NcHelper.StringLength, max);
                         nc.addVariable(tColName, DataType.CHAR, 
                             new Dimension[]{tDimension, zDimension, yDimension, xDimension, lengthDimension}); 
                     } else {
@@ -7343,7 +7358,8 @@ Dataset {
             if (stringVariableName != null) {
                 stringVariableName = String2.replaceAll(stringVariableName, " ", "_");
 
-                Dimension lengthDimension = nc.addDimension(stringVariableName + "StringLength", 
+                Dimension lengthDimension = nc.addDimension(
+                    stringVariableName + NcHelper.StringLength, 
                     Math.max(1, stringVariableValue.length())); //nclib wants at least 1
                 nc.addVariable(stringVariableName, DataType.CHAR, 
                     new Dimension[]{lengthDimension}); 
@@ -9106,7 +9122,7 @@ touble: because table is JsonObject, info may not be in expected order
         //"columnNames": ["Row Type", "Variable Name", "Attribute Name", "Java Type", "Value"],
         Table infoTable = new Table();
         infoTable.readJson(url, SSR.getUrlResponseString(url));
-        String tColNames = " column not found in colNames=" + String2.toCSVString(infoTable.getColumnNames());
+        String tColNames = " column not found in colNames=" + String2.toCSSVString(infoTable.getColumnNames());
         int nRows = infoTable.nRows();
         int rowTypeCol = infoTable.findColumnNumber("Row Type");
         int variableNameCol = infoTable.findColumnNumber("Variable Name");
@@ -9138,6 +9154,301 @@ touble: because table is JsonObject, info may not be in expected order
         }
     }
 
+    /**
+     * This mimics the a simple directory listing web page created by Apache.
+     * <br>It mimics http://www.ngdc.noaa.gov/metadata/published/NOAA/NESDIS/NGDC/MGG/Hazard_Photos/fgdc/xml/
+     * stored on Bob's computer as f:/programs/apache/listing.html
+     * <br>The URL for this page MUST be a directoryURL ending in '/', or the links don't work!
+     * <br>This just writes the part inside the 'body' tag.
+     * <br>If there is a parentDirectory, its link will be at the top of the list.
+     * <br>The table need not be sorted initially. This method handles sorting.
+     * <br>The table should have 4 columns: "Name" (String), "Last modified" (long), 
+     *    "Size" (long), and "Description" (String)
+     * <br>The displayed Last Modified time will be some Zulu timezone.
+     * <br>The displayed size will be some number of bytes, or truncated to some
+     *    number of K (1024), M (1024^2), G (1024^3), or T (1024^4), 
+     *
+     * @param showUrlDir the part of the URL directory name to be displayed (with trailing slash).
+     *    This is for display only.
+     * @param userQuery  may be null. Still percent encoded.  
+     *   <br>The parameter options are listed at 
+     *    http://httpd.apache.org/docs/2.0/mod/mod_autoindex.html
+     *   <br>C=N sorts the directory by file name
+     *   <br>C=M sorts the directory by last-modified date, then file name
+     *   <br>C=S sorts the directory by size, then file name
+     *   <br>C=D sorts the directory by description, then file name
+     *   <br>O=A sorts the listing in Ascending Order
+     *   <br>O=D sorts the listing in Descending Order
+     *   <br>F=0 formats the listing as a simple list (not FancyIndexed)
+     *   <br>F=1 formats the listing as a FancyIndexed list
+     *   <br>F=2 formats the listing as an HTMLTable FancyIndexed list
+     *   <br>V=0 disables version sorting
+     *   <br>V=1 enables version sorting
+     *   <br>P=pattern lists only files matching the given pattern
+     *   <br>The default is "C=N;O=A".
+     *   <br>Currently, only C= and O= parameters are supported.
+     * @param iconUrlDir the public URL directory (with slash at end) with the icon files
+     * @param addParentDir if true, this shows a link to the parent directory
+     * @param dirNames is the list of subdirectories in the directory (without trailing '/'). 
+     *   It will be sorted within directoryListing.
+     */
+    public String directoryListing(String showUrlDir, String userQuery,
+        String iconUrlDir, boolean addParentDir, 
+        StringArray dirNames) throws Exception {
+
+        int nameSpaces = 51; //with " " after it to ensure separation
+        int dateSpaces = 17; //with " " after it to ensure separation
+        int sizeSpaces = 5; //e.g., 1003, 1003K, 1003M, 1003G, 1003T, with "  "(!) after it
+
+        //String2.log("Table.directoryListing("showUrlDir=" + showUrlDir +
+        //    "\n  userQuery=" + userQuery + 
+        //    "\n  iconUrlDir=" + iconUrlDir +
+        //    "\n  nDirNames=" + dirNames.size() + " table.nRows=" + nRows());
+
+        String xmlShowUrlDir = XML.encodeAsXML(showUrlDir);
+
+        //ensure column names are as expected
+        String ncssv = getColumnNamesCSSVString();
+        String ncssvMust = "Name, Last modified, Size, Description";
+        if (!ncssvMust.equals(ncssv))
+             throw new SimpleException(
+                "ERROR in directoryListing(), the table's column\n" +
+                "names must be \"" + ncssvMust + "\".\n" +
+                "The names are \"" + ncssv + "\".");
+        PrimitiveArray namePA        = getColumn(0);
+        PrimitiveArray modifiedPA    = getColumn(1);
+        PrimitiveArray sizePA        = getColumn(2);
+        PrimitiveArray descriptionPA = getColumn(3);
+
+        //ensure column types are as expected
+        String tcssv = getColumn(0).elementClassString() + ", " +
+                       getColumn(1).elementClassString() + ", " +
+                       getColumn(2).elementClassString() + ", " +
+                       getColumn(3).elementClassString();
+        String tcssvMust = "String, long, long, String";
+        if (!tcssvMust.equals(tcssv))
+             throw new SimpleException(
+                "ERROR in directoryListing(), the table's column\n" +
+                "types must be \"" + tcssvMust + "\".\n" +
+                "The types are \"" + tcssv + "\".");
+
+        //parse userQuery (e.g., C=N;O=A)  
+        userQuery = userQuery == null? "" : 
+            ";" + SSR.percentDecode(userQuery) + ";";  // ";" make it easy to search below
+        int keyColumns[] =  //see definitions in javadocs above
+            userQuery.indexOf(";C=N;") >= 0? new int[]{0, 1} : //2nd not needed, but be consistent
+            userQuery.indexOf(";C=M;") >= 0? new int[]{1, 0} : 
+            userQuery.indexOf(";C=S;") >= 0? new int[]{2, 0} : 
+            userQuery.indexOf(";C=D;") >= 0? new int[]{3, 0} : 
+                                             new int[]{0, 1};  
+        boolean ascending[] =  //see definitions in javadocs above
+            userQuery.indexOf(";O=D;") >= 0? new boolean[]{false, false} :
+                                             new boolean[]{true, true};  
+        //Order=A|D in column links will be 'A', 
+        //  except currently selected column will offer !currentAscending
+        char linkAD[] = {'A','A','A','A'};
+        linkAD[keyColumns[0]] = ascending[0]? 'D' : 'A'; // !currentAscending
+        
+
+        //and sort the table (while lastModified and size are still the raw values) 
+        sortIgnoreCase(keyColumns, ascending);
+
+
+        //convert LastModified to string  (after sorting)
+        int tnRows = nRows();
+        StringArray newModifiedPA = new StringArray(tnRows, false);
+        for (int row = 0; row < tnRows; row++) {
+            String newMod = "";
+            try {
+                long tl = modifiedPA.getLong(row);
+                newMod = tl == Long.MAX_VALUE? "" : 
+                    Calendar2.formatAsDDMonYYYY(Calendar2.newGCalendarZulu(tl)).substring(0, dateSpaces); 
+            } catch (Throwable t) {
+            }
+            newModifiedPA.add(newMod);
+        }
+        modifiedPA = newModifiedPA;
+
+        //convert sizes
+        StringArray newSizePA = new StringArray(tnRows, false);
+        for (int row = 0; row < tnRows; row++) {
+            String newSize = "";
+            try {
+                //lim ensures the displayed number will be lim ... lim*1000-1
+               //(values of 1...lim-1 are not as precise)
+                int lim = 6;
+                long tl = sizePA.getLong(row);
+                newSize = tl == Long.MAX_VALUE? "" :  
+                    (tl >= lim * Math2.BytesPerPB? (tl / Math2.BytesPerPB) + "P" :
+                     tl >= lim * Math2.BytesPerTB? (tl / Math2.BytesPerTB) + "T" :
+                     tl >= lim * Math2.BytesPerGB? (tl / Math2.BytesPerGB) + "G" :
+                     tl >= lim * Math2.BytesPerMB? (tl / Math2.BytesPerMB) + "M" :
+                     tl >= lim * Math2.BytesPerKB? (tl / Math2.BytesPerKB) + "K" : tl + "");
+            } catch (Throwable t) {
+            }
+            newSizePA.add(newSize);
+        }
+        sizePA = newSizePA;
+
+
+//<pre>
+//<img src="/icons/blank.gif" alt="Icon "> <a href="?C=N;O=D">Name</a>                                                <a href="?C=M;O=A">Last modified</a>      <a href="?C=S;O=A">Size</a>  <a href="?C=D;O=A">Description</a><hr><img src="/icons/back.gif" alt="[DIR]"> <a href="/published/NOAA/NESDIS/NGDC/MGG/Hazard_Photos/fgdc/">Parent Directory</a>                                                         -   
+//<img src="/icons/text.gif" alt="[TXT]"> <a href="G01194.xml">G01194.xml</a>                                          05-Aug-2011 15:41   20K  
+
+        //write showUrlDir
+        StringBuilder sb = new StringBuilder();
+        sb.append(
+            "<h1>Index of " + XML.encodeAsXML(showUrlDir) + "</h1>\n");
+
+        //write column names
+        sb.append(
+            "<pre><img src=\"" + iconUrlDir + "blank.gif\" alt=\"Icon \"> " + 
+            "<a href=\"?C=N;O=" + linkAD[0] + "\">Name</a>"          + String2.makeString(' ', nameSpaces - 4)  + " " +
+            "<a href=\"?C=M;O=" + linkAD[1] + "\">Last modified</a>" + String2.makeString(' ', dateSpaces - 13) + "  " +
+            "<a href=\"?C=S;O=" + linkAD[2] + "\">Size</a>"          +                                            "  " +
+            "<a href=\"?C=D;O=" + linkAD[3] + "\">Description</a>"   +
+            "\n" + 
+            "<hr>"); //listings I looked at didn't have \n here
+
+
+        //display the directories
+        dirNames.sortIgnoreCase();
+        if (keyColumns[0] == 0 && !ascending[0])  //if sorted by Names, descending order
+            dirNames.reverse();
+        //if shown, parentDir always at top
+        if (addParentDir && dirNames.indexOf("..") < 0) 
+            dirNames.add(0, "..");
+        int nDir = dirNames.size();
+        for (int row = 0; row < nDir; row++) {
+            try {
+                String dirName = dirNames.get(row); 
+                String showDirName = dirName;
+                String xmlDirName = XML.encodeAsXML(dirName + 
+                    (dirName.equals("..")? "" : "/"));
+                String iconFile = "dir.gif"; //default
+                String iconAlt  = "DIR";  //always 3 characters
+                if (dirName.equals("..")) {
+                    showDirName = "Parent Directory";
+                    iconFile    = "back.gif";
+                }
+                sb.append(
+                    "<img src=\"" + iconUrlDir + iconFile + "\" alt=\"[" + iconAlt + "]\" " +
+                        "align=\"absbottom\"> " +
+                    "<a href=\"" + xmlDirName + "\">" + XML.encodeAsXML(showDirName) + "</a>" +
+                    String2.makeString(' ',  nameSpaces - showDirName.length()) + " " +
+                    String2.left("", dateSpaces) + " " +
+                    String2.right("- ", sizeSpaces) + "  \n"); 
+            } catch (Throwable t) {
+                String2.log(String2.ERROR + " for directoryListing(" +
+                    showUrlDir + ")\n" +
+                    MustBe.throwableToString(t));
+            }
+        }
+
+        //define the file types  (should be in messages.xml?)
+        //compressed and image ext from wikipedia
+        //many ext from http://www.fileinfo.com/filetypes/common
+        String binaryExt[] = {".accdb", ".bin", ".cab", ".cer", ".class", ".cpi", ".csr",
+            ".db", ".dbf", ".dll", ".dmp", ".drv", ".dwg", ".dxf", ".fnt", ".fon", 
+            ".ini", ".keychain", ".lnk", ".mat", ".mdb", ".mim", ".nc", 
+            ".otf", ".pdb", ".prf", ".sys", ".ttf"};
+        String compressedExt[] = {".7z", ".a", ".ace", ".afa", ".alz", ".apk", 
+            ".ar", ".arc", ".arj", ".ba", ".bak", ".bh", ".bz2", 
+            ".cab", ".cfs", ".cpio", ".dar", ".dd", ".deb", ".dgc", ".dmg", ".f",
+            ".gca", ".gho", ".gz", 
+            ".gzip", ".ha", ".hki", ".hqx", ".infl", ".iso", 
+            ".j", ".jar", ".kgb", ".kmz", 
+            ".lbr", ".lha", ".lz", ".lzh", ".lzma", ".lzo", ".lzx", 
+            ".mar", ".msi", ".partimg", ".paq6", ".paq7", ".paq8", ".pea", ".pim", ".pit",
+            ".pkg", ".qda", ".rar", ".rk", ".rpm", ".rz", 
+            ".s7z", ".sda", ".sea", ".sen", ".sfark", ".sfx", ".shar", ".sit", ".sitx", ".sqx",
+            ".tar", ".tbz2", ".tgz", ".tlz", ".toast", ".torrent",
+            ".uca", ".uha", ".uue", ".vcd", ".war", ".wim", ".xar", ".xp3", ".xz", ".yz1", 
+            ".z", ".zip", ".zipx", ".zoo"};
+        String imageExt[] = {".ai", ".bmp", ".cgm", ".draw", ".drw", ".gif", 
+            ".ico", ".jfif", ".jpeg", ".jpg", 
+            ".pbm", ".pgm", ".png", ".pnm", ".ppm", ".pspimage", 
+            ".raw", ".svg", ".thm", ".tif", ".tiff", ".webp", ".yuv"};
+        String layoutExt[] = {".doc", ".docx", ".indd", ".key", ".pct",
+            ".pps", ".ppt", ".pptx",
+            ".psd", ".qxd", ".qxp", ".rels", ".rtf", ".wpd", ".wps",
+            ".xlr", ".xls", ".xlsx"};  
+        String movieExt[] = {".3g2", ".3gp", ".asf", ".asx", ".avi", ".fla", ".flv", 
+            ".mov", ".mp4", ".mpg", ".rm", ".swf", ".vob", ".wmv"};
+        String pdfExt[] = {".pdf"};
+        String psExt[] = {".eps", ".ps"};
+        String scriptExt[] = {  //or executable  
+            ".app", ".asp", ".bat", ".cgi", ".com", ".csh", ".exe", ".gadget", ".js", ".jsp", 
+            ".ksh", ".php", ".pif", ".pl", ".py", ".sh", ".tcsh", ".vb", ".wsf"};
+        String soundExt[] = {".aif", ".iff", ".m3u", ".m4a", ".mid", 
+            ".mp3", ".mpa", ".wav", ".wma"};
+        String textExt[] = {".asc", ".c", ".cpp", ".cs", ".csv", ".das", ".dat", ".dds", 
+            ".java", ".json", ".log", ".m", 
+            ".sdf", ".sql", ".tsv", ".txt", ".vcf"};
+        String worldExt[] = {".css", ".htm", ".html", ".xhtml"};
+        String xmlExt[] = {".dtd", ".gpx", ".kml", ".xml", ".rss"};
+        
+        //display the files
+        for (int row = 0; row < tnRows; row++) {
+            try {
+                String fileName = namePA.getString(row);
+                String fileNameLC = fileName.toLowerCase();
+                String xmlFileName = XML.encodeAsXML(fileName);
+
+                String iconFile = "generic.gif"; //default
+                String iconAlt  = "UNK";  //always 3 characters  (unknown)
+                String extLC = File2.getExtension(fileName).toLowerCase();
+                if (fileNameLC.equals("index.html") ||
+                    fileNameLC.equals("index.htm")) {            
+                    iconFile = "index.gif"; iconAlt = "IDX";
+                } else if (String2.indexOf(binaryExt, extLC) >= 0) {
+                    iconFile = "binary.gif"; iconAlt = "BIN";
+                } else if (String2.indexOf(compressedExt, extLC) >= 0) {
+                    iconFile = "compressed.gif"; iconAlt = "ZIP";
+                } else if (String2.indexOf(imageExt, extLC) >= 0) {
+                    iconFile = "image2.gif"; iconAlt = "IMG";
+                } else if (String2.indexOf(layoutExt, extLC) >= 0) {
+                    iconFile = "layout.gif"; iconAlt = "DOC";
+                } else if (String2.indexOf(movieExt, extLC) >= 0) {
+                    iconFile = "movie.gif"; iconAlt = "MOV";
+                } else if (String2.indexOf(pdfExt, extLC) >= 0) {
+                    iconFile = "pdf.gif"; iconAlt = "PDF";
+                } else if (String2.indexOf(psExt, extLC) >= 0) {
+                    iconFile = "ps.gif"; iconAlt = "PS ";
+                } else if (String2.indexOf(scriptExt, extLC) >= 0) {
+                    iconFile = "script.gif"; iconAlt = "EXE";
+                } else if (String2.indexOf(soundExt, extLC) >= 0) {
+                    iconFile = "sound.gif"; iconAlt = "SND";
+                } else if (String2.indexOf(textExt, extLC) >= 0) {
+                    iconFile = "text.gif"; iconAlt = "TXT";
+                } else if (String2.indexOf(worldExt, extLC) >= 0) {
+                    iconFile = "world1.gif"; iconAlt = "WWW";
+                } else if (String2.indexOf(xmlExt, extLC) >= 0) {
+                    iconFile = "xml.gif"; iconAlt = "XML";
+                }
+
+                sb.append(
+                    "<img src=\"" + iconUrlDir + iconFile + "\" alt=\"[" + iconAlt + "]\" " +
+                        "align=\"absbottom\"> " +
+                    "<a href=\"" + xmlFileName + "\">" + xmlFileName + "</a>" +
+                    String2.makeString(' ',  nameSpaces - fileName.length()) + " " +
+                    String2.left(modifiedPA.getString(row), dateSpaces) + " " +
+                    String2.right(sizePA.getString(row), sizeSpaces) + "  " +
+                    XML.encodeAsXML(descriptionPA.getString(row)) + "\n"); 
+            } catch (Throwable t) {
+                String2.log(String2.ERROR + " for directoryListing(" +
+                    showUrlDir + ")\n" +
+                    MustBe.throwableToString(t));
+            }
+        }
+
+        sb.append(
+            "<hr></pre>\n" +
+            nDir   + (nDir   == 1? " directory, " : " directories, ") + 
+            tnRows + (tnRows == 1? " file "       : " files") + 
+            "\n\n");
+        return sb.toString();
+    } 
 
     /**
      * Test saveAsJson and readJson.
@@ -9197,7 +9508,7 @@ touble: because table is JsonObject, info may not be in expected order
                 ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").size(), 2,  ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").getString(0), 
-                "2011-07-19 Most recent downloading and reformatting of all " + //changes monthly
+                "2012-04-04 Most recent downloading and reformatting of all " + //changes monthly
                 "cdf/sites/... files from PMEL TAO's FTP site by bob.simons at noaa.gov.", 
                 ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").getString(1), 
@@ -9463,7 +9774,7 @@ touble: because table is JsonObject, info may not be in expected order
         al.add(lcColumnNames);
         int rank[] = PrimitiveArray.rank(al, new int[]{0}, new boolean[]{true});
         //String2.log("old colNames=" + columnNames);
-        //String2.log("ranks=" + String2.toCSVString(rank));
+        //String2.log("ranks=" + String2.toCSSVString(rank));
 
         //reorder
         ArrayList newColumns = new ArrayList();
@@ -9713,12 +10024,12 @@ touble: because table is JsonObject, info may not be in expected order
         //read it from lines
         table.readStandardTabbedASCII("tFileName", lines, null, true);
         String2.log("nRows=" + table.nRows() + " nCols=" + table.nColumns());
-        Test.ensureEqual(table.dataToCsvString(), 
-            "colA, colB, colC\n" +
-            "1a, 1b, 1c\n" +
-            "\"2\\na\", \"2\\nb\", 2c\n" +
-            "3a, 3b, 3c\n",
-            "tFileName toCsvString=\n" + table.dataToCsvString());
+        Test.ensureEqual(table.dataToCSVString(), 
+            "colA,colB,colC\n" +
+            "1a,1b,1c\n" +
+            "\"2\\na\",\"2\\nb\",2c\n" +
+            "3a,3b,3c\n",
+            "tFileName toCSVString=\n" + table.dataToCSVString());
 
         //write it to a file
         String fileName = testDir + "tempTable.asc";
@@ -9728,23 +10039,23 @@ touble: because table is JsonObject, info may not be in expected order
         Table table2 = new Table();
         table2.readStandardTabbedASCII(fileName, null, true);
         String2.log("nRows=" + table2.nRows() + " nCols=" + table2.nColumns());
-        Test.ensureEqual(table2.dataToCsvString(), 
-            "colA, colB, colC\n" +
-            "1a, 1b, 1c\n" +
-            "\"2\\na\", \"2\\nb\", 2c\n" +
-            "3a, 3b, 3c\n",
-            "table2 toCsvString=\n" + table2.dataToCsvString());
+        Test.ensureEqual(table2.dataToCSVString(), 
+            "colA,colB,colC\n" +
+            "1a,1b,1c\n" +
+            "\"2\\na\",\"2\\nb\",2c\n" +
+            "3a,3b,3c\n",
+            "table2 toCSVString=\n" + table2.dataToCSVString());
 
         //just read cols B and C from the file
         table2 = new Table();
         table2.readStandardTabbedASCII(fileName, new String[]{"colB", "colC"}, true);
         String2.log("nRows=" + table2.nRows() + " nCols=" + table2.nColumns());
-        Test.ensureEqual(table2.dataToCsvString(), 
-            "colB, colC\n" +
-            "1b, 1c\n" +
-            "\"2\\nb\", 2c\n" +
-            "3b, 3c\n",
-            "table2 toCsvString=\n" + table2.dataToCsvString());
+        Test.ensureEqual(table2.dataToCSVString(), 
+            "colB,colC\n" +
+            "1b,1c\n" +
+            "\"2\\nb\",2c\n" +
+            "3b,3c\n",
+            "table2 toCSVString=\n" + table2.dataToCSVString());
 
         //** finally 
         File2.delete(fileName);
@@ -9855,24 +10166,24 @@ touble: because table is JsonObject, info may not be in expected order
         //test readHtml - treat 2nd row as data
         Table table2 = new Table();
         table2.readHtml(fileName, results[1], 0, false, true);
-        String csv = table2.dataToCsvString();
+        String csv = table2.dataToCSVString();
         Test.ensureEqual(csv, 
-"Time, Longitude, Latitude, Double Data, Long Data, Int Data, Short Data, Byte Data, String Data\n" +
-"UTC, degrees_east, degrees_north, doubles, longs, ints, shorts, bytes, Strings\n" +
-"1970-01-01 00:00:00, -3, 1.0, -1.0E300, -2000000000000000, -2000000000, -32000, -120, a\n" +
-"2005-08-31 16:01:02, -2, 1.5, 3.123, 2, 2, 7, 8, bb\n" +
-"2005-11-02 18:04:09, -1, 2.0, 1.0E300, 2000000000000000, 2000000000, 32000, 120, ccc\n",
+"Time,Longitude,Latitude,Double Data,Long Data,Int Data,Short Data,Byte Data,String Data\n" +
+"UTC,degrees_east,degrees_north,doubles,longs,ints,shorts,bytes,Strings\n" +
+"1970-01-01 00:00:00,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,a\n" +
+"2005-08-31 16:01:02,-2,1.5,3.123,2,2,7,8,bb\n" +
+"2005-11-02 18:04:09,-1,2.0,1.0E300,2000000000000000,2000000000,32000,120,ccc\n",
             csv);
 
         //test readHtml - treat 2nd row as units
         table2 = new Table();
         table2.readHtml(fileName, results[1], 0, true, true);
-        csv = table2.dataToCsvString();
+        csv = table2.dataToCSVString();
         Test.ensureEqual(csv, 
-"Time, Longitude, Latitude, Double Data, Long Data, Int Data, Short Data, Byte Data, String Data\n" +
-"1970-01-01 00:00:00, -3, 1.0, -1.0E300, -2000000000000000, -2000000000, -32000, -120, a\n" +
-"2005-08-31 16:01:02, -2, 1.5, 3.123, 2, 2, 7, 8, bb\n" +
-"2005-11-02 18:04:09, -1, 2.0, 1.0E300, 2000000000000000, 2000000000, 32000, 120, ccc\n",
+"Time,Longitude,Latitude,Double Data,Long Data,Int Data,Short Data,Byte Data,String Data\n" +
+"1970-01-01 00:00:00,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,a\n" +
+"2005-08-31 16:01:02,-2,1.5,3.123,2,2,7,8,bb\n" +
+"2005-11-02 18:04:09,-1,2.0,1.0E300,2000000000000000,2000000000,32000,120,ccc\n",
             csv);
         Test.ensureEqual(table2.columnAttributes(0).getString("units"), "UTC", "");
         Test.ensureEqual(table2.columnAttributes(1).getString("units"), "degrees_east", "");
@@ -10685,12 +10996,12 @@ touble: because table is JsonObject, info may not be in expected order
             table.readASCII(fileName);
             time = System.currentTimeMillis() - time;
 
-            String results = table.dataToCsvString(3);
+            String results = table.dataToCSVString(3);
             String expected =
-"row, YY, MM, DD, hh, WD, WSPD, GST, WVHT, DPD, APD, MWD, BAR, ATMP, WTMP, DEWP, VIS\n" +
-"0, 90, 1, 1, 0, 161, 8.6, 10.7, 1.5, 5.0, 4.8, 999, 1017.2, 22.7, 22.0, 999.0, 99.0\n" +
-"1, 90, 1, 1, 1, 163, 9.3, 11.3, 1.5, 5.0, 4.9, 999, 1017.3, 22.7, 22.0, 999.0, 99.0\n" +
-"2, 90, 1, 1, 1, 164, 9.2, 10.6, 1.6, 4.8, 4.9, 999, 1017.3, 22.7, 22.0, 999.0, 99.0\n";
+"row,YY,MM,DD,hh,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS\n" +
+"0,90,1,1,0,161,8.6,10.7,1.5,5.0,4.8,999,1017.2,22.7,22.0,999.0,99.0\n" +
+"1,90,1,1,1,163,9.3,11.3,1.5,5.0,4.9,999,1017.3,22.7,22.0,999.0,99.0\n" +
+"2,90,1,1,1,164,9.2,10.6,1.6,4.8,4.9,999,1017.3,22.7,22.0,999.0,99.0\n";
             Test.ensureEqual(results, expected, "results=\n" + expected);
             Test.ensureEqual(table.nColumns(), 16, "nColumns=" + table.nColumns()); 
             Test.ensureEqual(table.nRows(), 17117, "nRows=" + table.nRows()); 
@@ -10726,13 +11037,13 @@ touble: because table is JsonObject, info may not be in expected order
             table=new Table();
             table.readJson(fileName, String2.readFromFile(fileName)[1]);
 
-            String results = table.dataToCsvString(3);
+            String results = table.dataToCSVString(3);
             String2.log("results=\n" + results);
-//row, dirIndex, fileName, lastMod, sortedSpacing, unique_tag_id_min_, unique_tag_id_max_, PI_min_, PI_max_, longitude_min_, longitude_max_, l
-//atitude_min_, latitude_max_, time_min_, time_max_, bottom_depth_min_, bottom_depth_max_, common_name_min_, common_name_max_, date_public_min
-//_, date_public_max_, line_min_, line_max_, position_on_subarray_min_, position_on_subarray_max_, project_min_, project_max_, riser_height_mi
-//n_, riser_height_max_, role_min_, role_max_, scientific_name_min_, scientific_name_max_, serial_number_min_, serial_number_max_, stock_min_,
-// stock_max_, surgery_time_min_, surgery_time_max_, surgery_location_min_, surgery_location_max_, tagger_min_, tagger_max_
+//row,dirIndex,fileName,lastMod,sortedSpacing,unique_tag_id_min_,unique_tag_id_max_,PI_min_,PI_max_,longitude_min_,longitude_max_,l
+//atitude_min_,latitude_max_,time_min_,time_max_,bottom_depth_min_,bottom_depth_max_,common_name_min_,common_name_max_,date_public_min
+//_,date_public_max_,line_min_,line_max_,position_on_subarray_min_,position_on_subarray_max_,project_min_,project_max_,riser_height_mi
+//n_,riser_height_max_,role_min_,role_max_,scientific_name_min_,scientific_name_max_,serial_number_min_,serial_number_max_,stock_min_,
+// stock_max_,surgery_time_min_,surgery_time_max_,surgery_location_min_,surgery_location_max_,tagger_min_,tagger_max_
             Test.ensureTrue(results.indexOf("unique_tag_id_max") > 0, "test 1");
             Test.ensureTrue(results.indexOf("surgery_time_min") > 0,  "test 2");
             Test.ensureTrue(table.nColumns() > 40, "nColumns=" + table.nColumns()); //was 42
@@ -10771,12 +11082,12 @@ touble: because table is JsonObject, info may not be in expected order
             table = new Table();
             table.readNDNc(fileName, null, null, 0, 0, true);
 
-            String results = table.dataToCsvString(3);
+            String results = table.dataToCSVString(3);
             String expected =  //before 2011-06-14 was 32.31, -75.35
-"row, TIME, DEPTH, LAT, LON, WD, WSPD, GST, WVHT, DPD, APD, MWD, BAR, ATMP, WTMP, DEWP, VIS, PTDY, TIDE, WSPU, WSPV, ID\n" +
-"0, 1.235556E8, 0.0, 32.309, -75.483, 149, 1.5, -9999999.0, -9999999.0, -9999999.0, -9999999.0, , 1031.0, 15.5, -9999999.0, 5.4, -9999999.0, -9999999.0, -9999999.0, -0.8, 1.3, 41002\n" +
-"1, 1.235592E8, 0.0, 32.309, -75.483, 145, 0.3, -9999999.0, -9999999.0, -9999999.0, -9999999.0, , 1031.0, 13.9, -9999999.0, 7.3, -9999999.0, -9999999.0, -9999999.0, -0.2, 0.2, 41002\n" +
-"2, 1.235628E8, 0.0, 32.309, -75.483, 315, 1.4, -9999999.0, -9999999.0, -9999999.0, -9999999.0, , 1031.0, 11.4, -9999999.0, 6.5, -9999999.0, -9999999.0, -9999999.0, 1.0, -1.0, 41002\n";
+"row,TIME,DEPTH,LAT,LON,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS,PTDY,TIDE,WSPU,WSPV,ID\n" +
+"0,1.235556E8,0.0,32.309,-75.483,149,1.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1031.0,15.5,-9999999.0,5.4,-9999999.0,-9999999.0,-9999999.0,-0.8,1.3,41002\n" +
+"1,1.235592E8,0.0,32.309,-75.483,145,0.3,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1031.0,13.9,-9999999.0,7.3,-9999999.0,-9999999.0,-9999999.0,-0.2,0.2,41002\n" +
+"2,1.235628E8,0.0,32.309,-75.483,315,1.4,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1031.0,11.4,-9999999.0,6.5,-9999999.0,-9999999.0,-9999999.0,1.0,-1.0,41002\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
             Test.ensureEqual(table.nColumns(), 21, "nColumns=" + table.nColumns()); 
             Test.ensureTrue(table.nRows() >= 309736, "nRows=" + table.nRows()); 
@@ -10811,12 +11122,12 @@ touble: because table is JsonObject, info may not be in expected order
             long time = System.currentTimeMillis();
             table = new Table();
             table.readOpendapSequence(url);
-            String results = table.dataToCsvString(3);            
+            String results = table.dataToCSVString(3);            
             String expected = //before 2011-06-14 was -80.17, 28.5
-"row, station, longitude, latitude, time, wd, wspd, gst, wvht, dpd, apd, mwd, bar, atmp, wtmp, dewp, vis, ptdy, tide, wspu, wspv\n" +
-"0, 41009, -80.166, 28.519, 9.151488E8, 0, 1.9, 2.7, 1.02, 11.11, 6.49, , 1021.0, 20.4, 24.2, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 0.0, -1.9\n" +
-"1, 41009, -80.166, 28.519, 9.151524E8, 53, 1.5, 2.8, 0.99, 11.11, 6.67, , 1021.0, 20.6, 24.5, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -1.2, -0.9\n" +
-"2, 41009, -80.166, 28.519, 9.15156E8, 154, 1.0, 2.2, 1.06, 11.11, 6.86, , 1021.2, 20.6, 24.6, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -0.4, 0.9\n";
+"row,station,longitude,latitude,time,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,wtmp,dewp,vis,ptdy,tide,wspu,wspv\n" +
+"0,41009,-80.166,28.519,9.151488E8,0,1.9,2.7,1.02,11.11,6.49,,1021.0,20.4,24.2,-9999999.0,-9999999.0,-9999999.0,-9999999.0,0.0,-1.9\n" +
+"1,41009,-80.166,28.519,9.151524E8,53,1.5,2.8,0.99,11.11,6.67,,1021.0,20.6,24.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-1.2,-0.9\n" +
+"2,41009,-80.166,28.519,9.15156E8,154,1.0,2.2,1.06,11.11,6.86,,1021.2,20.6,24.6,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-0.4,0.9\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             Test.ensureTrue(table.nRows() > 2100, "nRows=" + table.nRows());
@@ -11124,7 +11435,7 @@ touble: because table is JsonObject, info may not be in expected order
         lut.columnAttributes(2).add("missing_value", -9999999L);
 
         //test lut before join
-        String results = lut.toCsvString();
+        String results = lut.toCSVString();
         String expectedLut = 
 "{\n" +
 "dimensions:\n" +
@@ -11140,17 +11451,17 @@ touble: because table is JsonObject, info may not be in expected order
 "\n" +
 "// global attributes:\n" +
 "}\n" +
-"row, aa, bb, cc\n" +
-"0, 10, 11, 111\n" +
-"1, 20, 22, 222\n" +
-"2, 30, 33, 333\n" +
-"3, 40, 44, 444\n";
+"row,aa,bb,cc\n" +
+"0,10,11,111\n" +
+"1,20,22,222\n" +
+"2,30,33,333\n" +
+"3,40,44,444\n";
         Test.ensureEqual(results, expectedLut, "lut results=\n" + results);
 
         //do the join
         table.join(1, 1, "10", lut);
 
-        results = table.toCsvString();
+        results = table.toCSVString();
         String expected = 
 "{\n" +
 "dimensions:\n" +
@@ -11172,17 +11483,17 @@ touble: because table is JsonObject, info may not be in expected order
 "\n" +
 "// global attributes:\n" +
 "}\n" +
-"row, zero, one, bb, cc, two\n" +
-"0, a, 40, 44, 444, aa\n" +
-"1, b, 10, 11, 111, bb\n" +
-"2, c, 12, , -9999999, cc\n" +
-"3, d, 30, 33, 333, dd\n" +
-"4, , , 11, 111, \n" +
-"5, e, 20, 22, 222, ee\n";
+"row,zero,one,bb,cc,two\n" +
+"0,a,40,44,444,aa\n" +
+"1,b,10,11,111,bb\n" +
+"2,c,12,,-9999999,cc\n" +
+"3,d,30,33,333,dd\n" +
+"4,,,11,111,\n" +
+"5,e,20,22,222,ee\n";
         Test.ensureEqual(results, expected, "join 1 results=\n" + results);
 
         //ensure lut unchanged
-        results = lut.toCsvString();
+        results = lut.toCSVString();
         Test.ensureEqual(results, expectedLut, "lut 1 results=\n" + results);
 
 
@@ -11201,7 +11512,7 @@ touble: because table is JsonObject, info may not be in expected order
         //do the join
         table.join(2, 1, "10\t11", lut);
 
-        results = table.toCsvString();
+        results = table.toCSVString();
         expected = 
 "{\n" +
 "dimensions:\n" +
@@ -11223,17 +11534,17 @@ touble: because table is JsonObject, info may not be in expected order
 "\n" +
 "// global attributes:\n" +
 "}\n" +
-"row, zero, one, two, cc, three\n" +
-"0, a, 40, 44, 444, aaa\n" +
-"1, b, 10, bad, -9999999, bbb\n" +
-"2, c, 12, 1212, -9999999, ccc\n" +
-"3, d, 30, 33, 333, ddd\n" +
-"4, , , , 111, \n" + 
-"5, e, 20, 22, 222, eee\n";
+"row,zero,one,two,cc,three\n" +
+"0,a,40,44,444,aaa\n" +
+"1,b,10,bad,-9999999,bbb\n" +
+"2,c,12,1212,-9999999,ccc\n" +
+"3,d,30,33,333,ddd\n" +
+"4,,,,111,\n" + 
+"5,e,20,22,222,eee\n";
         Test.ensureEqual(results, expected, "join 2 results=\n" + results);
 
         //ensure lut unchanged
-        results = lut.toCsvString();
+        results = lut.toCSVString();
         Test.ensureEqual(results, expectedLut, "lut 2 results=\n" + results);
     }
 
@@ -11255,17 +11566,17 @@ touble: because table is JsonObject, info may not be in expected order
         otherTable.addColumn("five", PrimitiveArray.csvFactory(int.class,    "  1,  2,  3,  4"));
 
         int nMatched = table.update(new String[]{"zero", "one"}, otherTable);
-        String results = table.dataToCsvString();
+        String results = table.dataToCSVString();
         String expected = 
-"zero, one, two, three\n" +
-"a, 10, 111, 1.1\n" +
-"b, 20, 222, 2.2\n" +
-"c, 30, 333, 3.3\n" +
-"d, 40, 444, 4.4\n" +
-", , -99, 22.0\n" +  
-"e, 50, 555, 11.0\n" +
-"a, 11, -99, 33.0\n" + //-99 is from missing_value
-"f, 5, -99, 44.0\n";   //-99 is from missing_value
+"zero,one,two,three\n" +
+"a,10,111,1.1\n" +
+"b,20,222,2.2\n" +
+"c,30,333,3.3\n" +
+"d,40,444,4.4\n" +
+",,-99,22.0\n" +  
+"e,50,555,11.0\n" +
+"a,11,-99,33.0\n" + //-99 is from missing_value
+"f,5,-99,44.0\n";   //-99 is from missing_value
         Test.ensureEqual(results, expected, "update results=\n" + results);
         Test.ensureEqual(nMatched, 2, "nMatched");
 
@@ -11284,7 +11595,7 @@ touble: because table is JsonObject, info may not be in expected order
         verbose = true;
         reallyVerbose = true;
 
-/* */   //testLittleMethods
+        /* */
         testLittleMethods();
         testTestValueOpValue();
         testSortColumnsByName();
@@ -11310,7 +11621,6 @@ touble: because table is JsonObject, info may not be in expected order
         testSaveAsSpeed();
         testUpdate();
 
-
         try {
             testConvert();
         } catch (Exception e) {
@@ -11329,7 +11639,6 @@ touble: because table is JsonObject, info may not be in expected order
         }
         */
         testXml();
-
 
         /*not active -- it needs work to deal with sessions
         try {

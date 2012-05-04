@@ -51,7 +51,8 @@ public class TimeAxisDialog extends JDialog {
   private GeoDate startDate_;
   private GeoDate endDate_;
   private String[] styleNames_ = {"plain", "bold", "italic", "bold-italic"};
-  private String dateFormat_ = "yyyy-MM-dd HH:mm:ss";
+  //2011-12-15 Bob Simons changed space to 'T'
+  private String dateFormat_ = "yyyy-MM-dd'T'HH:mm:ss";
   /**
    * Constructor.
    */

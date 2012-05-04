@@ -48,7 +48,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
 
     /** The constructor. */
     public EDDTableFromAsciiServiceNOS(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltitudeMetersPerSourceUnit, 
         Object[][] tDataVariables,
@@ -58,7 +58,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         throws Throwable {
 
         super("EDDTableFromAsciiServiceNOS", tDatasetID, tAccessibleTo,
-            tOnChange, tAddGlobalAttributes,
+            tOnChange, tFgdcFile, tIso19115File, tAddGlobalAttributes,
             tAltitudeMetersPerSourceUnit,
             tDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl,
@@ -155,11 +155,11 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         //ensure the required constraints were specified
         if (!datumIsFixedValue && (datum == null || datum.length() == 0))
             throw new SimpleException(
-                "Query error: For this dataset, all queries must include a \"datum=\" constraint.");
+                EDStatic.queryError + "For this dataset, all queries must include a \"datum=\" constraint.");
         if (Double.isNaN(beginSeconds))
-            throw new SimpleException("Query error: Missing time>= constraint.");
+            throw new SimpleException(EDStatic.queryError + "Missing time>= constraint.");
         if (Double.isNaN(endSeconds))
-            throw new SimpleException("Query error: If present, the time<= constraint must be valid.");
+            throw new SimpleException(EDStatic.queryError + "If present, the time<= constraint must be valid.");
         String beginTime = Calendar2.epochSecondsToIsoStringT(beginSeconds).substring(0, 16);  //no seconds
         String endTime   = Calendar2.epochSecondsToIsoStringT(  endSeconds).substring(0, 16);
         if (beginSeconds > endSeconds)
@@ -233,7 +233,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                 in.close();
 
                 //table.makeColumnsSameSize();
-                //String2.log("\npre table=\n" + table.dataToCsvString());
+                //String2.log("\npre table=\n" + table.dataToCSVString());
 
                 if (datasetID.equals("nosCoopsWLTPHL")) {
 
@@ -263,7 +263,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                         }
                     }
                     //newTable.makeColumnsSameSize();
-                    //String2.log("\nnewTable=\n" + newTable.dataToCsvString());
+                    //String2.log("\nnewTable=\n" + newTable.dataToCSVString());
 
                     //swap newTable into place
                     table = newTable;
@@ -315,7 +315,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                         sa.addN(nRows, datum);
                     }
 
-                    //String2.log("\npost table=\n" + table.dataToCsvString());
+                    //String2.log("\npost table=\n" + table.dataToCSVString());
                     standardizeResultsTable(requestUrl, userDapQuery, table);
 
                     if (table.nRows() > 0)
@@ -453,7 +453,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
             stationIDPo = nextStationIDPo;
         }
         //String2.log(stationID1.toString());
-        String2.log("n " + lookFor + " Stations=" + table.dataToCsvString());
+        String2.log("n " + lookFor + " Stations=" + table.dataToCSVString());
         return table;
     }
 
@@ -520,7 +520,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         table.leftToRightSort(1);
         String dir = "c:/programs/tomcat/content/erddap/subset/";
         table.saveAsJson(dir + "nosCoopsCA.json",  -1, false); //timeColumn, writeUnits
-        String2.log(table.dataToCsvString());
+        String2.log(table.dataToCSVString());
     }
 
     /**
@@ -682,12 +682,12 @@ MHW            3.416          Mean High Water
         table2.leftToRightSort(5);
 
         //print a little of table2
-        String2.log(table2.dataToCsvString(30));
+        String2.log(table2.dataToCSVString(30));
 
         //print datumDescriptions
         Table datumDesc = new Table();
         datumDesc.readMap(datumsHash, "Datum", "Description");
-        String2.log(datumDesc.dataToCsvString());
+        String2.log(datumDesc.dataToCSVString());
 
         String dir = "c:/programs/tomcat/content/erddap/subset/";
         table2.saveAsJson(dir + "nosCoopsWLR6.json",  -1, false);

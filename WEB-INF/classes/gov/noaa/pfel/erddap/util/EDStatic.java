@@ -8,16 +8,19 @@ import com.cohort.array.Attributes;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.ResourceBundle2;
 import com.cohort.util.String2;
+import com.cohort.util.String2LogOutputStream;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.Projects;
 import gov.noaa.pfel.coastwatch.sgt.Boundaries;
 import gov.noaa.pfel.coastwatch.sgt.FilledMarkerRenderer;
 import gov.noaa.pfel.coastwatch.sgt.GSHHS;
@@ -33,11 +36,14 @@ import gov.noaa.pfel.erddap.*;
 import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.variable.*;
 
+import java.awt.Image;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.PrintStream;
 import java.io.Writer;
 import java.security.Principal;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,6 +55,26 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 //import org.apache.commons.codec.digest.DigestUtils;  //in netcdf-all.jar
+
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.FieldCache;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.util.Version;
+
+//import org.apache.lucene.document.Document;
+//import org.apache.lucene.document.Field;
+//import org.apache.lucene.index.IndexWriter;
+//import org.apache.lucene.search.TopDocs;
+//import org.apache.lucene.store.SimpleFSDirectory;
+
+
 import org.verisign.joid.consumer.OpenIdFilter;
 
 /** 
@@ -64,60 +90,38 @@ public class EDStatic {
     public final static String ProgramName = "ERDDAP";
 
     /** This changes with each release. 
-     * See Changes information in /downloads/setup.html .
+     * <br>See Changes information in /downloads/setup.html .
      * <br>0.1 started on 2007-09-17
      * <br>0.11 released on 2007-11-09
      * <br>0.12 released on 2007-12-05
      * <br>0.2 released on 2008-01-10
-     * <br>0.21 was used during development of 0.22
+     * <br>From here on, odd .01 are used during development
      * <br>0.22 released on 2008-02-21
-     * <br>0.23 is being used during development of 0.24
      * <br>0.24 released on 2008-03-03
-     * <br>0.25 is being used during development of 0.26
      * <br>0.26 released on 2008-03-11
-     * <br>0.27 is being used during development 
      * <br>0.28 released on 2008-04-14
-     * <br>0.29 is being used during development 
      * <br>1.00 released on 2008-05-06
-     * <br>1.01 is being used during development 
      * <br>1.02 released on 2008-05-26
-     * <br>1.03 is being used during development 
      * <br>1.04 released on 2008-06-10
-     * <br>1.05 is being used during development 
      * <br>1.06 released on 2008-06-20
-     * <br>1.07 is being used during development 
      * <br>1.08 released on 2008-07-13
-     * <br>1.09 is being used during development 
      * <br>1.10 released on 2008-10-14
-     * <br>1.11 is being used during development 
      * <br>1.12 released on 2008-11-02
-     * <br>1.13 is being used during development 
      * <br>1.14 released on 2009-03-17
-     * <br>1.15 is being used during development 
      * <br>1.16 released on 2009-03-26
-     * <br>1.17 is being used during development 
      * <br>1.18 released on 2009-04-08
-     * <br>1.19 is being used during development 
      * <br>1.20 released on 2009-07-02
-     * <br>1.21 is being used during development 
      * <br>1.22 released on 2009-07-05
-     * <br>1.23 is being used during development 
      * <br>1.24 released on 2010-08-06
-     * <br>1.25 is being used during development
      * <br>1.26 released on 2010-08-25
-     * <br>1.27 is being used during development
      * <br>1.28 released on 2010-08-27
-     * <br>1.29 is being used during development
      * <br>1.30 released on 2011-04-29
-     * <br>1.31 is being used during development
      * <br>1.32 released on 2011-05-20
-     * <br>1.33 is being used during development
      * <br>1.34 released on 2011-06-15
-     * <br>1.35 is being used during development
      * <br>1.36 released on 2011-08-01
-     * <br>1.37 is being used during development
+     * <br>1.38 released on 2012-04-21
      */   
-    public static String erddapVersion = "1.36";  
+    public static String erddapVersion = "1.38";  
 
     /** 
      * This is almost always false.  
@@ -125,6 +129,13 @@ public class EDStatic {
      * If true, ERDDAP uses setup2.xml, messages2.xml, and datasets2.xml. 
      */
 public static boolean developmentMode = false;
+
+    /** This identifies the dods server/version that this mimics. */
+    public static String dapVersion = "DAP/2.0";   //???
+    public static String serverVersion = "dods/3.7"; //this is what thredds replies
+      //drds at http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle.ver replies "DODS/3.2"
+      //both reply with server version, neither replies with coreVersion
+      //spec says #.#.#, but Gallagher says #.# is fine.
 
     /** 
      * contentDirectory is the local directory on this computer, e.g., [tomcat]/content/erddap/ 
@@ -136,9 +147,12 @@ public static boolean developmentMode = false;
 
     /* contextDirectory is the local directory on this computer, e.g., [tomcat]/webapps/erddap/ */
     public static String contextDirectory = SSR.getContextDirectory();
-    public final static String DOWNLOAD_DIR = "download/";
-    public final static String IMAGES_DIR   = "images/";
-    public final static String PUBLIC_DIR   = "public/"; 
+    //fgdc and iso19115XmlDirectory are used for virtual URLs.
+    public final static String fgdcXmlDirectory     = "metadata/fgdc/xml/";     //virtual
+    public final static String iso19115XmlDirectory = "metadata/iso19115/xml/"; //virtual
+    public final static String DOWNLOAD_DIR         = "download/";
+    public final static String IMAGES_DIR           = "images/";
+    public final static String PUBLIC_DIR           = "public/"; 
     public static String
         fullPaletteDirectory = contextDirectory + "WEB-INF/cptfiles/",
         fullPublicDirectory  = contextDirectory + PUBLIC_DIR,
@@ -198,7 +212,7 @@ public static boolean developmentMode = false;
      * For example, key="taskThread", value=taskThread.
      * The key make it easy to get a specific thread (e.g., to remove it).
      */
-    public static ConcurrentHashMap runningThreads = new ConcurrentHashMap(); 
+    public static ConcurrentHashMap runningThreads = new ConcurrentHashMap(16, 0.75f, 4); 
 
     //taskThread variables
     //Funnelling all taskThread tasks through one taskThread ensures
@@ -212,7 +226,7 @@ public static boolean developmentMode = false;
      * the number of the last task assigned to taskThread.
      * key=datasetID value=Integer(task#)
      */
-    public static ConcurrentHashMap lastAssignedTask = new ConcurrentHashMap(); 
+    public static ConcurrentHashMap lastAssignedTask = new ConcurrentHashMap(16, 0.75f, 4); 
     /** 
      * This returns the index number of the task in taskList (-1,0..) of the last completed task
      * (successful or not).
@@ -229,7 +243,7 @@ public static boolean developmentMode = false;
     /** This recieves key=startOfLocalSourceUrl value=startOfPublicSourceUrl from LoadDatasets 
      * and is used by EDD.convertToPublicSourceUrl. 
      */
-    public static ConcurrentHashMap convertToPublicSourceUrl = new ConcurrentHashMap();
+    public static ConcurrentHashMap convertToPublicSourceUrl = new ConcurrentHashMap(16, 0.75f, 4);
 
     /** 
      * This returns the position of the "/" in if tFrom has "[something]//[something]/...",
@@ -246,6 +260,46 @@ public static boolean developmentMode = false;
         return spo;
     }
 
+    /** For Lucene. */
+    //The latest version as of writing this.
+    //Since I recreate the index when erddap restarted, I can change anything
+    //  (e.g., Directory type, Version) any time
+    //  (no worries about compatibility with existing index).
+    //useful documentatino 
+    //  http://lucene.apache.org/java/3_5_0/queryparsersyntax.html
+    //  http://wiki.apache.org/lucene-java/LuceneFAQ
+    //  http://wiki.apache.org/lucene-java/BasicsOfPerformance
+    //  http://affy.blogspot.com/2003/04/codebit-examples-for-all-of-lucenes.html
+    public  static Version       luceneVersion = Version.LUCENE_35;
+    public  final static String  luceneDefaultField = "text";
+    //special characters to be escaped
+    //see bottom of http://lucene.apache.org/java/3_5_0/queryparsersyntax.html
+    public  static String        luceneSpecialCharacters = "+-&|!(){}[]^\"~*?:\\";
+
+    //made below if useLuceneSearchEngine
+    //there are many analyzers; this is a good starting point
+    public  static Analyzer      luceneAnalyzer;    
+    private static QueryParser   luceneQueryParser; //not thread-safe
+
+    //made once by RunLoadDatasets
+    public  static Directory     luceneDirectory;
+    public  static IndexWriter   luceneIndexWriter; //is thread-safe
+
+    //made/returned by luceneIndexSearcher
+    private static IndexReader   luceneIndexReader; //is thread-safe, but only need/want one
+    private static Object        luceneIndexReaderLock = Calendar2.newGCalendarLocal();
+    public  static boolean       needNewLuceneIndexReader = true;  
+    private static IndexSearcher luceneIndexSearcher; //is thread-safe, so can reuse
+    private static String[]      luceneDatasetIDFieldCache;
+
+    //also see updateLucene in LoadDatasets
+
+    public final static int defaultItemsPerPage = 1000; //1000, for /info/index.xxx and search
+    public final static String defaultPIppQuery        = "page=1&itemsPerPage=" + defaultItemsPerPage;
+    public final static String allPIppQuery            = "page=1&itemsPerPage=1000000000";
+    /** The HTML/XML encoded form */
+    public final static String encodedDefaultPIppQuery = "page=1&amp;itemsPerPage=" + defaultItemsPerPage;
+    public final static String encodedAllPIppQuery     = "page=1&amp;itemsPerPage=1000000000";
 
     /** 
      * These values are loaded from the [contentDirectory]setup.xml file. 
@@ -327,8 +381,13 @@ public static boolean developmentMode = false;
         lowResLogoImageFile,
         passwordEncoding, //will be one of "plaintext", "MD5", or "UEPMD5"
         questionMarkImageFile,
+        searchEngine,
         warName;
     public static String ampLoginInfo = "&loginInfo;";
+    public static int 
+        lowResLogoImageFileWidth,  lowResLogoImageFileHeight,
+        highResLogoImageFileWidth, highResLogoImageFileHeight,
+        googleEarthLogoFileWidth,  googleEarthLogoFileHeight;
     private static String legal, PostIndex1Html, PostIndex2Html, PostIndex3Html;
     private static int   ampLoginInfoPo = -1;
     /** These are special because other loggedInAs must be String2.justPrintable
@@ -343,12 +402,15 @@ public static boolean developmentMode = false;
         reallyVerbose,
         postShortDescriptionActive, //if true, PostIndexHtml is on home page and /post/index.html redirects there
         subscriptionSystemActive,
-        sosActive, wcsActive,
+        fgdcActive, iso19115Active, sosActive, wcsActive,
+        quickRestart,
+        useOriginalSearchEngine, useLuceneSearchEngine,  //exactly one will be true
         variablesMustHaveIoosCategory,
         verbose;
     public static String  categoryAttributes[];       //as it appears in metadata (and used for hashmap)
     public static String  categoryAttributesInURLs[]; //fileNameSafe (as used in URLs)
     public static boolean categoryIsGlobal[];
+    public static int variableNameCategoryAttributeIndex = -1;
     public static int 
         unusualActivity = 10000,
         partialRequestMaxBytes = 100000000, 
@@ -366,10 +428,11 @@ public static boolean developmentMode = false;
     public static String 
         erddapUrl,  //without slash at end
         erddapHttpsUrl,  //without slash at end   (may be useless, but won't be null)
-        fullDatasetInfoDirectory,
+        fullDatasetDirectory,  //all the Directory's have slash at end
         fullCacheDirectory,
         fullLogsDirectory,
         fullCopyDirectory,
+        fullLuceneDirectory,
         fullResetFlagDirectory,
         fullCptCacheDirectory,         
         fullPlainFileNcCacheDirectory,         
@@ -385,38 +448,73 @@ public static boolean developmentMode = false;
 
     /** These values are loaded from the [contentDirectory]messages.xml file. */
     public static String 
+        advancedSearch,
+        advancedSearchResults,
         advancedSearchDirections,
         advancedSearchHtml,
+        advancedSearchBounds,
+        advancedSearchMinLat,
+        advancedSearchMaxLat,
+        advancedSearchMinLon,
+        advancedSearchMaxLon,
+        advancedSearchMinMaxLon,
+        advancedSearchMinTime,
+        advancedSearchMaxTime,
+        advancedSearchClear,
+        advancedSearchClearHelp,
+        advancedSearchCategoryTooltip,
+        advancedSearchRangeTooltip,
+        advancedSearchMapTooltip,
+        advancedSearchLonTooltip,
+        advancedSearchTimeTooltip,
+        advancedSearchWithCriteria,
+        advancedSearchFewerCriteria,
+        advancedSearchNoCriteria,
         categoryTitleHtml,
         category1Html,
         category2Html,
         category3Html,
+        categoryPickAttribute,
         categorySearchHtml,
         categorySearchDifferentHtml,
         categoryClickHtml,
+        categoryNotAnOption,
         clickAccessHtml,
         clickAccess,
         clickBackgroundInfo,
         clickInfo,
         clickToSubmit,
-        convertFipsCounty,
+        convertFipsCounty,        
         convertFipsCountyIntro,
         convertFipsCountyNotes,
         convertFipsCountyService,
         convertHtml,
-        convertTime,
+        convertKeywords,          
+        convertKeywordsCfTooltip,
+        convertKeywordsGcmdTooltip,
+        convertKeywordsIntro,
+        convertKeywordsNotes,
+        convertKeywordsService,
+        convertTime,              
         convertTimeIntro,
         convertTimeNotes,
         convertTimeService,
         convertTimeUnitsHelp,
-        convertUnits,
-        convertUnitsComparison,
+        convertUnits,             
+        convertUnitsComparison,   
         convertUnitsFilter,
         convertUnitsIntro,
         convertUnitsNotes,
         convertUnitsService,
+        daf,
+        dafGridBypass,
+        dafGridHtml,
+        dafTableBypass,
+        dafTableHtml,
+        dasTitle,
         dataAccessNotAllowed,
         distinctValuesHtml,
+        doWithGraphs,
 
         dtAccessible,
         dtAccessibleYes,
@@ -431,25 +529,52 @@ public static boolean developmentMode = false;
         dtWCS,
         dtWMS,
 
+        EDDDatasetID,
+        EDDFgdc,
+        EDDFgdcMetadata,
+        EDDIso19115,
+        EDDIso19115Metadata,
+        EDDMetadata,
+        EDDBackground,
         EDDClickOnSubmitHtml,
-        EDDInstructions,
+        EDDInstitution,
+        EDDInformation,
+        EDDSummary,
+        EDDDatasetTitle,
         EDDDownloadData,
         EDDMakeAGraph,
         EDDMakeAMap,
         EDDFileType,
+        EDDFileTypeInformation,
         EDDSelectFileType,
         EDDMinimum,
         EDDMaximum,
+        EDDConstraint,
+
+        EDDChangedWasnt,
+        EDDChangedDifferentNVar,
+        EDDChanged2Different,
+        EDDChanged1Different,
+        EDDChangedCGADifferent,
+        EDDChangedAxesDifferentNVar,
+        EDDChangedAxes2Different,
+        EDDChangedAxes1Different,
+        EDDChangedNoValue,
+        EDDChangedTableToGrid,
+
+        EDDSimilarDifferentNVar,
+        EDDSimilarDifferent,
 
         EDDGridDapDescription,
         EDDGridDapLongDescription,
-        EDDGridDataAccessFormHtml,
         EDDGridDownloadDataHtml,
         EDDGridDimension,
+        EDDGridDimensionRanges,
         EDDGridFirst,
         EDDGridLast,
         EDDGridStart,
         EDDGridStop,
+        EDDGridStartStopHelp,
         EDDGridStride,
         EDDGridNValues,
         EDDGridNValuesHtml,
@@ -469,6 +594,7 @@ public static boolean developmentMode = false;
         EDDGridDownloadTooltipHtml,
         EDDGridGridVariableHtml,
 
+        EDDTableConstraints,
         EDDTableTabularDatasetHtml,
         EDDTableVariable,
         EDDTableCheckAll,
@@ -481,31 +607,255 @@ public static boolean developmentMode = false;
         EDDTableSelectAnOperator,
         EDDTableOptConstraint1Html,
         EDDTableOptConstraint2Html,
-        EDDTableMakeANumericConstraintHtml,
-        EDDTableMakeAStringConstraintHtml,
-        EDDTableMakeATimeConstraintHtml,
+        EDDTableOptConstraintVar,
+        EDDTableNumericConstraintHtml,
+        EDDTableStringConstraintHtml,
+        EDDTableTimeConstraintHtml,
         EDDTableConstraintHtml,
+        EDDTableSelectConstraint,
         EDDTableDapDescription,
         EDDTableDapLongDescription,
-        EDDTableDataAccessFormHtml,
         EDDTableDownloadDataHtml,
 
         errorTitle,
         errorRequestUrl,
         errorRequestQuery,
         errorTheError,
+        errorCopyFrom,
+        errorFileNotFound,
+        errorFileNotFoundImage,
+        errorInternal,
+        errorMoreThan2GB,
+        errorNotFound,
+        errorNotFoundIn,
+        errorOdvLLTGrid,
+        errorOdvLLTTable,
+        fileHelp_asc,
+        fileHelp_csv,
+        fileHelp_csvp,
+        fileHelp_das,
+        fileHelp_dds,
+        fileHelp_dods,
+        fileHelpGrid_esriAscii,
+        fileHelpTable_esriAscii,
+        fileHelp_fgdc,
+        fileHelp_geoJson,
+        fileHelp_graph,
+        fileHelpGrid_help,
+        fileHelpTable_help,
+        fileHelp_html,
+        fileHelp_htmlTable,
+        fileHelp_iso19115,
+        fileHelp_json,
+        fileHelp_mat,
+        fileHelpGrid_nc,
+        fileHelpTable_nc,
+        fileHelp_ncHeader,
+        fileHelp_ncCF,
+        fileHelpGrid_odvTxt,
+        fileHelpTable_odvTxt,
+        fileHelp_subset,
+        fileHelp_tsv,
+        fileHelp_tsvp,
+        fileHelp_xhtml,
+        fileHelp_geotif,  //graphical
+        fileHelpGrid_kml,
+        fileHelpTable_kml,
+        fileHelp_smallPdf,
+        fileHelp_pdf,
+        fileHelp_largePdf,
+        fileHelp_smallPng,
+        fileHelp_png,
+        fileHelp_largePng,
+        fileHelp_transparentPng,
+        functions,
         functionHtml,
+        functionDistinctCheck,
         functionDistinctHtml,
         functionOrderByHtml,
         functionOrderByMaxHtml,
+        functionOrderBySort,
+        functionOrderBySort1,
+        functionOrderBySort2,
+        functionOrderBySort3,
+        functionOrderBySort4,
+        functionOrderBySortLeast,
+        functionOrderBySortRowMax,
         getStartedHtml,
+        imageDataCourtesyOf,
+        indexViewAll,
+        indexSearchWith,
+        indexDevelopersSearch,
+        indexProtocol,
+        indexDescription,
+        indexDatasets,
+        indexDocumentation,
+        indexRESTfulSearch,        
+        indexServices,
+        indexDescribeServices,
+        indexMetadata,
+        indexWAF1,
+        indexWAF2,
+        indexConverters,
+        indexDescribeConverters,
+        infoAboutFrom,
         infoTableTitleHtml,
+        infoRequestForm,
         justGenerateAndView,
         justGenerateAndViewHtml,
         justGenerateAndViewUrl,
         justGenerateAndViewGraphUrlHtml,
-        nDatasetsListed,
+        license,
+        listAll,
+        listOfDatasets,
+        LogIn,
+        login,
+        loginAttemptBlocked,
+        loginDescribeCustom,
+        loginDescribeOpenID,
+        loginCanNot,
+        loginWereNot,
+        loginPleaseLogIn,
+        loginUserName,
+        loginPassword,
+        loginUserNameAndPassword,
+        loginOpenID,
+        loginOpenIDOr,
+        loginOpenIDCreate,
+        loginOpenIDFree,
+        loginOpenIDSame,
+        loginAs,
+        loginFailed,
+        loginInvalid,
+        loginNot,
+        loginBack,
+        loginProblems,
+        loginProblemsAfter,
+        loginPublicAccess,
+        LogOut,
+        logout,
+        logoutOpenID,
+        logoutSuccess,
+        mag,
+        magAxisX,
+        magAxisY,
+        magAxisColor,
+        magAxisStickX,
+        magAxisStickY,
+        magAxisVectorX,
+        magAxisVectorY,
+        magAxisHelpGraphX,
+        magAxisHelpGraphY,
+        magAxisHelpMarkerColor,
+        magAxisHelpSurfaceColor,
+        magAxisHelpStickX,
+        magAxisHelpStickY,
+        magAxisHelpMapX,
+        magAxisHelpMapY,
+        magAxisHelpVectorX,
+        magAxisHelpVectorY,
+        magAxisVarHelp,
+        magAxisVarHelpGrid,
+        magConstraintHelp,
+        magDocumentation,
+        magDownload,
+        magDownloadTooltip,
+        magFileType,
+        magGraphType,
+        magGraphTypeTooltipGrid,
+        magGraphTypeTooltipTable,
+        magGS,
+        magGSMarkerType,
+        magGSSize,
+        magGSColor,
+        magGSColorBar,
+        magGSColorBarTooltip,
+        magGSContinuity,
+        magGSContinuityTooltip,
+        magGSScale,
+        magGSScaleTooltip,
+        magGSMin,
+        magGSMinTooltip,
+        magGSMax,
+        magGSMaxTooltip,
+        magGSNSections,
+        magGSNSectionsTooltip,
+        magGSLandMask,
+        magGSLandMaskTooltipGrid,
+        magGSLandMaskTooltipTable,
+        magGSVectorStandard,
+        magGSVectorStandardTooltip,
+        magGSYAxisMin,
+        magGSYAxisMax,
+        magGSYRangeMinTooltip,
+        magGSYRangeMaxTooltip,
+        magGSYRangeTooltip,
+        magItemFirst,
+        magItemPrevious,
+        magItemNext,
+        magItemLast,
+        magJust1Value,
+        magRange,
+        magRangeTo,
+        magRedraw,
+        magRedrawTooltip,
+        magTimeRange,
+        magTimeRangeFirst,
+        magTimeRangeBack,
+        magTimeRangeForward,
+        magTimeRangeLast,
+        magTimeRangeTooltip,
+        magTimeRangeTooltip2,
+        magTimesVary,
+        magViewUrl,
+        magZoom,
+        magZoomCenter,
+        magZoomCenterTooltip,
+        magZoomIn,
+        magZoomInTooltip,
+        magZoomOut,
+        magZoomOutTooltip,
+        magZoomALittle,
+        magZoomData,
+        magZoomOutData,
+        magGridHtml,
+        magTableHtml,
+        metadataDownload,
+        moreInformation,
+        nMatching1,
+        nMatchingAlphabetical,
+        nMatchingMostRelevant,
+        nMatchingPage,
+        nMatchingCurrent,
+        noDataFixedValue,
+        noDataNoLL,
         noDatasetWith,
+        noPage1,
+        noPage2,
+        notAuthorized,
+        notAvailable,
+        noXxxBecause,
+        noXxxBecause2,
+        noXxxNotActive,
+        noXxxNoAxis1,
+        noXxxNoColorBar,
+        noXxxNoCdmDataType,
+        noXxxNoLL,
+        noXxxNoLLEvenlySpaced,
+        noXxxNoLLGt1,
+        noXxxNoLLT,
+        noXxxNoLonIn180,
+        noXxxNoNonString,
+        noXxxNo2NonString,
+        noXxxNoStation,
+        noXxxNoStationID,
+        noXxxNoMinMax,
+        noXxxItsGridded,
+        noXxxItsTabular,
+        optional,
+        orRefineSearchWith,
+        orSearchWith,
+        orComma,
         palettes[],
         palettes0[],
         paletteSections[] = {
@@ -515,20 +865,76 @@ public static boolean developmentMode = false;
             "30","31","32","33","34","35","36","37","38","39", "40"},
         patientData,
         patientYourGraph,
+        pickADataset,
         protocolSearchHtml,
         protocolSearch2Html,
         protocolClick,
+
+        queryError,
+        queryError180,
+        queryError1Value,
+        queryError1Var,
+        queryError2Var,
+        queryErrorAdjusted,
+        queryErrorAscending,
+        queryErrorConstraintNaN,
+        queryErrorEqualSpacing,
+        queryErrorExpectedAt,
+        queryErrorFileType,
+        queryErrorInvalid,
+        queryErrorLL,
+        queryErrorLLGt1,
+        queryErrorLLT,
+        queryErrorNeverTrue,
+        queryErrorNeverBothTrue,
+        queryErrorNotAxis,
+        queryErrorNotExpectedAt,
+        queryErrorNotFoundAfter,
+        queryErrorOccursTwice,
+        queryErrorUnknownVariable,
+
+        queryErrorGrid1Axis,
+        queryErrorGridAmp,
+        queryErrorGridDiagnostic,
+        queryErrorGridBetween,
+        queryErrorGridLessMin,
+        queryErrorGridGreaterMax,
+        queryErrorGridMissing,
+        queryErrorGridNoAxisVar,
+        queryErrorGridNoDataVar,
+        queryErrorGridNotIdentical,
+        queryErrorGridSLessS,
+        queryErrorLastEndP,
+        queryErrorLastExpected,
+        queryErrorLastUnexpected,
+        queryErrorLastPMInvalid,
+        queryErrorLastPMInteger,        
+        rangesFromTo,
         resetTheForm,
+        resetTheFormWas,
+        resourceNotFound,
         requestFormatExamplesHtml,
         resultsFormatExamplesHtml,
         resultsOfSearchFor,
+        restfulInformationFormats,
+        restfulViaService,
+        rows,
+        searchTitle,
+        searchDoFullTextHtml,
         searchFullTextHtml,
+        searchHintsHtml, 
+        searchHintsLuceneHtml, 
+        searchHintsOriginalHtml, 
         searchButton,
         searchClickTip,
+        searchNotAvailable,
         searchTip,
-        searchRelevantAreFirst,
         searchSpelling,
         searchFewerWords,
+        searchWithQuery,
+        seeProtocolDocumentation,
+        selectNext,
+        selectPrevious,
         ssBePatient, 
         ssInstructionsHtml,
         standardShortDescriptionHtml,
@@ -540,7 +946,17 @@ public static boolean developmentMode = false;
         standardGeneralDisclaimer,
         standardPrivacyPolicy,
         submit,
-        submitTooltip,          
+        submitTooltip, 
+        subscriptionsTitle,
+        subscriptionOptions,
+        subscriptionAdd,
+        subscriptionAddHtml,
+        subscriptionValidate,
+        subscriptionValidateHtml,
+        subscriptionList,
+        subscriptionListHtml,
+        subscriptionRemove,
+        subscriptionRemoveHtml,
         subscriptionAbuse,
         subscriptionAddError,
         subscriptionAdd2,
@@ -549,6 +965,8 @@ public static boolean developmentMode = false;
         subscriptionEmailInvalid,
         subscriptionEmailTooLong,
         subscriptionEmailUnspecified,
+        subscriptionHtml, 
+        subscription2Html, 
         subscriptionIDInvalid,
         subscriptionIDTooLong,
         subscriptionIDUnspecified,
@@ -560,13 +978,65 @@ public static boolean developmentMode = false;
         subscriptionRemove2,
         subscriptionRemoveSuccess,
         subscriptionRSS,
+        subscriptionsNotAvailable,
         subscriptionUrlHtml,
         subscriptionUrlInvalid,
         subscriptionUrlTooLong,        
         subscriptionValidateError,
         subscriptionValidateSuccess,
+        subset,
+        subsetSelect,
+        subsetNMatching,
+        subsetInstructions,
+        subsetOption,
+        subsetOptions,
+        subsetRefineMapDownload,
+        subsetRefineSubsetDownload,
+        subsetClickResetClosest,
+        subsetClickResetLL,
+        subsetMetadata,
+        subsetCount,
+        subsetPercent,
+        subsetViewSelect,
+        subsetViewSelectDistinctCombos,
+        subsetViewSelectRelatedCounts,
+        subsetWhen,
+        subsetWhenNoConstraints,
+        subsetWhenCounts,
+        subsetComboClickSelect,
+        subsetNVariableCombos,
+        subsetShowingAllRows,
+        subsetShowingNRows,
+        subsetChangeShowing,
+        subsetNRowsRelatedData,
+        subsetViewRelatedChange,
+        subsetTotalCount,
+        subsetView,
+        subsetViewCheck,
+        subsetViewCheck1,
+        subsetViewDistinctMap,
+        subsetViewRelatedMap,
+        subsetViewDistinctDataCounts,
+        subsetViewDistinctData,
+        subsetViewRelatedDataCounts,
+        subsetViewRelatedData,
+        subsetViewDistinctMapTooltip,
+        subsetViewRelatedMapTooltip,
+        subsetViewDistinctDataCountsTooltip,
+        subsetViewDistinctDataTooltip,
+        subsetViewRelatedDataCountsTooltip,
+        subsetViewRelatedDataTooltip,
+        subsetWarn,                    
+        subsetWarn10000,
+        subsetTooltip,
+        subsetNotSetUp,
+        subsetLongNotShown,
+
         THERE_IS_NO_DATA,
         thereIsTooMuchData,
+        unknownDatasetID,
+        unknownProtocol,
+        unsupportedFileType,
         viewAllDatasetsHtml,
         waitThenTryAgain,
 
@@ -576,18 +1046,10 @@ public static boolean developmentMode = false;
         wcsLongDescriptionHtml,
         wmsDescriptionHtml,
         wmsInstructions,
-        wmsLongDescriptionHtml,
-        yRangeHtml, 
-        yRangeMinHtml,
-        yRangeMaxHtml;
+        wmsLongDescriptionHtml;
 
     public static int[] imageWidths, imageHeights, pdfWidths, pdfHeights;
-    private static String 
-        searchHintsHtml, 
-        subscriptionHtml, subscription2Html, 
-        subscriptionAddHtml, subscriptionListHtml, 
-        subscriptionRemoveHtml, subscriptionValidateHtml,
-        subscriptionsNotAvailable,
+    private static String        
         theShortDescriptionHtml, theLongDescriptionHtml; //see the xxx() methods
     public static String errorFromDataSource = String2.ERROR + " from data source: ";
 
@@ -658,6 +1120,7 @@ public static boolean developmentMode = false;
         NcHelper.verbose = verbose;
         OutputStreamFromHttpResponse.verbose = verbose;
         PathCartesianRenderer.verbose = verbose;
+        Projects.verbose = verbose;
         //ResourceBundle2.verbose = verbose;
         RunLoadDatasets.verbose = verbose;
         SgtGraph.verbose = verbose;
@@ -677,6 +1140,7 @@ public static boolean developmentMode = false;
         FilledMarkerRenderer.reallyVerbose = reallyVerbose;
         GridDataAccessor.reallyVerbose = reallyVerbose;
         GSHHS.reallyVerbose = reallyVerbose;
+        NcHelper.reallyVerbose = reallyVerbose;
         PathCartesianRenderer.reallyVerbose = reallyVerbose;
         SgtGraph.reallyVerbose = reallyVerbose;
         SgtMap.reallyVerbose = reallyVerbose;
@@ -708,22 +1172,25 @@ public static boolean developmentMode = false;
         //Test.error("This is a test of emailing an error in Erddap constructor.");
 
         //*** set up directories  //all with slashes at end
-        fullDatasetInfoDirectory = bigParentDirectory + "datasetInfo/";
+        //before 2011-12-30, was fullDatasetInfoDirectory datasetInfo/; see conversion below
+        fullDatasetDirectory     = bigParentDirectory + "dataset/";  
         fullCacheDirectory       = bigParentDirectory + "cache/";
         fullResetFlagDirectory   = bigParentDirectory + "flag/";
         fullLogsDirectory        = bigParentDirectory + "logs/";
         fullCopyDirectory        = bigParentDirectory + "copy/";
+        fullLuceneDirectory      = bigParentDirectory + "lucene/";
 
         Test.ensureTrue(File2.isDirectory(fullPaletteDirectory),  
             errorInMethod + "fullPaletteDirectory (" + fullPaletteDirectory + ") doesn't exist.");
         Test.ensureTrue(File2.isDirectory(fullPublicDirectory),  
             errorInMethod + "fullPublicDirectory (" + fullPublicDirectory + ") doesn't exist.");
         errorInMethod = "EDStatic error while creating directories.\n";
-        File2.makeDirectory(fullDatasetInfoDirectory);
+        File2.makeDirectory(fullDatasetDirectory);
         File2.makeDirectory(fullCacheDirectory);
         File2.makeDirectory(fullResetFlagDirectory);
         File2.makeDirectory(fullLogsDirectory);
         File2.makeDirectory(fullCopyDirectory);
+        File2.makeDirectory(fullLuceneDirectory);
 
         //set up log (after fullLogsDirectory is known)
         errorInMethod = "EDStatic error while setting up log files: \n";
@@ -760,7 +1227,7 @@ public static boolean developmentMode = false;
             //open String2 log system
             String2.setupLog(false, false, 
                 fullLogsDirectory + "log.txt",
-                true, true, 5000000);
+                true, true, 20000000);
         } catch (Throwable t) {
             throw new RuntimeException(errorInMethod, t);
         }
@@ -793,9 +1260,52 @@ public static boolean developmentMode = false;
         String2.log(SgtUtil.isBufferedImageAccelerated());
 
         //get rid of old "private" directory (as of 1.14, ERDDAP uses fullCacheDirectory instead)
-        //remove this code mid-2009?
+        //remove this code 2014?
         File2.deleteAllFiles(bigParentDirectory + "private", true, true); //empty it
-        File2.delete(bigParentDirectory + "private"); //delete it
+        File2.delete(        bigParentDirectory + "private"); //delete it
+
+        //2011-12-30 convert /datasetInfo/[datasetID]/ to 
+        //                   /dataset/[last2char]/[datasetID]/
+        //to prepare for huge number of datasets
+        String oldBaseDir = bigParentDirectory + "datasetInfo/";   //the old name
+        if (File2.isDirectory(oldBaseDir)) {
+            try { 
+                String2.log("[[converting datasetInfo/ to dataset/");
+                String oldBaseDirList[] = (new File(oldBaseDir)).list();
+                int oldBaseDirListSize = oldBaseDirList == null? 0 : oldBaseDirList.length;
+                for (int od = 0; od < oldBaseDirListSize; od++) {
+                    String odName = oldBaseDirList[od];
+                    if (File2.isFile(oldBaseDir + odName)) {
+                        //delete obsolete files
+                        File2.delete(oldBaseDir + odName); 
+                        continue;
+                    }
+                    if (!File2.isDirectory(oldBaseDir + odName)) {
+                        //link??
+                        continue;
+                    }
+                    String fullNdName = EDD.datasetDir(odName);
+                    File2.makeDirectory(fullNdName);
+                    String oldFileList[] = (new File(oldBaseDir + odName)).list();
+                    int oldFileListSize = oldFileList == null? 0 : oldFileList.length;
+                    for (int of = 0; of < oldFileListSize; of++) {
+                        String ofName = oldFileList[of];
+                        String fullOfName = oldBaseDir + odName + "/" + ofName;
+                        if (!ofName.matches(".*[0-9]{7}")) //skip temp files
+                            File2.copy(fullOfName, fullNdName + ofName); //dir will be created
+                        File2.delete(fullOfName);
+                    }
+                    File2.deleteAllFiles(oldBaseDir + odName);  //should be already empty
+                }
+                File2.deleteAllFiles(oldBaseDir, true, true);  //and delete empty subdir
+                File2.delete(oldBaseDir);  //hopefully empty
+                String2.log("]]datasetInfo/ was successfully converted to dataset/");
+
+            } catch (Throwable t) {
+                String2.log(MustBe.throwableToString(t));
+            }
+        }
+
 
         //deal with cache
         //how many millis should files be left in the cache (if untouched)?
@@ -803,8 +1313,8 @@ public static boolean developmentMode = false;
         displayDiagnosticInfo = setup.getBoolean("displayDiagnosticInfo", false);
 
         //on start up, always delete all files from fullPublicDirectory and fullCacheDirectory
-        File2.deleteAllFiles(fullPublicDirectory, true, false);  
-        File2.deleteAllFiles(fullCacheDirectory, true, false);
+        File2.deleteAllFiles(fullPublicDirectory,      true, false);  //recursive, deleteEmptySubdirectories 
+        File2.deleteAllFiles(fullCacheDirectory,       true, true);   
 
         //make some subdirectories of fullCacheDirectory
         //'_' distinguishes from dataset cache dirs
@@ -816,10 +1326,7 @@ public static boolean developmentMode = false;
         fullWmsCacheDirectory              = fullCacheDirectory + "_wms/"; //for all-datasets WMS and subdirs for non-data layers
         File2.makeDirectory(fullCptCacheDirectory);
         File2.makeDirectory(fullPlainFileNcCacheDirectory);
-        File2.makeDirectory(fullSgtMapTopographyCacheDirectory);
-//2009-11-01 delete old dir name for topography; but someday remove this (only needed once)
-File2.deleteAllFiles(fullCacheDirectory + "_SgtMapBathymetry", false, true);
-File2.delete(fullCacheDirectory + "_SgtMapBathymetry"); 
+        File2.makeDirectory(fullSgtMapTopographyCacheDirectory);       
         File2.makeDirectory(fullTestCacheDirectory);
         File2.makeDirectory(fullWmsCacheDirectory);
         File2.makeDirectory(fullWmsCacheDirectory + "Land");  //includes LandMask
@@ -827,6 +1334,11 @@ File2.delete(fullCacheDirectory + "_SgtMapBathymetry");
         File2.makeDirectory(fullWmsCacheDirectory + "LakesAndRivers");
         File2.makeDirectory(fullWmsCacheDirectory + "Nations");
         File2.makeDirectory(fullWmsCacheDirectory + "States");
+
+        //2009-11-01 delete old dir name for topography; but someday remove this (only needed once)
+        File2.deleteAllFiles(fullCacheDirectory + "_SgtMapBathymetry", false, true);
+        File2.delete(        fullCacheDirectory + "_SgtMapBathymetry"); 
+        
 
         //get other info from setup.xml
         errorInMethod = "EDStatic error while reading " + setupFileName + ": \n";
@@ -847,6 +1359,8 @@ File2.delete(fullCacheDirectory + "_SgtMapBathymetry");
             }
             categoryAttributesInURLs[cati] = String2.modifyToBeFileNameSafe(cat);
         }
+        variableNameCategoryAttributeIndex =
+            String2.indexOf(categoryAttributes, "variableName");
 
         EDDGridIdExample           = setup.getNotNothingString("EDDGridIdExample",           errorInMethod);
         EDDGridDimensionExample    = setup.getNotNothingString("EDDGridDimensionExample",    errorInMethod);
@@ -886,6 +1400,8 @@ File2.delete(fullCacheDirectory + "_SgtMapBathymetry");
         legal                      = setup.getNotNothingString("legal",                      errorInMethod);
         units_standard             = setup.getString(          "units_standard",             "UDUNITS");
 
+        fgdcActive                 = setup.getBoolean(         "fgdcActive",                 true); 
+        iso19115Active             = setup.getBoolean(         "iso19115Active",             true); 
         sosActive                  = setup.getBoolean(         "sosActive",                  false); 
         if (sosActive) {
             sosFeatureOfInterest   = setup.getNotNothingString("sosFeatureOfInterest",       errorInMethod);
@@ -955,7 +1471,24 @@ wcsActive = false;
         partialRequestMaxBytes     = setup.getInt(             "partialRequestMaxBytes",     partialRequestMaxBytes);
         partialRequestMaxCells     = setup.getInt(             "partialRequestMaxCells",     partialRequestMaxCells);
         questionMarkImageFile      = setup.getNotNothingString("questionMarkImageFile",      errorInMethod);
+        quickRestart               = setup.getBoolean(         "quickRestart",               true);
         passwordEncoding           = setup.getString(          "passwordEncoding",           "UEPMD5");
+        searchEngine               = setup.getString(          "searchEngine",               "original");
+        if (searchEngine.equals("lucene")) {
+            useLuceneSearchEngine = true;
+            //ERDDAP consciously doesn't use any stopWords
+            //1) this matches the behaviour of the original searchEngine
+            //2) this is what users expect, e.g., when searching for a phrase
+            //3) the content here isn't prose, so the stop words aren't nearly as common
+            HashSet stopWords = new HashSet();
+            luceneAnalyzer = new StandardAnalyzer(luceneVersion, stopWords);
+            //it is important that the queryParser use the same analyzer as the indexWriter
+            luceneQueryParser = new QueryParser(luceneVersion, luceneDefaultField, luceneAnalyzer);
+        } else {
+            Test.ensureEqual(searchEngine, "original", errorInMethod + 
+                "<searchEngine> must be \"original\" (the default) or \"lucene\".");
+            useOriginalSearchEngine = true;
+        }
         startBodyHtml              = setup.getNotNothingString("startBodyHtml",              errorInMethod);
         startHeadHtml              = setup.getNotNothingString("startHeadHtml",              errorInMethod);
         subscriptionSystemActive   = setup.getBoolean(         "subscriptionSystemActive",   true);
@@ -1032,6 +1565,17 @@ wcsActive = false;
             }
         }
 
+        //ensure images exist and get their sizes
+        Image tImage = Image2.getImage(imageDir + lowResLogoImageFile, 10000, false);
+        lowResLogoImageFileWidth   = tImage.getWidth(null);
+        lowResLogoImageFileHeight  = tImage.getHeight(null);
+        tImage = Image2.getImage(imageDir + highResLogoImageFile, 10000, false);
+        highResLogoImageFileWidth  = tImage.getWidth(null);
+        highResLogoImageFileHeight = tImage.getHeight(null);
+        tImage = Image2.getImage(imageDir + googleEarthLogoFile, 10000, false);
+        googleEarthLogoFileWidth   = tImage.getWidth(null);
+        googleEarthLogoFileHeight  = tImage.getHeight(null);
+
 
         //**** messages.xml *************************************************************
         //read static Strings from messages.xml 
@@ -1046,15 +1590,37 @@ wcsActive = false;
         }
 
         //read all the static Strings from messages.xml
+        advancedSearch             = messages.getNotNothingString("advancedSearch",             errorInMethod);
+        advancedSearchResults      = messages.getNotNothingString("advancedSearchResults",      errorInMethod);
         advancedSearchDirections   = messages.getNotNothingString("advancedSearchDirections",   errorInMethod);
         advancedSearchHtml         = messages.getNotNothingString("advancedSearchHtml",         errorInMethod);
+        advancedSearchBounds       = messages.getNotNothingString("advancedSearchBounds",       errorInMethod);
+        advancedSearchMinLat       = messages.getNotNothingString("advancedSearchMinLat",       errorInMethod);
+        advancedSearchMaxLat       = messages.getNotNothingString("advancedSearchMaxLat",       errorInMethod);
+        advancedSearchMinLon       = messages.getNotNothingString("advancedSearchMinLon",       errorInMethod);
+        advancedSearchMaxLon       = messages.getNotNothingString("advancedSearchMaxLon",       errorInMethod);
+        advancedSearchMinMaxLon    = messages.getNotNothingString("advancedSearchMinMaxLon",    errorInMethod);
+        advancedSearchMinTime      = messages.getNotNothingString("advancedSearchMinTime",      errorInMethod);
+        advancedSearchMaxTime      = messages.getNotNothingString("advancedSearchMaxTime",      errorInMethod);
+        advancedSearchClear        = messages.getNotNothingString("advancedSearchClear",        errorInMethod);
+        advancedSearchClearHelp    = messages.getNotNothingString("advancedSearchClearHelp",    errorInMethod);
+        advancedSearchCategoryTooltip = messages.getNotNothingString("advancedSearchCategoryTooltip", errorInMethod);
+        advancedSearchRangeTooltip = messages.getNotNothingString("advancedSearchRangeTooltip", errorInMethod);
+        advancedSearchMapTooltip   = messages.getNotNothingString("advancedSearchMapTooltip",   errorInMethod);
+        advancedSearchLonTooltip   = messages.getNotNothingString("advancedSearchLonTooltip",   errorInMethod);
+        advancedSearchTimeTooltip  = messages.getNotNothingString("advancedSearchTimeTooltip",  errorInMethod);
+        advancedSearchWithCriteria = messages.getNotNothingString("advancedSearchWithCriteria", errorInMethod);
+        advancedSearchFewerCriteria = messages.getNotNothingString("advancedSearchFewerCriteria", errorInMethod);
+        advancedSearchNoCriteria   = messages.getNotNothingString("advancedSearchNoCriteria",   errorInMethod);
         categoryTitleHtml          = messages.getNotNothingString("categoryTitleHtml",          errorInMethod);
         category1Html              = messages.getNotNothingString("category1Html",              errorInMethod);
         category2Html              = messages.getNotNothingString("category2Html",              errorInMethod);
         category3Html              = messages.getNotNothingString("category3Html",              errorInMethod);
+        categoryPickAttribute      = messages.getNotNothingString("categoryPickAttribute",      errorInMethod);
         categorySearchHtml         = messages.getNotNothingString("categorySearchHtml",         errorInMethod);
         categorySearchDifferentHtml= messages.getNotNothingString("categorySearchDifferentHtml",errorInMethod);
         categoryClickHtml          = messages.getNotNothingString("categoryClickHtml",          errorInMethod);
+        categoryNotAnOption        = messages.getNotNothingString("categoryNotAnOption",        errorInMethod);
         clickAccessHtml            = messages.getNotNothingString("clickAccessHtml",            errorInMethod);
         clickAccess                = messages.getNotNothingString("clickAccess",                errorInMethod);
         clickBackgroundInfo        = messages.getNotNothingString("clickBackgroundInfo",        errorInMethod);
@@ -1065,6 +1631,12 @@ wcsActive = false;
         convertFipsCountyNotes     = messages.getNotNothingString("convertFipsCountyNotes",     errorInMethod);
         convertFipsCountyService   = messages.getNotNothingString("convertFipsCountyService",   errorInMethod);
         convertHtml                = messages.getNotNothingString("convertHtml",                errorInMethod);
+        convertKeywords            = messages.getNotNothingString("convertKeywords",            errorInMethod);
+        convertKeywordsCfTooltip   = messages.getNotNothingString("convertKeywordsCfTooltip",   errorInMethod);
+        convertKeywordsGcmdTooltip = messages.getNotNothingString("convertKeywordsGcmdTooltip", errorInMethod);
+        convertKeywordsIntro       = messages.getNotNothingString("convertKeywordsIntro",       errorInMethod);
+        convertKeywordsNotes       = messages.getNotNothingString("convertKeywordsNotes",       errorInMethod);
+        convertKeywordsService     = messages.getNotNothingString("convertKeywordsService",     errorInMethod);
         convertTime                = messages.getNotNothingString("convertTime",                errorInMethod);
         convertTimeIntro           = messages.getNotNothingString("convertTimeIntro",           errorInMethod);
         convertTimeNotes           = messages.getNotNothingString("convertTimeNotes",           errorInMethod);
@@ -1076,8 +1648,15 @@ wcsActive = false;
         convertUnitsIntro          = messages.getNotNothingString("convertUnitsIntro",          errorInMethod);
         convertUnitsNotes          = messages.getNotNothingString("convertUnitsNotes",          errorInMethod);
         convertUnitsService        = messages.getNotNothingString("convertUnitsService",        errorInMethod);
+        daf                        = messages.getNotNothingString("daf",                        errorInMethod);
+        dafGridBypass              = messages.getNotNothingString("dafGridBypass",              errorInMethod);
+        dafGridHtml                = messages.getNotNothingString("dafGridHtml",                errorInMethod);
+        dafTableBypass             = messages.getNotNothingString("dafTableBypass",             errorInMethod);
+        dafTableHtml               = messages.getNotNothingString("dafTableHtml",               errorInMethod);
+        dasTitle                   = messages.getNotNothingString("dasTitle",                   errorInMethod);
         dataAccessNotAllowed       = messages.getNotNothingString("dataAccessNotAllowed",       errorInMethod);
         distinctValuesHtml         = messages.getNotNothingString("distinctValuesHtml",         errorInMethod);
+        doWithGraphs               = messages.getNotNothingString("doWithGraphs",               errorInMethod);
 
         dtAccessible               = messages.getNotNothingString("dtAccessible",               errorInMethod);
         dtAccessibleYes            = messages.getNotNothingString("dtAccessibleYes",            errorInMethod);
@@ -1092,26 +1671,53 @@ wcsActive = false;
         dtWCS                      = messages.getNotNothingString("dtWCS",                      errorInMethod);
         dtWMS                      = messages.getNotNothingString("dtWMS",                      errorInMethod);
         
+        EDDDatasetID               = messages.getNotNothingString("EDDDatasetID",               errorInMethod);
+        EDDFgdc                    = messages.getNotNothingString("EDDFgdc",                    errorInMethod);
+        EDDFgdcMetadata            = messages.getNotNothingString("EDDFgdcMetadata",            errorInMethod);
+        EDDIso19115                = messages.getNotNothingString("EDDIso19115",                errorInMethod);
+        EDDIso19115Metadata        = messages.getNotNothingString("EDDIso19115Metadata",        errorInMethod);
+        EDDMetadata                = messages.getNotNothingString("EDDMetadata",                errorInMethod);
+        EDDBackground              = messages.getNotNothingString("EDDBackground",              errorInMethod);
         EDDClickOnSubmitHtml       = messages.getNotNothingString("EDDClickOnSubmitHtml",       errorInMethod);
-        EDDInstructions            = messages.getNotNothingString("EDDInstructions",            errorInMethod);
+        EDDInformation             = messages.getNotNothingString("EDDInformation",             errorInMethod);
+        EDDInstitution             = messages.getNotNothingString("EDDInstitution",             errorInMethod);
+        EDDSummary                 = messages.getNotNothingString("EDDSummary",                 errorInMethod);
+        EDDDatasetTitle            = messages.getNotNothingString("EDDDatasetTitle",            errorInMethod);
         EDDDownloadData            = messages.getNotNothingString("EDDDownloadData",            errorInMethod);
         EDDMakeAGraph              = messages.getNotNothingString("EDDMakeAGraph",              errorInMethod);
         EDDMakeAMap                = messages.getNotNothingString("EDDMakeAMap",                errorInMethod);
         EDDFileType                = messages.getNotNothingString("EDDFileType",                errorInMethod);
+        EDDFileTypeInformation     = messages.getNotNothingString("EDDFileTypeInformation",     errorInMethod);
         EDDSelectFileType          = messages.getNotNothingString("EDDSelectFileType",          errorInMethod);
         EDDMinimum                 = messages.getNotNothingString("EDDMinimum",                 errorInMethod);
         EDDMaximum                 = messages.getNotNothingString("EDDMaximum",                 errorInMethod);
+        EDDConstraint              = messages.getNotNothingString("EDDConstraint",              errorInMethod);
+
+        EDDChangedWasnt            = messages.getNotNothingString("EDDChangedWasnt",            errorInMethod);
+        EDDChangedDifferentNVar    = messages.getNotNothingString("EDDChangedDifferentNVar",    errorInMethod);
+        EDDChanged2Different       = messages.getNotNothingString("EDDChanged2Different",       errorInMethod);
+        EDDChanged1Different       = messages.getNotNothingString("EDDChanged1Different",       errorInMethod);
+        EDDChangedCGADifferent     = messages.getNotNothingString("EDDChangedCGADifferent",     errorInMethod);
+        EDDChangedAxesDifferentNVar= messages.getNotNothingString("EDDChangedAxesDifferentNVar",errorInMethod);
+        EDDChangedAxes2Different   = messages.getNotNothingString("EDDChangedAxes2Different",   errorInMethod);
+        EDDChangedAxes1Different   = messages.getNotNothingString("EDDChangedAxes1Different",   errorInMethod);
+        EDDChangedNoValue          = messages.getNotNothingString("EDDChangedNoValue",          errorInMethod);
+        EDDChangedTableToGrid      = messages.getNotNothingString("EDDChangedTableToGrid",      errorInMethod);
+
+        EDDSimilarDifferentNVar    = messages.getNotNothingString("EDDSimilarDifferentNVar",    errorInMethod);
+        EDDSimilarDifferent        = messages.getNotNothingString("EDDSimilarDifferent",        errorInMethod);
 
         EDDGridDownloadTooltipHtml = messages.getNotNothingString("EDDGridDownloadTooltipHtml", errorInMethod);
         EDDGridDapDescription      = messages.getNotNothingString("EDDGridDapDescription",      errorInMethod);
         EDDGridDapLongDescription  = messages.getNotNothingString("EDDGridDapLongDescription",  errorInMethod);
-        EDDGridDataAccessFormHtml  = messages.getNotNothingString("EDDGridDataAccessFormHtml",  errorInMethod);
         EDDGridDownloadDataHtml    = messages.getNotNothingString("EDDGridDownloadDataHtml",    errorInMethod);
         EDDGridDimension           = messages.getNotNothingString("EDDGridDimension",           errorInMethod);
+        EDDGridDimensionRanges     = messages.getNotNothingString("EDDGridDimensionRanges",     errorInMethod);
         EDDGridFirst               = messages.getNotNothingString("EDDGridFirst",               errorInMethod);
         EDDGridLast                = messages.getNotNothingString("EDDGridLast",                errorInMethod);
         EDDGridStart               = messages.getNotNothingString("EDDGridStart",               errorInMethod);
         EDDGridStop                = messages.getNotNothingString("EDDGridStop",                errorInMethod);
+        EDDGridStartStopHelp       = messages.getNotNothingString("EDDGridStartStopHelp",       errorInMethod);
         EDDGridStride              = messages.getNotNothingString("EDDGridStride",              errorInMethod);
         EDDGridNValues             = messages.getNotNothingString("EDDGridNValues",             errorInMethod);
         EDDGridNValuesHtml         = messages.getNotNothingString("EDDGridNValuesHtml",         errorInMethod);
@@ -1130,9 +1736,9 @@ wcsActive = false;
         EDDGridSpacingHtml         = messages.getNotNothingString("EDDGridSpacingHtml",         errorInMethod);
         EDDGridGridVariableHtml    = messages.getNotNothingString("EDDGridGridVariableHtml",    errorInMethod);
 
+        EDDTableConstraints        = messages.getNotNothingString("EDDTableConstraints",        errorInMethod);
         EDDTableDapDescription     = messages.getNotNothingString("EDDTableDapDescription",     errorInMethod);
         EDDTableDapLongDescription = messages.getNotNothingString("EDDTableDapLongDescription", errorInMethod);
-        EDDTableDataAccessFormHtml = messages.getNotNothingString("EDDTableDataAccessFormHtml", errorInMethod);
         EDDTableDownloadDataHtml   = messages.getNotNothingString("EDDTableDownloadDataHtml",   errorInMethod);
         EDDTableTabularDatasetHtml = messages.getNotNothingString("EDDTableTabularDatasetHtml", errorInMethod);
         EDDTableVariable           = messages.getNotNothingString("EDDTableVariable",           errorInMethod);
@@ -1146,29 +1752,258 @@ wcsActive = false;
         EDDTableSelectAnOperator   = messages.getNotNothingString("EDDTableSelectAnOperator",   errorInMethod);
         EDDTableOptConstraint1Html = messages.getNotNothingString("EDDTableOptConstraint1Html", errorInMethod);
         EDDTableOptConstraint2Html = messages.getNotNothingString("EDDTableOptConstraint2Html", errorInMethod);
-        EDDTableMakeANumericConstraintHtml= messages.getNotNothingString("EDDTableMakeANumericConstraintHtml",errorInMethod);
-        EDDTableMakeAStringConstraintHtml=  messages.getNotNothingString("EDDTableMakeAStringConstraintHtml", errorInMethod);
-        EDDTableMakeATimeConstraintHtml=    messages.getNotNothingString("EDDTableMakeATimeConstraintHtml",   errorInMethod);
+        EDDTableOptConstraintVar   = messages.getNotNothingString("EDDTableOptConstraintVar",   errorInMethod);
+        EDDTableNumericConstraintHtml=messages.getNotNothingString("EDDTableNumericConstraintHtml",errorInMethod);
+        EDDTableStringConstraintHtml=messages.getNotNothingString("EDDTableStringConstraintHtml",errorInMethod);
+        EDDTableTimeConstraintHtml = messages.getNotNothingString("EDDTableTimeConstraintHtml", errorInMethod);
         EDDTableConstraintHtml     = messages.getNotNothingString("EDDTableConstraintHtml",     errorInMethod);
+        EDDTableSelectConstraint   = messages.getNotNothingString("EDDTableSelectConstraint",   errorInMethod);
 
         errorTitle                 = messages.getNotNothingString("errorTitle",                 errorInMethod);
         errorRequestUrl            = messages.getNotNothingString("errorRequestUrl",            errorInMethod);
         errorRequestQuery          = messages.getNotNothingString("errorRequestQuery",          errorInMethod);
         errorTheError              = messages.getNotNothingString("errorTheError",              errorInMethod);
+        errorCopyFrom              = messages.getNotNothingString("errorCopyFrom",              errorInMethod);
+        errorFileNotFound          = messages.getNotNothingString("errorFileNotFound",          errorInMethod);
+        errorFileNotFoundImage     = messages.getNotNothingString("errorFileNotFoundImage",     errorInMethod);
+        errorInternal              = messages.getNotNothingString("errorInternal",              errorInMethod) +
+            " ";
+        errorMoreThan2GB           = messages.getNotNothingString("errorMoreThan2GB",           errorInMethod);
+        errorNotFound              = messages.getNotNothingString("errorNotFound",              errorInMethod);
+        errorNotFoundIn            = messages.getNotNothingString("errorNotFoundIn",            errorInMethod);
+        errorOdvLLTGrid            = messages.getNotNothingString("errorOdvLLTGrid",            errorInMethod);
+        errorOdvLLTTable           = messages.getNotNothingString("errorOdvLLTTable",           errorInMethod);
+        fileHelp_asc               = messages.getNotNothingString("fileHelp_asc",               errorInMethod);
+        fileHelp_csv               = messages.getNotNothingString("fileHelp_csv",               errorInMethod);
+        fileHelp_csvp              = messages.getNotNothingString("fileHelp_csvp",              errorInMethod);
+        fileHelp_das               = messages.getNotNothingString("fileHelp_das",               errorInMethod);
+        fileHelp_dds               = messages.getNotNothingString("fileHelp_dds",               errorInMethod);
+        fileHelp_dods              = messages.getNotNothingString("fileHelp_dods",              errorInMethod);
+        fileHelpGrid_esriAscii     = messages.getNotNothingString("fileHelpGrid_esriAscii",     errorInMethod);
+        fileHelpTable_esriAscii    = messages.getNotNothingString("fileHelpTable_esriAscii",    errorInMethod);
+        fileHelp_fgdc              = messages.getNotNothingString("fileHelp_fgdc",              errorInMethod);
+        fileHelp_geoJson           = messages.getNotNothingString("fileHelp_geoJson",           errorInMethod);
+        fileHelp_graph             = messages.getNotNothingString("fileHelp_graph",             errorInMethod);
+        fileHelpGrid_help          = messages.getNotNothingString("fileHelpGrid_help",          errorInMethod);
+        fileHelpTable_help         = messages.getNotNothingString("fileHelpTable_help",         errorInMethod);
+        fileHelp_html              = messages.getNotNothingString("fileHelp_html",              errorInMethod);
+        fileHelp_htmlTable         = messages.getNotNothingString("fileHelp_htmlTable",         errorInMethod);
+        fileHelp_iso19115          = messages.getNotNothingString("fileHelp_iso19115",          errorInMethod);
+        fileHelp_json              = messages.getNotNothingString("fileHelp_json",              errorInMethod);
+        fileHelp_mat               = messages.getNotNothingString("fileHelp_mat",               errorInMethod);
+        fileHelpGrid_nc            = messages.getNotNothingString("fileHelpGrid_nc",            errorInMethod);
+        fileHelpTable_nc           = messages.getNotNothingString("fileHelpTable_nc",           errorInMethod);
+        fileHelp_ncHeader          = messages.getNotNothingString("fileHelp_ncHeader",          errorInMethod);
+        fileHelp_ncCF              = messages.getNotNothingString("fileHelp_ncCF",              errorInMethod);
+        fileHelpGrid_odvTxt        = messages.getNotNothingString("fileHelpGrid_odvTxt",        errorInMethod);
+        fileHelpTable_odvTxt       = messages.getNotNothingString("fileHelpTable_odvTxt",       errorInMethod);
+        fileHelp_subset            = messages.getNotNothingString("fileHelp_subset",            errorInMethod);
+        fileHelp_tsv               = messages.getNotNothingString("fileHelp_tsv",               errorInMethod);
+        fileHelp_tsvp              = messages.getNotNothingString("fileHelp_tsvp",              errorInMethod);
+        fileHelp_xhtml             = messages.getNotNothingString("fileHelp_xhtml",             errorInMethod);
+        fileHelp_geotif            = messages.getNotNothingString("fileHelp_geotif",            errorInMethod);
+        fileHelpGrid_kml           = messages.getNotNothingString("fileHelpGrid_kml",           errorInMethod);
+        fileHelpTable_kml          = messages.getNotNothingString("fileHelpTable_kml",          errorInMethod);
+        fileHelp_smallPdf          = messages.getNotNothingString("fileHelp_smallPdf",          errorInMethod);
+        fileHelp_pdf               = messages.getNotNothingString("fileHelp_pdf",               errorInMethod);
+        fileHelp_largePdf          = messages.getNotNothingString("fileHelp_largePdf",          errorInMethod);
+        fileHelp_smallPng          = messages.getNotNothingString("fileHelp_smallPng",          errorInMethod);
+        fileHelp_png               = messages.getNotNothingString("fileHelp_png",               errorInMethod);
+        fileHelp_largePng          = messages.getNotNothingString("fileHelp_largePng",          errorInMethod);
+        fileHelp_transparentPng    = messages.getNotNothingString("fileHelp_transparentPng",    errorInMethod);
+        functions                  = messages.getNotNothingString("functions",                  errorInMethod);
         functionHtml               = messages.getNotNothingString("functionHtml",               errorInMethod);
+        functionDistinctCheck      = messages.getNotNothingString("functionDistinctCheck",      errorInMethod);
         functionDistinctHtml       = messages.getNotNothingString("functionDistinctHtml",       errorInMethod);
         functionOrderByHtml        = messages.getNotNothingString("functionOrderByHtml",        errorInMethod);
         functionOrderByMaxHtml     = messages.getNotNothingString("functionOrderByMaxHtml",     errorInMethod);
+        functionOrderBySort        = messages.getNotNothingString("functionOrderBySort",        errorInMethod);
+        functionOrderBySort1       = messages.getNotNothingString("functionOrderBySort1",       errorInMethod);
+        functionOrderBySort2       = messages.getNotNothingString("functionOrderBySort2",       errorInMethod);
+        functionOrderBySort3       = messages.getNotNothingString("functionOrderBySort3",       errorInMethod);
+        functionOrderBySort4       = messages.getNotNothingString("functionOrderBySort4",       errorInMethod);
+        functionOrderBySortLeast   = messages.getNotNothingString("functionOrderBySortLeast",   errorInMethod);
+        functionOrderBySortRowMax  = messages.getNotNothingString("functionOrderBySortRowMax",  errorInMethod);
         getStartedHtml             = messages.getNotNothingString("getStartedHtml",             errorInMethod);
+        imageDataCourtesyOf        = messages.getNotNothingString("imageDataCourtesyOf",        errorInMethod);
         imageWidths                = String2.toIntArray(String2.split(messages.getNotNothingString("imageWidths",  errorInMethod), ','));
         imageHeights               = String2.toIntArray(String2.split(messages.getNotNothingString("imageHeights", errorInMethod), ','));
+        indexViewAll               = messages.getNotNothingString("indexViewAll",               errorInMethod);
+        indexSearchWith            = messages.getNotNothingString("indexSearchWith",            errorInMethod);
+        indexDevelopersSearch      = messages.getNotNothingString("indexDevelopersSearch",      errorInMethod);
+        indexProtocol              = messages.getNotNothingString("indexProtocol",              errorInMethod);
+        indexDescription           = messages.getNotNothingString("indexDescription",           errorInMethod);
+        indexDatasets              = messages.getNotNothingString("indexDatasets",              errorInMethod);
+        indexDocumentation         = messages.getNotNothingString("indexDocumentation",         errorInMethod);
+        indexRESTfulSearch         = messages.getNotNothingString("indexRESTfulSearch",         errorInMethod);
+        indexServices              = messages.getNotNothingString("indexServices",              errorInMethod);
+        indexDescribeServices      = messages.getNotNothingString("indexDescribeServices",      errorInMethod);
+        indexMetadata              = messages.getNotNothingString("indexMetadata",              errorInMethod);
+        indexWAF1                  = messages.getNotNothingString("indexWAF1",                  errorInMethod);
+        indexWAF2                  = messages.getNotNothingString("indexWAF2",                  errorInMethod);
+        indexConverters            = messages.getNotNothingString("indexConverters",            errorInMethod);
+        indexDescribeConverters    = messages.getNotNothingString("indexDescribeConverters",    errorInMethod);
+        infoAboutFrom              = messages.getNotNothingString("infoAboutFrom",              errorInMethod);
         infoTableTitleHtml         = messages.getNotNothingString("infoTableTitleHtml",         errorInMethod);
+        infoRequestForm            = messages.getNotNothingString("infoRequestForm",            errorInMethod);
         justGenerateAndView        = messages.getNotNothingString("justGenerateAndView",        errorInMethod);
         justGenerateAndViewHtml    = messages.getNotNothingString("justGenerateAndViewHtml",    errorInMethod);
         justGenerateAndViewUrl     = messages.getNotNothingString("justGenerateAndViewUrl",     errorInMethod);
         justGenerateAndViewGraphUrlHtml = messages.getNotNothingString("justGenerateAndViewGraphUrlHtml", errorInMethod);
-        nDatasetsListed            = messages.getNotNothingString("nDatasetsListed",            errorInMethod);
+        license                    = messages.getNotNothingString("license",                    errorInMethod);
+        listAll                    = messages.getNotNothingString("listAll",                    errorInMethod);
+        listOfDatasets             = messages.getNotNothingString("listOfDatasets",             errorInMethod);
+        LogIn                      = messages.getNotNothingString("LogIn",                      errorInMethod);
+        login                      = messages.getNotNothingString("login",                      errorInMethod);
+        loginAttemptBlocked        = messages.getNotNothingString("loginAttemptBlocked",        errorInMethod);
+        loginDescribeCustom        = messages.getNotNothingString("loginDescribeCustom",        errorInMethod);
+        loginDescribeOpenID        = messages.getNotNothingString("loginDescribeOpenID",        errorInMethod);
+        loginCanNot                = messages.getNotNothingString("loginCanNot",                errorInMethod);
+        loginWereNot               = messages.getNotNothingString("loginWereNot",               errorInMethod);
+        loginPleaseLogIn           = messages.getNotNothingString("loginPleaseLogIn",           errorInMethod);
+        loginUserName              = messages.getNotNothingString("loginUserName",              errorInMethod);
+        loginPassword              = messages.getNotNothingString("loginPassword",              errorInMethod);
+        loginUserNameAndPassword   = messages.getNotNothingString("loginUserNameAndPassword",   errorInMethod);
+        loginOpenID                = messages.getNotNothingString("loginOpenID",                errorInMethod);
+        loginOpenIDOr              = messages.getNotNothingString("loginOpenIDOr",              errorInMethod);
+        loginOpenIDCreate          = messages.getNotNothingString("loginOpenIDCreate",          errorInMethod);
+        loginOpenIDFree            = messages.getNotNothingString("loginOpenIDFree",            errorInMethod);
+        loginOpenIDSame            = messages.getNotNothingString("loginOpenIDSame",            errorInMethod);
+        loginAs                    = messages.getNotNothingString("loginAs",                    errorInMethod);
+        loginFailed                = messages.getNotNothingString("loginFailed",                errorInMethod);
+        loginInvalid               = messages.getNotNothingString("loginInvalid",               errorInMethod);
+        loginNot                   = messages.getNotNothingString("loginNot",                   errorInMethod);
+        loginBack                  = messages.getNotNothingString("loginBack",                  errorInMethod);
+        loginProblems              = messages.getNotNothingString("loginProblems",              errorInMethod);
+        loginProblemsAfter         = messages.getNotNothingString("loginProblemsAfter",         errorInMethod);
+        loginPublicAccess          = messages.getNotNothingString("loginPublicAccess",          errorInMethod);
+        LogOut                     = messages.getNotNothingString("LogOut",                     errorInMethod);
+        logout                     = messages.getNotNothingString("logout",                     errorInMethod);
+        logoutOpenID               = messages.getNotNothingString("logoutOpenID",               errorInMethod);
+        logoutSuccess              = messages.getNotNothingString("logoutSuccess",              errorInMethod);
+        mag                        = messages.getNotNothingString("mag",                        errorInMethod);
+        magAxisX                   = messages.getNotNothingString("magAxisX",                   errorInMethod);
+        magAxisY                   = messages.getNotNothingString("magAxisY",                   errorInMethod);
+        magAxisColor               = messages.getNotNothingString("magAxisColor",               errorInMethod);
+        magAxisStickX              = messages.getNotNothingString("magAxisStickX",              errorInMethod);
+        magAxisStickY              = messages.getNotNothingString("magAxisStickY",              errorInMethod);
+        magAxisVectorX             = messages.getNotNothingString("magAxisVectorX",             errorInMethod);
+        magAxisVectorY             = messages.getNotNothingString("magAxisVectorY",             errorInMethod);
+        magAxisHelpGraphX          = messages.getNotNothingString("magAxisHelpGraphX",          errorInMethod);
+        magAxisHelpGraphY          = messages.getNotNothingString("magAxisHelpGraphY",          errorInMethod);
+        magAxisHelpMarkerColor     = messages.getNotNothingString("magAxisHelpMarkerColor",     errorInMethod);
+        magAxisHelpSurfaceColor    = messages.getNotNothingString("magAxisHelpSurfaceColor",    errorInMethod);
+        magAxisHelpStickX          = messages.getNotNothingString("magAxisHelpStickX",          errorInMethod);
+        magAxisHelpStickY          = messages.getNotNothingString("magAxisHelpStickY",          errorInMethod);
+        magAxisHelpMapX            = messages.getNotNothingString("magAxisHelpMapX",            errorInMethod);
+        magAxisHelpMapY            = messages.getNotNothingString("magAxisHelpMapY",            errorInMethod);
+        magAxisHelpVectorX         = messages.getNotNothingString("magAxisHelpVectorX",         errorInMethod);
+        magAxisHelpVectorY         = messages.getNotNothingString("magAxisHelpVectorY",         errorInMethod);
+        magAxisVarHelp             = messages.getNotNothingString("magAxisVarHelp",             errorInMethod);
+        magAxisVarHelpGrid         = messages.getNotNothingString("magAxisVarHelpGrid",         errorInMethod);
+        magConstraintHelp          = messages.getNotNothingString("magConstraintHelp",          errorInMethod);
+        magDocumentation           = messages.getNotNothingString("magDocumentation",           errorInMethod);
+        magDownload                = messages.getNotNothingString("magDownload",                errorInMethod);
+        magDownloadTooltip         = messages.getNotNothingString("magDownloadTooltip",         errorInMethod);
+        magFileType                = messages.getNotNothingString("magFileType",                errorInMethod);
+        magGraphType               = messages.getNotNothingString("magGraphType",               errorInMethod);
+        magGraphTypeTooltipGrid    = messages.getNotNothingString("magGraphTypeTooltipGrid",    errorInMethod);
+        magGraphTypeTooltipTable   = messages.getNotNothingString("magGraphTypeTooltipTable",   errorInMethod);
+        magGS                      = messages.getNotNothingString("magGS",                      errorInMethod);
+        magGSMarkerType            = messages.getNotNothingString("magGSMarkerType",            errorInMethod);
+        magGSSize                  = messages.getNotNothingString("magGSSize",                  errorInMethod);
+        magGSColor                 = messages.getNotNothingString("magGSColor",                 errorInMethod);
+        magGSColorBar              = messages.getNotNothingString("magGSColorBar",              errorInMethod);
+        magGSColorBarTooltip       = messages.getNotNothingString("magGSColorBarTooltip",       errorInMethod);
+        magGSContinuity            = messages.getNotNothingString("magGSContinuity",            errorInMethod);
+        magGSContinuityTooltip     = messages.getNotNothingString("magGSContinuityTooltip",     errorInMethod);
+        magGSScale                 = messages.getNotNothingString("magGSScale",                 errorInMethod);
+        magGSScaleTooltip          = messages.getNotNothingString("magGSScaleTooltip",          errorInMethod);
+        magGSMin                   = messages.getNotNothingString("magGSMin",                   errorInMethod);
+        magGSMinTooltip            = messages.getNotNothingString("magGSMinTooltip",            errorInMethod);
+        magGSMax                   = messages.getNotNothingString("magGSMax",                   errorInMethod);
+        magGSMaxTooltip            = messages.getNotNothingString("magGSMaxTooltip",            errorInMethod);
+        magGSNSections             = messages.getNotNothingString("magGSNSections",             errorInMethod);
+        magGSNSectionsTooltip      = messages.getNotNothingString("magGSNSectionsTooltip",      errorInMethod);
+        magGSLandMask              = messages.getNotNothingString("magGSLandMask",              errorInMethod);
+        magGSLandMaskTooltipGrid   = messages.getNotNothingString("magGSLandMaskTooltipGrid",   errorInMethod);
+        magGSLandMaskTooltipTable  = messages.getNotNothingString("magGSLandMaskTooltipTable",  errorInMethod);
+        magGSVectorStandard        = messages.getNotNothingString("magGSVectorStandard",        errorInMethod);
+        magGSVectorStandardTooltip = messages.getNotNothingString("magGSVectorStandardTooltip", errorInMethod);
+        magGSYAxisMin              = messages.getNotNothingString("magGSYAxisMin",              errorInMethod);
+        magGSYAxisMax              = messages.getNotNothingString("magGSYAxisMax",              errorInMethod);
+        magGSYRangeMinTooltip      = messages.getNotNothingString("magGSYRangeMinTooltip",      errorInMethod); 
+        magGSYRangeMaxTooltip      = messages.getNotNothingString("magGSYRangeMaxTooltip",      errorInMethod);
+        magGSYRangeTooltip         = messages.getNotNothingString("magGSYRangeTooltip",         errorInMethod);        
+        magItemFirst               = messages.getNotNothingString("magItemFirst",               errorInMethod);
+        magItemPrevious            = messages.getNotNothingString("magItemPrevious",            errorInMethod);
+        magItemNext                = messages.getNotNothingString("magItemNext",                errorInMethod);
+        magItemLast                = messages.getNotNothingString("magItemLast",                errorInMethod);
+        magJust1Value              = messages.getNotNothingString("magJust1Value",              errorInMethod);
+        magRange                   = messages.getNotNothingString("magRange",                   errorInMethod);
+        magRangeTo                 = messages.getNotNothingString("magRangeTo",                 errorInMethod);
+        magRedraw                  = messages.getNotNothingString("magRedraw",                  errorInMethod);
+        magRedrawTooltip           = messages.getNotNothingString("magRedrawTooltip",           errorInMethod);
+        magTimeRange               = messages.getNotNothingString("magTimeRange",               errorInMethod);
+        magTimeRangeFirst          = messages.getNotNothingString("magTimeRangeFirst",          errorInMethod);
+        magTimeRangeBack           = messages.getNotNothingString("magTimeRangeBack",           errorInMethod);
+        magTimeRangeForward        = messages.getNotNothingString("magTimeRangeForward",        errorInMethod);
+        magTimeRangeLast           = messages.getNotNothingString("magTimeRangeLast",           errorInMethod);
+        magTimeRangeTooltip        = messages.getNotNothingString("magTimeRangeTooltip",        errorInMethod);
+        magTimeRangeTooltip2       = messages.getNotNothingString("magTimeRangeTooltip2",       errorInMethod);
+        magTimesVary               = messages.getNotNothingString("magTimesVary",               errorInMethod);
+        magViewUrl                 = messages.getNotNothingString("magViewUrl",                 errorInMethod);
+        magZoom                    = messages.getNotNothingString("magZoom",                    errorInMethod);
+        magZoomCenter              = messages.getNotNothingString("magZoomCenter",              errorInMethod);
+        magZoomCenterTooltip       = messages.getNotNothingString("magZoomCenterTooltip",       errorInMethod);
+        magZoomIn                  = messages.getNotNothingString("magZoomIn",                  errorInMethod);
+        magZoomInTooltip           = messages.getNotNothingString("magZoomInTooltip",           errorInMethod);
+        magZoomOut                 = messages.getNotNothingString("magZoomOut",                 errorInMethod);
+        magZoomOutTooltip          = messages.getNotNothingString("magZoomOutTooltip",          errorInMethod);
+        magZoomALittle             = messages.getNotNothingString("magZoomALittle",             errorInMethod);
+        magZoomData                = messages.getNotNothingString("magZoomData",                errorInMethod);
+        magZoomOutData             = messages.getNotNothingString("magZoomOutData",             errorInMethod);
+        magGridHtml                = messages.getNotNothingString("magGridHtml",                errorInMethod);
+        magTableHtml               = messages.getNotNothingString("magTableHtml",               errorInMethod);
+        metadataDownload           = messages.getNotNothingString("metadataDownload",           errorInMethod);
+        moreInformation            = messages.getNotNothingString("moreInformation",            errorInMethod);
+        nMatching1                 = messages.getNotNothingString("nMatching1",                 errorInMethod);
+        nMatchingAlphabetical      = messages.getNotNothingString("nMatchingAlphabetical",      errorInMethod);
+        nMatchingMostRelevant      = messages.getNotNothingString("nMatchingMostRelevant",      errorInMethod);
+        nMatchingPage              = messages.getNotNothingString("nMatchingPage",              errorInMethod);
+        nMatchingCurrent           = messages.getNotNothingString("nMatchingCurrent",           errorInMethod);
+        noDataFixedValue           = messages.getNotNothingString("noDataFixedValue",           errorInMethod);
+        noDataNoLL                 = messages.getNotNothingString("noDataNoLL",                 errorInMethod);
         noDatasetWith              = messages.getNotNothingString("noDatasetWith",              errorInMethod);
+        noPage1                    = messages.getNotNothingString("noPage1",                    errorInMethod);
+        noPage2                    = messages.getNotNothingString("noPage2",                    errorInMethod);
+        notAuthorized              = messages.getNotNothingString("notAuthorized",              errorInMethod);
+        notAvailable               = messages.getNotNothingString("notAvailable",               errorInMethod);
+        noXxxBecause               = messages.getNotNothingString("noXxxBecause",               errorInMethod);
+        noXxxBecause2              = messages.getNotNothingString("noXxxBecause2",              errorInMethod);
+        noXxxNotActive             = messages.getNotNothingString("noXxxNotActive",             errorInMethod);
+        noXxxNoAxis1               = messages.getNotNothingString("noXxxNoAxis1",               errorInMethod);
+        noXxxNoCdmDataType         = messages.getNotNothingString("noXxxNoCdmDataType",         errorInMethod);
+        noXxxNoColorBar            = messages.getNotNothingString("noXxxNoColorBar",            errorInMethod);
+        noXxxNoLL                  = messages.getNotNothingString("noXxxNoLL",                  errorInMethod);
+        noXxxNoLLEvenlySpaced      = messages.getNotNothingString("noXxxNoLLEvenlySpaced",      errorInMethod);
+        noXxxNoLLGt1               = messages.getNotNothingString("noXxxNoLLGt1",               errorInMethod);
+        noXxxNoLLT                 = messages.getNotNothingString("noXxxNoLLT",                 errorInMethod);
+        noXxxNoLonIn180            = messages.getNotNothingString("noXxxNoLonIn180",            errorInMethod);
+        noXxxNoNonString           = messages.getNotNothingString("noXxxNoNonString",           errorInMethod);
+        noXxxNo2NonString          = messages.getNotNothingString("noXxxNo2NonString",          errorInMethod);
+        noXxxNoStation             = messages.getNotNothingString("noXxxNoStation",             errorInMethod);
+        noXxxNoStationID           = messages.getNotNothingString("noXxxNoStationID",           errorInMethod);
+        noXxxNoMinMax              = messages.getNotNothingString("noXxxNoMinMax",              errorInMethod);
+        noXxxItsGridded            = messages.getNotNothingString("noXxxItsGridded",            errorInMethod);
+        noXxxItsTabular            = messages.getNotNothingString("noXxxItsTabular",            errorInMethod);
+        optional                   = messages.getNotNothingString("optional",                   errorInMethod);
+        orRefineSearchWith         = messages.getNotNothingString("orRefineSearchWith",         errorInMethod);
+        orRefineSearchWith += " ";
+        orSearchWith               = messages.getNotNothingString("orSearchWith",               errorInMethod);
+        orSearchWith += " ";
+        orComma                    = messages.getNotNothingString("orComma",                    errorInMethod);
+        orComma += " ";
         palettes                   = String2.split(messages.getNotNothingString("palettes",     errorInMethod), ',');
         palettes0 = new String[palettes.length + 1];
         palettes0[0] = "";
@@ -1177,21 +2012,76 @@ wcsActive = false;
         patientYourGraph           = messages.getNotNothingString("patientYourGraph",           errorInMethod);
         pdfWidths                  = String2.toIntArray(String2.split(messages.getNotNothingString("pdfWidths",    errorInMethod), ','));
         pdfHeights                 = String2.toIntArray(String2.split(messages.getNotNothingString("pdfHeights",   errorInMethod), ','));
+        pickADataset               = messages.getNotNothingString("pickADataset",               errorInMethod);
         protocolSearchHtml         = messages.getNotNothingString("protocolSearchHtml",         errorInMethod);
         protocolSearch2Html        = messages.getNotNothingString("protocolSearch2Html",        errorInMethod);
         protocolClick              = messages.getNotNothingString("protocolClick",              errorInMethod);
+        queryError                 = messages.getNotNothingString("queryError",                 errorInMethod) + 
+                                     " ";
+        queryError180              = messages.getNotNothingString("queryError180",              errorInMethod);
+        queryError1Value           = messages.getNotNothingString("queryError1Value",           errorInMethod);
+        queryError1Var             = messages.getNotNothingString("queryError1Var",             errorInMethod);
+        queryError2Var             = messages.getNotNothingString("queryError2Var",             errorInMethod);
+        queryErrorAdjusted         = messages.getNotNothingString("queryErrorAdjusted",         errorInMethod);
+        queryErrorAscending        = messages.getNotNothingString("queryErrorAscending",        errorInMethod);
+        queryErrorConstraintNaN    = messages.getNotNothingString("queryErrorConstraintNaN",    errorInMethod);
+        queryErrorEqualSpacing     = messages.getNotNothingString("queryErrorEqualSpacing",     errorInMethod);
+        queryErrorExpectedAt       = messages.getNotNothingString("queryErrorExpectedAt",       errorInMethod);
+        queryErrorFileType         = messages.getNotNothingString("queryErrorFileType",         errorInMethod);
+        queryErrorInvalid          = messages.getNotNothingString("queryErrorInvalid",          errorInMethod);
+        queryErrorLL               = messages.getNotNothingString("queryErrorLL",               errorInMethod);
+        queryErrorLLGt1            = messages.getNotNothingString("queryErrorLLGt1",            errorInMethod);
+        queryErrorLLT              = messages.getNotNothingString("queryErrorLLT",              errorInMethod);
+        queryErrorNeverTrue        = messages.getNotNothingString("queryErrorNeverTrue",        errorInMethod);
+        queryErrorNeverBothTrue    = messages.getNotNothingString("queryErrorNeverBothTrue",    errorInMethod);
+        queryErrorNotAxis          = messages.getNotNothingString("queryErrorNotAxis",          errorInMethod);
+        queryErrorNotExpectedAt    = messages.getNotNothingString("queryErrorNotExpectedAt",    errorInMethod);
+        queryErrorNotFoundAfter    = messages.getNotNothingString("queryErrorNotFoundAfter",    errorInMethod);
+        queryErrorOccursTwice      = messages.getNotNothingString("queryErrorOccursTwice",      errorInMethod);
+        queryErrorUnknownVariable  = messages.getNotNothingString("queryErrorUnknownVariable",  errorInMethod);
+
+        queryErrorGrid1Axis        = messages.getNotNothingString("queryErrorGrid1Axis",        errorInMethod);
+        queryErrorGridAmp          = messages.getNotNothingString("queryErrorGridAmp",          errorInMethod);
+        queryErrorGridDiagnostic   = messages.getNotNothingString("queryErrorGridDiagnostic",   errorInMethod);
+        queryErrorGridBetween      = messages.getNotNothingString("queryErrorGridBetween",      errorInMethod);
+        queryErrorGridLessMin      = messages.getNotNothingString("queryErrorGridLessMin",      errorInMethod);
+        queryErrorGridGreaterMax   = messages.getNotNothingString("queryErrorGridGreaterMax",   errorInMethod);
+        queryErrorGridMissing      = messages.getNotNothingString("queryErrorGridMissing",      errorInMethod);
+        queryErrorGridNoAxisVar    = messages.getNotNothingString("queryErrorGridNoAxisVar",    errorInMethod);
+        queryErrorGridNoDataVar    = messages.getNotNothingString("queryErrorGridNoDataVar",    errorInMethod);
+        queryErrorGridNotIdentical = messages.getNotNothingString("queryErrorGridNotIdentical", errorInMethod);
+        queryErrorGridSLessS       = messages.getNotNothingString("queryErrorGridSLessS",       errorInMethod);
+        queryErrorLastEndP         = messages.getNotNothingString("queryErrorLastEndP",         errorInMethod);
+        queryErrorLastExpected     = messages.getNotNothingString("queryErrorLastExpected",     errorInMethod);
+        queryErrorLastUnexpected   = messages.getNotNothingString("queryErrorLastUnexpected",   errorInMethod);
+        queryErrorLastPMInvalid    = messages.getNotNothingString("queryErrorLastPMInvalid",    errorInMethod);
+        queryErrorLastPMInteger    = messages.getNotNothingString("queryErrorLastPMInteger",    errorInMethod);        
+        rangesFromTo               = messages.getNotNothingString("rangesFromTo",               errorInMethod);
         requestFormatExamplesHtml  = messages.getNotNothingString("requestFormatExamplesHtml",  errorInMethod);
         resetTheForm               = messages.getNotNothingString("resetTheForm",               errorInMethod);
+        resetTheFormWas            = messages.getNotNothingString("resetTheFormWas",            errorInMethod);
+        resourceNotFound           = messages.getNotNothingString("resourceNotFound",           errorInMethod);
         resultsFormatExamplesHtml  = messages.getNotNothingString("resultsFormatExamplesHtml",  errorInMethod);
         resultsOfSearchFor         = messages.getNotNothingString("resultsOfSearchFor",         errorInMethod);
+        restfulInformationFormats  = messages.getNotNothingString("restfulInformationFormats",  errorInMethod);
+        restfulViaService          = messages.getNotNothingString("restfulViaService",          errorInMethod);
+        rows                       = messages.getNotNothingString("rows",                       errorInMethod);
+        searchTitle                = messages.getNotNothingString("searchTitle",                errorInMethod);
+        searchDoFullTextHtml       = messages.getNotNothingString("searchDoFullTextHtml",       errorInMethod);
         searchFullTextHtml         = messages.getNotNothingString("searchFullTextHtml",         errorInMethod);
         searchButton               = messages.getNotNothingString("searchButton",               errorInMethod);
         searchClickTip             = messages.getNotNothingString("searchClickTip",             errorInMethod);
         searchHintsHtml            = messages.getNotNothingString("searchHintsHtml",            errorInMethod);
+        searchHintsLuceneHtml      = messages.getNotNothingString("searchHintsLuceneHtml",      errorInMethod);
+        searchHintsOriginalHtml    = messages.getNotNothingString("searchHintsOriginalHtml",    errorInMethod);
+        searchNotAvailable         = messages.getNotNothingString("searchNotAvailable",         errorInMethod);
         searchTip                  = messages.getNotNothingString("searchTip",                  errorInMethod);
-        searchRelevantAreFirst     = messages.getNotNothingString("searchRelevantAreFirst",     errorInMethod);
         searchSpelling             = messages.getNotNothingString("searchSpelling",             errorInMethod);
         searchFewerWords           = messages.getNotNothingString("searchFewerWords",           errorInMethod);
+        searchWithQuery            = messages.getNotNothingString("searchWithQuery",            errorInMethod);
+        selectNext                 = messages.getNotNothingString("selectNext",                 errorInMethod);
+        selectPrevious             = messages.getNotNothingString("selectPrevious",             errorInMethod);
+        seeProtocolDocumentation   = messages.getNotNothingString("seeProtocolDocumentation",   errorInMethod);
         ssBePatient                = messages.getNotNothingString("ssBePatient",                errorInMethod);
         ssInstructionsHtml         = messages.getNotNothingString("ssInstructionsHtml",         errorInMethod);
         standardShortDescriptionHtml=messages.getNotNothingString("standardShortDescriptionHtml",errorInMethod);
@@ -1204,6 +2094,12 @@ wcsActive = false;
         standardPrivacyPolicy      = messages.getNotNothingString("standardPrivacyPolicy",      errorInMethod);
         submit                     = messages.getNotNothingString("submit",                     errorInMethod);
         submitTooltip              = messages.getNotNothingString("submitTooltip",              errorInMethod);
+        subscriptionsTitle         = messages.getNotNothingString("subscriptionsTitle",         errorInMethod);
+        subscriptionOptions        = messages.getNotNothingString("subscriptionOptions",        errorInMethod);
+        subscriptionAdd            = messages.getNotNothingString("subscriptionAdd",            errorInMethod);
+        subscriptionValidate       = messages.getNotNothingString("subscriptionValidate",       errorInMethod);
+        subscriptionList           = messages.getNotNothingString("subscriptionList",           errorInMethod);
+        subscriptionRemove         = messages.getNotNothingString("subscriptionRemove",         errorInMethod);
         subscriptionHtml           = messages.getNotNothingString("subscriptionHtml",           errorInMethod);
         subscription2Html          = messages.getNotNothingString("subscription2Html",          errorInMethod);
         subscriptionAbuse          = messages.getNotNothingString("subscriptionAbuse",          errorInMethod);
@@ -1235,9 +2131,60 @@ wcsActive = false;
         subscriptionValidateError  = messages.getNotNothingString("subscriptionValidateError",  errorInMethod);
         subscriptionValidateHtml   = messages.getNotNothingString("subscriptionValidateHtml",   errorInMethod);
         subscriptionValidateSuccess= messages.getNotNothingString("subscriptionValidateSuccess",errorInMethod);
+        subset                     = messages.getNotNothingString("subset",                     errorInMethod);
+        subsetSelect               = messages.getNotNothingString("subsetSelect",               errorInMethod);
+        subsetNMatching            = messages.getNotNothingString("subsetNMatching",            errorInMethod);
+        subsetInstructions         = messages.getNotNothingString("subsetInstructions",         errorInMethod);
+        subsetOption               = messages.getNotNothingString("subsetOption",               errorInMethod);
+        subsetOptions              = messages.getNotNothingString("subsetOptions",              errorInMethod);
+        subsetRefineMapDownload    = messages.getNotNothingString("subsetRefineMapDownload",    errorInMethod);
+        subsetRefineSubsetDownload = messages.getNotNothingString("subsetRefineSubsetDownload", errorInMethod);
+        subsetClickResetClosest    = messages.getNotNothingString("subsetClickResetClosest",    errorInMethod);
+        subsetClickResetLL         = messages.getNotNothingString("subsetClickResetLL",         errorInMethod);
+        subsetMetadata             = messages.getNotNothingString("subsetMetadata",             errorInMethod);
+        subsetCount                = messages.getNotNothingString("subsetCount",                errorInMethod);
+        subsetPercent              = messages.getNotNothingString("subsetPercent",              errorInMethod);
+        subsetViewSelect           = messages.getNotNothingString("subsetViewSelect",           errorInMethod);
+        subsetViewSelectDistinctCombos= messages.getNotNothingString("subsetViewSelectDistinctCombos",errorInMethod);
+        subsetViewSelectRelatedCounts = messages.getNotNothingString("subsetViewSelectRelatedCounts", errorInMethod);
+        subsetWhen                 = messages.getNotNothingString("subsetWhen",                 errorInMethod);
+        subsetWhenNoConstraints    = messages.getNotNothingString("subsetWhenNoConstraints",    errorInMethod);
+        subsetWhenCounts           = messages.getNotNothingString("subsetWhenCounts",           errorInMethod);
+        subsetComboClickSelect     = messages.getNotNothingString("subsetComboClickSelect",     errorInMethod);
+        subsetNVariableCombos      = messages.getNotNothingString("subsetNVariableCombos",      errorInMethod);
+        subsetShowingAllRows       = messages.getNotNothingString("subsetShowingAllRows",       errorInMethod);
+        subsetShowingNRows         = messages.getNotNothingString("subsetShowingNRows",         errorInMethod);
+        subsetChangeShowing        = messages.getNotNothingString("subsetChangeShowing",        errorInMethod);
+        subsetNRowsRelatedData     = messages.getNotNothingString("subsetNRowsRelatedData",     errorInMethod);
+        subsetViewRelatedChange    = messages.getNotNothingString("subsetViewRelatedChange",    errorInMethod);
+        subsetTotalCount           = messages.getNotNothingString("subsetTotalCount",           errorInMethod);
+        subsetView                 = messages.getNotNothingString("subsetView",                 errorInMethod);
+        subsetViewCheck            = messages.getNotNothingString("subsetViewCheck",            errorInMethod);
+        subsetViewCheck1           = messages.getNotNothingString("subsetViewCheck1",           errorInMethod);
+        subsetViewDistinctMap      = messages.getNotNothingString("subsetViewDistinctMap",      errorInMethod);
+        subsetViewRelatedMap       = messages.getNotNothingString("subsetViewRelatedMap",       errorInMethod);
+        subsetViewDistinctDataCounts= messages.getNotNothingString("subsetViewDistinctDataCounts",errorInMethod);
+        subsetViewDistinctData     = messages.getNotNothingString("subsetViewDistinctData",     errorInMethod);
+        subsetViewRelatedDataCounts= messages.getNotNothingString("subsetViewRelatedDataCounts",errorInMethod);
+        subsetViewRelatedData      = messages.getNotNothingString("subsetViewRelatedData",      errorInMethod);
+        subsetViewDistinctMapTooltip       = messages.getNotNothingString("subsetViewDistinctMapTooltip",       errorInMethod);
+        subsetViewRelatedMapTooltip        = messages.getNotNothingString("subsetViewRelatedMapTooltip",        errorInMethod);
+        subsetViewDistinctDataCountsTooltip= messages.getNotNothingString("subsetViewDistinctDataCountsTooltip",errorInMethod);
+        subsetViewDistinctDataTooltip      = messages.getNotNothingString("subsetViewDistinctDataTooltip",      errorInMethod);
+        subsetViewRelatedDataCountsTooltip = messages.getNotNothingString("subsetViewRelatedDataCountsTooltip", errorInMethod);
+        subsetViewRelatedDataTooltip       = messages.getNotNothingString("subsetViewRelatedDataTooltip",       errorInMethod);
+        subsetWarn                 = messages.getNotNothingString("subsetWarn",                 errorInMethod);                    
+        subsetWarn10000            = messages.getNotNothingString("subsetWarn10000",            errorInMethod);
+        subsetTooltip              = messages.getNotNothingString("subsetTooltip",              errorInMethod);
+        subsetNotSetUp             = messages.getNotNothingString("subsetNotSetUp",             errorInMethod);
+        subsetLongNotShown         = messages.getNotNothingString("subsetLongNotShown",         errorInMethod);
+
         theLongDescriptionHtml     = messages.getNotNothingString("theLongDescriptionHtml",     errorInMethod);
         THERE_IS_NO_DATA           = messages.getNotNothingString("thereIsNoData",              errorInMethod);
         thereIsTooMuchData         = messages.getNotNothingString("thereIsTooMuchData",         errorInMethod);
+        unknownDatasetID           = messages.getNotNothingString("unknownDatasetID",           errorInMethod);
+        unknownProtocol            = messages.getNotNothingString("unknownProtocol",            errorInMethod);
+        unsupportedFileType        = messages.getNotNothingString("unsupportedFileType",        errorInMethod);
         viewAllDatasetsHtml        = messages.getNotNothingString("viewAllDatasetsHtml",        errorInMethod);
         waitThenTryAgain           = messages.getNotNothingString("waitThenTryAgain",           errorInMethod);
         sosDescriptionHtml         = messages.getNotNothingString("sosDescriptionHtml",         errorInMethod);
@@ -1247,9 +2194,6 @@ wcsActive = false;
         wmsDescriptionHtml         = messages.getNotNothingString("wmsDescriptionHtml",         errorInMethod);
         wmsInstructions            = messages.getNotNothingString("wmsInstructions",            errorInMethod); 
         wmsLongDescriptionHtml     = messages.getNotNothingString("wmsLongDescriptionHtml",     errorInMethod); 
-        yRangeHtml                 = messages.getNotNothingString("yRangeHtml",                 errorInMethod); 
-        yRangeMinHtml              = messages.getNotNothingString("yRangeMinHtml",              errorInMethod); 
-        yRangeMaxHtml              = messages.getNotNothingString("yRangeMaxHtml",              errorInMethod); 
 
         Test.ensureEqual(imageWidths.length,  3, errorInMethod + "imageWidths.length must be 3.");
         Test.ensureEqual(imageHeights.length, 3, errorInMethod + "imageHeights.length must be 3.");
@@ -1259,23 +2203,24 @@ wcsActive = false;
         for (int p = 0; p < palettes.length; p++) {
             String tName = fullPaletteDirectory + palettes[p] + ".cpt";
             Test.ensureTrue(File2.isFile(tName),
-               "\"" + palettes[p] + 
+                "\"" + palettes[p] + 
                 "\" is listed in <palettes> in messages.xml, but there is no file " + tName);
         }
 
         ampLoginInfoPo = startBodyHtml.indexOf(ampLoginInfo); 
         //String2.log("ampLoginInfoPo=" + ampLoginInfoPo);
 
+        searchHintsHtml = searchHintsHtml + "\n" +
+            (useLuceneSearchEngine? searchHintsLuceneHtml : searchHintsOriginalHtml);
         advancedSearchDirections = String2.replaceAll(advancedSearchDirections, "&searchButton;", searchButton);
 
         //always non-https: url
-        convertFipsCountyService = String2.replaceAll(convertFipsCountyService, "&erddapUrl;",            erddapUrl) + "\n";
-        convertTimeNotes         = String2.replaceAll(convertTimeNotes,         "&convertTimeUnitsHelp;", convertTimeUnitsHelp);
-        convertTimeNotes         = String2.replaceAll(convertTimeNotes,         "&erddapUrl;",            erddapUrl) + "\n";
-        convertTimeService       = String2.replaceAll(convertTimeService,       "&erddapUrl;",            erddapUrl) + "\n"; 
-        convertUnitsFilter       = String2.replaceAll(convertUnitsFilter,       "&units_standard;",       units_standard);
-        convertUnitsFilter       = String2.replaceAll(convertUnitsFilter,       "&erddapUrl;",            erddapUrl) + "\n";
-        convertUnitsService      = String2.replaceAll(convertUnitsService,      "&erddapUrl;",            erddapUrl) + "\n"; 
+        convertFipsCountyService = MessageFormat.format(convertFipsCountyService, erddapUrl) + "\n";
+        convertKeywordsService   = MessageFormat.format(convertKeywordsService,   erddapUrl) + "\n";
+        convertTimeNotes         = MessageFormat.format(convertTimeNotes,         erddapUrl, convertTimeUnitsHelp) + "\n";
+        convertTimeService       = MessageFormat.format(convertTimeService,       erddapUrl) + "\n"; 
+        convertUnitsFilter       = MessageFormat.format(convertUnitsFilter,       erddapUrl, units_standard) + "\n";
+        convertUnitsService      = MessageFormat.format(convertUnitsService,      erddapUrl) + "\n"; 
 
         //standardContact is used by legal
         String tEmail = String2.replaceAll(adminEmail, "@", " at ");
@@ -1286,6 +2231,11 @@ wcsActive = false;
         legal = String2.replaceAll(legal,"[standardDisclaimerOfExternalLinks]", standardDisclaimerOfExternalLinks + "\n\n"); 
         legal = String2.replaceAll(legal,"[standardDisclaimerOfEndorsement]",   standardDisclaimerOfEndorsement   + "\n\n"); 
         legal = String2.replaceAll(legal,"[standardPrivacyPolicy]",             standardPrivacyPolicy             + "\n\n"); 
+
+        loginProblems      = String2.replaceAll(loginProblems,     "&adminContact;",  adminContact()) + "\n\n"; 
+        loginProblemsAfter = String2.replaceAll(loginProblemsAfter,"&adminContact;",  adminContact()) + "\n\n"; 
+        loginPublicAccess += "\n"; 
+        logoutSuccess += "\n"; 
 
         PostIndex2Html = String2.replaceAll(PostIndex2Html, "&erddapUrl;",            erddapHttpsUrl);
 
@@ -1304,34 +2254,57 @@ wcsActive = false;
         //**************************************************************** 
         //other initialization
 
+        //trigger CfToGcmd initialization to ensure CfToGcmd.txt file is valid.
+        String testCfToGcmd[] = CfToFromGcmd.cfToGcmd("sea_water_temperature");
+        Test.ensureTrue(testCfToGcmd.length > 0, 
+            "testCfToGcmd=" + String2.toCSSVString(testCfToGcmd));
+
         String2.log("EDStatic initialization finished successfully.\n");
     }
   
     /** 
-     * If loggedInAs is null, this returns erddapUrl; else erddapHttpsUrl;
+     * If loggedInAs is null, this returns baseUrl, else baseHttpsUrl
+     *  (neither has slash at end).
      *
      * @param loggedInAs
-     * @return If loggedInAs == null, this returns erddapUrl; else erddapHttpsUrl;
+     * @return If loggedInAs == null, this returns baseUrl, else baseHttpsUrl
+     *  (neither has slash at end).
+     */
+    public static String baseUrl(String loggedInAs) {
+        return loggedInAs == null? baseUrl : baseHttpsUrl;
+    }
+
+    /** 
+     * If loggedInAs is null, this returns erddapUrl, else erddapHttpsUrl
+     *  (neither has slash at end).
+     *
+     * @param loggedInAs
+     * @return If loggedInAs == null, this returns erddapUrl, else erddapHttpsUrl
+     *  (neither has slash at end).
      */
     public static String erddapUrl(String loggedInAs) {
         return loggedInAs == null? erddapUrl : erddapHttpsUrl;
     }
 
     /** 
-     * If publicAccess, this returns erddapUrl; else erddapHttpsUrl;
+     * If publicAccess, this returns erddapUrl, else erddapHttpsUrl
+     *  (neither has slash at end).
      *
      * @param publicAccess
-     * @return If public access, this returns erddapUrl; else erddapHttpsUrl;
+     * @return If public access, this returns erddapUrl, else erddapHttpsUrl
+     *  (neither has slash at end).
      */
     public static String publicErddapUrl(boolean publicAccess) {
         return publicAccess? erddapUrl : erddapHttpsUrl;
     }
 
     /** 
-     * If loggedInAs is null, this returns imageDirUrl; else imageDirHttpsUrl;
+     * If loggedInAs is null, this returns imageDirUrl, else imageDirHttpsUrl
+     *  (with slash at end).
      *
      * @param loggedInAs
-     * @return If loggedInAs == null, this returns imageDirUrl; else imageDirHttpsUrl;
+     * @return If loggedInAs == null, this returns imageDirUrl, else imageDirHttpsUrl
+     *  (with slash at end).
      */
     public static String imageDirUrl(String loggedInAs) {
         return loggedInAs == null? imageDirUrl : imageDirHttpsUrl;
@@ -1364,6 +2337,17 @@ wcsActive = false;
             "\n</h1>\n";
     }
 
+    /** This returns a not-yet-HTML-encoded protocol URL.
+     * You may want to encode it with XML.encodeAsHTML(url)
+     */
+    public static String protocolUrl(String tErddapUrl, String protocol) {
+        return tErddapUrl + "/" + protocol + "/index.html" +
+            (protocol.equals("tabledap") || protocol.equals("griddap")    ||
+             protocol.equals("wms")      || protocol.equals("wcs")        ||
+             protocol.equals("info")     || protocol.equals("categorize")? 
+                "?" + defaultPIppQuery : "");            
+    }
+
     /**
      * This is used by html web page generating methods to 
      * return the You Are Here html for ERDDAP/protocol/datasetID.
@@ -1375,10 +2359,10 @@ wcsActive = false;
      */
     public static String youAreHere(String loggedInAs, String protocol, String datasetID) {
         String tErddapUrl = erddapUrl(loggedInAs);
-        String protocolUrl = tErddapUrl + "/" + protocol + "/index.html";
         return 
             "\n<h1>" + erddapHref(tErddapUrl) +
-            "\n &gt; <a href=\"" + protocolUrl + "\">" + protocol + "</a>" +
+            "\n &gt; <a href=\"" + XML.encodeAsHTML(protocolUrl(tErddapUrl, protocol)) +
+                "\">" + protocol + "</a>" +
             "\n &gt; " + datasetID + 
             "\n</h1>\n";
     }
@@ -1394,7 +2378,6 @@ wcsActive = false;
      */
     public static String youAreHereWithHelp(String loggedInAs, String protocol, String htmlHelp) {
         String tErddapUrl = erddapUrl(loggedInAs);
-        String protocolUrl = tErddapUrl + "/" + protocol + "/index.html";
         return 
             "\n<h1>" + erddapHref(tErddapUrl) + 
             "\n &gt; " + protocol + 
@@ -1416,18 +2399,19 @@ wcsActive = false;
         String datasetID, String htmlHelp) {
 
         String tErddapUrl = erddapUrl(loggedInAs);
-        String protocolUrl = tErddapUrl + "/" + protocol + "/index.html";
         return 
             "\n<h1>" + erddapHref(tErddapUrl) + 
-            "\n &gt; <a href=\"" + protocolUrl + "\">" + protocol + "</a>" +
+            "\n &gt; <a href=\"" + XML.encodeAsHTML(protocolUrl(tErddapUrl, protocol)) + 
+                "\">" + protocol + "</a>" +
             "\n &gt; " + datasetID + 
             "\n" + htmlTooltipImage(loggedInAs, htmlHelp) + 
             "\n</h1>\n";
     }
 
-    /**
+    /** THIS IS NO LONGER USED
      * This is used by html web page generating methods to 
      * return the You Are Here html for ERDDAP/{protocol}/{attribute}/{category}.
+     * IF REVIVED, append current ?page=x&amp;itemsPerPage=y
      * 
      * @param loggedInAs
      * @param protocol e.g., categorize
@@ -1435,19 +2419,19 @@ wcsActive = false;
      * @param category e.g., Temperature
      * @return the You Are Here html for this EDD subclass.
      */
-    public static String youAreHere(String loggedInAs, String protocol, 
+    /*public static String youAreHere(String loggedInAs, String protocol, 
         String attribute, String category) {
 
         String tErddapUrl = erddapUrl(loggedInAs);
-        String protocolUrl  = tErddapUrl + "/" + protocol + "/index.html";
-        String attributeUrl = tErddapUrl + "/" + protocol + "/" + attribute + "/index.html";
+        String attributeUrl = tErddapUrl + "/" + protocol + "/" + attribute + "/index.html"; //+?defaultPIppQuery
         return 
             "\n<h1>" + erddapHref(tErddapUrl) + 
-            "\n &gt; <a href=\"" + protocolUrl + "\">" + protocol + "</a>" +
+            "\n &gt; <a href=\"" + XML.encodeAsHTML(protocolUrl(tErddapUrl, protocol)) + 
+                "\">" + protocol + "</a>" +
             "\n &gt; <a href=\"" + attributeUrl + "\">" + attribute + "</a>" +
             "\n &gt; " + category + 
             "\n</h1>\n";
-    }
+    }*/
 
     /**
      * This returns the html to draw a question mark that has big html tooltip.
@@ -1587,7 +2571,7 @@ wcsActive = false;
         String localTime = Calendar2.getCurrentISODateTimeStringLocal();
         String fullMessage = 
             "\n==== BEGIN =====================================================================" +
-            "\n     To: " + String2.toCSVString(emailAddresses) + 
+            "\n     To: " + String2.toCSSVString(emailAddresses) + 
             "\nSubject: " + erddapUrl + " " + subject +  //always non-https url
             "\n   Date: " + localTime + 
             "\n--------------------------------------------------------------------------------" +
@@ -1790,11 +2774,11 @@ wcsActive = false;
             String2.log("requestBlacklist is now null.");
         } else {
             String rb[] = String2.split(csv, ',');
-            HashSet hs = new HashSet();
+            HashSet hs = new HashSet(Math2.roundToInt(1.4 * rb.length));
             for (int i = 0; i < rb.length; i++)
                 hs.add(rb[i]);
             requestBlacklist = hs; //set in an instant
-            String2.log("requestBlacklist is now " + String2.toCSVString(rb));
+            String2.log("requestBlacklist is now " + String2.toCSSVString(rb));
         }
     }
 
@@ -1828,7 +2812,7 @@ wcsActive = false;
         sb.append(String2.getBriefDistributionStatistics(responseTimesDistributionTotal) + "\n");
 
         synchronized(taskList) { //all task-related things synch on taskList
-            EDStatic.ensureTaskThreadIsRunningIfNeeded();  //clients (like this class) are responsible for checking on it
+            ensureTaskThreadIsRunningIfNeeded();  //clients (like this class) are responsible for checking on it
             long tElapsedTime = taskThread == null? -1 : taskThread.elapsedTime();
             sb.append("TaskThread has finished " + (lastFinishedTask + 1) + " out of " + 
                 taskList.size() + " tasks.  " +
@@ -1857,15 +2841,15 @@ wcsActive = false;
         }
         
         sb.append("Major LoadDatasets Times Distribution (since last Daily Report):\n");
-        sb.append(String2.getDistributionStatistics(EDStatic.majorLoadDatasetsDistribution24)); sb.append('\n');
+        sb.append(String2.getDistributionStatistics(majorLoadDatasetsDistribution24)); sb.append('\n');
         sb.append("Major LoadDatasets Times Distribution (since startup):\n");
-        sb.append(String2.getDistributionStatistics(EDStatic.majorLoadDatasetsDistributionTotal)); sb.append('\n');
+        sb.append(String2.getDistributionStatistics(majorLoadDatasetsDistributionTotal)); sb.append('\n');
         sb.append('\n');
 
         sb.append("Minor LoadDatasets Times Distribution (since last Daily Report):\n");
-        sb.append(String2.getDistributionStatistics(EDStatic.minorLoadDatasetsDistribution24)); sb.append('\n');
+        sb.append(String2.getDistributionStatistics(minorLoadDatasetsDistribution24)); sb.append('\n');
         sb.append("Minor LoadDatasets Times Distribution (since startup):\n");
-        sb.append(String2.getDistributionStatistics(EDStatic.minorLoadDatasetsDistributionTotal)); sb.append('\n');
+        sb.append(String2.getDistributionStatistics(minorLoadDatasetsDistributionTotal)); sb.append('\n');
         sb.append('\n');
 
         if (failureTimesLoadDatasetsSB.length() > 0) {
@@ -1874,11 +2858,11 @@ wcsActive = false;
             sb.append('\n');
         }
         sb.append("Response Failed Time Distribution (since last major LoadDatasets):\n");
-        sb.append(String2.getDistributionStatistics(EDStatic.failureTimesDistributionLoadDatasets)); sb.append('\n');
+        sb.append(String2.getDistributionStatistics(failureTimesDistributionLoadDatasets)); sb.append('\n');
         sb.append("Response Failed Time Distribution (since last Daily Report):\n");
-        sb.append(String2.getDistributionStatistics(EDStatic.failureTimesDistribution24)); sb.append('\n');
+        sb.append(String2.getDistributionStatistics(failureTimesDistribution24)); sb.append('\n');
         sb.append("Response Failed Time Distribution (since startup):\n");
-        sb.append(String2.getDistributionStatistics(EDStatic.failureTimesDistributionTotal)); sb.append('\n');
+        sb.append(String2.getDistributionStatistics(failureTimesDistributionTotal)); sb.append('\n');
         sb.append('\n');
 
         if (responseTimesLoadDatasetsSB.length() > 0) {
@@ -1887,21 +2871,21 @@ wcsActive = false;
             sb.append('\n');
         }
         sb.append("Response Succeeded Time Distribution (since last major LoadDatasets):\n");
-        sb.append(String2.getDistributionStatistics(EDStatic.responseTimesDistributionLoadDatasets)); sb.append('\n');
+        sb.append(String2.getDistributionStatistics(responseTimesDistributionLoadDatasets)); sb.append('\n');
         sb.append("Response Succeeded Time Distribution (since last Daily Report):\n");
-        sb.append(String2.getDistributionStatistics(EDStatic.responseTimesDistribution24)); sb.append('\n');
+        sb.append(String2.getDistributionStatistics(responseTimesDistribution24)); sb.append('\n');
         sb.append("Response Succeeded Time Distribution (since startup):\n");
-        sb.append(String2.getDistributionStatistics(EDStatic.responseTimesDistributionTotal)); sb.append('\n');
+        sb.append(String2.getDistributionStatistics(responseTimesDistributionTotal)); sb.append('\n');
         sb.append('\n');
 
         sb.append("TaskThread Failed Time Distribution (since last Daily Report):\n");
-        sb.append(String2.getDistributionStatistics(EDStatic.taskThreadFailedDistribution24)); sb.append('\n');
+        sb.append(String2.getDistributionStatistics(taskThreadFailedDistribution24)); sb.append('\n');
         sb.append("TaskThread Failed Time Distribution (since startup):\n");
-        sb.append(String2.getDistributionStatistics(EDStatic.taskThreadFailedDistributionTotal)); sb.append('\n');
+        sb.append(String2.getDistributionStatistics(taskThreadFailedDistributionTotal)); sb.append('\n');
         sb.append("TaskThread Succeeded Time Distribution (since last Daily Report):\n");
-        sb.append(String2.getDistributionStatistics(EDStatic.taskThreadSucceededDistribution24)); sb.append('\n');
+        sb.append(String2.getDistributionStatistics(taskThreadSucceededDistribution24)); sb.append('\n');
         sb.append("TaskThread Succeeded Time Distribution (since startup):\n");
-        sb.append(String2.getDistributionStatistics(EDStatic.taskThreadSucceededDistributionTotal)); sb.append('\n');
+        sb.append(String2.getDistributionStatistics(taskThreadSucceededDistributionTotal)); sb.append('\n');
         sb.append('\n');
 
         sb.append(SgtMap.topographyStats() + "\n");
@@ -1978,7 +2962,7 @@ wcsActive = false;
         if (session != null) {
             
             if (authentication.equals("custom")) 
-                loggedInAs = (String)session.getAttribute("loggedInAs:" + EDStatic.warName);
+                loggedInAs = (String)session.getAttribute("loggedInAs:" + warName);
 
             else if (authentication.equals("openid")) 
                 loggedInAs = OpenIdFilter.getCurrentUser(session);
@@ -2035,9 +3019,9 @@ wcsActive = false;
 
         //generate observedPassword from plaintextPassword via passwordEncoding 
         String observed = plaintextPassword;
-        if (EDStatic.passwordEncoding.equals("MD5"))
+        if (passwordEncoding.equals("MD5"))
             observed = String2.md5Hex(plaintextPassword); //it will be lowercase
-        else if (EDStatic.passwordEncoding.equals("UEPMD5"))
+        else if (passwordEncoding.equals("UEPMD5"))
             observed = String2.md5Hex(loggedInAs + ":ERDDAP:" + plaintextPassword); //it will be lowercase
         //only for debugging:
         //String2.log("loggedInAs=" + loggedInAs +
@@ -2083,8 +3067,8 @@ wcsActive = false;
 
         String message = null;
         try {
-            EDStatic.tally.add("Log in Redirect (since startup)", datasetID); 
-            EDStatic.tally.add("Log in Redirect (since last daily report)", datasetID);
+            tally.add("Log in Redirect (since startup)", datasetID); 
+            tally.add("Log in Redirect (since last daily report)", datasetID);
             if (datasetID != null && datasetID.length() > 0) 
                 message = "loggedInAs=" + loggedInAs + 
                     " isn't authorized to use datasetID=" + datasetID + ".";
@@ -2138,9 +3122,9 @@ wcsActive = false;
             String tLoggedInAs = loggedInAsLoggingIn.equals(loggedInAs)?
                 null : loggedInAs;
             return tLoggedInAs == null?  //always use the erddapHttpsUrl for login/logout pages
-                "<a href=\"" + EDStatic.erddapHttpsUrl + "/login.html\">log in</a>" :
-                "<a href=\"" + EDStatic.erddapHttpsUrl + "/login.html\"><b>" + XML.encodeAsHTML(tLoggedInAs) + "</b></a> | \n" + 
-                "<a href=\"" + EDStatic.erddapHttpsUrl + "/logout.html\">log out</a>";
+                "<a href=\"" + erddapHttpsUrl + "/login.html\">" + login + "</a>" :
+                "<a href=\"" + erddapHttpsUrl + "/login.html\"><b>" + XML.encodeAsHTML(tLoggedInAs) + "</b></a> | \n" + 
+                "<a href=\"" + erddapHttpsUrl + "/logout.html\">" + logout + "</a>";
         }
     }
 
@@ -2174,7 +3158,7 @@ wcsActive = false;
     public static String PostIndex1Html(         String tErddapUrl) {return String2.replaceAll(PostIndex1Html, "&erddapUrl;", tErddapUrl); }
     public static String PostIndex2Html()                           {return PostIndex2Html; }
     public static String PostIndex3Html(         String tErddapUrl) {return String2.replaceAll(PostIndex3Html, "&erddapUrl;", tErddapUrl); }
-    public static String searchHintsHtml(        String tErddapUrl) {return String2.replaceAll(searchHintsHtml,  "&erddapUrl;", tErddapUrl); }
+
     /** @param addToTitle has not yet been encodeAsHTML(addToTitle). */
     public static String startHeadHtml(          String tErddapUrl, String addToTitle) {
         String ts = startHeadHtml;
@@ -2182,13 +3166,6 @@ wcsActive = false;
             ts = String2.replaceAll(ts, "</title>", " - " + XML.encodeAsHTML(addToTitle) + "</title>"); 
         return String2.replaceAll(ts,    "&erddapUrl;", tErddapUrl); 
         }
-    public static String subscriptionHtml(         String tErddapUrl) {return String2.replaceAll(subscriptionHtml, "&erddapUrl;", tErddapUrl); }
-    public static String subscription2Html(        String tErddapUrl) {return String2.replaceAll(subscription2Html, "&erddapUrl;", tErddapUrl); }
-    public static String subscriptionAddHtml(      String tErddapUrl) {return String2.replaceAll(subscriptionAddHtml, "&erddapUrl;", tErddapUrl); }
-    public static String subscriptionListHtml(     String tErddapUrl) {return String2.replaceAll(subscriptionListHtml, "&erddapUrl;", tErddapUrl); }
-    public static String subscriptionRemoveHtml(   String tErddapUrl) {return String2.replaceAll(subscriptionRemoveHtml, "&erddapUrl;", tErddapUrl); }
-    public static String subscriptionValidateHtml( String tErddapUrl) {return String2.replaceAll(subscriptionValidateHtml, "&erddapUrl;", tErddapUrl); }
-    public static String subscriptionsNotAvailable(String tErddapUrl) {return String2.replaceAll(subscriptionsNotAvailable, "&erddapUrl;", tErddapUrl); }
     public static String theLongDescriptionHtml(   String tErddapUrl) {return String2.replaceAll(theLongDescriptionHtml,  "&erddapUrl;", tErddapUrl); }
     public static String theShortDescriptionHtml(  String tErddapUrl) {return String2.replaceAll(theShortDescriptionHtml, "&erddapUrl;", tErddapUrl); }
     public static String erddapHref(               String tErddapUrl) {
@@ -2249,7 +3226,7 @@ wcsActive = false;
             String names[] = String2.toStringArray(runningThreads.keySet().toArray());
             String2.log("\nEDStatic.destroy will try to interrupt nThreads=" + names.length + 
                 "\n  threadNames=" +
-                String2.toCSVString(names));
+                String2.toCSSVString(names));
 
             //interrupt all of them
             for (int i = 0; i < names.length; i++) {
@@ -2295,15 +3272,37 @@ wcsActive = false;
                 if (allDone) {
                     String2.log("EDStatic.destroy successfully interrupted all threads in " + 
                         waitedSeconds + " s");
-                    return;
+                    break;
                 }
                 if (waitedSeconds > maxSeconds) {
                     String2.log("!!! EDStatic.destroy is done, but it had to stop() some threads.");
-                    return;
+                    break;
                 }
                 Math2.sleep(2000);
                 waitedSeconds += 2;
             }
+
+            //finally
+            if (useLuceneSearchEngine) 
+                String2.log("stopping lucene..."); 
+
+            try { 
+                if (luceneIndexSearcher != null) luceneIndexSearcher.close(); 
+            } catch (Throwable t) {}
+            luceneIndexSearcher = null;
+
+            try {
+                if (luceneIndexReader   != null) luceneIndexReader.close();  
+            } catch (Throwable t) {}
+            luceneIndexReader = null;
+            luceneDatasetIDFieldCache = null;
+
+            try {
+                if (luceneIndexWriter   != null) 
+                    //indices will be thrown away, so don't make pending changes
+                    luceneIndexWriter.close(false); 
+            } catch (Throwable t) {}
+            luceneIndexWriter = null;
 
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
@@ -2365,7 +3364,7 @@ wcsActive = false;
                         Calendar2.elapsedTimeString(eTime) + " > " + 
                         Calendar2.elapsedTimeString(maxTime) + ") at " + 
                         Calendar2.getCurrentISODateTimeStringLocal();
-                    email(EDStatic.emailEverythingTo, 
+                    email(emailEverythingTo, 
                         "taskThread Stalled", tError);
                     String2.log("\n*** " + tError);
 
@@ -2399,7 +3398,7 @@ wcsActive = false;
                 
                 //taskThread isn't running
                 //Are there no tasks to do? 
-                int nPending = taskList.size() - EDStatic.nextTask;
+                int nPending = taskList.size() - nextTask;
                 if (nPending <= 0) 
                     return; //no need to start it
 
@@ -2422,11 +3421,20 @@ wcsActive = false;
         return (taskList.size() - lastFinishedTask) - 1;
     }
 
-    /** This adds a task to the taskList.
-     * @return the task number that was assigned to the task.
+    /** This adds a task to the taskList if it (other than TASK_SET_FLAG)
+     * isn't already on the taskList.
+     * @return the task number that was assigned to the task,
+     *   or -1 if it was a duplicate task.
      */
     public static int addTask(Object taskOA[]) {
         synchronized(taskList) { //all task-related things synch on taskList
+
+            //Note that all task creators check that
+            //   EDStatic.lastFinishedTask >= lastAssignedTask.  I.E., tasks are all done,
+            //before again creating new tasks.
+            //So no need to see if this new task duplicates an existing unfinished task.  
+            
+            //add the task to the list
             taskList.add(taskOA);
             return taskList.size() - 1;
         }
@@ -2455,6 +3463,433 @@ wcsActive = false;
         return table;
     }
     
+    /**
+     * This returns the complete list of CF Standard Names as a table with 1 column.
+     *
+     * @return the complete list of CF Standard Names as a table with 1 column
+     * @throws Exception if trouble (e.g., file not found)
+     */
+    public static Table keywordsCfTable() throws Exception {
+        StringArray sa = StringArray.fromFile(
+            contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/cfStdNames.txt");
+        Table table = new Table();
+        table.addColumn("CfStandardNames", sa);
+        return table;
+    }
+    
+    /**
+     * This returns the complete list of GCMD Science Keywords as a table with 1 column.
+     *
+     * @return the complete list of GCMD Science Keywords as a table with 1 column
+     * @throws Exception if trouble (e.g., file not found)
+     */
+    public static Table keywordsGcmdTable() throws Exception {
+        StringArray sa = StringArray.fromFile(
+            contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/gcmdScienceKeywords.txt");
+        Table table = new Table();
+        table.addColumn("GcmdScienceKeywords", sa);
+        return table;
+    }
+    
+    /**
+     * This returns the complete CF to GCMD conversion information as a table with 1 column.
+     * The GCMD to CF conversion information can be derived from this.
+     *
+     * @return the CF to GCMD conversion information as a table with 1 column
+     * @throws Exception if trouble (e.g., file not found)
+     */
+    public static Table keywordsCfToGcmdTable() throws Exception {
+        StringArray sa = StringArray.fromFile(
+            contextDirectory + "WEB-INF/classes/gov/noaa/pfel/erddap/util/CfToGcmd.txt");
+        Table table = new Table();
+        table.addColumn("CfToGcmd", sa);
+        return table;
+    }
+    
+    /**
+     * This returns true during the initial loadDatasets.
+     * @return true during the initial loadDatasets, else false.
+     */
+    public static boolean initialLoadDatasets() {
+        return memoryUseLoadDatasetsSB.length() == 0;
+    }
+
+    /** 
+     * This creates an IndexWriter.
+     * Normally, this is created once in RunLoadDatasets.
+     * But if trouble, a new one will be created.
+     *
+     * @throws RuntimeException if trouble
+     */
+    public static void createLuceneIndexWriter(boolean firstTime) {
+
+        try {
+            String2.log("createLuceneIndexWriter(" + firstTime + ")");
+            long tTime = System.currentTimeMillis();
+
+            //if this is being called, directory shouldn't be locked
+            //see javaDocs for indexWriter.close()
+            if (IndexWriter.isLocked(luceneDirectory)) 
+                IndexWriter.unlock(luceneDirectory);
+
+            //create indexWriter
+            IndexWriterConfig lucConfig = 
+                new IndexWriterConfig(luceneVersion, luceneAnalyzer);
+            lucConfig.setOpenMode(firstTime?
+                IndexWriterConfig.OpenMode.CREATE :
+                IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+            luceneIndexWriter = new IndexWriter(luceneDirectory, lucConfig);
+            luceneIndexWriter.setInfoStream(
+                verbose? new PrintStream(new String2LogOutputStream()) : null); 
+            String2.log("  createLuceneIndexWriter finished.  time=" +
+                (System.currentTimeMillis() - tTime));
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+    }
+
+    /** 
+     * This returns the Lucene IndexSearcher and datasetIDFieldCache (thread-safe).
+     * IndexSearch uses IndexReader (also thread-safe).
+     * IndexReader works on a snapshot of an index, 
+     * so it is recreated if flagged at end of LoadDatasetsevery 
+     * via needNewLuceneIndexReader.
+     *
+     * @return Object[2]: [0]=a luceneIndexSearcher (thread-safe), or null if trouble.
+     *    [1]=luceneDatasetIDFieldCache, or null if trouble.
+     *    Either both will be null or both will be !null.
+     */
+    public static Object[] luceneIndexSearcher() {
+
+        //synchronize 
+        synchronized (luceneIndexReaderLock) {
+
+            //need a new indexReader?
+            //(indexReader is thread-safe, but only need one)
+            if (luceneIndexReader == null || needNewLuceneIndexReader ||
+                luceneIndexSearcher == null) {
+
+                //clear out old one
+                try { 
+                    if (luceneIndexSearcher != null) luceneIndexSearcher.close(); 
+                } catch (Throwable t) {}
+                luceneIndexSearcher = null;
+
+                try {
+                    if (luceneIndexReader   != null) luceneIndexReader.close();  
+                } catch (Throwable t) {}
+                luceneIndexReader = null;
+                luceneDatasetIDFieldCache = null;
+
+                needNewLuceneIndexReader = true;
+
+                //create a new one
+                try {
+                    long rTime = System.currentTimeMillis();
+                    luceneIndexReader = IndexReader.open(luceneDirectory); // read-only=true
+                    luceneIndexSearcher = new IndexSearcher(luceneIndexReader);
+                    String2.log("  new luceneIndexReader+Searcher time=" + 
+                        (System.currentTimeMillis() - rTime));
+
+                    //create the luceneDatasetIDFieldCache
+                    //save memory by sharing the canonical strings  
+                    //(EDD.ensureValid makes datasetID's canonical)
+                    rTime = System.currentTimeMillis();
+                    luceneDatasetIDFieldCache = FieldCache.DEFAULT.getStrings(luceneIndexReader, 
+                        "datasetID");
+                    int n = luceneDatasetIDFieldCache.length;
+                    for (int i = 0; i < n; i++)
+                        luceneDatasetIDFieldCache[i] = String2.canonical(luceneDatasetIDFieldCache[i]);
+                    String2.log("  new luceneDatasetIDFieldCache time=" + 
+                        (System.currentTimeMillis() - rTime));
+
+                    //if successful, we no longer needNewLuceneIndexReader
+                    needNewLuceneIndexReader = false;  
+                    //if successful, fall through
+
+                } catch (Throwable t) {
+                    String subject = String2.ERROR + " while creating Lucene Searcher";
+                    String msg = MustBe.throwableToString(t);
+                    email(emailEverythingTo, subject, msg);
+                    String2.log(subject + "\n" + msg);            
+
+                    //clear out old one
+                    try { 
+                        if (luceneIndexSearcher != null) luceneIndexSearcher.close(); 
+                    } catch (Throwable t2) {}
+                    luceneIndexSearcher = null;
+
+                    try {
+                        if (luceneIndexReader   != null) luceneIndexReader.close();  
+                    } catch (Throwable t2) {}
+                    luceneIndexReader = null;
+                    luceneDatasetIDFieldCache = null;
+
+                    needNewLuceneIndexReader = true;
+
+                    //return
+                    return new Object[]{null, null};
+                }
+            }
+
+            return new Object[]{luceneIndexSearcher, luceneDatasetIDFieldCache};
+        }
+    }
+
+    /** 
+     * This parses a query with luceneQueryParser (not thread-safe).
+     *
+     * @param searchString  the user's searchString, but modified slightly for Lucene
+     * @return a Query, or null if trouble
+     */
+    public static Query luceneParseQuery(String searchString) {
+
+        //queryParser is not thread-safe, so re-use it in a synchronized block
+        //(It is fast, so synchronizing on one parser shouldn't be a bottleneck.
+        synchronized (luceneQueryParser) {
+
+            try {
+                //long qTime = System.currentTimeMillis();
+                Query q = luceneQueryParser.parse(searchString);
+                //String2.log("  luceneParseQuery finished.  time=" + (System.currentTimeMillis() - qTime)); //always 0
+                return q;
+            } catch (Throwable t) {
+                String2.log("Lucene failed to parse searchString=" + searchString + "\n" +
+                    MustBe.throwableToString(t));
+                return null;
+            }
+        }
+    }
+
+    /**
+     * This gets the raw requested (or inferred) page number and itemsPerPage
+     * by checking the request parameters.
+     *
+     * @param request
+     * @return int[2]  
+     *     [0]=page         (may be invalid, e.g., -5 or Integer.MAX_VALUE) 
+     *     [1]=itemsPerPage (may be invalid, e.g., -5 or Integer.MAX_VALUE)
+     */
+    public static int[] getRawRequestedPIpp(HttpServletRequest request) {
+
+        return new int[]{
+            String2.parseInt(request.getParameter("page")),
+            String2.parseInt(request.getParameter("itemsPerPage")) };
+    }
+
+    /**
+     * This gets the requested (or inferred) page number and itemsPerPage
+     * by checking the request parameters.
+     *
+     * @param request
+     * @return int[2]  
+     *     [0]=page (will be 1..., but may be too big), 
+     *     [1]=itemsPerPage (will be 1...), 
+     */
+    public static int[] getRequestedPIpp(HttpServletRequest request) {
+
+        int iar[] = getRawRequestedPIpp(request);
+
+        //page is 1..
+        if (iar[0] < 1 || iar[0] == Integer.MAX_VALUE)
+            iar[0] = 1; //default
+
+        //itemsPerPage
+        if (iar[1] < 1 || iar[1] == Integer.MAX_VALUE)
+            iar[1] = defaultItemsPerPage; 
+
+        return iar;
+    }
+
+    /**
+     * This returns the .jsonp=... part of the request (percent encoded) or "".
+     * If not "", it will have "&" at the end.
+     *
+     * @param request
+     * @return the .jsonp=... part of the request (percent encoded) or "".
+     *   If not "", it will have "&" at the end.
+     *   If the query has a syntax error, this returns "".
+     */
+    public static String passThroughJsonpQuery(HttpServletRequest request) {
+        String jsonp = "";
+        try {
+            String parts[] = EDD.getUserQueryParts(request.getQueryString()); //decoded.  Does some validity checking.
+            jsonp = String2.stringStartsWith(parts, ".jsonp="); //may be null
+            return jsonp == null? "" : 
+                ".jsonp=" + SSR.minimalPercentEncode(jsonp.substring(7)) + "&";
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            return "";
+        }
+    }
+
+
+    /**
+     * This extracts the page= and itemsPerPage= parameters
+     * of the request (if any) and returns them lightly validated and formatted for a URL
+     * (e.g., "page=1&amp;itemsPerPage=1000").
+     *
+     * @param request
+     * @return e.g., "page=1&amp;itemsPerPage=1000" (encoded here for JavaDocs)
+     */
+    public static String passThroughPIppQuery(HttpServletRequest request) {
+        int pipp[] = getRequestedPIpp(request);
+        return "page=" + pipp[0] + "&itemsPerPage=" + pipp[1];
+    }
+
+    /**
+     * This is like passThroughPIppQuery, but always sets page=1.
+     *
+     * @param request
+     * @return e.g., "page=1&amp;itemsPerPage=1000" (encoded here for JavaDocs)
+     */
+    public static String passThroughPIppQueryPage1(HttpServletRequest request) {
+        int pipp[] = getRequestedPIpp(request);
+        return "page=1&itemsPerPage=" + pipp[1];
+    }
+
+    /**
+     * This is like passThroughPIppQuery, but the ampersand is XML encoded so
+     * it is ready to be put into HTML.
+     *
+     * @param request
+     * @return e.g., "page=1&amp;amp;itemsPerPage=1000" (doubly encoded here for JavaDocs)
+     */
+    public static String encodedPassThroughPIppQuery(HttpServletRequest request) {
+        int pipp[] = getRequestedPIpp(request);
+        return "page=" + pipp[0] + "&amp;itemsPerPage=" + pipp[1];
+    }
+
+    /**
+     * This is like encodedPassThroughPIppQuery, but always sets page=1.
+     *
+     * @param request
+     * @return e.g., "page=1&amp;amp;itemsPerPage=1000" (doubly encoded here for JavaDocs)
+     */
+    public static String encodedPassThroughPIppQueryPage1(HttpServletRequest request) {
+        int pipp[] = getRequestedPIpp(request);
+        return "page=1&amp;itemsPerPage=" + pipp[1];
+    }
+
+    /**
+     * This calculates the requested (or inferred) page number and itemsPerPage
+     * by checking the request parameters.
+     *
+     * @param request
+     * @param nItems e.g., total number of datasets from search results
+     * @return int[4]  
+     *     [0]=page (will be 1..., but may be too big), 
+     *     [1]=itemsPerPage (will be 1...), 
+     *     [2]=startIndex (will be 0..., but may be too big),
+     *     [3]=lastPage with items (will be 1...).
+     *     Note that page may be greater than lastPage (caller should write error message to user).
+     */
+    public static int[] calculatePIpp(HttpServletRequest request, int nItems) {
+
+        int pipp[] = getRequestedPIpp(request);
+        int page = pipp[0];
+        int itemsPerPage = pipp[1]; 
+        int startIndex = Math2.narrowToInt((page - 1) * (long)itemsPerPage); //0..
+        int lastPage = Math.max(1, Math2.hiDiv(nItems, itemsPerPage));
+
+        return new int[]{page, itemsPerPage, startIndex, lastPage};
+    }
+
+    /** This returns the error String[2] if a search yielded no matches.
+     *
+     */
+    public static String[] noSearchMatch(String searchFor) {
+        if (searchFor == null)
+            searchFor = "";
+        return new String[] {
+            THERE_IS_NO_DATA,
+            (searchFor.length()     >  0? searchSpelling + " " : "") +
+            (searchFor.indexOf(' ') >= 0? searchFewerWords : "")};
+    }
+
+    /** 
+     * This returns the error String[2] if page &gt; lastPage.
+     *
+     * @param page
+     * @param lastPage
+     * @return String[2] with the two Strings
+     */
+    public static String[] noPage(int page, int lastPage) {
+        return new String[]{
+            MessageFormat.format(noPage1, "" + page, "" + lastPage),
+            MessageFormat.format(noPage2, "" + page, "" + lastPage)};
+    }
+
+    /**
+     * This returns the nMatchingDatasets HTML message, with paging options.
+     *
+     * @param nMatches   this must be 1 or more
+     * @param page
+     * @param lastPage
+     * @param relevant true=most relevant first, false=sorted alphabetically
+     * @param urlWithQuery percentEncoded, but not HTML/XML encoded, 
+     *    e.g., http://coastwatch.pfeg.noaa.gov/erddap/search/index.html?page=1&itemsPerPage=1000&searchFor=temperature%20wind
+     * @return string with HTML content
+     */
+    public static String nMatchingDatasetsHtml(int nMatches, int page, int lastPage,
+        boolean relevant, String urlWithQuery) {
+
+        if (nMatches == 1)
+            return nMatching1;
+
+        StringBuilder results = new StringBuilder(
+            MessageFormat.format(
+                relevant?
+                    nMatchingMostRelevant :
+                    nMatchingAlphabetical,
+                "" + nMatches) + "\n");
+
+        if (lastPage > 1) {
+
+            //figure out where page number is so replaceable
+            int pagePo = urlWithQuery.indexOf("?page=");
+            if (pagePo < 0)
+                pagePo = urlWithQuery.indexOf("&page="); 
+            if (pagePo < 0) {
+                pagePo = urlWithQuery.length();
+                urlWithQuery += (urlWithQuery.indexOf('?') < 0? "?" : "&") + "page=" + page;                
+            }
+            int pageNumberPo = pagePo + 6;
+
+            int ampPo = urlWithQuery.indexOf('&', pageNumberPo);
+            if (ampPo < 0)
+                ampPo = urlWithQuery.length();
+
+            String url1 = "&nbsp;<a href=\"" + 
+                          XML.encodeAsHTML(urlWithQuery.substring(0, pageNumberPo));  // + p
+            String url2 = XML.encodeAsHTML(urlWithQuery.substring(ampPo)) + "\">";    // + p   
+            String url3 = "</a>&nbsp;\n";        
+
+            //links, e.g. if page=5 and lastPage=12: _1 ... _4  5 _6 ... _12 
+            StringBuilder sb = new StringBuilder();
+            if (page >= 2)            sb.append(url1 + 1          + url2 + 1          + url3);
+            if (page >= 4)            sb.append("...\n");
+            if (page >= 3)            sb.append(url1 + (page - 1) + url2 + (page - 1) + url3);
+            sb.append("&nbsp;" + page + "&nbsp;(" + EDStatic.nMatchingCurrent + ")&nbsp;\n"); //always show current page
+            if (page <= lastPage - 2) sb.append(url1 + (page + 1) + url2 + (page + 1) + url3);
+            if (page <= lastPage - 3) sb.append("...\n");
+            if (page <= lastPage - 1) sb.append(url1 + lastPage   + url2 + lastPage   + url3);
+
+            //append to results
+            results.append("&nbsp;&nbsp;" +
+                MessageFormat.format(nMatchingPage, 
+                    "" + page, "" + lastPage, sb.toString()) + 
+                "\n");
+        }
+
+        return results.toString();
+    }
+
+    /** If query is null or "", this returns ""; otherwise, this returns "?" + query. */
+    public static String questionQuery(String query) {
+        return query == null || query.length() == 0? "" : "?" + query;
+    }
+
 
 
     /** 

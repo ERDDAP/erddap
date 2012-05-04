@@ -12,6 +12,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 
+import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.erddap.dataset.EDD;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
@@ -28,21 +29,32 @@ public class TaskThread extends Thread {
     /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
     public final static String ERROR = String2.ERROR;
 
+//PLEASE: make parameters from objects that have nice .toString(),
+//e.g., StringArray instead of String[].
+
     /** If taskOA[0].equals(TASK_MAKE_A_DATAFILE), then make
      * taskOA[1]=edd, taskOA[2]=query, taskOA[3]=fileDir, taskOA[4]=fileName, taskOA[5]=fileType 
      */
     public final static Integer TASK_MAKE_A_DATAFILE = new Integer(0);
 
-    /** If taskOA[1].equals(TASK_SET_FLAG), then make taskOA[1]=datasetID 
+    /** If taskOA[0].equals(TASK_SET_FLAG), then make taskOA[1]=datasetID 
      */
     public final static Integer TASK_SET_FLAG = new Integer(1);
+
+    /** If taskOA[0].equals(TASK_DAP_TO_NC), then make
+     * taskOA[1]=dapUrl, taskOA[2]=StringArray(vars), taskOA[3]=projection, 
+     * taskOA[4]=fullFileName, taskOA[5]=jplMode (Boolean.TRUE|FALSE),
+     * taskOA[6]=lastModified (Long)
+     */
+    public final static Integer TASK_DAP_TO_NC = new Integer(2);
 
     /**
      * TASK_NAMES parallels the TASK Integers.
      */
     public final static String[] TASK_NAMES = new String[]{
         "MAKE_A_DATAFILE",
-        "SET_FLAG"};
+        "SET_FLAG",
+        "DAP_TO_NC"};
 
     /**
      * Set this to true (by calling verbose=true in your program, 
@@ -121,6 +133,7 @@ public class TaskThread extends Thread {
                     edd.reuseOrMakeFileForDapQuery(null, EDStatic.loggedInAsSuperuser, //request, loggedInAs
                         query, fileDir, fileName, fileType);
 
+                //TASK_SET_FLAG
                 } else if (taskType.equals(TASK_SET_FLAG)) {
                     String datasetID = (String)taskOA[1];
                     taskSummary = "  TASK_SET_FLAG datasetID=" + datasetID;
@@ -130,11 +143,30 @@ public class TaskThread extends Thread {
                     //All of the files are copied, so all will be detected.
                     EDD.requestReloadASAP(datasetID);
 
+                //TASK_DAP_TO_NC
+                } else if (taskType.equals(TASK_DAP_TO_NC)) {
+
+                    String      dapUrl       = (String)taskOA[1];
+                    StringArray vars         = (StringArray)taskOA[2];
+                    String      projection   = (String)taskOA[3];
+                    String      fullFileName = (String)taskOA[4];
+                    Boolean     jplMode      = (Boolean)taskOA[5];
+                    Long        lastModified = (Long)taskOA[6];
+                    taskSummary = 
+                        "  TASK_DAP_TO_NC \n" + 
+                        "    dapUrl=" + dapUrl +
+                        "    vars=" + vars + " projection=" + projection +
+                        "    file=" + fullFileName + " at=" + lastModified;
+                    String2.log(taskSummary);
+
+                    OpendapHelper.dapToNc(dapUrl, vars.toArray(),
+                        projection, fullFileName, jplMode.booleanValue());
+                    File2.setLastModified(fullFileName, lastModified.longValue());
+
+                //UNKNOWN taskType
                 } else {
-                    //unknown taskType
                     String2.log("TaskThread error: Unknown taskType=" + taskType + 
                         " for task #" + (EDStatic.nextTask - 1) + ".");
-                    continue;
                 }
 
                 //task finished successfully
@@ -158,8 +190,10 @@ public class TaskThread extends Thread {
             }
 
             //whether succeeded or failed
-            EDStatic.lastFinishedTask = EDStatic.nextTask - 1;
-            EDStatic.taskList.set(EDStatic.nextTask - 1, null);  //throw away the task info (gc)
+            synchronized(EDStatic.taskList) { //all task-related things synch on taskList
+                EDStatic.lastFinishedTask = EDStatic.nextTask - 1;
+                EDStatic.taskList.set(EDStatic.nextTask - 1, null);  //throw away the task info (gc)
+            }
         }
     }
 

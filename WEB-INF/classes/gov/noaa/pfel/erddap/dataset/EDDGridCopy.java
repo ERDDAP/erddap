@@ -79,6 +79,8 @@ public class EDDGridCopy extends EDDGrid {
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         boolean checkSourceData = defaultCheckSourceData;
 
         //process the tags
@@ -99,6 +101,10 @@ public class EDDGridCopy extends EDDGrid {
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
             else if (localTags.equals( "<onChange>")) {}
             else if (localTags.equals("</onChange>")) tOnChange.add(content); 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<checkSourceData>")) {}
@@ -132,7 +138,7 @@ public class EDDGridCopy extends EDDGrid {
         }
 
         return new EDDGridCopy(tDatasetID, 
-            tAccessibleTo, tOnChange, tReloadEveryNMinutes, 
+            tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, tReloadEveryNMinutes, 
             tSourceEdd);
     }
 
@@ -148,6 +154,11 @@ public class EDDGridCopy extends EDDGrid {
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
      * @param tSourceEdd the remote dataset to be copied.
@@ -156,8 +167,9 @@ public class EDDGridCopy extends EDDGrid {
      * @throws Throwable if trouble
      */
     public EDDGridCopy(String tDatasetID, 
-        String tAccessibleTo, StringArray tOnChange, int tReloadEveryNMinutes,
-        EDDGrid tSourceEdd) throws Throwable {
+        String tAccessibleTo, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        int tReloadEveryNMinutes, EDDGrid tSourceEdd) throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDGridCopy " + tDatasetID); 
@@ -171,6 +183,8 @@ public class EDDGridCopy extends EDDGrid {
         sourceEdd = tSourceEdd;
         setAccessibleTo(tAccessibleTo);
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
 
         //ensure copyDatasetDir exists
@@ -220,14 +234,17 @@ public class EDDGridCopy extends EDDGrid {
                         Object taskOA[] = new Object[6];
                         taskOA[0] = TaskThread.TASK_MAKE_A_DATAFILE;
                         taskOA[1] = sourceEdd;
-                        taskOA[2] = tQuery.toString();
+                        taskOA[2] = tQuery.toString(); //String, not StringBuilder
                         taskOA[3] = copyDatasetDir;
                         taskOA[4] = fileName;
                         taskOA[5] = ".nc";
-                        taskNumber = EDStatic.addTask(taskOA);
-                        if (reallyVerbose)
-                            String2.log("  task#" + taskNumber + " TASK_MAKE_A_DATAFILE " + tQuery.toString() + "\n    " +
-                                copyDatasetDir + fileName + ".nc");
+                        int tTaskNumber = EDStatic.addTask(taskOA);
+                        if (tTaskNumber >= 0) {
+                            taskNumber = tTaskNumber;
+                            if (reallyVerbose)
+                                String2.log("  task#" + taskNumber + " TASK_MAKE_A_DATAFILE " + tQuery.toString() + "\n    " +
+                                    copyDatasetDir + fileName + ".nc");
+                        }
                     }
 
                     //create task to flag dataset to be reloaded
@@ -235,7 +252,7 @@ public class EDDGridCopy extends EDDGrid {
                         Object taskOA[] = new Object[2];
                         taskOA[0] = TaskThread.TASK_SET_FLAG;
                         taskOA[1] = datasetID;
-                        taskNumber = EDStatic.addTask(taskOA);
+                        taskNumber = EDStatic.addTask(taskOA);  //TASK_SET_FLAG will always be added
                         if (reallyVerbose)
                             String2.log("  task#" + taskNumber + " TASK_SET_FLAG " + datasetID);
                     }
@@ -335,7 +352,7 @@ public class EDDGridCopy extends EDDGrid {
         //  and constructor will try again in 15 min.
         localEdd = new EDDGridFromNcFiles(datasetID, 
             tAccessibleTo,
-            tOnChange, 
+            tOnChange, tFgdcFile, tIso19115File,
             new Attributes(), //addGlobalAttributes
             1, //altMetersPerSourceUnit, 
             tAxisVariables,
@@ -542,7 +559,7 @@ public class EDDGridCopy extends EDDGrid {
     "    String contributor_name \"Remote Sensing Systems, Inc\";\n" +
     "    String contributor_role \"Source of level 2 data.\";\n" +
     "    String Conventions \"CF-1.4\";\n" + //currently
-//    "    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" + //after next release
+//    "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" + //after next release
     "    String creator_email \"dave.foley@noaa.gov\";\n" +
     "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
     "    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
@@ -647,19 +664,19 @@ public class EDDGridCopy extends EDDGrid {
             expected = 
     //verified with 
     //http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwind1day.csv?y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]
-    "time, altitude, latitude, longitude, y_wind\n" +
-    "UTC, m, degrees_north, degrees_east, m s-1\n" +
-    "2008-01-10T12:00:00Z, 0.0, 36.625, 230.125, 3.555585\n" +
-    "2008-01-10T12:00:00Z, 0.0, 36.625, 230.875, 2.82175\n" +
-    "2008-01-10T12:00:00Z, 0.0, 36.625, 231.625, 4.539375\n" +
-    "2008-01-10T12:00:00Z, 0.0, 36.625, 232.375, 4.975015\n" +
-    "2008-01-10T12:00:00Z, 0.0, 36.625, 233.125, 5.643055\n" +
-    "2008-01-10T12:00:00Z, 0.0, 36.625, 233.875, 2.72394\n" +
-    "2008-01-10T12:00:00Z, 0.0, 36.625, 234.625, 1.39762\n" +
-    "2008-01-10T12:00:00Z, 0.0, 36.625, 235.375, 2.10711\n" +
-    "2008-01-10T12:00:00Z, 0.0, 36.625, 236.125, 3.019165\n" +
-    "2008-01-10T12:00:00Z, 0.0, 36.625, 236.875, 3.551915\n" +
-    "2008-01-10T12:00:00Z, 0.0, 36.625, 237.625, NaN\n";          //test of NaN
+    "time,altitude,latitude,longitude,y_wind\n" +
+    "UTC,m,degrees_north,degrees_east,m s-1\n" +
+    "2008-01-10T12:00:00Z,0.0,36.625,230.125,3.555585\n" +
+    "2008-01-10T12:00:00Z,0.0,36.625,230.875,2.82175\n" +
+    "2008-01-10T12:00:00Z,0.0,36.625,231.625,4.539375\n" +
+    "2008-01-10T12:00:00Z,0.0,36.625,232.375,4.975015\n" +
+    "2008-01-10T12:00:00Z,0.0,36.625,233.125,5.643055\n" +
+    "2008-01-10T12:00:00Z,0.0,36.625,233.875,2.72394\n" +
+    "2008-01-10T12:00:00Z,0.0,36.625,234.625,1.39762\n" +
+    "2008-01-10T12:00:00Z,0.0,36.625,235.375,2.10711\n" +
+    "2008-01-10T12:00:00Z,0.0,36.625,236.125,3.019165\n" +
+    "2008-01-10T12:00:00Z,0.0,36.625,236.875,3.551915\n" +
+    "2008-01-10T12:00:00Z,0.0,36.625,237.625,NaN\n";          //test of NaN
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -673,12 +690,12 @@ public class EDDGridCopy extends EDDGrid {
             expected = 
     //verified with 
     //http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwind1day.csv?y_wind[(1.1991888e9):3:(1.1999664e9)][0][(36.5)][(230)]
-    "time, altitude, latitude, longitude, y_wind\n" +
-    "UTC, m, degrees_north, degrees_east, m s-1\n" +
-    "2008-01-01T12:00:00Z, 0.0, 36.625, 230.125, 7.6282454\n" +
-    "2008-01-04T12:00:00Z, 0.0, 36.625, 230.125, -12.3\n" +
-    "2008-01-07T12:00:00Z, 0.0, 36.625, 230.125, -5.974585\n" +
-    "2008-01-10T12:00:00Z, 0.0, 36.625, 230.125, 3.555585\n";
+    "time,altitude,latitude,longitude,y_wind\n" +
+    "UTC,m,degrees_north,degrees_east,m s-1\n" +
+    "2008-01-01T12:00:00Z,0.0,36.625,230.125,7.6282454\n" +
+    "2008-01-04T12:00:00Z,0.0,36.625,230.125,-12.3\n" +
+    "2008-01-07T12:00:00Z,0.0,36.625,230.125,-5.974585\n" +
+    "2008-01-10T12:00:00Z,0.0,36.625,230.125,3.555585\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             //  */
 

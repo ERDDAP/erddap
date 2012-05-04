@@ -145,17 +145,17 @@ public class StoredIndex  {
         StoredIndex index = new StoredIndex(dir + name, pa);
 
         //get all
-        Test.ensureEqual(String2.toCSVString(index.subset(0, n/.1)), "0, 999999", "");
+        Test.ensureEqual(String2.toCSSVString(index.subset(0, n/.1)), "0, 999999", "");
 
         //get some
-        Test.ensureEqual(String2.toCSVString(index.subset(1, 2)), "10, 20", "");
+        Test.ensureEqual(String2.toCSSVString(index.subset(1, 2)), "10, 20", "");
 
         //between 2 indices
-        Test.ensureEqual(String2.toCSVString(index.subset(1.55, 1.56)), "16, 15", "");
+        Test.ensureEqual(String2.toCSSVString(index.subset(1.55, 1.56)), "16, 15", "");
 
         //get none
-        Test.ensureEqual(String2.toCSVString(index.subset(-.1, -.1)), "-1, -1", "");
-        Test.ensureEqual(String2.toCSVString(index.subset(100000, 100000)), "-1, -1", "");
+        Test.ensureEqual(String2.toCSSVString(index.subset(-.1, -.1)), "-1, -1", "");
+        Test.ensureEqual(String2.toCSSVString(index.subset(100000, 100000)), "-1, -1", "");
 
         index.close();
         String2.log("\n***** StoredIndex.main finished successfully");

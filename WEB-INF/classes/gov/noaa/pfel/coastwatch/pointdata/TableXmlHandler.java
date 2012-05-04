@@ -98,7 +98,7 @@ public class TableXmlHandler extends DefaultHandler {
             errorInMethod + "rowElementXPath=" + rowElementXPath + " must start with '/'.");
         rowStack = String2.split(rowElementXPath.substring(1), '/'); //substring(1) because first char is '/'
         rowStackSize = rowStack.length;
-        if (verbose) String2.log("TableXmlHandler rowStack=" + String2.toCSVString(rowStack));
+        if (verbose) String2.log("TableXmlHandler rowStack=" + String2.toCSSVString(rowStack));
 
 
     }

@@ -201,9 +201,9 @@ public class GridDataSetAnomaly extends GridDataSet {
         checkValidity();
     
         if (verbose) String2.log(
-            "  Options: "     + String2.toCSVString(activeTimePeriodOptions) + "\n" +
-            "  Titles: "      + String2.toCSVString(activeTimePeriodTitles) + "\n" +
-            "  NHours: "      + String2.toCSVString(activeTimePeriodNHours) + "\n" +
+            "  Options: "     + String2.toCSSVString(activeTimePeriodOptions) + "\n" +
+            "  Titles: "      + String2.toCSSVString(activeTimePeriodTitles) + "\n" +
+            "  NHours: "      + String2.toCSSVString(activeTimePeriodNHours) + "\n" +
             "  GridDataSetAnomaly constructor " + internalName + " done. TIME=" + 
                 (System.currentTimeMillis() - time));
     }
@@ -251,7 +251,7 @@ public class GridDataSetAnomaly extends GridDataSet {
             TimePeriods.getNHours(timePeriodValue),
             TimePeriods.getNHours(gdsTimePeriod),
             errorInMethod + "No matching timePeriod for " + timePeriodValue + " in gridDataSet:\n" +
-                String2.toCSVString(gridDataSet.activeTimePeriodOptions));
+                String2.toCSSVString(gridDataSet.activeTimePeriodOptions));
         //timeValue should already be appropriate
         Grid gdsGrid = gridDataSet.makeGrid(gdsTimePeriod, 
             timeValue, minX, maxX, minY, maxY, desiredNWide, desiredNHigh);
@@ -264,14 +264,14 @@ public class GridDataSetAnomaly extends GridDataSet {
             TimePeriods.getNHours(timePeriodValue),
             TimePeriods.getNHours(climatologyTimePeriod),
             errorInMethod + "No matching timePeriod for " + timePeriodValue + " in climatologyDataSet:\n" +
-                String2.toCSVString(climatology.activeTimePeriodOptions));
+                String2.toCSSVString(climatology.activeTimePeriodOptions));
         String[] climatologyTimes = 
             (String[])climatology.activeTimePeriodTimes.get(climatologyTimePeriodIndex);
         int timeIndex = GridDataSet.findAppropriateClimatologyTime(
             timePeriodValue, climatologyTimes, timeValue);
         Test.ensureTrue(timeIndex >= 0,
             errorInMethod + "No appropriate time for " + timeValue + " in climatologyDataSet:\n" +
-                String2.toCSVString(climatologyTimes));
+                String2.toCSSVString(climatologyTimes));
         String climatologyTimeValue = climatologyTimes[timeIndex];
         //try hard to exactly match the results from gdsGrid 
         //(as opposed to the original desired values)
@@ -370,21 +370,21 @@ public class GridDataSetAnomaly extends GridDataSet {
 
             Grid gdsGrid = gridDataSet.makeGrid(timePeriod, centeredTime,           
                 -135, -135, 22, 51, 1, 29);
-            String2.log("\ngdsGrid lon(" + gdsGrid.lon.length + ")=" + String2.toCSVString(gdsGrid.lon) +
-                "\n  lat(" + gdsGrid.lat.length + ")=" + String2.toCSVString(gdsGrid.lat) +
-                "\n  data(" + gdsGrid.data.length + ")=" + String2.toCSVString(gdsGrid.data));
+            String2.log("\ngdsGrid lon(" + gdsGrid.lon.length + ")=" + String2.toCSSVString(gdsGrid.lon) +
+                "\n  lat(" + gdsGrid.lat.length + ")=" + String2.toCSSVString(gdsGrid.lat) +
+                "\n  data(" + gdsGrid.data.length + ")=" + String2.toCSSVString(gdsGrid.data));
 
             Grid climatologyGrid = climatologyDataSet.makeGrid("monthly", climatologyCenteredTime,           
                 -135, -135, 22, 51, 1, 29);
-            String2.log("\nclimatologyGrid lon(" + climatologyGrid.lon.length + ")=" + String2.toCSVString(climatologyGrid.lon) +
-                "\n  lat(" + climatologyGrid.lat.length + ")=" + String2.toCSVString(climatologyGrid.lat) +
-                "\n  data(" + climatologyGrid.data.length + ")=" + String2.toCSVString(climatologyGrid.data));
+            String2.log("\nclimatologyGrid lon(" + climatologyGrid.lon.length + ")=" + String2.toCSSVString(climatologyGrid.lon) +
+                "\n  lat(" + climatologyGrid.lat.length + ")=" + String2.toCSSVString(climatologyGrid.lat) +
+                "\n  data(" + climatologyGrid.data.length + ")=" + String2.toCSSVString(climatologyGrid.data));
 
             Grid anomalyGrid = anomalyDataSet.makeGrid(timePeriod, centeredTime,           
                 -135, -135, 22, 51, 1, 29);
-            String2.log("\nanomalyGrid lon(" + anomalyGrid.lon.length + ")=" + String2.toCSVString(anomalyGrid.lon) +
-                "\n  lat(" + anomalyGrid.lat.length + ")=" + String2.toCSVString(anomalyGrid.lat) +
-                "\n  data(" + anomalyGrid.data.length + ")=" + String2.toCSVString(anomalyGrid.data));
+            String2.log("\nanomalyGrid lon(" + anomalyGrid.lon.length + ")=" + String2.toCSSVString(anomalyGrid.lon) +
+                "\n  lat(" + anomalyGrid.lat.length + ")=" + String2.toCSSVString(anomalyGrid.lat) +
+                "\n  data(" + anomalyGrid.data.length + ")=" + String2.toCSSVString(anomalyGrid.data));
 
             Test.ensureEqual(anomalyGrid.lon.length, 1, "");
             Test.ensureEqual(anomalyGrid.lon[0], -135, "");

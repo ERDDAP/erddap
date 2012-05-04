@@ -45,7 +45,7 @@ set dataSubDir=satellite/
 set incomplete=/opt/tomcat1/content/thredds/GeneratedXml/incompleteMainCatalog.xml 
 set xmlMainDir=/opt/tomcat1/content/thredds/GeneratedXml
 
-java -cp $thisDir/classes:$thisDir/lib/netcdfAll-latest.jar:$thisDir/lib/slf4j-jdk14.jar:$thisDir/lib/activation.jar:$thisDir/lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.GenerateThreddsXml $dataMainDir $dataSubDir $incomplete $xmlMainDir
+java -cp $thisDir/classes:$thisDir/lib/netcdfAll-latest.jar:$thisDir/lib/slf4j-jdk14.jar:$thisDir/lib/activation.jar:$thisDir/lib/lucene-core.jar:$thisDir/lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.GenerateThreddsXml $dataMainDir $dataSubDir $incomplete $xmlMainDir
 
 
 # finished 

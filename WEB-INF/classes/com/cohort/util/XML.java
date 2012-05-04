@@ -186,6 +186,55 @@ public class XML {
         return encodeAsXML? encodeAsXML(s) : s;
     }
 
+    /** This encodes spaces as (char)160 (nbsp) when they are leading, trailing,
+     * or more than 1 consecutive.
+     *
+     * @param s
+     * @return s with some spaces encoded as (char)160 (nbsp)
+     */
+    public static String minimalEncodeSpaces(String s) {
+        //String2.log("s=\"" + s + "\"");
+        int sLength = s.length();
+        if (sLength == 0)
+            return s;
+
+        //count spaces at end
+        int nSpacesAtEnd = 0;
+        while (nSpacesAtEnd < sLength && s.charAt(sLength - (nSpacesAtEnd + 1)) == ' ')
+            nSpacesAtEnd++;
+        StringBuilder sb = new StringBuilder();
+
+        if (nSpacesAtEnd < sLength) {
+
+            //leading spaces
+            int tsLength = sLength - nSpacesAtEnd;
+            int po = 0;
+            while (po < tsLength && s.charAt(po) == ' ') {
+                sb.append((char)160); //"&nbsp;"
+                po++; 
+            }    
+
+            //internal more than 1 consecutive
+            while (po < tsLength - 1) {  //-1 so safe to look at po+1
+                if (s.charAt(po) == ' ' && s.charAt(po + 1) == ' ') {
+                    while (po < tsLength - 1 && s.charAt(po) == ' ') {
+                        sb.append((char)160); //"&nbsp;"
+                        po++;
+                    }
+                } else {
+                    sb.append(s.charAt(po++));
+                }
+            }
+            sb.append(s.charAt(tsLength - 1));
+        }   
+
+        //trailing spaces
+        for (int i = 0; i < nSpacesAtEnd; i++)
+            sb.append((char)160); //"&nbsp;"
+
+        return sb.toString();
+    }
+
     /**
      * This is like encodeAsHTML but treats plainText as &lt;pre&gt; text.
      *
@@ -193,7 +242,7 @@ public class XML {
      * @param maxLineLength  if lines are longer, they are broken
      */
     public static String encodeAsPreHTML(String plainText, int maxLineLength) {
-        String s = String2.noLongLines(plainText, maxLineLength, "");
+        String s = String2.noLongLinesAtSpace(plainText, maxLineLength, "");
         s = encodeAsHTML(s);  //after noLongLines so tags aren't broken
         s = String2.replaceAll(s, "\r", "");
         s = String2.replaceAll(s, "\n", "<br>");  //after encodeAsHTML; 
@@ -203,8 +252,8 @@ public class XML {
 
     /**
      * This replaces HTML character entities (and the XML subset)
-     * (e.g., "&amp;", "&lt;", "&gt;", "&quot;", "&nbsp;", etc.) in the string
-     * with characters (e.g., '&', '<', '>', '"', ' ', etc.) 
+     * (e.g., "&amp;amp;", "&amp;lt;", "&amp;gt;", "&amp;quot;", "&amp;nbsp;", etc.) in the string
+     * with characters (e.g., '&', '<', '>', '"', regular ' ', etc.) 
      * so the original string can be recovered.
      * Unrecognized entities are left intact.
      *
@@ -227,7 +276,9 @@ public class XML {
                         int v = String2.parseInt(
                             (entity.charAt(2) == 'x'? "0" : "") + //&#x  hex number -> 0x
                             s.substring(i+1, po)); //just digits or x+digits
-                        output.append(v < Character.MAX_VALUE? "" + (char)v : 
+                        output.append(
+                            v == 160? " " :  //nbsp
+                            v < Character.MAX_VALUE? "" + (char)v : 
                             entity); //leave intact
                     //check for common entities first
                     } else if (entity.equals("&amp;"))  { output.append('&');
@@ -616,7 +667,8 @@ public class XML {
         if (inFileName.equals(outFileName))
             throw new RuntimeException("Error: inFileName equals outFileName!");
         String in[] = String2.readFromFile(inFileName);
-        Test.ensureEqual(in[0], "", "Error while reading " + inFileName);
+        if (in[0].length() > 0)
+            throw new RuntimeException("Error while reading " + inFileName + "\n" + in[0]);
         String xml = in[1];
         int xmlLength = xml.length();
         StringBuilder sb = new StringBuilder();
@@ -742,7 +794,7 @@ public class XML {
         for (int ch = 0; ch < 260; ch++) {
             char ch1 = (char)ch;
             String ch2 = decodeEntities(encodeAsXML("" + ch1));
-            if (ch2.length() > 0) 
+            if (ch2.length() > 0 && ch != 160)   //#160=nbsp decodes as #20=' ' 
                 Test.ensureEqual(ch2, "" + ch1, "XML encode/decode ch=" + ch);
             ch2 = decodeEntities(encodeAsHTML("" + ch1));
             if (ch2.length() > 0) 
@@ -827,7 +879,18 @@ public class XML {
         nodeList = getNodeList(document, xPath, "/testr/level1[@att1='value1']"); 
         Test.ensureEqual(nodeList.getLength(), 1, "");
 
-        
+
+        //test minimalEncodeSpaces
+        Test.ensureEqual(minimalEncodeSpaces(""), "", "");
+        Test.ensureEqual(minimalEncodeSpaces(" "), "\u00A0", "");
+        Test.ensureEqual(minimalEncodeSpaces("  "), "\u00A0\u00A0", "");
+        Test.ensureEqual(minimalEncodeSpaces(" a "), "\u00A0a\u00A0", "");
+        Test.ensureEqual(minimalEncodeSpaces("  a  "), "\u00A0\u00A0a\u00A0\u00A0", "");
+        Test.ensureEqual(minimalEncodeSpaces(" ab "), "\u00A0ab\u00A0", "");
+        Test.ensureEqual(minimalEncodeSpaces("a b"), "a b", "");
+        Test.ensureEqual(minimalEncodeSpaces(" a  b "), "\u00A0a\u00A0\u00A0b\u00A0", "");
+        Test.ensureEqual(minimalEncodeSpaces("  a   bc d  "), "\u00A0\u00A0a\u00A0\u00A0\u00A0bc d\u00A0\u00A0", "");
+
         String2.log("XML.test finished successfully.");
 
     }

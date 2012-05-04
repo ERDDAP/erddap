@@ -113,7 +113,7 @@ public class EmaClass extends HttpServlet {
     /** attributeList holds the EmaAttributes in the order added */
     protected Vector attributeList = new Vector(); //thread-safe 
     /** attributeMap makes it easy to access the EmaAttributes by name */
-    protected ConcurrentHashMap attributeMap = new ConcurrentHashMap(); //thread-safe 
+    protected ConcurrentHashMap attributeMap = new ConcurrentHashMap(16, 0.75f, 4); //thread-safe 
 
     /** This value must be specified in the class's properties file. */
     protected String url;

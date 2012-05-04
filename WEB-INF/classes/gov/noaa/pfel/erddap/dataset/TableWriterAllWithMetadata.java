@@ -58,7 +58,7 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
      * The constructor.
      *
      * @param tDir a private cache directory for storing the intermediate files,
-     *    usually EDStatic.fullCacheDirectory + datasetID + "/"
+     *    usually cacheDirectory(datasetID)
      * @param tFileNameNoExt is the fileName without dir or extension (used as basis for temp files).
      *     A random number will be added to it for safety.
      */

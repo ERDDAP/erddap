@@ -39,13 +39,246 @@
 
 <p>Here are the changes associated with each ERDDAP release.
 
+<table style="width:600px; border-style:outset; border-width:0px; padding:0px; " 
+  cellspacing="0"> 
+<tr>
+<td>
+
+
+<!-- ****************************************************************************** -->
+<h2><a name="changes1.38">Changes</a> in version 1.38 (released 2012-04-21)</h2>
+<ul>
+<li><b>New Features:</b>
+  <ul>
+  <li>ISO 19115 and FGDC - ERDDAP can automatically generate
+    ISO 19115 and FGDC XML metadata files for each dataset. 
+    Links to the files are visible on every list of datasets
+    (e.g., from Full Text Search) and also in Web Accessible Folders (WAF)
+    (see the <a href="http://coastwatch.pfeg.noaa.gov/erddap/metadata/fgdc/xml/">FGDC WAF</a> and
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/metadata/iso19115/xml/">ISO 19115 WAF</a>).
+    Thanks to Ted Habermann, Dave Neufeld, and many others.
+
+  <li>Full Text Searches for Datasets now support <tt>-<i>excludedWord</i></tt>
+      and <tt>-"<i>excluded phrase</i>"</tt> .
+      Thanks to Rich Signell.
+
+  <li>Searches for datasets now return results a page at a time. The
+    default uses the parameter string: <tt>page=1&amp;itemsPerPage=1000</tt>,
+    but you can change the values in the URL of your request.
+    Thanks to Steve Hankin and the UAF project.
+
+  <li>OpenSearch - ERDDAP now supports the
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/opensearch1.1/index.html">OpenSearch 1.1</a>
+    standard for searching for datasets. Among other things, this allows
+    catalog aggregation websites to do distributed searches
+    (passing a search request to each catalog that it knows about).
+
+  <li>Comma Separated Value (CSV) Files - 
+    ERDDAP now generates CSV files with just a comma between values
+    (which Excel prefers), instead of comma+space.
+    Thanks to Jeff deLaBeaujardiere.
+
+  <li>Million Datasets - Several changes were made to support ERDDAPs having
+    a huge number of datasets, perhaps even a million.
+    Thanks to Steve Hankin and the UAF project.
+
+  </ul>
+
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <ul>
+
+  <li>A quick restart system allows ERDDAP to restart much faster.
+    <br><b>Please add this to your setup.xml file</b> 
+    right after <tt>&lt;/datasetsRegex&gt;</tt>:<pre>
+      &lt;!-- If true, when you start up ERDDAP, some types of datasets (e.g., 
+      EDDGridFromDap) will used cached information (.dds, .das, etc.) to reload
+      very quickly, without contacting the remote server.  The dataset's age 
+      will be based on when the dataset was reloaded last.  Normally this 
+      should be true (the default), but set it to false if you want to bypass 
+      the cached information.
+      &lt;quickRestart&gt;true&lt;/quickRestart&gt;</pre>
+
+  <li>Full text searches for datasets can now be done with the Lucene search 
+    engine (although we recommend the original search engine if you have fewer
+    than 10,000 datasets) or the original search system.
+    <br><b>Please add this to your setup.xml file</b>
+    right after <tt>&lt;/displayDiagnosticInfo&gt;</tt>:<pre>
+      &lt;!-- ERDDAP lets you choose between two search engines for full text searches:
+      * original (the default) - is the best choice if your ERDDAP has fewer 
+        than about 10,000 datasets.  It is very robust and trouble free. 
+      * lucene - is the best choice for more than about 10,000 datasets.
+        The advantages are that with any number of datasets it works fast 
+        and uses very little memory.
+        But there are many things that might go wrong with individual 
+        queries and with the whole system. 
+        And although its behaviour (the datasets it finds and the order that
+        it ranks them) is almost identical to the original search engine,
+        it has a few quirky, subtle, small differences.
+      --&gt;
+      &lt;searchEngine&gt;original&lt;/searchEngine&gt;</pre>
+
+  <li>In setup.xml, you can/should now add two new categories to the comma-separated list 
+    of <tt>&lt;categoryAttributes&gt;</tt>:
+    <ul>
+    <li><tt>global:keywords</tt> (add it right after <tt>global:institution</tt>) -- 
+      a new special case that parses a 
+      comma-separated list of keywords from the global <tt>keywords</tt> 
+      attribute to make a separate entry for each keyword.
+    <li><tt>variableName</tt> (add it at the end) -- 
+      a new special case that categorizes each of the dataVariable destinationNames.
+    </ul>
+
+  <li>In setup.xml, you can (but why?) tell ERDDAP not to offer FGDC and/or ISO 19115 metadata
+    for any dataset by including<tt>
+    <br>&lt;fgdcActive&gt;false&lt;/fgdcActive&gt;
+    <br>&lt;iso19115Active&gt;false&lt;/iso19115Active&gt;</tt>
+    <br>The default values for these settings is <tt>true</tt>.
+
+  <li>In datasets.xml, please consider improving the metadata for your 
+    datasets. ERDDAP now automatically generates
+    ISO 19115 and FGDC XML metadata files for each dataset based on the
+    dataset's metadata. 
+    <br>So, <b>good dataset metadata leads to good ERDDAP-generated 
+    ISO 19115 and FGDC metadata.</b>
+    <br><b>See the new documentation for the many new RECOMMENDED
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#globalAttributes">Global Attributes</a>.</b>  
+
+  <li>In datasets.xml, if you want to tell ERDDAP to use a pre-made 
+    FGDC and/or ISO 19115 file
+    that is somewhere on the server's file system
+    instead of having ERDDAP generate these files, use:<tt>
+    <br>&lt;fgdcFile&gt;<i>fullFileName</i>&lt;/fgdcFile&gt;
+    <br>&lt;iso19115File&gt;<i>fullFileName</i>&lt;/iso19115File&gt;</tt>
+    <br>If <tt><i>fullFileName</i></tt>="" or the file isn't found, 
+      the dataset will have no FGDC and/or ISO 19115 metadata.
+      So this is also useful if you want to suppress the FGDC and/or ISO 19115 metadata
+      for a specific dataset.
+
+  <li>In datasets.xml, for all EDDGridSideBySide and EDDGridAggregateExistingDimension
+    datasets, make certain that child datasets have different datasetIDs
+    than their parent datasets and than the other children.
+    (For example, you could follow George Foreman's simple but effective 
+    system for naming his children.) 
+    If any names in a family are exactly the same, the dataset will fail to load
+    (with the error message that the values of the aggregated axis are not in sorted order).
+
+  <li>In datasets.xml, there were some changes to the list of valid ioos_category
+    metadata values:
+    <ul>
+    <li>"pCO2" was changed to "CO2". 
+    <li>"Physical Oceanography" was added.
+    <li>"Soils" was added.
+    </ul>
+ 
+  <li>In datasets.xml, ERDDAP no longer allows '.' in a datasetID.  
+    It was allowed but discouraged. (Sorry)
+
+  <li>In datasets.xml, the setup for EDDTableFromThreddsFiles and EDDTableFromHyraxFiles
+    has changed slightly because both classes were just rewritten to be more efficient
+    (both classes now always make a local copy of all of the remote data files).
+    See the documentation for setting up these classes:
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromHyraxFiles">EDDTableFromHyraxFiles</a> and
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromThreddsFiles">EDDTableFromThreddsFiles</a>.
+    In particular, see the revised comments about <tt>&lt;fileDir&gt;</tt> (now irrelevant)
+    and <tt>&lt;sourceUrl&gt;</tt> (now essential).
+    Also, you should never wrap this class in EDDTableCopy for efficiency.
+
+  <li>In datasets.xml, if you use EDDTableFromDatabase with an Oracle database,
+    you should include a connectionProperty such as
+    <br><tt>&lt;connectionProperty name="defaultRowPrefetch"&gt;4096&lt;/connectionProperty&gt;</tt>
+    <br>to specify how many rows of data to fetch at one time 
+    because the default is 10, which is horribly inefficient.
+    See the <a href="http://docs.oracle.com/cd/B10501_01/java.920/a96654/basic.htm">Oracle
+    documentation</a>.
+    MySql and PostgreSQL seem to have better defaults for this setting.
+    Thanks to Kevin O'Brien.
+
+  <li>If you use EDDTableFromDatabase, see the improved 
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase">"Speed" documentation</a> 
+    for additional suggestions to improve performance.
+    Thanks to Kevin O'Brien.
+
+  <li>In datasets.xml, for all EDDTable... datasets, in the <tt>Conventions</tt> and
+    <tt>Metadata_Conventions</tt> global attributes, please refer to 
+    CF-1.6 (not CF-1.0, 1.1, 1.2, 1.3, 1.4, or 1.5), 
+    since CF-1.6 is the first version to include the changes related to the
+    Discrete Sampling Geometry.
+
+  <li>Programmers that are compiling the ERDDAP code need to add <tt>lib/lucene-core.jar</tt>
+    to the list of jar files in their javac and java command line paths.
+
+  <li>ERDDAP has a 
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/convert/keywords.html">new service</a>
+    to convert a CF Standard Name to/from a GCMD Science Keyword.
+    You may find this useful when generating global <tt>keywords</tt>
+    metadata for the datasets in your ERDDAP.
+
+  <li>Dealing with Bots - Please read this advice to
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#robots">prevent
+    bots from crawling your ERDDAP in a stupid way</a>.
+
+  <li>Translation - The text on ERDDAP's web pages is now mostly
+    in messages.xml and so suitable for translation to different languages
+    (e.g., German, French).
+    The messages now often use MessageFormat for formatting, also to aid
+    in making translations.  If you are interested in doing a translation,
+    please email bob dot simons at noaa dot gov .
+
+  <li>Sample datasets.xml - There were several small but significant errors in the
+    sample datasets.xml. If you use those datasets, please get the newer versions
+    from the new sample datasets.xml in the new
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>.
+    Thanks to James Wilkinson.  
+
+  <li>Git - I will try hard to make ERDDAP a GitHub project ASAP after 
+    this release.
+  </ul>
+
+<li><b>Small changes/Bug Fixes:</b>
+  <ul>
+  <li>A new palette, OceanDepth, is useful for depth values (positive is down),
+    e.g., 0 (shallow) to 8000 (deep).
+
+  <li>The .kml output from tabledap uses a better marker icon (it isn't fuzzy).
+    And hovering over a marker now makes it bigger.
+  
+  <li>EDDTableFromFiles - 
+    In the last upgrade, the new netcdf-java library had tighter restrictions 
+    for variable names in .nc files. That caused problems for EDDTableFromFiles
+    if a variable's sourceName had certain punctuation characters.
+    EDDTableFromFiles is now modified to avoid that problem.
+    Thanks to Thomas Holcomb.
+
+  <li>The .subset page now supports 0/10/100/1000/10000/100000 instead of a check box
+    for <tt>Related Data</tt>.  The tooltip warns that 100000 may cause your
+    browser to crash.
+    Thanks to Annette DesRochers, Richard (Abe) Coughlin, and the IOOS Biological Project.
+
+  <li>.../erddap/info/<i>datasetID</i>/index.html web pages now show urls and email 
+    addresses as clickable links.
+    Thanks to Richard (Abe) Coughlin and the IOOS Biological Project.
+
+  <li>Bug fix: In tabledap, for datasets with altitudeMetersPerSourceUnit &lt; 0,
+    queries with altitude constraints were handled incorrectly.
+    Thanks to Kyle Wilcox.
+
+  <li>Bug fix: EDDGridAggregateFromExistingDimension now supports more diverse TDS URLs.
+    Thanks to ?
+
+  </ul>
+</ul>
+
+</td>
+</tr>
+</table>
+<!-- 1.36 is super wide, so not in the table -->
 
 <!-- ****************************************************************************** -->
 <h2><a name="changes1.36">Changes</a> in version 1.36 (released 2011-08-01)</h2>
 <ul>
 <li><b>New Features:</b>
   <ul>
-  <li>No changes from a user's standpoint.
+  <li>No significant changes from a user's standpoint.
   </ul>
 <li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
   <ul>
@@ -55,14 +288,15 @@
      <li>In your datasets.xml, if you have a <tt>datasetID="pmelTao"</tt> dataset, add
         <br><tt>active="false"</tt> right before the "&gt;" at the end of that line.
      
-     <li>In your setup.xml, if your &lt;EDDTableIdExample&gt; is pmelTao, then:
+     <li>In your setup.xml, if your <tt>&lt;EDDTableIdExample&gt;</tt> is pmelTao, then:
        <ul>
-       <li>If your datasets.xml doesn't have a dataset with datasetID="erdGlobecBottle", add<tt>
+       <li>If your datasets.xml doesn't have a dataset with 
+           <tt>datasetID="erdGlobecBottle"</tt>, add<tt>
          <br>&lt;dataset type="EDDTableFromErddap" datasetID="erdGlobecBottle" active="true"&gt;
          <br>&nbsp;&nbsp;&lt;sourceUrl&gt;http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle&lt;/sourceUrl&gt;
          <br>&lt;/dataset&gt;</tt>
-       <li>In your setup.xml, replace all of the tags from &lt;EDDTableIdExample&gt; through
-         <br>&lt;EDDTableMatlabPlotExample&gt; with <pre>
+       <li>In your setup.xml, replace all of the tags from <tt>&lt;EDDTableIdExample&gt;</tt> through
+         <br><tt>&lt;EDDTableMatlabPlotExample&gt;</tt> with <pre>
 &lt;!-- Tabledap Examples
 This group of settings is used to make examples for the tabledap documentation 
 that appears at [baseUrl]/erddap/tabledap/documentation.html and elsewhere.
@@ -111,7 +345,7 @@ HTML encoded as "&amp;amp;", "&amp;lt;", "&amp;gt;".
     you can now make data from metadata.
     <br>Specifically, you can now make a variable from the values of an attribute 
     of one of the original variables.
-    <br>For example, in datasets.xml, within a &lt;dataVariable&gt; tag, if you use 
+    <br>For example, in datasets.xml, within a <tt>&lt;dataVariable&gt;</tt> tag, if you use 
     <br><tt>&lt;sourceName&gt;variable:cruise:PI&lt;/sourceName&gt;</tt>
     <br>ERDDAP will make a variable with the values of the PI attribute of the cruise variable.
     <br>Thanks to WOD.
@@ -122,12 +356,13 @@ HTML encoded as "&amp;amp;", "&amp;lt;", "&amp;gt;".
   </ul>
 </ul>
 
-
-<!-- ****************************************************************************** -->
-<table style="width:640px; border-style:outset; border-width:0px; padding:0px; " 
+<!-- back in a table -->
+<table style="width:600px; border-style:outset; border-width:0px; padding:0px; " 
   cellspacing="0"> 
 <tr>
 <td>
+
+<!-- ****************************************************************************** -->
 <h2><a name="changes1.34">Changes</a> in version 1.34 (released 2011-06-15)</h2>
 <ul>
 <li><b>Changes:</b>
@@ -1424,7 +1659,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.36
+<p>ERDDAP, Version 1.38
 <br><a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

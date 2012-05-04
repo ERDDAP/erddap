@@ -7,13 +7,18 @@ package com.cohort.array;
 import com.cohort.util.*;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -117,6 +122,27 @@ public class StringArray extends PrimitiveArray {
         }
     }
 
+    /* *  probably works, but not tested
+     * This makes a StringArray with the contents of a map.
+     * Each entry will be from <key>.toString() = <value>.toString().
+     *
+     * @param map  if it needs to be thread-safe, use ConcurrentHashMap
+     * @return the corresponding String, with one entry on each line 
+     *    (<key>.toString() = <value>.toString()) unsorted.
+     *    Use sort() or sortIgnoreCase() afterwards if desired.
+     * /    
+    public StringArray(Map map) {
+        Set keySet = map.keySet();
+        array = new String[keySet.size()];
+        Iterator it = keySet.iterator();
+        while (it.hasNext()) {
+            Object key = it.next();
+            Object value = map.get(key);
+            add(key.toString() + " = " + 
+                (value == null? "null" : value.toString());
+        }
+    } */
+
     /**
      * This reads the text contents of the specified file using this computer's default charset.
      * 
@@ -152,6 +178,72 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
+     * Like the other toFile, but uses the default charset and lineSeparator.
+     */
+    public void toFile(String fileName) throws Exception {
+        toFile(fileName, null, null);
+    }
+
+    /**
+     * This writes the strings to a file.
+     *
+     * @param fileName is the (usually canonical) path (dir+name) for the file
+     * @param charset e.g., UTF-8; or null or "" for the default (ISO-8859-1 ?)
+     * @param lineSeparator is the desired lineSeparator for the outgoing file.
+     *     e.g., "\n".
+     *     null or "" uses String2.lineSeparator (the standard separator for this OS).
+     * @throws Exception if trouble (e.g., file can't be created).
+     *    If trouble, this will delete any partial file.
+     */
+    public void toFile(String fileName, String charset, String lineSeparator) 
+        throws Exception {
+        
+        if (lineSeparator == null || lineSeparator.length() == 0)
+            lineSeparator = String2.lineSeparator;
+        boolean append = false;
+        Exception e = null;
+
+        //bufferedWriter is declared outside try/catch so it
+        //can be accessed from within either try/catch block.
+        BufferedWriter bufferedWriter = null;
+        try {
+            //open the file
+            Writer w = charset == null || charset.length() == 0?
+                new FileWriter(fileName, append) :
+                new OutputStreamWriter(new FileOutputStream(fileName, append), charset);
+            bufferedWriter = new BufferedWriter(w);
+                         
+            //write the text to the file
+            for (int i = 0; i < size; i++) {
+                bufferedWriter.write(array[i]);
+                bufferedWriter.write(lineSeparator);
+            }
+
+        } catch (Exception e2) {
+            e = e2;
+        }
+
+        //make sure bufferedWriter is closed
+        try {
+            if (bufferedWriter != null) {
+                bufferedWriter.close();
+
+            }
+        } catch (Exception e2) {
+            if (e == null)
+                e = e2; 
+            //else ignore the error (the first one is more important)
+        }
+
+        //and delete partial file if error 
+        if (e != null) {
+            File2.delete(fileName);
+            throw e;
+        }       
+    }
+
+
+    /**
      * This returns the current capacity (number of elements) of the internal data array.
      * 
      * @return the current capacity (number of elements) of the internal data array.
@@ -183,9 +275,11 @@ public class StringArray extends PrimitiveArray {
      *
      * @param startIndex must be a valid index
      * @param stride   must be at least 1
-     * @param stopIndex (inclusive) must be &gt;= startIndex and &lt; size.
+     * @param stopIndex (inclusive) If &gt;= size, it will be changed to size-1.
      * @return a new PrimitiveArray with the desired subset.
-     *    It will have a new backing array with a capacity equal to its size.
+     *    It will have a new backing array (same type as this class)
+     *    with a capacity equal to its size.
+     *    If stopIndex &lt; startIndex, this returns PrimitiveArray with size=0;
      */
     public PrimitiveArray subset(int startIndex, int stride, int stopIndex) {
         if (startIndex < 0)
@@ -196,10 +290,11 @@ public class StringArray extends PrimitiveArray {
             throw new RuntimeException(String2.ERROR + 
                 " in StringArray.subset: stride=" + stride +
                 " must greater than 0.");
-        if (stopIndex < startIndex || stopIndex >= size)
-            throw new RuntimeException(String2.ERROR + 
-                " in StringArray.subset: stopIndex=" + startIndex +
-                " must be between startIndex=" + startIndex + " and size-1=" + (size - 1) + ".");
+        if (stopIndex >= size)
+            stopIndex = size - 1;
+        if (stopIndex < startIndex)
+            return new StringArray(new String[0]);
+
         int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
         Math2.ensureMemoryAvailable(16L * willFind, "StringArray"); //16 is a lame estimate of bytes/element        
         String tar[] = new String[willFind];
@@ -466,7 +561,7 @@ public class StringArray extends PrimitiveArray {
         if (first == last || destination == first || destination == last) 
             return; //nothing to do
         //String2.log("move first=" + first + " last=" + last + " dest=" + destination);
-        //String2.log("move initial " + String2.toCSVString(array));
+        //String2.log("move initial " + String2.toCSSVString(array));
 
         //store the range to be moved
         int nToMove = last - first;
@@ -476,19 +571,19 @@ public class StringArray extends PrimitiveArray {
         //if moving to left...    (draw diagram to visualize this)
         if (destination < first) {
             System.arraycopy(array, destination, array, destination + nToMove, first - destination);
-            //String2.log("move after shift " + String2.toCSVString(array));
+            //String2.log("move after shift " + String2.toCSSVString(array));
 
             //copy temp data into place
             System.arraycopy(temp, 0, array, destination, nToMove);
         } else {
             //moving to right
             System.arraycopy(array, last, array, first, destination - last);
-            //String2.log("move after shift " + String2.toCSVString(array));
+            //String2.log("move after shift " + String2.toCSSVString(array));
 
             //copy temp data into place
             System.arraycopy(temp, 0, array, destination - nToMove, nToMove);
         }
-        //String2.log("move done " + String2.toCSVString(array));
+        //String2.log("move done " + String2.toCSSVString(array));
 
 
     }
@@ -734,7 +829,7 @@ public class StringArray extends PrimitiveArray {
 
 
     /**
-     * This finds the first instance of 'lookFor' starting at index 'startIndex'.
+     * This finds the first value which equals 'lookFor' starting at index 'startIndex'.
      *
      * @param lookFor the value to be looked for
      * @param startIndex 0 ... size-1
@@ -748,7 +843,7 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * This finds the first instance of 'lookFor' starting at index 0, ignoring case.
+     * This finds the first value which equals 'lookFor' starting at index 0, ignoring case.
      *
      * @param lookFor the value to be looked for
      * @return the index where 'lookFor' is found, or -1 if not found.
@@ -759,7 +854,7 @@ public class StringArray extends PrimitiveArray {
 
 
     /**
-     * This finds the first instance of 'lookFor' starting at index 'startIndex', ignoring case.
+     * This finds the first value which equals 'lookFor' starting at index 'startIndex', ignoring case.
      *
      * @param lookFor the value to be looked for
      * @param startIndex 0 ... size-1
@@ -774,10 +869,10 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * This finds the last instance of 'lookFor' starting at index 'startIndex'.
+     * This finds the last value which equals 'lookFor' starting at index 'startIndex'.
      *
      * @param lookFor the value to be looked for
-     * @param startIndex 0 ... size-1
+     * @param startIndex 0 ... size-1. The search progresses towards 0.
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
     public int lastIndexOf(String lookFor, int startIndex) {
@@ -789,6 +884,34 @@ public class StringArray extends PrimitiveArray {
                 return i;
         return -1;
     }
+
+
+    /**
+     * This finds the first value which has the substring 'lookFor',
+     * starting at index 'startIndex' and position 'startPo'.
+     *
+     * @param lookFor the value to be looked for
+     * @param start int[2] {0=startIndex 0 ... size-1, 
+     *     1=startPo 0... (used on the first line only; startPo=0 is used thereafter)}
+     * @return The results are returned in start and here (for convenience), 
+     *     [0]=index, [1]=po, where 'lookFor' is found, or {-1,-1} if not found.
+     */
+    public int[] indexWith(String lookFor, int start[]) {
+        int startPo = start[1];
+        for (int i = start[0]; i < size; i++) {
+            int po = array[i].indexOf(lookFor, startPo);
+            if (po >= 0) {
+                start[0] = i;
+                start[1] = po;
+                return start;
+            }
+            startPo = 0;
+        }
+        start[0] = -1;
+        start[1] = -1;
+        return start;
+    }
+
 
     /**
      * If size != capacity, this makes a new 'array' of size 'size'
@@ -840,11 +963,38 @@ public class StringArray extends PrimitiveArray {
 
 
     /** 
-     * This converts the elements into a comma-separated (CSV) String.
+     * This converts the elements into a comma-space-separated (CSSV or CSV) String.
      * If a value has an internal comma or double quotes, the value is surrounded by 
      * double quotes and the internal quotes are replaced by 2 double quotes.
      *
-     * @return a comma-separated String representation 
+     * @return a Comma-Separated-Value (not comma space) String representation 
+     */
+    public String toCSVString() {
+        Math2.ensureMemoryAvailable(8L * size, "StringArray.toCSVString"); //8L is lame estimate of bytes/element
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < size; i++) {
+            if (i > 0)
+                sb.append(',');
+            String s = array[i];
+            if (s == null) {
+            } else if (s.indexOf('"') >= 0) { //check for '"' before check for ','
+                s = String2.replaceAll(s, "\"", "\"\"");
+                sb.append("\"" + s + "\"");
+            } else if (s.indexOf(',') >= 0) {
+                sb.append("\"" + s + "\"");
+            } else {
+                sb.append(s);
+            }
+        }
+        return sb.toString(); 
+    }
+
+    /** 
+     * This converts the elements into a Comma-Space-Separated-Value (CSSV) String.
+     * If a value has an internal comma or double quotes, the value is surrounded by 
+     * double quotes and the internal quotes are replaced by 2 double quotes.
+     *
+     * @return a Comma-Space-Separated-Value String representation 
      */
     public String toString() {
         Math2.ensureMemoryAvailable(8L * size, "StringArray.toString"); //8L is lame estimate of bytes/element
@@ -1157,7 +1307,7 @@ public class StringArray extends PrimitiveArray {
 
         //make a hashMap with all the unique values (associated values are initially all dummy)
         Integer dummy = new Integer(-1);
-        HashMap hashMap = new HashMap();
+        HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
         String lastValue = array[0]; //since lastValue often equals currentValue, cache it
         hashMap.put(lastValue, dummy);   //special for String
         boolean alreadySorted = true;
@@ -1252,7 +1402,7 @@ public class StringArray extends PrimitiveArray {
      * (which are separated by white space; commas are treated like any other whitespace).
      *
      * @param searchFor
-     * @return a StringArray with the words and double-quoted phrases from searchFor
+     * @return a StringArray with the words and phrases (no longer double quoted) from searchFor
      *   (which are separated by white space; commas are treated like any other whitespace).
      *   Interior double quotes in double-quoted phrases must be doubled 
      *   (e.g., "a quote "" within a phrase").
@@ -1313,6 +1463,25 @@ public class StringArray extends PrimitiveArray {
      */
     public static StringArray fromCSV(String searchFor) {
         return new StringArray(arrayFromCSV(searchFor));
+    }
+
+    /**
+     * This is like fromCSV, but with any "" elements removed.
+     *
+     * @param searchFor
+     * @return a StringArray with the words and double-quoted phrases from searchFor.
+     *    The items are trim'd.
+     */
+    public static StringArray fromCSVNoBlanks(String searchFor) {
+        StringArray sa = new StringArray(arrayFromCSV(searchFor));
+        int tSize = sa.size;
+        String tArray[] = sa.array;
+        BitSet bitset = new BitSet(tSize); //initially all false
+        for (int i = 0; i < tSize; i++)
+            if (tArray[i].length() > 0) 
+                bitset.set(i);
+        sa.justKeep(bitset);
+        return sa;
     }
 
     /**
@@ -1773,6 +1942,14 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(anArray.indexOf("8", 0),  4, "");
         Test.ensureEqual(anArray.indexOf("9", 0), -1, "");
 
+        //test lastIndexOf
+        Test.ensureEqual(anArray.lastIndexOf("0", 0),  0, "");
+        Test.ensureEqual(anArray.lastIndexOf("0", 0),  0, "");
+        Test.ensureEqual(anArray.lastIndexOf("8", 4),  4, "");
+        Test.ensureEqual(anArray.lastIndexOf("6", 2), -1, "");
+        Test.ensureEqual(anArray.lastIndexOf("6", 3),  3, "");
+        Test.ensureEqual(anArray.lastIndexOf("9", 2), -1, "");
+
         //test remove
         anArray.remove(1);
         Test.ensureEqual(anArray.size(), 4, "");
@@ -1908,6 +2085,12 @@ public class StringArray extends PrimitiveArray {
         //subset
         PrimitiveArray ss = anArray.subset(1, 3, 4);
         Test.ensureEqual(ss.toString(), "bb, 19", "");
+        ss = anArray.subset(0, 1, 0);
+        Test.ensureEqual(ss.toString(), "a", "");
+        ss = anArray.subset(0, 1, -1);
+        Test.ensureEqual(ss.toString(), "", "");
+        ss = anArray.subset(1, 1, 0);
+        Test.ensureEqual(ss.toString(), "", "");
 
         //wordsAndQuotedPhrases(String searchFor)
         Test.ensureEqual(wordsAndQuotedPhrases(null).toString(), "", "");
@@ -1923,6 +2106,10 @@ public class StringArray extends PrimitiveArray {
         anArray = wordsAndQuotedPhrases(" a \"b\"\"b\" c "); //internal quotes
         Test.ensureEqual(anArray.toString(), "a, \"b\"\"b\", c", "");
         Test.ensureEqual(anArray.get(1), "b\"b", "");
+        anArray = wordsAndQuotedPhrases("a \"-bob\" c");
+        Test.ensureEqual(anArray.get(1), "-bob", "");
+        anArray = wordsAndQuotedPhrases("a -\"bob\" c"); //internal quotes
+        Test.ensureEqual(anArray.get(1), "-\"bob\"", "");
 
         //fromCSV(String searchFor)
         Test.ensureEqual(fromCSV(null).toString(), "", "");
@@ -2075,6 +2262,9 @@ public class StringArray extends PrimitiveArray {
         anArray.inCommon(anArray2);
         Test.ensureEqual(anArray.toString(), "c", "");
 
+        //fromCSVNoBlanks
+        anArray  = fromCSVNoBlanks(", b, ,d,,");
+        Test.ensureEqual(anArray.toString(), "b, d", "");
 
         
     }

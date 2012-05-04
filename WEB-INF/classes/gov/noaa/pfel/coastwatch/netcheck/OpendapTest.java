@@ -286,7 +286,7 @@ public class OpendapTest extends NetCheckTest {
             "  variableName: " + variableName + "\n" +
             "  missingValue: " + missingValue + "\n" +
             "  offsetDate: " + Calendar2.formatAsISODate(offsetDate) + "\n" +
-            "  minMaxXY: " + String2.toCSVString(minMaxXY) + "\n";
+            "  minMaxXY: " + String2.toCSSVString(minMaxXY) + "\n";
     }
 
     /**

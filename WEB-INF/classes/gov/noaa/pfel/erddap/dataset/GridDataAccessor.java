@@ -225,7 +225,7 @@ public class GridDataAccessor {
 
         //make totalIndex
         totalIndex = new NDimensionalIndex(totalShape);
-        if (reallyVerbose) String2.log("      totalShape=" + String2.toCSVString(totalShape));
+        if (reallyVerbose) String2.log("      totalShape=" + String2.toCSSVString(totalShape));
 
         //make the dataAttributes
         dataAttributes = new Attributes[dataVariables.length];
@@ -292,9 +292,9 @@ public class GridDataAccessor {
         totalNBytes = driverIndex.size() * nBytesPerPartialRequest; //driverIndex.size() is a long
         if (reallyVerbose) String2.log("      getAllOfNAxes=" + getAllOfNAxes + 
             //driverShape e.g., [15][1][1][1],  note getAllOfNAxes 1's on right if row-major
-            "\n      driverShape=" + String2.toCSVString(driverShape) +  
+            "\n      driverShape=" + String2.toCSSVString(driverShape) +  
             //partialShape e.g., [1][1][43][45],  note 1's on left if row-major
-            "\n      partialShape=" + String2.toCSVString(partialShape) +  
+            "\n      partialShape=" + String2.toCSSVString(partialShape) +  
             "\n      nBytesPerPartialRequest=" + nBytesPerPartialRequest +
             "\n      totalNBytes=" + totalNBytes);
     }
@@ -497,9 +497,9 @@ public class GridDataAccessor {
         boolean tb = rowMajor? driverIndex.increment() : driverIndex.incrementCM();
         if (!tb)
             throw new RuntimeException("GridDataAccessor.increment: driverIndex failed to increment" +
-                "at mainIndex.current=" + String2.toCSVString(totalIndex.getCurrent()));
+                "at mainIndex.current=" + String2.toCSSVString(totalIndex.getCurrent()));
         if (reallyVerbose) String2.log("      GridDataAccessor.increment getting partial data; driverIndex=[" + 
-            String2.toCSVString(driverIndex.getCurrent()) + "]");
+            String2.toCSSVString(driverIndex.getCurrent()) + "]");
 
         //generate the partial constraint
         IntArray partialConstraints = new IntArray(constraints);

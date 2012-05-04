@@ -4,8 +4,12 @@
  */
 package gov.noaa.pfel.coastwatch.util;
 
+import com.cohort.array.LongArray;
+import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
+import com.cohort.array.StringComparatorIgnoreCase;
 
+import com.cohort.util.Calendar2;
 import com.cohort.util.Math2;
 import com.cohort.util.File2;
 import com.cohort.util.MustBe;
@@ -121,6 +125,60 @@ public class RegexFilenameFilter implements FilenameFilter {
     }
 
     /**
+     * This gathers information about all subdirectories (regardless of regex)
+     * and all files matching the regex
+     * in the specified directory (e.g., "c:/cohort");
+     * 
+     * @param dir the directory of interest (with or without a trailing slash)
+     * @param regex  See regEx documentation in Java Docs for java.util.regex.Pattern.
+     * @returns PrimitiveArray[] [0]=dirNames(StringArray), [1]=fileNames(StringArray), 
+     *   [2]=fileLastModified(LongArray), [3]=fileSize(LongArray).
+     *   dirNames will not include parent ("..") or self (".").
+     *   The sizes of [1], [2], [3] will be the same.
+     *   [0] and [1] will each be sorted (ignoringCase).
+     *   
+     * @throws RuntimeException if trouble
+     */
+    public static PrimitiveArray[] gatherInfo(String dir, String regex) {
+
+        //add slash to end of dir (if none)
+        dir = File2.addSlash(dir);
+
+        StringArray dirNames         = new StringArray();
+        StringArray fileNames        = new StringArray(); 
+        LongArray   fileLastModified = new LongArray();
+        LongArray   fileSize         = new LongArray();
+        PrimitiveArray paAr[] = new PrimitiveArray[]{dirNames,
+            fileNames, fileLastModified, fileSize};
+        
+        //get a list of files and dirs
+        String[] names = (new File(dir)).list();
+        if (names == null)
+            return paAr;
+
+        //for each, determine if it is a file or a dir
+        Arrays.sort(names, new StringComparatorIgnoreCase());
+        int n = names.length;
+        for (int i = 0; i < n; i++) {
+            String tName = names[i];
+            File tFile = new File(dir + tName);
+            if (tFile.isDirectory()) {
+                if (!tName.equals("."))  //ignore self
+                    dirNames.add(tName);
+            } else if (tFile.isFile()) {
+                if (tName.matches(regex)) {
+                    fileNames.add(tName);
+                    fileLastModified.add(tFile.lastModified());
+                    fileSize.add(tFile.length());
+                }
+            } else String2.log(
+                String2.ERROR + " in RegexFilenameFilter.gatherInfo: \"" + 
+                  dir + tName + "\" isn't a file or a directory.  (symbolic link?)");
+        }
+        return paAr;
+    }
+
+    /**
      * This is like list(), but returns the full file names.
      * 
      * <p>Note that this doesn't check if the name 
@@ -145,7 +203,7 @@ public class RegexFilenameFilter implements FilenameFilter {
 
     /**
      * This adds file names which match the regex
-     * in the specified directory (e.g., "c:\\cohort") 
+     * in the specified directory (e.g., "c:/cohort") 
      * AND IN RECURSIVELY FOUND SUBDIRECTORIES to an arrayList.
      * 
      * <p>Note that this *does* check if the name 
@@ -273,6 +331,8 @@ public class RegexFilenameFilter implements FilenameFilter {
             dir);
     }
 
+
+
     /**
      * This tests the methods of RegexFilenameFilter.
      *
@@ -347,6 +407,25 @@ public class RegexFilenameFilter implements FilenameFilter {
             coastwatchDir + "util/StringObject.java"             
             };
         Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.recursiveFullNameList");
+
+        //gatherInfo
+        PrimitiveArray info[] = gatherInfo("C:/programs/editplus", "editplus.*");
+        int tn = info[1].size();
+        StringArray lastMod = new StringArray();
+        for (int i = 0; i < tn; i++)
+            lastMod.add(Calendar2.safeEpochSecondsToIsoStringTZ(info[2].getLong(i) / 1000.0, "ERROR"));
+        Test.ensureEqual(info[0].toString(), 
+            "old files", "");
+        Test.ensureEqual(info[1].toString(), 
+            "editplus.cnt, editplus.exe, editplus.hlp, editplus.ini", "");
+        //lastMod and size verified by using DOS dir command
+        //last values of lastMod and info[3] change, so remove them
+        lastMod.remove(3);
+        info[3].remove(3);
+        Test.ensureEqual(lastMod.toString(),                                 
+            "2005-11-25T22:13:08Z, 2005-12-12T17:32:12Z, 2005-11-25T22:13:08Z", "");
+        Test.ensureEqual(info[3].toString(), 
+            "1102, 1397248, 218288", "");
     }
 
 }

@@ -39,6 +39,7 @@ import java.util.HashSet;
 
 
 /** 
+ * THIS WAS WORKING. BUT SERVICE CHANGED.  SINCE LITTLE/NO DEMAND, STOP SUPPORTING IT 2011-12-16.
  * This class aggregates data from a group of fixed-location sites (stations), all served by
  * NWIS Daily Values Service.
  * (It can't support all WaterML servers because they use different REST 
@@ -83,7 +84,7 @@ public class EDDTableFromNWISDV extends EDDTable{
 
     /** column numbers in stationTable.
      * Source must be [tomcat]/content/erddap/subset/[datasetID].json.
-     * Constructor creates .nc version in datasetInfoDir()/stationFileName) 
+     * Constructor creates .nc version in datasetDir()/stationFileName) 
      */
     final protected static String stationTableColumnNames[] = {
         "agencySiteCode", "agency", "siteCode", "siteID", "siteName", 
@@ -209,6 +210,8 @@ public class EDDTableFromNWISDV extends EDDTable{
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         String tLocalSourceUrl = null;
         String tParameterCode = null;
         String tStatisticCode = null;
@@ -246,6 +249,11 @@ public class EDDTableFromNWISDV extends EDDTable{
             else if (localTags.equals("</onChange>")) 
                 tOnChange.add(content); 
 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+
             else xmlReader.unexpectedTagException();
         }
         int ndv = tDataVariables.size();
@@ -254,7 +262,7 @@ public class EDDTableFromNWISDV extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromNWISDV(tDatasetID, tAccessibleTo,
-            tOnChange, tGlobalAttributes,
+            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
             tAltitudeMetersPerSourceUnit,
             ttDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl);
@@ -285,6 +293,11 @@ public class EDDTableFromNWISDV extends EDDTable{
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tAddGlobalAttributes are global attributes which will
      *   be added to (and take precedence over) the data source's global attributes.
      *   This may be null if you have nothing to add.
@@ -299,8 +312,8 @@ public class EDDTableFromNWISDV extends EDDTable{
      *   <li> "cdm_data_type" - one of the EDD.CDM_xxx options
      *   </ul>
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
-     *   Special case: if addGlobalAttributes name="license" value="[standard]",
-     *     the EDStatic.standardLicense will be used.
+     *   Special case: if combinedGlobalAttributes name="license", any instance of "[standard]"
+     *     will be converted to the EDStatic.standardLicense.
      * @param tAltMetersPerSourceUnit the factor needed to convert the source
      *    alt values to/from meters above sea level.
      * @param tDataVariables is an Object[nDataVariables][3]: 
@@ -334,7 +347,7 @@ public class EDDTableFromNWISDV extends EDDTable{
      */
     public EDDTableFromNWISDV(
         String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
@@ -352,13 +365,11 @@ public class EDDTableFromNWISDV extends EDDTable{
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
-        String tLicense = addGlobalAttributes.getString("license");
-        if (tLicense != null)
-            addGlobalAttributes.set("license", 
-                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
         localSourceUrl = tLocalSourceUrl;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
@@ -370,6 +381,10 @@ public class EDDTableFromNWISDV extends EDDTable{
 
         //get global attributes
         combinedGlobalAttributes = new Attributes(addGlobalAttributes); 
+        String tLicense = combinedGlobalAttributes.getString("license");
+        if (tLicense != null)
+            combinedGlobalAttributes.set("license", 
+                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         combinedGlobalAttributes.removeValue("null");
         parameterCode = combinedGlobalAttributes.getString("parameterCode");
         statisticCode = combinedGlobalAttributes.getString("statisticCode");
@@ -739,7 +754,7 @@ public class EDDTableFromNWISDV extends EDDTable{
                 }
             }
 
-            //String2.log("\nstationInfo+valuesColumns table=\n" + table.dataToCsvString());
+            //String2.log("\nstationInfo+valuesColumns table=\n" + table.dataToCSVString());
             if (table.nRows() > 0)
                 standardizeResultsTable(requestUrl, userDapQuery, table);
 
@@ -1086,7 +1101,7 @@ public class EDDTableFromNWISDV extends EDDTable{
 /*        //has <method> tags
         //http://interim.waterservices.usgs.gov/NWISQuery/GetDV1?SiteNum=07334200&ParameterCode=00060&StatisticCode=00003&AgencyCode=&StartDate=2000-11-16&EndDate=2000-12-15&action=Submit
         table = getValuesTable(new FileInputStream("c:/programs/waterML/nwisGetDV1.xml"));
-        results = table.toCsvString(5);
+        results = table.toCSSVString(5);
         expected = 
 "zztop\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
@@ -1095,7 +1110,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         //http://interim.waterservices.usgs.gov/NWISQuery/GetDV1?SiteNum=01010000&ParameterCode=00060&StatisticCode=00003&AgencyCode=&USGSStartDate=2009-01-31&EndDate=2009-02-01&action=Submit
         table = getValuesTable(new FileInputStream(
             "f:/data/waterML/nwisValues.xml"));
-        results = table.toCsvString();
+        results = table.toCSVString();
         expected = 
 "{\n" +
 "dimensions:\n" +
@@ -1133,9 +1148,9 @@ public class EDDTableFromNWISDV extends EDDTable{
 "\t\t:siteName = \"St. John River at Ninemile Bridge, Maine\" ;\n" +
 "\t\t:srs = \"EPSG:4269\" ;\n" +
 "}\n" +
-"row, time, Discharge, DischargeQualifiers\n" +
-"0, 2009-01-31T00:00:00, 388.0, Ae\n" +
-"1, 2009-02-01T00:00:00, 393.0, Ae\n";
+"row,time,Discharge,DischargeQualifiers\n" +
+"0,2009-01-31T00:00:00,388.0,Ae\n" +
+"1,2009-02-01T00:00:00,393.0,Ae\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     }
@@ -1195,7 +1210,7 @@ public class EDDTableFromNWISDV extends EDDTable{
             "\n  tLocalWaterMLUrl=" + tLocalWaterMLUrl);
 
         String tPublicWaterMLUrl = convertToPublicSourceUrl(tLocalWaterMLUrl);
-        String tStationTableColumnNames = String2.toCSVString(tStationTable.getColumnNames());
+        String tStationTableColumnNames = String2.toCSSVString(tStationTable.getColumnNames());
         int otStationTableNCols = tStationTable.nColumns();
         tStatisticName = tStatisticName.toLowerCase();
         if (tCharacteristicName.length() == 0)
@@ -1233,7 +1248,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         if (valuesTable == null || valuesTable.nRows() == 0)
             throw new SimpleException("No data was found!");
         if (displayResults && reallyVerbose) 
-            String2.log("valuesTable=\n" + valuesTable.toCsvString());
+            String2.log("valuesTable=\n" + valuesTable.toCSVString());
 
         //do things with/to the variable 
         int nValuesTableVars = valuesTable.nColumns();
@@ -1268,7 +1283,7 @@ public class EDDTableFromNWISDV extends EDDTable{
            //constructor won't read source atts
            //so put all atts in add atts
            Attributes tAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
-               addAtts, sourceName, true); //addColorBarMinMax
+               addAtts, sourceName, true, true); //addColorBarMinMax, tryToFindLLAT
            addAtts.add(tAtts);  //tAtts have precedence
 
            //add a similar column to dataAddTable
@@ -1359,7 +1374,7 @@ public class EDDTableFromNWISDV extends EDDTable{
             .add("statisticName", tStatisticName)
             .add("summary", tSummary) 
             .add("title", tTitle);
-        //String2.log("\ndataAddTable=\n" + dataAddTable.toCsvString());
+        //String2.log("\ndataAddTable=\n" + dataAddTable.toCSSVString());
 
         //write the information
         StringBuilder sb = new StringBuilder();
@@ -1378,7 +1393,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));        
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
             "dataVariable", 
-            true, false, false)); // includeDataType, tryToCatchLLAT, questionDestinationName
+            true, false, false)); // includeDataType, tryToFindLLAT, questionDestinationName
         sb.append(
             "</dataset>\n" +
             "\n");
@@ -1413,8 +1428,8 @@ public class EDDTableFromNWISDV extends EDDTable{
         Table paramCodes = new Table();
         paramCodes.readASCII(paramCodesFileName,
             15, 17, null, null, null, null, false);  //don't simplify
-        String2.log("paramCodes=\n" + paramCodes.dataToCsvString(3));
-        Test.ensureEqual(String2.toCSVString(paramCodes.getColumnNames()), 
+        String2.log("paramCodes=\n" + paramCodes.dataToCSVString(3));
+        Test.ensureEqual(String2.toCSSVString(paramCodes.getColumnNames()), 
             "parameter_cd, parameter_group_nm, parameter_nm, casrn, srsname, parameter_units", "");
         StringArray pcParamPA      = (StringArray)paramCodes.getColumn(0);
         StringArray pcParamName1PA = (StringArray)paramCodes.getColumn(2); //e.g., Discharge
@@ -1603,7 +1618,7 @@ public class EDDTableFromNWISDV extends EDDTable{
             new Attributes());
 
         String results = generateDatasetsXml(true, true, //includeInstructions, displayResults
-            "http://interim.waterservices.usgs.gov/NWISQuery/GetDV1",
+            "http://waterservices.usgs.gov/nwis/dv",
             "01018035", "USGS", 
             //???fix up  e.g., Water Temperature?
             "00010", "Temperature, water",  
@@ -2023,7 +2038,7 @@ directionsForGenerateDatasetsXml() +
         Table briarStations = new Table();
         briarStations.readASCII("F:/data/waterML/daily_value_series_catalog.20101216",
             0, 1, null, null, null, null, false);  //don't simplify
-        Test.ensureEqual(String2.toCSVString(briarStations.getColumnNames()), 
+        Test.ensureEqual(String2.toCSSVString(briarStations.getColumnNames()), 
             "agency_cd, site_no, parm_cd, stat_cd, begin_date, end_date, count_nu", "");
         StringArray briarAgencyPA = (StringArray)briarStations.getColumn(0);
         StringArray briarSitePA   = (StringArray)briarStations.getColumn(1);
@@ -2243,25 +2258,25 @@ directionsForGenerateDatasetsXml() +
 
         }
         if (justAgency == null) {
-            String2.log(briarStations.dataToCsvString(Math.min(100, nBriarStations)));
+            String2.log(briarStations.dataToCSVString(Math.min(100, nBriarStations)));
             briarStations.saveAsJson(outputFile, -1, false);
         } else {
             briarStations.saveAsJson(System.out, -1, false);
         }
 
         String2.log("\n*** EDDTableFromNWISDV.bobSrapeNWISStations finished." +
-            "\nsiteTypes: " + String2.toCSVString(siteTypes.toArray()) +
+            "\nsiteTypes: " + String2.toCSSVString(siteTypes.toArray()) +
             "\nnTotalCounty succeeded=" + nTotalCountyFound +
                 " failed=" + nTotalCountyNotFound + 
                 "\n  county: " + 
-                    String2.toCSVString(totalCountyFound.toArray()) +
+                    String2.toCSSVString(totalCountyFound.toArray()) +
             "\nnTotalVertDatum succeeded=" + nTotalVertDatumFound +
                 " failed=" + nTotalVertDatumNotFound + 
                 "\n  totalVertDatums: " + 
-                    String2.toCSVString(totalVertDatumFound.toArray()) +
-            "\nOnlyCity: " + String2.toCSVString(onlyCity.toArray()) +
-            "\nStates: " + String2.toCSVString(stateSet.toArray()) +
-            "\nCountries: " + String2.toCSVString(countrySet.toArray()) +
+                    String2.toCSSVString(totalVertDatumFound.toArray()) +
+            "\nOnlyCity: " + String2.toCSSVString(onlyCity.toArray()) +
+            "\nStates: " + String2.toCSSVString(stateSet.toArray()) +
+            "\nCountries: " + String2.toCSSVString(countrySet.toArray()) +
             "\nTotalTime=" + 
             Calendar2.elapsedTimeString(System.currentTimeMillis() - totalTime));
         String2.getStringFromSystemIn("Press enter to continue..."); 
@@ -2283,7 +2298,7 @@ directionsForGenerateDatasetsXml() +
         Table briarStations = new Table();
         briarStations.readASCII("F:/data/waterML/daily_value_series_catalog.20101216",
             0, 1, null, null, null, null, false);  //don't simplify
-        Test.ensureEqual(String2.toCSVString(briarStations.getColumnNames()), 
+        Test.ensureEqual(String2.toCSSVString(briarStations.getColumnNames()), 
             "agency_cd, site_no, parm_cd, stat_cd, begin_date, end_date, count_nu", "");
         StringArray briarAgencyPA = (StringArray)briarStations.getColumn(0);
         StringArray briarSitePA   = (StringArray)briarStations.getColumn(1);
@@ -2350,8 +2365,8 @@ directionsForGenerateDatasetsXml() +
         Table paramCodes = new Table();
         paramCodes.readASCII(paramCodesFileName,
             15, 17, null, null, null, null, false);  //don't simplify
-        String2.log("paramCodes=\n" + paramCodes.dataToCsvString(3));
-        Test.ensureEqual(String2.toCSVString(paramCodes.getColumnNames()), 
+        String2.log("paramCodes=\n" + paramCodes.dataToCSVString(3));
+        Test.ensureEqual(String2.toCSSVString(paramCodes.getColumnNames()), 
             "parameter_cd, parameter_group_nm, parameter_nm, casrn, srsname, parameter_units", "");
         StringArray pcParamPA      = (StringArray)paramCodes.getColumn(0);
         StringArray pcParamName1PA = (StringArray)paramCodes.getColumn(2); //e.g., Discharge
@@ -2361,7 +2376,7 @@ directionsForGenerateDatasetsXml() +
         //"agency_cd", "site_no", "siteType", "county", "state", "country", "altitude", "vertDatum"
         Table scrapeStations = new Table();
         scrapeStations.readJson(stationsFileName);  
-        Test.ensureEqual(String2.toCSVString(scrapeStations.getColumnNames()), 
+        Test.ensureEqual(String2.toCSSVString(scrapeStations.getColumnNames()), 
             "agency_cd, site_no, siteType, county, state, country, altitude, vertDatum", "");
         StringArray scrapeAgencyPA    = (StringArray)scrapeStations.getColumn(0);
         StringArray scrapeSitePA      = (StringArray)scrapeStations.getColumn(1);
@@ -2381,7 +2396,7 @@ directionsForGenerateDatasetsXml() +
         Table briarStations = new Table();
         briarStations.readASCII("F:/data/waterML/daily_value_series_catalog.20101216",
             0, 1, null, null, null, null, false);  //don't simplify
-        Test.ensureEqual(String2.toCSVString(briarStations.getColumnNames()), 
+        Test.ensureEqual(String2.toCSSVString(briarStations.getColumnNames()), 
             "agency_cd, site_no, parm_cd, stat_cd, begin_date, end_date, count_nu", "");
         StringArray briarAgencyPA = (StringArray)briarStations.getColumn(0);
         StringArray briarSitePA   = (StringArray)briarStations.getColumn(1);
@@ -2580,7 +2595,7 @@ directionsForGenerateDatasetsXml() +
                 //note the response variables
                 if (data.getColumnName(0).equals("time"))
                     data.removeColumn(0);
-                variables = String2.toCSVString(data.getColumnNames());
+                variables = String2.toCSSVString(data.getColumnNames());
                 String2.log("  variables=" + variables);
                 int nCols = data.nColumns();
                 for (int col = 0; col < nCols; col++) {
@@ -2644,7 +2659,7 @@ directionsForGenerateDatasetsXml() +
                     datasetStations.sort(
                         new int[]{datasetStations.findColumnNumber("siteCode")}, 
                         new boolean[]{true}); 
-String2.log("\ndatasetStations=\n" + datasetStations.dataToCsvString());
+String2.log("\ndatasetStations=\n" + datasetStations.dataToCSVString());
 
                     //write stations for each variableSeen to separate datasetsStations table
                     int nDSRows = datasetStations.nRows();
@@ -2677,7 +2692,7 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToCsvString());
                         //save the subset table
                         String2.log("\nwriting chunk for " + param + "_" + stat + " " + lookFor + 
                             " (nRows=" + subset.nRows() + ")\n" +
-                            subset.dataToCsvString(3));
+                            subset.dataToCSVString(3));
                         subset.saveAsJson(
                             dsDir + param + "_" + stat + "_" + vs + ".json",
                             -1, false);
@@ -2966,12 +2981,12 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
             edd.className() + "_3_1_test1", ".csv"); 
         results = String2.readFromFile(dir + tName);
         expected = 
-"agencySiteCode, agency, siteCode, siteID, siteName, siteType, network, longitude, latitude, srs, altitude, vertDatum, county, state, country, beginDate, endDate, time, Sampling_depth, Sampling_depthQualifiers\n" +
-", , , , , , , degrees_east, degrees_north, , m, , , , , UTC, UTC, UTC, ft, \n" +
-"USGS:01302250, USGS, 01302250, 2458432, EAST CREEK AT SANDS POINT NY, Estuary, NWISDV, -73.7101944, 40.8662222, EPSG:4269, NaN, , Nassau, NY, US, 2007-12-13T00:00:00Z, , 2010-12-01T00:00:00Z, 3.75, P\n" +
-"USGS:01302250, USGS, 01302250, 2458432, EAST CREEK AT SANDS POINT NY, Estuary, NWISDV, -73.7101944, 40.8662222, EPSG:4269, NaN, , Nassau, NY, US, 2007-12-13T00:00:00Z, , 2010-12-02T00:00:00Z, 3.2, P\n" +
-"USGS:01302250, USGS, 01302250, 2458432, EAST CREEK AT SANDS POINT NY, Estuary, NWISDV, -73.7101944, 40.8662222, EPSG:4269, NaN, , Nassau, NY, US, 2007-12-13T00:00:00Z, , 2010-12-03T00:00:00Z, 3.94, P\n" +
-"USGS:01302250, USGS, 01302250, 2458432, EAST CREEK AT SANDS POINT NY, Estuary, NWISDV, -73.7101944, 40.8662222, EPSG:4269, NaN, , Nassau, NY, US, 2007-12-13T00:00:00Z, , 2010-12-04T00:00:00Z, 3.61, P\n";
+"agencySiteCode,agency,siteCode,siteID,siteName,siteType,network,longitude,latitude,srs,altitude,vertDatum,county,state,country,beginDate,endDate,time,Sampling_depth,Sampling_depthQualifiers\n" +
+",,,,,,,degrees_east,degrees_north,,m,,,,,UTC,UTC,UTC,ft,\n" +
+"USGS:01302250,USGS,01302250,2458432,EAST CREEK AT SANDS POINT NY,Estuary,NWISDV,-73.7101944,40.8662222,EPSG:4269,NaN,,Nassau,NY,US,2007-12-13T00:00:00Z,,2010-12-01T00:00:00Z,3.75,P\n" +
+"USGS:01302250,USGS,01302250,2458432,EAST CREEK AT SANDS POINT NY,Estuary,NWISDV,-73.7101944,40.8662222,EPSG:4269,NaN,,Nassau,NY,US,2007-12-13T00:00:00Z,,2010-12-02T00:00:00Z,3.2,P\n" +
+"USGS:01302250,USGS,01302250,2458432,EAST CREEK AT SANDS POINT NY,Estuary,NWISDV,-73.7101944,40.8662222,EPSG:4269,NaN,,Nassau,NY,US,2007-12-13T00:00:00Z,,2010-12-03T00:00:00Z,3.94,P\n" +
+"USGS:01302250,USGS,01302250,2458432,EAST CREEK AT SANDS POINT NY,Estuary,NWISDV,-73.7101944,40.8662222,EPSG:4269,NaN,,Nassau,NY,US,2007-12-13T00:00:00Z,,2010-12-04T00:00:00Z,3.61,P\n";
         Test.ensureEqual(results[0], "", "results[0]=\n" + results[0]);
         Test.ensureEqual(results[1], expected, "results[1]=\n" + results[1]);
 
@@ -3057,16 +3072,16 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
         results = String2.readFromFile(dir + tName);
         Test.ensureEqual(results[0], "", "results[0]=\n" + results[0]);
         expected = 
-"agencySiteCode, agency, siteCode, siteID, siteName, siteType, network, longitude, latitude, srs, altitude, vertDatum, county, state, country, beginDate, endDate, time, Sampling_depth, Sampling_depthQualifiers\n" +
-", , , , , , , degrees_east, degrees_north, , m, , , , , UTC, UTC, UTC, ft, \n" +
-"USGS:0209303205, USGS, 0209303205, 2456089, \"NEW RIVER BELOW HWY17 BRIDGE AT JACKSONVILLE, NC\", Stream, NWISDV, -77.43777778, 34.74888889, EPSG:4269, 0.0, NAVD88, Onslow, NC, US, 2007-12-22T00:00:00Z, 2008-06-16T00:00:00Z, 2007-12-22T00:00:00Z, 4.8, P\n" +
-"USGS:0209303205, USGS, 0209303205, 2456089, \"NEW RIVER BELOW HWY17 BRIDGE AT JACKSONVILLE, NC\", Stream, NWISDV, -77.43777778, 34.74888889, EPSG:4269, 0.0, NAVD88, Onslow, NC, US, 2007-12-22T00:00:00Z, 2008-06-16T00:00:00Z, 2007-12-23T00:00:00Z, 5.0, P\n" +
-"USGS:0209303205, USGS, 0209303205, 2456089, \"NEW RIVER BELOW HWY17 BRIDGE AT JACKSONVILLE, NC\", Stream, NWISDV, -77.43777778, 34.74888889, EPSG:4269, 0.0, NAVD88, Onslow, NC, US, 2007-12-22T00:00:00Z, 2008-06-16T00:00:00Z, 2007-12-24T00:00:00Z, 5.0, P\n";
+"agencySiteCode,agency,siteCode,siteID,siteName,siteType,network,longitude,latitude,srs,altitude,vertDatum,county,state,country,beginDate,endDate,time,Sampling_depth,Sampling_depthQualifiers\n" +
+",,,,,,,degrees_east,degrees_north,,m,,,,,UTC,UTC,UTC,ft,\n" +
+"USGS:0209303205,USGS,0209303205,2456089,\"NEW RIVER BELOW HWY17 BRIDGE AT JACKSONVILLE, NC\",Stream,NWISDV,-77.43777778,34.74888889,EPSG:4269,0.0,NAVD88,Onslow,NC,US,2007-12-22T00:00:00Z,2008-06-16T00:00:00Z,2007-12-22T00:00:00Z,4.8,P\n" +
+"USGS:0209303205,USGS,0209303205,2456089,\"NEW RIVER BELOW HWY17 BRIDGE AT JACKSONVILLE, NC\",Stream,NWISDV,-77.43777778,34.74888889,EPSG:4269,0.0,NAVD88,Onslow,NC,US,2007-12-22T00:00:00Z,2008-06-16T00:00:00Z,2007-12-23T00:00:00Z,5.0,P\n" +
+"USGS:0209303205,USGS,0209303205,2456089,\"NEW RIVER BELOW HWY17 BRIDGE AT JACKSONVILLE, NC\",Stream,NWISDV,-77.43777778,34.74888889,EPSG:4269,0.0,NAVD88,Onslow,NC,US,2007-12-22T00:00:00Z,2008-06-16T00:00:00Z,2007-12-24T00:00:00Z,5.0,P\n";
         Test.ensureEqual(results[1].substring(0, expected.length()), expected, "results[1]=\n" + results[1]);
         expected = 
-"USGS:0209303205, USGS, 0209303205, 2456089, \"NEW RIVER BELOW HWY17 BRIDGE AT JACKSONVILLE, NC\", Stream, NWISDV, -77.43777778, 34.74888889, EPSG:4269, 0.0, NAVD88, Onslow, NC, US, 2007-12-22T00:00:00Z, 2008-06-16T00:00:00Z, 2008-06-14T00:00:00Z, 4.6, P\n" +
-"USGS:0209303205, USGS, 0209303205, 2456089, \"NEW RIVER BELOW HWY17 BRIDGE AT JACKSONVILLE, NC\", Stream, NWISDV, -77.43777778, 34.74888889, EPSG:4269, 0.0, NAVD88, Onslow, NC, US, 2007-12-22T00:00:00Z, 2008-06-16T00:00:00Z, 2008-06-15T00:00:00Z, 4.4, P\n" +
-"USGS:0209303205, USGS, 0209303205, 2456089, \"NEW RIVER BELOW HWY17 BRIDGE AT JACKSONVILLE, NC\", Stream, NWISDV, -77.43777778, 34.74888889, EPSG:4269, 0.0, NAVD88, Onslow, NC, US, 2007-12-22T00:00:00Z, 2008-06-16T00:00:00Z, 2008-06-16T00:00:00Z, 4.5, P\n";
+"USGS:0209303205,USGS,0209303205,2456089,\"NEW RIVER BELOW HWY17 BRIDGE AT JACKSONVILLE, NC\",Stream,NWISDV,-77.43777778,34.74888889,EPSG:4269,0.0,NAVD88,Onslow,NC,US,2007-12-22T00:00:00Z,2008-06-16T00:00:00Z,2008-06-14T00:00:00Z,4.6,P\n" +
+"USGS:0209303205,USGS,0209303205,2456089,\"NEW RIVER BELOW HWY17 BRIDGE AT JACKSONVILLE, NC\",Stream,NWISDV,-77.43777778,34.74888889,EPSG:4269,0.0,NAVD88,Onslow,NC,US,2007-12-22T00:00:00Z,2008-06-16T00:00:00Z,2008-06-15T00:00:00Z,4.4,P\n" +
+"USGS:0209303205,USGS,0209303205,2456089,\"NEW RIVER BELOW HWY17 BRIDGE AT JACKSONVILLE, NC\",Stream,NWISDV,-77.43777778,34.74888889,EPSG:4269,0.0,NAVD88,Onslow,NC,US,2007-12-22T00:00:00Z,2008-06-16T00:00:00Z,2008-06-16T00:00:00Z,4.5,P\n";
         Test.ensureEqual(results[1].substring(results[1].length() - expected.length()), 
             expected, "results[1]=\n" + results[1]);
 
@@ -3079,13 +3094,13 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
             edd.className() + "_3_1_test6", ".csv"); 
         results = String2.readFromFile(dir + tName);
         expected = 
-"agencySiteCode, agency, siteCode, siteID, siteName, siteType, network, longitude, latitude, srs, altitude, vertDatum, beginDate, endDate\n" +
-", , , , , , , degrees_east, degrees_north, , m, , UTC, UTC\n" +
-"USGS:01302250, USGS, 01302250, 2458432, EAST CREEK AT SANDS POINT NY, Estuary, NWISDV, -73.7101944, 40.8662222, EPSG:4269, NaN, , 2007-12-13T00:00:00Z, \n" +
-"USGS:01302845, USGS, 01302845, 2458431, FROST CREEK AT SHEEP LN BRIDGE AT LATTINGTOWN NY, Estuary, NWISDV, -73.5931944, 40.9051111, EPSG:4269, NaN, , 2007-12-13T00:00:00Z, \n" +
-"USGS:01304057, USGS, 01304057, 2458433, FLAX POND AT OLD FIELD NY, Estuary, NWISDV, -73.1431667, 40.9628611, EPSG:4269, NaN, , 2008-04-08T00:00:00Z, \n" +
-"USGS:01310740, USGS, 01310740, 1496694, REYNOLDS CHANNEL AT POINT LOOKOUT NY, Estuary, NWISDV, -73.5837396, 40.5934366, EPSG:4269, NaN, , 2004-10-28T00:00:00Z, \n" +
-"USGS:01311143, USGS, 01311143, 2532028, HOG ISLAND CHANNEL AT ISLAND PARK NY, Estuary, NWISDV, -73.6561111, 40.6088333, EPSG:4269, NaN, , 2010-10-21T00:00:00Z, \n";
+"agencySiteCode,agency,siteCode,siteID,siteName,siteType,network,longitude,latitude,srs,altitude,vertDatum,beginDate,endDate\n" +
+",,,,,,,degrees_east,degrees_north,,m,,UTC,UTC\n" +
+"USGS:01302250,USGS,01302250,2458432,EAST CREEK AT SANDS POINT NY,Estuary,NWISDV,-73.7101944,40.8662222,EPSG:4269,NaN,,2007-12-13T00:00:00Z,\n" +
+"USGS:01302845,USGS,01302845,2458431,FROST CREEK AT SHEEP LN BRIDGE AT LATTINGTOWN NY,Estuary,NWISDV,-73.5931944,40.9051111,EPSG:4269,NaN,,2007-12-13T00:00:00Z,\n" +
+"USGS:01304057,USGS,01304057,2458433,FLAX POND AT OLD FIELD NY,Estuary,NWISDV,-73.1431667,40.9628611,EPSG:4269,NaN,,2008-04-08T00:00:00Z,\n" +
+"USGS:01310740,USGS,01310740,1496694,REYNOLDS CHANNEL AT POINT LOOKOUT NY,Estuary,NWISDV,-73.5837396,40.5934366,EPSG:4269,NaN,,2004-10-28T00:00:00Z,\n" +
+"USGS:01311143,USGS,01311143,2532028,HOG ISLAND CHANNEL AT ISLAND PARK NY,Estuary,NWISDV,-73.6561111,40.6088333,EPSG:4269,NaN,,2010-10-21T00:00:00Z,\n";
         Test.ensureEqual(results[0], "", "results[0]=\n" + results[0]);
         Test.ensureEqual(results[1], expected, "results[1]=\n" + results[1]);
 
@@ -3097,10 +3112,10 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
             edd.className() + "_3_1_test7", ".csv"); 
         results = String2.readFromFile(dir + tName);
         expected = 
-"agencySiteCode, agency, siteCode, siteID, siteName, siteType, network, longitude, latitude, srs, altitude, vertDatum\n" +
-", , , , , , , degrees_east, degrees_north, , m, \n" +
-"USGS:01302845, USGS, 01302845, 2458431, FROST CREEK AT SHEEP LN BRIDGE AT LATTINGTOWN NY, Estuary, NWISDV, -73.5931944, 40.9051111, EPSG:4269, NaN, \n" +
-"USGS:0209303205, USGS, 0209303205, 2456089, \"NEW RIVER BELOW HWY17 BRIDGE AT JACKSONVILLE, NC\", Stream, NWISDV, -77.43777778, 34.74888889, EPSG:4269, 0.0, NAVD88\n";
+"agencySiteCode,agency,siteCode,siteID,siteName,siteType,network,longitude,latitude,srs,altitude,vertDatum\n" +
+",,,,,,,degrees_east,degrees_north,,m,\n" +
+"USGS:01302845,USGS,01302845,2458431,FROST CREEK AT SHEEP LN BRIDGE AT LATTINGTOWN NY,Estuary,NWISDV,-73.5931944,40.9051111,EPSG:4269,NaN,\n" +
+"USGS:0209303205,USGS,0209303205,2456089,\"NEW RIVER BELOW HWY17 BRIDGE AT JACKSONVILLE, NC\",Stream,NWISDV,-77.43777778,34.74888889,EPSG:4269,0.0,NAVD88\n";
         Test.ensureEqual(results[0], "", "results[0]=\n" + results[0]);
         Test.ensureEqual(results[1], expected, "results[1]=\n" + results[1]);
 
@@ -3146,7 +3161,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
     /** This runs all of the tests. */
     public static void test() throws Throwable {
         String2.log("\n*** EDDTableFromNWISDV.test");
-        testGetValuesTable();
+        //testGetValuesTable();
         testGenerateDatasetsXml();  
         testBasic();
         testAvoidStackOverflow();

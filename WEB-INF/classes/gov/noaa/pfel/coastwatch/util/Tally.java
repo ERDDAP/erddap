@@ -28,7 +28,8 @@ import java.util.Set;
  *
  */
 public class Tally  {
-    protected ConcurrentHashMap mainHashMap = new ConcurrentHashMap(); //thread-safe
+    //thread-safe; use default nConcurrent
+    protected ConcurrentHashMap mainHashMap = new ConcurrentHashMap(); 
 
     /**
      * This adds a tally mark.
@@ -51,7 +52,7 @@ public class Tally  {
         //get the category's hashMap
         ConcurrentHashMap hashMap = (ConcurrentHashMap)mainHashMap.get(categoryName);
         if (hashMap == null) {
-            hashMap = new ConcurrentHashMap();
+            hashMap = new ConcurrentHashMap(); //use default nConcurrent
             mainHashMap.put(categoryName, hashMap);
         }
 

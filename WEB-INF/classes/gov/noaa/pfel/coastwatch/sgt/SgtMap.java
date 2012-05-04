@@ -659,6 +659,10 @@ public class SgtMap  {
                 if (legendTitle1 == null && legendTitle2 == null) {
                     //no legend title to draw
                 } else {
+                    if (legendTitle1 == null) 
+                        legendTitle1 = "";
+                    if (legendTitle2 == null) 
+                        legendTitle2 = "";
                     if (legendPosition == SgtUtil.LEGEND_BELOW) {
                         //draw LEGEND_BELOW
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
@@ -669,12 +673,14 @@ public class SgtMap  {
                     } else {
                         //draw LEGEND_RIGHT
                         int tx = legendBoxULX + legendInsideBorder;
-                        legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
-                            0, fontFamily, labelHeightPixels * 5 / 4, false, 
-                            "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1) + "</color></b>");
-                        legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
-                            0, fontFamily, labelHeightPixels * 5 / 4, false, 
-                            "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle2) + "</color></b>");
+                        if (legendTitle1.length() > 0)
+                            legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
+                                0, fontFamily, labelHeightPixels * 5 / 4, false, 
+                                "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1) + "</color></b>");
+                        if (legendTitle2.length() > 0)
+                            legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
+                                0, fontFamily, labelHeightPixels * 5 / 4, false, 
+                                "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle2) + "</color></b>");
                         legendTextY += labelHeightPixels * 3 / 2;
                     }
 
@@ -949,7 +955,7 @@ public class SgtMap  {
                     if (reallyVerbose)
                         String2.log("  contour asf=" + contourAltScaleFactor + " ao=" + contourAltOffset +
                             " linesAt=" + contourDrawLinesAt +
-                            " levels=" + String2.toCSVString(levels) +
+                            " levels=" + String2.toCSSVString(levels) +
                             " minData=" + String2.genEFormat6(gridMinData) + 
                             " maxData=" + String2.genEFormat10(gridMaxData));
                     DecimalFormat format = new DecimalFormat("#0.######");
@@ -965,7 +971,7 @@ public class SgtMap  {
                     }
                     graph.setData(simpleGrid, new GridAttribute(contourLevels));
                     if (reallyVerbose) 
-                        String2.log("  contour levels = " + String2.toCSVString(levels));
+                        String2.log("  contour levels = " + String2.toCSSVString(levels));
 
                     //add legend text
                     if (legendPosition == SgtUtil.LEGEND_BELOW) {
@@ -1527,8 +1533,8 @@ public class SgtMap  {
 
 
             //test
-            //String2.log("ImageIO Readers: " + String2.toCSVString(ImageIO.getReaderFormatNames()) +
-            //          "\nImageIO Writers: " + String2.toCSVString(ImageIO.getWriterFormatNames()));
+            //String2.log("ImageIO Readers: " + String2.toCSSVString(ImageIO.getReaderFormatNames()) +
+            //          "\nImageIO Writers: " + String2.toCSSVString(ImageIO.getWriterFormatNames()));
 
             //display time to makeMap
             if (verbose) String2.log("}} SgtMap.makeMap done. TOTAL TIME=" + 
@@ -2034,7 +2040,7 @@ public class SgtMap  {
         globalAttributes.set("Metadata_Conventions",      FileNameUtility.getMetadataConventions());
         globalAttributes.set("title",                     BATHYMETRY_BOLD_TITLE);
         globalAttributes.set("summary",                   BATHYMETRY_SUMMARY);
-        globalAttributes.set("keywords",                  "EARTH SCIENCE > Oceans > Bathymetry/Seafloor Topography > Bathymetry");
+        globalAttributes.set("keywords",                  "Oceans > Bathymetry/Seafloor Topography > Bathymetry");
         globalAttributes.set("id",                        "SampledFrom" + etopoFileName);
         globalAttributes.set("naming_authority",          FileNameUtility.getNamingAuthority());
         globalAttributes.set("keywords_vocabulary",       FileNameUtility.getKeywordsVocabulary());
@@ -2521,19 +2527,19 @@ String2.log("err: " + errCatcher.getString());
         int results[] = new int[] {imageWidth, imageHeight, 
             graphULX, imageWidth - graphRightBorder, 
             graphULY, imageHeight - graphBottomY};
-        //String2.log(String2.toCSVString(results));
+        //String2.log(String2.toCSSVString(results));
         return results;
     }
 
     /** This tests bathymetry and the ocean palette in an area that was trouble.
     */
-    public static void testOceanPalette() throws Exception {
+    public static void testOceanPalette(int first, int last) throws Exception {
 
         double cx[] = {270, 90, -30, 235, 240, -123, -122.6,  -122};
         double cy[] = { 0,   0,  40,  40,  40, 37.8,   37.8,  36.8};
         double inc[]= {90,  90,  30,  15,   7,  1.5,    0.5,  0.25};
 
-        for (int i = 0; i < 8; i++) {   //0..8?
+        for (int i = first; i <= last; i++) {   //0..7
             BufferedImage bufferedImage = SgtUtil.getBufferedImage(480, 500);
             Grid bath = SgtMap.createTopographyGrid(
                 SSR.getTempDirectory(), 
@@ -2696,10 +2702,10 @@ String2.log("err: " + errCatcher.getString());
             int boundaryResAdjust, double fontScale) throws Exception {
 
         //region? 0=SF 1=C  2=US+Mexico 3=world   minX, maxX, minY, maxY, 
-        double minX[] = {-122.47, -129.5, -135, -180,  75, -85}; 
-        double maxX[] = {-122.3 , -120.5, -105,  180, 105, -55}; 
-        double minY[] = {  37.8 ,   33.5,   22,  -90,  15, -35};
-        double maxY[] = {  37.95,   42.5,   50,   90,  45,  -5}; 
+        double minX[] = {-122.47, -129.5, -135, -180,  75, -85, -176.5}; 
+        double maxX[] = {-122.3 , -120.5, -105,  180, 105, -55, -176.44}; 
+        double minY[] = {  37.8 ,   33.5,   22,  -90,  15, -35, .18};
+        double maxY[] = {  37.95,   42.5,   50,   90,  45,  -5, .24}; 
         int predicted[] = predictGraphSize(1, imageWidth, imageHeight, 
             minX[region], maxX[region], minY[region], maxY[region]);
         makeMap(false, 
@@ -2765,14 +2771,15 @@ String2.log("err: " + errCatcher.getString());
         }
     }
 
-    /** This tests SgtMap making topography maps. */ 
-    public static void testTopography(int first) throws Exception {
+
+    /** This tests SgtMap making topography maps.  (0, 6) */ 
+    public static void testTopography(int first, int last) throws Exception {
         verbose = true;
         reallyVerbose = true;
         Grid.verbose = true;
         String2.log("*** test SgtMap.testTopography");
 
-        for (int region = first; region < 6; region++) {
+        for (int region = first; region <= last; region++) {
             BufferedImage bufferedImage = SgtUtil.getBufferedImage(480, 640);
             testBathymetryMap(false, (Graphics2D)bufferedImage.getGraphics(), 
                 0, 0, 480, 480, region, 0, 1);
@@ -2902,8 +2909,8 @@ String2.log("err: " + errCatcher.getString());
 
     } 
 
-    /** This tests makeCleanMap. */ 
-    public static void testMakeCleanMap(boolean all) throws Exception {
+    /** This tests makeCleanMap.   (0, 5)  */ 
+    public static void testMakeCleanMap(int first, int last) throws Exception {
         verbose = true;
         reallyVerbose = true;
         String2.log("*** testMakeCleanMap");
@@ -2917,7 +2924,7 @@ String2.log("err: " + errCatcher.getString());
         //  World Vector Shorelines (WVS) and CIA World Data Bank II (WDBII).
         //  Perhaps each thinks the other is responsible for it.
 
-        for (int im = all? 0 : 6; im <= 6; im++) {  
+        for (int im = first; im <= last; im++) {  
             BufferedImage bufferedImage = SgtUtil.getBufferedImage(size*3, size*2);
             Graphics g = bufferedImage.getGraphics(); 
             Graphics2D g2 = (Graphics2D)g;
@@ -3054,8 +3061,8 @@ String2.log("err: " + errCatcher.getString());
         Test.ensureEqual(grid.lat.length, 541, "");   
         Test.ensureEqual((float)grid.lat[0], -90f, "");
         Test.ensureEqual((float)grid.lat[540], 90f, ""); 
-        Test.ensureEqual(grid.getData(0, 0), 2745, ""); //-180          2774
-        Test.ensureEqual(grid.getData(480, 540), -4229, ""); //180     -4117 
+        Test.ensureEqual(grid.getData(0, 0), 2745, ""); //-180         was 2774
+        Test.ensureEqual(grid.getData(480, 540), -4228, ""); //180     was -4229 -4117 
 
         //lon 0 360 //hard parts, 180 to 359,  360
         grid = createTopographyGrid(null, 0, 360, -80, 80, 37, 17);
@@ -3209,8 +3216,8 @@ String2.log("err: " + errCatcher.getString());
                       "\n    spacing=" + grid.lonSpacing +
                       "\n  file lat min=" + minY + " max=" + maxY + 
                       "\n    spacing=" + grid.latSpacing); 
-            //String2.log("  file lon=" + String2.toCSVString(grid.lon) +
-            //    "\n  file lat=" + String2.toCSVString(grid.lat));
+            //String2.log("  file lon=" + String2.toCSSVString(grid.lon) +
+            //    "\n  file lat=" + String2.toCSSVString(grid.lat));
 
             //make the bufferedImage 
             BufferedImage image = SgtUtil.getBufferedImage(imageWidth, imageHeight);
