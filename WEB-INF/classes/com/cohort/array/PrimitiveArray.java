@@ -804,7 +804,7 @@ public abstract class PrimitiveArray {
 
 
     /**
-     * This finds the first instance of 'lookFor' starting at index 'startIndex'.
+     * This finds the first value which equals 'lookFor' starting at index 'startIndex'.
      *
      * @param lookFor the value to be looked for
      * @param startIndex 0 ... size-1
@@ -813,7 +813,7 @@ public abstract class PrimitiveArray {
     abstract public int indexOf(String lookFor, int startIndex);
 
     /**
-     * This finds the first instance of 'lookFor' starting at index 0.
+     * This finds the first value which equals 'lookFor' starting at index 0.
      *
      * @param lookFor the value to be looked for
      * @return the index where 'lookFor' is found, or -1 if not found.
@@ -821,16 +821,16 @@ public abstract class PrimitiveArray {
     public int indexOf(String lookFor) {return indexOf(lookFor, 0); }
 
     /**
-     * This finds the last instance of 'lookFor' starting at index 'startIndex'.
+     * This finds the last value which equals'lookFor' starting at index 'startIndex'.
      *
      * @param lookFor the value to be looked for
-     * @param startIndex 0 ... size-1
+     * @param startIndex 0 ... size-1. The search progresses towards 0.
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
     abstract public int lastIndexOf(String lookFor, int startIndex);
 
     /**
-     * This finds the last instance of 'lookFor' starting at index size() - 1.
+     * This finds the last value which equals 'lookFor' starting at index size() - 1.
      *
      * @param lookFor the value to be looked for
      * @return the index where 'lookFor' is found, or -1 if not found.
@@ -844,9 +844,9 @@ public abstract class PrimitiveArray {
     abstract public void trimToSize();
 
     /** 
-     * This converts the elements into a comma-separated String.
+     * This converts the elements into a Comma-Space-Separated-Value (CSSV) String.
      *
-     * @return a comma-separated String representation 
+     * @return a Comma-Space-Separated-Value (CSSV) String representation 
      */
     abstract public String toString();
 
@@ -1938,7 +1938,7 @@ public abstract class PrimitiveArray {
 
         //sort the rows
         Arrays.sort(rowArray, comparator);   //this is "stable"
-        //String2.log("rank results: " + String2.toCSVString(integerArray));
+        //String2.log("rank results: " + String2.toCSSVString(integerArray));
 
         //create the int[] 
         int newArray[] = new int[n];
@@ -2546,9 +2546,10 @@ public abstract class PrimitiveArray {
      *
      * @param startIndex must be a valid index
      * @param stride   must be at least 1
-     * @param stopIndex (inclusive) must be &gt;= startIndex and &lt; size.
+     * @param stopIndex (inclusive) If &gt;= size, it will be changed to size-1.
      * @return a new PrimitiveArray with the desired subset.
      *    It will have a new backing array with a capacity equal to its size.
+     *    If stopIndex &lt; startIndex, this returns PrimitiveArray with size=0;
      */
     public abstract PrimitiveArray subset(int startIndex, int stride, int stopIndex);
 

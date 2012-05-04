@@ -351,7 +351,7 @@ String2.log("!!!Category=" + category);
                     //if (oneOf.verbose()) String2.log("vectorI=" + vectorI + 
                     //    " activeVectorTimeOption=" + xATPO
                     //    //+ " dates=" + String2.noLongerThan(
-                    //    //    String2.toCSVString(String2.toStringArray(commonDates.toArray())), 200)
+                    //    //    String2.toCSSVString(String2.toStringArray(commonDates.toArray())), 200)
                     //    );
                     }
                 } //end of xATPOIndex loop
@@ -373,7 +373,7 @@ String2.log("!!!Category=" + category);
                         " xDataSet=" + xDataSetInternalName + 
                         " yDataSet=" + yDataSetInternalName + 
                         " activeVectorTimeOptions=" + 
-                        String2.toCSVString(String2.toStringArray(
+                        String2.toCSSVString(String2.toStringArray(
                             tActiveVectorTimePeriodOptions.toArray())));                    
                 }
             } //end of Vector loop
@@ -387,10 +387,10 @@ String2.log("!!!Category=" + category);
             activeVectorYDataSetIndexes = String2.toIntArray(tActiveVectorYDataSetIndexes.toArray());
             if (oneOf.verbose()) {
                 String2.log(
-                    "activeVectorOptions: " + String2.toCSVString(activeVectorOptions) + "\n" +
-                    "activeVector7Names: " + String2.toCSVString(activeVector7Names) + "\n" +
-                    "activeVectorXDataSetIndexes: " + String2.toCSVString(activeVectorXDataSetIndexes) + "\n" +
-                    "activeVectorYDataSetIndexes: " + String2.toCSVString(activeVectorYDataSetIndexes));
+                    "activeVectorOptions: " + String2.toCSSVString(activeVectorOptions) + "\n" +
+                    "activeVector7Names: " + String2.toCSSVString(activeVector7Names) + "\n" +
+                    "activeVectorXDataSetIndexes: " + String2.toCSSVString(activeVectorXDataSetIndexes) + "\n" +
+                    "activeVectorYDataSetIndexes: " + String2.toCSSVString(activeVectorYDataSetIndexes));
             }
             vectorInfoTime = System.currentTimeMillis() - vectorInfoTime;
 
@@ -482,7 +482,7 @@ String2.log("!!!Category=" + category);
                 activePointDataSetOptions[i] = pds.option;
                 activePointDataSet7Names[i] = pds.internalName;
             }
-            String2.log("activePointDataSetOptions=" + String2.toCSVString(activePointDataSetOptions));
+            String2.log("activePointDataSetOptions=" + String2.toCSSVString(activePointDataSetOptions));
 
             //call gc
             Math2.incgc(100); 
@@ -567,10 +567,10 @@ String2.log("!!!Category=" + category);
             activePointVectorYDataSetIndexes = String2.toIntArray(tActivePointVectorYDataSetIndexes.toArray());
             if (oneOf.verbose()) {
                 String2.log(
-                    "activePointVectorOptions: " + String2.toCSVString(activePointVectorOptions) + "\n" +
-                    "activePointVector7Names: " + String2.toCSVString(activePointVector7Names) + "\n" +
-                    "activePointVectorXDataSetIndexes: " + String2.toCSVString(activePointVectorXDataSetIndexes) + "\n" +
-                    "activePointVectorYDataSetIndexes: " + String2.toCSVString(activePointVectorYDataSetIndexes));
+                    "activePointVectorOptions: " + String2.toCSSVString(activePointVectorOptions) + "\n" +
+                    "activePointVector7Names: " + String2.toCSSVString(activePointVector7Names) + "\n" +
+                    "activePointVectorXDataSetIndexes: " + String2.toCSSVString(activePointVectorXDataSetIndexes) + "\n" +
+                    "activePointVectorYDataSetIndexes: " + String2.toCSSVString(activePointVectorYDataSetIndexes));
             }
             pointVectorInfoTime = System.currentTimeMillis() - pointVectorInfoTime;
 
@@ -608,7 +608,7 @@ String2.log("!!!Category=" + category);
                 activeTrajectoryDataSetOptions[i] = tds.datasetName();
                 activeTrajectoryDataSet7Names[i] = tds.internalName();
             }
-            String2.log("activeTrajectoryDataSetOptions=" + String2.toCSVString(activeTrajectoryDataSetOptions));
+            String2.log("activeTrajectoryDataSetOptions=" + String2.toCSSVString(activeTrajectoryDataSetOptions));
 
             if (isInterrupted()) {
                 String2.log("*** Shared isInterrupted, so it is stopping.");
@@ -772,8 +772,8 @@ String2.log("!!!Category=" + category);
                 if (oneOf.verbose()) 
                     String2.log(
                         oneOf.shortClassName() + " shared.tryToLoad internalName=" + internalName + "\n" +
-                        "  fileInfo: " + String2.toCSVString(dataSetFileInfo) + "\n" +
-                        "  otherInfo: " + String2.toCSVString(dataSetOtherInfo) //+ "\n" +
+                        "  fileInfo: " + String2.toCSSVString(dataSetFileInfo) + "\n" +
+                        "  otherInfo: " + String2.toCSSVString(dataSetOtherInfo) //+ "\n" +
                         //"  fgdc: " + (tFGDC == null? tFGDC : XML.encodeAsXML(tFGDC))
                         );
 

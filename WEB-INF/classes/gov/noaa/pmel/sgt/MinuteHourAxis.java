@@ -38,7 +38,8 @@ import gov.noaa.pmel.util.IllegalTimeValue;
 public class MinuteHourAxis implements TimeAxisStyle {
   static final int MINUTE_TEST__ = 31;
   static final String defaultMinorLabelFormat__ = "mm";
-  static final String defaultMajorLabelFormat__ = "yyyy-MM-dd HH";
+  //2011-12-15 Bob Simons changed space to 'T'
+  static final String defaultMajorLabelFormat__ = "yyyy-MM-dd'T'HH"; 
   static final int defaultNumSmallTics__ = 0;
   int defaultMinorLabelInterval_ = 2;
   int defaultMajorLabelInterval_ = 1;

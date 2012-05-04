@@ -567,6 +567,10 @@ public class SgtGraph  {
                 if (legendTitle1 == null && legendTitle2 == null) {
                     //don't draw the legend title
                 } else {
+                    if (legendTitle1 == null) 
+                        legendTitle1 = "";
+                    if (legendTitle2 == null) 
+                        legendTitle2 = "";
                     if (legendPosition == SgtUtil.LEGEND_BELOW) {
                         //draw LEGEND_BELOW
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
@@ -577,12 +581,14 @@ public class SgtGraph  {
                     } else {
                         //draw LEGEND_RIGHT
                         int tx = legendBoxULX + legendInsideBorder;
-                        legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
-                            0, fontFamily, labelHeightPixels * 5 / 4, false, 
-                            "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1) + "</color></b>");
-                        legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
-                            0, fontFamily, labelHeightPixels * 5 / 4, false, 
-                            "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle2) + "</color></b>");
+                        if (legendTitle1.length() > 0)
+                            legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
+                                0, fontFamily, labelHeightPixels * 5 / 4, false, 
+                                "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1) + "</color></b>");
+                        if (legendTitle2.length() > 0)
+                            legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
+                                0, fontFamily, labelHeightPixels * 5 / 4, false, 
+                                "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle2) + "</color></b>");
                         legendTextY += labelHeightPixels * 3 / 2;
                     }
 
@@ -1065,7 +1071,7 @@ public class SgtGraph  {
                         }
                         graph.setData(simpleGrid, new GridAttribute(contourLevels));
                         if (reallyVerbose) 
-                            String2.log("  contour levels = " + String2.toCSVString(levels));
+                            String2.log("  contour levels = " + String2.toCSSVString(levels));
 
                         //add legend text
                         //don't draw legend if gdl.draw = DRAW_COLORED_SURFACE_AND_CONTOUR_LINES
@@ -1569,6 +1575,10 @@ public class SgtGraph  {
                 if (legendTitle1 == null && legendTitle2 == null) {
                     //don't draw the legend title
                 } else {
+                    if (legendTitle1 == null) 
+                        legendTitle1 = "";
+                    if (legendTitle2 == null) 
+                        legendTitle2 = "";
                     if (legendPosition == SgtUtil.LEGEND_BELOW) {
                         //draw LEGEND_BELOW
                         legendTextY = SgtUtil.drawHtmlText(g2, legendTextX, legendTextY, 
@@ -1579,12 +1589,14 @@ public class SgtGraph  {
                     } else {
                         //draw LEGEND_RIGHT
                         int tx = legendBoxULX + legendInsideBorder;
-                        legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
-                            0, fontFamily, labelHeightPixels * 5 / 4, false, 
-                            "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1) + "</color></b>");
-                        legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
-                            0, fontFamily, labelHeightPixels * 5 / 4, false, 
-                            "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle2) + "</color></b>");
+                        if (legendTitle1.length() > 0)
+                            legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
+                                0, fontFamily, labelHeightPixels * 5 / 4, false, 
+                                "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle1) + "</color></b>");
+                        if (legendTitle2.length() > 0)
+                            legendTextY = SgtUtil.drawHtmlText(g2, tx, legendTextY, 
+                                0, fontFamily, labelHeightPixels * 5 / 4, false, 
+                                "<b><color=#2600aa>" + SgtUtil.encodeAsHtml(legendTitle2) + "</color></b>");
                         legendTextY += labelHeightPixels * 3 / 2;
                     }
 
@@ -2236,82 +2248,87 @@ public class SgtGraph  {
         String2.getStringFromSystemIn("Press ^C to stop or Enter to continue..."); 
     }
 
-/* not finished (barely started)
     public static void testSurface() throws Exception {
         verbose = true;
         reallyVerbose = true;
         PathCartesianRenderer.verbose = true;
         PathCartesianRenderer.reallyVerbose = true;
         //AttributedString2.verbose = true;
+        for (int i = 0; i < 3; i++)
+            Math2.gc(500); //all should be garbage collected now
         long time = System.currentTimeMillis();
-        String tempDir = SSR.getTempDirectory();
-        SgtGraph sgtGraph = new SgtGraph("Bitstream Vera Sans"); //"SansSerif" is safe choice
-        String imageDir = SSR.getContextDirectory() + "images/";
+        long memoryInUse = Math2.getMemoryInUse();
 
-        int width = 800;  //2 graphs wide
-        int height = 900;  //3 graphs high
+        {  //so garbage collector can clean up at the end of the test
+            String tempDir = SSR.getTempDirectory();
+            SgtGraph sgtGraph = new SgtGraph("Bitstream Vera Sans"); //"SansSerif" is safe choice
+            String imageDir = SSR.getContextDirectory() + "images/";
 
-        //graph 1: make a data file with data
-        PrimitiveArray xCol = PrimitiveArray.factory(new double[]{1, 1.5, 2, 2.5});
-//future: test x axis is time
-        PrimitiveArray yCol = PrimitiveArray.factory(new double[]{20, 20.1, 20.1, 20.3});
-        Table table = new Table();
-        table.addColumn("X", xCol);
-        table.addColumn("Y", yCol);
+            int width = 800;  //2 graphs wide
+            int height = 900;  //3 graphs high
 
-        //graph 1: make a graphDataLayer with data for a time series line
-        GraphDataLayer graphDataLayer = new GraphDataLayer(
-            -1, //which pointScreen
-            0, 1, -1, -1, -1, //x,y,  others unused
-            GraphDataLayer.DRAW_COLORED_SURFACE, true, false,
-            "X Axis", "Y Axis Title", //x,yAxisTitle  for now, always std units 
-            "This is the really, really, extra long and very nice bold title.",             
-            "This is a really, really, extra long and very nice title2.", 
-            "This is a really, really, extra long and very nice title3.",
-            "This is title4.",
-            table, null, null,
-            null, new java.awt.Color(0x0099FF),
-            GraphDataLayer.MARKER_TYPE_PLUS, GraphDataLayer.MARKER_SIZE_SMALL,
-            0, //vectorStandard
-            GraphDataLayer.REGRESS_NONE);
-        ArrayList graphDataLayers1 = new ArrayList();
-        graphDataLayers1.add(graphDataLayer);
+            //graph 1: make a data file with data
+            PrimitiveArray xCol = PrimitiveArray.factory(new double[]{1, 1.5, 2, 2.5});
+    //future: test x axis is time
+            PrimitiveArray yCol = PrimitiveArray.factory(new double[]{20, 20.1, 20.1, 20.3});
+            Table table = new Table();
+            table.addColumn("X", xCol);
+            table.addColumn("Y", yCol);
 
-        //draw the graph with data
-        BufferedImage bufferedImage = SgtUtil.getBufferedImage(width, height);
-        Graphics2D g2 = (Graphics2D)bufferedImage.getGraphics();
+            //graph 1: make a graphDataLayer with data for a time series line
+            GraphDataLayer graphDataLayer = new GraphDataLayer(
+                -1, //which pointScreen
+                0, 1, -1, -1, -1, //x,y,  others unused
+                GraphDataLayer.DRAW_COLORED_SURFACE, true, false,
+                "X Axis", "Y Axis Title", //x,yAxisTitle  for now, always std units 
+                "This is the really, really, extra long and very nice bold title.",             
+                "This is a really, really, extra long and very nice title2.", 
+                "This is a really, really, extra long and very nice title3.",
+                "This is title4.",
+                table, null, null,
+                null, new java.awt.Color(0x0099FF),
+                GraphDataLayer.MARKER_TYPE_PLUS, GraphDataLayer.MARKER_SIZE_SMALL,
+                0, //vectorStandard
+                GraphDataLayer.REGRESS_NONE);
+            ArrayList graphDataLayers1 = new ArrayList();
+            graphDataLayers1.add(graphDataLayer);
 
-        //graph 1
-        String2.log("Graph 1");
-        sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
-            SgtUtil.LEGEND_BELOW, "Graph 1,", "x is TimeAxis",
-            imageDir, "noaa20.gif",
-            Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
-            false, false, //x/yIsTimeAxis,
-            graphDataLayers1,
-            g2, 0, 0, //upperLeft
-            width/2, height/3, 2, //graph width/height
-            1); //fontScale
-        
-        //save image
-        String fileName = tempDir + "SgtGraphTest" + testImageExtension;
-        SgtUtil.saveImage(bufferedImage, fileName);
+            //draw the graph with data
+            BufferedImage bufferedImage = SgtUtil.getBufferedImage(width, height);
+            Graphics2D g2 = (Graphics2D)bufferedImage.getGraphics();
 
-        //view it
-        SSR.displayInBrowser("file://" + fileName);
-        Math2.sleep(2000);
-        //String2.getStringFromSystemIn("Press ^C to stop or Enter to continue..."); 
-        
-        //delete files        
-        File2.delete(fileName);
+            //graph 1
+            String2.log("Graph 1");
+            sgtGraph.makeGraph(false, "xAxisTitle", "yAxisTitle",
+                SgtUtil.LEGEND_BELOW, "Graph 1,", "x is TimeAxis",
+                imageDir, "noaa20.gif",
+                Double.NaN, Double.NaN, Double.NaN, Double.NaN, //predefined min/maxX/Y
+                false, false, //x/yIsTimeAxis,
+                graphDataLayers1,
+                g2, 0, 0, //upperLeft
+                width/2, height/3, 2, //graph width/height
+                1); //fontScale
+            
+            //save image
+            String fileName = tempDir + "SgtGraphTest" + testImageExtension;
+            SgtUtil.saveImage(bufferedImage, fileName);
+
+            //view it
+            SSR.displayInBrowser("file://" + fileName);
+            Math2.sleep(2000);
+            //String2.getStringFromSystemIn("Press ^C to stop or Enter to continue..."); 
+            
+            //delete files        
+            File2.delete(fileName);
+        }
 
         //done
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 3; i++)
             Math2.gc(500); //all should be garbage collected now
-        String2.log("time=" + (System.currentTimeMillis() - time) + " ms\n" +
-            Math2.memoryString());
+        String2.log("time=" + (System.currentTimeMillis() - time) + " ms " +
+            "changeInMemoryInUse=" + (Math2.getMemoryInUse() - memoryInUse));
     } 
-*/
+
 
     /** This tests SgtGraph. */ 
     public static void test() throws Exception {

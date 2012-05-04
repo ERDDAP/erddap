@@ -123,8 +123,9 @@ public class EDVGridAxis extends EDV {
 
     /** 
      * This overwrites EDV superclass method to use firstDestinationValue and lastDestinationValue.
-     * "actual_range" is defined in [CDC COARDS] as
-     * "actual data range for variable. Same type as unpacked values."
+     * "actual_range" is defined in [CDC COARDS] 
+     * http://www.cdc.noaa.gov/cdc/conventions/cdc_netcdf_standard.shtml 
+     * as "actual data range for variable. Same type as unpacked values."
      * Later, it says "The range values are used to indicate order of storage 
      * (e.g., 90,-90 would indicate the latitudes started with 90 and ended with -90)."
      */
@@ -449,7 +450,7 @@ public class EDVGridAxis extends EDV {
      * For EDVTimeGridAxis, this is in epochSeconds.
      *
      * @return If there are 2 or more values, 
-     * this returns the average spacing between values.
+     * this returns the average spacing between values (in destination units).
      */
     public double averageSpacing() {return averageSpacing;}
 

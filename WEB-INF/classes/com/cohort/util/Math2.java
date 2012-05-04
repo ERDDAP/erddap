@@ -30,7 +30,11 @@ public class Math2 {
     public static final double ln2 = Math.log(2.0);
     public static final int Binary0 = -2000; //less than -980-980
     public static final int BinaryLimit = 980; //2^980 = ~1e295
-    public static final int BytesPerMB = 1048576;
+    public static final int BytesPerKB = 1024;
+    public static final int BytesPerMB = BytesPerKB * BytesPerKB;
+    public static final long BytesPerGB = BytesPerMB * (long)BytesPerKB;
+    public static final long BytesPerTB = BytesPerGB * BytesPerKB;
+    public static final long BytesPerPB = BytesPerTB * BytesPerKB;
     public static final long loAnd = ((long) Integer.MAX_VALUE * 2) + 1; //mask for low 32 bits
     public static java.util.Random random = new java.util.Random();
     public volatile static long lastUsingMemory = 0; //volatile: used by all threads

@@ -66,7 +66,7 @@ public class GridDataAllAccessor {
         EDV dataVars[] = gridDataAccessor.dataVariables();
         int nDv = dataVars.length;
         String tQuery = gridDataAccessor.userDapQuery();
-        baseFileName = EDStatic.fullCacheDirectory + gridDataAccessor.eddGrid().datasetID() + "/" + //dir created by EDD.ensureValid
+        baseFileName = gridDataAccessor.eddGrid().cacheDirectory() + //dir created by EDD.ensureValid
             String2.md5Hex12(tQuery == null? "" : tQuery) + "_" +
             Math2.random(Integer.MAX_VALUE) + "_"; //so two identical queries don't interfere with each other
 

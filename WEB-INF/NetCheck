@@ -7,4 +7,4 @@
 
 set commandLine=$0
 set thisDir=`echo commandLine | dirname $0`
-java -cp $thisDir/classes:$thisDir/lib/mail.jar:$thisDir/lib/netcdfAll-latest.jar:$thisDir/lib/slf4j-jdk14.jar:$thisDir/lib/activation.jar gov.noaa.pfel.coastwatch.netcheck.NetCheck NetCheck.xml $1 $2
+java -cp $thisDir/classes:$thisDir/lib/lucene-core.jar:$thisDir/lib/mail.jar:$thisDir/lib/netcdfAll-latest.jar:$thisDir/lib/slf4j-jdk14.jar:$thisDir/lib/activation.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.netcheck.NetCheck NetCheck.xml $1 $2

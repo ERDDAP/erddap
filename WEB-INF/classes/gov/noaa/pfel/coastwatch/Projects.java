@@ -297,7 +297,7 @@ the early years I was even testing them periodically in an ice bath.
                     DataHelper.ERD_PROJECT,       
                     tempID, //id
                     "GCMD Science Keywords", //keywordsVocabulary,
-                    "EARTH SCIENCE > Oceans > Ocean Temperature > Water Temperature", //keywords
+                    "Oceans > Ocean Temperature > Water Temperature", //keywords
 
                     //references   from 2006-12-19 email from Kushner
                     "Channel Islands National Parks Inventory and Monitoring information: " +
@@ -598,7 +598,7 @@ the early years I was even testing them periodically in an ice bath.
                     DataHelper.ERD_PROJECT,       
                     tempID, //id
                     "GCMD Science Keywords", //keywordsVocabulary,
-                    "EARTH SCIENCE > Oceans > Ocean Temperature > Water Temperature", //keywords
+                    "Oceans > Ocean Temperature > Water Temperature", //keywords
 
                     //references   from 2006-12-19 email from Kushner
                     "Channel Islands National Parks Inventory and Monitoring information: " +
@@ -1072,7 +1072,7 @@ String2.log("uniqueYear = " + uniqueYear);
                         "GCMD Science Keywords", //keywordsVocabulary,
                         //see http://gcmd.gsfc.nasa.gov/Resources/valids/gcmd_parameters.html
                         //there are plands and invertebrates, so habitat seems closest keyword
-                        "EARTH SCIENCE > Oceans > Marine Biology > Marine Habitat", //keywords
+                        "Oceans > Marine Biology > Marine Habitat", //keywords
 
                         //references   from 2006-12-19 email from Kushner
                         "Channel Islands National Parks Inventory and Monitoring information: " +
@@ -1436,7 +1436,7 @@ String2.log("uniqueYear = " + uniqueYear);
                         "GCMD Science Keywords", //keywordsVocabulary,
                         //see http://gcmd.gsfc.nasa.gov/Resources/valids/gcmd_parameters.html
                         //there are plands and invertebrates, so habitat seems closest keyword
-                        "EARTH SCIENCE > Oceans > Marine Biology > Marine Habitat", //keywords
+                        "Oceans > Marine Biology > Marine Habitat", //keywords
 
                         //references   from 2006-12-19 email from Kushner
                         "Channel Islands National Parks Inventory and Monitoring information: " +
@@ -1562,7 +1562,7 @@ String2.log("uniqueYear = " + uniqueYear);
             data.readASCII(tabDir + tabName + ".tab"); 
             int dataNRows = data.nRows();
             Test.ensureEqual(
-                String2.toCSVString(data.getColumnNames()),
+                String2.toCSSVString(data.getColumnNames()),
                 "Year, IslandName, SiteName, Date, " +                            //0,1,2,3
                     "Species, Species Name, Adult/Juvenile/sex, " +               //4,5,6
                     "CommonName, Transect, Number fish per 100mX2mX30m transect", //7,8,9
@@ -1749,7 +1749,7 @@ String2.log("uniqueSpp = " + uniqueSpp);
                         "GCMD Science Keywords", //keywordsVocabulary,
                         //see http://gcmd.gsfc.nasa.gov/Resources/valids/gcmd_parameters.html
                         //there are plands and invertebrates, so habitat seems closest keyword
-                        "EARTH SCIENCE > Oceans > Marine Biology > Marine Habitat", //keywords
+                        "Oceans > Marine Biology > Marine Habitat", //keywords
 
                         //references   from 2006-12-19 email from Kushner
                         "Channel Islands National Parks Inventory and Monitoring information: " +
@@ -2075,7 +2075,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
                         "GCMD Science Keywords", //keywordsVocabulary,
                         //see http://gcmd.gsfc.nasa.gov/Resources/valids/gcmd_parameters.html
                         //there are plands and invertebrates, so habitat seems closest keyword
-                        "EARTH SCIENCE > Oceans > Marine Biology > Marine Habitat", //keywords
+                        "Oceans > Marine Biology > Marine Habitat", //keywords
 
                         //references   from 2006-12-19 email from Kushner
                         "Channel Islands National Parks Inventory and Monitoring information: " +
@@ -2379,7 +2379,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
                         "GCMD Science Keywords", //keywordsVocabulary,
                         //see http://gcmd.gsfc.nasa.gov/Resources/valids/gcmd_parameters.html
                         //there are plands and invertebrates, so habitat seems closest keyword
-                        "EARTH SCIENCE > Oceans > Marine Biology > Marine Habitat", //keywords
+                        "Oceans > Marine Biology > Marine Habitat", //keywords
 
                         //references   from 2006-12-19 email from Kushner
                         "Channel Islands National Parks Inventory and Monitoring information: " +
@@ -2482,7 +2482,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
             String desiredColumns[] = {"TIME", "WD", "WSPD", "GST",  "WVHT", "DPD",  "APD",  "ATMP", "WTMP"};
             Table table = new Table();
             table.read4DNc("f:/programs/kushner/NDBC_" + id[idi] + "_met.nc", null, 1, stationColumnName, 4);
-            String2.log("colNames=" + String2.toCSVString(table.getColumnNames()));
+            String2.log("colNames=" + String2.toCSSVString(table.getColumnNames()));
 
             //pluck out desired columns
             //wants:
@@ -3048,8 +3048,8 @@ variables:
                     "TOGA-TAO thermistor array, Soviet SECTIONS tropical program, " +
                     "and Satellite altimetry from Geosat, ERS/1 and TOPEX/Poseidon.");
                 gatts.add("contributor_role", "source data");
-                gatts.add("Conventions", "COARDS, CF-1.4, Unidata Dataset Discovery v1.0");
-                gatts.add("Metadata_Conventions", "COARDS, CF-1.4, Unidata Dataset Discovery v1.0");
+                gatts.add("Conventions", "COARDS, CF-1.6, Unidata Dataset Discovery v1.0");
+                gatts.add("Metadata_Conventions", "COARDS, CF-1.6, Unidata Dataset Discovery v1.0");
                 gatts.add("creator_email", "carton@umd.edu");
                 gatts.add("creator_name", "SODA");
                 gatts.add("creator_url", "http://www.atmos.umd.edu/~ocean/");
@@ -3072,7 +3072,7 @@ variables:
                     cDate + " NOAA SWFSC ERD added metadata and time dimension");
                 gatts.add("infoUrl", "http://www.atmos.umd.edu/~ocean/");
                 gatts.add("institution", "TAMU/UMD"); //from title
-                gatts.add("keywords", "EARTH SCIENCE > Oceans > Ocean Temperature > Water Temperature");
+                gatts.add("keywords", "Oceans > Ocean Temperature > Water Temperature");
                 gatts.add("keywords_vocabulary", "GCMD Science Keywords");
                 gatts.add("license", "The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Creator, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.");
                 gatts.add("naming_authority", "SODA");
@@ -3222,6 +3222,21 @@ variables:
             nc.close();
         }
         // */
+
+        // /* 
+        //the netcdf-java way
+        String fileName = "F:/data/seawifs/L3bin/S20010012001008.L3b_8D_CHL.main";
+        NetcdfFile nc = NetcdfFile.open(fileName);
+        try {
+            String2.log(nc.toString());
+            //ucar4.nc2.Variable v = nc.findVariable("avhrr_ch1");
+            //ucar4.ma2.Array a = v.read("0:100:10,0:100:10");   //start:end:stride,start:end:stride
+            //String2.log(a.toString());
+        } finally {
+            nc.close();
+        }
+        // */
+
     }
 
     /** A test of Janino.
@@ -3312,7 +3327,7 @@ public static void testJanino() throws Exception {
         Grid grid = new Grid();
         //grid.readGrd("f:/programs/roy/AG2006009_2006022_ssta_westus.grd",
         grid.readNetCDF("f:/programs/roy/AG2006009_2006022_ssta.nc", null);
-        String2.log("lon=" + String2.toCSVString(grid.lon) + "\nlat=" + String2.toCSVString(grid.lat));
+        String2.log("lon=" + String2.toCSSVString(grid.lon) + "\nlat=" + String2.toCSSVString(grid.lat));
         int nLon = grid.lon.length;
         double maxLonDif = 0;
         double dLon[] = new double[nLon];
@@ -3326,7 +3341,7 @@ public static void testJanino() throws Exception {
         for (int i = 1; i < nLat; i++) 
             maxLatDif = Math.max(maxLatDif, Math.abs(grid.lat[i]-grid.lat[i-1]));
         String2.log("maxLonDif=" + maxLonDif + " maxLatDif = " + maxLatDif);
-            //+ "\ndLon=" + String2.toCSVString(dLon));
+            //+ "\ndLon=" + String2.toCSSVString(dLon));
     }
 
     /** A tunnel test for ERDDAP. */
@@ -3491,7 +3506,7 @@ public static void testJanino() throws Exception {
             String.class, String.class, float.class, float.class, String.class};
 
         //find timezone   America/Los_Angeles
-        //String2.log(String2.toCSVString(DateTimeZone.getAvailableIDs().toArray()));
+        //String2.log(String2.toCSSVString(DateTimeZone.getAvailableIDs().toArray()));
         //Test.ensureTrue(false, "");
 
         //recursively delete any files in destDir 
@@ -3677,7 +3692,7 @@ public static void testJanino() throws Exception {
         dataTable.addColumn(2, "latitude", newLatPa,  
             (new Attributes()).add("units", "degrees_north").add("scale_factor", 1/(float)factor));
 
-        String2.log("\ncolumnNames=" + String2.toCSVString(dataTable.getColumnNames()) + "\n");
+        String2.log("\ncolumnNames=" + String2.toCSSVString(dataTable.getColumnNames()) + "\n");
 
         //save in files
         StringArray oldStationCodePa = (StringArray)dataTable.findColumn("station_code");
@@ -3707,7 +3722,7 @@ public static void testJanino() throws Exception {
                 table.saveAsFlatNc(fullName, "row", false);
 
                 if (startRow < 100 || row == nRows - 1) 
-                    String2.log(table.toCsvString());
+                    String2.log(table.toCSVString());
                 //if (startRow > 100) Test.ensureTrue(false, "Evaluate the tables.");
 
                 lastStationCode = oldStationCodePa.get(row);
@@ -3941,7 +3956,7 @@ String2.log(marCatTable.toString());
                 table.saveAsFlatNc(fullName, "row", false);
 
                 if (startRow < 100 || row == nRows - 1) 
-                    String2.log(table.toCsvString());
+                    String2.log(table.toCSVString());
                 //if (startRow > 100) Test.ensureTrue(false, "Evaluate the tables.");
 
                 lastRegion = tRegion;
@@ -4865,7 +4880,7 @@ String2.log("Projects.touchUrls is finished.");
         //***
         String2.log("testConcurrentHashMap");
         time = System.currentTimeMillis();
-        ConcurrentHashMap map = new ConcurrentHashMap();
+        ConcurrentHashMap map = new ConcurrentHashMap(16, 0.75f, 4); //intentionally low initCapacity
         for (int i = 0; i < 1000; i++) {
             String s = "" + i;
             map.put(s, s);
@@ -4986,7 +5001,7 @@ String2.log("Projects.touchUrls is finished.");
         sa.intraReplaceAll("-blanket", "- blanket");
         sa.intraReplaceAll("Other, includes gill netting, beach seining, round",
                            "Other");
-        String2.log("\n*** activity09=\n" + activity09.toCsvString());
+        String2.log("\n*** activity09=\n" + activity09.toCSVString());
 
         //areaCode09
         Table areaCode09 = new Table();
@@ -5000,7 +5015,7 @@ String2.log("Projects.touchUrls is finished.");
         sa = (StringArray)areaCode09.getColumn(1);
         sa.intraReplaceAllIgnoreCase("\"Punta Baha - 28 \"\" 30.0' N.\"", "Punta Baha - 28.5N");
         sa.intraReplaceAllIgnoreCase("\"28\"\" 30.0' - punta Eugenia\"", "Punta Eugenia - 28.5N");
-        String2.log("\n*** areaCode09=\n" + areaCode09.toCsvString());
+        String2.log("\n*** areaCode09=\n" + areaCode09.toCSVString());
 
         //idMethod09
         Table idMethod09 = new Table();
@@ -5017,7 +5032,7 @@ String2.log("Projects.touchUrls is finished.");
             "Echo characteristic");
         sa.intraReplaceAll("detetions", "detections");  //ok???
         sa.intraReplaceAll(".", "");
-        String2.log("\n*** idMethod09=\n" + idMethod09.toCsvString());
+        String2.log("\n*** idMethod09=\n" + idMethod09.toCSVString());
 
         //lengthUnit09
         Table lengthUnit09 = new Table();
@@ -5037,12 +5052,12 @@ String2.log("Projects.touchUrls is finished.");
         sa.intraReplaceAllIgnoreCase("millimeters", "mm");
         sa.intraReplaceAll("length,squid measurement", "length (squid)");
         sa.intraReplaceAll("length.", "length");
-        String2.log("\n*** lengthUnit09=\n" + lengthUnit09.toCsvString());
+        String2.log("\n*** lengthUnit09=\n" + lengthUnit09.toCSVString());
 
         //methodCapt09   
         Table methodCapt09 = new Table();
         methodCapt09.readASCII(tsvDir + "methodCapt09.tsv");
-        String2.log("\n*** original methodCapt09=\n" + methodCapt09.dataToCsvString());
+        String2.log("\n*** original methodCapt09=\n" + methodCapt09.dataToCSVString());
         methodCapt09.setColumnName(0, "MethodLocatingCode"); //will be removed
         methodCapt09.removeColumn(2); //Description moved to metadata
         methodCapt09.setColumn(1, StringArray.fromCSV(
@@ -5080,7 +5095,7 @@ String2.log("Projects.touchUrls is finished.");
 "* 30H        30 foot-square opening trawl which was spread in same manner as above but with smaller hydrofoil doors.\n" +
 "* COT        A seldom-used early model cotton twine trawl.  Mouth opening was approximately 35 foot-square.\n" +
 "* MWT        Midwater trawl (no designation)\n");  //18
-        String2.log("\n*** methodCapt09=\n" + methodCapt09.toCsvString());
+        String2.log("\n*** methodCapt09=\n" + methodCapt09.toCSVString());
 
         //MethodLocating09    (missing value is code="0")
 //Code	AlphaCode	Description
@@ -5096,7 +5111,7 @@ String2.log("Projects.touchUrls is finished.");
             .add("long_name",     "Method Locating")
             .add("ioos_category", "Identifier");
         methodLocating09.setStringData(1, 1, "No attempt");
-        String2.log("\n*** methodLocating09=\n" + methodLocating09.toCsvString());
+        String2.log("\n*** methodLocating09=\n" + methodLocating09.toCSVString());
 
         //speCode09
         Table speCode09 = new Table();
@@ -5124,7 +5139,7 @@ String2.log("Projects.touchUrls is finished.");
             sa2.switchFromTo("Unknow", "Unknown");
 
         }
-        String2.log("\n*** speCode09=\n" + speCode09.toCsvString(20) + "...");
+        String2.log("\n*** speCode09=\n" + speCode09.toCSVString(20) + "...");
 
         //stType09
         Table stType09 = new Table();
@@ -5142,7 +5157,7 @@ String2.log("Projects.touchUrls is finished.");
         sa.intraReplaceAll(",round", ", round");
         sa.intraReplaceAll("-blanket", "- blanket");
         sa.intraReplaceAll("Other, includes gill netting, beach seining, round", "Other");
-        String2.log("\n*** stType09=\n" + stType09.toCsvString());
+        String2.log("\n*** stType09=\n" + stType09.toCSVString());
 
         //vesselName   (I put the info in the comments for CuiseNo)
         Table vesselName = new Table();
@@ -5151,7 +5166,7 @@ String2.log("Projects.touchUrls is finished.");
         vesselName.columnAttributes(1)
             .add("long_name",     "Vessel Name")
             .add("ioos_category", "Identifier");
-        String2.log("\n*** vesselName09=\n" + vesselName.toCsvString());
+        String2.log("\n*** vesselName09=\n" + vesselName.toCSVString());
 
 
         //*** stationData09        
@@ -5296,7 +5311,7 @@ String2.log("Projects.touchUrls is finished.");
         stationData09.columnAttributes(stationData09.findColumnNumber(""))
             .add("description",   "");
 
-        String2.log("\n*** stationData09=\n" + stationData09.toCsvString(20) + "...");
+        String2.log("\n*** stationData09=\n" + stationData09.toCSVString(20) + "...");
         for (int col = 0; col < stationData09.nColumns(); col++) {
             if (!(stationData09.getColumn(col) instanceof StringArray)) {
                 String2.log(String2.left(stationData09.getColumnName(col),14) + " " + 
@@ -5344,7 +5359,7 @@ project)
             .add("ioos_category", "Biology");
         afData09.columnAttributes(afData09.findColumnNumber("YearClass"))
             .add(yearClassAtts);
-        String2.log("\n*** afData09=\n" + afData09.toCsvString(20) + "...");
+        String2.log("\n*** afData09=\n" + afData09.toCSVString(20) + "...");
 
         //AnchSchoolData
         Table anchSchoolData = new Table();
@@ -5386,7 +5401,7 @@ project)
         anchSchoolData.columnAttributes(afData09.findColumnNumber("Frequencies"))        
             .add("description", "Number of anchovy schools seen from the sonargram at a station.")
             .add("units",       "count");
-        String2.log("\n*** anchSchoolData=\n" + anchSchoolData.toCsvString(20) + "...");
+        String2.log("\n*** anchSchoolData=\n" + anchSchoolData.toCSVString(20) + "...");
 
         //BTData09
         Table btData09 = new Table();
@@ -5412,7 +5427,7 @@ project)
         po = btData09.findColumnNumber("CruiseNo");
         btData09.join(3, po, "", stationData09); 
         //keep the keyColumns 
-        String2.log("\n*** btData09=\n" + btData09.toCsvString(20) + "...");
+        String2.log("\n*** btData09=\n" + btData09.toCSVString(20) + "...");
 
         //LFData09
         Table lfData09 = new Table();
@@ -5452,7 +5467,7 @@ project)
         po = lfData09.findColumnNumber("LengthUnit");
         lfData09.join(1, po, "0", lengthUnit09); 
         lfData09.removeColumn(po);
-        String2.log("\n*** lfData09=\n" + lfData09.toCsvString(20) + "...");
+        String2.log("\n*** lfData09=\n" + lfData09.toCSVString(20) + "...");
 
 
         //NSData09
@@ -5498,7 +5513,7 @@ project)
         po = nsData09.findColumnNumber("AreaCode");
         nsData09.join(1, po, "0", areaCode09); 
         nsData09.removeColumn(po);
-        String2.log("\n*** nsData09=\n" + nsData09.toCsvString(20) + "...");
+        String2.log("\n*** nsData09=\n" + nsData09.toCSVString(20) + "...");
 
         //speciesData09
         Table speciesData09 = new Table();
@@ -5545,7 +5560,7 @@ project)
         po = speciesData09.findColumnNumber("LenUnit");
         speciesData09.join(1, po, "0", lengthUnit09); 
         speciesData09.removeColumn(po);
-        String2.log("\n*** speciesData09=\n" + speciesData09.toCsvString(20) + "...");
+        String2.log("\n*** speciesData09=\n" + speciesData09.toCSVString(20) + "...");
 
         //speciesTally09
         Table speciesTally09 = new Table();
@@ -5581,7 +5596,7 @@ project)
         speciesTally09.join(1, po, "0", speCode09); 
         speciesTally09.setColumnName(po, "SpeciesCode"); //don't remove SpeCode
         speciesTally09.columnAttributes(po).add(speciesCodeAtts);
-        String2.log("\n*** speciesTally09=\n" + speciesTally09.toCsvString(20) + "...");
+        String2.log("\n*** speciesTally09=\n" + speciesTally09.toCSVString(20) + "...");
 
 
         //done
@@ -5608,7 +5623,7 @@ project)
             Table table = new Table();
             table.readNDNc(oldDir + "calcofiBio_19840211_66.7_65_NH16.nc",
                 null, null, Double.NaN, Double.NaN, true);
-            String2.log(table.toCsvString());
+            String2.log(table.toCSVString());
             System.exit(0);
         }
 
@@ -5790,7 +5805,7 @@ project)
                     String2.modifyToBeFileNameSafe(obsCommonPA.get(row)) + ".nc", 
                     "row", false); //convertToFakeMissingValues
                 if (startRow == 0)
-                    String2.log(tTable.toCsvString());
+                    String2.log(tTable.toCSVString());
                 startRow = row + 1;
             }
         }
@@ -5836,7 +5851,7 @@ project)
             Table table = new Table();
             table.readNDNc(oldDir + "subsurface_19490228_92_39.nc",
                 null, null, Double.NaN, Double.NaN, true);
-            String2.log(table.toCsvString());
+            String2.log(table.toCSVString());
             System.exit(0);
         }
 
@@ -5853,7 +5868,7 @@ project)
         Table outTable = new Table();
         outTable.readNDNc(oldDir + fileName[0],
             null, null, Double.NaN, Double.NaN, true);
-            String2.log(outTable.toCsvString());
+            String2.log(outTable.toCSVString());
         String outColNames[] = outTable.getColumnNames();
         String today = Calendar2.getCurrentISODateStringLocal();
         outTable.globalAttributes().set("history",
@@ -5901,7 +5916,7 @@ project)
         outTable.addColumn(0, "lineStation", lineStationPA, new Attributes());
         for (int row = 0; row < nRows; row++) 
             lineStationPA.add(calcofiLineStation(linePA.getString(row), stationPA.getString(row)));       
-        //String2.log(outTable.toCsvString());
+        //String2.log(outTable.toCSSVString());
 
         //write to lineStation files
         int startRow = 0;
@@ -5917,7 +5932,7 @@ project)
                     String2.modifyToBeFileNameSafe(lineStationPA.get(row)) + ".nc", 
                     "row", false); //convertToFakeMissingValues
                 if (startRow == 0)
-                    String2.log(tTable.toCsvString());
+                    String2.log(tTable.toCSVString());
                 startRow = row + 1;
             }
         }
@@ -5948,7 +5963,7 @@ project)
             Table table = new Table();
             table.readNDNc(oldDir + "surface_19490228_92_39.nc",
                 null, null, Double.NaN, Double.NaN, true);
-            String2.log(table.toCsvString());
+            String2.log(table.toCSVString());
             //System.exit(0);
         }
 
@@ -5965,7 +5980,7 @@ project)
         Table outTable = new Table();
         outTable.readNDNc(oldDir + fileName[0],
             null, null, Double.NaN, Double.NaN, true);
-            String2.log(outTable.toCsvString());
+            String2.log(outTable.toCSVString());
         String outColNames[] = outTable.getColumnNames();
         String today = Calendar2.getCurrentISODateStringLocal();
         outTable.globalAttributes().set("history",
@@ -6013,7 +6028,7 @@ project)
         outTable.addColumn(0, "line_station", lineStationPA, new Attributes());
         for (int row = 0; row < nRows; row++) 
             lineStationPA.add(calcofiLineStation(linePA.getString(row), stationPA.getString(row)));       
-        //String2.log(outTable.toCsvString());
+        //String2.log(outTable.toCSSVString());
 
         //write to line_station files
         int startRow = 0;
@@ -6029,7 +6044,7 @@ project)
                     String2.modifyToBeFileNameSafe(lineStationPA.get(row)) + ".nc", 
                     "row", false); //convertToFakeMissingValues
                 if (startRow == 0)
-                    String2.log(tTable.toCsvString());
+                    String2.log(tTable.toCSVString());
                 startRow = row + 1;
             }
         }
@@ -6704,7 +6719,7 @@ project)
                 int dateCol = table.findColumnNumber("date");  //YYYYMMDD
                 int timeCol = table.findColumnNumber("time");  //HHMM  (UT)
                 Test.ensureTrue(dateCol >= 0, "date column not found.\n" + 
-                    table.getColumnNamesCSVString());
+                    table.getColumnNamesCSSVString());
                 PrimitiveArray datePA = table.getColumn(dateCol);
                 StringArray dateTimePA = new StringArray(nRows, false);
                 if (timeCol >= 0) {
@@ -6782,7 +6797,7 @@ project)
      */
     public static void makeNetcheckErddapTests(String erddapUrl) throws Throwable {
         Table table = new Table();
-        erddapUrl += "info/index.json";
+        erddapUrl += "info/index.json?page=1&itemsPerPage=100000000"; //all possible datasets
         String json = SSR.getUncompressedUrlResponseString(erddapUrl);
         table.readJson(erddapUrl, json);
         int nRows = table.nRows();
@@ -6811,7 +6826,289 @@ project)
             '\"',   //char quote, 
             new com.healthmarketscience.jackcess.SimpleExportFilter());  //ExportFilter filter) 
     }*/
+ 
+    /**
+     * 2011-09-21 - recently I've made keywords newline separated. 
+     * It should be CSV (but ignore newlines).
+     * This fixes the datasets.xml files.
+     */
+    public static void fixKeywords(String fileName) throws Exception {
+        String2.log("fixKeywords " + fileName);
+        String charset = "ISO-8859-1";
+        String attKeywords = "<att name=\"keywords\">";
+        int attKeywordsLength = attKeywords.length();
+        StringArray lines = StringArray.fromFile(fileName, charset);
+        int linesSize = lines.size();
+        for (int i = 0; i < linesSize; i++) {
+            //start keywords?
+            String s = lines.get(i);
+            int kpo = s.indexOf(attKeywords);
+            if (kpo >= 0) {
+                int ekpo = s.lastIndexOf("</att>");
+                if (ekpo > kpo)
+                    continue;
+
+                //first line may not need comma
+                if (s.trim().endsWith(attKeywords))
+                    i++;
+
+                //add comma to subsequent lines
+                while (lines.get(i).indexOf("</att>") < 0) {
+                    if (!lines.get(i).trim().endsWith(",") &&
+                        !lines.get(i+1).trim().startsWith("</att>")) {
+                        lines.set(i, lines.get(i) + ",");
+                    }
+                    i++;
+                }
+            }
+        }
+        lines.toFile(fileName);
+    }
+
+    /**
+     * Get data from a common type of Opendap grid request and save in .nc file.
+     *
+     * @param dapUrl       the base DAP URL
+     * @param vars         the var names (which much share the same dimensions)
+     *   If a var isn't present, it is skipped.
+     * @param projection   e.g., [17][0][0:179][0:359]  (or null or "" for all) 
+     * @param fullFileName the complete name
+     * @param jplMode use for requests for jplG1SST data (to enable lat chunking)
+     *   when the projection is [0][0:15999][0:35999]
+     */
+/* See OpendapHelper.dapToNc
+
+  public static void dapToNc(String dapUrl, String vars[], String projection, 
+        String fullFileName, boolean jplMode) throws Throwable {
+
+        //constants for jpl
+        int jplLonSize = 36000;
+        int jplLatSize = 16000;
+        int jplLatChunk = 2000;
+        int jplNChunks = jplLatSize / jplLatChunk;
+        int jplLatDim = 1;  //[time][lat][lon]
+        FloatArray jplLatPa = new FloatArray(jplLatSize, true);
+        for (int i = 0; i < jplLatSize; i++)
+            jplLatPa.setDouble(i, -79.995 + i * 0.01);
+        int jplChunkShape[] = {1, jplLatChunk, jplLonSize};
+
+        String beginError = "Projects.dapToNc url=" + dapUrl + 
+            "\n  vars=" + String2.toCSSVString(vars) + "  projection=" + projection;
+        String2.log(beginError + 
+               " jplMode=" + jplMode +
+            "\n  fileName=" + fullFileName); 
+        beginError = "ERROR in " + beginError; 
+        long time = System.currentTimeMillis();
+
+        //delete any existing file
+        File2.delete(fullFileName);
+
+        //If procedure fails half way through, there won't be a half-finished file.
+        int randomInt = Math2.random(Integer.MAX_VALUE);
+
+        //get dConnect.  If this fails, no clean up needed.
+        DConnect dConnect = new DConnect(dapUrl, true, 1, 1);
+        DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
+        DDS dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
+
+        //figure out the projection if projection is null or ""
+        if (projection == null || projection.length() == 0) {
+            StringBuilder sb = new StringBuilder();
+            BUILD_PROJECTION:
+            for (int v = 0; v < vars.length; v++) {
+                String tName = vars[v];
+                BaseType baseType;
+                try {
+                    baseType = dds.getVariable(tName);
+                } catch (Throwable t) {
+                    if (verbose) String2.log("  for var=" + tName + ": " + t.toString());
+                    continue;
+                }
+                if (baseType instanceof DGrid) {
+                    //dGrid has main dArray + dimensions
+                    DGrid dGrid = (DGrid)baseType;
+                    int nEl = dGrid.elementCount(true);
+                    for (int el = 1; el < nEl; el++) { //1..
+                        BaseType bt2 = dGrid.getVar(el);
+                        if (bt2 instanceof DVector) 
+                            sb.append("[0:" + (((DVector)bt2).getLength() - 1) + "]");
+                        else throw new RuntimeException(beginError + 
+                            "var=" + tName + " element#" + el +
+                            " has unexpected baseType=" + bt2.getClass().getName());
+                    }
+                    break;
+                } else if (baseType instanceof DArray) {
+                    //dArray is usually 1 dim, but may be multidimensional
+                    DArray dArray = (DArray)baseType;
+                    int nDim = dArray.numDimensions();
+                    if (nDim == 0) 
+                        throw new RuntimeException(beginError + 
+                            "var=" + tName + " is a DArray with 0 dimensions.");
+                    for (int d = 0; d < nDim; d++) {//0..
+                        sb.append("[0:" + (dArray.getDimension(d).getSize() - 1) + "]");
+                    }
+                    break;
+                } else {
+                    throw new RuntimeException(beginError + 
+                        "var=" + tName + " has unexpected baseType=" + 
+                        baseType.getClass().getName());
+                }
+            }
+
+            if (sb.length() == 0) 
+                throw new RuntimeException(beginError + 
+                    "File not created! None of the requested vars were found.");
+        }
+
+        //read the first var to get the dimension info  (pas[] has main + dimensions)
+        String tProjection = projection;
+        if (jplMode) tProjection = String2.replaceAll(tProjection, 
+            ":" + (jplLatSize - 1) + "]", ":" + (jplLatChunk - 1) + "]");
+        PrimitiveArray[] pas = OpendapHelper.getPrimitiveArrays(
+            dConnect, "?" + vars[0] + tProjection); 
+        int nDims = pas.length - 1;
+        Dimension dims[] = new Dimension[nDims];
+        int shape[] = new int[nDims];
+
+        //*Then* make ncOut.    If this fails, no clean up needed.
+        NetcdfFileWriteable ncOut = NetcdfFileWriteable.createNew(fullFileName + randomInt,
+            false); //false says: create a new file and don't fill with missing_values
+
+        try {
+
+            //define the data variables in ncOut
+            int nVars = vars.length;
+            for (int v = 0; v < nVars; v++) {
+                //String2.log("  create var=" + vars[v]);
+                BaseType baseType = dds.getVariable(vars[v]);
+                if (baseType instanceof DGrid) {
+                    //dGrid has main dArray + dimensions
+                    DGrid dGrid = (DGrid)baseType;
+
+                    if (v == 0) {
+                        //make the dimensions
+                        for (int d = 0; d < nDims; d++) {
+                            String tName = dGrid.getVar(d + 1).getName();
+                            int tSize = pas[d + 1].size();
+                            if (jplMode && d == jplLatDim)
+                                tSize = jplLatSize;
+                            shape[d] = tSize;
+                            //String2.log("    dim#" + d + "=" + tName + " size=" + tSize);
+                            dims[d] = ncOut.addDimension(tName, tSize, true, false, false);
+                            ncOut.addVariable(tName, 
+                                NcHelper.getDataType(pas[d + 1].elementClass()), 
+                                new Dimension[]{dims[d]}); 
+                        }
+                    }
+
+                    PrimitiveVector pv = ((DArray)dGrid.getVar(0)).getPrimitiveVector(); 
+                    Class tClass = OpendapHelper.getElementClass(pv);
+                    //String2.log("pv=" + pv.toString() + " tClass=" + tClass);
+                    ncOut.addVariable(vars[v], NcHelper.getDataType(tClass), dims);
+
+                } else {
+                   throw new RuntimeException(beginError + 
+                       "var=" + vars[v] + " baseType=" + baseType.getClass().getName() +
+                       " isn't a DGrid.");
+                }
+            }
+
+            //write global attributes in ncOut
+            Attributes tAtts = new Attributes();
+            OpendapHelper.getAttributes(das, "GLOBAL", tAtts);
+            NcHelper.setAttributes(ncOut, "NC_GLOBAL", tAtts);
+
+            //write dimension attributes in ncOut
+            for (int dim = 0; dim < nDims; dim++) {
+                String dimName = dims[dim].getName();               
+                tAtts.clear();
+                OpendapHelper.getAttributes(das, dimName, tAtts);
+                NcHelper.setAttributes(ncOut, dimName, tAtts);
+            }
+
+            //write data attributes in ncOut
+            for (int v = 0; v < nVars; v++) {
+                tAtts.clear();
+                OpendapHelper.getAttributes(das, vars[v], tAtts);
+                NcHelper.setAttributes(ncOut, vars[v], tAtts);
+            }
+
+            //leave "define" mode in ncOut
+            ncOut.create();
 
 
+            //read/write the data variables
+            for (int v = 0; v < nVars; v++) {
+                long vTime = System.currentTimeMillis();
+
+                //write the dimensions
+                if (v == 0) {
+                    //pas already has the data
+                    for (int d = 0; d < nDims; d++) {
+                        PrimitiveArray tpa = jplMode && d == jplLatDim? 
+                            jplLatPa : pas[d + 1];
+                        ncOut.write(dims[d].getName(), Array.factory(tpa.toObjectArray()));
+                    }
+                }
+
+                if (jplMode) {
+                    //chunk 0 was read above
+                    int origin[] = {0, 0, 0};
+                    pas[0].trimToSize(); //so underlying array is exact size
+                    ncOut.write(vars[v], origin,
+                        Array.factory(pas[0].elementClass(), jplChunkShape, pas[0].toObjectArray()));
+
+                    //read other chunks
+                    for (int chunk = 1; chunk < jplNChunks; chunk++) {
+                        int base = chunk * jplLatChunk;
+                        origin[1] = base;
+                        tProjection = String2.replaceAll(projection, 
+                            "[0:" + (jplLatSize - 1) + "]", 
+                            "[" + base + ":" + (base + jplLatChunk - 1) + "]");
+                        pas = OpendapHelper.getPrimitiveArrays(dConnect, "?" + vars[v] + tProjection); 
+                        pas[0].trimToSize(); //so underlying array is exact size
+                        //String2.log("pas[0]=" + pas[0].toString());
+                        ncOut.write(vars[v], origin,
+                            Array.factory(pas[0].elementClass(), jplChunkShape, pas[0].toObjectArray()));
+                    }
+                } else {
+                    if (v > 0)  //read it
+                        pas = OpendapHelper.getPrimitiveArrays(dConnect, "?" + vars[v] + projection); 
+                    pas[0].trimToSize(); //so underlying array is exact size
+                    //String2.log("pas[0]=" + pas[0].toString());
+                    ncOut.write(vars[v], 
+                        Array.factory(pas[0].elementClass(), shape, pas[0].toObjectArray()));
+                }
+
+                if (verbose) String2.log("  v#" + v + "=" + vars[v] + " finished. time=" + 
+                    Calendar2.elapsedTimeString(System.currentTimeMillis() - vTime));
+            }
+
+            //if close throws Throwable, it is trouble
+            ncOut.close(); //it calls flush() and doesn't like flush called separately
+
+            //rename the file to the specified name
+            File2.rename(fullFileName + randomInt, fullFileName);
+
+            //diagnostic
+            if (verbose) String2.log("  Projects.dapToNc finished.  TIME=" + 
+                Calendar2.elapsedTimeString(System.currentTimeMillis() - time) + "\n");
+            //String2.log(NcHelper.dumpString(fullFileName, false));
+
+        } catch (Throwable t) {
+            //try to close the file
+            try {
+                ncOut.close(); //it calls flush() and doesn't like flush called separately
+            } catch (Throwable t2) {
+                //don't care
+            }
+
+            //delete the partial file
+            File2.delete(fullFileName + randomInt);
+
+            throw t;
+        }
+    }
+*/
 }
 

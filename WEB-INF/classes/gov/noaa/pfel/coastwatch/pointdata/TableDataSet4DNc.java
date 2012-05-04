@@ -468,7 +468,7 @@ public class TableDataSet4DNc extends TableDataSet {
         verbose = true;
         TableDataSet4DNc dataset = new TableDataSet4DNc(
             "4NBmeto", "NDBC Meteorological",
-            "f:/data/ndbc/ndbcMet20110726/", //this changes as I delete old directories
+            "f:/data/ndbc/ndbcMet/", 
             //".+\\.nc");
             "NDBC_41..._met.nc");
 

@@ -61,7 +61,10 @@ What you need to do:
       your network and sending emails to various subscribers whenever there 
       is a change in the status of a test. So, it is best to lock your computer
       (with the Windows-L key combination on Windows computers), 
-      not put the computer to sleep or turn the computer off.
+      not log out, put the computer to sleep, or turn the computer off.
+      Or, on Linux and Mac computers, you can run NetCheck in a background
+      process by: running it normally, then pressing ^Z, then entering on
+      the command "bg %1".
     * Log File: NetCheck will create a log file in the same directory and with 
       the same name as this .xml file, but will the additional extension .log,
       for example, C:\Program Files\netcheck\NetCheck.xml.log .
@@ -87,9 +90,9 @@ standard .xml file in the new version of NetCheck won't overwrite your
 read the comments in it) and rename your .xml file to its original name.
 
 License information for software included with NetCheck: 
-  * The com/cohort/util utilities are from the EMA project 
-    from CoHort Software (http://www.cohort.com)
-    which has an MIT/X-like license (see classes/com/cohort/ema/LICENSE.txt).
+  * The com/cohort/util utilities are from CoHort Software 
+    (http://www.cohort.com) and have an MIT/X-like license 
+    (see classes/com/cohort/ema/LICENSE.txt).
   * SftpTest uses code from the J2SSH project which is distributed by   
     SSHTools (see http://sourceforge.net/projects/sshtools/) 
     (version 0.2.2, which is old (2003) but the most recent available)
@@ -119,8 +122,11 @@ License information for software included with NetCheck:
     (http://www.java.com/en/download/license.jsp).
   * The remaining NetCheck code is a product of the  
     NOAA CoastWatch West Coast Regional Node (http://coastwatch.pfel.noaa.gov/)
-    by Bob Simons (bob.simons@noaa.gov) in 2005 and is copyrighted open source 
-    (see classes/gov/noaa/pfel/coastwatch/netcheck/LICENSE.txt). 
+    and NOAA NMFS SWFSC Environmental Research Division
+    by Bob Simons (bob.simons@noaa.gov).
+    It is copyrighted open source 
+    (see classes/gov/noaa/pfel/coastwatch/netcheck/LICENSE.txt)
+    with the copyright held by NOAA. 
 
 Disclaimers: 
   * DISCLAIMER OF ENDORSEMENT 
@@ -188,12 +194,21 @@ Questions? Comments? Suggestions? Please email bob.simons@noaa.gov .
          "Virus Scan Console : Access Protection Properties : 
          Anti Virus Standard Protections : 
          Prevent mass mailing worms from sending mail" is un-checked.         
+
+         We strongly recommend that you don't provide your smtpPassword below.
+         If you do provide it below, please use an application-specific password
+         (e.g., for a GMail account) so you can change the password often
+         and change the permissions of this file so that only you can read 
+         the file.
+         If you don't provide the password below, NetCheck will prompt you for it.
+
          -->
     <smtpServer>sunfish.noaa.gov</smtpServer> 
     <smtpPort>25</smtpPort>
     <smtpProperties></smtpProperties>
     <smtpUser>john.administrator</smtpUser>
     <smtpFromAddress>john.administrator@noaa.gov</smtpFromAddress> 
+    <!-- <smtpPassword>secret</smtpPassword> -->
 
     <!-- The email options here in "setup" let people subscribe to reports 
          with the results of all of the tests. 

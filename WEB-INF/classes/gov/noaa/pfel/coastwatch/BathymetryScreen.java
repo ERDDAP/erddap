@@ -135,11 +135,11 @@ public class BathymetryScreen extends Screen {
         drawLinesAtValue = drawLinesAt.getValue(session).trim(); 
         if (plotLines) {
             //ensure perfectly valid and in standard format (to avoid map redraw for minor difference)
-            drawLinesAtValue = String2.toCSVString(String2.justFiniteValues(
+            drawLinesAtValue = String2.toCSSVString(String2.justFiniteValues(
                 String2.csvToDoubleArray(drawLinesAtValue)));
             if (drawLinesAtValue == null || drawLinesAtValue.length() == 0) {
                 if (oneOf.verbose()) String2.log("  resetting drawLinesAtValue"); 
-                drawLinesAtValue = String2.toCSVString(String2.justFiniteValues(
+                drawLinesAtValue = String2.toCSSVString(String2.justFiniteValues(
                     String2.csvToDoubleArray(drawLinesAt.getDefaultValue())));
             }
 

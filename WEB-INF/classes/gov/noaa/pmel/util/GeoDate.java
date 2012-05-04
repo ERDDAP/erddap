@@ -721,13 +721,14 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
   }
   /**
    * Convert <code>GeoDate</code> to <code>String</code>
-   * using standard format "yyyy-MM-dd HH:mm:ss z"
+   * using standard format "yyyy-MM-dd'T'HH:mm:ss z"
    * and "GMT" time zone.
    *
    * @return date
    */
   public String toString() {
-    DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+    //2011-12-15 Bob Simons changed space to 'T'
+    DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss z");
     df.setCalendar(cal_);
     return df.format(this);
   }

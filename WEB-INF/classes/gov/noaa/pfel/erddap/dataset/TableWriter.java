@@ -35,6 +35,8 @@ public abstract class TableWriter {
     public static boolean verbose = false; 
     public static boolean reallyVerbose = false; 
 
+
+
     //these are set by the constructor
     protected long time;
     protected OutputStreamSource outputStreamSource;

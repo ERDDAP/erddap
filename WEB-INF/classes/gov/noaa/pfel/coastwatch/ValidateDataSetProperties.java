@@ -50,7 +50,7 @@ public class ValidateDataSetProperties {
         Test.ensureNotEqual(which, -1, 
             String2.ERROR + ": No non-DataSet.properties properties files found in\n" +
             contextDirectory + "WEB-INF/classes/gov/noaa/pfel/coastwatch/.\n" +
-            ".properties files=" + String2.toCSVString(propList));
+            ".properties files=" + String2.toCSSVString(propList));
       
         FileNameUtility fnu = new FileNameUtility(
             "gov.noaa.pfel.coastwatch." + File2.getNameNoExtension(propList[which]));

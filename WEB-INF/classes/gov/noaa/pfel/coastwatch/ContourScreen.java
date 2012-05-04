@@ -285,7 +285,7 @@ public class ContourScreen extends Screen {
             String defaultContourLinesAt = plotData?
                 (unitsIndex <= 0 ? gridDataSet.contourLinesAt : gridDataSet.altContourLinesAt) :
                 SgtMap.BATHYMETRY_LINES_AT; 
-            drawLinesAtValue = String2.toCSVString(String2.justFiniteValues(
+            drawLinesAtValue = String2.toCSSVString(String2.justFiniteValues(
                 String2.csvToDoubleArray(drawLinesAtValue)));
             if (drawLinesAtValue == null || drawLinesAtValue.length() == 0) {
                 String2.log("  resetting drawLinesAtValue");

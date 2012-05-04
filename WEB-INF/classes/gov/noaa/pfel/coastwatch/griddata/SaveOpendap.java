@@ -419,6 +419,7 @@ public class SaveOpendap  {
         } catch (Exception e) {
 
             String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
+                "\n2012-03-14 This failed. Entire TDS is down. But generally..." +
                 "\nUnexpected error. Press Enter to Continue or ^C to quit? ");
         }
        

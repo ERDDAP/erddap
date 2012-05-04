@@ -45,7 +45,7 @@ public class TableWriterSeparatedValue extends TableWriter {
      * @param tOutputStreamSource  the source of an outputStream that receives the 
      *     results, usually already buffered.
      *     The ouputStream is not procured until there is data to be written.
-     * @param tSeparator  usually a tab or a comma
+     * @param tSeparator  usually a tab or a comma (without space.  space causes problems with Excel)
      * @param tQuoted if true, if a String value starts or ends with a space or has a double quote or comma, 
      *    the value will be written in double quotes
      *    and internal double quotes become two double quotes.

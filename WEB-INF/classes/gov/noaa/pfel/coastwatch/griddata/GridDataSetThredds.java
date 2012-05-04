@@ -502,10 +502,10 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
         //check validity
         checkValidity();
         if (verbose) String2.log(
-            "  Options: "     + String2.toCSVString(activeTimePeriodOptions) + "\n" +
-            "  Titles: "      + String2.toCSVString(activeTimePeriodTitles) + "\n" +
-            "  NHours: "      + String2.toCSVString(activeTimePeriodNHours) + "\n" +
-            "  OpendapUrls: " + String2.toCSVString(activeTimePeriodOpendapUrls) + "\n" +
+            "  Options: "     + String2.toCSSVString(activeTimePeriodOptions) + "\n" +
+            "  Titles: "      + String2.toCSSVString(activeTimePeriodTitles) + "\n" +
+            "  NHours: "      + String2.toCSSVString(activeTimePeriodNHours) + "\n" +
+            "  OpendapUrls: " + String2.toCSSVString(activeTimePeriodOpendapUrls) + "\n" +
             "  GridDataSetThredds constructor " + internalName + " done. TIME=" + 
                 (System.currentTimeMillis() - time));
     }        
@@ -535,12 +535,12 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
         int timePeriodIndex = String2.indexOf(activeTimePeriodOptions, timePeriodValue);
         Test.ensureNotEqual(timePeriodIndex, -1, 
             errorInMethod + "timePeriod not found: " + timePeriodValue +
-            "\ntimePeriodOptions=" + String2.toCSVString(activeTimePeriodOptions));
+            "\ntimePeriodOptions=" + String2.toCSSVString(activeTimePeriodOptions));
         String tActiveTimePeriodTimes[] = (String[])activeTimePeriodTimes.get(timePeriodIndex);
         int timeIndex = String2.indexOf(tActiveTimePeriodTimes, timeValue);
         Test.ensureNotEqual(timeIndex, -1, 
             errorInMethod + "time (" + timeValue + ") must be one of\n" + 
-            String2.toCSVString(tActiveTimePeriodTimes));
+            String2.toCSSVString(tActiveTimePeriodTimes));
 
         //get the data
         Opendap opendap = (Opendap)activeTimePeriodOpendaps.get(timePeriodIndex); 
@@ -1099,8 +1099,8 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
             //see if it has the expected values
             int nLat = grid.lat.length;
             int nLon = grid.lon.length;
-            Test.ensureEqual(grid.globalAttributes().get("Conventions"),                new StringArray(new String[]{"COARDS, CF-1.4, Unidata Dataset Discovery v1.0, CWHDF"}), "Conventions");
-            Test.ensureEqual(grid.globalAttributes().get("Metadata_Conventions"),       new StringArray(new String[]{"COARDS, CF-1.4, Unidata Dataset Discovery v1.0, CWHDF"}), "Metadata_Conventions");
+            Test.ensureEqual(grid.globalAttributes().get("Conventions"),                new StringArray(new String[]{"COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF"}), "Conventions");
+            Test.ensureEqual(grid.globalAttributes().get("Metadata_Conventions"),       new StringArray(new String[]{"COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF"}), "Metadata_Conventions");
             Test.ensureEqual(grid.globalAttributes().get("title"),                      new StringArray(new String[]{"Wind, QuikSCAT SeaWinds, 0.25 degrees, Global, Science Quality, Zonal"}), "title");
             Test.ensureEqual(grid.globalAttributes().get("summary"),                    new StringArray(new String[]{"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters."}), "summary");  
             Test.ensureEqual(grid.globalAttributes().get("keywords"),                   new StringArray(new String[]{"EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds"}), "keywords");
@@ -1253,7 +1253,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
             //  cleanly align at 0 and still get my two test points exactly.
             //  But that is part of the nature of having to move the data columns around.
             grid = gridDataSet.makeGrid("8 day", "2007-01-12 00:00:00", -45, 135, 30, 30, 37, 1); //180 range / 5 = 36 + 1
-            String2.log("lon=" + String2.toCSVString(grid.lon));
+            String2.log("lon=" + String2.toCSSVString(grid.lon));
             Test.ensureEqual(grid.lon, DataHelper.getRegularArray(37, -45, 5), "");
             Test.ensureEqual(grid.lat, new double[]{30}, "");
             Test.ensureEqual((float)grid.data[0], (float)0.039, "");
@@ -1352,7 +1352,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
         Test.ensureNotEqual(gridDataSet.activeTimePeriodOptions.length, 0, 
             "activeTimePeriodOptions.length");
         String2.log("  activeTimePeriodOptions=" + 
-            String2.toCSVString(gridDataSet.activeTimePeriodOptions));
+            String2.toCSSVString(gridDataSet.activeTimePeriodOptions));
         String2.log("  GridDataSetThredds.quickTest finished successfully");
    }
 }

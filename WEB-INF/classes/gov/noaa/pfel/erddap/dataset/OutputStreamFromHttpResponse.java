@@ -84,6 +84,15 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         extension = tExtension;
     }
 
+
+    /**
+     * A variant of outputStream() for when the contentLength isn't known.
+     */
+    public OutputStream outputStream(String characterEncoding) throws Throwable {
+        return outputStream(characterEncoding, -1);
+    }
+
+        
     /**
      * This returns the OutputStream.
      * If called repeatedly, this returns the same outputStream.
@@ -91,10 +100,14 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
      * @param characterEncoding e.g., "" (for none specified), "UTF-8", or "" (for DAP).
      *     This parameter only matters the first time this method is called.
      *     This only matters for some subclasses.
+     * @param contentLength the number of bytes that will be sent (or -1 if not known).
+     *     Currently, this causes Firefox to freeze, so this method ignores it.
      * @return outputStream
      * @throws Throwable if trouble
      */
-    public OutputStream outputStream(String characterEncoding) throws Throwable {
+    public OutputStream outputStream(String characterEncoding, long contentLength) 
+        throws Throwable {
+
         if (outputStream != null) 
             return outputStream;
 
@@ -205,6 +218,8 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
             //special case for SOS (see EDDTable.sosResponseFormats): 
             //"text/xml;schema=\"ioos/0.6.1\"", "application/ioos+xml;version=0.6.1",
             response.setContentType(
+                fileType.startsWith("custom:") ?  
+                    fileType.substring(7) :
                 fileType.indexOf("ioos") >= 0 ||           //IOOS SOS types
                 fileType.equals("text/xml; subtype=\"om/1.0.0\"")?    //Oostethys SOS type
                     fileType :   //the SOS mime type
@@ -222,6 +237,15 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         //set the characterEncoding
         if (characterEncoding != null && characterEncoding.length() > 0)
             response.setCharacterEncoding(characterEncoding);
+
+        //specify contentLength if known
+//???!!! using this causes firefox to freeze (unknown reason)
+//        if (contentLength >= 0 && contentLength < Integer.MAX_VALUE) {
+//String2.log("response.setContentLength(" + contentLength + ");");
+//            response.setContentLength((int)contentLength);
+//String2.log("response.setContentLength finished");
+//String2.log("");
+//        }
 
         //specify the file's name  (this may force show File Save As dialog box in user's browser)
         if (extension.equals(".csv")  || 

@@ -46,7 +46,8 @@ abstract class PropertyPanel extends JComponent implements DesignListener {
   private Insets lInset = new Insets(2, 1, 1, 3);
   private Insets rInset = new Insets(2, 3, 1, 1);
   private static DecimalFormat numberFormat_ = new DecimalFormat("#.##");
-  private String dateFormat_ = "yyyy-MM-dd hh:mm";
+  //2011-12-15 Bob Simons changed space to 'T' and hh to HH (24 hour)
+  private String dateFormat_ = "yyyy-MM-dd'T'HH:mm";
 
   public PropertyPanel() {
     try {
@@ -227,7 +228,8 @@ abstract class PropertyPanel extends JComponent implements DesignListener {
     }
     SoTRange range = null;
     if(isTime) {
-//      String format = "yyyy-MM-dd hh:mm";
+//2011-12-15 Bob Simons changed space to 'T' and hh to HH (24 hour)
+//      String format = "yyyy-MM-dd'T'HH:mm";
       try {
         GeoDate start = new GeoDate(tok.nextToken().trim(), dateFormat_);
         GeoDate end = new GeoDate(tok.nextToken().trim(), dateFormat_);

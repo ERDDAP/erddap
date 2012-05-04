@@ -65,7 +65,7 @@ public class GridDataRandomAccessor {
         dataRaf = new RandomAccessFile[nDv];
         dataClass = new Class[nDv];
         String tQuery = gridDataAccessor.userDapQuery();
-        rafName = EDStatic.fullCacheDirectory + gridDataAccessor.eddGrid().datasetID() + "/" + //dir created by EDD.ensureValid
+        rafName = gridDataAccessor.eddGrid().cacheDirectory() + //dir created by EDD.ensureValid
             String2.md5Hex12(tQuery == null? "" : tQuery) + "_" +
             Math2.random(Integer.MAX_VALUE) + "_";
         for (int dv = 0; dv < nDv; dv++) {

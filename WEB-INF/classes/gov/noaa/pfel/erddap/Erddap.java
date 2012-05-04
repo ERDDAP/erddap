@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap;
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
+import com.cohort.array.LongArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -26,6 +27,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.sgt.CompoundColorMap;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.sgt.SgtUtil;
+import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 
@@ -51,6 +53,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URLConnection;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -69,6 +72,29 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
+//import org.apache.lucene.analysis.Analyzer;
+//import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+//import org.apache.lucene.document.Field;
+//import org.apache.lucene.index.IndexReader;
+//import org.apache.lucene.index.IndexWriter;
+//import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
+//import org.apache.lucene.queryParser.ParseException;
+//import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.PhraseQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.WildcardQuery;
+//import org.apache.lucene.store.Directory;
+//import org.apache.lucene.store.SimpleFSDirectory;
+//import org.apache.lucene.util.Version;
 
 import org.verisign.joid.consumer.OpenIdFilter;
 
@@ -114,13 +140,6 @@ public class Erddap extends HttpServlet {
      */
     public static boolean reallyVerbose = false; 
 
-    /** This identifies the dods server/version that this mimics. */
-    public static String dapVersion = "DAP/2.0";   //???
-    public static String serverVersion = "dods/3.7"; //this is what thredds replies
-      //drds at http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle.ver replies "DODS/3.2"
-      //both reply with server version, neither replies with coreVersion
-      //spec says #.#.#, but Gallagher says #.# is fine.
-
     /** The programmatic/computer access to Erddap services are available as 
      * all of the plainFileTypes. 
      * All plainFileTypes must be valid EDDTable.dataFileTypeNames.
@@ -130,12 +149,8 @@ public class Erddap extends HttpServlet {
     public static String plainFileTypes[] = {
         //no need for .csvp or .tsvp, because plainFileTypes never write units
         ".csv", ".htmlTable", ".json", ".mat", ".nc", ".tsv", ".xhtml"};
+    public static String plainFileTypesString = String2.toCSSVString(plainFileTypes);
 
-    public final static String WMS_SERVER = "request"; //last part of url for actual wms server
-    public final static int WMS_MAX_LAYERS = 16; //arbitrary
-    public final static int WMS_MAX_WIDTH = 2048; //arbitrary
-    public final static int WMS_MAX_HEIGHT = 2048; //arbitrary
-    public final static char WMS_SEPARATOR = ':'; //separates datasetID and variable name (not a valid interior char)
 
     // ************** END OF STATIC VARIABLES *****************************
 
@@ -150,16 +165,12 @@ public class Erddap extends HttpServlet {
      * [See Projects.testHashMaps() which shows that ConcurrentHashMap gives
      * me a thread-safe class without the time penalty of Collections.synchronizedMap(new HashMap()).]
      */
-    public ConcurrentHashMap gridDatasetHashMap  = new ConcurrentHashMap(); 
-    public ConcurrentHashMap tableDatasetHashMap = new ConcurrentHashMap(); 
+    public ConcurrentHashMap gridDatasetHashMap  = new ConcurrentHashMap(16, 0.75f, 4); 
+    public ConcurrentHashMap tableDatasetHashMap = new ConcurrentHashMap(16, 0.75f, 4); 
     /** The RSS info: key=datasetId, value=utf8 byte[] of rss xml */
-    public ConcurrentHashMap rssHashMap          = new ConcurrentHashMap(); 
-    public ConcurrentHashMap failedLogins        = new ConcurrentHashMap(); 
-    /** categoryInfo is not ConcurrentHashMap or synchronized map because
-     * it is constructed in one thread (LoadDatasets) then put into place here
-     * where it is read but never changed.
-     */
-    public Map categoryInfo = new HashMap(); 
+    public ConcurrentHashMap rssHashMap          = new ConcurrentHashMap(16, 0.75f, 4); 
+    public ConcurrentHashMap failedLogins        = new ConcurrentHashMap(16, 0.75f, 4); 
+    public ConcurrentHashMap categoryInfo        = new ConcurrentHashMap(16, 0.75f, 4);  
     public long lastClearedFailedLogins = System.currentTimeMillis();
 
 
@@ -187,7 +198,8 @@ public class Erddap extends HttpServlet {
         //make new catInfo with first level hashMaps
         int nCat = EDStatic.categoryAttributes.length;
         for (int cat = 0; cat < nCat; cat++) 
-            categoryInfo.put(EDStatic.categoryAttributes[cat], new HashMap());
+            categoryInfo.put(EDStatic.categoryAttributes[cat], 
+                new ConcurrentHashMap(16, 0.75f, 4));
 
         //start RunLoadDatasets
         runLoadDatasets = new RunLoadDatasets(this);
@@ -211,39 +223,31 @@ public class Erddap extends HttpServlet {
     }
 
     /**
-     * This returns a StringArray with all the datasetIDs for all of the grid datasets.
+     * This returns a StringArray with all the datasetIDs for all of the grid datasets (unsorted).
      *
-     * @param sorted if true, the resulting StringArray is sorted (ignoring case)
-     * @return a StringArray with all the datasetIDs for all of the grid datasets.
+     * @return a StringArray with all the datasetIDs for all of the grid datasets (unsorted.
      */
-    public StringArray gridDatasetIDs(boolean sorted) {
-        StringArray sa  = new StringArray(gridDatasetHashMap.keys()); 
-        if (sorted) sa.sortIgnoreCase();
-        return sa;
+    public StringArray gridDatasetIDs() {
+        return new StringArray(gridDatasetHashMap.keys()); 
     }
     
     /**
-     * This returns a StringArray with all the datasetIDs for all of the table datasets.
+     * This returns a StringArray with all the datasetIDs for all of the table datasets (unsorted).
      *
-     * @param sorted if true, the resulting StringArray is sorted (ignoring case)
-     * @return a StringArray with all the datasetIDs for all of the table datasets.
+     * @return a StringArray with all the datasetIDs for all of the table datasets (unsorted).
      */
-    public StringArray tableDatasetIDs(boolean sorted) {
-        StringArray sa  = new StringArray(tableDatasetHashMap.keys()); 
-        if (sorted) sa.sortIgnoreCase();
-        return sa;
+    public StringArray tableDatasetIDs() {
+        return new StringArray(tableDatasetHashMap.keys()); 
     }
     
     /**
-     * This returns a StringArray with all the datasetIDs for all of the datasets.
+     * This returns a StringArray with all the datasetIDs for all of the datasets (unsorted).
      *
-     * @param sorted if true, the resulting StringArray is sorted (ignoring case)
-     * @return a StringArray with all the datasetIDs for all of the datasets.
+     * @return a StringArray with all the datasetIDs for all of the datasets (unsorted).
      */
-    public StringArray allDatasetIDs(boolean sorted) {
+    public StringArray allDatasetIDs() {
         StringArray sa  = new StringArray(gridDatasetHashMap.keys()); 
         sa.append(new StringArray(tableDatasetHashMap.keys()));
-        if (sorted) sa.sortIgnoreCase();
         return sa;
     }
    
@@ -255,10 +259,10 @@ public class Erddap extends HttpServlet {
      * @return the category values for a given category attribute (or empty StringArray if none).
      */
     public StringArray categoryInfo(String attribute) {
-        HashMap hm = (HashMap)categoryInfo.get(attribute);
+        ConcurrentHashMap hm = (ConcurrentHashMap)categoryInfo.get(attribute);
         if (hm == null)
             return new StringArray();
-        StringArray sa  = new StringArray(hm.keySet().iterator());
+        StringArray sa  = new StringArray(hm.keys());
         sa.sortIgnoreCase();
         return sa;
     }
@@ -272,13 +276,13 @@ public class Erddap extends HttpServlet {
      *    attribute (or empty StringArray if none).
      */
     public StringArray categoryInfo(String attribute, String value) {
-        HashMap hm = (HashMap)categoryInfo.get(attribute);
+        ConcurrentHashMap hm = (ConcurrentHashMap)categoryInfo.get(attribute);
         if (hm == null)
             return new StringArray();
-        HashSet hs = (HashSet)hm.get(value);
+        ConcurrentHashMap hs = (ConcurrentHashMap)hm.get(value);
         if (hs == null)
             return new StringArray();
-        StringArray sa  = new StringArray(hs.iterator());
+        StringArray sa  = new StringArray(hs.keys());
         sa.sortIgnoreCase();
         return sa;
     }
@@ -320,9 +324,9 @@ public class Erddap extends HttpServlet {
             EDStatic.tally.add("Requester Is Logged In (since startup)", "" + (loggedInAs != null));
             EDStatic.tally.add("Requester Is Logged In (since last daily report)", "" + (loggedInAs != null));
 
-            //String2.log("requestURL=" + request.getRequestURL());
             String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
-            String requestUrl = request.getRequestURI();  //post EDD.baseUrl, pre "?"
+            String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl(), pre "?"
+            //String2.log("requestURL=" + requestUrl); 
 
             //get requester's ip addresses (x-forwarded-for)
             //getRemoteHost(); returns our proxy server (never changes)
@@ -349,7 +353,7 @@ public class Erddap extends HttpServlet {
                 Calendar2.getCurrentISODateTimeStringLocal() + " " + 
                 (loggedInAs == null? "(notLoggedIn)" : loggedInAs) + " " +
                 ipAddress + " " +
-                requestUrl + (userQuery.length() == 0? "" : "?" + userQuery));
+                requestUrl + EDStatic.questionQuery(userQuery));
 
             //Redirect to http if loggedInAs == null && non-login/logout request was sent to https.
             //loggedInAs is used in many, many places to determine if ERDDAP should use https for e.g., /images/... .
@@ -358,13 +362,14 @@ public class Erddap extends HttpServlet {
             //But browsers object to that.
             //This solution: redirect non-loggedIn users to http.
             if (loggedInAs == null &&
-                (!requestUrl.equals("/erddap/login.html") && !requestUrl.equals("/erddap/logout.html"))) {
-                String fullRequestUrl = request.getRequestURL().toString();
+                (!requestUrl.equals("/" + EDStatic.warName + "/login.html") && 
+                 !requestUrl.equals("/" + EDStatic.warName + "/logout.html"))) {
+                String fullRequestUrl = request.getRequestURL().toString(); //has proxied port#, e.g. :8080
                 if (fullRequestUrl.startsWith("https://")) {
                     //hopefully headers and other info won't be lost in the redirect
                     if (verbose) String2.log("Redirecting loggedInAs=null request from https: to http:.");
                     response.sendRedirect(EDStatic.baseUrl + requestUrl +
-                        (userQuery.length() == 0? "" : "?" + userQuery));
+                        EDStatic.questionQuery(userQuery));
                     return;            
                 }
             }
@@ -376,12 +381,12 @@ public class Erddap extends HttpServlet {
             //So if user is logged in, https is used and that puts https content on http pages.
             //This solution: redirect loggedIn users to https.
             if (loggedInAs != null) {
-                String fullRequestUrl = request.getRequestURL().toString();
+                String fullRequestUrl = request.getRequestURL().toString(); //has proxied port#, e.g. :8080
                 if (fullRequestUrl.startsWith("http://")) {
                     //hopefully headers and other info won't be lost in the redirect
                     if (verbose) String2.log("Redirecting loggedInAs!=null request from http: to https:.");
                     response.sendRedirect(EDStatic.baseHttpsUrl + requestUrl +
-                        (userQuery.length() == 0? "" : "?" + userQuery));
+                        EDStatic.questionQuery(userQuery));
                     return;            
                 }
             }
@@ -415,7 +420,7 @@ public class Erddap extends HttpServlet {
             }
 
             //look for double trouble in query (since java version may be old)
-            //Remove this some day in the future (2012?).
+            //Remove this some day in the future (2014?).
             if (String2.isDoubleTrouble(userQuery)) {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, //a.k.a. Error 403
                     "Oy!  Some numbers shouldn't be used in polite company!  Go bug some other web site.");
@@ -455,16 +460,44 @@ public class Erddap extends HttpServlet {
                 response.sendRedirect(tErddapUrl + "/index.html");
             } else if (protocol.startsWith("index.")) {
                 doIndex(request, response, loggedInAs);
+
+            /*
+            //test directoryListing
+            } else if (endOfRequest.equals("images/")) {
+                String tDir = endOfRequest;
+                PrimitiveArray info[] = RegexFilenameFilter.gatherInfo(
+                    EDStatic.contextDirectory + tDir, ".*");
+                Table table = new Table();
+                table.addColumn("Name", info[1]);
+                table.addColumn("Last modified", info[2]);
+                table.addColumn("Size", info[3]);
+                table.addColumn("Description", 
+                    PrimitiveArray.factory(String.class, info[1].size(), ""));
+
+                OutputStream out = getHtmlOutputStream(request, response);
+                Writer writer = getHtmlWriter(loggedInAs, "Directory Listing", out); 
+                writer.write(
+                    table.directoryListing(tErddapUrl + "/" + tDir, userQuery, 
+                        EDStatic.imageDirUrl(loggedInAs) + "fileIcons/", true, (StringArray)info[0]));
+                endHtmlWriter(out, writer, tErddapUrl, false);
+
+                return;
+            */
+
             } else if (protocol.equals("download") ||
                        protocol.equals("images") ||
                        protocol.equals("public")) {
                 doTransfer(request, response, protocol, protocolEnd + 1);
+            } else if (protocol.equals("metadata")) {
+                doMetadata(request, response, loggedInAs, endOfRequest, userQuery);
             } else if (protocol.equals("rss")) {
                 doRss(request, response, protocol, protocolEnd + 1);
             } else if (endOfRequest.startsWith("search/advanced.")) {  //before test for "search"
                 doAdvancedSearch(request, response, loggedInAs, protocolEnd + 1, userQuery);
             } else if (protocol.equals("search")) {
                 doSearch(request, response, loggedInAs, protocol, protocolEnd + 1, userQuery);
+            } else if (protocol.equals("opensearch1.1")) {
+                doOpenSearch(request, response, loggedInAs, protocol, protocolEnd + 1, userQuery);
             } else if (protocol.equals("categorize")) {
                 doCategorize(request, response, loggedInAs, protocol, protocolEnd + 1, userQuery);
             } else if (protocol.equals("info")) {
@@ -532,8 +565,8 @@ public class Erddap extends HttpServlet {
 
                 } else {
                     String q = request.getQueryString(); //not decoded
-                    message = "#" + requestNumber + " Error for url=" + request.getRequestURI() +
-                        (q == null || q.length() == 0? "" : "?" + q) + 
+                    message = "#" + requestNumber + " Error for url=" + 
+                        request.getRequestURI() + EDStatic.questionQuery(q) + 
                         "\nerror=" + message;
                     String2.log(message);
                     if (reallyVerbose) //should this be just 'verbose', or a separate setting?
@@ -556,6 +589,8 @@ public class Erddap extends HttpServlet {
 
             //if sendErrorCode fails because response.isCommitted(), it throws ServletException
             sendErrorCode(request, response, t); 
+            if (verbose) String2.log("}}}}#" + requestNumber + " sendErrorCode done. Total TIME=" + 
+                (System.currentTimeMillis() - doGetTime) + "\n");
         }
 
     }
@@ -596,7 +631,8 @@ public class Erddap extends HttpServlet {
                 for (int r = 0; r < resources.size(); r++) {
                     resourceCol.add(resources.get(r));
                     urlCol.add(tErddapUrl + "/" + resources.get(r) + "/index" + fileTypeName +
-                        (resources.get(r).equals("search")? "?searchFor=" : ""));
+                        "?" + EDStatic.defaultPIppQuery +
+                        (resources.get(r).equals("search")? "&searchFor=" : ""));
                 }
                 sendPlainTable(loggedInAs, request, response, table, "Resources", fileTypeName);
                 return;
@@ -643,65 +679,157 @@ public class Erddap extends HttpServlet {
 
             //display /info link with list of all datasets
             writer.write(
-                "\n<li><h3><a href=\"" + tErddapUrl + "/info/index.html\">" +
-                "View a List of All " + 
-                (gridDatasetHashMap.size() + tableDatasetHashMap.size()) +
-                " Datasets</a></h3>\n");
+                "\n<li><h3><a href=\"" + tErddapUrl + "/info/index.html?" +
+                    EDStatic.encodedDefaultPIppQuery + "\">" +
+                MessageFormat.format(EDStatic.indexViewAll,  
+                    gridDatasetHashMap.size() + tableDatasetHashMap.size()) +
+                "</a></h3>\n");
 
             //display a search form
             writer.write("\n<li>");
-            writer.write(getSearchFormHtml(loggedInAs, "<h3>", "</h3>", ""));
+            writer.write(getSearchFormHtml(request, loggedInAs, "<h3>", "</h3>", ""));
 
             //display categorize options
             writer.write("\n<li>");
-            writeCategorizeOptionsHtml1(loggedInAs, writer, null, true);
+            writeCategorizeOptionsHtml1(request, loggedInAs, writer, null, true);
 
             //display Advanced Search option
-            writer.write("\n<li><h3>Search for Datasets with " +
-                getAdvancedSearchLink(loggedInAs, "") + "</h3>\n");
+            writer.write("\n<li><h3>" +
+                MessageFormat.format(EDStatic.indexSearchWith, 
+                    getAdvancedSearchLink(loggedInAs, EDStatic.defaultPIppQuery)) + 
+                "</h3>\n");
 
             //display protocol links
-            String protSee = " title=\"" + EDStatic.protocolClick + " ";
             writer.write(
                 "\n<li>" +
                 "<h3>" + EDStatic.protocolSearchHtml + "</h3>\n" +
                 EDStatic.protocolSearch2Html +
-                "<br>Click on a protocol to see a list of datasets which are available via that protocol in ERDDAP." +
+                //"<br>Click on a protocol to see a list of datasets which are available via that protocol in ERDDAP." +
                 "<br>&nbsp;\n" +
                 "<table class=\"erd commonBGColor\" cellspacing=\"0\">\n" +
-                "  <tr><th>Protocol</th><th>Description</th></tr>\n" +
+                "  <tr><th>" + EDStatic.indexProtocol    + "</th>" + 
+                      "<th>" + EDStatic.indexDescription + "</th></tr>\n" +
                 "  <tr>\n" +
-                "    <td><a href=\"" + tErddapUrl + "/griddap/index.html\"" + 
-                    protSee + "griddap protocol.\">griddap</a> </td>\n" +
-                "    <td>" + EDStatic.EDDGridDapDescription + "</td>\n" +
+                "    <td><a href=\"" + tErddapUrl + "/griddap/index.html?" + 
+                    EDStatic.encodedDefaultPIppQuery + "\"" + 
+                    " title=\"" + 
+                    MessageFormat.format(EDStatic.protocolClick, "griddap") + "\">" +
+                    MessageFormat.format(EDStatic.indexDatasets, "griddap") + "</a> </td>\n" +
+                "    <td>" + EDStatic.EDDGridDapDescription + "\n" +
+                "      <a href=\"" + tErddapUrl + "/griddap/documentation.html\">" +
+                    MessageFormat.format(EDStatic.indexDocumentation, "griddap") + 
+                    "</a>\n" +
+                "    </td>\n" +
                 "  </tr>\n" +
                 "  <tr>\n" +
-                "    <td><a href=\"" + tErddapUrl + "/tabledap/index.html\"" + 
-                    protSee + "tabledap protocol.\">tabledap</a></td>\n" +
-                "    <td>" + EDStatic.EDDTableDapDescription + "</td>\n" +
+                "    <td><a href=\"" + tErddapUrl + "/tabledap/index.html?" + 
+                    EDStatic.encodedDefaultPIppQuery + "\"" + 
+                    " title=\"" + 
+                    MessageFormat.format(EDStatic.protocolClick, "tabledap") + "\">" +
+                    MessageFormat.format(EDStatic.indexDatasets, "tabledap") + "</a></td>\n" +
+                "    <td>" + EDStatic.EDDTableDapDescription + "\n" +
+                "      <a href=\"" + tErddapUrl + "/tabledap/documentation.html\">" +
+                    MessageFormat.format(EDStatic.indexDocumentation, "tabledap") + 
+                    "</a>\n" +
+                "    </td>\n" +
                 "  </tr>\n");
             if (EDStatic.sosActive) writer.write(
                 "  <tr>\n" +
-                "    <td><a href=\"" + tErddapUrl + "/sos/index.html\"" + 
-                    protSee + "SOS protocol.\">SOS</a></td>\n" +
-                "    <td>" + EDStatic.sosDescriptionHtml + "</td>\n" +
+                "    <td><a href=\"" + tErddapUrl + "/sos/index.html?" + 
+                    EDStatic.encodedDefaultPIppQuery + "\"" + 
+                    " title=\"" +
+                    MessageFormat.format(EDStatic.protocolClick, "SOS") + "\">" +
+                    MessageFormat.format(EDStatic.indexDatasets, "SOS") + "</a></td>\n" +
+                "    <td>" + EDStatic.sosDescriptionHtml + "\n" +
+                "      <a href=\"" + tErddapUrl + "/sos/documentation.html\">" +
+                    MessageFormat.format(EDStatic.indexDocumentation, "SOS") + 
+                    "</a>\n" +
+                "    </td>\n" +
                 "  </tr>\n");
             if (EDStatic.wcsActive) writer.write(
                 "  <tr>\n" +
-                "    <td><a href=\"" + tErddapUrl + "/wcs/index.html\"" + 
-                    protSee + "WCS protocol.\">WCS</a></td>\n" +
-                "    <td>" + EDStatic.wcsDescriptionHtml + "</td>\n" +
+                "    <td><a href=\"" + tErddapUrl + "/wcs/index.html?" + 
+                    EDStatic.encodedDefaultPIppQuery + "\"" + 
+                    " title=\"" + 
+                    MessageFormat.format(EDStatic.protocolClick, "WCS") + "\">" +
+                    MessageFormat.format(EDStatic.indexDatasets, "WCS") + "</a></td>\n" +
+                "    <td>" + EDStatic.wcsDescriptionHtml + "\n" +
+                "      <a href=\"" + tErddapUrl + "/wcs/documentation.html\">" +
+                    MessageFormat.format(EDStatic.indexDocumentation, "WCS") + 
+                    "</a>\n" +
+                "    </td>\n" +
                 "  </tr>\n");
             writer.write(
                 "  <tr>\n" +
-                "    <td><a href=\"" + tErddapUrl + "/wms/index.html\"" + 
-                    protSee + "WMS protocol.\">WMS</a></td>\n" +
-                "    <td>" + EDStatic.wmsDescriptionHtml + "</td>\n" +
+                "    <td><a href=\"" + tErddapUrl + "/wms/index.html?" +
+                    EDStatic.encodedDefaultPIppQuery + "\"" + 
+                    " title=\"" + 
+                    MessageFormat.format(EDStatic.protocolClick, "WMS") + "\">" +
+                    MessageFormat.format(EDStatic.indexDatasets, "WMS") + "</a></td>\n" +
+                "    <td>" + EDStatic.wmsDescriptionHtml + "\n" +
+                "      <a href=\"" + tErddapUrl + "/wms/documentation.html\">" +
+                    MessageFormat.format(EDStatic.indexDocumentation, "WMS") + 
+                    "</a>\n" +
+                "    </td>\n" +
                 "  </tr>\n" +
-                "</table>\n");  
+                "</table>\n" +
+                "&nbsp;\n" +
+                "\n");  
+
+            //connections to OpenSearch and SRU
+            writer.write(
+                "<li><h3>" + EDStatic.indexDevelopersSearch + "</h3>\n" +
+                "  <ul>\n" +
+                "  <li><a href=\"" + tErddapUrl + "/rest.html\">" + 
+                    EDStatic.indexRESTfulSearch + "</a>\n" +
+                "  <li><a href=\"" + tErddapUrl + "/opensearch1.1/index.html\">OpenSearch 1.1</a>\n" +
+                "  </ul>\n" +
+                "\n");
 
             //end of search/protocol options list
-            writer.write("\n</ul>\n");
+            writer.write(
+                "\n</ul>\n" +
+                "<p>&nbsp;<hr>\n");
+
+            //converters
+            writer.write(
+                //"<p>&nbsp;<hr>\n" +
+                "<p><b><a name=\"converters\">" + EDStatic.indexConverters + "</a></b>\n" +
+                "<br>" + EDStatic.indexDescribeConverters + "\n" +
+                "  <ul>\n" +
+                "  <li><a href=\"" + tErddapUrl + "/convert/fipscounty.html\">" + EDStatic.convertFipsCounty + "</a>\n" +
+                "  <li><a href=\"" + tErddapUrl + "/convert/keywords.html\">" + EDStatic.convertKeywords + "</a>\n" +
+                "  <li><a href=\"" + tErddapUrl + "/convert/time.html\">" + EDStatic.convertTime + "</a>\n" +
+                "  <li><a href=\"" + tErddapUrl + "/convert/units.html\">" + EDStatic.convertUnits + "</a>\n" +
+                "  </ul>\n" +
+                "\n");
+
+            //metadata
+            if (EDStatic.fgdcActive || EDStatic.iso19115Active) {
+                writer.write(
+                    "<p><b><a name=\"metadata\">" + EDStatic.indexMetadata + "</a></b>\n" +
+                    "<br>");
+                String fgdcLink = 
+                    "<a href=\"" + tErddapUrl + "/" + EDStatic.fgdcXmlDirectory + 
+                    "\">FGDC</a> " +
+                    "(<a href=\"http://www.fgdc.gov/\">?</a>)";
+                String isoLink  =
+                    "<a href=\"" + tErddapUrl + "/" + EDStatic.iso19115XmlDirectory +
+                    "\">ISO&nbsp;19115-2/19139</a> " +
+                    "(<a href=\"http://en.wikipedia.org/wiki/Geospatial_metadata\">?</a>)";
+                if (EDStatic.fgdcActive && EDStatic.iso19115Active)
+                    writer.write(MessageFormat.format(EDStatic.indexWAF2, 
+                        fgdcLink, isoLink));
+                else writer.write(MessageFormat.format(EDStatic.indexWAF1, 
+                    EDStatic.fgdcActive? fgdcLink : isoLink));
+                 writer.write("\n\n");
+            }
+
+            //REST services
+            writer.write(
+                "<p><b><a name=\"services\">" + EDStatic.indexServices + "</a></b>\n" +
+                "<br>" + MessageFormat.format(EDStatic.indexDescribeServices, tErddapUrl) + 
+                "\n\n");
 
             //end of table
             writer.write("</td>\n</tr>\n</table>\n");
@@ -853,74 +981,17 @@ public class Erddap extends HttpServlet {
             "<font class=\"warningColor\"><pre>" + 
             XML.encodeAsHTML(message) +  //encoding is important to avoid security problems (HTML injection)
             "</pre></font>\n";                   
-        String problemsLoggingIn = 
-            "<p>&nbsp;<hr><p><b>Problems?</b>\n" +
-            "<p>If you have problems logging in:\n" +
-            "<ul>\n" +
-            "<li>Make sure that you log in with the exact same &info; that you gave to the ERDDAP administrator.\n" +
-            "  <br>Uppercase and lower case letters are different.  Capital 'oh' and 'zero' are different.\n" +
-            "  <br>&nbsp;\n" +
-            "<li>Your password must be 7 or more characters long.\n" +
-            "  <br>&nbsp;\n" +
-            "<li>Make sure your browser is set to allow\n" +
-            "  <a href=\"http://en.wikipedia.org/wiki/HTTP_cookie\">cookies</a>:\n" +
-            "  <ul>\n" +
-            "  <li>In Internet Explorer, use \"Tools : Internet Options : Privacy\"\n" +
-            "  <li>In Firefox, use \"Tools : Options : Privacy\"\n" +
-            "  <li>In Opera, use \"Tools : Quick Preferences\"\n" +
-            "  <li>In Safari, use \"Safari : Preferences : Security\"\n" +
-            "  </ul>\n" +
-            "  If you are making ERDDAP requests from a computer program (other than a browser),\n" +
-            "  cookies are hard to work with. Sorry.\n" +
-            "  <br>&nbsp;\n" +
-            "<li>If you fail to log in three times, you are locked out. Wait 10 minutes and try again.\n" +
-            "  <br>&nbsp;\n" +
-            "<li>Contact the administrator of this ERDDAP: " + EDStatic.adminContact() + ".\n" +
-            "</ul>\n" +
-            "\n";
-        String problemsAfterLoggedIn = 
-            "<p>&nbsp;<hr>\n" +
-            "<p><b>If you are having problems ...</b>\n" +
-            "<ul>\n" +
-            "<li>You just logged in, but private datasets in ERDDAP still aren't visible\n" +
-            "<li>You just logged in, but some ERDDAP web pages indicate you aren't logged in.\n" +
-            "  <br>And if you try to log in again, ERDDAP says you are already logged in.\n" +
-            "<li>You logged in a while ago and now, after a period of inactivity, ERDDAP says you aren't logged in.\n" +
-            "</ul>\n" +
-            "<p><b>Try these solutions ...</b>\n" +
-            "<ul>\n" +
-            "<li>ERDDAP URLs are slightly different for users who are logged in and users who aren't\n" +
-            "  <br>(\"https:\" vs. \"http:\", and sometimes other differences).\n" +
-            "  <br>Don't use your browser's <tt>Back</tt> button. Use the \"ERDDAP\" link above,\n" +
-            "  <br>then use other links to go to ERDDAP pages you are interested in.\n" +
-            "  <br>&nbsp;\n" +
-            "<li>Click on your browser's Refresh button.\n" +
-            "  <br>Your browser may have cached the web page before you logged in.\n" +
-            "  <br>&nbsp;\n" +
-            "<li>If, after a period of inactivity, ERDDAP says you aren't logged in, you have to log in again.\n" +
-            "  <br>&nbsp;\n" +
-            "<li>If you have multiple accounts, make sure you are logged in with the appropriate name to see the desired datasets.\n" +
-            "  <br>&nbsp;\n" +
-            "&second;" +
-            "<li>Contact the administrator of this ERDDAP: " + EDStatic.adminContact() + ".\n" +
-            "  <br>It is possible that some datasets are not currently available or that you don't have permission to access them.\n" +
-            "</ul>\n" +
-            "\n";
-        String publicAccess = "(You don't have to be logged in to access ERDDAP's publicly available datasets.)\n";
-        String attemptBlocked1 = ERROR + ": Login attempts for ";
-        String attemptBlocked2 = " are being temporarily blocked after 3 failed attempts.\nWait ";
-        String attemptBlocked3 = " minutes, then try again.";
 
         //if authentication is active ...
         if (!EDStatic.authentication.equals("")) {
             //if request was sent to http:, redirect to https:
-            String actualUrl = request.getRequestURL().toString();
-            if (EDStatic.baseHttpsUrl != null && EDStatic.baseHttpsUrl.startsWith("https://") && //EDStatic ensures this is true
+            String actualUrl = request.getRequestURL().toString(); //has proxied port#, e.g. :8080
+            if (EDStatic.baseHttpsUrl != null && 
+                EDStatic.baseHttpsUrl.startsWith("https://") && //EDStatic ensures this is true
                 !actualUrl.startsWith("https://")) {
                 //hopefully this won't happen much
                 //hopefully headers and other info won't be lost in the redirect
-                response.sendRedirect(loginUrl +
-                    (userQuery == null || userQuery.length() == 0? "" : "?" + userQuery));
+                response.sendRedirect(loginUrl + EDStatic.questionQuery(userQuery));
                 return;            
             }
         }
@@ -936,9 +1007,9 @@ public class Erddap extends HttpServlet {
 
             //write the html for the form 
             OutputStream out = getHtmlOutputStream(request, response);
-            Writer writer = getHtmlWriter(tLoggedInAs, "Log In", out);
+            Writer writer = getHtmlWriter(tLoggedInAs, EDStatic.LogIn, out);
             try {
-                writer.write(EDStatic.youAreHere(tLoggedInAs, "Log In"));
+                writer.write(EDStatic.youAreHere(tLoggedInAs, EDStatic.LogIn));
 
                 //show message from EDStatic.redirectToLogin (which redirects to here) or logout.html
                 writer.write(redMessage);           
@@ -950,12 +1021,14 @@ public class Erddap extends HttpServlet {
                     writer.write(
                     "<p><b>Something is wrong!</b> Your browser should have asked you to log in to see this web page!\n" +
                     "<br>Tell the ERDDAP administrator to check the &lt;tomcat&gt;/conf/web.xml file.\n" +
-                    "<p>" + publicAccess);
+                    "<p>" + EDStatic.loginPublicAccess);
 
                 } else {
                     //tell user he is logged in
-                    writer.write("<p><font class=\"successColor\">You are logged in as <b>" + loggedInAs + "</b></font>\n" +
-                        "(<a href=\"" + EDStatic.erddapHttpsUrl + "/logout.html\">log out</a>)\n");
+                    writer.write("<p><font class=\"successColor\">" + EDStatic.loginAs + 
+                        " <b>" + loggedInAs + "</b></font>\n" +
+                        "(<a href=\"" + EDStatic.erddapHttpsUrl + "/logout.html\">" +
+                        EDStatic.logout + "</a>)\n");
                 }
             
             } catch (Throwable t) {
@@ -981,8 +1054,8 @@ public class Erddap extends HttpServlet {
                 int minutesUntilLoginAttempt = minutesUntilLoginAttempt(user);
                 if (minutesUntilLoginAttempt > 0) {
                     response.sendRedirect(loginUrl + "?message=" + 
-                        SSR.minimalPercentEncode(attemptBlocked1 + user + attemptBlocked2 + 
-                            minutesUntilLoginAttempt + attemptBlocked3));
+                        SSR.minimalPercentEncode(MessageFormat.format(
+                            EDStatic.loginAttemptBlocked, user, "" + minutesUntilLoginAttempt)));
                     return;
                 }
                 try {
@@ -1005,57 +1078,60 @@ public class Erddap extends HttpServlet {
                         }
                         loginFailed(user);
                         response.sendRedirect(loginUrl + "?message=" + SSR.minimalPercentEncode(
-                            ERROR + ": Login failed: Invalid User Name and/or Password."));
+                            EDStatic.loginFailed + ": " + EDStatic.loginInvalid));
                         return;
                     }
                 } catch (Throwable t) {
                     response.sendRedirect(loginUrl +
-                        "?message=" + ERROR + ": Login failed: " + 
-                        SSR.minimalPercentEncode(MustBe.getShortErrorMessage(t)));
+                        "?message=" + 
+                        SSR.minimalPercentEncode(EDStatic.loginFailed + ": " + 
+                            MustBe.getShortErrorMessage(t)));
                     return;
                 }
             }
 
             OutputStream out = getHtmlOutputStream(request, response);
-            Writer writer = getHtmlWriter(tLoggedInAs, "Log In", out);
+            Writer writer = getHtmlWriter(tLoggedInAs, EDStatic.LogIn, out);
             try {
-                writer.write(EDStatic.youAreHere(tLoggedInAs, "Log In"));
+                writer.write(EDStatic.youAreHere(tLoggedInAs, EDStatic.LogIn));
 
                 //show message from EDStatic.redirectToLogin (which redirects to here) or logout.html
                 writer.write(redMessage);           
 
-                writer.write("<p>This ERDDAP is configured to let you log in by entering your User Name and Password.\n");
+                writer.write(EDStatic.loginDescribeCustom);
 
                 if (loggedInAs == null) {
                     //show the login form
                     writer.write(
-                    "<p>You are not logged in.\n" +
-                    publicAccess +
+                    "<p>" + EDStatic.loginNot + "\n" +
+                    EDStatic.loginPublicAccess +
                     //use POST, not GET, so that form params (password!) aren't in url (and so browser history, etc.)
                     "<form action=\"login.html\" method=\"post\" id=\"login_form\">\n" +  
-                    "<p><b>Please log in:</b>\n" +
+                    "<p><b>" + EDStatic.loginPleaseLogIn + ":</b>\n" +
                     "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n" +
                     "  <tr>\n" +
-                    "    <td>User Name: </td>\n" +
+                    "    <td>" + EDStatic.loginUserName + ": </td>\n" +
                     "    <td><input type=\"text\" size=\"30\" value=\"\" name=\"user\" id=\"user\"/></td>\n" +
                     "  </tr>\n" +
                     "  <tr>\n" +
-                    "    <td>Password: </td>\n" + 
+                    "    <td>" + EDStatic.loginPassword + ": </td>\n" + 
                     "    <td><input type=\"password\" size=\"20\" value=\"\" name=\"password\" id=\"password\"/>\n" +
-                    "      <input type=\"submit\" value=\"Login\"/></td>\n" +
+                    "      <input type=\"submit\" value=\"" + EDStatic.LogIn + "\"/></td>\n" +
                     "  </tr>\n" +
                     "</table>\n" +
                     "</form>\n" +
                     "\n" +
-                    String2.replaceAll(problemsLoggingIn, "&info;", "User Name and Password"));               
+                    String2.replaceAll(EDStatic.loginProblems, "&info;", 
+                        EDStatic.loginUserNameAndPassword));               
 
                 } else {
                     //tell user he is already logged in
-                    writer.write("<p><font class=\"successColor\">You are logged in as <b>" + loggedInAs + "</b>.</font>\n" +
-                        "(<a href=\"" + EDStatic.erddapHttpsUrl + "/logout.html\">log out</a>)\n" +
-                        "<p><b>Don't use your browser's <tt>Back</tt> button. Use the \"ERDDAP\" link above,</b>\n" +
-                        "<br>then use other links to go to ERDDAP pages you are interested in.\n" +
-                        String2.replaceAll(problemsAfterLoggedIn, "&second;", ""));
+                    writer.write("<p><font class=\"successColor\">" + EDStatic.loginAs + 
+                        " <b>" + loggedInAs + "</b>.</font>\n" +
+                        "(<a href=\"" + EDStatic.erddapHttpsUrl + "/logout.html\">" +
+                        EDStatic.logout + "</a>)\n" +
+                        "<p>" + EDStatic.loginBack + "\n" +
+                        String2.replaceAll(EDStatic.loginProblemsAfter, "&second;", ""));
                 }
             } catch (Throwable t) {
                 writer.write(EDStatic.htmlForException(t));
@@ -1087,8 +1163,8 @@ public class Erddap extends HttpServlet {
                 int minutesUntilLoginAttempt = minutesUntilLoginAttempt(oid);
                 if (minutesUntilLoginAttempt > 0) {
                     response.sendRedirect(loginUrl + "?message=" + 
-                        SSR.minimalPercentEncode(attemptBlocked1 + oid + attemptBlocked2 + 
-                            minutesUntilLoginAttempt + attemptBlocked3));
+                        SSR.minimalPercentEncode(MessageFormat.format(
+                            EDStatic.loginAttemptBlocked, oid, "" + minutesUntilLoginAttempt)));
                     return;
                 }
                 try {
@@ -1108,34 +1184,32 @@ public class Erddap extends HttpServlet {
                     return;
                 } catch (Throwable t) {
                     response.sendRedirect(loginUrl +
-                        "?message=" + ERROR + ": Login failed: " + 
-                        SSR.minimalPercentEncode(MustBe.getShortErrorMessage(t)));
+                        "?message=" + SSR.minimalPercentEncode(
+                            EDStatic.loginFailed + ": " + MustBe.getShortErrorMessage(t)));
                     return;
                 }
             }
          
             //write the html for the openID info and form
             OutputStream out = getHtmlOutputStream(request, response);
-            Writer writer = getHtmlWriter(tLoggedInAs, "OpenID Log In", out);
+            Writer writer = getHtmlWriter(tLoggedInAs, "OpenID " + EDStatic.LogIn, out);
             try {
                 writer.write(EDStatic.youAreHere(tLoggedInAs,
                     "<img align=\"bottom\" src=\"" + //align=middle looks bad on safari
-                    EDStatic.imageDirUrl(tLoggedInAs) + "openid.png\" alt=\"OpenID\"/>OpenID Log In"));
+                    EDStatic.imageDirUrl(tLoggedInAs) + "openid.png\" alt=\"OpenID\"/>OpenID " +
+                    EDStatic.LogIn));
 
                 //show message from EDStatic.redirectToLogin (which redirects to here) or logout.html
                 writer.write(redMessage);           
 
                 //OpenID info
-                writer.write(
-                    "<p><a href=\"http://openid.net/\">OpenID</a> is an open standard that lets you\n" +
-                    "log in with your password at one web site\n" +
-                    "<br>and then log in without your password at many other web sites, including ERDDAP.\n");
+                writer.write(EDStatic.loginDescribeOpenID);
 
                 if (loggedInAs == null) {
                     //show the login form
                     writer.write(
-                    "<p>You are not logged in.\n" + 
-                    publicAccess +
+                    "<p>" + EDStatic.loginNot + "\n" + 
+                    EDStatic.loginPublicAccess +
                     "<script type=\"text/javascript\">\n" +
                     "  function submitForm(url){\n" +
                     "    document.getElementById(\"openid_url\").value = url;\n" +
@@ -1145,28 +1219,32 @@ public class Erddap extends HttpServlet {
                     //they use POST, not GET, probably so that form params (password!) aren't in url (and so browser history, etc.)
                     "<form action=\"login.html\" method=\"post\" id=\"openid_form\">\n" +  
                     "  <input type=\"hidden\" name=\"signin\" value=\"true\"/>\n" +
-                    "  <p><b>Log in with your OpenID URL:</b>\n" +
+                    "  <p><b>" + EDStatic.loginOpenID + ":</b>\n" +
                     "  <input type=\"text\" size=\"30\" value=\"\" name=\"openid_url\" id=\"openid_url\"/>\n" +
-                    "  <input type=\"submit\" value=\"Login\"/>\n" +
+                    "  <input type=\"submit\" value=\"" + EDStatic.LogIn + "\"/>\n" +
                     "  <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<small>For example: <tt>http://yourId.myopenid.com/</tt></small>\n" +
                     "</form>\n" +
-                    "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Or log in to your existing (non-OpenID) account at \n" +
+                    "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + EDStatic.loginOpenIDOr + "\n" +
                     "<img align=\"middle\" src=\"http://l.yimg.com/us.yimg.com/i/ydn/openid-signin-yellow.png\" \n" +
                         "alt=\"Sign in with Yahoo\" onclick=\"submitForm('http://www.yahoo.com');\"/>\n" +
-                    "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Or create an OpenID URL at\n" + 
+                    "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + EDStatic.loginOpenIDCreate + "\n" + 
                     "<a href=\"http://www.myopenid.com/\" target=\"_blank\">MyOpenID</a> (recommended), \n" +
                     "<a href=\"https://pip.verisignlabs.com/\" target=\"_blank\">Verisign</a>, or\n" +
-                    "<a href=\"https://myvidoop.com/\" target=\"_blank\">Vidoop</a>. (They are all free!)\n" +
+                    "<a href=\"https://myvidoop.com/\" target=\"_blank\">Vidoop</a>. (" +
+                        EDStatic.loginOpenIDFree + ")\n" +
                     "\n" +
-                    String2.replaceAll(problemsLoggingIn, "&info;", "OpenID URL"));
+                    String2.replaceAll(EDStatic.loginProblems, "&info;", "OpenID URL"));
 
                 } else {
                     //tell user he is already logged in
-                    String s = String2.replaceAll(problemsAfterLoggedIn, "&second;", 
-                        "<li>Make sure that you logged in with the exact same OpenID URL that you gave to the ERDDAP administrator.\n" +
+                    String s = String2.replaceAll(EDStatic.loginProblemsAfter, "&second;", 
+                        "<li>" + EDStatic.loginOpenIDSame + "\n" +
                         "  <br>&nbsp;\n");
-                    writer.write("<p><font class=\"successColor\">You are logged in as <b>" + loggedInAs + "</b>.</font>\n" +
-                        "(<a href=\"" + EDStatic.erddapHttpsUrl + "/logout.html\">log out</a>)\n" + 
+                    writer.write("<p><font class=\"successColor\">" + EDStatic.loginAs + 
+                        " <b>" + loggedInAs + "</b>.</font>\n" +
+                        "(<a href=\"" + EDStatic.erddapHttpsUrl + "/logout.html\">" +
+                        EDStatic.logout + "</a>)\n" + 
+                        "<p>" + EDStatic.loginBack + "\n" +
                         s);
 
                 }
@@ -1182,12 +1260,12 @@ public class Erddap extends HttpServlet {
         //response.sendError(HttpServletResponse.SC_UNAUTHORIZED, 
         //    "This ERDDAP is not set up to let users log in.");
         OutputStream out = getHtmlOutputStream(request, response);
-        Writer writer = getHtmlWriter(tLoggedInAs, "Log In", out);
+        Writer writer = getHtmlWriter(tLoggedInAs, EDStatic.LogIn, out);
         try {
             writer.write(
-                EDStatic.youAreHere(tLoggedInAs, "Log In") +
+                EDStatic.youAreHere(tLoggedInAs, EDStatic.LogIn) +
                 redMessage +
-                "<p>This ERDDAP is not configured to let users log in.\n");       
+                "<p>" + EDStatic.loginCanNot + "\n");       
         } catch (Throwable t) {
             writer.write(EDStatic.htmlForException(t));
         }
@@ -1209,9 +1287,8 @@ public class Erddap extends HttpServlet {
 
         try {       
             //user wasn't logged in?
-            String youWerentLoggedIn = "You weren't logged in.";
             String encodedYouWerentLoggedIn = "?message=" + 
-                SSR.minimalPercentEncode(youWerentLoggedIn);
+                SSR.minimalPercentEncode(EDStatic.loginWereNot);
             if (loggedInAs == null && !EDStatic.authentication.equals("basic")) {
                 //user wasn't logged in
                 response.sendRedirect(loginUrl + encodedYouWerentLoggedIn);
@@ -1220,20 +1297,8 @@ public class Erddap extends HttpServlet {
 
             //user was logged in
             HttpSession session = request.getSession(false); //false = don't make a session if none currently
-            String successMessage = 
-                "You have successfully logged out.\n" +
-                "\n" +
-                "Don't use your browser's Back button. Use the \"ERDDAP\" link above,\n" +
-                "then use other links to go to ERDDAP pages you are interested in.\n" +
-                "\n" +
-                "\n" +
-                "For increased security (especially if this is a shared computer), you can:\n" +
-                " * Clear your browser's cache:\n" +
-                "   * In Internet Explorer, use \"Tools : Delete Browsing History : Delete Files\"\n" +
-                "   * In Firefox, use \"Tools : Clear Private Data\"\n" +
-                "   * In Opera, use \"Tools : Delete Private Data\"\n" +
-                "   * In Safari, use \"Safari : Empty Cache\"\n";
-            String encodedSuccessMessage = "?message=" + SSR.minimalPercentEncode(successMessage);
+            String encodedSuccessMessage = "?message=" + SSR.minimalPercentEncode(
+                EDStatic.logoutSuccess);
 
             //*** BASIC
             /*
@@ -1252,19 +1317,19 @@ public class Erddap extends HttpServlet {
                 //Don't return to login.html, which triggers logging in again.
                 String tErddapUrl = EDStatic.erddapUrl(tLoggedInAs);
                 OutputStream out = getHtmlOutputStream(request, response);
-                Writer writer = getHtmlWriter(tLoggedInAs, "Log Out", out);
+                Writer writer = getHtmlWriter(tLoggedInAs, EDStatic.LogOut, out);
                 try {
-                    writer.write(EDStatic.youAreHere(tLoggedInAs, "Log Out"));
+                    writer.write(EDStatic.youAreHere(tLoggedInAs, EDStatic.LogOut));
                     if (loggedInAs == null) { 
                         //never was logged in 
-                        writer.write(youWerentLoggedIn);
+                        writer.write(EDStatic.loginWereNot);
                     } else {
                         //still logged in?
                         loggedInAs = EDStatic.getLoggedInAs(request);
                         if (loggedInAs == null) {
                             //successfully logged out
-                            String s = String2.replaceAll(successMessage, "\n", "\n<br>");
-                            s = String2.replaceAll(successMessage, "   ", " &nbsp; ");
+                            String s = String2.replaceAll(EDStatic.logoutSuccess, "\n", "\n<br>");
+                            s = String2.replaceAll(s, "   ", " &nbsp; ");
                             writer.write(s);       
                         } else {
                             //couldn't log user out!
@@ -1303,7 +1368,7 @@ public class Erddap extends HttpServlet {
                     EDStatic.tally.add("Log out (since last daily report)", "success");
                 }
                 response.sendRedirect(loginUrl + encodedSuccessMessage +
-                    SSR.minimalPercentEncode(" * Log out from your OpenID provider."));
+                    SSR.minimalPercentEncode(" * " + EDStatic.logoutOpenID));
                 return;
             }
 
@@ -1368,32 +1433,34 @@ public class Erddap extends HttpServlet {
         OutputStream out = getHtmlOutputStream(request, response);
         Writer writer = getHtmlWriter(loggedInAs, "Computer Programs", out);
         try {
-            String htmlQueryUrl = tErddapUrl + "/search/index.html?searchFor=temperature";
-            String jsonQueryUrl = tErddapUrl + "/search/index.json?searchFor=temperature";
+            String htmlQueryUrl = tErddapUrl + "/search/index.html?" +
+                EDStatic.encodedDefaultPIppQuery + "&amp;searchFor=temperature";
+            String jsonQueryUrl = tErddapUrl + "/search/index.json?" +
+                EDStatic.encodedDefaultPIppQuery + "&amp;searchFor=temperature";
             String htmlQueryUrlWithSpaces = htmlQueryUrl + "%20wind%20speed";
             String griddapExample  = tErddapUrl + "/griddap/" + EDStatic.EDDGridIdExample;
             String tabledapExample = tErddapUrl + "/tabledap/" + EDStatic.EDDTableIdExample;
             writer.write(
-                EDStatic.youAreHere(loggedInAs, "Computer Programs") +
+                EDStatic.youAreHere(loggedInAs, "RESTful Web Services") +
                 "<table style=\"width:640px; border-style:outset; border-width:0px; padding:0px; \" \n" +
                 "  cellspacing=\"0\">\n" +
                 "<tr>\n" +
                 "<td>\n" +
                 "\n" +
-                "<h2 align=\"center\"><a name=\"WebService\">Accessing</a> ERDDAP as a Web Service</h2>\n" +
+                "<h2 align=\"center\"><a name=\"WebService\">Accessing</a> ERDDAP's RESTful Web Services</h2>\n" +
                 "ERDDAP is both:\n" +
                 "<ul>\n" +
                 "<li><a href=\"http://en.wikipedia.org/wiki/Web_application\">A web application</a> \n" +
                 "  &ndash; a web site that humans with browsers can use\n" +
                 "  (in this case, to get data, graphs, and information about datasets).\n" +
                 "  <br>&nbsp;\n" +
-                "<li><a href=\"http://en.wikipedia.org/wiki/Web_service\">A web service</a> \n" +
+                "<li><a href=\"http://en.wikipedia.org/wiki/Web_service\">A RESTful web service</a> \n" +
                 "  &ndash; a web site that computer programs can use\n" +
                 "  (in this case, to get data, graphs, and information about datasets).\n" +
                 "</ul>\n" +
                 "For every ERDDAP feature that you as a human with a browser can use, there is an\n" +
                 "<br>almost identical feature that is designed to be easy for computer programs to use.\n" +
-                "For example, humans can use this URL to do a Full Text Search for datasets of interest:\n" +
+                "For example, humans can use this URL to do a Full Text Search for interesting datasets:\n" +
                 "<br><a href=\"" + htmlQueryUrl + "\">" + htmlQueryUrl + "</a>\n" +
                 "<br>By changing the file extension in the URL from .html to .json:\n" +
                 "<br><a href=\"" + jsonQueryUrl + "\">" + jsonQueryUrl + "</a>\n" +
@@ -1416,7 +1483,7 @@ public class Erddap extends HttpServlet {
                 "publicly accessible or just privately accessible.\n" +
                 "\n" +
                 //requests
-                "<p><a name=\"requests\"><b>URL Requests</b></a>\n" +
+                "<p><a name=\"requests\"><b>RESTful URL Requests</b></a>\n" +
                 "<br>Requests for user-interface information from ERDDAP (for example, search results)\n" +
                 "use the web's universal standard for requests:\n" +
                 "<a href=\"http://en.wikipedia.org/wiki/Uniform_Resource_Locator\">URLs</a>\n" +
@@ -1537,63 +1604,81 @@ public class Erddap extends HttpServlet {
                 "<li>To get the list of the <b>main resource access URLs</b>, use\n" +
                 "  <br>" + plainLinkExamples(tErddapUrl, "/index", "") +
                 "  <br>&nbsp;\n" +
-                "<li>To get the current list of all <b>datasets</b>, use\n" + 
-                "  <br>" + plainLinkExamples(tErddapUrl, "/info/index", "") + 
+                "<li>To get the current list of <b>all datasets</b>, use\n" + 
+                "  <br>" + plainLinkExamples(tErddapUrl, 
+                    "/info/index", EDStatic.encodedAllPIppQuery) + 
                 "  <br>&nbsp;\n" +
                 "<li>To get <b>metadata</b> for a specific data set\n" +
                 "  (the list of variables and their attributes), use\n" + 
                 "  <br>" + tErddapUrl + "/info/<i>datasetID</i>/index<i>.fileType</i>\n" +
                 "  <br>for example,\n" + 
-                "  <br>" + plainLinkExamples(tErddapUrl, "/info/" + EDStatic.EDDGridIdExample + "/index", "") + 
+                "  <br>" + plainLinkExamples(tErddapUrl, 
+                    "/info/" + EDStatic.EDDGridIdExample + "/index", "") + 
                 "  <br>&nbsp;\n" +
                 "<li>To get the results of <b>full text searches</b> for datasets\n" +
                 "  (using \"searchFor=temperature%20wind%20speed\" as the example), use\n" +
-                "  <br>" + plainLinkExamples(tErddapUrl, "/search/index", "?searchFor=temperature%20wind%20speed") +
+                "  <br>" + plainLinkExamples(tErddapUrl, "/search/index", 
+                    EDStatic.encodedDefaultPIppQuery + 
+                    "&amp;searchFor=temperature%20wind%20speed") +
                 "  <br>(Your program or script may need to \n" +
                 "    <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent-encode</a>\n" +
                 "    the value in the query.)\n" +
                 "  <br>&nbsp;\n" +
+                "  <br>Or, use the\n" +
+                "    <a href=\"" + tErddapUrl + "/opensearch1.1/index.html\">OpenSearch 1.1</a>\n" +
+                "    standard to do a full text search for datasets.\n" +
+                "  <br>&nbsp;\n" +
                 "<li>To get the results of <b>advanced searches</b> for datasets\n" +
                 "  (using \"searchFor=temperature%20wind%20speed\" as the example), use\n" +
-                "  <br>" + plainLinkExamples(tErddapUrl, "/search/advanced", "?searchFor=temperature%20wind%20speed") +
+                "  <br>" + plainLinkExamples(tErddapUrl, "/search/advanced", 
+                    EDStatic.encodedDefaultPIppQuery + 
+                    "&amp;searchFor=temperature%20wind%20speed") +
                 "  <br>But experiment with\n" +
-                "    <a href=\"" + tErddapUrl + "/search/advanced.html\">Advanced Search</a>\n" +
-                "    in a browser to figure out all of the\n" +
-                "  optional parameters.\n" +
+                "    <a href=\"" + tErddapUrl + "/search/advanced.html?" + 
+                    EDStatic.encodedDefaultPIppQuery + "\">" + EDStatic.advancedSearch + "</a>\n" +
+                "    in a browser to figure out all of the optional parameters.\n" +
                 "  (Your program or script may need to \n" +
                 "    <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent-encode</a>\n" +
                 "    the value in the query.)\n" +
                 "  <br>&nbsp;\n" +
                 "<li>To get the list of <b>categoryAttributes</b>\n" +
                 "  (e.g., institution, long_name, standard_name), use\n" +
-                "  <br>" + plainLinkExamples(tErddapUrl, "/categorize/index", "") +
+                "  <br>" + plainLinkExamples(tErddapUrl, "/categorize/index", 
+                    EDStatic.encodedDefaultPIppQuery) + 
                 "  <br>&nbsp;\n" +
                 "<li>To get the list of <b>categories for a specific categoryAttribute</b>\n" +
                 "  (using \"standard_name\" as the example), use\n" +
-                "  <br>" + plainLinkExamples(tErddapUrl, "/categorize/standard_name/index", "") +
+                "  <br>" + plainLinkExamples(tErddapUrl, "/categorize/standard_name/index", 
+                    EDStatic.encodedDefaultPIppQuery) + 
                 "  <br>&nbsp;\n" +
                 "<li>To get the list of <b>datasets in a specific category</b>\n" +
                 "  (using \"standard_name=time\" as the example), use\n" +
-                "  <br>" +  plainLinkExamples(tErddapUrl, "/categorize/standard_name/time/index", ""));
+                "  <br>" +  plainLinkExamples(tErddapUrl, "/categorize/standard_name/time/index", 
+                    EDStatic.encodedDefaultPIppQuery));  
             int tDasIndex = String2.indexOf(EDDTable.dataFileTypeNames, ".das");
             int tDdsIndex = String2.indexOf(EDDTable.dataFileTypeNames, ".dds");
             writer.write(
                 "  <br>&nbsp;\n" +
-                "<li>To get the current list of datasets available via a specific <b>protocol</b>,\n" +
+                "<li>To get the current list of <b>all datasets available via a specific protocol</b>,\n" +
                 "  <ul>\n" +
                 "  <li>For griddap: use\n" +
-                    plainLinkExamples(tErddapUrl, "/griddap/index", "") +
+                    plainLinkExamples(tErddapUrl, "/griddap/index", 
+                    EDStatic.encodedAllPIppQuery) + 
                 "  <li>For tabledap: use\n" +
-                    plainLinkExamples(tErddapUrl, "/tabledap/index", ""));
+                    plainLinkExamples(tErddapUrl, "/tabledap/index", 
+                    EDStatic.encodedAllPIppQuery)); 
             if (EDStatic.sosActive) writer.write(
                 "  <li>For SOS: use\n" +
-                    plainLinkExamples(tErddapUrl, "/sos/index", ""));
+                    plainLinkExamples(tErddapUrl, "/sos/index", 
+                    EDStatic.encodedAllPIppQuery)); 
             if (EDStatic.wcsActive) writer.write(
                 "  <li>For WCS: use\n" +
-                    plainLinkExamples(tErddapUrl, "/wcs/index", ""));
+                    plainLinkExamples(tErddapUrl, "/wcs/index", 
+                    EDStatic.encodedAllPIppQuery)); 
             writer.write(
                 "  <li>For WMS: use\n" +
-                    plainLinkExamples(tErddapUrl, "/wms/index", "") +
+                    plainLinkExamples(tErddapUrl, "/wms/index", 
+                    EDStatic.encodedAllPIppQuery) + 
                 "  <br>&nbsp;\n" +
                 "  </ul>\n" +
                 "<li>Griddap and tabledap have many web services that you can use.\n" +
@@ -1616,15 +1701,15 @@ public class Erddap extends HttpServlet {
                 "    use a standard OPeNDAP\n" +
                 "      <a href=\"" + XML.encodeAsHTML(EDDTable.dataFileTypeInfo[tDdsIndex]) + "\">.dds</a>\n" +
                 "      resquest. For example,\n" + 
-                "    <br><a href=\"" + griddapExample  + ".dds\">" + griddapExample  + ".dds</a> or\n" +
-                "    <br><a href=\"" + tabledapExample + ".dds\">" + tabledapExample + ".dds</a> .\n" +
+                "    <br><a href=\"" + griddapExample  + ".dds\">" + griddapExample  + ".dds</a> (gridded data) or\n" +
+                "    <br><a href=\"" + tabledapExample + ".dds\">" + tabledapExample + ".dds</a> (tabular data).\n" +
                 "    <br>&nbsp;\n" +
                 "  <li>To get a <b>dataset's metadata</b>, use a standard OPeNDAP\n" +
                 "      <a href=\"" + XML.encodeAsHTML(EDDTable.dataFileTypeInfo[tDdsIndex]) + "\">.das</a>\n" +
                 "      resquest.\n" +
                 "    For example,\n" + 
-                "    <br><a href=\"" + griddapExample  + ".das\">" + griddapExample  + ".das</a> or\n" +
-                "    <br><a href=\"" + tabledapExample + ".das\">" + tabledapExample + ".das</a> .\n" +
+                "    <br><a href=\"" + griddapExample  + ".das\">" + griddapExample  + ".das</a> (gridded data) or\n" +
+                "    <br><a href=\"" + tabledapExample + ".das\">" + tabledapExample + ".das</a> (tabular data).\n" +
                 "    <br>&nbsp;\n" +
                 "  </ul>\n" +
                 "<li>ERDDAP's other protocols also have web services that you can use.\n" +
@@ -1648,11 +1733,12 @@ public class Erddap extends HttpServlet {
                 "    which notify your computer program\n" +
                 "  whenever a dataset changes.\n" +
                 "  <br>&nbsp;\n" +
-                "<li>ERDDAP offers converter services:\n" +
+                "<li>ERDDAP offers several converters as web pages and as web services:\n" +
                 "  <ul>\n" +
-                "  <li><a href=\"" + tErddapUrl + "/convert/fipscounty.html#computerProgram\">Convert a FIPS County Code to/from a County Name</a>\n" +
-                "  <li><a href=\"" + tErddapUrl + "/convert/time.html#computerProgram\">Convert a Numeric Time to/from a String Time</a>\n" +
-                "  <li><a href=\"" + tErddapUrl + "/convert/units.html#computerProgram\">Convert UDUNITS to/from Unified Code for Units of Measure (UCUM)</a>\n" +
+                "  <li><a href=\"" + tErddapUrl + "/convert/fipscounty.html#computerProgram\">" + EDStatic.convertFipsCounty + "</a>\n" +
+                "  <li><a href=\"" + tErddapUrl + "/convert/keywords.html#computerProgram\">" + EDStatic.convertKeywords + "</a>\n" +
+                "  <li><a href=\"" + tErddapUrl + "/convert/time.html#computerProgram\">" + EDStatic.convertTime + "</a>\n" +
+                "  <li><a href=\"" + tErddapUrl + "/convert/units.html#computerProgram\">" + EDStatic.convertUnits + "</a>\n" +
                 "  </ul>\n" +
                 "  <br>&nbsp;\n" +
                 "</ul>\n" +
@@ -1747,22 +1833,33 @@ public class Erddap extends HttpServlet {
         writer.write(pre); writer.write("categorize/index.html");             writer.write(postMed);
         writer.write(pre); writer.write("convert/index.html");                writer.write(postMed);
         writer.write(pre); writer.write("convert/fipscounty.html");           writer.write(postHigh);
+        writer.write(pre); writer.write("convert/keywords.html");             writer.write(postHigh);
         writer.write(pre); writer.write("convert/time.html");                 writer.write(postHigh);
         writer.write(pre); writer.write("convert/units.html");                writer.write(postHigh);
         writer.write(pre); writer.write("griddap/documentation.html");        writer.write(postHigh);
-        writer.write(pre); writer.write("griddap/index.html");                writer.write(postHigh);
+        writer.write(pre); writer.write("griddap/index.html?" +
+            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh);
         writer.write(pre); writer.write("images/embed.html");                 writer.write(postHigh);
         writer.write(pre); writer.write("images/gadgets/GoogleGadgets.html"); writer.write(postHigh);
         writer.write(pre); writer.write("index.html");                        writer.write(postHigh);
-        writer.write(pre); writer.write("info/index.html");                   writer.write(postHigh); 
+        writer.write(pre); writer.write("info/index.html?" + 
+            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh); 
         writer.write(pre); writer.write("information.html");                  writer.write(postHigh);
+        if (EDStatic.fgdcActive) {
+        writer.write(pre); writer.write(EDStatic.fgdcXmlDirectory);           writer.write(postLow);}
+        if (EDStatic.iso19115Active) {
+        writer.write(pre); writer.write(EDStatic.iso19115XmlDirectory);       writer.write(postLow);}
         writer.write(pre); writer.write("legal.html");                        writer.write(postHigh);
         writer.write(pre); writer.write("rest.html");                         writer.write(postHigh);
-        writer.write(pre); writer.write("search/index.html");                 writer.write(postHigh); 
+        writer.write(pre); writer.write("search/advanced.html?" +
+            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh); 
+        writer.write(pre); writer.write("search/index.html?" +
+            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh); 
         writer.write(pre); writer.write("slidesorter.html");                  writer.write(postHigh);
         if (EDStatic.sosActive) {
         writer.write(pre); writer.write("sos/documentation.html");            writer.write(postHigh);
-        writer.write(pre); writer.write("sos/index.html");                    writer.write(postHigh);
+        writer.write(pre); writer.write("sos/index.html?" +
+            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh);
         }
         writer.write(pre); writer.write("subscriptions/index.html");          writer.write(postHigh); 
         writer.write(pre); writer.write("subscriptions/add.html");            writer.write(postMed); 
@@ -1770,13 +1867,16 @@ public class Erddap extends HttpServlet {
         writer.write(pre); writer.write("subscriptions/list.html");           writer.write(postMed); 
         writer.write(pre); writer.write("subscriptions/remove.html");         writer.write(postMed);
         writer.write(pre); writer.write("tabledap/documentation.html");       writer.write(postHigh);
-        writer.write(pre); writer.write("tabledap/index.html");               writer.write(postHigh);
+        writer.write(pre); writer.write("tabledap/index.html?" +
+            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh);
         if (EDStatic.wcsActive) {
         writer.write(pre); writer.write("wcs/documentation.html");            writer.write(postHigh);
-        writer.write(pre); writer.write("wcs/index.html");                    writer.write(postHigh);
+        writer.write(pre); writer.write("wcs/index.html?" +
+            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh);
         }
         writer.write(pre); writer.write("wms/documentation.html");            writer.write(postHigh);
-        writer.write(pre); writer.write("wms/index.html");                    writer.write(postHigh);
+        writer.write(pre); writer.write("wms/index.html?" +
+            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh);
 
         //special links only for ERD's erddap
         if (EDStatic.baseUrl.equals("http://coastwatch.pfeg.noaa.gov")) {
@@ -1786,7 +1886,8 @@ public class Erddap extends HttpServlet {
         }
 
         //write the dataset .html, .subset, .graph, wms, wcs, sos, ... urls
-        StringArray sa = gridDatasetIDs(true);
+        StringArray sa = gridDatasetIDs();
+        sa.sortIgnoreCase();
         int n = sa.size();
         String gPre = pre + "griddap/";
         String iPre = pre + "info/";
@@ -1795,7 +1896,7 @@ public class Erddap extends HttpServlet {
         String cPre = pre + "wcs/";
         String mPre = pre + "wms/";
         for (int i = 0; i < n; i++) {
-            //don't inlude index/datasetID, .das, .dds; better that people go to .html or .graph
+            //don't include index/datasetID, .das, .dds; better that people go to .html or .graph
             String dsi = sa.get(i);
             writer.write(gPre); writer.write(dsi); writer.write(".html");        writer.write(postMed);    
             writer.write(iPre); writer.write(dsi); writer.write("/index.html");  writer.write(postLow);
@@ -1805,7 +1906,7 @@ public class Erddap extends HttpServlet {
                 if (edd.accessibleViaMAG().length() == 0) {
                     writer.write(gPre); writer.write(dsi); writer.write(".graph");       writer.write(postMed);
                 }
-                if (EDStatic.wcsActive && edd.accessibleViaWCS().length() == 0) {
+                if (edd.accessibleViaWCS().length() == 0) {
                     writer.write(cPre); writer.write(dsi); writer.write("/index.html");  writer.write(postLow);
                 }
                 if (edd.accessibleViaWMS().length() == 0) {
@@ -1814,7 +1915,8 @@ public class Erddap extends HttpServlet {
             }
         }
 
-        sa = tableDatasetIDs(true);
+        sa = tableDatasetIDs();
+        sa.sortIgnoreCase(); 
         n = sa.size();
         for (int i = 0; i < n; i++) {
             String dsi = sa.get(i);
@@ -1829,7 +1931,7 @@ public class Erddap extends HttpServlet {
                 if (edd.accessibleViaSubset().length() == 0) {
                     writer.write(tPre); writer.write(dsi); writer.write(".subset");      writer.write(postMed);
                 }
-                if (EDStatic.sosActive && edd.accessibleViaSOS().length() == 0) {
+                if (edd.accessibleViaSOS().length() == 0) {
                     writer.write(sPre); writer.write(dsi); writer.write("/index.html");  writer.write(postLow);
                 }
             }
@@ -1857,7 +1959,8 @@ public class Erddap extends HttpServlet {
      * This is used to generate examples for the plainFileTypes in the method above.
      * 
      * @param tErddapUrl  from EDStatic.erddapUrl(loggedInAs)  (erddapUrl, or erddapHttpsUrl if user is logged in)
-     * @param relativeUrl e.g., "/griddap/index"
+     * @param relativeUrl without the fileType, e.g., "/griddap/index"  (no "?" or "?query" at end)
+     * @param query  after the "?",  e.g., "searchfor=temperature" or ""
      * @return a string with a series of html links to information about the plainFileTypes
      */
     protected String plainLinkExamples(String tErddapUrl,
@@ -1867,7 +1970,8 @@ public class Erddap extends HttpServlet {
         int n = plainFileTypes.length;
         for (int pft = 0; pft < n; pft++) {
             sb.append(
-                "    <a href=\"" + tErddapUrl + relativeUrl + plainFileTypes[pft] + query + "\">" + 
+                "    <a href=\"" + tErddapUrl + relativeUrl + plainFileTypes[pft] + 
+                EDStatic.questionQuery(query) + "\">" + 
                 plainFileTypes[pft] + "</a>");
             if (pft <= n - 3) sb.append(",\n");
             if (pft == n - 2) sb.append(", or\n");
@@ -1875,6 +1979,7 @@ public class Erddap extends HttpServlet {
         }
         return sb.toString();
     }
+
 
     /**
      * Process a grid or table OPeNDAP DAP-style request.
@@ -1918,7 +2023,8 @@ public class Erddap extends HttpServlet {
             //redirect to index.html
             if (endOfRequestUrl.equals("") ||
                 endOfRequestUrl.equals("index.htm")) {
-                response.sendRedirect(tErddapUrl + "/" + protocol + "/index.html");
+                response.sendRedirect(tErddapUrl + "/" + protocol + "/index.html?" +
+                    EDStatic.passThroughPIppQueryPage1(request));  
                 return;
             }      
             
@@ -1935,8 +2041,8 @@ public class Erddap extends HttpServlet {
                 OutputStream out = outSource.outputStream("ISO-8859-1");
                 Writer writer = new OutputStreamWriter(out, "ISO-8859-1");
                 writer.write( 
-                    "Core Version: " + dapVersion + OpendapHelper.EOL + //see EOL definition for comments
-                    "Server Version: " + serverVersion + OpendapHelper.EOL +
+                    "Core Version: "   + EDStatic.dapVersion    + OpendapHelper.EOL + //see EOL definition for comments
+                    "Server Version: " + EDStatic.serverVersion + OpendapHelper.EOL +
                     "ERDDAP_version: " + EDStatic.erddapVersion + OpendapHelper.EOL); 
 
                 //DODSServlet always does this if successful     done automatically?
@@ -1997,9 +2103,17 @@ public class Erddap extends HttpServlet {
 
             //get the datasetID and requested fileType
             int dotPo = endOfRequestUrl.lastIndexOf('.');
-            if (dotPo < 0) 
-                throw new SimpleException("URL error: " +
-                    "No file type (e.g., .html) was specified after the datasetID.");
+            if (dotPo < 0) {
+                //no fileType
+                response.sendRedirect(
+                    EDStatic.baseUrl(loggedInAs) + request.getRequestURI() + ".html" +
+                    (endOfRequestUrl.startsWith("index")? 
+                        "?" + EDStatic.passThroughPIppQueryPage1(request) : ""));  
+                return;               
+                //before 2012-01-19 was
+                //throw new SimpleException("URL error: " +
+                //    "No file type (e.g., .html) was specified after the datasetID.");
+            }
 
             String id = endOfRequestUrl.substring(0, dotPo);
             fileTypeName = endOfRequestUrl.substring(dotPo);
@@ -2018,7 +2132,7 @@ public class Erddap extends HttpServlet {
                 (EDD)tableDatasetHashMap.get(id);
             if (dataset == null) {
                 sendResourceNotFoundError(request, response, 
-                    "Currently unknown datasetID=" + id);
+                    MessageFormat.format(EDStatic.unknownDatasetID, id));
                 return;
             }
             if (!dataset.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //listPrivateDatasets doesn't apply
@@ -2058,9 +2172,7 @@ public class Erddap extends HttpServlet {
             //if EDDGridFromErddap or EDDTableFromErddap, forward request
             //Note that .html and .graph are handled locally so links on web pages 
             //  are for this server and the reponses can be handled quickly.
-            String tqs = request.getQueryString();  //still encoded
-            if (tqs == null) tqs = "";
-            if (tqs.length() > 0) tqs = "?" + tqs;
+            String tqs = EDStatic.questionQuery(request.getQueryString());  //still encoded
             if (dataset instanceof FromErddap) {
                 FromErddap fromErddap = (FromErddap)dataset;
                 double sourceVersion = fromErddap.sourceErddapVersion();
@@ -2192,7 +2304,7 @@ public class Erddap extends HttpServlet {
 
 
     /**
-     * This sends the list of graph or table datasets
+     * This sends the list of griddap, tabledap, sos, wcs, wms datasets
      *
      * @param request
      * @param response
@@ -2204,60 +2316,152 @@ public class Erddap extends HttpServlet {
     public void sendDatasetList(HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String protocol, String fileTypeName) throws Throwable {
 
-        //is it a valid fileTypeName?
+        String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
+        String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl(), pre "?"
+
+        //ensure valid fileTypeName
         int pft = String2.indexOf(plainFileTypes, fileTypeName);
         if (pft < 0 && !fileTypeName.equals(".html")) {
-            sendResourceNotFoundError(request, response, "Unsupported fileType=" + fileTypeName);
+            sendResourceNotFoundError(request, response, 
+                MessageFormat.format(EDStatic.unsupportedFileType, fileTypeName));
             return;
         }
 
+        //ensure query has simplistically valid page= itemsPerPage=
+        if (!Arrays.equals(
+                EDStatic.getRawRequestedPIpp(request),
+                EDStatic.getRequestedPIpp(request))) {
+            response.sendRedirect(
+                EDStatic.baseUrl(loggedInAs) + requestUrl + "?" +
+                EDStatic.passThroughJsonpQuery(request) +
+                EDStatic.passThroughPIppQuery(request));  //should be nothing else in query
+            return;
+        }      
+
         //gather the datasetIDs and descriptions
-        String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
+        String roles[] = EDStatic.getRoles(loggedInAs);
         StringArray ids;
+        StringArray titles;
         String description;  
         if      (protocol.equals("griddap")) {
-            ids = gridDatasetIDs(true);
+            StringArray tids = gridDatasetIDs();
+            int ntids = tids.size();
+            titles = new StringArray(ntids, false);
+            ids    = new StringArray(ntids, false);
+            for (int ti = 0; ti < ntids; ti++) {
+                EDD edd = (EDD)gridDatasetHashMap.get(tids.get(ti));
+                if (edd != null && //if just deleted
+                    (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+                    titles.add(edd.title());
+                    ids.add(   edd.datasetID());
+                }
+            }
             description = EDStatic.EDDGridDapDescription;
         } else if (protocol.equals("tabledap")) {
-            ids = tableDatasetIDs(true);
+            StringArray tids = tableDatasetIDs();
+            int ntids = tids.size();
+            titles = new StringArray(ntids, false);
+            ids    = new StringArray(ntids, false);
+            for (int ti = 0; ti < ntids; ti++) {
+                EDD edd = (EDD)tableDatasetHashMap.get(tids.get(ti));
+                if (edd != null && //if just deleted
+                    (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+                    titles.add(edd.title());
+                    ids.add(   edd.datasetID());
+                }
+            }
             description = EDStatic.EDDTableDapDescription;
         } else if (EDStatic.sosActive && protocol.equals("sos")) {
-            ids = new StringArray();
-            StringArray tids = tableDatasetIDs(true);
-            for (int ti = 0; ti < tids.size(); ti++) {
-                EDDTable eddTable = (EDDTable)tableDatasetHashMap.get(tids.get(ti));
-                if (eddTable != null && //if just deleted
-                    eddTable.accessibleViaSOS().length() == 0) 
-                    ids.add(eddTable.datasetID());
+            StringArray tids = tableDatasetIDs();
+            int ntids = tids.size();
+            titles = new StringArray(ntids, false);
+            ids    = new StringArray(ntids, false);
+            for (int ti = 0; ti < ntids; ti++) {
+                EDD edd = (EDD)tableDatasetHashMap.get(tids.get(ti));
+                if (edd != null && //if just deleted
+                    edd.accessibleViaSOS().length() == 0 &&
+                    (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+                    titles.add(edd.title());
+                    ids.add(   edd.datasetID());
+                }
             }
             description = EDStatic.sosDescriptionHtml +
                "<br>For details, see the 'S'OS links below.";
         } else if (EDStatic.wcsActive && protocol.equals("wcs")) {
-            ids = new StringArray();
-            StringArray gids = gridDatasetIDs(true);
-            for (int gi = 0; gi < gids.size(); gi++) {
-                EDDGrid eddGrid = (EDDGrid)gridDatasetHashMap.get(gids.get(gi));
-                if (eddGrid != null && //if just deleted
-                    eddGrid.accessibleViaWCS().length() == 0) 
-                    ids.add(eddGrid.datasetID());
+            StringArray tids = gridDatasetIDs();
+            int ntids = tids.size();
+            titles = new StringArray(ntids, false);
+            ids    = new StringArray(ntids, false);
+            for (int ti = 0; ti < ntids; ti++) {
+                EDD edd = (EDD)gridDatasetHashMap.get(tids.get(ti));
+                if (edd != null && //if just deleted
+                    edd.accessibleViaWCS().length() == 0 &&
+                    (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+                    titles.add(edd.title());
+                    ids.add(   edd.datasetID());
+                }
             }
             description = EDStatic.wcsDescriptionHtml;
         } else if (protocol.equals("wms")) {
-            ids = new StringArray();
-            StringArray gids = gridDatasetIDs(true);
-            for (int gi = 0; gi < gids.size(); gi++) {
-                EDDGrid eddGrid = (EDDGrid)gridDatasetHashMap.get(gids.get(gi));
-                if (eddGrid != null && //if just deleted
-                    eddGrid.accessibleViaWMS().length() == 0) 
-                    ids.add(eddGrid.datasetID());
+            StringArray tids = gridDatasetIDs();
+            int ntids = tids.size();
+            titles = new StringArray(ntids, false);
+            ids    = new StringArray(ntids, false);
+            for (int ti = 0; ti < ntids; ti++) {
+                EDD edd = (EDD)gridDatasetHashMap.get(tids.get(ti));
+                if (edd != null && //if just deleted
+                    edd.accessibleViaWMS().length() == 0 &&
+                    (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+                    titles.add(edd.title());
+                    ids.add(   edd.datasetID());
+                }
             }
             description = EDStatic.wmsDescriptionHtml;
         } else {
-            sendResourceNotFoundError(request, response, "Unknown protocol=" + protocol);
+            sendResourceNotFoundError(request, response, 
+                MessageFormat.format(EDStatic.unknownProtocol, protocol));
             return;
         }
 
-        String uProtocol = protocol.equals("sos") || protocol.equals("wcs") || protocol.equals("wms")? 
+        //sortByTitle
+        Table table = new Table();
+        table.addColumn("title", titles); 
+        table.addColumn("id",    ids);
+        table.leftToRightSortIgnoreCase(2);
+        titles = null;
+        table = null;
+
+        //calculate Page ItemsPerPage  (part of: list by protocol)
+        int nMatches = ids.size();
+        int pIpp[] = EDStatic.calculatePIpp(request, nMatches);
+        int page         = pIpp[0]; //will be 1... 
+        int itemsPerPage = pIpp[1]; //will be 1...
+        int startIndex   = pIpp[2]; //will be 0...
+        int lastPage     = pIpp[3]; //will be 1...
+
+        //reduce datasetIDs to ones on requested page
+        //IMPORTANT!!! For this to work correctly, datasetIDs must be
+        //  accessibleTo loggedInAs (or EDStatic.listPrivateDatasets)
+        //  and in final sorted order.   
+        //  (True here)
+        //Order of removal: more efficient to remove items at end, then items at beginning.
+        if (startIndex + itemsPerPage < nMatches) 
+            ids.removeRange(startIndex + itemsPerPage, nMatches);
+        ids.removeRange(0, Math.min(startIndex, nMatches));
+
+        //if non-null, error will be String[2]
+        String error[] = null;
+        if (nMatches == 0) {
+            error = new String[] {
+                MessageFormat.format(EDStatic.noDatasetWith, "protocol=\"" + protocol + "\""),
+                ""};
+        } else if (page > lastPage) {
+            error = EDStatic.noPage(page, lastPage);
+        }
+        
+        //clean up description
+        String uProtocol = protocol.equals("sos") || protocol.equals("wcs") || 
+                           protocol.equals("wms")? 
             protocol.toUpperCase() : protocol;
         description = String2.replaceAll(description, '\n', ' '); //remove inherent breaks
         description =
@@ -2266,25 +2470,32 @@ public class Erddap extends HttpServlet {
 
         //you can't use noLongLinesAtSpace for fear of  "<a <br>href..."
         if (!protocol.equals("sos"))
-            description +=
-            "\n<br>For details, see ERDDAP's <a href=\"" + tErddapUrl + "/" + protocol +  
-            "/documentation.html\">" + uProtocol + " Documentation</a>.\n";
-        
+            description += "\n<br>" + 
+                MessageFormat.format(EDStatic.seeProtocolDocumentation,
+                    tErddapUrl, protocol, uProtocol) +
+                "\n";
+
         //handle plainFileTypes   
+        boolean sortByTitle = false;  //sorted above
         if (pft >= 0) {
+            if (error != null) 
+                throw new SimpleException(error[0] + " " + error[1]);
+
             //make the plain table with the dataset list
-            Table table = makePlainDatasetTable(loggedInAs, ids, true, fileTypeName);  
+            table = makePlainDatasetTable(loggedInAs, ids, sortByTitle, fileTypeName);  
             sendPlainTable(loggedInAs, request, response, table, protocol, fileTypeName);
             return;
         }
 
 
         //make the html table with the dataset list
-        Table table = makeHtmlDatasetTable(loggedInAs, ids, true);  
+        table = makeHtmlDatasetTable(loggedInAs, ids, sortByTitle);  
 
         //display start of web page
         OutputStream out = getHtmlOutputStream(request, response);
-        Writer writer = getHtmlWriter(loggedInAs, "List of " + uProtocol + " Datasets", out); 
+        Writer writer = getHtmlWriter(loggedInAs, 
+            MessageFormat.format(EDStatic.listOfDatasets, uProtocol),
+            out); 
         try {
             writer.write(
                 //EDStatic.youAreHere(loggedInAs, uProtocol));
@@ -2294,25 +2505,45 @@ public class Erddap extends HttpServlet {
                     description,
                     //Or, View All Datasets
                     "&nbsp;\n" +
-                    "<br>" + getSearchFormHtml(loggedInAs, "Or, ", ":\n<br>", "") +
-                    "<p>" + getCategoryLinksHtml(tErddapUrl) +
-                    "<p>Or, Refine this Search with " + 
-                        getAdvancedSearchLink(loggedInAs, "protocol=" + uProtocol) + 
+                    "<br>" + getSearchFormHtml(request, loggedInAs, EDStatic.orComma, ":\n<br>", "") +
+                    "<p>" + getCategoryLinksHtml(request, tErddapUrl) +
+                    "<p>" + EDStatic.orRefineSearchWith + 
+                        getAdvancedSearchLink(loggedInAs, 
+                            EDStatic.passThroughPIppQueryPage1(request) + 
+                            "&protocol=" + uProtocol) + 
                     "&nbsp;&nbsp;&nbsp;"));
 
 
-            if (table.nRows() == 0) {
-                writer.write("\n<h2>" + EDStatic.noDatasetWith + " protocol = \"" + protocol + "\"</h2>");
-            } else {
-                writer.write("\n<h2>Datasets Which Can Be Accessed via " + uProtocol + "</h2>\n"
-                    //+ "(Or, refine this search with " + 
-                    //    getAdvancedSearchLink(loggedInAs, "protocol=" + uProtocol) + ")\n" +
-                    //+ EDStatic.clickAccessHtml + "\n" +
-                    //"<br>&nbsp;\n"
-                    );
+            writer.write("\n<h2>" + 
+                MessageFormat.format(EDStatic.listOfDatasets, uProtocol) + 
+                "</h2>\n");
+
+            if (error == null) {
+                String nMatchingHtml = EDStatic.nMatchingDatasetsHtml(
+                    nMatches, page, lastPage, false, //=alphabetical
+                    EDStatic.baseUrl(loggedInAs) + requestUrl + 
+                    EDStatic.questionQuery(request.getQueryString()));
+
+                writer.write(nMatchingHtml +
+                    "<br>&nbsp;\n");
+
                 table.saveAsHtmlTable(writer, "commonBGColor", null, 1, false, -1, false, false);        
-                writer.write("<p>" + table.nRows() + " " + EDStatic.nDatasetsListed + "\n");
-            }
+
+                if (lastPage > 1)
+                    writer.write("\n<p>" + nMatchingHtml);
+
+                //list plain file types
+                writer.write(
+                    "\n" +
+                    "<p>" + EDStatic.restfulInformationFormats + " \n(" +
+                    plainFileTypesString + //not links, which would be indexed by search engines
+                    ") <a href=\"" + tErddapUrl + "/rest.html\">" + 
+                        EDStatic.restfulViaService + "</a>.\n" +
+                    "\n");
+            } else {
+                writer.write(XML.encodeAsHTML(error[0] + " " + error[1]) + "\n");
+            } 
+
         } catch (Throwable t) {
             writer.write(EDStatic.htmlForException(t));
         }
@@ -2352,7 +2583,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
         //catch other reponses outside of try/catch  (so errors handled in doGet)
         if (endOfRequestUrl.equals("") || endOfRequestUrl.equals("index.htm")) {
-            response.sendRedirect(tErddapUrl + "/sos/index.html");
+            response.sendRedirect(tErddapUrl + "/sos/index.html?" + 
+                EDStatic.passThroughPIppQueryPage1(request));
             return;
         }
 
@@ -2375,7 +2607,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         EDDTable eddTable = (EDDTable)tableDatasetHashMap.get(tDatasetID);
         if (eddTable == null) {
             sendResourceNotFoundError(request, response, 
-                "Currently unknown datasetID=" + tDatasetID);
+                MessageFormat.format(EDStatic.unknownDatasetID, tDatasetID));
             return;
         }
 
@@ -2449,8 +2681,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             //if service= is present, it must be service=SOS     //technically, it is required
             String tService = queryMap.get("service"); 
             if (tService != null && !tService.equals("SOS")) 
-                //this format "Query error: xxx=" is parsed by Erddap section "deal with SOS error"
-                throw new SimpleException("Query error: service='" + tService + "' must be 'SOS'."); 
+                //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
+                throw new SimpleException(EDStatic.queryError + "service='" + tService + "' must be 'SOS'."); 
 
             //deal with the various request= options
             String tRequest = queryMap.get("request");
@@ -2478,23 +2710,23 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 //version is not required. If present, it must be valid.
                 String version = queryMap.get("version");  //map keys are lowercase
                 if (version == null || !version.equals(EDDTable.sosVersion))
-                    //this format "Query error: xxx=" is parsed by Erddap section "deal with SOS error"
-                    throw new SimpleException("Query error: version='" + version + 
+                    //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
+                    throw new SimpleException(EDStatic.queryError + "version='" + version + 
                         "' must be '" + EDDTable.sosVersion + "'."); 
 
                 //outputFormat is not required. If present, it must be valid.
                 //not different name and values than GetObservation responseFormat
                 String outputFormat = queryMap.get("outputformat");  //map keys are lowercase
                 if (outputFormat == null || !outputFormat.equals(EDDTable.sosDSOutputFormat))
-                    //this format "Query error: xxx=" is parsed by Erddap section "deal with SOS error"
-                    throw new SimpleException("Query error: outputFormat='" + outputFormat + 
+                    //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
+                    throw new SimpleException(EDStatic.queryError + "outputFormat='" + outputFormat + 
                         "' must be '" + SSR.minimalPercentEncode(EDDTable.sosDSOutputFormat) + "'."); 
 
                 //procedure=fullSensorID is required   (in getCapabilities, procedures are sensors)
                 String procedure = queryMap.get("procedure");  //map keys are lowercase
                 if (procedure == null)
-                //this format "Query error: xxx=" is parsed by Erddap section "deal with SOS error"
-                    throw new SimpleException("Query error: procedure=''.  Please specify a procedure."); 
+                //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
+                    throw new SimpleException(EDStatic.queryError + "procedure=''.  Please specify a procedure."); 
                 String sensorGmlNameStart = eddTable.getSosGmlNameStart("sensor");
                 String shortName = procedure.startsWith(sensorGmlNameStart)?
                     procedure.substring(sensorGmlNameStart.length()) : procedure;
@@ -2506,8 +2738,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 //}         
                 if (!shortName.equals(eddTable.datasetID()) &&    //all
                     eddTable.sosOfferings.indexOf(shortName) < 0) //1 station
-                    //this format "Query error: xxx=" is parsed by Erddap section "deal with SOS error"
-                    throw new SimpleException("Query error: procedure=" + procedure +
+                    //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
+                    throw new SimpleException(EDStatic.queryError + "procedure=" + procedure +
                         " isn't a valid long or short sensor name."); 
                 //if ((!sensor.equals(eddTable.datasetID()) &&    //all
                 //     String2.indexOf(eddTable.dataVariableDestinationNames(), sensor) < 0) || //1 variable
@@ -2516,8 +2748,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 //        sensor.equals(EDV.ALT_NAME) ||
                 //        sensor.equals(EDV.TIME_NAME) ||
                 //        sensor.equals(eddTable.dataVariableDestinationNames()[eddTable.idIndex()])) 
-                //    this format "Query error: xxx=" is parsed by Erddap section "deal with SOS error"
-                //    throw new SimpleException("Query error: procedure=" + procedure + " isn't valid because \"" +
+                //    this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
+                //    throw new SimpleException(EDStatic.queryError + "procedure=" + procedure + " isn't valid because \"" +
                 //        sensor + "\" isn't valid sensor name."); 
 
                 //all is well. do it.
@@ -2536,8 +2768,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 String responseFormat = queryMap.get("responseformat");  //map keys are lowercase
                 String fileTypeName = EDDTable.sosResponseFormatToFileTypeName(responseFormat);
                 if (fileTypeName == null)
-                    //this format "Query error: xxx=" is parsed by Erddap section "deal with SOS error"
-                    throw new SimpleException("Query error: responseFormat=" + responseFormat + " is invalid."); 
+                    //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
+                    throw new SimpleException(EDStatic.queryError + "responseFormat=" + responseFormat + " is invalid."); 
 
                 String responseMode = queryMap.get("responsemode");  //map keys are lowercase
                 if (responseMode == null)
@@ -2567,13 +2799,13 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 return;
 
             } else {
-                //this format "Query error: xxx=" is parsed by Erddap section "deal with SOS error"
-                throw new SimpleException("Query error: request=" + tRequest + " is not supported."); 
+                //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
+                throw new SimpleException(EDStatic.queryError + "request=" + tRequest + " is not supported."); 
             }
 
         } catch (Throwable t) {
 
-            //deal with the SOS error
+            //deal with SOS error
             //catch errors after the response has begun
             if (neededToSendErrorCode(request, response, t))
                 return;
@@ -2599,8 +2831,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             String locator = null;               //default
 
             //catch InvalidParameterValue 
-            //Look for "Query error: xxx="
-            String qe = "Query error: ";
+            //Look for EDStatic.queryError + "xxx="
+            String qe = EDStatic.queryError;
             int qepo = error.indexOf(qe);
             int epo = error.indexOf('=');
             if (qepo >= 0 && epo > qepo && epo - qepo < 17 + 20) {
@@ -2647,14 +2879,17 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "\n" +
                 "<h2>Overview</h2>\n" +
                 "In addition to making data available via \n" +
-                  "<a href=\"" + tErddapUrl + "/griddap/index.html\">gridddap</a> and \n" +
-                  "<a href=\"" + tErddapUrl + "/tabledap/index.html\">tabledap</a>, \n" + 
+                  "<a href=\"" + tErddapUrl + "/griddap/index.html?" + 
+                      EDStatic.encodedDefaultPIppQuery + "\">gridddap</a> and \n" +
+                  "<a href=\"" + tErddapUrl + "/tabledap/index.html?" + 
+                      EDStatic.encodedDefaultPIppQuery + "\">tabledap</a>, \n" + 
                   "ERDDAP makes some datasets\n" +
                 "<br>available via ERDDAP's Sensor Observation Service (SOS) web service.\n" +
                 "\n" +
                 "<p>" + EDStatic.sosLongDescriptionHtml + 
                 "<p>See the\n" +
-                "<a href=\"" + tErddapUrl + "/sos/index.html\">list of datasets available via SOS</a>\n" +
+                "<a href=\"" + tErddapUrl + "/sos/index.html?" + 
+                    EDStatic.encodedDefaultPIppQuery + "\">list of datasets available via SOS</a>\n" +
                 "at this ERDDAP installation.\n" +
                 "<br>The SOS web pages listed there for each dataset have further documentation and sample requests.\n" +
                 "\n");
@@ -2691,7 +2926,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
         //catch other reponses outside of try/catch  (so errors handled in doGet)
         if (endOfRequestUrl.equals("") || endOfRequestUrl.equals("index.htm")) {
-            response.sendRedirect(tErddapUrl + "/wcs/index.html");
+            response.sendRedirect(tErddapUrl + "/wcs/index.html?" + 
+                EDStatic.passThroughPIppQueryPage1(request));
             return;
         }
 
@@ -2714,7 +2950,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         EDDGrid eddGrid = (EDDGrid)gridDatasetHashMap.get(tDatasetID);
         if (eddGrid == null) {
             sendResourceNotFoundError(request, response, 
-                "Currently unknown datasetID=" + tDatasetID);
+                MessageFormat.format(EDStatic.unknownDatasetID, tDatasetID));
             return;
         }
 
@@ -2772,7 +3008,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             //if service= is present, it must be service=WCS     //technically, it is required
             String tService = queryMap.get("service"); 
             if (tService != null && !tService.equals("WCS"))
-                throw new SimpleException("Query error: service='" + tService + "' must be 'WCS'."); 
+                throw new SimpleException(EDStatic.queryError + "service='" + tService + "' must be 'WCS'."); 
 
             //deal with the various request= options
             String tRequest = queryMap.get("request"); //test .toLowerCase() 
@@ -2816,7 +3052,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 String tResponseFormats[] = EDDGrid.wcsResponseFormats100; //version100? wcsResponseFormats100 : wcsResponseFormats112;
                 int fi = String2.caseInsensitiveIndexOf(tRequestFormats, requestFormat);
                 if (fi < 0)
-                    throw new SimpleException("Query error: format=" + requestFormat + " isn't supported."); 
+                    throw new SimpleException(EDStatic.queryError + "format=" + requestFormat + " isn't supported."); 
                 String erddapFormat = tResponseFormats[fi];
                 int efe = String2.indexOf(EDDGrid.dataFileTypeNames, erddapFormat);
                 String fileExtension;
@@ -2827,7 +3063,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                     if (efe >= 0) {
                         fileExtension = EDDGrid.imageFileTypeExtensions[efe];
                     } else {
-                        throw new SimpleException("Query error: format=" + requestFormat + " isn't supported!"); //slightly different
+                        throw new SimpleException(EDStatic.queryError + "format=" + requestFormat + " isn't supported!"); //slightly different
                     }
                 }                   
 
@@ -2840,7 +3076,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 return;
 
             } else {
-                throw new SimpleException("Query error: request='" + tRequest + "' is not supported."); 
+                throw new SimpleException(EDStatic.queryError + "request='" + tRequest + "' is not supported."); 
             }
 
         } catch (Throwable t) {
@@ -2895,12 +3131,15 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "\n" +
                 "<h2>Overview</h2>\n" +
                 "In addition to making data available via \n" +
-                "<a href=\"" + tErddapUrl + "/griddap/index.html\">gridddap</a> and \n" +
-                "<a href=\"" + tErddapUrl + "/tabledap/index.html\">tabledap</a>,\n" + 
+                "<a href=\"" + tErddapUrl + "/griddap/index.html?" + 
+                    EDStatic.encodedDefaultPIppQuery + "\">gridddap</a> and \n" +
+                "<a href=\"" + tErddapUrl + "/tabledap/index.html?" + 
+                    EDStatic.encodedDefaultPIppQuery + "\">tabledap</a>,\n" + 
                 "ERDDAP makes some datasets available via ERDDAP's Web Coverage Service (WCS) web service.\n" +
                 "\n" +
                 "<p>See the\n" +
-                "<a href=\"" + tErddapUrl + "/wcs/index.html\">list of datasets available via WCS</a>\n" +
+                "<a href=\"" + tErddapUrl + "/wcs/index.html?" + 
+                    EDStatic.encodedDefaultPIppQuery + "\">list of datasets available via WCS</a>\n" +
                 "at this ERDDAP installation.\n" +
                 "\n" +
                 "<p>" + EDStatic.wcsLongDescriptionHtml + "\n" +
@@ -2948,7 +3187,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
         //catch other reponses outside of try/catch  (so errors handled in doGet)
         if (endOfRequestUrl.equals("") || endOfRequestUrl.equals("index.htm")) {
-            response.sendRedirect(tErddapUrl + "/wms/index.html");
+            response.sendRedirect(tErddapUrl + "/wms/index.html?" +
+                EDStatic.encodedPassThroughPIppQueryPage1(request));
             return;
         }
         if (endEnd.length() == 0 && endOfRequestUrl.startsWith("index.")) {
@@ -2972,7 +3212,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             return;
         }
 
-        //if (endOfRequestUrl.equals(WMS_SERVER)) {
+        //if (endOfRequestUrl.equals(EDD.WMS_SERVER)) {
         //    doWmsRequest(request, response, loggedInAs, "", userQuery); //all datasets
         //    return;
         //}
@@ -2987,7 +3227,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
             //request is for /wms/datasetID/...
             if (endEnd.equals("") || endEnd.equals("index.htm")) {
-                response.sendRedirect(tErddapUrl + "/wms/index.html");
+                response.sendRedirect(tErddapUrl + "/wms/index.html?" +
+                    EDStatic.passThroughPIppQueryPage1(request));
                 return;
             }
 
@@ -2995,7 +3236,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 doWmsOpenLayers(request, response, loggedInAs, "1.3.0", tDatasetID);
                 return;
             }
-            if (endEnd.equals(WMS_SERVER)) {
+            if (endEnd.equals(EDD.WMS_SERVER)) {
                 //if eddGrid instanceof EDDGridFromErddap, redirect the request
                 if (eddGrid instanceof EDDGridFromErddap && 
                     //earlier versions of wms work ~differently
@@ -3014,7 +3255,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                     //handle percent encoded or not
                     String tQuery = String2.replaceAll(userQuery, fe.datasetID() + "%3A", sourceDatasetID + "%3A");
                     tQuery =        String2.replaceAll(tQuery,    fe.datasetID() + ":",   sourceDatasetID + ":");
-                    tUrl = String2.replaceAll(tUrl, "/griddap/", "/wms/") + "/" + WMS_SERVER + 
+                    tUrl = String2.replaceAll(tUrl, "/griddap/", "/wms/") + "/" + EDD.WMS_SERVER + 
                         "?" + tQuery;
                     if (verbose) String2.log("redirected to " + tUrl);
                     response.sendRedirect(tUrl);  
@@ -3052,7 +3293,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             //must be service=WMS     but I don't require it
             String tService = queryMap.get("service");
             //if (tService == null || !tService.equals("WMS"))
-            //    throw new SimpleException("Query error: service='" + tService + "' must be 'WMS'."); 
+            //    throw new SimpleException(EDStatic.queryError + "service='" + tService + "' must be 'WMS'."); 
 
             //deal with different request=
             String tRequest = queryMap.get("request");
@@ -3072,7 +3313,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
             //if (tRequest.equals("GetFeatureInfo")) { //optional, not yet supported
 
-            throw new SimpleException("Query error: request='" + tRequest + "' isn't supported."); 
+            throw new SimpleException(EDStatic.queryError + "request='" + tRequest + "' isn't supported."); 
 
         } catch (Throwable t) {
 
@@ -3119,7 +3360,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         String loggedInAs) throws Throwable {
        
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
-        String e0 = tErddapUrl + "/wms/" + EDStatic.wmsSampleDatasetID + "/" + WMS_SERVER + "?"; 
+        String e0 = tErddapUrl + "/wms/" + EDStatic.wmsSampleDatasetID + "/" + EDD.WMS_SERVER + "?"; 
         String ec = "service=WMS&amp;request=GetCapabilities&amp;version=";
         String e1 = "service=WMS&amp;version="; 
         String e2 = "&amp;request=GetMap&amp;bbox=" + EDStatic.wmsSampleBBox +
@@ -3131,7 +3372,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         String e2b = "rs=EPSG:4326&amp;width=360&amp;height=" + tHeight + 
             "&amp;bgcolor=0x808080&amp;layers=";
         //Land,erdBAssta5day:sst,Coastlines,LakesAndRivers,Nations,States
-        String e3 = EDStatic.wmsSampleDatasetID + WMS_SEPARATOR + EDStatic.wmsSampleVariable;
+        String e3 = EDStatic.wmsSampleDatasetID + EDD.WMS_SEPARATOR + EDStatic.wmsSampleVariable;
         String e4 = "&amp;styles=&amp;format=image/png";
         String et = "&amp;transparent=TRUE";
 
@@ -3151,12 +3392,16 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         try {
             String likeThis = "<a href=\"" + tErddapUrl + "/wms/" + EDStatic.wmsSampleDatasetID + 
                      "/index.html\">like this</a>";
-            String makeAGraphRef = "<a href=\"http://coastwatch.pfeg.noaa.gov/erddap/images/embed.html\">Make A Graph</a>\n";
-            String datasetListRef = "<p>See the <a href=\"" + tErddapUrl + 
-                "/wms/index.html\">list of datasets available via WMS</a> at this ERDDAP installation.\n";
+            String makeAGraphRef = "<a href=\"http://coastwatch.pfeg.noaa.gov/erddap/images/embed.html\">" +
+                EDStatic.mag + "</a>\n";
+            String datasetListRef = 
+                "<p>See the <a href=\"" + tErddapUrl + 
+                "/wms/index.html?" + EDStatic.encodedDefaultPIppQuery + 
+                "\">list of datasets available via WMS</a> at this ERDDAP installation.\n";
             String makeAGraphListRef =
                 "  <br>See the <a href=\"" + tErddapUrl + 
-                   "/info/index.html\">list of datasets with Make A Graph</a> at this ERDDAP installation.\n";
+                "/info/index.html?" + EDStatic.encodedDefaultPIppQuery + 
+                "\">list of datasets with Make A Graph</a> at this ERDDAP installation.\n";
 
             writer.write(
                 //see almost identical documentation at ...
@@ -3177,7 +3422,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "  <br>For example, in ArcGIS (not yet fully working because it doesn't handle time!), use\n" +
                 "  <br>\"Arc Catalog : Add Service : Arc Catalog Servers Folder : GIS Servers : Add WMS Server\".\n" +
                 "  <br>In ERDDAP, each dataset has its own WMS service, which is located at\n" +
-                "  <br>&nbsp; &nbsp; " + tErddapUrl + "/wms/<i>datasetID</i>/" + WMS_SERVER + "?\n" +  
+                "  <br>&nbsp; &nbsp; " + tErddapUrl + "/wms/<i>datasetID</i>/" + EDD.WMS_SERVER + "?\n" +  
                 "  <br>&nbsp; &nbsp; For example: <b>" + e0 + "</b>\n" +  
                 "  <br>(Some WMS client programs don't want the <b>?</b> at the end of that URL.)\n" +
                 datasetListRef +
@@ -3261,7 +3506,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "<h2><a name=\"GetMap\">Forming GetMap URLs</a></h2>\n" +
                 "  A person with a browser or a computer program can generate a special URL to request a map.\n" + 
                 "  <br>The URL must be in the form\n" +
-                "  <br>&nbsp;&nbsp;&nbsp;" + tErddapUrl + "/wms/<i>datasetID</i>/" + WMS_SERVER + "?<i>query</i> " +
+                "  <br>&nbsp;&nbsp;&nbsp;" + tErddapUrl + "/wms/<i>datasetID</i>/" + EDD.WMS_SERVER + "?<i>query</i> " +
                 "  <br>The query for a WMS GetMap request consists of several <i>parameterName=value</i>, separated by '&amp;'.\n" +
                 "  <br>For example,\n" +
                 "  <br>&nbsp; &nbsp; <a href=\"" + tWmsOpaqueExample130 + "\">" + 
@@ -3292,7 +3537,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "    <td>Comma-separated list of one or more map layers.\n" +
                 "        <br>Layers are drawn in the order they occur in the list.\n" +
                 "        <br>Currently in ERDDAP's WMS, the layer names from datasets are named <i>datasetID</i>" + 
-                    WMS_SEPARATOR + "<i>variableName</i> .\n" +
+                    EDD.WMS_SEPARATOR + "<i>variableName</i> .\n" +
                 "        <br>In ERDDAP's WMS, there are five layers not based on ERDDAP datasets:\n" +
                 "        <ul>\n" +
                 "        <li> \"Land\" may be drawn BEFORE (as an under layer) or AFTER (as a land mask) layers from grid datasets.\n" +
@@ -3418,7 +3663,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "<li><b>Grid data layers:</b> In ERDDAP's WMS, all data variables in grid datasets that use\n" +
                 "  <br>longitude and latitude dimensions are available via WMS.\n" +
                 "  <br>Each such variable is available as a WMS layer, with the name <i>datasetID</i>" + 
-                    WMS_SEPARATOR + "<i>variableName</i>.\n" +
+                    EDD.WMS_SEPARATOR + "<i>variableName</i>.\n" +
                 "  <br>Each such layer is transparent (i.e., data values are represented as a range of colors\n" +
                 "  <br>and missing values are represented by transparent pixels).\n" +
                 "<li><b>Table data layers:</b> Currently in ERDDAP's WMS, data variables in table datasets are\n" +
@@ -3440,7 +3685,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "  <br>would be huge (~90 MB) which would take a long time to download (causing many people\n" +
                 "  <br>think something was wrong and give up) and would overwhelm most client software.\n" +
                 //"   <br>However, a WMS server with all of this ERDDAP's datasets does exist.  You can access it at\n" +
-                //"   <br>" + tErddapUrl + "/wms/" + WMS_SERVER + "?\n" + 
+                //"   <br>" + tErddapUrl + "/wms/" + EDD.WMS_SERVER + "?\n" + 
                 "</ul>\n");
 
             writer.write(
@@ -3563,7 +3808,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
             //find mainDatasetID  (if request is from one dataset's wms)
             //Currently, all requests are from one dataset's wms.
-            // http://coastwatch.pfeg.noaa.gov/erddap/wms/erdBAssta5day/WMS_SERVER?service=.....
+            // http://coastwatch.pfeg.noaa.gov/erddap/wms/erdBAssta5day/EDD.WMS_SERVER?service=.....
             String[] requestParts = String2.split(request.getRequestURI(), '/');  //post EDD.baseUrl, pre "?"
             int wmsPart = String2.indexOf(requestParts, "wms");
             String mainDatasetID = null;
@@ -3585,26 +3830,26 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                     if (gPo >= 0) {
                         String rDatasetID = tUrl.substring(gPo + "/griddap/".length()); //rDatasetID is at end of tUrl
                         tUrl = String2.replaceAll(tUrl, "/griddap/", "/wms/");
-                        StringBuilder etUrl = new StringBuilder(tUrl + "/" + WMS_SERVER + "?");
+                        StringBuilder etUrl = new StringBuilder(tUrl + "/" + EDD.WMS_SERVER + "?");
 
                         //change request's layers=mainDatasetID:var,mainDatasetID:var 
                         //              to layers=rDatasetID:var,rDatasetID:var
-                        if (userQuery != null) {
-                            String qParts[] = EDD.getUserQueryParts(userQuery); //always at least 1 part (may be "")
+                        if (userQuery != null) {    
+                            String qParts[] = EDD.getUserQueryParts(userQuery); //decoded.  always at least 1 part (may be "")
                             for (int qpi = 0; qpi < qParts.length; qpi++) {
                                 if (qpi > 0) etUrl.append('&');
 
                                 //this use of replaceAll is perhaps not perfect but very close...
-                                //percentDecode parts, so WMS_SEPARATOR and other chars won't be encoded
+                                //percentDecode parts, so EDD.WMS_SEPARATOR and other chars won't be encoded
                                 String part = qParts[qpi]; 
                                 int epo = part.indexOf('=');
                                 if (epo >= 0) {
                                     part = String2.replaceAll(part, 
-                                        "=" + mainDatasetID + WMS_SEPARATOR, 
-                                        "=" + rDatasetID    + WMS_SEPARATOR);
+                                        "=" + mainDatasetID + EDD.WMS_SEPARATOR, 
+                                        "=" + rDatasetID    + EDD.WMS_SEPARATOR);
                                     part = String2.replaceAll(part, 
-                                        "," + mainDatasetID + WMS_SEPARATOR, 
-                                        "," + rDatasetID    + WMS_SEPARATOR);
+                                        "," + mainDatasetID + EDD.WMS_SEPARATOR, 
+                                        "," + rDatasetID    + EDD.WMS_SEPARATOR);
                                     //encodedKey = encodedValue
                                     etUrl.append(SSR.minimalPercentEncode(part.substring(0, epo)) + "=" +
                                                  SSR.minimalPercentEncode(part.substring(epo + 1)));
@@ -3616,7 +3861,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                         if (verbose) String2.log("doWmsGetMap redirected to\n" + etUrl.toString()); 
                         response.sendRedirect(etUrl.toString()); 
                         return;
-                    } else String2.log("Internal Error: \"/griddap/\" should have been in " +
+                    } else String2.log(EDStatic.errorInternal + "\"/griddap/\" should have been in " +
                         "EDDGridFromErddap.getNextLocalSourceErddapUrl()=" + tUrl + " .");
                 }
             }
@@ -3625,7 +3870,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             if (mainDatasetID != null) 
                 fileName = mainDatasetID + "_" + fileName;
             String cacheDir = mainDatasetID == null? EDStatic.fullWmsCacheDirectory :
-                EDStatic.fullCacheDirectory + mainDatasetID + "/";            
+                EDD.cacheDirectory(mainDatasetID);            
             if (reallyVerbose) String2.log("doWmsGetMap cacheDir=" + cacheDir);
 
             //*** get required values   see wms spec, section 7.3.2   queryMap names are toLowerCase
@@ -3634,7 +3879,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 tVersion = "1.3.0";
             if (!tVersion.equals("1.1.0") && !tVersion.equals("1.1.1") && 
                 !tVersion.equals("1.3.0"))
-                throw new SimpleException("Query error: VERSION=" + tVersion + 
+                throw new SimpleException(EDStatic.queryError + "VERSION=" + tVersion + 
                     " must be '1.1.0', '1.1.1', or '1.3.0'.");
 
             String layersCsv    = queryMap.get("layers");
@@ -3679,27 +3924,27 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 !exceptions.equals("INIMAGE")) {
                 exceptions = "XML"; //fall back
                 if (tVersion.equals("1.1.0") || tVersion.equals("1.1.1"))
-                    throw new SimpleException("Query error: EXCEPTIONS=" + oExceptions + 
+                    throw new SimpleException(EDStatic.queryError + "EXCEPTIONS=" + oExceptions + 
                         " must be one of 'application/vnd.ogc.se_xml', 'application/vnd.ogc.se_blank', " +
                         "or 'application/vnd.ogc.se_inimage'.");  
                 else //1.3.0+
-                    throw new SimpleException("Query error: EXCEPTIONS=" + oExceptions + 
+                    throw new SimpleException(EDStatic.queryError + "EXCEPTIONS=" + oExceptions + 
                         " must be one of 'XML', 'BLANK', or 'INIMAGE'.");  
             }
 
-            if (width < 2 || width > WMS_MAX_WIDTH) {
+            if (width < 2 || width > EDD.WMS_MAX_WIDTH) {
                 exceptions = "XML"; //fall back
-                throw new SimpleException("Query error: WIDTH=" + width + 
-                    " must be between 2 and " + WMS_MAX_WIDTH + ".");
+                throw new SimpleException(EDStatic.queryError + "WIDTH=" + width + 
+                    " must be between 2 and " + EDD.WMS_MAX_WIDTH + ".");
             }
-            if (height < 2 || height > WMS_MAX_HEIGHT) {
+            if (height < 2 || height > EDD.WMS_MAX_HEIGHT) {
                 exceptions = "XML"; //fall back
-                throw new SimpleException("Query error: HEIGHT=" + height + 
-                    " must be between 2 and " + WMS_MAX_HEIGHT + ".");
+                throw new SimpleException(EDStatic.queryError + "HEIGHT=" + height + 
+                    " must be between 2 and " + EDD.WMS_MAX_HEIGHT + ".");
             }
             if (format == null || !format.toLowerCase().equals("image/png")) {
                 exceptions = "XML"; //fall back
-                throw new SimpleException("Query error: FORMAT=" + format +
+                throw new SimpleException(EDStatic.queryError + "FORMAT=" + format +
                     " must be image/png.");
             }
             format = format.toLowerCase();
@@ -3718,9 +3963,9 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             } else {
                 layers = String2.split(layersCsv, ',');
             }
-            if (layers.length > WMS_MAX_LAYERS)
-                throw new SimpleException("Query error: the number of LAYERS=" + layers.length +
-                    " must not be more than " + WMS_MAX_LAYERS + "."); //should be 1.., but allow 0
+            if (layers.length > EDD.WMS_MAX_LAYERS)
+                throw new SimpleException(EDStatic.queryError + "the number of LAYERS=" + layers.length +
+                    " must not be more than " + EDD.WMS_MAX_LAYERS + "."); //should be 1.., but allow 0
             //layers.length is at least 1, but it may be ""
 
             //Styles,  see WMS 1.3.0 section 7.2.4.6.5 and 7.3.3.4
@@ -3735,7 +3980,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 stylesCsv = String2.makeString(',', layers.length - 1);
             String styles[] = String2.split(stylesCsv, ',');
             if (layers.length != styles.length)
-                throw new SimpleException("Query error: the number of STYLES=" + styles.length +
+                throw new SimpleException(EDStatic.queryError + "the number of STYLES=" + styles.length +
                     " must equal the number of LAYERS=" + layers.length + ".");
 
             //CRS or SRS must be present  
@@ -3743,7 +3988,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 crs = "CRS:84";
             if (crs == null || 
                 (!crs.equals("CRS:84") && !crs.equals("EPSG:4326"))) 
-                throw new SimpleException("Query error: " + 
+                throw new SimpleException(EDStatic.queryError + 
                     (tVersion.equals("1.1.0") || 
                      tVersion.equals("1.1.1")? 
                     "SRS=" + crs + " must be EPSG:4326." :
@@ -3751,22 +3996,22 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
             //BBOX = minx,miny,maxx,maxy   see wms 1.3.0 spec section 7.3.3.6            
             if (bboxCsv == null || bboxCsv.length() == 0)
-                throw new SimpleException("Query error: BBOX must be specified.");
+                throw new SimpleException(EDStatic.queryError + "BBOX must be specified.");
                 //bboxCsv = "-180,-90,180,90";  //be lenient, default to full range
             double bbox[] = String2.toDoubleArray(String2.split(bboxCsv, ','));
             if (bbox.length != 4)
-                throw new SimpleException("Query error: BBOX length=" + bbox.length + " must be 4.");
+                throw new SimpleException(EDStatic.queryError + "BBOX length=" + bbox.length + " must be 4.");
             double minx = bbox[0];
             double miny = bbox[1];
             double maxx = bbox[2];
             double maxy = bbox[3];
             if (!Math2.isFinite(minx) || !Math2.isFinite(miny) ||
                 !Math2.isFinite(maxx) || !Math2.isFinite(maxy))
-                throw new SimpleException("Query error: invalid number in BBOX=" + bboxCsv + ".");
+                throw new SimpleException(EDStatic.queryError + "invalid number in BBOX=" + bboxCsv + ".");
             if (minx >= maxx)
-                throw new SimpleException("Query error: BBOX minx=" + minx + " must be < maxx=" + maxx + ".");
+                throw new SimpleException(EDStatic.queryError + "BBOX minx=" + minx + " must be < maxx=" + maxx + ".");
             if (miny >= maxy)
-                throw new SimpleException("Query error: BBOX miny=" + miny + " must be < maxy=" + maxy + ".");
+                throw new SimpleException(EDStatic.queryError + "BBOX miny=" + miny + " must be < maxy=" + maxy + ".");
 
 
             //if request is for JUST a transparent, non-data layer, use a _wms/... cache 
@@ -3847,36 +4092,36 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 }
 
                 //*** deal with grid data
-                int spo = layers[layeri].indexOf(WMS_SEPARATOR);
+                int spo = layers[layeri].indexOf(EDD.WMS_SEPARATOR);
                 if (spo <= 0 || spo >= layers[layeri].length() - 1)
-                    throw new SimpleException("Query error: LAYER=" + layers[layeri] + 
+                    throw new SimpleException(EDStatic.queryError + "LAYER=" + layers[layeri] + 
                         " is invalid (invalid separator position).");
                 String datasetID = layers[layeri].substring(0, spo);
                 String destVar = layers[layeri].substring(spo + 1);
                 EDDGrid eddGrid = (EDDGrid)gridDatasetHashMap.get(datasetID);
                 if (eddGrid == null)
-                    throw new SimpleException("Query error: LAYER=" + layers[layeri] + 
+                    throw new SimpleException(EDStatic.queryError + "LAYER=" + layers[layeri] + 
                         " is invalid (dataset not found).");
                 if (!eddGrid.isAccessibleTo(roles)) { //listPrivateDatasets doesn't apply
                     EDStatic.redirectToLogin(loggedInAs, response, datasetID);
                     return;
                 }
                 if (eddGrid.accessibleViaWMS().length() > 0)
-                    throw new SimpleException("Query error: LAYER=" + layers[layeri] + 
+                    throw new SimpleException(EDStatic.queryError + "LAYER=" + layers[layeri] + 
                         " is invalid (not accessible via WMS).");
                 int dvi = String2.indexOf(eddGrid.dataVariableDestinationNames(), destVar);
                 if (dvi < 0)
-                    throw new SimpleException("Query error: LAYER=" + layers[layeri] + 
+                    throw new SimpleException(EDStatic.queryError + "LAYER=" + layers[layeri] + 
                         " is invalid (variable not found).");
                 EDV tDataVariable = eddGrid.dataVariables()[dvi];
                 if (!tDataVariable.hasColorBarMinMax())
-                    throw new SimpleException("Query error: LAYER=" + layers[layeri] + 
+                    throw new SimpleException(EDStatic.queryError + "LAYER=" + layers[layeri] + 
                         " is invalid (variable doesn't have valid colorBarMinimum/Maximum).");
 
                 //style  (currently just the default)
                 if (!styles[layeri].equals("") && 
                     !styles[layeri].toLowerCase().equals("default")) { //nonstandard?  but allow it
-                    throw new SimpleException("Query error: for LAYER=" + layers[layeri] + 
+                    throw new SimpleException(EDStatic.queryError + "for LAYER=" + layers[layeri] + 
                         ", STYLE=" + styles[layeri] + " is invalid (must be \"\").");
                 }
 
@@ -3940,7 +4185,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 //get the data
                 GridDataAccessor gda = new GridDataAccessor(
                     eddGrid, 
-                    "/erddap/griddap/" + datasetID + ".dods", tQuery.toString(), 
+                    "/" + EDStatic.warName + "/griddap/" + datasetID + ".dods", tQuery.toString(), 
                     false, //Grid needs column-major order
                     true); //convertToNaN
                 long requestNL = gda.totalIndex().size();
@@ -4011,8 +4256,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
             //send INIMAGE or BLANK response   
             //see wms 1.3.0 spec sections 6.9, 6.10 and 7.3.3.11
-            if ((width > 0 && width <= WMS_MAX_WIDTH &&
-                 height > 0 && height <= WMS_MAX_HEIGHT &&
+            if ((width > 0 && width <= EDD.WMS_MAX_WIDTH &&
+                 height > 0 && height <= EDD.WMS_MAX_HEIGHT &&
                  format != null) &&
                 (format.equals("image/png")) &&
                 (exceptions.equals("INIMAGE") || exceptions.equals("BLANK"))) {
@@ -4105,7 +4350,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         EDDGrid eddGrid = (EDDGrid)gridDatasetHashMap.get(tDatasetID);
         if (eddGrid == null) {
             sendResourceNotFoundError(request, response, 
-                "Currently, datasetID=" + tDatasetID + " isn't available.");
+                MessageFormat.format(EDStatic.notAvailable, tDatasetID));
             return;
         }
         if (!eddGrid.isAccessibleTo(roles)) {
@@ -4126,7 +4371,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             request, response, "Capabilities", ".xml", ".xml");
         OutputStream out = outSource.outputStream("UTF-8");
         Writer writer = new OutputStreamWriter(out, "UTF-8");
-        String wmsUrl = tErddapUrl + "/wms/" + tDatasetID + "/" + WMS_SERVER;
+        String wmsUrl = tErddapUrl + "/wms/" + tDatasetID + "/" + EDD.WMS_SERVER;
         //see the WMS 1.1.0, 1.1.1, and 1.3.0 specification for details 
         //This based example in Annex H.
         if (tVersion.equals("1.1.0"))
@@ -4197,9 +4442,9 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
         (tVersion.equals("1.1.0") || 
          tVersion.equals("1.1.1")? "" :
-"    <LayerLimit>" + WMS_MAX_LAYERS + "</LayerLimit>\n" +  
-"    <MaxWidth>" + WMS_MAX_WIDTH + "</MaxWidth>\n" +  
-"    <MaxHeight>" + WMS_MAX_HEIGHT + "</MaxHeight>\n") +  
+"    <LayerLimit>" + EDD.WMS_MAX_LAYERS + "</LayerLimit>\n" +  
+"    <MaxWidth>" + EDD.WMS_MAX_WIDTH + "</MaxWidth>\n" +  
+"    <MaxHeight>" + EDD.WMS_MAX_HEIGHT + "</MaxHeight>\n") +  
 
 "  </Service>\n");
 
@@ -4448,7 +4693,7 @@ writer.write(
                  //Forming them is a little complex, so defer doing it.
              } else {
                  //csv values   (times as iso8601)
-                 writer.write(String2.toCSVString(av.destinationStringValues().toStringArray()));
+                 writer.write(String2.toCSSVString(av.destinationStringValues().toStringArray()));
              }
 
             if (tVersion.equals("1.1.0") || tVersion.equals("1.1.1"))
@@ -4491,7 +4736,7 @@ writer.write(
                 continue;
             writer.write(
    "        <Layer opaque=\"1\" >\n" + //see 7.2.4.7.1  use opaque for grid data, non for table data
-   "          <Name>" + XML.encodeAsXML(tDatasetID + WMS_SEPARATOR + dvNames[dvi]) + "</Name>\n" +
+   "          <Name>" + XML.encodeAsXML(tDatasetID + EDD.WMS_SEPARATOR + dvNames[dvi]) + "</Name>\n" +
    "          <Title>" + XML.encodeAsXML(eddGrid.title() + " - " + dvNames[dvi]) + "</Title>\n");
 /*
 
@@ -4505,11 +4750,11 @@ writer.write(
                 for (int avi = 0; avi < avs.length; avi++) {
                     if (avi == loni || avi == lati)
                         continue;
-                    dims.append(WMS_SEPARATOR +  ...currentavDsv[avi] = avs[avi].destinationStringValues();
+                    dims.append(EDD.WMS_SEPARATOR +  ...currentavDsv[avi] = avs[avi].destinationStringValues();
                 }
                 writer.write
                     "<Layer opaque=\"1\" >\n" + //see 7.2.4.7.1  use opaque for grid data, non for table data
-                    "  <Name>" + XML.encodeAsXML(tDatasetID + WMS_SEPARATOR + dvNames[dvi]) + dims + "</Name>\n" +
+                    "  <Name>" + XML.encodeAsXML(tDatasetID + EDD.WMS_SEPARATOR + dvNames[dvi]) + dims + "</Name>\n" +
                     "  <Title>" + XML.encodeAsXML(eddGrid.title() + " - " + dvNames[dvi]) + dims + "</Title>\n");
                     "        </Layer>\n");
 
@@ -4674,7 +4919,7 @@ writer.write(
                 gai == timei? "time" : "dim_" + gaa[gai].destinationName();
         }
         String baseUrl = tErddapUrl + "/wms/" + tDatasetID;
-        String requestUrl = baseUrl + "/" + WMS_SERVER;
+        String requestUrl = baseUrl + "/" + EDD.WMS_SERVER;
       
         String varNames[] = eddGrid.dataVariableDestinationNames();
         int nVars = varNames.length;
@@ -4737,10 +4982,10 @@ writer.write(
             //    "\"http://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi?\",{layers:\"nexrad-n0r-wmst\"," +
             //    "transparent:true,format:'image/png',time:\"2005-08-29T13:00:00Z\"});\n" +
             "    vLayer[" + nLayers + "] = new OpenLayers.Layer.WMS( \"" + 
-                         tDatasetID + WMS_SEPARATOR + varNames[dv] + "\",\n" +
+                         tDatasetID + EDD.WMS_SEPARATOR + varNames[dv] + "\",\n" +
             "        \"" + requestUrl + "?\", \n" +
             "        {" + exceptions + "version:'" + tVersion + "', srs:'EPSG:4326', " +
-                         "layers:'" + tDatasetID + WMS_SEPARATOR + varNames[dv] + "', \n" +
+                         "layers:'" + tDatasetID + EDD.WMS_SEPARATOR + varNames[dv] + "', \n" +
             "        ");
             for (int gai = 0; gai < gaa.length; gai++) {
                 if (gai == loni || gai == lati)
@@ -4828,7 +5073,8 @@ writer.write(
 
         //*** html body
         String tBody = String2.replaceAll(EDStatic.startBodyHtml(loggedInAs), "<body", "<body onLoad=\"init()\"");
-        String makeAGraphRef = "<a href=\"" + tErddapUrl + "/griddap/" + tDatasetID + ".graph\">Make A Graph</a>";
+        String makeAGraphRef = "<a href=\"" + tErddapUrl + "/griddap/" + tDatasetID + ".graph\">" +
+            EDStatic.mag + "</a>";
         writer.write(
             tBody + "\n" +
             HtmlWidgets.htmlTooltipScript(EDStatic.imageDirUrl(loggedInAs)) +
@@ -4936,7 +5182,7 @@ writer.write(
             writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
 
             //*** What is WMS? 
-            String e0 = tErddapUrl + "/wms/" + EDStatic.wmsSampleDatasetID + "/" + WMS_SERVER + "?";
+            String e0 = tErddapUrl + "/wms/" + EDStatic.wmsSampleDatasetID + "/" + EDD.WMS_SERVER + "?";
             String ec = "service=WMS&amp;request=GetCapabilities&amp;version=";
             String e1 = "service=WMS&amp;version="; 
             //this section of code is in 2 places
@@ -4947,7 +5193,7 @@ writer.write(
                         "&amp;" + csrs + "=EPSG:4326&amp;width=360&amp;height=" + tHeight + 
                         "&amp;bgcolor=0x808080&amp;layers=";
             //Land,erdBAssta5day:sst,Coastlines,LakesAndRivers,Nations,States
-            String e3 = EDStatic.wmsSampleDatasetID + WMS_SEPARATOR + EDStatic.wmsSampleVariable;
+            String e3 = EDStatic.wmsSampleDatasetID + EDD.WMS_SEPARATOR + EDStatic.wmsSampleVariable;
             String e4 = "&amp;styles=&amp;format=image/png";
             String et = "&amp;transparent=TRUE";
 
@@ -4955,16 +5201,18 @@ writer.write(
             String tWmsTransparentExample = e0 + e1 + tVersion + e2 +           e3 + e4 + et;
             String datasetListRef = 
                 "<br>See the\n" +
-                "  <a href=\"" + tErddapUrl + "/wms/index.html\">list \n" +
+                "  <a href=\"" + tErddapUrl + "/wms/index.html?" + 
+                    EDStatic.encodedDefaultPIppQuery + "\">list \n" +
                 "    of datasets available via WMS</a> at this ERDDAP installation.\n";
             String makeAGraphListRef =
                 "  <br>See the\n" +
-                "    <a href=\"" + tErddapUrl + "/info/index.html\">list \n" +
+                "    <a href=\"" + tErddapUrl + "/info/index.html?" +
+                    EDStatic.encodedDefaultPIppQuery + "\">list \n" +
                 "      of datasets with Make A Graph</a> at this ERDDAP installation.\n";
 
             //What is WMS?   (for tDatasetID) 
             //!!!see the almost identical documentation above
-            String wmsUrl = tErddapUrl + "/wms/" + tDatasetID + "/" + WMS_SERVER + "?";
+            String wmsUrl = tErddapUrl + "/wms/" + tDatasetID + "/" + EDD.WMS_SERVER + "?";
             String capUrl = wmsUrl + "service=WMS&amp;request=GetCapabilities&amp;version=" + tVersion;
             writer.write(
                 "<h2><a name=\"description\">What</a> is WMS?</h2>\n" +
@@ -5044,6 +5292,223 @@ writer.write(
 
     }
 
+    /**
+     * Deal with /metadata/fgdc/xml/datasetID_fgdc.xml requests (or iso19115) 
+     * (or shorter requests).
+     *
+     * @param loggedInAs  the name of the logged in user (or null if not logged in)
+     * @param endOfRequest  starting with "metadata"
+     * @param userQuery  post "?", still percentEncoded, may be null.
+     */
+    public void doMetadata(HttpServletRequest request, HttpServletResponse response,
+        String loggedInAs, String endOfRequest, String userQuery) throws Throwable {
+
+        String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
+        String fileIconsDir = EDStatic.imageDirUrl(loggedInAs) + "fileIcons/";
+        String urlParts[] = String2.split(
+            endOfRequest.endsWith("/")? 
+                endOfRequest.substring(0, endOfRequest.length() - 1) : //so no empty part at end
+                endOfRequest, 
+            '/');
+        int nUrlParts = urlParts.length;
+
+        //make a table for use below
+        StringArray namePA        = new StringArray();
+        LongArray   modifiedPA    = new LongArray();
+        LongArray   sizePA        = new LongArray();
+        StringArray descriptionPA = new StringArray();
+        Table table = new Table();
+        table.addColumn("Name",          namePA);
+        table.addColumn("Last modified", modifiedPA);
+        table.addColumn("Size",          sizePA);
+        table.addColumn("Description",   descriptionPA);
+        StringArray dirNames = new StringArray();
+        String startTallySinceStartup     = "Metadata requests (since startup)";
+        String startTallySinceDailyReport = "Metadata requests (since last daily report)";
+        String failed = "Failed: ";
+        String startFailureLog = "  Metadata request=" + endOfRequest + "\n" +
+            "    ";  //add reason here
+
+
+        // metadata
+        if (!urlParts[0].equals("metadata")) {  //it should
+            String reason = failed + "urlParts[0] wasn't 'metadata'.";
+            if (verbose) String2.log(startFailureLog +     reason);
+            EDStatic.tally.add(startTallySinceStartup,     reason);
+            EDStatic.tally.add(startTallySinceDailyReport, reason);
+            sendResourceNotFoundError(request, response, "");
+            return;
+        }
+
+        if (nUrlParts == 1) {
+            if (!endOfRequest.endsWith("/")) {
+                response.sendRedirect(tErddapUrl + "/" + endOfRequest + "/");
+                return;
+            }
+
+            //show the directory
+            EDStatic.tally.add(startTallySinceStartup,     endOfRequest);
+            EDStatic.tally.add(startTallySinceDailyReport, endOfRequest);
+
+            dirNames.add("fgdc");
+            dirNames.add("iso19115");
+
+            OutputStream out = getHtmlOutputStream(request, response);
+            Writer writer = getHtmlWriter(loggedInAs, 
+                "Index of " + tErddapUrl + "/" + endOfRequest, out); 
+            writer.write(
+                table.directoryListing(tErddapUrl + "/" + endOfRequest, userQuery, 
+                    fileIconsDir, true, dirNames));  
+            endHtmlWriter(out, writer, tErddapUrl, false);
+            return;
+        }
+
+
+        // metadata/fgdc or iso19115
+        if (!(urlParts[1].equals("fgdc") ||
+              urlParts[1].equals("iso19115"))) {  
+            String reason = failed + "urlParts[1] wasn't 'fgdc' or 'iso19115'.";
+            if (verbose) String2.log(startFailureLog +     reason);
+            EDStatic.tally.add(startTallySinceStartup,     reason);
+            EDStatic.tally.add(startTallySinceDailyReport, reason);
+            sendResourceNotFoundError(request, response, "");
+            return;
+        }
+        boolean isFgdc = urlParts[1].equals("fgdc");
+        String suffix  = isFgdc? EDD.fgdcSuffix : 
+                                 EDD.iso19115Suffix;
+
+        if (nUrlParts == 2) {
+            if (!endOfRequest.endsWith("/")) {
+                response.sendRedirect(tErddapUrl + "/" + endOfRequest + "/");
+                return;
+            }
+
+            //show the directory
+            EDStatic.tally.add(startTallySinceStartup,     endOfRequest);
+            EDStatic.tally.add(startTallySinceDailyReport, endOfRequest);
+
+            dirNames.add("xml");
+
+            OutputStream out = getHtmlOutputStream(request, response);
+            Writer writer = getHtmlWriter(loggedInAs, 
+                "Index of " + tErddapUrl + "/" + endOfRequest, out); 
+            writer.write(
+                table.directoryListing(tErddapUrl + "/" + endOfRequest, userQuery, 
+                    fileIconsDir, true, dirNames));  
+            endHtmlWriter(out, writer, tErddapUrl, false);
+            return;
+        }
+
+        // metadata/fgdc/xml (or iso19115)
+        if (!urlParts[2].equals("xml")) {  
+            String reason = failed + "urlParts[2] wasn't 'xml'.";
+            if (verbose) String2.log(startFailureLog +     reason);
+            EDStatic.tally.add(startTallySinceStartup,     reason);
+            EDStatic.tally.add(startTallySinceDailyReport, reason);
+            sendResourceNotFoundError(request, response, "");
+            return;
+        }
+
+        if (nUrlParts == 3) {
+            if (!endOfRequest.endsWith("/")) {
+                response.sendRedirect(tErddapUrl + "/" + endOfRequest + "/");
+                return;
+            }
+
+            //show the directory: list the fgdc or iso19115 datasets
+            EDStatic.tally.add(startTallySinceStartup,     endOfRequest);
+            EDStatic.tally.add(startTallySinceDailyReport, endOfRequest);
+
+            StringArray tIDs = allDatasetIDs();
+            for (int ds = 0; ds < tIDs.size(); ds++) {
+                String tDatasetID = tIDs.get(ds);
+                EDD edd = (EDD)gridDatasetHashMap.get(tDatasetID);
+                if (edd == null) {
+                    edd = (EDD)tableDatasetHashMap.get(tDatasetID);
+                    if (edd == null) 
+                        continue;
+                }
+                //ensure accessibleTo and accessibleVia
+                if (!edd.isAccessibleTo(EDStatic.getRoles(loggedInAs))) 
+                    continue;
+                if ((isFgdc? edd.accessibleViaFGDC() :
+                             edd.accessibleViaISO19115()).length() > 0)
+                    continue;
+
+                //add this dataset
+                String tFileName = tDatasetID + suffix + ".xml";                
+                namePA.add(tFileName);
+                modifiedPA.add(File2.getLastModified(EDD.datasetDir(tDatasetID) + tFileName));
+                sizePA.add(    File2.length(         EDD.datasetDir(tDatasetID) + tFileName));
+                descriptionPA.add(edd.title());                                               
+            }
+
+            OutputStream out = getHtmlOutputStream(request, response);
+            Writer writer = getHtmlWriter(loggedInAs, 
+                "Index of " + tErddapUrl + "/" + endOfRequest, out); 
+            writer.write(
+                table.directoryListing(tErddapUrl + "/" + endOfRequest, userQuery, 
+                    fileIconsDir, true, dirNames));  
+            endHtmlWriter(out, writer, tErddapUrl, false);
+            return;
+        }
+
+        // metadata/fgdc/xml/[datasetID]_fgdc.xml   (or iso19115)
+        if (nUrlParts == 4) {
+            String fileName = urlParts[3];
+            String reason = failed; 
+            if (fileName.endsWith(suffix + ".xml")) {
+                String tDatasetID = fileName.substring(0, fileName.length() - (suffix.length() + 4));
+                String tDir = EDD.datasetDir(tDatasetID);
+                EDD edd = (EDD)gridDatasetHashMap.get(tDatasetID);
+                if (edd == null) 
+                    edd = (EDD)tableDatasetHashMap.get(tDatasetID);
+                //ensure accessibleTo and accessibleVia
+                if (edd == null) {
+                    //reasons are just for Tally, so DON'T TRANSLATE THEM
+                    reason += "The dataset wasn't available.";
+                } else if (!edd.isAccessibleTo(EDStatic.getRoles(loggedInAs))) {
+                    reason += "The user wasn't authorized.";
+                } else if (isFgdc && edd.accessibleViaFGDC().length() > 0) {
+                    reason += "The dataset wasn't accessibleViaFGDC.";
+                } else if (!isFgdc && edd.accessibleViaISO19115().length() > 0) {
+                    reason += "The dataset wasn't accessibleViaISO19115.";
+                } else if (!File2.isFile(tDir + fileName)) {
+                    reason += "The file didn't exist.";
+                } else {
+                    //valid request
+                    EDStatic.tally.add(startTallySinceStartup,     "Succeeded: " + urlParts[1]);
+                    EDStatic.tally.add(startTallySinceDailyReport, "Succeeded: " + urlParts[1]);
+                    OutputStreamSource outSource = new OutputStreamFromHttpResponse(
+                        request, response, 
+                        fileName.substring(0, fileName.length() - 4), //remove .xml
+                        (isFgdc? ".fgdc" : ".iso19115"), ".xml");
+                    doTransfer(request, response, tDir, 
+                        tErddapUrl + "/" + File2.getDirectory(endOfRequest), fileName,
+                        outSource.outputStream("UTF-8", File2.length(tDir + fileName))); 
+                    return;
+                }
+            } else {
+                reason += "The requested file didn't end with " + suffix + ".xml.";
+            }
+
+            //any failures with nUrlParts==4 end up here
+            if (verbose) String2.log(startFailureLog +     reason);
+            EDStatic.tally.add(startTallySinceStartup,     reason);
+            EDStatic.tally.add(startTallySinceDailyReport, reason);
+            sendResourceNotFoundError(request, response, "");
+            return;
+        }
+
+        //nUrlParts >= 5
+        String reason = failed + "nUrlParts >= 5.";
+        if (verbose) String2.log(startFailureLog +     reason);
+        EDStatic.tally.add(startTallySinceStartup,     reason);
+        EDStatic.tally.add(startTallySinceDailyReport, reason);
+        sendResourceNotFoundError(request, response, "");
+    }
+
     /** 
      * This responds to a user's requst for a file in the (psuedo)'protocol' (e.g., images) 
      * directory.
@@ -5063,6 +5528,7 @@ writer.write(
         String dir = EDStatic.contextDirectory + protocol + "/";
         String fileNameAndExt = requestUrl.length() <= datasetIDStartsAt? "" : 
             requestUrl.substring(datasetIDStartsAt);
+
         if (!File2.isFile(dir + fileNameAndExt)) {
             sendResourceNotFoundError(request, response, "");
             return;
@@ -5098,7 +5564,7 @@ writer.write(
         }
 
         doTransfer(request, response, dir, protocol + "/", fileNameAndExt, 
-            outSource.outputStream(charEncoding)); 
+            outSource.outputStream(charEncoding, File2.length(dir + fileNameAndExt)));
     }
 
     /** 
@@ -5174,7 +5640,7 @@ writer.write(
             return;
         }
         OutputStreamSource outSource = new OutputStreamFromHttpResponse(
-            request, response, name, ".rss", ".rss"); 
+            request, response, name, "custom:application/rss+xml", ".rss"); 
         OutputStream outputStream = outSource.outputStream("UTF-8"); 
         outputStream.write(rssAr);
         outputStream.close();
@@ -5671,33 +6137,46 @@ writer.write(
             EDStatic.youAreHere(loggedInAs, protocol),
             //Or, View All Datasets
             "&nbsp;\n" +
-            //"<br>Or, <a href=\"" + tErddapUrl + "/info/index.html\">" +
+            //"<br>Or, <a href=\"" + tErddapUrl + "/info/index.html" +
+            //    EDStatic.encodedPassThroughPIppQueryPage1(request) + "\">" +
             //EDStatic.viewAllDatasetsHtml + "</a>\n" +
             ////Or, search by category
-            //"<p>" + getCategoryLinksHtml(tErddapUrl) +
+            //"<p>" + getCategoryLinksHtml(request, tErddapUrl) +
             ////Use <p> below if other options are enabled.
-            "<br>Or, Refine this Search with " + getAdvancedSearchLink(loggedInAs, userQuery) + 
+            "<br>" + EDStatic.orRefineSearchWith + 
+                getAdvancedSearchLink(loggedInAs, userQuery) + //??? how ensure it has PIppQuery?
             "&nbsp;&nbsp;&nbsp;");
 
         try {
             
-            //first, always set the standard DAP response header info
-            //standardDapHeader(response);
-
             //respond to search.html request
             String endOfRequestUrl = datasetIDStartsAt >= requestUrl.length()? "" : 
                 requestUrl.substring(datasetIDStartsAt);
 
-            //redirect to index.html
-            if (endOfRequestUrl.equals("") ||
-                endOfRequestUrl.equals("index.htm")) {
-                response.sendRedirect(tErddapUrl + "/" + protocol + "/index.html");
-                return;
-            }                    
-
             //get the 'searchFor' value
             searchFor = request.getParameter("searchFor");
             searchFor = searchFor == null? "" : searchFor.trim();
+
+            //redirect to index.html
+            if (endOfRequestUrl.equals("") ||
+                endOfRequestUrl.equals("index.htm")) {
+                response.sendRedirect(tErddapUrl + "/" + protocol + "/index.html?" +
+                    EDStatic.passThroughPIppQueryPage1(request) +
+                    (searchFor.length() == 0? "" : "&searchFor=" + SSR.minimalPercentEncode(searchFor)));
+                return;
+            }           
+            
+            //ensure query has simplistically valid page= itemsPerPage=
+            if (!Arrays.equals(
+                    EDStatic.getRawRequestedPIpp(request),
+                    EDStatic.getRequestedPIpp(request))) {
+                response.sendRedirect(
+                    EDStatic.baseUrl(loggedInAs) + request.getRequestURI() + "?" +
+                    EDStatic.passThroughJsonpQuery(request) +
+                    EDStatic.passThroughPIppQuery(request) + 
+                    (searchFor.length() == 0? "" : "&searchFor=" + SSR.minimalPercentEncode(searchFor)));
+                return;
+            }      
 
             fileTypeName = File2.getExtension(endOfRequestUrl); //eg ".html"
             boolean toHtml = fileTypeName.equals(".html");
@@ -5709,13 +6188,13 @@ writer.write(
             EDStatic.tally.add("Search File Type (since last daily report)", fileTypeName);
 
             if (endOfRequestUrl.equals("index.html")) {
-                if (searchFor.length() == 0) throw new Exception("show index"); //show form below
+                if (searchFor.length() == 0) 
+                    throw new Exception("show index"); //show form below
                 //else handle just below here
             } else if (endsWithPlainFileType(endOfRequestUrl, "index")) {
-                if (searchFor == null) {
+                if (searchFor.length() == 0) {
                     sendResourceNotFoundError(request, response, //or SC_NO_CONTENT error?
-                        "An " + requestUrl + 
-                        " request must include a query: \"?searchFor=search+words\".");
+                        MessageFormat.format(EDStatic.searchWithQuery, fileTypeName));
                     return;
                 }
                 //else handle just below here
@@ -5724,21 +6203,52 @@ writer.write(
                 return;
             }
 
-            //do the search
-            Table table = getSearchTable(loggedInAs, allDatasetIDs(false), 
-                searchFor, toHtml, fileTypeName);
+            //do the search (also, it ensures user has right to know dataset exists)
+            //(result may be size=0)
+            StringArray datasetIDs = getSearchDatasetIDs(loggedInAs, 
+                allDatasetIDs(), searchFor);
+            int nMatches = datasetIDs.size();
+
+            //calculate Page ItemsPerPage (part of: full text search)
+            int pIpp[] = EDStatic.calculatePIpp(request, nMatches);
+            int page         = pIpp[0]; //will be 1... 
+            int itemsPerPage = pIpp[1]; //will be 1...
+            int startIndex   = pIpp[2]; //will be 0...
+            int lastPage     = pIpp[3]; //will be 1...
+
+            //reduce datasetIDs to ones on requested page
+            //IMPORTANT!!! For this to work correctly, datasetIDs must be
+            //  accessibleTo loggedInAs (or EDStatic.listPrivateDatasets)
+            //  and in final sorted order.
+            //  (True here)
+            //Order of removal: more efficient to remove items at end, then items at beginning.
+            if (startIndex + itemsPerPage < nMatches) 
+                datasetIDs.removeRange(startIndex + itemsPerPage, nMatches);
+            datasetIDs.removeRange(0, Math.min(startIndex, nMatches));
+
+            int datasetIDSize = datasetIDs.size();  //may be 0        
+
+            //error messages
+            String error[] = null;
+            if (nMatches == 0) {
+                error = EDStatic.noSearchMatch(searchFor);
+            } else if (page > lastPage) {
+                error = EDStatic.noPage(page, lastPage);
+            }
+
 
             //show the results as an .html file 
+            boolean sortByTitle = false; //sorted above
             if (fileTypeName.equals(".html")) { 
                 //display start of web page
                 OutputStream out = getHtmlOutputStream(request, response);
-                Writer writer = getHtmlWriter(loggedInAs, "Search", out); 
+                Writer writer = getHtmlWriter(loggedInAs, EDStatic.searchTitle, out); 
                 try {
                     //you are here    Search
                     writer.write(youAreHereTable);
 
                     //display the search form
-                    writer.write(getSearchFormHtml(loggedInAs, "<h2>", "</h2>", searchFor));
+                    writer.write(getSearchFormHtml(request, loggedInAs, "<h2>", "</h2>", searchFor));
 
                     //display datasets
                     writer.write(
@@ -5749,26 +6259,45 @@ writer.write(
                         //(which allows hacker to insert his javascript into pages returned by server)
                         //See Tomcat (Definitive Guide) pg 147
                         XML.encodeAsHTML(searchFor) + "</font></h2>\n");  
-                    if (table.nRows() == 0) {
-                         writer.write("<b>" + XML.encodeAsHTML(EDStatic.THERE_IS_NO_DATA) + "</b>\n" +
-                             (searchFor.length() > 0? "<br>" + EDStatic.searchSpelling + "\n" : "") +
-                             (searchFor.indexOf(' ') >= 0? "<br>" + EDStatic.searchFewerWords + "\n" : ""));
-                    } else {
-                        writer.write(
-                            //table.nRows() + " " + EDStatic.nDatasetsListed + " " + 
-                            table.nRows() + " dataset" + (table.nRows() == 1? " matches" : "s match") + 
-                            " the search term(s). " +
-                            (table.nRows() == 1? "" : EDStatic.searchRelevantAreFirst) + 
+                    if (error == null) {
+
+                        Table table = makeHtmlDatasetTable(loggedInAs, datasetIDs, sortByTitle);
+
+                        String nMatchingHtml = EDStatic.nMatchingDatasetsHtml(
+                            nMatches, page, lastPage, true, //=most relevant first
+                            EDStatic.baseUrl(loggedInAs) + requestUrl + 
+                            EDStatic.questionQuery(request.getQueryString()));
+                                
+                        writer.write(nMatchingHtml +
                             //"\n&nbsp;&nbsp;" + 
-                            //"(Or, refine this search with " + getAdvancedSearchLink(loggedInAs, userQuery) + ")\n" +
+                            //"(" + EDStatic.orRefineSearchWith + 
+                            //    getAdvancedSearchLink(loggedInAs, userQuery) + ")\n" +
                             "<br>&nbsp;\n" //necessary for the blank line before the table (not <p>)
                             //was "Lower rating numbers indicate a better match.\n" +
                             //+ "<br>" + EDStatic.clickAccessHtml + "\n" +
                             //"<br>&nbsp;\n"
                             );
+
                         table.saveAsHtmlTable(writer, "commonBGColor", null, 1, false, -1, 
                             false, false); //don't encodeAsHTML the cell's contents, !allowWrap
+
+                        if (lastPage > 1)
+                            writer.write("\n<p>" + nMatchingHtml);
+
+                        //list plain file types
+                        writer.write(
+                            "\n" +
+                            "<p>" + EDStatic.restfulInformationFormats + " \n(" +
+                            plainFileTypesString + //not links, which would be indexed by search engines
+                            ") <a href=\"" + tErddapUrl + "/rest.html\">" + 
+                                EDStatic.restfulViaService + "</a>.\n" +
+                            "\n");
+                    } else {
+                        //error
+                        writer.write("<b>" + XML.encodeAsHTML(error[0]) + "</b>\n" +
+                                    "<br>" + XML.encodeAsHTML(error[1]) + "\n");
                     }
+
 
                 } catch (Throwable t) {
                     writer.write(EDStatic.htmlForException(t));
@@ -5780,6 +6309,10 @@ writer.write(
             }
 
             //show the results in other file types
+            if (error != null)
+                throw new SimpleException(error[0] + " " + error[1]);
+
+            Table table = makePlainDatasetTable(loggedInAs, datasetIDs, sortByTitle, fileTypeName);
             sendPlainTable(loggedInAs, request, response, table, protocol, fileTypeName);
             return;
 
@@ -5799,7 +6332,7 @@ writer.write(
             //make html page with [error message and] search form
             String error = MustBe.getShortErrorMessage(t);
             out = getHtmlOutputStream(request, response);
-            writer = getHtmlWriter(loggedInAs, "Search", out);
+            writer = getHtmlWriter(loggedInAs, EDStatic.searchTitle, out);
             try {
                 //you are here      Search
                 writer.write(youAreHereTable);
@@ -5807,8 +6340,12 @@ writer.write(
                 //write (error and) search form
                 if (error.indexOf("show index") < 0) 
                     writeErrorHtml(writer, request, error);
-                writer.write(getSearchFormHtml(loggedInAs, "<h2>", "</h2>", searchFor));
+                writer.write(getSearchFormHtml(request, loggedInAs, "<h2>", "</h2>", searchFor));
 
+                //writer.write(
+                //    "<p>&nbsp;<hr>\n" +
+                //    String2.replaceAll(EDStatic.restfulSearchService, "&erddapUrl;", tErddapUrl) +
+                //    "\n");
 
             } catch (Throwable t2) {
                 writer.write(EDStatic.htmlForException(t2));
@@ -5819,20 +6356,389 @@ writer.write(
     }
 
     /**
+     * This responds to OpenSearch requests.
+     * http://www.opensearch.org/Home
+     * (Bob has a copy of the specification in F:/programs/opensearch/1.1.htm )
+     *
+     * <p>A sample OpenSearch website is http://www.nature.com/opensearch/
+     *
+     * @param loggedInAs  the name of the logged in user (or null if not logged in)
+     * @param protocol  Currently, just "opensearch1.1" is supported. Others may be added in future.
+     * @param pageNameStartsAt is the position right after the / at the end of the protocol
+     *    (always "search") in the requestUrl
+     * @param userQuery  post "?", still percentEncoded, may be null.
+     */
+    public void doOpenSearch(HttpServletRequest request, HttpServletResponse response,
+        String loggedInAs, String protocol, int pageNameStartsAt, String userQuery) throws Throwable {
+        
+        String tErddapUrl     = EDStatic.erddapUrl(loggedInAs);
+        String requestUrl     = request.getRequestURI();  //post EDStatic.baseUrl, pre "?"
+        String descriptionUrl = tErddapUrl + "/" + protocol + "/description.xml";
+        String serviceWord    = "search";
+        String serviceUrl     = tErddapUrl + "/" + protocol + "/" + serviceWord;
+        String tImageDirUrl   = loggedInAs == null? EDStatic.imageDirUrl : EDStatic.imageDirHttpsUrl;
+        String niceProtocol   = "OpenSearch 1.1";
+
+        String endOfRequestUrl = pageNameStartsAt >= requestUrl.length()? "" : 
+            requestUrl.substring(pageNameStartsAt);
+        String xmlThisRequest = XML.encodeAsXML(serviceUrl + EDStatic.questionQuery(userQuery));
+
+        //search standard_names for a good exampleSearchTerm
+        String exampleSearchTerm = "datasetID";   //default    latitude?
+        int snpo = String2.indexOf(EDStatic.categoryAttributes, "standard_name");
+        if (snpo >= 0) {  //"standard_name" is a categoryAttribute
+            String tryTerms[] = {"temperature", "wind", "salinity", "pressure", 
+                "chlorophyll", "sea", "water", "atmosphere", "air"};
+            StringArray sNames = categoryInfo("standard_name");
+            for (int tt = 0; tt < tryTerms.length; tt++) {
+                int ttpo[] = {0, 0}; //start/result   [0]=index, [1]=po
+                if (sNames.indexWith(tryTerms[tt], ttpo)[0] >= 0) {
+                    exampleSearchTerm = tryTerms[tt];
+                    break;
+                }
+            }
+        }
+        String sampleUrl = serviceUrl + "?" +
+            EDStatic.encodedDefaultPIppQuery + "&amp;searchTerms=" + exampleSearchTerm;
+
+        //*** respond to /index.html
+        if (endOfRequestUrl.equals("index.html")) {
+            //display start of web page
+            OutputStream out = getHtmlOutputStream(request, response);
+            Writer writer = getHtmlWriter(loggedInAs, niceProtocol, out); 
+            writer.write(
+                EDStatic.youAreHere(loggedInAs, niceProtocol) +
+                "<p><a href=\"http://www.opensearch.org/Home\">" + niceProtocol + "</a> " +
+                "  is a standard way for search engines at other web sites to search this\n" +
+                "<br>ERDDAP for interesting datasets.\n" +
+                "<ul>\n" +
+                "<li>To set up your web site's search engine to search for datasets via " + 
+                    niceProtocol + ",\n" +
+                "  <br>point your " + niceProtocol + " client to the " + niceProtocol + 
+                    " service description document at\n" +
+                "  <br><a href=\"" + descriptionUrl + "\">" + 
+                                     descriptionUrl + "</a>\n" +
+                "  <br>&nbsp;\n" +
+                //"<li>The " + niceProtocol + " search service is at\n" +
+                //"  <br><a href=\"" + serviceUrl + "\">" + 
+                //                     serviceUrl + "</a>\n" +
+                //"  <br>&nbsp;\n" +
+                "<li>A sample " + niceProtocol + " request for an Atom response is\n" +
+                "  <br><a href=\"" + sampleUrl + "&amp;format=atom\">" + 
+                                     sampleUrl + "&amp;format=atom</a>\n" +
+                "  <br>&nbsp;\n" +
+                "<li>A sample " + niceProtocol + " request for an RSS response is\n" +
+                "  <br><a href=\"" + sampleUrl + "&amp;format=rss\">" + 
+                                     sampleUrl + "&amp;format=rss</a>\n" +
+                "</ul>\n" +
+                "\n" +
+                "<p>If you aren't setting up a web site that uses " + niceProtocol + ", please use ERDDAP's regular\n" +
+                "<br>search options on the right hand side of\n" +
+                "  <a href=\"" + tErddapUrl + "/index.html\">ERDDAP's home page</a>.\n" +
+                "<br>Developers of computer programs and JavaScripted web pages can access ERDDAP's regular\n" +
+                "<br>search options as\n" +
+                "  <a href=\"" + tErddapUrl + "/rest.html\">RESTful services</a>.\n");
+            endHtmlWriter(out, writer, tErddapUrl, false);
+            return;
+        }      
+
+        //*** respond to /description.xml 
+        if (endOfRequestUrl.equals("description.xml")) {
+            //extract the unique single keywords from EDStatic.keywords,
+            //and make them space separated
+            //??? or do this from all keywords of all datasets?
+            String tKeywords = EDStatic.keywords.toLowerCase();
+            tKeywords = String2.replaceAll(tKeywords, '>', ' ');
+            tKeywords = String2.replaceAll(tKeywords, '|', ' ');
+            tKeywords = String2.replaceAll(tKeywords, '\"', ' ');
+            StringArray tKeywordsSA = StringArray.wordsAndQuotedPhrases(tKeywords);
+            tKeywordsSA = (StringArray)tKeywordsSA.makeIndices(new IntArray()); //unique words
+            tKeywords = String2.toSVString(tKeywordsSA.toArray(), " ", false);
+
+            OutputStream out = (new OutputStreamFromHttpResponse(
+                request, response, "OpenSearchDescription", 
+                    "custom:application/opensearchdescription+xml", ".xml")).
+                outputStream("UTF-8");
+            Writer writer = new OutputStreamWriter(out, "UTF-8");
+            String template = "?searchTerms={searchTerms}&amp;page={startPage?}" +
+                              "&amp;itemsPerPage={count?}";
+            writer.write(  
+//items are in the order they are described in OpenSearch specification
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<OpenSearchDescription xmlns=\"http://a9.com/-/spec/opensearch/1.1/\">\n" +
+"  <ShortName>ERDDAP</ShortName>\n" +  //<=16 chars
+"  <Description>The ERDDAP at " + XML.encodeAsXML(EDStatic.adminInstitution) + //<=1024 chars
+" is a data server that gives you a simple, consistent way to download subsets of " +
+"scientific datasets in common file formats and make graphs and maps.</Description>\n" + 
+"  <Url type=\"application/atom+xml\"\n" +
+"       template=\"" + serviceUrl + template + "&amp;format=atom\"/>\n" +
+"  <Url type=\"application/rss+xml\"\n" +
+"       template=\"" + serviceUrl + template + "&amp;format=rss\"/>\n" +
+"  <Contact>" + XML.encodeAsXML(EDStatic.adminEmail) + "</Contact>\n" +
+"  <Tags>" + XML.encodeAsXML(tKeywords) + "</Tags>\n" +
+"  <LongName>ERDDAP" + //<=48 characters   
+XML.encodeAsXML(EDStatic.adminInstitution.length() <= 38? " at " + EDStatic.adminInstitution : "") +
+"</LongName>\n" +   
+"  <Image height=\"" + EDStatic.googleEarthLogoFileHeight  + "\" " + //preferred image first
+      "width=\"" + EDStatic.googleEarthLogoFileWidth   + "\">" + //type=\"image/png\" is optional
+  XML.encodeAsXML(
+    tImageDirUrl + EDStatic.googleEarthLogoFile)       + "</Image>\n" +
+"  <Image height=\"" + EDStatic.highResLogoImageFileHeight + "\" " +
+      "width=\"" + EDStatic.highResLogoImageFileWidth  + "\">" + 
+  XML.encodeAsXML(
+    tImageDirUrl + EDStatic.highResLogoImageFile)      + "</Image>\n" +
+"  <Image height=\"" + EDStatic.lowResLogoImageFileHeight  + "\" " +
+      "width=\"" + EDStatic.lowResLogoImageFileWidth   + "\">" + 
+  XML.encodeAsXML(
+    tImageDirUrl + EDStatic.lowResLogoImageFile)       + "</Image>\n" +
+//???need more and better examples
+"  <Query role=\"example\" searchTerms=\"" + XML.encodeAsXML(exampleSearchTerm) + "\" />\n" +
+"  <Developer>Bob Simons (bob.simons at noaa.gov)</Developer>\n" + //<=64 chars
+"  <Attribution>" +  //credit for search results    <=256 chars
+XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attribution>\n" +
+"  <SyndicationRight>" + (loggedInAs == null? "open" : "private") + "</SyndicationRight>\n" +
+"  <AdultContent>false</AdultContent>\n" +
+"  <Language>en-us</Language>\n" +  //language could change if messages.xml is translated
+"  <InputEncoding>UTF-8</InputEncoding>\n" +
+"  <OutputEncoding>UTF-8</OutputEncoding>\n" +
+"</OpenSearchDescription>\n");
+            writer.close(); //it calls writer.flush then out.close();         
+            return;
+        }
+
+        //redirect anything other than /search to /index.html
+        //???or page not found?
+        if (!endOfRequestUrl.equals(serviceWord)) {
+            response.sendRedirect(tErddapUrl + "/" + protocol + "/index.html");
+            return;
+        }                    
+
+        //*** handle /search request 
+        //get the 'searchTerms' value
+        String searchTerms = request.getParameter("searchTerms");
+        searchTerms = searchTerms == null? "" : searchTerms.trim();
+        EDStatic.tally.add("OpenSearch searchTerms (since startup)", searchTerms);
+        EDStatic.tally.add("OpenSearch searchTerms (since last daily report)", searchTerms);
+        String xmlSearchTerms = XML.encodeAsXML(searchTerms);
+        String pctSearchTerms = SSR.minimalPercentEncode(searchTerms);
+        String xmlPctSearchTerms = XML.encodeAsXML(SSR.minimalPercentEncode(searchTerms));
+
+        //format  
+        String format = request.getParameter("format");
+        format = format == null? "" : format.trim();
+        if (!format.equals("atom"))
+            format = "rss"; //default
+
+        if (reallyVerbose) String2.log("  OpenSearch format=" + format + " terms=" + searchTerms);
+
+        //do the search  (also, it ensures user has right to know dataset exists) 
+        //nMatches may be 0
+        StringArray datasetIDs = getSearchDatasetIDs(loggedInAs, 
+            allDatasetIDs(), searchTerms);
+        int nMatches = datasetIDs.size();
+
+        //calculate Page ItemsPerPage (part of: openSearch)
+        int pIpp[] = EDStatic.calculatePIpp(request, nMatches);
+        int page         = pIpp[0]; //will be 1... 
+        int itemsPerPage = pIpp[1]; //will be 1...
+        int startIndex   = pIpp[2]; //will be 0...
+        int lastPage     = pIpp[3]; //will be 1...
+
+        //reduce datasetIDs to ones on requested page
+        //IMPORTANT!!! For this to work correctly, datasetIDs must be 
+        //  accessibleTo loggedInAs (or EDStatic.listPrivateDatasets)
+        //  and in final sorted order.
+        //  (True here)
+        //Order of removal: more efficient to remove items at end, then items at beginning.
+        if (startIndex + itemsPerPage < nMatches) 
+            datasetIDs.removeRange(startIndex + itemsPerPage, nMatches);
+        datasetIDs.removeRange(0, Math.min(startIndex, nMatches));
+
+        int datasetIDSize = datasetIDs.size();  //may be 0        
+
+        //error messages
+        String title0 = "";
+        String msg0 = "";
+        if (nMatches == 0) {
+            String sar[] = EDStatic.noSearchMatch(searchTerms);
+            title0 = sar[0];
+            msg0   = sar[1];
+        } else if (page > lastPage) {
+            String sar[] = EDStatic.noPage(page, lastPage);
+            title0 = sar[0];
+            msg0   = sar[1];
+        }
+
+
+        //*** return results as Atom 
+        // see http://www.ietf.org/rfc/rfc4287.txt
+        // which I have in f:/projects/atom
+        if (format.equals("atom")) { 
+            OutputStreamSource outSource = new OutputStreamFromHttpResponse(
+                request, response, "OpenSearchResults", 
+                    "custom:application/atom+xml", ".xml"); 
+            OutputStream out = outSource.outputStream("UTF-8"); 
+            Writer writer = new OutputStreamWriter(out, "UTF-8");
+            long lastMajorLoadMillis = runLoadDatasets.lastMajorLoadDatasetsStopTimeMillis;
+            if (lastMajorLoadMillis == 0)
+                lastMajorLoadMillis = runLoadDatasets.lastMajorLoadDatasetsStartTimeMillis;
+            String thisRequestNoPage = serviceUrl + "?searchTerms=" + pctSearchTerms +
+                "&format=atom&itemsPerPage=" + itemsPerPage + "&page=";
+
+            writer.write(
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<feed xmlns=\"http://www.w3.org/2005/Atom\" \n" +
+            "      xmlns:opensearch=\"http://a9.com/-/spec/opensearch/1.1/\">\n" +
+            "  <title>ERDDAP Search: " + xmlSearchTerms + "</title> \n" +
+            "  <link href=\"" + xmlThisRequest + "\"/>\n" +
+            "  <updated>" + Calendar2.millisToIsoZuluString(lastMajorLoadMillis) +
+                  "Z</updated>\n" +
+            "  <author> \n" +
+            "    <name>"  + XML.encodeAsXML(EDStatic.adminIndividualName) + "</name>\n" +
+            "    <email>" + XML.encodeAsXML(EDStatic.adminEmail) + "</email>\n" +
+            "  </author> \n" +
+            //id shouldn't change if server's url changes or if served by another erddap.
+            //But I'm just using a simpler system which is universally unique: the request url
+            //It is okay that response to this request may change in time. It is still the same request.
+            "  <id>" + xmlThisRequest + "</id>\n" +
+            "  <opensearch:totalResults>" + nMatches + "</opensearch:totalResults>\n" +
+            "  <opensearch:startIndex>" + (startIndex + 1) + "</opensearch:startIndex>\n" +
+            "  <opensearch:itemsPerPage>" + itemsPerPage + "</opensearch:itemsPerPage>\n" +
+            "  <opensearch:Query role=\"request\" searchTerms=\"" + 
+                xmlSearchTerms + "\" startPage=\"" + page + "\" />\n" +
+            //"  <link rel=\"alternate\" href=\"http://example.com/New+York+History?pw=3\" type=\"text/html\"/>\n" +
+            "  <link rel=\"first\" href=\"" +
+                XML.encodeAsXML(thisRequestNoPage) + 1          + "\" type=\"application/atom+xml\"/>\n" +
+            (page == 1? "" :
+            "  <link rel=\"previous\" href=\"" +
+                XML.encodeAsXML(thisRequestNoPage) + (page - 1) + "\" type=\"application/atom+xml\"/>\n") +
+            "  <link rel=\"self\" href=\"" +
+                XML.encodeAsXML(thisRequestNoPage) + page       + "\" type=\"application/atom+xml\"/>\n" +
+            (page >= lastPage? "" :
+            "  <link rel=\"next\" href=\"" +
+                XML.encodeAsXML(thisRequestNoPage) + (page + 1) + "\" type=\"application/atom+xml\"/>\n") +
+            "  <link rel=\"last\" href=\"" +
+                XML.encodeAsXML(thisRequestNoPage) + lastPage   + "\" type=\"application/atom+xml\"/>\n");
+            //"  <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"http://example.com/opensearchdescription.xml\"/>\n" +
+
+            //0 results, see Best Practices at web site?
+            if (datasetIDSize == 0) {
+                writer.write(
+                    "  <entry>\n" +
+                    "    <title>" + XML.encodeAsXML(title0) + "</title>\n" +
+                    "    <link href=\"" + tErddapUrl + "/" + protocol + "/index.html\"/>\n" +
+                    "    <id>" + ERROR + "</id>\n" +
+                    "    <updated>" + Calendar2.millisToIsoZuluString(lastMajorLoadMillis) +
+                        "Z</updated>\n" +
+                    "    <content type=\"text\">" + XML.encodeAsXML(msg0) + "</content>\n" +
+                    "  </entry>\n");
+            }
+
+            for (int row = 0; row < datasetIDSize; row++) {
+                String tDatasetID = datasetIDs.get(row);
+                EDD edd = (EDD)gridDatasetHashMap.get(tDatasetID);
+                if (edd == null) {
+                    edd = (EDD)tableDatasetHashMap.get(tDatasetID);
+                    if (edd == null) {
+                        String2.log("  OpenSearch Warning: datasetID=" + tDatasetID + " not found!");
+                        continue;
+                    }
+                }
+                writer.write(
+                    "  <entry>\n" +
+                    "    <title>" + XML.encodeAsXML(edd.title()) + "</title>\n" +
+                    "    <link href=\"" + tErddapUrl + "/" + edd.dapProtocol() + "/" + tDatasetID + ".html\"/>\n" +
+                    //<id> shouldn't change if server's url changes or if served by another erddap.
+                    //But I'm just using a simpler system which is universally unique: the dataset's url
+                    //It is okay that the dataset will change in time. It is still the same dataset.
+                    "    <id>" + tErddapUrl + "/" + edd.dapProtocol() + "/" + tDatasetID + ".html</id>\n" +
+                    "    <updated>" + Calendar2.millisToIsoZuluString(edd.creationTimeMillis()) +
+                        "Z</updated>\n" +
+                    "    <content type=\"text\">\n" + XML.encodeAsXML(edd.extendedSummary()) +                           
+                    "    </content>\n" +
+                    "  </entry>\n");
+            }
+
+            writer.write(
+                "</feed>\n");
+            writer.close(); //it calls writer.flush then out.close();         
+            return;
+        }
+
+
+        //*** else return results as RSS 
+        OutputStreamSource outSource = new OutputStreamFromHttpResponse(
+            request, response, "OpenSearchResults", "custom:application/rss+xml", ".xml"); 
+        OutputStream out = outSource.outputStream("UTF-8"); 
+        Writer writer = new OutputStreamWriter(out, "UTF-8");
+        writer.write(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        "<rss version=\"2.0\" \n" +
+        "  xmlns:opensearch=\"http://a9.com/-/spec/opensearch/1.1/\"\n" +
+        "  xmlns=\"http://backend.userland.com/rss2\">\n" +
+        "  <channel>\n" +
+        "    <title>ERDDAP Search: " + xmlSearchTerms + "</title>\n" +
+        "    <link>" + xmlThisRequest + "</link>\n" +
+        "    <description>ERDDAP Search results for \"" + 
+            xmlSearchTerms + "\" at " + tErddapUrl + "</description>\n" +
+        "    <opensearch:totalResults>" + nMatches + "</opensearch:totalResults>\n" +
+        "    <opensearch:startIndex>" + (startIndex + 1) + "</opensearch:startIndex>\n" +
+        "    <opensearch:itemsPerPage>" + itemsPerPage + "</opensearch:itemsPerPage>\n" +
+        "    <atom:link rel=\"search\" type=\"application/opensearchdescription+xml\"" +
+             " href=\"" + serviceUrl + "\"/>\n" +
+        "    <opensearch:Query role=\"request\" searchTerms=\"" + 
+            xmlPctSearchTerms + "\" startPage=\"" + page + "\"/>\n");
+        
+        //0 results, see Best Practices at web site?
+        if (datasetIDSize == 0) {
+            writer.write(
+                "    <item>\n" +
+                "      <title>" + XML.encodeAsXML(title0) + "</title>\n" +
+                "      <link>" + tErddapUrl + "/" + protocol + "/index.html</link>\n" +
+                "      <description>" + XML.encodeAsXML(msg0) + "</description>\n" +
+                "    </item>\n");
+        }
+
+        for (int row = 0; row < datasetIDSize; row++) {
+            String tDatasetID = datasetIDs.get(row);
+            EDD edd = (EDD)gridDatasetHashMap.get(tDatasetID);
+            if (edd == null) {
+                edd = (EDD)tableDatasetHashMap.get(tDatasetID);
+                if (edd == null) {
+                    String2.log("  OpenSearch Warning: datasetID=" + tDatasetID + " not found!");
+                    continue;
+                }
+            }
+            writer.write(
+                "    <item>\n" +
+                "      <title>" + XML.encodeAsXML(edd.title()) + "</title>\n" +
+                "      <link>" + tErddapUrl + "/" + edd.dapProtocol() + "/" + tDatasetID + ".html</link>\n" +
+                "      <description>\n" + XML.encodeAsXML(edd.extendedSummary()) + 
+                      "</description>\n" +
+                "    </item>\n");
+        }
+
+        writer.write(
+            "  </channel>\n" +
+            "</rss>\n");
+        writer.close(); //it calls writer.flush then out.close();         
+    }
+
+    /**
      * This writes the link to Advanced Search page.
      *
      * @param loggedInAs
-     * @param paramString the param string 
-     *    (starting point for advanced search, already percent encoded) 
-     *    (or "" or null).
+     * @param paramString the param string (after "?")
+     *    (starting point for advanced search, already percent encoded, but not XML/HTML encoded) 
+     *    (or "" or null)
+     *    but should at least have page= and itemsPerPage= (PIppQuery).
      */
     public String getAdvancedSearchLink(String loggedInAs, String paramString) throws Throwable {
 
         return 
             "<a href=\"" + EDStatic.erddapUrl(loggedInAs) + "/search/advanced.html" +
-            (paramString == null || paramString.length() == 0? "" : 
-                "?" + XML.encodeAsHTML(paramString)) +
-            "\">Advanced Search</a>\n" +
+            XML.encodeAsHTML(EDStatic.questionQuery(paramString)) +
+            "\">" + EDStatic.advancedSearch + "</a>\n" +
             EDStatic.htmlTooltipImage(loggedInAs, EDStatic.advancedSearchHtml) +
             "\n";
     }
@@ -5856,7 +6762,7 @@ writer.write(
         String catAtts[]       = EDStatic.categoryAttributes;
         String catAttsInURLs[] = EDStatic.categoryAttributesInURLs;
         int    nCatAtts = catAtts.length;
-        String ANY = "(ANY)";
+        String ANY = "(ANY)";  //don't translate so consistent on all erddaps?
         String searchFor = "";
           
         //respond to /search/advanced.xxx request
@@ -5875,6 +6781,22 @@ writer.write(
         //parameters are "" if unused (not null)
         searchFor = request.getParameter("searchFor");
         searchFor = searchFor == null? "" : searchFor.trim();
+
+        //ensure query has page=   
+        //(different from similar places because there may be many other params)
+        if (request.getParameter("page") == null) {
+            if (userQuery == null)
+                userQuery = "";
+            if (request.getParameter("itemsPerPage") == null) 
+                userQuery = "itemsPerPage=" + EDStatic.defaultItemsPerPage + 
+                    (userQuery.length() == 0? "" : "&" + userQuery);
+            userQuery = "page=1&" + userQuery;
+            response.sendRedirect(
+                EDStatic.baseUrl(loggedInAs) + request.getRequestURI() + "?" + userQuery);
+            return;
+        }              
+        int pipp[] = EDStatic.getRequestedPIpp(request);
+
         EDStatic.tally.add("Advanced Search, Search For (since startup)", searchFor);
         EDStatic.tally.add("Advanced Search, Search For (since last daily report)", searchFor);
 
@@ -5967,7 +6889,7 @@ writer.write(
         if (toHtml) { 
             //display start of web page
             out = getHtmlOutputStream(request, response);
-            writer = getHtmlWriter(loggedInAs, "Advanced Search", out); 
+            writer = getHtmlWriter(loggedInAs, EDStatic.advancedSearch, out); 
             try {
                 HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
                 widgets.htmlTooltips = true;
@@ -5976,17 +6898,21 @@ writer.write(
                 //display the advanced search form
                 String formName = "f1";
                 writer.write(
-                    EDStatic.youAreHere(loggedInAs, "Advanced Search " +
+                    EDStatic.youAreHere(loggedInAs, EDStatic.advancedSearch + " " +
                         EDStatic.htmlTooltipImage(loggedInAs, 
                             EDStatic.advancedSearchHtml)) + "\n\n" +
                     EDStatic.advancedSearchDirections + "\n" +
                     widgets.beginForm(formName, "GET",
                         tErddapUrl + "/search/advanced.html", "") + "\n");
 
+                //pipp
+                writer.write(widgets.hidden("page", "1")); //new search always resets to page 1
+                writer.write(widgets.hidden("itemsPerPage", "" + pipp[1]));
+
                 //full text search...
                 writer.write(
-                    "<p><b>Full Text Search for Datasets</b>\n" + 
-                    EDStatic.htmlTooltipImage(loggedInAs, EDStatic.searchHintsHtml(tErddapUrl)) + "\n" +
+                    "<p><b>" + EDStatic.searchFullTextHtml + "</b>\n" + 
+                    EDStatic.htmlTooltipImage(loggedInAs, EDStatic.searchHintsHtml) + "\n" +
                     "<br>" +
                     widgets.textField("searchFor", EDStatic.searchTip, 70, 255, searchFor, "") + "\n");
 
@@ -5998,12 +6924,7 @@ writer.write(
                     "<tr>\n" +
                     "  <td align=\"left\" colspan=\"2\"><b>" + EDStatic.categoryTitleHtml + "</b>\n" +
                     EDStatic.htmlTooltipImage(loggedInAs, 
-                        "Datasets can be categorized in different ways" +
-                        "<br>based on the values of various metadata attributes." +
-                        "<p>Most datasets have multiple values for some attributes," +
-                        "<br>for example, the \"long_name\" associated with each variable." +
-                        "<br>To search for more than one value, enter additional values in the Full Text" +
-                        "<br>textfield above, e.g., <tt>\"long_name=Sea Surface Temperature\"</tt>.") +
+                        EDStatic.advancedSearchCategoryTooltip) +
                     "  </td>\n" +
                     "</tr>\n" +
                     "<tr>\n" +
@@ -6030,24 +6951,9 @@ writer.write(
                 writer.write("</table>\n\n");
 
                 //bounding box...
-                String mapTooltip = 
-                    "You can specify longitude and latitude bounds by entering text in the textfields," +
-                    "<br>or you can specify a rectangle on the map by clicking on two diagonal corners." +
-                    "<br>(Do it again if needed.)" +
-                    "<br>Drawing a rectangle on the map automatically puts values in the lat and lon textfields." +
-                    "<br>The values in the lat and lon textfields are what really count." +
-                    "<br>Drawing a rectangle on the map is just an easy way to specify those values.";
-                String lonTooltip = 
-                    mapTooltip + 
-                    "<p>Some datasets have longitude values within 0 to 360, others use -180 to 180." +
-                    "<br>You can specify Min and Max Longitude within 0 to 360 or -180 to 180," +
-                    "<br>but ERDDAP will only find datasets that match the values you specify." +
-                    "<br>Consider doing two searches, e.g., longitude -30 to 0, and 330 to 360.";
-                String timeTooltip = 
-                    "Use the format yyyy-MM-dd'T'HH:mm:ssZ, for example, 2009-01-21T23:00:00Z." +
-                    "<br>If you specify something, you must include yyyy-MM-dd." +
-                    "<br>You can omit (backwards from the end) Z, :ss, :mm, :HH, and T." +
-                    "<br>Always use UTC (GMT/Zulu) time.";
+                String mapTooltip    = EDStatic.advancedSearchMapTooltip;
+                String lonTooltip    = mapTooltip + EDStatic.advancedSearchLonTooltip;
+                String timeTooltip   = EDStatic.advancedSearchTimeTooltip;
                 String twoClickMap[] = HtmlWidgets.myTwoClickMap540Big(formName, 
                     widgets.imageDirUrl + "world540Big.png", null); //debugInBrowser
 
@@ -6056,24 +6962,21 @@ writer.write(
                     widgets.beginTable(0, 0, "") +
                     "<tr>\n" +
                     "  <td align=\"left\" colspan=\"3\"><b>" + 
-                        "Search for Datasets that have Data within Longitude, Latitude, and Time Ranges</b>\n" +
+                        EDStatic.advancedSearchBounds + "</b>\n" +
                     EDStatic.htmlTooltipImage(loggedInAs, 
-                        "Datasets will match these criteria if they have a least some matching data." +
-                        "<p>All grid datasets that have longitude, latitude and time variables\n" +
-                        "<br>have the data-range information needed to do these tests." +
-                        "<br>Unfortunately, some tabular datasets have the variables, but don't have" +
-                        "<br>the data-range information. They will be excluded from the search results." +
+                        EDStatic.advancedSearchRangeTooltip +
                         "<p>" + lonTooltip) +
                     "  </td>\n" +
                     "</tr>\n" +
 
                     //line 1
                     "<tr>\n" +
-                    "  <td>Maximum Latitude:&nbsp;</td>\n" +
+                    "  <td>" + EDStatic.advancedSearchMaxLat + ":&nbsp;</td>\n" +
                     "  <td>" + 
                     "    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n" +
-                        widgets.textField("maxLat", "Maximum Latitude (-90 to 90)<p>" + mapTooltip, 8, 8, 
-                            (Double.isNaN(maxLat)? "" : "" + maxLat), "") + 
+                        widgets.textField("maxLat", 
+                            EDStatic.advancedSearchMaxLat + " (-90 to 90)<p>" + mapTooltip, 
+                            8, 8, (Double.isNaN(maxLat)? "" : "" + maxLat), "") + 
                     "    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n" +
                     "    </td>\n" +
                     "  <td rowspan=\"7\" nowrap>&nbsp;&nbsp;" + twoClickMap[0] + 
@@ -6084,40 +6987,49 @@ writer.write(
 
                     //line 2
                     "<tr>\n" +
-                    "  <td>Min and Max Longitude:&nbsp;</td>\n" +
+                    "  <td>" + EDStatic.advancedSearchMinMaxLon + ":&nbsp;</td>\n" +
                     "  <td>" + 
-                        widgets.textField("minLon", "Minimum Longitude<p>" + lonTooltip, 8, 8, 
+                        widgets.textField("minLon", 
+                            EDStatic.advancedSearchMinLon + "<p>" + lonTooltip, 8, 8, 
                             (Double.isNaN(minLon)? "" : "" + minLon), "") + "\n" +
-                        widgets.textField("maxLon", "Maximum Longitude<p>" + lonTooltip, 8, 8, 
+                        widgets.textField("maxLon", 
+                            EDStatic.advancedSearchMaxLon + "<p>" + lonTooltip, 8, 8, 
                             (Double.isNaN(maxLon)? "" : "" + maxLon), "") +
                         "</td>\n" +
                     "</tr>\n" +
 
                     //line 3
                     "<tr>\n" +
-                    "  <td>Minimum Latitude:&nbsp;</td>\n" +
+                    "  <td>" + EDStatic.advancedSearchMinLat + ":&nbsp;</td>\n" +
                     "  <td>" + 
                     "    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n" +
-                        widgets.textField("minLat", "Minimum Latitude (-90 to 90)<p>" + mapTooltip, 8, 8, 
+                        widgets.textField("minLat", 
+                            EDStatic.advancedSearchMinLat + " (-90 to 90)<p>" + mapTooltip, 8, 8, 
                             (Double.isNaN(minLat)? "" : "" + minLat), "") +
                     "    &nbsp;\n" +
                         widgets.htmlButton("button", "", "", 
-                            "Clear all of the Longitude and Latitude textfields and the rectangle on the map.",
-                            "Clear",
+                            EDStatic.advancedSearchClearHelp,
+                            EDStatic.advancedSearchClear,
                             "onClick='f1.minLon.value=\"\"; f1.maxLon.value=\"\"; " +
                                      "f1.minLat.value=\"\"; f1.maxLat.value=\"\"; " +
-                                     "((document.all)? document.all.rubberBand : document.getElementById(\"rubberBand\")).style.visibility=\"hidden\";'") +
+                                     "((document.all)? document.all.rubberBand : " +
+                                         "document.getElementById(\"rubberBand\"))." +
+                                         "style.visibility=\"hidden\";'") +
                     "    </td>\n" +
                     "</tr>\n" +
                      
                     //lines 4, 5   time
                     "<tr>\n" +
-                    "  <td>Min Time:&nbsp;</td>\n" +
-                    "  <td>" + widgets.textField("minTime", "Minimum Time<p>" + timeTooltip, 27, 27, minTime, "") + "</td>\n" +
+                    "  <td>" + EDStatic.advancedSearchMinTime + ":&nbsp;</td>\n" +
+                    "  <td>" + widgets.textField("minTime", 
+                        EDStatic.advancedSearchMinTime + "<p>" + timeTooltip, 27, 27, minTime, "") + 
+                        "</td>\n" +
                     "</tr>\n" +
                     "<tr>\n" +
-                    "  <td>Max Time:&nbsp;</td>\n" +
-                    "  <td>" + widgets.textField("maxTime", "Maximum Time<p>" + timeTooltip, 27, 27, maxTime, "") + "</td>\n" +
+                    "  <td>" + EDStatic.advancedSearchMaxTime + ":&nbsp;</td>\n" +
+                    "  <td>" + widgets.textField("maxTime", 
+                        EDStatic.advancedSearchMaxTime + "<p>" + timeTooltip, 27, 27, maxTime, "") + 
+                        "</td>\n" +
                     "</tr>\n" +
 
                     //line 6   blank 
@@ -6129,7 +7041,7 @@ writer.write(
                     "<tr>\n" +
                     "  <td>" + 
                         widgets.htmlButton("submit", null, null, EDStatic.searchClickTip, 
-                            "<b>" + EDStatic.searchButton + "</b>", "") +
+                            "<big><b>" + EDStatic.searchButton + "</b></big>", "") +
                     "  </td>\n" +
                     "</tr>\n" +
 
@@ -6158,11 +7070,11 @@ writer.write(
         if (whichProtocol > 0) {
             String protocol = protocols.get(whichProtocol);
             if (protocol.equals("griddap")) {
-                matchingDatasetIDs = gridDatasetIDs(false);   //this assumes protocol is handled first 
+                matchingDatasetIDs = gridDatasetIDs();   
             } else if (protocol.equals("tabledap")) {
-                matchingDatasetIDs = tableDatasetIDs(false);  //this assumes protocol is handled first
+                matchingDatasetIDs = tableDatasetIDs();  
             } else {
-                matchingDatasetIDs = allDatasetIDs(false);    //this assumes protocol is handled first
+                matchingDatasetIDs = allDatasetIDs();    
                 boolean testWMS = protocol.equals("WMS");
                 boolean testWCS = protocol.equals("WCS");
                 boolean testSOS = protocol.equals("SOS");
@@ -6181,7 +7093,12 @@ writer.write(
                     }
                 }
                 matchingDatasetIDs.justKeep(keep);
+                matchingDatasetIDs.sort(); //must be plain sort()
             }
+
+            //category search needs plain sort(), not sortIgnoreCase()
+            matchingDatasetIDs.sort(); 
+            //String2.log("  after protocol=" + protocol + ", nMatching=" + matchingDatasetIDs.size()); 
         }            
 
 
@@ -6190,9 +7107,11 @@ writer.write(
             if (whichCatSAIndex[ca] > 0) {
                 StringArray tMatching = categoryInfo(catAtts[ca], catSAs[ca][whichCatSAIndex[ca]]);
                 tMatching.sort(); //must be plain sort()
-                if  (matchingDatasetIDs == null)
+                if  (matchingDatasetIDs == null) {
                      matchingDatasetIDs = tMatching;
-                else matchingDatasetIDs.inCommon(tMatching); 
+                } else {
+                    matchingDatasetIDs.inCommon(tMatching); 
+                }
             //String2.log("  after " + catAttsInURLs[ca] + ", nMatching=" + matchingDatasetIDs.size()); 
             }
         }
@@ -6203,7 +7122,7 @@ writer.write(
         boolean testTime = !Double.isNaN(minTimeD) || !Double.isNaN(maxTimeD);
         if (testLon || testLat || testTime) {
             if (matchingDatasetIDs == null)
-                matchingDatasetIDs = allDatasetIDs(false);
+                matchingDatasetIDs = allDatasetIDs();
             int dsn = matchingDatasetIDs.size();
             BitSet keep = new BitSet(dsn);
             keep.set(0, dsn, true);  //so look for a reason not to keep it
@@ -6290,35 +7209,60 @@ writer.write(
         }
             
         //do text search last, since it is the most time-consuming
-        Table resultsTable = null;
-        if (searchFor.equals("all")) {
-            //no need to do the full text search
+        //  and since it sorts the results by relevance
+        //IMPORTANT: this step ensures that datasets are in sorted order
+        //  (so reducing by page and itemsPerPage below works with correct items in correct order)
+        //  AND also ensures user has right to know dataset exists
+        if (searchFor.length() > 0) {
+            //do the full text search (sorts best to worst match)
             if (matchingDatasetIDs == null)
-                matchingDatasetIDs = allDatasetIDs(false);
-            //show datasets sorted by title
-            boolean sortByTitle = true;
+                matchingDatasetIDs = allDatasetIDs();
+            matchingDatasetIDs = getSearchDatasetIDs(loggedInAs, matchingDatasetIDs, 
+                searchFor);
+
+        } else {
+            //sortByTitle
+            if (matchingDatasetIDs != null) 
+                matchingDatasetIDs = sortByTitle(loggedInAs, matchingDatasetIDs);
+        }
+
+        Table resultsTable = null;
+        boolean searchPerformed = matchingDatasetIDs != null;        
+        int nMatches = 0, page = 0, itemsPerPage = 0,  //revised below   
+            startIndex = 0, lastPage = 0;      
+
+        if (searchPerformed) {
+            //calculate Page ItemsPerPage
+            nMatches = matchingDatasetIDs.size();
+            int pIpp[] = EDStatic.calculatePIpp(request, nMatches);
+            page         = pIpp[0]; //will be 1... 
+            itemsPerPage = pIpp[1]; //will be 1...
+            startIndex   = pIpp[2]; //will be 0...
+            lastPage     = pIpp[3]; //will be 1...
+
+            //reduce datasetIDs to ones on requested page
+            //more efficient to remove items at end, then items at beginning
+            if (startIndex + itemsPerPage < nMatches) 
+                matchingDatasetIDs.removeRange(startIndex + itemsPerPage, nMatches);
+            matchingDatasetIDs.removeRange(0, Math.min(startIndex, nMatches));
+
+            //if non-null, error will be String[2]
+            /*String error[] = null;
+            if (nMatches == 0) {
+                error = new String[] {
+                MessageFormat.format(EDStatic.noDatasetWith, "protocol=\"" + protocol + "\""),
+                    ""};
+            } else if (page > lastPage) {
+                error = EDStatic.noPage(page, lastPage);
+            }*/
+
+
+            //make the resultsTable 
+            boolean sortByTitle = false;  //already put in appropriate order above
             if (toHtml)
                  resultsTable = makeHtmlDatasetTable( loggedInAs, matchingDatasetIDs, sortByTitle);  
             else resultsTable = makePlainDatasetTable(loggedInAs, matchingDatasetIDs, sortByTitle, fileTypeName);  
-
-        } else if (searchFor.length() > 0) {
-            //do the full text search
-            if (matchingDatasetIDs == null)
-                matchingDatasetIDs = allDatasetIDs(false);
-            resultsTable = getSearchTable(loggedInAs, matchingDatasetIDs, 
-                searchFor, toHtml, fileTypeName);
-
-        } else {
-            //show the selected datasets, if any
-            boolean sortByTitle = true;
-            if (matchingDatasetIDs != null) {
-                if (toHtml)
-                     resultsTable = makeHtmlDatasetTable( loggedInAs, matchingDatasetIDs, sortByTitle);  
-                else resultsTable = makePlainDatasetTable(loggedInAs, matchingDatasetIDs, sortByTitle, fileTypeName);  
-            }
         }
-       
-        boolean searchPerformed = resultsTable != null;        
 
 
         //*** show the .html results
@@ -6328,46 +7272,43 @@ writer.write(
                 writer.write(
                     //"<br>&nbsp;\n" +
                     "<hr>\n" +
-                    "<h2>Advanced Search Results</h2>\n");  
+                    "<h2>" + EDStatic.advancedSearchResults + "</h2>\n");  
                 if (searchPerformed) {
                     if (resultsTable.nRows() == 0) {
                          writer.write("<b>" + XML.encodeAsHTML(EDStatic.THERE_IS_NO_DATA) + "</b>\n" +
                              (searchFor.length() > 0? "<br>" + EDStatic.searchSpelling + "\n" : "") +
-                             "<br>Try using fewer and/or broader search criteria.\n");
+                             "<br>" + EDStatic.advancedSearchFewerCriteria + "\n");
                     } else {
 
-                        if (searchFor.length() > 0 && !searchFor.equals("all"))
-                            if (resultsTable.nRows() == 1) 
-                                writer.write(
-                                "1 dataset matches all of the search criteria.\n");
-                            else writer.write(
-                                resultsTable.nRows() + " datasets match all of the search criteria. " +
-                                EDStatic.searchRelevantAreFirst + "\n");
+                        String nMatchingHtml = EDStatic.nMatchingDatasetsHtml(
+                            nMatches, page, lastPage, 
+                            searchFor.length() > 0 && !searchFor.equals("all"),  //true=most relevant first
+                            EDStatic.baseUrl(loggedInAs) + requestUrl + 
+                            EDStatic.questionQuery(request.getQueryString()));
+                            
+                        writer.write(nMatchingHtml +
+                            "<br>&nbsp;\n"); 
 
-                        else if (resultsTable.nRows() == 1) 
-                            writer.write( 
-                                "The 1 dataset which matches all of the search\n" +
-                                "criteria is listed below.\n");
-
-                        else writer.write(  //resultsTable > 1 rows
-                                "The " + resultsTable.nRows() + " datasets which match all of the search\n" +
-                                "criteria are listed in alphabetical order, by Title.\n");
-                            //was "Lower rating numbers indicate a better match.\n" +
-                            //+ "<br>" + EDStatic.clickAccessHtml + "\n" +
-                            //"<br>&nbsp;\n"
-
-                        writer.write("<br>&nbsp;\n"); //necessary for the blank line before the form (not <p>)
                         resultsTable.saveAsHtmlTable(writer, "commonBGColor", null, 1, false, -1, 
                             false, false); //don't encodeAsHTML the cell's contents, !allowWrap
+
+                        if (lastPage > 1)
+                            writer.write("\n<p>" + nMatchingHtml);
+
+                        //list plain file types
+                        writer.write(
+                            "\n" +
+                            "<p>" + EDStatic.restfulInformationFormats + " \n(" +
+                            plainFileTypesString + //not links, which would be indexed by search engines
+                            ") <a href=\"" + tErddapUrl + "/rest.html\">" + 
+                                EDStatic.restfulViaService + "</a>.\n" +
+                            "\n");
+
                     }
                 } else {
                     writer.write(
-                        "To see some results, you must specify at least one search criterion above,\n" +
-                        "then click <tt>" + EDStatic.searchButton + "</tt>.\n" +
-                        "<br>Or, <a href=\"" + tErddapUrl + "/search/advanced.html?searchFor=all\">" +
-                        "view a list of all " + 
-                        (gridDatasetHashMap.size() + tableDatasetHashMap.size()) +
-                        " datasets</a>.");
+                        MessageFormat.format(EDStatic.advancedSearchNoCriteria,
+                            EDStatic.searchButton, tErddapUrl, pipp[1]));
                 }
 
             } catch (Throwable t) {
@@ -6386,8 +7327,7 @@ writer.write(
                 return;
             } else {
                 sendResourceNotFoundError(request, response, //or SC_NO_CONTENT error?
-                    "A " + requestUrl + 
-                    " request must include at least one search criteria.");
+                    MessageFormat.format(EDStatic.advancedSearchWithCriteria, fileTypeName));
                 return;
             }
         }
@@ -6425,11 +7365,14 @@ writer.write(
         return sb.toString();
     }
 
+
     /**
      * This generates a results table in response to a searchFor string.
      *
-     * @param loggedInAs  the name of the logged in user (or null if not logged in)
-     * @param tDatasetIDs  The datasets to be considered (usually allDatasetIDs(false)). 
+     * @param loggedInAs  the name of the logged in user (or null if not logged in).
+     *    This is used to determine if the user has the right to know if a given
+     *    dataset exists.  (But dataset will be matched if EDStatic.listPrivateDatasets.)  
+     * @param tDatasetIDs  The datasets to be considered (usually allDatasetIDs()). 
      *    The order (sorted or not) is irrelevant.
      * @param searchFor the Google-like string of search terms.
      * @param toHtml if true, this returns a table with values suited
@@ -6442,10 +7385,38 @@ writer.write(
     public Table getSearchTable(String loggedInAs, StringArray tDatasetIDs,
         String searchFor, boolean toHtml, String fileTypeName) {
 
+        tDatasetIDs = getSearchDatasetIDs(loggedInAs, tDatasetIDs, searchFor);
+
+        boolean sortByTitle = false; //already sorted by search 
+        return toHtml? 
+            makeHtmlDatasetTable( loggedInAs, tDatasetIDs, sortByTitle) : 
+            makePlainDatasetTable(loggedInAs, tDatasetIDs, sortByTitle, fileTypeName);
+    }
+
+    /**
+     * This finds the datasets that match a searchFor string.
+     *
+     * @param loggedInAs  the name of the logged in user (or null if not logged in).
+     *    This is used to determine if the user has the right to know if a given
+     *    dataset exists.  (But dataset will be matched if EDStatic.listPrivateDatasets.)  
+     * @param tDatasetIDs  The datasets to be considered (usually allDatasetIDs()). 
+     *    The order (sorted or not) is irrelevant.
+     * @param searchFor the Google-like string of search terms.
+     *    Special cases: "" and "all" return all datasets that loggedInAs has a right 
+     *    to know exist, sorted by title.
+     * @return a StringArray with the matching datasetIDs, in order best to worst.
+     */
+    public StringArray getSearchDatasetIDs(String loggedInAs, StringArray tDatasetIDs,
+        String searchFor) {
+
         //*** respond to search request
-        StringArray searchWords = StringArray.wordsAndQuotedPhrases(searchFor);
-        for (int i = 0; i < searchWords.size(); i++)
-            searchWords.set(i, searchWords.get(i).toLowerCase());
+        StringArray searchWords = StringArray.wordsAndQuotedPhrases(searchFor.toLowerCase());
+        int nSearchWords = searchWords.size();
+
+        //special cases: "" and "all"
+        if (nSearchWords == 0 ||
+            (nSearchWords == 1 && searchWords.get(0).equals("all"))) 
+            return sortByTitle(loggedInAs, tDatasetIDs);
         
         //gather the matching datasets
         Table table = new Table();
@@ -6454,61 +7425,252 @@ writer.write(
         int rankCol = table.addColumn("rank", rankPa); 
         int idCol   = table.addColumn("id", idPa);
 
-        //NO LONGER USED    
-        //make the list of possible datasetIDs
-        //StringArray tDatasetIDs
-        //int gpo = searchWords.indexOf("type=grid");  //see info in getSearchFormHtml
-        //int tpo = searchWords.indexOf("type=table");
-        //if      (gpo >= 0 && tpo <  0) {tDatasetIDs = gridDatasetIDs(false);  searchWords.remove(gpo); if (searchWords.size() == 0) searchWords.add("");}
-        //else if (gpo < 0  && tpo >= 0) {tDatasetIDs = tableDatasetIDs(false); searchWords.remove(tpo); if (searchWords.size() == 0) searchWords.add("");}
-        //else if (gpo < 0  && tpo <  0) {tDatasetIDs = allDatasetIDs(false); }
-        //else {tDatasetIDs = new StringArray(); searchWords.clear();} //no datasets are grid and table
-
         //do the search; populate the results table 
         String roles[] = EDStatic.getRoles(loggedInAs);
         int nDatasetsSearched = 0;
         long tTime = System.currentTimeMillis();
-        if (searchWords.size() > 0) {
-            //prepare the byte[]s
-            byte searchWordsB[][] = new byte[searchWords.size()][];
-            int  jumpB[][]        = new int[ searchWords.size()][];
-            for (int w = 0; w < searchWords.size(); w++) {
-                searchWordsB[w] = String2.getUTF8Bytes(searchWords.get(w));
-                jumpB[w] = String2.makeJumpTable(searchWordsB[w]);
-            }
+        if (nSearchWords > 0) {
+            int ntDatasetIDs = tDatasetIDs.size();
 
-            //do the searches
-            for (int i = 0; i < tDatasetIDs.size(); i++) {
-                String tId = tDatasetIDs.get(i);
-                EDD edd = (EDD)gridDatasetHashMap.get(tId);
-                if (edd == null)
-                    edd = (EDD)tableDatasetHashMap.get(tId);
-                if (edd == null)  //just deleted?
-                    continue;
-                if (!EDStatic.listPrivateDatasets && !edd.isAccessibleTo(roles))
-                    continue;
-                nDatasetsSearched++;
-                int rank = edd.searchRank(searchWordsB, jumpB);           
-                if (rank < Integer.MAX_VALUE) {
-                    rankPa.add(rank);
-                    idPa.add(tId);
+            //try to get luceneIndexSearcher
+            //if fail, go back to original search
+            Object object2[] = EDStatic.useLuceneSearchEngine?
+                EDStatic.luceneIndexSearcher() : new Object[]{null, null};                   
+            IndexSearcher indexSearcher = (IndexSearcher)object2[0];
+            String datasetIDFieldCache[] = (String[])object2[1];
+
+            if (indexSearcher != null && datasetIDFieldCache != null) { 
+                //useLuceneSearchEngine=true and searcher is valid
+                //do the searches with the LUCENE searchEngine
+                //??? future: allow "title:..." searches
+                try {
+                    BooleanQuery booleanQuery = new BooleanQuery();
+                    boolean allNegative = true;
+                    boolean booleanQueryHasTerms = false;
+                    for (int w = 0; w < nSearchWords; w++) {
+
+                        //create the BooleanQuery for Lucene
+                        //see http://lucene.apache.org/java/3_5_0/queryparsersyntax.html
+                        String sw = searchWords.get(w);
+
+                        //excluded term?
+                        BooleanClause.Occur occur;
+                        if (sw.charAt(0) == '-') {
+                            occur = BooleanClause.Occur.MUST_NOT;
+                            sw = sw.substring(1);
+                        } else {
+                            occur = BooleanClause.Occur.MUST;
+                            allNegative = false;
+                        }
+
+                        //remove enclosing double quotes
+                        if (sw.length() >= 2 && 
+                            sw.charAt(0) == '\"' && sw.charAt(sw.length() - 1) == '\"') 
+                            sw = String2.replaceAll(sw.substring(1, sw.length() - 1), "\"\"", "\"");
+
+                        //escape special chars
+                        StringBuilder sb2 = new StringBuilder();
+                        for (int i2 = 0; i2 < sw.length(); i2++) {
+                            if (EDStatic.luceneSpecialCharacters.indexOf(sw.charAt(i2)) >= 0)
+                                sb2.append('\\');
+                            sb2.append(sw.charAt(i2));
+                        }
+                        sw = sb2.toString();
+
+                        //initial parsing (is it a Term or a Phrase?)
+                        //use queryParser to parse each part of the pre-parsed query
+                        //(using same Analyzer here as in IndexWriter
+                        //was emphasized at http://darksleep.com/lucene/ )
+                        Query tQuery = EDStatic.luceneParseQuery(sw);
+                        //String2.log("sw#" + w + "=" + sw + 
+                        //    " initialQuery=" + 
+                        //    (tQuery == null? "null" : tQuery.getClass().getName()) +
+                        //    " allNegative=" + allNegative);
+                        if (tQuery == null) {
+                            continue;  //it is possible, e.g., search for a stop word
+                        } else if (tQuery instanceof TermQuery) { //single word
+                            char lastChar = sw.length() == 0? ' ' : sw.charAt(sw.length() - 1);
+                            if (Character.isLetterOrDigit(lastChar) || 
+                                lastChar == '.' || lastChar == '_') //lucene treats as part of single word
+                                sw += "*"; //match original search: allow longer variants (wind finds windspeed)
+                            //else punctuation  //things like http://* fail, but http* succeeds
+                        } else {
+                            sw = "\"" + sw + "\""; //treat as phrase
+                        }
+
+                        //real parsing
+                        tQuery = EDStatic.luceneParseQuery(sw);
+
+                        if (tQuery == null)
+                            continue; //shouldn't happen
+                        booleanQueryHasTerms = true;
+                        booleanQuery.add(tQuery, occur);
+
+                        //boost score if it is also in title
+                        if (occur == BooleanClause.Occur.MUST) { //if it isn't in 'text', it won't be in title
+                            tQuery = EDStatic.luceneParseQuery("title:" + sw);
+                            if (tQuery != null) {
+                                booleanQueryHasTerms = true;
+                                booleanQuery.add(tQuery, BooleanClause.Occur.SHOULD);
+                            } //if tQuery couldn't be parsed, it is fine to just drop it
+                        }                           
+                    }
+
+                    //special case: add "all" to an allNegative query, e.g., "-sst -NODC" 
+                    //(for which Lucene says no matches)
+                    if (reallyVerbose) String2.log("allNegative=" + allNegative);
+                    if (allNegative) {
+                        if (booleanQueryHasTerms) {
+                            booleanQuery.add(
+                                new TermQuery(new Term(EDStatic.luceneDefaultField, "all")),
+                                BooleanClause.Occur.MUST);
+                        } else {
+                            //no terms. So return all datasetsIDs, sorted by title
+                            return sortByTitle(loggedInAs, tDatasetIDs);
+                        }
+                    }
+                    //now, booleanQuery must have terms
+                    if (reallyVerbose) String2.log("booleanQuery=" + booleanQuery.toString());
+
+                    //make a hashSet of tDatasetIDs (so seachable quickly)
+                    HashSet hashSet = new HashSet(Math2.roundToInt(1.4 * tDatasetIDs.size()));
+                    for (int i = 0; i < tDatasetIDs.size(); i++)
+                        hashSet.add(tDatasetIDs.get(i));
+
+                    //do the lucene search
+                    long luceneTime = System.currentTimeMillis();
+                    TopDocs hits = indexSearcher.search(booleanQuery, 
+                        indexSearcher.maxDoc()); //max n search results
+                    ScoreDoc scoreDocs[] = hits.scoreDocs;
+                    int nHits = scoreDocs.length;
+                    if (reallyVerbose) 
+                        String2.log("  luceneQuery nMatches=" + nHits + 
+                            " time=" + (System.currentTimeMillis() - luceneTime));
+                    for (int i = 0; i < nHits; i++) {
+                        //was (without luceneDatasetIDFieldCache)
+                        //Document hitDoc = indexSearcher.doc(hits.scoreDocs[i].doc);
+                        //String tDatasetID = hitDoc.get("datasetID"); 
+
+                        //with luceneDatasetIDFieldCache
+                        String tDatasetID = datasetIDFieldCache[scoreDocs[i].doc]; //doc#
+                        //String2.log("hit#" + i + ": datasetID=" + tDatasetID);
+
+                        //ensure tDatasetID is in tDatasetIDs (e.g., just grid datasets)
+                        if (!hashSet.contains(tDatasetID))
+                            continue;
+                        
+                        //ensure user is allowed to know this dataset exists
+                        if (EDStatic.listPrivateDatasets) {
+                            //list all datasets, private or not
+                            rankPa.add(i);  //they are already in sorted order
+                            idPa.add(tDatasetID);
+                        } else {
+                            //add if accessibleTo
+                            EDD edd = (EDD)gridDatasetHashMap.get(tDatasetID);
+                            if (edd == null)
+                                edd = (EDD)tableDatasetHashMap.get(tDatasetID);
+                            if (edd == null)  //just deleted?
+                                continue;
+                            if (edd.isAccessibleTo(EDStatic.getRoles(loggedInAs))) {
+                                rankPa.add(i);
+                                idPa.add(tDatasetID);
+                            }
+                        }
+                    }
+
+                } catch (Throwable t) {
+                    throw new SimpleException(EDStatic.searchNotAvailable);
                 }
+
+            } else {
+                //do the searches with the ORIGINAL searchEngine
+                //prepare the byte[]s
+                boolean isNegative[]  = new boolean[nSearchWords];
+                byte searchWordsB[][] = new byte[   nSearchWords][];
+                int  jumpB[][] = new int[nSearchWords][];
+                for (int w = 0; w < nSearchWords; w++) {
+                    String sw = searchWords.get(w);
+                    isNegative[w] = sw.charAt(0) == '-';  // -NCDC  -"my phrase"
+                    if (isNegative[w]) 
+                        sw = sw.substring(1); 
+
+                    //remove enclosing double quotes
+                    if (sw.length() >= 2 && 
+                        sw.charAt(0) == '\"' && sw.charAt(sw.length() - 1) == '\"')
+                        sw = String2.replaceAll(sw.substring(1, sw.length() - 1), "\"\"", "\"");
+
+                    searchWordsB[w] = String2.getUTF8Bytes(sw);
+                    jumpB[w] = String2.makeJumpTable(searchWordsB[w]);
+                }
+
+                for (int i = 0; i < ntDatasetIDs; i++) {
+                    String tId = tDatasetIDs.get(i);
+                    EDD edd = (EDD)gridDatasetHashMap.get(tId);
+                    if (edd == null)
+                        edd = (EDD)tableDatasetHashMap.get(tId);
+                    if (edd == null)  //just deleted?
+                        continue;
+                    if (!EDStatic.listPrivateDatasets && !edd.isAccessibleTo(roles))
+                        continue;
+                    nDatasetsSearched++;
+                    int rank = edd.searchRank(isNegative, searchWordsB, jumpB);           
+                    if (rank < Integer.MAX_VALUE) {
+                        rankPa.add(rank);
+                        idPa.add(tId);
+                    }
+                }
+
+                //sort
+                table.sort(new int[]{rankCol, idCol}, new boolean[]{true,true});
             }
         }
         if (verbose) {
             tTime = System.currentTimeMillis() - tTime;
-            String2.log("Erddap.search " +
+            String2.log("Erddap.search(" + EDStatic.searchEngine + ") " +
                 //"searchFor=" + searchFor + "\n" +
                 //"searchWords=" + searchWords.toString() + "\n" +
-                "nDatasetsSearched=" + nDatasetsSearched + 
-                " nWords=" + searchWords.size() + " totalTime=" + tTime + "ms"); 
-                //" avgTime=" + (tTime / Math.max(1, nDatasetsSearched*searchWords.size())));
+                //"nDatasetsSearched=" + nDatasetsSearched + 
+                " nWords=" + nSearchWords + " nMatches=" + rankPa.size() +
+                " totalTime=" + tTime + "ms"); 
+                //" avgTime=" + (tTime / Math.max(1, nDatasetsSearched*nSearchWords)));
         }
-        table.sort(new int[]{rankCol, idCol}, new boolean[]{true,true});
 
-        return toHtml? 
-            makeHtmlDatasetTable(loggedInAs, idPa, false) :   //roles check is redundant for some cases, but not all
-            makePlainDatasetTable(loggedInAs, idPa, false, fileTypeName);
+        return idPa;
+    }
+
+    /**
+     * This sorts the datasetIDs by the datasets' titles.
+     *
+     * @param loggedInAs  the name of the logged in user (or null if not logged in).
+     *    This is used to determine if the user has the right to know if a given
+     *    dataset exists. (But dataset will be matched if EDStatic.listPrivateDatasets.)  
+     * @param tDatasetIDs  The datasets to be considered (usually allDatasetIDs()). 
+     *    The order (sorted or not) is irrelevant.
+     * @return a StringArray with the matching datasetIDs, sorted by title.
+     */
+    public StringArray sortByTitle(String loggedInAs, StringArray tDatasetIDs) {
+
+        String roles[] = EDStatic.getRoles(loggedInAs);
+        Table table = new Table();
+        int n = tDatasetIDs.size();
+        StringArray titlePa = new StringArray(n, false);
+        StringArray idPa    = new StringArray(n, false);
+        table.addColumn("title", titlePa); 
+        table.addColumn("id", idPa);
+        for (int ds = 0; ds < n; ds++) {
+            String tID = tDatasetIDs.get(ds);
+            EDD edd = (EDD)gridDatasetHashMap.get(tID);
+            if (edd == null)
+                edd = (EDD)tableDatasetHashMap.get(tID);
+            if (edd == null)  //just deleted?
+                continue;
+            if (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles)) {
+                titlePa.add(edd.title());
+                idPa.add(tID);
+            }
+        }
+        table.leftToRightSortIgnoreCase(2);
+        return idPa;
     }
 
     /**
@@ -6530,6 +7692,17 @@ writer.write(
         String endOfRequestUrl = datasetIDStartsAt >= requestUrl.length()? "" : 
             requestUrl.substring(datasetIDStartsAt);
 
+        //ensure query has simplistically valid page= itemsPerPage=
+        if (!Arrays.equals(
+                EDStatic.getRawRequestedPIpp(request),
+                EDStatic.getRequestedPIpp(request))) {
+            response.sendRedirect(
+                EDStatic.baseUrl(loggedInAs) + requestUrl + "?" +
+                EDStatic.passThroughJsonpQuery(request) +
+                EDStatic.passThroughPIppQuery(request));  //should be nothing else in query
+            return;
+        }      
+
         //parse endOfRequestUrl into parts
         String parts[] = String2.split(endOfRequestUrl, '/');
         String attributeInURL = parts.length < 1? "" : parts[0];
@@ -6546,7 +7719,8 @@ writer.write(
             String values[] = categoryInfo(attribute).toArray();
             if (values.length == 1) {
                 response.sendRedirect(tErddapUrl + "/" + protocol + "/" + 
-                    attributeInURL + "/" + values[0] + "/index.html");
+                    attributeInURL + "/" + values[0] + "/index.html?" +
+                    EDStatic.passThroughPIppQueryPage1(request));
                 return;
             }
         }
@@ -6561,12 +7735,16 @@ writer.write(
             refine = 
                 "&nbsp;\n" +
                 ////Or, View All Datasets
-                //"<br>Or, <a href=\"" + tErddapUrl + "/info/index.html\">" +
+                //"<br>Or, <a href=\"" + tErddapUrl + "/info/index.html?" +
+                //    EDStatic.encodedPassThroughPIppQueryPage1(request) + "\">" +
                 //EDStatic.viewAllDatasetsHtml + "</a>\n" +
                 ////Or, search text
-                //"<p>" + getSearchFormHtml(loggedInAs, "Or, ", ":\n<br>", "") +
+                //"<p>" + getSearchFormHtml(request, loggedInAs, EDStatic.orComma, ":\n<br>", "") +
                 //Use <p> below if other options above are enabled.
-                "<br>Or, Refine this Search with " + getAdvancedSearchLink(loggedInAs, advancedQuery) +
+                "<br>" + EDStatic.orRefineSearchWith + 
+                    getAdvancedSearchLink(loggedInAs, 
+                        EDStatic.passThroughPIppQueryPage1(request) + 
+                        "&" + advancedQuery) +
                 "&nbsp;&nbsp;&nbsp;";
 
         String youAreHereTable = 
@@ -6583,7 +7761,8 @@ writer.write(
             //redirect to index.html
             if (attributeInURL.equals("") ||
                 attributeInURL.equals("index.htm")) {
-                response.sendRedirect(tErddapUrl + "/" + protocol + "/index.html");
+                response.sendRedirect(tErddapUrl + "/" + protocol + "/index.html?" +
+                    EDStatic.passThroughPIppQueryPage1(request));
                 return;
             }   
             
@@ -6593,7 +7772,7 @@ writer.write(
                 if (attributeInURL.equals("index" + fileTypeName)) {
                     //respond to categorize/index.xxx
                     //display list of categoryAttributes in plainFileType file
-                    Table table = categorizeOptionsTable(tErddapUrl, fileTypeName);
+                    Table table = categorizeOptionsTable(request, tErddapUrl, fileTypeName);
                     sendPlainTable(loggedInAs, request, response, table, protocol, fileTypeName);
                 } else {
                     sendResourceNotFoundError(request, response, "");
@@ -6609,7 +7788,7 @@ writer.write(
 
                     if (!attributeInURL.equals("index.html")) 
                         writeErrorHtml(writer, request, "categoryAttribute=\"" + attributeInURL + "\" is not an option.");
-                    writeCategorizeOptionsHtml1(loggedInAs, writer, null, false);
+                    writeCategorizeOptionsHtml1(request, loggedInAs, writer, null, false);
                 } catch (Throwable t) {
                     writer.write(EDStatic.htmlForException(t));
                 }
@@ -6623,14 +7802,15 @@ writer.write(
 
         //*** categoryName string should be e.g., Location
         //*** deal with index.xxx and invalid categoryName
-        StringArray catDats = categoryInfo(attribute, categoryName); 
+        StringArray catDats = categoryInfo(attribute, categoryName); //returns datasetIDs
         if (catDats.size() == 0) {
 
             //redirect to index.html
             if (categoryName.equals("") ||
                 categoryName.equals("index.htm")) {
                 response.sendRedirect(tErddapUrl + "/" + protocol + "/" + 
-                    attributeInURL + "/index.html");
+                    attributeInURL + "/index.html?" +
+                    EDStatic.passThroughPIppQueryPage1(request));
                 return;
             }   
             
@@ -6640,12 +7820,17 @@ writer.write(
                 if (catDats.size() > 0) {
                     parts[1] = parts[1].toLowerCase();
                     response.sendRedirect(tErddapUrl + "/" + protocol + "/" +
-                        String2.toSVString(parts, "/", false));
+                        String2.toSVString(parts, "/", false) + "?" +
+                        EDStatic.passThroughJsonpQuery(request) +
+                        EDStatic.passThroughPIppQueryPage1(request)); 
                     return;
                 }   
             }
 
             //return table of categoryNames
+            //Always return all.  page= and itemsPerPage don't apply to this.
+            //!!! That's trouble for UAF, because there could be 10^6 options and 
+            //   browsers (and Mac users) will freak out.
             if (String2.indexOf(plainFileTypes, fileTypeName) >= 0) {
                 //plainFileType
                 if (categoryName.equals("index" + fileTypeName)) {
@@ -6658,27 +7843,28 @@ writer.write(
                     return;
                 }
             } else { 
-                //respond to categorize/index.html or errors: unknown attribute, unknown fileTypeName 
+                //respond to categorize/index.html or errors: 
+                //  unknown attribute, unknown fileTypeName 
                 OutputStream out = getHtmlOutputStream(request, response);
                 Writer writer = getHtmlWriter(loggedInAs, "Categorize", out); 
                 try {
                     writer.write(youAreHereTable);
                     if (!categoryName.equals("index.html")) {
                         writeErrorHtml(writer, request, 
-                            "categoryName=\"" + categoryName + 
-                            "\" is not an option when categoryAttribute=\"" + 
-                            attributeInURL + "\".");
+                            MessageFormat.format(EDStatic.categoryNotAnOption,
+                                attributeInURL, categoryName));
                         writer.write("<hr>\n");
                     }
                     writer.write(
                         "<table border=\"0\" cellspacing=\"0\" cellpadding=\"2\">\n" +
                         "<tr>\n" +
                         "<td valign=\"top\">\n");
-                    writeCategorizeOptionsHtml1(loggedInAs, writer, attributeInURL, false);
+                    writeCategorizeOptionsHtml1(request, loggedInAs, writer, 
+                        attributeInURL, false);
                     writer.write(
                         "</td>\n" +
                         "<td valign=\"top\">\n");
-                    writeCategoryOptionsHtml2(loggedInAs, writer, 
+                    writeCategoryOptionsHtml2(request, loggedInAs, writer, 
                         attribute, attributeInURL, categoryName);
                     writer.write(
                         "</td>\n" +
@@ -6702,9 +7888,31 @@ writer.write(
         if (part2.equals("") ||
             part2.equals("index.htm")) {
             response.sendRedirect(tErddapUrl + "/" + protocol + "/" + 
-                attributeInURL + "/" + categoryName + "/index.html");
+                attributeInURL + "/" + categoryName + "/index.html?" +
+                    EDStatic.passThroughPIppQueryPage1(request));
             return;
         }   
+
+        //sort catDats by title
+        catDats = sortByTitle(loggedInAs, catDats);
+
+        //calculate Page ItemsPerPage  (part of: categorize)
+        int nMatches = catDats.size();
+        int pIpp[] = EDStatic.calculatePIpp(request, nMatches);
+        int page         = pIpp[0]; //will be 1... 
+        int itemsPerPage = pIpp[1]; //will be 1...
+        int startIndex   = pIpp[2]; //will be 0...
+        int lastPage     = pIpp[3]; //will be 1...
+
+        //reduce datasetIDs to ones on requested page
+        //IMPORTANT!!! For this to work correctly, datasetIDs must be
+        //  accessibleTo loggedInAs (or EDStatic.listPrivateDatasets)
+        //  and in final sorted order.   
+        //  (true here)
+        //Order of removal: more efficient to remove items at end, then items at beginning.
+        if (startIndex + itemsPerPage < nMatches) 
+            catDats.removeRange(startIndex + itemsPerPage, nMatches);
+        catDats.removeRange(0, Math.min(startIndex, nMatches));
 
         //*** respond to categorize/{attributeInURL}/{categoryName}/index.fileTypeName request
         EDStatic.tally.add("Categorize Attribute (since startup)", attributeInURL);
@@ -6713,9 +7921,10 @@ writer.write(
         EDStatic.tally.add("Categorize Attribute = Value (since last daily report)", attributeInURL + " = " + categoryName);
         EDStatic.tally.add("Categorize File Type (since startup)", fileTypeName);
         EDStatic.tally.add("Categorize File Type (since last daily report)", fileTypeName);
+        boolean sortByTitle = false;
         if (endsWithPlainFileType(part2, "index")) {
             //show the results as plain file type
-            Table table = makePlainDatasetTable(loggedInAs, catDats, true, fileTypeName);
+            Table table = makePlainDatasetTable(loggedInAs, catDats, sortByTitle, fileTypeName);
             sendPlainTable(loggedInAs, request, response, table, 
                 attributeInURL + "_" + categoryName, fileTypeName);
             return;
@@ -6724,7 +7933,7 @@ writer.write(
         //respond to categorize/{attributeInURL}/{categoryName}/index.html request
         if (part2.equals("index.html")) {
             //make a table of the datasets
-            Table table = makeHtmlDatasetTable(loggedInAs, catDats, true);
+            Table table = makeHtmlDatasetTable(loggedInAs, catDats, sortByTitle);
 
             //display start of web page
             OutputStream out = getHtmlOutputStream(request, response);
@@ -6737,31 +7946,59 @@ writer.write(
                     "<table border=\"0\" cellspacing=\"0\" cellpadding=\"2\">\n" +
                     "<tr>\n" +
                     "<td valign=\"top\">\n");
-                writeCategorizeOptionsHtml1(loggedInAs, writer, attributeInURL, false);
+                writeCategorizeOptionsHtml1(request, loggedInAs, writer, attributeInURL, false);
                 writer.write(
                     "</td>\n" +
                     "<td valign=\"top\">\n");
 
                 //write categoryOptions
-                writeCategoryOptionsHtml2(loggedInAs, writer, 
+                writeCategoryOptionsHtml2(request, loggedInAs, writer, 
                     attribute, attributeInURL, categoryName);
                 writer.write(
                     "</td>\n" +
                     "</tr>\n" +
                     "</table>\n");
 
+                String nMatchingHtml = EDStatic.nMatchingDatasetsHtml(
+                    nMatches, page, lastPage, false, //=alphabetical
+                    EDStatic.baseUrl(loggedInAs) + requestUrl + 
+                    EDStatic.questionQuery(userQuery));
+
                 //display datasets
-                writer.write("<h3>3) " + EDStatic.resultsOfSearchFor + " " + attributeInURL + 
-                    " = <font class=\"highlightColor\">" + categoryName + "</font> &nbsp; " +
-                    //EDStatic.htmlTooltipImage(loggedInAs, 
-                        //table.nRows() + " " + EDStatic.nDatasetsListed + "\n" +                    
-                        //"<br>" + EDStatic.clickAccessHtml + "\n") +
+                writer.write("<h3>3) " + EDStatic.resultsOfSearchFor + 
+                    " <font class=\"highlightColor\">" + attributeInURL + 
+                    " = " + categoryName + "</font> &nbsp; " +
+                    //EDStatic.htmlTooltipImage(loggedInAs, EDStatic.clickAccessHtml + "\n") +
                     "</h3>\n" +
-                    "<b>Pick a dataset:</b>\n&nbsp;&nbsp;" + 
-                    "(Or, refine this search with " + getAdvancedSearchLink(loggedInAs, advancedQuery) + ")\n" +
+                    nMatchingHtml +
+                    "<br>&nbsp;\n" +
+
+                    "<br><b>" + EDStatic.pickADataset + ":</b>\n" +
+                    //"&nbsp;&nbsp;(" + EDStatic.orRefineSearchWith + 
+                    //    getAdvancedSearchLink(loggedInAs, 
+                    //        EDStatic.passThroughPIppQueryPage1(request) + 
+                    //        "&" + advancedQuery) + ")\n" +
+
+                    //"<br>" + EDStatic.nMatchingDatasetsHtml(nMatches, page, lastPage, 
+                    //    false,  //=alphabetical
+                    //    EDStatic.baseUrl(loggedInAs) + requestUrl + 
+                    //    EDStatic.questionQuery(request.getQueryString())) +
                     "<br>&nbsp;\n"); //necessary for the blank line before the table (not <p>)
+
                 table.saveAsHtmlTable(writer, "commonBGColor", null, 1, false, -1, false, false);        
-                writer.write("<p>" + table.nRows() + " " + EDStatic.nDatasetsListed + "\n");
+
+                if (lastPage > 1)
+                    writer.write("\n<p>" + nMatchingHtml);
+
+                //list plain file types
+                writer.write(
+                    "\n" +
+                    "<p>" + EDStatic.restfulInformationFormats + " \n(" +
+                    plainFileTypesString + //not links, which would be indexed by search engines
+                    ") <a href=\"" + tErddapUrl + "/rest.html\">" + 
+                        EDStatic.restfulViaService + "</a>.\n" +
+                    "\n");
+
             } catch (Throwable t) {
                 writer.write(EDStatic.htmlForException(t));
             }
@@ -6791,6 +8028,14 @@ writer.write(
             requestUrl.substring(datasetIDStartsAt);
         String fileTypeName = File2.getExtension(endOfRequestUrl);
 
+        if (requestUrl.equals("/" + EDStatic.warName + "/info") ||
+            requestUrl.equals("/" + EDStatic.warName + "/info/") ||
+            requestUrl.equals("/" + EDStatic.warName + "/info/index.htm")) {
+            response.sendRedirect(tErddapUrl + "/info/index.html?" +
+                EDStatic.passThroughPIppQueryPage1(request));
+            return;
+        }
+
         String parts[] = String2.split(endOfRequestUrl, '/');
         int nParts = parts.length;
         if (nParts == 0 || !parts[nParts - 1].startsWith("index.")) {
@@ -6804,50 +8049,117 @@ writer.write(
         boolean endsWithPlainFileType = endsWithPlainFileType(parts[nParts - 1], "index");
         if (!endsWithPlainFileType && !fileTypeName.equals(".html")) {
             sendResourceNotFoundError(request, response, 
-                "Unsupported fileExtension=" + fileTypeName);
+                MessageFormat.format(EDStatic.unsupportedFileType, fileTypeName));
             return;
         }
         EDStatic.tally.add("Info File Type (since startup)", fileTypeName);
         EDStatic.tally.add("Info File Type (since last daily report)", fileTypeName);
         if (nParts < 2) {
-            //view all datasets
-            StringArray tIDs = allDatasetIDs(true);
+            //*** info/index.xxx    view all datasets 
+
+            //ensure query has simplistically valid page= itemsPerPage=
+            if (!Arrays.equals(
+                    EDStatic.getRawRequestedPIpp(request),
+                    EDStatic.getRequestedPIpp(request))) {
+                response.sendRedirect(
+                    EDStatic.baseUrl(loggedInAs) + request.getRequestURI() + "?" +
+                    EDStatic.passThroughJsonpQuery(request) +
+                    EDStatic.passThroughPIppQuery(request)); 
+                return;
+            }      
+
+            //get the datasetIDs
+            //(sortByTitle ensures user has right to know dataset exists)
+            StringArray tIDs = sortByTitle(loggedInAs, allDatasetIDs()); 
+            int nDatasets = tIDs.size();
             EDStatic.tally.add("Info (since startup)", "View All Datasets");
             EDStatic.tally.add("Info (since last daily report)", "View All Datasets");
 
+            //calculate Page ItemsPerPage and remove other tIDs  (part of: View All Datasets)
+            int pIpp[] = EDStatic.calculatePIpp(request, nDatasets);
+            int page         = pIpp[0]; //will be 1... 
+            int itemsPerPage = pIpp[1]; //will be 1...
+            int startIndex   = pIpp[2]; //will be 0...
+            int lastPage     = pIpp[3]; //will be 1...
+
+            //reduce tIDs to ones on requested page
+            //IMPORTANT!!! For this to work correctly, datasetIDs must be 
+            //  accessibleTo loggedInAs (or EDStatic.listPrivateDatasets)
+            //  and in final sorted order.
+            //  (True here)
+            //Order of removal: more efficient to remove items at end, then items at beginning.
+            if (startIndex + itemsPerPage < nDatasets) 
+                tIDs.removeRange(startIndex + itemsPerPage, nDatasets);
+            tIDs.removeRange(0, Math.min(startIndex, nDatasets));
+
+            //if non-null, error will be String[2]
+            String error[] = null;
+            if (nDatasets == 0) {
+                error = new String[] {
+                    EDStatic.THERE_IS_NO_DATA,
+                    ""};
+            } else if (page > lastPage) {
+                error = EDStatic.noPage(page, lastPage);
+            }
+
+            boolean sortByTitle = false; //already sorted above
             if (fileTypeName.equals(".html")) {
                 //make the table with the dataset list
-                Table table = makeHtmlDatasetTable(loggedInAs, tIDs, true);
+                Table table = makeHtmlDatasetTable(loggedInAs, tIDs, sortByTitle);
 
                 //display start of web page
                 OutputStream out = getHtmlOutputStream(request, response);
-                Writer writer = getHtmlWriter(loggedInAs, "List of All Datasets", out); 
+                Writer writer = getHtmlWriter(loggedInAs, 
+                    MessageFormat.format(EDStatic.listOfDatasets, EDStatic.listAll),
+                    out); 
                 try {
                     //you are here  View All Datasets
-                    String secondLine = table.nRows() == 0?
-                        "&nbsp;<br><b>" + EDStatic.THERE_IS_NO_DATA + "</b>\n" :
-                        "<h2>&nbsp;<br>Pick a Dataset</h2>\n";
+                    String secondLine = error == null?
+                        "<h2>&nbsp;<br>" + EDStatic.pickADataset + "</h2>\n" :
+                        "&nbsp;<br><b>" + XML.encodeAsHTML(error[0]) +"</b>\n" +
+                              "<br>"    + XML.encodeAsHTML(error[1]) +"\n";
 
                     writer.write(getYouAreHereTable(
-                        EDStatic.youAreHere(loggedInAs, "List of All Datasets") +
+                        EDStatic.youAreHere(loggedInAs, 
+                            MessageFormat.format(EDStatic.listOfDatasets, EDStatic.listAll)) +
                         secondLine, 
 
                         //Or, search text
                         "&nbsp;\n" +
-                        "<br>" + getSearchFormHtml(loggedInAs, "Or, ", ":\n<br>", "") +
+                        "<br>" + getSearchFormHtml(request, loggedInAs, EDStatic.orComma, ":\n<br>", "") +
                         //Or, by category
-                        "<p>" + getCategoryLinksHtml(tErddapUrl) +
+                        "<p>" + getCategoryLinksHtml(request, tErddapUrl) +
                         //Or,
-                        "<p>Or, Search for Datasets with " + getAdvancedSearchLink(loggedInAs, "")));
+                        "<p>" + EDStatic.orSearchWith + 
+                            getAdvancedSearchLink(loggedInAs, 
+                                EDStatic.passThroughPIppQueryPage1(request)))); 
                    
 
                     if (table.nRows() > 0) {
 
+                        String nMatchingHtml = EDStatic.nMatchingDatasetsHtml(
+                            nDatasets, page, lastPage, false,  //=alphabetical
+                            EDStatic.baseUrl(loggedInAs) + requestUrl + 
+                            EDStatic.questionQuery(request.getQueryString()));
+                        
+                        writer.write(nMatchingHtml +
+                            "<br>&nbsp;\n");
+
                         //show the table of all datasets 
                         table.saveAsHtmlTable(writer, "commonBGColor", null, 
                             1, false, -1, false, false);        
+
+                        if (lastPage > 1)
+                            writer.write("\n<p>" + nMatchingHtml);
+
+                        //list plain file types
                         writer.write(
-                            "<p>" + table.nRows() + " " + EDStatic.nDatasetsListed + "\n");
+                            "\n" +
+                            "<p>" + EDStatic.restfulInformationFormats + " \n(" +
+                            plainFileTypesString + //not links, which would be indexed by search engines
+                            ") <a href=\"" + tErddapUrl + "/rest.html\">" + 
+                                EDStatic.restfulViaService + "</a>.\n" +
+                            "\n");
                     }
                 } catch (Throwable t) {
                     writer.write(EDStatic.htmlForException(t));
@@ -6856,14 +8168,17 @@ writer.write(
                 //end of document
                 endHtmlWriter(out, writer, tErddapUrl, false);
             } else {
-                Table table = makePlainDatasetTable(loggedInAs, tIDs, true, fileTypeName);
+                if (error != null)
+                    throw new SimpleException(error[0] + " " + error[1]);
+
+                Table table = makePlainDatasetTable(loggedInAs, tIDs, sortByTitle, fileTypeName);
                 sendPlainTable(loggedInAs, request, response, table, protocol, fileTypeName);
             }
             return;
         }
         if (nParts > 2) {
             sendResourceNotFoundError(request, response, 
-                "erddap/info requests must be in the form erddap/info/<datasetID>/index<fileType> .");
+                MessageFormat.format(EDStatic.infoRequestForm, EDStatic.warName));
             return;
         }
         String tID = parts[0];
@@ -6872,7 +8187,7 @@ writer.write(
             edd = (EDD)tableDatasetHashMap.get(tID);
         if (edd == null) { 
             sendResourceNotFoundError(request, response,
-                EDStatic.noDatasetWith + " datasetID=" + tID + ".");
+                MessageFormat.format(EDStatic.unknownDatasetID, tID));
             return;
         }
         if (!edd.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //listPrivateDatasets doesn't apply
@@ -6913,7 +8228,7 @@ writer.write(
         if (edd instanceof EDDGrid) {
             EDDGrid eddGrid = (EDDGrid)edd;
             int nDims = eddGrid.axisVariables().length;
-            axisNamesCsv = String2.toCSVString(eddGrid.axisVariableDestinationNames());
+            axisNamesCsv = String2.toCSSVString(eddGrid.axisVariableDestinationNames());
             for (int dim = 0; dim < nDims; dim++) {
                 //dimension row
                 EDVGridAxis edv = eddGrid.axisVariables()[dim];
@@ -6925,7 +8240,7 @@ writer.write(
                 double avgSp = edv.averageSpacing(); //may be negative
                 if (tSize == 1) {
                     double dValue = edv.firstDestinationValue();
-                    valueSA.add(
+                    valueSA.add(  //for now, don't translate these, so consistent in all ERDDAPs
                         "nValues=1, onlyValue=" + 
                         (Double.isNaN(dValue)? "NaN" : edv.destinationToString(dValue))); //want "NaN", not ""
                 } else {
@@ -6989,8 +8304,9 @@ writer.write(
         if (parts[1].equals("index.html")) {
             //display start of web page
             OutputStream out = getHtmlOutputStream(request, response);
-            Writer writer = getHtmlWriter(loggedInAs, "Information about " + 
-                edd.title() + ", from " + edd.institution(), out); 
+            Writer writer = getHtmlWriter(loggedInAs, 
+                MessageFormat.format(EDStatic.infoAboutFrom, edd.title(), edd.institution()), 
+                out); 
             try {
                 writer.write(EDStatic.youAreHere(loggedInAs, protocol, parts[0]));
 
@@ -6999,12 +8315,25 @@ writer.write(
                 //    "<br>&nbsp;\n");
                 StringArray sa = new StringArray();
                 sa.add(parts[0]);
-                Table dsTable = makeHtmlDatasetTable(loggedInAs, sa, true);
+                boolean sortByTitle = true;
+                Table dsTable = makeHtmlDatasetTable(loggedInAs, sa, sortByTitle);
                 dsTable.saveAsHtmlTable(writer, "commonBGColor", null, 1, false, -1, false, false);        
 
                 //html format the valueSA values
-                for (int i = 0; i < valueSA.size(); i++) 
-                    valueSA.set(i, XML.encodeAsPreHTML(valueSA.get(i), 100000));  //???
+                for (int i = 0; i < valueSA.size(); i++) {                    
+                    String s = valueSA.get(i);
+                    if (String2.isUrl(s)) {
+                        //display as a link
+                        s = XML.encodeAsHTML(s);
+                        valueSA.set(i, "<a href=\"" + s + "\">" + s + "</a>");
+                    } else if (String2.isEmailAddress(s)) {
+                        //display as a mailTo link
+                        s = XML.encodeAsHTML(s);
+                        valueSA.set(i, "<a href=\"mailto:" + s + "\">" + s + "</a>");
+                    } else {
+                        valueSA.set(i, XML.encodeAsPreHTML(s, 100000));  //???
+                    }
+                }
 
                 //display the info table
                 writer.write("<h2>" + EDStatic.infoTableTitleHtml + "</h2>");
@@ -7038,6 +8367,16 @@ writer.write(
 
                 //close the table
                 writer.write("</table>\n");
+
+                //list plain file types
+                writer.write(
+                    "\n" +
+                    "<p>" + EDStatic.restfulInformationFormats + " \n(" +
+                    plainFileTypesString + //not links, which would be indexed by search engines
+                    ") <a href=\"" + tErddapUrl + "/rest.html\">" + 
+                        EDStatic.restfulViaService + "</a>.\n" +
+                    "\n");
+
             } catch (Throwable t) {
                 writer.write(EDStatic.htmlForException(t));
             }
@@ -7106,21 +8445,22 @@ writer.write(
         //display start of web page
         if (reallyVerbose) String2.log("doSubscriptions");
         OutputStream out = getHtmlOutputStream(request, response);
-        Writer writer = getHtmlWriter(loggedInAs, "Subscriptions", out); 
+        Writer writer = getHtmlWriter(loggedInAs, EDStatic.subscriptionsTitle, out); 
         try {
             writer.write(
                 EDStatic.youAreHere(loggedInAs, protocol) +
-                EDStatic.subscriptionHtml(tErddapUrl) + "\n");
+                MessageFormat.format(EDStatic.subscriptionHtml, tErddapUrl) + "\n");
             if (EDStatic.subscriptionSystemActive) 
                 writer.write(
-                "<p><b>Options:</b>\n" +
+                "<p><b>" + EDStatic.subscriptionOptions + ":</b>\n" +
                 "<ul>\n" +
-                "<li> <a href=\"" + tErddapUrl + "/" + Subscriptions.ADD_HTML      + "\">Add a new subscription</a>\n" +
-                "<li> <a href=\"" + tErddapUrl + "/" + Subscriptions.VALIDATE_HTML + "\">Validate a subscription</a>\n" +
-                "<li> <a href=\"" + tErddapUrl + "/" + Subscriptions.LIST_HTML     + "\">List your subscriptions</a>\n" +
-                "<li> <a href=\"" + tErddapUrl + "/" + Subscriptions.REMOVE_HTML   + "\">Remove a subscription</a>\n" +
+                "<li> <a href=\"" + tErddapUrl + "/" + Subscriptions.ADD_HTML      + "\">" + EDStatic.subscriptionAdd      + "</a>\n" +
+                "<li> <a href=\"" + tErddapUrl + "/" + Subscriptions.VALIDATE_HTML + "\">" + EDStatic.subscriptionValidate + "</a>\n" +
+                "<li> <a href=\"" + tErddapUrl + "/" + Subscriptions.LIST_HTML     + "\">" + EDStatic.subscriptionList     + "</a>\n" +
+                "<li> <a href=\"" + tErddapUrl + "/" + Subscriptions.REMOVE_HTML   + "\">" + EDStatic.subscriptionRemove   + "</a>\n" +
                 "</ul>\n");
-            else writer.write(EDStatic.subscriptionsNotAvailable(tErddapUrl) + "\n");
+            else writer.write(
+                MessageFormat.format(EDStatic.subscriptionsNotAvailable, tErddapUrl) + "\n");
         } catch (Throwable t) {
             writer.write(EDStatic.htmlForException(t));
         }
@@ -7216,8 +8556,8 @@ writer.write(
         try {
             writer.write(
                 EDStatic.youAreHere(loggedInAs, protocol, "add") +
-                EDStatic.subscriptionHtml(tErddapUrl) + "\n" +
-                EDStatic.subscription2Html(tErddapUrl) + "\n");
+                MessageFormat.format(EDStatic.subscriptionHtml,  tErddapUrl) + "\n" +
+                MessageFormat.format(EDStatic.subscription2Html, tErddapUrl) + "\n");
 
             if (tDatasetID.length() > 0 || tEmail.length() > 0 || tAction.length() > 0) {
                 if (trouble.length() > 0) {
@@ -7260,7 +8600,7 @@ writer.write(
             String urlTT = EDStatic.subscriptionUrlHtml;
             writer.write(
                 widgets.beginForm("addSub", "GET", tErddapUrl + "/" + Subscriptions.ADD_HTML, "") +
-                EDStatic.subscriptionAddHtml(tErddapUrl) + "\n" +
+                MessageFormat.format(EDStatic.subscriptionAddHtml, tErddapUrl) + "\n" +
                 widgets.beginTable(0, 0, "") +
                 "<tr>\n" +
                 "  <td>The datasetID:&nbsp;</td>\n" +
@@ -7342,7 +8682,7 @@ writer.write(
         try {
             writer.write(
                 EDStatic.youAreHere(loggedInAs, protocol, "list") +
-                EDStatic.subscriptionHtml(tErddapUrl) + "\n");
+                MessageFormat.format(EDStatic.subscriptionHtml, tErddapUrl) + "\n");
 
             if (tEmail.length() > 0) {
                 if (trouble.length() > 0) {
@@ -7383,7 +8723,7 @@ writer.write(
             //show the form
             writer.write(
                 widgets.beginForm("listSub", "GET", tErddapUrl + "/" + Subscriptions.LIST_HTML, "") +
-                EDStatic.subscriptionListHtml(tErddapUrl) + "\n" +
+                MessageFormat.format(EDStatic.subscriptionListHtml, tErddapUrl) + "\n" +
                 widgets.beginTable(0, 0, "") +
                 "<tr>\n" +
                 "  <td>Your email address:&nbsp;</td>\n" +
@@ -7447,7 +8787,7 @@ writer.write(
         try {
             writer.write(
                 EDStatic.youAreHere(loggedInAs, protocol, "validate") +
-                EDStatic.subscriptionHtml(tErddapUrl) + "\n");
+                MessageFormat.format(EDStatic.subscriptionHtml, tErddapUrl) + "\n");
 
             if (tSubscriptionID.length() > 0 || tKey.length() > 0) {
                 if (trouble.length() > 0) {
@@ -7488,7 +8828,7 @@ writer.write(
             //show the form
             writer.write(
                 widgets.beginForm("validateSub", "GET", tErddapUrl + "/" + Subscriptions.VALIDATE_HTML, "") +
-                EDStatic.subscriptionValidateHtml(tErddapUrl) + "\n" +
+                MessageFormat.format(EDStatic.subscriptionValidateHtml, tErddapUrl) + "\n" +
                 widgets.beginTable(0, 0, "") +
                 "<tr>\n" +
                 "  <td>The subscriptionID:&nbsp;</td>\n" +
@@ -7561,7 +8901,7 @@ writer.write(
         try {
             writer.write(
                 EDStatic.youAreHere(loggedInAs, protocol, "remove") +
-                EDStatic.subscriptionHtml(tErddapUrl) + "\n");
+                MessageFormat.format(EDStatic.subscriptionHtml, tErddapUrl) + "\n");
 
             if (tSubscriptionID.length() > 0 || tKey.length() > 0) {
                 if (trouble.length() > 0) {
@@ -7600,7 +8940,7 @@ writer.write(
             //show the form
             writer.write(
                 widgets.beginForm("removeSub", "GET", tErddapUrl + "/" + Subscriptions.REMOVE_HTML, "") +
-                EDStatic.subscriptionRemoveHtml(tErddapUrl) + "\n" +
+                MessageFormat.format(EDStatic.subscriptionRemoveHtml, tErddapUrl) + "\n" +
                 widgets.beginTable(0, 0, "") +
                 "<tr>\n" +
                 "  <td>The subscriptionID:&nbsp;</td>\n" +
@@ -7676,6 +9016,22 @@ writer.write(
                 throw new SimpleException("The FIPS county service is not available on this ERDDAP.");
             }
             return;
+        } else if (endOfRequestUrl.equals("keywords.html") ||
+                   endOfRequestUrl.equals("keywords.txt")) {
+            doConvertKeywords(request, response, loggedInAs, endOfRequestUrl, userQuery);
+            return;
+        } else if (endOfRequestUrl.startsWith("keywordsCf.") && pft >= 0) {
+            sendPlainTable(loggedInAs, request, response, 
+                EDStatic.keywordsCfTable(), "keywordsCf", fileTypeName);
+            return;
+        } else if (endOfRequestUrl.startsWith("keywordsCfToGcmd.") && pft >= 0) {
+            sendPlainTable(loggedInAs, request, response, 
+                EDStatic.keywordsCfToGcmdTable(), "keywordsCfToGcmd", fileTypeName);
+            return;
+        } else if (endOfRequestUrl.startsWith("keywordsGcmd.") && pft >= 0) {
+            sendPlainTable(loggedInAs, request, response, 
+                EDStatic.keywordsGcmdTable(), "keywordsGcmd", fileTypeName);
+            return;
         } else if (endOfRequestUrl.equals("time.html") ||
                    endOfRequestUrl.equals("time.txt")) {
             doConvertTime(request, response, loggedInAs, endOfRequestUrl, userQuery);
@@ -7701,6 +9057,8 @@ writer.write(
                 "<ul>\n" +
                 "<li><a href=\"" + tErddapUrl + "/convert/fipscounty.html\"><b>FIPS County Codes</b></a> - " + 
                     EDStatic.convertFipsCounty + "\n" +
+                "<li><a href=\"" + tErddapUrl + "/convert/keywords.html\"><b>Keywords</b></a> - " + 
+                    EDStatic.convertKeywords + "\n" +
                 "<li><a href=\"" + tErddapUrl + "/convert/time.html\"><b>Time</b></a> - " + 
                     EDStatic.convertTime + "\n" +
                 "<li><a href=\"" + tErddapUrl + "/convert/units.html\"><b>Units</b></a> - " + 
@@ -7894,8 +9252,211 @@ writer.write(
             //notes  (always non-https urls)
             writer.write(EDStatic.convertFipsCountyNotes);
 
-            //Info about .txt time service option   (always non-https urls)
+            //Info about .txt fips service option   (always non-https urls)
             writer.write(EDStatic.convertFipsCountyService);
+
+        } catch (Throwable t) {
+            writer.write(EDStatic.htmlForException(t));
+        }
+
+        //end of document
+        endHtmlWriter(out, writer, tErddapUrl, false);
+    }
+
+    /**
+     * Process erddap/convert/keywords.html [and ???.txt].
+     *
+     * @param loggedInAs  the name of the logged in user (or null if not logged in)
+     * @param endOfRequestUrl   time.html or time.txt
+     * @param userQuery  post "?", still percentEncoded, may be null.
+     * @throws Throwable if trouble
+     */
+    public void doConvertKeywords(HttpServletRequest request, HttpServletResponse response, 
+        String loggedInAs, String endOfRequestUrl, String userQuery) throws Throwable {
+
+        //parse the userQuery
+        HashMap<String, String> queryMap = EDD.userQueryHashMap(userQuery, false); //true=lowercase keys
+        String defaultCF   = "";
+        String defaultGCMD = "";
+        String queryCF     = queryMap.get("cf"); 
+        String queryGCMD   = queryMap.get("gcmd");
+        if (queryCF   == null) queryCF = "";
+        if (queryGCMD == null) queryGCMD = "";
+        String answerCF    = "";
+        String answerGCMD  = "";
+
+        //only 0 or 1 of toCF,toGCMD will be true (not both)
+        boolean toGCMD = queryCF.length() > 0; 
+        boolean toCF = !toGCMD && queryGCMD.length() > 0;
+
+        //a query either succeeds (and sets all answer...) 
+        //  or fails (doesn't change answer... and sets tError)
+
+        //process queryGCMD
+        String tError = null;
+        if (toCF) {
+            //process cf=,   a toCF query
+            String ansar[] = CfToFromGcmd.gcmdToCf(queryGCMD);
+            if (ansar.length == 0) {
+                tError = "gcmd=\"" + queryGCMD + 
+                    "\" has no corresponding CF Standard Names.";
+            } else {
+                //success
+                answerGCMD = queryGCMD;
+                answerCF   = String2.toNewlineString(ansar);
+            }
+
+        } else if (toGCMD) {        
+            //process gcmd=,   a toGCMD query            
+            String ansar[] = CfToFromGcmd.cfToGcmd(queryCF);
+            if (ansar.length == 0) {
+                tError = "cf=\"" + queryCF + 
+                    "\" has no corresponding GCMD Science Keywords.";
+            } else {
+                //success
+                answerCF   = queryCF;
+                answerGCMD = String2.toNewlineString(ansar);
+            }
+
+        } else {
+            //no query. use the default values...
+        }
+
+        //do the .txt response
+        if (endOfRequestUrl.equals("keywords.txt")) {
+
+            //throw exception?
+            if (tError == null && !toCF && !toGCMD)
+                tError = "You must specify a cf= or gcmd= parameter (for example \"?cf=" + 
+                defaultCF + "\") at the end of the URL.";
+            if (tError != null) 
+                throw new SimpleException(tError);
+
+            //respond to a valid request
+            OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
+                "ConvertTime", ".txt", ".txt")).outputStream("UTF-8");
+            Writer writer = new OutputStreamWriter(out, "UTF-8");
+
+            if (toCF) 
+                writer.write(answerCF);
+            else if (toGCMD) 
+                writer.write(answerGCMD);            
+            
+            writer.flush(); //essential
+            if (out instanceof ZipOutputStream) ((ZipOutputStream)out).closeEntry();
+            out.close(); 
+            return;
+        }
+
+        //do the .html response
+        String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
+        HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
+        OutputStream out = getHtmlOutputStream(request, response);
+        Writer writer = getHtmlWriter(loggedInAs, "Convert Keywords", out); 
+        try {
+            writer.write(
+                EDStatic.youAreHere(loggedInAs, "convert", "keywords") +
+                "<h2>" + EDStatic.convertKeywords + "</h2>\n" +
+                EDStatic.convertKeywordsIntro + "\n");
+
+     
+            //Convert from CF to GCMD
+            String selectedCF = queryCF.length() > 0? queryCF : defaultCF;
+            writer.write(
+                widgets.beginForm("getGCMD", "GET", tErddapUrl + "/convert/keywords.html", "") +
+                "<b>Convert the CF Standard Name</b>\n" + 
+                "<br>" +
+                widgets.select("cf", EDStatic.convertKeywordsCfTooltip, 1, 
+                    CfToFromGcmd.cfNames,
+                    String2.indexOf(CfToFromGcmd.cfNames, selectedCF), 
+                    "onchange=\"this.form.submit();\"") +
+                "\n<br><b>into GCMD Science Keywords.</b>" +
+                //widgets.button("submit", null, "", "Convert", "") + 
+                "\n");
+
+            if (toGCMD) {
+                String tAnswerGCMD = 
+                              String2.replaceAll(answerGCMD, ">", "&gt;");
+                tAnswerGCMD = String2.replaceAll(tAnswerGCMD, "\n", "\n<br>");
+                writer.write(tError == null?
+                    "<br><font class=\"successColor\">" + 
+                        answerCF + " =<br>" + 
+                        tAnswerGCMD + "</font>\n" :
+                    "<br><font class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</font>\n");                
+            } else {
+                writer.write("<br>&nbsp;\n");
+            }
+
+            writer.write(widgets.endForm() + "\n");
+
+            //Convert from GCMD to CF
+            String selectedGCMD = queryGCMD.length() > 0? queryGCMD : defaultGCMD;
+            writer.write(
+                "<br>&nbsp;\n" +  //necessary for the blank line before start of form (not <p>)
+                widgets.beginForm("getCF", "GET", tErddapUrl + "/convert/keywords.html", "") +
+                "<b>Convert the GCMD Science Keyword</b>\n" + 
+                "<br>" +
+                widgets.select("gcmd", EDStatic.convertKeywordsGcmdTooltip, 1,
+                    CfToFromGcmd.gcmdKeywords,
+                    String2.indexOf(CfToFromGcmd.gcmdKeywords, selectedGCMD), 
+                    "onchange=\"this.form.submit();\"") +
+                "\n<br><b>into CF Standard Names.</b>" +
+                //widgets.button("submit", null, "", "Convert", "") + 
+                "\n");
+
+            if (toCF) {
+                String tAnswerCF = String2.replaceAll(answerCF, "\n", "\n<br>");
+                writer.write(tError == null?
+                    "<br><font class=\"successColor\">" + 
+                        answerGCMD + " =<br>" + 
+                        tAnswerCF + "</font>\n" :
+                    "<br><font class=\"warningColor\">" + XML.encodeAsHTML(tError) + "</font>\n");                
+            } else {
+                writer.write("<br>&nbsp;\n");
+            }
+
+            writer.write(widgets.endForm() + "\n");
+
+            //reset the form
+            writer.write(
+                "<p><b>Other Options</b>\n" +
+                "<ul>\n" +
+                "<li><a href=\"" + tErddapUrl + 
+                    "/convert/keywords.html\">" + EDStatic.resetTheForm + "</a>\n" +
+                "  <br>&nbsp;\n" +
+
+                "<li><a href=\"#computerProgram\">Bypass this web page</a>\n" +
+                "  and do keyword conversions from within a computer program.\n" +
+                "  <br>&nbsp;\n" +
+
+                //get the entire CF or GCMD list
+                "<li>View/download a file which has all of the CF to GCMD conversion information: " +
+                plainLinkExamples(tErddapUrl, "/convert/keywordsCfToGcmd", "") +
+                "  <br>The GCMD to CF conversion information can be derived from this." +
+                "  <br>&nbsp;\n" +
+
+                "<li>View/download the entire CF Standard Names list in these file types: " +
+                plainLinkExamples(tErddapUrl, "/convert/keywordsCf", "") +
+                "  <br>Source: <a href=\"http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/current/cf-standard-name-table.html\">Version 18, dated 22 July 2011</a>.\n" +
+                "  <br>&nbsp;\n" +
+
+                "<li>View/download the entire GCMD Science Keywords list in these file types: " +
+                plainLinkExamples(tErddapUrl, "/convert/keywordsGcmd", "") +
+                "  <br>Source: <a href=\"http://gcmd.nasa.gov/Resources/valids/archives/keyword_list.html\">the version dated 2008-02-05</a>.\n" +
+                "    The requested citation is<tt>\n" +
+                "  <br>Olsen, L.M., G. Major, K. Shein, J. Scialdone, R. Vogel, S. Leicester,\n" +
+                "  <br>H. Weir, S. Ritz, T. Stevens, M. Meaux, C.Solomon, R. Bilodeau,\n" +
+                "  <br>M. Holland, T. Northcutt, R. A. Restrepo, 2007 . NASA/Global Change\n" +
+                "  <br>Master Directory (GCMD) Earth Science Keywords. Version 6.0.0.0.0 </tt>\n" +
+
+                "</ul>\n" +
+                "\n");
+
+            //notes  (always non-https urls)
+            writer.write(EDStatic.convertKeywordsNotes);
+
+            //Info about .txt time service option   (always non-https urls)
+            writer.write(EDStatic.convertKeywordsService);
 
         } catch (Throwable t) {
             writer.write(EDStatic.htmlForException(t));
@@ -8154,7 +9715,7 @@ writer.write(
 
             //throw exception?
             if (tUdunits.length() == 0 && tUcum.length() == 0) {
-                throw new SimpleException("Query error: Missing parameter (UDUNITS or UCUM).");
+                throw new SimpleException(EDStatic.queryError + "Missing parameter (UDUNITS or UCUM).");
             }
 
             //respond to a valid request
@@ -8723,7 +10284,8 @@ writer.write(
                 writer.write(
                     "=" +
                     widgets.select(pName, "", 1,
-                        saa, which, "onchange='mySubmit(\"" + pName + "\");'"));
+                        saa, which, "onchange='mySubmit(\"" + pName + "\");'", 
+                        true)); //encodeSpaces solves the problem with consecutive internal spaces
 
                 if (p == lastP) { 
                     writer.write(
@@ -8771,7 +10333,9 @@ writer.write(
                     (which == 0 || p == lastP? 
                         "<font class=\"subduedColor\">(" + 
                             (sa.size() - 1) + " option" + 
-                            (sa.size() == 2? ": " + sa.get(1) : "s") + 
+                            (sa.size() == 2? 
+                                ": " + XML.minimalEncodeSpaces(XML.encodeAsHTML(sa.get(1))) : 
+                                "s") + 
                             ")</font>\n" : 
                         ""));
 
@@ -8844,7 +10408,7 @@ writer.write(
 
             //mySubmit   (greatly reduces the length of the query -- just essential info)
             writer.write(
-                HtmlWidgets.PERCENT_ENCODE_JS +
+                HtmlWidgets.PERCENT_ENCODE_JS + //encodeSpaces: this encodes nbsp=#160 as space=%20
                 "<script type=\"text/javascript\"> \n" +
                 "function mySubmit(tLast) { \n" +
                 "  try { \n" +
@@ -9029,7 +10593,7 @@ writer.write(
                     TableWriterHtmlTable.writeAllAndFinish(loggedInAs, countTable, 
                         new OutputStreamSourceSimple(out), 
                         false, "", false, "", "", 
-                        true, false);          
+                        true, false, -1);          
                     writer.write("<p>The total of the counts is " + 
                         Math2.roundToLong(total) + ".\n");
                 } catch (Throwable t) {
@@ -9071,7 +10635,7 @@ writer.write(
                     TableWriterHtmlTable.writeAllAndFinish(loggedInAs, smallTable, 
                         new OutputStreamSourceSimple(out), 
                         false, "", false, "", "", 
-                        true, true);          
+                        true, true, -1);          
                 }
             } else {
                 writer.write("<p><font class=\"subduedColor\">To view the data, check <tt>View : " + 
@@ -9106,7 +10670,7 @@ writer.write(
                     TableWriter tw = new TableWriterHtmlTable(loggedInAs, 
                         new OutputStreamSourceSimple(out),
                         false, "", false, // tWriteHeadAndBodyTags, tFileNameNoExt, tXhtmlMode,         
-                        "", "", true, true); //tPreTableHtml, tPostTableHtml, tEncodeAsXML, tWriteUnits) 
+                        "", "", true, true, -1); //tPreTableHtml, tPostTableHtml, tEncodeAsXML, tWriteUnits) 
                     String detectionNcUrl = "/tabledap/" + EDStatic.PostDetectionDatasetID + ".nc";
                     if (detectionEdd.handleViaSubsetVariables(loggedInAs, newDapQueryString, tw)) {}
                     else detectionEdd.getDataForDapQuery(loggedInAs, detectionNcUrl, newDapQueryString, tw);  
@@ -9149,7 +10713,7 @@ writer.write(
         response.setHeader("Date", rfc822date);             //DAP 2.0, 7.1.4.1
         response.setHeader("Last-Modified", rfc822date);    //DAP 2.0, 7.1.4.2   //this is not a good implementation
         //response.setHeader("Server", );                   //DAP 2.0, 7.1.4.3  optional
-        response.setHeader("xdods-server", serverVersion);  //DAP 2.0, 7.1.7 (http header field names are case-insensitive)
+        response.setHeader("xdods-server", EDStatic.serverVersion);  //DAP 2.0, 7.1.7 (http header field names are case-insensitive)
         response.setHeader(EDStatic.programname + "-server", EDStatic.erddapVersion);  
     }
 
@@ -9316,9 +10880,8 @@ writer.write(
         }
 
         //just log it
-        String q = request.getQueryString();
         String message = ERROR + " for " + request.getRequestURI() +  
-            (q != null && q.length() > 0? "?" + q : "") + //not decoded
+            EDStatic.questionQuery(request.getQueryString()) + //not decoded
             "\n" + MustBe.throwableToString(t); //log the details
         String2.log(message);
         return false;
@@ -9336,10 +10899,10 @@ writer.write(
         try {
 
             //log the error            
-            String q = request.getQueryString();
             String2.log(
                 "*** sendErrorCode ERROR for " +
-                    request.getRequestURI() + (q != null && q.length() > 0? "?" + q : "") + //not decoded
+                    request.getRequestURI() + 
+                    EDStatic.questionQuery(request.getQueryString()) + //not decoded
                 "\nisCommitted=" + response.isCommitted() +
                 "\n" + MustBe.throwableToString(t));  //always log full stack trace
 
@@ -9375,9 +10938,9 @@ writer.write(
                 request.getRequestURI() + " (" + message + ")";
             String2.log("Calling response.sendError(404 - SC_NOT_FOUND):\n" + message);
             response.sendError(HttpServletResponse.SC_NOT_FOUND, 
-                "Resource not available: " + message);
+                EDStatic.resourceNotFound + " " + message);
         } catch (Throwable t) {
-            throw new SimpleException("Resource not available: " + message);
+            throw new SimpleException(EDStatic.resourceNotFound + " " + message);
         }
     }
 
@@ -9385,13 +10948,14 @@ writer.write(
     /** 
      * This gets the html for the search form.
      *
+     * @param request
      * @param loggedInAs
      * @param pretext e.g., &lt;h2&gt;   Or use "" for none.
      * @param posttext e.g., &lt;/h2&gt;   Or use "" for none.
      * @param searchFor the default text to be searched for
      * @throws Throwable if trouble
      */
-    public static String getSearchFormHtml(String loggedInAs,  
+    public static String getSearchFormHtml(HttpServletRequest request, String loggedInAs,  
         String pretext, String posttext, String searchFor) throws Throwable {
      
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
@@ -9399,20 +10963,22 @@ writer.write(
         widgets.enterTextSubmitsForm = true;
         StringBuilder sb = new StringBuilder(
             widgets.beginForm("search", "GET", tErddapUrl + "/search/index.html", ""));
+        int pipp[] = EDStatic.getRequestedPIpp(request);
+        sb.append(widgets.hidden("page", "1")); //new search always resets to page 1
+        sb.append(widgets.hidden("itemsPerPage", "" + pipp[1]));
         sb.append(pretext + 
-            "<a name=\"FullTextSearch\">" + EDStatic.searchFullTextHtml + "</a>" +
+            "<a name=\"FullTextSearch\">" + EDStatic.searchDoFullTextHtml + "</a>" +
             posttext);
         if (searchFor == null)
             searchFor = "";
         widgets.htmlTooltips = false;
         sb.append(widgets.textField("searchFor", EDStatic.searchTip, 40, 255, searchFor, ""));
         widgets.htmlTooltips = true;
-        sb.append(EDStatic.htmlTooltipImage(loggedInAs, EDStatic.searchHintsHtml(tErddapUrl)));
+        sb.append(EDStatic.htmlTooltipImage(loggedInAs, EDStatic.searchHintsHtml));
         widgets.htmlTooltips = false;
         sb.append(widgets.htmlButton("submit", null, null, EDStatic.searchClickTip, 
             EDStatic.searchButton, ""));
         widgets.htmlTooltips = true;
-        //sb.append(EDStatic.searchHintsHtml(tErddapUrl));
         sb.append("\n");
         sb.append(widgets.endForm());        
         return sb.toString();
@@ -9427,7 +10993,8 @@ writer.write(
      * @return a table with categorize options.
      * @throws Throwable if trouble
      */
-    public Table categorizeOptionsTable(String tErddapUrl, String fileTypeName) throws Throwable {
+    public Table categorizeOptionsTable(HttpServletRequest request, 
+        String tErddapUrl, String fileTypeName) throws Throwable {
 
         Table table = new Table();
         StringArray csa = new StringArray();
@@ -9435,8 +11002,10 @@ writer.write(
         if (fileTypeName.equals(".html")) {
             //1 column: links
             for (int cat = 0; cat < EDStatic.categoryAttributesInURLs.length; cat++) {
-                String s = tErddapUrl + "/categorize/" + EDStatic.categoryAttributesInURLs[cat] + "/index.html";
-                csa.add("<a href=\"" + s + "\">" + EDStatic.categoryAttributesInURLs[cat] + "</a>");
+                csa.add("<a href=\"" + tErddapUrl + "/categorize/" + 
+                    EDStatic.categoryAttributesInURLs[cat] + "/index.html?" +
+                    EDStatic.encodedPassThroughPIppQueryPage1(request) + "\">" + 
+                    EDStatic.categoryAttributesInURLs[cat] + "</a>");
             }
         } else {
             //2 columns: categorize, url
@@ -9444,7 +11013,9 @@ writer.write(
             table.addColumn("URL", usa);
             for (int cat = 0; cat < EDStatic.categoryAttributesInURLs.length; cat++) {
                 csa.add(EDStatic.categoryAttributesInURLs[cat]);
-                usa.add(tErddapUrl + "/categorize/" + EDStatic.categoryAttributesInURLs[cat] + "/index" + fileTypeName);
+                usa.add(tErddapUrl + "/categorize/" + EDStatic.categoryAttributesInURLs[cat] + 
+                    "/index" + fileTypeName + "?" +
+                    EDStatic.passThroughPIppQueryPage1(request)); 
             }
         }
         return table;
@@ -9457,11 +11028,12 @@ writer.write(
      * @param tErddapUrl  from EDStatic.erddapUrl(loggedInAs)  (erddapUrl, or erddapHttpsUrl if user is logged in)
      * @return the html with the category links
      */
-    public String getCategoryLinksHtml(String tErddapUrl) throws Throwable {
+    public String getCategoryLinksHtml(HttpServletRequest request, String tErddapUrl) 
+        throws Throwable {
         
-        Table catTable = categorizeOptionsTable(tErddapUrl, ".html");
+        Table catTable = categorizeOptionsTable(request, tErddapUrl, ".html");
         int cn = catTable.nRows();
-        StringBuilder sb = new StringBuilder("Or, " + EDStatic.categoryTitleHtml + ":");
+        StringBuilder sb = new StringBuilder(EDStatic.orComma + EDStatic.categoryTitleHtml + ":");
         int charCount = 0;
         for (int row = 0; row < cn; row++) {
             if (row % 4 == 0)
@@ -9475,22 +11047,25 @@ writer.write(
     /**
      * This writes the categorize options table
      *
+     * @param request
      * @param loggedInAs
      * @param writer
      * @param attributeInURL e.g., institution   (it may be null or invalid)
      * @param homePage
      */
-    public void writeCategorizeOptionsHtml1(String loggedInAs, Writer writer, 
+    public void writeCategorizeOptionsHtml1(HttpServletRequest request, 
+        String loggedInAs, Writer writer, 
         String attributeInURL, boolean homePage) throws Throwable {
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         if (homePage) {
-            Table table = categorizeOptionsTable(tErddapUrl, ".html");
+            Table table = categorizeOptionsTable(request, tErddapUrl, ".html");
             int n = table.nRows();
             writer.write(
                 "<h3><a name=\"SearchByCategory\">" + EDStatic.categoryTitleHtml + 
                 "</a></h3>\n" +
-                EDStatic.category1Html + "\n<br>(");
+                String2.replaceAll(EDStatic.category1Html, "<br>", "") + 
+                "\n(");
             for (int row = 0; row < n; row++) 
                 writer.write(table.getStringData(0, row) + (row < n - 1? ", \n" : ""));
             writer.write(") " + EDStatic.category2Html + "\n" +
@@ -9501,8 +11076,9 @@ writer.write(
         //categorize page
         writer.write(
             //"<h3>" + EDStatic.categoryTitleHtml + "</h3>\n" +
-            "<h3>1) Pick an attribute: &nbsp; " + 
-            EDStatic.htmlTooltipImage(loggedInAs, EDStatic.category1Html + " " + EDStatic.category2Html) +
+            "<h3>1) " + EDStatic.categoryPickAttribute + " &nbsp; " + 
+            EDStatic.htmlTooltipImage(loggedInAs, 
+                EDStatic.category1Html + " " + EDStatic.category2Html) +
             "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + //adds space between cat1 and cat2 
             "</h3>\n");
         String attsInURLs[] = EDStatic.categoryAttributesInURLs;
@@ -9510,32 +11086,17 @@ writer.write(
         writer.write(widgets.select("cat1", "", Math.min(attsInURLs.length, 12),
             attsInURLs, String2.indexOf(attsInURLs, attributeInURL), 
             "onchange=\"window.location='" + tErddapUrl + "/categorize/' + " +
-                "this.options[this.selectedIndex].text + '/index.html';\""));
+                "this.options[this.selectedIndex].text + '/index.html?" +
+                EDStatic.encodedPassThroughPIppQueryPage1(request) +
+                "';\""));
         writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
 
-        /* old style: html links   retired 2009-07-15
-        //categorize page
-        Table table = categorizeOptionsTable(tErddapUrl, ".html");
-        int n = table.nRows();
-        writer.write(
-            //"<h2>" + EDStatic.categoryTitleHtml + "</h2>\n" +
-            "<h3>1) Pick an attribute: &nbsp; " + 
-            EDStatic.htmlTooltipImage(loggedInAs, EDStatic.category1Html + " " + EDStatic.category2Html) +
-            "</h3>\n" +
-            "<table class=\"erd commonBGColor\" cellspacing=\"0\">\n" +
-            "  <tr>\n");
-        for (int row = 0; row < n; row++) 
-            writer.write("    <td>&nbsp;" + table.getStringData(0, row) + "&nbsp;</td>\n");
-        writer.write(
-            "  </tr>\n" +
-            "</table>\n\n");
-        writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
-        */
     }
 
     /** 
      * This writes the html with the category options to the writer (in a table with lots of columns).
      *
+     * @param request
      * @param loggedInAs
      * @param writer
      * @param attribute must be valid  (e.g., ioos_category)
@@ -9543,15 +11104,16 @@ writer.write(
      * @param value may be null or invalid (e.g., Location)
      * @throws Throwable if trouble
      */
-    public void writeCategoryOptionsHtml2(String loggedInAs, Writer writer, 
+    public void writeCategoryOptionsHtml2(HttpServletRequest request, 
+        String loggedInAs, Writer writer, 
         String attribute, String attributeInURL, String value) throws Throwable {
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String values[] = categoryInfo(attribute).toArray();
-        String title = EDStatic.categorySearchHtml;
-        title = String2.replaceAll(title, "&category;", attributeInURL);
         writer.write(
-            "<h3>2) " + title + ": &nbsp; " +
+            "<h3>2) " + 
+            MessageFormat.format(EDStatic.categorySearchHtml, attributeInURL) +
+            ": &nbsp; " +
             EDStatic.htmlTooltipImage(loggedInAs, EDStatic.categoryClickHtml) +
             "</h3>\n");
         if (values.length == 0) {
@@ -9560,8 +11122,11 @@ writer.write(
             HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
             writer.write(widgets.select("cat2", "", Math.min(values.length, 12),
                 values, String2.indexOf(values, value), 
-                "onchange=\"window.location='" + tErddapUrl + "/categorize/" + attributeInURL + "/' + " +
-                    "this.options[this.selectedIndex].text + '/index.html';\""));
+                "onchange=\"window.location='" + 
+                    tErddapUrl + "/categorize/" + attributeInURL + "/' + " +
+                    "this.options[this.selectedIndex].text + '/index.html?" +
+                    EDStatic.encodedPassThroughPIppQueryPage1(request) +
+                    "';\""));
         }
         writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
     }
@@ -9591,10 +11156,10 @@ writer.write(
         int nRows = Math2.hiDiv(nCats, nCols);
 
         //write the table
-        String catTitle = EDStatic.categorySearchHtml;
-        catTitle = String2.replaceAll(catTitle, "&category;", categoryAttribute);
         writer.write(
-            "<h3>2) " + catTitle + ": &nbsp; " +
+            "<h3>2) " + 
+            MessageFormat.format(EDStatic.categorySearchHtml, categoryAttribute) + 
+            ": &nbsp; " +
             EDStatic.htmlTooltipImage(loggedInAs, EDStatic.categoryClickHtml) +
             "</h3>\n");
         writer.write(
@@ -9629,11 +11194,11 @@ writer.write(
     } */
 
     /** 
-     * This sens a response: a table with two columns (Category, URL).
+     * This sends a response: a table with two columns (Category, URL).
      *
      * @param request
      * @param response
-     * @param loggedInAs  the name of the logged in user (or null if not logged in)
+     * @param loggedInAs  the name of the logged-in user (or null if not logged-in)
      * @param attribute must be valid  (e.g., ioos_category)
      * @param attributeInURL must be valid  (e.g., ioos_category)
      * @param fileTypeName a plainFileType, e.g., .htmlTable
@@ -9653,10 +11218,12 @@ writer.write(
         StringArray urlCol = new StringArray();
         table.addColumn("Category", catCol);
         table.addColumn("URL", urlCol);
+        String pipp1 = EDStatic.passThroughPIppQueryPage1(request);
         for (int i = 0; i < nCats; i++) {
             String cat = cats.get(i); //e.g., Temperature    already safe
             catCol.add(cat);
-            urlCol.add(tErddapUrl + "/categorize/" + attributeInURL + "/" + cat + "/index" + fileTypeName); 
+            urlCol.add(tErddapUrl + "/categorize/" + attributeInURL + 
+                "/" + cat + "/index" + fileTypeName + "?" + pipp1); 
         }
 
         //send it  
@@ -9667,7 +11234,9 @@ writer.write(
     /**
      * Given a list of datasetIDs, this makes a sorted table of the datasets info.
      *
-     * @param loggedInAs  the name of the logged in user (or null if not logged in)
+     * @param loggedInAs  the name of the logged in user (or null if not logged in).
+     *    This is used to ensure that the user sees only datasets they have a 
+     *    right to know exist.  But this has almost always already been done.
      * @param datasetIDs the id's of the datasets (e.g., "pmelTao") that should be put into the table
      * @param sortByTitle if true, rows will be sorted by title.
      *    If false, they are left in order of datasetIDs.
@@ -9691,12 +11260,16 @@ writer.write(
         StringArray accessCol = new StringArray();
         StringArray titleCol = new StringArray();
         StringArray summaryCol = new StringArray();
+        StringArray fgdcCol = new StringArray();
+        StringArray iso19115Col = new StringArray();
         StringArray infoCol = new StringArray();
         StringArray backgroundCol = new StringArray();
         StringArray rssCol = new StringArray();
         StringArray emailCol = new StringArray();
         StringArray institutionCol = new StringArray();
         StringArray idCol = new StringArray();  //useful for java programs
+
+        // !!! DON'T TRANSLATE THESE, SO CONSISTENT FOR ALL ERDDAPs 
         table.addColumn("griddap", gdCol);  //just protocol name
         table.addColumn("Subset", subCol);
         table.addColumn("tabledap", tdCol);
@@ -9708,6 +11281,8 @@ writer.write(
             table.addColumn("Accessible", accessCol);
         int sortOn = table.addColumn("Title", titleCol);
         table.addColumn("Summary", summaryCol);
+        if (EDStatic.fgdcActive)     table.addColumn("FGDC", fgdcCol);
+        if (EDStatic.iso19115Active) table.addColumn("ISO 19115", iso19115Col);
         table.addColumn("Info", infoCol);
         table.addColumn("Background Info", backgroundCol);
         table.addColumn("RSS", rssCol);
@@ -9737,12 +11312,18 @@ writer.write(
             wcsCol.add(edd.accessibleViaWCS().length() == 0? 
                 tErddapUrl + "/wcs/" + tId + "/" + EDDGrid.wcsServer : "");
             wmsCol.add(edd.accessibleViaWMS().length() == 0? 
-                tErddapUrl + "/wms/" + tId + "/" + WMS_SERVER : "");
+                tErddapUrl + "/wms/" + tId + "/" + EDD.WMS_SERVER : "");
             accessCol.add(edd.getAccessibleTo() == null? "public" :
                 !isLoggedIn? "log in" :
                 isAccessible? "yes" : "no");
             titleCol.add(edd.title());
             summaryCol.add(edd.extendedSummary());
+            fgdcCol.add(edd.accessibleViaFGDC().length() == 0? 
+                tErddapUrl + "/" + EDStatic.fgdcXmlDirectory     + 
+                    edd.datasetID() + EDD.fgdcSuffix     + ".xml" : "");
+            iso19115Col.add(edd.accessibleViaISO19115().length() == 0? 
+                tErddapUrl + "/" + EDStatic.iso19115XmlDirectory + 
+                    edd.datasetID() + EDD.iso19115Suffix + ".xml" : "");
             infoCol.add(tErddapUrl + "/info/" + edd.datasetID() + "/index" + fileTypeName);
             backgroundCol.add(edd.infoUrl());
             rssCol.add(EDStatic.erddapUrl + "/rss/" + edd.datasetID()+ ".rss"); //never https url
@@ -9761,7 +11342,9 @@ writer.write(
     /**
      * Given a list of datasetIDs, this makes a sorted table of the datasets info.
      *
-     * @param loggedInAs  the name of the logged in user (or null if not logged in)
+     * @param loggedInAs  the name of the logged in user (or null if not logged in).
+     *    This is used to ensure that the user sees only datasets they have a 
+     *    right to know exist.  But this has almost always already been done.
      * @param datasetIDs the id's of the datasets (e.g., "pmelTao") that should be put into the table
      * @param sortByTitle if true, rows will be sorted by title.
      *    If false, they are left in order of datasetIDs.
@@ -9814,7 +11397,11 @@ writer.write(
         table.addColumn("Title", titleCol);
         int sortOn = table.addColumn("Plain Title", plainTitleCol); 
         table.addColumn("Sum-<br>mary", summaryCol);
-        table.addColumn("Meta-<br>data<br>Info", infoCol);
+        table.addColumn(
+            (EDStatic.fgdcActive?     "FGDC,<br>" : "") +
+            (EDStatic.iso19115Active? "ISO,<br>"  : "") +
+            (EDStatic.fgdcActive || EDStatic.iso19115Active? "Metadata" : "Meta-<br>data"), 
+            infoCol);
         table.addColumn("Back-<br>ground<br>Info", backgroundCol);
         table.addColumn("RSS", rssCol);
         table.addColumn("E<br>mail", emailCol);
@@ -9885,9 +11472,31 @@ writer.write(
             else titleCol.add(XML.encodeAsHTML(tTitle));
             summaryCol.add("&nbsp;&nbsp;&nbsp;" + EDStatic.htmlTooltipImage(loggedInAs, 
                 XML.encodeAsPreHTML(edd.extendedSummary(), 100)));
-            infoCol.add("&nbsp;<a href=\"" + tErddapUrl + "/info/" + edd.datasetID() + 
+            infoCol.add(
+                "\n&nbsp;" +
+                //fgdc
+                (edd.accessibleViaFGDC().length() > 0?  
+                    (EDStatic.fgdcActive? "&nbsp;&nbsp;&nbsp;" : "") :
+                    "&nbsp;<a href=\"" + tErddapUrl + "/" + EDStatic.fgdcXmlDirectory + 
+                        edd.datasetID() + EDD.fgdcSuffix     + ".xml\" " + 
+                        "title=\"" + 
+                        XML.encodeAsHTML(MessageFormat.format(EDStatic.metadataDownload, "FGDC")) + 
+                        "\" >F</a>") +
+                "\n" +
+                //iso
+                (edd.accessibleViaISO19115().length() > 0? 
+                    (EDStatic.iso19115Active? "&nbsp;&nbsp;&nbsp;&nbsp;" : "") :
+                    "&nbsp;<a href=\"" + tErddapUrl + "/" + EDStatic.iso19115XmlDirectory +
+                        edd.datasetID() + EDD.iso19115Suffix + ".xml\" " + 
+                    "title=\"" + 
+                        XML.encodeAsHTML(MessageFormat.format(EDStatic.metadataDownload, "ISO 19115-2/19139")) + 
+                        "\" >&nbsp;I&nbsp;</a>") +
+                //dataset metadata
+                "\n&nbsp;" +
+                "<a href=\"" + tErddapUrl + "/info/" + edd.datasetID() + 
                 "/index.html\" " + //here, always .html
-                "title=\"" + EDStatic.clickInfo + "\" >meta</a>");
+                "title=\"" + EDStatic.clickInfo + "\" >M</a>" +
+                "\n&nbsp;");
             backgroundCol.add("<a href=\"" + XML.encodeAsHTML(edd.infoUrl()) + "\" " +
                 "title=\"" + EDStatic.clickBackgroundInfo + "\" >background</a>");
             rssCol.add(edd.rssHref(loggedInAs));
@@ -9935,20 +11544,20 @@ writer.write(
         if (fileTypeName.equals(".htmlTable")) {
             TableWriterHtmlTable.writeAllAndFinish(loggedInAs, table, outSource, 
                 true, fileName, false,
-                "", "", true, false); //pre, post, encodeAsHTML, writeUnits
+                "", "", true, false, -1); //pre, post, encodeAsHTML, writeUnits
 
         } else if (fileTypeName.equals(".json")) {
             //did query include &.jsonp= ?
-            String parts[] = EDD.getUserQueryParts(request.getQueryString());
+            String parts[] = EDD.getUserQueryParts(request.getQueryString()); //decoded
             String jsonp = String2.stringStartsWith(parts, ".jsonp="); //may be null
             if (jsonp != null) 
-                jsonp = SSR.percentDecode(jsonp.substring(7));
+                jsonp = jsonp.substring(7);
 
             TableWriterJson.writeAllAndFinish(table, outSource, jsonp, false); //writeUnits
 
         } else if (fileTypeName.equals(".csv")) {
             TableWriterSeparatedValue.writeAllAndFinish(table, outSource,
-                ", ", true, '0', "NaN"); //separator, quoted, writeUnits
+                ",", true, '0', "NaN"); //separator, quoted, writeUnits
 
         } else if (fileTypeName.equals(".mat")) {
             //avoid troublesome var names (e.g., with spaces)
@@ -9969,7 +11578,7 @@ writer.write(
                     String2.modifyToBeFileNameSafe(table.getColumnName(col)));
 
             //This is different from other formats (which stream the results to the user),
-            //since a file is being created then sent.
+            //since a file must be created before it can be sent.
             //Append a random# to fileName to deal with different responses 
             //for almost simultaneous requests
             //(e.g., all Advanced Search requests have fileName=AdvancedSearch)
@@ -9989,10 +11598,11 @@ writer.write(
         } else if (fileTypeName.equals(".xhtml")) {
             TableWriterHtmlTable.writeAllAndFinish(loggedInAs, table, outSource, 
                 true, fileName, true,
-                "", "", true, false); //pre, post, encodeAsHTML, writeUnits
+                "", "", true, false, -1); //pre, post, encodeAsHTML, writeUnits
 
         } else {
-            throw new SimpleException("Unsupported fileType=" + fileTypeName + " at the end of the requestUrl."); 
+            throw new SimpleException(
+                MessageFormat.format(EDStatic.unsupportedFileType, fileTypeName));
         }
 
         //essential
@@ -10010,7 +11620,8 @@ writer.write(
         String fileTypeName, String error) throws Throwable {
 
         if (fileTypeName.equals(".json")) {
-            OutputStream out = (new OutputStreamFromHttpResponse(request, response, ERROR, ".json", ".json")).outputStream("UTF-8");
+            OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
+                ERROR, ".json", ".json")).outputStream("UTF-8");
             Writer writer = new OutputStreamWriter(out, "UTF-8");
             writer.write(
                 "{\n" +
@@ -10030,7 +11641,8 @@ writer.write(
 //better error format for .htmlTable and .xhtml???
             fileTypeName.equals(".xhtml")) {  
 
-            OutputStream out = (new OutputStreamFromHttpResponse(request, response, ERROR, ".txt", ".txt")).outputStream("UTF-8");
+            OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
+                ERROR, ".txt", ".txt")).outputStream("UTF-8");
             Writer writer = new OutputStreamWriter(out, "UTF-8");
             if (!error.startsWith(ERROR))
                 writer.write(ERROR + ": ");
@@ -10043,7 +11655,8 @@ writer.write(
             return;
         }
 
-        throw new SimpleException("Unsupported fileType=" + fileTypeName + " at the end of the requestUrl."); 
+        throw new SimpleException(
+            MessageFormat.format(EDStatic.unsupportedFileType, fileTypeName));
     }*/
 
     /**
@@ -10110,7 +11723,7 @@ writer.write(
             expected = 
                 "Core Version: DAP/2.0\n" +
                 "Server Version: dods/3.7\n" +
-                "ERDDAP_version: 1.36\n";
+                "ERDDAP_version: 1.38\n";
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/griddap/version");
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/tabledap/version");
@@ -10161,12 +11774,14 @@ writer.write(
             Test.ensureTrue(results.indexOf("java.io.FileNotFoundException") >= 0, "results=\n" + results);
 
             //info    list all datasets
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/info/index.html"); 
+            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/info/index.html?" +
+                EDStatic.defaultPIppQuery); 
             Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("GLOBEC NEP Rosette Bottle Data (2002)") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("SST, Blended, Global, EXPERIMENTAL (5 Day Composite)") >= 0, "results=\n" + results);
 
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/info/index.csv"); 
+            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/info/index.csv?" +
+                EDStatic.defaultPIppQuery); 
             Test.ensureTrue(results.indexOf("</html>") < 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("GLOBEC NEP Rosette Bottle Data (2002)") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("SST, Blended, Global, EXPERIMENTAL (5 Day Composite)") >= 0, "results=\n" + results);
@@ -10187,12 +11802,14 @@ writer.write(
 
 
             //search    
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/search/index.html");
+            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/search/index.html?" +
+                EDStatic.defaultPIppQuery);
             Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("Do a Full Text Search for Datasets") >= 0, "results=\n" + results);
             //index.otherFileType must have ?searchFor=...
 
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/search/index.html?searchFor=all");
+            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/search/index.html?" +
+                EDStatic.defaultPIppQuery + "&searchFor=all");
             Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
@@ -10203,7 +11820,8 @@ writer.write(
                 ">GLOBEC NEP Rosette Bottle Data (2002)") >= 0,
                 "results=\n" + results);            
            
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/search/index.htmlTable?searchFor=all");
+            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/search/index.htmlTable?" +
+                EDStatic.defaultPIppQuery + "&searchFor=all");
             Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
@@ -10214,14 +11832,14 @@ writer.write(
                 ">GLOBEC NEP Rosette Bottle Data (2002)\n") >= 0,
                 "results=\n" + results);            
            
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + 
-                "/search/index.html?searchFor=tao+pmel");
+            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/search/index.html?" +
+                EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
             Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(">TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Sea Surface Temperature\n") > 0,
                 "results=\n" + results);
 
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + 
-                "/search/index.tsv?searchFor=tao+pmel");
+            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/search/index.tsv?" +
+                EDStatic.defaultPIppQuery + "&searchFor=tao+pmel");
             Test.ensureTrue(results.indexOf("\tTAO/TRITON, RAMA, and PIRATA Buoys, Daily, Sea Surface Temperature\t") > 0,
                 "results=\n" + results);
 
@@ -10242,16 +11860,13 @@ writer.write(
 "    \"columnNames\": [\"Categorize\", \"URL\"],\n" +
 "    \"columnTypes\": [\"String\", \"String\"],\n" +
 "    \"rows\": [\n" +
-"      [\"cdm_data_type\", \"http://127.0.0.1:8080/cwexperimental/categorize/cdm_data_type/index.json\"],\n" +
-"      [\"dataVariables\", \"http://127.0.0.1:8080/cwexperimental/categorize/dataVariables/index.json\"],\n" +
-"      [\"institution\", \"http://127.0.0.1:8080/cwexperimental/categorize/institution/index.json\"],\n" +
-"      [\"ioos_category\", \"http://127.0.0.1:8080/cwexperimental/categorize/ioos_category/index.json\"],\n" +
-"      [\"long_name\", \"http://127.0.0.1:8080/cwexperimental/categorize/long_name/index.json\"],\n" +
-"      [\"parameterCode\", \"http://127.0.0.1:8080/cwexperimental/categorize/parameterCode/index.json\"],\n" +
-"      [\"parameterName\", \"http://127.0.0.1:8080/cwexperimental/categorize/parameterName/index.json\"],\n" +
-"      [\"statisticCode\", \"http://127.0.0.1:8080/cwexperimental/categorize/statisticCode/index.json\"],\n" +
-"      [\"statisticName\", \"http://127.0.0.1:8080/cwexperimental/categorize/statisticName/index.json\"],\n" +
-"      [\"standard_name\", \"http://127.0.0.1:8080/cwexperimental/categorize/standard_name/index.json\"]\n" +
+"      [\"cdm_data_type\", \"http://127.0.0.1:8080/cwexperimental/categorize/cdm_data_type/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"institution\", \"http://127.0.0.1:8080/cwexperimental/categorize/institution/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"ioos_category\", \"http://127.0.0.1:8080/cwexperimental/categorize/ioos_category/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"keywords\", \"http://127.0.0.1:8080/cwexperimental/categorize/keywords/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"long_name\", \"http://127.0.0.1:8080/cwexperimental/categorize/long_name/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"standard_name\", \"http://127.0.0.1:8080/cwexperimental/categorize/standard_name/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"variableName\", \"http://127.0.0.1:8080/cwexperimental/categorize/variableName/index.json?page=1&itemsPerPage=1000\"]\n" +
 "    ]\n" +
 "  }\n" +
 "}\n", 
@@ -10268,16 +11883,13 @@ jsonp + "(" +
 "    \"columnNames\": [\"Categorize\", \"URL\"],\n" +
 "    \"columnTypes\": [\"String\", \"String\"],\n" +
 "    \"rows\": [\n" +
-"      [\"cdm_data_type\", \"http://127.0.0.1:8080/cwexperimental/categorize/cdm_data_type/index.json\"],\n" +
-"      [\"dataVariables\", \"http://127.0.0.1:8080/cwexperimental/categorize/dataVariables/index.json\"],\n" +
-"      [\"institution\", \"http://127.0.0.1:8080/cwexperimental/categorize/institution/index.json\"],\n" +
-"      [\"ioos_category\", \"http://127.0.0.1:8080/cwexperimental/categorize/ioos_category/index.json\"],\n" +
-"      [\"long_name\", \"http://127.0.0.1:8080/cwexperimental/categorize/long_name/index.json\"],\n" +
-"      [\"parameterCode\", \"http://127.0.0.1:8080/cwexperimental/categorize/parameterCode/index.json\"],\n" +
-"      [\"parameterName\", \"http://127.0.0.1:8080/cwexperimental/categorize/parameterName/index.json\"],\n" +
-"      [\"statisticCode\", \"http://127.0.0.1:8080/cwexperimental/categorize/statisticCode/index.json\"],\n" +
-"      [\"statisticName\", \"http://127.0.0.1:8080/cwexperimental/categorize/statisticName/index.json\"],\n" +
-"      [\"standard_name\", \"http://127.0.0.1:8080/cwexperimental/categorize/standard_name/index.json\"]\n" +
+"      [\"cdm_data_type\", \"http://127.0.0.1:8080/cwexperimental/categorize/cdm_data_type/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"institution\", \"http://127.0.0.1:8080/cwexperimental/categorize/institution/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"ioos_category\", \"http://127.0.0.1:8080/cwexperimental/categorize/ioos_category/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"keywords\", \"http://127.0.0.1:8080/cwexperimental/categorize/keywords/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"long_name\", \"http://127.0.0.1:8080/cwexperimental/categorize/long_name/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"standard_name\", \"http://127.0.0.1:8080/cwexperimental/categorize/standard_name/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"variableName\", \"http://127.0.0.1:8080/cwexperimental/categorize/variableName/index.json?page=1&itemsPerPage=1000\"]\n" +
 "    ]\n" +
 "  }\n" +
 "}\n" +
@@ -10306,10 +11918,10 @@ jsonp + "(" +
                 "/categorize/institution/index.tsv"));
             Test.ensureTrue(results.indexOf("Category[9]URL[10]") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(
-                "noaa_coastwatch_west_coast_node[9]http://127.0.0.1:8080/cwexperimental/categorize/institution/noaa_coastwatch_west_coast_node/index.tsv[10]") >= 0, 
+                "noaa_coastwatch_west_coast_node[9]http://127.0.0.1:8080/cwexperimental/categorize/institution/noaa_coastwatch_west_coast_node/index.tsv?page=1&itemsPerPage=1000[10]") >= 0, 
                 "results=\n" + results);
             Test.ensureTrue(results.indexOf(
-                "noaa_pmel[9]http://127.0.0.1:8080/cwexperimental/categorize/institution/noaa_pmel/index.tsv[10]") >= 0, 
+                "noaa_pmel[9]http://127.0.0.1:8080/cwexperimental/categorize/institution/noaa_pmel/index.tsv?page=1&itemsPerPage=1000[10]") >= 0, 
                 "results=\n" + results);
             
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + 
@@ -10327,11 +11939,15 @@ jsonp + "(" +
 "    \"columnNames\": [\"griddap\", \"Subset\", \"tabledap\", \"Make A Graph\", " +
                 (EDStatic.sosActive? "\"sos\", " : "") +
                 (EDStatic.wcsActive? "\"wcs\", " : "") +
-                "\"wms\", \"Title\", \"Summary\", \"Info\", \"Background Info\", \"RSS\", \"Email\", \"Institution\", \"Dataset ID\"],\n" +
+                "\"wms\", " + 
+                (EDStatic.authentication.length() > 0? "\"Accessible\", " : "") +
+                "\"Title\", \"Summary\", \"FGDC\", \"ISO 19115\", \"Info\", \"Background Info\", \"RSS\", \"Email\", \"Institution\", \"Dataset ID\"],\n" +
 "    \"columnTypes\": [\"String\", \"String\", \"String\", \"String\", " +
                 (EDStatic.sosActive? "\"String\", " : "") +
                 (EDStatic.wcsActive? "\"String\", " : "") +
-                "\"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\"],\n" +
+                "\"String\", " +
+                (EDStatic.authentication.length() > 0? "\"String\", " : "") +
+                "\"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\"],\n" +
 "    \"rows\": [\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
@@ -10341,7 +11957,9 @@ jsonp + "(" +
 "\"http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle.graph\", " + 
                 (EDStatic.sosActive? "\"\", " : "") + //currently, it isn't made available via sos
                 (EDStatic.wcsActive? "\"\", " : "") +
-                "\"\", \"GLOBEC NEP Rosette Bottle Data (2002)\", \"GLOBEC (GLOBal " +
+                "\"\", " +
+                (EDStatic.authentication.length() > 0? "\"public\", " : "") +
+                "\"GLOBEC NEP Rosette Bottle Data (2002)\", \"GLOBEC (GLOBal " +
                 "Ocean ECosystems Dynamics) NEP (Northeast Pacific)\\nRosette Bottle Data from " +
                 "New Horizon Cruise (NH0207: 1-19 August 2002).\\nNotes:\\nPhysical data " +
                 "processed by Jane Fleischbein (OSU).\\nChlorophyll readings done by " +
@@ -10368,6 +11986,8 @@ jsonp + "(" +
                 "Dr. Hal Batchelder (hbatchelder@coas.oregonstate.edu).\\n\\n" +
                 "cdm_data_type = TrajectoryProfile\\n" +
                 "VARIABLES:\\ncruise_id\\n... (24 more variables)\\n\", " +
+                "\"http://127.0.0.1:8080/cwexperimental/metadata/fgdc/xml/erdGlobecBottle_fgdc.xml\", " + 
+                "\"http://127.0.0.1:8080/cwexperimental/metadata/iso19115/xml/erdGlobecBottle_iso19115.xml\", " +
                 "\"http://127.0.0.1:8080/cwexperimental/info/erdGlobecBottle/index.json\", " +
                 "\"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?" +
                 "dataset=GLOBEC_Bottle_data\", \"http://127.0.0.1:8080/cwexperimental/rss/" +
@@ -10378,9 +11998,10 @@ jsonp + "(" +
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
 
             //griddap
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/griddap/index.html");            
+            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/griddap/index.html?" + 
+                EDStatic.defaultPIppQuery);            
             Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Datasets Which Can Be Accessed via griddap") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("List of griddap Datasets") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(
@@ -10388,7 +12009,8 @@ jsonp + "(" +
                 "results=\n" + results);
             Test.ensureTrue(results.indexOf(">erdMHchla8day\n") >= 0, "results=\n" + results);
 
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/griddap/index.json");
+            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/griddap/index.json?" + 
+                EDStatic.defaultPIppQuery + "");
             Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
@@ -10415,16 +12037,18 @@ jsonp + "(" +
 
 
             //tabledap
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/tabledap/index.html");
+            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/tabledap/index.html?" + 
+                EDStatic.defaultPIppQuery);
             Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Datasets Which Can Be Accessed via tabledap") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("List of tabledap Datasets") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(">GLOBEC NEP Rosette Bottle Data (2002)\n") >= 0,
                 "results=\n" + results);            
             Test.ensureTrue(results.indexOf(">erdGlobecBottle\n") >= 0, "results=\n" + results);
 
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/tabledap/index.json");
+            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/tabledap/index.json?" + 
+                EDStatic.defaultPIppQuery);
             Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
@@ -10450,7 +12074,8 @@ jsonp + "(" +
 
             //sos
             if (EDStatic.sosActive) {
-                results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/sos/index.html");
+                results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/sos/index.html?" + 
+                    EDStatic.defaultPIppQuery);
                 Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
                 Test.ensureTrue(results.indexOf("Datasets Which Can Be Accessed via SOS") >= 0, "results=\n" + results);
                 Test.ensureTrue(results.indexOf(">Title</th>") >= 0, "results=\n" + results);
@@ -10459,7 +12084,8 @@ jsonp + "(" +
                     "results=\n" + results);            
                 Test.ensureTrue(results.indexOf(">cwwcNDBCMet<") >= 0, "results=\n" + results);
 
-                results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/sos/index.json");
+                results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/sos/index.json?" + 
+                    EDStatic.defaultPIppQuery);
                 Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
                 Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
                 Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
@@ -10482,7 +12108,8 @@ jsonp + "(" +
 
             //wcs
             if (EDStatic.wcsActive) {
-                results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wcs/index.html");
+                results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wcs/index.html?" + 
+                    EDStatic.defaultPIppQuery);
                 Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
                 Test.ensureTrue(results.indexOf("Datasets Which Can Be Accessed via WCS") >= 0, "results=\n" + results);
                 Test.ensureTrue(results.indexOf(">Title</th>") >= 0, "results=\n" + results);
@@ -10491,7 +12118,8 @@ jsonp + "(" +
                     "results=\n" + results);            
                 Test.ensureTrue(results.indexOf(">erdMHchla8day<") >= 0, "results=\n" + results);
 
-                results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wcs/index.json");
+                results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wcs/index.json?" + 
+                    EDStatic.defaultPIppQuery);
                 Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
                 Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
                 Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
@@ -10513,16 +12141,18 @@ jsonp + "(" +
             }
 
             //wms
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wms/index.html");
+            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wms/index.html?" + 
+                EDStatic.defaultPIppQuery);
             Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Datasets Which Can Be Accessed via WMS") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("List of WMS Datasets") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(">Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\n") >= 0,
                 "results=\n" + results);            
             Test.ensureTrue(results.indexOf(">erdMHchla8day\n") >= 0, "results=\n" + results);
 
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wms/index.json");
+            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wms/index.json?" + 
+                EDStatic.defaultPIppQuery);
             Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
@@ -10552,7 +12182,7 @@ jsonp + "(" +
 
             //validate the various GetCapabilities documents
 /*            String s = "http://www.validome.org/xml/validate/?lang=en" +
-                "&url=" + EDStatic.erddapUrl + "/wms/" + WMS_SERVER + "?service=WMS&" +
+                "&url=" + EDStatic.erddapUrl + "/wms/" + EDD.WMS_SERVER + "?service=WMS&" +
                 "request=GetCapabilities&version=";
             SSR.displayInBrowser(s + "1.1.0");
             SSR.displayInBrowser(s + "1.1.1");
@@ -10632,25 +12262,26 @@ jsonp + "(" +
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/rest.html");
             Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(
-                "ERDDAP as a Web Service") >= 0,
+                "ERDDAP's RESTful Web Services") >= 0,
                 "results=\n" + results);
 
             //list of services
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/index.csv");
             expected = 
-"Resource, URL\n" +
-"info, http://127.0.0.1:8080/cwexperimental/info/index.csv\n" +
-"search, http://127.0.0.1:8080/cwexperimental/search/index.csv?searchFor=\n" +
-"categorize, http://127.0.0.1:8080/cwexperimental/categorize/index.csv\n" +
-"griddap, http://127.0.0.1:8080/cwexperimental/griddap/index.csv\n" +
-"tabledap, http://127.0.0.1:8080/cwexperimental/tabledap/index.csv\n" +
-(EDStatic.sosActive? "sos, http://127.0.0.1:8080/cwexperimental/sos/index.csv\n" : "") +
-(EDStatic.wcsActive? "wcs, http://127.0.0.1:8080/cwexperimental/wcs/index.csv\n" : "") +
-"wms, http://127.0.0.1:8080/cwexperimental/wms/index.csv\n";
+"Resource,URL\n" +
+"info,http://127.0.0.1:8080/cwexperimental/info/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
+"search,http://127.0.0.1:8080/cwexperimental/search/index.csv?" + EDStatic.defaultPIppQuery + "&searchFor=\n" +
+"categorize,http://127.0.0.1:8080/cwexperimental/categorize/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
+"griddap,http://127.0.0.1:8080/cwexperimental/griddap/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
+"tabledap,http://127.0.0.1:8080/cwexperimental/tabledap/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
+(EDStatic.sosActive? "sos,http://127.0.0.1:8080/cwexperimental/sos/index.csv?" + EDStatic.defaultPIppQuery + "\n" : "") +
+(EDStatic.wcsActive? "wcs,http://127.0.0.1:8080/cwexperimental/wcs/index.csv?" + EDStatic.defaultPIppQuery + "\n" : "") +
+"wms,http://127.0.0.1:8080/cwexperimental/wms/index.csv?" + EDStatic.defaultPIppQuery + "\n";
 //subscriptions?
             Test.ensureEqual(results, expected, "results=\n" + results);
 
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/index.htmlTable");
+            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/index.htmlTable?" + 
+                EDStatic.defaultPIppQuery);
             expected = 
 EDStatic.startHeadHtml(EDStatic.erddapUrl((String)null), "Resources") + "\n" +
 "</head>\n" +
@@ -10668,37 +12299,37 @@ EDStatic.startBodyHtml(null) + "\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>info\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/info/index.htmlTable\n" +
+"<td nowrap>http://127.0.0.1:8080/cwexperimental/info/index.htmlTable?page=1&amp;itemsPerPage=1000\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>search\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/search/index.htmlTable?searchFor=\n" +
+"<td nowrap>http://127.0.0.1:8080/cwexperimental/search/index.htmlTable?page=1&amp;itemsPerPage=1000&amp;searchFor=\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>categorize\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/categorize/index.htmlTable\n" +
+"<td nowrap>http://127.0.0.1:8080/cwexperimental/categorize/index.htmlTable?page=1&amp;itemsPerPage=1000\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>griddap\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/griddap/index.htmlTable\n" +
+"<td nowrap>http://127.0.0.1:8080/cwexperimental/griddap/index.htmlTable?page=1&amp;itemsPerPage=1000\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>tabledap\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/tabledap/index.htmlTable\n" +
+"<td nowrap>http://127.0.0.1:8080/cwexperimental/tabledap/index.htmlTable?page=1&amp;itemsPerPage=1000\n" +
 "</tr>\n" +
 (EDStatic.sosActive?              
 "<tr>\n" +
 "<td nowrap>sos\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/sos/index.htmlTable\n" +
+"<td nowrap>http://127.0.0.1:8080/cwexperimental/sos/index.htmlTable?page=1&amp;itemsPerPage=1000\n" +
 "</tr>\n" : "") +
 (EDStatic.wcsActive?
 "<tr>\n" +
 "<td nowrap>wcs\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/wcs/index.htmlTable\n" +
+"<td nowrap>http://127.0.0.1:8080/cwexperimental/wcs/index.htmlTable?page=1&amp;itemsPerPage=1000\n" +
 "</tr>\n" : "") +
 "<tr>\n" +
 "<td nowrap>wms\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/wms/index.htmlTable\n" +
+"<td nowrap>http://127.0.0.1:8080/cwexperimental/wms/index.htmlTable?page=1&amp;itemsPerPage=1000\n" +
 "</tr>\n" +
 "</table>\n" +
 EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
@@ -10712,14 +12343,14 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "    \"columnNames\": [\"Resource\", \"URL\"],\n" +
 "    \"columnTypes\": [\"String\", \"String\"],\n" +
 "    \"rows\": [\n" +
-"      [\"info\", \"http://127.0.0.1:8080/cwexperimental/info/index.json\"],\n" +
-"      [\"search\", \"http://127.0.0.1:8080/cwexperimental/search/index.json?searchFor=\"],\n" +
-"      [\"categorize\", \"http://127.0.0.1:8080/cwexperimental/categorize/index.json\"],\n" +
-"      [\"griddap\", \"http://127.0.0.1:8080/cwexperimental/griddap/index.json\"],\n" +
-"      [\"tabledap\", \"http://127.0.0.1:8080/cwexperimental/tabledap/index.json\"],\n" +
-(EDStatic.sosActive? "      [\"sos\", \"http://127.0.0.1:8080/cwexperimental/sos/index.json\"],\n" : "") +
-(EDStatic.wcsActive? "      [\"wcs\", \"http://127.0.0.1:8080/cwexperimental/wcs/index.json\"],\n" : "") +
-"      [\"wms\", \"http://127.0.0.1:8080/cwexperimental/wms/index.json\"]\n" +
+"      [\"info\", \"http://127.0.0.1:8080/cwexperimental/info/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"search\", \"http://127.0.0.1:8080/cwexperimental/search/index.json?page=1&itemsPerPage=1000&searchFor=\"],\n" +
+"      [\"categorize\", \"http://127.0.0.1:8080/cwexperimental/categorize/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"griddap\", \"http://127.0.0.1:8080/cwexperimental/griddap/index.json?page=1&itemsPerPage=1000\"],\n" +
+"      [\"tabledap\", \"http://127.0.0.1:8080/cwexperimental/tabledap/index.json?page=1&itemsPerPage=1000\"],\n" +
+(EDStatic.sosActive? "      [\"sos\", \"http://127.0.0.1:8080/cwexperimental/sos/index.json?page=1&itemsPerPage=1000\"],\n" : "") +
+(EDStatic.wcsActive? "      [\"wcs\", \"http://127.0.0.1:8080/cwexperimental/wcs/index.json?page=1&itemsPerPage=1000\"],\n" : "") +
+"      [\"wms\", \"http://127.0.0.1:8080/cwexperimental/wms/index.json?page=1&itemsPerPage=1000\"]\n" +
 //subscriptions?
 "    ]\n" +
 "  }\n" +
@@ -10729,14 +12360,14 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
             results = String2.annotatedString(SSR.getUrlResponseString(EDStatic.erddapUrl + "/index.tsv"));
             expected = 
 "Resource[9]URL[10]\n" +
-"info[9]http://127.0.0.1:8080/cwexperimental/info/index.tsv[10]\n" +
-"search[9]http://127.0.0.1:8080/cwexperimental/search/index.tsv?searchFor=[10]\n" +
-"categorize[9]http://127.0.0.1:8080/cwexperimental/categorize/index.tsv[10]\n" +
-"griddap[9]http://127.0.0.1:8080/cwexperimental/griddap/index.tsv[10]\n" +
-"tabledap[9]http://127.0.0.1:8080/cwexperimental/tabledap/index.tsv[10]\n" +
-(EDStatic.sosActive? "sos[9]http://127.0.0.1:8080/cwexperimental/sos/index.tsv[10]\n" : "") +
-(EDStatic.wcsActive? "wcs[9]http://127.0.0.1:8080/cwexperimental/wcs/index.tsv[10]\n" : "") +
-"wms[9]http://127.0.0.1:8080/cwexperimental/wms/index.tsv[10]\n" +
+"info[9]http://127.0.0.1:8080/cwexperimental/info/index.tsv?page=1&itemsPerPage=1000[10]\n" +
+"search[9]http://127.0.0.1:8080/cwexperimental/search/index.tsv?page=1&itemsPerPage=1000&searchFor=[10]\n" +
+"categorize[9]http://127.0.0.1:8080/cwexperimental/categorize/index.tsv?page=1&itemsPerPage=1000[10]\n" +
+"griddap[9]http://127.0.0.1:8080/cwexperimental/griddap/index.tsv?page=1&itemsPerPage=1000[10]\n" +
+"tabledap[9]http://127.0.0.1:8080/cwexperimental/tabledap/index.tsv?page=1&itemsPerPage=1000[10]\n" +
+(EDStatic.sosActive? "sos[9]http://127.0.0.1:8080/cwexperimental/sos/index.tsv?page=1&itemsPerPage=1000[10]\n" : "") +
+(EDStatic.wcsActive? "wcs[9]http://127.0.0.1:8080/cwexperimental/wcs/index.tsv?page=1&itemsPerPage=1000[10]\n" : "") +
+"wms[9]http://127.0.0.1:8080/cwexperimental/wms/index.tsv?page=1&itemsPerPage=1000[10]\n" +
 "[end]";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -10760,37 +12391,37 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap=\"nowrap\">info</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/info/index.xhtml</td>\n" +
+"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/info/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap=\"nowrap\">search</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/search/index.xhtml?searchFor=</td>\n" +
+"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/search/index.xhtml?page=1&amp;itemsPerPage=1000&amp;searchFor=</td>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap=\"nowrap\">categorize</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/categorize/index.xhtml</td>\n" +
+"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/categorize/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap=\"nowrap\">griddap</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/griddap/index.xhtml</td>\n" +
+"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/griddap/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap=\"nowrap\">tabledap</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/tabledap/index.xhtml</td>\n" +
+"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/tabledap/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
 "</tr>\n" +
 (EDStatic.sosActive?
 "<tr>\n" +
 "<td nowrap=\"nowrap\">sos</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/sos/index.xhtml</td>\n" +
+"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/sos/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
 "</tr>\n" : "") +
 (EDStatic.wcsActive?
 "<tr>\n" +
 "<td nowrap=\"nowrap\">wcs</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/wcs/index.xhtml</td>\n" +
+"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/wcs/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
 "</tr>\n" : "") +
 "<tr>\n" +
 "<td nowrap=\"nowrap\">wms</td>\n" +
-"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/wms/index.xhtml</td>\n" +
+"<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/wms/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
 "</tr>\n" +
 "</table>\n" +
 "</body>\n" +
@@ -10800,14 +12431,14 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-"\nThese tests don't work if the localhost erddap is configured to look like POST." +
+                "\nSome of these tests don't work if the localhost erddap is configured to look like POST." +
                 "\nError accessing " + EDStatic.erddapUrl +
                 "\nPress ^C to stop or Enter to continue..."); 
         }
     }
 
     /** This repeatedly gets the info/index.html web page and ensures it is without error. 
-     *  It is best tu run this when many datasets are loaded. 
+     *  It is best to run this when many datasets are loaded. 
      *  For a harder test: run this 4X simultaneously. */
     public static void testHammerGetDatasets() throws Throwable {
         Erddap.verbose = true;
@@ -10823,9 +12454,11 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
                 if (count == 0) sumTime = 0;
                 sumTime -= System.currentTimeMillis();
                 //if uncompressed, it is 1Thread=280 4Threads=900ms
-                results = SSR.getUncompressedUrlResponseString(EDStatic.erddapUrl + "/info/index.html"); 
+                results = SSR.getUncompressedUrlResponseString(EDStatic.erddapUrl + 
+                    "/info/index.html?" + EDStatic.defaultPIppQuery); 
                 //if compressed, it is 1Thread=1575 4=Threads=5000ms
-                //results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/info/index.html"); 
+                //results = SSR.getUrlResponseString(EDStatic.erddapUrl + 
+                //    "/info/index.html?" + EDStatic.defaultPIppQuery); 
                 sumTime += System.currentTimeMillis();
                 count++;
                 if (count > 0) String2.log("count=" + count + " AvgTime=" + (sumTime / count));

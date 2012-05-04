@@ -78,7 +78,7 @@ public class ConvertTable {
                 "       usually 0=lon, 1=lat, 2=depth, 3=time), or\n" +
                 "     3 (.mat).\n" +
                 "  <dimensionName> For example, 'time', 'station', 'observation', 'row'." +
-                "The command line arguments were: " + String2.toCSVString(args));
+                "The command line arguments were: " + String2.toCSSVString(args));
             return;
         }
 

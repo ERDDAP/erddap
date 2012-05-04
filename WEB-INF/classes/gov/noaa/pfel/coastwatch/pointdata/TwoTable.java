@@ -143,7 +143,8 @@ public class TwoTable  {
                 String tColName = getColumnNameWithoutSpaces(col);
                 if (type == String.class) {
                     int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nclib wants at least 1
-                    Dimension lengthDimension  = nc.addDimension(tcolName + "StringLength", max);
+                    Dimension lengthDimension = nc.addDimension(
+                        tcolName + NcHelper.StringLength, max);
                     nc.addVariable(tColName, char.class, 
                         new Dimension[]{observationDimension, lengthDimension}); 
                 } else {

@@ -30,6 +30,7 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -89,6 +90,8 @@ public class EDDTableFromDapSequence extends EDDTable{
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         String tLocalSourceUrl = null;
         String tOuterSequenceName = null;
         String tInnerSequenceName = null; 
@@ -145,6 +148,11 @@ public class EDDTableFromDapSequence extends EDDTable{
             else if (localTags.equals("</onChange>")) 
                 tOnChange.add(content); 
 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+
             else xmlReader.unexpectedTagException();
         }
         int ndv = tDataVariables.size();
@@ -153,7 +161,7 @@ public class EDDTableFromDapSequence extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromDapSequence(tDatasetID, tAccessibleTo,
-            tOnChange, tGlobalAttributes,
+            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
             tAltitudeMetersPerSourceUnit,
             ttDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl, 
@@ -191,6 +199,11 @@ public class EDDTableFromDapSequence extends EDDTable{
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tAddGlobalAttributes are global attributes which will
      *   be added to (and take precedence over) the data source's global attributes.
      *   This may be null if you have nothing to add.
@@ -205,8 +218,8 @@ public class EDDTableFromDapSequence extends EDDTable{
      *   <li> "cdm_data_type" - one of the EDD.CDM_xxx options
      *   </ul>
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
-     *   Special case: if addGlobalAttributes name="license" value="[standard]",
-     *     the EDStatic.standardLicense will be used.
+     *   Special case: if combinedGlobalAttributes name="license", any instance of value="[standard]"
+     *     will be converted to the EDStatic.standardLicense.
      * @param tAltMetersPerSourceUnit the factor needed to convert the source
      *    alt values to/from meters above sea level.
      * @param tDataVariables is an Object[nDataVariables][3]: 
@@ -252,7 +265,7 @@ public class EDDTableFromDapSequence extends EDDTable{
      * @throws Throwable if trouble
      */
     public EDDTableFromDapSequence(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
@@ -276,13 +289,11 @@ public class EDDTableFromDapSequence extends EDDTable{
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
-        String tLicense = addGlobalAttributes.getString("license");
-        if (tLicense != null)
-            addGlobalAttributes.set("license", 
-                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
         localSourceUrl = tLocalSourceUrl;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
@@ -326,6 +337,10 @@ public class EDDTableFromDapSequence extends EDDTable{
         sourceGlobalAttributes = new Attributes();
         OpendapHelper.getAttributes(das, "GLOBAL", sourceGlobalAttributes);
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
+        String tLicense = combinedGlobalAttributes.getString("license");
+        if (tLicense != null)
+            combinedGlobalAttributes.set("license", 
+                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         combinedGlobalAttributes.removeValue("null");
 
         //create structures to hold the sourceAttributes temporarily
@@ -666,7 +681,7 @@ public class EDDTableFromDapSequence extends EDDTable{
             throw new SimpleException("Error while getting DAS from " + tLocalSourceUrl + ".das .\n" +
                 t.getMessage());
         }
-//String2.log("das.getNames=" + String2.toCSVString(das.getNames()));
+//String2.log("das.getNames=" + String2.toCSSVString(das.getNames()));
 //AttributeTable att = OpendapHelper.getAttributeTable(das, outerSequenceName);
 //Attributes atts2 = new Attributes();
 //OpendapHelper.getAttributes(att, atts2);
@@ -720,7 +735,7 @@ public class EDDTableFromDapSequence extends EDDTable{
                                     dataAddTable.addColumn(dataAddTable.nColumns(), 
                                         varName, new StringArray(), 
                                         makeReadyToUseAddVariableAttributesForDatasetsXml(
-                                            sourceAtts, varName, true)); //addColorBarMinMax
+                                            sourceAtts, varName, true, true)); //addColorBarMinMax, tryToFindLLAT
                                 }
                             }
                         } else {
@@ -744,7 +759,7 @@ public class EDDTableFromDapSequence extends EDDTable{
                             sourceAtts);
                         dataAddTable.addColumn(   nOuterVars, varName, new StringArray(), 
                             makeReadyToUseAddVariableAttributesForDatasetsXml(
-                                sourceAtts, varName, true)); //addColorBarMinMax
+                                sourceAtts, varName, true, true)); //addColorBarMinMax, tryToFindLLAT
                         nOuterVars++;
                     }
                 }
@@ -752,13 +767,15 @@ public class EDDTableFromDapSequence extends EDDTable{
         }
 
         //get global attributes and ensure required entries are present 
+        //after dataVariables known, add global attributes in the axisAddTable
         OpendapHelper.getAttributes(das, "GLOBAL", dataSourceTable.globalAttributes());
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
                 probablyHasLonLatTime(dataAddTable)? "Point" : "Other",
-                tLocalSourceUrl, externalGlobalAttributes));
+                tLocalSourceUrl, externalGlobalAttributes, 
+                suggestKeywords(dataSourceTable, dataAddTable)));
         if (outerSequenceName == null)
             throw new SimpleException("No Sequence variable was found for " + tLocalSourceUrl + ".dds.");
         dataAddTable.globalAttributes().add("subsetVariables", tSubsetVariables.toString());
@@ -790,7 +807,7 @@ public class EDDTableFromDapSequence extends EDDTable{
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToCatchLLAT, questionDestinationName
+        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
             "dataVariable", false, true, false));
         sb.append(
@@ -942,7 +959,7 @@ public class EDDTableFromDapSequence extends EDDTable{
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0], 
-            "SimpleException: Your query produced no matching results. (fixed value variable=altitude failed 0<-1.0)", 
+            "SimpleException: Your query produced no matching results. Fixed value variable=altitude failed the test 0<-1.0.", 
             "error=" + error);
 
         error = "";
@@ -1089,17 +1106,17 @@ public class EDDTableFromDapSequence extends EDDTable{
         //test sliderCsvValues
         edv = globecBottle.findDataVariableByDestinationName("longitude");
         results = edv.sliderCsvValues();
-        expected = "-126.2, -126.19, -126.18, -126.17, -126.16,";  //-126
+        expected = "-126.2, -126.19, -126.18, -126.17, -126.16,";  
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
-        expected = ".13, -124.12, -124.11, -124.10000000000001";  //-124.1
+        expected = ".13, -124.12, -124.11, -124.1";  
         Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "results=\n" + results);
         Test.ensureEqual(edv.sliderNCsvValues(), 211, "");
 
         edv = globecBottle.findDataVariableByDestinationName("latitude");
         results = edv.sliderCsvValues();
-        expected = "41.9, 41.92, 41.94, 41.96, 41.98";  //41.9
+        expected = "41.9, 41.92, 41.94, 41.96, 41.98"; 
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
-        expected = "44.56, 44.58, 44.6, 44.62, 44.64, 44.65";  //44.65
+        expected = "44.56, 44.58, 44.6, 44.62, 44.64, 44.65";  
         Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "results=\n" + results);
         Test.ensureEqual(edv.sliderNCsvValues(), 139, "");
 
@@ -1247,15 +1264,15 @@ public class EDDTableFromDapSequence extends EDDTable{
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude, NO3, time, ship\n" +
-"degrees_east, micromoles L-1, UTC, \n" +
-"-124.4, 35.7, 2002-08-03T01:29:00Z, New_Horizon\n" +
-"-124.4, 35.48, 2002-08-03T01:29:00Z, New_Horizon\n" +
-"-124.4, 31.61, 2002-08-03T01:29:00Z, New_Horizon\n"; 
+"longitude,NO3,time,ship\n" +
+"degrees_east,micromoles L-1,UTC,\n" +
+"-124.4,35.7,2002-08-03T01:29:00Z,New_Horizon\n" +
+"-124.4,35.48,2002-08-03T01:29:00Z,New_Horizon\n" +
+"-124.4,31.61,2002-08-03T01:29:00Z,New_Horizon\n"; 
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-        expected = "-124.82, NaN, 2002-08-17T00:49:00Z, New_Horizon\n"; //row with missing value  has "NaN" missing value
+        expected = "-124.82,NaN,2002-08-17T00:49:00Z,New_Horizon\n"; //row with missing value  has "NaN" missing value
         Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
-        expected = "-124.1, 24.45, 2002-08-19T20:18:00Z, New_Horizon\n"; //last row
+        expected = "-124.1,24.45,2002-08-19T20:18:00Z,New_Horizon\n"; //last row
         Test.ensureTrue(results.endsWith(expected), "\nresults=\n" + results);
 
         //.csvp  and &units("UCUM")
@@ -1265,14 +1282,14 @@ public class EDDTableFromDapSequence extends EDDTable{
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude (deg{east}), NO3 (umol.L-1), time (UTC), ship\n" +
-"-124.4, 35.7, 2002-08-03T01:29:00Z, New_Horizon\n" +
-"-124.4, 35.48, 2002-08-03T01:29:00Z, New_Horizon\n" +
-"-124.4, 31.61, 2002-08-03T01:29:00Z, New_Horizon\n"; 
+"longitude (deg{east}),NO3 (umol.L-1),time (UTC),ship\n" +
+"-124.4,35.7,2002-08-03T01:29:00Z,New_Horizon\n" +
+"-124.4,35.48,2002-08-03T01:29:00Z,New_Horizon\n" +
+"-124.4,31.61,2002-08-03T01:29:00Z,New_Horizon\n"; 
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-        expected = "-124.82, NaN, 2002-08-17T00:49:00Z, New_Horizon\n"; //row with missing value  has "NaN" missing value
+        expected = "-124.82,NaN,2002-08-17T00:49:00Z,New_Horizon\n"; //row with missing value  has "NaN" missing value
         Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
-        expected = "-124.1, 24.45, 2002-08-19T20:18:00Z, New_Horizon\n"; //last row
+        expected = "-124.1,24.45,2002-08-19T20:18:00Z,New_Horizon\n"; //last row
         Test.ensureTrue(results.endsWith(expected), "\nresults=\n" + results);
 
         //.csv   test of datasetName.dataVarName notation
@@ -1283,13 +1300,13 @@ public class EDDTableFromDapSequence extends EDDTable{
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude, altitude, NO3, time, ship\n" +
-"degrees_east, m, micromoles L-1, UTC, \n" +
-"-124.4, 0, 35.7, 2002-08-03T01:29:00Z, New_Horizon\n" +
-"-124.4, 0, 35.48, 2002-08-03T01:29:00Z, New_Horizon\n" +
-"-124.4, 0, 31.61, 2002-08-03T01:29:00Z, New_Horizon\n";
+"longitude,altitude,NO3,time,ship\n" +
+"degrees_east,m,micromoles L-1,UTC,\n" +
+"-124.4,0,35.7,2002-08-03T01:29:00Z,New_Horizon\n" +
+"-124.4,0,35.48,2002-08-03T01:29:00Z,New_Horizon\n" +
+"-124.4,0,31.61,2002-08-03T01:29:00Z,New_Horizon\n";
         Test.ensureTrue(results.indexOf(expected) == 0, "\nresults=\n" + results);
-        expected = "-124.1, 0, 24.45, 2002-08-19T20:18:00Z, New_Horizon\n"; //last row
+        expected = "-124.1,0,24.45,2002-08-19T20:18:00Z,New_Horizon\n"; //last row
         Test.ensureTrue(results.endsWith(expected), "\nresults=\n" + results);
 
         //.csv  test of regex on numeric variable
@@ -1299,26 +1316,26 @@ public class EDDTableFromDapSequence extends EDDTable{
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude, NO3, time, ship\n" +
-"degrees_east, micromoles L-1, UTC, \n" +
-"-125.11, 33.91, 2002-08-09T05:03:00Z, New_Horizon\n" +
-"-125.11, 26.61, 2002-08-09T05:03:00Z, New_Horizon\n" +
-"-125.11, 10.8, 2002-08-09T05:03:00Z, New_Horizon\n" +
-"-125.11, 8.42, 2002-08-09T05:03:00Z, New_Horizon\n" +
-"-125.11, 6.34, 2002-08-09T05:03:00Z, New_Horizon\n" +
-"-125.11, 1.29, 2002-08-09T05:03:00Z, New_Horizon\n" +
-"-125.11, 0.02, 2002-08-09T05:03:00Z, New_Horizon\n" +
-"-125.11, 0.0, 2002-08-09T05:03:00Z, New_Horizon\n" +
-"-125.11, 10.81, 2002-08-09T05:03:00Z, New_Horizon\n" +
-"-125.11, 42.39, 2002-08-18T23:49:00Z, New_Horizon\n" +
-"-125.11, 33.84, 2002-08-18T23:49:00Z, New_Horizon\n" +
-"-125.11, 27.67, 2002-08-18T23:49:00Z, New_Horizon\n" +
-"-125.11, 15.93, 2002-08-18T23:49:00Z, New_Horizon\n" +
-"-125.11, 8.69, 2002-08-18T23:49:00Z, New_Horizon\n" +
-"-125.11, 4.6, 2002-08-18T23:49:00Z, New_Horizon\n" +
-"-125.11, 2.17, 2002-08-18T23:49:00Z, New_Horizon\n" +
-"-125.11, 8.61, 2002-08-18T23:49:00Z, New_Horizon\n" +
-"-125.11, 0.64, 2002-08-18T23:49:00Z, New_Horizon\n";
+"longitude,NO3,time,ship\n" +
+"degrees_east,micromoles L-1,UTC,\n" +
+"-125.11,33.91,2002-08-09T05:03:00Z,New_Horizon\n" +
+"-125.11,26.61,2002-08-09T05:03:00Z,New_Horizon\n" +
+"-125.11,10.8,2002-08-09T05:03:00Z,New_Horizon\n" +
+"-125.11,8.42,2002-08-09T05:03:00Z,New_Horizon\n" +
+"-125.11,6.34,2002-08-09T05:03:00Z,New_Horizon\n" +
+"-125.11,1.29,2002-08-09T05:03:00Z,New_Horizon\n" +
+"-125.11,0.02,2002-08-09T05:03:00Z,New_Horizon\n" +
+"-125.11,0.0,2002-08-09T05:03:00Z,New_Horizon\n" +
+"-125.11,10.81,2002-08-09T05:03:00Z,New_Horizon\n" +
+"-125.11,42.39,2002-08-18T23:49:00Z,New_Horizon\n" +
+"-125.11,33.84,2002-08-18T23:49:00Z,New_Horizon\n" +
+"-125.11,27.67,2002-08-18T23:49:00Z,New_Horizon\n" +
+"-125.11,15.93,2002-08-18T23:49:00Z,New_Horizon\n" +
+"-125.11,8.69,2002-08-18T23:49:00Z,New_Horizon\n" +
+"-125.11,4.6,2002-08-18T23:49:00Z,New_Horizon\n" +
+"-125.11,2.17,2002-08-18T23:49:00Z,New_Horizon\n" +
+"-125.11,8.61,2002-08-18T23:49:00Z,New_Horizon\n" +
+"-125.11,0.64,2002-08-18T23:49:00Z,New_Horizon\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv  test of String=
@@ -1331,27 +1348,27 @@ public class EDDTableFromDapSequence extends EDDTable{
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
             expected = 
-"longitude, NO3, time, ship\n" +
-"degrees_east, micromoles L-1, UTC, \n" +
-"-124.8, 34.54, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 29.98, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 17.24, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 12.74, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 11.43, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, NaN, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 9.74, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 5.62, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 4.4, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 4.21, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-125.0, 35.28, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 30.87, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 25.2, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 20.66, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, NaN, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, NaN, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 10.85, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 5.44, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 4.69, 2002-08-07T03:43:00Z, New_Horizon\n";
+"longitude,NO3,time,ship\n" +
+"degrees_east,micromoles L-1,UTC,\n" +
+"-124.8,34.54,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,29.98,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,17.24,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,12.74,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,11.43,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,NaN,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,9.74,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,5.62,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,4.4,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,4.21,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-125.0,35.28,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,30.87,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,25.2,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,20.66,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,NaN,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,NaN,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,10.85,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,5.44,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,4.69,2002-08-07T03:43:00Z,New_Horizon\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -1368,27 +1385,27 @@ public class EDDTableFromDapSequence extends EDDTable{
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
             expected = 
-"longitude, NO3, time, ship\n" +
-"degrees_east, micromoles L-1, UTC, \n" +
-"-124.8, 34.54, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 29.98, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 17.24, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 12.74, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 11.43, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, NaN, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 9.74, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 5.62, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 4.4, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 4.21, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-125.0, 35.28, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 30.87, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 25.2, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 20.66, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, NaN, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, NaN, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 10.85, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 5.44, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 4.69, 2002-08-07T03:43:00Z, New_Horizon\n";
+"longitude,NO3,time,ship\n" +
+"degrees_east,micromoles L-1,UTC,\n" +
+"-124.8,34.54,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,29.98,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,17.24,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,12.74,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,11.43,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,NaN,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,9.74,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,5.62,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,4.4,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,4.21,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-125.0,35.28,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,30.87,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,25.2,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,20.66,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,NaN,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,NaN,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,10.85,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,5.44,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,4.69,2002-08-07T03:43:00Z,New_Horizon\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -1415,27 +1432,27 @@ public class EDDTableFromDapSequence extends EDDTable{
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
             expected = 
-"longitude, NO3, time, ship\n" +
-"degrees_east, micromoles L-1, UTC, \n" +
-"-124.8, 34.54, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 29.98, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 17.24, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 12.74, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 11.43, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, NaN, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 9.74, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 5.62, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 4.4, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-124.8, 4.21, 2002-08-07T01:52:00Z, New_Horizon\n" +
-"-125.0, 35.28, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 30.87, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 25.2, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 20.66, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, NaN, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, NaN, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 10.85, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 5.44, 2002-08-07T03:43:00Z, New_Horizon\n" +
-"-125.0, 4.69, 2002-08-07T03:43:00Z, New_Horizon\n";
+"longitude,NO3,time,ship\n" +
+"degrees_east,micromoles L-1,UTC,\n" +
+"-124.8,34.54,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,29.98,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,17.24,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,12.74,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,11.43,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,NaN,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,9.74,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,5.62,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,4.4,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-124.8,4.21,2002-08-07T01:52:00Z,New_Horizon\n" +
+"-125.0,35.28,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,30.87,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,25.2,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,20.66,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,NaN,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,NaN,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,10.85,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,5.44,2002-08-07T03:43:00Z,New_Horizon\n" +
+"-125.0,4.69,2002-08-07T03:43:00Z,New_Horizon\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -1479,8 +1496,9 @@ public class EDDTableFromDapSequence extends EDDTable{
 "    String cdm_data_type \"TrajectoryProfile\";[10]\n" +
 "    String cdm_profile_variables \"time, cast, longitude, latitude\";[10]\n" +
 "    String cdm_trajectory_variables \"cruise_id, ship\";[10]\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";[10]\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
 "    Float64 Easternmost_Easting -124.1;[10]\n" +
+"    String featureType \"TrajectoryProfile\";[10]\n" +
 "    Float64 geospatial_lat_max 44.65;[10]\n" +
 "    Float64 geospatial_lat_min 41.9;[10]\n" +
 "    String geospatial_lat_units \"degrees_north\";[10]\n" +
@@ -1496,6 +1514,8 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
     "/tabledap/testGlobecBottle.das\";[10]\n" +
 "    String infoUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";[10]\n" +
 "    String institution \"GLOBEC\";[10]\n" +
+"    String keywords \"Oceans > Salinity/Density > Salinity\";[10]\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";[10]\n" +
 "    String license \"The data may be used and redistributed for free but is not intended[10]\n" +
 "for legal use, since it may contain inaccuracies. Neither the data[10]\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any[10]\n" +
@@ -1503,7 +1523,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "implied, including warranties of merchantability and fitness for a[10]\n" +
 "particular purpose, or assumes any legal liability for the accuracy,[10]\n" +
 "completeness, or usefulness, of this information.\";[10]\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";[10]\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
 "    Float64 Northernmost_Northing 44.65;[10]\n" +
 "    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\";[10]\n" +
 "    Float64 Southernmost_Northing 41.9;[10]\n" +
@@ -1607,11 +1627,11 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"X, Y, altitude, date, time, ship, cruise_id, cast, bottle_pos, chl_a_tota, chl_a_10um, phaeo_tota, phaeo_10um, sal00, sal11, temperatur, temperatuA, fluor_v, xmiss_v, PO4, N_N, NO3, Si, NO2, NH4, oxygen, par\n" +
-"-124.4, 44.0, 0, 2002-08-03, 1:29:00 am, New_Horizon, nh0207, 20, 1, -9999.0, -9999.0, -9999.0, -9999.0, 33.9939, 33.9908, 7.085, 7.085, 0.256, 0.518, 2.794, 35.8, 35.7, 71.11, 0.093, 0.037, -9999.0, 0.1545\n" +
-"-124.4, 44.0, 0, 2002-08-03, 1:29:00 am, New_Horizon, nh0207, 20, 2, -9999.0, -9999.0, -9999.0, -9999.0, 33.8154, 33.8111, 7.528, 7.53, 0.551, 0.518, 2.726, 35.87, 35.48, 57.59, 0.385, 0.018, -9999.0, 0.1767\n" +
-"-124.4, 44.0, 0, 2002-08-03, 1:29:00 am, New_Horizon, nh0207, 20, 3, 1.463, -9999.0, 1.074, -9999.0, 33.5858, 33.5834, 7.572, 7.573, 0.533, 0.518, 2.483, 31.92, 31.61, 48.54, 0.307, 0.504, -9999.0, 0.3875\n" +
-"-124.4, 44.0, 0, 2002-08-03, 1:29:00 am, New_Horizon, nh0207, 20, 4, 2.678, -9999.0, 1.64, -9999.0, 33.2905, 33.2865, 8.093, 8.098, 1.244, 0.518, 2.262, 27.83, 27.44, 42.59, 0.391, 0.893, -9999.0, 0.7674\n"; 
+"X,Y,altitude,date,time,ship,cruise_id,cast,bottle_pos,chl_a_tota,chl_a_10um,phaeo_tota,phaeo_10um,sal00,sal11,temperatur,temperatuA,fluor_v,xmiss_v,PO4,N_N,NO3,Si,NO2,NH4,oxygen,par\n" +
+"-124.4,44.0,0,2002-08-03,1:29:00 am,New_Horizon,nh0207,20,1,-9999.0,-9999.0,-9999.0,-9999.0,33.9939,33.9908,7.085,7.085,0.256,0.518,2.794,35.8,35.7,71.11,0.093,0.037,-9999.0,0.1545\n" +
+"-124.4,44.0,0,2002-08-03,1:29:00 am,New_Horizon,nh0207,20,2,-9999.0,-9999.0,-9999.0,-9999.0,33.8154,33.8111,7.528,7.53,0.551,0.518,2.726,35.87,35.48,57.59,0.385,0.018,-9999.0,0.1767\n" +
+"-124.4,44.0,0,2002-08-03,1:29:00 am,New_Horizon,nh0207,20,3,1.463,-9999.0,1.074,-9999.0,33.5858,33.5834,7.572,7.573,0.533,0.518,2.483,31.92,31.61,48.54,0.307,0.504,-9999.0,0.3875\n" +
+"-124.4,44.0,0,2002-08-03,1:29:00 am,New_Horizon,nh0207,20,4,2.678,-9999.0,1.64,-9999.0,33.2905,33.2865,8.093,8.098,1.244,0.518,2.262,27.83,27.44,42.59,0.391,0.893,-9999.0,0.7674\n"; 
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
 
@@ -1956,8 +1976,9 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 " :cdm_data_type = \"TrajectoryProfile\";\n" +
 " :cdm_profile_variables = \"time, cast, longitude, latitude\";\n" +
 " :cdm_trajectory_variables = \"cruise_id, ship\";\n" +
-" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :Easternmost_Easting = -124.8f; // float\n" +
+" :featureType = \"TrajectoryProfile\";\n" +
 " :geospatial_lat_units = \"degrees_north\";\n" +
 " :geospatial_lon_max = -124.8f; // float\n" +
 " :geospatial_lon_min = -125.67f; // float\n" +
@@ -1970,6 +1991,8 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 " :id = \"EDDTableFromDapSequence_Data\";\n" +
 " :infoUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";\n" +
 " :institution = \"GLOBEC\";\n" +
+" :keywords = \"Oceans > Salinity/Density > Salinity\";\n" +
+" :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 " :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -1977,7 +2000,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :observationDimension = \"row\";\n" +
 " :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\";\n" +
 " :standard_name_vocabulary = \"CF-12\";\n" +
@@ -2055,7 +2078,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
     //T21:09:15
             expected = 
     "</CreateTime>\n" +
-    "//<Software>ERDDAP - Version 1.35</Software>\n" +
+    "//<Software>ERDDAP - Version 1.38</Software>\n" +
     "//<Source>http://127.0.0.1:8080/cwexperimental/tabledap/testGlobecBottle.html</Source>\n" +
     "//<Version>ODV Spreadsheet V4.0</Version>\n" +
     "//<DataField>GeneralField</DataField>\n" +
@@ -2164,96 +2187,96 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude, latitude\n" +
-"degrees_east, degrees_north\n" +
-"-124.4, 44.0\n" +
-"-124.4, 44.0\n" +
-"-124.4, 44.0\n" +
-"-124.4, 44.0\n" +
-"-124.4, 44.0\n" +
-"-124.4, 44.0\n" +
-"-124.4, 44.0\n" +
-"-124.4, 44.0\n" +
-"-124.6, 44.0\n" +
-"-124.6, 44.0\n" +
-"-124.6, 44.0\n" +
-"-124.6, 44.0\n" +
-"-124.6, 44.0\n" +
-"-124.6, 44.0\n" +
-"-124.6, 44.0\n" +
-"-124.6, 44.0\n" +
-"-124.6, 44.0\n" +
-"-124.8, 44.0\n" +
-"-124.8, 44.0\n" +
-"-124.8, 44.0\n" +
-"-124.8, 44.0\n" +
-"-124.8, 44.0\n" +
-"-124.8, 44.0\n" +
-"-124.8, 44.0\n" +
-"-124.8, 44.0\n" +
-"-125.0, 44.0\n" +
-"-125.0, 44.0\n" +
-"-125.0, 44.0\n" +
-"-125.0, 44.0\n" +
-"-125.0, 44.0\n" +
-"-125.0, 44.0\n" +
-"-125.0, 44.0\n" +
-"-125.0, 44.0\n" +
-"-125.2, 44.0\n" +
-"-125.2, 44.0\n" +
-"-125.2, 44.0\n" +
-"-125.2, 44.0\n" +
-"-125.2, 44.0\n" +
-"-125.2, 44.0\n" +
-"-125.2, 44.0\n" +
-"-125.2, 44.0\n" +
-"-125.2, 44.0\n" +
-"-125.4, 44.0\n" +
-"-125.4, 44.0\n" +
-"-125.4, 44.0\n" +
-"-125.4, 44.0\n" +
-"-125.4, 44.0\n" +
-"-125.4, 44.0\n" +
-"-125.4, 44.0\n" +
-"-125.4, 44.0\n" +
-"-125.6, 43.8\n" +
-"-125.6, 43.8\n" +
-"-125.6, 43.8\n" +
-"-125.6, 43.8\n" +
-"-125.6, 43.8\n" +
-"-125.6, 43.8\n" +
-"-125.6, 43.8\n" +
-"-125.6, 43.8\n" +
-"-125.86, 43.5\n" +
-"-125.86, 43.5\n" +
-"-125.86, 43.5\n" +
-"-125.86, 43.5\n" +
-"-125.86, 43.5\n" +
-"-125.86, 43.5\n" +
-"-125.86, 43.5\n" +
-"-125.86, 43.5\n" +
-"-125.86, 43.5\n" +
-"-125.86, 43.5\n" +
-"-125.63, 43.5\n" +
-"-125.63, 43.5\n" +
-"-125.63, 43.5\n" +
-"-125.63, 43.5\n" +
-"-125.63, 43.5\n" +
-"-125.63, 43.5\n" +
-"-125.63, 43.5\n" +
-"-125.63, 43.5\n" +
-"-125.63, 43.5\n" +
-"-125.63, 43.5\n" +
-"-125.33, 43.5\n" +
-"-125.33, 43.5\n" +
-"-125.33, 43.5\n" +
-"-125.33, 43.5\n" +
-"-125.33, 43.5\n" +
-"-125.33, 43.5\n" +
-"-125.33, 43.5\n" +
-"-125.33, 43.5\n" +
-"-125.33, 43.5\n" +
-"-125.33, 43.5\n";
+"longitude,latitude\n" +
+"degrees_east,degrees_north\n" +
+"-124.4,44.0\n" +
+"-124.4,44.0\n" +
+"-124.4,44.0\n" +
+"-124.4,44.0\n" +
+"-124.4,44.0\n" +
+"-124.4,44.0\n" +
+"-124.4,44.0\n" +
+"-124.4,44.0\n" +
+"-124.6,44.0\n" +
+"-124.6,44.0\n" +
+"-124.6,44.0\n" +
+"-124.6,44.0\n" +
+"-124.6,44.0\n" +
+"-124.6,44.0\n" +
+"-124.6,44.0\n" +
+"-124.6,44.0\n" +
+"-124.6,44.0\n" +
+"-124.8,44.0\n" +
+"-124.8,44.0\n" +
+"-124.8,44.0\n" +
+"-124.8,44.0\n" +
+"-124.8,44.0\n" +
+"-124.8,44.0\n" +
+"-124.8,44.0\n" +
+"-124.8,44.0\n" +
+"-125.0,44.0\n" +
+"-125.0,44.0\n" +
+"-125.0,44.0\n" +
+"-125.0,44.0\n" +
+"-125.0,44.0\n" +
+"-125.0,44.0\n" +
+"-125.0,44.0\n" +
+"-125.0,44.0\n" +
+"-125.2,44.0\n" +
+"-125.2,44.0\n" +
+"-125.2,44.0\n" +
+"-125.2,44.0\n" +
+"-125.2,44.0\n" +
+"-125.2,44.0\n" +
+"-125.2,44.0\n" +
+"-125.2,44.0\n" +
+"-125.2,44.0\n" +
+"-125.4,44.0\n" +
+"-125.4,44.0\n" +
+"-125.4,44.0\n" +
+"-125.4,44.0\n" +
+"-125.4,44.0\n" +
+"-125.4,44.0\n" +
+"-125.4,44.0\n" +
+"-125.4,44.0\n" +
+"-125.6,43.8\n" +
+"-125.6,43.8\n" +
+"-125.6,43.8\n" +
+"-125.6,43.8\n" +
+"-125.6,43.8\n" +
+"-125.6,43.8\n" +
+"-125.6,43.8\n" +
+"-125.6,43.8\n" +
+"-125.86,43.5\n" +
+"-125.86,43.5\n" +
+"-125.86,43.5\n" +
+"-125.86,43.5\n" +
+"-125.86,43.5\n" +
+"-125.86,43.5\n" +
+"-125.86,43.5\n" +
+"-125.86,43.5\n" +
+"-125.86,43.5\n" +
+"-125.86,43.5\n" +
+"-125.63,43.5\n" +
+"-125.63,43.5\n" +
+"-125.63,43.5\n" +
+"-125.63,43.5\n" +
+"-125.63,43.5\n" +
+"-125.63,43.5\n" +
+"-125.63,43.5\n" +
+"-125.63,43.5\n" +
+"-125.63,43.5\n" +
+"-125.63,43.5\n" +
+"-125.33,43.5\n" +
+"-125.33,43.5\n" +
+"-125.33,43.5\n" +
+"-125.33,43.5\n" +
+"-125.33,43.5\n" +
+"-125.33,43.5\n" +
+"-125.33,43.5\n" +
+"-125.33,43.5\n" +
+"-125.33,43.5\n" +
+"-125.33,43.5\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);  
 
 
@@ -2262,7 +2285,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             //test treat itself as a dataset
             EDDTable eddTable2 = new EDDTableFromDapSequence(
                 "erddapGlobecBottle", //String tDatasetID, 
-                null, null, null,
+                null, null, null, null, null,
                 1, //double tAltMetersPerSourceUnit, 
                 new Object[][]{  //dataVariables: sourceName, addAttributes
                     {"longitude", null, null},
@@ -2350,6 +2373,25 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
     } //end of testBasic
 
     /**
+     * Test saveAsKml.
+     */
+    public static void testKml() throws Throwable {
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&altitude>-5&time>=2002-08-03";
+
+        String2.log("\n****************** EDDTableFromDapSequence.testKml\n");
+        EDDTable globecBottle = (EDDTableFromDapSequence)oneFromDatasetXml("testGlobecBottle"); //should work
+
+        //kml
+        tName = globecBottle.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapKml", ".kml"); 
+        //String2.log(String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1]);
+        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+    }
+
+
+    /**
      * The basic graphics tests of this class (testGlobecBottle).
      */
     public static void testGraphics(boolean doAll) throws Throwable {
@@ -2360,6 +2402,12 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 
         String2.log("\n****************** EDDTableFromDapSequence.testGraphics\n");
         EDDTable globecBottle = (EDDTableFromDapSequence)oneFromDatasetXml("testGlobecBottle"); //should work
+
+            //kml
+            tName = globecBottle.makeNewFileForDapQuery(null, null, mapDapQuery, 
+                EDStatic.fullTestCacheDirectory, globecBottle.className() + "_MapKml", ".kml"); 
+            //String2.log(String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1]);
+            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
         if (doAll) {
 
@@ -2825,7 +2873,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "  NC_GLOBAL {[10]\n" +
 "    String cdm_data_type \"TimeSeries\";[10]\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, altitude\";[10]\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";[10]\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
 "    Float64 Easternmost_Easting 360.0;[10]\n" +
 "    Float64 geospatial_lat_max 15.0;[10]\n" +
 "    Float64 geospatial_lat_min -21.0;[10]\n" +
@@ -2850,7 +2898,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "particular purpose, or assumes any legal liability for the accuracy,[10]\n" +
 "completeness, or usefulness, of this information.\";[10]\n" +
 "    Int32 max_profiles_per_request 15000;[10]\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";[10]\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
 "    Float64 Northernmost_Northing 15.0;[10]\n" +
 "    String sourceUrl \"http://dapper.pmel.noaa.gov/dapper/epic/tao_time_series.cdp\";[10]\n" +
 "    Float64 Southernmost_Northing -21.0;[10]\n" +
@@ -3089,11 +3137,19 @@ String expected2 =
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">epic-insitu-1.0, COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">epic-insitu-1.0, COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"infoUrl\">http://dapper.pmel.noaa.gov/dapper/epic/tao_time_series.cdp.das</att>\n" +
 "        <att name=\"institution\">NOAA PMEL</att>\n" +
+"        <att name=\"keywords\">\n" +
+"Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature,\n" +
+"Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,\n" +
+"Atmosphere &gt; Atmospheric Water Vapor &gt; Humidity,\n" +
+"Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
+"Oceans &gt; Ocean Circulation &gt; Ocean Currents,\n" +
+"air, air_temperature, atmosphere, atmospheric, circulation, currents, depth, direction, eastward, eastward_sea_water_velocity, epic, from, humidity, identifier, m/s, meteorology, noaa, northward, northward_sea_water_velocity, ocean, oceans, percent, pmel, quality, relative, relative_humidity, sea, seawater, sequence, series, source, speed, surface, tao, temperature, time, time series, vapor, velocity, water, wind, wind_from_direction, wind_speed, winds</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">epic-insitu-1.0, COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Metadata_Conventions\">epic-insitu-1.0, COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
 "        <att name=\"subsetVariables\">longitude, depth, latitude, id</att>\n" +
 "        <att name=\"summary\">NOAA PMEL data from http://dapper.pmel.noaa.gov/dapper/epic/tao_time_series.cdp.das .</att>\n" +
@@ -3109,6 +3165,8 @@ String expected2 =
 "            <att name=\"units\">degree_west</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Longitude</att>\n" +
 "            <att name=\"standard_name\">longitude</att>\n" +
@@ -3125,7 +3183,11 @@ String expected2 =
 "            <att name=\"units\">m</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"colorBarPalette\">OceanDepth</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"standard_name\">depth</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3138,6 +3200,8 @@ String expected2 =
 "            <att name=\"units\">degree_north</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Latitude</att>\n" +
 "            <att name=\"standard_name\">latitude</att>\n" +
@@ -3152,7 +3216,7 @@ String expected2 =
 "            <att name=\"missing_value\" type=\"int\">2147483647</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3164,7 +3228,10 @@ String expected2 =
 "            <att name=\"units\">degrees</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"standard_name\">wind_from_direction</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3175,7 +3242,9 @@ String expected2 =
 "            <att name=\"missing_value\" type=\"float\">NaN</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Meteorology</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">128.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3190,6 +3259,7 @@ String expected2 =
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Meteorology</att>\n" +
+"            <att name=\"standard_name\">relative_humidity</att>\n" +
 "            <att name=\"units\">percent</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -3213,7 +3283,9 @@ String expected2 =
 "            <att name=\"missing_value\" type=\"float\">NaN</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">128.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3224,7 +3296,10 @@ String expected2 =
 "            <att name=\"missing_value\" type=\"float\">NaN</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">360.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"standard_name\">wind_from_direction</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3235,7 +3310,10 @@ String expected2 =
 "            <att name=\"missing_value\" type=\"float\">NaN</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">20.0</att>\n" +
 "            <att name=\"ioos_category\">Meteorology</att>\n" +
+"            <att name=\"standard_name\">relative_humidity</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3246,7 +3324,9 @@ String expected2 =
 "            <att name=\"missing_value\" type=\"float\">NaN</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">128.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3257,7 +3337,10 @@ String expected2 =
 "            <att name=\"missing_value\" type=\"float\">NaN</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"standard_name\">wind_speed</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3269,7 +3352,10 @@ String expected2 =
 "            <att name=\"units\">m s-1</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"standard_name\">wind_speed</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3295,7 +3381,10 @@ String expected2 =
 "            <att name=\"units\">m s-1</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">0.5</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-0.5</att>\n" +
+"            <att name=\"ioos_category\">Currents</att>\n" +
+"            <att name=\"standard_name\">northward_sea_water_velocity</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3306,7 +3395,9 @@ String expected2 =
 "            <att name=\"missing_value\" type=\"float\">NaN</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">128.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3317,7 +3408,9 @@ String expected2 =
 "            <att name=\"missing_value\" type=\"float\">NaN</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">128.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Quality</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3329,7 +3422,10 @@ String expected2 =
 "            <att name=\"units\">c</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
 "            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"standard_name\">air_temperature</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3341,7 +3437,10 @@ String expected2 =
 "            <att name=\"units\">m s-1</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">0.5</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-0.5</att>\n" +
+"            <att name=\"ioos_category\">Currents</att>\n" +
+"            <att name=\"standard_name\">eastward_sea_water_velocity</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
@@ -3374,7 +3473,7 @@ String expected2 =
             EDD edd = oneFromXmlFragment(results);
             Test.ensureEqual(edd.datasetID(), "noaa_pmel_2688_61c6_5fbb", "");
             Test.ensureEqual(edd.title(), "Epic tao time series", "");
-            Test.ensureEqual(String2.toCSVString(edd.dataVariableDestinationNames()), 
+            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "longitude, depth, latitude, id, WD_410, QRH_5910, RH_910, T_20, QT_5020, SWD_6410, " +
                 "SRH_6910, QAT_5021, SWS_6401, WS_401, time, WV_423, QWS_5401, QWD_5410, AT_21, WU_422",
                 "");
@@ -3466,53 +3565,53 @@ String expected2 =
                 "&latitude=36.692"; 
             EDDTable tedd = (EDDTable)oneFromDatasetXml("cimtPsdac");
             String expected = 
-    "time, longitude, latitude, altitude, station, waterTemperature, salinity\n" +
-    "UTC, degrees_east, degrees_north, m, , degrees_Celsius, Presumed Salinity Units\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -1.0, T402, 12.8887, 33.8966\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -2.0, T402, 12.8272, 33.8937\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -3.0, T402, 12.8125, 33.8898\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -4.0, T402, 12.7125, 33.8487\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -5.0, T402, 12.4326, 33.8241\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -6.0, T402, 12.1666, 33.8349\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -7.0, T402, 11.9364, 33.8159\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -8.0, T402, 11.7206, 33.8039\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -9.0, T402, 11.511, 33.8271\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -10.0, T402, 11.4064, 33.853\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -11.0, T402, 11.3552, 33.8502\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -12.0, T402, 11.2519, 33.8607\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -13.0, T402, 11.1777, 33.8655\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -14.0, T402, 11.1381, 33.8785\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -15.0, T402, 11.0643, 33.8768\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -16.0, T402, 10.9416, 33.8537\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -17.0, T402, 10.809, 33.8379\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -18.0, T402, 10.7034, 33.8593\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -19.0, T402, 10.6502, 33.8476\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -20.0, T402, 10.5257, 33.8174\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -21.0, T402, 10.2857, 33.831\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -22.0, T402, 10.0717, 33.8511\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -23.0, T402, 9.9577, 33.8557\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -24.0, T402, 9.8876, 33.8614\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -25.0, T402, 9.842, 33.8757\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -26.0, T402, 9.7788, 33.8904\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -27.0, T402, 9.7224, 33.8982\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -28.0, T402, 9.695, 33.9038\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -29.0, T402, 9.6751, 33.9013\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -30.0, T402, 9.6462, 33.9061\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -31.0, T402, 9.6088, 33.9069\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -32.0, T402, 9.5447, 33.9145\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -33.0, T402, 9.4887, 33.9263\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -34.0, T402, 9.4514, 33.9333\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -35.0, T402, 9.4253, 33.9358\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -36.0, T402, 9.397, 33.9387\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -37.0, T402, 9.3795, 33.9479\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -38.0, T402, 9.3437, 33.9475\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -39.0, T402, 9.2946, 33.9494\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -40.0, T402, 9.2339, 33.9458\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -41.0, T402, 9.1812, 33.9468\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -42.0, T402, 9.153, 33.9548\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -43.0, T402, 9.1294, 33.9615\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -44.0, T402, 9.1048, 33.9652\n" +
-    "2002-06-25T14:55:00Z, -121.845, 36.692, -45.0, T402, 9.0566, 33.9762\n";
+    "time,longitude,latitude,altitude,station,waterTemperature,salinity\n" +
+    "UTC,degrees_east,degrees_north,m,,degrees_Celsius,Presumed Salinity Units\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-1.0,T402,12.8887,33.8966\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-2.0,T402,12.8272,33.8937\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-3.0,T402,12.8125,33.8898\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-4.0,T402,12.7125,33.8487\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-5.0,T402,12.4326,33.8241\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-6.0,T402,12.1666,33.8349\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-7.0,T402,11.9364,33.8159\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-8.0,T402,11.7206,33.8039\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-9.0,T402,11.511,33.8271\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-10.0,T402,11.4064,33.853\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-11.0,T402,11.3552,33.8502\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-12.0,T402,11.2519,33.8607\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-13.0,T402,11.1777,33.8655\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-14.0,T402,11.1381,33.8785\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-15.0,T402,11.0643,33.8768\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-16.0,T402,10.9416,33.8537\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-17.0,T402,10.809,33.8379\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-18.0,T402,10.7034,33.8593\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-19.0,T402,10.6502,33.8476\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-20.0,T402,10.5257,33.8174\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-21.0,T402,10.2857,33.831\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-22.0,T402,10.0717,33.8511\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-23.0,T402,9.9577,33.8557\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-24.0,T402,9.8876,33.8614\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-25.0,T402,9.842,33.8757\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-26.0,T402,9.7788,33.8904\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-27.0,T402,9.7224,33.8982\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-28.0,T402,9.695,33.9038\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-29.0,T402,9.6751,33.9013\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-30.0,T402,9.6462,33.9061\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-31.0,T402,9.6088,33.9069\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-32.0,T402,9.5447,33.9145\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-33.0,T402,9.4887,33.9263\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-34.0,T402,9.4514,33.9333\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-35.0,T402,9.4253,33.9358\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-36.0,T402,9.397,33.9387\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-37.0,T402,9.3795,33.9479\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-38.0,T402,9.3437,33.9475\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-39.0,T402,9.2946,33.9494\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-40.0,T402,9.2339,33.9458\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-41.0,T402,9.1812,33.9468\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-42.0,T402,9.153,33.9548\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-43.0,T402,9.1294,33.9615\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-44.0,T402,9.1048,33.9652\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,-45.0,T402,9.0566,33.9762\n";
 
             //the basicQuery
             try {
@@ -3614,21 +3713,21 @@ String expected2 =
                 tedd.className() + "_bird1", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"trans_no, trans_id, longitude, latitude, time, area, behav_code, flight_dir, head_c, number, number_adj, species, wspd\n" +
-", , degrees_east, degrees_north, UTC, km2, , degrees_true, degrees_true, count, count, , knots\n" +
-"22001, 8388607, -125.023, 43.053, 2000-08-07T00:00:00Z, 1.3, 1, 180, 240, 1, 0.448, SHSO, 15\n" +
-"22001, 8388607, -125.023, 43.053, 2000-08-07T00:00:00Z, 1.3, 2, 0, 240, 1, 1.0, FUNO, 15\n" +
-"22001, 8388607, -125.023, 43.053, 2000-08-07T00:00:00Z, 1.3, 3, 0, 240, 1, 1.0, SKMA, 15\n" +
-"22005, 8388607, -125.225, 43.955, 2000-08-07T00:00:00Z, 1.3, 2, 0, 240, 3, 3.0, AKCA, 15\n" +
-"22009, 8388607, -125.467, 43.84, 2000-08-07T00:00:00Z, 1.3, 1, 200, 240, 2, 0.928, PHRE, 20\n" +
-"22013, 8388607, -125.648, 43.768, 2000-08-07T00:00:00Z, 1.3, 1, 270, 240, 1, 1.104, STLE, 20\n" +
-"22015, 8388607, -125.745, 43.73, 2000-08-07T00:00:00Z, 1.3, 1, 180, 240, 4, 1.616, PHRE, 20\n" +
-"22018, 8388607, -125.922, 43.668, 2000-08-07T00:00:00Z, 1.3, 2, 0, 240, 1, 1.0, AKCA, 20\n" +
-"22019, 8388607, -125.935, 43.662, 2000-08-07T00:00:00Z, 1.3, 1, 270, 340, 1, 0.601, STLE, 25\n" +
-"22020, 8388607, -125.968, 43.693, 2000-08-07T00:00:00Z, 1.6, 1, 40, 340, 1, 0.67, STLE, 25\n" +
-"22022, 8388607, -125.978, 43.727, 2000-08-07T00:00:00Z, 1.3, 1, 50, 150, 1, 0.469, STLE, 25\n" +
-"22023, 8388607, -125.953, 43.695, 2000-08-07T00:00:00Z, 1.3, 2, 0, 150, 1, 1.0, PHRE, 25\n" +
-"22025, 8388607, -125.903, 43.628, 2000-08-07T00:00:00Z, 1.3, 1, 50, 150, 1, 0.469, STLE, 25\n";
+"trans_no,trans_id,longitude,latitude,time,area,behav_code,flight_dir,head_c,number,number_adj,species,wspd\n" +
+",,degrees_east,degrees_north,UTC,km2,,degrees_true,degrees_true,count,count,,knots\n" +
+"22001,8388607,-125.023,43.053,2000-08-07T00:00:00Z,1.3,1,180,240,1,0.448,SHSO,15\n" +
+"22001,8388607,-125.023,43.053,2000-08-07T00:00:00Z,1.3,2,0,240,1,1.0,FUNO,15\n" +
+"22001,8388607,-125.023,43.053,2000-08-07T00:00:00Z,1.3,3,0,240,1,1.0,SKMA,15\n" +
+"22005,8388607,-125.225,43.955,2000-08-07T00:00:00Z,1.3,2,0,240,3,3.0,AKCA,15\n" +
+"22009,8388607,-125.467,43.84,2000-08-07T00:00:00Z,1.3,1,200,240,2,0.928,PHRE,20\n" +
+"22013,8388607,-125.648,43.768,2000-08-07T00:00:00Z,1.3,1,270,240,1,1.104,STLE,20\n" +
+"22015,8388607,-125.745,43.73,2000-08-07T00:00:00Z,1.3,1,180,240,4,1.616,PHRE,20\n" +
+"22018,8388607,-125.922,43.668,2000-08-07T00:00:00Z,1.3,2,0,240,1,1.0,AKCA,20\n" +
+"22019,8388607,-125.935,43.662,2000-08-07T00:00:00Z,1.3,1,270,340,1,0.601,STLE,25\n" +
+"22020,8388607,-125.968,43.693,2000-08-07T00:00:00Z,1.6,1,40,340,1,0.67,STLE,25\n" +
+"22022,8388607,-125.978,43.727,2000-08-07T00:00:00Z,1.3,1,50,150,1,0.469,STLE,25\n" +
+"22023,8388607,-125.953,43.695,2000-08-07T00:00:00Z,1.3,2,0,150,1,1.0,PHRE,25\n" +
+"22025,8388607,-125.903,43.628,2000-08-07T00:00:00Z,1.3,1,50,150,1,0.469,STLE,25\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
             //unscaled flight_dir values are 0..36 so see if >=40 is properly handled 
@@ -3636,16 +3735,16 @@ String expected2 =
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_bird2", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"trans_no, trans_id, longitude, latitude, time, area, behav_code, flight_dir, head_c, number, number_adj, species, wspd\n" +
-", , degrees_east, degrees_north, UTC, km2, , degrees_true, degrees_true, count, count, , knots\n" +
-"22001, 8388607, -125.023, 43.053, 2000-08-07T00:00:00Z, 1.3, 1, 180, 240, 1, 0.448, SHSO, 15\n" +
-"22009, 8388607, -125.467, 43.84, 2000-08-07T00:00:00Z, 1.3, 1, 200, 240, 2, 0.928, PHRE, 20\n" +
-"22013, 8388607, -125.648, 43.768, 2000-08-07T00:00:00Z, 1.3, 1, 270, 240, 1, 1.104, STLE, 20\n" +
-"22015, 8388607, -125.745, 43.73, 2000-08-07T00:00:00Z, 1.3, 1, 180, 240, 4, 1.616, PHRE, 20\n" +
-"22019, 8388607, -125.935, 43.662, 2000-08-07T00:00:00Z, 1.3, 1, 270, 340, 1, 0.601, STLE, 25\n" +
-"22020, 8388607, -125.968, 43.693, 2000-08-07T00:00:00Z, 1.6, 1, 40, 340, 1, 0.67, STLE, 25\n" +
-"22022, 8388607, -125.978, 43.727, 2000-08-07T00:00:00Z, 1.3, 1, 50, 150, 1, 0.469, STLE, 25\n" +
-"22025, 8388607, -125.903, 43.628, 2000-08-07T00:00:00Z, 1.3, 1, 50, 150, 1, 0.469, STLE, 25\n";
+"trans_no,trans_id,longitude,latitude,time,area,behav_code,flight_dir,head_c,number,number_adj,species,wspd\n" +
+",,degrees_east,degrees_north,UTC,km2,,degrees_true,degrees_true,count,count,,knots\n" +
+"22001,8388607,-125.023,43.053,2000-08-07T00:00:00Z,1.3,1,180,240,1,0.448,SHSO,15\n" +
+"22009,8388607,-125.467,43.84,2000-08-07T00:00:00Z,1.3,1,200,240,2,0.928,PHRE,20\n" +
+"22013,8388607,-125.648,43.768,2000-08-07T00:00:00Z,1.3,1,270,240,1,1.104,STLE,20\n" +
+"22015,8388607,-125.745,43.73,2000-08-07T00:00:00Z,1.3,1,180,240,4,1.616,PHRE,20\n" +
+"22019,8388607,-125.935,43.662,2000-08-07T00:00:00Z,1.3,1,270,340,1,0.601,STLE,25\n" +
+"22020,8388607,-125.968,43.693,2000-08-07T00:00:00Z,1.6,1,40,340,1,0.67,STLE,25\n" +
+"22022,8388607,-125.978,43.727,2000-08-07T00:00:00Z,1.3,1,50,150,1,0.469,STLE,25\n" +
+"22025,8388607,-125.903,43.628,2000-08-07T00:00:00Z,1.3,1,50,150,1,0.469,STLE,25\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
         
         } catch (Throwable t) {
@@ -3687,151 +3786,151 @@ String expected2 =
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = //2009-07-21 changed: temp_adjusted_error data went from NaNs to values
 /*
-"longitude, latitude, time, id, cndc, cndc_qc, cndc_adjusted, cndc_adjusted_error, cndc_adjusted_qc, doxy, doxy_qc, doxy_adjusted, doxy_adjusted_error, doxy_adjusted_qc, pres, pres_qc, pres_adjusted, pres_adjusted_error, pres_adjusted_qc, psal, psal_qc, psal_adjusted, psal_adjusted_error, psal_adjusted_qc, temp, temp_qc, temp_adjusted, temp_adjusted_error, temp_adjusted_qc, temp_doxy, temp_doxy_qc, temp_doxy_adjusted, temp_doxy_adjusted_error, temp_doxy_adjusted_qc\n" +
-"degrees_east, degrees_north, UTC, , mhos m-1, , mhos m-1, mhos m-1, , micromole kg-1, , micromole kg-1, micromole kg-1, , decibar, , decibar, decibar, , psu, , psu, psu, , degree_C, , degree_C, degree_C, , degree_C, , degree_C, degree_C, \n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 4.4, 49.0, 5.1, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 11.392, 49.0, 11.392, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 9.6, 49.0, 10.3, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 9.166, 49.0, 9.166, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 14.8, 49.0, 15.5, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 8.239, 49.0, 8.239, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 19.9, 49.0, 20.6, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 7.369, 49.0, 7.369, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 25.1, 49.0, 25.8, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 5.819, 49.0, 5.819, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 30.3, 49.0, 31.0, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 4.591, 49.0, 4.591, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 35.4, 49.0, 36.1, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 4.347, 49.0, 4.347, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 40.6, 49.0, 41.3, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 3.394, 49.0, 3.394, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 45.8, 49.0, 46.5, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 3.292, 49.0, 3.292, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 50.9, 49.0, 51.6, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.927, 49.0, 2.927, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 56.1, 49.0, 56.8, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.887, 49.0, 2.887, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 61.3, 49.0, 62.0, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.924, 49.0, 2.924, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 66.4, 49.0, 67.1, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.574, 49.0, 2.574, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 71.6, 49.0, 72.3, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.721, 49.0, 2.721, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 76.8, 49.0, 77.5, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.682, 49.0, 2.682, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 81.9, 49.0, 82.6, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.664, 49.0, 2.664, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 87.1, 49.0, 87.8, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.736, 49.0, 2.736, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 92.3, 49.0, 93.0, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.83, 49.0, 2.83, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 97.4, 49.0, 98.1, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.64, 49.0, 2.64, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 102.6, 49.0, 103.3, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.296, 49.0, 2.296, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 107.8, 49.0, 108.5, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.915, 49.0, 1.915, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 112.9, 49.0, 113.6, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.243, 49.0, 2.243, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 118.1, 49.0, 118.8, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.806, 49.0, 1.806, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 123.3, 49.0, 124.0, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.763, 49.0, 1.763, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 128.5, 49.0, 129.2, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.826, 49.0, 1.826, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 133.6, 49.0, 134.3, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.901, 49.0, 1.901, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 138.8, 49.0, 139.5, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.826, 49.0, 1.826, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 144.0, 49.0, 144.7, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.803, 49.0, 1.803, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 149.1, 49.0, 149.8, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.798, 49.0, 1.798, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 154.3, 49.0, 155.0, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.701, 49.0, 1.701, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 159.5, 49.0, 160.2, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.644, 49.0, 1.644, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 164.6, 49.0, 165.3, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.61, 49.0, 1.61, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 169.8, 49.0, 170.5, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.576, 49.0, 1.576, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 175.0, 49.0, 175.7, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.573, 49.0, 1.573, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 180.1, 49.0, 180.8, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.534, 49.0, 1.534, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 185.3, 49.0, 186.0, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.528, 49.0, 1.528, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 190.5, 49.0, 191.2, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.539, 49.0, 1.539, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 195.6, 49.0, 196.3, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.556, 49.0, 1.556, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 200.8, 49.0, 201.5, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.573, 49.0, 1.573, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 206.0, 49.0, 206.7, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.576, 49.0, 1.576, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 211.1, 49.0, 211.8, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.517, 49.0, 1.517, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 216.3, 49.0, 217.0, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.444, 49.0, 1.444, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 221.5, 49.0, 222.2, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.449, 49.0, 1.449, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 226.6, 49.0, 227.3, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.469, 49.0, 1.469, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 231.8, 49.0, 232.5, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.57, 49.0, 1.57, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 237.0, 49.0, 237.7, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.667, 49.0, 1.667, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 242.1, 49.0, 242.8, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.706, 49.0, 1.706, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 247.3, 49.0, 248.0, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.752, 49.0, 1.752, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 252.5, 49.0, 253.2, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.778, 49.0, 1.778, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 257.6, 49.0, 258.3, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 1.864, 49.0, 1.864, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 262.8, 49.0, 263.5, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.106, 49.0, 2.106, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 273.1, 49.0, 273.8, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.179, 49.0, 2.179, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 283.5, 49.0, 284.2, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.176, 49.0, 2.176, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 293.8, 49.0, 294.5, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.252, 49.0, 2.252, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 304.2, 49.0, 304.9, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.393, 49.0, 2.393, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 314.5, 49.0, 315.2, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.417, 49.0, 2.417, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 324.8, 49.0, 325.5, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.387, 49.0, 2.387, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 335.2, 49.0, 335.9, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.438, 49.0, 2.438, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 345.5, 49.0, 346.2, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.476, 49.0, 2.476, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 355.8, 49.0, 356.5, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.37, 49.0, 2.37, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 366.2, 49.0, 366.9, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.252, 49.0, 2.252, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 376.5, 49.0, 377.2, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 2.691, 49.0, 2.691, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 386.8, 49.0, 387.5, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 3.156, 49.0, 3.156, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 397.2, 49.0, 397.9, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 3.425, 49.0, 3.425, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 417.8, 49.0, 418.5, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 3.488, 49.0, 3.488, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 438.5, 49.0, 439.2, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 3.488, 49.0, 3.488, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 459.2, 49.0, 459.9, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 3.51, 49.0, 3.51, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 479.8, 49.0, 480.5, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 3.535, 49.0, 3.535, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 156470, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 500.5, 49.0, 501.2, NaN, 49.0, NaN, 32.0, NaN, NaN, 32.0, 3.554, 49.0, 3.554, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n";
+"longitude,latitude,time,id,cndc,cndc_qc,cndc_adjusted,cndc_adjusted_error,cndc_adjusted_qc,doxy,doxy_qc,doxy_adjusted,doxy_adjusted_error,doxy_adjusted_qc,pres,pres_qc,pres_adjusted,pres_adjusted_error,pres_adjusted_qc,psal,psal_qc,psal_adjusted,psal_adjusted_error,psal_adjusted_qc,temp,temp_qc,temp_adjusted,temp_adjusted_error,temp_adjusted_qc,temp_doxy,temp_doxy_qc,temp_doxy_adjusted,temp_doxy_adjusted_error,temp_doxy_adjusted_qc\n" +
+"degrees_east,degrees_north,UTC,,mhos m-1,,mhos m-1,mhos m-1,,micromole kg-1,,micromole kg-1,micromole kg-1,,decibar,,decibar,decibar,,psu,,psu,psu,,degree_C,,degree_C,degree_C,,degree_C,,degree_C,degree_C,\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,4.4,49.0,5.1,NaN,49.0,NaN,32.0,NaN,NaN,32.0,11.392,49.0,11.392,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,9.6,49.0,10.3,NaN,49.0,NaN,32.0,NaN,NaN,32.0,9.166,49.0,9.166,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,14.8,49.0,15.5,NaN,49.0,NaN,32.0,NaN,NaN,32.0,8.239,49.0,8.239,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,19.9,49.0,20.6,NaN,49.0,NaN,32.0,NaN,NaN,32.0,7.369,49.0,7.369,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,25.1,49.0,25.8,NaN,49.0,NaN,32.0,NaN,NaN,32.0,5.819,49.0,5.819,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,30.3,49.0,31.0,NaN,49.0,NaN,32.0,NaN,NaN,32.0,4.591,49.0,4.591,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,35.4,49.0,36.1,NaN,49.0,NaN,32.0,NaN,NaN,32.0,4.347,49.0,4.347,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,40.6,49.0,41.3,NaN,49.0,NaN,32.0,NaN,NaN,32.0,3.394,49.0,3.394,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,45.8,49.0,46.5,NaN,49.0,NaN,32.0,NaN,NaN,32.0,3.292,49.0,3.292,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,50.9,49.0,51.6,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.927,49.0,2.927,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,56.1,49.0,56.8,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.887,49.0,2.887,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,61.3,49.0,62.0,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.924,49.0,2.924,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,66.4,49.0,67.1,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.574,49.0,2.574,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,71.6,49.0,72.3,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.721,49.0,2.721,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,76.8,49.0,77.5,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.682,49.0,2.682,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,81.9,49.0,82.6,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.664,49.0,2.664,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,87.1,49.0,87.8,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.736,49.0,2.736,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,92.3,49.0,93.0,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.83,49.0,2.83,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,97.4,49.0,98.1,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.64,49.0,2.64,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,102.6,49.0,103.3,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.296,49.0,2.296,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,107.8,49.0,108.5,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.915,49.0,1.915,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,112.9,49.0,113.6,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.243,49.0,2.243,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,118.1,49.0,118.8,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.806,49.0,1.806,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,123.3,49.0,124.0,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.763,49.0,1.763,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,128.5,49.0,129.2,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.826,49.0,1.826,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,133.6,49.0,134.3,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.901,49.0,1.901,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,138.8,49.0,139.5,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.826,49.0,1.826,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,144.0,49.0,144.7,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.803,49.0,1.803,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,149.1,49.0,149.8,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.798,49.0,1.798,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,154.3,49.0,155.0,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.701,49.0,1.701,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,159.5,49.0,160.2,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.644,49.0,1.644,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,164.6,49.0,165.3,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.61,49.0,1.61,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,169.8,49.0,170.5,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.576,49.0,1.576,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,175.0,49.0,175.7,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.573,49.0,1.573,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,180.1,49.0,180.8,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.534,49.0,1.534,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,185.3,49.0,186.0,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.528,49.0,1.528,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,190.5,49.0,191.2,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.539,49.0,1.539,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,195.6,49.0,196.3,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.556,49.0,1.556,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,200.8,49.0,201.5,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.573,49.0,1.573,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,206.0,49.0,206.7,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.576,49.0,1.576,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,211.1,49.0,211.8,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.517,49.0,1.517,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,216.3,49.0,217.0,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.444,49.0,1.444,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,221.5,49.0,222.2,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.449,49.0,1.449,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,226.6,49.0,227.3,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.469,49.0,1.469,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,231.8,49.0,232.5,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.57,49.0,1.57,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,237.0,49.0,237.7,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.667,49.0,1.667,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,242.1,49.0,242.8,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.706,49.0,1.706,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,247.3,49.0,248.0,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.752,49.0,1.752,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,252.5,49.0,253.2,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.778,49.0,1.778,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,257.6,49.0,258.3,NaN,49.0,NaN,32.0,NaN,NaN,32.0,1.864,49.0,1.864,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,262.8,49.0,263.5,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.106,49.0,2.106,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,273.1,49.0,273.8,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.179,49.0,2.179,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,283.5,49.0,284.2,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.176,49.0,2.176,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,293.8,49.0,294.5,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.252,49.0,2.252,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,304.2,49.0,304.9,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.393,49.0,2.393,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,314.5,49.0,315.2,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.417,49.0,2.417,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,324.8,49.0,325.5,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.387,49.0,2.387,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,335.2,49.0,335.9,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.438,49.0,2.438,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,345.5,49.0,346.2,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.476,49.0,2.476,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,355.8,49.0,356.5,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.37,49.0,2.37,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,366.2,49.0,366.9,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.252,49.0,2.252,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,376.5,49.0,377.2,NaN,49.0,NaN,32.0,NaN,NaN,32.0,2.691,49.0,2.691,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,386.8,49.0,387.5,NaN,49.0,NaN,32.0,NaN,NaN,32.0,3.156,49.0,3.156,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,397.2,49.0,397.9,NaN,49.0,NaN,32.0,NaN,NaN,32.0,3.425,49.0,3.425,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,417.8,49.0,418.5,NaN,49.0,NaN,32.0,NaN,NaN,32.0,3.488,49.0,3.488,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,438.5,49.0,439.2,NaN,49.0,NaN,32.0,NaN,NaN,32.0,3.488,49.0,3.488,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,459.2,49.0,459.9,NaN,49.0,NaN,32.0,NaN,NaN,32.0,3.51,49.0,3.51,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,479.8,49.0,480.5,NaN,49.0,NaN,32.0,NaN,NaN,32.0,3.535,49.0,3.535,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,156470,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,500.5,49.0,501.2,NaN,49.0,NaN,32.0,NaN,NaN,32.0,3.554,49.0,3.554,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n";
 */
 //2010-04-16  just the id changed (from 156470 to 308050)!  I emailed Joe Sirott
 //2011-02-15 I reordered the variables
-"id, longitude, latitude, time, pres, pres_qc, pres_adjusted, pres_adjusted_error, pres_adjusted_qc, cndc, cndc_qc, cndc_adjusted, cndc_adjusted_error, cndc_adjusted_qc, doxy, doxy_qc, doxy_adjusted, doxy_adjusted_error, doxy_adjusted_qc, psal, psal_qc, psal_adjusted, psal_adjusted_error, psal_adjusted_qc, temp, temp_qc, temp_adjusted, temp_adjusted_error, temp_adjusted_qc, temp_doxy, temp_doxy_qc, temp_doxy_adjusted, temp_doxy_adjusted_error, temp_doxy_adjusted_qc\n" +
-", degrees_east, degrees_north, UTC, decibar, , decibar, decibar, , mhos m-1, , mhos m-1, mhos m-1, , micromole kg-1, , micromole kg-1, micromole kg-1, , psu, , psu, psu, , degree_C, , degree_C, degree_C, , degree_C, , degree_C, degree_C, \n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 4.4, 49.0, 5.1, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 11.392, 49.0, 11.392, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 9.6, 49.0, 10.3, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 9.166, 49.0, 9.166, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 14.8, 49.0, 15.5, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 8.239, 49.0, 8.239, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 19.9, 49.0, 20.6, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 7.369, 49.0, 7.369, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 25.1, 49.0, 25.8, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 5.819, 49.0, 5.819, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 30.3, 49.0, 31.0, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 4.591, 49.0, 4.591, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 35.4, 49.0, 36.1, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 4.347, 49.0, 4.347, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 40.6, 49.0, 41.3, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 3.394, 49.0, 3.394, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 45.8, 49.0, 46.5, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 3.292, 49.0, 3.292, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 50.9, 49.0, 51.6, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.927, 49.0, 2.927, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 56.1, 49.0, 56.8, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.887, 49.0, 2.887, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 61.3, 49.0, 62.0, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.924, 49.0, 2.924, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 66.4, 49.0, 67.1, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.574, 49.0, 2.574, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 71.6, 49.0, 72.3, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.721, 49.0, 2.721, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 76.8, 49.0, 77.5, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.682, 49.0, 2.682, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 81.9, 49.0, 82.6, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.664, 49.0, 2.664, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 87.1, 49.0, 87.8, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.736, 49.0, 2.736, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 92.3, 49.0, 93.0, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.83, 49.0, 2.83, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 97.4, 49.0, 98.1, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.64, 49.0, 2.64, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 102.6, 49.0, 103.3, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.296, 49.0, 2.296, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 107.8, 49.0, 108.5, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.915, 49.0, 1.915, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 112.9, 49.0, 113.6, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.243, 49.0, 2.243, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 118.1, 49.0, 118.8, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.806, 49.0, 1.806, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 123.3, 49.0, 124.0, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.763, 49.0, 1.763, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 128.5, 49.0, 129.2, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.826, 49.0, 1.826, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 133.6, 49.0, 134.3, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.901, 49.0, 1.901, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 138.8, 49.0, 139.5, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.826, 49.0, 1.826, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 144.0, 49.0, 144.7, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.803, 49.0, 1.803, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 149.1, 49.0, 149.8, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.798, 49.0, 1.798, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 154.3, 49.0, 155.0, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.701, 49.0, 1.701, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 159.5, 49.0, 160.2, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.644, 49.0, 1.644, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 164.6, 49.0, 165.3, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.61, 49.0, 1.61, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 169.8, 49.0, 170.5, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.576, 49.0, 1.576, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 175.0, 49.0, 175.7, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.573, 49.0, 1.573, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 180.1, 49.0, 180.8, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.534, 49.0, 1.534, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 185.3, 49.0, 186.0, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.528, 49.0, 1.528, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 190.5, 49.0, 191.2, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.539, 49.0, 1.539, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 195.6, 49.0, 196.3, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.556, 49.0, 1.556, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 200.8, 49.0, 201.5, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.573, 49.0, 1.573, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 206.0, 49.0, 206.7, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.576, 49.0, 1.576, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 211.1, 49.0, 211.8, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.517, 49.0, 1.517, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 216.3, 49.0, 217.0, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.444, 49.0, 1.444, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 221.5, 49.0, 222.2, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.449, 49.0, 1.449, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 226.6, 49.0, 227.3, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.469, 49.0, 1.469, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 231.8, 49.0, 232.5, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.57, 49.0, 1.57, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 237.0, 49.0, 237.7, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.667, 49.0, 1.667, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 242.1, 49.0, 242.8, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.706, 49.0, 1.706, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 247.3, 49.0, 248.0, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.752, 49.0, 1.752, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 252.5, 49.0, 253.2, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.778, 49.0, 1.778, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 257.6, 49.0, 258.3, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 1.864, 49.0, 1.864, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 262.8, 49.0, 263.5, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.106, 49.0, 2.106, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 273.1, 49.0, 273.8, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.179, 49.0, 2.179, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 283.5, 49.0, 284.2, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.176, 49.0, 2.176, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 293.8, 49.0, 294.5, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.252, 49.0, 2.252, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 304.2, 49.0, 304.9, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.393, 49.0, 2.393, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 314.5, 49.0, 315.2, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.417, 49.0, 2.417, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 324.8, 49.0, 325.5, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.387, 49.0, 2.387, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 335.2, 49.0, 335.9, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.438, 49.0, 2.438, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 345.5, 49.0, 346.2, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.476, 49.0, 2.476, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 355.8, 49.0, 356.5, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.37, 49.0, 2.37, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 366.2, 49.0, 366.9, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.252, 49.0, 2.252, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 376.5, 49.0, 377.2, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 2.691, 49.0, 2.691, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 386.8, 49.0, 387.5, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 3.156, 49.0, 3.156, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 397.2, 49.0, 397.9, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 3.425, 49.0, 3.425, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 417.8, 49.0, 418.5, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 3.488, 49.0, 3.488, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 438.5, 49.0, 439.2, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 3.488, 49.0, 3.488, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 459.2, 49.0, 459.9, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 3.51, 49.0, 3.51, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 479.8, 49.0, 480.5, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 3.535, 49.0, 3.535, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n" +
-"308050, 143.408, 41.405, 2000-08-07T00:33:50Z, 500.5, 49.0, 501.2, NaN, 49.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 32.0, NaN, NaN, 32.0, 3.554, 49.0, 3.554, 0.0020, 49.0, NaN, NaN, NaN, NaN, NaN\n";
+"id,longitude,latitude,time,pres,pres_qc,pres_adjusted,pres_adjusted_error,pres_adjusted_qc,cndc,cndc_qc,cndc_adjusted,cndc_adjusted_error,cndc_adjusted_qc,doxy,doxy_qc,doxy_adjusted,doxy_adjusted_error,doxy_adjusted_qc,psal,psal_qc,psal_adjusted,psal_adjusted_error,psal_adjusted_qc,temp,temp_qc,temp_adjusted,temp_adjusted_error,temp_adjusted_qc,temp_doxy,temp_doxy_qc,temp_doxy_adjusted,temp_doxy_adjusted_error,temp_doxy_adjusted_qc\n" +
+",degrees_east,degrees_north,UTC,decibar,,decibar,decibar,,mhos m-1,,mhos m-1,mhos m-1,,micromole kg-1,,micromole kg-1,micromole kg-1,,psu,,psu,psu,,degree_C,,degree_C,degree_C,,degree_C,,degree_C,degree_C,\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,4.4,49.0,5.1,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,11.392,49.0,11.392,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,9.6,49.0,10.3,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,9.166,49.0,9.166,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,14.8,49.0,15.5,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,8.239,49.0,8.239,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,19.9,49.0,20.6,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,7.369,49.0,7.369,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,25.1,49.0,25.8,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,5.819,49.0,5.819,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,30.3,49.0,31.0,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,4.591,49.0,4.591,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,35.4,49.0,36.1,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,4.347,49.0,4.347,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,40.6,49.0,41.3,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,3.394,49.0,3.394,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,45.8,49.0,46.5,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,3.292,49.0,3.292,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,50.9,49.0,51.6,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.927,49.0,2.927,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,56.1,49.0,56.8,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.887,49.0,2.887,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,61.3,49.0,62.0,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.924,49.0,2.924,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,66.4,49.0,67.1,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.574,49.0,2.574,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,71.6,49.0,72.3,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.721,49.0,2.721,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,76.8,49.0,77.5,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.682,49.0,2.682,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,81.9,49.0,82.6,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.664,49.0,2.664,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,87.1,49.0,87.8,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.736,49.0,2.736,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,92.3,49.0,93.0,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.83,49.0,2.83,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,97.4,49.0,98.1,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.64,49.0,2.64,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,102.6,49.0,103.3,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.296,49.0,2.296,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,107.8,49.0,108.5,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.915,49.0,1.915,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,112.9,49.0,113.6,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.243,49.0,2.243,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,118.1,49.0,118.8,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.806,49.0,1.806,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,123.3,49.0,124.0,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.763,49.0,1.763,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,128.5,49.0,129.2,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.826,49.0,1.826,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,133.6,49.0,134.3,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.901,49.0,1.901,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,138.8,49.0,139.5,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.826,49.0,1.826,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,144.0,49.0,144.7,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.803,49.0,1.803,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,149.1,49.0,149.8,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.798,49.0,1.798,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,154.3,49.0,155.0,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.701,49.0,1.701,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,159.5,49.0,160.2,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.644,49.0,1.644,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,164.6,49.0,165.3,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.61,49.0,1.61,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,169.8,49.0,170.5,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.576,49.0,1.576,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,175.0,49.0,175.7,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.573,49.0,1.573,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,180.1,49.0,180.8,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.534,49.0,1.534,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,185.3,49.0,186.0,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.528,49.0,1.528,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,190.5,49.0,191.2,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.539,49.0,1.539,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,195.6,49.0,196.3,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.556,49.0,1.556,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,200.8,49.0,201.5,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.573,49.0,1.573,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,206.0,49.0,206.7,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.576,49.0,1.576,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,211.1,49.0,211.8,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.517,49.0,1.517,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,216.3,49.0,217.0,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.444,49.0,1.444,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,221.5,49.0,222.2,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.449,49.0,1.449,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,226.6,49.0,227.3,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.469,49.0,1.469,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,231.8,49.0,232.5,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.57,49.0,1.57,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,237.0,49.0,237.7,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.667,49.0,1.667,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,242.1,49.0,242.8,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.706,49.0,1.706,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,247.3,49.0,248.0,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.752,49.0,1.752,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,252.5,49.0,253.2,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.778,49.0,1.778,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,257.6,49.0,258.3,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,1.864,49.0,1.864,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,262.8,49.0,263.5,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.106,49.0,2.106,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,273.1,49.0,273.8,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.179,49.0,2.179,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,283.5,49.0,284.2,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.176,49.0,2.176,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,293.8,49.0,294.5,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.252,49.0,2.252,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,304.2,49.0,304.9,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.393,49.0,2.393,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,314.5,49.0,315.2,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.417,49.0,2.417,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,324.8,49.0,325.5,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.387,49.0,2.387,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,335.2,49.0,335.9,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.438,49.0,2.438,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,345.5,49.0,346.2,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.476,49.0,2.476,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,355.8,49.0,356.5,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.37,49.0,2.37,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,366.2,49.0,366.9,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.252,49.0,2.252,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,376.5,49.0,377.2,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,2.691,49.0,2.691,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,386.8,49.0,387.5,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,3.156,49.0,3.156,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,397.2,49.0,397.9,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,3.425,49.0,3.425,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,417.8,49.0,418.5,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,3.488,49.0,3.488,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,438.5,49.0,439.2,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,3.488,49.0,3.488,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,459.2,49.0,459.9,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,3.51,49.0,3.51,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,479.8,49.0,480.5,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,3.535,49.0,3.535,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n" +
+"308050,143.408,41.405,2000-08-07T00:33:50Z,500.5,49.0,501.2,NaN,49.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,32.0,NaN,NaN,32.0,3.554,49.0,3.554,0.0020,49.0,NaN,NaN,NaN,NaN,NaN\n";
 
 Test.ensureEqual(results, expected, "results=\n" + results);      
            
@@ -4095,11 +4194,11 @@ try {
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
 //2010-04-16  just the id changed (from 156470 to 308050)!  I emailed Joe Sirott
-"longitude, latitude, time_stamp, id, pres, cndc, temp\n" +
-"degrees_east, degrees_north, UTC, , decibar, mhos m-1, degree_C\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 308050, 4.4, NaN, 11.392\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 308050, 9.6, NaN, 9.166\n" +
-"143.408, 41.405, 2000-08-07T00:33:50Z, 308050, 14.8, NaN, 8.239\n";
+"longitude,latitude,time_stamp,id,pres,cndc,temp\n" +
+"degrees_east,degrees_north,UTC,,decibar,mhos m-1,degree_C\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,308050,4.4,NaN,11.392\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,308050,9.6,NaN,9.166\n" +
+"143.408,41.405,2000-08-07T00:33:50Z,308050,14.8,NaN,8.239\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);      
            
             //geoJson
@@ -4301,24 +4400,24 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
                 edd.className() + "_FP_EQ", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, time, common_name\n" +
-"degrees_east, degrees_north, UTC, \n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, Dover sole\n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, petrale sole\n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, arrowtooth flounder\n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, sablefish\n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, English sole\n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, yellowtail rockfish\n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, Pacific ocean perch\n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, longspine thornyhead\n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, widow rockfish\n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, shortspine thornyhead\n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, darkblotched rockfish\n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, yelloweye rockfish\n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, cowcod\n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, canary rockfish\n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, chilipepper\n" +
-"-124.34809875488281, 44.69025421142578, 2005-01-01T00:00:00Z, bocaccio\n";
+"longitude,latitude,time,common_name\n" +
+"degrees_east,degrees_north,UTC,\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,Dover sole\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,petrale sole\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,arrowtooth flounder\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,sablefish\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,English sole\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,yellowtail rockfish\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,Pacific ocean perch\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,longspine thornyhead\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,widow rockfish\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,shortspine thornyhead\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,darkblotched rockfish\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,yelloweye rockfish\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,cowcod\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,canary rockfish\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,chilipepper\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,bocaccio\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -4345,24 +4444,24 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
                 edd.className() + "_LL", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"cruise_id, station_id, longitude, latitude\n" +
-", , degrees_east, degrees_north\n" +
-"NH0005, NH15, -124.4117, 44.6517\n" +
-"NH0005, NH25, -124.65, 44.6517\n" +
-"NH0007, NH05, -124.175, 44.6517\n" +
-"NH0007, NH15, -124.4117, 44.6517\n" +
-"NH0007, NH25, -124.65, 44.6517\n" +
-"W0004B, NH05, -124.175, 44.6517\n" +
-"W0004B, NH15, -124.4117, 44.6517\n" +
-"W0004B, NH25, -124.65, 44.6517\n" +
-"W0004B, NH45, -125.1167, 44.6517\n" +
-"W0007A, NH15, -124.4117, 44.6517\n" +
-"W0007A, NH25, -124.65, 44.6517\n" +
-"W0009A, NH15, -124.4117, 44.6517\n" +
-"W0009A, NH25, -124.65, 44.6517\n" +
-"W0204A, NH25, -124.65, 44.6517\n" +
-"W0205A, NH15, -124.4117, 44.6517\n" +
-"W0205A, NH25, -124.65, 44.6517\n";
+"cruise_id,station_id,longitude,latitude\n" +
+",,degrees_east,degrees_north\n" +
+"NH0005,NH15,-124.4117,44.6517\n" +
+"NH0005,NH25,-124.65,44.6517\n" +
+"NH0007,NH05,-124.175,44.6517\n" +
+"NH0007,NH15,-124.4117,44.6517\n" +
+"NH0007,NH25,-124.65,44.6517\n" +
+"W0004B,NH05,-124.175,44.6517\n" +
+"W0004B,NH15,-124.4117,44.6517\n" +
+"W0004B,NH25,-124.65,44.6517\n" +
+"W0004B,NH45,-125.1167,44.6517\n" +
+"W0007A,NH15,-124.4117,44.6517\n" +
+"W0007A,NH25,-124.65,44.6517\n" +
+"W0009A,NH15,-124.4117,44.6517\n" +
+"W0009A,NH25,-124.65,44.6517\n" +
+"W0204A,NH25,-124.65,44.6517\n" +
+"W0205A,NH15,-124.4117,44.6517\n" +
+"W0205A,NH25,-124.65,44.6517\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -4441,6 +4540,193 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         }
     }
 
+    /** Test that info from subsetVariables gets back to variable's ranges */
+    public static void testSubsetVariablesRange() throws Throwable {
+        String2.log("\n*** EDDTableFromDapSequence.testSubsetVariablesRange\n");
+        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+
+        //before I fixed this, time had destinationMin/Max = NaN
+        EDDTable edd = (EDDTable)oneFromDatasetXml("nwioosCoral"); 
+        EDV edvTime = edd.dataVariables()[edd.timeIndex];
+        Test.ensureEqual(edvTime.destinationMin(), 3.155328E8,  "");
+        Test.ensureEqual(edvTime.destinationMax(), 1.1045376E9, "");
+
+        String tName = edd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            edd.className() + "_Entire", ".das"); 
+        String results = String2.annotatedString(new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        String expected = 
+"Attributes {[10]\n" +
+" s {[10]\n" +
+"  longitude {[10]\n" +
+"    String _CoordinateAxisType \"Lon\";[10]\n" +
+"    Float64 actual_range -125.98999786376953, -117.27667236328125;[10]\n" +
+"    String axis \"X\";[10]\n" +
+"    String ioos_category \"Location\";[10]\n" +
+"    String long_name \"Longitude\";[10]\n" +
+"    String standard_name \"longitude\";[10]\n" +
+"    String units \"degrees_east\";[10]\n" +
+"  }[10]\n" +
+"  latitude {[10]\n" +
+"    String _CoordinateAxisType \"Lat\";[10]\n" +
+"    Float64 actual_range 32.570838928222656, 48.969085693359375;[10]\n" +
+"    String axis \"Y\";[10]\n" +
+"    String ioos_category \"Location\";[10]\n" +
+"    String long_name \"Latitude\";[10]\n" +
+"    String standard_name \"latitude\";[10]\n" +
+"    String units \"degrees_north\";[10]\n" +
+"  }[10]\n" +
+"  altitude {[10]\n" +
+"    String _CoordinateAxisType \"Height\";[10]\n" +
+"    String _CoordinateZisPositive \"up\";[10]\n" +
+"    Float64 actual_range 11.0, 1543.0;[10]\n" +
+"    String axis \"Z\";[10]\n" +
+"    Float64 colorBarMaximum 0.0;[10]\n" +
+"    Float64 colorBarMinimum -1500.0;[10]\n" +
+"    String ioos_category \"Location\";[10]\n" +
+"    String long_name \"Altitude\";[10]\n" +
+"    String positive \"up\";[10]\n" +
+"    String standard_name \"altitude\";[10]\n" +
+"    String units \"m\";[10]\n" +
+"  }[10]\n" +
+"  time {[10]\n" +
+"    String _CoordinateAxisType \"Time\";[10]\n" +
+"    Float64 actual_range 3.155328e+8, 1.1045376e+9;[10]\n" +
+"    String axis \"T\";[10]\n" +
+"    String Description \"Year of Survey.\";[10]\n" +
+"    String ioos_category \"Time\";[10]\n" +
+"    String long_name \"Time (Beginning of Survey Year)\";[10]\n" +
+"    String standard_name \"time\";[10]\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";[10]\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";[10]\n" +
+"  }[10]\n" +
+"  institution {[10]\n" +
+"    String Description \"Institution is either: Northwest Fisheries Science Center (FRAM Division) or Alaska Fisheries Science Center (RACE Division)\";[10]\n" +
+"    String ioos_category \"Identifier\";[10]\n" +
+"    String long_name \"Institution\";[10]\n" +
+"  }[10]\n" +
+"  institution_id {[10]\n" +
+"    Float64 actual_range 38807.0, 2.00503017472e+11;[10]\n" +
+"    String Description \"Unique ID from Institution.\";[10]\n" +
+"    String ioos_category \"Identifier\";[10]\n" +
+"    String long_name \"Institution ID\";[10]\n" +
+"  }[10]\n" +
+"  species_code {[10]\n" +
+"    Float64 actual_range 41000.0, 144115.0;[10]\n" +
+"    String Description \"Unique identifier for species.\";[10]\n" +
+"    String ioos_category \"Taxonomy\";[10]\n" +
+"    String long_name \"Species Code\";[10]\n" +
+"  }[10]\n" +
+"  taxa_scientific {[10]\n" +
+"    String Description \"Scientific name of taxa\";[10]\n" +
+"    String ioos_category \"Taxonomy\";[10]\n" +
+"    String long_name \"Taxa Scientific\";[10]\n" +
+"  }[10]\n" +
+"  taxonomic_order {[10]\n" +
+"    String ioos_category \"Taxonomy\";[10]\n" +
+"    String long_name \"Taxonomic Order\";[10]\n" +
+"  }[10]\n" +
+"  order_abbreviation {[10]\n" +
+"    String ioos_category \"Taxonomy\";[10]\n" +
+"    String long_name \"Order Abbreviation\";[10]\n" +
+"  }[10]\n" +
+"  taxonomic_family {[10]\n" +
+"    String ioos_category \"Taxonomy\";[10]\n" +
+"    String long_name \"Taxonomic Family\";[10]\n" +
+"  }[10]\n" +
+"  family_abbreviation {[10]\n" +
+"    String ioos_category \"Taxonomy\";[10]\n" +
+"    String long_name \"Family Abbreviation\";[10]\n" +
+"  }[10]\n" +
+"  taxonomic_genus {[10]\n" +
+"    String Description \"Taxonomic Genus.\";[10]\n" +
+"    String ioos_category \"Taxonomy\";[10]\n" +
+"    String long_name \"Taxonomic Genus\";[10]\n" +
+"  }[10]\n" +
+" }[10]\n" +
+"  NC_GLOBAL {[10]\n" +
+"    String cdm_data_type \"Point\";[10]\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
+"    Float64 Easternmost_Easting -117.27667236328125;[10]\n" +
+"    String featureType \"Point\";[10]\n" +
+"    Float64 geospatial_lat_max 48.969085693359375;[10]\n" +
+"    Float64 geospatial_lat_min 32.570838928222656;[10]\n" +
+"    String geospatial_lat_units \"degrees_north\";[10]\n" +
+"    Float64 geospatial_lon_max -117.27667236328125;[10]\n" +
+"    Float64 geospatial_lon_min -125.98999786376953;[10]\n" +
+"    String geospatial_lon_units \"degrees_east\";[10]\n" +
+"    Float64 geospatial_vertical_max 1543.0;[10]\n" +
+"    Float64 geospatial_vertical_min 11.0;[10]\n" +
+"    String geospatial_vertical_positive \"up\";[10]\n" +
+"    String geospatial_vertical_units \"m\";[10]\n" +
+"    String history \"" + today + " http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005[10]\n" +
+today + " http://127.0.0.1:8080/cwexperimental/tabledap/nwioosCoral.das\";[10]\n" +
+"    String infoUrl \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005.das.info\";[10]\n" +
+"    String institution \"NOAA NWFSC\";[10]\n" +
+"    String keywords \"Biosphere > Aquatic Ecosystems > Coastal Habitat,[10]\n" +
+"Biosphere > Aquatic Ecosystems > Marine Habitat,[10]\n" +
+"Biological Classification > Animals/Invertebrates > Cnidarians > Anthozoans/Hexacorals > Hard Or Stony Corals,[10]\n" +
+"1980-2005, abbreviation, altitude, atmosphere, beginning, coast, code, collected, coral, data, family, genus, height, identifier, institution, noaa, nwfsc, off, order, scientific, species, station, survey, taxa, taxonomic, taxonomy, time, west, west coast, year\";[10]\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";[10]\n" +
+"    String license \"The data may be used and redistributed for free but is not intended[10]\n" +
+"for legal use, since it may contain inaccuracies. Neither the data[10]\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any[10]\n" +
+"of their employees or contractors, makes any warranty, express or[10]\n" +
+"implied, including warranties of merchantability and fitness for a[10]\n" +
+"particular purpose, or assumes any legal liability for the accuracy,[10]\n" +
+"completeness, or usefulness, of this information.\";[10]\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
+"    Float64 Northernmost_Northing 48.969085693359375;[10]\n" +
+"    String sourceUrl \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005\";[10]\n" +
+"    Float64 Southernmost_Northing 32.570838928222656;[10]\n" +
+"    String standard_name_vocabulary \"CF-12\";[10]\n" +
+"    String subsetVariables \"longitude, latitude, altitude, time, institution, institution_id, species_code, taxa_scientific, taxonomic_order, order_abbreviation, taxonomic_family, family_abbreviation, taxonomic_genus\";[10]\n" +
+"    String summary \"This data contains the locations of some observations of[10]\n" +
+"cold-water/deep-sea corals off the west coast of the United States.[10]\n" +
+"Records of coral catch originate from bottom trawl surveys conducted[10]\n" +
+"from 1980 to 2001 by the Alaska Fisheries Science Center (AFSC) and[10]\n" +
+"2001 to 2005 by the Northwest Fisheries Science Center (NWFSC).[10]\n" +
+"Locational information represent the vessel mid positions (for AFSC[10]\n" +
+"survey trawls) or \\\"best position\\\" (i.e., priority order: 1) gear[10]\n" +
+"midpoint 2) vessel midpoint, 3) vessel start point, 4) vessel end[10]\n" +
+"point, 5) station coordinates for NWFSC survey trawls) conducted as[10]\n" +
+"part of regular surveys of groundfish off the coasts of Washington,[10]\n" +
+"Oregon and California by NOAA Fisheries. Only records where corals[10]\n" +
+"were identified in the total catch are included. Each catch sample[10]\n" +
+"of coral was identified down to the most specific taxonomic level[10]\n" +
+"possible by the biologists onboard, therefore identification was[10]\n" +
+"dependent on their expertise. When positive identification was not[10]\n" +
+"possible, samples were sometimes archived for future identification[10]\n" +
+"by systematist experts. Data were compiled by the NWFSC, Fishery[10]\n" +
+"Resource Analysis & Monitoring Division[10]\n" +
+"[10]\n" +
+"Purpose - Examination of the spatial and temporal distributions of[10]\n" +
+"observations of cold-water/deep-sea corals off the west coast of the[10]\n" +
+"United States, including waters off the states of Washington, Oregon,[10]\n" +
+"and California. It is important to note that these records represent[10]\n" +
+"only presence of corals in the area swept by the trawl gear. Since[10]\n" +
+"bottom trawls used during these surveys are not designed to sample[10]\n" +
+"epibenthic invertebrates, absence of corals in the catch does not[10]\n" +
+"necessary mean they do not occupy the area swept by the trawl gear.[10]\n" +
+"[10]\n" +
+"Data Credits - NOAA Fisheries, Alaska Fisheries Science Center,[10]\n" +
+"Resource Assessment & Conservation Engineering Division (RACE) NOAA[10]\n" +
+"Fisheries, Northwest Fisheries Science Center, Fishery Resource[10]\n" +
+"Analysis & Monitoring Division (FRAM)[10]\n" +
+"[10]\n" +
+"Contact: Curt Whitmire, NOAA NWFSC, Curt.Whitmire@noaa.gov\";[10]\n" +
+"    String time_coverage_end \"2005-01-01T00:00:00Z\";[10]\n" +
+"    String time_coverage_start \"1980-01-01T00:00:00Z\";[10]\n" +
+"    String title \"NWFSC Coral Data Collected off West Coast of US (1980-2005)\";[10]\n" +
+"    Float64 Westernmost_Easting -125.98999786376953;[10]\n" +
+"  }[10]\n" +
+"}[10]\n" +
+"[end]";
+        
+        Test.ensureEqual(results, expected, "results=" + results);
+
+    }
+
      
     /**
      * This tests the methods in this class.
@@ -4451,6 +4737,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         String2.log("\n****************** EDDTableFromDapSequence.test() *****************\n");
         testVerboseOn();
 
+/* */
         //always done        
         testBasic();
         testGraphics(doAllGraphicsTests);
@@ -4465,6 +4752,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         testLatLon();
         testReadDas();
         testSubsetVariablesGraph();
+        testSubsetVariablesRange();
 
    //     testErdlasNewportCtd();   //not yet working
    //     testErdlasCalCatch();     //not yet working

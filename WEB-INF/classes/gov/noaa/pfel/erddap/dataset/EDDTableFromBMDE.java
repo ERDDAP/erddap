@@ -85,6 +85,8 @@ public class EDDTableFromBMDE extends EDDTable{
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         Attributes tGlobalAttributes = null;
         String tLocalSourceUrl = null, tSourceCode = null;
         ArrayList tDataVariables = new ArrayList();
@@ -125,6 +127,11 @@ public class EDDTableFromBMDE extends EDDTable{
             else if (localTags.equals("</onChange>")) 
                 tOnChange.add(content); 
 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+
             else xmlReader.unexpectedTagException();
         }
         int ndv = tDataVariables.size();
@@ -132,7 +139,8 @@ public class EDDTableFromBMDE extends EDDTable{
         for (int i = 0; i < tDataVariables.size(); i++)
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
-        return new EDDTableFromBMDE(tDatasetID, tAccessibleTo, tOnChange, tGlobalAttributes,
+        return new EDDTableFromBMDE(tDatasetID, tAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
             tAltitudeMetersPerSourceUnit, ttDataVariables, tReloadEveryNMinutes, 
             tLocalSourceUrl, tSourceCode);
     }
@@ -149,6 +157,11 @@ public class EDDTableFromBMDE extends EDDTable{
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tAddGlobalAttributes are global attributes which will
      *   be added to (and take precedence over) the data source's global attributes.
      *   This may be null if you have nothing to add.
@@ -209,7 +222,8 @@ public class EDDTableFromBMDE extends EDDTable{
      * @throws Throwable if trouble
      */
     public EDDTableFromBMDE(String tDatasetID, String tAccessibleTo, 
-        StringArray tOnChange, Attributes tAddGlobalAttributes,
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object tDataVariables[][],
         int tReloadEveryNMinutes,
@@ -226,6 +240,8 @@ public class EDDTableFromBMDE extends EDDTable{
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
@@ -243,16 +259,16 @@ public class EDDTableFromBMDE extends EDDTable{
         tAddGlobalAttributes.add("cdm_data_type", CDM_POINT);
         tAddGlobalAttributes.add("standard_name_vocabulary", FileNameUtility.getStandardNameVocabulary());
         addGlobalAttributes = tAddGlobalAttributes;
-        String tLicense = addGlobalAttributes.getString("license");
-        if (tLicense != null)
-            addGlobalAttributes.set("license", 
-                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         addGlobalAttributes.set("sourceUrl", makePublicSourceUrl(tLocalSourceUrl));
         localSourceUrl = tLocalSourceUrl;
         sourceCode = tSourceCode;
 
         sourceGlobalAttributes = new Attributes();
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
+        String tLicense = combinedGlobalAttributes.getString("license");
+        if (tLicense != null)
+            combinedGlobalAttributes.set("license", 
+                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         combinedGlobalAttributes.removeValue("null");
 
         //sourceCanConstrain:

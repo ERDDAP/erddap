@@ -71,7 +71,7 @@ import ucar.unidata.geoloc.Station;
 /** 
  * This class represents a table of data from a collection of FeatureDatasets
  * using CF Discrete Sampling Geometries (was Point Observation Conventions), 
- * https://cf-pcmdi.llnl.gov/trac/wiki/PointObservationConventions (currently out-of-date).
+ * http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/aph.html
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2011-01-27
  */
@@ -85,6 +85,11 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tFileDir the base URL or file directory. 
      *    See http://www.unidata.ucar.edu/software/netcdf-java/v4.2/javadoc/index.html
      *    FeatureDatasetFactoryManager open().
@@ -101,7 +106,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
      */
     public EDDTableFromNcCFFiles(boolean tIsLocal, 
         String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
@@ -116,7 +121,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
 
         super("EDDTableFromNcCFFiles", 
             tIsLocal, 
-            tDatasetID, tAccessibleTo, tOnChange, 
+            tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
             tAddGlobalAttributes, tAltMetersPerSourceUnit, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
@@ -429,7 +434,7 @@ latLonRect = null;
         }
 
         String2.log("EDDTableFromNcCFFiles.getSourceDataFromFile table.nRows=" + table.nRows());
-String2.log(table.dataToCsvString(10));
+String2.log(table.dataToCSVString(10));
         return table;
 */      return new Table();
     }
@@ -646,7 +651,7 @@ String2.log(table.dataToCsvString(10));
                             sourceAtts);
                         dataAddTable.addColumn(av, dimVar.getName(), dimPa, 
                             makeReadyToUseAddVariableAttributesForDatasetsXml(
-                                sourceAtts, dimVar.getName(), true)); //addColorBarMinMax
+                                sourceAtts, dimVar.getName(), true, true)); //addColorBarMinMax, tryToFindLLAT
                     }
                 }
 
@@ -660,7 +665,7 @@ String2.log(table.dataToCsvString(10));
                     sourceAtts);
                 dataAddTable.addColumn(   dataAddTable.nColumns(),    var.getName(), pa,
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
-                        sourceAtts, var.getName(), true)); //addColorBarMinMax
+                        sourceAtts, var.getName(), true, true)); //addColorBarMinMax, tryToFindLLAT
 
                 //if a variable has timeUnits, files are likely sorted by time
                 //and no harm if files aren't sorted that way
@@ -696,12 +701,14 @@ String2.log(table.dataToCsvString(10));
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", "(local files)");
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
+        //after dataVariables known, add global attributes in the axisAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
                 probablyHasLonLatTime(dataAddTable)? "Point" : "Other",
-                tFileDir, externalAddGlobalAttributes));
+                tFileDir, externalAddGlobalAttributes, 
+                suggestKeywords(dataSourceTable, dataAddTable)));
 
         //add the columnNameForExtract variable
         if (tColumnNameForExtract.length() > 0) {
@@ -719,8 +726,8 @@ String2.log(table.dataToCsvString(10));
             ".*\\" + File2.getExtension(sampleFileName) :
             tFileNameRegex;
         if (tSortFilesBySourceNames.length() == 0)
-            tSortFilesBySourceNames = tColumnNameForExtract + 
-                (tSortedColumnSourceName.length() == 0? "" : " " + tSortedColumnSourceName);
+            tSortFilesBySourceNames = (tColumnNameForExtract + 
+                (tSortedColumnSourceName.length() == 0? "" : " " + tSortedColumnSourceName)).trim();
         sb.append(
             directionsForGenerateDatasetsXml() +
             "-->\n\n" +
@@ -743,7 +750,7 @@ String2.log(table.dataToCsvString(10));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToCatchLLAT, questionDestinationName
+        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
             "dataVariable", true, true, false));
         sb.append(
@@ -806,7 +813,7 @@ directionsForGenerateDatasetsXml() +
             EDD edd = oneFromXmlFragment(results);
             Test.ensureEqual(edd.datasetID(), "ndbcMet_5df7_b363_ad99", "");
             Test.ensureEqual(edd.title(), "NOAA NDBC Standard Meteorological", "");
-            Test.ensureEqual(String2.toCSVString(edd.dataVariableDestinationNames()), 
+            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "stationID, time, DEPTH, latitude, longitude, WD, WSPD, GST, WVHT, " +
                 "DPD, APD, MWD, BAR, ATMP, WTMP, DEWP, VIS, PTDY, TIDE, WSPU, WSPV", 
                 "");
@@ -839,7 +846,7 @@ directionsForGenerateDatasetsXml() +
             EDD edd = oneFromXmlFragment(results);
             Test.ensureEqual(edd.datasetID(), "ngdcJasonSwath_2743_941d_6d6c", "");
             Test.ensureEqual(edd.title(), "OGDR - Standard dataset", "");
-            Test.ensureEqual(String2.toCSVString(edd.dataVariableDestinationNames()), 
+            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
 "zztop", 
                 "");
 
@@ -866,9 +873,9 @@ directionsForGenerateDatasetsXml() +
 
         String id = "erdCinpKfmSFNH";
         if (deleteCachedDatasetInfo) {
-            File2.delete(datasetInfoDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + BADFILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
         }
         EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
 
@@ -935,9 +942,9 @@ directionsForGenerateDatasetsXml() +
         //the test files were made with makeTestFiles();
         String id = "testNc2D";       
         if (deleteCachedDatasetInfo) {
-            File2.delete(datasetInfoDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + BADFILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
         }
 
         //touch a good and a bad file, so they are checked again
@@ -1060,7 +1067,7 @@ directionsForGenerateDatasetsXml() +
                 Double.NaN, Double.NaN, //min/MaxAlt 
                 Double.NaN, Double.NaN, //min/MaxTime 
                 true, true); //getMetadata, mustGetData
-            results = table.toCsvString(10);
+            results = table.toCSSVString(10);
             expected = "zztop";
             //Test.ensureEqual(results, expected, 
             //    "results0=\n" + String2.replaceAll(results, "\t", "\\t"));
@@ -1075,7 +1082,7 @@ directionsForGenerateDatasetsXml() +
                 Double.NaN, Double.NaN, //min/MaxAlt 
                 Double.NaN, Double.NaN, //min/MaxTime 
                 true, true); //getMetadata, mustGetData
-            results = table.toCsvString(10);
+            results = table.toCSSVString(10);
             expected = 
 "zztop";
             //Test.ensureEqual(results, expected, 
@@ -1091,7 +1098,7 @@ directionsForGenerateDatasetsXml() +
                 Double.NaN, Double.NaN, //min/MaxAlt 
                 Double.NaN, Double.NaN, //min/MaxTime 
                 true, true); //getMetadata, mustGetData
-            results = table.toCsvString(10);
+            results = table.toCSSVString(10);
             expected = 
 "zztop";
             //Test.ensureEqual(results, expected, 
@@ -1107,7 +1114,7 @@ directionsForGenerateDatasetsXml() +
                 Double.NaN, Double.NaN, //min/MaxAlt 
                 Double.NaN, Double.NaN, //min/MaxTime 
                 true, true); //getMetadata, mustGetData
-            results = table.toCsvString(10);
+            results = table.toCSSVString(10);
             expected = "zztop";
             //Test.ensureEqual(results, expected, 
             //    "results3=\n" + String2.replaceAll(results, "\t", "\\t"));
@@ -1122,7 +1129,7 @@ directionsForGenerateDatasetsXml() +
                 Double.NaN, Double.NaN, //min/MaxAlt 
                 Double.NaN, Double.NaN, //min/MaxTime 
                 true, true); //getMetadata, mustGetData
-            results = table.toCsvString(10);
+            results = table.toCSSVString(10);
             expected = "zztop";
             //Test.ensureEqual(results, expected, 
             //    "results4=\n" + String2.replaceAll(results, "\t", "\\t"));
@@ -1137,7 +1144,7 @@ directionsForGenerateDatasetsXml() +
                 Double.NaN, Double.NaN, //min/MaxAlt 
                 Double.NaN, Double.NaN, //min/MaxTime 
                 true, true); //getMetadata, mustGetData
-            results = table.toCsvString(10);
+            results = table.toCSSVString(10);
             expected = "zztop";
             //Test.ensureEqual(results, expected, 
             //    "results5=\n" + String2.replaceAll(results, "\t", "\\t"));
@@ -1152,7 +1159,7 @@ directionsForGenerateDatasetsXml() +
                 Double.NaN, Double.NaN, //min/MaxAlt 
                 Double.NaN, Double.NaN, //min/MaxTime 
                 true, true); //getMetadata, mustGetData
-            results = table.toCsvString(10);
+            results = table.toCSSVString(10);
             expected = "zztop";
             //Test.ensureEqual(results, expected, 
             //    "results6=\n" + String2.replaceAll(results, "\t", "\\t"));

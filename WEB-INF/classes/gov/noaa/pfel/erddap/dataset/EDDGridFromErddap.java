@@ -87,6 +87,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         String tLocalSourceUrl = null;
 
         //process the tags
@@ -123,9 +125,15 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             else if (localTags.equals("</onChange>")) 
                 tOnChange.add(content); 
 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+
             else xmlReader.unexpectedTagException();
         }
-        return new EDDGridFromErddap(tDatasetID, tAccessibleTo, tOnChange, tReloadEveryNMinutes, tLocalSourceUrl);
+        return new EDDGridFromErddap(tDatasetID, tAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File, tReloadEveryNMinutes, tLocalSourceUrl);
     }
 
     /**
@@ -137,14 +145,19 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data (use Integer.MAX_VALUE for never).
      * @param tLocalSourceUrl the url to which .das or .dds or ... can be added
      * @throws Throwable if trouble
      */
     public EDDGridFromErddap(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, int tReloadEveryNMinutes,
-        String tLocalSourceUrl) throws Throwable {
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        int tReloadEveryNMinutes, String tLocalSourceUrl) throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDGridFromErddap " + tDatasetID); 
@@ -157,6 +170,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         datasetID = tDatasetID;
         //setAccessibleTo(tAccessibleTo);  disabled. see above.
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         localSourceUrl = tLocalSourceUrl;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         if (tLocalSourceUrl.indexOf("/tabledap/") > 0)
@@ -264,19 +279,23 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
         combinedGlobalAttributes.removeValue("null");
 
-        axisVariables = new EDVGridAxis[tAxisVariables.size()]; 
-        for (int av = 0; av < tAxisVariables.size(); av++) {
-            axisVariables[av] = 
-                (EDVGridAxis)tAxisVariables.get(tAxisVariables.size() - av - 1); //reverse the order
+        int nav = tAxisVariables.size();
+        axisVariables = new EDVGridAxis[nav]; 
+        for (int av = 0; av < nav; av++) {
+            //reverse the order, since read (above) from bottom to top
+            axisVariables[av] = (EDVGridAxis)tAxisVariables.get(nav - av - 1); 
             String tName = axisVariables[av].destinationName();
             if      (tName.equals(EDV.LON_NAME))  lonIndex  = av;
             else if (tName.equals(EDV.LAT_NAME))  latIndex  = av;
             else if (tName.equals(EDV.ALT_NAME))  altIndex  = av;
             else if (tName.equals(EDV.TIME_NAME)) timeIndex = av;
         }
-        dataVariables = new EDV[tDataVariables.size()];
-        for (int dv = 0; dv < tDataVariables.size(); dv++)
-            dataVariables[dv] = (EDV)tDataVariables.get(dv);
+
+        int ndv = tDataVariables.size();
+        dataVariables = new EDV[ndv];
+        for (int dv = 0; dv < ndv; dv++)
+            //reverse the order, since read (above) from bottom to top
+            dataVariables[dv] = (EDV)tDataVariables.get(ndv - dv - 1); 
 
         //ensure the setup is valid
         ensureValid();  //this ensures many things are set, e.g., sourceUrl
@@ -373,10 +392,20 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         int nAv = axisVariables.length;
         int nDv = dataVariables.length;
 
+        //need a unique datasetID for sibling 
+        //  so cached .das .dds axis values are stored separately.
+        //So make tDatasetID by putting md5Hex12 in the middle of original datasetID
+        //  so beginning and ending for tDatasetID are same as original.
+        int po = datasetID.length() / 2; 
+        String tDatasetID = datasetID.substring(0, po) +
+            "_" + String2.md5Hex12(tLocalSourceUrl) + "_" +
+            datasetID.substring(po);
+
+        //make the sibling
         EDDGridFromErddap newEDDGrid = new EDDGridFromErddap(
-            datasetID, 
+            tDatasetID, 
             String2.toSSVString(accessibleTo),
-            shareInfo? onChange : (StringArray)onChange.clone(), 
+            shareInfo? onChange : (StringArray)onChange.clone(), "", "", 
             getReloadEveryNMinutes(), tLocalSourceUrl);
 
         //if shareInfo, point to same internal data
@@ -405,7 +434,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             newEDDGrid.institution                  = institution();
             newEDDGrid.infoUrl                      = infoUrl();
             newEDDGrid.cdmDataType                  = cdmDataType();
-            newEDDGrid.searchString                 = searchString();
+            newEDDGrid.searchBytes                  = searchBytes();
             //not sourceUrl, which will be different
             newEDDGrid.sourceGlobalAttributes       = sourceGlobalAttributes();
             newEDDGrid.addGlobalAttributes          = addGlobalAttributes();
@@ -629,7 +658,7 @@ expected =
             //!!!the first dataset will vary, depending on which are currently active!!!
             Test.ensureEqual(edd.title(), "Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)", "");
             Test.ensureEqual(edd.datasetID(), "0_0_1eed_1be2_4073", "");
-            Test.ensureEqual(String2.toCSVString(edd.dataVariableDestinationNames()), 
+            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "chlorophyll", "");
 
 
@@ -669,7 +698,7 @@ expected =
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0260864e+9, 1.3100832e+9;\n" + //last value changes periodically
+"    Float64 actual_range 1.0260864e+9, 1.3333248e+9;\n" + //last value changes periodically
 "    String axis \"T\";\n" +
 "    Int32 fraction_digits 0;\n" +
 "    String ioos_category \"Time\";\n" +
@@ -733,12 +762,12 @@ expected =
 "    String composite \"true\";\n" +
 "    String contributor_name \"NASA GSFC (OBPG)\";\n" +
 "    String contributor_role \"Source of level 2 data.\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" + 
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" + 
 "    String creator_email \"dave.foley@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
-"    String date_created \"2011-07-28Z\";\n" +  //changes
-"    String date_issued \"2011-07-28Z\";\n" +  //changes
+"    String date_created \"2012-04-08Z\";\n" +  //changes
+"    String date_issued \"2012-04-08Z\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
 "    Float64 geospatial_lat_max 90.0;\n" +
 "    Float64 geospatial_lat_min -90.0;\n" +
@@ -761,7 +790,9 @@ expected =
 expected2 =
 "    String infoUrl \"http://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
 "    String institution \"NOAA CoastWatch, West Coast Node\";\n" +
-"    String keywords \"EARTH SCIENCE > Oceans > Ocean Chemistry > Chlorophyll\";\n" +
+"    String keywords \"8-day,\n" +
+"Oceans > Ocean Chemistry > Chlorophyll,\n" +
+"aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" + 
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -770,7 +801,7 @@ expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 90.0;\n" +
 "    String origin \"NASA GSFC (OBPG)\";\n" +
@@ -786,7 +817,7 @@ expected2 =
 "    Float64 Southernmost_Northing -90.0;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String summary \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-"    String time_coverage_end \"2011-07-08T00:00:00Z\";\n" + //changes
+"    String time_coverage_end \"2012-04-02T00:00:00Z\";\n" + //changes
 "    String time_coverage_start \"2002-07-08T00:00:00Z\";\n" +
 "    String title \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
@@ -815,15 +846,15 @@ expected2 =
             //String2.log(results);
             expected = 
     "Dataset {\n" +
-    "  Float64 time[time = 406];\n" +   //406 will change sometimes   (and a few places below)
+    "  Float64 time[time = 439];\n" +   //439 will change sometimes   (and a few places below)
     "  Float64 altitude[altitude = 1];\n" +
     "  Float64 latitude[latitude = 4320];\n" +
     "  Float64 longitude[longitude = 8640];\n" +
     "  GRID {\n" +
     "    ARRAY:\n" +
-    "      Float32 chlorophyll[time = 406][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+    "      Float32 chlorophyll[time = 439][altitude = 1][latitude = 4320][longitude = 8640];\n" +
     "    MAPS:\n" +
-    "      Float64 time[time = 406];\n" +
+    "      Float64 time[time = 439];\n" +
     "      Float64 altitude[altitude = 1];\n" +
     "      Float64 latitude[latitude = 4320];\n" +
     "      Float64 longitude[longitude = 8640];\n" +
@@ -873,16 +904,21 @@ expected2 =
             //String2.log(results);
             //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
             expected = 
-    "time, longitude\n" +
-    "UTC, degrees_east\n" +
-    "2002-07-08T00:00:00Z, 360.0\n" +
-    "2004-09-25T00:00:00Z, NaN\n" +
-    "2006-12-15T00:00:00Z, NaN\n";
+    "time,longitude\n" +
+    "UTC,degrees_east\n" +
+    "2002-07-08T00:00:00Z,360.0\n" +
+    "2004-09-25T00:00:00Z,NaN\n" +
+    "2006-12-15T00:00:00Z,NaN\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             if (testLocalErddapToo) {
-                results = SSR.getUrlResponseString(localUrl + ".csv?" + query);
-                Test.ensureEqual(results, expected, "\nresults=\n" + results);
+                try {
+                    results = SSR.getUrlResponseString(localUrl + ".csv?" + query);
+                    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+                } catch (Throwable t) {
+                    String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                        "\nUnexpected error.\nPress ^C to stop or Enter to continue...");
+                }
             }
 
             //.csv  test of gridName.axisName notation
@@ -894,16 +930,21 @@ expected2 =
             //String2.log(results);
             //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
             expected = 
-    "time, longitude\n" +
-    "UTC, degrees_east\n" +
-    "2002-07-08T00:00:00Z, 360.0\n" +
-    "2004-09-25T00:00:00Z, NaN\n" +
-    "2006-12-15T00:00:00Z, NaN\n";
+    "time,longitude\n" +
+    "UTC,degrees_east\n" +
+    "2002-07-08T00:00:00Z,360.0\n" +
+    "2004-09-25T00:00:00Z,NaN\n" +
+    "2006-12-15T00:00:00Z,NaN\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             if (testLocalErddapToo) {
-                results = SSR.getUrlResponseString(localUrl + ".csv?" + query);
-                Test.ensureEqual(results, expected, "\nresults=\n" + results);
+                try {
+                    results = SSR.getUrlResponseString(localUrl + ".csv?" + query);
+                    Test.ensureEqual(results, expected, "\nresults=\n" + results);
+                } catch (Throwable t) {
+                    String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                        "\nUnexpected error.\nPress ^C to stop or Enter to continue...");
+                }
             }
 
             //.dods
@@ -1040,22 +1081,27 @@ expected2 =
 "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434, 0.118\n" +
 "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.65123278157193, NaN\n" +
 "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953, 0.091\n"; */
-"time, altitude, latitude, longitude, chlorophyll\n" +
-"UTC, m, degrees_north, degrees_east, mg m-3\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 224.98437319134158, NaN\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.40108808889917, NaN\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.81780298645677, 0.10655\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434, 0.12478\n";
+"time,altitude,latitude,longitude,chlorophyll\n" +
+"UTC,m,degrees_north,degrees_east,mg m-3\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,225.40108808889917,NaN\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.10655\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12478\n";
             Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
             expected2 = 
 //pre 2010-10-26 was  "2007-02-06T00:00:00Z, 0.0, 49.407270201435495, 232.06852644982058, 0.37\n";
-            "2007-02-06T00:00:00Z, 0.0, 49.407270201435495, 232.06852644982058, 0.58877\n";
+            "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n";
             Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
 
             if (testLocalErddapToo) {
-                results = SSR.getUrlResponseString(localUrl + ".csv?" + userDapQuery);
-                Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-                Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
+                try {
+                    results = SSR.getUrlResponseString(localUrl + ".csv?" + userDapQuery);
+                    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+                    Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
+                } catch (Throwable t) {
+                    String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                        "\nUnexpected error.\nPress ^C to stop or Enter to continue...");
+                }
             }
 
             //.csv   test gridName.gridName notation
@@ -1073,22 +1119,27 @@ expected2 =
 "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434, 0.118\n" +
 "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.65123278157193, NaN\n" +
 "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953, 0.091\n"; */
-"time, altitude, latitude, longitude, chlorophyll\n" +
-"UTC, m, degrees_north, degrees_east, mg m-3\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 224.98437319134158, NaN\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.40108808889917, NaN\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.81780298645677, 0.10655\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434, 0.12478\n";
+"time,altitude,latitude,longitude,chlorophyll\n" +
+"UTC,m,degrees_north,degrees_east,mg m-3\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,225.40108808889917,NaN\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.10655\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12478\n";
             Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
             expected2 = 
 //pre 2010-10-26 was  "2007-02-06T00:00:00Z, 0.0, 49.407270201435495, 232.06852644982058, 0.37\n";
-            "2007-02-06T00:00:00Z, 0.0, 49.407270201435495, 232.06852644982058, 0.58877\n";
+            "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n";
             Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
 
             if (testLocalErddapToo) {
-                results = SSR.getUrlResponseString(localUrl + ".csv" + "?chlorophyll." + userDapQuery);
-                Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-                Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
+                try {
+                    results = SSR.getUrlResponseString(localUrl + ".csv" + "?chlorophyll." + userDapQuery);
+                    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+                    Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
+                } catch (Throwable t) {
+                    String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                        "\nUnexpected error.\nPress ^C to stop or Enter to continue...");
+                }
             }
 
             //.nc
@@ -1165,12 +1216,12 @@ expected2 =
 " :composite = \"true\";\n" +
 " :contributor_name = \"NASA GSFC (OBPG)\";\n" +
 " :contributor_role = \"Source of level 2 data.\";\n" +
-" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" + 
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" + 
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2011-07-28Z\";\n" + //changes periodically
-" :date_issued = \"2011-07-28Z\";\n" +  //changes periodically
+" :date_created = \"2012-04-08Z\";\n" + //changes periodically
+" :date_issued = \"2012-04-08Z\";\n" +  //changes periodically
 " :Easternmost_Easting = 246.65354786433613; // double\n" +
 " :geospatial_lat_max = 49.82403334105115; // double\n" +
 " :geospatial_lat_min = 28.985876360268577; // double\n" +
@@ -1189,7 +1240,9 @@ expected2 =
         expected = //note original missing values
 " :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
 " :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
-" :keywords = \"EARTH SCIENCE > Oceans > Ocean Chemistry > Chlorophyll\";\n" +
+" :keywords = \"8-day,\n" +
+"Oceans > Ocean Chemistry > Chlorophyll,\n" +
+"aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\";\n" +
 " :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 " :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -1198,7 +1251,7 @@ expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
 " :Northernmost_Northing = 49.82403334105115; // double\n" +
 " :origin = \"NASA GSFC (OBPG)\";\n" +
@@ -1244,6 +1297,15 @@ expected2 =
         }
     }
 
+    public static void testDataVarOrder() throws Throwable {
+        String2.log("\n*** EDDGridFromErddap.testDataVarOrder()");
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("testDataVarOrder"); 
+        String results = String2.toCSSVString(eddGrid.dataVariableDestinationNames());
+        String expected = "SST, mask, analysis_error";
+        Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+    }
+
+
     /**
      * This tests the methods in this class.
      *
@@ -1257,6 +1319,7 @@ expected2 =
         testBasic(false);
         testBasic(true);
         testGenerateDatasetsXml();
+        testDataVarOrder();
 
         //not regularly done
 

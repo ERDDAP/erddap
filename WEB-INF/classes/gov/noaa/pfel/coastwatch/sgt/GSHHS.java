@@ -381,8 +381,8 @@ public class GSHHS  {
                 for (int i = 0; i < n; i++) {
                     xArray[i] = dis.readInt();
                     yArray[i] = dis.readInt();
-                    //String2.log("xarray=" +String2.toCSVString(xArray));
-                    //String2.log("yarray=" +String2.toCSVString(yArray));
+                    //String2.log("xarray=" +String2.toCSSVString(xArray));
+                    //String2.log("yarray=" +String2.toCSSVString(yArray));
                 }  
 
                 //for addAntarcticCorners, insert points at corners of map.

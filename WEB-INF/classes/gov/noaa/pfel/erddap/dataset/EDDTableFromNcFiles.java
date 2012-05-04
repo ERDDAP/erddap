@@ -78,15 +78,21 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
     /** 
      * The constructor just calls the super constructor. 
      *
+     * <p>The sortedColumnSourceName can't be for a char/String variable
+     *   because NcHelper binary searches are currently set up for numeric vars only.
+     *
      * @param tAccessibleTo is a comma separated list of 0 or more
      *    roles which will have access to this dataset.
      *    <br>If null, everyone will have access to this dataset (even if not logged in).
      *    <br>If "", no one will have access to this dataset.
-     * <p>The sortedColumnSourceName can't be for a char/String variable
-     *   because NcHelper binary searches are currently set up for numeric vars only.
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      */
     public EDDTableFromNcFiles(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
@@ -99,7 +105,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         boolean tSourceNeedsExpandedFP_EQ) 
         throws Throwable {
 
-        super("EDDTableFromNcFiles", true, tDatasetID, tAccessibleTo, tOnChange, 
+        super("EDDTableFromNcFiles", true, tDatasetID, tAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File,
             tAddGlobalAttributes, tAltMetersPerSourceUnit, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
@@ -111,12 +118,12 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
     }
 
     /** 
-     * Subclasses need this constructor. 
+     * The constructor. 
      *
      */
     public EDDTableFromNcFiles(String tClassName, boolean tFilesAreLocal,
         String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
@@ -129,7 +136,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         boolean tSourceNeedsExpandedFP_EQ) 
         throws Throwable {
 
-        super(tClassName, tFilesAreLocal, tDatasetID, tAccessibleTo, tOnChange, 
+        super(tClassName, tFilesAreLocal, tDatasetID, tAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File,
             tAddGlobalAttributes, tAltMetersPerSourceUnit, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
@@ -264,7 +272,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(c, colName,
                 dataSourceTable.getColumn(c),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    sourceAtts, colName, true)); //addColorBarMinMax
+                    sourceAtts, colName, true, true)); //addColorBarMinMax, tryToFindLLAT
 
             //if a variable has timeUnits, files are likely sorted by time
             //and no harm if files aren't sorted that way
@@ -272,116 +280,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
                 EDVTimeStamp.hasTimeUnits(sourceAtts, null))
                 tSortedColumnSourceName = colName;
         }
-        //String2.log("SOURCE COLUMN NAMES=" + dataSourceTable.getColumnNamesCSVString());
-        //String2.log("DEST   COLUMN NAMES=" + dataSourceTable.getColumnNamesCSVString());
-
-
-        /* old way
-        NetcdfFile ncFile = NcHelper.openFile(sampleFileName);
-        int maxDim = 0;
-        try {
-            List variables = ncFile.getVariables();
-            for (int dv = 0; dv < variables.size(); dv++) {
-                Variable var = (Variable)variables.get(dv);
-                Class elementClass = NcHelper.getElementClass(var.getDataType());
-                if (elementClass == boolean.class) elementClass = byte.class;  //NcHelper.getArray converts booleans to bytes
-                else if (elementClass == char.class) elementClass = String.class;
-                PrimitiveArray pa = PrimitiveArray.factory(elementClass, 1, false);
-                int tDim = var.getRank() - (pa instanceof StringArray? 1 : 0);
-
-                if (useDimensions.length > 0) {
-                    //use useDimensions
-                    //Do the vars dimensions match useDimensions? Reject var if not.
-                    if (tDim != useDimensions.length)
-                        continue;
-                    for (int d = 0; d < tDim; d++)
-                        if (!var.getDimension(d).getName().equals(useDimensions[d]))
-                            continue;
-
-                } else {
-                    //don't use useDimensions
-                    if (tDim < maxDim)
-                        continue;
-
-                    //Do the vars dimensions match the currently in-use dimensions? Reject var if not.
-                    //If maxDim == 0 or tDim>maxDim, it's better! Let if fall through.
-                    if (maxDim > 0 && tDim == maxDim) { 
-                        for (int d = 0; d < tDim; d++)
-                            if (!var.getDimension(d).getName().equals(
-                                dataSourceTable.getColumnName(d)))
-                                continue;
-                    }
-                }
-
-                //first var using the dimensions?
-                if (tDim > maxDim) {
-                    //reset and store this var's dimensions
-                    dataSourceTable.clear();
-                    dataAddTable.clear();
-                    maxDim = tDim;
-                    for (int av = 0; av < maxDim; av++) {
-                        Dimension dim = var.getDimension(av);
-                        Variable dimVar = ncFile.findVariable(dim.getName());
-                        //if it is just a counter like 'row', skip it
-                        if (dimVar == null)
-                            continue;
-                        Attributes sourceAtts = new Attributes();
-                        PrimitiveArray dimPa = null;
-                        if (dimVar == null) {
-                            dimPa = dim.getLength() < 125?   new ByteArray() : 
-                                 dim.getLength() < 30000? new ShortArray() : 
-                                 new IntArray();
-                        } else {
-                            NcHelper.getVariableAttributes(dimVar, sourceAtts);
-                            Class dimElementType = NcHelper.getElementClass(dimVar.getDataType());
-                            if (dimElementType == boolean.class) dimElementType = byte.class;  //NcHelper.getArray converts booleans to bytes
-                            else if (dimElementType == char.class) dimElementType = String.class;
-                            dimPa = PrimitiveArray.factory(dimElementType, 1, false);
-                        }
-                        dataSourceTable.addColumn(av, dimVar.getName(), dimPa, 
-                            sourceAtts);
-                        dataAddTable.addColumn(av, dimVar.getName(), dimPa, 
-                            makeReadyToUseAddVariableAttributesForDatasetsXml(
-                                sourceAtts, dimVar.getName(), true)); //addColorBarMinMax
-                    }
-                }
-
-                if (dataAddTable.findColumnNumber(var.getName()) >= 0) 
-                    continue; //e.g., time(time) is already in the dataAddTable
-
-                //load this var
-                Attributes sourceAtts = new Attributes();
-                NcHelper.getVariableAttributes(var, sourceAtts);
-                dataSourceTable.addColumn(dataSourceTable.nColumns(), var.getName(), pa, 
-                    sourceAtts);
-                dataAddTable.addColumn(   dataAddTable.nColumns(),    var.getName(), pa,
-                    makeReadyToUseAddVariableAttributesForDatasetsXml(
-                        sourceAtts, var.getName(), true)); //addColorBarMinMax
-
-                //if a variable has timeUnits, files are likely sorted by time
-                //and no harm if files aren't sorted that way
-                if (tSortedColumnSourceName.length() == 0 && 
-                    EDVTimeStamp.hasTimeUnits(sourceAtts, null))
-                    tSortedColumnSourceName = var.getName();
-            }
-
-            //load the global metadata
-            NcHelper.getGlobalAttributes(ncFile, dataSourceTable.globalAttributes());
-
-            //I do care if this throws Throwable
-            ncFile.close(); 
-
-        } catch (Throwable t) {
-            //make sure ncFile is explicitly closed
-            try {
-                ncFile.close(); 
-            } catch (Throwable t2) {
-                //don't care
-            }
-
-            throw t;
-        }
-        */
+        //String2.log("SOURCE COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
+        //String2.log("DEST   COLUMN NAMES=" + dataSourceTable.getColumnNamesCSSVString());
 
         //globalAttributes
         if (externalAddGlobalAttributes == null)
@@ -392,12 +292,14 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", "(local files)");
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
+        //after dataVariables known, add global attributes in the axisAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
                 probablyHasLonLatTime(dataAddTable)? "Point" : "Other",
-                tFileDir, externalAddGlobalAttributes));
+                tFileDir, externalAddGlobalAttributes, 
+                suggestKeywords(dataSourceTable, dataAddTable)));
 
         //add the columnNameForExtract variable
         if (tColumnNameForExtract.length() > 0) {
@@ -415,8 +317,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
             ".*\\" + File2.getExtension(sampleFileName) :
             tFileNameRegex;
         if (tSortFilesBySourceNames.length() == 0)
-            tSortFilesBySourceNames = tColumnNameForExtract + 
-                (tSortedColumnSourceName.length() == 0? "" : " " + tSortedColumnSourceName);
+            tSortFilesBySourceNames = (tColumnNameForExtract + 
+                (tSortedColumnSourceName.length() == 0? "" : " " + tSortedColumnSourceName)).trim();
         sb.append(
             directionsForGenerateDatasetsXml() +
             "-->\n\n" +
@@ -439,7 +341,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToCatchLLAT, questionDestinationName
+        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
             "dataVariable", true, true, false));
         sb.append(
@@ -508,8 +410,8 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"creator_url\">http://coastwatch.pfeg.noaa.gov</att>\n" +
-"        <att name=\"date_created\">2011-07-26Z</att>\n" +
-"        <att name=\"date_issued\">2011-07-26Z</att>\n" +
+"        <att name=\"date_created\">2012-03-22Z</att>\n" + //changes
+"        <att name=\"date_issued\">2012-03-22Z</att>\n" +  //changes
 "        <att name=\"Easternmost_Easting\" type=\"float\">-79.099</att>\n" +
 "        <att name=\"geospatial_lat_max\" type=\"float\">32.501</att>\n" +
 "        <att name=\"geospatial_lat_min\" type=\"float\">32.501</att>\n" +
@@ -524,7 +426,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"history\">NOAA NDBC</att>\n" +
 "        <att name=\"id\">NDBC_41004_met</att>\n" +
 "        <att name=\"institution\">NOAA National Data Buoy Center and Participators in Data Assembly Center.</att>\n" +
-"        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans</att>\n" +
+"        <att name=\"keywords\">Oceans</att>\n" +
 "        <att name=\"license\">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither NOAA, NDBC, CoastWatch, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0, Unidata Observation Dataset v1.0</att>\n" +
 "        <att name=\"naming_authority\">gov.noaa.pfeg.coastwatch</att>\n" +
@@ -536,9 +438,9 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"Southernmost_Northing\" type=\"float\">32.501</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
 "        <att name=\"summary\">The National Data Buoy Center (NDBC) distributes meteorological data from moored buoys maintained by NDBC and others. Moored buoys are the weather sentinels of the sea. They are deployed in the coastal and offshore waters from the western Atlantic to the Pacific Ocean around Hawaii, and from the Bering Sea to the South Pacific. NDBC&#039;s moored buoys measure and transmit barometric pressure; wind direction, speed, and gust; air and sea temperature; and wave energy spectra from which significant wave height, dominant wave period, and average wave period are derived. Even the direction of wave propagation is measured on many moored buoys. \n" +
-"\n" +
-"This dataset has both historical data (quality controlled, before 2011-07-01T00:00:00) and near real time data (less quality controlled, from 2011-07-01T00:00:00 on).</att>\n" +
-"        <att name=\"time_coverage_end\">2011-07-26T16:00:00Z</att>\n" +
+"\n" +                                                            //changes 2 places...
+"This dataset has both historical data (quality controlled, before 2012-03-01T00:00:00) and near real time data (less quality controlled, from 2012-03-01T00:00:00 on).</att>\n" +
+"        <att name=\"time_coverage_end\">2012-03-22T16:00:00Z</att>\n" + //changes
 "        <att name=\"time_coverage_resolution\">P1H</att>\n" +
 "        <att name=\"time_coverage_start\">1978-06-27T13:00:00Z</att>\n" +
 "        <att name=\"title\">NOAA NDBC Standard Meteorological</att>\n" +
@@ -546,7 +448,28 @@ directionsForGenerateDatasetsXml() +
 "    </sourceAttributes -->\n" +
 cdmSuggestion() +
 "    <addAttributes>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0, Unidata Observation Dataset v1.0</att>\n" +
 "        <att name=\"infoUrl\">http://coastwatch.pfeg.noaa.gov</att>\n" +
+"        <att name=\"keywords\">\n" +
+"Atmosphere &gt; Air Quality &gt; Visibility,\n" +
+"Atmosphere &gt; Altitude &gt; Planetary Boundary Layer Height,\n" +
+"Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements,\n" +
+"Atmosphere &gt; Atmospheric Pressure &gt; Pressure Tendency,\n" +
+"Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure,\n" +
+"Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure,\n" +
+"Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature,\n" +
+"Atmosphere &gt; Atmospheric Temperature &gt; Dew Point Temperature,\n" +
+"Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,\n" +
+"Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature,\n" +
+"Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
+"Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
+"Oceans &gt; Ocean Waves &gt; Significant Wave Height,\n" +
+"Oceans &gt; Ocean Waves &gt; Swells,\n" +
+"Oceans &gt; Ocean Waves &gt; Wave Period,\n" +
+"Oceans &gt; Ocean Waves &gt; Wave Speed/Direction,\n" +
+"air, air_pressure_at_sea_level, air_temperature, altitude, assembly, atmosphere, atmospheric, average, boundary, buoy, center, center., currents, data, depth, dew point, dew_point_temperature, direction, dominant, eastward, eastward_wind, from, gust, height, identifier, layer, level, measurements, meridional, meteorological, meteorology, national, ndbc, noaa, northward, northward_wind, ocean, oceans, participators, period, planetary, pressure, quality, sea, sea_surface_swell_wave_period, sea_surface_temperature, sea_surface_wave_significant_height, sea_surface_wave_to_direction, seawater, significant, speed, sst, standard, static, station, station_id, surface, surface waves, surface_altitude, swell, swells, temperature, tendency, tendency_of_air_pressure, time, vapor, visibility, visibility_in_air, water, wave, waves, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, zonal</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0, Unidata Observation Dataset v1.0</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
@@ -566,7 +489,7 @@ cdmSuggestion() +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">2.678004E8 1.311696E9</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">2.678004E8 1.332432E9</att>\n" + //changes
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"comment\">Time in seconds since 1970-01-01T00:00:00Z. The original times are rounded to the nearest hour.</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
@@ -597,8 +520,9 @@ cdmSuggestion() +
 "            <att name=\"units\">m</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-1.0</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"colorBarPalette\">OceanDepth</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -616,8 +540,8 @@ cdmSuggestion() +
 "            <att name=\"units\">degrees_north</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">34.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">31.0</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -635,8 +559,8 @@ cdmSuggestion() +
 "            <att name=\"units\">degrees_east</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">-74.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-84.0</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -707,7 +631,7 @@ cdmSuggestion() +
 "            <att name=\"comment\">Significant wave height (meters) is calculated as the average of the highest one-third of all of the wave heights during the 20-minute sampling period. See the Wave Measurements section.</att>\n" +
 "            <att name=\"long_name\">Wave Height</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"standard_name\">sea_surface_swell_wave_significant_height</att>\n" +
+"            <att name=\"standard_name\">sea_surface_wave_significant_height</att>\n" +
 "            <att name=\"units\">m</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
@@ -764,7 +688,7 @@ cdmSuggestion() +
 "            <att name=\"comment\">Mean wave direction corresponding to energy of the dominant period (DOMPD). The units are degrees from true North just like wind direction. See the Wave Measurements section.</att>\n" +
 "            <att name=\"long_name\">Wave Direction</att>\n" +
 "            <att name=\"missing_value\" type=\"short\">32767</att>\n" +
-"            <att name=\"standard_name\">sea_surface_swell_wave_to_direction</att>\n" +
+"            <att name=\"standard_name\">sea_surface_wave_to_direction</att>\n" +
 "            <att name=\"units\">degrees_true</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
@@ -817,7 +741,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-6.1 32.1</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-6.1 32.2</att>\n" +
 "            <att name=\"comment\">Sea surface temperature (Celsius). For sensor depth, see Hull Description.</att>\n" +
 "            <att name=\"long_name\">SST</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
@@ -874,7 +798,7 @@ cdmSuggestion() +
 "        <dataType>float</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-2.9 2.9</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-3.7 5.0</att>\n" +
 "            <att name=\"comment\">Pressure Tendency is the direction (plus or minus) and the amount of pressure change (hPa) for a three hour period ending at the time of observation.</att>\n" +
 "            <att name=\"long_name\">Pressure Tendency</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
@@ -902,7 +826,7 @@ cdmSuggestion() +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">5.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">-5.0</att>\n" +
-"            <att name=\"ioos_category\">Sea Level</att>\n" +
+"            <att name=\"ioos_category\">Currents</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -954,6 +878,8 @@ cdmSuggestion() +
 "            <att name=\"units\">unitless</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">1.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -975,7 +901,7 @@ cdmSuggestion() +
             EDD edd = oneFromXmlFragment(results);
             Test.ensureEqual(edd.datasetID(), "ndbcMet_5df7_b363_ad99", "");
             Test.ensureEqual(edd.title(), "NOAA NDBC Standard Meteorological", "");
-            Test.ensureEqual(String2.toCSVString(edd.dataVariableDestinationNames()), 
+            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "stationID, time, DEPTH, latitude, longitude, WD, WSPD, GST, WVHT, " +
                 "DPD, APD, MWD, BAR, ATMP, WTMP, DEWP, VIS, PTDY, TIDE, WSPU, WSPV, ID", 
                 "");
@@ -1008,7 +934,7 @@ cdmSuggestion() +
             EDD edd = oneFromXmlFragment(results);
             Test.ensureEqual(edd.datasetID(), "ngdcJasonSwath_2743_941d_6d6c", "");
             Test.ensureEqual(edd.title(), "OGDR - Standard dataset", "");
-            Test.ensureEqual(String2.toCSVString(edd.dataVariableDestinationNames()), 
+            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
 "time, latitude, longitude, surface_type, alt_echo_type, rad_surf_type, " +
 "qual_alt_1hz_range_ku, qual_alt_1hz_range_c, qual_alt_1hz_swh_ku, qual_alt_1hz_swh_c, " +
 "qual_alt_1hz_sig0_ku, qual_alt_1hz_sig0_c, qual_alt_1hz_off_nadir_angle_wf_ku, " +
@@ -1058,9 +984,9 @@ cdmSuggestion() +
 
         String id = "erdCinpKfmSFNH";
         if (deleteCachedDatasetInfo) {
-            File2.delete(datasetInfoDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + BADFILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
         }
         EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
 
@@ -1147,13 +1073,14 @@ cdmSuggestion() +
 "    String contributor_email \"David_Kushner@nps.gov\";\n" +
 "    String contributor_name \"Channel Islands National Park, National Park Service\";\n" +
 "    String contributor_role \"Source of data.\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String creator_email \"Roy.Mendelssohn@noaa.gov\";\n" +
 "    String creator_name \"NOAA NMFS SWFSC ERD\";\n" +
 "    String creator_url \"http://www.pfel.noaa.gov\";\n" +
 "    String date_created \"2008-06-11T21:43:28Z\";\n" +
 "    String date_issued \"2008-06-11T21:43:28Z\";\n" +
 "    Float64 Easternmost_Easting -118.4;\n" +
+"    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 34.05;\n" +
 "    Float64 geospatial_lat_min 32.8;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -1171,10 +1098,13 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 "/tabledap/erdCinpKfmSFNH.das\";\n" +
 "    String infoUrl \"http://www.nps.gov/chis/naturescience/index.htm\";\n" +
 "    String institution \"CINP\";\n" +
-"    String keywords \"EARTH SCIENCE > Oceans > Marine Biology > Marine Habitat\";\n" +
+"    String keywords \"Atmosphere > Altitude > Station Height,\n" +
+"Biosphere > Aquatic Ecosystems > Coastal Habitat,\n" +
+"Biosphere > Aquatic Ecosystems > Marine Habitat,\n" +
+"altitude, aquatic, atmosphere, biology, biosphere, channel, cinp, coastal, common, ecosystems, forest, frequency, habitat, height, identifier, islands, kelp, marine, monitoring, name, natural, size, species, station, taxonomy, time\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.  National Park Service Disclaimer: The National Park Service shall not be held liable for improper or incorrect use of the data described and/or contained herein. These data and related graphics are not legal documents and are not intended to be used as such. The information contained in these data is dynamic and may change over time. The data are not better than the original sources from which they were derived. It is the responsibility of the data user to use the data appropriately and consistent within the limitation of geospatial data in general and these data in particular. The related graphics are intended to aid the data user in acquiring relevant data; it is not appropriate to use the related graphics as data. The National Park Service gives no warranty, expressed or implied, as to the accuracy, reliability, or completeness of these data. It is strongly recommended that these data are directly acquired from an NPS server and not indirectly through other sources which may have changed the data in some way. Although these data have been processed successfully on computer systems at the National Park Service, no warranty expressed or implied is made regarding the utility of the data on other systems for general or scientific purposes, nor shall the act of distribution constitute any such warranty. This disclaimer applies both to individual use of the data and aggregate use with other data.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 34.05;\n" +
 "    String observationDimension \"row\";\n" +
@@ -1225,16 +1155,16 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"id, longitude, latitude, altitude, time, common_name, species_name, size\n" +
-", degrees_east, degrees_north, m, UTC, , , mm\n" +
-"Santa Barbara (Webster's Arch), -119.05, 33.4666666666667, -14.0, 2005-07-01T00:00:00Z, Bat star, Asterina miniata, 57\n" +
-"Santa Barbara (Webster's Arch), -119.05, 33.4666666666667, -14.0, 2005-07-01T00:00:00Z, Bat star, Asterina miniata, 41\n" +
-"Santa Barbara (Webster's Arch), -119.05, 33.4666666666667, -14.0, 2005-07-01T00:00:00Z, Bat star, Asterina miniata, 55\n";
+"id,longitude,latitude,altitude,time,common_name,species_name,size\n" +
+",degrees_east,degrees_north,m,UTC,,,mm\n" +
+"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,-14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,57\n" +
+"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,-14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,41\n" +
+"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,-14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,55\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
         expected = //last 3 lines
-"Santa Barbara (Webster's Arch), -119.05, 33.4666666666667, -14.0, 2005-07-01T00:00:00Z, Purple sea urchin, Strongylocentrotus purpuratus, 15\n" +
-"Santa Barbara (Webster's Arch), -119.05, 33.4666666666667, -14.0, 2005-07-01T00:00:00Z, Purple sea urchin, Strongylocentrotus purpuratus, 23\n" +
-"Santa Barbara (Webster's Arch), -119.05, 33.4666666666667, -14.0, 2005-07-01T00:00:00Z, Purple sea urchin, Strongylocentrotus purpuratus, 19\n";
+"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,-14.0,2005-07-01T00:00:00Z,Purple sea urchin,Strongylocentrotus purpuratus,15\n" +
+"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,-14.0,2005-07-01T00:00:00Z,Purple sea urchin,Strongylocentrotus purpuratus,23\n" +
+"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,-14.0,2005-07-01T00:00:00Z,Purple sea urchin,Strongylocentrotus purpuratus,19\n";
         Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "\nresults=\n" + results);
 
 
@@ -1246,16 +1176,16 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"id, longitude, latitude, altitude, time, common_name, species_name, size\n" +
-", degrees_east, degrees_north, m, UTC, , , mm\n" +
-"Santa Barbara (Webster's Arch), -119.05, 33.4666666666667, -14.0, 2005-07-01T00:00:00Z, Bat star, Asterina miniata, 57\n" +
-"Santa Barbara (Webster's Arch), -119.05, 33.4666666666667, -14.0, 2005-07-01T00:00:00Z, Bat star, Asterina miniata, 41\n" +
-"Santa Barbara (Webster's Arch), -119.05, 33.4666666666667, -14.0, 2005-07-01T00:00:00Z, Bat star, Asterina miniata, 55\n";
+"id,longitude,latitude,altitude,time,common_name,species_name,size\n" +
+",degrees_east,degrees_north,m,UTC,,,mm\n" +
+"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,-14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,57\n" +
+"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,-14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,41\n" +
+"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,-14.0,2005-07-01T00:00:00Z,Bat star,Asterina miniata,55\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
         expected = //last 3 lines
-"Santa Barbara (Webster's Arch), -119.05, 33.4666666666667, -14.0, 2005-07-01T00:00:00Z, Purple sea urchin, Strongylocentrotus purpuratus, 15\n" +
-"Santa Barbara (Webster's Arch), -119.05, 33.4666666666667, -14.0, 2005-07-01T00:00:00Z, Purple sea urchin, Strongylocentrotus purpuratus, 23\n" +
-"Santa Barbara (Webster's Arch), -119.05, 33.4666666666667, -14.0, 2005-07-01T00:00:00Z, Purple sea urchin, Strongylocentrotus purpuratus, 19\n";
+"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,-14.0,2005-07-01T00:00:00Z,Purple sea urchin,Strongylocentrotus purpuratus,15\n" +
+"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,-14.0,2005-07-01T00:00:00Z,Purple sea urchin,Strongylocentrotus purpuratus,23\n" +
+"Santa Barbara (Webster's Arch),-119.05,33.4666666666667,-14.0,2005-07-01T00:00:00Z,Purple sea urchin,Strongylocentrotus purpuratus,19\n";
         Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "\nresults=\n" + results);
 
 
@@ -1269,17 +1199,17 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"id, longitude, latitude, altitude, time, common_name, species_name, size\n" +
-", degrees_east, degrees_north, m, UTC, , , mm\n" +
-"San Miguel (Hare Rock), -120.35, 34.05, -5.0, 2005-07-01T00:00:00Z, Red abalone, Haliotis rufescens, 13\n" +
-"San Miguel (Miracle Mile), -120.4, 34.0166666666667, -10.0, 2005-07-01T00:00:00Z, Red abalone, Haliotis rufescens, 207\n" +
-"San Miguel (Miracle Mile), -120.4, 34.0166666666667, -10.0, 2005-07-01T00:00:00Z, Red abalone, Haliotis rufescens, 203\n" +
-"San Miguel (Miracle Mile), -120.4, 34.0166666666667, -10.0, 2005-07-01T00:00:00Z, Red abalone, Haliotis rufescens, 193\n";
+"id,longitude,latitude,altitude,time,common_name,species_name,size\n" +
+",degrees_east,degrees_north,m,UTC,,,mm\n" +
+"San Miguel (Hare Rock),-120.35,34.05,-5.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,13\n" +
+"San Miguel (Miracle Mile),-120.4,34.0166666666667,-10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,207\n" +
+"San Miguel (Miracle Mile),-120.4,34.0166666666667,-10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,203\n" +
+"San Miguel (Miracle Mile),-120.4,34.0166666666667,-10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,193\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
         expected = //last 3 lines
-"Santa Rosa (South Point), -120.116666666667, 33.8833333333333, -13.0, 2005-07-01T00:00:00Z, Red abalone, Haliotis rufescens, 185\n" +
-"Santa Rosa (Trancion Canyon), -120.15, 33.9, -9.0, 2005-07-01T00:00:00Z, Red abalone, Haliotis rufescens, 198\n" +
-"Santa Rosa (Trancion Canyon), -120.15, 33.9, -9.0, 2005-07-01T00:00:00Z, Red abalone, Haliotis rufescens, 85\n";
+"Santa Rosa (South Point),-120.116666666667,33.8833333333333,-13.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,185\n" +
+"Santa Rosa (Trancion Canyon),-120.15,33.9,-9.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,198\n" +
+"Santa Rosa (Trancion Canyon),-120.15,33.9,-9.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,85\n";
         Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "\nresults=\n" + results);
 
 
@@ -1293,16 +1223,16 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"id, longitude, latitude, altitude, time, common_name, species_name, size\n" +
-", degrees_east, degrees_north, m, UTC, , , mm\n" +
-"San Miguel (Miracle Mile), -120.4, 34.0166666666667, -10.0, 2005-07-01T00:00:00Z, Red abalone, Haliotis rufescens, 207\n" +
-"San Miguel (Miracle Mile), -120.4, 34.0166666666667, -10.0, 2005-07-01T00:00:00Z, Red abalone, Haliotis rufescens, 203\n" +
-"San Miguel (Miracle Mile), -120.4, 34.0166666666667, -10.0, 2005-07-01T00:00:00Z, Red abalone, Haliotis rufescens, 193\n";
+"id,longitude,latitude,altitude,time,common_name,species_name,size\n" +
+",degrees_east,degrees_north,m,UTC,,,mm\n" +
+"San Miguel (Miracle Mile),-120.4,34.0166666666667,-10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,207\n" +
+"San Miguel (Miracle Mile),-120.4,34.0166666666667,-10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,203\n" +
+"San Miguel (Miracle Mile),-120.4,34.0166666666667,-10.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,193\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
         expected = //last 3 lines
-"Santa Rosa (South Point), -120.116666666667, 33.8833333333333, -13.0, 2005-07-01T00:00:00Z, Red abalone, Haliotis rufescens, 185\n" +
-"Santa Rosa (Trancion Canyon), -120.15, 33.9, -9.0, 2005-07-01T00:00:00Z, Red abalone, Haliotis rufescens, 198\n" +
-"Santa Rosa (Trancion Canyon), -120.15, 33.9, -9.0, 2005-07-01T00:00:00Z, Red abalone, Haliotis rufescens, 85\n";
+"Santa Rosa (South Point),-120.116666666667,33.8833333333333,-13.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,185\n" +
+"Santa Rosa (Trancion Canyon),-120.15,33.9,-9.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,198\n" +
+"Santa Rosa (Trancion Canyon),-120.15,33.9,-9.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,85\n";
         Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "\nresults=\n" + results);
 
 
@@ -1316,9 +1246,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"id, longitude, latitude, altitude, time, common_name, species_name, size\n" +
-", degrees_east, degrees_north, m, UTC, , , mm\n" +
-"San Miguel (Hare Rock), -120.35, 34.05, -5.0, 2005-07-01T00:00:00Z, Red abalone, Haliotis rufescens, 13\n";
+"id,longitude,latitude,altitude,time,common_name,species_name,size\n" +
+",degrees_east,degrees_north,m,UTC,,,mm\n" +
+"San Miguel (Hare Rock),-120.35,34.05,-5.0,2005-07-01T00:00:00Z,Red abalone,Haliotis rufescens,13\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -1332,9 +1262,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude, latitude, altitude, time, id, species_name, size\n" +
-"degrees_east, degrees_north, m, UTC, , , mm\n" +
-"-120.35, 34.05, -5.0, 2005-07-01T00:00:00Z, San Miguel (Hare Rock), Haliotis rufescens, 13\n";
+"longitude,latitude,altitude,time,id,species_name,size\n" +
+"degrees_east,degrees_north,m,UTC,,,mm\n" +
+"-120.35,34.05,-5.0,2005-07-01T00:00:00Z,San Miguel (Hare Rock),Haliotis rufescens,13\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     }
@@ -1355,9 +1285,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //the test files were made with makeTestFiles();
         String id = "testNc2D";       
         if (deleteCachedDatasetInfo) {
-            File2.delete(datasetInfoDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + BADFILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
         }
 
         //touch a good and a bad file, so they are checked again
@@ -1462,9 +1392,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"latitude, time, station, wvht, dpd, wtmp, dewp\n" +
-"degrees_north, UTC, , m, s, degree_C, degree_C\n" +
-"-27.7, 2005-04-19T00:00:00Z, 31201, 1.4, 9.0, 24.4, NaN\n";
+"latitude,time,station,wvht,dpd,wtmp,dewp\n" +
+"degrees_north,UTC,,m,s,degree_C,degree_C\n" +
+"-27.7,2005-04-19T00:00:00Z,31201,1.4,9.0,24.4,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //YYYY MM DD hh mm  WD WSPD  GST  WVHT   DPD   APD MWD  BARO   ATMP  WTMP  DEWP  VIS  TIDE
@@ -1475,13 +1405,13 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             eddTable.className() + "_Data2", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
-        expected = "latitude, time, station, wvht, dpd, wtmp, dewp\n";
+        expected = "latitude,time,station,wvht,dpd,wtmp,dewp\n";
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
-        expected = "degrees_north, UTC, , m, s, degree_C, degree_C\n";
+        expected = "degrees_north,UTC,,m,s,degree_C,degree_C\n";
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
-        expected = "-27.7, 2005-04-19T00:00:00Z, 31201, 1.4, 9.0, 24.4, NaN\n"; //time above
+        expected = "-27.7,2005-04-19T00:00:00Z,31201,1.4,9.0,24.4,NaN\n"; //time above
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
-        expected = "-27.7, 2005-04-25T18:00:00Z, 31201, 3.9, 8.0, 23.9, NaN\n"; //this time
+        expected = "-27.7,2005-04-25T18:00:00Z,31201,3.9,8.0,23.9,NaN\n"; //this time
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
 
         //test requesting a lat area
@@ -1494,23 +1424,23 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"latitude, time, station, wvht, dpd, wtmp, dewp\n" +
-"degrees_north, UTC, , m, s, degree_C, degree_C\n" +
-"35.01, 2005-04-01T00:00:00Z, 41025, 1.34, 10.0, 9.1, 14.9\n" +
-"38.47, 2005-04-01T00:00:00Z, 44004, 2.04, 11.43, 9.8, 4.9\n" +
-"38.46, 2005-04-01T00:00:00Z, 44009, 1.3, 10.0, 5.0, 5.7\n" +
-"36.61, 2005-04-01T00:00:00Z, 44014, 1.67, 11.11, 6.5, 8.6\n" +
-"37.36, 2005-04-01T00:00:00Z, 46012, 2.55, 12.5, 13.7, NaN\n" +
-"38.23, 2005-04-01T00:00:00Z, 46013, 2.3, 12.9, 13.9, NaN\n" +
-"37.75, 2005-04-01T00:00:00Z, 46026, 1.96, 12.12, 14.0, NaN\n" +
-"35.74, 2005-04-01T00:00:00Z, 46028, 2.57, 12.9, 16.3, NaN\n" +
-"36.75, 2005-04-01T00:00:00Z, 46042, 2.21, 17.39, 14.5, NaN\n" +
-"37.98, 2005-04-01T00:00:00Z, 46059, 2.51, 14.29, 12.9, NaN\n" +
-"36.83, 2005-04-01T00:00:00Z, 46091, NaN, NaN, NaN, NaN\n" +
-"36.75, 2005-04-01T00:00:00Z, 46092, NaN, NaN, NaN, NaN\n" +
-"36.69, 2005-04-01T00:00:00Z, 46093, NaN, NaN, 14.3, NaN\n" +
-"37.57, 2005-04-01T00:00:00Z, 46214, 2.5, 9.0, 12.8, NaN\n" +
-"35.21, 2005-04-01T00:00:00Z, 46215, 1.4, 10.0, 11.4, NaN\n";
+"latitude,time,station,wvht,dpd,wtmp,dewp\n" +
+"degrees_north,UTC,,m,s,degree_C,degree_C\n" +
+"35.01,2005-04-01T00:00:00Z,41025,1.34,10.0,9.1,14.9\n" +
+"38.47,2005-04-01T00:00:00Z,44004,2.04,11.43,9.8,4.9\n" +
+"38.46,2005-04-01T00:00:00Z,44009,1.3,10.0,5.0,5.7\n" +
+"36.61,2005-04-01T00:00:00Z,44014,1.67,11.11,6.5,8.6\n" +
+"37.36,2005-04-01T00:00:00Z,46012,2.55,12.5,13.7,NaN\n" +
+"38.23,2005-04-01T00:00:00Z,46013,2.3,12.9,13.9,NaN\n" +
+"37.75,2005-04-01T00:00:00Z,46026,1.96,12.12,14.0,NaN\n" +
+"35.74,2005-04-01T00:00:00Z,46028,2.57,12.9,16.3,NaN\n" +
+"36.75,2005-04-01T00:00:00Z,46042,2.21,17.39,14.5,NaN\n" +
+"37.98,2005-04-01T00:00:00Z,46059,2.51,14.29,12.9,NaN\n" +
+"36.83,2005-04-01T00:00:00Z,46091,NaN,NaN,NaN,NaN\n" +
+"36.75,2005-04-01T00:00:00Z,46092,NaN,NaN,NaN,NaN\n" +
+"36.69,2005-04-01T00:00:00Z,46093,NaN,NaN,14.3,NaN\n" +
+"37.57,2005-04-01T00:00:00Z,46214,2.5,9.0,12.8,NaN\n" +
+"35.21,2005-04-01T00:00:00Z,46215,1.4,10.0,11.4,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //test that constraint vars are sent to low level data request
@@ -1522,23 +1452,23 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"latitude, station, wvht, dpd, wtmp, dewp\n" +
-"degrees_north, , m, s, degree_C, degree_C\n" +
-"35.01, 41025, 1.34, 10.0, 9.1, 14.9\n" +
-"38.47, 44004, 2.04, 11.43, 9.8, 4.9\n" +
-"38.46, 44009, 1.3, 10.0, 5.0, 5.7\n" +
-"36.61, 44014, 1.67, 11.11, 6.5, 8.6\n" +
-"37.36, 46012, 2.55, 12.5, 13.7, NaN\n" +
-"38.23, 46013, 2.3, 12.9, 13.9, NaN\n" +
-"37.75, 46026, 1.96, 12.12, 14.0, NaN\n" +
-"35.74, 46028, 2.57, 12.9, 16.3, NaN\n" +
-"36.75, 46042, 2.21, 17.39, 14.5, NaN\n" +
-"37.98, 46059, 2.51, 14.29, 12.9, NaN\n" +
-"36.83, 46091, NaN, NaN, NaN, NaN\n" +
-"36.75, 46092, NaN, NaN, NaN, NaN\n" +
-"36.69, 46093, NaN, NaN, 14.3, NaN\n" +
-"37.57, 46214, 2.5, 9.0, 12.8, NaN\n" +
-"35.21, 46215, 1.4, 10.0, 11.4, NaN\n";
+"latitude,station,wvht,dpd,wtmp,dewp\n" +
+"degrees_north,,m,s,degree_C,degree_C\n" +
+"35.01,41025,1.34,10.0,9.1,14.9\n" +
+"38.47,44004,2.04,11.43,9.8,4.9\n" +
+"38.46,44009,1.3,10.0,5.0,5.7\n" +
+"36.61,44014,1.67,11.11,6.5,8.6\n" +
+"37.36,46012,2.55,12.5,13.7,NaN\n" +
+"38.23,46013,2.3,12.9,13.9,NaN\n" +
+"37.75,46026,1.96,12.12,14.0,NaN\n" +
+"35.74,46028,2.57,12.9,16.3,NaN\n" +
+"36.75,46042,2.21,17.39,14.5,NaN\n" +
+"37.98,46059,2.51,14.29,12.9,NaN\n" +
+"36.83,46091,NaN,NaN,NaN,NaN\n" +
+"36.75,46092,NaN,NaN,NaN,NaN\n" +
+"36.69,46093,NaN,NaN,14.3,NaN\n" +
+"37.57,46214,2.5,9.0,12.8,NaN\n" +
+"35.21,46215,1.4,10.0,11.4,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -1551,27 +1481,27 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"latitude, wtmp\n" +
-"degrees_north, degree_C\n" +
-"32.31, 23.5\n" +
-"28.5, 21.3\n" +
-"28.95, 23.7\n" +
-"30.0, 20.1\n" +
-"14.53, 25.3\n" +
-"20.99, 25.7\n" +
-"27.47, 23.8\n" +
-"31.9784, 22.0\n" +
-"28.4, 21.0\n" +
-"27.55, 21.8\n" +
-"25.9, 24.1\n" +
-"25.17, 23.9\n" +
-"26.07, 26.1\n" +
-"22.01, 24.4\n" +
-"19.87, 26.8\n" +
-"15.01, 26.4\n" +
-"27.3403, 20.2\n" +
-"29.06, 21.8\n" +
-"38.47, 20.4\n";
+"latitude,wtmp\n" +
+"degrees_north,degree_C\n" +
+"32.31,23.5\n" +
+"28.5,21.3\n" +
+"28.95,23.7\n" +
+"30.0,20.1\n" +
+"14.53,25.3\n" +
+"20.99,25.7\n" +
+"27.47,23.8\n" +
+"31.9784,22.0\n" +
+"28.4,21.0\n" +
+"27.55,21.8\n" +
+"25.9,24.1\n" +
+"25.17,23.9\n" +
+"26.07,26.1\n" +
+"22.01,24.4\n" +
+"19.87,26.8\n" +
+"15.01,26.4\n" +
+"27.3403,20.2\n" +
+"29.06,21.8\n" +
+"38.47,20.4\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
     }
 
@@ -1590,9 +1520,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         String id = "testNc3D";
         
         if (deleteCachedDatasetInfo) {
-            File2.delete(datasetInfoDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + BADFILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
         }
 
         //touch a good and a bad file, so they are checked again
@@ -1699,9 +1629,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude, latitude, time, station, wvht, dpd, wtmp, dewp\n" +
-"degrees_east, degrees_north, UTC, , m, s, degree_C, degree_C\n" +
-"-48.13, -27.7, 2005-04-19T00:00:00Z, 31201, 1.4, 9.0, 24.4, NaN\n";
+"longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n" +
+"degrees_east,degrees_north,UTC,,m,s,degree_C,degree_C\n" +
+"-48.13,-27.7,2005-04-19T00:00:00Z,31201,1.4,9.0,24.4,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //YYYY MM DD hh mm  WD WSPD  GST  WVHT   DPD   APD MWD  BARO   ATMP  WTMP  DEWP  VIS  TIDE
@@ -1712,13 +1642,13 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             eddTable.className() + "_Data2", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
-        expected = "longitude, latitude, time, station, wvht, dpd, wtmp, dewp\n";
+        expected = "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n";
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
-        expected = "degrees_east, degrees_north, UTC, , m, s, degree_C, degree_C\n";
+        expected = "degrees_east,degrees_north,UTC,,m,s,degree_C,degree_C\n";
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
-        expected = "-48.13, -27.7, 2005-04-19T00:00:00Z, 31201, 1.4, 9.0, 24.4, NaN\n"; //time above
+        expected = "-48.13,-27.7,2005-04-19T00:00:00Z,31201,1.4,9.0,24.4,NaN\n"; //time above
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
-        expected = "-48.13, -27.7, 2005-04-25T18:00:00Z, 31201, 3.9, 8.0, 23.9, NaN\n"; //this time
+        expected = "-48.13,-27.7,2005-04-25T18:00:00Z,31201,3.9,8.0,23.9,NaN\n"; //this time
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
 
         //test requesting a lat lon area
@@ -1731,17 +1661,17 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude, latitude, time, station, wvht, dpd, wtmp, dewp\n" +
-"degrees_east, degrees_north, UTC, , m, s, degree_C, degree_C\n" +
-"-122.88, 37.36, 2005-04-01T00:00:00Z, 46012, 2.55, 12.5, 13.7, NaN\n" +
-"-123.32, 38.23, 2005-04-01T00:00:00Z, 46013, 2.3, 12.9, 13.9, NaN\n" +
-"-122.82, 37.75, 2005-04-01T00:00:00Z, 46026, 1.96, 12.12, 14.0, NaN\n" +
-"-121.89, 35.74, 2005-04-01T00:00:00Z, 46028, 2.57, 12.9, 16.3, NaN\n" +
-"-122.42, 36.75, 2005-04-01T00:00:00Z, 46042, 2.21, 17.39, 14.5, NaN\n" +
-"-121.9, 36.83, 2005-04-01T00:00:00Z, 46091, NaN, NaN, NaN, NaN\n" +
-"-122.02, 36.75, 2005-04-01T00:00:00Z, 46092, NaN, NaN, NaN, NaN\n" +
-"-122.41, 36.69, 2005-04-01T00:00:00Z, 46093, NaN, NaN, 14.3, NaN\n" +
-"-123.28, 37.57, 2005-04-01T00:00:00Z, 46214, 2.5, 9.0, 12.8, NaN\n";
+"longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n" +
+"degrees_east,degrees_north,UTC,,m,s,degree_C,degree_C\n" +
+"-122.88,37.36,2005-04-01T00:00:00Z,46012,2.55,12.5,13.7,NaN\n" +
+"-123.32,38.23,2005-04-01T00:00:00Z,46013,2.3,12.9,13.9,NaN\n" +
+"-122.82,37.75,2005-04-01T00:00:00Z,46026,1.96,12.12,14.0,NaN\n" +
+"-121.89,35.74,2005-04-01T00:00:00Z,46028,2.57,12.9,16.3,NaN\n" +
+"-122.42,36.75,2005-04-01T00:00:00Z,46042,2.21,17.39,14.5,NaN\n" +
+"-121.9,36.83,2005-04-01T00:00:00Z,46091,NaN,NaN,NaN,NaN\n" +
+"-122.02,36.75,2005-04-01T00:00:00Z,46092,NaN,NaN,NaN,NaN\n" +
+"-122.41,36.69,2005-04-01T00:00:00Z,46093,NaN,NaN,14.3,NaN\n" +
+"-123.28,37.57,2005-04-01T00:00:00Z,46214,2.5,9.0,12.8,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //test that constraint vars are sent to low level data request
@@ -1753,17 +1683,17 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude, latitude, station, wvht, dpd, wtmp, dewp\n" +
-"degrees_east, degrees_north, , m, s, degree_C, degree_C\n" +
-"-122.88, 37.36, 46012, 2.55, 12.5, 13.7, NaN\n" +
-"-123.32, 38.23, 46013, 2.3, 12.9, 13.9, NaN\n" +
-"-122.82, 37.75, 46026, 1.96, 12.12, 14.0, NaN\n" +
-"-121.89, 35.74, 46028, 2.57, 12.9, 16.3, NaN\n" +
-"-122.42, 36.75, 46042, 2.21, 17.39, 14.5, NaN\n" +
-"-121.9, 36.83, 46091, NaN, NaN, NaN, NaN\n" +
-"-122.02, 36.75, 46092, NaN, NaN, NaN, NaN\n" +
-"-122.41, 36.69, 46093, NaN, NaN, 14.3, NaN\n" +
-"-123.28, 37.57, 46214, 2.5, 9.0, 12.8, NaN\n";
+"longitude,latitude,station,wvht,dpd,wtmp,dewp\n" +
+"degrees_east,degrees_north,,m,s,degree_C,degree_C\n" +
+"-122.88,37.36,46012,2.55,12.5,13.7,NaN\n" +
+"-123.32,38.23,46013,2.3,12.9,13.9,NaN\n" +
+"-122.82,37.75,46026,1.96,12.12,14.0,NaN\n" +
+"-121.89,35.74,46028,2.57,12.9,16.3,NaN\n" +
+"-122.42,36.75,46042,2.21,17.39,14.5,NaN\n" +
+"-121.9,36.83,46091,NaN,NaN,NaN,NaN\n" +
+"-122.02,36.75,46092,NaN,NaN,NaN,NaN\n" +
+"-122.41,36.69,46093,NaN,NaN,14.3,NaN\n" +
+"-123.28,37.57,46214,2.5,9.0,12.8,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -1776,27 +1706,27 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude, latitude, wtmp\n" +
-"degrees_east, degrees_north, degree_C\n" +
-"-75.35, 32.31, 23.5\n" +
-"-80.17, 28.5, 21.3\n" +
-"-78.47, 28.95, 23.7\n" +
-"-80.6, 30.0, 20.1\n" +
-"-46.0, 14.53, 25.3\n" +
-"-65.01, 20.99, 25.7\n" +
-"-71.49, 27.47, 23.8\n" +
-"-69.649, 31.9784, 22.0\n" +
-"-80.53, 28.4, 21.0\n" +
-"-80.22, 27.55, 21.8\n" +
-"-89.67, 25.9, 24.1\n" +
-"-94.42, 25.17, 23.9\n" +
-"-85.94, 26.07, 26.1\n" +
-"-94.05, 22.01, 24.4\n" +
-"-85.06, 19.87, 26.8\n" +
-"-67.5, 15.01, 26.4\n" +
-"-84.245, 27.3403, 20.2\n" +
-"-88.09, 29.06, 21.8\n" +
-"-70.56, 38.47, 20.4\n";
+"longitude,latitude,wtmp\n" +
+"degrees_east,degrees_north,degree_C\n" +
+"-75.35,32.31,23.5\n" +
+"-80.17,28.5,21.3\n" +
+"-78.47,28.95,23.7\n" +
+"-80.6,30.0,20.1\n" +
+"-46.0,14.53,25.3\n" +
+"-65.01,20.99,25.7\n" +
+"-71.49,27.47,23.8\n" +
+"-69.649,31.9784,22.0\n" +
+"-80.53,28.4,21.0\n" +
+"-80.22,27.55,21.8\n" +
+"-89.67,25.9,24.1\n" +
+"-94.42,25.17,23.9\n" +
+"-85.94,26.07,26.1\n" +
+"-94.05,22.01,24.4\n" +
+"-85.06,19.87,26.8\n" +
+"-67.5,15.01,26.4\n" +
+"-84.245,27.3403,20.2\n" +
+"-88.09,29.06,21.8\n" +
+"-70.56,38.47,20.4\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
     }
 
@@ -1943,9 +1873,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 
         String id = "cwwcNDBCMet";
         if (deleteCachedDatasetInfo) {
-            File2.delete(datasetInfoDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + BADFILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
         }
         //touch a good and a bad file, so they are checked again
         File2.touch("c:/u00/data/points/ndbcMet/NDBC_32012_met.nc");
@@ -1984,7 +1914,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    String ioos_category \"Surface Waves\";\n" +
 "    String long_name \"Wave Height\";\n" +
 "    Float32 missing_value -9999999.0;\n" +
-"    String standard_name \"sea_surface_swell_wave_significant_height\";\n" +
+"    String standard_name \"sea_surface_wave_significant_height\";\n" +
 "    String units \"m\";\n" +
 "  }\n";
         po = results.indexOf(expected.substring(0,10));
@@ -2066,9 +1996,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude, latitude, time, station, wvht, dpd, wtmp, dewp\n" +
-"degrees_east, degrees_north, UTC, , m, s, degree_C, degree_C\n" +
-"-48.134, -27.705, 2005-04-19T00:00:00Z, 31201, 1.4, 9.0, 24.4, NaN\n";
+"longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n" +
+"degrees_east,degrees_north,UTC,,m,s,degree_C,degree_C\n" +
+"-48.134,-27.705,2005-04-19T00:00:00Z,31201,1.4,9.0,24.4,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //YYYY MM DD hh mm  WD WSPD  GST  WVHT   DPD   APD MWD  BARO   ATMP  WTMP  DEWP  VIS  TIDE
@@ -2079,13 +2009,13 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             eddTable.className() + "_Data2", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
-        expected = "longitude, latitude, time, station, wvht, dpd, wtmp, dewp\n";
+        expected = "longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n";
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
-        expected = "degrees_east, degrees_north, UTC, , m, s, degree_C, degree_C\n";
+        expected = "degrees_east,degrees_north,UTC,,m,s,degree_C,degree_C\n";
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
-        expected = "-48.134, -27.705, 2005-04-19T00:00:00Z, 31201, 1.4, 9.0, 24.4, NaN\n"; //time above
+        expected = "-48.134,-27.705,2005-04-19T00:00:00Z,31201,1.4,9.0,24.4,NaN\n"; //time above
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
-        expected = "-48.134, -27.705, 2005-04-25T18:00:00Z, 31201, 3.9, 8.0, 23.9, NaN\n"; //this time
+        expected = "-48.134,-27.705,2005-04-25T18:00:00Z,31201,3.9,8.0,23.9,NaN\n"; //this time
         Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
 
         //test requesting a lat lon area
@@ -2099,25 +2029,25 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //String2.log(results);
         expected = //changed 2011-04-12 after reprocessing everything: 
                    //more precise lat lon: from mostly 2 decimal digits to mostly 3.
-"longitude, latitude, time, station, wvht, dpd, wtmp, dewp\n" +
-"degrees_east, degrees_north, UTC, , m, s, degree_C, degree_C\n" +
-"-122.881, 37.363, 2005-04-01T00:00:00Z, 46012, 2.55, 12.5, 13.7, NaN\n" +
-"-123.301, 38.242, 2005-04-01T00:00:00Z, 46013, 2.3, 12.9, 13.9, NaN\n" +
-"-122.833, 37.759, 2005-04-01T00:00:00Z, 46026, 1.96, 12.12, 14.0, NaN\n" +
-"-121.884, 35.741, 2005-04-01T00:00:00Z, 46028, 2.57, 12.9, 16.3, NaN\n" +
-"-122.404, 36.789, 2005-04-01T00:00:00Z, 46042, 2.21, 17.39, 14.5, NaN\n" +
-"-121.899, 36.835, 2005-04-01T00:00:00Z, 46091, NaN, NaN, NaN, NaN\n" +
-"-122.02, 36.75, 2005-04-01T00:00:00Z, 46092, NaN, NaN, NaN, NaN\n" +
-"-122.41, 36.69, 2005-04-01T00:00:00Z, 46093, NaN, NaN, 14.3, NaN\n" +
-"-123.47, 37.945, 2005-04-01T00:00:00Z, 46214, 2.5, 9.0, 12.8, NaN\n" +
-"-122.298, 37.772, 2005-04-01T00:00:00Z, AAMC1, NaN, NaN, 15.5, NaN\n" +
-"-123.708, 38.913, 2005-04-01T00:00:00Z, ANVC1, NaN, NaN, NaN, NaN\n" +
-"-122.465, 37.807, 2005-04-01T00:00:00Z, FTPC1, NaN, NaN, NaN, NaN\n" +
-"-121.888, 36.605, 2005-04-01T00:00:00Z, MTYC1, NaN, NaN, 15.1, NaN\n" +
-"-122.038, 38.057, 2005-04-01T00:00:00Z, PCOC1, NaN, NaN, 14.9, NaN\n" +
-"-123.74, 38.955, 2005-04-01T00:00:00Z, PTAC1, NaN, NaN, NaN, NaN\n" +
-"-122.4, 37.928, 2005-04-01T00:00:00Z, RCMC1, NaN, NaN, 14.0, NaN\n" +
-"-122.21, 37.507, 2005-04-01T00:00:00Z, RTYC1, NaN, NaN, 14.2, NaN\n";
+"longitude,latitude,time,station,wvht,dpd,wtmp,dewp\n" +
+"degrees_east,degrees_north,UTC,,m,s,degree_C,degree_C\n" +
+"-122.881,37.363,2005-04-01T00:00:00Z,46012,2.55,12.5,13.7,NaN\n" +
+"-123.301,38.242,2005-04-01T00:00:00Z,46013,2.3,12.9,13.9,NaN\n" +
+"-122.833,37.759,2005-04-01T00:00:00Z,46026,1.96,12.12,14.0,NaN\n" +
+"-121.884,35.741,2005-04-01T00:00:00Z,46028,2.57,12.9,16.3,NaN\n" +
+"-122.404,36.789,2005-04-01T00:00:00Z,46042,2.21,17.39,14.5,NaN\n" +
+"-121.899,36.835,2005-04-01T00:00:00Z,46091,NaN,NaN,NaN,NaN\n" +
+"-122.02,36.75,2005-04-01T00:00:00Z,46092,NaN,NaN,NaN,NaN\n" +
+"-122.41,36.69,2005-04-01T00:00:00Z,46093,NaN,NaN,14.3,NaN\n" +
+"-123.47,37.945,2005-04-01T00:00:00Z,46214,2.5,9.0,12.8,NaN\n" +
+"-122.298,37.772,2005-04-01T00:00:00Z,AAMC1,NaN,NaN,15.5,NaN\n" +
+"-123.708,38.913,2005-04-01T00:00:00Z,ANVC1,NaN,NaN,NaN,NaN\n" +
+"-122.465,37.807,2005-04-01T00:00:00Z,FTPC1,NaN,NaN,NaN,NaN\n" +
+"-121.888,36.605,2005-04-01T00:00:00Z,MTYC1,NaN,NaN,15.1,NaN\n" +
+"-122.038,38.057,2005-04-01T00:00:00Z,PCOC1,NaN,NaN,14.9,NaN\n" +
+"-123.74,38.955,2005-04-01T00:00:00Z,PTAC1,NaN,NaN,NaN,NaN\n" +
+"-122.4,37.928,2005-04-01T00:00:00Z,RCMC1,NaN,NaN,14.0,NaN\n" +
+"-122.21,37.507,2005-04-01T00:00:00Z,RTYC1,NaN,NaN,14.2,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //test that constraint vars are sent to low level data request
@@ -2130,25 +2060,25 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //String2.log(results);
         expected = //changed 2011-04-12 after reprocessing everything: 
                    //more precise lat lon: from mostly 2 decimal digits to mostly 3.
-"longitude, latitude, station, wvht, dpd, wtmp, dewp\n" +
-"degrees_east, degrees_north, , m, s, degree_C, degree_C\n" +
-"-122.881, 37.363, 46012, 2.55, 12.5, 13.7, NaN\n" +
-"-123.301, 38.242, 46013, 2.3, 12.9, 13.9, NaN\n" +
-"-122.833, 37.759, 46026, 1.96, 12.12, 14.0, NaN\n" +
-"-121.884, 35.741, 46028, 2.57, 12.9, 16.3, NaN\n" +
-"-122.404, 36.789, 46042, 2.21, 17.39, 14.5, NaN\n" +
-"-121.899, 36.835, 46091, NaN, NaN, NaN, NaN\n" +
-"-122.02, 36.75, 46092, NaN, NaN, NaN, NaN\n" +
-"-122.41, 36.69, 46093, NaN, NaN, 14.3, NaN\n" +
-"-123.47, 37.945, 46214, 2.5, 9.0, 12.8, NaN\n" +
-"-122.298, 37.772, AAMC1, NaN, NaN, 15.5, NaN\n" +
-"-123.708, 38.913, ANVC1, NaN, NaN, NaN, NaN\n" +
-"-122.465, 37.807, FTPC1, NaN, NaN, NaN, NaN\n" +
-"-121.888, 36.605, MTYC1, NaN, NaN, 15.1, NaN\n" +
-"-122.038, 38.057, PCOC1, NaN, NaN, 14.9, NaN\n" +
-"-123.74, 38.955, PTAC1, NaN, NaN, NaN, NaN\n" +
-"-122.4, 37.928, RCMC1, NaN, NaN, 14.0, NaN\n" +
-"-122.21, 37.507, RTYC1, NaN, NaN, 14.2, NaN\n";
+"longitude,latitude,station,wvht,dpd,wtmp,dewp\n" +
+"degrees_east,degrees_north,,m,s,degree_C,degree_C\n" +
+"-122.881,37.363,46012,2.55,12.5,13.7,NaN\n" +
+"-123.301,38.242,46013,2.3,12.9,13.9,NaN\n" +
+"-122.833,37.759,46026,1.96,12.12,14.0,NaN\n" +
+"-121.884,35.741,46028,2.57,12.9,16.3,NaN\n" +
+"-122.404,36.789,46042,2.21,17.39,14.5,NaN\n" +
+"-121.899,36.835,46091,NaN,NaN,NaN,NaN\n" +
+"-122.02,36.75,46092,NaN,NaN,NaN,NaN\n" +
+"-122.41,36.69,46093,NaN,NaN,14.3,NaN\n" +
+"-123.47,37.945,46214,2.5,9.0,12.8,NaN\n" +
+"-122.298,37.772,AAMC1,NaN,NaN,15.5,NaN\n" +
+"-123.708,38.913,ANVC1,NaN,NaN,NaN,NaN\n" +
+"-122.465,37.807,FTPC1,NaN,NaN,NaN,NaN\n" +
+"-121.888,36.605,MTYC1,NaN,NaN,15.1,NaN\n" +
+"-122.038,38.057,PCOC1,NaN,NaN,14.9,NaN\n" +
+"-123.74,38.955,PTAC1,NaN,NaN,NaN,NaN\n" +
+"-122.4,37.928,RCMC1,NaN,NaN,14.0,NaN\n" +
+"-122.21,37.507,RTYC1,NaN,NaN,14.2,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -2162,54 +2092,54 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //String2.log(results);
         expected = //changed 2011-04-12 after reprocessing everything: 
                    //more precise lat lon: from mostly 2 decimal digits to mostly 3.
-"longitude, latitude, wtmp\n" +
-"degrees_east, degrees_north, degree_C\n" +
-"-80.166, 28.519, 21.2\n" +
-"-78.471, 28.906, 23.7\n" +
-"-80.533, 30.041, 20.1\n" +
-"-46.008, 14.357, 25.3\n" +
-"-64.966, 21.061, 25.7\n" +
-"-71.491, 27.469, 23.8\n" +
-"-69.649, 31.978, 22.0\n" +
-"-80.53, 28.4, 21.6\n" +
-"-80.225, 27.551, 21.7\n" +
-"-89.658, 25.888, 24.1\n" +
-"-93.666, 25.79, 23.9\n" +
-"-85.612, 26.044, 26.1\n" +
-"-94.046, 22.017, 24.4\n" +
-"-85.059, 19.874, 26.8\n" +
-"-67.472, 15.054, 26.4\n" +
-"-84.245, 27.34, 20.2\n" +
-"-88.09, 29.06, 21.7\n" +
-"-157.808, 17.094, 24.3\n" +
-"-160.66, 19.087, 24.7\n" +
-"-152.382, 17.525, 24.0\n" +
-"-153.913, 0.0, 25.0\n" +
-"-158.116, 21.673, 24.3\n" +
-"-157.668, 21.417, 24.2\n" +
-"144.789, 13.354, 28.1\n" +
-"-90.42, 29.789, 20.4\n" +
-"-64.92, 18.335, 27.7\n" +
-"-81.872, 26.647, 22.2\n" +
-"-80.097, 25.59, 23.5\n" +
-"-156.472, 20.898, 25.0\n" +
-"167.737, 8.737, 27.6\n" +
-"-81.808, 24.553, 23.9\n" +
-"-80.862, 24.843, 23.8\n" +
-"-64.753, 17.697, 26.0\n" +
-"-67.047, 17.972, 27.1\n" +
-"-80.38, 25.01, 24.2\n" +
-"-81.807, 26.13, 23.7\n" +
-"-170.688, -14.28, 29.6\n" +
-"-157.867, 21.307, 25.5\n" +
-"-96.388, 28.452, 20.1\n" +
-"-82.773, 24.693, 22.8\n" +
-"-97.215, 26.06, 20.1\n" +
-"-82.627, 27.76, 21.7\n" +
-"-66.117, 18.462, 28.3\n" +
-"-177.36, 28.212, 21.8\n" +
-"-80.593, 28.415, 22.7\n" +
-"166.618, 19.29, 27.9\n";
+"longitude,latitude,wtmp\n" +
+"degrees_east,degrees_north,degree_C\n" +
+"-80.166,28.519,21.2\n" +
+"-78.471,28.906,23.7\n" +
+"-80.533,30.041,20.1\n" +
+"-46.008,14.357,25.3\n" +
+"-64.966,21.061,25.7\n" +
+"-71.491,27.469,23.8\n" +
+"-69.649,31.978,22.0\n" +
+"-80.53,28.4,21.6\n" +
+"-80.225,27.551,21.7\n" +
+"-89.658,25.888,24.1\n" +
+"-93.666,25.79,23.9\n" +
+"-85.612,26.044,26.1\n" +
+"-94.046,22.017,24.4\n" +
+"-85.059,19.874,26.8\n" +
+"-67.472,15.054,26.4\n" +
+"-84.245,27.34,20.2\n" +
+"-88.09,29.06,21.7\n" +
+"-157.808,17.094,24.3\n" +
+"-160.66,19.087,24.7\n" +
+"-152.382,17.525,24.0\n" +
+"-153.913,0.0,25.0\n" +
+"-158.116,21.673,24.3\n" +
+"-157.668,21.417,24.2\n" +
+"144.789,13.354,28.1\n" +
+"-90.42,29.789,20.4\n" +
+"-64.92,18.335,27.7\n" +
+"-81.872,26.647,22.2\n" +
+"-80.097,25.59,23.5\n" +
+"-156.472,20.898,25.0\n" +
+"167.737,8.737,27.6\n" +
+"-81.808,24.553,23.9\n" +
+"-80.862,24.843,23.8\n" +
+"-64.753,17.697,26.0\n" +
+"-67.047,17.972,27.1\n" +
+"-80.38,25.01,24.2\n" +
+"-81.807,26.13,23.7\n" +
+"-170.688,-14.28,29.6\n" +
+"-157.867,21.307,25.5\n" +
+"-96.388,28.452,20.1\n" +
+"-82.773,24.693,22.8\n" +
+"-97.215,26.06,20.1\n" +
+"-82.627,27.76,21.7\n" +
+"-66.117,18.462,28.3\n" +
+"-177.36,28.212,21.8\n" +
+"-80.593,28.415,22.7\n" +
+"166.618,19.29,27.9\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     }
@@ -2264,18 +2194,18 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = //2011-04-12 changed with reprocessing. Mostly 2 to mostly 3 decimal digits
-"longitude, latitude, station\n" +
-"degrees_east, degrees_north, \n" +
-"-162.279, 23.445, 51001\n" +
-"-162.058, 24.321, 51101\n" +
-"-160.66, 19.087, 51003\n" +
-"-158.116, 21.673, 51201\n" +
-"-157.808, 17.094, 51002\n" +
-"-157.668, 21.417, 51202\n" +
-"-157.01, 20.788, 51203\n" +
-"-153.913, 0.0, 51028\n" +
-"-152.382, 17.525, 51004\n" +
-"144.789, 13.354, 52200\n";
+"longitude,latitude,station\n" +
+"degrees_east,degrees_north,\n" +
+"-162.279,23.445,51001\n" +
+"-162.058,24.321,51101\n" +
+"-160.66,19.087,51003\n" +
+"-158.116,21.673,51201\n" +
+"-157.808,17.094,51002\n" +
+"-157.668,21.417,51202\n" +
+"-157.01,20.788,51203\n" +
+"-153.913,0.0,51028\n" +
+"-152.382,17.525,51004\n" +
+"144.789,13.354,52200\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //if no time constraint, erddap can use SUBSET_FILENAME
@@ -2289,10 +2219,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
            //2011-04-12 lots of small changes due to full reprocessing
 "netcdf EDDTableFromNcFiles_distincts2.nc {\n" +
 " dimensions:\n" +
-"   row = 19;\n" +
+"   row = 20;\n" +
 "   stationStringLength = 5;\n" +
 " variables:\n" +
-"   float longitude(row=19);\n" +
+"   float longitude(row=20);\n" +
 "     :_CoordinateAxisType = \"Lon\";\n" +
 "     :actual_range = -162.279f, 171.395f; // float\n" +
 "     :axis = \"X\";\n" +
@@ -2301,7 +2231,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "     :long_name = \"Longitude\";\n" +
 "     :standard_name = \"longitude\";\n" +
 "     :units = \"degrees_east\";\n" +
-"   float latitude(row=19);\n" +
+"   float latitude(row=20);\n" +
 "     :_CoordinateAxisType = \"Lat\";\n" +
 "     :actual_range = 0.0f, 24.321f; // float\n" +
 "     :axis = \"Y\";\n" +
@@ -2310,7 +2240,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "     :long_name = \"Latitude\";\n" +
 "     :standard_name = \"latitude\";\n" +
 "     :units = \"degrees_north\";\n" +
-"   char station(row=19, stationStringLength=5);\n" +
+"   char station(row=20, stationStringLength=5);\n" +
 "     :cf_role = \"timeseries_id\";\n" +
 "     :ioos_category = \"Identifier\";\n" +
 "     :long_name = \"Station Name\";\n" +
@@ -2320,11 +2250,12 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 " :cdm_timeseries_variables = \"station, longitude, latitude\";\n" +
 " :contributor_name = \"NOAA NDBC and NOAA CoastWatch (West Coast Node)\";\n" +
 " :contributor_role = \"Source of data.\";\n" +
-" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfeg.noaa.gov\";\n" +
 " :Easternmost_Easting = 171.395f; // float\n" +
+" :featureType = \"TimeSeries\";\n" +
 " :geospatial_lat_max = 24.321f; // float\n" +
 " :geospatial_lat_min = 0.0f; // float\n" +
 " :geospatial_lat_units = \"degrees_north\";\n" +
@@ -2339,7 +2270,22 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 " :id = \"subset\";\n" +
 " :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
 " :institution = \"NOAA NDBC, CoastWatch WCN\";\n" +
-" :keywords = \"EARTH SCIENCE > Oceans\";\n" +
+" :keywords = \"Atmosphere > Air Quality > Visibility,\n" +
+"Atmosphere > Altitude > Planetary Boundary Layer Height,\n" +
+"Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements,\n" +
+"Atmosphere > Atmospheric Pressure > Pressure Tendency,\n" +
+"Atmosphere > Atmospheric Pressure > Sea Level Pressure,\n" +
+"Atmosphere > Atmospheric Pressure > Static Pressure,\n" +
+"Atmosphere > Atmospheric Temperature > Air Temperature,\n" +
+"Atmosphere > Atmospheric Temperature > Dew Point Temperature,\n" +
+"Atmosphere > Atmospheric Water Vapor > Dew Point Temperature,\n" +
+"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
+"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
+"Oceans > Ocean Waves > Significant Wave Height,\n" +
+"Oceans > Ocean Waves > Swells,\n" +
+"Oceans > Ocean Waves > Wave Period,\n" +
+"air, air_pressure_at_sea_level, air_temperature, altitude, atmosphere, atmospheric, average, boundary, buoy, coastwatch, data, dew point, dew_point_temperature, direction, dominant, eastward, eastward_wind, from, gust, height, identifier, layer, level, measurements, meridional, meteorological, meteorology, name, ndbc, noaa, northward, northward_wind, ocean, oceans, period, planetary, pressure, quality, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, surface, surface waves, surface_altitude, swell, swells, temperature, tendency, tendency_of_air_pressure, time, vapor, visibility, visibility_in_air, water, wave, waves, wcn, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, zonal\";\n" +
+" :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 " :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -2347,7 +2293,7 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 " :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";\n" +
 " :Northernmost_Northing = 24.321f; // float\n" +
@@ -2374,17 +2320,17 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "given hour. The time values in the dataset are rounded to the nearest hour.\n" +
 "\n" +
 "This dataset has both historical data (quality controlled, before\n" +
-"2011-07-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
-"2011-07-01T00:00:00Z on).\";\n" +                                                 //changes  
+"2012-03-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
+"2012-03-01T00:00:00Z on).\";\n" +                                                 //changes  
 " :time_coverage_resolution = \"P1H\";\n" +
 " :title = \"NDBC Standard Meteorological Buoy Data\";\n" +
 " :Westernmost_Easting = -162.279f; // float\n" +
 " data:\n" +
 "longitude =\n" +
-"  {-162.279, -162.058, -160.66, -158.303, -158.124, -158.116, -157.808, -157.668, -157.1, -157.01, -156.93, -156.1, -154.056, -153.913, -153.9, -152.382, -144.668, 144.789, 171.395}\n" +
+"  {-162.279, -162.058, -160.66, -158.303, -158.124, -158.116, -157.808, -157.668, -157.1, -157.01, -156.93, -156.427, -156.1, -154.056, -153.913, -153.9, -152.382, -144.668, 144.789, 171.395}\n" +
 "latitude =\n" +
-"  {23.445, 24.321, 19.087, 21.096, 21.281, 21.673, 17.094, 21.417, 20.4, 20.788, 21.35, 20.4, 23.546, 0.0, 23.558, 17.525, 13.729, 13.354, 7.092}\n" +
-"station =\"51001\", \"51101\", \"51003\", \"51200\", \"51204\", \"51201\", \"51002\", \"51202\", \"51027\", \"51203\", \"51026\", \"51005\", \"51000\", \"51028\", \"51100\", \"51004\", \"52009\", \"52200\", \"52201\"\n" +
+"  {23.445, 24.321, 19.087, 21.096, 21.281, 21.673, 17.094, 21.417, 20.4, 20.788, 21.35, 21.019, 20.4, 23.546, 0.0, 23.558, 17.525, 13.729, 13.354, 7.092}\n" +
+"station =\"51001\", \"51101\", \"51003\", \"51200\", \"51204\", \"51201\", \"51002\", \"51202\", \"51027\", \"51203\", \"51026\", \"51205\", \"51005\", \"51000\", \"51028\", \"51100\", \"51004\", \"52009\", \"52200\", \"52201\"\n" +
 "}\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
@@ -2415,11 +2361,12 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 " :cdm_timeseries_variables = \"station, longitude, latitude\";\n" +
 " :contributor_name = \"NOAA NDBC and NOAA CoastWatch (West Coast Node)\";\n" +
 " :contributor_role = \"Source of data.\";\n" +
-" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfeg.noaa.gov\";\n" +
 " :Easternmost_Easting = -153.348f; // float\n" +
+" :featureType = \"TimeSeries\";\n" +
 " :geospatial_lat_units = \"degrees_north\";\n" +
 " :geospatial_lon_max = -153.348f; // float\n" +
 " :geospatial_lon_min = -153.913f; // float\n" +
@@ -2430,7 +2377,22 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 " :id = \"EDDTableFromNcFiles_distincts3\";\n" +
 " :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
 " :institution = \"NOAA NDBC, CoastWatch WCN\";\n" +
-" :keywords = \"EARTH SCIENCE > Oceans\";\n" +
+" :keywords = \"Atmosphere > Air Quality > Visibility,\n" +
+"Atmosphere > Altitude > Planetary Boundary Layer Height,\n" +
+"Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements,\n" +
+"Atmosphere > Atmospheric Pressure > Pressure Tendency,\n" +
+"Atmosphere > Atmospheric Pressure > Sea Level Pressure,\n" +
+"Atmosphere > Atmospheric Pressure > Static Pressure,\n" +
+"Atmosphere > Atmospheric Temperature > Air Temperature,\n" +
+"Atmosphere > Atmospheric Temperature > Dew Point Temperature,\n" +
+"Atmosphere > Atmospheric Water Vapor > Dew Point Temperature,\n" +
+"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
+"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
+"Oceans > Ocean Waves > Significant Wave Height,\n" +
+"Oceans > Ocean Waves > Swells,\n" +
+"Oceans > Ocean Waves > Wave Period,\n" +
+"air, air_pressure_at_sea_level, air_temperature, altitude, atmosphere, atmospheric, average, boundary, buoy, coastwatch, data, dew point, dew_point_temperature, direction, dominant, eastward, eastward_wind, from, gust, height, identifier, layer, level, measurements, meridional, meteorological, meteorology, name, ndbc, noaa, northward, northward_wind, ocean, oceans, period, planetary, pressure, quality, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, surface, surface waves, surface_altitude, swell, swells, temperature, tendency, tendency_of_air_pressure, time, vapor, visibility, visibility_in_air, water, wave, waves, wcn, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, zonal\";\n" +
+" :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 " :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -2438,7 +2400,7 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 " :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";\n" +
 " :observationDimension = \"row\";\n" +
@@ -2463,8 +2425,8 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "given hour. The time values in the dataset are rounded to the nearest hour.\n" +
 "\n" +
 "This dataset has both historical data (quality controlled, before\n" +
-"2011-07-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
-"2011-07-01T00:00:00Z on).\";\n" +                                                 //changes
+"2012-03-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
+"2012-03-01T00:00:00Z on).\";\n" +                                                 //changes
 " :time_coverage_resolution = \"P1H\";\n" +
 " :title = \"NDBC Standard Meteorological Buoy Data\";\n" +
 " :Westernmost_Easting = -153.913f; // float\n" +
@@ -2511,6 +2473,7 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "51202\n" +
 "51203\n" +
 "51204\n" +
+"51205\n" + //added 2012-03-25
 "52009\n" +
 "52200\n" +
 "52201\n";
@@ -2540,32 +2503,32 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
             eddTable.className() + "_ob", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
-"time, station, wtmp, atmp\n" +
-"UTC, , degree_C, degree_C\n" +
-"2005-04-19T21:00:00Z, 51001, 24.1, 23.5\n" +
-"2005-04-19T22:00:00Z, 51001, 24.2, 23.6\n" +
-"2005-04-19T23:00:00Z, 51001, 24.2, 22.1\n" +
-"2005-04-19T21:00:00Z, 51002, 25.1, 25.4\n" +
-"2005-04-19T22:00:00Z, 51002, 25.2, 25.4\n" +
-"2005-04-19T23:00:00Z, 51002, 25.2, 24.8\n" +
-"2005-04-19T21:00:00Z, 51003, 25.3, 23.9\n" +
-"2005-04-19T22:00:00Z, 51003, 25.4, 24.3\n" +
-"2005-04-19T23:00:00Z, 51003, 25.4, 24.7\n" +
-"2005-04-19T21:00:00Z, 51004, 25.0, 24.0\n" +
-"2005-04-19T22:00:00Z, 51004, 25.0, 23.8\n" +
-"2005-04-19T23:00:00Z, 51004, 25.0, 24.3\n" +
-"2005-04-19T21:00:00Z, 51028, 27.7, 27.6\n" +
-"2005-04-19T22:00:00Z, 51028, 27.8, 27.1\n" +
-"2005-04-19T23:00:00Z, 51028, 27.8, 27.5\n" +
-"2005-04-19T21:00:00Z, 51201, 25.0, NaN\n" +
-"2005-04-19T22:00:00Z, 51201, 24.9, NaN\n" +
-"2005-04-19T23:00:00Z, 51201, 25.0, NaN\n" +
-"2005-04-19T21:00:00Z, 51202, 24.5, NaN\n" +
-"2005-04-19T22:00:00Z, 51202, 24.6, NaN\n" +
-"2005-04-19T23:00:00Z, 51202, 24.5, NaN\n" +
-"2005-04-19T21:00:00Z, 52200, 28.0, NaN\n" +
-"2005-04-19T22:00:00Z, 52200, 28.0, NaN\n" +
-"2005-04-19T23:00:00Z, 52200, 28.0, NaN\n";
+"time,station,wtmp,atmp\n" +
+"UTC,,degree_C,degree_C\n" +
+"2005-04-19T21:00:00Z,51001,24.1,23.5\n" +
+"2005-04-19T22:00:00Z,51001,24.2,23.6\n" +
+"2005-04-19T23:00:00Z,51001,24.2,22.1\n" +
+"2005-04-19T21:00:00Z,51002,25.1,25.4\n" +
+"2005-04-19T22:00:00Z,51002,25.2,25.4\n" +
+"2005-04-19T23:00:00Z,51002,25.2,24.8\n" +
+"2005-04-19T21:00:00Z,51003,25.3,23.9\n" +
+"2005-04-19T22:00:00Z,51003,25.4,24.3\n" +
+"2005-04-19T23:00:00Z,51003,25.4,24.7\n" +
+"2005-04-19T21:00:00Z,51004,25.0,24.0\n" +
+"2005-04-19T22:00:00Z,51004,25.0,23.8\n" +
+"2005-04-19T23:00:00Z,51004,25.0,24.3\n" +
+"2005-04-19T21:00:00Z,51028,27.7,27.6\n" +
+"2005-04-19T22:00:00Z,51028,27.8,27.1\n" +
+"2005-04-19T23:00:00Z,51028,27.8,27.5\n" +
+"2005-04-19T21:00:00Z,51201,25.0,NaN\n" +
+"2005-04-19T22:00:00Z,51201,24.9,NaN\n" +
+"2005-04-19T23:00:00Z,51201,25.0,NaN\n" +
+"2005-04-19T21:00:00Z,51202,24.5,NaN\n" +
+"2005-04-19T22:00:00Z,51202,24.6,NaN\n" +
+"2005-04-19T23:00:00Z,51202,24.5,NaN\n" +
+"2005-04-19T21:00:00Z,52200,28.0,NaN\n" +
+"2005-04-19T22:00:00Z,52200,28.0,NaN\n" +
+"2005-04-19T23:00:00Z,52200,28.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //.csv
@@ -2578,32 +2541,32 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
             eddTable.className() + "_ob2", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
-"time, station, wtmp, atmp\n" +
-"UTC, , degree_C, degree_C\n" +
-"2005-04-19T21:00:00Z, 51001, 24.1, 23.5\n" +
-"2005-04-19T21:00:00Z, 51002, 25.1, 25.4\n" +
-"2005-04-19T21:00:00Z, 51003, 25.3, 23.9\n" +
-"2005-04-19T21:00:00Z, 51004, 25.0, 24.0\n" +
-"2005-04-19T21:00:00Z, 51028, 27.7, 27.6\n" +
-"2005-04-19T21:00:00Z, 51201, 25.0, NaN\n" +
-"2005-04-19T21:00:00Z, 51202, 24.5, NaN\n" +
-"2005-04-19T21:00:00Z, 52200, 28.0, NaN\n" +
-"2005-04-19T22:00:00Z, 51001, 24.2, 23.6\n" +
-"2005-04-19T22:00:00Z, 51002, 25.2, 25.4\n" +
-"2005-04-19T22:00:00Z, 51003, 25.4, 24.3\n" +
-"2005-04-19T22:00:00Z, 51004, 25.0, 23.8\n" +
-"2005-04-19T22:00:00Z, 51028, 27.8, 27.1\n" +
-"2005-04-19T22:00:00Z, 51201, 24.9, NaN\n" +
-"2005-04-19T22:00:00Z, 51202, 24.6, NaN\n" +
-"2005-04-19T22:00:00Z, 52200, 28.0, NaN\n" +
-"2005-04-19T23:00:00Z, 51001, 24.2, 22.1\n" +
-"2005-04-19T23:00:00Z, 51002, 25.2, 24.8\n" +
-"2005-04-19T23:00:00Z, 51003, 25.4, 24.7\n" +
-"2005-04-19T23:00:00Z, 51004, 25.0, 24.3\n" +
-"2005-04-19T23:00:00Z, 51028, 27.8, 27.5\n" +
-"2005-04-19T23:00:00Z, 51201, 25.0, NaN\n" +
-"2005-04-19T23:00:00Z, 51202, 24.5, NaN\n" +
-"2005-04-19T23:00:00Z, 52200, 28.0, NaN\n";
+"time,station,wtmp,atmp\n" +
+"UTC,,degree_C,degree_C\n" +
+"2005-04-19T21:00:00Z,51001,24.1,23.5\n" +
+"2005-04-19T21:00:00Z,51002,25.1,25.4\n" +
+"2005-04-19T21:00:00Z,51003,25.3,23.9\n" +
+"2005-04-19T21:00:00Z,51004,25.0,24.0\n" +
+"2005-04-19T21:00:00Z,51028,27.7,27.6\n" +
+"2005-04-19T21:00:00Z,51201,25.0,NaN\n" +
+"2005-04-19T21:00:00Z,51202,24.5,NaN\n" +
+"2005-04-19T21:00:00Z,52200,28.0,NaN\n" +
+"2005-04-19T22:00:00Z,51001,24.2,23.6\n" +
+"2005-04-19T22:00:00Z,51002,25.2,25.4\n" +
+"2005-04-19T22:00:00Z,51003,25.4,24.3\n" +
+"2005-04-19T22:00:00Z,51004,25.0,23.8\n" +
+"2005-04-19T22:00:00Z,51028,27.8,27.1\n" +
+"2005-04-19T22:00:00Z,51201,24.9,NaN\n" +
+"2005-04-19T22:00:00Z,51202,24.6,NaN\n" +
+"2005-04-19T22:00:00Z,52200,28.0,NaN\n" +
+"2005-04-19T23:00:00Z,51001,24.2,22.1\n" +
+"2005-04-19T23:00:00Z,51002,25.2,24.8\n" +
+"2005-04-19T23:00:00Z,51003,25.4,24.7\n" +
+"2005-04-19T23:00:00Z,51004,25.0,24.3\n" +
+"2005-04-19T23:00:00Z,51028,27.8,27.5\n" +
+"2005-04-19T23:00:00Z,51201,25.0,NaN\n" +
+"2005-04-19T23:00:00Z,51202,24.5,NaN\n" +
+"2005-04-19T23:00:00Z,52200,28.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     }
@@ -2631,16 +2594,16 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
             eddTable.className() + "_obm", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
-"time, station, wtmp, atmp\n" +
-"UTC, , degree_C, degree_C\n" +
-"2005-04-19T23:00:00Z, 51001, 24.2, 22.1\n" +
-"2005-04-19T23:00:00Z, 51002, 25.2, 24.8\n" +
-"2005-04-19T23:00:00Z, 51003, 25.4, 24.7\n" +
-"2005-04-19T23:00:00Z, 51004, 25.0, 24.3\n" +
-"2005-04-19T23:00:00Z, 51028, 27.8, 27.5\n" +
-"2005-04-19T23:00:00Z, 51201, 25.0, NaN\n" +
-"2005-04-19T23:00:00Z, 51202, 24.5, NaN\n" +
-"2005-04-19T23:00:00Z, 52200, 28.0, NaN\n";
+"time,station,wtmp,atmp\n" +
+"UTC,,degree_C,degree_C\n" +
+"2005-04-19T23:00:00Z,51001,24.2,22.1\n" +
+"2005-04-19T23:00:00Z,51002,25.2,24.8\n" +
+"2005-04-19T23:00:00Z,51003,25.4,24.7\n" +
+"2005-04-19T23:00:00Z,51004,25.0,24.3\n" +
+"2005-04-19T23:00:00Z,51028,27.8,27.5\n" +
+"2005-04-19T23:00:00Z,51201,25.0,NaN\n" +
+"2005-04-19T23:00:00Z,51202,24.5,NaN\n" +
+"2005-04-19T23:00:00Z,52200,28.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         userDapQuery = "time,station,wtmp,atmp&station>\"5\"&station<\"6\"" +
@@ -2649,11 +2612,11 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
             eddTable.className() + "_obm2", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
-"time, station, wtmp, atmp\n" +
-"UTC, , degree_C, degree_C\n" +
-"2005-04-19T21:00:00Z, 52200, 28.0, NaN\n" +
-"2005-04-19T22:00:00Z, 52200, 28.0, NaN\n" +
-"2005-04-19T23:00:00Z, 52200, 28.0, NaN\n";
+"time,station,wtmp,atmp\n" +
+"UTC,,degree_C,degree_C\n" +
+"2005-04-19T21:00:00Z,52200,28.0,NaN\n" +
+"2005-04-19T22:00:00Z,52200,28.0,NaN\n" +
+"2005-04-19T23:00:00Z,52200,28.0,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     }
@@ -2680,16 +2643,16 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
             eddTable.className() + "_sll", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
-"station, longitude, latitude\n" +
-", degrees_east, degrees_north\n" +
-"23020, 38.5, 22.162\n" +
-"31201, -48.134, -27.705\n" +
-"32012, -85.384, -19.616\n" +
-"32301, -105.2, -9.9\n" +
-"32302, -85.1, -18.0\n" +
-"32487, -77.737, 3.517\n" +
-"32488, -77.511, 6.258\n" +
-"41001, -72.698, 34.675\n";
+"station,longitude,latitude\n" +
+",degrees_east,degrees_north\n" +
+"23020,38.5,22.162\n" +
+"31201,-48.134,-27.705\n" +
+"32012,-85.384,-19.616\n" +
+"32301,-105.2,-9.9\n" +
+"32302,-85.1,-18.0\n" +
+"32487,-77.737,3.517\n" +
+"32488,-77.511,6.258\n" +
+"41001,-72.698,34.675\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
     }
 
@@ -2712,9 +2675,9 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
             eddTable.className() + "_sll2", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
-"line_station, line, station, longitude, latitude\n" +
-", , , degrees_east, degrees_north\n" +
-"034_282, 34.0, 282.0, -143.38333, 34.88333\n";
+"line_station,line,station,longitude,latitude\n" +
+",,,degrees_east,degrees_north\n" +
+"034_282,34.0,282.0,-143.38333,34.88333\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
     }
 
@@ -2733,26 +2696,26 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 
         //min max
         edv = csub.findDataVariableByDestinationName("longitude");
-        Test.ensureEqual(edv.destinationMin(), -164.0833, "");
+        Test.ensureEqual(edv.destinationMin(), -164.0833, ""); 
         Test.ensureEqual(edv.destinationMax(), -106.1167, "");
 
         tName = csub.makeNewFileForDapQuery(null, null, csubDapQuery, EDStatic.fullTestCacheDirectory, baseName, ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"line_station, line, station, longitude, latitude, time, altitude, chlorophyll, dark, light_percent, NH3, NO2, NO3, oxygen, PO4, pressure, primprod, salinity, silicate, temperature\n" +
-", , , degrees_east, degrees_north, UTC, m, mg m-3, mg m-3 experiment-1, mg m-3 experiment-1, ugram-atoms L-1, ugram-atoms L-1, ugram-atoms L-1, mL L-1, ugram-atoms L-1, dbar, mg m-3 experiment-1, PSU, ugram-atoms L-1, degree_C\n" +
-"171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, 0.0, NaN, NaN, NaN, NaN, NaN, NaN, 4.53, NaN, NaN, NaN, 34.38, NaN, 27.74\n" +
-"171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -10.0, NaN, NaN, NaN, NaN, NaN, NaN, 4.82, NaN, NaN, NaN, 34.39, NaN, 27.5\n" +
-"171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -29.0, NaN, NaN, NaN, NaN, NaN, NaN, 4.16, NaN, NaN, NaN, 34.35, NaN, 26.11\n" +
-"171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -48.0, NaN, NaN, NaN, NaN, NaN, NaN, 3.12, NaN, NaN, NaN, 34.43, NaN, 22.64\n" +
-"171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -71.0, NaN, NaN, NaN, NaN, NaN, NaN, 0.34, NaN, NaN, NaN, 34.63, NaN, 17.04\n" +
-"171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -94.0, NaN, NaN, NaN, NaN, NaN, NaN, 0.2, NaN, NaN, NaN, 34.74, NaN, 14.89\n" +
-"171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -118.0, NaN, NaN, NaN, NaN, NaN, NaN, 0.3, NaN, NaN, NaN, 34.76, NaN, 13.69\n" +
-"171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -155.0, NaN, NaN, NaN, NaN, NaN, NaN, 0.21, NaN, NaN, NaN, 34.79, NaN, 12.51\n" +
-"171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -193.0, NaN, NaN, NaN, NaN, NaN, NaN, 0.24, NaN, NaN, NaN, 34.79, NaN, 11.98\n" +
-"171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -239.0, NaN, NaN, NaN, NaN, NaN, NaN, 0.35, NaN, NaN, NaN, 34.76, NaN, 11.8\n" +
-"171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -286.0, NaN, NaN, NaN, NaN, NaN, NaN, 0.19, NaN, NaN, NaN, 34.76, NaN, 11.42\n";
+"line_station,line,station,longitude,latitude,time,altitude,chlorophyll,dark,light_percent,NH3,NO2,NO3,oxygen,PO4,pressure,primprod,salinity,silicate,temperature\n" +
+",,,degrees_east,degrees_north,UTC,m,mg m-3,mg m-3 experiment-1,mg m-3 experiment-1,ugram-atoms L-1,ugram-atoms L-1,ugram-atoms L-1,mL L-1,ugram-atoms L-1,dbar,mg m-3 experiment-1,PSU,ugram-atoms L-1,degree_C\n" +
+"171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,0.0,NaN,NaN,NaN,NaN,NaN,NaN,4.53,NaN,NaN,NaN,34.38,NaN,27.74\n" +
+"171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-10.0,NaN,NaN,NaN,NaN,NaN,NaN,4.82,NaN,NaN,NaN,34.39,NaN,27.5\n" +
+"171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-29.0,NaN,NaN,NaN,NaN,NaN,NaN,4.16,NaN,NaN,NaN,34.35,NaN,26.11\n" +
+"171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-48.0,NaN,NaN,NaN,NaN,NaN,NaN,3.12,NaN,NaN,NaN,34.43,NaN,22.64\n" +
+"171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-71.0,NaN,NaN,NaN,NaN,NaN,NaN,0.34,NaN,NaN,NaN,34.63,NaN,17.04\n" +
+"171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-94.0,NaN,NaN,NaN,NaN,NaN,NaN,0.2,NaN,NaN,NaN,34.74,NaN,14.89\n" +
+"171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-118.0,NaN,NaN,NaN,NaN,NaN,NaN,0.3,NaN,NaN,NaN,34.76,NaN,13.69\n" +
+"171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-155.0,NaN,NaN,NaN,NaN,NaN,NaN,0.21,NaN,NaN,NaN,34.79,NaN,12.51\n" +
+"171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-193.0,NaN,NaN,NaN,NaN,NaN,NaN,0.24,NaN,NaN,NaN,34.79,NaN,11.98\n" +
+"171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-239.0,NaN,NaN,NaN,NaN,NaN,NaN,0.35,NaN,NaN,NaN,34.76,NaN,11.8\n" +
+"171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-286.0,NaN,NaN,NaN,NaN,NaN,NaN,0.19,NaN,NaN,NaN,34.76,NaN,11.42\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
@@ -2770,9 +2733,9 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"line_station, line, station, longitude, latitude, time, altitude, air_pressure, chlorophyll, phaeopigment, primary_productivity, secchi_depth, wind_direction, wind_speed\n" +
-", , , degrees_east, degrees_north, UTC, m, millibars, mg m-2, mg m-2, mg m-2, m, wmo 0877, knots\n" +
-"171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, 0.0, NaN, NaN, NaN, NaN, NaN, 30, 5\n";
+"line_station,line,station,longitude,latitude,time,altitude,air_pressure,chlorophyll,phaeopigment,primary_productivity,secchi_depth,wind_direction,wind_speed\n" +
+",,,degrees_east,degrees_north,UTC,m,millibars,mg m-2,mg m-2,mg m-2,m,wmo 0877,knots\n" +
+"171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,0.0,NaN,NaN,NaN,NaN,NaN,30,5\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
     } //end of testCalcofi
 
@@ -2799,19 +2762,19 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"ID, line_station, line, station, longitude, latitude, time, altitude, chlorophyll, dark, light_percent, NH3, NO2, NO3, oxygen, PO4, pressure, primprod, salinity, silicate, temperature\n" +
-", , , , degrees_east, degrees_north, UTC, m, mg m-3, mg m-3 experiment-1, mg m-3 experiment-1, ugram-atoms L-1, ugram-atoms L-1, ugram-atoms L-1, mL L-1, ugram-atoms L-1, dbar, mg m-3 experiment-1, PSU, ugram-atoms L-1, degree_C\n" +
-"171_040, 171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, 0.0, NaN, NaN, NaN, NaN, NaN, NaN, 4.53, NaN, NaN, NaN, 34.38, NaN, 27.74\n" +
-"171_040, 171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -10.0, NaN, NaN, NaN, NaN, NaN, NaN, 4.82, NaN, NaN, NaN, 34.39, NaN, 27.5\n" +
-"171_040, 171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -29.0, NaN, NaN, NaN, NaN, NaN, NaN, 4.16, NaN, NaN, NaN, 34.35, NaN, 26.11\n" +
-"171_040, 171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -48.0, NaN, NaN, NaN, NaN, NaN, NaN, 3.12, NaN, NaN, NaN, 34.43, NaN, 22.64\n" +
-"171_040, 171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -71.0, NaN, NaN, NaN, NaN, NaN, NaN, 0.34, NaN, NaN, NaN, 34.63, NaN, 17.04\n" +
-"171_040, 171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -94.0, NaN, NaN, NaN, NaN, NaN, NaN, 0.2, NaN, NaN, NaN, 34.74, NaN, 14.89\n" +
-"171_040, 171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -118.0, NaN, NaN, NaN, NaN, NaN, NaN, 0.3, NaN, NaN, NaN, 34.76, NaN, 13.69\n" +
-"171_040, 171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -155.0, NaN, NaN, NaN, NaN, NaN, NaN, 0.21, NaN, NaN, NaN, 34.79, NaN, 12.51\n" +
-"171_040, 171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -193.0, NaN, NaN, NaN, NaN, NaN, NaN, 0.24, NaN, NaN, NaN, 34.79, NaN, 11.98\n" +
-"171_040, 171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -239.0, NaN, NaN, NaN, NaN, NaN, NaN, 0.35, NaN, NaN, NaN, 34.76, NaN, 11.8\n" +
-"171_040, 171_040, 171.0, 40.0, -106.11667, 21.05, 1956-12-05T21:00:00Z, -286.0, NaN, NaN, NaN, NaN, NaN, NaN, 0.19, NaN, NaN, NaN, 34.76, NaN, 11.42\n";
+"ID,line_station,line,station,longitude,latitude,time,altitude,chlorophyll,dark,light_percent,NH3,NO2,NO3,oxygen,PO4,pressure,primprod,salinity,silicate,temperature\n" +
+",,,,degrees_east,degrees_north,UTC,m,mg m-3,mg m-3 experiment-1,mg m-3 experiment-1,ugram-atoms L-1,ugram-atoms L-1,ugram-atoms L-1,mL L-1,ugram-atoms L-1,dbar,mg m-3 experiment-1,PSU,ugram-atoms L-1,degree_C\n" +
+"171_040,171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,0.0,NaN,NaN,NaN,NaN,NaN,NaN,4.53,NaN,NaN,NaN,34.38,NaN,27.74\n" +
+"171_040,171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-10.0,NaN,NaN,NaN,NaN,NaN,NaN,4.82,NaN,NaN,NaN,34.39,NaN,27.5\n" +
+"171_040,171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-29.0,NaN,NaN,NaN,NaN,NaN,NaN,4.16,NaN,NaN,NaN,34.35,NaN,26.11\n" +
+"171_040,171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-48.0,NaN,NaN,NaN,NaN,NaN,NaN,3.12,NaN,NaN,NaN,34.43,NaN,22.64\n" +
+"171_040,171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-71.0,NaN,NaN,NaN,NaN,NaN,NaN,0.34,NaN,NaN,NaN,34.63,NaN,17.04\n" +
+"171_040,171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-94.0,NaN,NaN,NaN,NaN,NaN,NaN,0.2,NaN,NaN,NaN,34.74,NaN,14.89\n" +
+"171_040,171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-118.0,NaN,NaN,NaN,NaN,NaN,NaN,0.3,NaN,NaN,NaN,34.76,NaN,13.69\n" +
+"171_040,171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-155.0,NaN,NaN,NaN,NaN,NaN,NaN,0.21,NaN,NaN,NaN,34.79,NaN,12.51\n" +
+"171_040,171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-193.0,NaN,NaN,NaN,NaN,NaN,NaN,0.24,NaN,NaN,NaN,34.79,NaN,11.98\n" +
+"171_040,171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-239.0,NaN,NaN,NaN,NaN,NaN,NaN,0.35,NaN,NaN,NaN,34.76,NaN,11.8\n" +
+"171_040,171_040,171.0,40.0,-106.11667,21.05,1956-12-05T21:00:00Z,-286.0,NaN,NaN,NaN,NaN,NaN,NaN,0.19,NaN,NaN,NaN,34.76,NaN,11.42\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
 
@@ -2948,7 +2911,909 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
      *    and puts results in testDestDir f:/data/gtspp/testDest/.
      *    So the first/last/Year/Month params are ignored.
      */
-    public static void bobConsolidateGtspp(int firstYear, int firstMonth,
+    public static void bobConsolidateGtsppTgz(int firstYear, int firstMonth,
+        int lastYear, int lastMonth, boolean testMode) throws Throwable {
+
+        int chunkSize = 30;  //lon width, lat height of a tile, in degrees
+        int minLat = -90;
+        int minLon = -180;
+        int maxLon = 180;
+        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String zipDir      = "f:\\data\\gtspp\\bestNcZip\\"; //gtspp_at199001.tgz
+        String destDir     = "f:\\data\\gtspp\\bestNcConsolidated\\";
+        String tempDir     = "f:\\data\\gtspp\\temp\\"; 
+        String testTempDir = "f:\\data\\gtspp\\testTemp\\"; 
+        String testDestDir = "f:\\data\\gtspp\\testDest\\";
+        String logFile     = "f:\\data\\gtspp\\log" + 
+            String2.replaceAll(today, "-", "") + ".txt"; 
+        File2.makeDirectory(tempDir);
+        //http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm
+        //1=correct, 2=probably correct, 5=modified (so now correct)
+        //pre 2012-04-15   was {1,2,5}
+        int okQF[] = {1,2};  
+        float depthMV       = 99999; //was -99;
+        float temperatureMV = 99999; //was -99;
+        float salinityMV    = 99999; //was -99;
+        int qMV = 9;
+        String timeUnits = "days since 1900-01-01 00:00:00"; //causes roundoff error(!)
+        double timeBaseAndFactor[] = Calendar2.getTimeBaseAndFactor(timeUnits);
+        //impossible values:
+        float minDepth       = 0,  maxDepth = 10000;
+        float minTemperature = -2, maxTemperature = 40;
+        float minSalinity    = 0,  maxSalinity = 41;
+
+
+        if (testMode) {
+            firstYear = 1990; firstMonth = 1;
+            lastYear = 1990; lastMonth = 1;
+        }
+
+        SSR.verbose = false;
+        
+        String2.setupLog(true, false, 
+            logFile, false, false, Integer.MAX_VALUE);
+
+        String2.log("*** bobConsolidateGtsppTgz");
+        long elapsedTime = System.currentTimeMillis();
+        //q_pos (position quality flag), q_date_time (time quality flag)
+        int stationCol = -1, organizationCol = -1, dataTypeCol = -1, 
+            platformCol = -1, cruiseCol = -1,
+            longitudeCol = -1, latitudeCol = -1, timeCol = -1, 
+            depthCol = -1, temperatureCol = -1, salinityCol = -1;
+        int totalNGoodStation = 0, totalNGoodPos = 0, totalNGoodTime = 0, 
+            totalNGoodDepth = 0, totalNGoodTemperature = 0, totalNGoodSalinity = 0;
+        int totalNBadStation = 0, totalNBadPos = 0, totalNBadTime = 0, 
+            totalNBadDepth = 0, totalNBadTemperature = 0, totalNBadSalinity = 0,
+            totalNWarnings = 0, totalNExceptions = 0;
+        long totalNGoodRows = 0, totalNBadRows = 0;
+        //StringArray impossibleNaNDepth = new StringArray();
+        StringArray impossibleMinDepth = new StringArray();
+        StringArray impossibleMaxDepth = new StringArray();
+        //StringArray impossibleNanTemperature = new StringArray();
+        StringArray impossibleMinTemperature = new StringArray();
+        StringArray impossibleMaxTemperature = new StringArray();
+        //StringArray impossibleNanSalinity = new StringArray();
+        StringArray impossibleMinSalinity = new StringArray();
+        StringArray impossibleMaxSalinity = new StringArray();
+        int nLons = 0, nLats = 0;
+        int lonSum = 0, latSum = 0;
+        long profilesSum = 0;
+        long rowsSum = 0;
+
+        //*** process a month's data
+        int year = firstYear;
+        int month = firstMonth;
+        long chunkTime = System.currentTimeMillis();
+        while (year <= lastYear) {
+            String2.log("\n*** " + Calendar2.getCurrentISODateTimeStringLocal() +
+                " start processing year=" + year + " month=" + month);
+
+            String zMonth  = String2.zeroPad("" + month,       2);
+            String zMonth1 = String2.zeroPad("" + (month + 1), 2);
+            double minEpochSeconds = Calendar2.isoStringToEpochSeconds(year + "-" + zMonth  + "-01");
+            double maxEpochSeconds = Calendar2.isoStringToEpochSeconds(year + "-" + zMonth1 + "-01");                   
+
+            //destination directory
+            String tDestDir = testMode? testDestDir : destDir + year + "\\" + zMonth + "\\";
+            File2.makeDirectory(tDestDir);
+            HashMap tableHashMap = new HashMap();
+            //make sure all files are deleted 
+            int waitSeconds = 2;
+            int nAttempts = 10;
+            long cmdTime = System.currentTimeMillis();
+            String cmd = "del/q " + tDestDir + "*.*"; 
+            for (int attempt = 0; attempt < nAttempts; attempt++) {
+                if (attempt % 8 == 0) {
+                    String2.log(cmd);
+                    SSR.dosShell(cmd, 30*60); //10 minutes*60 seconds
+                    //File2.deleteAllFiles(tempDir);  //previous method
+                }
+                Math2.gc(waitSeconds * 1000); //good time to gc
+                File destDirFile = new File(tDestDir);
+                File files[] = destDirFile.listFiles();
+                String2.log("  nRemainingFiles=" + files.length);
+                if (files.length == 0)
+                    break;
+                waitSeconds = 2 * nAttempts;
+            }
+            String2.log("  cmd total time=" + 
+                Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
+
+
+            //unzip all atlantic, indian, and pacific .zip files for that month 
+            String region2[] = {"at", "in", "pa"};
+            int nRegions = testMode? 1 : 3;
+            for (int region = 0; region < nRegions; region++) {
+                String sourceBaseName = "gtspp4_" + region2[region] + year + zMonth;
+                String sourceZipJustFileName = sourceBaseName + ".tgz";
+                String sourceZipName = zipDir + sourceZipJustFileName;
+
+                if (!testMode) {
+
+                    //delete all files in tempDir
+                    waitSeconds = 2;
+                    nAttempts = 10;
+                    cmdTime = System.currentTimeMillis();
+                    cmd = "del/q " + tempDir + "*.*"; 
+                    String2.log(""); //blank line
+                    for (int attempt = 0; attempt < nAttempts; attempt++) {
+                        String2.log(cmd);
+                        SSR.dosShell(cmd, 30*60); //10 minutes*60 seconds
+                        //File2.deleteAllFiles(tempDir);  //previous method
+
+                        //delete dirs too
+                        File2.deleteAllFiles(tempDir, true, true);
+ 
+                        Math2.gc(waitSeconds * 1000); //good time to gc
+                        File tempDirFile = new File(tempDir);
+                        File files[] = tempDirFile.listFiles();
+                        String2.log("  nRemainingFiles=" + files.length);
+                        if (files.length == 0)
+                            break;
+                        waitSeconds = 2 * nAttempts;
+                    }
+                    String2.log("  cmd total time=" + 
+                        Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
+
+                    //unzip file into tempDir         //gtspp_at199001.zip
+                    cmd = "c:\\programs\\7-Zip\\7z -y e " + sourceZipName + " -o" + tempDir + " -r"; 
+                    cmdTime = System.currentTimeMillis();
+                    String2.log("\n*** " + cmd);
+                    SSR.dosShell(cmd, 30*60); //10 minutes*60 seconds
+                    String2.log("  cmd time=" + 
+                        Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
+
+                    //extract from the .tar file   //gtspp4_at199001.tar
+                    cmd = "c:\\programs\\7-Zip\\7z -y e " + tempDir + sourceBaseName + ".tar -o" + tempDir + " -r"; 
+                    cmdTime = System.currentTimeMillis();
+                    String2.log("\n*** " + cmd);
+                    SSR.dosShell(cmd, 120*60); //120 minutes*60 seconds
+                    String2.log("  cmd time=" + 
+                        Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
+                    
+                    //previous method
+                    //SSR.unzip(sourceZipName,
+                    //    tempDir, true, 100 * 60); //ignoreZipDirectories, timeOutSeconds 100 minutes
+                }
+
+                //read each file and put data in proper table
+                String tTempDir = testMode? testTempDir : tempDir;
+                File tTempDirAsFile = new File(tTempDir);
+                String sourceFileNames[] = tTempDirAsFile.list(); //just the file names
+                String2.log("\nunzipped " + sourceFileNames.length + " files");
+                int nSourceFileNames = //testMode? 100 : 
+                    sourceFileNames.length;
+                int nGoodStation = 0, nGoodPos = 0, nGoodTime = 0, 
+                    nGoodDepth = 0, nGoodTemperature = 0, nGoodSalinity = 0, nGoodRows = 0;
+                int nBadStation = 0, nBadPos = 0, nBadTime = 0, 
+                    nBadDepth = 0, nBadTemperature = 0, nBadSalinity = 0, nBadRows = 0,
+                    nWarnings = 0, nExceptions = 0;
+                long fileReadTime = System.currentTimeMillis();
+                profilesSum += nSourceFileNames;
+                for (int sfi = 0; sfi < nSourceFileNames; sfi++) {
+                    String sourceFileName = sourceFileNames[sfi];
+                    if (sfi % 10000 == 0) {
+                        if (sfi > 0) 
+                            Math2.gc(3 * 1000); //good time to gc
+                        //high water mark is ~160 MB, so memory not a problem
+                        String2.log("file #" + sfi + " " + Math2.memoryString());
+                    }
+
+                    if (!sourceFileName.endsWith(".nc")) {
+                        //String2.log("ERROR: not a .nc file: " + sourceFileName);
+                        continue;
+                    }
+
+                    NetcdfFile ncFile = null; 
+
+                    try {
+                        //get the station name
+                        //gtspp_13635162_te_111.nc  gtspp_10313692_cu_111.nc
+                        if (!sourceFileName.matches("gtspp_[0-9]+_.*\\.nc")) { //was "\\d+")) {//all digits
+                            nBadStation++;
+                            throw new SimpleException("Invalid sourceFileName=" + sourceFileName);
+                        }
+                        int po = sourceFileName.indexOf('_', 6);
+                        if (po < 0) {
+                            nBadStation++;
+                            throw new SimpleException("Invalid sourceFileName=" + sourceFileName);
+                        }
+                        int station = String2.parseInt(sourceFileName.substring(6, po));
+                        nGoodStation++;
+
+                        //open the file
+                        ncFile = NcHelper.openFile(tTempDir + sourceFileName);
+                        Variable var;
+                        Attributes tVarAtts = new Attributes();
+                        String tUnits;
+
+                        //get all of the data 
+
+                        //stream_ident
+                        var = ncFile.findVariable("stream_ident");                        
+                        String organization = "";
+                        String dataType = "";
+                        if (var == null) {
+                            nWarnings++;
+                            String2.log("WARNING: No stream_ident in " + sourceFileName);
+                        } else {
+                            PrimitiveArray streamPA = NcHelper.getPrimitiveArray(var);
+                            if (streamPA instanceof StringArray && streamPA.size() > 0) {
+                                String stream = streamPA.getString(0);
+                                if (stream.length() >= 4) {
+                                    organization = stream.substring(0, 2).trim();
+                                    dataType = stream.substring(2, 4).trim();
+                                } else {
+                                    String2.log("WARNING: stream_ident isn't a 4 char string: " + stream);
+                                }
+                            } else {
+                                String2.log("WARNING: stream_ident isn't a StringArray: " + 
+                                    streamPA.toString());
+                            }
+                        }
+
+                        //platform_code
+                        var = ncFile.findVariable("gtspp_platform_code");                        
+                        String platform = "";
+                        if (var == null) {
+                            //a small percentage have this problem
+                            //nWarnings++;
+                            //String2.log("WARNING: No gtspp_platform_code in " + sourceFileName);
+                        } else {
+                            PrimitiveArray pa = NcHelper.getPrimitiveArray(var);
+                            if (pa instanceof StringArray && pa.size() > 0) {
+                                platform = pa.getString(0).trim();
+                                //String2.log("platform_code=" + platform_code);
+                            } else {
+                                String2.log("WARNING: gtspp_platform_code isn't a StringArray: " + 
+                                    pa.toString());
+                            }
+                        }
+
+                        //cruise
+                        var = ncFile.findVariable("cruise_id");                        
+                        String cruise = "";
+                        if (var == null) {
+                            nWarnings++;
+                            String2.log("WARNING: No cruise_id in " + sourceFileName);
+                        } else {
+                            PrimitiveArray cruisePA = NcHelper.getPrimitiveArray(var);
+                            if (cruisePA instanceof StringArray && cruisePA.size() > 0) {
+                                cruise = cruisePA.getString(0).trim();
+                            } else {
+                                String2.log("WARNING: cruise_id isn't a StringArray: " + 
+                                    cruisePA.toString());
+                            }
+                        }
+
+                        //prof_type  is TEMP or PSAL so don't save it.
+                        /*var = ncFile.findVariable("prof_type");                        
+                        String prof_type = "";
+                        if (var == null) {
+                            nWarnings++;
+                            String2.log("WARNING: No prof_type in " + sourceFileName);
+                        } else {
+                            PrimitiveArray pa = NcHelper.getPrimitiveArray(var);
+                            if (pa instanceof StringArray && pa.size() > 0) {
+                                prof_type = pa.getString(0).trim();
+                                String2.log("prof_type=" + prof_type);
+                            } else {
+                                String2.log("WARNING: prof_type isn't a StringArray: " + 
+                                    pa.toString());
+                            }
+                        }*/
+
+                        //position quality flag 
+                        var = ncFile.findVariable("position_quality_flag"); //was "q_pos");                        
+                        if (var == null) {
+                            nWarnings++;
+                            String2.log("WARNING: No position_quality_flag in " + sourceFileName);
+                        } else {
+                            PrimitiveArray q_pos = NcHelper.getPrimitiveArray(var);
+                            if (!(q_pos instanceof IntArray) || q_pos.size() != 1) 
+                                throw new SimpleException("Invalid position_quality_flag=" + q_pos);
+                            int ti = q_pos.getInt(0);
+                            if (String2.indexOf(okQF, ti) < 0) {
+                                nBadPos++;
+                                continue;
+                            }
+                            //nGoodPos++; is below
+                        }
+
+                        //time quality flag 
+                        var = ncFile.findVariable("time_quality_flag"); //q_date_time");                        
+                        if (var == null) {
+                            nWarnings++;
+                            String2.log("WARNING: No time_quality_flag in " + sourceFileName);
+                        } else {
+                            PrimitiveArray q_date_time = NcHelper.getPrimitiveArray(var);
+                            if (!(q_date_time instanceof IntArray) || q_date_time.size() != 1) 
+                                throw new SimpleException("Invalid time_quality_flag=" + q_date_time);
+                            int ti = q_date_time.getInt(0);
+                            if (String2.indexOf(okQF, ti) < 0) {
+                                nBadTime++;
+                                continue;
+                            }
+                            //nGoodTime is below
+                        }
+
+                        //time
+                        var = ncFile.findVariable("time");                        
+                        if (var == null) 
+                            throw new SimpleException("No time!");
+                        tVarAtts.clear();
+                        NcHelper.getVariableAttributes(var, tVarAtts);
+                        tUnits = tVarAtts.getString("units");
+                        if (!timeUnits.equals(tUnits)) 
+                            throw new SimpleException("Invalid time units=" + tUnits);
+                        PrimitiveArray time = NcHelper.getPrimitiveArray(var);
+                        if (!(time instanceof DoubleArray) || time.size() != 1) 
+                            throw new SimpleException("Invalid time=" + time);
+                        double tTime = Calendar2.unitsSinceToEpochSeconds(
+                            timeBaseAndFactor[0], timeBaseAndFactor[1], time.getDouble(0));
+                        String isoTime = Calendar2.safeEpochSecondsToIsoStringT(tTime, "");
+                        if (tTime < minEpochSeconds || tTime > maxEpochSeconds) 
+                            throw new SimpleException("Invalid tTime=" + isoTime);
+                        //original times (that I looked at) are to nearest second
+                        //so round to nearest second (fix .99999 problems)
+                        tTime = Math.rint(tTime); 
+                        nGoodTime++;
+
+                        //longitude
+                        var = ncFile.findVariable("longitude");                        
+                        if (var == null) 
+                            throw new SimpleException("No longitude!");
+                        PrimitiveArray longitude = NcHelper.getPrimitiveArray(var);
+                        if (!(longitude instanceof FloatArray) || longitude.size() != 1) 
+                            throw new SimpleException("Invalid longitude=" + longitude);
+
+                        //latitude
+                        var = ncFile.findVariable("latitude");                        
+                        if (var == null) 
+                            throw new SimpleException("No latitude!");
+                        PrimitiveArray latitude = NcHelper.getPrimitiveArray(var);
+                        if (!(latitude instanceof FloatArray) || latitude.size() != 1) 
+                            throw new SimpleException("Invalid latitude=" + latitude);
+                        nGoodPos++;
+
+                        //depth
+                        var = ncFile.findVariable("z");                        
+                        if (var == null) 
+                            throw new SimpleException("No z!");
+                        PrimitiveArray depth = NcHelper.getPrimitiveArray(var);
+                        if (!(depth instanceof FloatArray) || depth.size() == 0) 
+                            throw new SimpleException("Invalid z=" + depth);
+                        int nDepth = depth.size();
+
+                        //DEPH_qparm
+                        var = ncFile.findVariable("z_variable_quality_flag"); //DEPH_qparm");                        
+                        if (var == null) 
+                            throw new SimpleException("No z_variable_quality_flag!");
+                        PrimitiveArray DEPH_qparm = NcHelper.getPrimitiveArray(var);
+                        if (!(DEPH_qparm instanceof IntArray) || DEPH_qparm.size() != nDepth) 
+                            throw new SimpleException("Invalid z_variable_quality_flag=" + DEPH_qparm);
+                        //nGoodDepth is below
+
+                        //temperature
+                        var = ncFile.findVariable("temperature");                        
+                        PrimitiveArray temperature;
+                        PrimitiveArray TEMP_qparm;
+                        float temperatureFV = temperatureMV;
+                        if (var == null) {
+                            //nWarnings++;
+                            //String2.log("WARNING: No temperature in " + sourceFileName); reasonably common
+                            temperature = PrimitiveArray.factory(float.class,  nDepth, "" + temperatureMV);
+                            TEMP_qparm  = PrimitiveArray.factory(int.class,    nDepth, "" + qMV);
+                        } else {            
+                            temperature = NcHelper.getPrimitiveArray(var);
+                            if (!(temperature instanceof FloatArray) || temperature.size() != nDepth) 
+                                throw new SimpleException("Invalid temperature=" + temperature);
+
+                            tVarAtts.clear();
+                            NcHelper.getVariableAttributes(var, tVarAtts);
+                            temperatureFV = tVarAtts.getFloat("_FillValue");
+                            if (!Float.isNaN(temperatureFV) && temperatureFV != temperatureMV)
+                                throw new SimpleException("Invalid temperature _FillValue=" + temperatureFV);
+
+                            //TEMP_qparm
+                            var = ncFile.findVariable("temperature_quality_flag"); //TEMP_qparm");                        
+                            if (var == null) {
+                                nWarnings++;
+                                String2.log("WARNING: No temperature_quality_flag in " + sourceFileName);
+                                TEMP_qparm = PrimitiveArray.factory(int.class,  nDepth, "" + qMV);
+                            } else {
+                                TEMP_qparm = NcHelper.getPrimitiveArray(var);
+                                if (!(TEMP_qparm instanceof IntArray) || TEMP_qparm.size() != nDepth) 
+                                    throw new SimpleException("Invalid temperature_quality_flag=" + TEMP_qparm);
+                            }
+                        }
+
+                        //salinity
+                        var = ncFile.findVariable("salinity");                        
+                        PrimitiveArray salinity;
+                        PrimitiveArray PSAL_qparm;
+                        float salinityFV = salinityMV;
+                        if (var == null) {
+                            //String2.log("WARNING: No salinity in " + sourceFileName);   //very common
+                            salinity   = PrimitiveArray.factory(float.class,  nDepth, "" + salinityMV);
+                            PSAL_qparm = PrimitiveArray.factory(int.class,    nDepth, "" + qMV);
+                        } else {
+                            salinity = NcHelper.getPrimitiveArray(var);
+                            if (!(salinity instanceof FloatArray) || salinity.size() != nDepth) 
+                                throw new SimpleException("Invalid salinity=" + salinity);
+
+                            tVarAtts.clear();
+                            NcHelper.getVariableAttributes(var, tVarAtts);
+                            salinityFV = tVarAtts.getFloat("_FillValue");
+                            if (!Float.isNaN(salinityFV) && salinityFV != salinityMV)
+                                throw new SimpleException("Invalid salinity _FillValue=" + salinityFV);
+
+                            //PSAL_qparm
+                            var = ncFile.findVariable("salinity_quality_flag"); //PSAL_qparm");                        
+                            if (var == null) {
+                                nWarnings++;
+                                String2.log("WARNING: No salinity_quality_flag in " + sourceFileName);
+                                PSAL_qparm = PrimitiveArray.factory(int.class,  nDepth, "" + qMV);
+                            } else {
+                                PSAL_qparm = NcHelper.getPrimitiveArray(var);
+                                if (!(PSAL_qparm instanceof IntArray) || PSAL_qparm.size() != nDepth) 
+                                    throw new SimpleException("Invalid salinity_quality_flag=" + PSAL_qparm);
+                            }                   
+                        }
+
+                        //clean the data
+                        //(good to do it here so memory usage is low -- table remains as small as possible)
+                        //Change "impossible" data to NaN
+                        //(from http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf
+                        //pg 61 has Table 2.1: Global Impossible Parameter Values).
+                        BitSet keep = new BitSet();
+                        keep.set(0, nDepth);  //all true 
+
+                        //find worst impossible depth/temperature/salinity for this station
+                        //boolean tImpossibleNanDepth       = false;
+                        //boolean tImpossibleNanTemperature = false;
+                        //boolean tImpossibleNanSalinity    = false;
+                        float tImpossibleMinDepth = minDepth;
+                        float tImpossibleMaxDepth = maxDepth;
+                        float tImpossibleMinTemperature = minTemperature;
+                        float tImpossibleMaxTemperature = maxTemperature;
+                        float tImpossibleMinSalinity = minSalinity;
+                        float tImpossibleMaxSalinity = maxSalinity;
+
+                        for (int row = 0; row < nDepth; row++) {
+
+                            //DEPH_qparm
+                            int qs = DEPH_qparm.getInt(row);
+                            float f = depth.getFloat(row);
+                            if (String2.indexOf(okQF, qs) < 0) {
+                                nBadDepth++;
+                                keep.clear(row);
+                                continue;
+                            } else if (Float.isNaN(f) || f == depthMV) { //"impossible" depth
+                                //tImpossibleNanDepth = true;
+                                nBadDepth++;
+                                keep.clear(row);
+                                continue;
+                            } else if (f < minDepth) {
+                                tImpossibleMinDepth = Math.min(tImpossibleMinDepth, f);
+                                nBadDepth++;
+                                keep.clear(row);
+                                continue;
+                            } else if (f > maxDepth) { 
+                                tImpossibleMaxDepth = Math.max(tImpossibleMaxDepth, f);
+                                nBadDepth++;
+                                keep.clear(row);
+                                continue;
+                            }
+                            nGoodDepth++;
+
+                            boolean hasData = false;
+
+                            //temperature
+                            qs = TEMP_qparm.getInt(row);
+                            f = temperature.getFloat(row);
+                            if (String2.indexOf(okQF, qs) < 0) {
+                                temperature.setString(row, "");  //so bad value is now NaN
+                                nBadTemperature++;
+                            } else if (Float.isNaN(f) || f == temperatureMV) {
+                                temperature.setString(row, "");  //so missing value is now NaN
+                                nBadTemperature++;
+                            } else if (f < minTemperature) { //"impossible" water temperature
+                                tImpossibleMinTemperature = Math.min(tImpossibleMinTemperature, f);
+                                temperature.setString(row, "");  //so impossible value is now NaN
+                                nBadTemperature++;
+                            } else if (f > maxTemperature) { //"impossible" water temperature
+                                tImpossibleMaxTemperature = Math.max(tImpossibleMaxTemperature, f);
+                                temperature.setString(row, "");  //so impossible value is now NaN
+                                nBadTemperature++;
+                            } else {
+                                nGoodTemperature++;
+                                hasData = true;
+                            }
+
+                            //salinity
+                            qs = PSAL_qparm.getInt(row);
+                            f = salinity.getFloat(row);
+                            if (String2.indexOf(okQF, qs) < 0) {
+                                salinity.setString(row, "");  //so bad value is now NaN
+                                nBadSalinity++;
+                            } else if (Float.isNaN(f) || f == salinityMV) {
+                                salinity.setString(row, "");  //so missing value is now NaN
+                                nBadSalinity++;
+                            } else if (f < minSalinity) { //"impossible" salinity
+                                tImpossibleMinSalinity = Math.min(tImpossibleMinSalinity, f);
+                                salinity.setString(row, "");  //so impossible value is now NaN
+                                nBadSalinity++;
+                            } else if (f > maxSalinity) { //"impossible" salinity
+                                tImpossibleMaxSalinity = Math.max(tImpossibleMaxSalinity, f);
+                                salinity.setString(row, "");  //so impossible value is now NaN
+                                nBadSalinity++;
+                            } else {
+                                nGoodSalinity++;
+                                hasData = true;
+                            }
+
+                            //no valid temperature or salinity data?
+                            if (!hasData) {           
+                                keep.clear(row);
+                            }
+                        }
+
+                        //ensure sizes still correct
+                        Test.ensureEqual(depth.size(),       nDepth, "depth.size changed!");
+                        Test.ensureEqual(temperature.size(), nDepth, "temperature.size changed!");
+                        Test.ensureEqual(salinity.size(),    nDepth, "salinity.size changed!");
+
+                        //actually remove the bad rows
+                        int tnGood = keep.cardinality();
+                        if (testMode && verbose) String2.log(sourceFileName + 
+                            ": nGoodRows=" + tnGood + 
+                            " nBadRows=" + (nDepth - tnGood));
+                        nGoodRows += tnGood;
+                        nBadRows += nDepth - tnGood;
+                        depth.justKeep(keep);
+                        temperature.justKeep(keep);
+                        salinity.justKeep(keep);
+                        nDepth = depth.size();
+
+                        //impossible
+                        String key = sourceZipJustFileName + " " + sourceFileName;
+                        //if (tImpossibleNanDepth)
+                        //     impossibleNanDepth.add(key + " hasNaN=true");
+                        //if (tImpossibleNanTemperature)
+                        //     impossibleNanTemperature.add(key + " hasNaN=true");
+                        //if (tImpossibleNanSalinity)
+                        //     impossibleNanSalinity.add(key + " hasNaN=true");
+
+                        if (tImpossibleMinDepth < minDepth)
+                             impossibleMinDepth.add(key + " worst = " + tImpossibleMinDepth);
+                        if (tImpossibleMaxDepth > maxDepth)
+                             impossibleMaxDepth.add(key + " worst = " + tImpossibleMaxDepth);
+                        if (tImpossibleMinTemperature < minTemperature)
+                             impossibleMinTemperature.add(key + " worst = " + tImpossibleMinTemperature);
+                        if (tImpossibleMaxTemperature > maxTemperature)
+                             impossibleMaxTemperature.add(key + " worst = " + tImpossibleMaxTemperature);
+                        if (tImpossibleMinSalinity < minSalinity)
+                             impossibleMinSalinity.add(key + " worst = " + tImpossibleMinSalinity);
+                        if (tImpossibleMaxSalinity > maxSalinity)
+                             impossibleMaxSalinity.add(key + " worst = " + tImpossibleMaxSalinity);
+
+                        float lon = (float)Math2.anglePM180(longitude.getFloat(0));
+                        float lat = latitude.getFloat(0);
+                        if (lon < minLon || lon > maxLon ||
+                            lat < -90 || lat > 90) {
+                            //impossibleLatLon.add(sourceZipJustFileName + " " + sourceFileName);
+                            nGoodPos--; //adjust for above
+                            nBadPos++;
+                            throw new SimpleException("Invalid lon=" + lon + " or lat=" + lat);
+                        }
+
+                        //which table
+                        Table tTable = (Table)tableHashMap.get(platform);  //based on platform
+                        if (tTable == null) {
+
+                            Attributes ncGlobalAtts = new Attributes();
+                            NcHelper.getGlobalAttributes(ncFile, ncGlobalAtts);
+                            String tHistory = ncGlobalAtts.getString("history");
+                            tHistory =  tHistory != null && tHistory.length() > 0?
+                                tHistory + "\n" : "";
+
+                            //make a table for this platform
+                            tTable = new Table();
+                            Attributes ga = tTable.globalAttributes();
+                            String ack = "These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on " + 
+                                today + " from http://www.nodc.noaa.gov/GTSPP/.";
+                            ga.add("acknowledgment", ack);
+                            ga.add("license", 
+                                "These data are openly available to the public.  " +
+                                "Please acknowledge the use of these data with:\n" +
+                                ack + "\n\n" +
+                                "[standard]");
+                            ga.add("history", 
+                                tHistory + 
+                                ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (http://www.nodc.noaa.gov/GTSPP/)\n" +
+                                today + " Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).");
+                            ga.add("infoUrl",    "http://www.nodc.noaa.gov/GTSPP/");
+                            ga.add("institution","NOAA NODC");
+                            ga.add("title",      "Global Temperature and Salinity Profile Programme (GTSPP) Data");
+
+                            String attName = "gtspp_ConventionVersion";
+                            String attValue = ncGlobalAtts.getString(attName);
+                            if (attValue != null && attValue.length() > 0)
+                                ga.add(attName, attValue);
+                          
+                            attName = "gtspp_program";
+                            attValue = ncGlobalAtts.getString(attName);
+                            if (attValue != null && attValue.length() > 0)
+                                ga.add(attName, attValue);
+                          
+                            attName = "gtspp_programVersion";
+                            attValue = ncGlobalAtts.getString(attName);
+                            if (attValue != null && attValue.length() > 0)
+                                ga.add(attName, attValue);
+                          
+                            attName = "gtspp_handbook_version";
+                            attValue = ncGlobalAtts.getString(attName);
+                            if (attValue != null && attValue.length() > 0)
+                                ga.add(attName, attValue);
+                          
+                            organizationCol  = tTable.addColumn(tTable.nColumns(), "org",               new StringArray(),
+                                new Attributes());
+                            platformCol      = tTable.addColumn(tTable.nColumns(), "platform",          new StringArray(),
+                                new Attributes());
+                            dataTypeCol      = tTable.addColumn(tTable.nColumns(), "type",              new StringArray(),
+                                new Attributes());
+                            cruiseCol        = tTable.addColumn(tTable.nColumns(), "cruise",            new StringArray(),
+                                new Attributes());
+                            stationCol       = tTable.addColumn(tTable.nColumns(), "station_id",        new IntArray(),
+                                new Attributes());
+                            longitudeCol     = tTable.addColumn(tTable.nColumns(), "longitude",         new FloatArray(),
+                                (new Attributes()).add("units", "degrees_east"));
+                            latitudeCol      = tTable.addColumn(tTable.nColumns(), "latitude",          new FloatArray(),
+                                (new Attributes()).add("units", "degrees_north"));
+                            timeCol          = tTable.addColumn(tTable.nColumns(), "time",              new DoubleArray(),
+                                (new Attributes()).add("units", EDV.TIME_UNITS));
+                            depthCol         = tTable.addColumn(tTable.nColumns(), "depth",             new FloatArray(),
+                                (new Attributes()).add("units", "m"));
+                            temperatureCol   = tTable.addColumn(tTable.nColumns(), "temperature",       new FloatArray(),
+                                (new Attributes()).add("units", "degree_C"));
+                            salinityCol      = tTable.addColumn(tTable.nColumns(), "salinity",          new FloatArray(),
+                                (new Attributes()).add("units", "PSU"));
+
+                            tableHashMap.put(platform, tTable);
+                        }
+
+                        //put data in tTable
+                        int oNRows = tTable.nRows();
+                        ((StringArray)tTable.getColumn(organizationCol)).addN(nDepth, organization);
+                        ((StringArray)tTable.getColumn(platformCol)).addN(nDepth, platform);
+                        ((StringArray)tTable.getColumn(dataTypeCol)).addN(nDepth, dataType);
+                        ((StringArray)tTable.getColumn(cruiseCol)).addN(nDepth, cruise);
+                        ((IntArray   )tTable.getColumn(stationCol)).addN(nDepth, station);
+                        ((FloatArray )tTable.getColumn(longitudeCol)).addN(nDepth, lon);
+                        ((FloatArray )tTable.getColumn(latitudeCol)).addN(nDepth, lat);
+                        ((DoubleArray)tTable.getColumn(timeCol)).addN(nDepth, tTime);
+                        ((FloatArray )tTable.getColumn(depthCol)).append(depth);
+                        ((FloatArray )tTable.getColumn(temperatureCol)).append(temperature);
+                        ((FloatArray )tTable.getColumn(salinityCol)).append(salinity);
+
+                        //ensure the table is valid (same size for each column)
+                        tTable.ensureValid();
+
+                    } catch (Throwable t) {
+                        nExceptions++;
+                        String2.log("ERROR while processing " + sourceFileName + "\n  " + 
+                            MustBe.throwableToString(t));
+                    } finally {
+                        //always close the ncFile
+                        if (ncFile != null) {
+                            try {
+                                ncFile.close(); 
+                            } catch (Throwable t) {
+                                String2.log("ERROR: unable to close " + sourceFileName + "\n" +
+                                    MustBe.getShortErrorMessage(t));
+                            }
+                        }
+                    }
+                }
+
+                String2.log("\n  time to read all those files = " + 
+                    Calendar2.elapsedTimeString(System.currentTimeMillis() - fileReadTime));
+
+                //end of region loop
+                String2.log("\nIn zip=" + sourceZipName + 
+                    "\n nExceptions=    " + nExceptions     + "        nWarnings="        + nWarnings +
+                    "\n nBadStation=    " + nBadStation     + "        nGoodStation="     + nGoodStation +
+                    "\n nBadPos=        " + nBadPos         + "        nGoodPos="         + nGoodPos +
+                    "\n nBadTime=       " + nBadTime        + "        nGoodTime="        + nGoodTime +
+                    "\n nBadDepth=      " + nBadDepth       + "        nGoodDepth="       + nGoodDepth +
+                    "\n nBadTemperature=" + nBadTemperature + "        nGoodTemperature=" + nGoodTemperature +
+                    "\n nBadSalinity=   " + nBadSalinity    + "        nGoodSalinity="    + nGoodSalinity);
+                totalNGoodStation += nGoodStation;
+                totalNGoodPos += nGoodPos;
+                totalNGoodTime += nGoodTime;
+                totalNGoodDepth += nGoodDepth; 
+                totalNGoodTemperature += nGoodTemperature; 
+                totalNGoodSalinity += nGoodSalinity;
+                totalNGoodRows += nGoodRows;
+                totalNBadPos += nBadPos; 
+                totalNBadTime += nBadTime; 
+                totalNBadDepth += nBadDepth; 
+                totalNBadTemperature += nBadTemperature; 
+                totalNBadSalinity += nBadSalinity;
+                totalNBadRows += nBadRows;
+                totalNWarnings += nWarnings;
+                totalNExceptions += nExceptions;
+            } //end of region loop
+
+            //save by platform 
+            boolean filePrinted = false;
+            Object keys[] = tableHashMap.keySet().toArray();
+            int nKeys = keys.length;
+            String2.log("\n*** saving nPlatforms=" + nKeys);
+            for (int keyi = 0; keyi < nKeys; keyi++) {
+                String key = keys[keyi].toString();
+                Table tTable = (Table)tableHashMap.remove(key);
+                if (tTable == null || tTable.nRows() == 0) {
+                    String2.log("Unexpected: no table for key=" + key);
+                    continue;
+                }
+
+                //sort by time, station, depth  
+                //depth matches the source files: from surface to deepest
+                tTable.sort(new int[]{timeCol, stationCol, depthCol}, 
+                        new boolean[]{true,    true,       true});
+
+                //is this saving a small lat lon range?
+                double stationStats[] = tTable.getColumn(stationCol).calculateStats();
+                double lonStats[]     = tTable.getColumn(longitudeCol).calculateStats();
+                double latStats[]     = tTable.getColumn(latitudeCol).calculateStats();
+                nLats++;
+                double latRange = latStats[PrimitiveArray.STATS_MAX] - latStats[PrimitiveArray.STATS_MIN];
+                latSum += latRange;
+                rowsSum += tTable.nRows();
+                String2.log("    stationRange=" + Math2.roundToInt(stationStats[PrimitiveArray.STATS_MAX] - stationStats[PrimitiveArray.STATS_MIN]) +
+                              "  lonRange="     + Math2.roundToInt(lonStats[    PrimitiveArray.STATS_MAX] - lonStats[    PrimitiveArray.STATS_MIN]) +
+                              "  latRange="     + Math2.roundToInt(latRange) +
+                              "  nRows="        + tTable.nRows());
+
+                //save it
+                String tName = tDestDir + 
+                    year + "-" + zMonth + "_" + String2.encodeFileNameSafe(key);
+                if (lonStats[PrimitiveArray.STATS_MAX] > 45 &&
+                    lonStats[PrimitiveArray.STATS_MIN] < -45) {
+
+                    //crosses dateline (or widely across lon=0)?  split into 2 files
+                    Table ttTable = (Table)tTable.clone();
+                    ttTable.oneStepApplyConstraint(0, "longitude", "<", "0");
+                    ttTable.saveAsFlatNc(tName + "_west.nc", "row", false);
+                    double lonStatsW[] = ttTable.getColumn(longitudeCol).calculateStats();
+                    nLons++;
+                    double lonRangeW = lonStatsW[PrimitiveArray.STATS_MAX] - lonStatsW[PrimitiveArray.STATS_MIN];
+                    lonSum += lonRangeW;
+
+                    ttTable = (Table)tTable.clone();
+                    ttTable.oneStepApplyConstraint(0, "longitude", ">=", "0");
+                    ttTable.saveAsFlatNc(tName + "_east.nc", "row", false);
+                    double lonStatsE[] = ttTable.getColumn(longitudeCol).calculateStats();
+                    nLons++;
+                    double lonRangeE = lonStatsE[PrimitiveArray.STATS_MAX] - lonStatsE[PrimitiveArray.STATS_MIN];
+                    lonSum += lonRangeE;
+
+                    String2.log("  westLonRange=" + Math2.roundToInt(lonRangeW) +
+                                "  eastLonRange=" + Math2.roundToInt(lonRangeE));
+                } else {
+                    tTable.saveAsFlatNc(tName + ".nc",
+                        "row", false); //convertToFakeMissingValues  (keep mv's as NaNs)
+                }
+
+                //print a file
+                if (testMode && !filePrinted) {
+                    filePrinted = true;
+                    String2.log(NcHelper.dumpString(tName, true));
+                }
+            }
+            String2.log("\ncumulative nProfiles=" + profilesSum + " nRows=" + rowsSum);
+            if (nLats > 0) 
+                String2.log(  "cumulative nLats=" + nLats + " meanLatRange=" + (float)(latSum / nLats));
+            if (nLons > 0) {
+                String2.log(  "cumulative nLons=" + nLons + " meanLonRange=" + (float)(lonSum / nLons));
+                String2.log("mean nRows per saved file = " + (rowsSum / nLons));
+            }
+
+            //print list of impossible at end of year or end of run
+            if (month == 12 || (year == lastYear && month == lastMonth)) {
+
+                String2.log("\n*** " + Calendar2.getCurrentISODateTimeStringLocal() +
+                        " bobConsolidateGtsppTgz finished the chunk ending " + 
+                        year + "-" + month + "\n" +
+                    "chunkTime=" + 
+                        Calendar2.elapsedTimeString(System.currentTimeMillis() - chunkTime));
+                chunkTime = System.currentTimeMillis();
+
+                //print impossible statistics
+                String2.log("\nCumulative number of stations with:\n" +
+                    "impossibleMinDepth       = " + impossibleMinDepth.size() + "\n" +
+                    "impossibleMaxDepth       = " + impossibleMaxDepth.size() + "\n" +
+                    //"impossibleLatLon      = " + impossibleLatLon.size() + "\n" +
+                    "impossibleMinTemperature = " + impossibleMinTemperature.size() + "\n" +
+                    "impossibleMaxTemperature = " + impossibleMaxTemperature.size() + "\n" +
+                    "impossibleMinSalinity    = " + impossibleMinSalinity.size() + "\n" +
+                    "impossibleMaxSalinity    = " + impossibleMaxSalinity.size() + "\n");
+
+
+                String2.log("\n*** " + impossibleMinDepth.size() + " stations had depth<" + minDepth +  
+                    " and good depth quality flags (1|2).");
+                impossibleMinDepth.sortIgnoreCase();
+                String2.log(impossibleMinDepth.toNewlineString());
+
+                String2.log("\n*** " + impossibleMaxDepth.size() + " stations had depth>" + maxDepth + 
+                    " and good depth quality flags (1|2).");
+                impossibleMaxDepth.sortIgnoreCase();
+                String2.log(impossibleMaxDepth.toNewlineString());
+
+                //sa = impossibleLatLon.toArray();
+                //Arrays.sort(sa);
+                //String2.log("\n*** " + sa.length + " stations had impossible latitude or longitude values" +
+                //    " and good q_pos quality flags.");
+                //String2.log(String2.toNewlineString(sa));
+
+                String2.log("\n*** " + impossibleMinTemperature.size() + " stations had temperature<" + minTemperature + 
+                    " and good temperature quality flags (1|2).");
+                impossibleMinTemperature.sortIgnoreCase();
+                String2.log(impossibleMinTemperature.toNewlineString());
+
+                String2.log("\n*** " + impossibleMaxTemperature.size() + " stations had temperature>" + maxTemperature + 
+                    " and good temperature quality flags (1|2).");
+                impossibleMaxTemperature.sortIgnoreCase();
+                String2.log(impossibleMaxTemperature.toNewlineString());
+
+                String2.log("\n*** " + impossibleMinSalinity.size() + " stations had salinity<" + minSalinity + 
+                    " and good salinity quality flags (1|2).");
+                impossibleMinSalinity.sortIgnoreCase();
+                String2.log(impossibleMinSalinity.toNewlineString());
+
+                String2.log("\n*** " + impossibleMaxSalinity.size() + " stations had salinity>" + maxSalinity + 
+                    " and good salinity quality flags (1|2).");
+                impossibleMaxSalinity.sortIgnoreCase();
+                String2.log(impossibleMaxSalinity.toNewlineString());
+
+            }
+
+            //are we done?
+            if (year == lastYear && month == lastMonth)
+                break;
+
+            //increment the month
+            month++;
+            if (month == 13) {
+                year++; 
+                month = 1;
+            }
+
+        }  //end of month/year loop
+
+        String2.log("\n*** bobConsolidateGtspp completely finished " + firstYear + "-" + firstMonth +
+            " through " + lastYear + "-" + lastMonth);
+
+        String2.log("\n***" +
+            "\ntotalNExceptions=    " + totalNExceptions     + "        totalNWarnings=       " + totalNWarnings +
+            "\ntotalNBadStation=    " + totalNBadStation     + "        totalNGoodStation=    " + totalNGoodStation + 
+            "\ntotalNBadPos=        " + totalNBadPos         + "        totalNGoodPos=        " + totalNGoodPos + 
+            "\ntotalNBadTime=       " + totalNBadTime        + "        totalNGoodTime=       " + totalNGoodTime + 
+            "\ntotalNBadDepth=      " + totalNBadDepth       + "        totalNGoodDepth=      " + totalNGoodDepth + 
+            "\ntotalNBadTemperature=" + totalNBadTemperature + "        totalNGoodTemperature=" + totalNGoodTemperature + 
+            "\ntotalNBadSalinity=   " + totalNBadSalinity    + "        totalNGoodSalinity=   " + totalNGoodSalinity + 
+            "\ntotalNBadRows=       " + totalNBadRows        + "        totalNGoodRows=       " + totalNGoodRows + 
+            "\nlogFile=F:/data/gtspp/log.txt" +
+            "\n\n*** all finished time=" + 
+            Calendar2.elapsedTimeString(System.currentTimeMillis() - elapsedTime));
+    }
+
+    /** Almost identical to method above, 
+     * but for .zip files with the GTSPP .nc format used until the beginning of 2012 */
+     //THIS WORKS ON THE OLD FORMAT GTSPP DATA.  COMMENTED OUT TO AVOID CONFUSION.
+/*    public static void bobConsolidateGtsppPre2012(int firstYear, int firstMonth,
         int lastYear, int lastMonth, boolean testMode) throws Throwable {
 
         int chunkSize = 30;  //lon width, lat height of a tile, in degrees
@@ -2985,7 +3850,7 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
         String2.setupLog(true, false, 
             logFile, false, false, Integer.MAX_VALUE);
 
-        String2.log("*** bobConsolidateGtspp");
+        String2.log("*** bobConsolidateGtsppZip");
         long elapsedTime = System.currentTimeMillis();
         int nLon = 360 / chunkSize;
         int nLat = 180 / chunkSize;
@@ -2999,10 +3864,15 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
             totalNBadDepth = 0, totalNBadTemperature = 0, totalNBadSalinity = 0,
             totalNWarnings = 0, totalNExceptions = 0;
         long totalNGoodRows = 0, totalNBadRows = 0;
-        HashSet impossibleDepth = new HashSet();
-        HashSet impossibleLatLon = new HashSet();
-        HashSet impossibleTemperature = new HashSet();
-        HashSet impossibleSalinity = new HashSet();
+        //StringArray impossibleNaNDepth = new StringArray();
+        StringArray impossibleMinDepth = new StringArray();
+        StringArray impossibleMaxDepth = new StringArray();
+        //StringArray impossibleNanTemperature = new StringArray();
+        StringArray impossibleMinTemperature = new StringArray();
+        StringArray impossibleMaxTemperature = new StringArray();
+        //StringArray impossibleNanSalinity = new StringArray();
+        StringArray impossibleMinSalinity = new StringArray();
+        StringArray impossibleMaxSalinity = new StringArray();
 
         //*** process a month's data
         int year = firstYear;
@@ -3060,7 +3930,7 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
             File2.makeDirectory(tDestDir);
             //make sure all files are deleted 
             for (int i = 0; i < 1000000; i++) {
-                if (i % 10 == 0)
+                if (i % 10 == 0) 
                     File2.deleteAllFiles(tDestDir);
                 File tf = new File(tDestDir);
                 File files[] = tf.listFiles();
@@ -3358,6 +4228,18 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
                         //pg 61 has Table 2.1: Global Impossible Parameter Values).
                         BitSet keep = new BitSet();
                         keep.set(0, nDepth);  //all true 
+
+                        //find worst impossible depth/temperature/salinity for this station
+                        //boolean tImpossibleNanDepth       = false;
+                        //boolean tImpossibleNanTemperature = false;
+                        //boolean tImpossibleNanSalinity    = false;
+                        float tImpossibleMinDepth = minDepth;
+                        float tImpossibleMaxDepth = maxDepth;
+                        float tImpossibleMinTemperature = minTemperature;
+                        float tImpossibleMaxTemperature = maxTemperature;
+                        float tImpossibleMinSalinity = minSalinity;
+                        float tImpossibleMaxSalinity = maxSalinity;
+
                         for (int row = 0; row < nDepth; row++) {
 
                             //DEPH_qparm
@@ -3369,8 +4251,18 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
                                 nBadDepth++;
                                 keep.clear(row);
                                 continue;
-                            } else if (Float.isNaN(f) || f < minDepth || f > maxDepth) { //"impossible" depth
-                                impossibleDepth.add(sourceZipJustFileName + " " + stationName);
+                            } else if (Float.isNaN(f)) { //"impossible" depth
+                                //tImpossibleNanDepth = true;
+                                nBadDepth++;
+                                keep.clear(row);
+                                continue;
+                            } else if (f < minDepth) {
+                                tImpossibleMinDepth = Math.min(tImpossibleMinDepth, f);
+                                nBadDepth++;
+                                keep.clear(row);
+                                continue;
+                            } else if (f > maxDepth) { 
+                                tImpossibleMaxDepth = Math.max(tImpossibleMaxDepth, f);
                                 nBadDepth++;
                                 keep.clear(row);
                                 continue;
@@ -3388,10 +4280,15 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
                                 temperature.setString(row, "");  //so bad value is now NaN
                                 nBadTemperature++;
                             } else if (Float.isNaN(f) || f == temperatureMV) {
+                                //tImpossibleNanTemperature = true;
                                 temperature.setString(row, "");  //so missing value is now NaN
                                 nBadTemperature++;
-                            } else if (f < minTemperature || f > maxTemperature) { //"impossible" water temperature
-                                impossibleTemperature.add(sourceZipJustFileName + " " + stationName);
+                            } else if (f < minTemperature) { //"impossible" water temperature
+                                tImpossibleMinTemperature = Math.min(tImpossibleMinTemperature, f);
+                                temperature.setString(row, "");  //so impossible value is now NaN
+                                nBadTemperature++;
+                            } else if (f > maxTemperature) { //"impossible" water temperature
+                                tImpossibleMaxTemperature = Math.max(tImpossibleMaxTemperature, f);
                                 temperature.setString(row, "");  //so impossible value is now NaN
                                 nBadTemperature++;
                             } else {
@@ -3408,10 +4305,15 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
                                 salinity.setString(row, "");  //so bad value is now NaN
                                 nBadSalinity++;
                             } else if (Float.isNaN(f) || f == salinityMV) {
+                                //tImpossibleNanSalinity = true;
                                 salinity.setString(row, "");  //so missing value is now NaN
                                 nBadSalinity++;
-                            } else if (f < minSalinity || f > maxSalinity) { //"impossible" salinity
-                                impossibleSalinity.add(sourceZipJustFileName + " " + stationName);
+                            } else if (f < minSalinity) { //"impossible" salinity
+                                tImpossibleMinSalinity = Math.min(tImpossibleMinSalinity, f);
+                                salinity.setString(row, "");  //so impossible value is now NaN
+                                nBadSalinity++;
+                            } else if (f > maxSalinity) { //"impossible" salinity
+                                tImpossibleMaxSalinity = Math.max(tImpossibleMaxSalinity, f);
                                 salinity.setString(row, "");  //so impossible value is now NaN
                                 nBadSalinity++;
                             } else {
@@ -3442,12 +4344,34 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
                         salinity.justKeep(keep);
                         nDepth = depth.size();
 
+                        //impossible
+                        String key = sourceZipJustFileName + " " + stationName;
+                        //if (tImpossibleNanDepth)
+                        //     impossibleNanDepth.add(key + " hasNaN=true");
+                        //if (tImpossibleNanTemperature)
+                        //     impossibleNanTemperature.add(key + " hasNaN=true");
+                        //if (tImpossibleNanSalinity)
+                        //     impossibleNanSalinity.add(key + " hasNaN=true");
+
+                        if (tImpossibleMinDepth < minDepth)
+                             impossibleMinDepth.add(key + " worst = " + tImpossibleMinDepth);
+                        if (tImpossibleMaxDepth > maxDepth)
+                             impossibleMaxDepth.add(key + " worst = " + tImpossibleMaxDepth);
+                        if (tImpossibleMinTemperature < minTemperature)
+                             impossibleMinTemperature.add(key + " worst = " + tImpossibleMinTemperature);
+                        if (tImpossibleMaxTemperature > maxTemperature)
+                             impossibleMaxTemperature.add(key + " worst = " + tImpossibleMaxTemperature);
+                        if (tImpossibleMinSalinity < minSalinity)
+                             impossibleMinSalinity.add(key + " worst = " + tImpossibleMinSalinity);
+                        if (tImpossibleMaxSalinity > maxSalinity)
+                             impossibleMaxSalinity.add(key + " worst = " + tImpossibleMaxSalinity);
+
                         //which table
                         float lon = (float)Math2.anglePM180(longitude.getFloat(0));
                         float lat = latitude.getFloat(0);
                         if (lon < minLon || lon > maxLon ||
                             lat < -90 || lat > 90) {
-                            impossibleLatLon.add(sourceZipJustFileName + " " + stationName);
+                            //impossibleLatLon.add(sourceZipJustFileName + " " + stationName);
                             nGoodPos--; //adjust for above
                             nBadPos++;
                             throw new SimpleException("Invalid lon=" + lon + " or lat=" + lat);
@@ -3549,10 +4473,13 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 
             //print impossible statistics
             String2.log("\nTotal number of stations with:\n" +
-                "impossibleDepth       = " + impossibleDepth.size() + "\n" +
-                "impossibleLatLon      = " + impossibleLatLon.size() + "\n" +
-                "impossibleTemperature = " + impossibleTemperature.size() + "\n" +
-                "impossibleSalinity    = " + impossibleSalinity.size() + "\n");
+                "impossibleMinDepth       = " + impossibleMinDepth.size() + "\n" +
+                "impossibleMaxDepth       = " + impossibleMaxDepth.size() + "\n" +
+                //"impossibleLatLon      = " + impossibleLatLon.size() + "\n" +
+                "impossibleMinTemperature = " + impossibleMinTemperature.size() + "\n" +
+                "impossibleMaxTemperature = " + impossibleMaxTemperature.size() + "\n" +
+                "impossibleMinSalinity    = " + impossibleMinSalinity.size() + "\n" +
+                "impossibleMaxSalinity    = " + impossibleMaxSalinity.size() + "\n");
 
             //increment the month
             month++;
@@ -3565,30 +4492,41 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
         String2.log("\n*** bobConsolidateGtspp finished " + firstYear + "-" + firstMonth +
             " through " + lastYear + "-" + lastMonth);
 
-        Object sa[] = impossibleDepth.toArray();
-        Arrays.sort(sa);
-        String2.log("\n*** " + sa.length + " stations had depth<" + minDepth + " or >" + maxDepth + 
+        String2.log("\n*** " + impossibleMinDepth.size() + " stations had depth<" + minDepth +  
             " and good depth quality flags.");
-        String2.log(String2.toNewlineString(sa));
+        impossibleMinDepth.sortIgnoreCase();
+        String2.log(impossibleMinDepth.toNewlineString());
 
-        sa = impossibleLatLon.toArray();
-        Arrays.sort(sa);
-        String2.log("\n*** " + sa.length + " stations had impossible latitude or longitude values" +
-            " and good q_pos quality flags.");
-        String2.log(String2.toNewlineString(sa));
+        String2.log("\n*** " + impossibleMaxDepth.size() + " stations had depth>" + maxDepth + 
+            " and good depth quality flags.");
+        impossibleMaxDepth.sortIgnoreCase();
+        String2.log(impossibleMaxDepth.toNewlineString());
 
-        sa = impossibleTemperature.toArray();
-        Arrays.sort(sa);
-        String2.log("\n*** " + sa.length + " stations had temperature<" + minTemperature + " or >" + maxTemperature + 
+        //sa = impossibleLatLon.toArray();
+        //Arrays.sort(sa);
+        //String2.log("\n*** " + sa.length + " stations had impossible latitude or longitude values" +
+        //    " and good q_pos quality flags.");
+        //String2.log(String2.toNewlineString(sa));
+
+        String2.log("\n*** " + impossibleMinTemperature.size() + " stations had temperature<" + minTemperature + 
             " and good temperature quality flags.");
-        String2.log(String2.toNewlineString(sa));
+        impossibleMinTemperature.sortIgnoreCase();
+        String2.log(impossibleMinTemperature.toNewlineString());
 
-        sa = impossibleSalinity.toArray();
-        Arrays.sort(sa);
-        String2.log("\n*** " + sa.length + " stations had salinity<" + minSalinity + " or >" + maxSalinity + 
+        String2.log("\n*** " + impossibleMaxTemperature.size() + " stations had temperature>" + maxTemperature + 
+            " and good temperature quality flags.");
+        impossibleMaxTemperature.sortIgnoreCase();
+        String2.log(impossibleMaxTemperature.toNewlineString());
+
+        String2.log("\n*** " + impossibleMinSalinity.size() + " stations had salinity<" + minSalinity + 
             " and good salinity quality flags.");
-        String2.log(String2.toNewlineString(sa));
+        impossibleMinSalinity.sortIgnoreCase();
+        String2.log(impossibleMinSalinity.toNewlineString());
 
+        String2.log("\n*** " + impossibleMaxSalinity.size() + " stations had salinity>" + maxSalinity + 
+            " and good salinity quality flags.");
+        impossibleMaxSalinity.sortIgnoreCase();
+        String2.log(impossibleMaxSalinity.toNewlineString());
 
         String2.log("\n***" +
             "\ntotalNExceptions=    " + totalNExceptions     + "        totalNWarnings=       " + totalNWarnings +
@@ -3603,7 +4541,7 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
             "\n\n*** all finished time=" + 
             Calendar2.elapsedTimeString(System.currentTimeMillis() - elapsedTime));
     }
-
+*/
     /**
      * Test erdGtsppBest against source files (.zip to .nc to ncdump).
      */
@@ -3625,14 +4563,23 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
         expected = 
 "Attributes {\n" +
 " s {\n" +
-"  station_id {\n" +
-"    Int32 actual_range 1, 11949088;\n" + //changes; other changes below...
-"    String cf_role \"profile_id\";\n" +
+"  platform {\n" +
+"    String comment \"See the list of platform codes (sorted in various ways) at http://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html\";\n" +
 "    String ioos_category \"Identifier\";\n" +
-"    String long_name \"Station ID\";\n" +
+"    String long_name \"GTSPP Platform Code\";\n" +
+"    String references \"http://www.nodc.noaa.gov/gtspp/document/codetbls/callist.html\";\n" +
+"  }\n" +
+"  cruise {\n" +
+"    String cf_role \"trajectory_id\";\n" +
+"    String comment \"Radio callsign + year for real time data, or NODC reference number for delayed mode data.  See\n" +
+"http://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html .\n" +
+"'X' indicates a missing value.\";\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"Cruise_ID\";\n" +
 "  }\n" +
 "  org {\n" +
-"    String description \"Code  Meaning\n" +
+"    String comment \"From the first 2 characters of stream_ident:\n" +
+"Code  Meaning\n" +
 "AD  Australian Oceanographic Data Centre\n" +
 "AF  Argentina Fisheries (Fisheries Research and Development National Institute (INIDEP), Mar del Plata, Argentina\n" +
 "AO  Atlantic Oceanographic and Meteorological Lab\n" +
@@ -3675,7 +4622,8 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "    String long_name \"Organization\";\n" +
 "  }\n" +
 "  type {\n" +
-"    String description \"Code  Meaning\n" +
+"    String comment \"From the 3rd and 4th characters of stream_ident:\n" +
+"Code  Meaning\n" +
 "AR  Animal mounted recorder\n" +
 "BA  BATHY message\n" +
 "BF  Undulating Oceanographic Recorder (e.g. Batfish CTD)\n" +
@@ -3715,19 +4663,20 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Data Type\";\n" +
 "  }\n" +
-"  cruise {\n" +
-"    String description \"Radio callsign + year for real time data, or NODC reference number for delayed mode data.  See http://www.nodc.noaa.gov/GTSPP/document/codetbls/calllist.html .\";\n" +
+"  station_id {\n" +
+"    Int32 actual_range 1254666, 8118701;\n" +
+"    String cf_role \"profile_id\";\n" +
+"    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
-"    String long_name \"Cruise ID\";\n" +
+"    String long_name \"Station ID Number\";\n" +
 "  }\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float32 actual_range -180.0, 179.999;\n" +
+"    Float32 actual_range -180.0, 179.8917;\n" +
 "    String axis \"X\";\n" +
 "    String C_format \"%9.4f\";\n" +
 "    Float64 colorBarMaximum 180.0;\n" +
 "    Float64 colorBarMinimum -180.0;\n" +
-"    String description \"Decimal degrees (+ = east, - = west)\";\n" +
 "    Int32 epic_code 502;\n" +
 "    String FORTRAN_format \"F9.4\";\n" +
 "    String ioos_category \"Location\";\n" +
@@ -3739,12 +4688,11 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float32 actual_range -78.579, 90.0;\n" +
+"    Float32 actual_range -62.8667, 77.0167;\n" +
 "    String axis \"Y\";\n" +
 "    String C_format \"%8.4f\";\n" +
 "    Float64 colorBarMaximum 90.0;\n" +
 "    Float64 colorBarMinimum -90.0;\n" +
-"    String description \"Decimal degrees (+ = north, - = south)\";\n" +
 "    Int32 epic_code 500;\n" +
 "    String FORTRAN_format \"F8.4\";\n" +
 "    String ioos_category \"Location\";\n" +
@@ -3756,7 +4704,7 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 6.31152e+8, 1.3093053e+9;\n" + //changes
+"    Float64 actual_range 9.466848e+8, 9.4936314e+8;\n" +
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -3766,7 +4714,7 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "  }\n" +
 "  depth {\n" +
 "    String _CoordinateAxisType \"Height\";\n" +
-"    Float32 actual_range 0.0, 9910.0;\n" +
+"    Float32 actual_range 0.0, 2044.0;\n" +
 "    String axis \"Z\";\n" +
 "    String C_format \"%6.2f\";\n" +
 "    Float64 colorBarMaximum 5000.0;\n" +
@@ -3774,87 +4722,120 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "    Int32 epic_code 3;\n" +
 "    String FORTRAN_format \"F6.2\";\n" +
 "    String ioos_category \"Location\";\n" +
-"    String long_name \"Depth of the Observation\";\n" +
+"    String long_name \"Depth of the Observations\";\n" +
 "    String positive \"down\";\n" +
+"    String standard_name \"depth\";\n" +
 "    String units \"m\";\n" +
 "  }\n" +
 "  temperature {\n" +
-"    Float32 actual_range -2.0, 40.0;\n" +
+"    Float32 actual_range -1.78, 33.8;\n" +
 "    String C_format \"%9.4f\";\n" +
+"    String cell_methods \"time: point longitude: point latitude: point depth: point\";\n" +
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
+"    String coordinates \"time latitude longitude depth\";\n" +
 "    Int32 epic_code 28;\n" +
 "    String FORTRAN_format \"F9.4\";\n" +
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"Sea Water Temperature\";\n" +
-"    String Standard \"2\";\n" +
 "    String standard_name \"sea_water_temperature\";\n" +
 "    String units \"degree_C\";\n" +
 "  }\n" +
 "  salinity {\n" +
-"    Float32 actual_range 0.0, 41.0;\n" +
+"    Float32 actual_range 7.46, 37.53;\n" +
 "    String C_format \"%9.4f\";\n" +
+"    String cell_methods \"time: point longitude: point latitude: point depth: point\";\n" +
 "    Float64 colorBarMaximum 37.0;\n" +
 "    Float64 colorBarMinimum 32.0;\n" +
+"    String coordinates \"time latitude longitude depth\";\n" +
 "    Int32 epic_code 41;\n" +
 "    String FORTRAN_format \"F9.4\";\n" +
 "    String ioos_category \"Salinity\";\n" +
-"    String long_name \"Sea Water Salinity\";\n" +
-"    String Standard \"1\";\n" +
+"    String long_name \"Practical Salinity\";\n" +
+"    String salinity_scale \"psu\";\n" +
 "    String standard_name \"sea_water_salinity\";\n" +
 "    String units \"PSU\";\n" +
 "  }\n" +
 " }\n" +
 "  NC_GLOBAL {\n" +
+"    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-04-15 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +
 "    String cdm_altitude_proxy \"depth\";\n" +
-"    String cdm_data_type \"Profile\";\n" +  
-"    String cdm_profile_variables \"station_id, org, type, cruise, longitude, latitude, time\";\n" +
-"    String Conventions \"COARDS, WOCE, GTSPP, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
-"    Float64 Easternmost_Easting 179.999;\n" +
+"    String cdm_data_type \"TrajectoryProfile\";\n" +
+"    String cdm_profile_variables \"org, type, station_id, longitude, latitude, time\";\n" +
+"    String cdm_trajectory_variables \"platform, cruise\";\n" +
+"    String Conventions \"COARDS, WOCE, GTSPP, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String creator_email \"nodc.gtspp@noaa.gov\";\n" +
+"    String creator_name \"US DOC; NESDIS; NATIONAL OCEANOGRAPHIC DATA CENTER - IN295\";\n" +
+"    String creator_url \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
+"    String crs \"EPSG:4326\";\n" +
+"    Float64 Easternmost_Easting 179.8917;\n" +
+"    String featureType \"TrajectoryProfile\";\n" +
 "    String file_source \"The GTSPP Continuously Managed Data Base\";\n" +
-"    String format_version \"GTSPP NetCDF format Ver. 3.7\";\n" +
-"    Float64 geospatial_lat_max 90.0;\n" +
-"    Float64 geospatial_lat_min -78.579;\n" +
+"    Float64 geospatial_lat_max 77.0167;\n" +
+"    Float64 geospatial_lat_min -62.8667;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
-"    Float64 geospatial_lon_max 179.999;\n" +
+"    Float64 geospatial_lon_max 179.8917;\n" +
 "    Float64 geospatial_lon_min -180.0;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
-"    String history \".zip files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (http://www.nodc.noaa.gov/GTSPP/)\n" +
-"2011-07-24 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n" + //changes
+"    String gtspp_ConventionVersion \"GTSPP4.0\";\n" +
+"    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
+"    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
+"    String gtspp_programVersion \"1.3\";\n" +
+"    String history \"2012-03-15??0\n" +
+".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (http://www.nodc.noaa.gov/GTSPP/)\n" +
+"2012-04-15 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n" +
 today + " (local files)\n" +
 today + " http://127.0.0.1:8080/cwexperimental/tabledap/testErdGtsppBest.das\";\n" +
+"    String id \"gtsppBest\";\n" +
 "    String infoUrl \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
 "    String institution \"NOAA NODC\";\n" +
+"    String keywords \"Oceans > Ocean Temperature > Water Temperature,\n" +
+"Oceans > Salinity/Density > Salinity,\n" +
+"cruise, data, density, depth, global, gtspp, identifier, noaa, nodc, observation, ocean, oceans, organization, profile, program, salinity, sea, sea_water_salinity, sea_water_temperature, seawater, station, temperature, temperature-salinity, time, type, water\";\n" +
+"    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +
-"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-04-15 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"\n" +
+"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
 "of their employees or contractors, makes any warranty, express or\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, WOCE, GTSPP, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
-"    Float64 Northernmost_Northing 90.0;\n" +
+"    String Metadata_Conventions \"COARDS, WOCE, GTSPP, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String naming_authority \"gov.noaa.nodc\";\n" +
+"    Float64 Northernmost_Northing 77.0167;\n" +
 "    String observationDimension \"row\";\n" +
+"    String project \"Joint IODE/JCOMM Global Temperature-Salinity Profile Programme\";\n" +
+"    String references \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    Float64 Southernmost_Northing -78.579;\n" +
+"    Float64 Southernmost_Northing -62.8667;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
-"    String summary \"The Global Temperature and Salinity Profile Program (GTSPP) develops and maintains a global ocean Temperature-Salinity resource with data that are both up-to-date and of the highest quality. It is a joint World Meteorological Organization (WMO) and Intergovernmental Oceanographic Commission (IOC) program.  It includes data from XBTs, CTDs, moored and drifting buoys, and PALACE floats. For information about organizations contributing data to GTSPP, see http://gosic.org/goos/GTSPP-data-flow.htm .  The U.S. National Oceanographic Data Center (NODC) maintains the GTSPP database and releases new 'best-copy' data once per month.\n" +
+"    String subsetVariables \"platform, cruise, org, type\";\n" +
+"    String summary \"The Global Temperature-Salinity Profile Programme (GTSPP) develops and maintains a global ocean temperature and salinity resource with data that are both up-to-date and of the highest quality. It is a joint World Meteorological Organization (WMO) and Intergovernmental Oceanographic Commission (IOC) program.  It includes data from XBTs, CTDs, moored and drifting buoys, and PALACE floats. For information about organizations contributing data to GTSPP, see http://gosic.org/goos/GTSPP-data-flow.htm .  The U.S. National Oceanographic Data Center (NODC) maintains the GTSPP Continuously Managed Data Base and releases new 'best-copy' data once per month.\n" +
 "\n" +
-"WARNING: This dataset has a *lot* of data.  To avoid having your request fail because you are requesting too much data at once, you should always specify either a small time bounding box (at most, a few days) and/or a small longitude and latitude bounding box (at most, 1 degree square).  (Subsetting by station_id is slow.)\n" +
-"\n" +                                                                         //changes:
-"*** This ERDDAP dataset has data for the entire world for all available times (currently, up to and including the June 2011 data) but is a subset of the original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=CHANGED (and now correct). It does not include much of the metadata or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
-"* Profiles with a position quality flag (q_pos) or a time quality flag (q_date_time) other than 1|2|5 were removed.\n" +
-"* Rows with depth value less than 0 or greater than 10000 or a depth quality flag (DEPH_qparm) other than 1|2|5 were removed.\n" +
-"* Temperature values less than -2 or greater than 40 or with a temperature quality flag (TEMP_qparm) other than 1|2|5 were set to NaN.\n" +
-"* Salinity values less than 0 or greater than 41 or with a salinity quality flag (PSAL_qparm) other than 1|2|5 were set to NaN.\n" +
+"WARNING: This dataset has a *lot* of data.  To avoid having your request fail because you are requesting too much data at once, you should almost always specify either:\n" +
+"* a specific platform, cruise, org, type, and/or station_id,\n" +
+"* a small time bounding box (at most, a few days), and/or\n" +
+"* a small longitude and latitude bounding box (at most, several degrees square).\n" +
+"(Requesting a specific station_id is slow, but works.)\n" +
+"\n" +
+"*** This ERDDAP dataset has data for the entire world for all available times (currently, up to and including the March 2012 data) but is a subset of the original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT or 2=PROBABLY GOOD. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
+"* Profiles with a position_quality_flag or a time_quality_flag other than 1|2 were removed.\n" +
+"* Rows with a depth (z) value less than 0 or greater than 10000 or a z_variable_quality_flag other than 1|2 were removed.\n" +
+"* Temperature values less than -2 or greater than 40 or with a temperature_quality_flag other than 1|2 were set to NaN.\n" +
+"* Salinity values less than 0 or greater than 41 or with a salinity_quality_flag other than 1|2 were set to NaN.\n" +
 "* Time values were converted from \\\"days since 1900-01-01 00:00:00\\\" to \\\"seconds since 1970-01-01T00:00:00\\\".\n" +
 "\n" +
 "See the Quality Flag definitions on page 5 and \\\"Table 2.1: Global Impossible Parameter Values\\\" on page 61 of\n" +
-"http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\";\n" +
-"    String time_coverage_end \"2011-06-28T23:55:00Z\";\n" +   //changes
-"    String time_coverage_start \"1990-01-01T00:00:00Z\";\n" +
-"    String title \"Global Temperature-Salinity Profile Program (GTSPP) Data\";\n" +
+"http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\n" +
+"The Quality Flag definitions are also at\n" +
+"http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
+"    String time_coverage_end \"2000-01-31T23:59:00Z\";\n" +
+"    String time_coverage_start \"2000-01-01T00:00:00Z\";\n" +
+"    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
 "  }\n" +
 "}\n";
@@ -3868,10 +4849,11 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/testErdGtsppBest.das\";\
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
-"    Int32 station_id;\n" +
+"    String platform;\n" +
+"    String cruise;\n" +
 "    String org;\n" +
 "    String type;\n" +
-"    String cruise;\n" +
+"    Int32 station_id;\n" +
 "    Float32 longitude;\n" +
 "    Float32 latitude;\n" +
 "    Float64 time;\n" +
@@ -3883,63 +4865,18 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/testErdGtsppBest.das\";\
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
-        //lon lat time range and station_id    should succeed quickly (except for println statements here)
+        //station_id    should succeed quickly (except for println statements here)
         tName = tedd.makeNewFileForDapQuery(null, null, 
-            "&longitude=-96.8333&latitude=75.3833&time>=1995-05-01&time<1995-06-01&station_id=1989427", 
-            EDStatic.fullTestCacheDirectory, "gtspp1989427", ".csv"); 
+            "&station_id=1254666", 
+            EDStatic.fullTestCacheDirectory, "gtspp1254666", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
-        //good test of salinity values: I hand checked this from 1989427.nc in gtspp_at199505.zip
         expected = 
-//"1989427, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 14.0, 4.445, NaN\n" +    //they have PSAL_qparm=1 sal= 44.5090
-//"1989427, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 15.0, 6.206, NaN\n" +    //they have PSAL_qparm=4
-"station_id, org, type, cruise, longitude, latitude, time, depth, temperature, salinity\n" +
-", , , , degrees_east, degrees_north, UTC, m, degree_C, PSU\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 2.0, -0.345, 6.661\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 3.0, -0.346, 6.661\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 4.0, -0.345, 6.661\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 5.0, -0.346, 6.661\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 6.0, -0.346, 6.661\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 7.0, -0.346, 6.66\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 8.0, -0.347, 6.66\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 9.0, -0.347, 6.661\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 10.0, -0.346, 6.661\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 11.0, -0.313, 6.662\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 12.0, 0.27, 7.78\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 13.0, 2.381, 27.279\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 14.0, 4.445, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 15.0, 6.206, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 16.0, 7.436, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 17.0, 8.418, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 18.0, 9.001, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 19.0, 9.372, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 20.0, 9.67, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 21.0, 9.807, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 22.0, 9.936, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 23.0, 9.974, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 24.0, 9.991, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 25.0, 9.99, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 26.0, 9.991, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 27.0, 9.991, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 28.0, 9.995, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 29.0, 10.0, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 30.0, 10.003, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 31.0, 10.002, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 32.0, 10.004, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 33.0, 10.002, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 34.0, 10.003, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 35.0, 10.005, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 36.0, 10.005, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 37.0, 10.007, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 38.0, 10.005, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 39.0, 10.002, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 40.0, 9.991, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 41.0, 9.989, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 42.0, 9.976, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 43.0, 9.96, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 44.0, 9.94, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 45.0, 9.905, NaN\n" +
-"1989427, IO, CT, 189995015, -96.8333, 75.3833, 1995-05-08T21:41:00Z, 46.0, 9.873, NaN\n";
+"platform,cruise,org,type,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
+",,,,,degrees_east,degrees_north,UTC,m,degree_C,PSU\n" +
+"33TT,21004   00,ME,BA,1254666,134.9833,28.9833,2000-01-01T03:00:00Z,0.0,20.8,NaN\n" +
+"33TT,21004   00,ME,BA,1254666,134.9833,28.9833,2000-01-01T03:00:00Z,50.0,20.7,NaN\n" +
+"33TT,21004   00,ME,BA,1254666,134.9833,28.9833,2000-01-01T03:00:00Z,100.0,20.7,NaN\n";
         Test.ensureEqual(results.substring(results.length() - expected.length()), expected, 
             "\nresults=\n" + results);
 
@@ -3968,87 +4905,74 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/testErdGtsppBest.das\";\
             Test.ensureTrue(error.indexOf(EDStatic.THERE_IS_NO_DATA) >= 0, "error=" + error);
         }
 
-        //latitude = 90    should succeed quickly (except for println statements here)
-        tName = tedd.makeNewFileForDapQuery(null, null, "&latitude=90", 
-            EDStatic.fullTestCacheDirectory, "gtspp90", ".csv"); 
+        //latitude = 77.0167    should succeed quickly (except for println statements here)
+        tName = tedd.makeNewFileForDapQuery(null, null, "&latitude=77.0167", 
+            EDStatic.fullTestCacheDirectory, "gtspp77", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"station_id, org, type, cruise, longitude, latitude, time, depth, temperature, salinity\n" +
-", , , , degrees_east, degrees_north, UTC, m, degree_C, PSU\n" +
-"786789, TC, XB, UPIG    90, 110.0, 90.0, 1990-08-08T09:00:00Z, 1.0, -1.85, NaN\n" +
-"786789, TC, XB, UPIG    90, 110.0, 90.0, 1990-08-08T09:00:00Z, 2.0, -1.85, NaN\n" +
-"786789, TC, XB, UPIG    90, 110.0, 90.0, 1990-08-08T09:00:00Z, 3.0, -1.85, NaN\n" +
-"786789, TC, XB, UPIG    90, 110.0, 90.0, 1990-08-08T09:00:00Z, 4.0, -1.85, NaN\n";
-        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-        expected =  //last rows
-"8117127, IO, CT, 180294071, 80.0, 90.0, 1994-08-22T15:09:00Z, 599.0, 0.411, 34.878\n" +
-"8117127, IO, CT, 180294071, 80.0, 90.0, 1994-08-22T15:09:00Z, 600.0, 0.414, 34.879\n" +
-"8117127, IO, CT, 180294071, 80.0, 90.0, 1994-08-22T15:09:00Z, 601.0, 0.417, 34.88\n" +
-"8117127, IO, CT, 180294071, 80.0, 90.0, 1994-08-22T15:09:00Z, 602.0, 0.42, 34.879\n";
+"platform,cruise,org,type,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
+",,,,,degrees_east,degrees_north,UTC,m,degree_C,PSU\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,3.0,3.37,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,8.0,3.25,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,13.0,4.47,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,18.0,4.48,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,23.0,4.48,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,28.0,4.48,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,33.0,4.48,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,38.0,4.48,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,44.0,4.49,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,49.0,4.49,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,56.0,4.49,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,67.0,4.48,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,77.0,4.48,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,87.0,4.48,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,97.0,4.48,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,108.0,4.49,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,118.0,4.48,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,128.0,4.49,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,138.0,4.49,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,148.0,4.49,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,159.0,4.49,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,169.0,4.48,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,179.0,4.44,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,189.0,4.34,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,200.0,4.28,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,210.0,4.25,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,220.0,4.18,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,230.0,4.16,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,241.0,4.15,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,251.0,4.14,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,261.0,4.11,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,271.0,4.11,NaN\n" +
+"33PF,62740   00,ME,TE,1264636,-11.75,77.0167,2000-01-22T08:31:00Z,282.0,4.07,NaN\n";
 
-        Test.ensureEqual(results.substring(results.length() - expected.length()), expected, 
-            "\nresults=\n" + results);
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
-        //lon lat time range     should succeed quickly (except for println statements here)
+        //time range     should succeed quickly (except for println statements here)
         long eTime = System.currentTimeMillis();
         tName = tedd.makeNewFileForDapQuery(null, null, 
-            "&longitude>=-140&longitude<=-139.5&latitude>=35&latitude<=35.5&time>=2009-05-01&time<2009-05-31", 
+            "&time>2000-01-01T02:59:59Z&time<2000-01-01T03:00:01Z", 
             EDStatic.fullTestCacheDirectory, "gtsppLL", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
-        //good test of salinity values: I hand checked this from 7003015.nc in gtspp_pa200905.zip
         expected = 
-"station_id, org, type, cruise, longitude, latitude, time, depth, temperature, salinity\n" +
-", , , , degrees_east, degrees_north, UTC, m, degree_C, PSU\n" +
-"7003015, ME, TE, Q590147109, -139.719, 35.459, 2009-05-10T23:17:00Z, 6.0, 15.62, 33.36\n" +
-"7003015, ME, TE, Q590147109, -139.719, 35.459, 2009-05-10T23:17:00Z, 10.0, 15.54, NaN\n" +
-"7003015, ME, TE, Q590147109, -139.719, 35.459, 2009-05-10T23:17:00Z, 20.0, 15.31, NaN\n";
-        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-        //good test of salinity values: I hand checked this from 7092983.nc in gtspp_pa200905.zip
-        expected =  //last rows
-"7092983, ME, TE, Q590147109, -139.966, 35.121, 2009-05-26T10:52:00Z, 1877.0, 2.06, 34.6\n" +
-"7092983, ME, TE, Q590147109, -139.966, 35.121, 2009-05-26T10:52:00Z, 1926.0, 2.01, 34.6\n" +
-"7092983, ME, TE, Q590147109, -139.966, 35.121, 2009-05-26T10:52:00Z, 1976.0, 1.96, 34.61\n";
-        Test.ensureEqual(results.substring(results.length() - expected.length()), expected, 
-            "\nresults=\n" + results);
-        String2.log("lon lat range request. elapsedTime=" + (System.currentTimeMillis() - eTime));
+"platform,cruise,org,type,station_id,longitude,latitude,time,depth,temperature,salinity\n" +
+",,,,,degrees_east,degrees_north,UTC,m,degree_C,PSU\n" +
+"33TT,21004   00,ME,BA,1254666,134.9833,28.9833,2000-01-01T03:00:00Z,0.0,20.8,NaN\n" +
+"33TT,21004   00,ME,BA,1254666,134.9833,28.9833,2000-01-01T03:00:00Z,50.0,20.7,NaN\n" +
+"33TT,21004   00,ME,BA,1254666,134.9833,28.9833,2000-01-01T03:00:00Z,100.0,20.7,NaN\n" +
+"33TT,21002   00,ME,BA,1254689,134.5333,37.9,2000-01-01T03:00:00Z,0.0,14.7,NaN\n" +
+"33TT,21002   00,ME,BA,1254689,134.5333,37.9,2000-01-01T03:00:00Z,50.0,14.8,NaN\n" +
+"33TT,21002   00,ME,BA,1254689,134.5333,37.9,2000-01-01T03:00:00Z,100.0,14.7,NaN\n" +
+"33TT,22001   00,ME,BA,1254716,126.3,28.1667,2000-01-01T03:00:00Z,0.0,22.3,NaN\n" +
+"33TT,22001   00,ME,BA,1254716,126.3,28.1667,2000-01-01T03:00:00Z,50.0,21.3,NaN\n" +
+"33TT,22001   00,ME,BA,1254716,126.3,28.1667,2000-01-01T03:00:00Z,100.0,19.8,NaN\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        String2.log("time. elapsedTime=" + (System.currentTimeMillis() - eTime));
         //String2.getStringFromSystemIn("Press Enter to continue or ^C to stop ->");
 
-
-
-        //from  station_id=103252  (1990-01 atlantic); time = 32875.7493055556 ;
-        //  (ERDDAP confirms 32875.749305555 days since 1900-01-01T00:00:00 = 1990-01-04T17:59:00Z)
-        //  1990-01-04T17:59   lat 10.4167  longitude 58.8500 
-        // depth =   0.00,   3.00,   8.00,  25.00,  28.00,  71.00, 
-        //    last   780.00, 785.00, 793.00, 794.00 ;
-        // temperature = 26.8000, 99.9000, 26.8000, 26.7000, 26.7000, 26.6000,
-        //     last  9.8000, 9.8000, 9.7000, 9.7000 ;
-        // no salinity
-        // all quality flags are 1 or 2
-
-        //station_id 103252   (a slow test)
-        tName = tedd.makeNewFileForDapQuery(null, null, 
-            "&station_id=103252", 
-            EDStatic.fullTestCacheDirectory, "gtspp103252", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
-        //String2.log(results);
-        expected = 
-"station_id, org, type, cruise, longitude, latitude, time, depth, temperature, salinity\n" +
-", , , , degrees_east, degrees_north, UTC, m, degree_C, PSU\n" +
-"103252, NO, XB, FNJT    90, 58.85, 10.4167, 1990-01-04T17:59:00Z, 0.0, 26.8, NaN\n" +
-"103252, NO, XB, FNJT    90, 58.85, 10.4167, 1990-01-04T17:59:00Z, 8.0, 26.8, NaN\n";
-        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-
-        expected =  //last rows
-"103252, NO, XB, FNJT    90, 58.85, 10.4167, 1990-01-04T17:59:00Z, 780.0, 9.8, NaN\n" +
-"103252, NO, XB, FNJT    90, 58.85, 10.4167, 1990-01-04T17:59:00Z, 785.0, 9.8, NaN\n" +
-"103252, NO, XB, FNJT    90, 58.85, 10.4167, 1990-01-04T17:59:00Z, 793.0, 9.7, NaN\n" +
-"103252, NO, XB, FNJT    90, 58.85, 10.4167, 1990-01-04T17:59:00Z, 794.0, 9.7, NaN\n";
-
-        Test.ensureEqual(results.substring(results.length() - expected.length()), expected, 
-            "\nresults=\n" + results);
 
 
     }
@@ -4218,17 +5142,17 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/testErdGtsppBest.das\";\
         int expectedMs[] = new int[] { 
             //now Java 1.6                 //was Java 1.5
             //graphics tests changed a little, so not perfectly comparable
-            3125, 2718, 2719, 16, 31,      //4469, 4125, 4094, 16, 32, 
+            3125, 2625, 2687, 16, 31,      //4469, 4125, 4094, 16, 32, 
             687, 3531, 5219, 47, 31,       //1782, 5156, 6922, 125, 100, 
             4400, 2719, 1531, 1922, 1797,  //6109, 4109, 4921, 4921, 4610, 
             4266, 32, 2562, 2531, 4266,    //8359, 31, 3969, 3921, 6531, 
             2078, 2500, 2063, 2047,        //4500, 5800, 5812, 5610, 
             2984, 3125, 3391};             //5421, 5204, 5343};         
         int bytes[]    = new int[] {
-            18989646, 15374361, 15374379, 12923, 394, 
-            11703093, 18829503, 55007762, 129296, 156701, 
-            48534273, 17827554, 10485696, 9887104, 13177, 
-            10698295, 20880, 13058166, 13058203, 59642150, 
+            18989646, 13058166, 13058203, 14544, 394, 
+            11703093, 16391423, 55007762, 129296, 156701, 
+            48534273, 17827554, 10485696, 9887104, 14886, 
+            10698295, 21466, 13058166, 13058203, 59642150, 
             4211, 82780, 135305, 161613, 
             7482, 11367, 23684};
 
@@ -4289,11 +5213,11 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/testErdGtsppBest.das\";\
                     int nRows = table.nRows();
                     String2.log(".nc fileName=" + dir + tName + "\n" +
                         "nRows=" + nRows);
-                    String results = table.dataToCsvString(2);
+                    String results = table.dataToCSVString(2);
                     String expected = 
-"row, time, wtmp, station, longitude, latitude, wd, wspd, gst, wvht, dpd, apd, mwd, bar, atmp, dewp, vis, ptdy, tide, wspu, wspv\n" +
-"0, 3.912804E8, 24.8, 41006, -77.4, 29.3, 297, 4.1, 5.3, 1.0, 8.3, 4.8, , 1014.7, 22.0, , , , , 3.7, -1.9\n" +
-"1, 3.91284E8, 24.7, 41006, -77.4, 29.3, , , , 1.1, 9.1, 4.5, , 1014.6, 22.2, , , , , , \n";
+"row,time,wtmp,station,longitude,latitude,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,dewp,vis,ptdy,tide,wspu,wspv\n" +
+"0,3.912804E8,24.8,41006,-77.4,29.3,297,4.1,5.3,1.0,8.3,4.8,,1014.7,22.0,,,,,3.7,-1.9\n" +
+"1,3.91284E8,24.7,41006,-77.4,29.3,,,,1.1,9.1,4.5,,1014.6,22.2,,,,,,\n";
                     String2.log("results=\n" + results);
                     Test.ensureEqual(results, expected, "");
                     for (int row = 0; row < nRows; row++) {
@@ -4336,7 +5260,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/testErdGtsppBest.das\";\
         int col = table.findColumnNumber(colName);
         if (col < 0)
             throw new RuntimeException("col=" + colName + " not found in " + 
-                table.getColumnNamesCSVString());
+                table.getColumnNamesCSSVString());
         String value = table.columnAttributes(col).getString(attName);
         table.columnAttributes(col).remove(attName);
         if (value == null)
@@ -4587,8 +5511,8 @@ float z(z) ;
                     } else {
                         //ensure colNames same
                         Test.ensureEqual(
-                            tTable.getColumnNamesCSVString(),
-                            cumTable.getColumnNamesCSVString(),
+                            tTable.getColumnNamesCSSVString(),
+                            cumTable.getColumnNamesCSSVString(),
                             "Different column names.");
 
                         //append
@@ -4606,9 +5530,9 @@ float z(z) ;
             int timeCol = cumTable.findColumnNumber("time");
             int idCol   = cumTable.findColumnNumber("wod_unique_cast");
             Test.ensureNotEqual(timeCol, -1, "time column not found in " + 
-                cumTable.getColumnNamesCSVString());
+                cumTable.getColumnNamesCSSVString());
             Test.ensureNotEqual(idCol, -1, "wod_unique_cast column not found in " + 
-                cumTable.getColumnNamesCSVString());
+                cumTable.getColumnNamesCSSVString());
             cumTable.ascendingSort(new int[]{timeCol, idCol});
 
             //write consolidated data as tiles
@@ -4773,20 +5697,20 @@ landings.time_series[12]
                 dir, eddTable.className() + "_" + SL + "M", ".csv"); 
             results = new String((new ByteArray(dir + tName)).toArray());
             expected = 
-"time, year, fish, port, landings\n" +
-"UTC, , , , pounds\n" +
-"1929-01-16T00:00:00Z, 1929, \"Barracuda, California\", Los Angeles, 15356\n" +
-"1929-02-16T00:00:00Z, 1929, \"Barracuda, California\", Los Angeles, 93891\n" +
-"1929-03-16T00:00:00Z, 1929, \"Barracuda, California\", Los Angeles, 178492\n" +
-"1929-04-16T00:00:00Z, 1929, \"Barracuda, California\", Los Angeles, 367186\n" +
-"1929-05-16T00:00:00Z, 1929, \"Barracuda, California\", Los Angeles, 918303\n" +
-"1929-06-16T00:00:00Z, 1929, \"Barracuda, California\", Los Angeles, 454981\n" +
-"1929-07-16T00:00:00Z, 1929, \"Barracuda, California\", Los Angeles, 342464\n" +
-"1929-08-16T00:00:00Z, 1929, \"Barracuda, California\", Los Angeles, 261587\n" +
-"1929-09-16T00:00:00Z, 1929, \"Barracuda, California\", Los Angeles, 175979\n" +
-"1929-10-16T00:00:00Z, 1929, \"Barracuda, California\", Los Angeles, 113828\n" +
-"1929-11-16T00:00:00Z, 1929, \"Barracuda, California\", Los Angeles, 46916\n" +
-"1929-12-16T00:00:00Z, 1929, \"Barracuda, California\", Los Angeles, 73743\n";
+"time,year,fish,port,landings\n" +
+"UTC,,,,pounds\n" +
+"1929-01-16T00:00:00Z,1929,\"Barracuda, California\",Los Angeles,15356\n" +
+"1929-02-16T00:00:00Z,1929,\"Barracuda, California\",Los Angeles,93891\n" +
+"1929-03-16T00:00:00Z,1929,\"Barracuda, California\",Los Angeles,178492\n" +
+"1929-04-16T00:00:00Z,1929,\"Barracuda, California\",Los Angeles,367186\n" +
+"1929-05-16T00:00:00Z,1929,\"Barracuda, California\",Los Angeles,918303\n" +
+"1929-06-16T00:00:00Z,1929,\"Barracuda, California\",Los Angeles,454981\n" +
+"1929-07-16T00:00:00Z,1929,\"Barracuda, California\",Los Angeles,342464\n" +
+"1929-08-16T00:00:00Z,1929,\"Barracuda, California\",Los Angeles,261587\n" +
+"1929-09-16T00:00:00Z,1929,\"Barracuda, California\",Los Angeles,175979\n" +
+"1929-10-16T00:00:00Z,1929,\"Barracuda, California\",Los Angeles,113828\n" +
+"1929-11-16T00:00:00Z,1929,\"Barracuda, California\",Los Angeles,46916\n" +
+"1929-12-16T00:00:00Z,1929,\"Barracuda, California\",Los Angeles,73743\n";
             Test.ensureEqual(results, expected, "erdCAMarCat" + SL + "M results=\n" + results);
 
             //salmon became separable in 1972. Separation appears in Long list of names, not Short.
@@ -4795,59 +5719,59 @@ landings.time_series[12]
                 dir, eddTable.className() + "_" + SL + "M", ".csv"); 
             results = new String((new ByteArray(dir + tName)).toArray());
             expected = SL == 'S'?
-"time, year, fish, port, landings\n" +
-"UTC, , , , pounds\n" +
-"1976-01-16T00:00:00Z, 1976, Salmon, All, 0\n" +
-"1976-02-16T00:00:00Z, 1976, Salmon, All, 0\n" +
-"1976-03-16T00:00:00Z, 1976, Salmon, All, 0\n" +
-"1976-04-16T00:00:00Z, 1976, Salmon, All, 465896\n" +
-"1976-05-16T00:00:00Z, 1976, Salmon, All, 1932912\n" +
-"1976-06-16T00:00:00Z, 1976, Salmon, All, 2770715\n" +
-"1976-07-16T00:00:00Z, 1976, Salmon, All, 1780115\n" +
-"1976-08-16T00:00:00Z, 1976, Salmon, All, 581702\n" +
-"1976-09-16T00:00:00Z, 1976, Salmon, All, 244695\n" +
-"1976-10-16T00:00:00Z, 1976, Salmon, All, 485\n" +
-"1976-11-16T00:00:00Z, 1976, Salmon, All, 0\n" +
-"1976-12-16T00:00:00Z, 1976, Salmon, All, 0\n" +
-"1977-01-16T00:00:00Z, 1977, Salmon, All, 0\n" +
-"1977-02-16T00:00:00Z, 1977, Salmon, All, 43\n" +
-"1977-03-16T00:00:00Z, 1977, Salmon, All, 0\n" +
-"1977-04-16T00:00:00Z, 1977, Salmon, All, 680999\n" +
-"1977-05-16T00:00:00Z, 1977, Salmon, All, 1490628\n" +
-"1977-06-16T00:00:00Z, 1977, Salmon, All, 980842\n" +
-"1977-07-16T00:00:00Z, 1977, Salmon, All, 1533176\n" +
-"1977-08-16T00:00:00Z, 1977, Salmon, All, 928234\n" +
-"1977-09-16T00:00:00Z, 1977, Salmon, All, 314464\n" +
-"1977-10-16T00:00:00Z, 1977, Salmon, All, 247\n" +
-"1977-11-16T00:00:00Z, 1977, Salmon, All, 0\n" +
-"1977-12-16T00:00:00Z, 1977, Salmon, All, 0\n"
+"time,year,fish,port,landings\n" +
+"UTC,,,,pounds\n" +
+"1976-01-16T00:00:00Z,1976,Salmon,All,0\n" +
+"1976-02-16T00:00:00Z,1976,Salmon,All,0\n" +
+"1976-03-16T00:00:00Z,1976,Salmon,All,0\n" +
+"1976-04-16T00:00:00Z,1976,Salmon,All,465896\n" +
+"1976-05-16T00:00:00Z,1976,Salmon,All,1932912\n" +
+"1976-06-16T00:00:00Z,1976,Salmon,All,2770715\n" +
+"1976-07-16T00:00:00Z,1976,Salmon,All,1780115\n" +
+"1976-08-16T00:00:00Z,1976,Salmon,All,581702\n" +
+"1976-09-16T00:00:00Z,1976,Salmon,All,244695\n" +
+"1976-10-16T00:00:00Z,1976,Salmon,All,485\n" +
+"1976-11-16T00:00:00Z,1976,Salmon,All,0\n" +
+"1976-12-16T00:00:00Z,1976,Salmon,All,0\n" +
+"1977-01-16T00:00:00Z,1977,Salmon,All,0\n" +
+"1977-02-16T00:00:00Z,1977,Salmon,All,43\n" +
+"1977-03-16T00:00:00Z,1977,Salmon,All,0\n" +
+"1977-04-16T00:00:00Z,1977,Salmon,All,680999\n" +
+"1977-05-16T00:00:00Z,1977,Salmon,All,1490628\n" +
+"1977-06-16T00:00:00Z,1977,Salmon,All,980842\n" +
+"1977-07-16T00:00:00Z,1977,Salmon,All,1533176\n" +
+"1977-08-16T00:00:00Z,1977,Salmon,All,928234\n" +
+"1977-09-16T00:00:00Z,1977,Salmon,All,314464\n" +
+"1977-10-16T00:00:00Z,1977,Salmon,All,247\n" +
+"1977-11-16T00:00:00Z,1977,Salmon,All,0\n" +
+"1977-12-16T00:00:00Z,1977,Salmon,All,0\n"
 :
-"time, year, fish, port, landings\n" +
-"UTC, , , , pounds\n" +
-"1976-01-16T00:00:00Z, 1976, Salmon, All, 0\n" +
-"1976-02-16T00:00:00Z, 1976, Salmon, All, 0\n" +
-"1976-03-16T00:00:00Z, 1976, Salmon, All, 0\n" +
-"1976-04-16T00:00:00Z, 1976, Salmon, All, 465896\n" +
-"1976-05-16T00:00:00Z, 1976, Salmon, All, 1932912\n" +
-"1976-06-16T00:00:00Z, 1976, Salmon, All, 2770715\n" +
-"1976-07-16T00:00:00Z, 1976, Salmon, All, 1780115\n" +
-"1976-08-16T00:00:00Z, 1976, Salmon, All, 581702\n" +
-"1976-09-16T00:00:00Z, 1976, Salmon, All, 244695\n" +
-"1976-10-16T00:00:00Z, 1976, Salmon, All, 485\n" +
-"1976-11-16T00:00:00Z, 1976, Salmon, All, 0\n" +
-"1976-12-16T00:00:00Z, 1976, Salmon, All, 0\n" +
-"1977-01-16T00:00:00Z, 1977, Salmon, All, 0\n" +
-"1977-02-16T00:00:00Z, 1977, Salmon, All, 0\n" +
-"1977-03-16T00:00:00Z, 1977, Salmon, All, 0\n" +
-"1977-04-16T00:00:00Z, 1977, Salmon, All, 1223\n" +
-"1977-05-16T00:00:00Z, 1977, Salmon, All, 1673\n" +
-"1977-06-16T00:00:00Z, 1977, Salmon, All, 2333\n" +
-"1977-07-16T00:00:00Z, 1977, Salmon, All, 1813\n" +
-"1977-08-16T00:00:00Z, 1977, Salmon, All, 1300\n" +
-"1977-09-16T00:00:00Z, 1977, Salmon, All, 924\n" +
-"1977-10-16T00:00:00Z, 1977, Salmon, All, 0\n" +
-"1977-11-16T00:00:00Z, 1977, Salmon, All, 0\n" +
-"1977-12-16T00:00:00Z, 1977, Salmon, All, 0\n";
+"time,year,fish,port,landings\n" +
+"UTC,,,,pounds\n" +
+"1976-01-16T00:00:00Z,1976,Salmon,All,0\n" +
+"1976-02-16T00:00:00Z,1976,Salmon,All,0\n" +
+"1976-03-16T00:00:00Z,1976,Salmon,All,0\n" +
+"1976-04-16T00:00:00Z,1976,Salmon,All,465896\n" +
+"1976-05-16T00:00:00Z,1976,Salmon,All,1932912\n" +
+"1976-06-16T00:00:00Z,1976,Salmon,All,2770715\n" +
+"1976-07-16T00:00:00Z,1976,Salmon,All,1780115\n" +
+"1976-08-16T00:00:00Z,1976,Salmon,All,581702\n" +
+"1976-09-16T00:00:00Z,1976,Salmon,All,244695\n" +
+"1976-10-16T00:00:00Z,1976,Salmon,All,485\n" +
+"1976-11-16T00:00:00Z,1976,Salmon,All,0\n" +
+"1976-12-16T00:00:00Z,1976,Salmon,All,0\n" +
+"1977-01-16T00:00:00Z,1977,Salmon,All,0\n" +
+"1977-02-16T00:00:00Z,1977,Salmon,All,0\n" +
+"1977-03-16T00:00:00Z,1977,Salmon,All,0\n" +
+"1977-04-16T00:00:00Z,1977,Salmon,All,1223\n" +
+"1977-05-16T00:00:00Z,1977,Salmon,All,1673\n" +
+"1977-06-16T00:00:00Z,1977,Salmon,All,2333\n" +
+"1977-07-16T00:00:00Z,1977,Salmon,All,1813\n" +
+"1977-08-16T00:00:00Z,1977,Salmon,All,1300\n" +
+"1977-09-16T00:00:00Z,1977,Salmon,All,924\n" +
+"1977-10-16T00:00:00Z,1977,Salmon,All,0\n" +
+"1977-11-16T00:00:00Z,1977,Salmon,All,0\n" +
+"1977-12-16T00:00:00Z,1977,Salmon,All,0\n";
             Test.ensureEqual(results, expected, "erdCAMarCat" + SL + "M results=\n" + results);
 
             tName = eddTable.makeNewFileForDapQuery(null, null, 
@@ -4865,9 +5789,9 @@ landings.time_series[12]
                 dir, eddTable.className() + "_" + SL + "Y", ".csv"); 
             results = new String((new ByteArray(dir + tName)).toArray());
             expected = 
-"time, year, fish, port, landings\n" +
-"UTC, , , , pounds\n" +
-"1929-07-01T00:00:00Z, 1929, \"Barracuda, California\", Los Angeles, 3042726\n";
+"time,year,fish,port,landings\n" +
+"UTC,,,,pounds\n" +
+"1929-07-01T00:00:00Z,1929,\"Barracuda, California\",Los Angeles,3042726\n";
             Test.ensureEqual(results, expected, "erdCAMarCat" + SL + "Y results=\n" + results);
 
             //salmon became separable in 1972. Separation appears in Long list of names, not Short.
@@ -4876,31 +5800,31 @@ landings.time_series[12]
                 dir, eddTable.className() + "_" + SL + "M", ".csv"); 
             results = new String((new ByteArray(dir + tName)).toArray());
             expected = SL == 'S'?
-"time, year, fish, port, landings\n" +
-"UTC, , , , pounds\n" +
-"1971-07-01T00:00:00Z, 1971, Salmon, All, 8115432\n" +
-"1972-07-01T00:00:00Z, 1972, Salmon, All, 6422171\n" +
-"1973-07-01T00:00:00Z, 1973, Salmon, All, 9668966\n" +
-"1974-07-01T00:00:00Z, 1974, Salmon, All, 8749013\n" +
-"1975-07-01T00:00:00Z, 1975, Salmon, All, 6925082\n" +
-"1976-07-01T00:00:00Z, 1976, Salmon, All, 7776520\n" +
-"1977-07-01T00:00:00Z, 1977, Salmon, All, 5928633\n" +
-"1978-07-01T00:00:00Z, 1978, Salmon, All, 6810880\n" +
-"1979-07-01T00:00:00Z, 1979, Salmon, All, 8747677\n" +
-"1980-07-01T00:00:00Z, 1980, Salmon, All, 6021953\n"
+"time,year,fish,port,landings\n" +
+"UTC,,,,pounds\n" +
+"1971-07-01T00:00:00Z,1971,Salmon,All,8115432\n" +
+"1972-07-01T00:00:00Z,1972,Salmon,All,6422171\n" +
+"1973-07-01T00:00:00Z,1973,Salmon,All,9668966\n" +
+"1974-07-01T00:00:00Z,1974,Salmon,All,8749013\n" +
+"1975-07-01T00:00:00Z,1975,Salmon,All,6925082\n" +
+"1976-07-01T00:00:00Z,1976,Salmon,All,7776520\n" +
+"1977-07-01T00:00:00Z,1977,Salmon,All,5928633\n" +
+"1978-07-01T00:00:00Z,1978,Salmon,All,6810880\n" +
+"1979-07-01T00:00:00Z,1979,Salmon,All,8747677\n" +
+"1980-07-01T00:00:00Z,1980,Salmon,All,6021953\n"
 :
-"time, year, fish, port, landings\n" +
-"UTC, , , , pounds\n" +
-"1971-07-01T00:00:00Z, 1971, Salmon, All, 8115432\n" +
-"1972-07-01T00:00:00Z, 1972, Salmon, All, 6422171\n" +
-"1973-07-01T00:00:00Z, 1973, Salmon, All, 9668966\n" +
-"1974-07-01T00:00:00Z, 1974, Salmon, All, 8749013\n" +
-"1975-07-01T00:00:00Z, 1975, Salmon, All, 6925082\n" +
-"1976-07-01T00:00:00Z, 1976, Salmon, All, 7776520\n" +
-"1977-07-01T00:00:00Z, 1977, Salmon, All, 9266\n" +
-"1978-07-01T00:00:00Z, 1978, Salmon, All, 21571\n" +
-"1979-07-01T00:00:00Z, 1979, Salmon, All, 30020\n" +
-"1980-07-01T00:00:00Z, 1980, Salmon, All, 40653\n";
+"time,year,fish,port,landings\n" +
+"UTC,,,,pounds\n" +
+"1971-07-01T00:00:00Z,1971,Salmon,All,8115432\n" +
+"1972-07-01T00:00:00Z,1972,Salmon,All,6422171\n" +
+"1973-07-01T00:00:00Z,1973,Salmon,All,9668966\n" +
+"1974-07-01T00:00:00Z,1974,Salmon,All,8749013\n" +
+"1975-07-01T00:00:00Z,1975,Salmon,All,6925082\n" +
+"1976-07-01T00:00:00Z,1976,Salmon,All,7776520\n" +
+"1977-07-01T00:00:00Z,1977,Salmon,All,9266\n" +
+"1978-07-01T00:00:00Z,1978,Salmon,All,21571\n" +
+"1979-07-01T00:00:00Z,1979,Salmon,All,30020\n" +
+"1980-07-01T00:00:00Z,1980,Salmon,All,40653\n";
             Test.ensureEqual(results, expected, "erdCAMarCat" + SL + "M results=\n" + results);
 
             tName = eddTable.makeNewFileForDapQuery(null, null, 
@@ -5025,9 +5949,9 @@ landings.landings[12][1][1]
 "     :long_name = \"Species Code\";\n" +
 "\n" +
 " :cdm_data_type = \"Point\";\n" +
-" :Conventions = \"COARDS, CF-1.5, Unidata Dataset Discovery v1.0\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :Easternmost_Easting = -121.3140640258789; // double\n" +
-" :featureType = \"point\";\n" +
+" :featureType = \"Point\";\n" +
 " :geospatial_lat_max = 47.237003326416016; // double\n" +
 " :geospatial_lat_min = 34.911373138427734; // double\n" +
 " :geospatial_lat_units = \"degrees_north\";\n" +
@@ -5043,6 +5967,11 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/nwioosCoral.ncCF?longitu
 " :id = \"ncCF\";\n" +
 " :infoUrl = \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005.das.info\";\n" +
 " :institution = \"NOAA NWFSC\";\n" +
+" :keywords = \"Biosphere > Aquatic Ecosystems > Coastal Habitat,\n" +
+"Biosphere > Aquatic Ecosystems > Marine Habitat,\n" +
+"Biological Classification > Animals/Invertebrates > Cnidarians > Anthozoans/Hexacorals > Hard Or Stony Corals,\n" +
+"1980-2005, abbreviation, altitude, atmosphere, beginning, coast, code, collected, coral, data, family, genus, height, identifier, institution, noaa, nwfsc, off, order, scientific, species, station, survey, taxa, taxonomic, taxonomy, time, west, west coast, year\";\n" +
+" :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 " :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -5050,7 +5979,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/nwioosCoral.ncCF?longitu
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.5, Unidata Dataset Discovery v1.0\";\n" +
+" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :Northernmost_Northing = 47.237003326416016; // double\n" +
 " :observationDimension = \"row\";\n" +
 " :sourceUrl = \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005\";\n" +
@@ -5207,12 +6136,12 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/nwioosCoral.ncCF?longitu
 " :cdm_timeseries_variables = \"station, longitude, latitude\";\n" +
 " :contributor_name = \"NOAA NDBC and NOAA CoastWatch (West Coast Node)\";\n" +
 " :contributor_role = \"Source of data.\";\n" +
-" :Conventions = \"COARDS, CF-1.5, Unidata Dataset Discovery v1.0\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfeg.noaa.gov\";\n" +
 " :Easternmost_Easting = -122.21f; // float\n" +
-" :featureType = \"timeSeries\";\n" + 
+" :featureType = \"TimeSeries\";\n" + 
 " :geospatial_lat_max = 37.997f; // float\n" +
 " :geospatial_lat_min = 37.363f; // float\n" +
 " :geospatial_lat_units = \"degrees_north\";\n" +
@@ -5227,7 +6156,22 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/cwwcNDBCMet.ncCF?longitu
 " :id = \"ncCF\";\n" +
 " :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
 " :institution = \"NOAA NDBC, CoastWatch WCN\";\n" +
-" :keywords = \"EARTH SCIENCE > Oceans\";\n" +
+" :keywords = \"Atmosphere > Air Quality > Visibility,\n" +
+"Atmosphere > Altitude > Planetary Boundary Layer Height,\n" +
+"Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements,\n" +
+"Atmosphere > Atmospheric Pressure > Pressure Tendency,\n" +
+"Atmosphere > Atmospheric Pressure > Sea Level Pressure,\n" +
+"Atmosphere > Atmospheric Pressure > Static Pressure,\n" +
+"Atmosphere > Atmospheric Temperature > Air Temperature,\n" +
+"Atmosphere > Atmospheric Temperature > Dew Point Temperature,\n" +
+"Atmosphere > Atmospheric Water Vapor > Dew Point Temperature,\n" +
+"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
+"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
+"Oceans > Ocean Waves > Significant Wave Height,\n" +
+"Oceans > Ocean Waves > Swells,\n" +
+"Oceans > Ocean Waves > Wave Period,\n" +
+"air, air_pressure_at_sea_level, air_temperature, altitude, atmosphere, atmospheric, average, boundary, buoy, coastwatch, data, dew point, dew_point_temperature, direction, dominant, eastward, eastward_wind, from, gust, height, identifier, layer, level, measurements, meridional, meteorological, meteorology, name, ndbc, noaa, northward, northward_wind, ocean, oceans, period, planetary, pressure, quality, sea, sea level, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_temperature, seawater, significant, speed, sst, standard, static, station, surface, surface waves, surface_altitude, swell, swells, temperature, tendency, tendency_of_air_pressure, time, vapor, visibility, visibility_in_air, water, wave, waves, wcn, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, zonal\";\n" +
+" :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 " :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -5235,7 +6179,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/cwwcNDBCMet.ncCF?longitu
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.5, Unidata Dataset Discovery v1.0\";\n" +
+" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 " :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";\n" +
 " :Northernmost_Northing = 37.997f; // float\n" +
@@ -5261,8 +6205,8 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/cwwcNDBCMet.ncCF?longitu
 "given hour. The time values in the dataset are rounded to the nearest hour.\n" +
 "\n" +
 "This dataset has both historical data (quality controlled, before\n" +
-"2011-07-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
-"2011-07-01T00:00:00Z on).\";\n" +                                                 //changes
+"2012-03-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
+"2012-03-01T00:00:00Z on).\";\n" +                                                 //changes
 " :time_coverage_end = \"2005-05-01T03:00:00Z\";\n" +
 " :time_coverage_resolution = \"P1H\";\n" +
 " :time_coverage_start = \"2005-05-01T00:00:00Z\";\n" +
@@ -5396,9 +6340,9 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/cwwcNDBCMet.ncCF?longitu
 " :cdm_data_type = \"TrajectoryProfile\";\n" +
 " :cdm_profile_variables = \"cast, longitude, latitude, time\";\n" +
 " :cdm_trajectory_variables = \"cruise_id, ship\";\n" +
-" :Conventions = \"COARDS, CF-1.5, Unidata Dataset Discovery v1.0\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :Easternmost_Easting = -124.18f; // float\n" +
-" :featureType = \"trajectoryProfile\";\n" +
+" :featureType = \"TrajectoryProfile\";\n" +
 " :geospatial_lat_max = 44.65f; // float\n" +
 " :geospatial_lat_min = 44.65f; // float\n" +
 " :geospatial_lat_units = \"degrees_north\";\n" +
@@ -5411,6 +6355,22 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle.ncCF?cru
 " :id = \"ncCF\";\n" +
 " :infoUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";\n" +
 " :institution = \"GLOBEC\";\n" +
+" :keywords = \"10um,\n" +
+"Biosphere > Vegetation > Photosynthetically Active Radiation,\n" +
+"Oceans > Ocean Chemistry > Ammonia,\n" +
+"Oceans > Ocean Chemistry > Chlorophyll,\n" +
+"Oceans > Ocean Chemistry > Nitrate,\n" +
+"Oceans > Ocean Chemistry > Nitrite,\n" +
+"Oceans > Ocean Chemistry > Nitrogen,\n" +
+"Oceans > Ocean Chemistry > Oxygen,\n" +
+"Oceans > Ocean Chemistry > Phosphate,\n" +
+"Oceans > Ocean Chemistry > Pigments,\n" +
+"Oceans > Ocean Chemistry > Silicate,\n" +
+"Oceans > Ocean Optics > Attenuation/Transmission,\n" +
+"Oceans > Ocean Temperature > Water Temperature,\n" +
+"Oceans > Salinity/Density > Salinity,\n" +
+"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
+" :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 " :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -5418,7 +6378,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle.ncCF?cru
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.5, Unidata Dataset Discovery v1.0\";\n" +
+" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :Northernmost_Northing = 44.65f; // float\n" +
 " :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\";\n" +
 " :Southernmost_Northing = 44.65f; // float\n" +
@@ -5573,11 +6533,11 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle.ncCF?cru
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         //String2.log(results);
         expected = 
-"line_station, line, station, longitude, latitude, time, altitude, chlorophyll, dark, light_percent, NH3, NO2, NO3, oxygen, PO4, pressure, primprod, salinity, silicate, temperature\n" +
-", , , degrees_east, degrees_north, UTC, m, mg m-3, mg m-3 experiment-1, mg m-3 experiment-1, ugram-atoms L-1, ugram-atoms L-1, ugram-atoms L-1, mL L-1, ugram-atoms L-1, dbar, mg m-3 experiment-1, PSU, ugram-atoms L-1, degree_C\n" +
-"_000, NaN, 0.0, -126.073326, 39.228333, 1987-05-12T12:44:00Z, -11.0, 0.22, NaN, NaN, NaN, 0.0, 0.0, 6.21, 0.42, 11.1, NaN, 32.76, 2.9, 13.9\n" +
-"_000, NaN, 0.0, -125.53833, 38.47333, 1987-05-12T01:31:00Z, -12.0, 0.11, NaN, NaN, NaN, 0.0, 0.0, 6.11, 0.39, 12.1, NaN, 32.85, 3.2, 14.15\n" +
-"_000, NaN, 0.0, -125.16833, 39.31, 1987-05-07T17:44:00Z, -6.0, 0.16, NaN, NaN, NaN, 0.0, 0.0, 6.23, 0.43, 6.3, NaN, 32.66, 2.0, 13.17\n";
+"line_station,line,station,longitude,latitude,time,altitude,chlorophyll,dark,light_percent,NH3,NO2,NO3,oxygen,PO4,pressure,primprod,salinity,silicate,temperature\n" +
+",,,degrees_east,degrees_north,UTC,m,mg m-3,mg m-3 experiment-1,mg m-3 experiment-1,ugram-atoms L-1,ugram-atoms L-1,ugram-atoms L-1,mL L-1,ugram-atoms L-1,dbar,mg m-3 experiment-1,PSU,ugram-atoms L-1,degree_C\n" +
+"_000,NaN,0.0,-126.073326,39.228333,1987-05-12T12:44:00Z,-11.0,0.22,NaN,NaN,NaN,0.0,0.0,6.21,0.42,11.1,NaN,32.76,2.9,13.9\n" +
+"_000,NaN,0.0,-125.53833,38.47333,1987-05-12T01:31:00Z,-12.0,0.11,NaN,NaN,NaN,0.0,0.0,6.11,0.39,12.1,NaN,32.85,3.2,14.15\n" +
+"_000,NaN,0.0,-125.16833,39.31,1987-05-07T17:44:00Z,-6.0,0.16,NaN,NaN,NaN,0.0,0.0,6.23,0.43,6.3,NaN,32.66,2.0,13.17\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         String2.log("\n*** EDDTableFromNcFiles.testEqualsNaN finished.");
@@ -5589,12 +6549,77 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle.ncCF?cru
      * Test requesting altitude=-2.
      * This tests fix of bug where EDDTable.getSourceQueryFromDapQuery didn't use
      * altitudeMetersPerSourceUnit to convert altitude constraints to source units (e.g., /-1)!
+     * 
+     * <p>And this tests altitude&gt;= should become depth&lt;= internally. (and related)
      */
     public static void testAltitude() throws Throwable {
 
         String2.log("\n*** EDDTableFromNcFiles.testAltitude");
-        EDDTable tedd = (EDDTable)oneFromDatasetXml("epaseamapTimeSeriesProfiles"); 
+
+        //tests of REVERSED_OPERATOR
+        EDDTable tedd; 
         String tName, error, results, expected;
+
+        tedd = (EDDTable)oneFromDatasetXml("erdCinpKfmT"); 
+        expected = 
+"station,longitude,latitude,altitude,time,temperature\n" +
+",degrees_east,degrees_north,m,UTC,degree_C\n" +
+"Santa_Rosa_Johnsons_Lee_North,-120.1,33.883335,-11,2007-09-26T22:13:00Z,16.38\n" +
+"Santa_Rosa_Johnsons_Lee_North,-120.1,33.883335,-11,2007-09-26T23:13:00Z,16.7\n";
+
+        // >= 
+        tName = tedd.makeNewFileForDapQuery(null, null, 
+            "&altitude>=-17&time>=2007-09-26T22",  //what we want to work
+            EDStatic.fullTestCacheDirectory, "altitude", ".csv"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+
+        // > 
+        tName = tedd.makeNewFileForDapQuery(null, null, 
+            "&altitude>-18&time>=2007-09-26T22",  //what we want to work
+            EDStatic.fullTestCacheDirectory, "altitude", ".csv"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+
+        // <= 
+        tName = tedd.makeNewFileForDapQuery(null, null, 
+            "&altitude<=-11&time>=2007-09-26T22",  //what we want to work
+            EDStatic.fullTestCacheDirectory, "altitude", ".csv"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+
+        // <
+        tName = tedd.makeNewFileForDapQuery(null, null, 
+            "&altitude<-10.9&time>=2007-09-26T22",  //what we want to work
+            EDStatic.fullTestCacheDirectory, "altitude", ".csv"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+
+        // =
+        tName = tedd.makeNewFileForDapQuery(null, null, 
+            "&altitude=-11&time>=2007-09-26T22",  //what we want to work
+            EDStatic.fullTestCacheDirectory, "altitude", ".csv"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+
+        // !=
+        tName = tedd.makeNewFileForDapQuery(null, null, 
+            "&altitude!=-10&time>=2007-09-26T22",  //what we want to work
+            EDStatic.fullTestCacheDirectory, "altitude", ".csv"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+
+        // =~
+        tName = tedd.makeNewFileForDapQuery(null, null, 
+            "&altitude=~\"(1000|-11)\"&time>=2007-09-26T22",  //what we want to work
+            EDStatic.fullTestCacheDirectory, "altitude", ".csv"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+
+
+
+        //*** original test
+        tedd = (EDDTable)oneFromDatasetXml("epaseamapTimeSeriesProfiles"); 
 
         //lon lat time range 
         tName = tedd.makeNewFileForDapQuery(null, null, 
@@ -5603,9 +6628,9 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle.ncCF?cru
         results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
         //String2.log(results);
         expected = 
-"station_name, station, latitude, longitude, time, altitude, WaterTemperature, salinity, chlorophyll, Nitrogen, Phosphate, Ammonium\n" +
-", , degrees_north, degrees_east, UTC, m, Celsius, psu, mg_m-3, percent, percent, percent\n" +
-"ED16, 1, 29.728, -88.00584, 2004-06-08T18:00:00Z, -2.0, 27.2501, 34.843, NaN, NaN, NaN, NaN\n";
+"station_name,station,latitude,longitude,time,altitude,WaterTemperature,salinity,chlorophyll,Nitrogen,Phosphate,Ammonium\n" +
+",,degrees_north,degrees_east,UTC,m,Celsius,psu,mg_m-3,percent,percent,percent\n" +
+"ED16,1,29.728,-88.00584,2004-06-08T18:00:00Z,-2.0,27.2501,34.843,NaN,NaN,NaN,NaN\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
 
         String2.log("\n*** EDDTableFromNcFiles.testAltitude finished.");
@@ -5636,11 +6661,11 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle.ncCF?cru
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
             expected = 
-"line_station, line, station, longitude, latitude, altitude, time, cruise, shipName, shipCode, occupy, obsCommon, obsScientific, obsValue, obsUnits\n" +
-", , , degrees_east, degrees_north, m, UTC, , , , , , , , \n" +
-"110_032.4, 110.0, 32.4, -115.82667, 29.873333, -42.7, 1984-11-04T04:37:00Z, 8410, NEW HORIZON, NH, 77, Bigmouth sole, Hippoglossina stomata, 1, number of larvae\n" +
-"110_032.5, 110.0, 32.5, -115.82, 29.87, -48.9, 1984-03-20T09:17:00Z, 8403, DAVID STARR JORDAN, JD, 777, Broadfin lampfish, Nannobrachium ritteri, 1, number of larvae\n" +
-"110_035, 110.0, 35.0, -115.995, 29.785, -211.1, 1984-03-20T12:06:00Z, 8403, DAVID STARR JORDAN, JD, 780, California flashlightfish, Protomyctophum crockeri, 1, number of larvae\n";
+"line_station,line,station,longitude,latitude,altitude,time,cruise,shipName,shipCode,occupy,obsCommon,obsScientific,obsValue,obsUnits\n" +
+",,,degrees_east,degrees_north,m,UTC,,,,,,,,\n" +
+"110_032.4,110.0,32.4,-115.82667,29.873333,-42.7,1984-11-04T04:37:00Z,8410,NEW HORIZON,NH,77,Bigmouth sole,Hippoglossina stomata,1,number of larvae\n" +
+"110_032.5,110.0,32.5,-115.82,29.87,-48.9,1984-03-20T09:17:00Z,8403,DAVID STARR JORDAN,JD,777,Broadfin lampfish,Nannobrachium ritteri,1,number of larvae\n" +
+"110_035,110.0,35.0,-115.995,29.785,-211.1,1984-03-20T12:06:00Z,8403,DAVID STARR JORDAN,JD,780,California flashlightfish,Protomyctophum crockeri,1,number of larvae\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
             String2.log("\n\n*** GETTING DATA FROM CACHED subsetVariables data.  SHOULD BE FAST.");
@@ -5650,15 +6675,15 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle.ncCF?cru
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
             expected = 
-"line, station, cruise, shipName\n" +
-", , , \n" +
-"73.3, 100.0, 302, DAVID STARR JORDAN\n" +
-"73.3, 100.0, 304, DAVID STARR JORDAN\n" +
-"73.3, 100.0, 404, DAVID STARR JORDAN\n" +
-"73.3, 100.0, 8401, DAVID STARR JORDAN\n" +
-"73.3, 100.0, 8402, NEW HORIZON\n" +
-"73.3, 100.0, 8407, DAVID STARR JORDAN\n" +
-"73.3, 100.0, 8410, DAVID STARR JORDAN\n";
+"line,station,cruise,shipName\n" +
+",,,\n" +
+"73.3,100.0,302,DAVID STARR JORDAN\n" +
+"73.3,100.0,304,DAVID STARR JORDAN\n" +
+"73.3,100.0,404,DAVID STARR JORDAN\n" +
+"73.3,100.0,8401,DAVID STARR JORDAN\n" +
+"73.3,100.0,8402,NEW HORIZON\n" +
+"73.3,100.0,8407,DAVID STARR JORDAN\n" +
+"73.3,100.0,8410,DAVID STARR JORDAN\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
     
             // CHANGED. SEE EDDTableFromNcFiles.testCalcofi
@@ -5677,6 +6702,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle.ncCF?cru
      * @throws Throwable if trouble
      */
     public static void test() throws Throwable {
+/* */
         test1D(false); //deleteCachedDatasetInfo
         test2D(true); 
         test3D(false);
@@ -5705,7 +6731,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle.ncCF?cru
         testSpeedSubset();
         testEqualsNaN();
         testAltitude();
-
+        
 
         //not usually run
         //test24Hours();  //requires special set up

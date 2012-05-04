@@ -72,6 +72,8 @@ public class EDDGridSideBySide extends EDDGrid {
         StringBuilder messages = new StringBuilder();
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -122,6 +124,11 @@ public class EDDGridSideBySide extends EDDGrid {
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+
             else xmlReader.unexpectedTagException();
         }
         if (messages.length() > 0) {
@@ -135,7 +142,8 @@ public class EDDGridSideBySide extends EDDGrid {
             tcds[c] = (EDDGrid)tChildDatasets.get(c);
 
         //make the main dataset based on the information gathered
-        return new EDDGridSideBySide(tDatasetID, tAccessibleTo, tOnChange, tcds);
+        return new EDDGridSideBySide(tDatasetID, tAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File, tcds);
 
     }
 
@@ -151,11 +159,17 @@ public class EDDGridSideBySide extends EDDGrid {
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tChildDatasets
      * @throws Throwable if trouble
      */
     public EDDGridSideBySide(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, EDDGrid tChildDatasets[]) throws Throwable {
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        EDDGrid tChildDatasets[]) throws Throwable {
 
         if (verbose) String2.log("\n*** constructing EDDGridSideBySide " + tDatasetID); 
         long constructionStartMillis = System.currentTimeMillis();
@@ -167,6 +181,8 @@ public class EDDGridSideBySide extends EDDGrid {
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         childDatasets = tChildDatasets;
         int nChildren = tChildDatasets.length;
         childStopsAt = new int[nChildren];
@@ -191,7 +207,7 @@ public class EDDGridSideBySide extends EDDGrid {
                 childDatasets[c].institution                  = firstChild.institution();
                 childDatasets[c].infoUrl                      = firstChild.infoUrl();
                 childDatasets[c].cdmDataType                  = firstChild.cdmDataType();
-                childDatasets[c].searchString                 = firstChild.searchString();
+                childDatasets[c].searchBytes                  = firstChild.searchBytes();
                 //not sourceUrl, which will be different
                 childDatasets[c].sourceGlobalAttributes       = firstChild.sourceGlobalAttributes();
                 childDatasets[c].addGlobalAttributes          = firstChild.addGlobalAttributes();
@@ -502,13 +518,13 @@ public class EDDGridSideBySide extends EDDGrid {
 "1999-09-11T00:00:00Z, 0.0, -20.0, 80.0, -5.842872, 4.5936112\n" +
 "1999-09-19T00:00:00Z, 0.0, -20.0, 80.0, -8.269525, 4.7751155\n" +
 "1999-09-27T00:00:00Z, 0.0, -20.0, 80.0, -8.95586, 2.439596\n"; */
-"time, altitude, latitude, longitude, x_wind, y_wind\n" +
-"UTC, m, degrees_north, degrees_east, m s-1, m s-1\n" +
-"1999-07-29T00:00:00Z, 0.0, -20.0, 80.0, -8.757242, 4.1637316\n" +
-"1999-07-30T00:00:00Z, 0.0, -20.0, 80.0, -9.012303, 3.48984\n" +
-"1999-07-31T00:00:00Z, 0.0, -20.0, 80.0, -8.631654, 3.0311484\n" +
-"1999-08-01T00:00:00Z, 0.0, -20.0, 80.0, -7.9840736, 2.5528698\n" +
-"1999-08-02T00:00:00Z, 0.0, -20.0, 80.0, -7.423252, 2.432058\n";
+"time,altitude,latitude,longitude,x_wind,y_wind\n" +
+"UTC,m,degrees_north,degrees_east,m s-1,m s-1\n" +
+"1999-07-29T00:00:00Z,0.0,-20.0,80.0,-8.757242,4.1637316\n" +
+"1999-07-30T00:00:00Z,0.0,-20.0,80.0,-9.012303,3.48984\n" +
+"1999-07-31T00:00:00Z,0.0,-20.0,80.0,-8.631654,3.0311484\n" +
+"1999-08-01T00:00:00Z,0.0,-20.0,80.0,-7.9840736,2.5528698\n" +
+"1999-08-02T00:00:00Z,0.0,-20.0,80.0,-7.423252,2.432058\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         dapQuery = "x_wind[4:8][0][(-20)][(80)]";
@@ -525,13 +541,13 @@ public class EDDGridSideBySide extends EDDGrid {
 "1999-09-11T00:00:00Z, 0.0, -20.0, 80.0, -5.842872\n" +
 "1999-09-19T00:00:00Z, 0.0, -20.0, 80.0, -8.269525\n" +
 "1999-09-27T00:00:00Z, 0.0, -20.0, 80.0, -8.95586\n"; */
-"time, altitude, latitude, longitude, x_wind\n" +
-"UTC, m, degrees_north, degrees_east, m s-1\n" +
-"1999-07-29T00:00:00Z, 0.0, -20.0, 80.0, -8.757242\n" +
-"1999-07-30T00:00:00Z, 0.0, -20.0, 80.0, -9.012303\n" +
-"1999-07-31T00:00:00Z, 0.0, -20.0, 80.0, -8.631654\n" +
-"1999-08-01T00:00:00Z, 0.0, -20.0, 80.0, -7.9840736\n" +
-"1999-08-02T00:00:00Z, 0.0, -20.0, 80.0, -7.423252\n";
+"time,altitude,latitude,longitude,x_wind\n" +
+"UTC,m,degrees_north,degrees_east,m s-1\n" +
+"1999-07-29T00:00:00Z,0.0,-20.0,80.0,-8.757242\n" +
+"1999-07-30T00:00:00Z,0.0,-20.0,80.0,-9.012303\n" +
+"1999-07-31T00:00:00Z,0.0,-20.0,80.0,-8.631654\n" +
+"1999-08-01T00:00:00Z,0.0,-20.0,80.0,-7.9840736\n" +
+"1999-08-02T00:00:00Z,0.0,-20.0,80.0,-7.423252\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         dapQuery = "y_wind[4:8][0][(-20)][(80)]";
@@ -548,13 +564,13 @@ public class EDDGridSideBySide extends EDDGrid {
 "1999-09-11T00:00:00Z, 0.0, -20.0, 80.0, 4.5936112\n" +
 "1999-09-19T00:00:00Z, 0.0, -20.0, 80.0, 4.7751155\n" +
 "1999-09-27T00:00:00Z, 0.0, -20.0, 80.0, 2.439596\n"; */
-"time, altitude, latitude, longitude, y_wind\n" +
-"UTC, m, degrees_north, degrees_east, m s-1\n" +
-"1999-07-29T00:00:00Z, 0.0, -20.0, 80.0, 4.1637316\n" +
-"1999-07-30T00:00:00Z, 0.0, -20.0, 80.0, 3.48984\n" +
-"1999-07-31T00:00:00Z, 0.0, -20.0, 80.0, 3.0311484\n" +
-"1999-08-01T00:00:00Z, 0.0, -20.0, 80.0, 2.5528698\n" +
-"1999-08-02T00:00:00Z, 0.0, -20.0, 80.0, 2.432058\n";
+"time,altitude,latitude,longitude,y_wind\n" +
+"UTC,m,degrees_north,degrees_east,m s-1\n" +
+"1999-07-29T00:00:00Z,0.0,-20.0,80.0,4.1637316\n" +
+"1999-07-30T00:00:00Z,0.0,-20.0,80.0,3.48984\n" +
+"1999-07-31T00:00:00Z,0.0,-20.0,80.0,3.0311484\n" +
+"1999-08-01T00:00:00Z,0.0,-20.0,80.0,2.5528698\n" +
+"1999-08-02T00:00:00Z,0.0,-20.0,80.0,2.432058\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         if (doGraphicsTests) {
@@ -651,16 +667,16 @@ public class EDDGridSideBySide extends EDDGrid {
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"time, altitude, latitude, longitude, taux, tauy\n" +
-"UTC, m, degrees_north, degrees_east, Pa, Pa\n" +
-"2005-10-26T12:00:00Z, 0.0, -20.0, 40.0, -0.0204974, 0.0194982\n" +
-"2005-10-27T12:00:00Z, 0.0, -20.0, 40.0, -0.08357, 0.155034\n" +
-"2005-10-28T12:00:00Z, 0.0, -20.0, 40.0, -0.0173238, 0.0646148\n" +
-"2005-10-29T12:00:00Z, 0.0, -20.0, 40.0, -0.0175401, 0.0921468\n" +
-"2005-10-30T12:00:00Z, 0.0, -20.0, 40.0, -0.0110465, 0.121438\n" +
-"2005-10-31T12:00:00Z, 0.0, -20.0, 40.0, -3.6782E-4, 0.0166592\n" +
-"2005-11-01T12:00:00Z, 0.0, -20.0, 40.0, -0.0040105, 0.0141265\n" +
-"2005-11-02T12:00:00Z, 0.0, -20.0, 40.0, -0.0481124, -0.0946055\n";
+"time,altitude,latitude,longitude,taux,tauy\n" +
+"UTC,m,degrees_north,degrees_east,Pa,Pa\n" +
+"2005-10-26T12:00:00Z,0.0,-20.0,40.0,-0.0204974,0.0194982\n" +
+"2005-10-27T12:00:00Z,0.0,-20.0,40.0,-0.08357,0.155034\n" +
+"2005-10-28T12:00:00Z,0.0,-20.0,40.0,-0.0173238,0.0646148\n" +
+"2005-10-29T12:00:00Z,0.0,-20.0,40.0,-0.0175401,0.0921468\n" +
+"2005-10-30T12:00:00Z,0.0,-20.0,40.0,-0.0110465,0.121438\n" +
+"2005-10-31T12:00:00Z,0.0,-20.0,40.0,-3.6782E-4,0.0166592\n" +
+"2005-11-01T12:00:00Z,0.0,-20.0,40.0,-0.0040105,0.0141265\n" +
+"2005-11-02T12:00:00Z,0.0,-20.0,40.0,-0.0481124,-0.0946055\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         
         dapQuery = "taux[(1.130328E9):2:(1.1309328E9)][0][(-20)][(40)],tauy[(1.130328E9):2:(1.1309328E9)][0][(-20)][(40)]";
@@ -669,12 +685,12 @@ public class EDDGridSideBySide extends EDDGrid {
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"time, altitude, latitude, longitude, taux, tauy\n" +
-"UTC, m, degrees_north, degrees_east, Pa, Pa\n" +
-"2005-10-26T12:00:00Z, 0.0, -20.0, 40.0, -0.0204974, 0.0194982\n" +
-"2005-10-28T12:00:00Z, 0.0, -20.0, 40.0, -0.0173238, 0.0646148\n" +
-"2005-10-30T12:00:00Z, 0.0, -20.0, 40.0, -0.0110465, 0.121438\n" +
-"2005-11-01T12:00:00Z, 0.0, -20.0, 40.0, -0.0040105, 0.0141265\n";
+"time,altitude,latitude,longitude,taux,tauy\n" +
+"UTC,m,degrees_north,degrees_east,Pa,Pa\n" +
+"2005-10-26T12:00:00Z,0.0,-20.0,40.0,-0.0204974,0.0194982\n" +
+"2005-10-28T12:00:00Z,0.0,-20.0,40.0,-0.0173238,0.0646148\n" +
+"2005-10-30T12:00:00Z,0.0,-20.0,40.0,-0.0110465,0.121438\n" +
+"2005-11-01T12:00:00Z,0.0,-20.0,40.0,-0.0040105,0.0141265\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         
         dapQuery = "taux[(2005-10-27T12:00:00Z):2:(1.1309328E9)][0][(-20)][(40)],tauy[(2005-10-27T12:00:00Z):2:(1.1309328E9)][0][(-20)][(40)]";
@@ -683,12 +699,12 @@ public class EDDGridSideBySide extends EDDGrid {
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"time, altitude, latitude, longitude, taux, tauy\n" +
-"UTC, m, degrees_north, degrees_east, Pa, Pa\n" +
-"2005-10-27T12:00:00Z, 0.0, -20.0, 40.0, -0.08357, 0.155034\n" +
-"2005-10-29T12:00:00Z, 0.0, -20.0, 40.0, -0.0175401, 0.0921468\n" +
-"2005-10-31T12:00:00Z, 0.0, -20.0, 40.0, -3.6782E-4, 0.0166592\n" +
-"2005-11-02T12:00:00Z, 0.0, -20.0, 40.0, -0.0481124, -0.0946055\n";
+"time,altitude,latitude,longitude,taux,tauy\n" +
+"UTC,m,degrees_north,degrees_east,Pa,Pa\n" +
+"2005-10-27T12:00:00Z,0.0,-20.0,40.0,-0.08357,0.155034\n" +
+"2005-10-29T12:00:00Z,0.0,-20.0,40.0,-0.0175401,0.0921468\n" +
+"2005-10-31T12:00:00Z,0.0,-20.0,40.0,-3.6782E-4,0.0166592\n" +
+"2005-11-02T12:00:00Z,0.0,-20.0,40.0,-0.0481124,-0.0946055\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test missing time point represents >1 missing value
@@ -698,28 +714,28 @@ public class EDDGridSideBySide extends EDDGrid {
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"time, altitude, latitude, longitude, taux, tauy\n" +
-"UTC, m, degrees_north, degrees_east, Pa, Pa\n" +
-"2005-10-26T12:00:00Z, 0.0, -20.0, 40.0, -0.0204974, 0.0194982\n" +
-"2005-10-26T12:00:00Z, 0.0, -20.0, 40.125, -0.013397, 0.0241179\n" +
-"2005-10-26T12:00:00Z, 0.0, -20.0, 40.25, -0.0073588, 0.0304036\n" +
-"2005-10-26T12:00:00Z, 0.0, -20.0, 40.375, -0.017018, 0.0420586\n" +
-"2005-10-26T12:00:00Z, 0.0, -20.0, 40.5, 0.0074961, 0.0470117\n" +
-"2005-10-28T12:00:00Z, 0.0, -20.0, 40.0, -0.0173238, 0.0646148\n" +
-"2005-10-28T12:00:00Z, 0.0, -20.0, 40.125, -0.0345203, 0.0789654\n" +
-"2005-10-28T12:00:00Z, 0.0, -20.0, 40.25, -0.0363615, 0.115381\n" +
-"2005-10-28T12:00:00Z, 0.0, -20.0, 40.375, -0.0537272, 0.133791\n" +
-"2005-10-28T12:00:00Z, 0.0, -20.0, 40.5, -0.0626239, 0.133823\n" +
-"2005-10-30T12:00:00Z, 0.0, -20.0, 40.0, -0.0110465, 0.121438\n" +
-"2005-10-30T12:00:00Z, 0.0, -20.0, 40.125, -0.00235985, 0.137055\n" +
-"2005-10-30T12:00:00Z, 0.0, -20.0, 40.25, -0.0088645, 0.137093\n" +
-"2005-10-30T12:00:00Z, 0.0, -20.0, 40.375, -0.0196206, 0.135083\n" +
-"2005-10-30T12:00:00Z, 0.0, -20.0, 40.5, -0.044424, 0.160418\n" +
-"2005-11-01T12:00:00Z, 0.0, -20.0, 40.0, -0.0040105, 0.0141265\n" +
-"2005-11-01T12:00:00Z, 0.0, -20.0, 40.125, -0.00600515, 0.0118363\n" +
-"2005-11-01T12:00:00Z, 0.0, -20.0, 40.25, -0.010433, 0.0160705\n" +
-"2005-11-01T12:00:00Z, 0.0, -20.0, 40.375, -0.0243944, 0.021086\n" +
-"2005-11-01T12:00:00Z, 0.0, -20.0, 40.5, -0.0408028, 0.028469\n";
+"time,altitude,latitude,longitude,taux,tauy\n" +
+"UTC,m,degrees_north,degrees_east,Pa,Pa\n" +
+"2005-10-26T12:00:00Z,0.0,-20.0,40.0,-0.0204974,0.0194982\n" +
+"2005-10-26T12:00:00Z,0.0,-20.0,40.125,-0.013397,0.0241179\n" +
+"2005-10-26T12:00:00Z,0.0,-20.0,40.25,-0.0073588,0.0304036\n" +
+"2005-10-26T12:00:00Z,0.0,-20.0,40.375,-0.017018,0.0420586\n" +
+"2005-10-26T12:00:00Z,0.0,-20.0,40.5,0.0074961,0.0470117\n" +
+"2005-10-28T12:00:00Z,0.0,-20.0,40.0,-0.0173238,0.0646148\n" +
+"2005-10-28T12:00:00Z,0.0,-20.0,40.125,-0.0345203,0.0789654\n" +
+"2005-10-28T12:00:00Z,0.0,-20.0,40.25,-0.0363615,0.115381\n" +
+"2005-10-28T12:00:00Z,0.0,-20.0,40.375,-0.0537272,0.133791\n" +
+"2005-10-28T12:00:00Z,0.0,-20.0,40.5,-0.0626239,0.133823\n" +
+"2005-10-30T12:00:00Z,0.0,-20.0,40.0,-0.0110465,0.121438\n" +
+"2005-10-30T12:00:00Z,0.0,-20.0,40.125,-0.00235985,0.137055\n" +
+"2005-10-30T12:00:00Z,0.0,-20.0,40.25,-0.0088645,0.137093\n" +
+"2005-10-30T12:00:00Z,0.0,-20.0,40.375,-0.0196206,0.135083\n" +
+"2005-10-30T12:00:00Z,0.0,-20.0,40.5,-0.044424,0.160418\n" +
+"2005-11-01T12:00:00Z,0.0,-20.0,40.0,-0.0040105,0.0141265\n" +
+"2005-11-01T12:00:00Z,0.0,-20.0,40.125,-0.00600515,0.0118363\n" +
+"2005-11-01T12:00:00Z,0.0,-20.0,40.25,-0.010433,0.0160705\n" +
+"2005-11-01T12:00:00Z,0.0,-20.0,40.375,-0.0243944,0.021086\n" +
+"2005-11-01T12:00:00Z,0.0,-20.0,40.5,-0.0408028,0.028469\n";
         Test.ensureEqual(results, expected, "results=\n" + results);   
     }
 
@@ -746,16 +762,16 @@ public class EDDGridSideBySide extends EDDGrid {
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"time, altitude, latitude, longitude, taux\n" +
-"UTC, m, degrees_north, degrees_east, Pa\n" +
-"2005-10-26T12:00:00Z, 0.0, -20.0, 40.0, -0.0102223\n" +
-"2005-10-27T12:00:00Z, 0.0, -20.0, 40.0, -0.0444894\n" +
-"2005-10-28T12:00:00Z, 0.0, -20.0, 40.0, -0.025208\n" +
-"2005-10-29T12:00:00Z, 0.0, -20.0, 40.0, -0.0156589\n" +
-"2005-10-30T12:00:00Z, 0.0, -20.0, 40.0, -0.0345074\n" +
-"2005-10-31T12:00:00Z, 0.0, -20.0, 40.0, -0.00270854\n" +
-"2005-11-01T12:00:00Z, 0.0, -20.0, 40.0, -0.00875408\n" +
-"2005-11-02T12:00:00Z, 0.0, -20.0, 40.0, -0.0597476\n";
+"time,altitude,latitude,longitude,taux\n" +
+"UTC,m,degrees_north,degrees_east,Pa\n" +
+"2005-10-26T12:00:00Z,0.0,-20.0,40.0,-0.0102223\n" +
+"2005-10-27T12:00:00Z,0.0,-20.0,40.0,-0.0444894\n" +
+"2005-10-28T12:00:00Z,0.0,-20.0,40.0,-0.025208\n" +
+"2005-10-29T12:00:00Z,0.0,-20.0,40.0,-0.0156589\n" +
+"2005-10-30T12:00:00Z,0.0,-20.0,40.0,-0.0345074\n" +
+"2005-10-31T12:00:00Z,0.0,-20.0,40.0,-0.00270854\n" +
+"2005-11-01T12:00:00Z,0.0,-20.0,40.0,-0.00875408\n" +
+"2005-11-02T12:00:00Z,0.0,-20.0,40.0,-0.0597476\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         EDDGrid qsy1 = (EDDGrid)oneFromDatasetXml("erdQStauy1day");
@@ -765,16 +781,16 @@ public class EDDGridSideBySide extends EDDGrid {
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"results=time, altitude, latitude, longitude, tauy\n" +
-"UTC, m, degrees_north, degrees_east, Pa\n" +
-"2005-10-26T12:00:00Z, 0.0, -20.0, 40.0, 0.0271539\n" +
-"2005-10-27T12:00:00Z, 0.0, -20.0, 40.0, 0.180277\n" +
-"2005-10-28T12:00:00Z, 0.0, -20.0, 40.0, 0.0779955\n" +
-"2005-10-29T12:00:00Z, 0.0, -20.0, 40.0, 0.0994889\n" + 
+"results=time,altitude,latitude,longitude,tauy\n" +
+"UTC,m,degrees_north,degrees_east,Pa\n" +
+"2005-10-26T12:00:00Z,0.0,-20.0,40.0,0.0271539\n" +
+"2005-10-27T12:00:00Z,0.0,-20.0,40.0,0.180277\n" +
+"2005-10-28T12:00:00Z,0.0,-20.0,40.0,0.0779955\n" +
+"2005-10-29T12:00:00Z,0.0,-20.0,40.0,0.0994889\n" + 
 //note no 10-30 data
-"2005-10-31T12:00:00Z, 0.0, -20.0, 40.0, 0.0184601\n" +
-"2005-11-01T12:00:00Z, 0.0, -20.0, 40.0, 0.0145052\n" +
-"2005-11-02T12:00:00Z, 0.0, -20.0, 40.0, -0.0942029\n";
+"2005-10-31T12:00:00Z,0.0,-20.0,40.0,0.0184601\n" +
+"2005-11-01T12:00:00Z,0.0,-20.0,40.0,0.0145052\n" +
+"2005-11-02T12:00:00Z,0.0,-20.0,40.0,-0.0942029\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         */
 

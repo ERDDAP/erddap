@@ -38,7 +38,7 @@ import java.util.HashSet;
 public class TableWriterEsriCsv extends TableWriter {
 
     //set by constructor
-    protected String separator = ", ";
+    protected String separator = ",";
     protected boolean quoted = true;
     //search for "default esri" in
     //http://www.stata-journal.com/sjpdf.html?articlenum=dm0014

@@ -67,7 +67,7 @@ public class TableWriterAll extends TableWriter {
      * TableWriterAll will delete all of the files when garbage-collected.
      *
      * @param tDir a private cache directory for storing the intermediate files,
-     *    usually EDStatic.fullCacheDirectory + datasetID + "/"
+     *    usually cacheDirectory(datasetID)
      * @param tFileNameNoExt is the fileName without dir or extension (used as basis for temp files).
      *     A random number will be added to it for safety.
      */
@@ -171,6 +171,29 @@ public class TableWriterAll extends TableWriter {
             (int)totalNRows, false);  //safe since checked above
         DataInputStream dis = dataInputStream(col);
         pa.readDis(dis, (int)totalNRows); //safe since checked above
+        dis.close();
+        return pa;
+    }
+
+    /**
+     * This is like the other column(col), but just gets up to the firstNRows. 
+     *
+     * @param col   0..
+     * @param firstNRows puts a limit on the max number of rows this will return
+     * @return a PrimitiveArray with the requested data for one of the columns.
+     * @throws Throwable if trouble 
+     */
+    public PrimitiveArray column(int col, int firstNRows) throws Throwable {
+        //get it from cumulativeTable
+        if (cumulativeTable != null)
+            return cumulativeTable.getColumn(col);
+
+        //get it from DOSFile
+        EDStatic.ensureArraySizeOkay(totalNRows, "TableWriterAll");
+        PrimitiveArray pa = PrimitiveArray.factory(columnType(col), 
+            (int)totalNRows, false);  //safe since checked above
+        DataInputStream dis = dataInputStream(col);
+        pa.readDis(dis, Math.min(firstNRows, Math2.narrowToInt(totalNRows)));
         dis.close();
         return pa;
     }

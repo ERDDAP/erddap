@@ -81,6 +81,8 @@ public class EDDTableFromMWFS extends EDDTable{
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         String tLocalSourceUrl = null;
 
         //process the tags
@@ -129,6 +131,11 @@ public class EDDTableFromMWFS extends EDDTable{
             else if (localTags.equals("</onChange>")) 
                 tOnChange.add(content); 
 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+
             else xmlReader.unexpectedTagException();
         }
         int ndv = tDataVariables.size();
@@ -137,7 +144,7 @@ public class EDDTableFromMWFS extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromMWFS(tDatasetID, tAccessibleTo,
-            tOnChange, tGlobalAttributes,
+            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
             tLongitudeSourceMinimum, tLongitudeSourceMaximum,
             tLatitudeSourceMinimum,  tLatitudeSourceMaximum,
             tAltitudeSourceMinimum,  tAltitudeSourceMaximum, 
@@ -163,6 +170,11 @@ public class EDDTableFromMWFS extends EDDTable{
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tAddGlobalAttributes are global attributes which will
      *   be added to (and take precedence over) the data source's global attributes.
      *   This may be null if you have nothing to add.
@@ -177,8 +189,8 @@ public class EDDTableFromMWFS extends EDDTable{
      *   <li> "cdm_data_type" - one of the EDD.CDM_xxx options
      *   </ul>
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
-     *   Special case: if addGlobalAttributes name="license" value="[standard]",
-     *     the EDStatic.standardLicense will be used.
+     *   Special case: if combinedGlobalAttributes name="license", any instance of "[standard]"
+     *     will be converted to the EDStatic.standardLicense.
      * @param tLonMin in source units (use Double.NaN if not known).
      *    [I use eddTable.getEmpiricalMinMax("2007-02-01", "2007-02-01", false, true); below to get it.]
      * @param tLonMax see tLonMin description.
@@ -208,7 +220,7 @@ public class EDDTableFromMWFS extends EDDTable{
      * @throws Throwable if trouble
      */
     public EDDTableFromMWFS(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange,
+        StringArray tOnChange, String tFgdcFile, String tIso19115File,
         Attributes tAddGlobalAttributes,
         double tLonMin, double tLonMax,
         double tLatMin, double tLatMax,
@@ -229,13 +241,11 @@ public class EDDTableFromMWFS extends EDDTable{
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
-        String tLicense = addGlobalAttributes.getString("license");
-        if (tLicense != null)
-            addGlobalAttributes.set("license", 
-                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         addGlobalAttributes.set("sourceUrl", makePublicSourceUrl(tLocalSourceUrl));
         localSourceUrl = tLocalSourceUrl;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
@@ -248,6 +258,10 @@ public class EDDTableFromMWFS extends EDDTable{
         //set source attributes (none available from source)
         sourceGlobalAttributes = new Attributes();
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
+        String tLicense = combinedGlobalAttributes.getString("license");
+        if (tLicense != null)
+            combinedGlobalAttributes.set("license", 
+                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         combinedGlobalAttributes.removeValue("null");
 
         //make the fixedVariables
@@ -559,11 +573,11 @@ Consortium (OGC) Web Feature Service (WFS) and the Geography
 Markup Language (GML) Simple Feature Profile to transport in-situ 
 time series data.</att>
             <att name="cdm_data_type">Station</att>
-            <att name="Conventions">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>  
+            <att name="Conventions">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>  
             <att name="infoUrl">http://www.csc.noaa.gov/DTL/dtl_proj4_gmlsfp_wfs.html</att>
             <att name="institution">NOAA CSC</att>
             <att name="license">[standard]</att>
-            <att name="Metadata_Conventions">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>  
+            <att name="Metadata_Conventions">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>  
             <att name="standard_name_vocabulary">CF-12</att>
         </addAttributes> 
         <longitudeSourceMinimum>-97.22</longitudeSourceMinimum>
@@ -690,7 +704,7 @@ time series data.</att>
 "  NC_GLOBAL {[10]\n" +
 "    String cdm_data_type \"TimeSeries\";[10]\n" +
 "    String cdm_timeseries_variables \"???\";[10]\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";[10]\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
 "    Float64 Easternmost_Easting -70.43;[10]\n" +
 "    Float64 geospatial_lat_max 38.48;[10]\n" +
 "    Float64 geospatial_lat_min 24.55;[10]\n" +
@@ -714,7 +728,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "implied, including warranties of merchantability and fitness for a[10]\n" +
 "particular purpose, or assumes any legal liability for the accuracy,[10]\n" +
 "completeness, or usefulness, of this information.\";[10]\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";[10]\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
 "    Float64 Northernmost_Northing 38.48;[10]\n" +
 "    String sourceUrl \"http://csc-s-ial-p.csc.noaa.gov/cgi-bin/microwfs/microWFS.cgi?SERVICENAME=dtlservicesubType=gml/3.1.1/profiles/gmlsf/1.0.0/1\";[10]\n" +
 "    Float64 Southernmost_Northing 24.55;[10]\n" +

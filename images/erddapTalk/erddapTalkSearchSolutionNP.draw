@@ -31,32 +31,13 @@ setTextHeight(0.18);
 setTextPosition(0);
 setShapeType(34);
 setShapeHAlign(3);
-setShapeVAlign(10);
-setShapeWidth(.);
+setShapeVAlign(3);
+setShapeWidth(8.1);
 setShapeHeight(.);
 setShapeBorder(1);
 setShapeAngle(0);
 setShapeShadow(0);
-setCharacters("The datasets of interest are hard to find<br>because they are at many different web sites. ");
-create("text", "0.3, 4.8");
-
-setTextPosition(4);
-setCharacters("&bull; Google-like full-text search");
-create("text", "0.6, 3.2");
-
-setTextPosition(3);
-setCharacters("&bull; Category search <small>(e.g., standard name = sea_surface_temperature)");
-create("text", "0.6, 2.9");
-
-setCharacters("&bull; One web service");
-create("text", "0.6, 3.5");
-
-setTextColor(Color2.blue4);
-setTextPosition(4);
-setCharacters("<b>The Problem: <color=Color2.orange4><big>Search");
-create("text", "0.3, 5.3");
-
-setCharacters("<b>The Solution:");
-create("text", "0.3, 3.8");
+setCharacters("<color=Color2.blue4><big><b>Problem #1: Search</b></big></color>\n<br>Datasets of interest are hard to find because they are\nat many different web sites.\n\n<p><color=Color2.blue4><big><b>ERDDAP's Solution</b></big></color>\n<br=0.5>&nbsp;\n<ul>\n<li>ERDDAP is a middleman between you and remote data servers.\n  <br>This lets ERDDAP act as if it has lots of datasets.\n  <br>A search for datasets of interest searches all of those datasets.\n  <br=0.5>&nbsp;\n<li>ERDDAP offers Google-like full-text search \n    <br><small><small>(e.g, sea surface temperature)</small></small>\n  <br=0.5>&nbsp;\n<li>ERDDAP offers category (faceted) search \n    <br><small><small>(e.g., standard_name = sea_surface_temperature)</small></small>");
+create("bigText", "0.2, 5.800000000000001");
 
 endOfFile();

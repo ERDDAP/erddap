@@ -62,7 +62,7 @@ public class TableWriterUnits extends TableWriter {
                 " (usually from units_standard in setup.xml) must be UDUNITS or UCUM.");
 
         if (toUnits == null || !(toUnits.equals("UDUNITS") || toUnits.equals("UCUM")))
-            throw new SimpleException("Query error: " +
+            throw new SimpleException(EDStatic.queryError +
                 "toUnits=" + fromUnits + " must be UDUNITS or UCUM.");
     }
 

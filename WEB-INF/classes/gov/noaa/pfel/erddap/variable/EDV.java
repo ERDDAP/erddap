@@ -87,9 +87,12 @@ public class EDV {
      * </ul>
      */
     public final static String[] IOOS_CATEGORIES = {
+        //!!! MAKING CHANGES?  Make the changes to the list in setupDatasetsXml.html, too.
+        //??? need categories processing paramaters,
         "Bathymetry", 
         "Biology", //bob added
         "Bottom Character", 
+        "CO2", //bob added pCO2 2011-05-19, 2011-10-11 changed to CO2
         "Colored Dissolved Organic Matter", //added 2011-05-19
         "Contaminants", "Currents", //was "Surface Currents" 
         "Dissolved Nutrients", "Dissolved O2",
@@ -103,12 +106,13 @@ public class EDV {
         "Ocean Color", "Optical Properties",  //what is dividing line?
         "Other", //bob added
         "Pathogens", 
-        "pCO2", //added 2011-05-19
+        "Physical Oceanography", //Bob added 2011-10-11
         "Phytoplankton Species", //??the species name? better to use Taxonomy??
         "Pressure", //bob added
         "Productivity", //bob added
         "Quality", //bob added 2010-11-10
         "Salinity", "Sea Level", 
+        "Soils",   //bob added 2011-10-06
         "Statistics", //bob added 2010-12-24
         "Stream Flow", //added 2011-05-19
         "Surface Waves", 
@@ -296,13 +300,14 @@ public class EDV {
         if (isFixedValue()) {
             destinationMin = String2.parseDouble(fixedValue); //if String, will be NaN (as it should be)
             destinationMax = destinationMin;
-        } else if (sourceDataType.equals("float")) {
+        } else if (sourceDataType.equals("float")) {  //destinationDataType not known yet
             destinationMin = Math2.floatToDouble(tSourceMin);  //unbruise them
             destinationMax = Math2.floatToDouble(tSourceMax);
         } else {
             destinationMin = tSourceMin;  
             destinationMax = tSourceMax;
         }
+        //String2.getStringFromSystemIn("!!!sourceName=" + sourceName + " type=" + sourceDataType + " min=" + destinationMin);
 
         //makeCombinedAttributes
         makeCombinedAttributes(); 
@@ -316,11 +321,11 @@ public class EDV {
             longName = destinationName;
         units = combinedAttributes().getString("units"); //may be null; already canonical
 
-        //extractScaleAddOffset
+        //extractScaleAddOffset     It sets destinationDataType
         extractScaleAddOffset(); 
         if (scaleAddOffset) {
-            destinationMin = destinationMin * scaleFactor + addOffset;
-            destinationMax = destinationMax * scaleFactor + addOffset;
+            setDestinationMin(destinationMin * scaleFactor + addOffset);
+            setDestinationMax(destinationMax * scaleFactor + addOffset);
         }
         //test for min>max after extractScaleAddOffset, since order may have changed
         if (destinationMin > destinationMax) { 
@@ -330,6 +335,11 @@ public class EDV {
         //after extractScaleAddOffset, get sourceMissingValue and sourceFillValue
         //and convert to destinationDataType (from scaleAddOffset)
         //???eek!!! can there be String missing_value or _FillValue?
+        //
+        //ERDDAP policy: a variable can have one/both/neither of 
+        //missing_value (CF deprecated) and _FillValue metadata. 
+        //ERDDAP doesn't care, doesn't change and just passes through whatever 
+        //the metadata specifies.
         PrimitiveArray pa = combinedAttributes.get("missing_value"); 
         if (pa != null) {
             sourceMissingValue = pa.getNiceDouble(0);
@@ -376,8 +386,10 @@ public class EDV {
 
         //min max  from actual_range, data_min, or data_max
         double mm[] = extractActualRange();  //may be low,high or high,low
-        if (Double.isNaN(destinationMin)) destinationMin = mm[0] * scaleFactor + addOffset;
-        if (Double.isNaN(destinationMax)) destinationMax = mm[1] * scaleFactor + addOffset; 
+        if (Double.isNaN(destinationMin)) 
+            setDestinationMin(mm[0] * scaleFactor + addOffset);
+        if (Double.isNaN(destinationMax)) 
+            setDestinationMax(mm[1] * scaleFactor + addOffset); 
         if (destinationMin > destinationMax) {
             double d = destinationMin; destinationMin = destinationMax; destinationMax = d;
         }
@@ -411,12 +423,12 @@ public class EDV {
                " must be less than colorBarMaximum=" + tMax + ".");
         if (tPalette != null && String2.indexOf(EDStatic.palettes, tPalette) < 0)
             throw new IllegalArgumentException("colorBarPalette=" + tPalette + " must be one of " + 
-                String2.toCSVString(EDStatic.palettes) + " (default='Rainbow').");
+                String2.toCSSVString(EDStatic.palettes) + " (default='Rainbow').");
         if (tContinuous != null && !tContinuous.equals("true") && !tContinuous.equals("false"))
             throw new IllegalArgumentException("colorBarContinuous=" + tPalette + " must be 'true' (the default) or 'false'.");
         if (tScale != null && String2.indexOf(VALID_SCALES, tScale) < 0)
             throw new IllegalArgumentException("colorBarScale=" + tScale + " must be one of " + 
-                String2.toCSVString(VALID_SCALES) + " (default='Linear').");
+                String2.toCSSVString(VALID_SCALES) + " (default='Linear').");
         if (tScale != null && tScale.equals("Log") && tMin <= 0) 
             throw new IllegalArgumentException("If colorBarScale=Log, colorBarMinimum=" + 
                 tMin + " must be > 0.");
@@ -494,12 +506,11 @@ public class EDV {
      * This sets the actual_range attribute in addAttributes and combinedAttributes
      * based on the destinationMin and destinationMax value.
      * destinationDataTypeClass must be already set correctly.
-     * "actual_range" is defined in [CDC COARDS] as
-     * "actual data range for variable. Same type as unpacked values."
-     *
-     * <p>Later, it says "The range values are used to indicate order of storage 
+     * "actual_range" is defined in [CDC COARDS] 
+     * http://www.cdc.noaa.gov/cdc/conventions/cdc_netcdf_standard.shtml 
+     * as "actual data range for variable. Same type as unpacked values."
+     * Later, it says "The range values are used to indicate order of storage 
      * (e.g., 90,-90 would indicate the latitudes started with 90 and ended with -90)."
-     * But ERDDAP always uses the numeric lower value as min and the higher value as max.
      *
      * <p>EDVGridAxis overwrites this to use firstDestinationValue and lastDestinationValue.
      */
@@ -525,8 +536,10 @@ public class EDV {
      */
     public void extractAndSetActualRange() {
         double mm[] = extractActualRange(); 
-        if (Double.isNaN(destinationMin)) destinationMin = mm[0] * scaleFactor + addOffset;
-        if (Double.isNaN(destinationMax)) destinationMax = mm[1] * scaleFactor + addOffset;
+        if (Double.isNaN(destinationMin)) 
+            setDestinationMin(mm[0] * scaleFactor + addOffset);
+        if (Double.isNaN(destinationMax)) 
+            setDestinationMax(mm[1] * scaleFactor + addOffset);
         if (!Double.isNaN(destinationMin) && 
             !Double.isNaN(destinationMax) &&
             destinationMin > destinationMax) {
@@ -634,33 +647,47 @@ public class EDV {
 
         String2.replaceAll(tName, "_", " ");
 
-        //change "camelCase" to spaced "camel Case"
-        //  but don't space out an acronym, e.g., E T O P O
-        for (int i = tName.length() - 1; i > 0; i--) {
-            char chi  = tName.charAt(i);
-            char chi1 = tName.charAt(i - 1);
-            if (chi  != Character.toLowerCase(chi)  &&
-                chi1 == Character.toLowerCase(chi1) && chi1 != ' ') {
-                tName.insert(i, ' ');
-            }
-        }
+        String result = tName.toString();  //default
 
-        //no vowels? 
-        String ucName = tName.toString().toUpperCase();
-        String result = null;
-        if (ucName.indexOf('A') < 0 &&
-            ucName.indexOf('E') < 0 &&
-            ucName.indexOf('I') < 0 &&
-            ucName.indexOf('O') < 0 &&
-            ucName.indexOf('U') < 0) {
-            //capitalize all
-            result = ucName;  
+        String tNameLC = result.toLowerCase();
+        if (tNameLC.startsWith("eta ") ||
+            tNameLC.startsWith("cs ") ||
+            tNameLC.startsWith("s ") ||
+            tNameLC.startsWith("xi ") ||
+            tNameLC.startsWith("rho ") ||
+            tNameLC.startsWith("tau ") ||
+            tNameLC.endsWith(" rho")) {
+            //don't change case
+
         } else {
-            //capitalize 1st char and after spaces
-            for (int i = 0; i < tName.length(); i++) 
-                if (i == 0 || tName.charAt(i - 1) == ' ')
-                    tName.setCharAt(i, Character.toUpperCase(tName.charAt(i)));
-            result = tName.toString();
+
+            //change "camelCase" to spaced "camel Case"
+            //  but don't space out an acronym, e.g., E T O P O
+            for (int i = tName.length() - 1; i > 0; i--) {
+                char chi  = tName.charAt(i);
+                char chi1 = tName.charAt(i - 1);
+                if (chi  != Character.toLowerCase(chi)  &&
+                    chi1 == Character.toLowerCase(chi1) && chi1 != ' ') {
+                    tName.insert(i, ' ');
+                }
+            }
+
+            //no vowels? 
+            String ucName = tName.toString().toUpperCase();
+            if (ucName.indexOf('A') < 0 &&
+                ucName.indexOf('E') < 0 &&
+                ucName.indexOf('I') < 0 &&
+                ucName.indexOf('O') < 0 &&
+                ucName.indexOf('U') < 0) {
+                //capitalize all
+                result = ucName;  
+            } else {
+                //capitalize 1st char and after spaces
+                for (int i = 0; i < tName.length(); i++) 
+                    if (i == 0 || tName.charAt(i - 1) == ' ')
+                        tName.setCharAt(i, Character.toUpperCase(tName.charAt(i)));
+                result = tName.toString();
+            }
         }
 
         //return
@@ -877,8 +904,15 @@ public class EDV {
      */
     public double destinationMax() {return destinationMax;}
 
-    public void setDestinationMin(double tMin) {destinationMin = tMin;}
-    public void setDestinationMax(double tMax) {destinationMax = tMax;}
+    public void setDestinationMin(double tMin) {
+        destinationMin = destinationDataTypeClass() == float.class?
+            Math2.floatToDouble(tMin) : tMin;  //store unbruised
+    }
+
+    public void setDestinationMax(double tMax) {
+        destinationMax = destinationDataTypeClass() == float.class?
+            Math2.floatToDouble(tMax) : tMax;  //store unbruised
+    }
 
     /** 
      * This is the destinationMin value (time overrides this to format as ISO string).  
@@ -891,7 +925,6 @@ public class EDV {
             destinationDataTypeClass == float.class?
                 "" + Math2.niceDouble(destinationMin, 15) :  //was "" + destinationMin
                 "" + Math2.roundToLong(destinationMin);  //ints are nicer without trailing ".0"
-
     }
 
     /** 
@@ -1015,29 +1048,38 @@ public class EDV {
             double tMax = destinationMax;
             if (!Math2.isFinite(tMin)) return null;
             if (!Math2.isFinite(tMax)) return null;
+            boolean isFloat = destinationDataTypeClass == float.class;
+            double dVal;
+            String sVal;
 
             //one value
             if (Math2.almostEqual(8, tMin, tMax)) {
-                String csv = toSliderString("" + tMin, isTimeStamp);
+                dVal = tMin;
+                sVal = isFloat? "" + (float)dVal : "" + dVal;
+                String csv = toSliderString(sVal, isTimeStamp);
                 sliderCsvValues = String2.getUTF8Bytes(csv);
                 sliderNCsvValues = 1; //do last
                 return csv;
             }
 
             //one time: generate the sliderCsvValues
+            dVal = tMin;
+            sVal = isFloat? "" + (float)dVal : "" + dVal;
+            StringBuilder sb = new StringBuilder(toSliderString(sVal, isTimeStamp)); //first value
             double stride = Math2.suggestMaxDivisions(tMax - tMin, SLIDER_MAX_NVALUES);    
             int nDiv = Math2.roundToInt(Math.abs((tMax - tMin) / stride));
             double base = Math.floor(tMin / stride) * stride;
-            StringBuilder sb = new StringBuilder(toSliderString("" + tMin, isTimeStamp)); //first value
             for (int i = 1; i < nDiv; i++) { 
                 sb.append(", ");
-                double d = base + i * stride;
-                String s = Math2.almost0(d)? "0" : 
-                    Math.abs(d) < 1e37? "" + (float)d : "" + d;
-                sb.append(toSliderString(s, isTimeStamp));
+                dVal = base + i * stride;
+                sVal = Math2.almost0(dVal)? "0" :
+                       isFloat || Math.abs(dVal) < 1e37? "" + (float)dVal : "" + dVal;
+                sb.append(toSliderString(sVal, isTimeStamp));
             }
             sb.append(", ");
-            sb.append(toSliderString("" + tMax, isTimeStamp)); //last value
+            dVal = tMax;
+            sVal = isFloat? "" + (float)dVal : "" + dVal;
+            sb.append(toSliderString(sVal, isTimeStamp)); //last value
 
             //store in compact utf8 format
             String csv = sb.toString();

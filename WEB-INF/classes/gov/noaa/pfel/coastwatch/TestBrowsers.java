@@ -343,7 +343,7 @@ public class TestBrowsers  {
 " :cols = 2; // int\n" +
 " :contributor_name = \"NOAA NGDC ETOPO2v2\";\n" +
 " :contributor_role = \"Source of level 3 data.\";\n" +
-" :Conventions = \"CF-1.4\";\n" +
+" :Conventions = \"CF-1.6\";\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
@@ -584,7 +584,7 @@ public class TestBrowsers  {
 " :composite = \"true\";\n" +
 " :contributor_name = \"NASA JPL (Cal. Inst. of Technology)\";\n" +
 " :contributor_role = \"Source of level 2 data.\";\n" +
-" :Conventions = \"CF-1.4\";\n" +
+" :Conventions = \"CF-1.6\";\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
@@ -735,7 +735,7 @@ public class TestBrowsers  {
 " :composite = \"true\";\n" +
 " :contributor_name = \"NOAA NWS Monterey and NOAA CoastWatch\";\n" +
 " :contributor_role = \"Source of level 2 data.\";\n" +
-" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
@@ -766,10 +766,10 @@ public class TestBrowsers  {
 //        Test.ensureTrue(String2.indexOf(responseArray, "2006-12-18T21:07:05Z NOAA NESDIS CoastWatch WCRN\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :id = \"TATsstaS1day_20061121120000_x-135_X-130_y22_Y27\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :institution = \"NOAA CoastWatch, West Coast Node\";") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :keywords = \"EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :keywords = \"Oceans > Ocean Temperature > Sea Surface Temperature\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :keywords_vocabulary = \"GCMD Science Keywords\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :naming_authority = \"gov.noaa.pfel.coastwatch\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :Northernmost_Northing = 27.0; // double") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :origin = \"NOAA NWS Monterey and NOAA CoastWatch\";") > 0, error);
@@ -930,7 +930,7 @@ public class TestBrowsers  {
 " :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
 " :contributor_name = \"NASA JPL (Cal. Inst. of Technology)\";\n" +
 " :contributor_role = \"Source of data.\";\n" +
-" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";";
@@ -952,10 +952,10 @@ public class TestBrowsers  {
         Test.ensureTrue(response.indexOf(" :history = \"NASA JPL (Cal. Inst. of Technology)") > 0, error);
         Test.ensureTrue(response.indexOf(" :id = \"TS_TQNux10S1dayAverages_x-127.26_y46.65_t20061021120000_T20061121120000\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :institution = \"NOAA CoastWatch, West Coast Node\";") > 0, error);
-        Test.ensureTrue(response.indexOf(" :keywords = \"EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds\";") > 0, error);
+        Test.ensureTrue(response.indexOf(" :keywords = \"Oceans > Ocean Winds > Surface Winds\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :keywords_vocabulary = \"GCMD Science Keywords\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";") > 0, error);
-        Test.ensureTrue(response.indexOf(" :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Observation Dataset v1.0\";") > 0, error);
+        Test.ensureTrue(response.indexOf(" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Observation Dataset v1.0\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :naming_authority = \"gov.noaa.pfel.coastwatch\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :Northernmost_Northing = 46.75; // double") > 0, error);
         Test.ensureTrue(response.indexOf(" :observationDimension = \"row\";") > 0, error);
@@ -1131,7 +1131,7 @@ public class TestBrowsers  {
 " :composite = \"true\";\n" +
 " :contributor_name = \"NASA JPL (Cal. Inst. of Technology)\";\n" +
 " :contributor_role = \"Source of level 2 data.\";\n" +
-" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
@@ -1162,10 +1162,10 @@ public class TestBrowsers  {
         //"2006-11-27T19:46:16Z NOAA NESDIS CoastWatch WCRN\";\n") > 0, error);
         Test.ensureTrue(response.indexOf(" :id = \"TQNux10S1day_20061121120000_x-135_X-105_y22_Y50\";\n") > 0, error);
         Test.ensureTrue(response.indexOf(" :institution = \"NOAA CoastWatch, West Coast Node\";\n") > 0, error);
-        Test.ensureTrue(response.indexOf(" :keywords = \"EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds\";\n") > 0, error);
+        Test.ensureTrue(response.indexOf(" :keywords = \"Oceans > Ocean Winds > Surface Winds\";\n") > 0, error);
         Test.ensureTrue(response.indexOf(" :keywords_vocabulary = \"GCMD Science Keywords\";\n") > 0, error);
         Test.ensureTrue(response.indexOf(" :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";\n") > 0, error);
-        Test.ensureTrue(response.indexOf(" :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n") > 0, error);
+        Test.ensureTrue(response.indexOf(" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n") > 0, error);
         Test.ensureTrue(response.indexOf(" :naming_authority = \"gov.noaa.pfel.coastwatch\";\n") > 0, error);
         Test.ensureTrue(response.indexOf(" :Northernmost_Northing = 50.0; // double\n") > 0, error);
         Test.ensureTrue(response.indexOf(" :origin = \"NASA JPL (Cal. Inst. of Technology)\";\n") > 0, error);
@@ -1298,7 +1298,7 @@ Test.ensureEqual(response.substring(0, reference.length()), reference, "");
 " :cdm_data_type = \"Station\";\n" +
 " :contributor_name = \"NOAA NDBC and Other Station Owners/Operators\";\n" +
 " :contributor_role = \"Source of data.\";\n" +
-" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n";
@@ -1322,9 +1322,9 @@ Test.ensureEqual(response.substring(0, reference.length()), reference, "");
         //Test.ensureTrue(String2.indexOf(responseArray, "2006-11-27T23:49:43Z NOAA NESDIS CoastWatch WCRN\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :id = \"NDBC_31201_met\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :institution = \"NOAA CoastWatch, West Coast Node\";") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :keywords = \"EARTH SCIENCE > Oceans\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :keywords = \"Oceans\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Observation Dataset v1.0\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Observation Dataset v1.0\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :naming_authority = \"gov.noaa.pfel.coastwatch\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :Northernmost_Northing = 48.86; // double") > 0, error);
@@ -1461,7 +1461,7 @@ String2.ERROR + " getting .asc");
 " :cdm_data_type = \"Station\";\n" +
 " :contributor_name = \"NOAA NDBC and Other Station Owners/Operators\";\n" +
 " :contributor_role = \"Source of data.\";\n" +
-" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n";
@@ -1485,9 +1485,9 @@ String2.ERROR + " getting .asc");
         //Test.ensureTrue(response.indexOf("2006-11-27T23:53:26Z NOAA NESDIS CoastWatch WCRN\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :id = \"NDBC_31201_met\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :institution = \"NOAA CoastWatch, West Coast Node\";") > 0, error);
-        Test.ensureTrue(response.indexOf(" :keywords = \"EARTH SCIENCE > Oceans\";") > 0, error);
+        Test.ensureTrue(response.indexOf(" :keywords = \"Oceans\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";") > 0, error);
-        Test.ensureTrue(response.indexOf(" :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Observation Dataset v1.0\";") > 0, error);
+        Test.ensureTrue(response.indexOf(" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Observation Dataset v1.0\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :naming_authority = \"gov.noaa.pfel.coastwatch\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :Northernmost_Northing = 42.58; // double") > 0, error);
@@ -1602,7 +1602,7 @@ String2.ERROR + " getting .asc");
 " :cdm_data_type = \"Station\";\n" +
 " :contributor_name = \"NOAA NDBC and Other Station Owners/Operators\";\n" +
 " :contributor_role = \"Source of data.\";\n" +
-" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n";
@@ -1627,9 +1627,9 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(String2.indexOf(responseArray, " :id = \"NDBC_31201_met\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :institution = \"NOAA CoastWatch, West Coast Node\";") > 0, error);
 //lame...
-        Test.ensureTrue(String2.indexOf(responseArray, " :keywords = \"EARTH SCIENCE > Oceans\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :keywords = \"Oceans\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Observation Dataset v1.0\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Observation Dataset v1.0\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :naming_authority = \"gov.noaa.pfel.coastwatch\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :Northernmost_Northing = 48.86; // double") > 0, error);
@@ -1763,7 +1763,7 @@ String2.ERROR + " getting .asc");
 " :cdm_data_type = \"Station\";\n" +
 " :contributor_name = \"NOAA NDBC and Other Station Owners/Operators\";\n" +
 " :contributor_role = \"Source of data.\";\n" +
-" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n";
@@ -1787,9 +1787,9 @@ String2.ERROR + " getting .asc");
         //Test.ensureTrue(String2.indexOf(responseArray, "2006-11-28T00:23:19Z NOAA NESDIS CoastWatch WCRN\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :id = \"NDBC_31201_met\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :institution = \"NOAA CoastWatch, West Coast Node\";") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :keywords = \"EARTH SCIENCE > Oceans\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :keywords = \"Oceans\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Observation Dataset v1.0\";") > 0, error);
+        Test.ensureTrue(String2.indexOf(responseArray, " :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Observation Dataset v1.0\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :naming_authority = \"gov.noaa.pfel.coastwatch\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :Northernmost_Northing = 42.58; // double") > 0, error);

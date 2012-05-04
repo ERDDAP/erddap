@@ -28,6 +28,7 @@ import gov.noaa.pfel.erddap.variable.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 
 /** 
  * This class represents a table of data from a DiGIR/OBIS source.
@@ -213,6 +214,8 @@ public class EDDTableFromOBIS extends EDDTable{
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         double tLongitudeSourceMinimum = Double.NaN;  
         double tLongitudeSourceMaximum = Double.NaN;  
         double tLatitudeSourceMinimum = Double.NaN;  
@@ -271,11 +274,16 @@ public class EDDTableFromOBIS extends EDDTable{
             else if (localTags.equals("</onChange>")) 
                 tOnChange.add(content); 
 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+
             else xmlReader.unexpectedTagException();
         }
 
         return new EDDTableFromOBIS(tDatasetID, tAccessibleTo,
-            tOnChange, tGlobalAttributes,
+            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
             tLocalSourceUrl, tSourceCode, tReloadEveryNMinutes, 
             tLongitudeSourceMinimum, tLongitudeSourceMaximum,
             tLatitudeSourceMinimum,  tLatitudeSourceMaximum,
@@ -297,6 +305,11 @@ public class EDDTableFromOBIS extends EDDTable{
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tAddGlobalAttributes are global attributes which will
      *   be added to (and take precedence over) the data source's global attributes.
      *   This may be null if you have nothing to add.
@@ -313,8 +326,8 @@ public class EDDTableFromOBIS extends EDDTable{
      *      (a longer description of the dataset; it may have newline characters (usually at &lt;= 72 chars per line)).
      *      If summary is present, the standard OBIS_SUMMARY will be substituted for "[OBIS_SUMMARY]".
      *   <br>Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
-     *   <br>Special case: if addGlobalAttributes name="license" value="[standard]",
-     *     the EDStatic.standardLicense plus EDDTableFromOBIS OBIS_LICENSE will be used.
+     *   <br>Special case: if combinedGlobalAttributes name="license", any instance of "[standard]"
+     *     will be converted to the EDStatic.standardLicense plus EDDTableFromOBIS OBIS_LICENSE.
      *   <br>Special case: addGlobalAttributes must have a name="creator_email" value=AnEmailAddress
      *     for users to contact regarding publications that use the data in order 
      *     to comply with license.
@@ -342,7 +355,7 @@ public class EDDTableFromOBIS extends EDDTable{
      * @throws Throwable if trouble
      */
     public EDDTableFromOBIS(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         String tLocalSourceUrl, String tSourceCode,
         int tReloadEveryNMinutes,
@@ -363,13 +376,15 @@ public class EDDTableFromOBIS extends EDDTable{
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         if (tAddGlobalAttributes.getString("Conventions") == null) 
-            tAddGlobalAttributes.add("Conventions", "COARDS, CF-1.4, Unidata Dataset Discovery v1.0");
+            tAddGlobalAttributes.add("Conventions", "COARDS, CF-1.6, Unidata Dataset Discovery v1.0");
         if (tAddGlobalAttributes.getString("Metadata_Conventions") == null) 
-            tAddGlobalAttributes.add("Metadata_Conventions", "COARDS, CF-1.4, Unidata Dataset Discovery v1.0");
+            tAddGlobalAttributes.add("Metadata_Conventions", "COARDS, CF-1.6, Unidata Dataset Discovery v1.0");
         if (tAddGlobalAttributes.getString("infoUrl") == null) 
             tAddGlobalAttributes.add("infoUrl", STANDARD_INFO_URL);
         String tSummary = tAddGlobalAttributes.getString("summary");
@@ -384,20 +399,20 @@ public class EDDTableFromOBIS extends EDDTable{
         tAddGlobalAttributes.add("cdm_data_type", CDM_POINT);
         tAddGlobalAttributes.add("standard_name_vocabulary", "CF-12");
         addGlobalAttributes = tAddGlobalAttributes;
-        String tLicense = addGlobalAttributes.getString("license");
-        if (tLicense != null) {
-            tLicense = String2.replaceAll(tLicense, "[standard]", 
-                EDStatic.standardLicense + "\n\n" + 
-                String2.replaceAll(OBIS_LICENSE, "&sourceUrl;", tLocalSourceUrl));
-            tLicense = String2.replaceAll(tLicense, "&creator_email;", tCreator_email);
-            addGlobalAttributes.set("license", tLicense);
-        }
         addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
         localSourceUrl = tLocalSourceUrl;
         sourceCode = tSourceCode;
 
         sourceGlobalAttributes = new Attributes();
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
+        String tLicense = combinedGlobalAttributes.getString("license");
+        if (tLicense != null) {
+            tLicense = String2.replaceAll(tLicense, "[standard]", 
+                EDStatic.standardLicense + "\n\n" + 
+                String2.replaceAll(OBIS_LICENSE, "&sourceUrl;", tLocalSourceUrl));
+            tLicense = String2.replaceAll(tLicense, "&creator_email;", tCreator_email);
+            combinedGlobalAttributes.set("license", tLicense);
+        }
         combinedGlobalAttributes.removeValue("null");
 
         //souceCanConstrain:
@@ -682,11 +697,14 @@ public class EDDTableFromOBIS extends EDDTable{
             externalAddGlobalAttributes.add(      "summary", tTitle + ".\n\n[OBIS_SUMMARY]");
         if (externalAddGlobalAttributes.getString("title") == null)
             externalAddGlobalAttributes.add(      "title", tTitle);
+
+        //add global attributes in the axisAddTable
         Attributes addAtts = makeReadyToUseAddGlobalAttributesForDatasetsXml(
             new Attributes(), 
             //another cdm_data_type could be better; this is ok
             "Point",
-            tLocalSourceUrl, externalAddGlobalAttributes);
+            tLocalSourceUrl, externalAddGlobalAttributes,
+            new HashSet());
 
         //generate the datasets.xml
         StringBuilder sb = new StringBuilder();
@@ -756,12 +774,13 @@ directionsForGenerateDatasetsXml() +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"creator_email\">dhyrenbach@duke.edu</att>\n" +
 "        <att name=\"infoUrl\">http://iobis.marine.rutgers.edu/digir2/DiGIR.php</att>\n" +
 "        <att name=\"institution\">RUTGERS</att>\n" +
+"        <att name=\"keywords\">data, from, obis, obis-seamap, rutgers, seamap, server</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
 "        <att name=\"summary\">OBIS-SEAMAP Data from the OBIS Server at RUTGERS.\n" +
 "\n" +
@@ -776,7 +795,7 @@ directionsForGenerateDatasetsXml() +
             EDD edd = oneFromXmlFragment(results);
             Test.ensureEqual(edd.datasetID(), "rutgers_6cb4_a970_1d67", "");
             Test.ensureEqual(edd.title(), "OBIS-SEAMAP Data from the OBIS Server at RUTGERS", "");
-            Test.ensureEqual(String2.toCSVString(edd.dataVariableDestinationNames()), 
+            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "longitude, latitude, altitude, time, ID, BasisOfRecord, BoundingBox, " +
                 "CatalogNumber, Citation, Class, CollectionCode, Collector, " +
                 "CollectorNumber, ContinentOcean, CoordinatePrecision, Country, " +
@@ -807,7 +826,7 @@ directionsForGenerateDatasetsXml() +
 
 
     /**
-     * rutgers obis should work.  
+     * rutgers obis, failing since 2011-01
      */
     public static void testRutgers() throws Throwable {
         testVerboseOn();
@@ -861,7 +880,7 @@ directionsForGenerateDatasetsXml() +
 "  NC_GLOBAL {[10]\n" +
 "    String cdm_data_type \"Point\";[10]\n" +
 "    String citation \"Living marine legacy of Gwaii Haanas. I: Marine plant baseline to 1999 and plant-related management issues.\";[10]\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";[10]\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
 "    String creator_email \"SloanNormPCA@DFO-MPO.GC.CA\";[10]\n" +
 "    Float64 Easternmost_Easting 180.0;[10]\n" +
 "    Float64 geospatial_lat_max 90.0;[10]\n" +
@@ -1009,7 +1028,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "carrying out field surveys and taxonomic studies designed to fill[10]\n" +
 "geographic and taxonomic gaps in knowledge.[10]\n" +
 "\";[10]\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";[10]\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";[10]\n" +
 "    Float64 Northernmost_Northing 90.0;[10]\n" +
 "    String sourceUrl \"http://iobis.marine.rutgers.edu/digir2/DiGIR.php\";[10]\n" +
 "    Float64 Southernmost_Northing -90.0;[10]\n" +
@@ -1193,7 +1212,7 @@ so standardize results table removes all but 1 record.
     }
 
     /**
-     * fishbase should work
+     * fishbase stopped working in 2009-01
      */
     public static void testFishbase() throws Throwable {
         testVerboseOn();
@@ -1404,8 +1423,6 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
     public static void test() throws Throwable {
 
         //usually done
-        //testRutgers();   //starting ~2011-01 always fails
-        testFishbase();
         testGenerateDatasetsXml();
 
         //not usually done
@@ -1415,6 +1432,10 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
         //EDD.testDasDds("rutgersSeamap");
         //EDD.testDasDds("rutgersGombis");
         //EDD.testDasDds("aadcArgos");
+
+        //testFishbase();  //failing since 2009-01
+        //testRutgers();   //failing since ~2011-01
+
     }
 
 }

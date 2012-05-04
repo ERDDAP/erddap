@@ -55,9 +55,18 @@ public class NcHelper  {
      */
     public static boolean verbose = false;
 
+    /**
+     * Set this to true (by calling reallyVerbose=true in your program, not but changing the code here)
+     * if you want lots of diagnostic messages sent to String2.log.
+     */
+    public static boolean reallyVerbose = false;
+
     /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
     public final static String ERROR = String2.ERROR; 
 
+    /** varName + StringLength is used to create the name for the char dimension 
+        of a String variable.*/
+    public final static String StringLength = "StringLength"; 
 
     /**
      * This generates a String with a dump of the contents of a netcdf file.
@@ -258,7 +267,7 @@ public class NcHelper  {
         if (o instanceof String[]) {
             //make ArrayChar.D2
             String[] sar = (String[])o;
-            //String2.log("NcHelper.get1DArray sar=" + String2.toCSVString(sar));
+            //String2.log("NcHelper.get1DArray sar=" + String2.toCSSVString(sar));
             int max = 0;
             for (int i = 0; i < sar.length; i++) {
                 //if (sar[i].length() > max) String2.log("new max=" + sar[i].length() + " s=\"" + sar[i] + "\"");
@@ -607,7 +616,7 @@ public class NcHelper  {
         //String2.log("rootGroup variables=" + String2.toNewlineString(rootGroupVariables.toArray()));
         for (int v = 0; v < rootGroupVariables.size(); v++) {
             if (rootGroupVariables.get(v) instanceof Structure) {
-                if (verbose) String2.log("NcHelper.findVariables found a Structure.");
+                if (reallyVerbose) String2.log("NcHelper.findVariables found a Structure.");
                 return variableListToArray(((Structure)rootGroupVariables.get(v)).getVariables());
             }
         }
@@ -619,7 +628,7 @@ public class NcHelper  {
             PrimitiveArray pa = PrimitiveArray.factory(getArray(gAtt.getValues()));
             if (pa.size() > 0) {
                 String dimName = pa.getString(0);
-                if (verbose) 
+                if (reallyVerbose) 
                     String2.log("NcHelper.findVariables observationDimension: " + 
                         dimName);
                 mainDimension = netcdfFile.getRootGroup().findDimension(dimName);
@@ -635,7 +644,7 @@ public class NcHelper  {
                 Dimension tDimension = (Dimension)dimensions.get(i);
                 if (tDimension.isUnlimited()) {
                     mainDimension = tDimension;
-                    if (verbose) 
+                    if (reallyVerbose) 
                         String2.log("NcHelper.findVariables found an unlimited dimension: " + 
                             mainDimension.getName());
                     break;
@@ -652,7 +661,7 @@ public class NcHelper  {
                 if (units != null && units.size() > 0 && 
                     units.getString(0).indexOf(" since ") > 0 && dimensions.size() > 0) {
                     mainDimension = (Dimension)dimensions.get(0);
-                    if (verbose) 
+                    if (reallyVerbose) 
                         String2.log("NcHelper.findVariables found a time variable with dimension: " + 
                             mainDimension.getName());
                     break;
@@ -667,7 +676,7 @@ public class NcHelper  {
                 List dimensions = variable.getDimensions();
                 if (dimensions.size() > 0) {
                     mainDimension = (Dimension)dimensions.get(0);
-                    if (verbose) String2.log("NcHelper.findVariables found an outer dimension: " + 
+                    if (reallyVerbose) String2.log("NcHelper.findVariables found an outer dimension: " + 
                         mainDimension.getName());
                     break;
                 }
@@ -680,11 +689,11 @@ public class NcHelper  {
         //get a list of all variables which use just mainDimension
         List structureVariables = new ArrayList();
         for (int i = 0; i < rootGroupVariables.size(); i++) {
-            //if (verbose) String2.log("  get all variables which use mainDimension, check " + i);
+            //if (reallyVerbose) String2.log("  get all variables which use mainDimension, check " + i);
             Variable tVariable = (Variable)rootGroupVariables.get(i);
             List tDimensions = tVariable.getDimensions();
             int nDimensions = tDimensions.size();
-            //if (verbose) String2.log("i=" + i + " name=" + tVariable.getName() + 
+            //if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getName() + 
             //    " type=" + tVariable.getDataType());
             if ((nDimensions == 1 && tDimensions.get(0).equals(mainDimension)) ||
                 (nDimensions == 2 && tDimensions.get(0).equals(mainDimension) && 
@@ -1249,7 +1258,7 @@ public class NcHelper  {
                 "variable.read returned too few (" + pa.size() + ").");
         if (pa.size() > nRows) {
             //it full-sized; reduce to correct size
-            if (verbose) String2.log("NcHelper.getPrimitiveArray variable.read returned entire variable!"); 
+            if (reallyVerbose) String2.log("NcHelper.getPrimitiveArray variable.read returned entire variable!"); 
             pa.removeRange(lastRow + 1, pa.size()); //remove tail first (so don't have to move it when remove head
             pa.removeRange(0, firstRow - 1); //remove head section
         }
@@ -1367,6 +1376,11 @@ public class NcHelper  {
 
     /**
      * This sets a series of values in a Variable from a NetcdfFileWriteable.
+     * This works with all PrimitiveArray types, but
+     * <br>LongArray is stored as a StringArray, so retrieve with 
+     * <br>pa = new LongArray(pa), and
+     * <br>CharArray is stored as a ShortArray, so retrieve with
+     * <br>pa = new CharArray(((ShortArray)pa).toArray()).
      *
      * @param netcdfFileWriteable
      * @param variableName
@@ -1380,6 +1394,11 @@ public class NcHelper  {
     public static void setValues(NetcdfFileWriteable netcdfFileWriteable, 
         String variableName, int firstRow, PrimitiveArray values, 
         int maxStringLength) throws Exception {
+    
+        if (values.elementClass() == char.class) 
+            values = new ShortArray(((CharArray)values).toArray());
+        if (values.elementClass() == long.class) 
+            values = new StringArray(values);
 
         if (values.elementClass() == String.class) {
             StringArray sa = (StringArray)values;
@@ -1473,37 +1492,77 @@ public class NcHelper  {
 
     /** 
      * This writes the PrimitiveArrays into an .nc file.
+     * This works with all PrimitiveArray types, but some datatypes 
+     * are specially encoded in the files and then automatically decoded when read.
      *
-     * @param fullName for the file (This doesn't write to an intermediate file.)
+     * @param fullName for the file (This writes to an intermediate file then renames quickly.)
      * @param varNames    Names musn't have internal spaces.
      * @param pas   Each may have a different size! 
      *     (Which makes this method different than Table.saveAsFlatNc.)
      *     In the .nc file, each will have a dimension with the same name as the varName.
      *     All must have at least 1 value.
-     * @throws Exception if trouble
+     * @throws Exception if trouble 
      */
     public static void writePAsInNc(String fullName, StringArray varNames, PrimitiveArray pas[]) 
             throws Exception {
-        if (verbose) String2.log("NcHelper.savePAsInNc " + fullName); 
+        if (reallyVerbose) String2.log("NcHelper.savePAsInNc " + fullName); 
         long time = System.currentTimeMillis();
 
+        //If procedure fails half way through, there won't be a half-finished file.
+        int randomInt = Math2.random(Integer.MAX_VALUE);
+        File2.delete(fullName);
+
         //open the file (before 'try'); if it fails, no temp file to delete
-        NetcdfFileWriteable nc = NetcdfFileWriteable.createNew(fullName, false);
+        NetcdfFileWriteable nc = NetcdfFileWriteable.createNew(fullName + randomInt, false);
+
+        //tpas is same as pas, but with CharArray and LongArray converted to StringArray
+        int nVars = varNames.size();
+        PrimitiveArray tpas[] = new PrimitiveArray[nVars]; 
+
         try {
 
             //add the variables
-            int nVars = varNames.size();
             for (int var = 0; var < nVars; var++) {
                 String name = varNames.get(var);
-                Class type = pas[var].elementClass();
-                Dimension dimension  = nc.addDimension(name, pas[var].size());
+                tpas[var] = pas[var];
+                if (tpas[var].elementClass() == char.class) {
+                    tpas[var] = new ShortArray(((CharArray)pas[var]).toArray());
+                } else if (tpas[var].elementClass() == long.class) {
+                    //these will always be decoded by fromJson as-is; no need to encode with toJson
+                    tpas[var] = new StringArray(pas[var]);
+                } else if (tpas[var].elementClass() == String.class) {
+                    //.nc strings only support characters 1..255, so encode as Json strings
+                    StringArray oldSa = (StringArray)pas[var];
+                    int tSize = oldSa.size();
+                    StringArray newSa = new StringArray(tSize, false);
+                    tpas[var] = newSa;
+                    for (int i = 0; i < tSize; i++) {
+                        //Only save json version if oldS part of it (inside enclosing "'s) is different.
+                        //This minimizes new Strings, memory usage, garbage collection, etc.
+                        //Note that oldS starting and ending with " will be changed when encoded
+                        //  and so newS will be used.
+                        String oldS = oldSa.get(i);
+                        String newS = String2.toJson(oldS);
+                        newSa.add(newS.substring(1, newS.length() - 1).equals(oldS)?
+                            oldS : newS);
+                    }
+                }
+
+                Class type = tpas[var].elementClass();
+                Dimension dimension  = nc.addDimension(name, tpas[var].size());
                 if (type == String.class) {
-                    int max = Math.max(1, ((StringArray)pas[var]).maxStringLength()); //nc libs want at least 1; 0 happens if no data
-                    Dimension lengthDimension  = nc.addDimension(name + "StringLength", max);
+                    int max = Math.max(1, ((StringArray)tpas[var]).maxStringLength()); //nc libs want at least 1; 0 happens if no data
+                    Dimension lengthDimension  = nc.addDimension(name + NcHelper.StringLength, max);
                     nc.addVariable(name, DataType.CHAR, 
                         new Dimension[]{dimension, lengthDimension}); 
+                    if (pas[var].elementClass() == long.class) 
+                        nc.addVariableAttribute(name, "NcHelper", "originally a LongArray"); 
+                    else if (pas[var].elementClass() == String.class) 
+                        nc.addVariableAttribute(name, "NcHelper", "JSON encoded"); 
                 } else {
                     nc.addVariable(name, DataType.getType(type), new Dimension[]{dimension}); 
+                    if (pas[var].elementClass() == char.class) 
+                        nc.addVariableAttribute(name, "NcHelper", "originally a CharArray"); 
                 }
             }
 
@@ -1512,15 +1571,16 @@ public class NcHelper  {
 
             //write the data
             for (int var = 0; var < nVars; var++) {
-                nc.write(varNames.get(var), 
-                    get1DArray(pas[var].toObjectArray()));
+                nc.write(varNames.get(var), get1DArray(tpas[var].toObjectArray()));
             }
 
             //if close throws exception, it is trouble
             nc.close(); //it calls flush() and doesn't like flush called separately
 
+            File2.rename(fullName + randomInt, fullName);
+
             //diagnostic
-            if (verbose) String2.log("  NcHelper.savePAsInNc done. TIME=" + 
+            if (reallyVerbose) String2.log("  NcHelper.savePAsInNc done. TIME=" + 
                 (System.currentTimeMillis() - time));
             //ncDump("End of Table.saveAsFlatNc", directory + name + ext, false);
 
@@ -1533,7 +1593,7 @@ public class NcHelper  {
             }
 
             //delete any partial or pre-existing file
-            File2.delete(fullName);
+            File2.delete(fullName + randomInt);
 
             throw e;
         }
@@ -1542,21 +1602,23 @@ public class NcHelper  {
 
     /**
      * This reads the PAs in the .nc file.
+     * This works with all PrimitiveArray types, but some datatypes 
+     * are specially encoded in the files and then automatically decoded when read.
      *
      * @param fullName the name of the .nc file.
      * @param loadVarNames the names of the variables to load (null to get all)
      * @param varNames this will receive the varNames
-     * @param pas this will receive the pas. They may have different sizes!
-     * @throws Exception if trouble 
+     * @return PrimitiveArray[] paralleling the names in varNames
+     * @throws Exception if trouble (e.g., one of the loadVarNames wasn't found)
      */
-    public static void readPAsInNc(String fullName, String loadVarNames[],
-        StringArray varNames, ArrayList pas) throws Exception {
+    public static PrimitiveArray[] readPAsInNc(String fullName, String loadVarNames[],
+        StringArray varNames) throws Exception {
 
-        if (verbose) String2.log("NcHelper.readPAsInNc " + fullName
-            //+ " \n  loadVarNames=" + String2.toCSVString(loadVarNames)
+        if (reallyVerbose) String2.log("NcHelper.readPAsInNc " + fullName
+            //+ " \n  loadVarNames=" + String2.toCSSVString(loadVarNames)
             ); 
         varNames.clear();
-        pas.clear();
+        ArrayList pas = new ArrayList();
         long time = System.currentTimeMillis();
         NetcdfFile netcdfFile = openFile(fullName);
         try {
@@ -1575,15 +1637,38 @@ public class NcHelper  {
                 if (tVariable == null)
                     throw new RuntimeException(
                         "ERROR: Expected variable #" + v + " not found while reading " + fullName + 
-                        " (loadVarNames=" + String2.toCSVString(loadVarNames) + ").");
+                        " (loadVarNames=" + String2.toCSSVString(loadVarNames) + ").");
                 List tDimensions = tVariable.getDimensions();
                 int nDimensions = tDimensions.size();
-                //if (verbose) String2.log("i=" + i + " name=" + tVariable.getName() + 
+                //if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getName() + 
                 //    " type=" + tVariable.getDataType());
                 if (nDimensions == 1 ||
                     (nDimensions == 2 && tVariable.getDataType() == DataType.CHAR)) {
-                        varNames.add(tVariable.getName());
-                        pas.add(getPrimitiveArray(tVariable));
+                    varNames.add(tVariable.getName());
+                    PrimitiveArray pa = getPrimitiveArray(tVariable);
+
+                    //decode the pa?
+                    Attribute att = tVariable.findAttribute("NcHelper");
+                    if (att != null && att.isString()) {
+                        String ncHelper = att.getStringValue();
+                        if (ncHelper == null) 
+                            ncHelper = "";
+                        if (pa.elementClass() == short.class && 
+                            ncHelper.indexOf("originally a CharArray") >= 0) {
+                            pa = new CharArray(((ShortArray)pa).toArray());
+                        } else if (pa.elementClass() == String.class &&  
+                            ncHelper.indexOf("originally a LongArray") >= 0) {  //before JSON test
+                            pa = new LongArray(pa);
+                        } else if (pa.elementClass() == String.class && 
+                            ncHelper.indexOf("JSON encoded") >= 0) {
+                            int tSize = pa.size();
+                            for (int i = 0; i < tSize; i++) 
+                                pa.setString(i, String2.fromJson(pa.getString(i)));
+                        }
+                    }
+
+                    //add the decoded pa
+                    pas.add(pa);
                 }
             }
 
@@ -1600,9 +1685,119 @@ public class NcHelper  {
             throw e;
         }
 
-        if (verbose) String2.log("  NcHelper.readPAsInNc done. nPAs=" + pas.size() + 
+        int pasSize = pas.size();
+        PrimitiveArray paar[] = new PrimitiveArray[pasSize];
+        for (int i = 0; i < pasSize; i++)
+            paar[i] = (PrimitiveArray)pas.get(i);
+        if (reallyVerbose) String2.log("  NcHelper.readPAsInNc done. nPAs=" + pasSize + 
             " TIME=" + (System.currentTimeMillis() - time));
+        return paar;
     }
+
+    /** 
+     * This writes the contents of Attributes to an .nc file,
+     * so the .nc file can be a key-value-pair (KVP) repository.
+     * This works with all PrimitiveArray types, but some datatypes 
+     * are specially encoded in the files and then automatically decoded when read.
+     *
+     * @param fullName for the file (This doesn't write to an intermediate file.)
+     * @param attributes  Names musn't have internal spaces.
+     * @throws Exception if trouble (if an attribute's values are in a LongArray)
+     */
+    public static void writeAttributesToNc(String fullName, Attributes attributes) 
+        throws Exception {
+
+        //gather the names and primitiveArrays
+        String names[] = attributes.getNames();
+        int nNames = names.length;
+        PrimitiveArray pas[] = new PrimitiveArray[nNames];
+        for (int i = 0; i < nNames; i++) 
+            pas[i] = attributes.get(names[i]);
+
+        //write to .nc
+        writePAsInNc(fullName, new StringArray(names), pas);
+    }
+
+    /** 
+     * This reads the specified Attribute from an .nc file
+     * which was created by writeAttributesToNc.
+     * This works with all PrimitiveArray types, but some datatypes 
+     * are specially encoded in the files and then automatically decoded when read.
+     *
+     * @param fullName for the file 
+     * @return the PrimitiveArray corresponding to name
+     *    (e.g., fullName file or variable name not found)
+     * @throws exception if trouble (e.g., name not found)
+     */
+    public static PrimitiveArray readAttributeFromNc(String fullName, String name) 
+        throws Exception {
+
+        return readPAsInNc(fullName, new String[]{name}, new StringArray())[0];
+    }
+
+    /** 
+     * This reads the specified Attributes from an .nc file
+     * which was created by writeAttributesToNc.
+     * This works with all PrimitiveArray types, but some datatypes 
+     * are specially encoded in the files and then automatically decoded when read.
+     *
+     * @param fullName for the file 
+     * @return PrimitiveArray[] which parallels names
+     * @throws exception if trouble
+     *    (e.g., fullName file or one of the names not found)
+     */
+    public static PrimitiveArray[] readAttributesFromNc(String fullName, String names[]) 
+        throws Exception {
+
+        return readPAsInNc(fullName, names, new StringArray());
+    }
+
+    /** 
+     * This reads all Attributes from an .nc file 
+     * which was created by writeAttributesToNc,
+     * and creates an Attributes object.
+     * This works with all PrimitiveArray types, but some datatypes 
+     * are specially encoded in the files and then automatically decoded when read.
+     *
+     * @param fullName for the file 
+     * @return attributes  
+     * @throws Exception if trouble
+     */
+    public static Attributes readAttributesFromNc(String fullName) 
+        throws Exception {
+
+        StringArray names = new StringArray();
+        PrimitiveArray pas[] = readPAsInNc(fullName, null, names);
+        Attributes atts = new Attributes();
+        int nNames = names.size();
+        for (int i = 0; i < nNames; i++) 
+            atts.add(names.get(i), pas[i]);
+        return atts;
+    }
+
+    /** Diagnose a problem */
+    public static void testJplG1SST() throws Exception {
+        String dir = "f:/data/jplG1SST/";
+        String request[] = new String[]{"SST"};
+        StringArray varNames = new StringArray();
+        NetcdfFile fi;
+        Variable var;    //read    start:stop:stride
+
+        fi = openFile(dir + "sst_20120214.nc");
+        var = fi.findVariable("SST");  
+        PrimitiveArray pas14 = getPrimitiveArray(var.read("0,0:14000:200,0:28000:200"));
+        fi.close();
+String2.log(pas14.toString());     
+
+        fi = openFile(dir + "sst_20120212.nc");
+        var = fi.findVariable("SST");  
+        PrimitiveArray pas13 = getPrimitiveArray(var.read("0,0:14000:200,0:28000:200"));
+        fi.close();
+String2.log(pas13.toString());     
+
+        String2.log("diffString=\n" + pas14.diffString(pas13));
+    }
+
 
 
     /**
@@ -1660,30 +1855,129 @@ public class NcHelper  {
 
         //test readWritePAsInNc
         ByteArray ba = new ByteArray(new byte[]{1,2,4,7});
-        DoubleArray da = new DoubleArray(new double[]{1.1, 2.2, 9.9});
-        StringArray sa = new StringArray(new String[]{"This", "is", "a", "test."});
-        IntArray inta = new IntArray(new int[]{-1, 0, 1});
+        ShortArray sha = new ShortArray(new short[]{100,200,400,700});
+        IntArray ia = new IntArray(new int[]{-1, 0, 1});
+        LongArray la = new LongArray(new long[]{-10L, 0, 10L});
+        char charAr[] = new char[65536];
+        for (int i = 0; i < 65536; i++)
+            charAr[i] = (char)i;
+        CharArray ca = new CharArray(charAr);
+        FloatArray fa = new FloatArray(new float[]{-1.1f, 2.2f, 5.5f, Float.NaN});
+        DoubleArray da = new DoubleArray(new double[]{1.1, 2.2, 9.9, Double.NaN});
+        StringArray sa = new StringArray();
+        for (int i = 0; i < 65536; i++) 
+            sa.add("a" + (char)i + "z");  
         //write to file
         String fullName = "c:/temp/PAsInNc.nc";
         File2.delete(fullName); //for test, make double sure it doesn't already exist
-        StringArray varNames = new StringArray(new String[]{"ba", "da", "sa", "inta"});
-        PrimitiveArray pas[] = new PrimitiveArray[]{ba, da, sa, inta};
+        StringArray varNames = new StringArray(new String[]{
+            "ba", "sha", "ia", "la", "ca", "fa", "da", "sa"});
+        PrimitiveArray pas[] = new PrimitiveArray[]{
+            ba, sha, ia, la, ca, fa, da, sa};
         writePAsInNc(fullName, varNames, pas);
         //read from file
         StringArray varNames2 = new StringArray();
-        ArrayList pas2 = new ArrayList();
-        readPAsInNc(fullName, null, varNames2, pas2);
+        PrimitiveArray pas2[] = readPAsInNc(fullName, null, varNames2);
         Test.ensureEqual(varNames, varNames2, "");
-        Test.ensureEqual(pas.length, pas2.size(), "");
-        for (int i = 0; i < 4; i++)
-            Test.ensureEqual(pas[i], pas2.get(i), "i=" + i);
+        Test.ensureEqual(pas.length, pas2.length, "");
+        for (int i = 0; i < pas.length; i++) {
+            int which = varNames2.indexOf(varNames.get(i));
+            PrimitiveArray pa2 = pas2[which];
+            Test.ensureEqual(pas[i].elementClassString(), pa2.elementClassString(), "i=" + i);
+            if (pas[i].elementClass() == String.class) {
+                for (int j = 0; j < pas[i].size(); j++)
+                    Test.ensureEqual(String2.toJson(pas[i].getString(j)),
+                                     String2.toJson(   pa2.getString(j)), "i=" + i + " j=" + j);
+            } else {
+                Test.ensureEqual(pas[i].toJsonCsvString(),pa2.toJsonCsvString(),    "i=" + i);
+            }
+        }
 
-        readPAsInNc(fullName, new String[]{"sa"}, varNames2, pas2);
+        pas2 = readPAsInNc(fullName, new String[]{"sa"}, varNames2);
         Test.ensureEqual(varNames2.size(), 1, "");
         Test.ensureEqual(varNames2.get(0), "sa", "");
-        Test.ensureEqual(pas2.size(), 1, "");
-        Test.ensureEqual(pas[2], pas2.get(0), "");
+        Test.ensureEqual(pas2.length, 1, "");
+        Test.ensureEqual(pas[varNames.indexOf("sa")].toJsonCsvString(), pas2[0].toJsonCsvString(), "");
 
+        //test writeAttributesToNc
+        fullName = "c:/temp/AttsInNc.nc";
+        Attributes atts = new Attributes();
+        for (int i = 0; i < pas.length; i++)
+            atts.set(varNames.get(i), pas[i]);
+        writeAttributesToNc(fullName, atts);
+        //read 1
+        PrimitiveArray pa = readAttributeFromNc(fullName, "sa");
+        Test.ensureEqual(sa.elementClassString(), pa.elementClassString(), "");
+        Test.ensureEqual(sa, pa, "");
+        pa = readAttributeFromNc(fullName, "ia");
+        Test.ensureEqual(ia.elementClassString(), pa.elementClassString(), "");
+        Test.ensureEqual(ia, pa, "");
+        //read many
+        pas2 = readAttributesFromNc(fullName, varNames.toArray());
+        for (int i = 0; i < pas.length; i++) {
+            Test.ensureEqual(pas[i].elementClassString(), pas2[i].elementClassString(), "i=" + i);
+            Test.ensureEqual(pas[i].toJsonCsvString(),    pas2[i].toJsonCsvString(), "i=" + i);
+        }
+        //read all 
+        atts = readAttributesFromNc(fullName);
+        for (int i = 0; i < varNames.size(); i++) {
+            pa = atts.get(varNames.get(i));
+            Test.ensureEqual(pas[i].elementClassString(), pa.elementClassString(), "i=" + i);
+            Test.ensureEqual(pas[i].toJsonCsvString(),    pa.toJsonCsvString(), "i=" + i);
+        }
+        //test fail to read non-existent file
+        try {
+            pa = readAttributeFromNc(fullName + "zztop", "sa");
+            throw new RuntimeException("shouldn't get here");
+        } catch (Exception e) {
+            if (e.toString().indexOf(
+                "java.io.FileNotFoundException: c:\\temp\\AttsInNc.nczztop " + 
+                "(The system cannot find the file specified)") < 0)
+            throw e;
+        }
+
+        try {
+            pas2 = readAttributesFromNc(fullName + "zztop", varNames.toArray());
+            throw new RuntimeException("shouldn't get here");
+        } catch (Exception e) {
+            if (e.toString().indexOf(
+                "java.io.FileNotFoundException: c:\\temp\\AttsInNc.nczztop " + 
+                "(The system cannot find the file specified)") < 0)
+            throw e;
+        }
+
+        try {
+            atts = readAttributesFromNc(fullName + "zztop");
+            throw new RuntimeException("shouldn't get here");
+        } catch (Exception e) {
+            if (e.toString().indexOf(
+                "java.io.FileNotFoundException: c:\\temp\\AttsInNc.nczztop " + 
+                "(The system cannot find the file specified)") < 0)
+            throw e;
+        }
+
+        //test fail to read non-existent var
+        try {
+            pa = readAttributeFromNc(fullName, "zztop");
+            throw new RuntimeException("shouldn't get here");
+        } catch (Exception e) {
+            if (e.toString().indexOf(
+                "ERROR: Expected variable #0 not found while reading " +
+                "c:/temp/AttsInNc.nc (loadVarNames=zztop).") < 0)
+            throw e;
+        }
+
+        try {
+            pas2 = readAttributesFromNc(fullName, new String[]{"zztop"});
+            throw new RuntimeException("shouldn't get here");
+        } catch (Exception e) {
+            if (e.toString().indexOf(
+                "ERROR: Expected variable #0 not found while reading " +
+                "c:/temp/AttsInNc.nc (loadVarNames=zztop).") < 0)
+            throw e;
+        }
+        
+ 
         //done
         String2.log("\n***** NcHelper.test finished successfully");
         Math2.incgc(2000);

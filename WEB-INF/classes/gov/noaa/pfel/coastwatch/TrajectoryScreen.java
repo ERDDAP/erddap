@@ -358,7 +358,7 @@ public class TrajectoryScreen extends Screen {
                 cColumnNumber = table.findColumnNumber(cVariableName);
                 if (cColumnNumber < 0)
                     Test.error("cVariableName=" + cVariableName + " not in table:" +
-                        String2.toCSVString(table.getColumnNames()));
+                        String2.toCSSVString(table.getColumnNames()));
                 PrimitiveArray colorCol = table.getColumn(cColumnNumber);
                 double cStats[] = colorCol.calculateStats();
                 double cMin = cStats[PrimitiveArray.STATS_MIN];
@@ -462,10 +462,10 @@ public class TrajectoryScreen extends Screen {
             int idColumnNumber = 4;
             if (xColumnNumber < 0)
                 Test.error("xVariableName=" + xVariableName + " not in table:" +
-                    String2.toCSVString(table.getColumnNames()));
+                    String2.toCSSVString(table.getColumnNames()));
             if (yColumnNumber < 0)
                 Test.error("yVariableName=" + yVariableName + " not in table:" +
-                    String2.toCSVString(table.getColumnNames()));
+                    String2.toCSSVString(table.getColumnNames()));
             //String2.log(table.toString("row", 10));
 
             //make colorMap 
@@ -483,7 +483,7 @@ public class TrajectoryScreen extends Screen {
                 cColumnNumber = table.findColumnNumber(cVariableName);
                 if (cColumnNumber < 0)
                     Test.error("cVariableName=" + cVariableName + " not in table:" +
-                        String2.toCSVString(table.getColumnNames()));
+                        String2.toCSSVString(table.getColumnNames()));
                 PrimitiveArray colorCol = table.getColumn(cColumnNumber);
                 double cStats[] = colorCol.calculateStats();
                 double cMin = cStats[PrimitiveArray.STATS_MIN];
@@ -568,7 +568,7 @@ public class TrajectoryScreen extends Screen {
             String[] dataLongNames = tableDataSet.dataLongNames();
             StringBuilder sb = new StringBuilder();
             if (getAll) {
-                sb.append(String2.toCSVString(dataVariableNames));
+                sb.append(String2.toCSSVString(dataVariableNames));
             } else {
                 int dataX = String2.indexOf(dataLongNames, xAxisValue);
                 int dataY = String2.indexOf(dataLongNames, yAxisValue);

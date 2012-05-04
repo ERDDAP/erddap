@@ -31,6 +31,7 @@ import java.util.Vector;
 
 /**
  * This class mimics the behavior of a GMT Color Palette Table (.cpt) file.
+ * http://gmt.soest.hawaii.edu/gmt/html/GMT_Docs.html#x1-720004.15
  * Note that log ranges can be simulated by a series of ranges
  *  (each of which is actually linearly interpolated).
  */
@@ -182,7 +183,7 @@ public class CompoundColorMap extends ColorMap {
                 double low  = String2.parseDouble(items[0]);
                 if (!Double.isNaN(low) && items.length >= 8) {
                     //it is a color range
-                    //String2.log(String2.toCSVString(items));
+                    //String2.log(String2.toCSSVString(items));
                     double high = String2.parseDouble(items[4]);
                     rangeLowAr.add(low);
                     rangeHighAr.add(high);
@@ -363,7 +364,7 @@ public class CompoundColorMap extends ColorMap {
         String dt;
         //String2.log("gc=" + Calendar2.gcToEpochSeconds(gc) + " maxSeconds=" + maxSeconds);
         while (Calendar2.gcToEpochSeconds(gc) < maxSeconds) {  
-            dt = Calendar2.formatAsISODateTimeSpace(gc);
+            dt = Calendar2.formatAsISODateTimeT(gc);  //2011-12-15 Bob Simons changed Space to T.
             String tLabel = duration == Calendar2.MONTH? 
                 Calendar2.getMonthName3(gc.get(Calendar2.MONTH) + 1) : //since java is 0..
                 dt.substring(minorDisplayBegin, minorDisplayEnd);
@@ -406,7 +407,7 @@ public class CompoundColorMap extends ColorMap {
                 break;
             }
         }
-        dt = Calendar2.formatAsISODateTimeSpace(gc);
+        dt = Calendar2.formatAsISODateTimeT(gc); //2011-12-15 Bob Simons changed Space to T.
         String tLastLabel = duration == Calendar2.MONTH? 
             Calendar2.getMonthName3(gc.get(Calendar2.MONTH) + 1) : //since java is 0..
             dt.substring(minorDisplayBegin, minorDisplayEnd);
@@ -699,7 +700,7 @@ public class CompoundColorMap extends ColorMap {
 
                 //add toAdd*EveryDecade
                 for (int which = 0; which < toAdd.length; which++) {
-                    //String2.log("makeCPT which=" + which + " levels.size()=" + levels.size() + " " + String2.toCSVString(levels.toArray()));
+                    //String2.log("makeCPT which=" + which + " levels.size()=" + levels.size() + " " + String2.toCSSVString(levels.toArray()));
                     if (levels.size() < nSections) { //if fewer than 8 sections, poor sampling of colors
                         for (int i = minExponent; i <= maxExponent; i++) {
                             double d = toAdd[which] * Math2.ten(i);
@@ -711,7 +712,7 @@ public class CompoundColorMap extends ColorMap {
                     }
                 }
                 if (reallyVerbose) 
-                    String2.log("CompoundColorMap.makeCPT levels=" + String2.toCSVString(levels.toArray()));
+                    String2.log("CompoundColorMap.makeCPT levels=" + String2.toCSSVString(levels.toArray()));
 
                 //sort the values
                 Collections.sort(levels);
@@ -989,7 +990,7 @@ public class CompoundColorMap extends ColorMap {
                 Calendar2.isoStringToEpochSeconds("1906-10-05T12:13:14"),
                 Calendar2.isoStringToEpochSeconds("1996-01-15T08:09:10"),
                 atLeastNPieces, continuous, tempDir);
-            Test.ensureEqual(String2.toCSVString(ccm.leftLabel), 
+            Test.ensureEqual(String2.toCSSVString(ccm.leftLabel), 
                 "1900, 1920, 1940, 1960, 1980", "");
             Test.ensureEqual(ccm.lastLabel, "2000", "");
             
@@ -999,7 +1000,7 @@ public class CompoundColorMap extends ColorMap {
                 Calendar2.isoStringToEpochSeconds("1971-01-05T12:13:14"),
                 Calendar2.isoStringToEpochSeconds("2001-06-15T08:09:10"),
                 atLeastNPieces, continuous, tempDir);
-            Test.ensureEqual(String2.toCSVString(ccm.leftLabel), 
+            Test.ensureEqual(String2.toCSSVString(ccm.leftLabel), 
                 "1970, 1975, 1980, 1985, 1990, 1995, 2000", "");
             Test.ensureEqual(ccm.lastLabel, "2005", "");
             
@@ -1009,7 +1010,7 @@ public class CompoundColorMap extends ColorMap {
                 Calendar2.isoStringToEpochSeconds("1978-09-05T12:13:14"),
                 Calendar2.isoStringToEpochSeconds("1990-02-15T08:09:10"),
                 atLeastNPieces, continuous, tempDir);
-            Test.ensureEqual(String2.toCSVString(ccm.leftLabel), 
+            Test.ensureEqual(String2.toCSSVString(ccm.leftLabel), 
                 "1978, 1980, 1982, 1984, 1986, 1988, 1990", "");
             Test.ensureEqual(ccm.lastLabel, "1992", "");
             
@@ -1019,7 +1020,7 @@ public class CompoundColorMap extends ColorMap {
                 Calendar2.isoStringToEpochSeconds("2000-12-05T12:13:14"),
                 Calendar2.isoStringToEpochSeconds("2004-03-17T08:09:10"),
                 atLeastNPieces, continuous, tempDir);
-            Test.ensureEqual(String2.toCSVString(ccm.leftLabel), 
+            Test.ensureEqual(String2.toCSSVString(ccm.leftLabel), 
                 "2000, 2001, 2002, 2003, 2004", "");
             Test.ensureEqual(ccm.lastLabel, "2005", "");
             
@@ -1029,7 +1030,7 @@ public class CompoundColorMap extends ColorMap {
                 Calendar2.isoStringToEpochSeconds("2000-10-05T12:13:14"),
                 Calendar2.isoStringToEpochSeconds("2003-04-17T08:09:10"),
                 atLeastNPieces, continuous, tempDir);
-            Test.ensureEqual(String2.toCSVString(ccm.leftLabel), 
+            Test.ensureEqual(String2.toCSSVString(ccm.leftLabel), 
                 "Jul<br>2000, Jan<br>2001, Jul, Jan<br>2002, Jul, Jan<br>2003", "");
             Test.ensureEqual(ccm.lastLabel, "Jul", "");
             
@@ -1039,7 +1040,7 @@ public class CompoundColorMap extends ColorMap {
                 Calendar2.isoStringToEpochSeconds("2000-10-05T12:13:14"),
                 Calendar2.isoStringToEpochSeconds("2001-08-17T08:09:10"),
                 atLeastNPieces, continuous, tempDir);
-            Test.ensureEqual(String2.toCSVString(ccm.leftLabel), 
+            Test.ensureEqual(String2.toCSSVString(ccm.leftLabel), 
                 "Sep<br>2000, Nov, Jan<br>2001, Mar, May, Jul", "");
             Test.ensureEqual(ccm.lastLabel, "Sep", "");
             
@@ -1049,7 +1050,7 @@ public class CompoundColorMap extends ColorMap {
                 Calendar2.isoStringToEpochSeconds("2000-07-09T12:13:14"),
                 Calendar2.isoStringToEpochSeconds("2000-09-27T08:09:10"),
                 atLeastNPieces, continuous, tempDir);
-            Test.ensureEqual(String2.toCSVString(ccm.leftLabel), 
+            Test.ensureEqual(String2.toCSSVString(ccm.leftLabel), 
                 "01<br>2000-07, 17, 01<br>2000-08, 17, 01<br>2000-09, 17", ""); //note no 31
             Test.ensureEqual(ccm.lastLabel, "01<br>2000-10", "");
             
@@ -1059,7 +1060,7 @@ public class CompoundColorMap extends ColorMap {
                 Calendar2.isoStringToEpochSeconds("2000-07-14T12:13:14"),
                 Calendar2.isoStringToEpochSeconds("2000-08-30T20:09:10"),
                 atLeastNPieces, continuous, tempDir);
-            Test.ensureEqual(String2.toCSVString(ccm.leftLabel), 
+            Test.ensureEqual(String2.toCSSVString(ccm.leftLabel), 
                 "11<br>2000-07, 21, 01<br>2000-08, 11, 21", ""); //note no 31
             Test.ensureEqual(ccm.lastLabel, "01<br>2000-09", "");
             
@@ -1069,7 +1070,7 @@ public class CompoundColorMap extends ColorMap {
                 Calendar2.isoStringToEpochSeconds("2000-07-09T12:13:14"),
                 Calendar2.isoStringToEpochSeconds("2000-08-05T08:09:10"),
                 atLeastNPieces, continuous, tempDir);
-            Test.ensureEqual(String2.toCSVString(ccm.leftLabel), 
+            Test.ensureEqual(String2.toCSSVString(ccm.leftLabel), 
                 "06<br>2000-07, 11, 16, 21, 26, 01<br>2000-08", ""); //note no 31
             Test.ensureEqual(ccm.lastLabel, "06", "");
             
@@ -1079,7 +1080,7 @@ public class CompoundColorMap extends ColorMap {
                 Calendar2.isoStringToEpochSeconds("2000-07-26T12:13:14"),
                 Calendar2.isoStringToEpochSeconds("2000-08-05T08:09:10"),
                 atLeastNPieces, continuous, tempDir);
-            Test.ensureEqual(String2.toCSVString(ccm.leftLabel), 
+            Test.ensureEqual(String2.toCSSVString(ccm.leftLabel), 
                 "25<br>2000-07, 27, 29, 01<br>2000-08, 03, 05", ""); //note no 31
             Test.ensureEqual(ccm.lastLabel, "07", "");
             
@@ -1089,7 +1090,7 @@ public class CompoundColorMap extends ColorMap {
                 Calendar2.isoStringToEpochSeconds("2000-07-09T01:13:14"),
                 Calendar2.isoStringToEpochSeconds("2000-07-11T15:09:10"),
                 atLeastNPieces, continuous, tempDir);
-            Test.ensureEqual(String2.toCSVString(ccm.leftLabel), 
+            Test.ensureEqual(String2.toCSSVString(ccm.leftLabel), 
                 "00<br>2000-07-09, 12, 00<br>2000-07-10, 12, 00<br>2000-07-11, 12", "");
             Test.ensureEqual(ccm.lastLabel, "00<br>2000-07-12", "");
 
@@ -1099,8 +1100,8 @@ public class CompoundColorMap extends ColorMap {
                 Calendar2.isoStringToEpochSeconds("2000-11-09T13:14:15"),
                 Calendar2.isoStringToEpochSeconds("2000-11-09T14:29:10"),
                 atLeastNPieces, continuous, tempDir);
-            Test.ensureEqual(String2.toCSVString(ccm.leftLabel), 
-                "00<br>2000-11-09 13, 15, 30, 45, 00<br>2000-11-09 14, 15", "");
+            Test.ensureEqual(String2.toCSSVString(ccm.leftLabel), 
+                "00<br>2000-11-09T13, 15, 30, 45, 00<br>2000-11-09T14, 15", "");
             Test.ensureEqual(ccm.lastLabel, "30", "");
 
             // 6 min -> 1 min
@@ -1109,8 +1110,8 @@ public class CompoundColorMap extends ColorMap {
                 Calendar2.isoStringToEpochSeconds("2000-07-09T01:58:14"),
                 Calendar2.isoStringToEpochSeconds("2000-07-09T02:03:10"),
                 atLeastNPieces, continuous, tempDir);
-            Test.ensureEqual(String2.toCSVString(ccm.leftLabel), 
-                "58<br>2000-07-09 01, 59, 00<br>2000-07-09 02, 01, 02, 03", "");
+            Test.ensureEqual(String2.toCSSVString(ccm.leftLabel), 
+                "58<br>2000-07-09T01, 59, 00<br>2000-07-09T02, 01, 02, 03", "");
             Test.ensureEqual(ccm.lastLabel, "04", "");
 
             // 58 sec -> 10 sec
@@ -1119,8 +1120,8 @@ public class CompoundColorMap extends ColorMap {
                 Calendar2.isoStringToEpochSeconds("2000-07-09T01:16:14"),
                 Calendar2.isoStringToEpochSeconds("2000-07-09T01:17:12"),
                 atLeastNPieces, continuous, tempDir);
-            Test.ensureEqual(String2.toCSVString(ccm.leftLabel), 
-                "10<br>2000-07-09 01:16, 20, 30, 40, 50, 00<br>2000-07-09 01:17, 10", "");
+            Test.ensureEqual(String2.toCSSVString(ccm.leftLabel), 
+                "10<br>2000-07-09T01:16, 20, 30, 40, 50, 00<br>2000-07-09T01:17, 10", "");
             Test.ensureEqual(ccm.lastLabel, "20", "");
 
             //0 sec          threw exception

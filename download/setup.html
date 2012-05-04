@@ -53,7 +53,7 @@
 <a href="#license">License</a> |
 <a href="#contact">Contact</a>
 <p>And see the related document 
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">Working with the datasets.xml File</a>
+<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><b>Working with the datasets.xml File</b></a>
 </center>
 
 <p>ERDDAP is an all-open source, all-Java (servlet), web application that runs in a web application server 
@@ -118,23 +118,24 @@ or Mac server instead.
       <a href="http://tomcat.apache.org/">http://tomcat.apache.org/</a> 
       to set up Tomcat on your server.
       <br>On Linux, we recommend installing it in /usr/local.
-      <br>On Mac, it is probably already installed in /Library/Tomcat.
-      <br>On Windows, it will be installed in c:/Program Files.
+      <br>On a Mac, it is probably already installed in /Library/Tomcat.
+      <br>On Windows, select the "32-bit/64-bit Windows Service Installer".
+        It will be installed in c:/Program Files.
       <br>&nbsp;
 
-    <li>On Windows, run Tomcat Manager and right click on the Tomcat Manager icon in the system tray; 
+    <li><a name="WindowsMemory">On Windows,</a> run Tomcat Manager and right click on the Tomcat Manager icon in the system tray; 
       select <tt>Configure : Java</tt>.
       <ul>
       <li>Set the <tt>Java Virtual Machine</tt> directory, e.g.,
         C:\Program Files\Java\jre6\bin\client\jvm.dll.      
       <li>Set <tt>Initial Memory Pool</tt> and 
-        <tt>Maximum Memory Pool</tt> to <tt>1200</tt> MB.
-        On most computers, Tomcat won't start if the memory setting is much higher than that.
+        <tt>Maximum Memory Pool</tt> to <tt>1200</tt> MB on 32-bit Windows computers or
+        up to 1/2 of physical memory on 64-bit Windows computers. On 32-bit computers, going much higher than 1200 MB will probably fail.
         <br>&nbsp;
       </ul>
 
-    <li>On Linux and Mac, Tomcat is often set up as belonging to user "tomcat". Set up that account 
-      now.  
+    <li>On Linux and Macs, Tomcat is often set up as belonging to 
+      user "tomcat". Set up that account now.  
       From the parent of the apache-tomcat directory, type 
       <br><tt>chown -R tomcat apache-tomcat-<i>7.0.10</i></tt> 
       <br><tt>chgrp -R tomcat apache-tomcat-<i>7.0.10</i></tt>
@@ -144,7 +145,8 @@ or Mac server instead.
       permission to write to its log files.
       <br>&nbsp;
 
-    <li>On Linux and Mac, create a file [tomcat]/bin/setenv.sh (which is used by 
+    <li>On <a name="LinuxMemory">Linux</a> and <a name="MacMemory">Macs</a>, 
+      create a file [tomcat]/bin/setenv.sh (which is used by 
       [tomcat]/bin/startup.sh and shutdown.sh) with should contain<tt>
       <br>export JAVA_HOME=/usr/local/jre1.6.0_24
       <br>export JAVA_OPTS='-server -Djava.awt.headless=true -Xmx1500M -Xms1500M'
@@ -184,22 +186,33 @@ or Mac server instead.
       information to [tomcat]/logs/catalina.out (or some other Tomcat log file) 
       which is useful if your ERDDAP has memory problems. -->
 
-    <li>On Linix and Mac, change the permissions of all [tomcat]/bin/*.sh to be executable by the owner.
+    <li><a name="permissions">On</a> Linux and Macs, change the permissions of all 
+      [tomcat]/bin/*.sh to be executable by the owner.
       <br>&nbsp;
 
-    <li><a name="fonts">Fonts</a> for images: On Linux and Windows, download 
+    <li><a name="fonts">Fonts</a> for images: We strongly prefer the free Vera Sans fonts 
+      to the standard Linux/Java fonts.  Installing these fonts isn't required.  
+
+    <p>If you don't install these fonts, you need to change the fontFamily setting in 
+      setup.xml to <tt>&lt;fontFamily&gt;SansSerif&lt;/fontFamily&gt;</tt> .
+
+    <p>To install the fonts, please download 
         <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/BitstreamVeraSans.zip">BitstreamVeraSans.zip</a> 
-        (344,753 bytes, MD5=E16AF0C9838FD2443434F6E0E9FD0A0D) and (as the root user)  
-      unzip it into &lt;<i>JAVA_HOME</i>&gt;/lib/fonts so Java can find the fonts.
-      Installing these fonts isn't required, but we prefer these free fonts to the standard Linux/Java fonts.
-      <br>On Mac (or Linux and Windows if you don't install these fonts), 
-      you need to change the fontFamily setting in setup.xml to 
-        <tt>&lt;fontFamily&gt;SansSerif&lt;/fontFamily&gt;</tt> .
-      <br>Remember: if/when you later upgrade to a newer version of Java, you need to reinstall
-        these fonts.
-      <br>&nbsp;
+        (344,753 bytes, MD5=E16AF0C9838FD2443434F6E0E9FD0A0D) 
+        and unzip the font files to a temporary directory.
+      <ul>
+      <li>On Linux (as the root user) and Windows XP (as the administrator), 
+         copy the font files into &lt;<i>JAVA_HOME</i>&gt;/lib/fonts 
+         so Java can find the fonts.
+         Remember: if/when you later upgrade to a newer version of Java, you need to reinstall
+         these fonts.
+      <li>On Macs, for each font file, double click on it and then click <tt>Install Font</tt>.
+      <li>On Windows Vista and 7, in Windows Explorer, select all of the font files. 
+          Right click.  Click on <tt>Install</tt>.
+        <br>&nbsp;
+      </ul>
 
-    <li>Test your Tomcat installation.
+    <li><a name="testTomcat">Test</a> your Tomcat installation.
       <ul>
       <li>Linux:
         <br>As user "tomcat", run <tt>[tomcat]/bin/startup.sh</tt>
@@ -232,7 +245,7 @@ or Mac server instead.
       </ul>
     </ul>
 
-<li><a name="apache">Use</a> ProxyPass so users don't have to put :8080 in the URL.
+<li><a name="ProxyPass">Use</a> ProxyPass so users don't have to put :8080 in the URL.
   <br>On Linux computers, if Tomcat is running in Apache, you need to modify the
     /etc/httpd/conf/httpd.conf
   file to allow HTTP traffic to/from ERDDAP:
@@ -247,7 +260,7 @@ or Mac server instead.
 <li><a name="erddapContent">Set up the [tomcat]/content/erddap configuration files.</a> 
   <br>On Linux, Mac, and Windows, download
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a> 
-    (55,840 bytes, MD5=C82FC0650443B91287ED044CC4567DDB) and unzip it into [tomcat], 
+    (70,829 bytes, MD5=1A266CE16FF4EA85B3E5EB74A03281A9) and unzip it into [tomcat], 
   creating [tomcat]/content/erddap .
   <ul>
   <li><a name="setup.xml">Read</a> the comments in [tomcat]/content/erddap/<b>setup.xml</b>
@@ -273,10 +286,10 @@ or Mac server instead.
   set the system property erddapContentDirectory=/usr/local/erddap/content/ (or wherever it is).
   If you aren't allowed to set this property in startup.sh, perhaps you can set it in Tomcat's context.xml.
 
-<li>Install the erddap.war file.
+<li><a name="erddap.war">Install</a> the erddap.war file.
   <br>On Linux, Mac, and Windows, download 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    (version 1.36, size=475,774,304 bytes, MD5=BF28C3BE7CD88BA9EEA6723B4630A289) <!-- duplicated below -->
+    (version 1.38, size=478,798,895 bytes, MD5=9E3ADF98A8DE9F032DC4CE0EE6E5ED5E) <!-- duplicated below -->
     into [tomcat]/webapps .  
   The .war file is big because it contains high resolution coastline, boundary, 
   and elevation data needed to create maps.
@@ -327,7 +340,7 @@ or Mac server instead.
   <br>&nbsp;
 
 <li>Download <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-(version 1.36, size=475,774,304 bytes, MD5=BF28C3BE7CD88BA9EEA6723B4630A289) <!-- duplicated above -->
+    (version 1.38, size=478,798,895 bytes, MD5=9E3ADF98A8DE9F032DC4CE0EE6E5ED5E) <!-- duplicated above -->
 into a  temporary directory.
   <br>&nbsp;
 
@@ -431,6 +444,7 @@ into a  temporary directory.
 <li><b><a name="flag">A Flag File</a> Tells ERDDAP to Try to <a name="reloadingDatasets">Reload</a> 
   a Dataset As Soon As Possible</b> 
   <ul>
+  <li>ERDDAP won't notice any changes to a dataset's setup in datasets.xml until ERDDAP reloads the dataset.
   <li>If a dataset is active in ERDDAP and you want to force ERDDAP to reload it as soon as possible
     (before the dataset's <tt>&lt;reloadEveryNMinutes&gt;</tt> would cause it to be reloaded),
     put a file in [bigParentDirectory]/flag 
@@ -473,16 +487,133 @@ into a  temporary directory.
   to a large number (e.g., 10080 = 1 week).
   Then, when you know the dataset has changed (perhaps because you added a file to the dataset's data 
   directory), set a flag so that the dataset is reloaded as soon as possible.
-  This is much more responsive and much more efficient than setting 
+  Flags are usually seen quickly.  But if the LoadDatasets thread is already
+  busy, it may be a while before it is available to act on the flag.
+  But the flag system is much more responsive and much more efficient than setting 
   <tt>&lt;reloadEveryNMinutes&gt;</tt> to a small number.
 
 <li><b>Force Dataset <a name="removingDatasets">Removal</a></b> - 
   If a dataset is active in ERDDAP, and you want to deactivate it as soon as 
   possible, add <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><tt>active="false"</tt></a>
     to the dataset tag and set a <a href="#flag">flag</a>.
+  Flags are usually seen quickly.  But if the LoadDatasets thread is already
+  busy, it may be a while before it is available to act on the flag.
   Once the dataset is not active (i.e., not visible in ERDDAP's list of datasets), 
   you can remove the dataset's description from the datasets.xml file if you want to.
   <br>&nbsp;
+
+<li><b><a name="DatasetsReloaded">When Are Datasets Reloaded?</a></b> 
+  A thread called RunLoadDatasets is the master thread that controls 
+  when datasets are reloaded. RunLoadDatasets loops forever:
+  <ol>
+  <li>RunLoadDatasets notes the current time.
+  <li>RunLoadDatasets starts a LoadDatasets thread to do a "majorLoad".  
+    You can see information about the current/previous majorLoad at the top of your
+    ERDDAP's status page at http://<i>www.yourSite.org</i>/erddap/status.html
+    (<a href="http://coastwatch.pfeg.noaa.gov/erddap/status.html">status&nbsp;page&nbsp;example</a>).
+    <ol>
+    <li>LoadDatasets makes a copy of datasets.xml.
+    <li>LoadDatasets reads through the copy of datasets.xml and, for each dataset,
+       sees if the dataset needs to be (re)loaded or removed.
+       <ul>
+       <li>If a <a href="#flag">flag</a> file exists for this dataset, 
+         the file is deleted and 
+         the dataset is removed if <tt>active="false"</tt> 
+         or (re)loaded if <tt>active="true"</tt> (regardless of the dataset's age).
+       <li>If the dataset's dataset.xml chunk has <tt>active="false"</tt>
+         and the dataset is currently loaded (active), is is unloaded (removed).       
+       <li>If the dataset has <tt>active="true"</tt> and the dataset isn't already loaded,
+         it is loaded.
+       <li>If the dataset has <tt>active="true"</tt> and the dataset is already loaded,
+         the data set is reloaded if the dataset's age (time since last load) is greater than 
+         its <tt>&lt;reloadEveryNMinutes&gt;</tt> (default = 10080 minutes),
+         otherwise, the dataset is left alone.
+       </ul>
+    <li>LoadDatasets finishes.
+    </ol>
+    The RunLoadDatasets thread waits for the LoadDatasets thread to finish.
+    If LoadDatasets takes longer than <tt>loadDatasetsMinMinutes</tt>
+    (as specified in setup.xml), RunLoadDatasets interrupts the LoadDatasets thread.
+    Ideally, LoadDatasets notices the interrupt and finishes.
+    But if it doesn't notice the interrupt within a minute, 
+    RunLoadDatasets calls <tt>loadDatasets.stop()</tt>, which is undesirable.
+
+  <li>While the time since the start of the last majorLoad is less than
+    <tt>loadDatasetsMinMinutes</tt> (as specified in setup.xml, e.g., 15 minutes),
+    RunLoadDatasets repeatedly looks for <a href="#flag">flag</a> files
+    in the [bigParentDirectory]/flag directory.  If one or more flag files are 
+    found, they are deleted, and RunLoadDatasets starts a LoadDatasets thread to do a 
+    "minorLoad" (majorLoad=false).  You can't see minorLoad information on 
+    your ERDDAP's status page. 
+    <ol>
+    <li>LoadDatasets makes a copy of datasets.xml.
+    <li>LoadDatasets reads through the copy of datasets.xml and, 
+       for each dataset for which there was a flag file:
+       <ul>
+       <li>If the dataset's dataset.xml chunk has <tt>active="false"</tt>
+         and the dataset is currently loaded (active), is is unloaded (removed).
+       <li>If the dataset has <tt>active="true"</tt>, the dataset is (re)loaded,
+         regardless of its age.
+       </ul>
+       Non-flagged datasets are ignored.
+    <li>LoadDatasets finishes.
+    </ol>
+
+  <li>RunLoadDatasets goes back to step 1.
+  </ol>
+<br>Notes:
+  <ul>
+  <li><a name="DRStartup">Startup</a>
+    <br>When you restart ERDDAP, every dataset with <tt>active="true"</tt> is loaded.
+  <li><a name="DRCache">Cache</a>
+    <br>When a dataset is (re)loaded, its cache (including any data response files
+    and/or image files) is emptied.  
+  <li><a name="DRLotsOfDatasets">Lots of Datasets</a>
+    <br>If you have a lot of datasets and/or one or more datasets are slow to (re)load,
+    a LoadDatasets thread may take a long to finish its work,
+    perhaps even longer than <tt>loadDatasetsMinMinutes</tt>.
+  <li><a name="DROneLoadDatasetsThread">One LoadDatasets Thread</a>
+    <br>There is never more than one LoadDatasets thread running at once.
+    If a flag is set when LoadDatasets is already running,
+    the flag probably won't be noticed or acted on until that LoadDatasets thread finishes running.
+    You might say: "That's stupid. Why don't you just start a bunch of new threads
+    to load datasets?"  But if you have lots of datasets which get data from
+    one remote server, even one LoadDatasets thread will put substantial stress
+    on the remote server.  The same is true if you have lots of datasets which get data from 
+    files on one RAID.  There are rapidly diminishing returns from having 
+    more than one LoadDatasets thread.
+  <li><a name="DRFlagASAP">Flag = ASAP</a>
+    <br>Setting a flag just signals that the dataset should be (re)loaded
+    as soon as possible, not necessarily immediately.
+    If no LoadDatasets thread is currently running, the dataset will start to be reloaded
+    within a few seconds.
+    But if a LoadDatasets thread is currently running, the dataset probably won't be reloaded
+    until after that LoadDatasets thread is finished.
+  <li><a name="DRFlagFileDeleted">Flag File Deleted</a>
+    <br>In general, if you put a flag file in the <tt>[bigParentDirectory]/erddap/flag</tt>
+    directory (by visiting the dataset's flagUrl or putting an actual file there), the
+    dataset will usually be reloaded very soon after that flag file is deleted.    
+  <li><a name="DRFlagVsReloadEveryNMinutes">Flag vs. Small <tt>reloadEveryNMinutes</tt></a>
+    <br>If you have some external way of knowing when a dataset needs to be reloaded
+    and if it is convenient for you,
+    the best way to make sure that a dataset is always up-to-date is to 
+    set its <tt>reloadEveryNMinutes</tt> to a large number (10080?) and
+    set a flag (via a script?) whenever it needs to be reloaded.
+    That is the system that EDDGridFromErddap and EDDTableFromErddap use
+    receive messages that the dataset needs to be reloaded.
+  <li><a name="DRLookInLog">Look in log.txt</a>
+    <br>Lots of relevant information is written to the 
+    &lt;<i>bigParentDirectory</i>&gt;/logs/log.txt file.
+    If things aren't working as you expect, looking at log.txt
+    lets you diagnose the problem by finding out exactly what ERDDAP did.
+    <ul>
+    <li>Search for "majorLoad=true" for the start of major LoadDataset threads.
+    <li>Search for "majorLoad=false" for the start of minor LoadDatasets threads.
+    <li>Search for a given dataset's datasetID for information about it being
+       (re)loaded or queried.
+    </ul>
+    <br>&nbsp;
+  </ul>
 
 <li><b><a name="cachedResponses">Cached Responses</a></b> -
   In general, ERDDAP doesn't cache (store) responses to user requests.
@@ -533,6 +664,36 @@ into a  temporary directory.
     use the <a href="#flag">flag</a> system.
     <br>&nbsp;
   </ul>
+
+<li><b><a name="robots">robots.txt</a></b> - 
+  The search engine companies use web crawlers (e.g., GoogleBot) to examine all of
+  the pages on the web to add the content to the search engines.
+  For ERDDAP, that is good.  ERDDAP has lots of links between pages, so the crawlers
+  will find all of the web pages and add them to the search engines. 
+  Then, users of the search engines will be able to find datasets on your ERDDAP.
+
+  <p>Unfortunately, some web crawlers (e.g., GoogleBot) are now filling out and submitting
+  forms in order to find additional content.  For web commerce sites, this is great. 
+  But this is terrible for ERDDAP because it just leads to an <b>infinite</b> number of
+  undesireable and pointless attempts to crawl the actual data. 
+  This can lead to more requests for data than from all other users combined.
+  And it fills the search engine with goofy, pointless subsets of the actual data.
+
+  <p>To tell the web crawlers to stop filling out forms, you need to create a text file called 
+  <a href="http://en.wikipedia.org/wiki/Robots_exclusion_standard">robots.txt</a> 
+  in the root directory of your web site's document hierarchy so that it can be viewed by 
+  anyone as, e.g., www.example.com/robots.txt .
+  <br>If you are creating a new robots.txt file, put these two lines in it:
+    <pre>
+    User-Agent: *
+    Disallow: /*?</pre>
+  If you already have a robots.txt file, add this line to the Disallow section:
+    <pre>
+    Disallow: /*?</pre>
+  This tells the web crawler not to visit URLs with "?" in the URL 
+    (i.e., all form submissions).
+  <br>It may take a few days for the search engines to notice and for the changes to take effect.
+  <br>&nbsp;
 
 <li><b><a name="sitemap">sitemap.xml</a></b> - As the
   <a href="http://www.sitemaps.org/">www.sitemaps.org</a> web site says:
@@ -936,7 +1097,7 @@ If you repeatedly use Tomcat Manager to Reload (or Stop and Start) ERDDAP,
 when making graphs and maps. 
   ERDDAP comes with several pre-made palettes. You can add additional palettes.
   ERDDAP's palettes are defined in <a href="http://gmt.soest.hawaii.edu/">GMT</a>-style 
-    <a href="http://gmt.soest.hawaii.edu/gmt/doc/gmt/html/GMT_Docs/node62.html">.cpt (Color Palette Table) files</a>.
+    <a href="http://gmt.soest.hawaii.edu/gmt/html/GMT_Docs.html#x1-720004.15">.cpt (Color Palette Table) files</a>.
   All ERDDAP .cpt files are valid GMT .cpt files, but the opposite may not be true.
   ERDDAP may just support a subset of what GMT supports.  
   If there is trouble, ERDDAP will probably throw an error when the .cpt file is parsed 
@@ -955,6 +1116,41 @@ when making graphs and maps.
     <li> Restart ERDDAP so ERDDAP re-reads the messages.xml file.
      <br>&nbsp;
     </ol>
+
+<li><b><a name="colorbars">How does ERDDAP generate the colors in a colorbar?</a></b>
+  <ol>
+  <li>The user selects one of the predefined <a href="#palettes">palettes</a> or uses the default,
+    e.g., Rainbow.  Palettes are stored/defined in GMT-style .cpt Color Palette Table files.  
+    Each of ERDDAP's predefined palettes has a simple integer range, 
+    e.g., 0 to 1 (if there is just one section in the palette), 
+    or 0 to 4 (if there are four sections in the palette).
+    Each segment in the file covers n to n+1, starting at n=0.
+  <li>ERDDAP generates a new .cpt file on-the-fly, by scaling the predefined palette's range
+    (e.g., 0 to 4) to the range of the palette needed by the
+    user (e.g., 0.1 to 50) and then generating a section in the 
+    new palette for each section of the new palette 
+    (e.g., a log scale with ticks at 0.1, 0.5, 1, 5, 10, 50 will have 5 sections).
+    The color for the end point of each section is generated by finding the relevant section of the
+    palette in the .cpt file, then linearly interpolating the R, G, and B values.
+    (That's the same as how GMT generates colors from its Color Palette Table files.)
+    This system allows ERDDAP to start with generic palettes 
+    (e.g., Rainbow with 8 segments, in total spanning 0 to 8)
+    and create custom palettes on-the-fly
+    (e.g., a custom Rainbow, which maps 0.1 to 50 mg/L to the rainbow colors).
+  <li>ERDDAP then uses that new .cpt file to generate the color for each different colored pixel 
+    in the color bar
+    (and later for each data point when plotting data on a graph or map),
+    again by finding the relevant section of the
+    palette in the .cpt file, then linearly interpolating the R, G, and B values.    
+  </ol>
+  This process may seem unnecessarily complicated. But it solves problems
+  related to log scales that are hard to solve other ways.
+
+  <p>So how can you mimic what ERDDAP is doing?  That isn't easy.
+  Basically you need to duplicate the process that ERDDAP is using.
+  If you are a Java programmer, you can use the same Java class that ERDDAP uses to do all of this: 
+  <br>[tomcat]/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/coastwatch/sgt/CompoundColorMap.java.
+
 
 <li><b><a name="dataDistribution">Guidelines for Data Distribution Systems</a></b> 
   - More general opinions about the design and evaluation 
@@ -1043,7 +1239,7 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
      <li>Our javac and java classpath (including some unnecessary items) is currently
        <!-- Bob: don't forget to update the classpath in the .bat/shell script files in WEB-INF. -->
        <br><tt>
-./classes;../../../lib/servlet-api.jar;lib/activation.jar;lib/axis.jar;lib/commons-compress.jar;lib/commons-discovery.jar;lib/itext-1.3.1.jar;lib/joda-time.jar;lib/joid.jar;lib/mail.jar;lib/netcdfAll-latest.jar;lib/postgresql.jdbc.jar;lib/jaxrpc.jar;lib/saaj.jar;lib/slf4j-jdk14.jar;lib/tsik.jar;lib/wsdl4j.jar</tt>
+./classes;../../../lib/servlet-api.jar;lib/activation.jar;lib/axis.jar;lib/commons-compress.jar;lib/commons-discovery.jar;lib/itext-1.3.1.jar;lib/joda-time.jar;lib/joid.jar;lib/lucene-core.jar;lib/mail.jar;lib/netcdfAll-latest.jar;lib/postgresql.jdbc.jar;lib/jaxrpc.jar;lib/saaj.jar;lib/slf4j-jdk14.jar;lib/tsik.jar;lib/wsdl4j.jar</tt>
 
      <li>So your javac command line will be something like
        <br><tt>javac -cp (classpath above) classes/gov/noaa/pfel/coastwatch/TestAll.java</tt>
@@ -1125,8 +1321,8 @@ ERDDAP is a product of the
 <a title="National Marine Fisheries Service"               href="http://www.nmfs.noaa.gov">NMFS</a>  
 <a title="Southwest Fisheries Science Center"              href="http://swfsc.noaa.gov">SWFSC</a>  
 <a title="Environmental Research Division" href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>.
-<br>Roy Mendelssohn initiated and oversees the project.
-<br>Bob Simons wrote the ERDDAP-specific code.
+<br>Bob Simons is the author of ERDDAP (the designer and programmer who wrote the ERDDAP-specific code).
+<br>Roy Mendelssohn instigated and oversees the project.
 <br>The ERDDAP-specific code is licensed as copyrighted open source, with <a href="http://www.noaa.gov">NOAA</a> 
   holding the copyright. See the <a href="#license">ERDDAP license</a>.
 <br>ERDDAP uses copyrighted open source, Apache, LGPL, MIT/X, Mozilla, and public domain libraries and data.
@@ -1151,6 +1347,9 @@ program, and the <a href="http://www.postprogram.org/">POST</a> program.
   system (license: <a href="http://www.linux.org/info/gnu.html">GPL</a>).
 <li>The data sets are from various sources. See the metadata (in particular the "sourceUrl", "infoUrl", 
   and "institution") for each dataset.
+<li> The com/cohort classes are from CoHort Software 
+    (<a href="http://www.cohort.com">http://www.cohort.com</a>)
+    which makes these classes available with an MIT/X-like license (see classes/com/cohort/util/LICENSE.txt).
 <li>Data from <a href="http://www.opendap.org">OPeNDAP</a> servers are read 
     with <a href="http://www.opendap.org/download/index.html">Java DAP 1.1.7</a>
     (license: LGPL).
@@ -1167,12 +1366,17 @@ program, and the <a href="http://www.postprogram.org/">POST</a> program.
 <li>The NetCDF Java Library requires a logger facade (we chose slf4j-jdk14.jar) from the
   <a href="http://www.slf4j.org/">Simple Logging Facade for Java</a> project
     (license: <a href="http://www.slf4j.org/license.html">MIT/X</a>).
-<li>The NetCDF Java Library uses code from several .jar files from the 
-      <a href="http://www.apache.org/">Apache project</a>:
-      <a href="http://commons.apache.org/codec/">commons-codec</a>, 
+<li>The NetCDF Java Library uses code from several .jar files from 
+  <a href="http://www.apache.org/">Apache projects</a>:
+  <a href="http://commons.apache.org/codec/">commons-codec</a>, 
   <a href="http://hc.apache.org/httpcomponents-client-ga/">commons-httpclient</a>, and
-      <a href="http://commons.apache.org/logging/">commons-logging</a>
-      (license: <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache</a>).
+  <a href="http://commons.apache.org/logging/">commons-logging</a>
+  (license: <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache</a>).
+<li>Other parts of ERDDAP use code from other 
+  <a href="http://www.apache.org/">Apache projects</a>:
+  <a href="http://commons.apache.org/compress/">commons-compress</a> and
+  <a href="http://commons.apache.org/discovery/">commons-discovery</a>
+  (license: <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache</a>).
 <li>The NetCDF Java Library uses XML processing code from 
     <a href="http://www.jdom.org/">JDOM</a>
     (license: <a href="http://www.jdom.org/docs/faq.html#a0030">Apache</a>).
@@ -1217,10 +1421,14 @@ program, and the <a href="http://www.postprogram.org/">POST</a> program.
     <a href="http://www.ngdc.noaa.gov">NOAA NGDC</a>.
 <li> Emails are sent using code in mail.jar from Oracle's   
     <a href="http://www.oracle.com/technetwork/java/javamail/index.html">JavaMail API</a>
-   (license: <a href="http://www.oracle.com/technetwork/java/javamail/index.html">BSD</a>).
+    (license: 
+    <a href="http://download.oracle.com/otn-pub/java/licenses/OTN_JavaEE_Legacy_Binary-Code-License_30Jan2012.txt">Oracle 
+    Binary Code License Agreement for Java EE Technologies</a>).
 <li> JavaMail uses activation.jar from the 
-  <a href="http://www.oracle.com/technetwork/java/jaf11-139815.html">JavaBeans Activation Framework</a>
-  (license: <a href="http://www.java.com/en/download/license.jsp">Oracle Open Source</a>.
+    <a href="http://www.oracle.com/technetwork/java/jaf11-139815.html">JavaBeans Activation Framework</a>
+    (license: 
+    <a href="http://download.oracle.com/otn-pub/java/licenses/OTN_JavaEE_Legacy_Binary-Code-License_30Jan2012.txt">Oracle 
+    Binary Code License Agreement for Java EE Technologies</a>.
 <li> For <a href="http://openid.net/">OpenID</a> authentication, ERDDAP uses the
      joid.jar and tsik.jar libraries from the 
      <a href="http://code.google.com/p/joid/">joid project</a>
@@ -1267,7 +1475,7 @@ The ERDDAP-specific code is licensed as copyrighted open source,
   with <a href="http://www.noaa.gov">NOAA</a> holding the copyright.  
 The license is:
 <blockquote>
-ERDDAP, Copyright 2011, NOAA.
+ERDDAP, Copyright 2012, NOAA.
 
 <P>PERMISSION TO USE, COPY, MODIFY, AND DISTRIBUTE THIS SOFTWARE AND 
 ITS DOCUMENTATION FOR ANY PURPOSE AND WITHOUT FEE IS HEREBY GRANTED,
@@ -1288,7 +1496,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.36
+<p>ERDDAP, Version 1.38
 <br><a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 
