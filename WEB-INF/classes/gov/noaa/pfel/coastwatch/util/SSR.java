@@ -2074,7 +2074,11 @@ public class SSR {
     public static String getTempDirectory() {
         if (tempDirectory == null) {
             getContextDirectory(); 
-            tempDirectory = contextDirectory + "WEB-INF/temp/";
+            String tdir = contextDirectory + "WEB-INF/temp/";
+            //make it, because Git doesn't track empty dirs
+            File2.makeDirectory(tdir);            
+            //then set it if successful
+            tempDirectory = tdir;
         }
 
         return tempDirectory;

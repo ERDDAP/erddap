@@ -182,13 +182,13 @@ public class TestAll  {
 //    String2.log("\n" + EDDGridFromDap.generateDatasetsXml(false, //directions
 //        "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/HadleyCenter/HadISSTDecomp",
 //        "http://oceanwatch.pifsc.noaa.gov/thredds/dodsC/altim/monthly",
-//        "http://omglnx1.meas.ncsu.edu:8080/thredds/dodsC/gomtox/2004/avg",
+//        "http://data1.gfdl.noaa.gov:8380/thredds3/dodsC/ipcc_ar4_CM2.0_R1_20C3M-0_3hr_atmos_19910101-20001231",
 //        "http://www.ncdc.noaa.gov/thredds/dodsC/gpcp/daily/gpcp_1dd_v1.1_p1d.199610.gz",
 //        "http://ferret.pmel.noaa.gov/geoide/dodsC/ncom_relo/sendai",
 //        "http://geoport.whoi.edu/thredds/dodsC/ncom_relo/sendai",
 //        "http://ecowatch.ncddc.noaa.gov/thredds/dodsC/dwh/ctd/Brooks_McCall/Cruise5/Brooks_McCall_Cruise_5.nc",
 //        "http://tds.hycom.org/thredds/dodsC/glb_analysis",
-//         "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/lftx.sfc.1948.nc",
+//        "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/lftx.sfc.1948.nc",
 //        null, null, null, 10080, null));
 //    EDDGridFromDap.generateErdThreddsDatasetXml("Satellite/aggregsat", "satellite"));
 //    EDDGridFromDap.generateErdThreddsDatasetXml("Hfradar/aggreghfradar", "satellite"));
@@ -211,8 +211,10 @@ public class TestAll  {
 //        "http://sdf.ndbc.noaa.gov:8080/thredds/catalog.xml", 
 //        ".*500m.*", true));
         
-//    crawl UAF clean catalog (50)  (about 2h 4m)  results in datasets.xml in EditPlus
-//    EDDGridFromDap.testUAFSubThreddsCatalog(50);  
+//    crawl UAF clean catalog      Results put in datasets.xml in EditPlus. 
+//      Log file is in [bigParent]/cache/_test/. Sort it. Look at problems. Make improvements.
+//    EDDGridFromDap.testUAFSubThreddsCatalog(2);   //2012-04-30 newer clean catalog   about 5h
+//    EDDGridFromDap.testUAFSubThreddsCatalog(50);  //official catalog about 2h 4m
 //    EDDGridFromDap.testGetUrlsFromHyraxCatalog();
 //    EDDGridFromDap.testGetUrlsFromThreddsCatalog();
 //    EDDGridFromDap.testGraphics();
@@ -507,10 +509,9 @@ public class TestAll  {
 //    EDDTableFromNcFiles.testTransparentPng();
 
 //    *** To update GTSPP (~10th of every month):
-//NEXT MONTH: reprocess all and add source_id (e.g., =IOS) metadata as data?
-//  And modify to log min and max temp in 'bad' profiles.
-//  And add other metadata, instrument id?
-//  And switch to tgz?
+//*** NEXT TIME: again allow flag=5 data
+//*** NEXT TIME: reprocess all and add source_id (e.g., =IOS) metadata as data?
+//*** NEXT TIME: add other metadata, instrument id?
 //Melanie may provide a list or URL of source_id's.
 //    1) (Thursday night?) Use FileZilla to download newly changed files 
 //      from ftp.nodc.noaa.gov (name=anonymous  pwd=bob.simons@noaa.gov)
@@ -518,27 +519,37 @@ public class TestAll  {
 //      !!! Note that older files are reprocessed sometimes. 
 //      !!! So sort by lastModified time to check if "older" files have a recent last-modified-time.
 //    2) (Friday night?) Unzip and consolidate the profiles (full run takes 2 days 14 hours)
-//*** Next time: switch to tempMin = -3 ???
-//*** Switch off parts of Macafee Virus Shield? to speed up?
+//*** Consider temporarily switching off parts of McAfee : Virus Scan Console  (2X speedup!)
+//      On Access Scan : All Processes
+//        Scan Items: check: specified file types only (instead of usual All Files) 
 //       EDDTableFromNcFiles.bobConsolidateGtsppTgz(1990, 1, 2012, 3, false);  //first/last year(1990..)/month(1..), testMode
 //       EDDTableFromNcFiles.bobConsolidateGtsppTgz(1990, 1, 1990, 1, false);  //first/last year(1990..)/month(1..), testMode
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(1999, 12, 2000, 1, false);  //first/last year(1990..)/month(1..), testMode
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2000, 1, 2000, 1, false);  //first/last year(1990..)/month(1..), testMode
 //       log file is F:/data/gtspp/log.txt 
-//      2b) Email the "good" but "impossible" stations to Melanie Hamilton and Meilin.Chen@noaa.gov.
+//      2b) Email the "good" but "impossible" stations to Charles Sun, Melanie Hamilton and Meilin.Chen@noaa.gov.
 //    3) In datasetsUAF.xml, for erdGtsppBest and datasets2.xml for testErdGtsppBest, 
 //       update the summary
 //       (e.g., "(currently, up to and including the [lastMonth] 2011 data)")
-//    4) Run and update this test:
+//    4) * Delete [tomcat]/content/erddap/subset/testErdGtsppBest.csv
+//         * Load testErdGtsppBest in localHost ERDDAP.
+//         * Generate .csv file from
+//           http://127.0.0.1:8080/cwexperimental/tabledap/testErdGtsppBest.json?platform,cruise,org,type&distinct() 
+//           and save it as [tomcat]/content/erddap/subset/testErdGtsppBest.csv
+//         * Reload ERDDAP to ensure it loads quickly.
+//    5) Run and update this test:
 //       //one time: File2.touch("F:/data/gtspp/bestNcConsolidated/2011/09/2011-09_0E_0N.nc"); //one time
 //       EDDTableFromNcFiles.testErdGtsppBest();
-//    5) If copying all, temporarily rename dir to F:/data/gtspp/bestNcConsolidated2011??/
-//       Copy the newly consolidated directories (and their files)
-//       from my F:/data/gtspp/bestNcConsolidated/ e.g., 2010/06/
-//       to upwell /Volumes/ServerStorage/u00/data/points/gtspp/bestNcConsolidated/  e.g., 2010/06/
-//            aka     /Volumes/ServerStorage/erddap
-//    6) Copy datasetsUAF.xml to upwell and rename to datasets.xml
-//    7) Ping the gtspp flag url on ERDDAP (see an upwell ERDDAP daily report email)
-//    8) Defragment F:.
+//    6) If copying all, temporarily rename dir to F:/data/gtspp/bestNcConsolidated2012??/
+//       * Copy the newly consolidated directories (and their files)
+//         from my F:/data/gtspp/bestNcConsolidated/ e.g., 2010/06/
+//         to upwell /Volumes/ServerStorage/u00/data/points/gtspp/bestNcConsolidated/  e.g., 2010/06/
+//              aka     /Volumes/ServerStorage/erddap
+//       * Copy from local  [tomcat]/content/erddap/subset/testErdGtsppBest.csv
+//              to   upwell [tomcat]/content/erddap/subset/erdGtsppBest.csv
+//    7) Copy datasetsUAF.xml to upwell and rename to datasets.xml
+//    8) Ping the gtspp flag url on ERDDAP (it is in "flag" bookmarks)
+//       http://upwell.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=erdGtsppBest&flagKey=3912861017
+//    9) Defragment F:.
 
       //used to make NWIS Daily Value datasets (in order built/used)
 //    EDDTableFromNWISDV.testAvoidStackOverflow();
@@ -910,9 +921,15 @@ public class TestAll  {
 //    toFile "f:/data/tao/response.html", false);
 
 //    SSR.displayInBrowser("file://" + tName);
-//    SSR.downloadFile(
-//        "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.pngInfo",
-//        "f:/downloads/testCwwcNDBCMet.pngInfo", true);
+//    for (int pe = 0; pe < 1000000; pe++) {
+//        long peTime = System.currentTimeMillis();
+//        SSR.downloadFile(
+//            //"http://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.pngInfo",
+//            "http://oceanwatch.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMY/k490/catalog.xml",
+//            //"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/vekm/7day.das",
+//            "f:/downloads/peTest", true);
+//        String2.log("Attempt #" + pe + " time=" + (System.currentTimeMillis() - peTime));
+//    }
 //    SSR.downloadFile("",
 //            String fullFileName, boolean tryToUseCompression);
 //    String2.log(SSR.getUrlResponseString(
@@ -938,11 +955,8 @@ public class TestAll  {
 //    String2.log(String2.readFromFile(tName)[1]);
 //    String2.log(String2.getKeysAndValuesString(System.getProperties()));
 //    String2.log(String2.utf8ToString(EDD.oneFromDatasetXml("rMHchla8day").searchString()));
-//    StringArray.repeatedDiff("F:/programs/iso19115/threddsNcIsoMHchla8day201106Temp.xml", 
-//                             "F:/programs/iso19115/threddsNcIsoMHchla8day201108Temp.xml");
-//    StringArray.repeatedDiff(
-//        "c:/temp/DataSetDave100917.properties", 
-//        "C:/programs/tomcat/webapps/cwexperimental/WEB-INF/classes/gov/noaa/pfel/coastwatch/DataSet.properties");
+//    StringArray.repeatedDiff("c:/downloads/messageOld.xml", 
+//                             "c:/downloads/messageOld.xml");
 //    StringArray.test();
 /* */
 //(new Table()).readASCII("F:/data/ndbc/ndbcMetHistoricalTxt/4f887h2009.txt"); //really small

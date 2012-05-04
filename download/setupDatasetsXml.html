@@ -3008,11 +3008,9 @@ Here are detailed descriptions of common tags and attributes.
         If this attribute is present, the dataset will have a .subset web page (and a link to it
         on every dataset list) which lets users quickly and easily select various subsets of the data.
         <ul>
-        <li>After a dataset is reloaded, the first request for .subset web page
-          or request a subset of data which can be handled by the subsetVariables
-          causes ERDDAP to load and cache all of the distinct() subsetVariable data.
-          All subsequent requests for similar data will be very fast, even if
-             getting the data initially is slow.
+        <li>Each time a dataset is loaded, ERDDAP
+          loads and caches all of the distinct() subsetVariable data.
+          Then, all user requests for distinct() subsetVariable data will be very fast.
         <li>The order of the destinationNames you specify determines the sort order on the .subset web page,
           so you will usually specify the most important variables first, then the least important.
           For example, for datasets with time series data for several stations, you might use, e.g.,
@@ -3035,15 +3033,17 @@ Here are detailed descriptions of common tags and attributes.
           <br><tt>&lt;att name="subsetVariables"&gt;station_id, longitude, latitude&lt;/att&gt;</tt>
           <br>when the dataset is created.
         <li>Possible warning: if a user using the .subset web page selects a value which
-          has a leading space, a trailing space, or a newline character, .subset will fail.
+          has a carriageReturn or newline character, .subset will fail.
           ERDDAP can't work around this issue because of some HTML details. In any case, it is
-          almost always a good idea to remove the leading/trailing spaces and newline characters.
+          almost always a good idea to remove the carriageReturn and newline characters
+          from the data.
           To help you fix the problem, if the EDDTable.subsetVariablesDataTable method in ERDDAP
           detects data values that will cause trouble, it will email a warning with a list of 
           offending values to the emailEverythingTo email addresses specified in setup.xml.
           That way, you know what needs to be fixed.
         <li>Pre-generated subset tables.  Normally, when ERDDAP loads a dataset, it requests
-          the subset variables data table from the data source, just via a normal data request.
+          the distinct() subset variables data table from the data source, 
+          just via a normal data request.
           In some cases, this data is not available from the data source or retrieving from the
           data source may be hard on the data source server.
           If so, you can supply a table with the information in a .json or .csv file

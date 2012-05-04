@@ -3776,11 +3776,13 @@ public abstract class EDD {
         String lc = "|" + lcSourceName + "|" + ttLongName + "|"; 
         lc = String2.replaceAll(lc, ' ', '|'); 
         lc = String2.replaceAll(lc, '_', '|'); 
+        lc = String2.replaceAll(lc, ',', '|'); 
         String lcu = lc + 
             tStandardName.toLowerCase() + "|" +
             tUnitsLC                    + "|";
         lcu = String2.replaceAll(lcu, ' ', '|');
         lcu = String2.replaceAll(lcu, '_', '|');
+        lcu = String2.replaceAll(lcu, ',', '|');
         if (reallyVerbose && 
             "|longitude|latitude|altitude|time|".indexOf("|" + tStandardName + "|") < 0)
             String2.log("  sourceName=" + tSourceName + " lcu=" + lcu);
@@ -3789,6 +3791,7 @@ public abstract class EDD {
         String testUnits = tUnits.toLowerCase(); 
         testUnits = String2.replaceAll(testUnits, ' ', '|');
         testUnits = String2.replaceAll(testUnits, '_', '|');
+        testUnits = String2.replaceAll(testUnits, ',', '|');
         boolean isMeters = 
             tUnits.equals("m")       ||
             tUnits.equals("meter")   ||
@@ -4171,6 +4174,14 @@ public abstract class EDD {
                                                          "mole_concentration_of_silicate_in_sea_water" :
                                                          "mass_concentration_of_silicate_in_sea_water";
 
+            //update lcu
+            lcu = lc + 
+                tStandardName.toLowerCase() + "|" +
+                tUnitsLC                    + "|";
+            lcu = String2.replaceAll(lcu, ' ', '|');
+            lcu = String2.replaceAll(lcu, '_', '|');
+            lcu = String2.replaceAll(lcu, ',', '|');
+
         }
         if (reallyVerbose && 
             "|longitude|latitude|altitude|time|".indexOf("|" + tStandardName + "|") < 0)
@@ -4519,13 +4530,15 @@ public abstract class EDD {
             else if (isDegreesF)                                           {tMin = 14;   tMax = 104;} 
             else if (isDegreesK)                                           {tMin = 263;  tMax = 313;} 
             else if (lcu.indexOf("anom") >= 0                           )  {tMin = -10;  tMax = 10;}
-            else if ((lc.indexOf("|radiative|") >= 0 && lc.indexOf("|flux|") >= 0) ||
-                     (lc.indexOf("|radiation|") >= 0 && lc.indexOf("|flux|") >= 0) ||
-                     (lc.indexOf("|shortwave|") >= 0 && lc.indexOf("|flux|") >= 0) ||
-                     (lc.indexOf("|longwave|")  >= 0 && lc.indexOf("|flux|") >= 0) ||
-                     (lc.indexOf("|solar|")     >= 0 && lc.indexOf("|flux|") >= 0) ||
-                     lcu.indexOf(          "|w/m^2|")        >= 0       )  {tMin = -500; tMax = 500;}
-            else if ((lc.indexOf("|heat|") >= 0 && lc.indexOf("|flux|") >= 0)
+            else if ((lcu.indexOf("|radiative|") >= 0 ||
+                      lcu.indexOf("|radiation|") >= 0 ||
+                      lcu.indexOf("|shortwave|") >= 0 ||
+                      lcu.indexOf("|longwave|")  >= 0 ||
+                      lcu.indexOf("|solar|")     >= 0) && 
+                     (lcu.indexOf("|flux|")  >= 0 ||
+                      lcu.indexOf("|fluxd|") >= 0)                      )  {tMin = -500; tMax = 500;}
+            else if (lcu.indexOf("|w/m^2|") >= 0                        )  {tMin = -500; tMax = 500;}
+            else if (lcu.indexOf("|heat|") >= 0 && lcu.indexOf("|flux|") >= 0
                                                                         )  {tMin = -250; tMax = 250;}
             else if (tUnits.equals("degrees_east") ||
                      tUnits.equals("degree_east")                       )  {tMin = -180; tMax = 180;}
@@ -4672,6 +4685,7 @@ public abstract class EDD {
                 tSourceName.toLowerCase()   + "|"; 
             lcu = String2.replaceAll(lcu, '_', '|');
             lcu = String2.replaceAll(lcu, ' ', '|');
+            lcu = String2.replaceAll(lcu, ',', '|');
 
             //see similar CATCH STATISTICS above        catch before others
             if (lcu.indexOf("sigma")        >= 0 &&
@@ -4693,6 +4707,7 @@ public abstract class EDD {
                 lcu.indexOf("standard|deviation") >= 0 ||
                 lcu.indexOf("standard|error") >= 0) {
                 //catch statistics first    including special cases from WOA 2001 
+                //See BELOW for additional statistics (last resort)
                 tAddAtts.add("ioos_category", "Statistics");
 
             } else if (lcu.indexOf("sigma")        >= 0) {
@@ -4706,6 +4721,7 @@ public abstract class EDD {
                 //see similar CATCH QUALITY above        catch before others
                 lcu.indexOf("qc")           >= 0 || 
                 lcu.indexOf("qa")           >= 0 || 
+                lcu.indexOf("uncertainty")  >= 0 || 
                 (lcu.indexOf("quality") >= 0 && lcu.indexOf("science|quality") < 0) || 
                 lcu.indexOf("flag")         >= 0) { 
                 tAddAtts.add("ioos_category", "Quality");
@@ -4768,7 +4784,7 @@ public abstract class EDD {
                 (lcu.indexOf("geopotential") >= 0 && lcu.indexOf("height") >= 0) ||
                 lcu.indexOf("ssh")                   >= 0 ||
                 lcu.indexOf("surf|el")               >= 0 ||
-                (lcu.indexOf("sea") >= 0 && lcu.indexOf("surface") >= 0 &&
+                (lcu.indexOf("|sea|") >= 0 && lcu.indexOf("surface") >= 0 &&
                     lcu.indexOf("wave") < 0 && //don't catch e.g., sea surface swell wave height
                     (lcu.indexOf("elevation") >= 0 || lcu.indexOf("height") >= 0))) { 
                 tAddAtts.add("ioos_category", "Sea Level");
@@ -4801,7 +4817,8 @@ public abstract class EDD {
                 tAddAtts.add("ioos_category", "Ecology");
 
             } else if (
-               ((lcu.indexOf("heat") >= 0 || lcu.indexOf("radiative") >= 0) && 
+               ((lcu.indexOf("heat") >= 0 || lcu.indexOf("radiative") >= 0 ||
+                 lcu.indexOf("radiation") >= 0 || lcu.indexOf("solar") >= 0) && 
                 (lcu.indexOf("flux") >= 0 || lcu.indexOf("flx") >= 0)) ||
                 lcu.indexOf("shortwave")      >= 0 ||  //"heat flux" not ideal; "radiant energy"?
                 lcu.indexOf("longwave")       >= 0 ||  //"heat flux" not ideal; "radiant energy"?
@@ -4851,6 +4868,7 @@ public abstract class EDD {
                 lcu.indexOf("chla")         >= 0 || 
                 lcu.indexOf("chl|a|")       >= 0 || 
                 lcu.indexOf("k490")         >= 0 ||
+                lcu.indexOf("dissolved|organic|material") >= 0 ||
                 lcu.indexOf("|par|")        >= 0) {
                 tAddAtts.add("ioos_category", "Ocean Color");
 
@@ -4859,6 +4877,15 @@ public abstract class EDD {
                 lcu.indexOf("|rrs")         >= 0 ||
                 lcu.indexOf("667")          >= 0 ||
                 lcu.indexOf("fluor")        >= 0 ||
+                lcu.indexOf("|photosynthetically|available|radiation|") >= 0 ||
+                ((lcu.indexOf("|radiative|") >= 0 ||
+                  lcu.indexOf("|radiation|") >= 0 ||
+                  lcu.indexOf("|shortwave|") >= 0 ||
+                  lcu.indexOf("|longwave|")  >= 0 ||
+                  lcu.indexOf("|solar|")     >= 0) && 
+                 (lcu.indexOf("|flux|")  >= 0 ||
+                  lcu.indexOf("|fluxd|") >= 0))  ||
+                lcu.indexOf("|w/m^2|")      >= 0 ||
                 tSourceName.toLowerCase().equals("graphics")) {
                 tAddAtts.add("ioos_category", "Optical Properties");
 
@@ -4874,6 +4901,7 @@ public abstract class EDD {
                 lcu.indexOf("pressure")     >= 0 ||
                 //lcu.indexOf("sigma")        >= 0 ||  //but caught above specially
                 lcu.indexOf("|mbar|")       >= 0 ||
+                lcu.indexOf("|millibar|")   >= 0 ||
                 lcu.indexOf("|hpa|")        >= 0) {
                 tAddAtts.add("ioos_category", "Pressure");
 
@@ -5005,12 +5033,17 @@ public abstract class EDD {
             //catch Location last   so e.g., ocean_salt_x_transport caught by Salinity
             } else if (
                 lcu.indexOf("altitude")     >= 0 ||
+                lcu.indexOf("elevation")    >= 0 ||
                 (lcu.indexOf("depth")       >= 0 && lcu.indexOf("mixed|layer") < 0) ||
                 lcu.indexOf("geox")         >= 0 || 
                 lcu.indexOf("geoy")         >= 0 || 
                 lcu.indexOf("|lon|")        >= 0 ||
+                lcu.indexOf("|tlon|")       >= 0 ||
+                lcu.indexOf("|vlon|")       >= 0 ||
                 lcu.indexOf("longitude")    >= 0 ||
                 lcu.indexOf("|lat|")        >= 0 ||
+                lcu.indexOf("|tlat|")       >= 0 ||
+                lcu.indexOf("|vlat|")       >= 0 ||
                 lcu.indexOf("latitude")     >= 0 ||
                 lcu.indexOf("|x|")          >= 0 || 
                 lcu.indexOf("xax")          >= 0 || //x axis
@@ -5046,6 +5079,19 @@ public abstract class EDD {
                 lcu.indexOf("|country|")    >= 0 ||
                 lcu.indexOf("|fips")        >= 0) {
                 tAddAtts.add("ioos_category", "Location");            
+
+            } else if (
+                //last resort statistics
+                lcu.indexOf("|nav|")        >= 0 || 
+                lcu.indexOf("|ngrids|")     >= 0 || 
+                lcu.indexOf("|nmodels|")    >= 0 || 
+                lcu.indexOf("|nuser|")      >= 0 || 
+                lcu.indexOf("|nx|")         >= 0 || 
+                lcu.indexOf("|ny|")         >= 0 || 
+                lcu.indexOf("|nv|")         >= 0 || 
+                lcu.indexOf("|n|")          >= 0) {
+                //See ABOVE for additional statistics 
+                tAddAtts.add("ioos_category", "Statistics");
 
             } else {
                 if (reallyVerbose) String2.log("    ioos_category=Unknown for " + lcu);

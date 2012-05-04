@@ -121,7 +121,7 @@ public class EDStatic {
      * <br>1.36 released on 2011-08-01
      * <br>1.38 released on 2012-04-21
      */   
-    public static String erddapVersion = "1.38";  
+    public static String erddapVersion = "1.39";  
 
     /** 
      * This is almost always false.  
@@ -1185,6 +1185,7 @@ public static boolean developmentMode = false;
         Test.ensureTrue(File2.isDirectory(fullPublicDirectory),  
             errorInMethod + "fullPublicDirectory (" + fullPublicDirectory + ") doesn't exist.");
         errorInMethod = "EDStatic error while creating directories.\n";
+        File2.makeDirectory(fullPublicDirectory);  //make it, because Git doesn't track empty dirs
         File2.makeDirectory(fullDatasetDirectory);
         File2.makeDirectory(fullCacheDirectory);
         File2.makeDirectory(fullResetFlagDirectory);
