@@ -1,0 +1,540 @@
+/* 
+ * GridDataSetCWOpendap Copyright 2005, NOAA.
+ * See the LICENSE.txt file in this file's directory.
+ */
+package gov.noaa.pfel.coastwatch.griddata;
+
+import com.cohort.array.*;
+import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
+import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
+import com.cohort.util.ResourceBundle2;
+import com.cohort.util.String2;
+import com.cohort.util.Test;
+
+import gov.noaa.pfel.coastwatch.OneOf;
+import gov.noaa.pfel.coastwatch.TimePeriods;
+import gov.noaa.pfel.coastwatch.util.StringObject;
+
+import java.util.GregorianCalendar;
+import java.util.Vector;
+
+/** 
+ * THIS CLASS IS NO LONGER ACTIVE (as of 2006-11-04). 
+ * This class represents a gridDataSet from OceanWatch/opendap-sourced data.
+ *
+ * <pre>
+******
+Sample .dds (http://las.pfeg.noaa.gov/cgi-bin/nph-dods/data/oceanwatch/nrt/gac/AG1day.nc.dds)
+Dataset {
+    Float64 time_series[time_series = 60];
+    Float32 lon[lon = 3601];
+    Float32 lat[lat = 1501];
+    Grid {
+     ARRAY:
+        Int32 numberOfObservations[time_series = 60];
+     MAPS:
+        Float64 time_series[time_series = 60];
+    } numberOfObservations;
+    Grid {
+     ARRAY:
+        Float32 min[time_series = 60];
+     MAPS:
+        Float64 time_series[time_series = 60];
+    } min;
+    Grid {
+     ARRAY:
+        Float32 max[time_series = 60];
+     MAPS:
+        Float64 time_series[time_series = 60];
+    } max;
+    Grid {
+     ARRAY:
+        Float32 ssta[time_series = 60][lat = 1501][lon = 3601];
+     MAPS:
+        Float64 time_series[time_series = 60];
+        Float32 lat[lat = 1501];
+        Float32 lon[lon = 3601];
+    } ssta;
+} AG1day.nc;
+
+******
+Sample .das (http://las.pfeg.noaa.gov/cgi-bin/nph-dods/data/oceanwatch/nrt/gac/AG1day.nc.das)
+Attributes {
+    time_series {
+        String long_name "reference time";
+        String units "days since 1985-01-01";
+        String point_spacing "even";
+    }
+    lon {
+        String long_name "Longitude";
+        String units "degrees_east";
+        String point_spacing "even";
+        String AXIS "X";
+        Float32 actual_range 0., 360.;
+    }
+    lat {
+        String long_name "Latitude";
+        String units "degrees_north";
+        String point_spacing "even";
+        String AXIS "Y";
+        Float32 actual_range -75., 75.;
+    }
+    numberOfObservations {
+    }
+    min {
+        Float32 missing_value -9.99999979e+33;
+        Float32 _FillValue -9.99999979e+33;
+        String units "degrees Celsius";
+    }
+    max {
+        Float32 missing_value -9.99999979e+33;
+        Float32 _FillValue -9.99999979e+33;
+        String units "degrees Celsius";
+    }
+    ssta {
+        Float32 missing_value -9.99999979e+33;
+        Float32 _FillValue -9.99999979e+33;
+        String long_name "Sea Surface Temperature mixed night and day";
+        String units "degrees Celsius";
+    }
+    NC_GLOBAL {
+        String server "NOAA NESDIS CoastWatch WCRN";
+        Int32 composite_interval 1;
+        String composite_interval_units "days";
+        String time_info "time_series values are centered on composite interval";
+        String platform "AVHRR GAC SST on NOAA POES spacecraft";
+        String source "NOAA/NESDIS/OSDPD";
+    }
+    DODS_EXTRA {
+        String Unlimited_Dimension "time_series";
+    }
+}
+
+****
+sample .lat (http://las.pfeg.noaa.gov/cgi-bin/nph-dods/data/oceanwatch/nrt/gac/AG1day.nc.ascii?lat)
+Dataset: AG1day.nc
+lat, -75, -74.9, -74.8, -74.7, -74.6, -74.5, -74.4, -74.3, -74.2, 
+...
+74.3, 74.4, 74.5, 74.6, 74.7, 74.8, 74.9, 75
+
+****
+sample data (http://las.pfeg.noaa.gov/cgi-bin/nph-dods/data/oceanwatch/nrt/gac/AG1day.nc.asc?ssta[32][600:609][1400:1409])
+Dataset: AG1day.nc
+ssta.lon, 140, 140.1, 140.2, 140.3, 140.4, 140.5, 140.6, 140.7, 140.8, 140.9
+ssta.ssta[ssta.time_series=7427][ssta.lat=-15], 28.8, 29.3, -1e+34, -1e+34, 29.4, -1e+34, 29.7, -1e+34, -1e+34, -1e+34
+ssta.ssta[ssta.time_series=7427][ssta.lat=-14.9], -1e+34, 29.2, -1e+34, 29.7, 29.4, -1e+34, 29.3, 29.2, 28.4, 29.2
+ssta.ssta[ssta.time_series=7427][ssta.lat=-14.8], -1e+34, -1e+34, -1e+34, -1e+34, -1e+34, -1e+34, 29.4, -1e+34, -1e+34, -1e+34
+ssta.ssta[ssta.time_series=7427][ssta.lat=-14.7], 28.6, -1e+34, -1e+34, -1e+34, -1e+34, -1e+34, 29, -1e+34, -1e+34, -1e+34
+ssta.ssta[ssta.time_series=7427][ssta.lat=-14.6], 29.2, -1e+34, 28.95, 28.8, -1e+34, -1e+34, 29.4, -1e+34, -1e+34, -1e+34
+ssta.ssta[ssta.time_series=7427][ssta.lat=-14.5], -1e+34, -1e+34, 28.75, -1e+34, 29.5, 29.1, -1e+34, 29.2, 29.3, -1e+34
+ssta.ssta[ssta.time_series=7427][ssta.lat=-14.4], 29.7, -1e+34, -1e+34, -1e+34, -1e+34, -1e+34, -1e+34, -1e+34, 28.4, -1e+34
+ssta.ssta[ssta.time_series=7427][ssta.lat=-14.3], -1e+34, -1e+34, -1e+34, -1e+34, -1e+34, 29, -1e+34, -1e+34, -1e+34, 28.9
+ssta.ssta[ssta.time_series=7427][ssta.lat=-14.2], -1e+34, 28.95, 28.8, 28.8, -1e+34, 28.6, -1e+34, 29.4, -1e+34, -1e+34
+ssta.ssta[ssta.time_series=7427][ssta.lat=-14.1], -1e+34, 29.4, -1e+34, -1e+34, 28.1, 29.3, -1e+34, 28.8, -1e+34, 28.4
+</pre>
+ *
+ * @author Bob Simons (bob.simons@noaa.gov) 2005-05-01
+ */
+public class GridDataSetCWOpendap extends GridDataSetCW { 
+
+    /** The active time period OpendapGrids related to an activeTimePeriodOption. */
+    public Vector activeTimePeriodOpendapGrids = new Vector(); //set by the constructor
+    public int[]  activeTimePeriodDaysForward;
+
+    public static boolean acceptDeflate = true;
+
+    //the constructor sets
+    public String directory;
+    public String fileNameRegex;
+    public String gridName;
+
+    //the constructor also sets
+    public long failTime = 0;
+    public long newOpendapTime = 0;
+    public long getIndexInfoTime = 0;
+    public int opendapDatesCount = 0;
+
+
+    /**
+     * The constructor searches for available data and sets
+     * activeTimePeriodOptions, activeTimePeriodTitles, activeTimePeriodTimes,
+     * and activeTimePeriodFileNames.
+     * This prints diagnostics to String2.log.
+     *
+     * @param fileNameUtility
+     * @param internalName
+     * @param flagDirectory  If flagDirectory is not null and this dataset needs to be
+     *    reindexed (because the time values have changed), a file will
+     *    be put in flagDirectory (by makeGrd or another method in this class) 
+     *    to signal the need for a new index.
+     * @throws Exception if trouble
+     */
+    public GridDataSetCWOpendap(FileNameUtility fileNameUtility, String internalName,
+        String flagDirectory) throws Exception {
+
+        String2.log("\n*** GridDataSetCWOpendap constructor (" + internalName + ")");
+        long time = System.currentTimeMillis();
+
+        //set info from DataSet.properties
+        dataSetPropertiesSetup(fileNameUtility, internalName);
+        ResourceBundle2 dataSetRB2 = fileNameUtility.dataSetRB2();
+        String dsfi = dataSetRB2.getString(internalName + "FileInfo", null);
+        String dataSetFileInfo[] = String2.split(dsfi, '`');
+        directory     = dataSetFileInfo[OneOf.DSFIDirectory];   //e.g., http://192.168.31.13/cgi-bin/nph-dods/data/oceanwatch/nrt/poes
+        fileNameRegex = dataSetFileInfo[OneOf.DSFIRegex];       //e.g., AT
+        gridName      = dataSetFileInfo[OneOf.DSFIGridName];
+        opendapUrlPrefix = 
+            directory + // e.g., http://192.168.31.13/cgi-bin/nph-dods/data/oceanwatch/nrt/poes/
+            fileNameRegex;   //e.g., AT
+        opendapUrlSuffix = ".nc.html";
+
+        //set original timePeriod values
+        String[] originalTimePeriodOptions = {  //each must be in TimePeriods.OPTIONS
+            "1 observation", "1 day", "3 day", "4 day", "5 day", "8 day", "10 day", "14 day", "monthly"};
+        //the regexes are also used as the timePeriodShortNames which are used in the customFileNames
+        String[] originalTimePeriodRegexes = {
+            "1obs",          "1day",   "3day", "4day",   "5day", "8day",  "10day",  "14day",  "mday"};
+        int[] originalTimePeriodDaysForward = { 
+            0,                  0,       1,        2,        2,      4,       5,       7,      15};
+        String[] originalTimePeriodTitles = {
+            "", //dummy main title
+            singlePassTitle(),
+            compositeTitle("a 1 day"),
+            compositeTitle("a 3 day"),
+            compositeTitle("a 4 day"),
+            compositeTitle("a 5 day"),
+            compositeTitle("an 8 day"),
+            compositeTitle("a 10 day"),
+            compositeTitle("a 14 day"),
+            compositeTitle("a 1 month")};
+
+        //create vectors to hold info for available data
+        Vector tActiveTimePeriodOptions     = new Vector();//holds the active timePeriodOptions for this dataset
+        Vector tActiveTimePeriodTitles      = new Vector();//holds the active timePeriodTitles  for this dataset
+        Vector tActiveTimePeriodRegexes     = new Vector();//holds the active timePeriodRegexes for this dataset
+        Vector tActiveTimePeriodNHours      = new Vector();//holds the active timePeriodNHours  for this dataset
+        Vector tActiveTimePeriodDaysForward = new Vector();//holds the active timePeriodDaysForward for this dataset
+        tActiveTimePeriodTitles.add(""); //always add a blank main title
+
+        //for each timePeriod
+        int nTimePeriods = originalTimePeriodOptions.length;
+        for (int timePeriodI = 0; timePeriodI < nTimePeriods; timePeriodI++) {
+            String dataSetUrl = "";
+            long tFailTime = System.currentTimeMillis();
+            try {
+                //try to create the opendapGrid object
+                long tTime = System.currentTimeMillis();
+                String timePeriodInFileName = originalTimePeriodRegexes[timePeriodI];
+                dataSetUrl = directory + fileNameRegex + //e.g., AT
+                    timePeriodInFileName + ".nc"; //e.g., 1day + .nc
+                Opendap opendap = new Opendap(dataSetUrl, acceptDeflate, 
+                    flagDirectory); //throws Exception if trouble
+                newOpendapTime += System.currentTimeMillis() - tTime;
+
+                //getGridInfo
+                tTime = System.currentTimeMillis();
+                String tGridName = 
+                    (fileNameRegex + originalTimePeriodRegexes[timePeriodI]).equals("ATpass")?
+                        "sstd" : //special case  (other ATxxxx use "ssta")
+                        gridName;
+                opendap.getGridInfo(tGridName, "-1.0e34");
+                if (opendap.gridTimeDimension < 0 || 
+                    opendap.gridLatDimension < 0 || 
+                    opendap.gridLonDimension < 0)
+                    throw new RuntimeException(ERROR + " in GridDataSetCW constructor:\n dataset (" + dataSetUrl + ")\n" +
+                        "  grid (" + tGridName + ") wasn't found.");
+
+                //get numberObservations (do before getTimeOptions)
+                try {
+                    opendap.numberOfObservations = 
+                        DataHelper.getDoubleArray(opendap.dConnect,
+                            "?numberOfObservations.numberOfObservations");
+                } catch (Throwable t) {
+                    //no numberOfObservations, but dataset is still valid
+                    String2.log("For url=" + dataSetUrl + "\n  " + 
+                        originalTimePeriodOptions[timePeriodI] + 
+                        ": numberOfObservations wasn't found!");
+                }
+                
+                //getTimeOptions (generate dates[] as ISO strings)
+                opendap.getTimeOptions(
+                    false, //true = show dates; false = dateTime
+                    opendap.gridTimeFactorToGetSeconds, 
+                    //Adjust apparent dates because Lynn represents composites 
+                    //  by the middle date of the time period  
+                    //  (Lynn's date = endDate - nDays / 2  (where "/" is integer division)
+                    //  whereas Dave wants endDate (that is label for date values on web page).
+                    opendap.gridTimeBaseSeconds + 
+                        Calendar2.SECONDS_PER_DAY * originalTimePeriodDaysForward[timePeriodI],
+Eeeek. This has not been fully updated to new system. I think Lynn's times were to nearest day.
+Fix perfectly if need to make active
+                        TimePeriods.getNHours(originalTimePeriodRegexes[timePeriodI]) ); 
+                String dates[] = opendap.timeOptions;
+                getIndexInfoTime += System.currentTimeMillis() - tTime;
+
+                //if there is data, save it
+                if (dates != null && dates.length > 0) {
+                    int nDates = dates.length;
+                    opendapDatesCount += nDates;
+                    String ts = String2.toNewlineString(dates);
+                    if (verbose)
+                        String2.log("dates found in " + dataSetUrl + ": " + 
+                            ts.substring(0, Math.min(ts.length(), 100)) + "...");
+
+                    //save the info
+                    tActiveTimePeriodOptions.add(originalTimePeriodOptions[timePeriodI]);
+                    tActiveTimePeriodTitles.add(originalTimePeriodTitles[timePeriodI + 1]); //+1 since 0=mainTitle
+                    tActiveTimePeriodRegexes.add(originalTimePeriodRegexes[timePeriodI]);
+                    tActiveTimePeriodNHours.add("" + TimePeriods.getNHours(originalTimePeriodOptions[timePeriodI]));
+                    tActiveTimePeriodDaysForward.add("" + originalTimePeriodDaysForward[timePeriodI]);
+                    activeTimePeriodTimes.add(dates);
+                    activeTimePeriodOpendapGrids.add(opendap);
+                }
+            } catch (Throwable t) {
+                tFailTime = System.currentTimeMillis() - tFailTime;
+                failTime += tFailTime;
+                String2.log(MustBe.throwable(
+                        Opendap.WAIT_THEN_TRY_AGAIN + 
+                        "\n(CWDataSetCWOpendap3 can't open Opendap " + dataSetUrl + "\n" +                        
+                        " timePeriodI=" + timePeriodI + " failTime=" + tFailTime + ")", t));
+            }
+
+        } //end of timePeriods loop
+
+        //convert vectors to string[]'s
+        activeTimePeriodOptions     = String2.toStringArray(tActiveTimePeriodOptions.toArray());
+        activeTimePeriodTitles      = String2.toStringArray(tActiveTimePeriodTitles.toArray());
+        activeTimePeriodShortNames  = String2.toStringArray(tActiveTimePeriodRegexes.toArray());
+        activeTimePeriodNHours      = String2.toIntArray(tActiveTimePeriodNHours.toArray());
+        activeTimePeriodDaysForward = String2.toIntArray(tActiveTimePeriodDaysForward.toArray());
+
+        //check validity
+        checkValidity();
+
+        String2.log(
+            "Options: "     + String2.toCSVString(activeTimePeriodOptions) + "\n" +
+            "Titles: "      + String2.toCSVString(activeTimePeriodTitles) + "\n" +
+            "ShortNames: "  + String2.toCSVString(activeTimePeriodShortNames) + "\n" +
+            "NHours: "      + String2.toCSVString(activeTimePeriodNHours) + "\n" +
+            "DaysForward: " + String2.toCSVString(activeTimePeriodDaysForward) + "\n" +
+            "GridDataSetCWOpendap constructor time = " + (System.currentTimeMillis() - time) + "\n");
+    }        
+
+    /**
+     * Create a .grd file if it doesn't already exist.
+     *
+     * <p>This rounds min/max/X/Y to the nearest grid point. Rounding 
+     * is most appropriate because the x,y grid points represent the
+     * center of a box. Thus the data for a given x,y point may be from 
+     * a grid point just outside of the range you request. Also, if you
+     * request the data for one point (minX=maxX, minY=maxY), rounding
+     * will return the appropriate grid point (the minX,minY point is in
+     * a box; the procedure returns the value for the box).
+     *
+     * @param newDir  the directory for the new grd file
+     * @param baseName the start of the name for the new grd file (without WESNXY info or .grd)
+     * @param timePeriodValue e.g., "1 day"
+     * @param timeValue   e.g., "2006-01-02"
+     * @param minX the requested min longitude. 
+     *    minX and maxX can be pm180 or 0..360. 
+     *    makeGrd will adjust them to get the desired data.  
+     *    The pm180 nature of the resulting grd file may be either pm180 or 0..360,
+     *    not necessarily as you request here.
+     *    Fortunately, the subsequent grid.readGrd will adjust them.
+     * @param maxX the requested max longitude.
+     * @param minY the requested min latitude.
+     * @param maxY the requested max latitude.
+     * @param desiredNWide the requested minimal resolution (nPixels wide).
+     *   The file may have higher resolution.
+     *   The file will have lower resolution if that is all that is available.
+     *   If the range of data available is smaller than requested,
+     *      this will be descreased proportionally.
+     *   Use Integer.MAX_VALUE for maximum available resolution.
+     * @param desiredNHigh the requested minimal resolution (nPixels high).
+     *   (see desiredNWide description)
+     * @return the name of the file created in newDir 
+     *   ([baseName]_x[minX]_X[maxX]_y[minY]_Y[maxY]_nx[nWide]_ny[nHigh].grd)
+     * @throws Exception if trouble (including no data in range, 
+     *    since can't store grd/nc file with no data)
+     */
+    public String makeGrd(String newDir, String baseName, 
+        String timePeriodValue, String timeValue,         
+        double minX, double maxX, 
+        double minY, double maxY,
+        int desiredNWide, int desiredNHigh)  throws Exception {
+        
+        if (verbose) String2.log( 
+            "CWDataSetCWOpendap.makeGrd(" +
+            "newDir=" + newDir +
+            " baseName=" + baseName +
+            "\n timePeriodValue=" + timePeriodValue +
+            " timeValue=" + timeValue +
+            " minX=" + minX +
+            " maxX=" + maxX +
+            " minY=" + minY +
+            " maxY=" + maxY + 
+            " desiredNWide=" + desiredNWide +
+            " desiredNHigh=" + desiredNHigh + 
+            ")");
+
+        //get indexes
+        String errorInMethod = ERROR + " in GridDataSetCWOpendap.makeGrd(" + baseName + ")\n";
+        int timePeriodIndex = String2.indexOf(activeTimePeriodOptions, timePeriodValue);
+        Test.ensureNotEqual(timePeriodIndex, -1, errorInMethod + "timePeriod not found: " + timePeriodValue);
+        String tActiveTimePeriodTimes[] = (String[])activeTimePeriodTimes.get(timePeriodIndex);
+        int dateIndex = String2.indexOf(tActiveTimePeriodTimes, timeValue);
+        Test.ensureNotEqual(timePeriodIndex, -1, errorInMethod + 
+            "date (" + timeValue + ") not found for timePeriod (" + timePeriodValue + ").");
+
+        //get the data
+        Opendap opendap = (Opendap)activeTimePeriodOpendapGrids.get(timePeriodIndex); 
+        return opendap.makeGrd(
+            newDir, baseName,
+            ((String[])activeTimePeriodTimes.get(timePeriodIndex))[dateIndex],  
+            minX, maxX, minY, maxY,
+            desiredNWide, desiredNHigh);  
+    }
+
+    /**
+     * This is a test of this class, particularly the .
+     *
+     * @throws Exception of trouble
+     */
+    public static void test() throws Exception {
+        String2.log("\n*** GridDataSetCWOpendap.test");
+
+        String internalName = "OQNux10";
+        String sixName = internalName.substring(1);
+        FileNameUtility.verbose = true;
+        FileNameUtility fnu = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser");
+        GridDataSetCWOpendap.verbose = true;
+        GridDataSetCWOpendap gridDataSet = new GridDataSetCWOpendap(fnu, internalName, null); 
+
+        String dir = String2.getClassPath() + "gov/noaa/pfel/coastwatch/griddata/";
+        String fileName = "OQNux10S1day_20060610";
+        StringObject resultingFileName = new StringObject(null);
+        Grid grid = gridDataSet.makeGrid(dir, "OQNux10S1day_20060610",
+            "1 day", "2006-06-10", -135, -105, 22, 50, 300, 300, resultingFileName);
+        fileName += "_x-135_X-105_y22_Y50";
+        File2.delete(dir + resultingFileName.s);
+
+        //set attributes
+        gridDataSet.setAttributes(grid, fileName);
+        grid.setStatsAttributes(false);  //false -> floats
+
+        //see if it has the expected values
+        int nLat = grid.lat.length;
+        int nLon = grid.lon.length;
+        Test.ensureEqual(grid.globalAttributes().get("Conventions"),                new StringArray(new String[]{"COARDS, CF-1.0, Unidata Dataset Discovery v1.0, CWHDF"}), "Conventions");
+        Test.ensureEqual(grid.globalAttributes().get("title"),                      new StringArray(new String[]{"Wind, QuikSCAT SeaWinds, Near Real Time, Zonal"}), "title");
+        Test.ensureEqual(grid.globalAttributes().get("summary"),                    new StringArray(new String[]{"NASA's Jet Propulsion Laboratory (JPL) distributes near real time wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters."}), "summary");
+        Test.ensureEqual(grid.globalAttributes().get("keywords"),                   new StringArray(new String[]{"EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds"}), "keywords");
+        Test.ensureEqual(grid.globalAttributes().get("id"),                         new StringArray(new String[]{"OQNux10S1day_20060610_x-135_X-105_y22_Y50"}), "id");
+        Test.ensureEqual(grid.globalAttributes().get("naming_authority"),           new StringArray(new String[]{"gov.noaa.pfel.coastwatch"}), "naming_authority");
+        Test.ensureEqual(grid.globalAttributes().get("keywords_vocabulary"),        new StringArray(new String[]{"GCMD Science Keywords"}), "keywords_vocabulary");
+        Test.ensureEqual(grid.globalAttributes().get("cdm_data_type"),              new StringArray(new String[]{"Grid"}), "cdm_data_typ");
+        Test.ensureTrue(grid.globalAttributes().getString("history").startsWith("unknown\n"), "history");
+        Test.ensureEqual(grid.globalAttributes().get("date_created"),               new StringArray(new String[]{Calendar2.formatAsISODate(Calendar2.newGCalendarZulu()) + "Z"}), "date_created");
+        Test.ensureEqual(grid.globalAttributes().get("creator_name"),               new StringArray(new String[]{"NOAA NESDIS CoastWatch WCRN"}), "creator_name");
+        Test.ensureEqual(grid.globalAttributes().get("creator_url"),                new StringArray(new String[]{"http://coastwatch.pfel.noaa.gov"}), "creator_url");
+        Test.ensureEqual(grid.globalAttributes().get("creator_email"),              new StringArray(new String[]{"dave.foley@noaa.gov"}), "creator_email");
+        Test.ensureEqual(grid.globalAttributes().get("institution"),                new StringArray(new String[]{"NOAA NESDIS CoastWatch WCRN (http://coastwatch.pfel.noaa.gov)"}), "institution");
+        Test.ensureEqual(grid.globalAttributes().get("project"),                    new StringArray(new String[]{"CoastWatch (http://coastwatch.noaa.gov/)"}), "project");
+        Test.ensureEqual(grid.globalAttributes().get("processing_level"),           new StringArray(new String[]{"3"}), "processing_level");
+        Test.ensureEqual(grid.globalAttributes().get("acknowledgement"),            new StringArray(new String[]{"NOAA NESDIS"}), "acknowledgement");
+        Test.ensureEqual(grid.globalAttributes().get("geospatial_lat_min"),         new FloatArray(new float[]{22f}), "geospatial_lat_min");
+        Test.ensureEqual(grid.globalAttributes().get("geospatial_lat_max"),         new FloatArray(new float[]{50f}), "geospatial_lat_max");
+        Test.ensureEqual(grid.globalAttributes().get("geospatial_lon_min"),         new FloatArray(new float[]{-135f}), "geospatial_lon_min");
+        Test.ensureEqual(grid.globalAttributes().get("geospatial_lon_max"),         new FloatArray(new float[]{-105f}), "geospatial_lon_max");
+        Test.ensureEqual(grid.globalAttributes().get("geospatial_lat_units"),       new StringArray(new String[]{"degrees_north"}), "geospatial_lat_units");
+        Test.ensureEqual(grid.globalAttributes().get("geospatial_lat_resolution"),  new FloatArray(new float[]{0.25f}), "geospatial_lat_resolution");
+        Test.ensureEqual(grid.globalAttributes().get("geospatial_lon_units"),       new StringArray(new String[]{"degrees_east"}), "geospatial_lon_units");
+        Test.ensureEqual(grid.globalAttributes().get("geospatial_lon_resolution"),  new FloatArray(new float[]{0.25f}), "geospatial_lon_resolution");
+        Test.ensureEqual(grid.globalAttributes().get("time_coverage_start"),        new StringArray(new String[]{"2006-06-10T00:00:00Z"}), "time_coverage_start");
+        Test.ensureEqual(grid.globalAttributes().get("time_coverage_end"),          new StringArray(new String[]{"2006-06-10T23:59:59Z"}), "time_coverage_end");
+        //Test.ensureEqual(grid.globalAttributes().get("time_coverage_resolution", new StringArray(new String[]{""}), "time_coverage_resolution");
+        Test.ensureEqual(grid.globalAttributes().get("standard_name_vocabulary"),   new StringArray(new String[]{"CF-1.0"}), "standard_name_vocabulary");
+        Test.ensureEqual(grid.globalAttributes().get("license"),                    new StringArray(new String[]{"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information."}), "license");
+        Test.ensureEqual(grid.globalAttributes().get("contributor_name"),           new StringArray(new String[]{"NASA JPL (Cal. Inst. of Technology)"}), "contributor_name");
+        Test.ensureEqual(grid.globalAttributes().get("contributor_role"),           new StringArray(new String[]{"Source of level 2 data."}), "contributor_role");
+        Test.ensureEqual(grid.globalAttributes().get("date_issued"),                new StringArray(new String[]{Calendar2.formatAsISODate(Calendar2.newGCalendarZulu())}), "date_issued");
+        Test.ensureEqual(grid.globalAttributes().get("references"),                 new StringArray(new String[]{"NASA/JPL Winds: http://winds.jpl.nasa.gov/ ."}), "references");
+        Test.ensureEqual(grid.globalAttributes().get("source"),                     new StringArray(new String[]{"satellite observation: QuikSCAT, SeaWinds"}), "source");
+        //Google Earth
+        Test.ensureEqual(grid.globalAttributes().get("Southernmost_Northing"),      new FloatArray(new float[]{22f}), "southernmost");
+        Test.ensureEqual(grid.globalAttributes().get("Northernmost_Northing"),      new FloatArray(new float[]{50f}), "northernmost");
+        Test.ensureEqual(grid.globalAttributes().get("Westernmost_Easting"),        new FloatArray(new float[]{-135f}), "westernmost");
+        Test.ensureEqual(grid.globalAttributes().get("Easternmost_Easting"),        new FloatArray(new float[]{-105f}), "easternmost");
+
+        //cwhdf attributes
+        Test.ensureEqual(grid.globalAttributes().get("cwhdf_version"),              new StringArray(new String[]{"3.4"}), "cwhdf_version"); //string
+        Test.ensureEqual(grid.globalAttributes().get("satellite"),                  new StringArray(new String[]{"QuikSCAT"}), "satellite"); //string
+        Test.ensureEqual(grid.globalAttributes().get("sensor"),                     new StringArray(new String[]{"SeaWinds"}), "sensor"); //string
+        Test.ensureEqual(grid.globalAttributes().get("composite"),                  new StringArray(new String[]{"true"}), "composite"); //string
+ 
+        Test.ensureEqual(grid.globalAttributes().get("pass_date"),                  new IntArray(new int[]{13309}), "pass_date"); //int32[nDays] 
+        Test.ensureEqual(grid.globalAttributes().get("start_time"),                 new DoubleArray(new double[]{0}), "start_time"); //float64[nDays] 
+        Test.ensureEqual(grid.globalAttributes().get("origin"),                     new StringArray(new String[]{"NASA JPL (Cal. Inst. of Technology)"}), "origin"); //string
+        //Test.ensureEqual(grid.globalAttributes().get("history"),                  new StringArray(new String[]{"unknown"}), "history"); //string
+
+        Test.ensureEqual(grid.globalAttributes().get("projection_type"),            new StringArray(new String[]{"mapped"}), "projection_type"); //string
+        Test.ensureEqual(grid.globalAttributes().get("projection"),                 new StringArray(new String[]{"geographic"}), "projection"); //string
+        Test.ensureEqual(grid.globalAttributes().get("gctp_sys"),                   new IntArray(new int[]{0}), "gctp_sys"); //int32
+        Test.ensureEqual(grid.globalAttributes().get("gctp_zone"),                  new IntArray(new int[]{0}), "gctp_zone"); //int32
+        Test.ensureEqual(grid.globalAttributes().get("gctp_parm"),                  new DoubleArray(new double[15]), "gctp_parm"); //float64[15 0's]
+        Test.ensureEqual(grid.globalAttributes().get("gctp_datum"),                 new IntArray(new int[]{12}), "gctp_datum");//int32 12=WGS84
+
+        double matrix[] = {0, -grid.latSpacing, grid.lonSpacing, 0, grid.lon[0], grid.lat[nLat-1]}; //up side down
+        Test.ensureEqual(grid.globalAttributes().get("et_affine"),                  new DoubleArray(matrix), "et_affine"); //right side up
+
+        Test.ensureEqual(grid.globalAttributes().get("rows"),                       new IntArray(new int[]{grid.lat.length}), "rows");//int32 number of rows
+        Test.ensureEqual(grid.globalAttributes().get("cols"),                       new IntArray(new int[]{grid.lon.length}), "cols");//int32 number of columns
+        Test.ensureEqual(grid.globalAttributes().get("polygon_latitude"),           new DoubleArray(new double[]{
+            grid.lat[0], grid.lat[nLat - 1], grid.lat[nLat - 1], grid.lat[0], grid.lat[0]}), "polygon_latitude");
+        Test.ensureEqual(grid.globalAttributes().get("polygon_longitude"),          new DoubleArray(new double[]{
+            grid.lon[0], grid.lon[0], grid.lon[nLon - 1], grid.lon[nLon - 1], grid.lon[0]}), "polygon_longitude");
+
+        //lat attributes
+        Test.ensureEqual(grid.latAttributes().get("long_name"),                     new StringArray(new String[]{"Latitude"}), "lat long_name");
+        Test.ensureEqual(grid.latAttributes().get("standard_name"),                 new StringArray(new String[]{"latitude"}), "lat standard_name");
+        Test.ensureEqual(grid.latAttributes().get("units"),                         new StringArray(new String[]{"degrees_north"}), "lat units");
+        Test.ensureEqual(grid.latAttributes().get("point_spacing"),                 new StringArray(new String[]{"even"}), "lat point_spacing");
+        Test.ensureEqual(grid.latAttributes().get("actual_range"),                  new FloatArray(new float[]{22f, 50f}), "lat actual_range");
+
+        //CWHDF metadata/attributes for Latitude
+        Test.ensureEqual(grid.latAttributes().get("coordsys"),                      new StringArray(new String[]{"geographic"}), "coordsys");//string
+        Test.ensureEqual(grid.latAttributes().get("fraction_digits"),               new IntArray(new int[]{2}), "fraction_digits"); //int32
+
+        
+        //lon attributes
+        Test.ensureEqual(grid.lonAttributes().get("long_name"),                     new StringArray(new String[]{"Longitude"}), "lon long_name");
+        Test.ensureEqual(grid.lonAttributes().get("standard_name"),                 new StringArray(new String[]{"longitude"}), "lon standard_name");
+        Test.ensureEqual(grid.lonAttributes().get("units"),                         new StringArray(new String[]{"degrees_east"}), "lon units");
+        Test.ensureEqual(grid.lonAttributes().get("point_spacing"),                 new StringArray(new String[]{"even"}), "lon point_spacing");
+        Test.ensureEqual(grid.lonAttributes().get("actual_range"),                  new FloatArray(new float[]{-135f, -105f}), "lon actual_range");     
+        
+        //CWHDF metadata/attributes for Longitude
+        Test.ensureEqual(grid.lonAttributes().get("coordsys"),                      new StringArray(new String[]{"geographic"}), "coordsys"); //string
+        Test.ensureEqual(grid.lonAttributes().get("fraction_digits"),               new IntArray(new int[]{2}), "fraction_digits"); //int32
+
+        
+        //data attributes
+        Test.ensureEqual(grid.dataAttributes().get("long_name"),                    new StringArray(new String[]{"Wind, QuikSCAT SeaWinds, Near Real Time, Zonal"}), "data long_name");
+        Test.ensureEqual(grid.dataAttributes().get("standard_name"),                new StringArray(new String[]{"x_wind"}), "data standard_name");
+        Test.ensureEqual(grid.dataAttributes().get("units"),                        new StringArray(new String[]{"m s-1"}), "data units");
+        Test.ensureEqual(grid.dataAttributes().get("_FillValue"),                   new FloatArray(new float[]{-1e32f}), "data _FillValue");
+        Test.ensureEqual(grid.dataAttributes().get("missing_value"),                new FloatArray(new float[]{-1e32f}), "data missing_value");
+        Test.ensureEqual(grid.dataAttributes().get("numberOfObservations"),         new IntArray(new int[]{6164}), "data numberOfObservations");
+        Test.ensureEqual(grid.dataAttributes().get("percentCoverage"),              new DoubleArray(new double[]{0.45081547575513786}), "data percentCoverage");
+
+        //CWHDF metadata/attributes for the data: varName
+        Test.ensureEqual(grid.dataAttributes().get("coordsys"),                     new StringArray(new String[]{"geographic"}), "coordsys");    //string
+        Test.ensureEqual(grid.dataAttributes().get("fraction_digits"),              new IntArray(new int[]{1}), "fraction_digits"); //int32
+
+        //if (verbose) ncDump("Grid.main", "c:/backup/data/AT8day_wcs.nc", false);
+
+    }
+
+}

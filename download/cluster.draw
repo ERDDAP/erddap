@@ -1,0 +1,280 @@
+CoPlot.drawVersion(6.300);
+setDrawingBackgroundColor(Color2.orange0);
+setFont(0,"helvet");
+setFont(1,"tmsrmn");
+setFont(2,"cour");
+setFont(3,"marker");
+setFont(4,"greek");
+setFont(5,"");
+setFont(6,"");
+setFont(7,"");
+setFont(8,"");
+setFont(9,"");
+setFont(10,"");
+setFont(11,"");
+setFont(12,"");
+setFont(13,"");
+setFont(14,"");
+setXBounds(0.1, 7.1);
+setYBounds(-1.05, 4.1);
+setGridSize(0.05);
+setLeftMargin(0.75);
+setBottomMargin(2.925);
+setVisibleGroups("0");
+setSmoothing(0);
+setGraphArrayX("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
+setGraphArrayY("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
+
+setGroup(0);
+setBackgroundColor(Color2.sky0);
+setFillColor(Color2.notDrawn);
+setLineColor(Color2.gray4);
+setLineType(0);
+setLineDashsize(0.02);
+setLineWidth(0.003);
+setArrowTypeStart(0);
+setArrowTypeFinish(0);
+setMarkerColor(Color2.notDrawn);
+setPathType(0);
+create("path", "0.2, 1, 0.2, 3.3, "+
+  "6.95, 3.3, 6.95, 1, "+
+  "0.2, 1");
+
+setBackgroundColor(Color2.notDrawn);
+setLineColor(Color2.black);
+create("path", "1.9000000000000001, -0.55, 1.9, 2.6");
+
+setGroup(2);
+create("path", "5.550000000000001, 3.4000000000000004, 4.45, 0.25000000000000006");
+
+create("path", "6.4, 3.4000000000000004, 4.4, 0.25000000000000006");
+
+setGroup(0);
+create("path", "5.55, 3.4, 1.9, 2.6500000000000004");
+
+create("path", "6.4, 3.4, 1.9, 2.6500000000000004");
+
+setGroup(1);
+setLineColor(Color2.gray3);
+create("path", "4.25, 2.4500000000000006, 6.1000000000000005, 1.6");
+
+create("path", "4.25, 2.4500000000000006, 1, 1.6");
+
+create("path", "4.25, 2.4500000000000006, 2.7, 1.55");
+
+create("path", "1.85, 2.65, 4.25, 2.45");
+
+setGroup(0);
+setBackgroundColor(Color2.yellow1);
+setLineColor(Color2.black);
+create("path", "2.7, 1.6, 1.95, 2.6500000000000004");
+
+setLineType(7);
+create("path", "2.7, 0.25000000000000006, 2.7, 1.6");
+
+setGroup(2);
+create("path", "6.1000000000000005, 0.25000000000000006, 6.1000000000000005, 1.6");
+
+setGroup(0);
+setBackgroundColor(Color2.notDrawn);
+setLineType(0);
+create("path", "1, 0.25000000000000006, 1, 1.6500000000000001, "+
+  "1.9, 2.6500000000000004");
+
+create("path", "0.5, 3.4, 1.9, 2.6500000000000004");
+
+create("path", "1.15, 3.4, 1.9, 2.6500000000000004");
+
+create("path", "1.8, 3.4, 1.9, 2.6500000000000004");
+
+create("path", "2.55, 3.4, 1.9, 2.7");
+
+create("path", "3.35, 3.4, 1.9, 2.6500000000000004");
+
+create("path", "4.1, 3.4, 1.9, 2.6500000000000004");
+
+create("path", "4.8, 3.4, 1.9, 2.6500000000000004");
+
+setGroup(2);
+create("path", "6.4, 3.4, 6.1000000000000005, 1.6500000000000001");
+
+create("path", "5.55, 3.4, 6.1000000000000005, 1.7000000000000002");
+
+setGroup(0);
+setBackgroundColor(Color2.orange1);
+setTextColor(Color2.black);
+setTextFont(0);
+setTextHeight(0.1);
+setTextPosition(4);
+setShapeType(34);
+setShapeHAlign(4);
+setShapeVAlign(10);
+setShapeWidth(.);
+setShapeHeight(.);
+setShapeBorder(1);
+setShapeAngle(0);
+setShapeShadow(0);
+setCharacters("Data Source<br>(ERDDAP-able)<br>(high bandwidth)");
+create("text", "1, 0.25000000000000006");
+
+setCharacters("Data Source<br>(ERDDAP-able)<br>(low bandwidth)");
+create("text", "2.7, 0.25000000000000006");
+
+setBackgroundColor(Color2.notDrawn);
+setLineColor(Color2.notDrawn);
+setShapeHAlign(3);
+setCharacters("New (Local?) Servers");
+create("text", "0.30000000000000004, 3.0500000000000003");
+
+setGroup(1);
+setBackgroundColor(Color2.gray1);
+setLineColor(Color2.black);
+setShapeHAlign(4);
+setCharacters("Administrator's<br>Web<br>Application");
+create("text", "4.25, 2.45");
+
+setGroup(0);
+setBackgroundColor(Color2.orange1);
+setCharacters("Composite<br>ERDDAP");
+create("text", "1.9, 2.65");
+
+setCharacters("ERDDAP<br>(no local data)");
+create("text", "1, 1.6500000000000001");
+
+setCharacters("ERDDAP<br>(replicated data)");
+create("text", "2.7, 1.6");
+
+setBackgroundColor(Color2.yellow2);
+setLineColor(Color2.notDrawn);
+setCharacters("<b>ERDDAP<br>Grid/Cluster<br>Diagram");
+create("text", "6.4, -0.6499999999999999");
+
+setBackgroundColor(Color2.notDrawn);
+setTextHeight(0.08);
+setCharacters("1...");
+create("text", "1.7000000000000002, 1.5");
+
+setCharacters("1...");
+create("text", "3.45, 1.5");
+
+setCharacters("1...");
+create("text", "3.5, 5.551115123125783E-17");
+
+setCharacters("1...");
+create("text", "1.75, 5.551115123125783E-17");
+
+setCharacters("1?, 1...");
+create("text", "2.55, 2.5");
+
+setGroup(2);
+setBackgroundColor(Color2.purple1);
+setLineColor(Color2.black);
+setTextHeight(0.1);
+setCharacters("Non-ERDDAP-able<br>Data Source<br>(DAP/THREDDS)<br>(high bandwidth)");
+create("text", "4.4, 0.2500000000000001");
+
+setCharacters("Non-ERDDAP-able<br>Data Source<br>(DAP/other)<br>(low bandwidth)");
+create("text", "6.1000000000000005, 0.2500000000000001");
+
+setCharacters("DAP/THREDDS<br>(replicated data)");
+create("text", "6.1000000000000005, 1.6");
+
+setBackgroundColor(Color2.notDrawn);
+setLineColor(Color2.notDrawn);
+setTextHeight(0.08);
+setCharacters("1...");
+create("text", "5.2, -0.04999999999999996");
+
+setCharacters("1...");
+create("text", "6.900000000000001, -0.04999999999999996");
+
+setCharacters("1...");
+create("text", "6.8500000000000005, 1.45");
+
+setGroup(0);
+setBackgroundColor(Color2.green1);
+setLineColor(Color2.black);
+setTextHeight(0.1);
+setCharacters("Matlab<br>client");
+create("text", "1.15, 3.65");
+
+setCharacters("(OPeN)DAP<br>client");
+create("text", "6.4, 3.65");
+
+setCharacters("WMS<br>client");
+create("text", "1.8000000000000003, 3.65");
+
+setCharacters(".csv<br>client");
+create("text", "0.5, 3.65");
+
+setCharacters("...<br>client");
+create("text", "4.8, 3.65");
+
+setCharacters("Google<br>Earth");
+create("text", "3.35, 3.65");
+
+setCharacters("&lt;img&gt; on<br>web page");
+create("text", "2.55, 3.65");
+
+setCharacters("ESRI<br>ArcGIS");
+create("text", "4.1, 3.65");
+
+setCharacters("Web<br>Browser");
+create("text", "5.55, 3.65");
+
+setBackgroundColor(Color2.orange1);
+setCharacters("Data Source<br>(ERDDAP)<br>(high bandwidth)");
+create("text", "1.9000000000000001, -0.55");
+
+setGroup(2);
+setBackgroundColor(Color2.maroon1);
+setCharacters("Data Source<br>(non-DAP-able)");
+create("text", "4.35, -0.6");
+
+setGroup(0);
+setBackgroundColor(Color2.notDrawn);
+setLineColor(Color2.notDrawn);
+setTextHeight(0.08);
+setCharacters("1...");
+create("text", "2.65, -0.7999999999999999");
+
+setGroup(2);
+setCharacters("1...");
+create("text", "5.1, -0.75");
+
+setGroup(0);
+setTextColor(Color2.blue4);
+setTextHeight(0.1);
+setCharacters("<b>B</b>");
+create("text", "0.9, 1.15");
+
+setCharacters("<b>A</b>");
+create("text", "1.7, 1.15");
+
+setCharacters("<b>D</b>");
+create("text", "1.2999999999999998, 2.6500000000000004");
+
+setGroup(1);
+setCharacters("<b>H</b>");
+create("text", "3.5, 2.6500000000000004");
+
+setGroup(2);
+setCharacters("<b>E</b>");
+create("text", "3.5500000000000003, 0.30000000000000004");
+
+setCharacters("<b>F</b>");
+create("text", "5.95, 1.15");
+
+setCharacters("<b>G</b>");
+create("text", "3.6, -0.6");
+
+setGroup(0);
+setCharacters("<b>C");
+create("text", "2.5500000000000003, 1.1500000000000001");
+
+setTextColor(Color2.black);
+setShapeHAlign(3);
+setCharacters("Pre-existing (Remote?) Servers");
+create("text", "0.30000000000000004, 0.8");
+
+endOfFile();

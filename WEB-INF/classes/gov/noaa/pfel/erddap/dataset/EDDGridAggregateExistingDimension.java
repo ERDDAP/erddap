@@ -1,0 +1,1292 @@
+/* 
+ * EDDGridAggregateExistingDimension Copyright 2008, NOAA.
+ * See the LICENSE.txt file in this file's directory.
+ */
+package gov.noaa.pfel.erddap.dataset;
+
+import com.cohort.array.Attributes;
+import com.cohort.array.ByteArray;
+import com.cohort.array.IntArray;
+import com.cohort.array.PrimitiveArray;
+import com.cohort.array.StringArray;
+import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
+import com.cohort.util.SimpleException;
+import com.cohort.util.String2;
+import com.cohort.util.Test;
+
+import gov.noaa.pfel.coastwatch.griddata.NcHelper;
+import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
+import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.util.EDStatic;
+import gov.noaa.pfel.erddap.variable.*;
+
+import java.util.ArrayList;
+
+
+/** 
+ * This class represents a grid dataset created by aggregating 
+ * for first existing dimension of other datasets.
+ * Each child holds a contiguous group of values for the aggregated dimension.
+ * 
+ * @author Bob Simons (bob.simons@noaa.gov) 2008-02-04
+ */
+public class EDDGridAggregateExistingDimension extends EDDGrid { 
+
+    protected EDDGrid childDatasets[];
+    protected int childStopsAt[]; //the last valid axisVar0 index for each childDataset
+    protected boolean ensureAxisValuesAreEqual;
+
+    /**
+     * This constructs an EDDGridAggregateExistingDimension based on the information in an .xml file.
+     * Only the attributes from the first dataset are used for the composite
+     * dataset.
+     * 
+     * @param xmlReader with the &lt;erddapDatasets&gt;&lt;dataset type="EDDGridAggregateExistingDimension"&gt; 
+     *    having just been read.  
+     * @return an EDDGridAggregateExistingDimension.
+     *    When this returns, xmlReader will have just read &lt;erddapDatasets&gt;&lt;/dataset&gt; .
+     * @throws Throwable if trouble
+     */
+    public static EDDGridAggregateExistingDimension fromXml(SimpleXMLReader xmlReader) throws Throwable {
+
+        if (verbose) String2.log("\n*** constructing EDDGridAggregateExistingDimension(xmlReader)...");
+        String tDatasetID = xmlReader.attributeValue("datasetID"); 
+
+        //data to be obtained while reading xml
+        EDDGrid firstChild = null;
+        StringArray tLocalSourceUrls = new StringArray();
+        String tAccessibleTo = null;
+        StringArray tOnChange = new StringArray();
+        boolean tEnsureAxisValuesAreEqual = true;
+
+        String tSUServerType = null;
+        String tSURegex = null;
+        boolean tSURecursive = true;
+        String tSU = null; 
+
+        //process the tags
+        String startOfTags = xmlReader.allTags();
+        int startOfTagsN = xmlReader.stackSize();
+        int startOfTagsLength = startOfTags.length();
+
+        while (true) {
+            xmlReader.nextTag();
+            String tags = xmlReader.allTags();
+            String content = xmlReader.content();
+            if (reallyVerbose) String2.log("eavae=" + tEnsureAxisValuesAreEqual + "  tags=" + tags + content);
+            if (xmlReader.stackSize() == startOfTagsN) 
+                break; //the </dataset> tag
+            String localTags = tags.substring(startOfTagsLength);
+
+            //try to make the tag names as consistent, descriptive and readable as possible
+            if (localTags.equals("<dataset>")) {
+                if (firstChild == null) {
+                    EDD edd = EDD.fromXml(xmlReader.attributeValue("type"), xmlReader);
+                    if (edd instanceof EDDGrid) {
+                        firstChild = (EDDGrid)edd;
+                    } else {
+                        throw new RuntimeException("Datasets.xml error: " +
+                            "The dataset defined in an " +
+                            "EDDGridAggregateExistingDimension must be a subclass of EDDGrid.");
+                    }
+                } else {
+                    throw new RuntimeException("Datasets.xml error: " +
+                        "There can be only one <dataset> defined within an " +
+                        "EDDGridAggregateExistingDimension <dataset>.");
+                }
+
+            } 
+            else if (localTags.equals( "<sourceUrl>")) {}
+            else if (localTags.equals("</sourceUrl>")) 
+                tLocalSourceUrls.add(content);
+
+            //<sourceUrls serverType="thredds" regex=".*\\.nc" recursive="true"
+            //  >http://ourocean.jpl.nasa.gov:8080/thredds/dodsC/g1sst/catalog.xml</sourceUrl>
+            else if (localTags.equals( "<sourceUrls>")) {
+                tSUServerType = xmlReader.attributeValue("serverType");
+                tSURegex      = xmlReader.attributeValue("regex");
+                String tr     = xmlReader.attributeValue("recursive");
+                tSURecursive  = tr == null? true : String2.parseBoolean(tr);
+            }
+            else if (localTags.equals("</sourceUrls>")) 
+                tSU = content; 
+
+            else if (localTags.equals( "<ensureAxisValuesAreEqual>")) {}
+            else if (localTags.equals("</ensureAxisValuesAreEqual>")) 
+                tEnsureAxisValuesAreEqual = String2.parseBoolean(content); 
+
+            else if (localTags.equals( "<accessibleTo>")) {}
+            else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+
+            //onChange
+            else if (localTags.equals( "<onChange>")) {}
+            else if (localTags.equals("</onChange>")) 
+                tOnChange.add(content); 
+
+            else xmlReader.unexpectedTagException();
+        }
+
+        //make the main dataset based on the information gathered
+        return new EDDGridAggregateExistingDimension(tDatasetID, tAccessibleTo, tOnChange,
+            firstChild, tLocalSourceUrls.toArray(),
+            tSUServerType, tSURegex, tSURecursive, tSU, 
+            tEnsureAxisValuesAreEqual);
+
+    }
+
+    /**
+     * The constructor.
+     * The axisVariables must be the same and in the same
+     * order for each dataVariable.
+     *
+     * @param tDatasetID
+     * @param tAccessibleTo is a space separated list of 0 or more
+     *    roles which will have access to this dataset.
+     *    <br>If null, everyone will have access to this dataset (even if not logged in).
+     *    <br>If "", no one will have access to this dataset.
+     * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
+     *    to be done whenever the dataset changes significantly
+     * @param firstChild
+     * @param tLocalSourceUrls the sourceUrls for the other siblings
+     * @param tEnsureAxisValuesAreEqual if true (recommended), this ensures
+     *   that the axis sourceValues for axisVar 1+ are almostEqual.
+     *   (Setting this to false is not recommended, but is useful if the, 
+     *   for example, lat and lon values vary slightly and you 
+     *   are willing to accept the initial values as the correct values.)   
+     *   Actually, the tests are always done but if this is false and the test fails,
+     *   the error is just logged and doesn't throw an exception.
+     * @throws Throwable if trouble
+     */
+    public EDDGridAggregateExistingDimension(String tDatasetID, 
+        String tAccessibleTo, StringArray tOnChange, 
+        EDDGrid firstChild, String tLocalSourceUrls[], 
+        String tSUServerType, String tSURegex, boolean tSURecursive, String tSU,
+        boolean tEnsureAxisValuesAreEqual) throws Throwable {
+
+        if (verbose) String2.log(
+            "\n*** constructing EDDGridAggregateExistingDimension " + tDatasetID + 
+            " ensureEqual=" + tEnsureAxisValuesAreEqual); 
+        long constructionStartMillis = System.currentTimeMillis();
+        String errorInMethod = "Error in EDDGridGridAggregateExistingDimension(" + 
+            tDatasetID + ") constructor:\n";
+            
+        //save some of the parameters
+        className = "EDDGridAggregateExistingDimension"; 
+        datasetID = tDatasetID;
+        setAccessibleTo(tAccessibleTo);
+        onChange = tOnChange;
+        ensureAxisValuesAreEqual = tEnsureAxisValuesAreEqual;
+
+        //if no tLocalSourceURLs, generate from hyrax or thredds catalog?
+        if (tLocalSourceUrls.length == 0 && tSU != null && tSU.length() > 0) {
+            if (tSURegex == null || tSURegex.length() == 0)
+                tSURegex = ".*";
+
+            StringArray tsa = new StringArray();
+            if (tSUServerType == null)
+                throw new RuntimeException(errorInMethod + "<sourceUrls> serverType is null.");
+            else if (tSUServerType.toLowerCase().equals("hyrax"))
+                tsa.add(EDDGridFromDap.getUrlsFromHyraxCatalog(tSU, tSURegex, tSURecursive));
+            else if (tSUServerType.toLowerCase().equals("thredds"))
+                tsa.add(EDDGridFromDap.getUrlsFromThreddsCatalog(tSU, tSURegex, tSURecursive));
+            else throw new RuntimeException(errorInMethod + 
+                "<sourceUrls> serverType must be \"hyrax\" or \"thredds\".");
+            //String2.log("\nchildren=\n" + tsa.toNewlineString());
+
+            //remove firstChild's sourceUrl
+            int fc = tsa.indexOf(firstChild.localSourceUrl());
+            //if (reallyVerbose) String2.log("firstChild sourceUrl=" + firstChild.localSourceUrl() + " at po=" + fc);
+            if (fc >= 0)
+                tsa.remove(fc);
+
+            tsa.sort();
+            tLocalSourceUrls = tsa.toArray();
+        }
+
+        int nChildren = tLocalSourceUrls.length + 1;
+        childDatasets = new EDDGrid[nChildren];
+        childDatasets[0] = firstChild;
+        PrimitiveArray cumSV = firstChild.axisVariables()[0].sourceValues();
+        childStopsAt = new int[nChildren];
+        childStopsAt[0] = cumSV.size() - 1;
+
+        //create the siblings
+        for (int sib = 0; sib < nChildren - 1; sib++) {
+            if (reallyVerbose) String2.log("\n+++ Creating childDatasets[" + (sib+1) + "]\n");
+            EDDGrid sibling = firstChild.sibling(tLocalSourceUrls[sib], 
+                ensureAxisValuesAreEqual? 1 : Integer.MAX_VALUE, true);
+            childDatasets[sib + 1] = sibling;
+            PrimitiveArray sourceValues0 = sibling.axisVariables()[0].sourceValues();
+            cumSV.append(sourceValues0);
+            childStopsAt[sib + 1] = cumSV.size() - 1;
+            if (reallyVerbose) String2.log("\n+++ childDatasets[" + (sib+1) + 
+                "] #0=" + sourceValues0.getString(0) +
+                " #" + sourceValues0.size() + "=" + sourceValues0.getString(sourceValues0.size() - 1));
+                //sourceValues0=" + sourceValues0 + "\n");
+        }
+
+
+        //create the aggregate dataset
+        if (reallyVerbose) String2.log("\n+++ Creating the aggregate dataset\n");
+        setReloadEveryNMinutes(firstChild.getReloadEveryNMinutes());
+      
+        localSourceUrl = firstChild.localSourceUrl();
+        addGlobalAttributes = firstChild.addGlobalAttributes();
+        sourceGlobalAttributes = firstChild.sourceGlobalAttributes();
+        combinedGlobalAttributes = firstChild.combinedGlobalAttributes();
+        //and clear searchString of children?
+
+        int nAv = firstChild.axisVariables.length;
+        axisVariables = new EDVGridAxis[nAv];
+        System.arraycopy(firstChild.axisVariables, 0, axisVariables, 0, nAv);
+        lonIndex = firstChild.lonIndex;
+        latIndex = firstChild.latIndex;
+        altIndex = firstChild.altIndex;
+        timeIndex = firstChild.timeIndex;
+        EDVGridAxis av0 = axisVariables[0];
+        String sn = av0.sourceName();
+        Attributes sa = av0.sourceAttributes();
+        Attributes aa = av0.addAttributes();
+        if      (lonIndex  == 0) axisVariables[0] = new EDVLonGridAxis(sn, sa, aa, cumSV);
+        else if (latIndex  == 0) axisVariables[0] = new EDVLatGridAxis(sn, sa, aa, cumSV);
+        else if (altIndex  == 0) axisVariables[0] = new EDVAltGridAxis(sn, sa, aa, cumSV, 
+            ((EDVAltGridAxis)av0).metersPerSourceUnit());
+        else if (timeIndex == 0) axisVariables[0] = new EDVTimeGridAxis(sn, sa, aa, cumSV);
+        else {axisVariables[0] = new EDVGridAxis(sn, av0.destinationName(), sa, aa, cumSV);
+              axisVariables[0].setActualRangeFromDestinationMinMax();
+        }
+
+
+        int nDv = firstChild.dataVariables.length;
+        dataVariables = new EDV[nDv];
+        System.arraycopy(firstChild.dataVariables, 0, dataVariables, 0, nDv);
+
+        //ensure the setup is valid
+        ensureValid();
+
+        //finally
+        if (verbose) String2.log(
+            (reallyVerbose? "\n" + toString() : "") +
+            "\n*** EDDGridAggregateExistingDimension " + datasetID + " constructor finished. TIME=" + 
+            (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
+
+    }
+
+    /**
+     * This makes a sibling dataset, based on the new sourceUrl.
+     *
+     * @throws Throwable always (since this class doesn't support sibling())
+     */
+    public EDDGrid sibling(String tLocalSourceUrl, int ensureAxisValuesAreEqual, 
+        boolean shareInfo) throws Throwable {
+        throw new SimpleException( 
+            "Error: EDDGridAggregateExistingDimension doesn't support method=\"sibling\".");
+    }
+
+    /** 
+     * This gets data (not yet standardized) from the data 
+     * source for this EDDGrid.     
+     * Because this is called by GridDataAccessor, the request won't be the 
+     * full user's request, but will be a partial request (for less than
+     * EDStatic.partialRequestMaxBytes).
+     * 
+     * @param tDataVariables
+     * @param tConstraints
+     * @return a PrimitiveArray[] where the first axisVariables.length elements
+     *   are the axisValues and the next tDataVariables.length elements
+     *   are the dataValues.
+     *   Both the axisValues and dataValues are straight from the source,
+     *   not modified.
+     * @throws Throwable if trouble
+     */
+    public PrimitiveArray[] getSourceData(EDV tDataVariables[], IntArray tConstraints) 
+        throws Throwable {
+
+        //parcel first dimension's constraints to appropriate datasets
+        int nChildren = childStopsAt.length;
+        int nAv = axisVariables.length;
+        int nDv = tDataVariables.length;
+        PrimitiveArray[] cumResults = null;
+        int index = tConstraints.get(0);
+        int stride = tConstraints.get(1);
+        int stop = tConstraints.get(2);
+        //find currentDataset (associated with index)
+        int currentStart = index;
+        int currentDataset = 0;  
+        while (index > childStopsAt[currentDataset])
+            currentDataset++;
+        IntArray childConstraints = (IntArray)tConstraints.clone();
+
+        //walk through the requested index values
+        while (index <= stop) {
+            //find nextDataset (associated with next iteration's index)
+            int nextDataset = currentDataset; 
+            while (nextDataset < nChildren && index + stride > childStopsAt[nextDataset])
+                nextDataset++; //ok if >= nDatasets
+
+            //get a chunk of data related to current chunk of indexes?
+            if (nextDataset != currentDataset ||   //next iteration will be a different dataset
+                index + stride > stop) {           //this is last iteration
+                //get currentStart:stride:index
+                int currentDatasetStartsAt = currentDataset == 0? 0 : childStopsAt[currentDataset - 1] + 1;
+                childConstraints.set(0, currentStart - currentDatasetStartsAt);
+                childConstraints.set(2, index - currentDatasetStartsAt);
+                if (reallyVerbose) String2.log("  currentDataset=" + currentDataset +
+                    "  datasetStartsAt=" + currentDatasetStartsAt + 
+                    "  localStart=" + childConstraints.get(0) +
+                    "  localStop=" + childConstraints.get(2));
+                PrimitiveArray[] tResults = childDatasets[currentDataset].getSourceData(
+                    tDataVariables, childConstraints);
+                //childDataset has already checked that axis values are as *it* expects          
+                if (cumResults == null) {
+                    if (!ensureAxisValuesAreEqual) {
+                        //make axis values exactly as expected by aggregate dataset
+                        for (int av = 1; av < nAv; av++)
+                            tResults[av] = axisVariables[av].sourceValues().subset(
+                                childConstraints.get(av * 3 + 0),
+                                childConstraints.get(av * 3 + 1),
+                                childConstraints.get(av * 3 + 2));
+                    }
+                    cumResults = tResults;
+                } else {
+                    cumResults[0].append(tResults[0]);
+                    for (int dv = 0; dv < nDv; dv++)
+                        cumResults[nAv + dv].append(tResults[nAv + dv]);
+                }
+
+                currentDataset = nextDataset;
+                currentStart = index + stride;            
+            }
+
+            //increment index
+            index += stride;
+        }
+
+        return cumResults;
+    }
+
+
+    /**
+     * This generates datasets.xml for an aggregated dataset from a Hyrax catalog.
+     *
+     * @param serverType Currently, only "hyrax" and "thredds" are supported  (case insensitive)
+     * @param startUrl the url of the current web page (with a hyrax catalog) e.g.,
+     *   <br>hyrax: "http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/contents.html" 
+     *   <br>thredds: "http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml" 
+     * @param fileNameRegex e.g.,
+     *   <br>hyrax: "pentad.*flk\\.nc\\.gz"
+     *   <br>thredds: ".*"
+     * @param recursive
+     */
+    public static String generateDatasetsXml(String serverType, String startUrl, 
+        String fileNameRegex, boolean recursive, int tReloadEveryNMinutes) throws Throwable {
+
+        long time = System.currentTimeMillis();
+
+        StringBuilder sb = new StringBuilder();
+        String sa[];
+        serverType = serverType.toLowerCase();
+        if ("hyrax".equals(serverType))
+            sa = EDDGridFromDap.getUrlsFromHyraxCatalog(startUrl, fileNameRegex, recursive);
+        else if ("thredds".equals(serverType))
+            sa = EDDGridFromDap.getUrlsFromThreddsCatalog(startUrl, fileNameRegex, recursive);
+        else throw new RuntimeException("ERROR: serverType must be \"hyrax\" or \"thredds\".");
+
+        if (sa.length == 0)
+            throw new RuntimeException("ERROR: No matching URLs were found.");
+
+        if (sa.length == 1) 
+            return EDDGridFromDap.generateDatasetsXml(true, //writeDirections, 
+                sa[0], null, null, null,
+                tReloadEveryNMinutes, null);
+
+        //multiple URLs, so aggregate them
+        //outer EDDGridAggregateExistingDimension
+        sb.append(
+            directionsForGenerateDatasetsXml() +
+            "-->\n\n" +
+            "<dataset type=\"EDDGridAggregateExistingDimension\" datasetID=\"" + 
+                suggestDatasetID(startUrl + "?" + fileNameRegex) + "\" active=\"true\">\n" +
+            "\n");
+
+        //first child -- fully defined
+        sb.append(EDDGridFromDap.generateDatasetsXml(false, //writeDirections, 
+            sa[0], null, null, null,
+            tReloadEveryNMinutes, null));
+
+        //other children
+        for (int i = 1; i < sa.length; i++) 
+            sb.append("<sourceUrl>" + sa[i] + "</sourceUrl>\n");
+
+        //end
+        sb.append("\n" +
+            "</dataset>\n" +
+            "\n");
+
+        String2.log("\n\n*** generateDatasetsXml finished successfully; time=" +
+            (System.currentTimeMillis() - time) + "\n\n");
+        return sb.toString();
+    }
+
+    /**
+     */
+    public static void testGenerateDatasetsXml() throws Throwable {
+        String2.log("\n*** EDDGridAggregateExistingDimension.testGenerateDatasetsXml()\n");
+        String results, expected;
+
+        //******* test thredds -- lame test: the datasets can't actually be aggregated
+        results = generateDatasetsXml("thredds",
+            "http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml", 
+            ".*", 
+            true, 1440); //recursive
+        expected = 
+"<!--\n" +
+" DISCLAIMER:\n" +
+"   The chunk of datasets.xml made by GenerageDatasetsXml isn't perfect.\n" +
+"   YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.\n" +
+"   GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always\n" +
+"   correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML\n" +
+"   THAT YOU ADD TO ERDDAP'S datasets.xml FILE.\n" +
+"\n" +
+" DIRECTIONS:\n" +
+" * Read about this type of dataset in\n" +
+"   http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
+" * Read http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
+"   so that you understand about sourceAttributes and addAttributes.\n" +
+" * Note: Global sourceAttributes and variable sourceAttributes are listed\n" +
+"   below as comments, for informational purposes only.\n" +
+"   ERDDAP combines sourceAttributes and addAttributes (which have\n" +
+"   precedence) to make the combinedAttributes that are shown to the user.\n" +
+"   (And other attributes are automatically added to longitude, latitude,\n" +
+"   altitude, and time variables).\n" +
+" * If you don't like a sourceAttribute, override it by adding an\n" +
+"   addAttribute with the same name but a different value\n" +
+"   (or no value, if you want to remove it).\n" +
+" * All of the addAttributes are computer-generated suggestions. Edit them!\n" +
+"   If you don't like an addAttribute, change it.\n" +
+" * If you want to add other addAttributes, add them.\n" +
+" * If you want to change a destinationName, change it.\n" +
+"   But don't change sourceNames.\n" +
+" * You can change the order of the dataVariables or remove any of them.\n" +
+"-->\n" +
+"\n" +
+"<dataset type=\"EDDGridAggregateExistingDimension\" datasetID=\"noaa_pfeg_8d37_4596_befd\" active=\"true\">\n" +
+"\n" +
+"<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_pfeg_9375_e30f_f0b8\" active=\"true\">\n" +
+"    <sourceUrl>http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day</sourceUrl>\n" +
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" +
+"        <att name=\"cdm_data_type\">Grid</att>\n" +
+"        <att name=\"cols\" type=\"int\">8640</att>\n" +
+"        <att name=\"composite\">true</att>\n" +
+"        <att name=\"contributor_name\">NASA GSFC (G. Feldman)</att>\n" +
+"        <att name=\"contributor_role\">Source of level 2 data.</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.0, Unidata Dataset Discovery v1.0, CWHDF</att>\n" +
+"        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" +
+"        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
+"        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" +
+"        <att name=\"cwhdf_version\">3.4</att>\n" +
+"        <att name=\"date_created\">2010-02-22Z</att>\n" +
+"        <att name=\"date_issued\">2010-02-22Z</att>\n" +
+"        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" +
+"        <att name=\"et_affine\" type=\"doubleList\">0.0 0.041676313961565174 0.04167148975575877 0.0 0.0 -90.0</att>\n" +
+"        <att name=\"gctp_datum\" type=\"int\">12</att>\n" +
+"        <att name=\"gctp_parm\" type=\"doubleList\">0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</att>\n" +
+"        <att name=\"gctp_sys\" type=\"int\">0</att>\n" +
+"        <att name=\"gctp_zone\" type=\"int\">0</att>\n" +
+"        <att name=\"geospatial_lat_max\" type=\"double\">90.0</att>\n" +
+"        <att name=\"geospatial_lat_min\" type=\"double\">-90.0</att>\n" +
+"        <att name=\"geospatial_lat_resolution\" type=\"double\">0.041676313961565174</att>\n" +
+"        <att name=\"geospatial_lat_units\">degrees_north</att>\n" +
+"        <att name=\"geospatial_lon_max\" type=\"double\">360.0</att>\n" +
+"        <att name=\"geospatial_lon_min\" type=\"double\">0.0</att>\n" +
+"        <att name=\"geospatial_lon_resolution\" type=\"double\">0.04167148975575877</att>\n" +
+"        <att name=\"geospatial_lon_units\">degrees_east</att>\n" +
+"        <att name=\"geospatial_vertical_max\" type=\"double\">0.0</att>\n" +
+"        <att name=\"geospatial_vertical_min\" type=\"double\">0.0</att>\n" +
+"        <att name=\"geospatial_vertical_positive\">up</att>\n" +
+"        <att name=\"geospatial_vertical_units\">m</att>\n" +
+"        <att name=\"history\">NASA GSFC (G. Feldman)\n" +
+"2010-02-22T22:48:46Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</att>\n" +
+"        <att name=\"id\">LMHchlaS8day_20100129000000</att>\n" +
+"        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" +
+"        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
+"        <att name=\"license\">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.</att>\n" +
+"        <att name=\"naming_authority\">gov.noaa.pfel.coastwatch</att>\n" +
+"        <att name=\"Northernmost_Northing\" type=\"double\">90.0</att>\n" +
+"        <att name=\"origin\">NASA GSFC (G. Feldman)</att>\n" +
+"        <att name=\"pass_date\" type=\"intList\">14634 14635 14636 14637 14638 14639 14640 14641</att>\n" +
+"        <att name=\"polygon_latitude\" type=\"doubleList\">-90.0 90.0 90.0 -90.0 -90.0</att>\n" +
+"        <att name=\"polygon_longitude\" type=\"doubleList\">0.0 0.0 360.0 360.0 0.0</att>\n" +
+"        <att name=\"processing_level\">3</att>\n" +
+"        <att name=\"project\">CoastWatch (http://coastwatch.noaa.gov/)</att>\n" +
+"        <att name=\"projection\">geographic</att>\n" +
+"        <att name=\"projection_type\">mapped</att>\n" +
+"        <att name=\"references\">Aqua/MODIS information: http://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .</att>\n" +
+"        <att name=\"rows\" type=\"int\">4320</att>\n" +
+"        <att name=\"satellite\">Aqua</att>\n" +
+"        <att name=\"sensor\">MODIS</att>\n" +
+"        <att name=\"source\">satellite observation: Aqua, MODIS</att>\n" +
+"        <att name=\"Southernmost_Northing\" type=\"double\">-90.0</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" +
+"        <att name=\"start_time\" type=\"doubleList\">0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</att>\n" +
+"        <att name=\"summary\">NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#039;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.</att>\n" +
+"        <att name=\"time_coverage_end\">2010-02-02T00:00:00Z</att>\n" +
+"        <att name=\"time_coverage_start\">2010-01-25T00:00:00Z</att>\n" +
+"        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality</att>\n" +
+"        <att name=\"Westernmost_Easting\" type=\"double\">0.0</att>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"infoUrl\">http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day.html</att>\n" +
+"        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
+"        <att name=\"Metadata_Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0, CWHDF</att>\n" +
+"        <att name=\"original_institution\">NOAA CoastWatch, West Coast Node</att>\n" +
+"    </addAttributes>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_CoordinateAxisType\">Time</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">1.2647232E9 1.2647232E9</att>\n" +
+"            <att name=\"axis\">T</att>\n" +
+"            <att name=\"fraction_digits\" type=\"int\">0</att>\n" +
+"            <att name=\"long_name\">Centered Time</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>altitude</sourceName>\n" +
+"        <destinationName>altitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_CoordinateAxisType\">Height</att>\n" +
+"            <att name=\"_CoordinateZisPositive\">up</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">0.0 0.0</att>\n" +
+"            <att name=\"axis\">Z</att>\n" +
+"            <att name=\"fraction_digits\" type=\"int\">0</att>\n" +
+"            <att name=\"long_name\">Altitude</att>\n" +
+"            <att name=\"positive\">up</att>\n" +
+"            <att name=\"standard_name\">altitude</att>\n" +
+"            <att name=\"units\">m</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lat</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_CoordinateAxisType\">Lat</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">-90.0 90.0</att>\n" +
+"            <att name=\"axis\">Y</att>\n" +
+"            <att name=\"coordsys\">geographic</att>\n" +
+"            <att name=\"fraction_digits\" type=\"int\">4</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"            <att name=\"point_spacing\">even</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lon</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_CoordinateAxisType\">Lon</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">0.0 360.0</att>\n" +
+"            <att name=\"axis\">X</att>\n" +
+"            <att name=\"coordsys\">geographic</att>\n" +
+"            <att name=\"fraction_digits\" type=\"int\">4</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"            <att name=\"point_spacing\">even</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>MHchla</sourceName>\n" +
+"        <destinationName>MHchla</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">0.01 63.997</att>\n" +
+"            <att name=\"coordsys\">geographic</att>\n" +
+"            <att name=\"fraction_digits\" type=\"int\">2</att>\n" +
+"            <att name=\"long_name\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality</att>\n" +
+"            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
+"            <att name=\"numberOfObservations\" type=\"int\">9664503</att>\n" +
+"            <att name=\"percentCoverage\" type=\"double\">0.2589298000257202</att>\n" +
+"            <att name=\"standard_name\">concentration_of_chlorophyll_in_sea_water</att>\n" +
+"            <att name=\"units\">mg m-3</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">30.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.03</att>\n" +
+"            <att name=\"colorBarScale\">Log</att>\n" +
+"            <att name=\"ioos_category\">Ocean Color</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n" +
+"<sourceUrl>http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/mday</sourceUrl>\n" +
+"\n" +
+"</dataset>\n" +
+"\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+
+
+        //****** test HYRAX
+        results = generateDatasetsXml("hyrax",
+            "http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/contents.html", 
+            "pentad.*flk\\.nc\\.gz", 
+            true, 1440); //recursive
+        expected = 
+"<!--\n" +
+" DISCLAIMER:\n" +
+"   The chunk of datasets.xml made by GenerageDatasetsXml isn't perfect.\n" +
+"   YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.\n" +
+"   GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always\n" +
+"   correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML\n" +
+"   THAT YOU ADD TO ERDDAP'S datasets.xml FILE.\n" +
+"\n" +
+" DIRECTIONS:\n" +
+" * Read about this type of dataset in\n" +
+"   http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
+" * Read http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
+"   so that you understand about sourceAttributes and addAttributes.\n" +
+" * Note: Global sourceAttributes and variable sourceAttributes are listed\n" +
+"   below as comments, for informational purposes only.\n" +
+"   ERDDAP combines sourceAttributes and addAttributes (which have\n" +
+"   precedence) to make the combinedAttributes that are shown to the user.\n" +
+"   (And other attributes are automatically added to longitude, latitude,\n" +
+"   altitude, and time variables).\n" +
+" * If you don't like a sourceAttribute, override it by adding an\n" +
+"   addAttribute with the same name but a different value\n" +
+"   (or no value, if you want to remove it).\n" +
+" * All of the addAttributes are computer-generated suggestions. Edit them!\n" +
+"   If you don't like an addAttribute, change it.\n" +
+" * If you want to add other addAttributes, add them.\n" +
+" * If you want to change a destinationName, change it.\n" +
+"   But don't change sourceNames.\n" +
+" * You can change the order of the dataVariables or remove any of them.\n" +
+"-->\n" +
+"\n" +
+"<dataset type=\"EDDGridAggregateExistingDimension\" datasetID=\"nasa_jpl_c873_f7fb_c710\" active=\"true\">\n" +
+"\n" +
+"<dataset type=\"EDDGridFromDap\" datasetID=\"nasa_jpl_dcf3_676f_99b9\" active=\"true\">\n" +
+"    <sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880101_v11l35flk.nc.gz</sourceUrl>\n" +
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
+"    <!-- sourceAttributes>\n" +
+"        <att name=\"base_date\" type=\"shortList\">1988 1 1</att>\n" +
+"        <att name=\"Conventions\">COARDS</att>\n" +
+"        <att name=\"description\">Time average of level3.0 products for the period: 1988-01-01 to 1988-01-05</att>\n" +
+"        <att name=\"history\">Created by NASA Goddard Space Flight Center under the NASA REASoN CAN: A Cross-Calibrated, Multi-Platform Ocean Surface Wind Velocity Product for Meteorological and Oceanographic Applications</att>\n" +
+"        <att name=\"title\">Atlas FLK v1.1 derived surface winds (level 3.5)</att>\n" +
+"    </sourceAttributes -->\n" +
+"    <addAttributes>\n" +
+"        <att name=\"cdm_data_type\">Grid</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"infoUrl\">http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880101_v11l35flk.nc.gz.html</att>\n" +
+"        <att name=\"institution\">NASA JPL</att>\n" +
+"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"Metadata_Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
+"        <att name=\"summary\">Time average of level3.0 products for the period: 1988-01-01 to 1988-01-05</att>\n" +
+"    </addAttributes>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>time</sourceName>\n" +
+"        <destinationName>time</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">8760.0 8760.0</att>\n" +
+"            <att name=\"avg_period\">0000-00-05 00:00:00</att>\n" +
+"            <att name=\"delta_t\">0000-00-05 00:00:00</att>\n" +
+"            <att name=\"long_name\">Time</att>\n" +
+"            <att name=\"units\">hours since 1987-01-01 00:00:0.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Time</att>\n" +
+"            <att name=\"standard_name\">time</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lat</sourceName>\n" +
+"        <destinationName>latitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-78.375 78.375</att>\n" +
+"            <att name=\"long_name\">Latitude</att>\n" +
+"            <att name=\"units\">degrees_north</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"standard_name\">latitude</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <axisVariable>\n" +
+"        <sourceName>lon</sourceName>\n" +
+"        <destinationName>longitude</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">0.125 359.875</att>\n" +
+"            <att name=\"long_name\">Longitude</att>\n" +
+"            <att name=\"units\">degrees_east</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"standard_name\">longitude</att>\n" +
+"        </addAttributes>\n" +
+"    </axisVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>uwnd</sourceName>\n" +
+"        <destinationName>uwnd</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-18.274595 25.119558</att>\n" +
+"            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
+"            <att name=\"long_name\">u-wind at 10 meters</att>\n" +
+"            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
+"            <att name=\"scale_factor\" type=\"float\">0.001525972</att>\n" +
+"            <att name=\"units\">m/s</att>\n" +
+"            <att name=\"valid_range\" type=\"floatList\">-50.0 50.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-15.0</att>\n" +
+"            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"standard_name\">eastward_wind</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>vwnd</sourceName>\n" +
+"        <destinationName>vwnd</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-19.939075 25.561361</att>\n" +
+"            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
+"            <att name=\"long_name\">v-wind at 10 meters</att>\n" +
+"            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
+"            <att name=\"scale_factor\" type=\"float\">0.001525972</att>\n" +
+"            <att name=\"units\">m/s</att>\n" +
+"            <att name=\"valid_range\" type=\"floatList\">-50.0 50.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-15.0</att>\n" +
+"            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"standard_name\">northward_wind</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>wspd</sourceName>\n" +
+"        <destinationName>wspd</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">0.15885441 25.766176</att>\n" +
+"            <att name=\"add_offset\" type=\"float\">37.5</att>\n" +
+"            <att name=\"long_name\">wind speed at 10 meters</att>\n" +
+"            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
+"            <att name=\"scale_factor\" type=\"float\">0.001144479</att>\n" +
+"            <att name=\"units\">m/s</att>\n" +
+"            <att name=\"valid_range\" type=\"floatList\">0.0 75.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"standard_name\">wind_speed</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>upstr</sourceName>\n" +
+"        <destinationName>upstr</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-335.80392 636.5254</att>\n" +
+"            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
+"            <att name=\"long_name\">u-component of pseudostress at 10 meters</att>\n" +
+"            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
+"            <att name=\"scale_factor\" type=\"float\">0.03051944</att>\n" +
+"            <att name=\"units\">m2/s2</att>\n" +
+"            <att name=\"valid_range\" type=\"floatList\">-1000.0 1000.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">1000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-1000.0</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>vpstr</sourceName>\n" +
+"        <destinationName>vpstr</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-435.46085 658.6185</att>\n" +
+"            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
+"            <att name=\"long_name\">v-component of pseudostress at 10 meters</att>\n" +
+"            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
+"            <att name=\"scale_factor\" type=\"float\">0.03051944</att>\n" +
+"            <att name=\"units\">m2/s2</att>\n" +
+"            <att name=\"valid_range\" type=\"floatList\">-1000.0 1000.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">1000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-1000.0</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>nobs</sourceName>\n" +
+"        <destinationName>nobs</destinationName>\n" +
+"        <!-- sourceAttributes>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">0.0 20.0</att>\n" +
+"            <att name=\"add_offset\" type=\"float\">32766.0</att>\n" +
+"            <att name=\"long_name\">number of observations</att>\n" +
+"            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
+"            <att name=\"scale_factor\" type=\"float\">1.0</att>\n" +
+"            <att name=\"units\">count</att>\n" +
+"            <att name=\"valid_range\" type=\"floatList\">0.0 65532.0</att>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">65532.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"</dataset>\n" +
+"\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880106_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880111_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880116_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880121_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880126_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880131_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M02/pentad_19880205_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M02/pentad_19880210_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M02/pentad_19880215_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M02/pentad_19880220_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M02/pentad_19880225_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M03/pentad_19880302_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M03/pentad_19880307_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M03/pentad_19880312_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M03/pentad_19880317_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M03/pentad_19880322_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M03/pentad_19880327_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M04/pentad_19880401_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M04/pentad_19880406_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M04/pentad_19880411_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M04/pentad_19880416_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M04/pentad_19880421_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M04/pentad_19880426_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M05/pentad_19880501_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M05/pentad_19880506_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M05/pentad_19880511_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M05/pentad_19880516_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M05/pentad_19880521_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M05/pentad_19880526_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M05/pentad_19880531_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M06/pentad_19880605_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M06/pentad_19880610_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M06/pentad_19880615_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M06/pentad_19880620_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M06/pentad_19880625_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M06/pentad_19880630_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M07/pentad_19880705_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M07/pentad_19880710_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M07/pentad_19880715_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M07/pentad_19880720_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M07/pentad_19880725_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M07/pentad_19880730_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M08/pentad_19880804_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M08/pentad_19880809_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M08/pentad_19880814_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M08/pentad_19880819_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M08/pentad_19880824_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M08/pentad_19880829_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M09/pentad_19880903_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M09/pentad_19880908_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M09/pentad_19880913_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M09/pentad_19880918_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M09/pentad_19880923_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M09/pentad_19880928_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M10/pentad_19881003_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M10/pentad_19881008_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M10/pentad_19881013_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M10/pentad_19881018_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M10/pentad_19881023_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M10/pentad_19881028_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M11/pentad_19881102_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M11/pentad_19881107_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M11/pentad_19881112_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M11/pentad_19881117_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M11/pentad_19881122_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M11/pentad_19881127_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M12/pentad_19881202_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M12/pentad_19881207_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M12/pentad_19881212_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M12/pentad_19881217_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M12/pentad_19881222_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M12/pentad_19881227_v11l35flk.nc.gz</sourceUrl>\n" +
+"\n" +
+"</dataset>\n" +
+"\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+
+        String2.log("\n*** EDDGridAggregateExistingDimension.testGenerateDatasetsXml() finished successfully.\n");
+
+    }
+
+    /**
+     * This tests the basic methods in this class.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testBasic() throws Throwable {
+
+        String2.log("\n****************** EDDGridAggregateExistingDimension.testBasic() *****************\n");
+        testVerboseOn();
+        String name, tName, userDapQuery, results, expected, error;
+
+        //one time
+
+        //*** NDBC  is also IMPORTANT UNIQUE TEST of >1 variable in a file
+        EDDGrid gridDataset = (EDDGrid)oneFromDatasetXml("ndbcCWind41002");       
+
+        //min max
+        EDV edv = gridDataset.findAxisVariableByDestinationName("longitude");
+        Test.ensureEqual(edv.destinationMin(), -75.42, "");
+        Test.ensureEqual(edv.destinationMax(), -75.42, "");
+
+        String ndbcDapQuery = "wind_speed[1:5][0][0]";
+        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, 
+            EDStatic.fullTestCacheDirectory, gridDataset.className(), ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"time, latitude, longitude, wind_speed\n" +
+"UTC, degrees_north, degrees_east, m s-1\n" +
+"1989-06-13T16:10:00Z, 32.27, -75.42, 15.7\n" +
+"1989-06-13T16:20:00Z, 32.27, -75.42, 15.0\n" +
+"1989-06-13T16:30:00Z, 32.27, -75.42, 14.4\n" +
+"1989-06-13T16:40:00Z, 32.27, -75.42, 14.0\n" +
+"1989-06-13T16:50:00Z, 32.27, -75.42, 13.6\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        ndbcDapQuery = "wind_speed[1:5][0][0]";
+        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+            gridDataset.className(), ".nc"); 
+        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+        int dataPo = results.indexOf("data:");
+        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        expected = 
+"netcdf EDDGridAggregateExistingDimension.nc {\n" +
+" dimensions:\n" +
+"   time = 5;\n" +   // (has coord.var)\n" +   //changed when switched to netcdf-java 4.0, 2009-02-23
+"   latitude = 1;\n" +   // (has coord.var)\n" +
+"   longitude = 1;\n" +   // (has coord.var)\n" +
+" variables:\n" +
+"   double time(time=5);\n" +
+"     :_CoordinateAxisType = \"Time\";\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+//BUG???!!!
+//"     :actual_range = 6.137568E8, 7.258458E8; // double\n" +  //this changes depending on how many files aggregated
+
+expected = 
+":axis = \"T\";\n" +
+"     :ioos_category = \"Time\";\n" +
+"     :long_name = \"Epoch Time\";\n" +
+"     :short_name = \"time\";\n" +
+"     :standard_name = \"time\";\n" +
+"     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"   float latitude(latitude=1);\n" +
+"     :_CoordinateAxisType = \"Lat\";\n" +
+"     :actual_range = 32.27f, 32.27f; // float\n" +
+"     :axis = \"Y\";\n" +
+"     :ioos_category = \"Location\";\n" +
+"     :long_name = \"Latitude\";\n" +
+"     :short_name = \"latitude\";\n" +
+"     :standard_name = \"latitude\";\n" +
+"     :units = \"degrees_north\";\n" +
+"   float longitude(longitude=1);\n" +
+"     :_CoordinateAxisType = \"Lon\";\n" +
+"     :actual_range = -75.42f, -75.42f; // float\n" +
+"     :axis = \"X\";\n" +
+"     :ioos_category = \"Location\";\n" +
+"     :long_name = \"Longitude\";\n" +
+"     :short_name = \"longitude\";\n" +
+"     :standard_name = \"longitude\";\n" +
+"     :units = \"degrees_east\";\n" +
+"   float wind_speed(time=5, latitude=1, longitude=1);\n" +
+"     :_FillValue = 99.0f; // float\n" +
+"     :ioos_category = \"Wind\";\n" +
+"     :long_name = \"Wind Speed\";\n" +
+"     :missing_value = 99.0f; // float\n" +
+"     :short_name = \"wspd\";\n" +
+"     :standard_name = \"wind_speed\";\n" +
+"     :units = \"m s-1\";\n" +
+"\n" +
+" :cdm_data_type = \"Grid\";\n" +
+" :comment = \"S HATTERAS - 250 NM East of Charleston, SC\";\n" +
+" :contributor_name = \"NOAA NDBC\";\n" +
+" :contributor_role = \"Source of data.\";\n" +
+" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Easternmost_Easting = -75.42f; // float\n" +
+" :geospatial_lat_max = 32.27f; // float\n" +
+" :geospatial_lat_min = 32.27f; // float\n" +
+" :geospatial_lon_max = -75.42f; // float\n" +
+" :geospatial_lon_min = -75.42f; // float\n" +
+" :history = \"" + today + " http://dods.ndbc.noaa.gov/thredds/dodsC/data/cwind/41002/41002c1989.nc\n" +
+today + " " + EDStatic.erddapUrl + //in tests, always non-https url
+"/griddap/ndbcCWind41002.nc?wind_speed[1:5][0][0]\";\n" +
+" :infoUrl = \"http://www.ndbc.noaa.gov/cwind.shtml\";\n" +
+" :institution = \"NOAA NDBC\";\n" +
+" :license = \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+" :location = \"32.27 N 75.42 W \";\n" +
+" :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Northernmost_Northing = 32.27f; // float\n" +
+" :quality = \"Automated QC checks with manual editing and comprehensive monthly QC\";\n" +
+" :sourceUrl = \"http://dods.ndbc.noaa.gov/thredds/dodsC/data/cwind/41002/41002c1989.nc\";\n" +
+" :Southernmost_Northing = 32.27f; // float\n" +
+" :station = \"41002\";\n" +
+" :summary = \"These continuous wind measurements from the NOAA National Data Buoy Center (NDBC) stations are 10-minute average values of wind speed (in m/s) and direction (in degrees clockwise from North).\";\n" +
+" :time_coverage_end = \"1989-06-13T16:50:00Z\";\n" +
+" :time_coverage_start = \"1989-06-13T16:10:00Z\";\n" +
+" :title = \"Wind Data from NDBC 41002\";\n" +
+" :url = \"http://dods.ndbc.noaa.gov\";\n" +
+" :Westernmost_Easting = -75.42f; // float\n" +
+" data:\n" +
+"time =\n" +
+"  {6.137574E8, 6.13758E8, 6.137586E8, 6.137592E8, 6.137598E8}\n" +
+"latitude =\n" +
+"  {32.27}\n" +
+"longitude =\n" +
+"  {-75.42}\n" +
+"wind_speed =\n" +
+"  {\n" +
+"    {\n" +
+"      {15.7}\n" +
+"    },\n" +
+"    {\n" +
+"      {15.0}\n" +
+"    },\n" +
+"    {\n" +
+"      {14.4}\n" +
+"    },\n" +
+"    {\n" +
+"      {14.0}\n" +
+"    },\n" +
+"    {\n" +
+"      {13.6}\n" +
+"    }\n" +
+"  }\n" +
+"}\n";
+        int po = results.indexOf(":axis =");
+        Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
+
+        ndbcDapQuery = "wind_direction[1:5][0][0]";
+        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+            gridDataset.className() + "2", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"time, latitude, longitude, wind_direction\n" +
+"UTC, degrees_north, degrees_east, degrees_true\n" +
+"1989-06-13T16:10:00Z, 32.27, -75.42, 234\n" +
+"1989-06-13T16:20:00Z, 32.27, -75.42, 233\n" +
+"1989-06-13T16:30:00Z, 32.27, -75.42, 233\n" +
+"1989-06-13T16:40:00Z, 32.27, -75.42, 235\n" +
+"1989-06-13T16:50:00Z, 32.27, -75.42, 235\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        ndbcDapQuery = "wind_speed[1:5][0][0],wind_direction[1:5][0][0]";
+        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+            gridDataset.className() + "3", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"time, latitude, longitude, wind_speed, wind_direction\n" +
+"UTC, degrees_north, degrees_east, m s-1, degrees_true\n" +
+"1989-06-13T16:10:00Z, 32.27, -75.42, 15.7, 234\n" +
+"1989-06-13T16:20:00Z, 32.27, -75.42, 15.0, 233\n" +
+"1989-06-13T16:30:00Z, 32.27, -75.42, 14.4, 233\n" +
+"1989-06-13T16:40:00Z, 32.27, -75.42, 14.0, 235\n" +
+"1989-06-13T16:50:00Z, 32.27, -75.42, 13.6, 235\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        ndbcDapQuery = "wind_direction[1:5][0][0],wind_speed[1:5][0][0]";
+        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+            gridDataset.className() + "4", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"time, latitude, longitude, wind_direction, wind_speed\n" +
+"UTC, degrees_north, degrees_east, degrees_true, m s-1\n" +
+"1989-06-13T16:10:00Z, 32.27, -75.42, 234, 15.7\n" +
+"1989-06-13T16:20:00Z, 32.27, -75.42, 233, 15.0\n" +
+"1989-06-13T16:30:00Z, 32.27, -75.42, 233, 14.4\n" +
+"1989-06-13T16:40:00Z, 32.27, -75.42, 235, 14.0\n" +
+"1989-06-13T16:50:00Z, 32.27, -75.42, 235, 13.6\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+            gridDataset.className() + "4", ".nc"); 
+        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+        dataPo = results.indexOf("data:");
+        results = results.substring(dataPo);
+        expected = 
+"data:\n" +
+"time =\n" +
+"  {6.137574E8, 6.13758E8, 6.137586E8, 6.137592E8, 6.137598E8}\n" +
+"latitude =\n" +
+"  {32.27}\n" +
+"longitude =\n" +
+"  {-75.42}\n" +
+"wind_direction =\n" +
+"  {\n" +
+"    {\n" +
+"      {234}\n" +
+"    },\n" +
+"    {\n" +
+"      {233}\n" +
+"    },\n" +
+"    {\n" +
+"      {233}\n" +
+"    },\n" +
+"    {\n" +
+"      {235}\n" +
+"    },\n" +
+"    {\n" +
+"      {235}\n" +
+"    }\n" +
+"  }\n" +
+"wind_speed =\n" +
+"  {\n" +
+"    {\n" +
+"      {15.7}\n" +
+"    },\n" +
+"    {\n" +
+"      {15.0}\n" +
+"    },\n" +
+"    {\n" +
+"      {14.4}\n" +
+"    },\n" +
+"    {\n" +
+"      {14.0}\n" +
+"    },\n" +
+"    {\n" +
+"      {13.6}\n" +
+"    }\n" +
+"  }\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test seam of two datasets
+        ndbcDapQuery = "wind_direction[22232:22239][0][0],wind_speed[22232:22239][0][0]";
+        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+            gridDataset.className() + "5", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"time, latitude, longitude, wind_direction, wind_speed\n" +
+"UTC, degrees_north, degrees_east, degrees_true, m s-1\n" +
+"1989-12-05T05:20:00Z, 32.27, -75.42, 232, 23.7\n" +
+"1989-12-05T05:30:00Z, 32.27, -75.42, 230, 24.1\n" +
+"1989-12-05T05:40:00Z, 32.27, -75.42, 225, 23.5\n" +
+"1989-12-05T05:50:00Z, 32.27, -75.42, 233, 23.3\n" +
+"1992-04-28T23:00:00Z, 32.27, -75.42, 335, 29.4\n" +
+"1992-04-28T23:10:00Z, 32.27, -75.42, 335, 30.5\n" +
+"1992-04-28T23:20:00Z, 32.27, -75.42, 330, 32.3\n" +
+"1992-04-28T23:30:00Z, 32.27, -75.42, 331, 33.2\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test seam of two datasets   with stride
+        ndbcDapQuery = "wind_direction[22232:2:22239][0][0],wind_speed[22232:2:22239][0][0]";
+        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+            gridDataset.className() + "6", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"time, latitude, longitude, wind_direction, wind_speed\n" +
+"UTC, degrees_north, degrees_east, degrees_true, m s-1\n" +
+"1989-12-05T05:20:00Z, 32.27, -75.42, 232, 23.7\n" +
+"1989-12-05T05:40:00Z, 32.27, -75.42, 225, 23.5\n" +
+"1992-04-28T23:00:00Z, 32.27, -75.42, 335, 29.4\n" +
+"1992-04-28T23:20:00Z, 32.27, -75.42, 330, 32.3\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        // */
+
+        //test last data value (it causes a few problems -- including different axis values)
+        ndbcDapQuery = "wind_direction[(2007-12-31T22:40:00):1:(2007-12-31T22:55:00)][0][0]," +
+                           "wind_speed[(2007-12-31T22:40:00):1:(2007-12-31T22:55:00)][0][0]";
+        tName = gridDataset.makeNewFileForDapQuery(null, null, ndbcDapQuery, EDStatic.fullTestCacheDirectory, 
+            gridDataset.className() + "7", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"time, latitude, longitude, wind_direction, wind_speed\n" +
+"UTC, degrees_north, degrees_east, degrees_true, m s-1\n" +
+"2007-12-31T22:40:00Z, 32.27, -75.42, 36, 4.0\n" +
+"2007-12-31T22:50:00Z, 32.27, -75.42, 37, 4.3\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+
+        String2.log("\n*** EDDGridAggregateExistingDimension.test finished.");
+
+    }
+
+    /** This tests rtofs - where the aggregated dimension, time, has sourceValues != destValues
+     *  since sourceTimeFormat isn't "seconds since 1970-01-01". 
+     *  !!!THIS USED TO WORK, BUT NEEDS TO BE UPDATED; datasets are removed after ~1 month
+     */
+    public static void testRtofs() throws Throwable {
+        String2.log("\n****************** EDDGridAggregateExistingDimension.testRtofs() *****************\n");
+        testVerboseOn();
+        String tName, results, expected;
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("RTOFSWOC1");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+            "time", EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_rtofs", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"time\n" +
+"UTC\n" +
+"2009-07-01T00:00:00Z\n" +
+"2009-07-02T00:00:00Z\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        
+    }
+
+    /**
+     * This tests the methods in this class.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void test() throws Throwable {
+
+        String2.log("\n****************** EDDGridAggregateExistingDimension.test() *****************\n");
+        testGenerateDatasetsXml();
+        testBasic();
+
+
+        //not usually run
+        //testRtofs();  //worked but needs to be updated; datasets are removed after ~1 month
+    }
+
+
+
+}

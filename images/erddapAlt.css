@@ -1,0 +1,27 @@
+/* Alternate CSS style settings for ERDDAP 
+See the comments in the erddap.css file. */
+a:link {color:#222288; } 
+a:visited {color:#882288; }
+body {background-color:#ffffcc; color:black;
+      font-family:Georgia,"Times New Roman",Times,serif; font-size:90%; line-height:130%;}
+button, input, select {font-family:Georgia,"Times New Roman",Times,serif; font-size:90%;}
+font.highlightColor {color:#3333cc; }
+font.standoutColor {color:#dd5500; }
+font.subduedColor {color:#777777; }
+font.successColor {color:#008800; }
+font.warningColor {color:red; }
+h1, h2, h3 {line-height:130%; }
+hr {color:#ccaa88; background-color:#ccaa88; height:1px; border:none; }
+img {border:0px; }
+input[type=button], input[type=submit], button {margin:0px; padding:0px 3px; }
+input[type=checkbox], input[type=password], input[type=text], select, textarea {
+  margin:0px; padding:0px; }
+input[type=radio] {margin:0px 2px; padding:0px; }
+input.skinny {padding:0px 1px; }
+pre, tt {font-family: "Courier New",Courier,FreeMono,monospace; font-size:100%; line-height:130%;}
+table.commonBGColor {background-color:#ffddbb; }
+table.erd {border-collapse:collapse; border:1px solid #ccaa88; }
+table.erd th, table.erd td {padding:2px 4px; border:1px solid #ccaa88; }
+td.verticalLine {width:1px; background-color:#ccaa88; }
+td.highlightBGColor {background-color:#cceecc; }
+tr.highlightBGColor {background-color:#cceecc; }

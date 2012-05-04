@@ -1,0 +1,19 @@
+#!/bin/csh
+#
+# usage: DoubleCenterGrids <oldEndTimeDir> <newCenteredTimeDir> [-fast]
+# For example: DoubleCenterGrids /u00/satellite/avhrr_hrpt /u00/satellite/centeredavhrr_hrpt
+# Or, run with no parameters to see documentation.
+#
+# To make this Linux/Unix script executable, use 
+#    chmod +x CenterGrids
+#
+# originally written 2007-01-23
+# last updated 2007-01-31
+# NOAA/Bob Simons  bob.simons@noaa.gov
+#
+
+set commandLine=$0
+set thisDir=`echo commandLine | dirname $0`
+java -cp $thisDir/classes:$thisDir/lib/netcdfAll-latest.jar:$thisDir/lib/slf4j-jdk14.jar:$thisDir/lib/activation.jar:$thisDir/lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.DoubleCenterGrids $1 $2 $3 $4 $5
+
+# finished 

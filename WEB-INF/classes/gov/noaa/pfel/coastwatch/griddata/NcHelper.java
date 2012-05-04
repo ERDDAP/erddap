@@ -1,0 +1,1693 @@
+/* 
+ * NcHelper Copyright 2005, NOAA.
+ * See the LICENSE.txt file in this file's directory.
+ */
+package gov.noaa.pfel.coastwatch.griddata;
+
+import com.cohort.array.*;
+import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
+import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
+import com.cohort.util.String2;
+import com.cohort.util.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Enumeration;
+import java.util.List;
+
+/**
+ * Get netcdf-X.X.XX.jar from http://www.unidata.ucar.edu/software/netcdf-java/index.htm
+ * and copy it to <context>/WEB-INF/lib renamed as netcdf-latest.jar.
+ * Get slf4j-jdk14.jar from 
+ * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
+ * and copy it to <context>/WEB-INF/lib.
+ * Put both of these .jar files in the classpath for the compiler and for Java.
+ */
+import ucar.nc2.*;
+import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dods.*;
+import ucar.nc2.util.*;
+import ucar.ma2.*;
+
+
+/**
+ * This class has some static convenience methods related to NetCDF files
+ * and the other Data classes.
+ *
+ * <p>!!!netcdf classes use the Apache Jakarta Commons Logging project (Apache license).
+ * The files are in the netcdfAll.jar.
+ * !!!The commons logging system and your logger must be initialized before using this class.
+ * It is usually set by the main program (e.g., NetCheck).
+ * For a simple solution, use String2.setupCommonsLogging(-1);
+ *
+ * @author Bob Simons (bob.simons@noaa.gov) 2005-12-07
+ */
+public class NcHelper  {
+
+    /**
+     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * if you want lots of diagnostic messages sent to String2.log.
+     */
+    public static boolean verbose = false;
+
+    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
+    public final static String ERROR = String2.ERROR; 
+
+
+    /**
+     * This generates a String with a dump of the contents of a netcdf file.
+     * WARNING: if the file is big, this can be very slow.
+     * WARNING: if printData is true, this may not show the data if there is lots of data. 
+     *
+     * @param fullFileName
+     * @param printData if true, all of the data values are printed, too.
+     * @return a String with the dump text
+     */
+    public static String dumpString(String fullFileName, 
+            boolean printData) throws Exception {
+        return lowDumpString(fullFileName, printData, "");
+    }
+
+        
+    /**
+     * This generates a String with a dump of the contents of a netcdf file.
+     * WARNING: if the file is big, this can be very slow.
+     * WARNING: if printData is true, this may not show the data if there is lots of data. 
+     *
+     * @param fullFileName
+     * @param varNames    a CSV list of varNames whose data you want printed
+     * @return a String with the dump text
+     */
+    public static String dumpString(String fullFileName, 
+          String varNames) throws Exception {
+        return lowDumpString(fullFileName, true, varNames);
+    }
+
+    /**
+     * This generates a String with a dump of the contents of a netcdf file.
+     * WARNING: if the file is big, this can be very slow.
+     * WARNING: if printData is true, this may not show the data if there is lots of data. 
+     *
+     * @param fullFileName
+     * @param printData if true, all of the data values are printed, too.
+     * @return a String with the dump text
+     */
+    public static String lowDumpString(String fullFileName, 
+            boolean printData, String varNames) throws Exception {
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        //NCdump.printHeader(fullFileName, baos);
+        NCdump.print(fullFileName, baos, 
+            printData, false /*print only coord variables*/, false /*ncml*/, false,
+            varNames, null /*cancel*/);
+        String s = baos.toString();
+
+        //remove the directory name from the string
+        //These headers are used by the HTTP GET system and so are seen
+        //by users, so they should not have directory info (on first line)
+        //e.g., netcdf /u00/cwatch/cwexperimental/private/PTS_PMBcrunS1dayAverages_x-135_X-105_y22_Y50_z6_Z6_t20061026000000_T20061026000000.nc {
+        //because users would know where the files are (which is bad for some files
+        //like SeaWiFS).
+        int nPo = s.indexOf('\n');
+        if (nPo > 0) {
+            String firstLine = s.substring(0, nPo);
+            int slash1 = firstLine.indexOf('/');
+            if (slash1 >= 2 && String2.isLetter(firstLine.charAt(slash1 - 2)) && 
+                firstLine.charAt(slash1 - 1) == ':')
+                slash1 -= 2;
+            int slash2 = firstLine.lastIndexOf('/');
+            if (slash1 >= 1 && slash2 >= 0) 
+                s = s.substring(0, slash1) + s.substring(slash2 + 1);
+        }
+
+        //added with switch to netcdf-java 4.0
+        s = decodeNcDump(s);
+
+        return s;
+    }
+
+    /**
+     * This is like String2.fromJson, but does less decoding and is made specifically to fix up 
+     * unnecessarily encoded attributes in NcDump String starting with netcdf-java 4.0.
+     * This is like replaceAll, but smarter.
+     * null is returned as null.
+     *
+     * @param s
+     * @return the decoded string
+     */
+    public static String decodeNcDump(String s) {
+        StringBuilder sb = new StringBuilder();
+        int sLength = s.length();
+        int po = 0;
+        while (po < sLength) {
+            char ch = s.charAt(po);
+            if (ch == '\\') {
+                if (po == sLength - 1) 
+                    po--;  //so reread \ and treat as \\
+                po++; 
+                ch = s.charAt(po);
+                if (ch == 'n') sb.append('\n');
+                else if (ch == 'r') {}
+                else if (ch == '\'') sb.append('\'');
+                else sb.append("\\" + ch); //leave as backslash encoded
+            } else {
+                sb.append(ch);
+            }
+            po++;
+        }
+        return sb.toString();
+    }
+    
+    /**
+     * This is like fromJson, but specifically designed to 
+     * decode an attribute, starting with netcdf-java 4.0 
+     * (which returns them in a backslash encoded form).
+     * null is returned as null
+     *
+     * @param o
+     * @return the decoded o
+     */
+    public static Object decodeAttribute(Object o) {
+        if (o == null ||
+            !(o instanceof String[]))
+            return o;
+        String sar[] = (String[])o;
+        for (int i = 0; i < sar.length; i++)
+            sar[i] = String2.fromJson(sar[i]); //previously used precursor to decodeNcDump(sar[i]);
+        return sar;
+    }
+
+
+    /**
+     * This converts a ArrayXxx.D1 (of any numeric type) into a double[].
+     *
+     * @param array any numeric ArrayXxx.D1
+     * @return a double[]
+     * @throws Exception if trouble
+     */
+    public static double[] toDoubleArray(Array array) {
+        return (double[])array.get1DJavaArray(double.class);
+    }
+
+
+    /**
+     * This returns the size of the array.
+     * If n > Integer.MAX_VALUE, this throws an Exception.
+     *
+     * @param array  an ArrayChar.D2 or any ArrayXxx.D1
+     * @return the length of array (the number of Strings in the ArrayChar,
+     *    or the number of elements in any other array type)
+     */
+    public static int get1DArrayLength(Array array) {
+        long n;
+        if (array instanceof ArrayChar.D2) {
+            n = ((ArrayChar.D2)array).getShape()[0]; 
+        } else n = array.getSize();
+        Test.ensureTrue(n < Integer.MAX_VALUE,  
+            ERROR + " in NcHelper.getSize; n = " + n);
+        return (int)n; //safe since checked above
+
+    }
+
+    /** 
+     * This returns an netcdf Attribute from a PrimitiveArray.
+     *
+     * @param name
+     * @param pa 
+     * @return an Attribute
+     */
+    public static Attribute getAttribute(String name, PrimitiveArray pa) {
+        if (pa instanceof StringArray) {
+            //String2.log("***getAttribute nStrings=" + pa.size());
+            String ts = Attributes.valueToNcString(pa);
+            //int maxLength = 32000; //pre 2010-10-13 8000 ok; 9000 not; now >32K ok; unclear what new limit is
+            //if (ts.length() > maxLength) 
+            //    ts = ts.substring(0, maxLength - 3) + "...";
+            //String2.log("***getAttribute string=\"" + ts + "\"");
+            return new Attribute(name, ts);
+        }
+        return new Attribute(name, get1DArray(pa.toObjectArray()));
+    }
+
+    /** 
+     * This converts a String or array of primitives into a 
+     * ucar.nc2.ArrayXxx.D1.
+     * The o array is used as the storage for the Array.
+     *
+     * @param o the String or array of primitives
+     * @return an ArrayXxx.D1.  A String is converted to a ArrayChar.D1.
+     */
+    public static Array get1DArray(Object o) {
+        if (o instanceof String) {
+            o = ((String)o).toCharArray();
+            //will be handled below
+        }
+
+        if (o instanceof char[])   return Array.factory(char.class,   new int[]{((char[])o).length}, o);
+        if (o instanceof byte[])   return Array.factory(byte.class,   new int[]{((byte[])o).length}, o);
+        if (o instanceof short[])  return Array.factory(short.class,  new int[]{((short[])o).length}, o);
+        if (o instanceof int[])    return Array.factory(int.class,    new int[]{((int[])o).length}, o);
+        if (o instanceof long[])   return Array.factory(long.class,   new int[]{((long[])o).length}, o);
+        if (o instanceof float[])  return Array.factory(float.class,  new int[]{((float[])o).length}, o);
+        if (o instanceof double[]) return Array.factory(double.class, new int[]{((double[])o).length}, o);
+        if (o instanceof String[]) {
+            //make ArrayChar.D2
+            String[] sar = (String[])o;
+            //String2.log("NcHelper.get1DArray sar=" + String2.toCSVString(sar));
+            int max = 0;
+            for (int i = 0; i < sar.length; i++) {
+                //if (sar[i].length() > max) String2.log("new max=" + sar[i].length() + " s=\"" + sar[i] + "\"");
+                max = Math.max(max, sar[i].length());
+            }
+            //String2.log("NcHelper.get1DArray String[] max=" + max);
+            ArrayChar.D2 ac = new ArrayChar.D2(sar.length, max);
+            for (int i = 0; i < sar.length; i++) {
+                ac.setString(i, sar[i]);
+                //String s = sar[i];
+                //int sLength = s.length();
+                //for (int po = 0; po < sLength; po++) 
+                //    ac.set(i, po, s.charAt(po));
+                //for (int po = sLength; po < max; po++)  //not necessary because filled with 0's?
+                //    ac.set(i, po, '\u0000');
+            }
+            return ac;
+        }
+
+        Test.error(ERROR + " in NcHelper.get1DArray: unexpected object type: " + o);
+        return null;
+    }
+
+    /**
+     * This reads all of the values from an nDimensional variable.
+     * The variable can be any shape.
+     *
+     * @param variable
+     * @return a suitable primitiveArray 
+     */
+     public static PrimitiveArray getPrimitiveArray(Variable variable) throws Exception {
+         return getPrimitiveArray(variable.read());
+     }
+
+    /** 
+     * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a PrimitiveArray.
+     *
+     * @param nc2Array an nc2Array
+     * @return a PrimitiveArray
+     */
+    public static PrimitiveArray getPrimitiveArray(Array nc2Array) {
+        return PrimitiveArray.factory(getArray(nc2Array));
+    }
+
+//was
+//   * This converts a ucar.nc2 numeric ArrayXxx.D1, numeric ArrayXxx.D4,
+//   *   ArrayChar.D2, or ArrayChar.D5 into an array of primitives.
+
+    /** 
+     * This converts a ucar.nc2 numeric or char ArrayXxx.Dx into a 1D array of primitives.
+     * ArrayChars are converted to String[].
+     * ArrayBooleans are converted to byte[].
+     * 
+     * @param nc2Array an nc2Array
+     * @return String[] (from ArrayChar.D1, split at \n), String[],
+     *    or primitive[] (from numeric ArrayXxx.D1)
+     */
+    public static Object getArray(Array nc2Array) {
+        //String[] from ArrayChar.D1
+        if (nc2Array instanceof ArrayChar.D1) {
+            String s = new String((char[])((ArrayChar.D1)nc2Array).copyTo1DJavaArray());
+            String sa[] = String2.splitNoTrim(s, '\n');
+            for (int i = 0; i < sa.length; i++)
+                sa[i] = String2.canonical(sa[i]);
+            return sa;
+        }
+
+        /*
+        //String[] from ArrayChar.D2
+        if (nc2Array instanceof ArrayChar.D2) {
+            ArrayChar.D2 ac = (ArrayChar.D2)nc2Array;
+            int shape[] = ac.getShape();
+            int nStrings = shape[0];
+            int max = shape[1];
+            String[] sar = new String[nStrings];
+            //StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < nStrings; i++) {
+                //intern() returns the canonical String
+                //Since strings are often duplicates, this can lead to a huge memory savings.
+                sar[i] = String2.canonical(ac.getString(i)); 
+                //sb.setLength(0);
+                //for (int po = 0; po < max; po++) {
+                //    char ch = ac.get(i, po);
+                //    if (ch == 0)
+                //        break;
+                //    sb.append(ch);
+                //}
+                //sar[i] = sb.toString();
+            }
+            return sar;
+        }
+
+        //String[] from ArrayChar.D5
+        if (nc2Array instanceof ArrayChar.D5) {
+            ArrayChar.D5 ac = (ArrayChar.D5)nc2Array;
+            int shape[] = ac.getShape();
+            int nt = shape[0];
+            int nz = shape[1];
+            int ny = shape[2];
+            int nx = shape[3];
+            int nStrings = nx * ny * nz * nt;
+            String[] sar = new String[nStrings];
+            //StringBuilder sb = new StringBuilder();
+            Index index = nc2Array.getIndex();
+            int count = 0;
+            for (int t = 0; t < nt; t++) 
+                for (int z = 0; z < nz; z++) 
+                    for (int y = 0; y < ny; y++) 
+                        for (int x = 0; x < nx; x++) 
+                            //intern() returns the canonical String
+                            //Since strings are often duplicates, this can lead to a huge memory savings.                
+                            sar[count++] = String2.canonical(ac.getString(index.set(t,z,y,x,0))); 
+            return sar;
+        }
+        */
+
+        //String[] from ArrayChar.Dn
+        if (nc2Array instanceof ArrayChar) {
+            ArrayObject ao = ((ArrayChar)nc2Array).make1DStringArray();
+            String sa[] = String2.toStringArray((Object[])ao.copyTo1DJavaArray());
+            for (int i = 0; i < sa.length; i++)
+                sa[i] = String2.canonical(sa[i]);
+            return sa;
+        }
+
+        //byte[] from ArrayBoolean.Dn
+        if (nc2Array instanceof ArrayBoolean) {
+            boolean boolAr[] = (boolean[])nc2Array.copyTo1DJavaArray();
+            int n = boolAr.length;
+            byte    byteAr[] = new byte[n];
+            for (int i = 0; i < n; i++)
+                byteAr[i] = boolAr[i]? (byte)1 : (byte)0;
+            return byteAr;
+        }
+
+        //ArrayXxxnumeric
+        return nc2Array.copyTo1DJavaArray();
+    }
+
+
+    /** 
+     * This converts an netcdf DataType into a PrimitiveArray ElementClass (e.g., int.class for integer primitives).
+     * BEWARE: .nc files store strings as char arrays, so 
+     * if variable.getRank()==1 it is a char variable, but
+     * if variable.getRang()==2 it is a String variable.
+     * This throws Exception if dataType not found.
+     *
+     * @param dataType the Netcdf dataType
+     * @return the corresponding PrimitiveArray elementClass (e.g., int.class for integer primitives)
+     */
+     public static Class getElementClass(DataType dataType) {
+         if (dataType == DataType.BOOLEAN) return boolean.class;
+         if (dataType == DataType.BYTE)    return byte.class;
+         if (dataType == DataType.CHAR)    return char.class;
+         if (dataType == DataType.DOUBLE)  return double.class;
+         if (dataType == DataType.FLOAT)   return float.class;
+         if (dataType == DataType.INT)     return int.class;
+         if (dataType == DataType.SHORT)   return short.class;
+         if (dataType == DataType.STRING)  return String.class;
+         //STRUCTURE not converted
+         Test.error(ERROR + " in NcHelper.getElementType:\n" +
+             " unrecognized DataType: " + dataType.toString());
+         return null;
+     }
+
+    /** 
+     * This converts an ElementType (e.g., int.class for integer primitives) 
+     * into an netcdf DataType.
+     * BEWARE: .nc files store strings as char arrays, so 
+     * if variable.getRank()==1 it is a char variable, but
+     * if variable.getRang()==2 it is a String variable.
+     * This throws Exception if elementClass not found.
+     *
+     * @param elementClass the PrimitiveArray elementClass (e.g., int.class for integer primitives)
+     * @return the corresponding netcdf dataType 
+     */
+     public static DataType getDataType(Class elementClass) {
+         if (elementClass == boolean.class) return DataType.BOOLEAN;
+         if (elementClass == byte.class)    return DataType.BYTE;
+         if (elementClass == char.class)    return DataType.CHAR;
+         if (elementClass == double.class)  return DataType.DOUBLE;
+         if (elementClass == float.class)   return DataType.FLOAT;
+         if (elementClass == int.class)     return DataType.INT;
+         if (elementClass == short.class)   return DataType.SHORT;
+         if (elementClass == String.class)  return DataType.STRING;
+         //STRUCTURE not converted
+         Test.error(ERROR + " in NcHelper.getDataType:\n" +
+             " unrecognized ElementType: " + elementClass.toString());
+         return null;
+     }
+
+
+    /**
+     * From an arrayList which alternates attributeName (a String) and 
+     * attributeValue (an object), this generates a String with 
+     * startLine+"<name>=<value>" on each line.
+     * If arrayList == null, this returns startLine+"[null]\n".
+     * <p>This nc version is used to print netcdf header attributes. 
+     * It puts quotes around String attributeValues,
+     * converts \ to \\, and " to \", and appends 'f' to float values/
+     *
+     * @param arrayList 
+     * @return the desired string representation
+     */
+    public static String alternateToString(String prefix, ArrayList arrayList, String suffix) {
+        if (arrayList == null)
+            return prefix + "[null]\n";
+        StringBuilder sb = new StringBuilder();
+        for (int index = 0; index < arrayList.size(); index += 2) {
+            sb.append(prefix);
+            sb.append(arrayList.get(index).toString());
+            sb.append(" = ");
+            Object o = arrayList.get(index+1);
+            if (o instanceof StringArray) {
+                StringArray sa = (StringArray)o;
+                int n = sa.size();
+                String connect = "";
+                for (int i = 0; i < n; i++) {
+                    sb.append(connect);
+                    connect = ", ";
+                    String s = String2.replaceAll(sa.get(i), "\\", "\\\\");  //  \ becomes \\
+                    s = String2.replaceAll(s, "\"", "\\\"");                 //  " becomes \"
+                    sb.append("\"" + s + "\"");
+                }
+            } else if (o instanceof FloatArray) {
+                FloatArray fa = (FloatArray)o;
+                int n = fa.size();
+                String connect = "";
+                for (int i = 0; i < n; i++) {
+                    sb.append(connect);
+                    connect = ", ";
+                    sb.append(fa.get(i));
+                    sb.append("f");
+                }
+            } else {
+                sb.append(o.toString());
+            }
+            sb.append(suffix);
+            sb.append('\n');
+        }
+        return sb.toString();
+    }
+
+
+    /**
+     * This gets a string representation of the header of a .nc file.
+     *
+     * <p>If the fullName is an http address, the name needs to start with "http:\\" 
+     * (upper or lower case) and the server needs to support "byte ranges"
+     * (see ucar.nc2.NetcdfFile documentation).
+     * 
+     * @param fullName This may be a local file name, an "http:" address of a
+     *    .nc file, or an opendap url.
+     * @return the string representation of a .nc file header
+     * @throws Exception
+     */
+    public static String readCDL(String fullName) throws Exception {
+
+        //get information
+        NetcdfFile netcdfFile = openFile(fullName);
+        try {
+            String results = netcdfFile.toString();
+
+            //I care about this exception
+            netcdfFile.close();
+            return results;
+
+        } catch (Exception e) {
+            try {
+                netcdfFile.close(); //make sure it is explicitly closed
+            } catch (Exception e2) {
+                //don't care
+            }
+            throw e;
+        }
+
+    }
+    
+
+    /**
+     * This opens a local file name or an "http:" address of a .nc file.
+     * ALWAYS explicitly call netcdfFile.close() when you are finished with it,
+     * preferably in a "finally" clause.
+     *
+     * <p>This purposely does not work for opendap urls. Use the opendap 
+     * methods instead.
+     *
+     * <p>If the fullName is an http address, the name needs to start with "http:\\" 
+     * (upper or lower case) and the server needs to support "byte ranges"
+     * (see ucar.nc2.NetcdfFile documentation).
+     * 
+     * @param fullName This may be a local file name, an "http:" address of a
+     *    .nc file, or an opendap url.
+     * @return a NetcdfFile
+     * @throws Exception if trouble
+     */
+    public static NetcdfFile openFile(String fullName) throws Exception {
+
+        return NetcdfFile.open(fullName);
+    }
+
+    /** 
+     * This converts a List of variables to a variable[].
+     *
+     * @param list   
+     * @return a variable[]  (or null if list is null)
+     */
+    public static Variable[] variableListToArray(List list) {
+        if (list == null)
+            return null;
+        int nVars = list.size();
+        Variable vars[] = new Variable[nVars];
+        for (int v = 0; v < nVars; v++) 
+            vars[v] = (Variable)list.get(v);
+        return vars;
+    }
+
+    /**
+     * Get the list of variables from a netcdf file's structure or, if
+     * there is no structure, a list of variables using the largest dimension
+     * (a pseudo structure).
+     *
+     * @param netcdfFile
+     * @param variableNames if null, this will search for the variables in 
+     *   a (psuedo)structure.
+     * @return structure's variables
+     */
+    public static Variable[] findVariables(NetcdfFile netcdfFile, String variableNames[]) {
+        //just use the variable names
+        if (variableNames != null) {
+            ArrayList list = new ArrayList();
+            for (int i = 0; i < variableNames.length; i++) {
+                Variable variable = netcdfFile.findVariable(variableNames[i]);
+                Test.ensureNotNull(variable, 
+                    ERROR + " in NcHelper.findVariables: '" + variableNames[i] + 
+                    "' not found."); 
+                list.add(variable);
+            }
+            return variableListToArray(list);
+        }
+
+        //find a structure among the variables in the rootGroup
+        //if no structure found, it falls through the loop
+        Group rootGroup = netcdfFile.getRootGroup();
+        List rootGroupVariables = rootGroup.getVariables(); 
+        //String2.log("rootGroup variables=" + String2.toNewlineString(rootGroupVariables.toArray()));
+        for (int v = 0; v < rootGroupVariables.size(); v++) {
+            if (rootGroupVariables.get(v) instanceof Structure) {
+                if (verbose) String2.log("NcHelper.findVariables found a Structure.");
+                return variableListToArray(((Structure)rootGroupVariables.get(v)).getVariables());
+            }
+        }
+
+        //is there an "observationDimension" global attribute?
+        Dimension mainDimension = null;
+        ucar.nc2.Attribute gAtt = netcdfFile.findGlobalAttribute("observationDimension"); //there is also a dods.dap.Attribute
+        if (gAtt != null) {
+            PrimitiveArray pa = PrimitiveArray.factory(getArray(gAtt.getValues()));
+            if (pa.size() > 0) {
+                String dimName = pa.getString(0);
+                if (verbose) 
+                    String2.log("NcHelper.findVariables observationDimension: " + 
+                        dimName);
+                mainDimension = netcdfFile.getRootGroup().findDimension(dimName);
+            }
+        }
+
+        //look for unlimited dimension
+        if (mainDimension == null) {
+            List dimensions = netcdfFile.getDimensions(); //next nc version: getRootGroup().getDimensions();  //was netcdfFile.getDimensions()
+            if (dimensions.size() == 0)
+                Test.error(ERROR + " in NcHelper.findVariables: the file has no dimensions.");
+            for (int i = 0; i < dimensions.size(); i++) {
+                Dimension tDimension = (Dimension)dimensions.get(i);
+                if (tDimension.isUnlimited()) {
+                    mainDimension = tDimension;
+                    if (verbose) 
+                        String2.log("NcHelper.findVariables found an unlimited dimension: " + 
+                            mainDimension.getName());
+                    break;
+                }
+            }
+        }
+
+        //look for a time variable (units contain " since ")       
+        if (mainDimension == null) {            
+            for (int v = 0; v < rootGroupVariables.size(); v++) {
+                Variable variable = (Variable)rootGroupVariables.get(v);
+                List dimensions = variable.getDimensions();
+                PrimitiveArray units = getVariableAttribute(variable, "units");
+                if (units != null && units.size() > 0 && 
+                    units.getString(0).indexOf(" since ") > 0 && dimensions.size() > 0) {
+                    mainDimension = (Dimension)dimensions.get(0);
+                    if (verbose) 
+                        String2.log("NcHelper.findVariables found a time variable with dimension: " + 
+                            mainDimension.getName());
+                    break;
+                }
+            }
+        }
+
+        //use the first outer dimension  (look at last veriables first -- more likely to be the main data variables)
+        if (mainDimension == null) {            
+            for (int v = rootGroupVariables.size() - 1; v >= 0; v--) {
+                Variable variable = (Variable)rootGroupVariables.get(v);
+                List dimensions = variable.getDimensions();
+                if (dimensions.size() > 0) {
+                    mainDimension = (Dimension)dimensions.get(0);
+                    if (verbose) String2.log("NcHelper.findVariables found an outer dimension: " + 
+                        mainDimension.getName());
+                    break;
+                }
+            }
+            //check for no dimensions
+            if (mainDimension == null)
+                Test.error(ERROR + " in NcHelper.findVariables: the file doesn't use dimensions.");
+        }
+
+        //get a list of all variables which use just mainDimension
+        List structureVariables = new ArrayList();
+        for (int i = 0; i < rootGroupVariables.size(); i++) {
+            //if (verbose) String2.log("  get all variables which use mainDimension, check " + i);
+            Variable tVariable = (Variable)rootGroupVariables.get(i);
+            List tDimensions = tVariable.getDimensions();
+            int nDimensions = tDimensions.size();
+            //if (verbose) String2.log("i=" + i + " name=" + tVariable.getName() + 
+            //    " type=" + tVariable.getDataType());
+            if ((nDimensions == 1 && tDimensions.get(0).equals(mainDimension)) ||
+                (nDimensions == 2 && tDimensions.get(0).equals(mainDimension) && 
+                     tVariable.getDataType() == DataType.CHAR)) {
+                    structureVariables.add(tVariable);
+            }
+        }
+        return variableListToArray(structureVariables);
+    }
+
+    /** This finds the highest dimension variable in the rootGroup,
+     * and then finds all similar variables.
+     * @return the similar variables (or null if none have a dimension!)
+     */
+    public static Variable[] findMaxDVariables(NetcdfFile netcdfFile) {
+
+        //find dimNames of highest dimension variable
+        String dimNames[] = new String[0];
+        Group rootGroup = netcdfFile.getRootGroup();
+        List rootGroupVariables = rootGroup.getVariables(); 
+        List loadVariables = null; 
+        for (int v = 0; v < rootGroupVariables.size(); v++) {
+            Variable variable = (Variable)rootGroupVariables.get(v);
+            boolean isChar = variable.getDataType() == DataType.CHAR;
+            int tnDim = variable.getRank() - (isChar? 1 : 0);
+            if (tnDim > dimNames.length) {
+                //a new winner
+                loadVariables = new ArrayList();
+                loadVariables.add(variable);
+                dimNames = new String[tnDim];
+                for (int d = 0; d < tnDim; d++)
+                    dimNames[d] = variable.getDimension(d).getName();
+            } else if (tnDim > 0 && tnDim == dimNames.length) {
+                //a similar variable?
+                boolean ok = true;
+                for (int d = 0; d < tnDim; d++) {
+                    if (!dimNames[d].equals(variable.getDimension(d).getName())) {
+                        ok = false;
+                        break;
+                    }
+                }
+                if (ok) 
+                    loadVariables.add(variable);
+            }
+        }
+        return variableListToArray(loadVariables);
+    }
+
+    /**
+     * Get the list of 4D numeric (or 5D char) variables from a netcdf file.
+     * Currently this does no verification that the dimensions are 
+     *    t,z,y,x, but it could in the future.
+     *
+     * @param netcdfFile
+     * @param variableNames if null, this will search for a 4D variable,
+     *   then also include all other variables using the same axes.
+     * @return the variables  (list length 0 if none found)
+     */
+    public static Variable[] find4DVariables(NetcdfFile netcdfFile, String variableNames[]) {
+        //just use the variable names
+        if (variableNames != null) {
+            ArrayList list = new ArrayList();
+            for (int i = 0; i < variableNames.length; i++) {
+                Variable variable = netcdfFile.findVariable(variableNames[i]);
+                Test.ensureNotNull(variable, 
+                    ERROR + " in NcHelper.find4DVariables: '" + variableNames[i] + 
+                    "' not found."); 
+                list.add(variable);
+            }
+            return variableListToArray(list);
+        }
+
+        //find a 4D variable among the variables in the rootGroup
+        List allVariables = netcdfFile.getVariables(); 
+        String foundDimensionNames[] = null;
+        ArrayList foundVariables = new ArrayList();
+        for (int v = 0; v < allVariables.size(); v++) {
+            Variable variable = (Variable)allVariables.get(v);
+            List dimensions = variable.getDimensions();
+
+            if ((dimensions.size() == 4 && variable.getDataType() != DataType.CHAR) ||
+                (dimensions.size() == 5 && variable.getDataType() == DataType.CHAR)) {
+
+                //first found?    (future: check that axes are t,z,y,x?)
+                if (foundDimensionNames == null) {
+                    foundDimensionNames = new String[4];
+                    for (int i = 0; i < 4; i++)
+                       foundDimensionNames[i] = ((Dimension)dimensions.get(i)).getName();               
+                }
+
+                //does it match foundDimensions
+                boolean matches = true;
+                for (int i = 0; i < 4; i++) {
+                    if (!foundDimensionNames[i].equals(((Dimension)dimensions.get(i)).getName())) {
+                        matches = false;
+                        break;
+                    }
+                }
+                if (matches)
+                    foundVariables.add(variable);
+
+            }
+        }
+
+        return variableListToArray(foundVariables);
+    }
+
+    /**
+     * Get the desired variable.
+     *
+     * @param netcdfFile
+     * @param variableName (not null or "")
+     * @return a Variable
+     * @throws Exception if trouble
+     */
+    public static Variable findVariable(NetcdfFile netcdfFile, String variableName) {
+        Variable variable = netcdfFile.findVariable(variableName);
+        Test.ensureNotNull(variable, 
+            ERROR + " in NcHelper.findVariable: '" + variableName + 
+            "' not found."); 
+        return variable;
+    }
+
+    /**
+     * This write the global attributes to a netcdf file.
+     *
+     * @param netcdfFile
+     * @param varName   use "NC_GLOBAL" for global attributes
+     * @param attributes the Attributes that will be set
+     */
+    public static void setAttributes(NetcdfFileWriteable netcdfFile, String varName, Attributes attributes) {
+        boolean isGlobal = "NC_GLOBAL".equals(varName);
+        String names[] = attributes.getNames();
+        for (int ni = 0; ni < names.length; ni++) { 
+            PrimitiveArray tValue = attributes.get(names[ni]);
+            if (tValue == null || tValue.size() == 0 || tValue.toString().length() == 0) {
+                String2.log("WARNING in NcHelper.setAttributes: " + 
+                    varName + " attribute: " + names[ni] + " is \"" + tValue + "\".");
+            } else if (isGlobal) {
+                netcdfFile.addGlobalAttribute(getAttribute(names[ni], tValue));
+            } else {
+                netcdfFile.addVariableAttribute(varName, getAttribute(names[ni], tValue));
+            }
+        }
+    }
+
+
+    /**
+     * This reads the global attributes from a netcdf file.
+     *
+     * @param netcdfFile
+     * @param attributes the Attributes that will be populated
+     */
+    public static void getGlobalAttributes(NetcdfFile netcdfFile, Attributes attributes) {
+        getGlobalAttributes(netcdfFile.getGlobalAttributes(), attributes);
+    }
+
+    /**
+     * This reads the global attributes from a netcdf file.
+     *
+     * @param globalAttList
+     * @param attributes the Attributes that will be populated
+     */
+    public static void getGlobalAttributes(List globalAttList, Attributes attributes) {
+
+        //read the globalAttributes
+        int nAtt = globalAttList.size();
+        for (int att = 0; att < nAtt; att++) {
+            ucar.nc2.Attribute gAtt = (ucar.nc2.Attribute)globalAttList.get(att); //there is also a dods.dap.Attribute
+            //intern() will find canonical string and save memory (since I store so many similar attributes)
+            attributes.set(gAtt.getName(), //it calls String2.canonical
+                PrimitiveArray.factory(decodeAttribute(getArray(gAtt.getValues())))); //decodeAttribute added with switch to netcdf-java 4.0
+        }
+    }
+
+    /**
+     * This gets one global attribute from a netcdf variable.
+     *
+     * @param netcdfFile
+     * @param attributeName
+     * @return the attribute (or null if none)
+     */
+    public static PrimitiveArray getGlobalAttribute(NetcdfFile netcdfFile, String attributeName) {
+        ucar.nc2.Attribute att = netcdfFile.findGlobalAttribute(attributeName); //there is also a dods.dap.Attribute
+        if (att == null) return null;
+        return PrimitiveArray.factory(decodeAttribute(getArray(att.getValues()))); //decodeAttribute added with switch to netcdf-java 4.0
+    }
+
+    /**
+     * This adds to the attributes for a netcdf variable.
+     *
+     * @param variable
+     * @param attributes the Attributes that will be added to
+     */
+    public static void getVariableAttributes(Variable variable, Attributes attributes) {
+        List variableAttList = variable.getAttributes();
+        for (int att = 0; att < variableAttList.size(); att++) {
+            ucar.nc2.Attribute vAtt = (ucar.nc2.Attribute)variableAttList.get(att); //there is also a dods.dap.Attribute
+            //intern() will find canonical string and save memory (since I store so many similar attributes)
+            attributes.set(vAtt.getName(), //it calls String2.canonical() 
+                PrimitiveArray.factory(decodeAttribute(getArray(vAtt.getValues())))); //decodeAttribute added with switch to netcdf-java 4.0
+        }
+    }
+
+    /**
+     * This gets one attribute from a netcdf variable.
+     *
+     * @param variable
+     * @param attributeName
+     * @return the attribute (or null if none)
+     */
+    public static PrimitiveArray getVariableAttribute(Variable variable, String attributeName) {
+        ucar.nc2.Attribute att = variable.findAttribute(attributeName); //there is also a dods.dap.Attribute
+        if (att == null) return null;
+        return PrimitiveArray.factory(decodeAttribute(getArray(att.getValues()))); //decodeAttribute added with switch to netcdf-java 4.0
+    }
+
+    /**
+     * This returns the double value of an attribute.
+     * If the attribute DataType is DataType.FLOAT, this nicely
+     * converts the float to a double.
+     *
+     * @param attribute
+     * @return the double value of an attribute.
+     */
+    public static double getNiceDouble(Attribute attribute) {
+        double d = attribute.getNumericValue().doubleValue();
+        if (attribute.getDataType() == DataType.FLOAT)
+            return Math2.floatToDouble(d);
+        return d;
+    }
+
+    /**
+     * Given an ascending sorted .nc Variable,
+     * this finds the index of an instance of the value 
+     * (not necessarily the first or last instance)
+     * (or -index-1 where it should be inserted).
+     *
+     * @param variable an ascending sorted nc variable.
+     *   The variable can have nDimensions, but the size
+     *   of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
+     * @param lowPo the low index to start with, usually 0
+     * @param highPo the high index to start with, usually (size - 1)
+     * @param value the value you are searching for
+     * @return the index of an instance of the value 
+     *     (not necessarily the first or last instance)
+     *     (or -index-1 where it should be inserted, with extremes of
+     *     -lowPo-1 and -(highPo+1)-1).
+     * @throws Exception if trouble
+     */
+    public static int binarySearch(Variable variable, 
+        int lowPo, int highPo, double value) throws Exception {
+        //String2.log("binSearch lowPo=" + lowPo + " highPo=" + highPo + " value=" + value);
+        
+        //ensure lowPo <= highPo
+        //lowPo == highPo is handled by the following two chunks of code
+        Test.ensureTrue(lowPo <= highPo,  
+            String2.ERROR + "in NcHelper.binarySearch: lowPo > highPo.");
+        
+        double tValue = getDouble(variable, lowPo);
+        if (tValue == value)
+            return lowPo;
+        if (tValue > value)
+            return -lowPo - 1;
+
+        tValue = getDouble(variable, highPo);
+        if (tValue == value)
+            return highPo;
+        if (tValue < value)
+            return -(highPo+1) - 1;
+
+        //repeatedly look at midpoint
+        //If no match, this always ends with highPo - lowPo = 1
+        //  and desired value would be in between them.
+        while (highPo - lowPo > 1) {
+            int midPo = (highPo + lowPo) / 2;
+            tValue = getDouble(variable, midPo);
+            //String2.log("binSearch midPo=" + midPo + " tValue=" + tValue);
+            if (tValue == value)
+                return midPo;
+            if (tValue < value) 
+                lowPo = midPo;
+            else highPo = midPo;
+        }
+
+        //no exact match
+        return -highPo - 1;
+    }
+
+    /**
+     * Given an ascending sorted .nc variable and a row,
+     * this finds the first row that has that same value (which may be different if there are ties).
+     *
+     * @param variable an ascending sorted nc Variable.
+     *   The variable can have nDimensions, but the size
+     *   of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
+     * @param row the starting row
+     * @return the first row that has the same value
+     */
+    public static int findFirst(Variable variable, int row) throws Exception {
+        //would be much more efficient if read several values at once
+        double value = getDouble(variable, row);
+        while (row > 0 && getDouble(variable, row - 1) == value)
+            row--;
+        return row;
+    }
+
+    /**
+     * Given an ascending sorted .nc variable and a row,
+     * this finds the last row that has that same value (which may be different if there are ties).
+     *
+     * @param variable an ascending sorted nc Variable.
+     *   The variable can have nDimensions, but the size
+     *   of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
+     * @param row the starting row
+     * @return the last row that has the same value
+     */
+    public static int findLast(Variable variable, int row) throws Exception {
+        //would be much more efficient if read several values at once
+        double value = getDouble(variable, row);
+        int size1 = variable.getDimension(0).getLength() - 1;
+        while (row < size1 && getDouble(variable, row + 1) == value)
+            row++;
+        return row;
+    }
+
+
+    /**
+     * Given an ascending sorted .nc Variable,
+     * this finds the index of the first element >= value. 
+     *
+     * @param variable an ascending sorted nc Variable.
+     *   The variable can have nDimensions, but the size
+     *   of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
+     * @param lowPo the low index to start with, usually 0
+     * @param highPo the high index to start with, usually (size - 1)
+     * @param value the value you are searching for
+     * @return the index of the first element >= value 
+     *     (or highPo + 1, if there are none)
+     * @throws Exception if trouble
+     */
+    public static int binaryFindFirstGE(Variable variable, int lowPo, int highPo, double value) throws Exception {
+        if (lowPo > highPo)
+            return highPo + 1;
+        int po = binarySearch(variable, lowPo, highPo, value);
+
+        //an exact match? find the first exact match
+        if (po >= 0) {
+            while (po > lowPo && getDouble(variable, po - 1) == value)
+                po--;
+            return po;
+        }
+
+        //no exact match? return the binary search po
+        //thus returning a positive number
+        //the inverse of -x-1 is -x-1 !
+        return -po -1;
+    }
+
+    /**
+     * Given an ascending sorted .nc Variable,
+     * this finds the index of the last element <= value. 
+     *
+     * @param variable an ascending sorted nc Variable.
+     *   The variable can have nDimensions, but the size
+     *   of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
+     * @param lowPo the low index to start with, usually 0
+     * @param highPo the high index to start with, usually 
+     *  (originalPrimitiveArray.size() - 1)
+     * @param value the value you are searching for
+     * @return the index of the first element <= value 
+     *     (or -1, if there are none)
+     * @throws Exception if trouble
+     */
+    public static int binaryFindLastLE(Variable variable, int lowPo, int highPo, double value) throws Exception {
+
+        if (lowPo > highPo)
+            return -1;
+
+        int po = binarySearch(variable, lowPo, highPo, value);
+
+        //an exact match? find the last exact match
+        if (po >= 0) {
+            while (po < highPo && getDouble(variable, po + 1) == value)
+                po++;
+            return po;
+        }
+
+        //no exact match? return binary search po -1
+        //thus returning a positive number
+        //the inverse of -x-1 is -x-1 !
+        return -po -1 -1;
+    }
+
+
+    /**
+     * Given an ascending sorted .nc Variable,
+     * this finds the index of the element closest to value. 
+     *
+     * @param variable an ascending sorted nc Variable.
+     *   The variable can have nDimensions, but the size
+     *   of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
+     * @param value the value you are searching for
+     * @return the index of the first element found which is closest to value 
+     *    (there may be other identical values)
+     * @throws Exception if trouble
+     */
+    public static int binaryFindClosest(Variable variable, double value) throws Exception {
+        return binaryFindClosest(variable, 0, variable.getDimension(0).getLength() - 1, value);
+    }
+
+    /**
+     * Given an ascending sorted .nc Variable,
+     * this finds the index of the element closest to value. 
+     *
+     * @param variable an ascending sorted nc Variable.
+     *   The variable can have nDimensions, but the size
+     *   of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
+     * @param lowPo the low index to start with, usually 0
+     * @param highPo the high index to start with (e.g., length-1)
+     * @param value the value you are searching for
+     * @return the index of the first element found which is closest to value 
+     *    (there may be other identical values)
+     * @throws Exception if trouble
+     */
+    public static int binaryFindClosest(Variable variable, int lowPo, int highPo, double value) throws Exception {
+
+        int po = binarySearch(variable, lowPo, highPo, value);
+        //String2.log("po1=" + po);
+        //an exact match? find the first exact match
+        if (po >= 0) {
+//would be much more efficient if read several values at once
+            while (po > lowPo && getDouble(variable, po - 1) == value)
+                po--;
+            return po;
+        }
+
+        //insertionPoint at end point?
+        int insertionPoint = -po - 1;  //0.. highPo
+        if (insertionPoint == 0) 
+            return 0;
+        if (insertionPoint >= highPo)
+            return highPo;
+
+        //insertionPoint between 2 points 
+        if (Math.abs(getDouble(variable, insertionPoint - 1) - value) <
+            Math.abs(getDouble(variable, insertionPoint    ) - value))
+             return insertionPoint - 1;
+        else return insertionPoint;
+    }
+
+    /**
+     * This is like getPrimitiveArray, but converts it to DoubleArray.
+     * If it was FloatArray, this rounds the values nicely to doubles.
+     *
+     * @param variable the variable to be read from.
+     *   The variable can have nDimensions, but the size
+     *   of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
+     * @param firstRow  the value of the leftmost dimension
+     * @param lastRow the last row to be read (inclusive).  
+     *    If lastRow = -1, firstRow is ignored and the entire var is read.
+     * @return the values in a DoubleArray
+     * @throws Exception if trouble
+     */
+    public static DoubleArray getNiceDoubleArray(Variable variable, int firstRow, int lastRow) 
+            throws Exception {
+
+        PrimitiveArray pa = lastRow == -1?
+            getPrimitiveArray(variable) :
+            getPrimitiveArray(variable, firstRow, lastRow);
+        if (pa instanceof DoubleArray) {
+            return (DoubleArray)pa;
+        }
+
+        DoubleArray da = new DoubleArray(pa);
+        if (pa instanceof FloatArray) {
+            int n = da.size();
+            for (int i = 0; i < n; i++)
+                da.array[i] = Math2.floatToDouble(da.array[i]);
+        }
+        return da;
+    }
+
+    /** 
+     * This reads the number at 'row' from a numeric variable
+     * and returns a double.
+     *
+     * @param variable the variable to be read from.
+     *   The variable can have nDimensions, but the size
+     *   of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
+     * @param row  the value of the leftmost dimension
+     * @return the value at 'row'
+     */
+    public static double getDouble(Variable variable, int row) throws Exception {
+        int nDim = variable.getRank();
+        int origin[] = new int[nDim]; //all 0's
+        int shape[] = new int[nDim];
+        origin[0] = row;
+        Arrays.fill(shape, 1);        
+
+        Array array = variable.read(origin, shape);
+        return toDoubleArray(array)[0];
+    }
+
+    /** 
+     * This reads the number at 'row' from a numeric variable
+     * and returns a nice double (floats are converted with Math2.floatToDouble).
+     *
+     * @param variable the variable to be read from.
+     *   The variable can have nDimensions, but the size
+     *   of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
+     * @param row  the value of the leftmost dimension
+     * @return the value at 'row'
+     */
+    public static double getNiceDouble(Variable variable, int row) throws Exception {
+        double d= getDouble(variable, row);
+        if (variable.getDataType() == DataType.FLOAT) 
+            return Math2.floatToDouble(d);
+        return d;
+    }
+
+
+    /**
+     * This reads a range of values from an nDimensional variable in a NetcdfFile.
+     * Use getPrimitiveArray(variable) if you need all of the data.
+     *
+     * @param variable the variable to be read from.
+     *   The variable can have nDimensions, but the size
+     *   of the non-leftmost dimensions must be 1, e.g., [1047][1][1][1]
+     *   (or non-leftmost and non-rightmost (nChar/String) dimensions for char/String variables, e.g., [1047][1][1][1][20]).
+     * @param firstRow the first row to be read
+     * @param lastRow the last row to be read. (inclusive). 
+     *    If lastRow=-1, firstRow is ignored and the entire variable is returned.
+     * @return the values in a PrimitiveArray
+     * @throws Exception if trouble
+     */
+    public static PrimitiveArray getPrimitiveArray(Variable variable, int firstRow, int lastRow) 
+            throws Exception {
+
+        if (lastRow == -1)
+            return getPrimitiveArray(variable.read());
+
+        boolean isChar = variable.getDataType() == DataType.CHAR;
+        int nDim = variable.getRank();
+        int oShape[] = variable.getShape();
+        //???verify that shape is valid?
+        int origin[] = new int[nDim]; //all 0's
+        int shape[] = new int[nDim];
+        origin[0] = firstRow;
+        Arrays.fill(shape, 1);        
+        int nRows = lastRow - firstRow + 1;
+        shape[0] = nRows;
+        if (isChar) 
+            shape[nDim - 1] = oShape[nDim - 1]; //nChars / String
+        PrimitiveArray pa = getPrimitiveArray(variable.read(origin, shape));
+
+        //eek! opendap returns a full-sized array! 
+        //     netcdf  returns a shape-sized array
+        if (pa.size() < nRows) 
+            Test.error(ERROR + " in NcHelper.getPrimitiveArray(firstRow=" + 
+                firstRow + " lastRow=" + lastRow + ")\n" +
+                "variable.read returned too few (" + pa.size() + ").");
+        if (pa.size() > nRows) {
+            //it full-sized; reduce to correct size
+            if (verbose) String2.log("NcHelper.getPrimitiveArray variable.read returned entire variable!"); 
+            pa.removeRange(lastRow + 1, pa.size()); //remove tail first (so don't have to move it when remove head
+            pa.removeRange(0, firstRow - 1); //remove head section
+        }
+        return pa;
+    }
+
+    /**
+     * This reads a 1D range of values from a 4D variable
+     * (or 5D if it holds strings, so 5th dimension DataType is CHAR) in a NetcdfFile.
+     *
+     * @param variable the variable to be read from
+     * @param xIndex the first x index to be read
+     * @param yIndex the first y index to be read
+     * @param zIndex the first z index to be read
+     * @param firstT the first t index to be read
+     * @param lastT the last t index to be read
+     * @return the values in a PrimitiveArray
+     * @throws Exception if trouble
+     */
+    public static PrimitiveArray get4DValues(Variable variable, int xIndex, 
+            int yIndex, int zIndex, int firstT, int lastT) throws Exception {
+
+        int rowOrigin[] = null; 
+        int rowShape[]  = null; 
+        if (variable.getRank() == 5 && variable.getDataType() == DataType.CHAR) {
+            rowOrigin = new int[]{firstT, zIndex, yIndex, xIndex, 0};
+            rowShape  = new int[]{lastT - firstT + 1, 1, 1, 1, variable.getDimension(4).getLength()};
+        } else { //numeric
+            rowOrigin = new int[]{firstT, zIndex, yIndex, xIndex};
+            rowShape  = new int[]{lastT - firstT + 1, 1, 1, 1};
+        }
+        Array array = variable.read(rowOrigin, rowShape); 
+        PrimitiveArray pa = PrimitiveArray.factory(getArray(array)); 
+        Test.ensureEqual(pa.size(), lastT - firstT + 1, "NcHelper.getValues nFound!=nExpected.\n" +
+            " name=" + variable.getName() +
+            " xIndex=" + xIndex + 
+            " yIndex=" + yIndex + 
+            " zIndex=" + zIndex + 
+            " firstT=" + firstT + 
+            " lastT=" + lastT); 
+        return pa;
+    }
+
+    /**
+     * This reads a 4D range of values from a 4D variable
+     * (or 5D if it holds strings, so 5th dimension DataType is CHAR) in a NetcdfFile.
+     *
+     * @param variable the variable to be read from
+     * @param firstX the first x index to be read
+     * @param nX the number of x indexes to be read
+     * @param firstY the first y index to be read
+     * @param nY the number of y indexes to be read
+     * @param firstZ the first z index to be read
+     * @param nZ the number of z indexes to be read
+     * @param firstT the first t index to be read
+     * @param nT the number of t indexes to be read
+     * @return the values in a PrimitiveArray (read from primitive array
+     *     with loops: for t=... for z=... for y=... for x=...  pa.getDouble(po++))
+     * @throws Exception if trouble
+     */
+    public static PrimitiveArray get4DValues(Variable variable, 
+        int firstX, int nX, int firstY, int nY, 
+        int firstZ, int nZ, int firstT, int nT) throws Exception {
+
+        int rowOrigin[] = null; 
+        int rowShape[]  = null; 
+        if (variable.getRank() == 5 && variable.getDataType() == DataType.CHAR) {
+            rowOrigin = new int[]{firstT, firstZ, firstY, firstX, 0};
+            rowShape  = new int[]{nT, nZ, nY, nX, variable.getDimension(4).getLength()};
+        } else { //numeric
+            rowOrigin = new int[]{firstT, firstZ, firstY, firstX};
+            rowShape  = new int[]{nT, nZ, nY, nX};
+        }
+        Array array = variable.read(rowOrigin, rowShape); 
+        PrimitiveArray pa = PrimitiveArray.factory(getArray(array)); 
+        Test.ensureEqual(pa.size(), nX*nY*nZ*nT, "NcHelper.get4DValues nFound!=nExpected.\n" +
+            " name=" + variable.getName() +
+            " firstX=" + firstX + " nX=" + nX +
+            " firstY=" + firstY + " nT=" + nY +
+            " firstZ=" + firstZ + " nZ=" + nZ +
+            " firstT=" + firstT + " nT=" + nT); 
+        return pa;
+    }
+
+
+    /**
+     * This opens the nc file and gets the names of the (pseudo)structure variables.
+     * 
+     * @param fullName
+     * @return StringArray variableNames
+     * @throws Exception if trouble
+     */
+    public static String[] readColumnNames(String fullName) throws Exception {
+        String tColumnNames[] = null;
+        NetcdfFile netcdfFile = openFile(fullName);
+        try {
+            Variable loadVariables[] = findVariables(netcdfFile, null);
+            tColumnNames = new String[loadVariables.length];
+            for (int i = 0; i < loadVariables.length; i++)
+                tColumnNames[i] = loadVariables[i].getShortName(); //short implies not in a structure
+
+            //I care about this exception
+            netcdfFile.close();
+        } catch (Exception e) {
+            try {
+                netcdfFile.close(); //make sure it is explicitly closed
+            } catch (Exception e2) {
+                //don't care
+            }
+            throw e;
+        }
+
+        return tColumnNames;
+    }
+
+    /**
+     * This sets a series of values in a Variable from a NetcdfFileWriteable.
+     *
+     * @param netcdfFileWriteable
+     * @param variableName
+     * @param firstRow 
+     * @param values will be converted to the appropriate numeric type
+     * @param maxStringLength is the maxLength to use for String data.
+     *    If PrimitiveArray is not a StringArray, this is ignored.
+     *    If <= 0, maxLength is calculated from the strings.
+     * @throws Exception if trouble
+     */
+    public static void setValues(NetcdfFileWriteable netcdfFileWriteable, 
+        String variableName, int firstRow, PrimitiveArray values, 
+        int maxStringLength) throws Exception {
+
+        if (values.elementClass() == String.class) {
+            StringArray sa = (StringArray)values;
+            if (maxStringLength <= 0)
+                maxStringLength = sa.maxStringLength();
+            int n = sa.size();
+            ArrayChar.D2 ac = new ArrayChar.D2(n, maxStringLength);
+            for (int i = 0; i < n; i++) {
+                ac.setString(i, sa.get(i));
+            }
+            int rowOrigin[] = {firstRow, 0}; 
+            netcdfFileWriteable.write(variableName, rowOrigin, ac);         
+
+        } else {
+            Array array = get1DArray(values.toObjectArray());
+            int rowOrigin[] = {firstRow}; //for string, need to include dim[1]length
+            netcdfFileWriteable.write(variableName, rowOrigin, array);         
+        }
+    }
+
+    /** 
+     * This opens an opendap dataset as a NetcdfDataset.
+     * ALWAYS explicitly use netcdfDataset.close() when you are finished with it,
+     * preferably in a "finally" clause.
+     *
+     * @param url  This should not include a list of variables 
+     *   (e.g., ?varName,varName) or a constraint expression at the end.
+     * @return a NetcdfDataset which is a superclass of NetcdfFile
+     * @throws Exception if trouble
+     */
+    public static NetcdfDataset openOpendapAsNetcdfDataset(String url) throws Exception {
+        return NetcdfDataset.openDataset(url);
+    }
+
+
+    /**
+     * This determines which rows of an .nc file have testVariables 
+     * between min and max.
+     * This is faster if the first testVariable(s) eliminate a lot of rows.
+     *
+     * @param testVariables the variables to be tested.
+     *     They must all be ArrayXxx.D1 or ArrayChar.D2 variables and use the 
+     *     same, one, dimension as the first dimension.
+     *     This must not be null or empty.
+     *     If you have variable names, use ncFile.findVariable(name);
+     * @param min the minimum acceptable values for the testVariables
+     * @param max the maximum acceptable values for the testVariables
+     * @return okRows  
+     * @throws Exception if trouble
+     */
+    public static BitSet testRows(Variable testVariables[], double min[], double max[]) 
+        throws Exception {
+
+        String errorInMethod = ERROR + " in testNcRows: ";
+        long time = System.currentTimeMillis();
+      
+        BitSet okRows = null;
+        long cumReadTime = 0;
+        for (int col = 0; col < testVariables.length; col++) {
+            Variable variable = testVariables[col];
+            if (col == 0) {
+                int nRows = variable.getDimension(0).getLength();
+                okRows = new BitSet(nRows); 
+                okRows.set(0, nRows); //make all 'true' initially
+            }
+
+            //read the data
+            cumReadTime -= System.currentTimeMillis();
+            PrimitiveArray pa = PrimitiveArray.factory(getArray(variable.read())); 
+            cumReadTime += System.currentTimeMillis();
+
+            //test the data
+            double tMin = min[col];
+            double tMax = max[col];
+            int row = okRows.nextSetBit(0);
+            int lastSetBit = -1;
+            while (row >= 0) {
+                double d = pa.getDouble(row);
+                if (d < tMin || d > tMax || Double.isNaN(d))
+                    okRows.clear(row);
+                else lastSetBit = row;
+                row = okRows.nextSetBit(row + 1);
+            }
+            if (lastSetBit == -1)
+                return okRows;
+        }
+        String2.log("testNcRows totalTime=" + (System.currentTimeMillis() - time) +
+            " cumReadTime=" + cumReadTime);
+        return okRows;
+    }
+
+    /** 
+     * This writes the PrimitiveArrays into an .nc file.
+     *
+     * @param fullName for the file (This doesn't write to an intermediate file.)
+     * @param varNames    Names musn't have internal spaces.
+     * @param pas   Each may have a different size! 
+     *     (Which makes this method different than Table.saveAsFlatNc.)
+     *     In the .nc file, each will have a dimension with the same name as the varName.
+     *     All must have at least 1 value.
+     * @throws Exception if trouble
+     */
+    public static void writePAsInNc(String fullName, StringArray varNames, PrimitiveArray pas[]) 
+            throws Exception {
+        if (verbose) String2.log("NcHelper.savePAsInNc " + fullName); 
+        long time = System.currentTimeMillis();
+
+        //open the file (before 'try'); if it fails, no temp file to delete
+        NetcdfFileWriteable nc = NetcdfFileWriteable.createNew(fullName, false);
+        try {
+
+            //add the variables
+            int nVars = varNames.size();
+            for (int var = 0; var < nVars; var++) {
+                String name = varNames.get(var);
+                Class type = pas[var].elementClass();
+                Dimension dimension  = nc.addDimension(name, pas[var].size());
+                if (type == String.class) {
+                    int max = Math.max(1, ((StringArray)pas[var]).maxStringLength()); //nc libs want at least 1; 0 happens if no data
+                    Dimension lengthDimension  = nc.addDimension(name + "StringLength", max);
+                    nc.addVariable(name, DataType.CHAR, 
+                        new Dimension[]{dimension, lengthDimension}); 
+                } else {
+                    nc.addVariable(name, DataType.getType(type), new Dimension[]{dimension}); 
+                }
+            }
+
+            //leave "define" mode
+            nc.create();
+
+            //write the data
+            for (int var = 0; var < nVars; var++) {
+                nc.write(varNames.get(var), 
+                    get1DArray(pas[var].toObjectArray()));
+            }
+
+            //if close throws exception, it is trouble
+            nc.close(); //it calls flush() and doesn't like flush called separately
+
+            //diagnostic
+            if (verbose) String2.log("  NcHelper.savePAsInNc done. TIME=" + 
+                (System.currentTimeMillis() - time));
+            //ncDump("End of Table.saveAsFlatNc", directory + name + ext, false);
+
+        } catch (Exception e) {
+            //try to close the file
+            try {
+                nc.close(); //it calls flush() and doesn't like flush called separately
+            } catch (Exception e2) {
+                //don't care
+            }
+
+            //delete any partial or pre-existing file
+            File2.delete(fullName);
+
+            throw e;
+        }
+
+    }
+
+    /**
+     * This reads the PAs in the .nc file.
+     *
+     * @param fullName the name of the .nc file.
+     * @param loadVarNames the names of the variables to load (null to get all)
+     * @param varNames this will receive the varNames
+     * @param pas this will receive the pas. They may have different sizes!
+     * @throws Exception if trouble 
+     */
+    public static void readPAsInNc(String fullName, String loadVarNames[],
+        StringArray varNames, ArrayList pas) throws Exception {
+
+        if (verbose) String2.log("NcHelper.readPAsInNc " + fullName
+            //+ " \n  loadVarNames=" + String2.toCSVString(loadVarNames)
+            ); 
+        varNames.clear();
+        pas.clear();
+        long time = System.currentTimeMillis();
+        NetcdfFile netcdfFile = openFile(fullName);
+        try {
+            List rootGroupVariables = null;
+            if (loadVarNames == null) {
+                //find variables in the rootGroup
+                Group rootGroup = netcdfFile.getRootGroup();
+                rootGroupVariables = rootGroup.getVariables(); 
+            }
+            int n = loadVarNames == null? rootGroupVariables.size() : loadVarNames.length;
+
+            for (int v = 0; v < n; v++) {
+                Variable tVariable = loadVarNames == null? 
+                    (Variable)rootGroupVariables.get(v) :
+                    netcdfFile.findVariable(loadVarNames[v]);
+                if (tVariable == null)
+                    throw new RuntimeException(
+                        "ERROR: Expected variable #" + v + " not found while reading " + fullName + 
+                        " (loadVarNames=" + String2.toCSVString(loadVarNames) + ").");
+                List tDimensions = tVariable.getDimensions();
+                int nDimensions = tDimensions.size();
+                //if (verbose) String2.log("i=" + i + " name=" + tVariable.getName() + 
+                //    " type=" + tVariable.getDataType());
+                if (nDimensions == 1 ||
+                    (nDimensions == 2 && tVariable.getDataType() == DataType.CHAR)) {
+                        varNames.add(tVariable.getName());
+                        pas.add(getPrimitiveArray(tVariable));
+                }
+            }
+
+            //I care about this exception
+            netcdfFile.close();
+
+        } catch (Exception e) {
+            //make sure it is explicitly closed
+            try {
+                netcdfFile.close(); 
+            } catch (Exception e2) {
+                //don't care
+            }
+            throw e;
+        }
+
+        if (verbose) String2.log("  NcHelper.readPAsInNc done. nPAs=" + pas.size() + 
+            " TIME=" + (System.currentTimeMillis() - time));
+    }
+
+
+    /**
+     * This tests the methods in this class.
+     */
+    public static void test() throws Exception {
+        String2.log("\n*** NcHelper.test...");
+
+        //getArray  get1DArray, get1DArrayLength
+        Object o;
+        o = new String[]{"5.5", "7.77"}; 
+        Array array = get1DArray(o);
+        Test.ensureTrue(array instanceof ArrayChar.D2, "get1DArray a");
+        Test.ensureEqual(get1DArrayLength(array), 2, "get1DArrayLength a");
+        o = getArray(array);
+        Test.ensureTrue(o instanceof String[], "getArray a; o=" + o.toString());
+        String sar[] = (String[])o;
+        Test.ensureEqual(sar.length, 2, "");
+        Test.ensureEqual(sar[0], "5.5", "");
+        Test.ensureEqual(sar[1], "7.77", "");
+
+        ArrayChar.D3 ac3 = new ArrayChar.D3(2, 3, 5);
+        Index index = ac3.getIndex();
+        index.set(0, 0); ac3.setString(index, "a");
+        index.set(0, 1); ac3.setString(index, "bb");
+        index.set(0, 2); ac3.setString(index, "ccc");
+        index.set(1, 0); ac3.setString(index, "dddd");
+        index.set(1, 1); ac3.setString(index, "e");
+        index.set(1, 2); ac3.setString(index, "f");
+        o = getArray(ac3);
+        Test.ensureTrue(o instanceof String[], "getArray a; o=" + o.toString());
+        sar = (String[])o;
+        Test.ensureEqual(sar.length, 6, "");
+        Test.ensureEqual(sar[0], "a", "");
+        Test.ensureEqual(sar[1], "bb", "");
+        Test.ensureEqual(sar[2], "ccc", "");
+        Test.ensureEqual(sar[3], "dddd", "");
+        Test.ensureEqual(sar[4], "e", "");
+        Test.ensureEqual(sar[5], "f", "");
+
+
+        o = new byte[]{(byte)2, (byte)9};
+        array = get1DArray(o);
+        Test.ensureTrue(array instanceof ArrayByte.D1, "get1DArray b");
+        Test.ensureEqual(get1DArrayLength(array), 2, "get1DArrayLength a");
+        o = getArray(array);
+        Test.ensureTrue(o instanceof byte[], "getArray b");
+
+        o = new double[]{2.2, 9.9};
+        array = get1DArray(o);
+        Test.ensureTrue(array instanceof ArrayDouble.D1, "get1DArray c");
+        Test.ensureEqual(get1DArrayLength(array), 2, "get1DArrayLength a");
+        o = getArray(array);
+        Test.ensureTrue(o instanceof double[], "getArray c");
+
+        //test readWritePAsInNc
+        ByteArray ba = new ByteArray(new byte[]{1,2,4,7});
+        DoubleArray da = new DoubleArray(new double[]{1.1, 2.2, 9.9});
+        StringArray sa = new StringArray(new String[]{"This", "is", "a", "test."});
+        IntArray inta = new IntArray(new int[]{-1, 0, 1});
+        //write to file
+        String fullName = "c:/temp/PAsInNc.nc";
+        File2.delete(fullName); //for test, make double sure it doesn't already exist
+        StringArray varNames = new StringArray(new String[]{"ba", "da", "sa", "inta"});
+        PrimitiveArray pas[] = new PrimitiveArray[]{ba, da, sa, inta};
+        writePAsInNc(fullName, varNames, pas);
+        //read from file
+        StringArray varNames2 = new StringArray();
+        ArrayList pas2 = new ArrayList();
+        readPAsInNc(fullName, null, varNames2, pas2);
+        Test.ensureEqual(varNames, varNames2, "");
+        Test.ensureEqual(pas.length, pas2.size(), "");
+        for (int i = 0; i < 4; i++)
+            Test.ensureEqual(pas[i], pas2.get(i), "i=" + i);
+
+        readPAsInNc(fullName, new String[]{"sa"}, varNames2, pas2);
+        Test.ensureEqual(varNames2.size(), 1, "");
+        Test.ensureEqual(varNames2.get(0), "sa", "");
+        Test.ensureEqual(pas2.size(), 1, "");
+        Test.ensureEqual(pas[2], pas2.get(0), "");
+
+        //done
+        String2.log("\n***** NcHelper.test finished successfully");
+        Math2.incgc(2000);
+    } 
+
+
+}

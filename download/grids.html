@@ -1,0 +1,450 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>ERDDAP - Heavy Loads, Grids, Clusters, Federations, and Cloud Computing</title>
+<link rel="shortcut icon" href="http://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
+<link href="../images/erddap.css" rel="stylesheet" type="text/css">
+</head>
+
+<body> 
+<table bgcolor="#128CB5" border="0" cellpadding="2" cellspacing="0" width="100%"> 
+  <tr> 
+    <td align="center" style="width:100px;"> &nbsp;
+      <img src="http://coastwatch.pfeg.noaa.gov/erddap/images/noaab.png" alt="NOAA" align="middle"> &nbsp;     
+      </td> 
+    <td align="left">
+      <font color="#FFFFFF">
+      <font size="+2"><b>ERDDAP</b></font>
+      <br>Easier access to scientific data</font>
+      </td> 
+    <td align="right"><font size="-1"> 
+      <br>Brought to you by 
+      <a title="National Oceanic and Atmospheric Administration" href="http://www.noaa.gov">NOAA</a>  
+      <a title="National Marine Fisheries Service"               href="http://www.nmfs.noaa.gov">NMFS</a>  
+      <a title="Southwest Fisheries Science Center"              href="http://swfsc.noaa.gov">SWFSC</a>  
+      <a title="Environmental Research Division" href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
+      &nbsp; &nbsp;
+      </font></td> 
+  </tr> 
+</table>
+
+<table style="width:640px; border-style:outset; border-width:0px; padding:0px; " 
+  cellspacing="0"> 
+<tr>
+<td>
+
+&nbsp;
+<form action="">
+<input type="button" value="Back" onClick="history.go(-1);return true;">
+</form>
+
+<h1 align="center">ERDDAP: 
+<br>
+<a href="#heavyLoads">Heavy Loads</a>, 
+<a href="#grids">Grids, Clusters, Federations</a>, 
+<br>
+and
+<a href="#cloudComputing">Cloud Computing</a></h1>
+
+<a href="http://coastwatch.pfeg.noaa.gov/erddap/index.html">ERDDAP</a>
+is a web application and a web service that aggregates scientific data from diverse local and
+remote sources and offers a simple, consistent way to download subsets of the data in common file
+formats and make graphs and maps.
+
+
+<!-- ******* -->
+<h2><a name="heavyLoads">Heavy Loads / Constraints</a></h2> 
+With heavy use, a standalone ERDDAP will be constrained (from most to least likely) by:
+  <ol>
+  <li>A remote data source's bandwidth - Unless a remote data source has a very high bandwidth
+    Internet connection, ERDDAP's responses will be constrained by how fast ERDDAP can get
+    data from the data source. A solution is to copy the dataset onto ERDDAP's hard drive,
+    perhaps with 
+  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
+  or
+  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
+  <li>ERDDAP's server's bandwidth - Unless ERDDAP's server has a very high bandwidth Internet
+    connection, ERDDAP's responses will be constrained by how fast ERDDAP can get data from
+    the data sources and how fast ERDDAP can return data to the clients. The only solution
+    is to get a faster Internet connection.
+  <li>Memory - If there are many simultaneous requests, ERDDAP can run out of memory 
+     and temporarily refuse new requests. 
+     (ERDDAP has a couple of mechanisms to avoid this and to minimize the consequences if it does
+     happen.) So the more memory in the server the better.  
+     On a 32-bit server, 4+ GB is really good, 2 GB is okay,
+     less is not recommended. 
+     On a 64-bit server, you can almost entirely avoid the problem but getting
+     lots of memory.
+     See the 
+     <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#initialSetup">-Xmx and -Xms settings</a> 
+     for ERDDAP/Tomcat.     
+  <li>Hard drive bandwidth - Accessing data stored on the server's hard drive is vastly faster than 
+     accessing remote data. Even so, if the ERDDAP server has a very high bandwidth connection, 
+     it is possible that accessing data on the hard drive will be a bottleneck. A partial solution 
+     is to use fast (e.g., 10,000 RPM) hard drives.
+  <li>Too many files in a <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#cachedResponses">cache</a> directory - 
+     ERDDAP caches all images, but only caches the 
+     data for certain types of data requests. It is possible for the cache directory for a 
+     dataset to have a large number of files temporarily. This will slow down requests to see 
+     if a file is in the cache (really!). <tt>&lt;cacheMinutes&gt;</tt> in 
+       <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a> 
+       lets you set how 
+     long a file can be in the cache before it is deleted. Setting a smaller number would 
+     minimize this problem.
+  <li>CPU - Making graphs is the only thing that takes significant CPU time (roughly 1 second per graph).   
+     So if there were many simultaneous unique requests for graphs (WMS clients!), 
+     there could be a CPU limitation. 
+     On a multi-core server, it would take a lot of requests before this became a problem. 
+     <br>&nbsp;
+  </ol>
+
+
+<h2><a name="grids"><b>Grids, Clusters, and Federations</b></a></h2> 
+  Under very heavy use, a single standalone ERDDAP will run into one or more of the 
+    <a href="#heavyLoads">constraints</a> listed 
+  above and even the suggested solutions will be insufficient.  For such situations, ERDDAP has 
+  features that make it easy to construct scalable grids (also called clusters or federations) 
+  of ERDDAPs which allow the system to handle very heavy use (e.g., for a large data center). 
+
+  <p>We're using 
+    <a href="http://en.wikipedia.org/wiki/Computer_cluster#Grid_computing">grid</a>
+    as a general term to indicate a type of computer cluster where all of the
+  parts may or may not be physically located in one facility and may or may not be centrally 
+  administered. An advantage of co-located, centrally owned and administered grids (clusters) 
+  is that they benefit from economies of scale (especially the human workload) and simplify 
+  making the parts of the system work well together. An advantage of non-co-located grids, 
+  non-centrally owned and administered (federations) is that they distribute the human work load 
+  and the cost, and may provide some additional fault tolerance. The solution we propose below 
+  works well for all grid topographies.
+
+  <p>The basic idea of designing a scalable system is to identify the potential bottlenecks
+    and then design the system so that parts of the system can be replicated as needed to 
+    alleviate the bottlenecks. Ideally, each replicated part increases the capacity of that
+    part of the system linearly (efficiency of scaling). The system isn't scalable unless
+    there is a scalable solution for every bottleneck.  
+    <a href="http://en.wikipedia.org/wiki/Scalability">Scalability</a> is different from 
+        efficiency (how quickly a task can be done -- efficiency
+    
+    of the parts).  Scalability allows the system to grow to handle any level of demand.
+    <b>Efficiency</b> (of scaling and of the parts) determines how may servers, etc., will be needed
+    to meet a given level of demand. Efficiency is very important, but always has limits.
+    Scalability is the only practical solution to building a system that can handle <b>very</b>
+    heavy use. Ideally, the system will be scalable and efficient.
+
+  <p><a name="goals">The goals of this design are:</a>
+  <ul>
+  <li>To make a scalable architecture (one that is easily extensible by replicating any part that
+    becomes over-burdened). To make an efficient system that maximizes the availability and
+    throughput of the data given the available computing resources. 
+    (Cost is almost always an issue.)
+  <li>To balance the capabilities of the parts of the system so that one part of the system won't
+    overwhelm another part.
+  <li>To make a simple architecture so that the system is easy to set up and administer.
+  <li>To make an architecture that works well with all grid topographies.
+  <li>To make a system that fails gracefully and in a limited way if any part becomes over-burdened.
+    (The time required to copy a large datasets will always limit the system's ability to deal
+    with sudden increases in the demand for a specific dataset.)
+  <li>(If possible) To make an architecture that isn't tied any specific 
+      <a href="#cloudComputing">cloud computing</a> service 
+    or other external services (because it doesn't need them).
+  </ul>  
+
+  <p><a name="recommendations">Our recommendations are:</a>
+    <br><img src="http://coastwatch.pfeg.noaa.gov/erddap/download/cluster.png" alt="grid/cluster diagram" align="middle">
+  <ul>
+  <li>Basically, we suggest setting up a Composite ERDDAP (<b>D</b> in the diagram), which is a
+    regular ERDDAP except that it just serves data from other ERDDAPs. The grid's architecture
+    is designed to shift as much work as possible (CPU usage, memory usage, bandwidth usage)
+    from the Composite ERDDAP to the other ERDDAPs.
+  <li>ERDDAP has two special dataset types,
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGridFromErddap</a> 
+    and
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>,
+    which refer to
+    <br>datasets on other ERDDAPs. 
+  <li>When the composite ERDDAP receives a request for data or images from these datasets, the
+    composite ERDDAP <a href="http://en.wikipedia.org/wiki/URL_redirection">redirects</a>
+       the data request to the other ERDDAP server. The result is:
+    <ul>
+    <li>This is very efficient (CPU, memory, and bandwidth), because otherwise 
+      <ol>
+      <li>The composite ERDDAP has to send the data request to the other ERDDAP.
+      <li>The other ERDDAP has to get the data, reformat it, and transmit the data to the composite
+        ERDDAP.
+      <li>The composite ERDDAP has to receive the data (using extra bandwidth), reformat it
+        (using extra CPU time and memory), and transmit the data to the user (using extra bandwidth).
+      </ol>
+      By redirecting the data request and allowing the other ERDDAP to send the response directly
+      to the user, the composite ERDDAP spends essentially no CPU time, memory, or bandwidth
+      on data requests.
+    <li>The redirect is transparent to the user regardless of the client software (a browser or
+      any other software or command line tool).
+    </ul>
+  </ul>
+
+  <p><a name="gridParts">The parts of the grid are:</a>
+  
+  <p><b><font color="#0000FF">A</font></b>) For every ERDDAP data source that has a high-bandwidth server,
+     use EDDGridFromErddap or
+    EDDTableFromERDDAP to serve the data in the Composite ERDDAP.
+
+  <p><b><font color="#0000FF">B</font></b>) For every ERDDAP-able data source (a data source from which ERDDAP
+    can read data) that has a high-bandwidth server, set up another ERDDAP in the grid which
+    is responsible for serving the data from this data source.
+     <ul>
+     <li>If several such ERDDAPs aren't getting many requests for data, you can consolidate them into
+        one ERDDAP. 
+     <li>If the ERDDAP dedicated to getting data from one remote source is getting too many requests,
+       there is a temptation to add additional ERDDAPs to access the remote data source. In special
+       cases this may make sense, but it is more likely that this will overwhelm the remote data
+       source (which is self-defeating) and also prevent other users from accessing the remote data
+       source (which isn't nice). In such a case, consider setting up another ERDDAP to serve that
+       one dataset and copy the dataset on that ERDDAP's hard drive (see <b>C</b>) using 
+       
+<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
+and/or
+<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
+     </ul>
+
+  <p><b><font color="#0000FF">C</font></b>) For every ERDDAP-able data source that has a low-bandwidth server
+     (or is a slow service for
+    other reasons), consider setting up another ERDDAP and storing a copy of the dataset
+    on that ERDDAP's hard drives using     
+<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
+and/or
+<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
+     If several such ERDDAPs
+    aren't getting many requests for data, you can consolidate them into one ERDDAP. 
+
+  <p><b><font color="#0000FF">D</font></b>) The composite ERDDAP is a regular ERDDAP except that it just serves data from other ERDDAPs. 
+    <ul>
+    <li>Because the composite ERDDAP has information in memory about all of the datasets, it can
+      quickly respond to requests for lists of datasets (full text searches, category searches,
+      the list of all datasets), and requests for an individual dataset's Data Access Form,
+      Make A Graph form, or WMS info page. These are all small, dynamically generated, HTML
+      pages based on information which is held in memory. So the responses are very fast.
+    <li>Because requests for actual data are quickly redirected to the other ERDDAPs, the composite
+      ERDDAP can quickly respond to requests for actual data without using any CPU time, memory,
+      or bandwidth.
+    <li>By shifting as much work as possible (CPU, memory, bandwidth) from the Composite ERDDAP to
+      the other ERDDAPs, the composite ERDDAP can appear to serve data from all of the datasets
+      and yet still keep up with very large numbers of data requests from a large number of users.
+    <li>Preliminary tests indicate that the composite ERDDAP can respond to any request in ~1ms of
+      CPU time, or 1000 requests/second. So an 8 core processor should be able to respond to
+      about 8000 requests/second. Although it is possible to envision bursts of higher activity
+      which would cause slowdowns, that is a lot of throughput.  It is likely that data center
+      bandwidth will be the bottleneck long before the composite ERDDAP becomes the bottleneck.
+    <li>In very, very extreme cases, you may want to set up more than one composite ERDDAP.
+      It is likely that other parts of the system (notably, the data center's bandwidth)
+      will become a problem long before the composite ERDDAP becomes a bottleneck.
+      So the solution is probably to set up additional, geographically diverse, data centers
+      (mirrors), each with one composite ERDDAP and servers with ERDDAPs and (at least) mirror
+      copies of the datasets which are in high demand. Such a setup also provides fault
+      tolerance and data backup (via copying).      
+    <li>[For a fascinating design of a high performance system running on one server, 
+        see
+      <a href="http://www.pbs.org/cringely/pulpit/2008/pulpit_20080728_005308.html">Cringely's overview</a>
+      or the <a href="http://mailinator.blogspot.com/2007/01/architecture-of-mailinator.html">detailed description of Mailinator</a>.]
+    </ul>
+
+  <p><a name="copy">Datasets In Very High Demand</a> - In the really unusual case that one of the 
+    <b>A</b>, <b>B</b>, or <b>C</b> ERDDAPs 
+      can't keep up with the requests because of bandwidth or hard drive limitations, 
+      it makes sense to copy the data (again) on to another server+hardDrive+ERDDAP, using
+      
+<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">EDDGridCopy</a>
+and/or
+<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableCopy">EDDTableCopy</a>.
+       While it may seem ideal to have the original dataset and the
+      copied dataset appear seamlessly as one dataset in the composite ERDDAP, this is difficult
+      because the two datasets will be in slightly different states at different times (notably,
+      after the original gets new data, but before the copied dataset gets its copy).
+      Therefore, we recommend that the datasets be given slightly different titles (e.g.,
+      "... (copy #1)" and "... (copy #2)", or perhaps "(mirror #<i>n</i>)" or "(server #<i>n</i>)") and
+       appear as separate datasets in the composite ERDDAP.  Users are used to seeing lists of
+      <a href="http://en.wikipedia.org/wiki/Mirror_(computing)">mirror sites</a>
+         at popular file download sites, so this shouldn't surprise or disappoint them.
+      Because of bandwidth limitations at a given site, it may make sense to have the mirror
+      located at another site. If the mirror copy is at a different data center, accessed just
+      by that data center's composite ERDDAP, the different titles (e.g., "mirror #1) aren't
+      necessary.
+
+  <p><a name="hardDrives">RAIDs vs. Regular Hard Drives</a> - 
+    If a large dataset or a group of datasets are not heavily used,
+      it may make sense to store the data on a RAID since it offers fault tolerance and since
+      you don't need the processing power or bandwidth of another server. But if a dataset is
+      heavily used, it may make more sense to copy the data on another server + ERDDAP + hard
+      drive (similar to 
+        <a href="http://storagemojo.com/2007/02/19/googles-disk-failure-experience/">what Google does</a>)
+        rather than to use one server and a RAID to store
+      multiple datasets since you get to use both server+hardDrive+ERDDAPs in the grid until
+      one of them fails.
+
+  <p><a name="failures">Failures</a> - What happens if...
+  <ul>
+  <li>There is a burst of requests for one dataset (e.g., all students in a class simultaneously
+    request similar data)? Only the ERDDAP serving that dataset will be overwhelmed and
+    slow down or refuse requests. The composite ERDDAP and other ERDDAPs won't be
+    affected. Since the limiting factor for a given dataset within the system is the hard
+    drive with the data (not ERDDAP), the only solution (not immediate) is to make a copy
+    of the dataset on a different server+hardDrive+ERDDAP.
+  <li>An <b>A</b>, <b>B</b>, or <b>C</b> ERDDAP fails (e.g., hard drive failure)? 
+      Only the dataset(s) served by that ERDDAP are affected. 
+      If the dataset(s) is mirrored on another server+hardDrive+ERDDAP, the effect is minimal.
+      If the problem is a hard drive failure in a level 5 or 6 RAID, you just replace the
+      drive and have the RAID rebuild the data on the drive.
+  <li>The composite ERDDAP fails?
+      If you have no 
+        <a href="http://vista.intersystems.com/csp/docbook/DocBook.UI.Page.cls?KEY=GHA_failover">hot or warm failover</a>, 
+        the system is effectively down until you set up
+      a replacement. That's not good. So if this is a concern, set up multiple composite ERDDAPs
+      or a hot or warm failover. Then the effect is minimal. Failures of the composite ERDDAP
+      should be rare because it has minimal hard drive activity. 
+  </ul>
+
+  <p>Simple, Scalable - This system is easy to set up and administer, and easily extensible when
+      any part of it becomes over-burdened. The only real limitation for a given data center
+      is the data center's bandwidth.
+
+  <p><a name="bandwidth">Bandwidth</a> - Note the approximate bandwidth of commonly used components of the system: 
+    <table class="erd" bgcolor="#FFFFCC" cellspacing="0">
+      <tr><th>Component</th><th>Bandwidth (GBytes/s)</th></tr>
+      <tr><td>DDR memory</td><td>~2.5</td></tr>
+      <tr><td>SATA hard drive</td><td>0.3</td></tr>
+      <tr><td>Gigabit Ethernet</td><td>0.1</td></tr>
+      <!--tr><td>OC-192 (ISP)</td><td>1</td></tr-->
+      <tr><td>OC-12</td><td>0.06</td></tr>
+      <tr><td>OC-3</td><td>0.015</td></tr>
+      <tr><td>T1</td><td>0.0002</td></tr>
+    </table>
+      <br>So, one SATA hard drive (0.3GB/s) on one server with one ERDDAP can probably saturate a
+      Gigabit Ethernet LAN (0.1GB/s). 
+      And one Gigabit Ethernet LAN (0.1GB/s) can probably saturate an OC-12 Internet connection
+      (0.06GB/s).
+      And at least one source lists OC-12 lines costing about $100,000 per month.
+      (Yes, these calculations are based on pushing the system to its limits, which is not good
+      because it leads to very sluggish responses. 
+      But these calculations are useful for planning and for balancing parts of the system.)
+      <b>Clearly, a suitably fast Internet connection for your data center is by far the most
+      expensive part of the system.</b>
+      You can easily and relatively cheaply build a grid with a dozen servers running a dozen ERDDAPs 
+      which is capable of pumping out lots of data quickly, but a suitably fast Internet
+      connection will be very, very expensive. 
+      (Fun fact: ERD, which hosts several data servers including an ERDDAP, currently has just
+      a fractional OC-3, ~0.001 GB/s.  So, ERD is bandwidth limited.)
+      The partial solutions are:
+    <ul>
+    <li>Encourage clients to request subsets of the data if that is all that is needed.
+      If the client only needs data for a small region or at a lower resolution, that is what
+      they should request. Subsetting is a central focus of the protocols ERDDAP supports for
+      requesting data. 
+    <li>Encourage transmitting compressed data.  
+      ERDDAP <a href="http://coastwatch.pfeg.noaa.gov/erddap/information.html#compression">compresses</a> 
+       a data transmission if it 
+      finds "accept-encoding" in the HTTP GET request header. All web browsers use
+      "accept-encoding" and automatically decompress the response.  Other clients (e.g.,
+      computer programs) have to use it explicitly.
+    <li>Colocate your servers at an ISP or other site that offers relatively less expensive
+      bandwidth costs.
+    <li>Disperse the servers with the ERDDAPs to different institutions so that the costs are
+      dispersed. You can then link your composite ERDDAP to their ERDDAPs.
+    </ul>
+    Note that <a href="#cloudComputing">Cloud Computing</a> and web hosting services
+      offer all the Internet bandwidth
+    you need, but don't solve the price problem.
+
+<p>For general information on designing scalable, high capacity, fault-tolerant systems, 
+  see Michael T. Nygard's book 
+      <a href="http://www.amazon.com/Release-Production-Ready-Software-Pragmatic-Programmers/dp/0978739213">Release It</a>.
+
+<p>[Yes, these are simplistic calculations, but I think the conclusions are correct.
+Did I use faulty logic or make a mistake in my calculations? If so, the fault is mine alone. 
+Please send an email with the correction to bob dot simons at noaa dot gov.]
+<br>&nbsp;
+
+
+<!-- ******* -->
+<h2><a name="cloudComputing"><b>Cloud Computing</b></a></h2> 
+Several companies are starting to offer cloud computing services 
+    (e.g., <a href="http://aws.amazon.com/">Amazon Web Services</a>
+      and
+        <a href="http://code.google.com/appengine/">Google App Engine</a>).
+        <a href="http://en.wikipedia.org/wiki/Web_hosting_service">Web hosting companies</a> 
+        have offered a range of roughly similar
+      services since the mid-1990's. Since the ERDDAP grid just consists of ERDDAPs and
+      since ERDDAPs are Java web applications that can run in Tomcat (the most common
+      application server) or other application servers, it should be relatively easy to
+      set up an ERDDAP grid on a cloud service or web hosting site. The advantages of these
+      services are:
+    <ul>
+    <li>They offer access to very high bandwidth Internet connections. This alone may justify
+      using these services.
+    <li>They only charge for the services you use. For example, you get access to a very high
+      bandwidth Internet connection, but you only pay for actual data transferred. 
+      That lets you build a system that rarely gets overwhelmed (even at peak demand), 
+      without have to pay for capacity that is rarely used.
+    <li>They are easily extensible.
+    <li>They free you from many of the administrative duties of running the servers and networks.
+    </ul>
+    The disadvantages of these services are:
+    <ul>
+    <li>They charge for their services, sometimes a lot (in absolute terms; not that it isn't a
+      good value). The prices listed here are for 
+      <a href="http://aws.amazon.com/ec2/#pricing">Amazon EC2</a>.
+      These prices (as of March 2009) will come down, but there will also probably be more
+      data and more requests for data in the future.
+      <ul>
+      <li>Data Transfer - $0.10/GB for data transfers into the system and $0.10/GB for data
+        transfers out of the system.
+        Storing 1 TB in the cloud will cost $100 for the initial data transfer fees alone.
+        But the ongoing cost for data transfer is the bigger problem.
+        One SATA hard drive (0.3GB/s) on one server with one ERDDAP can probably 
+        saturate a Gigabit Ethernet LAN (0.1GB/s).
+        And one Gigabit Ethernet LAN (0.1GB/s) can probably saturate an OC-12 Internet
+        connection (0.06GB/s).
+        If one OC-12 connection can transmit ~150,000 GB/month, the Data Transfer costs
+        will be about 150,000 GB @ $0.10/GB = $15,000/month.
+        <b>Clearly, if you have a dozen hard-working ERDDAP's on a cloud service, your
+        monthly Data Transfer fees could be substantial (up to $180,000/month).</b>
+        (Again, it isn't that the service is over-priced, it is that we are buying a lot of
+         the service.)
+      <li>Data storage - Amazon charges $150/month per TB. (Compare that to buying a drive
+        outright for ~$150/TB). So if you need to store lots of data in the cloud, it might
+        it might be fairly expensive (e.g., 20TB would cost $3000/month). But this is a
+        minor issue compared to bandwidth/data transfer costs.
+      </ul>
+    <li>The subsetting problem:
+      The only way to efficiently distribute data which is stored in the cloud, is to have
+      the program which is distributing the data (ERDDAP) running on a server which has the
+      data stored on a local hard drive (or a SAN). Many data requests (notably gridded data
+      requests where the stride value is &gt; 1) can't be done efficiently if the program
+      has to requests big chunks of a dataset from a non-local data storage system and then
+      extract a subset. 
+    </ul>  
+
+
+<p><b>Thanks</b> - Many thanks to Matthew Arrott and his group for their work on putting ERDDAP in
+  the cloud and the resulting discussions.
+
+<!-- ******* -->
+<hr>
+<h2><a name="contact">Contact</a></h2>
+Yes, these are simplistic calculations, but I think the conclusions are correct.
+Did I use faulty logic or make a mistake in my calculations? If so, the fault is mine alone. 
+Please send an email with the correction to <tt>bob dot simons at noaa dot gov</tt>.
+
+<p>Questions, comments, suggestions?  Please send an email to 
+  <tt>bob dot simons at noaa dot gov</tt>
+and include the ERDDAP URL directly related to your question or comment.
+<br>&nbsp;
+<hr>
+<p>ERDDAP, Version 1.36
+<br><a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
+
+</td>
+</tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<HTML>
+<BODY>
+Core classes for the Scientific Graphics Toolkit.
+
+<P>The Java Scientific Graphics Toolkit (<CODE>sgt</CODE>) is designed
+to allow a graphics client developer a great deal of flexibility and
+freedom. <CODE>sgt</CODE> is a package that greatly aids a developer
+in creating graphics applets. <CODE>sgt</CODE> is not a general
+purpose graphics package, but provides the tools to enable scientific
+graphics to be easily incorporated into applications or
+<code>Applets</code>.</P>
+
+<P>SGT has three main components, the <CODE>JPane</CODE>, on which all
+graphics are drawn. The <CODE>Layer</CODE>, of which several can be
+associated with a single <CODE>JPane</CODE>, that insulates the
+developer from device coordinates.  And the <CODE>Graph</CODE>, of
+which a single instance can be associated with a <CODE>Layer</CODE>,
+that transforms form user coordinates (e.g. cm/sec, time, etc) to the
+layer coordinate system (physical coordinates).
+
+<P>Examples demonstrating the use of SGT are available in the {@link
+gov.noaa.pmel.sgt.demo demo} package.  These examples show how to
+create SGT applications from scratch and how to use the {@link
+gov.noaa.pmel.sgt.swing.JPlotLayout JPlotLayout} utility class.  A <A
+href="http://www.epic.noaa.gov/talks/dwd/noaatech2002/SGT_Tutorial_files/v3_document.htm">tutorial
+</A> on using SGT to develop interactive graphics is now available.
+
+<p><font size="-1">This software is provided by NOAA for full, free
+and open release.  It is understood by the recipient/user that NOAA
+assumes no liability for any errors contained in the code.  Although
+this software is released without conditions or restrictions in its
+use, it is expected that appropriate credit be given to its author and
+to the National Oceanic and Atmospheric Administration should the
+software be included by the recipient as an element in other product
+development.</font></p>
+
+@see gov.noaa.pmel.sgt.Pane
+@see gov.noaa.pmel.sgt.JPane
+@see gov.noaa.pmel.sgt.Layer 
+@see gov.noaa.pmel.sgt.Graph
+</BODY>
+
+</HTML>

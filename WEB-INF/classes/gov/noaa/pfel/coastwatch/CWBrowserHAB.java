@@ -1,0 +1,61 @@
+/* 
+ * CWBrowserHAB Copyright 2007, NOAA.
+ * See the LICENSE.txt file in this file's directory.
+ */
+package gov.noaa.pfel.coastwatch;
+
+import com.cohort.util.String2;
+
+import java.util.Enumeration;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+/**
+ * The CoastWatch Browser. See info for Browser.java.
+ *
+ * @author Bob Simons (bob.simons@noaa.gov) 2007-05-24
+ */
+public class CWBrowserHAB extends Browser {
+
+    /**
+     * Constructor
+     */
+    public CWBrowserHAB() throws Exception {
+        super("gov.noaa.pfel.coastwatch.CWBrowserHAB");
+    }
+
+    /** 
+     * This gets the user (making one if needed) associated with a request.
+     *
+     * @param request
+     * @return the UserCW associated with the request (possibly a new user)
+     */
+    public User getUser(HttpServletRequest request) {
+        
+        HttpSession session = request.getSession();
+        String sessionID = session.getId();
+        User user = (User)userHashMap.get(sessionID);
+        if (user == null) {
+
+            //make a User for this new session
+            String remoteHost = request.getHeader("x-forwarded-for");
+            if (remoteHost == null) {
+                String2.log("!!!WARNING x-forwarded-for not found in request header=");
+                Enumeration en = request.getHeaderNames();
+                while (en != null && en.hasMoreElements()) {
+                    String name = (en.nextElement()).toString();
+                    String2.log("  " + name + " = " + request.getHeader(name));
+                }
+            }
+            boolean doTally = getDoTally(remoteHost);
+            user = new CWUser(oneOf, shared, session, doTally); //customized for this class
+            userHashMap.put(sessionID, user);
+            if (doTally) nUsers++;
+        }
+        return user;
+    }
+
+
+}

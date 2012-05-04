@@ -1,0 +1,183 @@
+<style type="text/css">
+/* IE6 PNG Fix */
+img{
+  behavior: url("images/post/iepngfix/iepngfix.htc");
+}
+
+/* Global Styles */
+html{
+  margin: 0px;
+  padding: 0px;
+}
+
+body{
+  background-color: #ffffff;
+  color: #000000;
+  font-family: Arial,Helvetica,sans-serif;
+  font-size: 85%;
+  line-height: 130%;
+  margin: 0px 10px 0px 10px;
+  padding: 0px;
+}
+
+/* Header */
+#post_header{
+  background-image: url("images/post/header-background.jpg");
+  height: 100px;
+  margin: 0px -10px 0px -10px;
+}
+#post_header_fixed_width{
+  background-image: url("images/post/header-background.jpg");
+  height: 100px;
+  width: 1000px;
+}
+
+/* Login / Logout */
+#post_loginInfo_wrapper{
+  border: 0px solid #990000;
+  height: 50px;
+  width: 493px;
+}
+#post_loginInfo{
+  background-color: #001B36;
+  border: 2px solid #3B6082;
+  color: #ffffff;
+  font-size: 12px;
+  margin: 20px 0px 0px 0px;
+  padding: 5px;
+  text-align: center;
+  text-transform: uppercase;
+}
+#post_loginInfo a, #post_loginInfo a:visited{
+  color: #ffffff;
+  font-size: 12px;
+  text-decoration: underline;
+  text-transform: uppercase;
+}
+#post_loginInfo a:hover{
+  color: #ffffff;
+  font-size: 12px;
+  text-decoration: underline;
+  text-transform: uppercase;
+}
+
+/* Header Menu */
+#post_header_menu{
+  margin: 0px;
+  padding: 17px 0px 0px 40px;
+}
+#post_header_menu li{
+  float: left;
+  list-style-type: none;
+  margin: 0px 10px 0px 0px;
+
+}
+#post_header_menu li a{
+  background-color: transparent;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 2px 2px 2px 4px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+/* Content */
+#content_area{
+  background-color: #ffffff;
+  border-radius: 10px;
+  margin: 0px;
+  padding: 10px;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+}
+
+/* Footer */
+#post_footer{
+  background-color: #05141f;
+  height: 55px;
+  padding: 0px;
+  margin: 0px -10px 0px -10px;
+}
+#post_footer_inner{
+  background-color: #05141f;
+  height: 55px;
+  padding: 0px 0px 0px 0px;
+  width: 1000px;
+}
+#post_footer_column1{
+  background-color: #112445;
+  height: 55px;
+  width: 630px;
+}
+#post_footer_menu{
+  padding: 20px 0px 0px 15px;
+}
+#post_footer_menu_ul{
+  margin: 0px;
+  padding: 0px;
+}
+#post_footer_menu li{
+  float: left;
+  list-style-type: none;
+  margin: 0px 20px 0px 0px;
+  padding: 0px;
+}
+#post_footer_menu li a{
+  background-color: transparent;
+  color: #ffffff;
+  font-size: 12px;
+  padding: 2px 6px 2px 4px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+#post_footer_menu li a:hover{
+  color: #cccccc;
+}
+
+/* Logos */
+#post_footer_column3{
+  text-align: left;
+}
+#vancouveraquarium {
+  margin: 12px 10px 0;
+  background: transparent url("images/post/vancouveraquarium.gif") 0 0;
+  float: left;
+  width: 65px;
+  height: 32px;
+}
+#vancouveraquarium:hover {
+  background: transparent url("images/post/vancouveraquarium.gif") 0 -33px;	
+}
+#moorefoundation {
+  margin: 15px 10px 0;
+  background: transparent url("images/post/moorefoundation.gif") 0 0;
+  float: left;
+  width: 80px;
+  height: 32px;
+}
+#moorefoundation:hover {
+  background: transparent url("images/post/moorefoundation.gif") 0 -33px;	
+}
+#census {
+  margin: 12px 10px 0;
+  background: transparent url("images/post/censusofmarinelife.gif") 0 0;
+  float: left;
+  width: 65px;
+  height: 32px;
+}
+#census:hover {
+  background: transparent url("images/post/censusofmarinelife.gif") 0 -33px;	
+}
+
+/* Float */
+.float{
+  float: left;
+}
+.float_right{
+  float: right;
+}
+.clear{
+  clear: both;
+}
+</style>

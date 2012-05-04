@@ -1,0 +1,695 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<java version="1.4.1_01" class="java.beans.XMLDecoder"> 
+ <object class="gov.noaa.pmel.sgt.beans.PanelModel"> 
+  <void property="printScaleMode"> 
+   <int>0</int> 
+  </void> 
+  <void property="pageSize"> 
+   <object class="java.awt.Dimension"> 
+    <int>501</int> 
+    <int>400</int> 
+   </object> 
+  </void> 
+  <void property="panelList"> 
+   <void method="put"> 
+    <string>UpperRight</string> 
+    <object class="gov.noaa.pmel.sgt.beans.PanelHolder"> 
+     <void property="border"> 
+      <object class="javax.swing.border.BevelBorder"> 
+       <int>0</int> 
+       <object class="java.awt.Color"> 
+        <int>255</int> 
+        <int>255</int> 
+        <int>255</int> 
+        <int>255</int> 
+       </object> 
+       <object class="java.awt.Color"> 
+        <int>255</int> 
+        <int>255</int> 
+        <int>255</int> 
+        <int>255</int> 
+       </object> 
+       <object class="java.awt.Color"> 
+        <int>124</int> 
+        <int>124</int> 
+        <int>124</int> 
+        <int>255</int> 
+       </object> 
+       <object class="java.awt.Color"> 
+        <int>178</int> 
+        <int>178</int> 
+        <int>178</int> 
+        <int>255</int> 
+       </object> 
+      </object> 
+     </void> 
+     <void property="bounds"> 
+      <object class="java.awt.Rectangle"> 
+       <int>300</int> 
+       <int>0</int> 
+       <int>200</int> 
+       <int>293</int> 
+      </object> 
+     </void> 
+     <void property="dataGroups"> 
+      <void method="put"> 
+       <string>Random</string> 
+       <object class="gov.noaa.pmel.sgt.beans.DataGroup"> 
+        <void property="XAxisHolder"> 
+         <void property="boundsP"> 
+          <void property="height"> 
+           <double>0.4166666567325592</double> 
+          </void> 
+          <void property="width"> 
+           <double>2.097222328186035</double> 
+          </void> 
+          <void property="x"> 
+           <double>0.5</double> 
+          </void> 
+          <void property="y"> 
+           <double>0.0833333358168602</double> 
+          </void> 
+         </void> 
+         <void property="title"> 
+          <void property="HAlign"> 
+           <int>1</int> 
+          </void> 
+          <void property="VAlign"> 
+           <int>0</int> 
+          </void> 
+          <void property="bounds"> 
+           <object class="java.awt.Rectangle"> 
+            <int>394</int> 
+            <int>278</int> 
+            <int>34</int> 
+            <int>10</int> 
+           </object> 
+          </void> 
+          <void property="font"> 
+           <object class="java.awt.Font"> 
+            <string>Helvetica</string> 
+            <int>0</int> 
+            <int>12</int> 
+           </object> 
+          </void> 
+          <void property="location"> 
+           <object class="java.awt.Point"> 
+            <int>411</int> 
+            <int>276</int> 
+           </object> 
+          </void> 
+          <void property="moveable"> 
+           <boolean>false</boolean> 
+          </void> 
+         </void> 
+         <void property="transformGroup"> 
+          <string>Random</string> 
+         </void> 
+         <void property="userRange"> 
+          <void id="SoTValue$Double0" property="delta"/> 
+          <void property="delta"> 
+           <object idref="SoTValue$Double0"/> 
+          </void> 
+          <void id="SoTValue$Double1" property="end"/> 
+          <void property="end"> 
+           <object idref="SoTValue$Double1"/> 
+          </void> 
+          <void id="SoTValue$Double2" property="start"/> 
+          <void property="start"> 
+           <object idref="SoTValue$Double2"/> 
+          </void> 
+         </void> 
+        </void> 
+        <void property="YAxisHolder"> 
+         <void property="boundsP"> 
+          <void property="height"> 
+           <double>3.125</double> 
+          </void> 
+          <void property="width"> 
+           <double>0.4166666567325592</double> 
+          </void> 
+          <void property="x"> 
+           <double>0.0833333358168602</double> 
+          </void> 
+          <void property="y"> 
+           <double>0.5</double> 
+          </void> 
+         </void> 
+         <void property="title"> 
+          <void property="HAlign"> 
+           <int>1</int> 
+          </void> 
+          <void property="bounds"> 
+           <object class="java.awt.Rectangle"> 
+            <int>308</int> 
+            <int>128</int> 
+            <int>10</int> 
+            <int>34</int> 
+           </object> 
+          </void> 
+          <void property="font"> 
+           <object class="java.awt.Font"> 
+            <string>Helvetica</string> 
+            <int>0</int> 
+            <int>12</int> 
+           </object> 
+          </void> 
+          <void property="location"> 
+           <object class="java.awt.Point"> 
+            <int>316</int> 
+            <int>145</int> 
+           </object> 
+          </void> 
+          <void property="moveable"> 
+           <boolean>false</boolean> 
+          </void> 
+          <void property="orientation"> 
+           <int>1</int> 
+          </void> 
+         </void> 
+         <void property="transformGroup"> 
+          <string>Random</string> 
+         </void> 
+         <void property="userRange"> 
+          <void id="SoTValue$Double3" property="delta"/> 
+          <void property="delta"> 
+           <object idref="SoTValue$Double3"/> 
+          </void> 
+          <void id="SoTValue$Double4" property="end"/> 
+          <void property="end"> 
+           <object idref="SoTValue$Double4"/> 
+          </void> 
+          <void id="SoTValue$Double5" property="start"/> 
+          <void property="start"> 
+           <object idref="SoTValue$Double5"/> 
+          </void> 
+         </void> 
+        </void> 
+        <void property="ZRangeU"> 
+         <void id="SoTValue$Double6" property="delta"/> 
+         <void property="delta"> 
+          <object idref="SoTValue$Double6"/> 
+         </void> 
+         <void id="SoTValue$Double7" property="end"/> 
+         <void property="end"> 
+          <object idref="SoTValue$Double7"/> 
+         </void> 
+         <void id="SoTValue$Double8" property="start"/> 
+         <void property="start"> 
+          <object idref="SoTValue$Double8"/> 
+         </void> 
+        </void> 
+        <void property="id"> 
+         <string>Random</string> 
+        </void> 
+        <void id="Margin0" property="margin"> 
+         <void property="right"> 
+          <float>0.18055555</float> 
+         </void> 
+         <void property="top"> 
+          <float>0.44444445</float> 
+         </void> 
+        </void> 
+        <void property="margin"> 
+         <object idref="Margin0"/> 
+        </void> 
+       </object> 
+      </void> 
+     </void> 
+     <void property="id"> 
+      <string>UpperRight</string> 
+     </void> 
+     <void property="labels"> 
+      <void method="put"> 
+       <string>Label0</string> 
+       <object class="gov.noaa.pmel.sgt.beans.Label"> 
+        <void property="boundsP"> 
+         <object class="gov.noaa.pmel.util.Rectangle2D$Double"> 
+          <void property="height"> 
+           <double>0.25</double> 
+          </void> 
+          <void property="width"> 
+           <double>0.75</double> 
+          </void> 
+          <void property="x"> 
+           <double>1.0138888359069824</double> 
+          </void> 
+          <void property="y"> 
+           <double>3.75</double> 
+          </void> 
+         </object> 
+        </void> 
+        <void property="id"> 
+         <string>Label0</string> 
+        </void> 
+        <void property="text"> 
+         <string>Bean Demo</string> 
+        </void> 
+       </object> 
+      </void> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>UpperLeft</string> 
+    <object class="gov.noaa.pmel.sgt.beans.PanelHolder"> 
+     <void property="border"> 
+      <object class="javax.swing.border.BevelBorder"> 
+       <int>0</int> 
+       <object class="java.awt.Color"> 
+        <int>255</int> 
+        <int>255</int> 
+        <int>255</int> 
+        <int>255</int> 
+       </object> 
+       <object class="java.awt.Color"> 
+        <int>255</int> 
+        <int>255</int> 
+        <int>255</int> 
+        <int>255</int> 
+       </object> 
+       <object class="java.awt.Color"> 
+        <int>124</int> 
+        <int>124</int> 
+        <int>124</int> 
+        <int>255</int> 
+       </object> 
+       <object class="java.awt.Color"> 
+        <int>178</int> 
+        <int>178</int> 
+        <int>178</int> 
+        <int>255</int> 
+       </object> 
+      </object> 
+     </void> 
+     <void property="bounds"> 
+      <object class="java.awt.Rectangle"> 
+       <int>0</int> 
+       <int>0</int> 
+       <int>300</int> 
+       <int>293</int> 
+      </object> 
+     </void> 
+     <void property="dataGroups"> 
+      <void method="put"> 
+       <string>Grid</string> 
+       <object class="gov.noaa.pmel.sgt.beans.DataGroup"> 
+        <void property="XAxisHolder"> 
+         <void property="boundsP"> 
+          <void property="height"> 
+           <double>0.4166666567325592</double> 
+          </void> 
+          <void property="width"> 
+           <double>2.375</double> 
+          </void> 
+          <void property="x"> 
+           <double>0.5</double> 
+          </void> 
+          <void property="y"> 
+           <double>0.0833333358168602</double> 
+          </void> 
+         </void> 
+         <void property="title"> 
+          <void property="HAlign"> 
+           <int>1</int> 
+          </void> 
+          <void property="VAlign"> 
+           <int>0</int> 
+          </void> 
+          <void property="bounds"> 
+           <object class="java.awt.Rectangle"> 
+            <int>102</int> 
+            <int>279</int> 
+            <int>38</int> 
+            <int>11</int> 
+           </object> 
+          </void> 
+          <void property="font"> 
+           <object class="java.awt.Font"> 
+            <string>Helvetica</string> 
+            <int>0</int> 
+            <int>13</int> 
+           </object> 
+          </void> 
+          <void property="location"> 
+           <object class="java.awt.Point"> 
+            <int>121</int> 
+            <int>277</int> 
+           </object> 
+          </void> 
+          <void property="moveable"> 
+           <boolean>false</boolean> 
+          </void> 
+         </void> 
+         <void property="transformGroup"> 
+          <string>Grid</string> 
+         </void> 
+         <void property="userRange"> 
+          <void id="SoTValue$Double9" property="delta"/> 
+          <void property="delta"> 
+           <object idref="SoTValue$Double9"/> 
+          </void> 
+          <void id="SoTValue$Double10" property="end"/> 
+          <void property="end"> 
+           <object idref="SoTValue$Double10"/> 
+          </void> 
+          <void id="SoTValue$Double11" property="start"/> 
+          <void property="start"> 
+           <object idref="SoTValue$Double11"/> 
+          </void> 
+         </void> 
+        </void> 
+        <void property="YAxisHolder"> 
+         <void property="boundsP"> 
+          <void property="height"> 
+           <double>3.277777671813965</double> 
+          </void> 
+          <void property="width"> 
+           <double>0.4166666567325592</double> 
+          </void> 
+          <void property="x"> 
+           <double>0.0833333358168602</double> 
+          </void> 
+          <void property="y"> 
+           <double>0.5</double> 
+          </void> 
+         </void> 
+         <void property="title"> 
+          <void property="HAlign"> 
+           <int>1</int> 
+          </void> 
+          <void property="bounds"> 
+           <object class="java.awt.Rectangle"> 
+            <int>7</int> 
+            <int>121</int> 
+            <int>11</int> 
+            <int>38</int> 
+           </object> 
+          </void> 
+          <void property="font"> 
+           <object class="java.awt.Font"> 
+            <string>Helvetica</string> 
+            <int>0</int> 
+            <int>13</int> 
+           </object> 
+          </void> 
+          <void property="location"> 
+           <object class="java.awt.Point"> 
+            <int>16</int> 
+            <int>140</int> 
+           </object> 
+          </void> 
+          <void property="moveable"> 
+           <boolean>false</boolean> 
+          </void> 
+          <void property="orientation"> 
+           <int>1</int> 
+          </void> 
+         </void> 
+         <void property="transformGroup"> 
+          <string>Grid</string> 
+         </void> 
+         <void property="userRange"> 
+          <void id="SoTValue$Double12" property="delta"/> 
+          <void property="delta"> 
+           <object idref="SoTValue$Double12"/> 
+          </void> 
+          <void id="SoTValue$Double13" property="end"/> 
+          <void property="end"> 
+           <object idref="SoTValue$Double13"/> 
+          </void> 
+          <void id="SoTValue$Double14" property="start"/> 
+          <void property="start"> 
+           <object idref="SoTValue$Double14"/> 
+          </void> 
+         </void> 
+        </void> 
+        <void property="ZRangeU"> 
+         <void id="SoTValue$Double15" property="delta"/> 
+         <void property="delta"> 
+          <object idref="SoTValue$Double15"/> 
+         </void> 
+         <void id="SoTValue$Double16" property="end"/> 
+         <void property="end"> 
+          <object idref="SoTValue$Double16"/> 
+         </void> 
+         <void id="SoTValue$Double17" property="start"/> 
+         <void property="start"> 
+          <object idref="SoTValue$Double17"/> 
+         </void> 
+        </void> 
+        <void property="id"> 
+         <string>Grid</string> 
+        </void> 
+        <void id="Margin1" property="margin"> 
+         <void property="right"> 
+          <float>1.2916666</float> 
+         </void> 
+         <void property="top"> 
+          <float>0.29166666</float> 
+         </void> 
+        </void> 
+        <void property="margin"> 
+         <object idref="Margin1"/> 
+        </void> 
+       </object> 
+      </void> 
+     </void> 
+     <void property="id"> 
+      <string>UpperLeft</string> 
+     </void> 
+     <void property="legends"> 
+      <void method="put"> 
+       <string>ColorKey</string> 
+       <object class="gov.noaa.pmel.sgt.beans.Legend"> 
+        <void property="boundsP"> 
+         <object class="gov.noaa.pmel.util.Rectangle2D$Double"> 
+          <void property="height"> 
+           <double>3.2916667461395264</double> 
+          </void> 
+          <void property="width"> 
+           <double>1.125</double> 
+          </void> 
+          <void property="x"> 
+           <double>2.930555582046509</double> 
+          </void> 
+          <void property="y"> 
+           <double>0.4861111044883728</double> 
+          </void> 
+         </object> 
+        </void> 
+        <void property="id"> 
+         <string>ColorKey</string> 
+        </void> 
+        <void property="scaleSignificantDigits"> 
+         <int>1</int> 
+        </void> 
+        <void property="type"> 
+         <int>1</int> 
+        </void> 
+       </object> 
+      </void> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>Bottom</string> 
+    <object class="gov.noaa.pmel.sgt.beans.PanelHolder"> 
+     <void property="border"> 
+      <object class="javax.swing.border.BevelBorder"> 
+       <int>0</int> 
+       <object class="java.awt.Color"> 
+        <int>255</int> 
+        <int>255</int> 
+        <int>255</int> 
+        <int>255</int> 
+       </object> 
+       <object class="java.awt.Color"> 
+        <int>255</int> 
+        <int>255</int> 
+        <int>255</int> 
+        <int>255</int> 
+       </object> 
+       <object class="java.awt.Color"> 
+        <int>124</int> 
+        <int>124</int> 
+        <int>124</int> 
+        <int>255</int> 
+       </object> 
+       <object class="java.awt.Color"> 
+        <int>178</int> 
+        <int>178</int> 
+        <int>178</int> 
+        <int>255</int> 
+       </object> 
+      </object> 
+     </void> 
+     <void property="bounds"> 
+      <object class="java.awt.Rectangle"> 
+       <int>0</int> 
+       <int>293</int> 
+       <int>500</int> 
+       <int>107</int> 
+      </object> 
+     </void> 
+     <void property="dataGroups"> 
+      <void method="put"> 
+       <string>TimeSeries</string> 
+       <object class="gov.noaa.pmel.sgt.beans.DataGroup"> 
+        <void property="XAxisHolder"> 
+         <void property="axisType"> 
+          <int>3</int> 
+         </void> 
+         <void property="boundsP"> 
+          <void property="height"> 
+           <double>0.4166666567325592</double> 
+          </void> 
+          <void property="width"> 
+           <double>6.291666507720947</double> 
+          </void> 
+          <void property="x"> 
+           <double>0.5</double> 
+          </void> 
+          <void property="y"> 
+           <double>0.0833333358168602</double> 
+          </void> 
+         </void> 
+         <void property="transformGroup"> 
+          <string>TimeSeries</string> 
+         </void> 
+         <void property="userRange"> 
+          <object class="gov.noaa.pmel.util.SoTRange$Time"> 
+           <void id="SoTValue$Time0" property="delta"> 
+            <void property="value"> 
+             <long>172800000</long> 
+            </void> 
+           </void> 
+           <void property="delta"> 
+            <object idref="SoTValue$Time0"/> 
+           </void> 
+           <void id="SoTValue$Time1" property="end"> 
+            <void property="value"> 
+             <long>978307200000</long> 
+            </void> 
+           </void> 
+           <void property="end"> 
+            <object idref="SoTValue$Time1"/> 
+           </void> 
+           <void id="SoTValue$Time2" property="start"> 
+            <void property="value"> 
+             <long>946684800000</long> 
+            </void> 
+           </void> 
+           <void property="start"> 
+            <object idref="SoTValue$Time2"/> 
+           </void> 
+          </object> 
+         </void> 
+        </void> 
+        <void property="YAxisHolder"> 
+         <void property="boundsP"> 
+          <void property="height"> 
+           <double>0.875</double> 
+          </void> 
+          <void property="width"> 
+           <double>0.4166666567325592</double> 
+          </void> 
+          <void property="x"> 
+           <double>0.0833333358168602</double> 
+          </void> 
+          <void property="y"> 
+           <double>0.5</double> 
+          </void> 
+         </void> 
+         <void property="labelInterval"> 
+          <int>4</int> 
+         </void> 
+         <void property="title"> 
+          <void property="HAlign"> 
+           <int>1</int> 
+          </void> 
+          <void property="bounds"> 
+           <object class="java.awt.Rectangle"> 
+            <int>15</int> 
+            <int>317</int> 
+            <int>10</int> 
+            <int>34</int> 
+           </object> 
+          </void> 
+          <void property="font"> 
+           <object class="java.awt.Font"> 
+            <string>Helvetica</string> 
+            <int>0</int> 
+            <int>12</int> 
+           </object> 
+          </void> 
+          <void property="location"> 
+           <object class="java.awt.Point"> 
+            <int>23</int> 
+            <int>334</int> 
+           </object> 
+          </void> 
+          <void property="moveable"> 
+           <boolean>false</boolean> 
+          </void> 
+          <void property="orientation"> 
+           <int>1</int> 
+          </void> 
+         </void> 
+         <void property="transformGroup"> 
+          <string>TimeSeries</string> 
+         </void> 
+         <void property="userRange"> 
+          <void id="SoTValue$Double18" property="delta"/> 
+          <void property="delta"> 
+           <object idref="SoTValue$Double18"/> 
+          </void> 
+          <void id="SoTValue$Double19" property="end"/> 
+          <void property="end"> 
+           <object idref="SoTValue$Double19"/> 
+          </void> 
+          <void id="SoTValue$Double20" property="start"/> 
+          <void property="start"> 
+           <object idref="SoTValue$Double20"/> 
+          </void> 
+         </void> 
+        </void> 
+        <void property="ZRangeU"> 
+         <void id="SoTValue$Double21" property="delta"/> 
+         <void property="delta"> 
+          <object idref="SoTValue$Double21"/> 
+         </void> 
+         <void id="SoTValue$Double22" property="end"/> 
+         <void property="end"> 
+          <object idref="SoTValue$Double22"/> 
+         </void> 
+         <void id="SoTValue$Double23" property="start"/> 
+         <void property="start"> 
+          <object idref="SoTValue$Double23"/> 
+         </void> 
+        </void> 
+        <void property="id"> 
+         <string>TimeSeries</string> 
+        </void> 
+        <void id="Margin2" property="margin"> 
+         <void property="right"> 
+          <float>0.15277778</float> 
+         </void> 
+         <void property="top"> 
+          <float>0.11111111</float> 
+         </void> 
+        </void> 
+        <void property="margin"> 
+         <object idref="Margin2"/> 
+        </void> 
+       </object> 
+      </void> 
+     </void> 
+     <void property="id"> 
+      <string>Bottom</string> 
+     </void> 
+    </object> 
+   </void> 
+  </void> 
+ </object> 
+</java> 

@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>ERDDAP - Embed a Graph in a Web Page</title>
+<link rel="shortcut icon" href="http://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
+<style type="text/css">
+<!--
+  @import "erddap.css";
+-->
+</style>
+</head>
+
+<body> 
+<table bgcolor="#128CB5" border="0" cellpadding="2" cellspacing="0" width="100%"> 
+  <tr> 
+    <td align="center" style="width:100px;"> &nbsp;
+      <img src="http://coastwatch.pfeg.noaa.gov/erddap/images/noaab.png" alt="NOAA" align="middle"> &nbsp;     
+      </td> 
+    <td align="left">
+      <font color="#FFFFFF">
+      <font size="+2"><b>ERDDAP</b></font>
+      <br>Easier access to scientific data</font>
+      </td> 
+    <td align="right"><font size="-1"> 
+      <br>Brought to you by 
+      <a title="National Oceanic and Atmospheric Administration" href="http://www.noaa.gov">NOAA</a>  
+      <a title="National Marine Fisheries Service"               href="http://www.nmfs.noaa.gov">NMFS</a>  
+      <a title="Southwest Fisheries Science Center"              href="http://swfsc.noaa.gov">SWFSC</a>  
+      <a title="Environmental Research Division" href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
+      &nbsp; &nbsp;
+      </font></td> 
+  </tr> 
+</table>
+
+&nbsp;<form action="">
+<input type="button" value="Back" onClick="history.go(-1);return true;">
+</form>
+
+<h1 align="center">Embed a Graph in a Web Page</h1> 
+If you are a web page author, you can embed ERDDAP's Make A Graph image URLs directly in your web pages 
+with HTML &lt;img&gt; tags.
+
+<ol>
+<li>In ERDDAP, <!-- not a link; encourage users to use the erddap installation that got them here -->
+   search for a dataset of interest.
+<li>Click on the dataset's <tt>graph</tt> link to see the Make A Graph web page.
+<li>Modify the graph until it looks like you want it to.
+<li>Specify the <tt>File Type</tt> (for example, .png) and get the URL from the <tt>view the URL</tt>
+  textfield.
+<li>You can make additional changes to the image by adding other commands to the URL. For example, you can
+  <br>add commands to specify any image size, remove excess whitespace at the bottom of the image, and/or
+  <br>choose to view the graph without the legend. See the 
+<a href="http://coastwatch.pfel.noaa.gov/erddap/griddap/documentation.html#GraphicsCommands">griddap documentation</a> or
+<a href="http://coastwatch.pfel.noaa.gov/erddap/tabledap/documentation.html#GraphicsCommands">tabledap documentation</a>.
+<li>Replace all instances of <tt>&amp;</tt> in the URL with <tt>&amp;amp;</tt> .
+<li>If it hasn't already been done, replace all instances of <tt>&lt;</tt>, <tt>&gt;</tt>, 
+   and <tt>"</tt> in the URL with <tt>%3C</tt>, <tt>%3E</tt>, and <tt>%22</tt>, respectively.
+<li>For gridded datasets, you may change the time dimension's value in the URL to <tt>(last)</tt> so that
+  <br>the image will always show data for the latest date/time instead of a specific date/time.
+<li>Make an img tag in your HTML document which refers to that modified URL, for example
+
+<pre>
+&lt;img src="http://coastwatch.pfel.noaa.gov/erddap/griddap/erdBAssta5day.png?sst[(last)][(0.0)][(22.0):(50.0)][(225.0):(255.0)]&amp;amp;.draw=surface&amp;amp;.vars=longitude|latitude|sst&amp;amp;.colorBar=Rainbow|C|Linear|8|32|" alt="SST, Blended, West US (Experimental, 5 Day Composite)"&gt;</pre>
+
+<p>Or, if you want to be fancy, here is an example that includes "largest" and "edit" links. 
+<br>Note that the URLs have different file extensions (.largePng, .graph, and .png).
+
+<pre>
+&lt;a href="http://coastwatch.pfel.noaa.gov/erddap/griddap/erdBAssta5day.largePng?sst[(last)][(0.0)][(22.0):(50.0)][(225.0):(255.0)]&amp;amp;.draw=surface&amp;amp;.vars=longitude|latitude|sst&amp;amp;.colorBar=Rainbow|C|Linear|8|32|"&gt;largest&lt;/a&gt;
+&lt;a href="http://coastwatch.pfel.noaa.gov/erddap/griddap/erdBAssta5day.graph?sst[(last)][(0.0)][(22.0):(50.0)][(225.0):(255.0)]&amp;amp;.draw=surface&amp;amp;.vars=longitude|latitude|sst&amp;amp;.colorBar=Rainbow|C|Linear|8|32|"&gt;edit image / download data&lt;/a&gt;
+&lt;br&gt;
+&lt;img src="http://coastwatch.pfel.noaa.gov/erddap/griddap/erdBAssta5day.png?sst[(last)][(0.0)][(22.0):(50.0)][(225.0):(255.0)]&amp;amp;.draw=surface&amp;amp;.vars=longitude|latitude|sst&amp;amp;.colorBar=Rainbow|C|Linear|8|32|" alt="SST, Blended, West US (Experimental, 5 Day Composite)"&gt;
+</pre>
+
+<p>That example makes these links and this image:
+<p><a href="http://coastwatch.pfel.noaa.gov/erddap/griddap/erdBAssta5day.largePng?sst[(last)][(0.0)][(22.0):(50.0)][(225.0):(255.0)]&amp;.draw=surface&amp;.vars=longitude|latitude|sst&amp;.colorBar=Rainbow|C|Linear|8|32|">largest</a>
+<a href="http://coastwatch.pfel.noaa.gov/erddap/griddap/erdBAssta5day.graph?sst[(last)][(0.0)][(22.0):(50.0)][(225.0):(255.0)]&amp;.draw=surface&amp;.vars=longitude|latitude|sst&amp;.colorBar=Rainbow|C|Linear|8|32|">edit image / download data</a>
+<br>
+<br><img src="http://coastwatch.pfel.noaa.gov/erddap/griddap/erdBAssta5day.png?sst[(last)][(0.0)][(22.0):(50.0)][(225.0):(255.0)]&amp;.draw=surface&amp;.vars=longitude|latitude|sst&amp;.colorBar=Rainbow|C|Linear|8|32|" alt="ERDDAP: SST, Blended, West US (Experimental, 5 Day Composite)">
+</ol>
+
+
+<br>&nbsp;
+<hr>
+<h2><a name="contact">CONTACT</a></h2>
+Questions, comments, suggestions?  Please send an email to 
+  <tt>bob dot simons at noaa dot gov</tt>
+<br>and include the ERDDAP URL directly related to your question or comment.
+<br>&nbsp;
+<hr>
+<p>ERDDAP, Version 1.30
+<br><a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
+</body>
+</html>

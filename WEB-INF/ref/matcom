@@ -1,0 +1,17 @@
+#!/bin/csh
+#
+# usage: matcom <infile> <outfile>
+#
+# program allows use of matlab in command file format.
+#       (i.e., run matlab in non-interactive mode)
+#
+#
+#  nfile is a series of matlab commands, ending with 'exit'
+#  outfile is the matlab output, useful for error anlysis
+#
+
+set OLDDISPLAY = $DISPLAY
+unsetenv DISPLAY
+nohup matlab < $1 > $2
+setenv DISPLAY $OLDDISPLAY
+

@@ -1,0 +1,350 @@
+/* 
+ * CWDataSetPathfinder Copyright 2005, NOAA.
+ * See the LICENSE.txt file in this file's directory.
+ *
+ * THIS FILE IS NOT ACTIVE. IT WAS NEVER FINISHED.
+ * IT TOOK ~1 MIN TO DOWNLOAD THE 4 FILES (BINARY AND COMPRESSED).
+ * THAT IS TOO SLOW. SO WE WILL PREPROCESS THE DATA AND SERVE IT LOCALLY.
+ */
+package gov.noaa.pfel.coastwatch.griddata;
+
+import com.cohort.util.Calendar2;
+import com.cohort.util.File2;
+import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
+import com.cohort.util.String2;
+import com.cohort.util.Test;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Vector;
+
+/** 
+ * This class represents the Pathfinder grid dataset for CWBrowser.
+ * It determine the dates for which data is available and
+ * it can generate a grd file with the data for a specific date.
+ * 
+ * <pre>
+Here is an example from PathFinder data set:
+*** typical .dds (http://data.nodc.noaa.gov/cgi-bin/nph-dods/pathfinder/Version5.0/5day/1990/1990001-1990005.s0451pfv50-sst-16b.hdf.dds)
+Dataset {
+    Grid {
+     ARRAY:
+        UInt16 sst[lat = 4096][lon = 8192];
+     MAPS:
+        Float64 lat[4096];
+        Float64 lon[8192];
+    } sst;
+} 1990001-1990005.s0451pfv50-sst-16b.hdf;
+
+*** typical .das
+Attributes {
+    HDF_GLOBAL {
+        Uint16 dsp_SubImageId 0;
+        String dsp_SubImageName "SST";
+        Int32 dsp_ModificationDate 20030531;
+        Int32 dsp_ModificationTime 132327;
+        Int32 dsp_SubImageFlag 64;
+        String dsp_SubImageTitle "\\\\NLC Postage Stamp";
+        Int32 dsp_StartDate 19900105;
+        Float32 dsp_StartTime 171040;
+        Int32 dsp_SizeX 8192;
+        Int32 dsp_SizeY 4096;
+        Int32 dsp_OffsetX 0;
+        Int32 dsp_RecordLength 16384;
+        Byte dsp_DataOrganization 64;
+        Byte dsp_NumberOfBands 1;
+ ...
+        Int32 dsp_hgt_lltime 61788931;
+        Float32 dsp_hgt_llvect 863.573, 1.53535, 864.004, 1.55394, 864.377, 1.50321, 864.685, 1.45188, 864.931, 1.40049, 865.114, 1.34909, 865.237, 1.2977, 865.304, 1.2463, 865.317, 1.19491, 865.282, 1.14353, 865.202, 1.09215, 865.085, 1.04078, 864.936, 0.989422, 864.762, 0.938069, 864.57, 0.886725, 864.367, 0.835389, 864.161, 0.784062, 863.96, 0.732744, 863.772, 0.681435, 863.604, 0.630135, 863.464, 0.578844, 863.359, 0.527562, 863.297, 0.47629, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
+        String history "\\001PATHNLC Jan 18 03:06:41 2003 PATHNLC t,3,270.16,0.05,0.,0.01,271.16,308.16,,,,1,,,2,,,3,,,,,,4,,,,,,,0.6,,35.,0.1,5,,,,,,,0.7,,35.,0.15,45.,80.,0.005,20,0.,3.6,0.,8.,t,,,,,,,, ,,,,1.2,,,,1.2,,55.,1,270.16,0.05 pixsiz=16 allb=4 nlsst=1 vernum=4 version=V4.2 pathfinder flagtree 3bitqual 14oct97 newtest=1 tree=0 in=/r1/gacsst/orbit/90005164722/sector//90005171039.N11@ingest in1=/r1/gacsst/gacmask//3wk-199001.m1dw0oisstv2-sst out=/r1/gacsst/gacsst//90005171039.sst@ingest\\012\\004PATHNLC  NLSST Temp calculation date: April 10, 1996\\012\\001oisstv2mia Jul 10 15:13:14 2002 oisstv2mia  IN=../global_blnk.m1d-sst IN1=oisst.19900103 OUT=199001.m1dw0oisstv2-sst dtype=1 bias=-3 slope=0.15\\012\\001STATS Jul 10 18:25:55 2002 STATS minpix=1 maxpix=255 in=/usr5/gacsst/etc/oiv2/90//199001.m1dw0oisstv2-sst \\011  audit=t, callim=f, cal=f, cloud=f \\011  outm=/usr5/gacsst/etc/oiv2/90/3wk-199001.m1dw0oisstv2-sst\\012\\001oisstv2mia Jul 10 15:13:08 2002 oisstv2mia  IN=../global_blnk.m1d-sst IN1=oisst.19891231 OUT=198953.m1dw0oisstv2-sst dtype=1 bias=-3 slope=0.15\\012\\002STATS /usr5/gacsst/etc/oiv2/90//198953.m1dw0oisstv2-sst\\012\\001oisstv2mia Jul 10 15:13:14 2002 oisstv2mia  IN=../global_blnk.m1d-sst IN1=oisst.19900103 OUT=199001.m1dw0oisstv2-sst dtype=1 bias=-3 slope=0.15\\012\\002STATS /usr5/gacsst/etc/oiv2/90//199001.m1dw0oisstv2-sst\\012\\001oisstv2mia Jul 10 15:13:19 2002 oisstv2mia  IN=../global_blnk.m1d-sst IN1=oisst.19900110 OUT=199002.m1dw0oisstv2-sst dtype=1 bias=-3 slope=0.15\\012\\002STATS /usr5/gacsst/etc/oiv2/90//199002.m1dw0oisstv2-sst\\012\\002PATHNLC /r1/gacsst/gacmask//3wk-199001.m1dw0oisstv2-sst\\012\\004PATHNLC  45d coeffs used (1) =    1.274   0.924   0.130   0.828   0.000\\012\\004PATHNLC  45d coeffs used (2) =    1.265   0.963   0.078   1.011   0.000\\012\\004PATHNLC  45d coeffs used (3) =    0.000   0.000   0.000   0.000   0.000\\012\\004PATHNLC  GETOZONE I     0.0900    0.0000\\012\\001PATHBIN Jan 18 03:08:20 2003 PATHBIN RESOLVE=4 BINMODEL=1     ASC=D GRID=(16, 16) IN=/r1/gacsst/gacsst//90005171039.sst@ingest@sst NLC=1     DATADAY=1990006 DAYSTR=90005140656 DAYEND=90006135925     OUT=/r1/gacsst/gacpst//90005171039.b04p1pfv50@pst\\NLC Postage Stamp     ALLB=4 SEAMLON=-180.0     LAND=/r1/gacsst/gacmask//pfv50-land.b04bit-180\\012\\001PATHTIME Jan 18 03:09:30 2003 PATHTIME WQ=B ASC=D IN=/tmp/90005164722-1990005-1.filespfv50 OUT=/r1/gacsst/gaclpst//90005164722-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /r1/gacsst/gacpst//90005171039-1990005.b04p1pfv50@pst@bin_number\\012\\001PATHTIME Jan 18 03:32:45 2003 PATHTIME WQ=B ASC=D IN=/i1/gacsst/gacopst/1990005.filedpfv50 OUT=/r1/gacsst/pfv50/b04d/90/01/1990005.b04d1pfv50-p@pst@bin_number \\011satzen=f\\012\\002PATHTIME /i1/gacsst/gacopst//90004102942-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/gacopst//90004120847-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/gacopst//90004153023-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/gacopst//90004165617-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/gacopst//90004183519-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/gacopst//90004202554-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/gacopst//90004220735-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/gacopst//90004234945-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/gacopst//90005013845-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/gacopst//90005051824-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/gacopst//90005065943-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/gacopst//90005084057-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/gacopst//90005101705-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/gacopst//90005115806-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/gacopst//90005133857-1990005.b04o1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/gacopst//90005152021-1990005.b04o1pfv50@pst@bin_number\\012\\002
+PATHTIME /i1/gacsst/gacopst//90005164722-1990005.b04o1pfv50@pst@bin_number\\012\\001PATHCLMAP Jan 19 21:10:44 2003 PATHCLMAP thresh=2. thr2 =12. WQ=F in=/r1/gacsst/pfv50/b04d/90/01//1990005.b04d1pfv50-p@pst  ref=/r1/gacsst/pfv50/ref/90//3wk-199001.b09w1pfv50-f7-7@pst map=/usr5/gacsst/gacmask/bin2bin.u04to09\\012\\001PATHTIME May 28 18:41:40 2003 PATHTIME WQ=D ASC=D IN=/i1/gacsst/pfv50/tope/b045.file1pfv50 OUT=/r1/gacsst/pfv50/b045/90/1990001-1990005.b0451pfv50@pst@sst@pst@bin_number \\011satzen=f\\012\\002PATHTIME /i1/gacsst/pfv50/tope//1990001.b04d1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/pfv50/tope//1990002.b04d1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/pfv50/tope//1990003.b04d1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/pfv50/tope//1990004.b04d1pfv50@pst@bin_number\\012\\002PATHTIME /i1/gacsst/pfv50/tope//1990005.b04d1pfv50@pst@bin_number\\012\\001PATHMAP May 31 13:23:27 2003 PATHMAP STAT=M QUAL=A WQ=D PIXSIZ=16 \\011\\011    IN=/i1/gacsst/pfv50/tomp//1990001-1990005.b0451pfv50@pst@sst OUT=(IMG=/mo1/gacsst/pfv50/m045/90/1990001-1990005.s0451pfv50-sst-16b@sst SLO= 0.075       INT=  -3.0      )\\012\\004PATHMAP Output image pixel, line size =    8192,    4096\\012\\004PATHMAP Grid spacing (X,Y) = (        3.00,        3.00), Projection Code=     7\\012\\004PATHMAP Projection Origin Lon,Lat,Rotation =         0.00        0.00        0.00\\012\\004PATHMAP center lon,lat,width, or height =        0.00       0.00       0.00     179.96\\012\\012d\\300\\000\\000";
+    }
+    sst {
+        Byte dsp_PixelType 1;
+        Byte dsp_PixelSize 2;
+        Uint16 dsp_Flag 0;
+        Uint16 dsp_nBits 16;
+        Int32 dsp_LineSize 0;
+        String dsp_cal_name "Temperature";
+        String units "Temp";
+        Uint16 dsp_cal_eqnNumber 2;
+        Uint16 dsp_cal_CoeffsLength 8;
+        Float32 dsp_cal_coeffs 0.075, -3;
+        Float32 scale_factor 0.075;               //important
+        Float32 add_off -3;                       //important
+    }
+    sst_dim_0 {
+        String name "lat";
+        String long_name "latitude";
+    }
+    sst_dim_1 {
+        String name "lon";
+        String long_name "longitude";
+    }
+}
+*** typical lat:
+http://data.nodc.noaa.gov/cgi-bin/nph-dods/pathfinder/Version5.0/5day/1990/1990001-1990005.s0451pfv50-sst-16b.hdf.ascii?lat
+Dataset: 1990001-1990005.s0451pfv50-sst-16b.hdf
+lat, 89.9800033569336, 89.9360580444336, 89.8921127319336, 89.8481674194336, 89.8042144775391, 89.7602691650391, ...
+[monotonic DESCENDING, and intervals not consistent]
+
+*** typical lon:
+Dataset: 1990001-1990005.s0451pfv50-sst-16b.hdf
+lon, -179.981979370117, -179.938034057617, -179.894088745117, -179.850143432617, -179.806198120117, -179.762252807617, ...
+
+*** typical grid:
+Dataset: 1990001-1990005.s0451pfv50-sst-16b.hdf
+sst.lon, -136.035705566406, -135.991760253906, -135.947814941406, -135.903869628906, -135.859924316406, -135.815963745117, -135.772018432617, -135.728073120117, -135.684127807617, -135.640182495117, -135.596237182617, -135.552291870117, -135.508346557617, -135.464401245117, -135.420455932617, -135.376510620117, -135.332565307617, -135.288619995117, -135.244674682617, -135.200729370117, -135.156784057617
+sst.sst[sst.lat=46.0337257385254], 73, 73, 63, 63, 84, 87, 78, 78, 176, 176, 176, 176, 79, 174, 174, 173, 174, 177, 177, 177, 177
+sst.sst[sst.lat=45.9897804260254], 104, 104, 61, 180, 75, 75, 73, 83, 74, 74, 78, 94, 86, 86, 88, 47, 47, 172, 172, 171, 171
+sst.sst[sst.lat=45.9458351135254], 88, 77, 176, 176, 176, 180, 180, 180, 59, 77, 89, 89, 70, 171, 171, 171, 171, 172, 172, 172, 171
+sst.sst[sst.lat=45.9018859863281], 47, 182, 182, 178, 177, 177, 176, 178, 84, 84, 174, 174, 174, 174, 175, 176, 176, 176, 169, 170, 168
+sst.sst[sst.lat=45.8579406738281], 49, 60, 167, 182, 182, 178, 178, 178, 178, 178, 74, 114, 114, 120, 94, 94, 95, 90, 91, 91, 73
+sst.sst[sst.lat=45.8139953613281], 41, 70, 70, 64, 167, 72, 72, 80, 178, 79, 79, 101, 94, 94, 100, 83, 96, 96, 179, 179, 92
+sst.sst[sst.lat=45.7700462341309], 52, 52, 50, 53, 53, 68, 70, 87, 87, 71, 90, 113, 113, 106, 90, 100, 100, 99, 90, 181, 181
+
+ * </pre>
+ *
+ * @author Bob Simons (bob.simons@noaa.gov) 2005-05-01
+ */
+public class GridDataSetPathfinder extends GridDataSet { 
+
+    //for Pathfinder, all possible data exists
+    //so there is no distinction between original and activeXxx
+    //so just set everything
+    String opendapUrl = "http://data.nodc.noaa.gov/cgi-bin/nph-dods/pathfinder/Version5.0/"; 
+    String[] activeTimePeriodDirectories;
+    int[]    activeTimePeriodDaysForward;
+    char[]   activeTimePeriodLetters;
+
+    int firstYear = 1985;
+    int lastYear  = 2001;
+
+    static boolean acceptDeflate = true;
+
+    //the constructor sets
+    String gridName;
+
+    //the constructor also sets
+    long newOpendapGridTime = 0;
+    long getIndexInfoTime = 0;
+    int opendapDatesCount = 0;
+
+
+    /**
+     * The constructor searches for available data and sets
+     * activeTimePeriodOptions, activeTimePeriodTitles, activeTimePeriodTimes,
+     * and activeTimePeriodFileNames.
+     * Diagnostics are printed to String2.log.
+     *
+     * @param internalName
+     * @param otherInfo info from xxxxInfo lines in CWBrowser.properties
+     * @param fgdc several lines of substitutions, 
+     *    stored in one String with newline separators
+     *    (null if unused)
+     * @throws Exception if trouble
+     */
+    public GridDataSetPathfinder(String internalName, String[] otherInfo, 
+        String fgdc) throws Exception {
+
+        //call the super constructor
+        super(internalName, otherInfo, fgdc);
+
+        //set super.timePeriodOptions, Titles, and ShortNames
+        //and related info stored in this class
+        activeTimePeriodOptions = new String[] {
+            "Monthly"};
+            //"Daily", "5 day", "7 day", "8 day", "Monthly", "Yearly"};
+        activeTimePeriodLetters = new char[] {
+            'm'};
+            //'d', '5', 'w', '8', 'm', 'y'};
+        activeTimePeriodTitles = new String[] {
+            "", //dummy main title
+    //        compositeTitle("a 1 day")}; //,
+    //        compositeTitle("a 5 day"),
+    //        compositeTitle("a 7 day"),
+    //        compositeTitle("an 8 day"),
+            compositeTitle("a 1 month")};
+    //        compositeTitle("a 1 year")};
+        activeTimePeriodDirectories = new String[] {
+            "Monthly"};
+            //"Daily", "5day", "7day", "8day", "Monthly", "Yearly"};
+        activeTimePeriodShortNames = activeTimePeriodDirectories;
+        activeTimePeriodNDays = new int[] {
+            30};
+            //1, 5, 7, 8, 30, 365}; //30 is translated to 1 month; 365 is translated to 1 year
+
+        //a GregorianCalendar object (Zulu time zone) is useful date caluculations
+        GregorianCalendar gCalendar = Calendar2.newGCalendarZulu();
+
+        //create and store the String[] for activeTimePeriodTimes for timePeriod=daily
+        int year;
+
+        /*
+        Vector dates = new Vector();
+        for (year = firstYear; year <= lastYear; year++) {
+            //set the year; how many days in the year?
+            gCalendar.set(Calendar.DAY_OF_YEAR, 1); //temporary, to avoid leniency rollovers
+            gCalendar.set(Calendar.YEAR, year);
+            int nDays = gCalendar.getActualMaximum(Calendar.DAY_OF_YEAR);
+
+            //create the date strings
+            for (int day = 1; day <= nDays; day++) {
+                gCalendar.set(Calendar.DAY_OF_YEAR, day);
+                dates.add(Calendar2.formatAsISODate(gCalendar));
+            }
+        } 
+        activeTimePeriodTimes.add(String2.toStringArray(dates.toArray())); //store it
+        */
+
+        //Monthly
+        Vector dates = new Vector();
+        for (year = firstYear; year <= lastYear; year++) {
+            //set the year
+            gCalendar.set(Calendar.YEAR, year);
+
+            //create the date strings
+            for (int month = 0; month <= 11; month++) {
+                gCalendar.set(Calendar.DAY_OF_MONTH, 1); //temporary, to avoid leniency rollovers
+                gCalendar.set(Calendar.MONTH, month);
+                int nDays = gCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+                gCalendar.set(Calendar.DAY_OF_MONTH, nDays);
+                dates.add(Calendar2.formatAsISODate(gCalendar));
+            }
+        } 
+        activeTimePeriodTimes.add(String2.toStringArray(dates.toArray())); //store it
+ 
+        if (verbose) 
+            String2.log(
+                "Options: "     + String2.toCSVString(activeTimePeriodOptions) + "\n" +
+                "Titles: "      + String2.toCSVString(activeTimePeriodTitles) + "\n" +
+                "ShortNames: "  + String2.toCSVString(activeTimePeriodShortNames) + "\n" +
+                "NDays: "       + String2.toCSVString(activeTimePeriodNDays) + "\n" +
+                "DaysForward: " + String2.toCSVString(activeTimePeriodDaysForward));
+    }        
+
+    /**
+     * Create a .grd file if it doesn't already exist.
+     *
+     * @param timePeriodIndex
+     * @param dateIndex 
+     * @param newDir  the directory for the new grd file
+     * @param newName the name for the new grd file (ending in .grd)
+     * @param minX
+     * @param maxX
+     * @param minY
+     * @param maxY
+     * @throws Exception
+     */
+    public void makeGrd(int timePeriodIndex, int dateIndex, 
+        String newDir, String newName, 
+        double minX, double maxX, 
+        double minY, double maxY) throws Exception {
+
+        if (verbose) 
+            String2.log(
+                "CWDataSetPathfinder.makeGrd(" +
+                " timePeriodIndex=" + timePeriodIndex +
+                " dateIndex=" + dateIndex +
+                "\n  newDir=" + newDir +
+                "\n  newName=" + newName +
+                "\n  minX=" + minX +
+                " maxX=" + maxX +
+                " minY=" + minY +
+                " maxY=" + maxY + ")");
+
+        //make the base file with region's data
+        if (File2.touch(newDir + newName)) {
+            String2.log("makeGrd: reuse " + newName);  
+            return;
+        }
+
+        //set up
+        String originalDateString = 
+            ((String[])activeTimePeriodTimes.get(timePeriodIndex))[dateIndex];
+        String dateString; //what I need: appropriately formatted (see Pathfinder doc)
+
+        //generate the url's for the data
+        //see Pathfinder documentation for description of file names
+        //if (timePeriodIndex == 0) { //daily
+        //    dateString = Calendar2.formatAsYYYYDDD(
+        //        Calendar2.parseISODateString(originalDateString));
+        if (timePeriodIndex == 0) { //monthly
+            dateString = Calendar2.formatAsYYYYMM(
+                Calendar2.parseISODateString(originalDateString));
+        } else throw new RuntimeException(
+            ERROR + " in CWDataSetPathfinder.makeGrd: invalid timePeriodIndex(" + timePeriodIndex + ")."); 
+
+        //generate the 4 url's
+        // 1999001 s|m=16|8bit 04=resolution d|5|w|8|m|y=daily,... 
+        // 1|3=day|nighttime pfv50=PathfinderVersion5.0 -sst -16b=16bit .hdf
+        String dir = opendapUrl + 
+            activeTimePeriodShortNames[timePeriodIndex] + "/" + // e.g., Daily/
+            originalDateString.substring(0, 4) + "/"; // e.g., 1999/
+        char letter = activeTimePeriodLetters[timePeriodIndex];
+        String sstDayUrl    = dir + dateString + ".s04" + letter + "1pfv50-sst-16b.hdf"; 
+        String sstNightUrl  = dir + dateString + ".s04" + letter + "3pfv50-sst-16b.hdf"; 
+        String qualDayUrl   = dir + dateString + ".m04" + letter + "1pfv50-qual.hdf"; 
+        String qualNightUrl = dir + dateString + ".m04" + letter + "3pfv50-qual.hdf"; 
+        String2.log(
+            "sstDayUrl=   " + sstDayUrl    + "\n" +
+            "sstNightUrl= " + sstNightUrl  + "\n" +
+            "qualDayUrl=  " + qualDayUrl   + "\n" +
+            "qualNightUrl=" + qualNightUrl);
+
+        //create the 4 .grd files
+        minX = Math2.looserAngle0360(minX);
+        maxX = Math2.looserAngle0360(maxX);
+        int randomInt = Math2.random(1000000000);
+        
+        makeGrd(sstDayUrl,    newDir, randomInt + "sstDay.grd",    "sst",  minX, maxX, minY, maxY);  
+        //makeGrd(sstNightUrl,  newDir, randomInt + "sstNight.grd",  "sst",  minX, maxX, minY, maxY);  
+        //makeGrd(qualDayUrl,   newDir, randomInt + "qualDay.grd",   "qual", minX, maxX, minY, maxY);  
+        //makeGrd(qualNightUrl, newDir, randomInt + "qualNight.grd", "qual", minX, maxX, minY, maxY);  
+
+        //use grdmath to make the desired .grd file
+        String tName = randomInt + "sstDay.grd"; //JUST FOR TEST PURPOSES
+        //NEED TO PROCESS THE 4 FILES:
+        //  RESTRICT EACH SST TO JUST QUAL=7 PIXELS
+        //  THEN COMBINE THE DAY AND NIGHT SST.
+            
+        //rename it to desired name and delete the temp files
+        File2.rename(newDir, tName, newName);
+        File2.delete(newDir + randomInt + "sstDay.grd");
+        File2.delete(newDir + randomInt + "sstNight.grd");
+        File2.delete(newDir + randomInt + "qualDay.grd");
+        File2.delete(newDir + randomInt + "qualNight.grd");
+
+    }
+
+    /** 
+     * Given a completeUrl and range info, make a .grd file.
+     * @param completeUrl
+     * @param newDir  the directory for the new grd file
+     * @param newName the name for the new grd file (ending in .grd)
+     * @param gridName e.g., "sst" or "qual"
+     * @param minX
+     * @param maxX
+     * @param minY
+     * @param maxY
+     * @throws Exception if trouble
+     */
+    public static void makeGrd(String completeUrl, 
+        String newDir, String newName, String gridName,
+        double minX, double maxX, 
+        double minY, double maxY) throws Exception {
+
+        Opendap opendap = new Opendap(completeUrl, acceptDeflate);
+        opendap.getGridInfo(gridName, "0");  //0??? A guess. I looked in files.
+        if (opendap.gridLatDimension < 0 || opendap.gridLonDimension < 0)
+            throw new RuntimeException("Pathfinder dataset (" + completeUrl + ")\n" +
+                "  grid (" + gridName + ") wasn't found.");
+
+        opendap.makeGrd(null, //no desiredTimeOption
+            minX, maxX, 
+            minY, maxY,
+            opendap.gridLonIncrement, opendap.gridLatIncrement, //use max data resolution
+            newDir, newName);  
+    }
+
+}

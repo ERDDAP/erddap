@@ -1,0 +1,81 @@
+#!/bin/csh
+#
+# usage: ./grdtohdf <infile> <outfile> <varName> 
+#
+# Inputs:
+#         <infile> - input .grd file full path
+#         <outfile> - outpu file fullpath. Must have write permission
+#                     as this is where chump will work.
+#         <varName> - variable name to appear in matlab file
+#
+# Programs converts WC CoastWatch files from GMT netCDF files
+#   to CoastWatch-style .hdf files.  Does some actual work in the output directory.
+# naming convention and use that. Matlab file will contain three arrays:
+#   "variable", "longitude", "latitude" and two scalars: delx, dely
+#
+# 13 January 2003
+# CoastWatch/DGF
+# modified from grd2matlab RAS 2005-06-06
+#
+
+if ($#argv == 3) then
+  set infile = $1
+  set outfile = $2
+  set varName = $3
+
+else
+  echo "Incorrect number of input arguments.  Please try again."
+  echo "usage: ./grdtomatlab <infile> <outfile> <varName>"
+  echo "Have a pleasant day."
+  exit
+endif
+
+echo "Working on $infile to $outfile for $varName"
+
+# identify working directory - same as output directory
+set groups = `echo $infile | sed 's/\// /g'`
+set infilename = $groups[$#groups]
+set groups = `echo $outfile | sed 's/\// /g'`
+set outfilename = $groups[$#groups]
+set ncharall = `echo $outfile | wc -c`
+set ncharfile = `echo $outfilename | wc -c`
+@ nchardir = ( $ncharall - $ncharfile ) - 1
+set OUT_DIR = `echo $outfile | cut -c1-$nchardir`
+set WORK_DIR = $OUT_DIR/CHUMP_AT_WORK
+
+# some basic directory structures which must be identified
+# note: this is a major weakness, but this be CHEAP CHUMP
+set BIN_DIR = /u00/chump
+set REF_DIR = /u00/ref
+
+# purge and create working directory
+if (-e $WORK_DIR) then
+  rm -r $WORK_DIR
+endif
+
+mkdir $WORK_DIR
+cd $WORK_DIR
+
+# copy GMT grd file of interest to work space
+cp $infile $WORK_DIR/$infilename
+
+# get grid spacing
+set delx = `grdinfo $infilename | grep "x_inc" | awk '{ print $7}'`
+set dely = `grdinfo $infilename | grep "y_inc" | awk '{ print $7}'`
+
+# convert to xyz
+grd2xyz $infilename > $WORK_DIR/$infilename.xyz
+
+# set up matlab control script
+echo "path(path,'$BIN_DIR')" >! $WORK_DIR/matlab_control
+echo "cd $WORK_DIR" >> $WORK_DIR/matlab_control
+echo "chump_make_grd2hdf('$infilename.xyz','$outfile','$varName',$delx,$dely)" >> $WORK_DIR/matlab_control
+echo "quit" >> $WORK_DIR/matlab_control
+
+# execute matlab script
+$BIN_DIR/matcom $WORK_DIR/matlab_control $WORK_DIR/matlab_log
+
+# clean up
+rm -r $WORK_DIR
+
+# fin 

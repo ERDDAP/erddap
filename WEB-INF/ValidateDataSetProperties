@@ -1,0 +1,20 @@
+#!/bin/csh
+#
+# usage: ValidateDataSetProperties
+#
+# ValidateDataSetProperties makes sure that DataSet.properties has all of 
+# the required information for each of the data sets listed in 
+# DataSet.properties' validDataSets.
+# Don't run this on the coastwatch computer.
+#
+# To make this Linux/Unix script executable, use "chmod +x ValidateDataSetProperties".
+#
+# 2006-10-09
+# NOAA/Bob Simons  bob.simons@noaa.gov
+#
+
+set commandLine=$0
+set thisDir=`echo commandLine | dirname $0`
+java -cp $thisDir/classes:$thisDir/lib/netcdfAll-latest.jar:$thisDir/lib/slf4j-jdk14.jar:$thisDir/lib/activation.jar:$thisDir/lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.ValidateDataSetProperties
+
+# finished 
