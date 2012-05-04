@@ -185,7 +185,8 @@ public class PseudoRealTimeData implements SGTLine, ActionListener {
     xData_ = new GeoDate[bufsize_];
     yData_ = new double[bufsize_];
     try {
-      ref_ = new GeoDate("1999-01-01 00:00", "yyyy-MM-dd HH:mm");
+      //2011-12-15 Bob Simons changed space to 'T'
+      ref_ = new GeoDate("1999-01-01T00:00", "yyyy-MM-dd'T'HH:mm");
     } catch (IllegalTimeValue e) {
       e.printStackTrace();
     }

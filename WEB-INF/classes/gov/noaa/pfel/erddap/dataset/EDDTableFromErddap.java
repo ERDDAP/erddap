@@ -84,6 +84,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         String tLocalSourceUrl = null;
 
         //process the tags
@@ -119,11 +121,16 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             else if (localTags.equals("</onChange>")) 
                 tOnChange.add(content); 
 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+
             else xmlReader.unexpectedTagException();
         }
 
         return new EDDTableFromErddap(tDatasetID, tAccessibleTo, 
-            tOnChange, tReloadEveryNMinutes, tLocalSourceUrl);
+            tOnChange, tFgdcFile, tIso19115File, tReloadEveryNMinutes, tLocalSourceUrl);
     }
 
     /**
@@ -138,13 +145,19 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
      * @param tLocalSourceUrl the url to which .das or .dds or ... can be added
      * @throws Throwable if trouble
      */
     public EDDTableFromErddap(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, int tReloadEveryNMinutes, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        int tReloadEveryNMinutes, 
         String tLocalSourceUrl) throws Throwable {
 
         if (verbose) String2.log(
@@ -158,6 +171,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         datasetID = tDatasetID;
         //setAccessibleTo(tAccessibleTo);  disabled. see above.
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         addGlobalAttributes = new Attributes();
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         localSourceUrl = tLocalSourceUrl;
@@ -532,12 +547,12 @@ try {
             EDD edd = oneFromXmlFragment(results);
             if (edd.title().equals("GLOBEC NEP Rosette Bottle Data (2002)")) {
                 Test.ensureEqual(edd.datasetID(), "0_0_4b4a_d1d6_068b", "");
-                Test.ensureEqual(String2.toCSVString(edd.dataVariableDestinationNames()), 
+                Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                     "cruise_id, ship, cast, longitude, latitude, time, bottle_posn, chl_a_total, chl_a_10um, phaeo_total, phaeo_10um, sal00, sal11, temperature0, temperature1, fluor_v, xmiss_v, PO4, N_N, NO3, Si, NO2, NH4, oxygen, par", 
                     "");
             } else if (edd.title().equals("CalCOFI Fish Larvae Count")) {
                 Test.ensureEqual(edd.datasetID(), "0_0_0e34_4614_10bc", "");
-                Test.ensureTrue(String2.toCSVString(edd.dataVariableDestinationNames()).startsWith( 
+                Test.ensureTrue(String2.toCSSVString(edd.dataVariableDestinationNames()).startsWith( 
 "longitude, latitude, altitude, time, ID, line_number, station_number, ship, TotalFishEggs, " +
 "TotalFishLarvae, TotalPlanktonVolume, Argyropelecus_spp_Larvae, Arrow_goby_Larvae, " +
 "Artedius_spp_Larvae, Atlantic_fangjaw_Larvae, Aurora_rockfish_Larvae, Barradcudinas_Larvae"),
@@ -830,6 +845,7 @@ try {
 "    String cdm_trajectory_variables \"cruise_id, ship\";\n" +
 "    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting -124.1;\n" +
+"    String featureType \"TrajectoryProfile\";\n" +
 "    Float64 geospatial_lat_max 44.65;\n" +
 "    Float64 geospatial_lat_min 41.9;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -844,6 +860,22 @@ try {
 expected2 = 
 "    String infoUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";\n" +
 "    String institution \"GLOBEC\";\n" +
+"    String keywords \"10um,\n" +
+"Biosphere > Vegetation > Photosynthetically Active Radiation,\n" +
+"Oceans > Ocean Chemistry > Ammonia,\n" +
+"Oceans > Ocean Chemistry > Chlorophyll,\n" +
+"Oceans > Ocean Chemistry > Nitrate,\n" +
+"Oceans > Ocean Chemistry > Nitrite,\n" +
+"Oceans > Ocean Chemistry > Nitrogen,\n" +
+"Oceans > Ocean Chemistry > Oxygen,\n" +
+"Oceans > Ocean Chemistry > Phosphate,\n" +
+"Oceans > Ocean Chemistry > Pigments,\n" +
+"Oceans > Ocean Chemistry > Silicate,\n" +
+"Oceans > Ocean Optics > Attenuation/Transmission,\n" +
+"Oceans > Ocean Temperature > Water Temperature,\n" +
+"Oceans > Salinity/Density > Salinity,\n" +
+"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -999,22 +1031,27 @@ expected2 =
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
             expected = 
-"longitude, NO3, time, ship\n" +
-"degrees_east, micromoles L-1, UTC, \n" +
-"-124.4, 35.7, 2002-08-03T01:29:00Z, New_Horizon\n" +
-"-124.4, 35.48, 2002-08-03T01:29:00Z, New_Horizon\n" +
-"-124.4, 31.61, 2002-08-03T01:29:00Z, New_Horizon\n";
-            expected2 = "-124.8, NaN, 2002-08-03T07:17:00Z, New_Horizon\n"; //row with missing value  has source missing value
-            expected3 = "-124.1, 24.45, 2002-08-19T20:18:00Z, New_Horizon\n"; //last row
+"longitude,NO3,time,ship\n" +
+"degrees_east,micromoles L-1,UTC,\n" +
+"-124.4,35.7,2002-08-03T01:29:00Z,New_Horizon\n" +
+"-124.4,35.48,2002-08-03T01:29:00Z,New_Horizon\n" +
+"-124.4,31.61,2002-08-03T01:29:00Z,New_Horizon\n";
+            expected2 = "-124.8,NaN,2002-08-03T07:17:00Z,New_Horizon\n"; //row with missing value  has source missing value
+            expected3 = "-124.1,24.45,2002-08-19T20:18:00Z,New_Horizon\n"; //last row
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
             Test.ensureTrue(results.indexOf(expected2) > 0, "\nresults=\n" + results);
             Test.ensureTrue(results.endsWith(expected3), "\nresults=\n" + results);
 
             if (testLocalErddapToo) {
-                results = SSR.getUrlResponseString(localUrl + ".csv?" + userDapQuery);
-                Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-                Test.ensureTrue(results.indexOf(expected2) > 0, "\nresults=\n" + results);
-                Test.ensureTrue(results.endsWith(expected3), "\nresults=\n" + results);
+                try {
+                    results = SSR.getUrlResponseString(localUrl + ".csv?" + userDapQuery);
+                    Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+                    Test.ensureTrue(results.indexOf(expected2) > 0, "\nresults=\n" + results);
+                    Test.ensureTrue(results.endsWith(expected3), "\nresults=\n" + results);
+                } catch (Throwable t) {
+                    String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                        "\nUnexpected error.\nPress ^C to stop or Enter to continue...");
+                }
             }
 
             //.das     das isn't affected by userDapQuery
@@ -1072,6 +1109,7 @@ expected2 =
 "    String cdm_trajectory_variables \"cruise_id, ship\";\n" +
 "    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" + 
 "    Float64 Easternmost_Easting -124.1;\n" +
+"    String featureType \"TrajectoryProfile\";\n" +
 "    Float64 geospatial_lat_max 44.65;\n" +
 "    Float64 geospatial_lat_min 41.9;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -1084,6 +1122,22 @@ today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
 today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" +
 "    String infoUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";\n" +
 "    String institution \"GLOBEC\";\n" +
+"    String keywords \"10um,\n" +
+"Biosphere > Vegetation > Photosynthetically Active Radiation,\n" +
+"Oceans > Ocean Chemistry > Ammonia,\n" +
+"Oceans > Ocean Chemistry > Chlorophyll,\n" +
+"Oceans > Ocean Chemistry > Nitrate,\n" +
+"Oceans > Ocean Chemistry > Nitrite,\n" +
+"Oceans > Ocean Chemistry > Nitrogen,\n" +
+"Oceans > Ocean Chemistry > Oxygen,\n" +
+"Oceans > Ocean Chemistry > Phosphate,\n" +
+"Oceans > Ocean Chemistry > Pigments,\n" +
+"Oceans > Ocean Chemistry > Silicate,\n" +
+"Oceans > Ocean Optics > Attenuation/Transmission,\n" +
+"Oceans > Ocean Temperature > Water Temperature,\n" +
+"Oceans > Salinity/Density > Salinity,\n" +
+"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -1196,75 +1250,92 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" 
                 globecBottle.className() + "_Data", ".nc"); 
             results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
             String tHeader = 
-    "netcdf EDDTableFromErddap_Data.nc {\n" +
-    " dimensions:\n" +
-    "   row = 100;\n" +
-    "   shipStringLength = 11;\n" +
-    " variables:\n" +
-    "   float longitude(row=100);\n" +
-    "     :_CoordinateAxisType = \"Lon\";\n" +
-    "     :actual_range = -125.67f, -124.8f; // float\n" +
-    "     :axis = \"X\";\n" +
-    "     :colorBarMaximum = -115.0; // double\n" +
-    "     :colorBarMinimum = -135.0; // double\n" +
-    "     :ioos_category = \"Location\";\n" +
-    "     :long_name = \"Longitude\";\n" +
-    "     :standard_name = \"longitude\";\n" +
-    "     :units = \"degrees_east\";\n" +
-    "   float NO3(row=100);\n" +
-    "     :_FillValue = -99.0f; // float\n" +
-    "     :actual_range = 0.46f, 34.09f; // float\n" +
-    "     :colorBarMaximum = 50.0; // double\n" +
-    "     :colorBarMinimum = 0.0; // double\n" +
-    "     :ioos_category = \"Dissolved Nutrients\";\n" +
-    "     :long_name = \"Nitrate\";\n" +
-    "     :missing_value = -9999.0f; // float\n" +
-    "     :standard_name = \"mole_concentration_of_nitrate_in_sea_water\";\n" +
-    "     :units = \"micromoles L-1\";\n" +
-    "   double time(row=100);\n" +
-    "     :_CoordinateAxisType = \"Time\";\n" +
-    "     :actual_range = 1.02928674E9, 1.02936804E9; // double\n" +
-    "     :axis = \"T\";\n" +
-    "     :cf_role = \"profile_id\";\n" +
-    "     :ioos_category = \"Time\";\n" +
-    "     :long_name = \"Time\";\n" +
-    "     :standard_name = \"time\";\n" +
-    "     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
-    "     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
-    "   char ship(row=100, shipStringLength=11);\n" +
-    "     :ioos_category = \"Identifier\";\n" +
-    "     :long_name = \"Ship\";\n" +
-    "\n" +
-    " :cdm_altitude_proxy = \"bottle_posn\";\n" +
-    " :cdm_data_type = \"TrajectoryProfile\";\n" +
-    " :cdm_profile_variables = \"cast, longitude, latitude, time\";\n" +
-    " :cdm_trajectory_variables = \"cruise_id, ship\";\n" +
-    " :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" + 
+"netcdf EDDTableFromErddap_Data.nc {\n" +
+" dimensions:\n" +
+"   row = 100;\n" +
+"   shipStringLength = 11;\n" +
+" variables:\n" +
+"   float longitude(row=100);\n" +
+"     :_CoordinateAxisType = \"Lon\";\n" +
+"     :actual_range = -125.67f, -124.8f; // float\n" +
+"     :axis = \"X\";\n" +
+"     :colorBarMaximum = -115.0; // double\n" +
+"     :colorBarMinimum = -135.0; // double\n" +
+"     :ioos_category = \"Location\";\n" +
+"     :long_name = \"Longitude\";\n" +
+"     :standard_name = \"longitude\";\n" +
+"     :units = \"degrees_east\";\n" +
+"   float NO3(row=100);\n" +
+"     :_FillValue = -99.0f; // float\n" +
+"     :actual_range = 0.46f, 34.09f; // float\n" +
+"     :colorBarMaximum = 50.0; // double\n" +
+"     :colorBarMinimum = 0.0; // double\n" +
+"     :ioos_category = \"Dissolved Nutrients\";\n" +
+"     :long_name = \"Nitrate\";\n" +
+"     :missing_value = -9999.0f; // float\n" +
+"     :standard_name = \"mole_concentration_of_nitrate_in_sea_water\";\n" +
+"     :units = \"micromoles L-1\";\n" +
+"   double time(row=100);\n" +
+"     :_CoordinateAxisType = \"Time\";\n" +
+"     :actual_range = 1.02928674E9, 1.02936804E9; // double\n" +
+"     :axis = \"T\";\n" +
+"     :cf_role = \"profile_id\";\n" +
+"     :ioos_category = \"Time\";\n" +
+"     :long_name = \"Time\";\n" +
+"     :standard_name = \"time\";\n" +
+"     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"   char ship(row=100, shipStringLength=11);\n" +
+"     :ioos_category = \"Identifier\";\n" +
+"     :long_name = \"Ship\";\n" +
+"\n" +
+" :cdm_altitude_proxy = \"bottle_posn\";\n" +
+" :cdm_data_type = \"TrajectoryProfile\";\n" +
+" :cdm_profile_variables = \"cast, longitude, latitude, time\";\n" +
+" :cdm_trajectory_variables = \"cruise_id, ship\";\n" +
+" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" + 
 //goofy lat=double  lon=float!
-    " :Easternmost_Easting = -124.8f; // float\n" +
-    " :geospatial_lat_units = \"degrees_north\";\n" +
-    " :geospatial_lon_max = -124.8f; // float\n" +
-    " :geospatial_lon_min = -125.67f; // float\n" +
-    " :geospatial_lon_units = \"degrees_east\";\n" +
-    " :history = \"" + today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
-    today + " http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das\n" +
-    today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
-    today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.nc?longitude,NO3,time,ship&latitude>0&time>=2002-08-14&time<=2002-08-15\";\n" +
-    " :id = \"EDDTableFromErddap_Data\";\n" +
-    " :infoUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";\n" +
-    " :institution = \"GLOBEC\";\n" +
-    " :license = \"The data may be used and redistributed for free but is not intended\n" +
-    "for legal use, since it may contain inaccuracies. Neither the data\n" +
-    "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
-    "of their employees or contractors, makes any warranty, express or\n" +
-    "implied, including warranties of merchantability and fitness for a\n" +
-    "particular purpose, or assumes any legal liability for the accuracy,\n" +
-    "completeness, or usefulness, of this information.\";\n" +
-    " :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
-    " :observationDimension = \"row\";\n" +
-    " :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\";\n" +
-    " :standard_name_vocabulary = \"CF-12\";\n" +
-    " :subsetVariables = \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
+" :Easternmost_Easting = -124.8f; // float\n" +
+" :featureType = \"TrajectoryProfile\";\n" +
+" :geospatial_lat_units = \"degrees_north\";\n" +
+" :geospatial_lon_max = -124.8f; // float\n" +
+" :geospatial_lon_min = -125.67f; // float\n" +
+" :geospatial_lon_units = \"degrees_east\";\n" +
+" :history = \"" + today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
+today + " http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das\n" +
+today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
+today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.nc?longitude,NO3,time,ship&latitude>0&time>=2002-08-14&time<=2002-08-15\";\n" +
+" :id = \"EDDTableFromErddap_Data\";\n" +
+" :infoUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";\n" +
+" :institution = \"GLOBEC\";\n" +
+" :keywords = \"10um,\n" +
+"Biosphere > Vegetation > Photosynthetically Active Radiation,\n" +
+"Oceans > Ocean Chemistry > Ammonia,\n" +
+"Oceans > Ocean Chemistry > Chlorophyll,\n" +
+"Oceans > Ocean Chemistry > Nitrate,\n" +
+"Oceans > Ocean Chemistry > Nitrite,\n" +
+"Oceans > Ocean Chemistry > Nitrogen,\n" +
+"Oceans > Ocean Chemistry > Oxygen,\n" +
+"Oceans > Ocean Chemistry > Phosphate,\n" +
+"Oceans > Ocean Chemistry > Pigments,\n" +
+"Oceans > Ocean Chemistry > Silicate,\n" +
+"Oceans > Ocean Optics > Attenuation/Transmission,\n" +
+"Oceans > Ocean Temperature > Water Temperature,\n" +
+"Oceans > Salinity/Density > Salinity,\n" +
+"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
+" :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
+" :license = \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+" :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :observationDimension = \"row\";\n" +
+" :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\";\n" +
+" :standard_name_vocabulary = \"CF-12\";\n" +
+" :subsetVariables = \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
 " :summary = \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
 "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
 "Notes:\n" +
@@ -1360,11 +1431,12 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" 
     public static void test() throws Throwable {
         String2.log("\n****************** EDDTableFromErddap.test() *****************\n");
         testVerboseOn();
-
+        
         //always done
+/* 
         testBasic(false);
         testBasic(true);
-        testGenerateDatasetsXml();
+   */     testGenerateDatasetsXml();
         
         //not usually done
 

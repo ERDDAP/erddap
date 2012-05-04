@@ -74,7 +74,7 @@ public class NDimensionalIndex {
             if (shape[i] < 1)
                 throw new RuntimeException(String2.ERROR + 
                     " in NDimensionalIndex constructor: shape=[" + 
-                    String2.toCSVString(shape) + "] has a value less than 1.");
+                    String2.toCSSVString(shape) + "] has a value less than 1.");
             factors[i] = size;
             size *= shape[i];
         }
@@ -88,7 +88,7 @@ public class NDimensionalIndex {
      * @return a String representation of this nDimensionalIndex.
      */
     public String toString() {
-        return "NDimensionalIndex([" + String2.toCSVString(shape) + "])";
+        return "NDimensionalIndex([" + String2.toCSSVString(shape) + "])";
     }
 
     /**
@@ -262,8 +262,8 @@ public class NDimensionalIndex {
         for (int i = 0; i < nDimensions; i++) {
             if (tCurrent[i] < 0 || tCurrent[i] >= shape[i])
                 throw new RuntimeException(String2.ERROR + " in NDimensionalIndex.setCurrent: tCurrent=[" + 
-                    String2.toCSVString(tCurrent) + "] is invalid for shape=[" +
-                    String2.toCSVString(tCurrent) + "].");
+                    String2.toCSSVString(tCurrent) + "] is invalid for shape=[" +
+                    String2.toCSSVString(shape) + "].");
             index += current[i] * factors[i];
         }
         return index; 

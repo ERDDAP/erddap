@@ -78,6 +78,22 @@ public class CharArray extends PrimitiveArray {
     }
 
     /**
+     * A special constructor which encodes all short values as char values via
+     * <tt>ch[i] = (char)sh[i]</tt>.
+     * Note that the cohort 'missingValue' of a CharArray is different from the
+     * missingValue of a ShortArray.
+     * 'size' will equal anArray.length.
+     *
+     * @param shortArray 
+     */
+    public CharArray(short[] shortArray) {
+        size = shortArray.length;
+        array = new char[size];
+        for (int i = 0; i < size; i++)
+            array[i] = (char)shortArray[i];
+    }
+
+    /**
      * This returns the current capacity (number of elements) of the internal data array.
      * 
      * @return the current capacity (number of elements) of the internal data array.
@@ -110,9 +126,10 @@ public class CharArray extends PrimitiveArray {
      *
      * @param startIndex must be a valid index
      * @param stride   must be at least 1
-     * @param stopIndex (inclusive) must be &gt;= startIndex and &lt; size.
+     * @param stopIndex (inclusive) If &gt;= size, it will be changed to size-1.
      * @return a new PrimitiveArray with the desired subset.
      *    It will have a new backing array with a capacity equal to its size.
+     *    If stopIndex &lt; startIndex, this returns PrimitiveArray with size=0;
      */
     public PrimitiveArray subset(int startIndex, int stride, int stopIndex) {
         if (startIndex < 0)
@@ -123,10 +140,10 @@ public class CharArray extends PrimitiveArray {
             throw new IllegalArgumentException(String2.ERROR + 
                 " in CharArray.subset: stride=" + stride +
                 " must greater than 0.");
-        if (stopIndex < startIndex || stopIndex >= size)
-            throw new IllegalArgumentException(String2.ERROR + 
-                " in CharArray.subset: stopIndex=" + startIndex +
-                " must be between startIndex=" + startIndex + " and size-1=" + (size - 1) + ".");
+        if (stopIndex >= size)
+            stopIndex = size - 1;
+        if (stopIndex < startIndex)
+            return new CharArray(new char[0]);
 
         int willFind = strideWillFind(stopIndex - startIndex + 1, stride);
         Math2.ensureMemoryAvailable(2L * willFind, "CharArray"); 
@@ -370,7 +387,7 @@ public class CharArray extends PrimitiveArray {
         if (first == last || destination == first || destination == last) 
             return; //nothing to do
         //String2.log("move first=" + first + " last=" + last + " dest=" + destination);
-        //String2.log("move initial " + String2.toCSVString(array));
+        //String2.log("move initial " + String2.toCSSVString(array));
 
         //store the range to be moved
         int nToMove = last - first;
@@ -380,19 +397,19 @@ public class CharArray extends PrimitiveArray {
         //if moving to left...    (draw diagram to visualize this)
         if (destination < first) {
             System.arraycopy(array, destination, array, destination + nToMove, first - destination);
-            //String2.log("move after shift " + String2.toCSVString(array));
+            //String2.log("move after shift " + String2.toCSSVString(array));
 
             //copy temp data into place
             System.arraycopy(temp, 0, array, destination, nToMove);
         } else {
             //moving to right
             System.arraycopy(array, last, array, first, destination - last);
-            //String2.log("move after shift " + String2.toCSVString(array));
+            //String2.log("move after shift " + String2.toCSSVString(array));
 
             //copy temp data into place
             System.arraycopy(temp, 0, array, destination - nToMove, nToMove);
         }
-        //String2.log("move done " + String2.toCSVString(array));
+        //String2.log("move done " + String2.toCSSVString(array));
 
 
     }
@@ -646,7 +663,7 @@ public class CharArray extends PrimitiveArray {
     }
 
     /**
-     * This finds the first instance of 'lookFor' starting at index 'startIndex'.
+     * This finds the first value which equals 'lookFor' starting at index 'startIndex'.
      *
      * @param lookFor the value to be looked for
      * @return the index where 'lookFor' is found, or -1 if not found.
@@ -657,7 +674,7 @@ public class CharArray extends PrimitiveArray {
 
 
     /**
-     * This finds the first instance of 'lookFor' starting at index 'startIndex'.
+     * This finds the first value which equals 'lookFor' starting at index 'startIndex'.
      *
      * @param lookFor the value to be looked for
      * @param startIndex 0 ... size-1
@@ -671,7 +688,7 @@ public class CharArray extends PrimitiveArray {
     }
 
     /**
-     * This finds the first instance of 'lookFor' starting at index 'startIndex'.
+     * This finds the first value which equals 'lookFor' starting at index 'startIndex'.
      * Here char is treated as an insigned short, so lookFor could be e.g., "65".
      *
      * @param lookFor the value to be looked for
@@ -683,10 +700,10 @@ public class CharArray extends PrimitiveArray {
     }
 
     /**
-     * This finds the last instance of 'lookFor' starting at index 'startIndex'.
+     * This finds the last value which equals 'lookFor' starting at index 'startIndex'.
      *
      * @param lookFor the value to be looked for
-     * @param startIndex 0 ... size-1
+     * @param startIndex 0 ... size-1. The search progresses towards 0.
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
     public int lastIndexOf(char lookFor, int startIndex) {
@@ -700,11 +717,11 @@ public class CharArray extends PrimitiveArray {
     }
 
     /**
-     * This finds the last instance of 'lookFor' starting at index 'startIndex'.
+     * This finds the last value which equals 'lookFor' starting at index 'startIndex'.
      * Here char is treated as an insigned short, so lookFor could be e.g., "65".
      *
      * @param lookFor the value to be looked for
-     * @param startIndex 0 ... size-1
+     * @param startIndex 0 ... size-1. The search progresses towards 0.
      * @return the index where 'lookFor' is found, or -1 if not found.
      */
     public int lastIndexOf(String lookFor, int startIndex) {
@@ -760,13 +777,13 @@ public class CharArray extends PrimitiveArray {
     }
 
     /** 
-     * This converts the elements into a comma-separated String.
+     * This converts the elements into a Comma-Space-Separated-Value (CSSV) String.
      *
-     * @return the comma-separated String representation of the values
+     * @return a Comma-Space-Separated-Value (CSSV) String representation 
      *  (with chars acting like unsigned shorts).
      */
     public String toString() {
-        return String2.toCSVString(toArray()); //toArray() get just 'size' elements
+        return String2.toCSSVString(toArray()); //toArray() get just 'size' elements
     }
 
     /** 
@@ -955,7 +972,7 @@ public class CharArray extends PrimitiveArray {
 
         //make a hashMap with all the unique values (associated values are initially all dummy)
         Integer dummy = new Integer(-1);
-        HashMap hashMap = new HashMap();
+        HashMap hashMap = new HashMap(Math2.roundToInt(1.4 * size));
         char lastValue = array[0]; //since lastValue often equals currentValue, cache it
         hashMap.put(new Character(lastValue), dummy);
         boolean alreadySorted = true;
@@ -1389,6 +1406,12 @@ public class CharArray extends PrimitiveArray {
         //subset
         PrimitiveArray ss = anArray.subset(1, 3, 4);
         Test.ensureEqual(ss.toString(), "5, 19", "");
+        ss = anArray.subset(0, 1, 0);
+        Test.ensureEqual(ss.toString(), "25", "");
+        ss = anArray.subset(0, 1, -1);
+        Test.ensureEqual(ss.toString(), "", "");
+        ss = anArray.subset(1, 1, 0);
+        Test.ensureEqual(ss.toString(), "", "");
 
         //evenlySpaced
         anArray = new CharArray(new char[] {10,20,30});

@@ -22,29 +22,22 @@ setSmoothing(0);
 setGraphArrayX("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
 setGraphArrayY("1, 2, 3, 4, 5, 6, 7, 8, 9, 10");
 
-setGroup(4);
+setGroup(5);
 setBackgroundColor(Color2.notDrawn);
 setLineColor(Color2.notDrawn);
 setTextColor(Color2.black);
 setTextFont(0);
 setTextHeight(0.18);
-setTextPosition(4);
+setTextPosition(0);
 setShapeType(34);
-setShapeHAlign(4);
-setShapeVAlign(10);
-setShapeWidth(.);
+setShapeHAlign(3);
+setShapeVAlign(3);
+setShapeWidth(8.1);
 setShapeHeight(.);
 setShapeBorder(1);
 setShapeAngle(0);
 setShapeShadow(0);
-setCharacters("<b>How does ERDDAP work?");
-create("text", "4, 5.1");
-
-setGroup(5);
-setTextPosition(0);
-setShapeHAlign(3);
-setShapeVAlign(5);
-setCharacters("<ol><li>Internally, just two simple data models<ul><li>same-sized grids<li>database-like tables<br>&nbsp;</ul><li>OPeNDAP server + more file extensions<ul><li>OPeNDAP: .dds, .das, .html, .asc, .dods<li>added: .csv, .esriAsc, .json, .mat, .nc, .odvTxt, <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.graph, .kml, .png, .pdf, ...</ul>WMS server");
-create("text", "0.6, 4.5");
+setCharacters("<b><big><color=Color2.blue4>ERDDAP's Solution</color></big></b>\n\n<p><ul>\n<li>ERDDAP is a middleman between you and remote data servers.\n  <br>You get a consistent way to request data.\n  <br>You get more options for the format of the response. \n  <br=0.5>&nbsp;\n<li>Internally, ERDDAP uses just two simple data models\n  <ul>\n  <li>Multi-dimensional grids\n  <li>Database-like tables\n  <br>&nbsp;\n  </ul>\n\n<br>That allows ERDDAP to be an OPeNDAP server \n  <br><small><small>(.dds, .das, .html, .asc, .dods)</small></small>\n  <br>with additional file extensions\n   <br><small><small>(.csv, .esriAsc, .json, .mat, .nc, .odvTxt, ... for data\n   <br>and .graph, .kml, .png, .pdf, for graphics)</small></small>\n  <br>and a WMS server.\n</ul>");
+create("bigText", "0.2, 5.800000000000001");
 
 endOfFile();

@@ -66,6 +66,8 @@ public class EDDTableCopy extends EDDTable{
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         String tExtractDestinationNames = "";
         String tOrderExtractBy = "";
         boolean checkSourceData = defaultCheckSourceData;
@@ -89,6 +91,10 @@ public class EDDTableCopy extends EDDTable{
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
             else if (localTags.equals( "<onChange>")) {}
             else if (localTags.equals("</onChange>")) tOnChange.add(content); 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<extractDestinationNames>")) {}
@@ -122,7 +128,7 @@ public class EDDTableCopy extends EDDTable{
         }
 
         return new EDDTableCopy(tDatasetID, 
-            tAccessibleTo, tOnChange, tReloadEveryNMinutes, 
+            tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, tReloadEveryNMinutes, 
             tExtractDestinationNames, tOrderExtractBy, tSourceNeedsExpandedFP_EQ,
             tSourceEdd);
     }
@@ -139,6 +145,11 @@ public class EDDTableCopy extends EDDTable{
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
      * @param tExtractDestinationNames a space separated list of destination names (at least one)
@@ -165,7 +176,9 @@ public class EDDTableCopy extends EDDTable{
      * @throws Throwable if trouble
      */
     public EDDTableCopy(String tDatasetID, 
-        String tAccessibleTo, StringArray tOnChange, int tReloadEveryNMinutes,
+        String tAccessibleTo, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        int tReloadEveryNMinutes,
         String tExtractDestinationNames, String tOrderExtractBy,
         Boolean tSourceNeedsExpandedFP_EQ,
         EDDTable tSourceEdd) throws Throwable {
@@ -182,9 +195,15 @@ public class EDDTableCopy extends EDDTable{
         sourceEdd = tSourceEdd;
         setAccessibleTo(tAccessibleTo);
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
 
-
+        //check some things
+        if (tSourceEdd instanceof EDDTableFromThreddsFiles) 
+            throw new IllegalArgumentException("datasets.xml error: " +
+                "EDDTableFromThreddsFiles makes its own local copy of " +
+                "the data, so it MUST NEVER be enclosed by EDDTableCopy (" + datasetID + ").");
         if (tExtractDestinationNames.indexOf(',') >= 0)
             throw new IllegalArgumentException("datasets.xml error: " +
                 "extractDestinationNames should be space separated, not comma separated.");
@@ -219,7 +238,7 @@ public class EDDTableCopy extends EDDTable{
                     if (reallyVerbose) String2.log("extractNames=" + extractNames);
                     String query = String2.replaceAll(extractNames.toString(), " ", "") + 
                         "&distinct()";
-                    String cacheDir = EDStatic.fullCacheDirectory + datasetID + "/";
+                    String cacheDir = cacheDirectory();
                     File2.makeDirectory(cacheDir);  //ensure it exists
                     TableWriterAll twa = new TableWriterAll(cacheDir, "extract");
                     TableWriter tw = encloseTableWriter(cacheDir, "extractDistinct", twa, query); 
@@ -255,7 +274,7 @@ public class EDDTableCopy extends EDDTable{
 
                         //does the file already exist
                         String fileName = String2.encodeFileNameSafe(table.getStringData(nCols-1, row));
-                        if (File2.isFile(fileDir + fileName + ".nc")) {
+                        if (File2.isFile(fileDir.toString() + fileName + ".nc")) {
                             if (reallyVerbose) String2.log("  file already exists: " + fileDir + fileName + ".nc");
                             continue;
                         }
@@ -268,14 +287,17 @@ public class EDDTableCopy extends EDDTable{
                         Object taskOA[] = new Object[6];
                         taskOA[0] = TaskThread.TASK_MAKE_A_DATAFILE;
                         taskOA[1] = sourceEdd;
-                        taskOA[2] = tQuery.toString();
-                        taskOA[3] = fileDir.toString();
+                        taskOA[2] = tQuery.toString();  //string, not StringBuilder
+                        taskOA[3] = fileDir.toString(); //string, not StringBuilder
                         taskOA[4] = fileName;
                         taskOA[5] = ".nc";
-                        taskNumber = EDStatic.addTask(taskOA);
-                        if (reallyVerbose)
-                            String2.log("  task#" + taskNumber + " TASK_MAKE_A_DATAFILE " + tQuery.toString() + "\n    " +
-                                fileDir.toString() + taskOA[4] + ".nc");
+                        int tTaskNumber = EDStatic.addTask(taskOA);
+                        if (tTaskNumber >= 0) {
+                            taskNumber = tTaskNumber;
+                            if (reallyVerbose)
+                                String2.log("  task#" + taskNumber + " TASK_MAKE_A_DATAFILE " + tQuery.toString() + "\n    " +
+                                    fileDir.toString() + fileName + ".nc");
+                        }
                     }
 
                     //create task to flag dataset to be reloaded
@@ -283,7 +305,7 @@ public class EDDTableCopy extends EDDTable{
                         Object taskOA[] = new Object[2];
                         taskOA[0] = TaskThread.TASK_SET_FLAG;
                         taskOA[1] = datasetID;
-                        taskNumber = EDStatic.addTask(taskOA);
+                        taskNumber = EDStatic.addTask(taskOA); //TASK_SET_FLAG will always be added
                         if (reallyVerbose)
                             String2.log("  task#" + taskNumber + " TASK_SET_FLAG " + datasetID);
                     }
@@ -356,7 +378,7 @@ public class EDDTableCopy extends EDDTable{
         //  and constructor will try again in 15 min.
         localEdd = makeLocalEdd(datasetID, 
             tAccessibleTo,
-            tOnChange, 
+            tOnChange, tFgdcFile, tIso19115File, 
             new Attributes(), //addGlobalAttributes
             1, //altMetersPerSourceUnit, 
             tDataVariables,
@@ -416,7 +438,7 @@ public class EDDTableCopy extends EDDTable{
      *  and constructor will try again in 15 min.
      */
     EDDTableFromFiles makeLocalEdd(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
@@ -429,7 +451,8 @@ public class EDDTableCopy extends EDDTable{
         boolean tSourceNeedsExpandedFP_EQ) 
         throws Throwable {
 
-        return new EDDTableFromNcFiles(tDatasetID, tAccessibleTo, tOnChange, 
+        return new EDDTableFromNcFiles(tDatasetID, tAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File,
             tAddGlobalAttributes, tAltMetersPerSourceUnit,
             tDataVariables, tReloadEveryNMinutes, 
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
@@ -734,8 +757,9 @@ public class EDDTableCopy extends EDDTable{
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"time, cast, longitude, latitude\";\n" +
 "    String cdm_trajectory_variables \"cruise_id, ship\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting -124.1;\n" +
+"    String featureType \"TrajectoryProfile\";\n" +
 "    Float64 geospatial_lat_max 44.65;\n" +
 "    Float64 geospatial_lat_min 41.9;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -749,6 +773,8 @@ public class EDDTableCopy extends EDDTable{
     expected2 = 
 "    String infoUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";\n" +
 "    String institution \"GLOBEC\";\n" +
+"    String keywords \"Oceans > Salinity/Density > Salinity\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -756,7 +782,7 @@ public class EDDTableCopy extends EDDTable{
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 44.65;\n" +
 "    String observationDimension \"row\";\n" +
 "    String sourceUrl \"http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle\";\n" +
@@ -884,13 +910,13 @@ public class EDDTableCopy extends EDDTable{
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
             expected = 
-"longitude, NO3, time, ship\n" +
-"degrees_east, micromoles L-1, UTC, \n" +
-"-124.4, 35.7, 2002-08-03T01:29:00Z, New_Horizon\n" +
-"-124.4, 35.48, 2002-08-03T01:29:00Z, New_Horizon\n" +
-"-124.4, 31.61, 2002-08-03T01:29:00Z, New_Horizon\n";
-            expected2 = "-124.8, NaN, 2002-08-03T07:17:00Z, New_Horizon\n"; //row with missing value  has source missing value
-            expected3 = "-124.1, 24.45, 2002-08-19T20:18:00Z, New_Horizon\n"; //last row
+"longitude,NO3,time,ship\n" +
+"degrees_east,micromoles L-1,UTC,\n" +
+"-124.4,35.7,2002-08-03T01:29:00Z,New_Horizon\n" +
+"-124.4,35.48,2002-08-03T01:29:00Z,New_Horizon\n" +
+"-124.4,31.61,2002-08-03T01:29:00Z,New_Horizon\n";
+            expected2 = "-124.8,NaN,2002-08-03T07:17:00Z,New_Horizon\n"; //row with missing value  has source missing value
+            expected3 = "-124.1,24.45,2002-08-19T20:18:00Z,New_Horizon\n"; //last row
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
             Test.ensureTrue(results.indexOf(expected2) > 0, "\nresults=\n" + results);
             Test.ensureTrue(results.indexOf(expected3) > 0, "\nresults=\n" + results); //last row in erdGlobedBottle, not last here
@@ -1061,29 +1087,29 @@ reallyVerbose=false;
                 EDStatic.fullTestCacheDirectory, edd.className() + "_postDet2var", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = //this will change
-"pi, common_name\n" +
-", \n" +
-"BARRY BEREJIKIAN, STEELHEAD\n" +
-"CEDAR CHITTENDEN, COHO\n" +
-"CHRIS WOOD, \"SOCKEYE, KOKANEE\"\n" +
-"CHUCK BOGGS, COHO\n" +
-"DAVID WELCH, CHINOOK\n" +
-"DAVID WELCH, COHO\n" +
-"DAVID WELCH, DOLLY VARDEN\n" +
-"DAVID WELCH, \"SOCKEYE, KOKANEE\"\n" +
-"DAVID WELCH, STEELHEAD\n" +
-"FRED GOETZ, CHINOOK\n" +
-"FRED GOETZ, CUTTHROAT\n" +
-"JACK TIPPING, STEELHEAD\n" +
-"JEFF MARLIAVE, BLACK ROCKFISH\n" +
-"JOHN PAYNE, SQUID\n" +
-"LYSE GODBOUT, \"SOCKEYE, KOKANEE\"\n" +
-"MIKE MELNYCHUK, COHO\n" +
-"MIKE MELNYCHUK, \"SOCKEYE, KOKANEE\"\n" +
-"MIKE MELNYCHUK, STEELHEAD\n" +
-"ROBERT BISON, STEELHEAD\n" +
-"SCOTT STELTZNER, CHINOOK\n" +
-"SCOTT STELTZNER, COHO\n";
+"pi,common_name\n" +
+",\n" +
+"BARRY BEREJIKIAN,STEELHEAD\n" +
+"CEDAR CHITTENDEN,COHO\n" +
+"CHRIS WOOD,\"SOCKEYE,KOKANEE\"\n" +
+"CHUCK BOGGS,COHO\n" +
+"DAVID WELCH,CHINOOK\n" +
+"DAVID WELCH,COHO\n" +
+"DAVID WELCH,DOLLY VARDEN\n" +
+"DAVID WELCH,\"SOCKEYE,KOKANEE\"\n" +
+"DAVID WELCH,STEELHEAD\n" +
+"FRED GOETZ,CHINOOK\n" +
+"FRED GOETZ,CUTTHROAT\n" +
+"JACK TIPPING,STEELHEAD\n" +
+"JEFF MARLIAVE,BLACK ROCKFISH\n" +
+"JOHN PAYNE,SQUID\n" +
+"LYSE GODBOUT,\"SOCKEYE,KOKANEE\"\n" +
+"MIKE MELNYCHUK,COHO\n" +
+"MIKE MELNYCHUK,\"SOCKEYE,KOKANEE\"\n" +
+"MIKE MELNYCHUK,STEELHEAD\n" +
+"ROBERT BISON,STEELHEAD\n" +
+"SCOTT STELTZNER,CHINOOK\n" +
+"SCOTT STELTZNER,COHO\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             String2.log(results);
             String2.log("*** 2var elapsed time=" + (System.currentTimeMillis() - eTime) + 
@@ -1097,11 +1123,11 @@ reallyVerbose=false;
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
             expected = 
-"pi, common_name, surgery_id\n" +
-", , \n";
+"pi,common_name,surgery_id\n" +
+",,\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
             expected = 
-"BARRY BEREJIKIAN, STEELHEAD, 2846\n";
+"BARRY BEREJIKIAN,STEELHEAD,2846\n";
             Test.ensureTrue(results.indexOf(expected) > 0, "\nresults=\n" + results);
             String lines[] = String2.split(results, '\n');
             Test.ensureEqual(lines.length, 4317 + 3, "\nresults=\n" + results);
@@ -1117,9 +1143,9 @@ reallyVerbose=false;
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
             expected = 
-"longitude, latitude, time, common_name, pi, project, surgery_id, tag_id_code, tag_sn\n" +
-"degrees_east, degrees_north, UTC, , , , , , \n" +
-"-127.34393, 50.67973, 2004-05-30T06:08:40Z, STEELHEAD, BARRY BEREJIKIAN, NOAA|NOAA FISHERIES, 2846, 3985, 1031916\n";
+"longitude,latitude,time,common_name,pi,project,surgery_id,tag_id_code,tag_sn\n" +
+"degrees_east,degrees_north,UTC,,,,,,\n" +
+"-127.34393,50.67973,2004-05-30T06:08:40Z,STEELHEAD,BARRY BEREJIKIAN,NOAA|NOAA FISHERIES,2846,3985,1031916\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
             String2.log("*** 1tag elapsed time=" + (System.currentTimeMillis() - eTime) + 
                 " ms (vs 5,700 ms for POST).");
@@ -1132,14 +1158,14 @@ reallyVerbose=false;
                 edd.className() + "_peb_constrained", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =  
-"longitude, latitude, time, common_name, pi, project, surgery_id, tag_id_code, tag_sn\n" +
-"degrees_east, degrees_north, UTC, , , , , , \n" +
-"-127.48843, 50.78142, 2007-05-01T08:43:33Z, CHINOOK, DAVID WELCH, KINTAMA RESEARCH, 1201, 1054, 1030254\n" +
-"-127.48843, 50.78142, 2007-05-01T08:48:23Z, CHINOOK, DAVID WELCH, KINTAMA RESEARCH, 1201, 1054, 1030254\n" +
-"-127.48843, 50.78142, 2007-05-01T08:51:14Z, CHINOOK, DAVID WELCH, KINTAMA RESEARCH, 1201, 1054, 1030254\n" +
-"-127.48843, 50.78142, 2007-05-01T08:53:18Z, CHINOOK, DAVID WELCH, KINTAMA RESEARCH, 1201, 1054, 1030254\n" +
-"-127.48843, 50.78142, 2007-05-01T08:56:23Z, CHINOOK, DAVID WELCH, KINTAMA RESEARCH, 1201, 1054, 1030254\n" +
-"-127.48843, 50.78142, 2007-05-01T08:59:27Z, CHINOOK, DAVID WELCH, KINTAMA RESEARCH, 1201, 1054, 1030254\n";
+"longitude,latitude,time,common_name,pi,project,surgery_id,tag_id_code,tag_sn\n" +
+"degrees_east,degrees_north,UTC,,,,,,\n" +
+"-127.48843,50.78142,2007-05-01T08:43:33Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.48843,50.78142,2007-05-01T08:48:23Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.48843,50.78142,2007-05-01T08:51:14Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.48843,50.78142,2007-05-01T08:53:18Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.48843,50.78142,2007-05-01T08:56:23Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.48843,50.78142,2007-05-01T08:59:27Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n";
             Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
                 expected, "\nresults=\n" + results);
             String2.log("*** constraint elapsed time=" + (System.currentTimeMillis() - eTime) +

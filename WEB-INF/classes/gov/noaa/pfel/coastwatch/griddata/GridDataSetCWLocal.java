@@ -285,10 +285,10 @@ public class GridDataSetCWLocal extends GridDataSetCW {
         //check validity
         checkValidity();
         if (verbose) String2.log(
-            "  Options: "     + String2.toCSVString(activeTimePeriodOptions) + "\n" +
-            "  Titles: "      + String2.toCSVString(activeTimePeriodTitles) + "\n" +
-            "  NHours: "      + String2.toCSVString(activeTimePeriodNHours) + "\n" +
-            "  Directories: " + String2.toCSVString(activeTimePeriodDirectories) + "\n" +
+            "  Options: "     + String2.toCSSVString(activeTimePeriodOptions) + "\n" +
+            "  Titles: "      + String2.toCSSVString(activeTimePeriodTitles) + "\n" +
+            "  NHours: "      + String2.toCSSVString(activeTimePeriodNHours) + "\n" +
+            "  Directories: " + String2.toCSSVString(activeTimePeriodDirectories) + "\n" +
             "  GridDataSetCWLocal constructor done. TIME=" + grdDirTime);
     
     }        
@@ -344,12 +344,12 @@ public class GridDataSetCWLocal extends GridDataSetCW {
         int timePeriodIndex = String2.indexOf(activeTimePeriodOptions, timePeriodValue);
         Test.ensureNotEqual(timePeriodIndex, -1, 
             errorInMethod + "timePeriod not found: " + timePeriodValue +
-            "\ntimePeriodOptions=" + String2.toCSVString(activeTimePeriodOptions));
+            "\ntimePeriodOptions=" + String2.toCSSVString(activeTimePeriodOptions));
         String tActiveTimePeriodTimes[] = (String[])activeTimePeriodTimes.get(timePeriodIndex);
         int timeIndex = String2.indexOf(tActiveTimePeriodTimes, timeValue);
         Test.ensureNotEqual(timeIndex, -1, 
             errorInMethod + "time (" + timeValue + ") must be one of\n" + 
-            String2.toCSVString(tActiveTimePeriodTimes));
+            String2.toCSSVString(tActiveTimePeriodTimes));
         if (verbose) String2.log( 
             "  activeTimePeriodDir=" + activeTimePeriodDirectories[timePeriodIndex]);
 

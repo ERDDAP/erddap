@@ -144,7 +144,7 @@ public class DoubleCenterGrids {
         //so I can quickly find out if they already exist
         int oldBaseDirLength = oldBaseDir.length();
         int newBaseDirLength = newBaseDir.length();
-        HashSet newFilesSet = new HashSet();
+        HashSet newFilesSet = new HashSet(Math2.roundToInt(1.4 * newFiles.length));
         for (int i = 0; i < newFiles.length; i++)
             newFilesSet.add(newFiles[i].substring(newBaseDirLength));
 
@@ -309,7 +309,7 @@ public class DoubleCenterGrids {
 " :composite = \"true\";\n" +
 " :contributor_name = \"NOAA NESDIS OSDPD\";\n" +
 " :contributor_role = \"Source of level 2 data.\";\n" +
-" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0, CWHDF\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF\";\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfeg.noaa.gov\";\n" +
@@ -346,7 +346,7 @@ String reference3=
 " :keywords = \"EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature\";\n" +
 " :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
 " :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0, CWHDF\";\n" +
+" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF\";\n" +
 " :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 " :Northernmost_Northing = 42.5; // double\n" +
 " :origin = \"NOAA NESDIS OSDPD\";\n" +

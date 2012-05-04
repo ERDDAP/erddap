@@ -49,7 +49,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
      * <p>The sortedColumnSourceName isn't utilized.
      */
     public EDDTableFromAsciiFiles(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
@@ -62,7 +62,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         boolean tSourceNeedsExpandedFP_EQ) 
         throws Throwable {
 
-        super("EDDTableFromAsciiFiles", true, tDatasetID, tAccessibleTo, tOnChange, 
+        super("EDDTableFromAsciiFiles", true, tDatasetID, tAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File,
             tAddGlobalAttributes, tAltMetersPerSourceUnit, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
@@ -169,7 +170,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(col, colName,
                 (PrimitiveArray)dataSourceTable.getColumn(col).clone(),
                 makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    atts, colName, true)); //addColorBarMinMax
+                    atts, colName, true, true)); //addColorBarMinMax, tryToFindLLAT
 
             //if a variable has timeUnits, files are likely sorted by time
             //and no harm if files aren't sorted that way
@@ -177,13 +178,6 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             if (tSortedColumnSourceName.length() == 0 && hasTimeUnits)
                 tSortedColumnSourceName = dataSourceTable.getColumnName(col);
         }
-
-        dataAddTable.globalAttributes().set(
-            makeReadyToUseAddGlobalAttributesForDatasetsXml(
-                dataSourceTable.globalAttributes(), 
-                //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataSourceTable)? "Point" : "Other",
-                tFileDir, externalAddGlobalAttributes));
 
         //add the columnNameForExtract variable
         if (tColumnNameForExtract.length() > 0) {
@@ -195,11 +189,20 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(   0, tColumnNameForExtract, new StringArray(), atts);
         }
 
+        //after dataVariables known, add global attributes in the axisAddTable
+        dataAddTable.globalAttributes().set(
+            makeReadyToUseAddGlobalAttributesForDatasetsXml(
+                dataSourceTable.globalAttributes(), 
+                //another cdm_data_type could be better; this is ok
+                probablyHasLonLatTime(dataSourceTable)? "Point" : "Other",
+                tFileDir, externalAddGlobalAttributes, 
+                suggestKeywords(dataSourceTable, dataAddTable)));
+
         //write the information
         StringBuilder sb = new StringBuilder();
         if (tSortFilesBySourceNames.length() == 0)
-            tSortFilesBySourceNames = tColumnNameForExtract + 
-                (tSortedColumnSourceName.length() == 0? "" : " " + tSortedColumnSourceName);
+            tSortFilesBySourceNames = (tColumnNameForExtract + 
+                (tSortedColumnSourceName.length() == 0? "" : " " + tSortedColumnSourceName)).trim();
         sb.append(
             directionsForGenerateDatasetsXml() +
             " * Since the source files don't have any metadata, you must add metadata\n" +
@@ -226,7 +229,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToCatchLLAT, questionDestinationName
+        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
             "dataVariable", true, true, false));
         sb.append(
@@ -298,11 +301,19 @@ directionsForGenerateDatasetsXml() +
 "    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"infoUrl\">http://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"institution\">NOAA NDBC</att>\n" +
+"        <att name=\"keywords\">\n" +
+"Atmosphere &gt; Altitude &gt; Station Height,\n" +
+"Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature,\n" +
+"Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,\n" +
+"Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
+"Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
+"air, air_temperature, altitude, atmosphere, atmospheric, direction, from, height, identifier, ndbc, newer, noaa, ocean, oceans, sea, sea_water_temperature, seawater, speed, station, surface, temperature, time, title, water, wind, wind_from_direction, wind_speed, winds</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"sourceUrl\">(local files)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
 "        <att name=\"summary\">The new summary!</att>\n" +
@@ -326,6 +337,8 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Longitude</att>\n" +
 "            <att name=\"standard_name\">longitude</att>\n" +
@@ -339,6 +352,8 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Latitude</att>\n" +
 "            <att name=\"standard_name\">latitude</att>\n" +
@@ -450,13 +465,13 @@ directionsForGenerateDatasetsXml() +
             Test.ensureEqual(edd.datasetID(), "asciiNdbc_8dd9_4da9_8229", "");
             Test.ensureEqual(edd.title(), "The Newer Title!", "");
             //If it does get here, this will fail on purpose...
-            Test.ensureEqual(String2.toCSVString(edd.dataVariableDestinationNames()), 
+            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "zztop???", "");
 
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
             if (msg.indexOf(
-                "datasets.xml/EDDTable.ensureValid error for asciiNdbc_9e39_e486_1cc2:\n" +
+                "datasets.xml/EDDTable.ensureValid error for datasetID=asciiNdbc_9e39_e486_1cc2:\n" +
                 " dataVariable[timeIndex=4] isn't an EDVTime.") >= 0) {
                 String2.log("EXPECTED ERROR while creating the edd: time's units haven't been set.\n");
             } else 
@@ -482,9 +497,9 @@ directionsForGenerateDatasetsXml() +
 
         String id = "testTableAscii";
         if (deleteCachedDatasetInfo) {
-            File2.delete(datasetInfoDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + BADFILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
         }
         EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
 
@@ -581,8 +596,9 @@ directionsForGenerateDatasetsXml() +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station, longitude, latitude, altitude\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting -48.13;\n" +
+"    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 37.75;\n" +
 "    Float64 geospatial_lat_min -27.7;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -597,6 +613,8 @@ directionsForGenerateDatasetsXml() +
 today + " http://127.0.0.1:8080/cwexperimental/tabledap/testTableAscii.das\";\n" +
 "    String infoUrl \"The Info Url\";\n" +
 "    String institution \"NDBC\";\n" +
+"    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -604,7 +622,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/testTableAscii.das\";\n"
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 37.75;\n" +
 "    String sourceUrl \"The source URL.\";\n" +
 "    Float64 Southernmost_Northing -27.7;\n" +
@@ -652,18 +670,18 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/testTableAscii.das\";\n"
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n" +
-"degrees_east, degrees_north, m, UTC, , m s-1, m s-1, degree_C, degree_C\n" +
-"-122.88, 37.36, 0, 2005-07-01T00:00:00Z, 46012, 294, 2.6, 12.7, 13.4\n" +
-"-122.88, 37.36, 0, 2005-07-01T01:00:00Z, 46012, 297, 3.5, 12.6, 13.0\n" +
-"-122.88, 37.36, 0, 2005-07-01T02:00:00Z, 46012, 315, 4.0, 12.2, 12.9\n" +
-"-122.88, 37.36, 0, 2005-07-01T03:00:00Z, 46012, 325, 4.2, 11.9, 12.8\n" +
-"-122.88, 37.36, 0, 2005-07-01T04:00:00Z, 46012, 330, 4.1, 11.8, 12.8\n" +
-"-122.88, 37.36, 0, 2005-07-01T05:00:00Z, 46012, 321, 4.9, 11.8, 12.8\n" +
-"-122.88, 37.36, 0, 2005-07-01T06:00:00Z, 46012, 320, 4.4, 12.1, 12.8\n" +
-"-122.88, 37.36, 0, 2005-07-01T07:00:00Z, 46012, 325, 3.8, 12.4, 12.8\n" +
-"-122.88, 37.36, 0, 2005-07-01T08:00:00Z, 46012, 298, 4.0, 12.5, 12.8\n" +
-"-122.88, 37.36, 0, 2005-07-01T09:00:00Z, 46012, 325, 4.0, 12.5, 12.8\n";
+"longitude,latitude,altitude,time,station,wd,wspd,atmp,wtmp\n" +
+"degrees_east,degrees_north,m,UTC,,m s-1,m s-1,degree_C,degree_C\n" +
+"-122.88,37.36,0,2005-07-01T00:00:00Z,46012,294,2.6,12.7,13.4\n" +
+"-122.88,37.36,0,2005-07-01T01:00:00Z,46012,297,3.5,12.6,13.0\n" +
+"-122.88,37.36,0,2005-07-01T02:00:00Z,46012,315,4.0,12.2,12.9\n" +
+"-122.88,37.36,0,2005-07-01T03:00:00Z,46012,325,4.2,11.9,12.8\n" +
+"-122.88,37.36,0,2005-07-01T04:00:00Z,46012,330,4.1,11.8,12.8\n" +
+"-122.88,37.36,0,2005-07-01T05:00:00Z,46012,321,4.9,11.8,12.8\n" +
+"-122.88,37.36,0,2005-07-01T06:00:00Z,46012,320,4.4,12.1,12.8\n" +
+"-122.88,37.36,0,2005-07-01T07:00:00Z,46012,325,3.8,12.4,12.8\n" +
+"-122.88,37.36,0,2005-07-01T08:00:00Z,46012,298,4.0,12.5,12.8\n" +
+"-122.88,37.36,0,2005-07-01T09:00:00Z,46012,325,4.0,12.5,12.8\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -684,12 +702,12 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/testTableAscii.das\";\n"
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n" +
-"degrees_east, degrees_north, m, UTC, , m s-1, m s-1, degree_C, degree_C\n" +
-"-48.13, -27.7, 0, 2005-07-01T00:00:00Z, 31201, NaN, NaN, NaN, NaN\n" +
-"-122.88, 37.36, 0, 2005-07-01T00:00:00Z, 46012, 294, 2.6, 12.7, 13.4\n" +
-"-122.82, 37.75, 0, 2005-07-01T00:00:00Z, 46026, 273, 2.5, 12.6, 14.6\n" +
-"-121.89, 35.74, 0, 2005-07-01T00:00:00Z, 46028, 323, 4.2, 14.7, 14.8\n";
+"longitude,latitude,altitude,time,station,wd,wspd,atmp,wtmp\n" +
+"degrees_east,degrees_north,m,UTC,,m s-1,m s-1,degree_C,degree_C\n" +
+"-48.13,-27.7,0,2005-07-01T00:00:00Z,31201,NaN,NaN,NaN,NaN\n" +
+"-122.88,37.36,0,2005-07-01T00:00:00Z,46012,294,2.6,12.7,13.4\n" +
+"-122.82,37.75,0,2005-07-01T00:00:00Z,46026,273,2.5,12.6,14.6\n" +
+"-121.89,35.74,0,2005-07-01T00:00:00Z,46028,323,4.2,14.7,14.8\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -700,9 +718,9 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/testTableAscii.das\";\n"
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp\n" +
-"degrees_east, degrees_north, m, UTC, , m s-1, m s-1, degree_C, degree_C\n" +
-"-48.13, -27.7, 0, 2005-05-07T18:00:00Z, 31201, NaN, NaN, NaN, 32.2\n";
+"longitude,latitude,altitude,time,station,wd,wspd,atmp,wtmp\n" +
+"degrees_east,degrees_north,m,UTC,,m s-1,m s-1,degree_C,degree_C\n" +
+"-48.13,-27.7,0,2005-05-07T18:00:00Z,31201,NaN,NaN,NaN,32.2\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -714,10 +732,10 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/testTableAscii.das\";\n"
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude, latitude, altitude, time, station, atmp, wtmp\n" +
-"degrees_east, degrees_north, m, UTC, , degree_C, degree_C\n" +
-"-122.88, 37.36, 0, 2005-07-01T00:00:00Z, 46012, 12.7, 13.4\n" +
-"-122.82, 37.75, 0, 2005-07-01T00:00:00Z, 46026, 12.6, 14.6\n";
+"longitude,latitude,altitude,time,station,atmp,wtmp\n" +
+"degrees_east,degrees_north,m,UTC,,degree_C,degree_C\n" +
+"-122.88,37.36,0,2005-07-01T00:00:00Z,46012,12.7,13.4\n" +
+"-122.82,37.75,0,2005-07-01T00:00:00Z,46026,12.6,14.6\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     }

@@ -160,8 +160,8 @@ public class Index  {
     public Table subset(double desiredMin[], double desiredMax[]) throws Exception {
 
         if (verbose) String2.log("Index.subset " + 
-            " desiredMin=" + String2.toCSVString(desiredMin) + 
-            " desiredMax=" + String2.toCSVString(desiredMax)); 
+            " desiredMin=" + String2.toCSSVString(desiredMin) + 
+            " desiredMax=" + String2.toCSSVString(desiredMax)); 
 
         //set up the table
         long time = System.currentTimeMillis();
@@ -221,7 +221,7 @@ public class Index  {
             for (int index = 0; index < nIndices; index++) 
                 doubleArray[index].add(rowValues[index]);
             rowArray.add(row);
-            //if (verbose) String2.log("row=" + row + " values=" + String2.toCSVString(values));
+            //if (verbose) String2.log("row=" + row + " values=" + String2.toCSSVString(values));
         }
             
         for (int index = 0; index < nIndices; index++) 

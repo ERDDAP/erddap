@@ -163,23 +163,23 @@ public class HtmlWidgets {
      *  similar to SSR.minimalPercentEncode.
      */
     public static String PERCENT_ENCODE_JS =
+        //browser handles other chars, but needs help with + & " ' space, and thus %
         "<script type=\"text/javascript\"> \n" +
-        "function percentEncode(s) { \n" + //browser handles other chars, but needs help with + & " ', and thus %
+        "function percentEncode(s) { \n" + 
         "  var s2=\"\";\n" +
         "  for (var i = 0; i < s.length; i++) {\n" +
         "    var ch=s.charAt(i);\n" +
         "    if (ch == \"%\") s2+=\"%25\";\n" +
         "    else if (ch == \"&\") s2+=\"%26\";\n" +     //to distinguish & in value in &id=value
-        "    else if (ch == \"\\\"\") s2+=\"%22\";\n" +  //avoids trouble with urls in javascript 
-        "    else if (ch == \"'\") s2+=\"%27\";\n" +     //avoids trouble with urls in javascript
+        "    else if (ch == \"\\\"\") s2+=\"%22\";\n" +  //avoids trouble with " in urls in javascript 
+        "    else if (ch == \"'\") s2+=\"%27\";\n" +     //avoids trouble with ' in urls in javascript
         "    else if (ch == \"+\") s2+=\"%2B\";\n" +     //avoid trouble with +
-        "    else if (ch == \" \") s2+=\"%20\";\n" +     //safer than +
+        "    else if (ch == \" \" || ch == \"\\xA0\") s2+=\"%20\";\n" +  //safer than +   0xA0=nbsp, see select(encodeSpaces)
         "    else s2+=ch;\n" +
         "  }\n" +
         "  return s2;\n" +
         "}\n" +
         "</script>\n";
-
 
     // *********************** set by constructor  ****************************
 
@@ -560,6 +560,22 @@ public class HtmlWidgets {
      */
     public String select(String name, String tooltip, int nRows,
         String options[], int selected, String other) {
+        return select(name, tooltip, nRows, options, selected, other, false);
+    }
+
+    /**
+     * This variant of select deals with a special case where 
+     * JavaScript code that transfers an option to a textfield
+     * e.g., document.form1.val0_0.value=this.options[this.selectedIndex].text
+     * converts internal &gt;1 space ("ab   c") into 1 space ("ab c").
+     * This also solves the problem of leading and trailing spaces being trimmed 
+     * by the JavaScript code.
+     * Set encodeSpaces=true for these special situations.
+     * This requires the little change I made in percentEncode above:
+     *   nbsp (char A0) is no percent encoded as %20 (a space).
+     */    
+    public String select(String name, String tooltip, int nRows,
+        String options[], int selected, String other, boolean encodeSpaces) {
 
         StringBuilder sb = new StringBuilder();
         int nOptions = options.length;
@@ -582,7 +598,9 @@ public class HtmlWidgets {
 
         String spacer = nOptions < 20? "      " : ""; //save space if lots of options
         for (int i = 0; i < nOptions; i++) {
-            String opt = options[i];
+            String opt = XML.encodeAsHTML(options[i]);
+            if (encodeSpaces)
+                opt = XML.minimalEncodeSpaces(opt);
             sb.append(spacer + "<option" + 
                 (i == selected? " selected=\"selected\"" : "") + 
                 //If option is "", Win IE 7 needs 'value' to be explicitly set 
@@ -598,8 +616,10 @@ public class HtmlWidgets {
                 //  see http://jszen.blogspot.com/2007/01/ie6-select-value-gotcha.html
                 //  so I removed
                 //  (opt.length() == 0? " value=\"\"" : "") +
-                ">" + 
-                XML.encodeAsHTML(opt) +
+                //2012-04-18 javascript code that transfers an option to a textfield
+                //  e.g., document.form1.val0_0.value=this.options[this.selectedIndex].text
+                //  converts internal >1 space ("ab   c") into 1 space ("ab c").
+                ">" + opt +
                 //</option> is often not used and is not required.  
                 "\n"); //"</option>\n"); 
         }

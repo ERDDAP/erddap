@@ -218,9 +218,10 @@ class BeanDemoFrame extends JFrame {
 
     GeoDate start = null;
     GeoDate end = null;
-    String format = "yyyy-MM-dd HH:mm";
-    String min1 = "2001-02-12 00:00";
-    String max1 = "2001-06-10 00:00";
+    //2011-12-15 Bob Simons changed spaces to 'T's
+    String format = "yyyy-MM-dd'T'HH:mm";
+    String min1 = "2001-02-12'T'00:00";
+    String max1 = "2001-06-10'T'00:00";
     try {
       start = new GeoDate(min1, format);
       end = new GeoDate(max1, format);

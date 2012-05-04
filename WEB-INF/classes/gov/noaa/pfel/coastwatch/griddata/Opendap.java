@@ -388,7 +388,7 @@ Dataset {
             "Opendap.getGridInfo(" + gridName + 
             ") numDimensions != po.\n  (url = " + url + ")");
         if (verbose) String2.log(
-            "  names=" + String2.toCSVString(gridDimensionNames) + "\n" +
+            "  names=" + String2.toCSSVString(gridDimensionNames) + "\n" +
             "  gridTimeDimension=" + gridTimeDimension + 
                 " min=" + gridDimensionData[gridTimeDimension][0] + 
                 " max=" + gridDimensionData[gridTimeDimension][ 
@@ -780,7 +780,7 @@ Dataset {
                     " realHighIndex=" + realHighIndex + 
                     " belowCenter=" + belowCenter + 
                     " aboveCenter=" + aboveCenter
-                //+ "\n    final lon=" + String2.toCSVString(grid.lon)
+                //+ "\n    final lon=" + String2.toCSSVString(grid.lon)
                 );
 
             //get eventual left half of data  
@@ -942,9 +942,9 @@ Dataset {
         latIncrementInNewFile = stride[gridLatDimension] * gridLatIncrement;
         if (verbose) String2.log( 
             "Opendap.makeGrid/Index(gridName=" + gridName +
-            //" minIndex=" + String2.toCSVString(minIndex) +
-            //" maxIndex=" + String2.toCSVString(maxIndex) +
-            //" strides=" + String2.toCSVString(stride) + "\n" +
+            //" minIndex=" + String2.toCSSVString(minIndex) +
+            //" maxIndex=" + String2.toCSSVString(maxIndex) +
+            //" strides=" + String2.toCSSVString(stride) + "\n" +
             //"  newDir=" + newDir + "\n" +
             //"  newName=" + newName + "\n" +
             "\n  inNewFile minLon=" + String2.genEFormat10(minLonInNewFile) +
@@ -1445,13 +1445,13 @@ Dataset {
         String dir = SSR.getTempDirectory();
         Grid grid = opendap.makeGrid(opendap.timeOptions[0], 
             -170, 170, 22, 50, 53, 37);
-        String2.log("lon values: " + String2.toCSVString(grid.lon));
+        String2.log("lon values: " + String2.toCSSVString(grid.lon));
         DataHelper.ensureEvenlySpaced(grid.lon, "The lon values aren't evenly spaced:\n");
         DataHelper.ensureEvenlySpaced(grid.lat, "The lat values aren't evenly spaced:\n");
         int nLon = grid.lon.length;
         int nLat = grid.lat.length;
-        String lonString = "lon values: " + String2.toCSVString(grid.lon);
-        String latString = "lat values: " + String2.toCSVString(grid.lat);
+        String lonString = "lon values: " + String2.toCSSVString(grid.lon);
+        String latString = "lat values: " + String2.toCSSVString(grid.lat);
 //???the results seem to flip flop, perhaps based on some intermediate file that isn't being deleted every time
 //but both answers are ok  (179.2 is preferred?)
 //        if (nLon == 55) {

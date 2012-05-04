@@ -31,7 +31,8 @@ import gov.noaa.pmel.util.SoTValue;
 public class ValueIconFormat {
   protected DecimalFormat xfrm_;
   protected DecimalFormat yfrm_;
-  protected String tfrm_ = "yyyy-MM-dd HH:mm:ss z";
+  //2011-12-15 Bob Simons changed space to 'T'
+  protected String tfrm_ = "yyyy-MM-dd'T'HH:mm:ss z";
   /**
    * Construct <code>ValueIconFormat</code> from x and y coordinate
    * <code>DeciamalFormat</code>s.

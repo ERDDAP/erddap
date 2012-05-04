@@ -148,7 +148,7 @@ public class TestSSR {
         String[] results = String2.readFromFile(zipDir + fileName);
         Test.ensureEqual(results[0], "", "SSR.zip b");
         Test.ensureEqual(results[1], longText, "SSR.zip c");
-        String2.log("zip+unzip time=" + (time1 + time2) + "  (Java 1.6 4375-6600ms)");
+        String2.log("zip+unzip time=" + (time1 + time2) + "  (Java 1.6 4000-11000ms)");
         File2.delete(zipDir + zipName);
         File2.delete(zipDir + fileName);
 
@@ -171,7 +171,7 @@ public class TestSSR {
         results = String2.readFromFile(zipDir + fileName);
         Test.ensureEqual(results[0], "", "SSR.zip b");
         Test.ensureEqual(results[1], longText, "SSR.zip c");  
-        String2.log("zip+unzip (w directory info) time=" + (time1 + time2) + "  (Java 1.6 ~4000-6720ms)");
+        String2.log("zip+unzip (w directory info) time=" + (time1 + time2) + "  (Java 1.6 ~4000-11000ms)");
         File2.delete(zipDir + zipName);
         File2.delete(zipDir + fileName);
 
@@ -200,7 +200,7 @@ public class TestSSR {
             Test.ensureEqual(results[0], "", "SSR.gz b");
             Test.ensureEqual(results[1], longText, "SSR.z c");
             String2.log("gzip+ungzip time=" + (time1 + time2) + 
-                "  (Java 1.6 ~4000-8000ms)"); 
+                "  (Java 1.6 ~4000-11000ms)"); 
             File2.delete(gzipDir + gzipName);
             File2.delete(gzipDir + fileName);
         }
@@ -306,48 +306,36 @@ public class TestSSR {
      */
     public static void testEmail() throws Exception {
 
+        String emailServer, emailPort, emailProperties, emailUser,
+            emailPassword, emailReplyToAddress, emailToAddress;
+
         //sendEmail (always uses authentication)
-        String emailServer = String2.getStringFromSystemIn(
-            "\nemail server (e.g., stonefish.nmfs.noaa.gov)? ");
-        if (emailServer.length() == 0) emailServer = "stonefish.nmfs.noaa.gov";
+        emailServer = String2.getStringFromSystemIn(
+            "\n\n*** NOAA email server (e.g., mta.nems.noaa.gov)? ");
+        if (emailServer.length() == 0) emailServer = "mta.nems.noaa.gov";
 
-        String emailPort = String2.getStringFromSystemIn(
-            "email port (e.g., 25)? ");  
-        if (emailPort.length() == 0) emailPort = "25";
+        emailPort = String2.getStringFromSystemIn(
+            "email port (e.g., 587)? ");  
+        if (emailPort.length() == 0) emailPort = "587";
 
-        //new 2010-01-15, but doesn't solve problem
-        String emailProperties = String2.getStringFromSystemIn(
-            "email properties (e.g., mail.smtp.starttls.required|false)? ");  
-        if (emailProperties.length() == 0) emailProperties = "mail.smtp.starttls.required|false";
+        emailProperties = String2.getStringFromSystemIn(
+            "email properties (e.g., mail.smtp.starttls.enable|true)? ");  
+        if (emailProperties.length() == 0) emailProperties = "mail.smtp.starttls.enable|true";
 
-        String emailUser = String2.getStringFromSystemIn(
-            "email user (e.g., bob.simons)? ");
-        if (emailUser.length() == 0) emailUser = "bob.simons";
+        emailUser = String2.getStringFromSystemIn(
+            "email user (e.g., erd.data)? ");
+        if (emailUser.length() == 0) emailUser = "erd.data";
 
-        String emailPassword = String2.getPasswordFromSystemIn(
-            "email password (or \"\" to skip the non-local email test)? ");
+        emailPassword = String2.getPasswordFromSystemIn(
+            "email password (or \"\" to skip the test)? ");
         
-        String emailReplyToAddress = String2.getStringFromSystemIn(
-            "email Reply To address (e.g., bob.simons@noaa.gov)? ");
-        if (emailReplyToAddress.length() == 0) emailReplyToAddress = "bob.simons@noaa.gov";
+        emailReplyToAddress = String2.getStringFromSystemIn(
+            "email Reply To address (e.g., erd.data@noaa.gov)? ");
+        if (emailReplyToAddress.length() == 0) emailReplyToAddress = "erd.data@noaa.gov";
 
-        String emailToAddress = String2.getStringFromSystemIn(
+        emailToAddress = String2.getStringFromSystemIn(
             "an email To address outside this domain (e.g., info@cohort.com)? ");
         if (emailToAddress.length() == 0) emailToAddress = "info@cohort.com";
-
-        //Local destinations like this succeed without password/authentication.
-        String2.log("test email " + emailReplyToAddress); 
-        try {
-            SSR.sendEmail(emailServer, String2.parseInt(emailPort), emailUser, 
-                "",  //""=emailPassword    2009-12-13 it didn't used to need password, maybe still doesn't
-                emailProperties, 
-                emailReplyToAddress, emailReplyToAddress,
-                "Email Test", "This is an email test (local) from TestSSR.");
-        } catch (Exception e) {
-            String2.getStringFromSystemIn(
-                MustBe.throwableToString(e) +
-                "\nPress ^C to stop or Enter to continue..."); 
-        }
 
         //Non-local destinations like this fail without password/authentication.
         String2.log("test email " + emailToAddress); 
@@ -375,17 +363,18 @@ public class TestSSR {
             "gmail email port (e.g., 465 or 587 (default))? ");
         if (emailPort.length() == 0) emailPort = "587";
 
-        emailUser = String2.getStringFromSystemIn(
-            "gmail email user (e.g., bob.simons.noaa)? ");
-        if (emailUser.length() == 0) emailUser = "bob.simons.noaa";
+        emailUser = String2.getStringFromSystemIn( //was "bob.simons.noaa";
+            "gmail email user (e.g., bob.simons@noaa.gov)? ");
+        if (emailUser.length() == 0) emailUser = "bob.simons@noaa.gov"; 
 
         emailPassword = String2.getPasswordFromSystemIn(
-            "gmail email password (or \"\" to skip the non-local email test)? ");
+            "application specific gmail email password\n" +
+            "(e.g., password for \"Dell at work\", or \"\" to skip this test)? ");
         
         if (emailPassword.length() > 0) {
-            emailReplyToAddress = String2.getStringFromSystemIn(
-                "gmail email Reply To address (e.g., bob.simons.noaa@gmail.com)? ");
-            if (emailReplyToAddress.length() == 0) emailReplyToAddress = "bob.simons.noaa@gmail.com";
+            emailReplyToAddress = String2.getStringFromSystemIn( //was "bob.simons.noaa@gmail.com"
+                "gmail email Reply To address (e.g., bob.simons@noaa.gov)? ");
+            if (emailReplyToAddress.length() == 0) emailReplyToAddress = "bob.simons@noaa.gov";
 
             emailToAddress = String2.getStringFromSystemIn(
                 "an email To address (e.g., bob.simons@noaa.gov)? ");
@@ -422,20 +411,39 @@ public class TestSSR {
     }
 
 
-    /** test local email 
+    /** 
+     * Test email. 
      * If this fails with "Connection refused" error, make sure McAffee "Virus Scan Console :
      *   Access Protection Properties : Anti Virus Standard Protections :
      *   Prevent mass mailing worms from sending mail" is un-checked.
      * 
      */
-    public static void testBobsLocalEmail(String password) throws Exception {
-        String emailServer = "stonefish.nmfs.noaa.gov";
-        String emailUser = "bob.simons";
-        String emailReplyToAddress = "bob.simons@noaa.gov";
-        SSR.sendEmail(emailServer, 25, emailUser, password, 
-            "mail.smtp.starttls.required|false", //was null
-            emailReplyToAddress, emailReplyToAddress,
-            "Email Test", "This is an email test (local) from TestSSR.");
+    public static void testEmail(String emailUser, String password) throws Exception {
+        //see properties list at
+        //http://javamail.kenai.com/nonav/javadocs/com/sun/mail/smtp/package-summary.html
+
+        String title = "Email Test from TestSSR";
+        String content = "This is an email test (local) from user=" + emailUser + " in TestSSR.";
+        String2.log("\n*** " + content);
+        if (false) {
+            String emailServer = "smtp.gmail.com";
+            int emailPort = 587;
+            SSR.sendEmail(emailServer, emailPort, emailUser, password, 
+                "mail.smtp.starttls.enable|true", 
+                emailUser, emailUser, title, content);
+        }
+        if (true) {
+            String emailServer = "mta.nems.noaa.gov";
+            String properties = "mail.smtp.starttls.enable|true";
+            int emailPort = 587;
+            String2.log("sending email to bob.simons@noaa.gov");
+            SSR.sendEmail(emailServer, emailPort, emailUser, password, 
+                properties, emailUser, "bob.simons@noaa.gov", title, content);
+
+            String2.log("sending email to info@cohort.com");
+            SSR.sendEmail(emailServer, emailPort, emailUser, password, 
+                properties, emailUser, "info@cohort.com", title, content);
+        }
     }
 
 

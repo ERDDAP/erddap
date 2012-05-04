@@ -184,10 +184,10 @@ public class CWDataBrowser extends EmaClass  {
         if (verbose || trouble)
             String2.log(
                 "baseDataDirectory: " + baseDataDirectory + "\n" +
-                "dataSetOptions: " + String2.toCSVString(dataSetOptions) + "\n" +
+                "dataSetOptions: " + String2.toCSSVString(dataSetOptions) + "\n" +
                 "dataSetTitles: " + String2.toNewlineString(dataSetTitles) + "\n" +
-                "dataSetDirectories: " + String2.toCSVString(dataSetDirectories) + "\n" +
-                "dataSetRegexs: " + String2.toCSVString(dataSetRegexs));
+                "dataSetDirectories: " + String2.toCSSVString(dataSetDirectories) + "\n" +
+                "dataSetRegexs: " + String2.toCSSVString(dataSetRegexs));
         if (trouble) 
             throw new RuntimeException(ERROR + ": CWDataBrowser.reset " +
                 "nDataSetOptions " + dataSetOptions.length + 
@@ -207,9 +207,9 @@ public class CWDataBrowser extends EmaClass  {
             regionOptions.length != regionCoordinates.length;
         if (verbose || trouble)
             String2.log(
-                "regionOptions: " + String2.toCSVString(regionOptions) + "\n" +
+                "regionOptions: " + String2.toCSSVString(regionOptions) + "\n" +
                 "regionTitles: " + String2.toNewlineString(regionTitles) + "\n" +
-                "regionRegexs: " + String2.toCSVString(regionRegexs));
+                "regionRegexs: " + String2.toCSSVString(regionRegexs));
         if (trouble) 
             throw new RuntimeException(ERROR + ": CWDataBrowser.reset " +
                 "nRegionOptions " + regionOptions.length + 
@@ -227,9 +227,9 @@ public class CWDataBrowser extends EmaClass  {
             timePeriodOptions.length != timePeriodDirectories.length;
         if (verbose || trouble)
             String2.log(
-                "timePeriodOptions: " + String2.toCSVString(timePeriodOptions) + "\n" +
+                "timePeriodOptions: " + String2.toCSSVString(timePeriodOptions) + "\n" +
                 "timePeriodTitles: " + String2.toNewlineString(timePeriodTitles) + "\n" +
-                "timePeriodDirectories: " + String2.toCSVString(timePeriodDirectories));
+                "timePeriodDirectories: " + String2.toCSSVString(timePeriodDirectories));
         if (trouble) 
             throw new RuntimeException(ERROR + ": CWDataBrowser.reset " +
                 "nTimePeriodOptions " + timePeriodOptions.length + 
@@ -252,10 +252,10 @@ public class CWDataBrowser extends EmaClass  {
             getOptions.length != getExtensions.length;
         if (verbose || trouble)
             String2.log(
-                "getOptions: " + String2.toCSVString(getOptions) + "\n" +
-                "getDirectories: " + String2.toCSVString(getDirectories) + "\n" +
-                "getExtensions: " + String2.toCSVString(getExtensions) + "\n" +
-                "getRegexs: " + String2.toCSVString(getRegexs));
+                "getOptions: " + String2.toCSSVString(getOptions) + "\n" +
+                "getDirectories: " + String2.toCSSVString(getDirectories) + "\n" +
+                "getExtensions: " + String2.toCSSVString(getExtensions) + "\n" +
+                "getRegexs: " + String2.toCSSVString(getRegexs));
         if (trouble) 
             throw new RuntimeException(ERROR + ": CWDataBrowser.reset \n" +
                 "nGetOptions " + getOptions.length + 
@@ -264,7 +264,7 @@ public class CWDataBrowser extends EmaClass  {
                 " != nGetRegexs " + getRegexs.length +
                 " != nGetExtensions " + getExtensions.length);
 
-        requestedFilesMap = new ConcurrentHashMap(); //thread-safe
+        requestedFilesMap = new ConcurrentHashMap(128, 0.75f, 4); //thread-safe
         //EmaAttribute.verbose= true;
 
         //reset after attributes have been created
@@ -499,7 +499,7 @@ public class CWDataBrowser extends EmaClass  {
         String[] activeTimeOptions = (String[])object[1];
         int[]    getBits           = (int[])object[2]; 
         //if (verbose)
-        //    String2.log("activeTimeOptions = " + String2.toCSVString(activeTimeOptions));
+        //    String2.log("activeTimeOptions = " + String2.toCSSVString(activeTimeOptions));
         date.setOptions(activeTimeOptions);
         String timeValue = date.getValue(session);
         //find exact date match or one past (activeTimeOptions are sorted)

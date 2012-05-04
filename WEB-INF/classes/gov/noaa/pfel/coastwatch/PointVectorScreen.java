@@ -349,7 +349,7 @@ public class PointVectorScreen extends Screen {
             //don't sort here, because connection to averageTable used below
 
             timeSeriesOptions = timeSeriesOptionsSA.toArray();
-            //String2.log("  timeSeriesOptions=" + String2.toCSVString(timeSeriesOptions));
+            //String2.log("  timeSeriesOptions=" + String2.toCSSVString(timeSeriesOptions));
             timeSeriesValue = timeSeries.setOptionsAndValidate(timeSeriesOptions, session, 0);
             timeSeriesIndex = timeSeries.indexOf(timeSeriesValue);
             if (doTally)

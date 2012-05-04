@@ -277,10 +277,10 @@ public class GridDataSetCWLocalClimatology extends GridDataSetCWLocal {
         //check validity
         checkValidity();
         if (verbose) String2.log(
-            "  Options: "     + String2.toCSVString(activeTimePeriodOptions) + "\n" +
-            "  Titles: "      + String2.toCSVString(activeTimePeriodTitles) + "\n" +
-            "  NHours: "      + String2.toCSVString(activeTimePeriodNHours) + "\n" +
-            "  Directories: " + String2.toCSVString(activeTimePeriodDirectories) + "\n" +
+            "  Options: "     + String2.toCSSVString(activeTimePeriodOptions) + "\n" +
+            "  Titles: "      + String2.toCSSVString(activeTimePeriodTitles) + "\n" +
+            "  NHours: "      + String2.toCSSVString(activeTimePeriodNHours) + "\n" +
+            "  Directories: " + String2.toCSSVString(activeTimePeriodDirectories) + "\n" +
             "  GridDataSetCWLocalClimatology constructor " + internalName + 
                 " done. TIME=" + grdDirTime);
     }        

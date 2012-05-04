@@ -32,6 +32,7 @@ public class TableWriterHtmlTable extends TableWriter {
     //set by constructor
     protected String loggedInAs, fileNameNoExt, preTableHtml, postTableHtml;
     protected boolean writeHeadAndBodyTags, xhtmlMode, encode, writeUnits;
+    protected int totalRows = 0, rowsShown = 0, showFirstNRows;
 
     //set firstTime
     protected boolean isTimeStamp[];
@@ -60,11 +61,13 @@ public class TableWriterHtmlTable extends TableWriter {
      *   to character entities).
      *   Otherwise, they are stored as is (presumably already XML/HTML).
      * @param tWriteUnits if true, the second row of the table will have units.
+     * @param tShowFirstNRows if &gt;= 0, this only shows the specified number of rows,
+     *   then ignores the remaining rows.
      */
     public TableWriterHtmlTable(String tLoggedInAs, OutputStreamSource tOutputStreamSource,        
         boolean tWriteHeadAndBodyTags, String tFileNameNoExt, boolean tXhtmlMode,         
         String tPreTableHtml, String tPostTableHtml,
-        boolean tEncode, boolean tWriteUnits) {
+        boolean tEncode, boolean tWriteUnits, int tShowFirstNRows) {
 
         super(tOutputStreamSource);
         loggedInAs = tLoggedInAs;
@@ -75,11 +78,15 @@ public class TableWriterHtmlTable extends TableWriter {
         postTableHtml = tPostTableHtml;
         encode = tEncode;
         writeUnits = tWriteUnits;
+        showFirstNRows = tShowFirstNRows;
     }
 
     /** This encodes s as XML or HTML */
     String encode(String s) {
-        return xhtmlMode? XML.encodeAsXML(s) : XML.encodeAsHTML(s);
+        //encodingSpaces for HTML ensures spacing info won't be lost when rendered in a browser.
+        //encodingSpaces for XML is debatable. 
+        //Thankfully, only leading, trailing, and consecutive spaces (all rare) are encoded.
+        return XML.minimalEncodeSpaces(xhtmlMode? XML.encodeAsXML(s) : XML.encodeAsHTML(s));
     }
 
     /**
@@ -186,7 +193,10 @@ public class TableWriterHtmlTable extends TableWriter {
         //write the data
         String noWrap = xhtmlMode? " nowrap=\"nowrap\"" : " nowrap"; //if xhtml, need: nowrap="nowrap"
         int nRows = table.nRows();
-        for (int row = 0; row < nRows; row++) {
+        int showNRows = nRows;
+        if (showFirstNRows >= 0 && rowsShown + nRows > showFirstNRows)
+            showNRows = showFirstNRows - rowsShown;
+        for (int row = 0; row < showNRows; row++) {
             writer.write("<tr>\n");
             for (int col = 0; col < nColumns; col++) {
                 if (isTimeStamp[col]) {
@@ -211,7 +221,9 @@ public class TableWriterHtmlTable extends TableWriter {
                     "\n");
             }
             writer.write("</tr>\n");
+            rowsShown++;
         }       
+        totalRows += nRows;
 
         //ensure it gets to user right away
         if (nRows > 1) //some callers work one row at a time; avoid excessive flushing
@@ -253,6 +265,13 @@ public class TableWriterHtmlTable extends TableWriter {
 
     }
 
+    /** This returns the total number of rows of data received so far. */
+    public int totalRows() {return totalRows;}
+
+    /** This returns the total number of rows of data shown so far. */
+    public int rowsShown() {return rowsShown;}
+
+
     /**
      * This is a convenience method to write an entire table in one step.
      *
@@ -262,12 +281,12 @@ public class TableWriterHtmlTable extends TableWriter {
         Table table, OutputStreamSource outputStreamSource,
         boolean writeHeadAndBodyTags, String fileNameNoExt, boolean xhtmlMode, 
         String preTableHtml, String postTableHtml,
-        boolean encode, boolean writeUnits) throws Throwable {
+        boolean encode, boolean writeUnits, int tShowFirstNRows) throws Throwable {
 
         TableWriterHtmlTable tw = new TableWriterHtmlTable(loggedInAs,
             outputStreamSource,  
             writeHeadAndBodyTags, fileNameNoExt, xhtmlMode, preTableHtml, postTableHtml, 
-            encode, writeUnits);
+            encode, writeUnits, tShowFirstNRows);
         tw.writeAllAndFinish(table);
     }
 

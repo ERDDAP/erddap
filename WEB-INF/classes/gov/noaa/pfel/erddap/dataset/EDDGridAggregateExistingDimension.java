@@ -58,6 +58,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         StringArray tLocalSourceUrls = new StringArray();
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         boolean tEnsureAxisValuesAreEqual = true;
 
         String tSUServerType = null;
@@ -74,7 +76,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             xmlReader.nextTag();
             String tags = xmlReader.allTags();
             String content = xmlReader.content();
-            if (reallyVerbose) String2.log("eavae=" + tEnsureAxisValuesAreEqual + "  tags=" + tags + content);
+            //if (reallyVerbose) String2.log("eavae=" + tEnsureAxisValuesAreEqual + "  tags=" + tags + content);
             if (xmlReader.stackSize() == startOfTagsN) 
                 break; //the </dataset> tag
             String localTags = tags.substring(startOfTagsLength);
@@ -124,11 +126,17 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             else if (localTags.equals("</onChange>")) 
                 tOnChange.add(content); 
 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+
             else xmlReader.unexpectedTagException();
         }
 
         //make the main dataset based on the information gathered
-        return new EDDGridAggregateExistingDimension(tDatasetID, tAccessibleTo, tOnChange,
+        return new EDDGridAggregateExistingDimension(tDatasetID, tAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File,
             firstChild, tLocalSourceUrls.toArray(),
             tSUServerType, tSURegex, tSURecursive, tSU, 
             tEnsureAxisValuesAreEqual);
@@ -147,6 +155,11 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param firstChild
      * @param tLocalSourceUrls the sourceUrls for the other siblings
      * @param tEnsureAxisValuesAreEqual if true (recommended), this ensures
@@ -159,7 +172,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      * @throws Throwable if trouble
      */
     public EDDGridAggregateExistingDimension(String tDatasetID, 
-        String tAccessibleTo, StringArray tOnChange, 
+        String tAccessibleTo, StringArray tOnChange, String tFgdcFile, String tIso19115File,
         EDDGrid firstChild, String tLocalSourceUrls[], 
         String tSUServerType, String tSURegex, boolean tSURecursive, String tSU,
         boolean tEnsureAxisValuesAreEqual) throws Throwable {
@@ -176,6 +189,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         ensureAxisValuesAreEqual = tEnsureAxisValuesAreEqual;
 
         //if no tLocalSourceURLs, generate from hyrax or thredds catalog?
@@ -196,7 +211,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 
             //remove firstChild's sourceUrl
             int fc = tsa.indexOf(firstChild.localSourceUrl());
-            //if (reallyVerbose) String2.log("firstChild sourceUrl=" + firstChild.localSourceUrl() + " at po=" + fc);
+            if (verbose) String2.log("firstChild sourceUrl=" + firstChild.localSourceUrl() + 
+                "\nis in children at po=" + fc);
             if (fc >= 0)
                 tsa.remove(fc);
 
@@ -416,9 +432,13 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
             tReloadEveryNMinutes, null));
 
         //other children
-        for (int i = 1; i < sa.length; i++) 
-            sb.append("<sourceUrl>" + sa[i] + "</sourceUrl>\n");
+        //for (int i = 1; i < sa.length; i++) 
+        //    sb.append("<sourceUrl>" + sa[i] + "</sourceUrl>\n");
 
+        sb.append("<sourceUrls serverType=\"" + serverType + 
+            "\" regex=\"" + fileNameRegex + "\" recursive=\"" + recursive + "\">" + 
+            startUrl + "</sourceUrls>\n");     
+        
         //end
         sb.append("\n" +
             "</dataset>\n" +
@@ -473,8 +493,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "\n" +
 "<dataset type=\"EDDGridAggregateExistingDimension\" datasetID=\"noaa_pfeg_8d37_4596_befd\" active=\"true\">\n" +
 "\n" +
-"<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_pfeg_9375_e30f_f0b8\" active=\"true\">\n" +
-"    <sourceUrl>http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day</sourceUrl>\n" +
+"<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_pfeg_adfb_8ff5_678c\" active=\"true\">\n" +
+"    <sourceUrl>http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/1day</sourceUrl>\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
@@ -482,15 +502,15 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
 "        <att name=\"cols\" type=\"int\">8640</att>\n" +
 "        <att name=\"composite\">true</att>\n" +
-"        <att name=\"contributor_name\">NASA GSFC (G. Feldman)</att>\n" +
+"        <att name=\"contributor_name\">NASA GSFC (OBPG)</att>\n" +
 "        <att name=\"contributor_role\">Source of level 2 data.</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.0, Unidata Dataset Discovery v1.0, CWHDF</att>\n" +
 "        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" +
 "        <att name=\"cwhdf_version\">3.4</att>\n" +
-"        <att name=\"date_created\">2010-02-22Z</att>\n" +
-"        <att name=\"date_issued\">2010-02-22Z</att>\n" +
+"        <att name=\"date_created\">2012-03-10Z</att>\n" +
+"        <att name=\"date_issued\">2012-03-10Z</att>\n" +
 "        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" +
 "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.041676313961565174 0.04167148975575877 0.0 0.0 -90.0</att>\n" +
 "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" +
@@ -509,17 +529,17 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"geospatial_vertical_min\" type=\"double\">0.0</att>\n" +
 "        <att name=\"geospatial_vertical_positive\">up</att>\n" +
 "        <att name=\"geospatial_vertical_units\">m</att>\n" +
-"        <att name=\"history\">NASA GSFC (G. Feldman)\n" +
-"2010-02-22T22:48:46Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</att>\n" +
-"        <att name=\"id\">LMHchlaS8day_20100129000000</att>\n" +
+"        <att name=\"history\">NASA GSFC (OBPG)\n" +
+"2012-03-10T05:34:02Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</att>\n" +
+"        <att name=\"id\">LMHchlaS1day_20120227120000</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.</att>\n" +
 "        <att name=\"naming_authority\">gov.noaa.pfel.coastwatch</att>\n" +
 "        <att name=\"Northernmost_Northing\" type=\"double\">90.0</att>\n" +
-"        <att name=\"origin\">NASA GSFC (G. Feldman)</att>\n" +
-"        <att name=\"pass_date\" type=\"intList\">14634 14635 14636 14637 14638 14639 14640 14641</att>\n" +
+"        <att name=\"origin\">NASA GSFC (OBPG)</att>\n" +
+"        <att name=\"pass_date\" type=\"int\">15397</att>\n" +
 "        <att name=\"polygon_latitude\" type=\"doubleList\">-90.0 90.0 90.0 -90.0 -90.0</att>\n" +
 "        <att name=\"polygon_longitude\" type=\"doubleList\">0.0 0.0 360.0 360.0 0.0</att>\n" +
 "        <att name=\"processing_level\">3</att>\n" +
@@ -533,17 +553,21 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"source\">satellite observation: Aqua, MODIS</att>\n" +
 "        <att name=\"Southernmost_Northing\" type=\"double\">-90.0</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" +
-"        <att name=\"start_time\" type=\"doubleList\">0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</att>\n" +
+"        <att name=\"start_time\" type=\"double\">0.0</att>\n" +
 "        <att name=\"summary\">NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#039;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.</att>\n" +
-"        <att name=\"time_coverage_end\">2010-02-02T00:00:00Z</att>\n" +
-"        <att name=\"time_coverage_start\">2010-01-25T00:00:00Z</att>\n" +
+"        <att name=\"time_coverage_end\">2012-02-28T00:00:00Z</att>\n" +
+"        <att name=\"time_coverage_start\">2012-02-27T00:00:00Z</att>\n" +
 "        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality</att>\n" +
 "        <att name=\"Westernmost_Easting\" type=\"double\">0.0</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"infoUrl\">http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day.html</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF</att>\n" +
+"        <att name=\"infoUrl\">http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/1day.html</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0, CWHDF</att>\n" +
+"        <att name=\"keywords\">\n" +
+"Oceans &gt; Ocean Chemistry &gt; Chlorophyll,\n" +
+"aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn</att>\n" +
+"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF</att>\n" +
 "        <att name=\"original_institution\">NOAA CoastWatch, West Coast Node</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
@@ -551,7 +575,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <destinationName>time</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">1.2647232E9 1.2647232E9</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">1.330344E9 1.330344E9</att>\n" +
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" +
 "            <att name=\"long_name\">Centered Time</att>\n" +
@@ -621,13 +645,13 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <destinationName>MHchla</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.01 63.997</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">0.0010 63.87</att>\n" +
 "            <att name=\"coordsys\">geographic</att>\n" +
 "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" +
 "            <att name=\"long_name\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"numberOfObservations\" type=\"int\">9664503</att>\n" +
-"            <att name=\"percentCoverage\" type=\"double\">0.2589298000257202</att>\n" +
+"            <att name=\"numberOfObservations\" type=\"int\">2059934</att>\n" +
+"            <att name=\"percentCoverage\" type=\"double\">0.05518941829561042</att>\n" +
 "            <att name=\"standard_name\">concentration_of_chlorophyll_in_sea_water</att>\n" +
 "            <att name=\"units\">mg m-3</att>\n" +
 "        </sourceAttributes -->\n" +
@@ -640,7 +664,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n" +
-"<sourceUrl>http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/mday</sourceUrl>\n" +
+"<sourceUrls serverType=\"thredds\" regex=\".*\" recursive=\"true\">http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml</sourceUrls>\n" +
 "\n" +
 "</dataset>\n" +
 "\n";
@@ -650,8 +674,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 
         //****** test HYRAX
         results = generateDatasetsXml("hyrax",
-            "http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/contents.html", 
-            "pentad.*flk\\.nc\\.gz", 
+            "http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html", 
+            "month_[0-9]{8}_v11l35flk\\.nc\\.gz", //note: v one one L
             true, 1440); //recursive
         expected = 
 "<!--\n" +
@@ -684,36 +708,41 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 " * You can change the order of the dataVariables or remove any of them.\n" +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDGridAggregateExistingDimension\" datasetID=\"nasa_jpl_c873_f7fb_c710\" active=\"true\">\n" +
+"<dataset type=\"EDDGridAggregateExistingDimension\" datasetID=\"nasa_jpl_790b_dd75_9ec2\" active=\"true\">\n" +
 "\n" +
-"<dataset type=\"EDDGridFromDap\" datasetID=\"nasa_jpl_dcf3_676f_99b9\" active=\"true\">\n" +
-"    <sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880101_v11l35flk.nc.gz</sourceUrl>\n" +
+"<dataset type=\"EDDGridFromDap\" datasetID=\"nasa_jpl_adfc_4221_1009\" active=\"true\">\n" +
+"    <sourceUrl>http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M01/month_19880101_v11l35flk.nc.gz</sourceUrl>\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"base_date\" type=\"shortList\">1988 1 1</att>\n" +
 "        <att name=\"Conventions\">COARDS</att>\n" +
-"        <att name=\"description\">Time average of level3.0 products for the period: 1988-01-01 to 1988-01-05</att>\n" +
+"        <att name=\"description\">Time average of level3.0 products for the period: 1988-01-01 to 1988-01-31</att>\n" +
 "        <att name=\"history\">Created by NASA Goddard Space Flight Center under the NASA REASoN CAN: A Cross-Calibrated, Multi-Platform Ocean Surface Wind Velocity Product for Meteorological and Oceanographic Applications</att>\n" +
 "        <att name=\"title\">Atlas FLK v1.1 derived surface winds (level 3.5)</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"infoUrl\">http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880101_v11l35flk.nc.gz.html</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"infoUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M01/month_19880101_v11l35flk.nc.gz.html</att>\n" +
 "        <att name=\"institution\">NASA JPL</att>\n" +
+"        <att name=\"keywords\">\n" +
+"Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
+"Atmosphere &gt; Atmospheric Winds &gt; Wind Stress,\n" +
+"atlas, atmosphere, atmospheric, component, derived, downward, eastward, eastward_wind, flk, jpl, level, meters, nasa, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, u-component, u-wind, v-component, v-wind, v1.1, wind, wind_speed, winds</att>\n" +
+"        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
-"        <att name=\"summary\">Time average of level3.0 products for the period: 1988-01-01 to 1988-01-05</att>\n" +
+"        <att name=\"summary\">Time average of level3.0 products for the period: 1988-01-01 to 1988-01-31</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
 "        <destinationName>time</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"actual_range\" type=\"doubleList\">8760.0 8760.0</att>\n" +
-"            <att name=\"avg_period\">0000-00-05 00:00:00</att>\n" +
-"            <att name=\"delta_t\">0000-00-05 00:00:00</att>\n" +
+"            <att name=\"avg_period\">0000-01-00 00:00:00</att>\n" +
+"            <att name=\"delta_t\">0000-01-00 00:00:00</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
 "            <att name=\"units\">hours since 1987-01-01 00:00:0.0</att>\n" +
 "        </sourceAttributes -->\n" +
@@ -752,7 +781,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <sourceName>uwnd</sourceName>\n" +
 "        <destinationName>uwnd</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-18.274595 25.119558</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-20.97617 21.307398</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
 "            <att name=\"long_name\">u-wind at 10 meters</att>\n" +
 "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
@@ -771,7 +800,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <sourceName>vwnd</sourceName>\n" +
 "        <destinationName>vwnd</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-19.939075 25.561361</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-18.43927 19.008484</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
 "            <att name=\"long_name\">v-wind at 10 meters</att>\n" +
 "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
@@ -790,7 +819,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <sourceName>wspd</sourceName>\n" +
 "        <destinationName>wspd</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.15885441 25.766176</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">0.10927376 22.478634</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">37.5</att>\n" +
 "            <att name=\"long_name\">wind speed at 10 meters</att>\n" +
 "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
@@ -809,7 +838,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <sourceName>upstr</sourceName>\n" +
 "        <destinationName>upstr</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-335.80392 636.5254</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-446.93918 478.96118</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
 "            <att name=\"long_name\">u-component of pseudostress at 10 meters</att>\n" +
 "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
@@ -818,16 +847,17 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "            <att name=\"valid_range\" type=\"floatList\">-1000.0 1000.0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">1000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-1000.0</att>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">0.5</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-0.5</att>\n" +
+"            <att name=\"ioos_category\">Physical Oceanography</att>\n" +
+"            <att name=\"standard_name\">surface_downward_eastward_stress</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>vpstr</sourceName>\n" +
 "        <destinationName>vpstr</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-435.46085 658.6185</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-356.3739 407.52307</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
 "            <att name=\"long_name\">v-component of pseudostress at 10 meters</att>\n" +
 "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
@@ -836,16 +866,17 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "            <att name=\"valid_range\" type=\"floatList\">-1000.0 1000.0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">1000.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-1000.0</att>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">0.5</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-0.5</att>\n" +
+"            <att name=\"ioos_category\">Physical Oceanography</att>\n" +
+"            <att name=\"standard_name\">surface_downward_northward_stress</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>nobs</sourceName>\n" +
 "        <destinationName>nobs</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.0 20.0</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">0.0 124.0</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">32766.0</att>\n" +
 "            <att name=\"long_name\">number of observations</att>\n" +
 "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
@@ -854,85 +885,14 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "            <att name=\"valid_range\" type=\"floatList\">0.0 65532.0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">65532.0</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Statistics</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880106_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880111_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880116_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880121_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880126_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M01/pentad_19880131_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M02/pentad_19880205_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M02/pentad_19880210_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M02/pentad_19880215_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M02/pentad_19880220_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M02/pentad_19880225_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M03/pentad_19880302_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M03/pentad_19880307_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M03/pentad_19880312_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M03/pentad_19880317_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M03/pentad_19880322_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M03/pentad_19880327_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M04/pentad_19880401_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M04/pentad_19880406_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M04/pentad_19880411_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M04/pentad_19880416_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M04/pentad_19880421_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M04/pentad_19880426_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M05/pentad_19880501_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M05/pentad_19880506_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M05/pentad_19880511_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M05/pentad_19880516_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M05/pentad_19880521_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M05/pentad_19880526_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M05/pentad_19880531_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M06/pentad_19880605_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M06/pentad_19880610_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M06/pentad_19880615_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M06/pentad_19880620_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M06/pentad_19880625_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M06/pentad_19880630_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M07/pentad_19880705_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M07/pentad_19880710_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M07/pentad_19880715_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M07/pentad_19880720_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M07/pentad_19880725_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M07/pentad_19880730_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M08/pentad_19880804_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M08/pentad_19880809_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M08/pentad_19880814_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M08/pentad_19880819_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M08/pentad_19880824_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M08/pentad_19880829_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M09/pentad_19880903_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M09/pentad_19880908_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M09/pentad_19880913_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M09/pentad_19880918_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M09/pentad_19880923_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M09/pentad_19880928_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M10/pentad_19881003_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M10/pentad_19881008_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M10/pentad_19881013_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M10/pentad_19881018_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M10/pentad_19881023_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M10/pentad_19881028_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M11/pentad_19881102_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M11/pentad_19881107_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M11/pentad_19881112_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M11/pentad_19881117_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M11/pentad_19881122_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M11/pentad_19881127_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M12/pentad_19881202_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M12/pentad_19881207_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M12/pentad_19881212_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M12/pentad_19881217_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M12/pentad_19881222_v11l35flk.nc.gz</sourceUrl>\n" +
-"<sourceUrl>http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/flk/1988/M12/pentad_19881227_v11l35flk.nc.gz</sourceUrl>\n" +
+"<sourceUrls serverType=\"hyrax\" regex=\"month_[0-9]{8}_v11l35flk\\.nc\\.gz\" recursive=\"true\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html</sourceUrls>\n" +
 "\n" +
 "</dataset>\n" +
 "\n";
@@ -1038,7 +998,7 @@ expected =
 " :comment = \"S HATTERAS - 250 NM East of Charleston, SC\";\n" +
 " :contributor_name = \"NOAA NDBC\";\n" +
 " :contributor_role = \"Source of data.\";\n" +
-" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :Easternmost_Easting = -75.42f; // float\n" +
 " :geospatial_lat_max = 32.27f; // float\n" +
 " :geospatial_lat_min = 32.27f; // float\n" +
@@ -1057,7 +1017,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 " :location = \"32.27 N 75.42 W \";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :Northernmost_Northing = 32.27f; // float\n" +
 " :quality = \"Automated QC checks with manual editing and comprehensive monthly QC\";\n" +
 " :sourceUrl = \"http://dods.ndbc.noaa.gov/thredds/dodsC/data/cwind/41002/41002c1989.nc\";\n" +

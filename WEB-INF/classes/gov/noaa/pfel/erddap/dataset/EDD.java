@@ -39,7 +39,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.io.Writer;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -50,6 +52,11 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Field.Index;
+import org.apache.lucene.document.Field.Store;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -62,7 +69,7 @@ a gridded or tabular dataset
 (usually Longitude, Latitude, Altitude, and Time-referenced)
 usable by ERDDAP (ERD's Distributed Access Program).
 
-<p>Currently, ERDDAP serves these datasets via a superset of the OPeNDAP protocol
+<p>Currently, ERDDAP serves these datasets via the OPeNDAP protocol
 (http://www.opendap.org/), which is the recommended
 IOOS DMAC (http://dmac.ocean.us/index.jsp) data transport mechanism. 
 (OPeNDAP is great!)
@@ -197,6 +204,13 @@ public abstract class EDD {
         CDM_RADIALSWEEP, CDM_TIMESERIES, CDM_TIMESERIESPROFILE, CDM_SWATH, 
         CDM_TRAJECTORY, CDM_TRAJECTORYPROFILE};
 
+    /**
+     * The CF 1.6 standard featureTypes are just the point CDM_TYPES.
+     * See featureType definition and table 9.1 in the CF standard.
+     */
+    public final static String[] CF_FEATURE_TYPES = {
+        CDM_POINT, CDM_PROFILE, CDM_TIMESERIES, CDM_TIMESERIESPROFILE, 
+        CDM_TRAJECTORY, CDM_TRAJECTORYPROFILE};
 
     /** 
      * LEGEND constants define the options for legend placements on graphs
@@ -209,11 +223,28 @@ public abstract class EDD {
 
     public static int DEFAULT_RELOAD_EVERY_N_MINUTES = 10080; //1 week  //The value is mentioned in datasets.xml.
 
-    /** These are used by EDDGridFromFiles and EDDTableFromFiles for files in datasetInfoDir(). */
+    /** These are used by EDDGridFromFiles and EDDTableFromFiles for files in datasetDir(). */
     public final static String DIR_TABLE_FILENAME     = "dirTable.nc";
     public final static String FILE_TABLE_FILENAME    = "fileTable.nc";
     public final static String BADFILE_TABLE_FILENAME = "badFiles.nc";
+    public final static String QUICK_RESTART_FILENAME = "quickRestart.nc";
     public final static String pngInfoSuffix = "_info.json";
+    public final static String fgdcSuffix     = "_fgdc";
+    public final static String iso19115Suffix = "_iso19115";
+
+    public final static String WMS_SERVER = "request"; //last part of url for actual wms server
+    public final static int WMS_MAX_LAYERS = 16; //arbitrary
+    public final static int WMS_MAX_WIDTH = 2048; //arbitrary
+    public final static int WMS_MAX_HEIGHT = 2048; //arbitrary
+    public final static char WMS_SEPARATOR = ':'; //separates datasetID and variable name (not a valid interior char)
+
+    public final static String ONE_WORD_CF_STANDARD_NAMES[] = {
+        "altitude","cakes123","depth","geopotential","height",
+        "latitude","longitude","omega","realization","region","time"};
+    public final static int LONGEST_ONE_WORD_CF_STANDARD_NAMES = 12;  //characters
+
+    public final static byte[] NOT_ORIGINAL_SEARCH_ENGINE_BYTES = String2.getUTF8Bytes(
+        "In setup.xml, <searchEngine> is not 'original'.");
 
     //*********** END OF STATIC DECLARATIONS ***************************
 
@@ -255,8 +286,10 @@ public abstract class EDD {
         infoUrl, cdmDataType;
     /** These are created as needed (in the constructor) by accessibleVia...(). */
     protected String accessibleViaMAG, accessibleViaSubset, accessibleViaSOS, 
-        accessibleViaWCS, accessibleViaWMS, accessibleViaNcCF; 
-    protected byte[] searchString;
+        accessibleViaWCS, accessibleViaWMS, accessibleViaNcCF, 
+        accessibleViaFGDC, accessibleViaISO19115; 
+    protected String fgdcFile, iso19115File;  //the names of pre-made, external files; or null
+    protected byte[] searchBytes;
     /** These are created as needed (in the constructor) from dataVariables[]. */
     protected String[] dataVariableSourceNames, dataVariableDestinationNames;
     
@@ -432,8 +465,8 @@ public abstract class EDD {
      *   <li> "cdm_data_type" - one of the EDD.CDM_xxx options
      *   </ul>
      * Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
-     * Special case: if addGlobalAttributes name="license", then "[standard]" in the value 
-     * will be replaced by EDStatic.standardLicense.
+     * Special case: for combinedGlobalAttributes name="license", any instance of "[standard]"
+     *   will be converted to the EDStatic.standardLicense.
      *
      */
     public void setup(String tDatasetID, 
@@ -445,11 +478,11 @@ public abstract class EDD {
         datasetID = tDatasetID;
         sourceGlobalAttributes = tSourceGlobalAttributes;
         addGlobalAttributes = tAddGlobalAttributes;
-        String tLicense = addGlobalAttributes.getString("license");
-        if (tLicense != null)
-            addGlobalAttributes.set("license", 
-                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
+        String tLicense = combinedGlobalAttributes.getString("license");
+        if (tLicense != null)
+            combinedGlobalAttributes.set("license", 
+                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         combinedGlobalAttributes.removeValue("null");
 
         dataVariables = tDataVariables;
@@ -467,11 +500,14 @@ public abstract class EDD {
      */
     public void ensureValid() throws Throwable {
         //ensure valid
-        String errorInMethod = "datasets.xml/EDD.ensureValid error for " + datasetID + ":\n ";
+        String errorInMethod = "datasets.xml/EDD.ensureValid error for datasetID=" + datasetID + ":\n ";
 
         //test that required things are set
         Test.ensureFileNameSafe(datasetID, errorInMethod + "datasetID");
-        File2.makeDirectory(EDStatic.fullCacheDirectory + datasetID);
+        if (datasetID.indexOf('.') >= 0)
+            throw new SimpleException(errorInMethod + "periods are not allowed in datasetID's.");
+        datasetID = String2.canonical(datasetID); //for Lucene, useful if canonical
+        File2.makeDirectory(cacheDirectory());
         //Don't test Test.ensureSomethingUtf8(sourceGlobalAttributes, errorInMethod + "sourceGlobalAttributes");
         //Admin can't control source and addAttributes may override offending characters.
         Test.ensureSomethingUtf8(addGlobalAttributes,     errorInMethod + "addGlobalAttributes");
@@ -495,17 +531,22 @@ public abstract class EDD {
         }
         Test.ensureTrue(cdmPo >= 0,      
             errorInMethod + "cdm_data_type=" + cdmDataType + 
-            " isn't one of the standard CDM types (" + String2.toCSVString(CDM_TYPES) + ").");
+            " isn't one of the standard CDM types (" + String2.toCSSVString(CDM_TYPES) + ").");
+        if (String2.indexOf(CF_FEATURE_TYPES, cdmDataType) >= 0)
+            combinedGlobalAttributes.set("featureType", cdmDataType); //case-insensitive, so match ERDDAP's name
+        else 
+            combinedGlobalAttributes.remove("featureType"); //featureType is for point types only (table 9.1)
         Test.ensureTrue(dataVariables != null && dataVariables.length > 0, 
             errorInMethod + "'dataVariables' wasn't set.");
-        HashSet destNames = new HashSet();
+        HashSet destNames = new HashSet(Math2.roundToInt(1.4 * dataVariables.length));
         for (int i = 0; i < dataVariables.length; i++) {
             Test.ensureNotNull(dataVariables[i], errorInMethod + "'dataVariables[" + i + "]' wasn't set.");
             String tErrorInMethod = errorInMethod + 
                 "for dataVariable #" + i + "=" + dataVariables[i].destinationName() + ":\n";
             dataVariables[i].ensureValid(tErrorInMethod);
             if (!destNames.add(dataVariables[i].destinationName()))
-                throw new IllegalArgumentException(tErrorInMethod + "Two variables have destinationName=" + 
+                throw new IllegalArgumentException(tErrorInMethod + 
+                    "Two variables have destinationName=" + 
                     dataVariables[i].destinationName() + ".");
         }
         //ensure these are set in the constructor (they may be "")
@@ -516,12 +557,15 @@ public abstract class EDD {
         accessibleViaWCS();
         accessibleViaWMS(); 
         accessibleViaNcCF(); 
+        //handle at end of EDDGrid/Table.ensureValid: 
+        //  accessibleViaFGDC();  
+        //  accessibleViaISO19115(); 
         if (this instanceof EDDTable)
             String2.log("  accessibleViaNcCF=" +
                 (accessibleViaNcCF.length() == 0? "[true]" : accessibleViaNcCF));
 
-        //String2.log("\n***** beginSearchString\n" + String2.utf8ToString(searchString()) + 
-        //            "\n***** endSearchString\n");
+        //String2.log("\n***** beginSearchString\n" + searchString() + 
+        //    "\n***** endSearchString\n");
         //reloadEveryNMinutes
     }
 
@@ -561,17 +605,15 @@ public abstract class EDD {
      *    same units, same sourceDataType, same missing values) or a message if not.
      */
     public String similar(EDD other) {
-        String msg = "EDD.similar: The other dataset has a different ";
 
         try {
             if (other == null) 
-                return "EDD.similar: Previously, this dataset was (temporarily?) not available.  " +
-                    "Perhaps ERDDAP was just restarted.";
+                return "EDSimilar: " + EDStatic.EDDChangedWasnt;
 
             int nDv = dataVariables.length;
             if (nDv != other.dataVariables.length)
-                return msg + "number of dataVariables (" + 
-                    nDv + " != " + other.dataVariables.length + ")";
+                return EDStatic.EDDSimilarDifferentNVar + 
+                    " (" + nDv + " != " + other.dataVariables.length + ")";
 
             for (int dv = 0; dv < nDv; dv++) {
                 EDV dv1 = dataVariables[dv];
@@ -580,39 +622,45 @@ public abstract class EDD {
                 //destinationName
                 String s1 = dv1.destinationName();
                 String s2 = dv2.destinationName();
-                String msg2 = " for dataVariable #" + dv + "=" + s1 + " (";
+                String msg2 = "#" + dv + "=" + s1;
                 if (!s1.equals(s2))
-                    return msg + "destinationName" + msg2 +  s1 + " != " + s2 + ")";
+                    return MessageFormat.format(EDStatic.EDDSimilarDifferent,
+                        "destinationName", msg2, "(" + s1 + " != " + s2 + ")");
 
                 //sourceDataType
                 s1 = dv1.sourceDataType();
                 s2 = dv2.sourceDataType();
                 if (!s1.equals(s2))
-                    return msg + "sourceDataType" + msg2 +  s1 + " != " + s2 + ")";
+                    return MessageFormat.format(EDStatic.EDDSimilarDifferent,
+                        "sourceDataType", msg2, "(" + s1 + " != " + s2 + ")");
 
                 //destinationDataType
                 s1 = dv1.destinationDataType();
                 s2 = dv2.destinationDataType();
                 if (!s1.equals(s2))
-                    return msg + "destinationDataType" + msg2 +  s1 + " != " + s2 + ")";
+                    return MessageFormat.format(EDStatic.EDDSimilarDifferent,
+                        "destinationDataType", msg2, "(" + s1 + " != " + s2 + ")");
 
                 //units
                 s1 = dv1.units();
                 s2 = dv2.units();
                 if (!Test.equal(s1, s2)) //may be null 
-                    return msg + "units" + msg2 +  s1 + " != " + s2 + ")";
+                    return MessageFormat.format(EDStatic.EDDSimilarDifferent,
+                        "units", msg2, "(" + s1 + " != " + s2 + ")");
 
                 //sourceMissingValue
                 double d1 = dv1.sourceMissingValue();
                 double d2 = dv2.sourceMissingValue();
                 if (!Test.equal(d1, d2)) //says NaN==NaN is true
-                    return msg + "sourceMissingValue" + msg2 +  d1 + " != " + d2 + ")";
+                    return MessageFormat.format(EDStatic.EDDSimilarDifferent,
+                        "sourceMissingValue", msg2, "(" + d1 + " != " + d2 + ")");
 
                 //sourceFillValue
                 d1 = dv1.sourceFillValue();
                 d2 = dv2.sourceFillValue();
                 if (!Test.equal(d1, d2)) //says NaN==NaN is true
-                    return msg + "sourceFillValue" + msg2 +  d1 + " != " + d2 + ")";
+                    return MessageFormat.format(EDStatic.EDDSimilarDifferent,
+                        "sourceFillValue", msg2, "(" + d1 + " != " + d2 + ")");
             }
 
             //they are similar
@@ -622,17 +670,17 @@ public abstract class EDD {
         }
     }
 
-    protected static String test1Changed(String msg, String diff) {
-        return diff.length() == 0? "" : msg + "\n" + diff + "\n";
-    }
+//    protected static String test1Changed(String msg, String diff) {
+//        return diff.length() == 0? "" : msg + "\n" + diff + "\n";
+//    }
 
-    protected static String test2Changed(String msg, String oldS, String newS) {
-        if (oldS.equals(newS))
-            return "";
-        return msg + 
-            "\n  old=" + oldS + ",\n" +
-              "  new=" + newS + ".\n";
-    }
+//    protected static String test2Changed(String msg, String oldS, String newS) {
+//        if (oldS.equals(newS))
+//            return "";
+//        return msg + 
+//            "\n  old=" + oldS + ",\n" +
+//              "  new=" + newS + ".\n";
+//    }
 
     /**
      * This tests if 'old' is different from this in any way.
@@ -651,53 +699,107 @@ public abstract class EDD {
         //  so it would appear in email subscription and rss.
         //  but for many datasets (e.g., ndbc met) there are huge number of buoys. so not practical.
         if (old == null)
-            return "Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.\n";
+            return EDStatic.EDDChangedWasnt;
 
         //check most important things first
         int nDv = dataVariables.length;
         StringBuilder diff = new StringBuilder();
-        diff.append(test2Changed("The number of dataVariables changed:",
-            "" + old.dataVariables.length, 
-            "" + nDv));
-        if (diff.length() > 0) 
+        String oldS = "" + old.dataVariables.length;
+        String newS = "" + nDv;
+        if (!oldS.equals(newS)) {
+            diff.append(MessageFormat.format(EDStatic.EDDChangedDifferentNVar,
+                oldS, newS));
             return diff.toString(); //because tests below assume nDv are same
+        }
 
         for (int dv = 0; dv < nDv; dv++) { 
             EDV oldDV = old.dataVariables()[dv];
             EDV newDV =     dataVariables()[dv];             
             String newName = newDV.destinationName();
+            String msg2 = "#" + dv + "=" + newName;
 
-            diff.append(test2Changed(
-                "The destinationName for dataVariable #" + dv + " changed:",
-                oldDV.destinationName(), 
-                newName));
+            oldS = oldDV.destinationName();
+            newS = newName;
+            if (!oldS.equals(newS))
+                diff.append(MessageFormat.format(EDStatic.EDDChanged2Different,
+                    "destinationName", msg2, oldS, newS) + "\n");
 
-            diff.append(test2Changed(
-                "The destinationDataType for dataVariable #" + dv + "=" + newName + " changed:",
-                oldDV.destinationDataType(), 
-                newDV.destinationDataType()));
+            oldS = oldDV.destinationDataType(); 
+            newS = newDV.destinationDataType();
+            if (!oldS.equals(newS))
+                diff.append(MessageFormat.format(EDStatic.EDDChanged2Different,
+                    "destinationDataType", msg2, oldS, newS) + "\n");
 
-            diff.append(test1Changed(
-                "A combinedAttribute for dataVariable #" + dv + "=" + newName + " changed:",
-                String2.differentLine(
-                    oldDV.combinedAttributes().toString(), 
-                    newDV.combinedAttributes().toString())));
+            String s = String2.differentLine(
+                oldDV.combinedAttributes().toString(), 
+                newDV.combinedAttributes().toString());
+            if (s.length() > 0)
+                diff.append(MessageFormat.format(EDStatic.EDDChanged1Different,
+                    "combinedAttribute", msg2, s) + "\n");
         }
 
         //check least important things last
-        diff.append(test1Changed("A combinedGlobalAttribute changed:",
-            String2.differentLine(
-                old.combinedGlobalAttributes().toString(), 
-                    combinedGlobalAttributes().toString())));
+        String s = String2.differentLine(
+            old.combinedGlobalAttributes().toString(), 
+                combinedGlobalAttributes().toString());
+        if (s.length() > 0)
+            diff.append(MessageFormat.format(EDStatic.EDDChangedCGADifferent,
+                s) + "\n");
 
         return diff.toString();    
     }
 
+    /**
+     * The directory in which information for this dataset (e.g., fileTable.nc) is stored.
+     *
+     */
+    public String datasetDir() {
+        return datasetDir(datasetID);
+    }
+
+    /**
+     * The directory in which information for a dataset (e.g., fileTable.nc) is stored.
+     * EDStatic.fullDatasetDirectory/[last2char]/tDatasetID/
+     */
+    public static String datasetDir(String tDatasetID) {
+        return EDStatic.fullDatasetDirectory + 
+            (tDatasetID.length() <= 2? tDatasetID : tDatasetID.substring(tDatasetID.length() - 2)) +
+            "/" +
+            tDatasetID + "/";
+    }
+
+    /**
+     * The full name of the quick restart .nc file for this dataset.
+     *
+     */
+    public String quickRestartFullFileName() {
+        return quickRestartFullFileName(datasetID);
+    }
+
+    /**
+     * The full name of the quick restart .nc file for a dataset.
+     */
+    public static String quickRestartFullFileName(String tDatasetID) {
+        return datasetDir(tDatasetID) + QUICK_RESTART_FILENAME;
+    }
+
+
     /** The directory to be used for caching files for this dataset (with "/" at end).
      */
     public String cacheDirectory() {
-        return EDStatic.fullCacheDirectory + datasetID + "/"; //dir is created by EDD.ensureValid
+        return cacheDirectory(datasetID);
     }
+
+    /** The directory to be used for caching files for this dataset (with "/" at end).
+     */
+    public static String cacheDirectory(String tDatasetID) {
+
+        return EDStatic.fullCacheDirectory + 
+            (tDatasetID.length() <= 2? tDatasetID : tDatasetID.substring(tDatasetID.length() - 2)) +
+            "/" +
+            tDatasetID + "/"; //dir is created by EDD.ensureValid
+    }
+
 
     /** 
      * This returns the link tag for an HTML head section which advertises 
@@ -991,12 +1093,12 @@ public abstract class EDD {
      * @return true if the dataset is accessible to this user
      */
     public boolean isAccessibleTo(String roles[]) {
-        String message = "";
-        boolean showMessage = reallyVerbose;
-        if (showMessage) message = datasetID + 
-            " accessibleTo=" + String2.toSSVString(accessibleTo) + 
+        boolean showMessage = false;
+        String message = showMessage? 
+            datasetID + " accessibleTo=" + String2.toSSVString(accessibleTo) + 
             "\n  user roles=" + String2.toSSVString(roles) +
-            "\n  accessible="; 
+            "\n  accessible=" :
+            ""; 
 
         //dataset is accessible to all?
         if (accessibleTo == null) {
@@ -1065,10 +1167,175 @@ public abstract class EDD {
     public abstract String accessibleViaNcCF();
 
     /** 
-     * This indicates why the dataset is accessible via WMS
+     * This indicates why the dataset isn't accessible via WMS
      * (or "" if it is).
      */
     public abstract String accessibleViaWMS();
+
+    /** 
+     * This indicates why the dataset isn't accessible via the FGDC service
+     * (or "" if it is).
+     */
+    public String accessibleViaFGDC() {
+
+        if (accessibleViaFGDC == null) {
+
+            if (EDStatic.fgdcActive) {
+
+                //see if error while creating the FGDC file
+                //(The constructor calls this, so no need to be careful about concurrency.)
+                accessibleViaFGDC = String2.canonical("");
+                String tmp = ".tmp";
+                File2.makeDirectory(datasetDir());
+                String tName = datasetDir() + datasetID + fgdcSuffix + ".xml";
+                try {
+                    //is a pre-made, external file available?
+                    if (fgdcFile == null) {  
+                        //No.  Write fgdc to temp file
+                        StringWriter writer = new StringWriter(65536);  //most are ~40KB
+                        writeFGDC(writer);
+                        accessibleViaFGDC = String2.canonical(
+                            String2.writeToFile(
+                                tName + tmp, writer.toString(), "UTF-8"));
+
+                        //then swap into place to replace old version quickly
+                        if (accessibleViaFGDC.length() == 0)
+                            File2.rename(tName + tmp, tName);
+                        else File2.delete(tName + tmp);                
+
+                    } else {
+                        //Yes.  fgdcFile is a filename, copy the file
+                        if (fgdcFile.length() > 0 && File2.isFile(fgdcFile)) {
+                            if (!File2.copy(fgdcFile, tName)) 
+                                throw new SimpleException(
+                                    MessageFormat.format(EDStatic.errorCopyFrom, fgdcFile));
+                        } else {
+                            throw new SimpleException(
+                                MessageFormat.format(EDStatic.errorFileNotFound, 
+                                    "fgdcFile=\"" + fgdcFile + "\""));
+                        }
+                    }
+                    
+                } catch (Throwable t) {
+                    String2.log(MessageFormat.format(
+                        EDStatic.noXxxBecause2,
+                        "FGDC", 
+                        (t instanceof SimpleException?
+                            MustBe.getShortErrorMessage(t) :
+                            MustBe.throwableToString(t))));
+                    if (accessibleViaFGDC.length() == 0)
+                        accessibleViaFGDC = String2.canonical(MustBe.getShortErrorMessage(t));
+                    File2.delete(tName + tmp);                
+                    File2.delete(tName);                
+                }  
+            } else {
+                accessibleViaFGDC = String2.canonical(
+                    MessageFormat.format(EDStatic.noXxxBecause2,      "FGDC",
+                        MessageFormat.format(EDStatic.noXxxNotActive, "FGDC")));
+            }
+        }
+        return accessibleViaFGDC;
+    }
+
+    /** 
+     * This indicates why the dataset isn't accessible via the ISO 19115 service
+     * (or "" if it is).
+     */
+    public String accessibleViaISO19115() {
+
+        if (accessibleViaISO19115 == null) {
+
+            if (EDStatic.iso19115Active) {
+
+                //create the ISO19115 file
+                //(The constructor calls this, so no need to be careful about concurrency.)
+                accessibleViaISO19115 = String2.canonical("");
+                String tmp = ".tmp";
+                File2.makeDirectory(datasetDir());
+                String tName = datasetDir() + datasetID + iso19115Suffix + ".xml";
+                try {
+                    //is a pre-made, external file available?
+                    if (iso19115File == null) {
+                        //No.  Write iso19115 to temp file
+                        StringWriter writer = new StringWriter(65536);  //most are ~40KB
+                        writeISO19115(writer);
+                        accessibleViaISO19115 = String2.canonical(
+                            String2.writeToFile(
+                                tName + tmp, writer.toString(), "UTF-8"));
+
+                        //then swap into place to replace old version quickly
+                        if (accessibleViaISO19115.length() == 0)
+                            File2.rename(tName + tmp, tName);
+                        else File2.delete(tName + tmp);                
+
+                    } else {
+                        //Yes.  iso19115File is a filename, copy the file
+                        if (iso19115File.length() > 0 && File2.isFile(iso19115File)) {
+                            if (!File2.copy(iso19115File, tName)) 
+                                throw new SimpleException(
+                                    MessageFormat.format(EDStatic.errorCopyFrom, iso19115File));
+                        } else {
+                            throw new SimpleException(
+                                MessageFormat.format(EDStatic.errorFileNotFound, 
+                                    "iso19115File=\"" + iso19115File + "\""));
+                        }
+                    }
+
+                } catch (Throwable t) {
+                    String2.log(MessageFormat.format(
+                        EDStatic.noXxxBecause2,
+                        "ISO 19115-2/19139", 
+                        (t instanceof SimpleException?
+                            MustBe.getShortErrorMessage(t) :
+                            MustBe.throwableToString(t))));
+                    if (accessibleViaISO19115.length() == 0)
+                        accessibleViaISO19115 = String2.canonical(
+                            MustBe.getShortErrorMessage(t));
+                    File2.delete(tName + tmp);                
+                    File2.delete(tName);                
+                }
+            } else {
+                accessibleViaISO19115 = String2.canonical(
+                    MessageFormat.format(EDStatic.noXxxBecause2,      "ISO 19115-2/19139",
+                        MessageFormat.format(EDStatic.noXxxNotActive, "ISO 19115-2/19139")));
+            }
+        }
+        return accessibleViaISO19115;
+    }
+
+
+
+    /** 
+     * This writes the dataset's FGDC-STD-012-2002
+     * "Content Standard for Digital Geospatial Metadata: Extensions for Remote Sensing Metadata"
+     * XML to the writer.
+     *
+     * <p>This is usually just called by the dataset's constructor, 
+     * at the end of EDDTable/Grid.ensureValid.
+     * 
+     * @param writer a UTF-8 writer
+     * @throws Throwable if trouble
+     */
+    protected abstract void writeFGDC(Writer writer) throws Throwable;
+
+    /** 
+     * This writes the dataset's ISO 19115-2/19139 XML to the writer.
+     * <br>The template is initially based on THREDDS ncIso output from
+     * <br>http://oceanwatch.pfeg.noaa.gov/thredds/iso/satellite/MH/chla/8day
+     * <br>(stored on Bob's computer as F:/programs/iso19115/threddsNcIsoMHchla8dayYYYYMM.xml).
+     * <br>Made pretty via TestAll: XML.prettyXml(in, out);
+     *
+     * <p>Help with schema: http://www.schemacentral.com/sc/niem21/e-gmd_contact-1.html
+     * <br>List of nilReason: http://www.schemacentral.com/sc/niem21/a-gco_nilReason.html
+     * 
+     * <p>This is usually just called by the dataset's constructor, 
+     * at the end of EDDTable/Grid.ensureValid.
+     * 
+     * @param writer a UTF-8 writer
+     * @throws Throwable if trouble
+     */
+    protected abstract void writeISO19115(Writer writer) throws Throwable;
+
 
     /**
      * This returns the dapProtocol for this dataset (e.g., griddap).
@@ -1103,22 +1370,6 @@ public abstract class EDD {
      * @return the datasetID
      */
     public String datasetID() {return datasetID; }
-
-    /**
-     * The directory in which information for this dataset (e.g., fileTable.nc) is stored.
-     *
-     */
-    public String datasetInfoDir() {
-        return datasetInfoDir(datasetID);
-    }
-
-    /**
-     * The directory in which information for a dataset (e.g., fileTable.nc) is stored.
-     *
-     */
-    public static String datasetInfoDir(String tDatasetID) {
-        return EDStatic.fullDatasetInfoDirectory + tDatasetID + "/";
-    }
 
     /** 
      * The className is the name of the non-abstract subclass of this EDD, e.g., EDDTableFromDapSequence.
@@ -1425,7 +1676,8 @@ public abstract class EDD {
 
         int which = String2.indexOf(dataVariableSourceNames(), tSourceName);
         if (which < 0) throw new SimpleException(
-            "Error: source variable name='" + tSourceName + "' wasn't found.");
+            MessageFormat.format(EDStatic.errorNotFound, 
+                "sourceVariableName=" + tSourceName));
         return dataVariables[which];
     }
 
@@ -1440,7 +1692,8 @@ public abstract class EDD {
 
         int which = String2.indexOf(dataVariableDestinationNames(), tDestinationName);
         if (which < 0) throw new SimpleException(
-            "Error: destination variable name='" + tDestinationName + "' wasn't found.");
+            MessageFormat.format(EDStatic.errorNotFound, 
+                "destinationVariableName=" + tDestinationName));
         return dataVariables[which];
     }
 
@@ -1561,8 +1814,6 @@ public abstract class EDD {
 
     /**
      * Given words from a text search query, this returns a ranking of this dataset.
-     * Not all words need to be found, but not finding a word incurs a large 
-     * penalty.
      * This is a case-insensitve search.
      * This uses a Boyer-Moore-like search (see String2.indexOf(byte[], byte[], int[])).
      *
@@ -1571,20 +1822,27 @@ public abstract class EDD {
      * @param jump the jumpTables from String2.makeJumpTable(word).
      * @return a rating value for this dataset (lower numbers are better),
      *   or Integer.MAX_VALUE if words.length == 0 or 
-     *   one of the words wasn't found.
+     *   one of the words wasn't found or a negative search word was found.
      */
-    public int searchRank(byte words[][], int jump[][]) {
+    public int searchRank(boolean isNegative[], byte words[][], int jump[][]) {
         if (words.length == 0)
             return Integer.MAX_VALUE;
         int rank = 0;
-        searchString(); //ensure it is available
-        //int penalty = 10000;
+        byte tSearchBytes[] = searchBytes(); //hold on, since it may be recreated each time
         for (int w = 0; w < words.length; w++) {
-            int po = String2.indexOf(searchString, words[w], jump[w]);
+            if (words[w].length == 0) //search word was removed
+                continue;
+
+            int po = String2.indexOf(tSearchBytes, words[w], jump[w]);
 
             //word not found
-            if (po < 0)
-                return Integer.MAX_VALUE;
+            if (isNegative[w]) {
+                if (po >= 0)
+                    return Integer.MAX_VALUE;
+            } else {
+                if (po < 0)
+                    return Integer.MAX_VALUE;
+            }
             rank += po;
             //Exact penalty value doesn't really matter. Any large penalty will
             //  force rankings to be ranked by n words found first, 
@@ -1627,13 +1885,30 @@ public abstract class EDD {
     }
 
     /**
-     * This makes/returns the searchString that searchRank searches.
-     * Subclasses may overwrite this.
+     * This makes/returns the searchBytes that originalSearchEngine searchRank searches.
      *
-     * @return the searchString that searchRank searches.
+     * @return the searchBytes that searchRank searches.
      */
-    public abstract byte[] searchString();
+    public byte[] searchBytes() {
+
+        if (searchBytes == null) {
+            byte tSearchBytes[] = String2.getUTF8Bytes(searchString().toLowerCase());
+            if (EDStatic.useOriginalSearchEngine)
+                searchBytes = tSearchBytes; //cache it
+            else return tSearchBytes;       //don't cache it (10^6 datasets?!) (uses should be rare)
+            //was NOT_ORIGINAL_SEARCH_ENGINE_BYTES;
+        }
+        return searchBytes;
+    }
     
+    /**
+     * This makes the searchString (mixed case) used to create searchBytes or searchDocument.
+     *
+     * @return the searchString (mixed case) used to create searchBytes or searchDocument.
+     */
+    public abstract String searchString();
+
+
     protected StringBuilder startOfSearchString() {
 
         //make a string to search through
@@ -1644,25 +1919,137 @@ public abstract class EDD {
         //protocol=...  is suggested in Advanced Search for text searches from protocols
         //protocol=griddap and protocol=tabledap *were* mentioned in searchHintsHtml, now commented out
         sb.append("protocol=" + dapProtocol() + "\n");  
-        if (EDStatic.sosActive && accessibleViaSOS().length() == 0) 
-            sb.append("protocol=SOS\n");
-        if (EDStatic.wcsActive && accessibleViaWCS().length() == 0) 
-            sb.append("protocol=WCS\n");
-        if (accessibleViaWMS().length() == 0) 
-            sb.append("protocol=WMS\n");
+        sb.append("className=" + className + "\n");
+        if (accessibleViaSOS().length()      == 0) sb.append("protocol=SOS\n");
+        if (accessibleViaWCS().length()      == 0) sb.append("protocol=WCS\n");
+        if (accessibleViaWMS().length()      == 0) sb.append("protocol=WMS\n");
+        if (accessibleViaFGDC().length()     == 0) sb.append("service=FGDC\n");
+        if (accessibleViaISO19115().length() == 0) sb.append("service=ISO19115\n");
+        if (accessibleViaMAG().length()      == 0) sb.append("service=MakeAGraph\n");
+        if (accessibleViaNcCF().length()     == 0) sb.append("service=NcCF\n");
+        if (accessibleViaSubset().length()   == 0) sb.append("service=Subset\n");
         for (int dv = 0; dv < dataVariables.length; dv++) {
-            sb.append(dataVariables[dv].destinationName() + "\n");
-            if (!dataVariables[dv].sourceName().equalsIgnoreCase(dataVariables[dv].destinationName()))
-                sb.append(dataVariables[dv].sourceName() + "\n");
-            if (!dataVariables[dv].longName().equalsIgnoreCase(dataVariables[dv].destinationName()))
-                sb.append(dataVariables[dv].longName() + "\n");
+            sb.append("variableName=" + dataVariables[dv].destinationName() + "\n");
+            sb.append("sourceName="   + dataVariables[dv].sourceName() + "\n");
+            sb.append("long_name="    + dataVariables[dv].longName() + "\n");
         }
         sb.append(combinedGlobalAttributes.toString() + "\n");
         for (int dv = 0; dv < dataVariables.length; dv++) 
             sb.append(dataVariables[dv].combinedAttributes().toString() + "\n");
-        sb.append("className=" + className + "\n");
         return sb;
     }
+
+    /**
+     * This makes/returns the Document that Lucene searches.
+     * Subclasses may implement this.
+     *
+     * @return the Document that Lucene searches.
+     */
+    public Document searchDocument() {
+
+        Document doc = new Document();
+        //Store specifies if the original string also needs to be stored as is
+        //  (e.g., so I can retrieve datasetID field from a matched document).
+        //ANALYZED breaks string into tokens;  NOT_ANALYZED treats string as 1 token.
+        //"datasetID" Store.YES lets me later figure out which dataset a given document is for.
+        doc.add(new Field("datasetID",                 datasetID,      Field.Store.YES, Field.Index.NOT_ANALYZED));
+        doc.add(new Field(EDStatic.luceneDefaultField, searchString(), Field.Store.NO,  Field.Index.ANALYZED));
+        
+        //Do duplicate searches of title (boost=10, plus it is shorter, so scores higher), 
+        //  so score from lucene and original are closer. 
+        //!!! FUTURE: support separate searches within the datasets' titles
+        //   If so, add support in searchEngine=original, too.
+        Field field = new Field("title",               title(),        Field.Store.NO,  Field.Index.ANALYZED);
+        field.setBoost(10);
+        doc.add(field);
+        return doc;
+    }
+
+
+    /* * This is like startOfSearchString but creates the start of a Document for Lucene. */
+    /*protected Document startOfSearchDocument() {
+
+        StringBuilder sb = new StringBuilder();
+
+        field = new Field("title", title(), fs, fi);
+        field.setBoost(20);
+        doc.add(field);
+
+        field = new Field("datasetID", datasetID, fs, fi);
+        field.setBoost(10);
+        doc.add(field);
+
+        sb.setLength(0);
+        for (int dv = 0; dv < dataVariables.length; dv++) 
+            sb.append(dataVariables[dv].destinationName() + ", ");
+        field = new Field("variableName", sb.toString(), fs, fi);
+        field.setBoost(10);
+        doc.add(field);
+
+        sb.setLength(0);
+        for (int dv = 0; dv < dataVariables.length; dv++) 
+            sb.append(dataVariables[dv].sourceName() + ", ");
+        field = new Field("variableSourceName", sb.toString(), fs, fi);
+        field.setBoost(5);
+        doc.add(field);
+
+        sb.setLength(0);
+        for (int dv = 0; dv < dataVariables.length; dv++) 
+            sb.append(dataVariables[dv].longName() + ", ");
+        field = new Field("variableLongName", sb.toString(), fs, fi);
+        field.setBoost(5);
+        doc.add(field);
+
+        sb.setLength(0);
+        sb.append(combinedGlobalAttributes.toString());
+        String2.replaceAll(sb, "\"", ""); //no double quotes (esp around attribute values)
+        String2.replaceAll(sb, "\n    ", "\n"); //occurs for all attributes
+        field = new Field("globalAttributes", sb.toString(), fs, fi);
+        field.setBoost(2);
+        doc.add(field);
+
+        sb.setLength(0);
+        for (int dv = 0; dv < dataVariables.length; dv++) 
+            sb.append(dataVariables[dv].combinedAttributes().toString() + "\n");
+        String2.replaceAll(sb, "\"", ""); //no double quotes (esp around attribute values)
+        String2.replaceAll(sb, "\n    ", "\n"); //occurs for all attributes
+        field = new Field("variableAttributes", sb.toString(), fs, fi);
+        field.setBoost(1);
+        doc.add(field);
+
+        //protocol=...  is suggested in Advanced Search for text searches from protocols
+        //protocol=griddap and protocol=tabledap *were* mentioned in searchHintsHtml, 
+        //  now commented out
+        sb.setLength(0);
+        sb.append(dapProtocol());  
+        if (accessibleViaSOS().length()      == 0) sb.append(", SOS");
+        if (accessibleViaWCS().length()      == 0) sb.append(", WCS");
+        if (accessibleViaWMS().length()      == 0) sb.append(", WMS");
+        field = new Field("protocol", sb.toString(), fs, fi);
+        field.setBoost(1);
+        doc.add(field);
+
+        sb.setLength(0);
+        if (accessibleViaFGDC().length()     == 0) sb.append("FGDC, ");
+        if (accessibleViaISO19115().length() == 0) sb.append("ISO19115, ");
+        if (accessibleViaMAG().length()      == 0) sb.append("MakeAGraph, ");
+        if (accessibleViaNcCF().length()     == 0) sb.append("NcCF, ");
+        if (accessibleViaSubset().length()   == 0) sb.append("Subset, ");
+        field = new Field("service", sb.toString(), fs, fi);
+        field.setBoost(1);
+        doc.add(field);
+
+        field = new Field("className", "className", fs, fi);
+        field.setBoost(1);
+        doc.add(field);
+
+        field = new Field("all", "all", fs, fi);
+        field.setBoost(1);
+        doc.add(field);
+
+        return doc;
+    } */
+
 
     /**
      * This returns the types of data files that this dataset can be returned as.
@@ -1792,6 +2179,9 @@ public abstract class EDD {
         } catch (Exception e) {
             //shouldn't happen
         }
+
+        if (".fgdc".equals(fileTypeName))     return datasetID + fgdcSuffix;    //without trailing .xml
+        if (".iso19115".equals(fileTypeName)) return datasetID + iso19115Suffix;//without trailing .xml
 
         //include fileTypeName in hash so, e.g., different sized .png 
         //  have different file names
@@ -1989,7 +2379,7 @@ public abstract class EDD {
 
     /**
      * This writes the dataset info (id, title, institution, infoUrl, summary)
-     * to an html document.
+     * to an html document (e.g., the top of a Data Access Form).
      *
      * @param loggedInAs  the name of the logged in user (or null if not logged in).
      *   Normally, this is not used to test if this edd is accessibleTo loggedInAs, 
@@ -2020,58 +2410,67 @@ public abstract class EDD {
             //(which allows hacker to insert his javascript into pages returned by server)
             //See Tomcat (Definitive Guide) pg 147...
             "?" + XML.encodeAsHTML(userDapQuery); 
+        String dapUrl = tErddapUrl + "/" + dapProtocol() + "/" + datasetID;
         String dapLink = "", subsetLink = "", graphLink = "";
         if (showDafLink) 
             dapLink = 
-                "     | <a title=\"Click to see an OPeNDAP Data Access Form for this data set.\" \n" +
-                "         href=\"" + tErddapUrl + "/" + dapProtocol() + "/" + datasetID + ".html" + 
-                    tQuery + "\">Data Access Form</a>\n";
+                "     | <a title=\"" + EDStatic.clickAccess + "\" \n" +
+                "         href=\"" + dapUrl + ".html" + 
+                    tQuery + "\">" + EDStatic.daf + "</a>\n";
         if (showSubsetLink && accessibleViaSubset().length() == 0) 
             subsetLink = 
-                "     | <a title=\"Click to see a Subset form for this data set.\" \n" +
-                "         href=\"" + tErddapUrl + "/" + dapProtocol() + "/" + datasetID + ".subset" + 
+                "     | <a title=\"" + EDStatic.dtSubset + "\" \n" +
+                "         href=\"" + dapUrl + ".subset" + 
                     tQuery + 
                     (tQuery.length() == 0? "" : XML.encodeAsHTML(EDDTable.DEFAULT_SUBSET_VIEWS)) + 
-                    "\">Subset</a>\n";
+                    "\">" + EDStatic.subset + "</a>\n";
         if (showGraphLink && accessibleViaMAG().length() == 0) 
             graphLink = 
-                "     | <a title=\"Click to see a Make A Graph form for this data set.\" \n" +
-                "         href=\"" + tErddapUrl + "/" + dapProtocol() + "/" + datasetID + ".graph" + 
-                    tQuery + "\">Make A Graph</a>\n";
+                "     | <a title=\"" + EDStatic.dtMAG + "\" \n" +
+                "         href=\"" + dapUrl + ".graph" + 
+                    tQuery + "\">" + EDStatic.EDDMakeAGraph + "</a>\n";
         String tSummary = extendedSummary(); 
         String tLicense = combinedGlobalAttributes().getString("license");
         boolean nonStandardLicense = tLicense != null && !tLicense.equals(EDStatic.standardLicense);
         tLicense = tLicense == null? "" :
             "    | " +
             (nonStandardLicense? "<font class=\"warningColor\">" : "") + 
-            "License " + 
+            EDStatic.license + " " + 
             (nonStandardLicense? "</font>" : "") +
             EDStatic.htmlTooltipImage(loggedInAs, XML.encodeAsPreHTML(tLicense, 100)) +  "\n";
         writer.write(
             //"<p><b>" + type + " Dataset:</b>\n" +
             "<table border=\"0\" cellspacing=\"0\" cellpadding=\"0\">\n" +
             "  <tr>\n" +
-            "    <td nowrap valign=\"top\">Dataset Title:&nbsp;</td>\n" +
+            "    <td nowrap valign=\"top\">" + EDStatic.EDDDatasetTitle + ":&nbsp;</td>\n" +
             "    <td><font class=\"standoutColor\"><big><b>" + XML.encodeAsHTML(title()) + "</b></big></font>\n" +
             "      " + emailHref(loggedInAs) + "\n" +
             "      " + rssHref(loggedInAs) + "\n" +
             "    </td>\n" +
             "  </tr>\n" +
             "  <tr>\n" +
-            "    <td nowrap valign=\"top\">Institution:&nbsp;</td>\n" +
+            "    <td nowrap valign=\"top\">" + EDStatic.EDDInstitution + ":&nbsp;</td>\n" +
             "    <td>" + XML.encodeAsHTML(institution()) + "&nbsp;&nbsp;\n" +
-            "    (Dataset ID: " + XML.encodeAsHTML(datasetID) + ")</td>\n" +
+            "    (" + EDStatic.EDDDatasetID + ": " + XML.encodeAsHTML(datasetID) + ")</td>\n" +
             "  </tr>\n" +
             otherRows +
             "  <tr>\n" +
-            "    <td nowrap valign=\"top\">Information:&nbsp;</td>\n" +
-            "    <td>Summary " + 
+            "    <td nowrap valign=\"top\">" + EDStatic.EDDInformation + ":&nbsp;</td>\n" +
+            "    <td>" + EDStatic.EDDSummary + " " + 
                 EDStatic.htmlTooltipImage(loggedInAs, XML.encodeAsPreHTML(tSummary, 100)) +  "\n" +
             tLicense +
+            (accessibleViaFGDC.length() > 0? "" : 
+                "     | <a title=\"" + EDStatic.EDDFgdcMetadata + "\" \n" +
+                "          href=\"" + dapUrl + ".fgdc\">" + EDStatic.EDDFgdc + "</a>\n") +
+            (accessibleViaISO19115().length() > 0? "" : 
+                "     | <a title=\"" + EDStatic.EDDIso19115Metadata + "\" \n" +
+                "          href=\"" + dapUrl + ".iso19115\">" + EDStatic.EDDIso19115 + "</a>\n") +
             "     | <a title=\"" + EDStatic.clickInfo + "\" \n" +
-            "          href=\"" + tErddapUrl + "/info/" + datasetID + "/index.html\">Metadata</a>\n" +
+            "          href=\"" + tErddapUrl + "/info/" + datasetID + "/index.html\">" + 
+                EDStatic.EDDMetadata + "</a>\n" +
             "     | <a title=\"" + EDStatic.clickBackgroundInfo + "\" \n" +
-            "         href=\"" + XML.encodeAsHTML(infoUrl()) + "\">Background</a>\n" +
+            "         href=\"" + XML.encodeAsHTML(infoUrl()) + "\">" + 
+                EDStatic.EDDBackground + "</a>\n" +
                 subsetLink + "\n" +
                 dapLink + "\n" +
                 graphLink + "</td>\n" +
@@ -2117,7 +2516,7 @@ public abstract class EDD {
 
         //get the readyToUseAddGlobalAttributes for suggestions
         Attributes addAtts = makeReadyToUseAddGlobalAttributesForDatasetsXml(sourceAtts, 
-            tCdmDataType, tLocalSourceUrl, null);
+            tCdmDataType, tLocalSourceUrl, null, new HashSet());
         String aConventions  = addAtts.getString("Conventions");
         String aInfo         = addAtts.getString("infoUrl"); 
         String aIns          = addAtts.getString("institution");
@@ -2199,6 +2598,133 @@ public abstract class EDD {
     }
 
     /**
+     * This chops phrase.toLowerCase into words and adds words[i] to hashSet.
+     *
+     * @param phrase
+     * @param hashset
+     */
+    public static void chopUpAndAdd(String phrase, HashSet hashSet) {
+        //String2.log("chopUpAndAdd " + phrase);
+        String phraseLC = phrase.toLowerCase();
+        if (phraseLC.indexOf("mixed_layer") >= 0)
+            hashSet.add("mixed layer");
+
+        char car[] = phraseLC.toCharArray();
+        int nc = car.length;
+        for (int c = 0; c < nc; c++) {
+            //want to break things up, but not parts of equations.  
+            //  keep /: mg/ml 
+            //    but break up in Title and GCMD keywords before calling this method, 
+            //    so Salinity/Density broken up
+            //  keep ^: want to keep length^2
+            //  keep .: is less likely end-of-sentence, more likely part of a number or and of abbreviation
+            //  keep -: in a number and word-word should be kept, - alone will be removed (<3 chars)
+            if (car[c] == '%') {
+                hashSet.add("percent");
+                car[c] = ' ';
+            } else if ("`~!@#$()_={}[];:'\"<>,?".indexOf(car[c]) >= 0) {
+                car[c] = ' ';
+            }
+        }
+        StringArray tWords = StringArray.wordsAndQuotedPhrases(new String(car));
+        int ntWords = tWords.size();
+        for (int tw = 0; tw < ntWords; tw++) {
+            String s = tWords.get(tw);
+            if (s.length() > 2) {
+                //String2.log("  add " + s);
+                hashSet.add(s); 
+            }
+
+            //if it contains internal '-' or '/', also: split it and add words
+            if (s.indexOf('-') > 0 ||
+                s.indexOf('/') > 0) {
+                s = String2.replaceAll(s, '-', ' ');
+                s = String2.replaceAll(s, '/', ' ');
+                StringArray ttWords = StringArray.wordsAndQuotedPhrases(s);
+                int nttWords = ttWords.size();
+                for (int ttw = 0; ttw < nttWords; ttw++) {
+                    String ts = ttWords.get(ttw);
+                    if (ts.length() > 2) {
+                        //String2.log("  add " + ts);
+                        hashSet.add(ts); 
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * This is used by generateDatasetsXml in subclasses to suggest 
+     * keywords (GCMD and others) based on variable's standard_names, long_name,
+     * and ioos_category (for use by makeReadyToUseAddGlobalAttributesForDatasetsXml).
+     *
+     * @param dataSourceTable
+     * @param dataAddTable
+     * @return a HashSet of suggested keywords (may be String[0])
+     */
+    public static HashSet suggestKeywords(Table dataSourceTable, 
+        Table dataAddTable) {
+
+        HashSet keywordHashSet = new HashSet(128);
+
+        //from the data variables
+        for (int addCol = 0; addCol < dataAddTable.nColumns(); addCol++) {
+            int sourceCol = dataSourceTable.findColumnNumber(
+                dataAddTable.getColumnName(addCol));
+
+            //try to find standard_name 
+            String stdName = dataAddTable.columnAttributes(addCol).getString("standard_name");
+            if (stdName == null && sourceCol >= 0)
+                stdName = dataSourceTable.columnAttributes(sourceCol).getString("standard_name");
+            if (stdName != null) {
+                //get matching gcmd keywords
+                String tKeywords[] = CfToFromGcmd.cfToGcmd(stdName);
+                for (int i = 0; i < tKeywords.length; i++) {
+                    //add the whole gcmd keyword phrase
+                    String tk = tKeywords[i];
+                    keywordHashSet.add(tk); 
+
+                    //add individual words from gcmd keywords
+                    chopUpAndAdd(String2.replaceAll(tk, '/', ' '), keywordHashSet);
+                }
+
+                //add whole and parts of standard_name
+                if (stdName.indexOf("longitude") < 0 &&
+                    stdName.indexOf("latitude") < 0 &&
+                    //depth is interesting
+                    //altitude is interesting
+                    !stdName.equals("time")) {    //time     is in interesting longer standard_names
+                    keywordHashSet.add(stdName.toLowerCase());  
+                    chopUpAndAdd(stdName, keywordHashSet);  
+                }
+            }
+
+            //try to find long_name 
+            String longName = dataAddTable.columnAttributes(addCol).getString("long_name");
+            if (longName == null && sourceCol >= 0)
+                longName = dataSourceTable.columnAttributes(sourceCol).getString("long_name");
+            if (longName != null) 
+                chopUpAndAdd(longName, keywordHashSet);
+
+            //try to find ioos_category 
+            String ioos = dataAddTable.columnAttributes(addCol).getString("ioos_category");
+            if (ioos == null && sourceCol >= 0)
+                ioos = dataSourceTable.columnAttributes(sourceCol).getString("ioos_category");
+            if (ioos != null) {
+                //add whole and in parts
+                keywordHashSet.add(ioos.toLowerCase());
+                chopUpAndAdd(ioos, keywordHashSet);
+            }
+
+        }
+
+        //common uninteresting keywords (due, for) will be removed by
+        //  makeReadyToUseAddGlobalAttributesForDatasetsXml
+
+        return keywordHashSet;
+    }
+
+    /**
      * This is used by subclass's generateDatasetsXml methods to make
      * sure that the global attributes are present (as good as possible; no dummy values)
      * for the required/common global attributes.
@@ -2213,9 +2739,11 @@ public abstract class EDD {
      *    But title is special: sourceAtts title &gt; 20 characters has priority.
      *    <br>&lt;suffixForTitle&gt; is special attribute with text to be appended to title in parentheses.
      *    It is removed from addAttributes at end of method.
+     * @param suggestedKeywords suggested keywords (usually from suggestKeywords)
      */
     public static Attributes makeReadyToUseAddGlobalAttributesForDatasetsXml(Attributes sourceAtts, 
-        String tCdmDataType, String tLocalSourceUrl, Attributes externalAtts) {
+        String tCdmDataType, String tLocalSourceUrl, Attributes externalAtts,
+        HashSet suggestedKeywords) {
 
 //TO DO: look at other metadata standards (e.g., FGDC) to find similar attributes to look for
 //fgdc: http://docs.google.com/viewer?a=v&q=cache:jqwVIfleOYoJ:portal.opengeospatial.org/files/%3Fartifact_id%3D16936+%22fgdc:title%22&hl=en&gl=us&pid=bl&srcid=ADGEESjCZAzZzsRrGP0bxE3vj2qf3e7UAtL0O9C7M6Vm9JSvkuaW74nBYChLJdQagIf0X0vm-0_qgAHUanv6WqhNu59ouFV4i3-wD-nzfUBmRg4npV2wrCrc2RIJ8Q7El65RjHCZiqzU&sig=AHIEtbRqR8ld45spO4SqD7nIYV2de1FGow
@@ -2397,6 +2925,8 @@ public abstract class EDD {
                     //special cases
                     if (value.equals("NOAA CoastWatch, West Coast Node"))
                         value = "NOAA CoastWatch WCN";
+                    else if (value.equals("NOAA Earth System Research Laboratory"))
+                        value = "NOAA ESRL";
                     else if (value.equals("NOAA National Climatic Data Center"))
                         value = "NOAA NCDC";
                     else if (value.equals("DOC/NOAA/NESDIS/NGDC > National Geophysical Data Center, " +
@@ -2457,6 +2987,8 @@ public abstract class EDD {
             if (reallyVerbose) String2.log("  new institution=" + value);
         }
         String tIns = value;
+
+        //keywords below, after title
 
         //license
         name = "license";
@@ -2555,6 +3087,15 @@ public abstract class EDD {
             }
             addAtts.add(name, value);
         }
+        if (isSomething(value)) {
+            if (value.indexOf("\\012") >= 0) {
+                value = String2.replaceAll(value, "\\\\\\\\012", "\n"); 
+                value = String2.replaceAll(value, "\\\\\\012",   "\n"); 
+                value = String2.replaceAll(value, "\\\\012",     "\n"); 
+                value = String2.replaceAll(value, "\\012",       "\n"); 
+            }
+            addAtts.add(name, value);
+        }
         String tSummary = value;
 
         //title
@@ -2647,6 +3188,353 @@ public abstract class EDD {
                 value += suffixForTitleP;
             addAtts.add(name, value);
         }
+        String tTitle = value;
+
+        //keywords (after title)
+        name = "keywords";
+        value = addAtts.getString(name);
+        if (!isSomething(value)) value = sourceAtts.getString(name);
+        if (!isSomething(value)) {
+            if (!isSomething(value)) value =    addAtts.getString("Keywords");  //wrong case?
+            if (!isSomething(value)) value = sourceAtts.getString("Keywords");
+            if ( isSomething(value))                  addAtts.set("Keywords", "null"); //not just remove()
+
+            addAtts.add(name, value);
+            //if (reallyVerbose) String2.log("  new keywords=" + value);
+        }
+
+        //add suggestedKeywords and words from title to keywords  (and improve current keywords)
+        if (suggestedKeywords == null)
+            suggestedKeywords = new HashSet(128);
+        {
+
+            //build hashset of current keywords
+            String words[] = StringArray.arrayFromCSV(value == null? "" : value);  //csv, not chop up
+            for (int w = 0; w < words.length; w++) {
+                if (words[w].length() > 0) {
+                    if (words[w].indexOf(" > ") >= 0) { 
+                        if (words[w].toLowerCase().startsWith("earth science > "))
+                            words[w] = words[w].substring(16);
+                        suggestedKeywords.add(words[w]);
+
+                        //add individual words from original gcmd keywords
+                        chopUpAndAdd(String2.replaceAll(words[w], '/', ' '), suggestedKeywords);
+                    } else {
+                        //individual words: toLowerCase avoids distinguishing based on case
+                        suggestedKeywords.add(words[w].toLowerCase());
+                    }
+                }
+            }
+
+            //add words from institution;     definitely split at '/', e.g., NOAA/NODC
+            //odd to make lowerCase but good to sort in with single words, not GCMD keywords
+            chopUpAndAdd(String2.replaceAll(tIns, '/', ' '), suggestedKeywords);  
+
+            //removed... interesting idea, but too aggressive. keywords should be for dataset, not distribution
+            //catch server type from publicSourceUrl
+            //las not distinctive; hyrax is "/opendap/"?
+            //String tps = tPublicSourceUrl.toLowerCase();
+            //if (tps.indexOf("/thredds/") >= 0)  suggestedKeywords.add("thredds");
+            //suggestedKeywords.add("erddap");  //all datasets processed here available via erddap
+
+            //add words and popular phrases from new title and original_title
+            //'/' difficult; most likely word/word (not e.g., mg/ml) so split it
+            String tt = sourceAtts.getString("title"); 
+            tt = (tTitle + (isSomething(tt)? " " + tt : "")).toLowerCase();
+            chopUpAndAdd(String2.replaceAll(tt, '/', ' '), suggestedKeywords);  
+            if (tt.indexOf(              "best time series") >= 0)
+                suggestedKeywords.add(   "best time series");
+            if (tt.indexOf(              "east coast") >= 0) 
+                suggestedKeywords.add(   "east coast");
+            if (tt.indexOf(              "great lakes") >= 0) 
+                suggestedKeywords.add(   "great lakes");
+            if (tt.indexOf(              "gulf of mexico") >= 0) 
+                suggestedKeywords.add(   "gulf of mexico");
+            if (tt.indexOf(              "hf radar") >= 0 ||
+                tt.indexOf(              "hfradar")  >= 0) 
+                suggestedKeywords.add(   "hf radar");
+            if (tt.indexOf(              "hf radio") >= 0 ||
+                tt.indexOf(              "hfradio") >= 0) 
+                suggestedKeywords.add(   "hf radio");
+            if (tt.indexOf(              "navy coastal ocean model") >= 0) 
+                suggestedKeywords.add(   "ncom");  //expanded further below
+            int npo = tt.indexOf("near");  //may be "near-real-time" or "near real time"
+            if (npo >= 0 &&
+                tt.indexOf("real", npo + 4) == npo + 5 &&
+                tt.indexOf("time", npo + 4) == npo + 10) 
+                suggestedKeywords.add(   "near real time");
+            if (tt.indexOf(              "new york") >= 0) 
+                suggestedKeywords.add(   "new york");
+            if (tt.indexOf(              "north america") >= 0) 
+                suggestedKeywords.add(   "north america");
+            if (!suggestedKeywords.contains("near real time") &&
+                (tt.indexOf("real-time") >= 0 ||         //real-time converted to "real time" below
+                 tt.indexOf("real time") >= 0)) 
+                suggestedKeywords.add(   "real time");  
+            if (tt.indexOf(              "regional ocean model") >= 0)
+                suggestedKeywords.add(   "regional ocean model");
+            if (tt.indexOf(              "science quality") >= 0)
+                suggestedKeywords.add(   "science quality");
+            if (tt.indexOf(              "south america") >= 0) 
+                suggestedKeywords.add(   "south america");
+            if (tt.indexOf(              "time series") >= 0)
+                suggestedKeywords.add(   "time series");
+            if (tt.indexOf(              "west coast") >= 0) 
+                suggestedKeywords.add(   "west coast");
+
+            //add expanded common abbreviations and acronyms    use contains() so original not remove
+            if (suggestedKeywords.contains("co2"))  
+                suggestedKeywords.add(     "carbon dioxide");
+            if (suggestedKeywords.contains("carbon dioxide"))  
+                suggestedKeywords.add(     "co2");
+            if (suggestedKeywords.contains("co3"))  
+                suggestedKeywords.add(     "carbonate");
+            if (suggestedKeywords.contains("carbonate"))  
+                suggestedKeywords.add(     "co3");
+            if (suggestedKeywords.contains("nh4"))
+                suggestedKeywords.add(     "ammonium");
+            if (suggestedKeywords.contains("ammonium"))
+                suggestedKeywords.add(     "nh4");
+            if (suggestedKeywords.contains("no2"))
+                suggestedKeywords.add(     "nitrite");
+            if (suggestedKeywords.contains("nitrate"))
+                suggestedKeywords.add(     "n02");
+            if (suggestedKeywords.contains("no3"))
+                suggestedKeywords.add(     "nitrate");
+            if (suggestedKeywords.contains("nitrate"))
+                suggestedKeywords.add(     "no3");
+            if (suggestedKeywords.contains("o2"))
+                suggestedKeywords.add(     "oxygen");
+            if (suggestedKeywords.contains("oxygen"))
+                suggestedKeywords.add(     "o2");
+            if (suggestedKeywords.contains("po4"))
+                suggestedKeywords.add(     "phosphate");
+            if (suggestedKeywords.contains("phosphate"))
+                suggestedKeywords.add(     "po4");
+
+            if (suggestedKeywords.contains("dew") &&
+                suggestedKeywords.contains("point")) {
+                suggestedKeywords.remove(  "dew"); 
+                suggestedKeywords.remove(  "point"); 
+                suggestedKeywords.add(     "dew point");
+            }
+            if (suggestedKeywords.contains("eur"))  
+                suggestedKeywords.add(     "europe");
+            if (suggestedKeywords.contains("hfr")) { 
+                suggestedKeywords.add(     "hf radar");
+                suggestedKeywords.add(     "radar");
+            }
+            if (suggestedKeywords.contains("hf") &&
+                suggestedKeywords.contains("radar"))  
+                suggestedKeywords.add(     "hf radar");
+            if (suggestedKeywords.contains("hf") &&
+                suggestedKeywords.contains("radio"))  
+                suggestedKeywords.add(     "hf radio");
+            if (suggestedKeywords.contains("glob"))  
+                suggestedKeywords.add(     "global");  //usually
+            if (suggestedKeywords.contains("mod")) 
+                suggestedKeywords.add(     "modulus"); //usually
+            if (suggestedKeywords.contains("aoml") ||
+                suggestedKeywords.contains("coastwatch") ||
+                suggestedKeywords.contains("esrl") ||
+                suggestedKeywords.contains("gfdl") ||
+                suggestedKeywords.contains("glerl") ||
+                suggestedKeywords.contains("ncdc") ||
+                suggestedKeywords.contains("ndbc") ||
+                suggestedKeywords.contains("nesdis") ||
+                suggestedKeywords.contains("ngdc") ||
+                suggestedKeywords.contains("nmfs") ||
+                suggestedKeywords.contains("nodc") ||
+                suggestedKeywords.contains("nws") ||
+                suggestedKeywords.contains("osdpd") ||
+                suggestedKeywords.contains("pfeg") ||
+                suggestedKeywords.contains("pfel") ||
+                suggestedKeywords.contains("pmel")) 
+                suggestedKeywords.add(     "noaa");
+            if (suggestedKeywords.contains("ncom")) {
+                suggestedKeywords.add(     "navy coastal ocean model");
+                suggestedKeywords.add(     "navy");
+                suggestedKeywords.add(     "coastal");
+                suggestedKeywords.add(     "ocean");
+                suggestedKeywords.add(     "model");
+            }
+            if (suggestedKeywords.contains("roms")) {
+                suggestedKeywords.add(     "regional ocean model");
+                suggestedKeywords.add(     "regional");
+                suggestedKeywords.add(     "ocean");
+                suggestedKeywords.add(     "model");
+                suggestedKeywords.add(     "modeling");
+                suggestedKeywords.add(     "system");
+            }
+            if (suggestedKeywords.contains("sea") && 
+                suggestedKeywords.contains("water"))
+                suggestedKeywords.add(     "seawater");
+
+            //replace with expanded common abbreviations and acronyms   use remove() so original is removed
+            if (suggestedKeywords.remove("anal")) 
+                suggestedKeywords.add(   "analysis");
+            if (suggestedKeywords.remove("ann")) 
+                suggestedKeywords.add(   "annual");
+            if (suggestedKeywords.remove("atmos")) 
+                suggestedKeywords.add(   "atmosphere");
+            if (suggestedKeywords.remove("chl")) 
+                suggestedKeywords.add(   "chlorophyll");
+            if (suggestedKeywords.remove("chla")) 
+                suggestedKeywords.add(   "chlorophyll");
+            if (suggestedKeywords.remove("chlor")) 
+                suggestedKeywords.add(   "chlorophyll");
+            if (suggestedKeywords.remove("chlora")) 
+                suggestedKeywords.add(   "chlorophyll");
+            if (suggestedKeywords.remove("coef.")) 
+                suggestedKeywords.add(   "coefficient");
+            if (suggestedKeywords.remove("climatologymeteorologyatmosphere")) {
+                suggestedKeywords.add(   "atmosphere");
+                suggestedKeywords.add(   "climatology");
+                suggestedKeywords.add(   "meteorology");
+            }            
+            if (suggestedKeywords.remove("dewpoint")) 
+                suggestedKeywords.add(   "dew point");
+            if (suggestedKeywords.remove("dewpt")) 
+                suggestedKeywords.add(   "dew point");
+            if (suggestedKeywords.remove("geoscientificinformation")) {
+                suggestedKeywords.add(   "geoscientific");
+                suggestedKeywords.add(   "information");
+            }                        
+            if (suggestedKeywords.remove("merid.")) 
+                suggestedKeywords.add(   "meridional");
+            if (suggestedKeywords.remove("mon")) 
+                suggestedKeywords.add(   "monthly");
+            if (suggestedKeywords.remove("near-real")) 
+                suggestedKeywords.add(   "near real time");
+            if (suggestedKeywords.remove("nseabaltic")) {
+                suggestedKeywords.add(   "north sea");
+                suggestedKeywords.add(   "baltic sea");
+            }                        
+            if (suggestedKeywords.remove("obs")) 
+                suggestedKeywords.add(   "observations");
+            if (suggestedKeywords.remove("phos")) 
+                suggestedKeywords.add(   "phosphate");
+            if (suggestedKeywords.remove("real-time")) 
+                suggestedKeywords.add(   "real time");
+            if (suggestedKeywords.remove("sili")) 
+                suggestedKeywords.add(   "silicate");
+            if (suggestedKeywords.remove("temp")) 
+                suggestedKeywords.add(   "temperature");
+            if (suggestedKeywords.remove("u-veloc.")) 
+                suggestedKeywords.add(   "u-velocity");
+            if (suggestedKeywords.remove("v-veloc.")) 
+                suggestedKeywords.add(   "v-velocity");
+            if (suggestedKeywords.remove("veloc.")) 
+                suggestedKeywords.add(   "velocity");
+            if (suggestedKeywords.remove("w-veloc.")) 
+                suggestedKeywords.add(   "w-velocity");
+            
+            //remove common uninteresting keywords >=3 chars
+            suggestedKeywords.remove("alt");
+            suggestedKeywords.remove("and");
+            suggestedKeywords.remove("apr");
+            suggestedKeywords.remove("april");
+            suggestedKeywords.remove("aug");
+            suggestedKeywords.remove("august");
+            suggestedKeywords.remove("dec");
+            suggestedKeywords.remove("december");
+            suggestedKeywords.remove("feb");
+            suggestedKeywords.remove("february");
+            suggestedKeywords.remove("for");
+            suggestedKeywords.remove("gmt");
+            suggestedKeywords.remove("jan");
+            suggestedKeywords.remove("january");
+            suggestedKeywords.remove("jul");
+            suggestedKeywords.remove("july");
+            suggestedKeywords.remove("jun");
+            suggestedKeywords.remove("june");
+            suggestedKeywords.remove("location");
+            suggestedKeywords.remove("lon");
+            suggestedKeywords.remove("longitude");
+            suggestedKeywords.remove("lat");
+            suggestedKeywords.remove("latitude");
+            suggestedKeywords.remove("mar");
+            suggestedKeywords.remove("march");
+            suggestedKeywords.remove("may");
+            suggestedKeywords.remove("netcdf");
+            suggestedKeywords.remove("nov");
+            suggestedKeywords.remove("november");
+            suggestedKeywords.remove("oct");
+            suggestedKeywords.remove("october");
+            suggestedKeywords.remove("other");
+            suggestedKeywords.remove("precision");
+            suggestedKeywords.remove("processing");
+            suggestedKeywords.remove("prof.");  //professor, profile?
+            suggestedKeywords.remove("sep");
+            suggestedKeywords.remove("september");
+            suggestedKeywords.remove("the");
+            suggestedKeywords.remove("unknown");
+            suggestedKeywords.remove("utc");
+            suggestedKeywords.remove("vars");
+            suggestedKeywords.remove("variables");
+            suggestedKeywords.remove("ver");  //usually version, but could be vertical or ...
+            
+            //build new keywords String
+            StringBuilder sb = new StringBuilder("");
+            String keywordSar[] = (String[])suggestedKeywords.toArray(new String[0]); 
+            //they are consistently capitalized, so will sort very nicely:
+            //  single words then gcmd
+            Arrays.sort(keywordSar); 
+            for (int w = 0; w < keywordSar.length; w++) {
+
+                //don't save numbers
+                String kw = keywordSar[w];
+                boolean aNumber = true;
+                for (int kwpo = 0; kwpo < kw.length(); kwpo++) {
+                    char ch = kw.charAt(kwpo);
+                    if (!String2.isDigit(ch) && ch != '.') {
+                         aNumber = false;
+                         break;
+                    }
+                }
+                if (aNumber)
+                    continue;
+
+                //?? L2, L3, US appear as l2 l3 us: uppercase() and save?
+                if (kw.equals("hf") || //the only 1 or 2 letter words worth keeping
+                    kw.equals("o2") ||         
+                    kw.length() > 2) { //lose lots of junk and a few greek letters
+
+                    boolean isGcmd = kw.indexOf(" > ") >= 0;
+                    if (isGcmd) {
+                        if (sb.length() == 0) 
+                            sb.append('\n');
+                        else if (sb.charAt(sb.length() - 1) == ' ') 
+                            sb.setCharAt(sb.length() - 1, '\n');
+                    }
+                    sb.append(kw);
+                    sb.append(isGcmd? ",\n" : ", "); //both are 2 char
+                }
+            }
+            //remove last 2 char separator (", " or ",\n")
+            if (sb.length() >= 2)
+                sb.setLength(sb.length() - 2);
+
+            value = sb.toString();
+            addAtts.add(name, value);
+            if (reallyVerbose) String2.log("  new keywords=" + value);
+        }
+        boolean keywordsPartlyGcmd = value != null && value.indexOf(" > ") >= 0;
+
+        //keywords_vocabulary
+        name = "keywords_vocabulary";
+        value = addAtts.getString(name);
+        if (!isSomething(value)) value = sourceAtts.getString(name);
+        if (keywordsPartlyGcmd) {
+            String gcmdSK = "GCMD Science Keywords";
+            //Some datasets use a slightly different name.  This standardizes the name.
+            if ((isSomething(value) && !value.equals(gcmdSK)) ||
+                !isSomething(value)) {
+                value = gcmdSK;
+                addAtts.add(name, value);
+                if (reallyVerbose) String2.log("  new keywords_vocabulary=" + value);
+            }
+        }
 
         //remove atts which are already in sourceAtts
         addAtts.removeIfSame(sourceAtts);
@@ -2701,11 +3589,12 @@ public abstract class EDD {
      * @param tSourceName
      */
     public static void addDummyRequiredVariableAttributesForDatasetsXml(
-        Attributes tSourceAtts, String tSourceName, boolean addColorBarMinMax) {
+        Attributes tSourceAtts, String tSourceName, 
+        boolean addColorBarMinMax) {
 
         //get the readyToUseAddVariableAttributes for suggestions
         Attributes tAddAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
-            tSourceAtts, tSourceName, addColorBarMinMax);
+            tSourceAtts, tSourceName, addColorBarMinMax, false);
 
         if (addColorBarMinMax) {
             if (tSourceAtts.getString("colorBarMinimum") == null) 
@@ -2748,10 +3637,13 @@ public abstract class EDD {
      * @param tSourceAtts
      * @param tSourceName   
      * @param tryToAddColorBarMinMax
+     * @param tryToFindLLAT  is true of grid dataset axis variables, and 
+     *         true for table dataset all variables
      * @return tAddAdds for the variable
      */
     public static Attributes makeReadyToUseAddVariableAttributesForDatasetsXml(
-        Attributes tSourceAtts, String tSourceName, boolean tryToAddColorBarMinMax) {
+        Attributes tSourceAtts, String tSourceName, boolean tryToAddColorBarMinMax,
+        boolean tryToFindLLAT) {
 
         String lcSourceName = tSourceName.toLowerCase();
         Attributes tAddAtts = new Attributes();
@@ -2766,17 +3658,20 @@ public abstract class EDD {
         String tLongName     = oLongName;
         String tStandardName = oStandardName;
         String tUnits        = oUnits;
+        String tUnitsLC      = tUnits.toLowerCase();
 
         //longitude, latitude, altitude, time are special cases
         String tDestName = suggestDestinationName(tSourceName, tUnits, 
-            tSourceAtts.getFloat("scale_factor"), true);
+            tSourceAtts.getFloat("scale_factor"), tryToFindLLAT);
         if (tDestName.equals("longitude")) {
-            tLongName = "Longitude";
+            tLongName = isSomething(tLongName) && 
+               !tLongName.toLowerCase().equals("longitude")? tLongName : "Longitude";
             tStandardName = "longitude";
             tUnits = "degrees_east";
         }
         if (tDestName.equals("latitude")) {
-            tLongName = "Latitude";
+            tLongName = isSomething(tLongName) && 
+               !tLongName.toLowerCase().equals("latitude")? tLongName : "Latitude";
             tStandardName = "latitude";
             tUnits = "degrees_north";
         }
@@ -2789,61 +3684,500 @@ public abstract class EDD {
             tStandardName = "time";
         }
 
-        //do standard_name first, since long_name and colorBar can use it
-        if (!isSomething(tStandardName)) {
-            tStandardName = tSourceAtts.getString("Standard_name");  //wrong case?
-            if (!isSomething(tStandardName)) tStandardName = tSourceAtts.getString("Standard_Name");  //wrong case?
-            if (!isSomething(tStandardName)) tStandardName = "";  //do after checking tSourceAtts
+        //common mistakes in UAF
+        if (tUnitsLC.equals("°k")) 
+            tUnits = "deg_K";
+        if (tUnits.equals("u M") || tUnits.equals("uM")) 
+            tUnits = "umoles L-1";
+        int umpo = tUnits.indexOf("(uM)");
+        if (umpo >= 0) 
+            tUnits = tUnits.substring(0, umpo) + "(umoles L-1)" + tUnits.substring(umpo + 4);
+        if (tUnitsLC.startsWith("degrees celsius")) 
+            tUnits = "degree_C" + tUnits.substring(15);
 
-            //from lcSourceName?  (most are NDBC names from NdbcMetStation lists)
-            //!!!??? these are CF standard names, but not all datasets will be using CF standard names
-                             //mostly alphabetical by tStandardName
-            if (isSomething(tStandardName)) {}
-            else if (lcSourceName.equals("atmp"))        tStandardName = "air_temperature"; 
-            //else if (lcSourceName.equals("bar"))         tStandardName = "air_pressure_at_sea_level"; 
-            else if (lcSourceName.equals("chl_a") ||
-                     lcSourceName.equals("chlor_a") ||
-                     lcSourceName.equals("chlormean") ||
-                     lcSourceName.equals("chla"))        tStandardName = "concentration_of_chlorophyll_in_sea_water";
-            else if (lcSourceName.equals("dewp"))        tStandardName = "dew_point_temperature"; 
-            else if (lcSourceName.equals("wvht"))        tStandardName = "sea_surface_swell_wave_significant_height";
-            else if (lcSourceName.equals("dpd"))         tStandardName = "sea_surface_swell_wave_period";
-            else if (lcSourceName.equals("apd"))         tStandardName = "sea_surface_swell_wave_period"; //???
-            else if (lcSourceName.equals("mwd"))         tStandardName = "sea_surface_swell_wave_to_direction";
-            else if (lcSourceName.equals("wtmp") ||
-                     lcSourceName.equals("water_temp"))  tStandardName = "sea_water_temperature"; //sea???
-            else if (lcSourceName.equals("sst"))         tStandardName = "sea_surface_temperature";
-            else if (lcSourceName.equals("current_u") ||
-                     lcSourceName.equals("current_x") ||
-                     lcSourceName.equals("water_u") ||
-                     lcSourceName.equals("water_x"))     tStandardName = "eastward_sea_water_velocity";
-            else if (lcSourceName.equals("current_v") ||
-                     lcSourceName.equals("current_y") ||
-                     lcSourceName.equals("water_v") ||
-                     lcSourceName.equals("water_y"))     tStandardName = "northward_sea_water_velocity";
-            else if (lcSourceName.equals("shum"))        tStandardName = "specific_humidity"; 
-            else if (lcSourceName.equals("tide"))        tStandardName = "surface_altitude"; 
-            else if (lcSourceName.equals("tauu") ||
-                     lcSourceName.equals("tau_x") ||
-                     lcSourceName.equals("taux"))        tStandardName = "surface_downward_eastward_stress";
-            else if (lcSourceName.equals("tauv") ||
-                     lcSourceName.equals("tau_y") ||
-                     lcSourceName.equals("tauy"))        tStandardName = "surface_downward_northward_stress";
-            else if (lcSourceName.equals("ptdy"))        tStandardName = "tendency_of_air_pressure"; 
-            else if (lcSourceName.equals("vis"))         tStandardName = "visibility_in_air"; 
-            else if (lcSourceName.equals("wspu") || 
-                     lcSourceName.equals("uwnd") ||                      
-                     lcSourceName.equals("xwnd"))        tStandardName = "eastward_wind";
-            else if (lcSourceName.equals("wspv") ||
-                     lcSourceName.equals("vwnd") ||                       
-                     lcSourceName.equals("ywnd"))        tStandardName = "northward_wind";
-            else if (lcSourceName.equals("wd"))          tStandardName = "wind_from_direction";
-            else if (lcSourceName.equals("wspd"))        tStandardName = "wind_speed";
-            else if (lcSourceName.equals("gst"))         tStandardName = "wind_speed_of_gust";
+
+        //moles (more distinctive than looking for g for grams)
+        boolean moleUnits = tUnits.indexOf("mol") >= 0 || 
+            //M is used for Molar (moles/liter).  UDUNITS doesn't define it, but some datasets use it
+            //M is the metric abbreviation prefix for Mega
+            tUnits.indexOf("M") >= 0;   
+
+        //gUnits is less useful, but its absence is useful     g may be from many terms
+        boolean gUnits = tUnits.indexOf("g") >= 0; 
+
+        tUnitsLC = tUnits.toLowerCase();
+
+        if (isSomething(tStandardName)) {
+
+            //fix some common invalid standard_names in WOA 2005
+            if (     tStandardName.equals("chlorophyll"))   //avoids mol vs. g 
+                     tStandardName      = "concentration_of_chlorophyll_in_sea_water";
+            else if (tStandardName.equals("nitrate"))       //no g option
+                     tStandardName      = "mole_concentration_of_nitrate_in_sea_water";
+            else if (tStandardName.equals("nitrite"))       //no g option
+                     tStandardName      = "mole_concentration_of_nitrite_in_sea_water";
+            else if (tStandardName.equals("dissolved_oxygen"))      
+                     tStandardName      = moleUnits?
+                                          "mole_concentration_of_dissolved_molecular_oxygen_in_sea_water" :
+                                          "mass_concentration_of_oxygen_in_sea_water";
+            else if (tStandardName.equals("apparent_oxygen_saturation") ||
+                     tStandardName.equals("percentage_oxygen_saturation"))      
+                     tStandardName      = "fractional_saturation_of_oxygen_in_sea_water";
+            else if (tStandardName.equals("phosphate"))      
+                     tStandardName      = moleUnits?
+                                          "mole_concentration_of_phosphate_in_sea_water" :
+                                          "mass_concentration_of_phosphate_in_sea_water";
+            else if (tStandardName.equals("salinity"))       
+                     tStandardName      = "sea_water_salinity";
+            else if (tStandardName.equals("silicate"))
+                     tStandardName      = moleUnits?
+                                          "mole_concentration_of_silicate_in_sea_water" :
+                                          "mass_concentration_of_silicate_in_sea_water";    
+            else if (tStandardName.equals("temperature"))       
+                     tStandardName      = "sea_water_temperature";
+
+            //and other common incorrect names
+            else if (tStandardName.equals("eastward_sea_water_velocit")) //missing y
+                     tStandardName = "eastward_sea_water_velocity";
+            else if (tStandardName.equals("northward_sea_water_velocit")) //missing y
+                     tStandardName = "northward_sea_water_velocity";
+
+            else if (tStandardName.equals("grid_eastward_sea_water_velocity"))
+                     tStandardName      = "eastward_sea_water_velocity";
+            else if (tStandardName.equals("grid_northward_sea_water_velocity"))
+                     tStandardName      = "northward_sea_water_velocity";
+            else if (tStandardName.equals("ice_thickness"))       
+                     tStandardName      = "sea_ice_thickness";
+            else if (tStandardName.equals("ice_u_veloctiy") || //sic
+                     tStandardName.equals("grid_eastward_sea_ice_velocity"))
+                     tStandardName      = "sea_ice_x_velocity";
+            else if (tStandardName.equals("ice_v_veloctiy") || //sic       
+                     tStandardName.equals("grid_northward_sea_ice_velocity"))
+                     tStandardName      = "sea_ice_y_velocity";
+            else if (tStandardName.equals("net_surface_heat_flux") ||
+                     tStandardName.equals("surface_heat_flux"))       
+                     tStandardName      = "surface_downward_heat_flux_in_air";
+            else if (tStandardName.equals("wave_direction_to"))       
+                     tStandardName      = "sea_surface_wave_to_direction";
+            else if (tStandardName.equals("wave_height"))       
+                     tStandardName      = "sea_surface_wave_significant_height";
+            else if (tStandardName.equals("wave_period"))       
+                     tStandardName      = "sea_surface_swell_wave_period";
 
         }
 
+
+        //do standard_name first, since long_name and colorBar can use it
+        //    (These aren't crucial but are important. Try hard to be pretty confident.)
+        String ttLongName = tLongName.toLowerCase();
+        int asl = ttLongName.indexOf(" at sigma level ");
+        if (asl > 0)
+            ttLongName = ttLongName.substring(0, asl);
+        String lc = "|" + lcSourceName + "|" + ttLongName + "|"; 
+        lc = String2.replaceAll(lc, ' ', '|'); 
+        lc = String2.replaceAll(lc, '_', '|'); 
+        String lcu = lc + 
+            tStandardName.toLowerCase() + "|" +
+            tUnitsLC                    + "|";
+        lcu = String2.replaceAll(lcu, ' ', '|');
+        lcu = String2.replaceAll(lcu, '_', '|');
+        if (reallyVerbose && 
+            "|longitude|latitude|altitude|time|".indexOf("|" + tStandardName + "|") < 0)
+            String2.log("  sourceName=" + tSourceName + " lcu=" + lcu);
+
+        //isMeters
+        String testUnits = tUnits.toLowerCase(); 
+        testUnits = String2.replaceAll(testUnits, ' ', '|');
+        testUnits = String2.replaceAll(testUnits, '_', '|');
+        boolean isMeters = 
+            tUnits.equals("m")       ||
+            tUnits.equals("meter")   ||
+            tUnits.equals("meters"); 
+
+        //isDegreesC
+        boolean isDegreesC = 
+            testUnits.equals("°c")                  ||
+            testUnits.equals("celsius")             ||
+            testUnits.equals("degree|centigrade")   ||
+            testUnits.equals("degree|celsius")      ||
+            testUnits.equals("degrees|celsius")     ||
+            testUnits.equals("degc")                ||
+            testUnits.equals("degreec")             ||
+            testUnits.equals("degreesc")            ||
+            testUnits.equals("degree|c")            ||
+            testUnits.equals("degrees|c")           ||
+            testUnits.equals("deg|c")               ||
+            testUnits.equals("degs|c")              ||
+            testUnits.equals("cel")                 || //ucum
+            testUnits.endsWith("(degc)")            || //special for UAF
+            testUnits.endsWith("(degc");               //special for UAF
+
+        //isDegreesF
+        boolean isDegreesF = 
+            testUnits.equals("°f")                  ||
+            testUnits.equals("fahrenheit")          ||
+            testUnits.equals("degree|fahrenheit")   ||
+            testUnits.equals("degrees|fahrenheit")  ||
+            testUnits.equals("degf")                ||
+            testUnits.equals("degreef")             ||
+            testUnits.equals("degreesf")            ||
+            testUnits.equals("degree|f")            ||
+            testUnits.equals("degrees|f")           ||
+            testUnits.equals("deg|f")               ||
+            testUnits.equals("degs|f")              ||
+            testUnits.equals("[degf]"); //ucum
+
+        //isDegreesK
+        boolean isDegreesK = 
+            testUnits.equals("°k")                  ||
+            testUnits.equals("kelvin")              ||
+            testUnits.equals("degree|kelvin")       ||
+            testUnits.equals("degrees|kelvin")      ||
+            testUnits.equals("degk")                ||
+            testUnits.equals("degreek")             ||
+            testUnits.equals("degreesk")            ||
+            testUnits.equals("degree|k")            ||
+            testUnits.equals("degrees|k")           ||
+            testUnits.equals("deg|k")               ||
+            testUnits.equals("degs|k")              ||
+            testUnits.equals("k"); //udunits and ucum
+
+        if (!isSomething(tStandardName)) {
+            tStandardName = tSourceAtts.getString("Standard_name");  //wrong case?
+            if (!isSomething(tStandardName)) tStandardName = tSourceAtts.getString("Standard_Name");  //wrong case?
+            if (!isSomething(tStandardName) &&
+               "surface_carbon_dioxide_mole_flux".equals(tSourceAtts.getString("comment")))
+                tStandardName = tSourceAtts.getString("comment");
+
+            if (!isSomething(tStandardName)) tStandardName = "";  //do after checking tSourceAtts
+            //"|" allows search for whole word
+
+            //coads special case
+            String tHistory = tSourceAtts.getString("history"); //yes, for each variable
+            boolean coads = isSomething(tHistory) && tHistory.indexOf("coads") >= 0;
+
+            //from lcSourceName or lcLongName?  
+            //  (some abbreviations are NDBC names from NdbcMetStation lists)
+            //  (some abbreviations are from ICOADS)
+            //!!!??? these are CF standard names, but not all datasets will be using CF standard names
+                             //mostly alphabetical by tStandardName
+            if (tUnits.indexOf("Interpolation error fields") >= 0 ||
+                tUnits.indexOf("Monthly difference") >= 0 ||
+                tUnits.indexOf("Number of observations") >= 0 ||
+                tUnits.indexOf("Radius influence grid points") >= 0 ||
+                tUnits.indexOf("Standard deviation of data") >= 0 ||
+                tUnits.indexOf("Standard error of the mean") >= 0) {
+                //special case: don't assign stdName for WOA 2001 datasets 
+                //with crucial info in units 
+
+            } else if (isSomething(tStandardName)) {
+
+            //catch sigma-theta before catch sigma
+            } else if (lc.indexOf("sigma") >= 0 && 
+                     lc.indexOf("theta") >= 0)      tStandardName = "sea_water_sigma_theta"; 
+
+            //see similar CATCH STATISTICS below
+            else if (
+                     (lcu.indexOf("|n|") >= 0 && lcu.indexOf("degrees|n|") < 0) ||
+                     lcu.indexOf("count")        >= 0 || 
+                     lcu.indexOf("stddev")       >= 0 || 
+                     lcu.indexOf("|sd|")         >= 0 || 
+                     lcu.indexOf("|s.d.|")       >= 0 ||
+                     lcu.indexOf("sigma")        >= 0 ||
+                     lcu.indexOf("variance")     >= 0 ||
+                     lcu.indexOf("confidence")   >= 0 ||
+                     lcu.indexOf("precision")    >= 0 ||
+                     lcu.indexOf("error")        >= 0 || //"interpolation error fields"
+                     lcu.indexOf("number")       >= 0 || //"number of observations"
+                     lcu.indexOf("radius|influence|grid|points") >= 0 ||
+                     lcu.indexOf("standard|deviation") >= 0 ||
+                     lcu.indexOf("standard|error") >= 0) {}
+
+            //see similar CATCH QUALITY above and below        catch before others
+            else if (lcu.indexOf("qc")           >= 0 || 
+                     lcu.indexOf("qa")           >= 0 || 
+                     (lcu.indexOf("quality") >= 0 && lcu.indexOf("science|quality") < 0) || 
+                     lcu.indexOf("flag")         >= 0) {} 
+
+            //coads special cases
+            else if ((coads && lc.indexOf("|sflx|") >= 0) ||
+                     (lc.indexOf("|sensible|") >= 0 &&
+                      lc.indexOf("|heat|")     >= 0 &&
+                      lc.indexOf("|flux|")     >= 0))
+                                                   tStandardName = "surface_downward_sensible_heat_flux";
+            else if ((coads && lc.indexOf("|lflx|") >= 0) ||
+                     (lc.indexOf("|latent|")   >= 0 &&
+                      lc.indexOf("|heat|")     >= 0 &&
+                      lc.indexOf("|flux|")     >= 0))
+                                                    tStandardName = "surface_downward_latent_heat_flux";
+
+            //oceanographic and meteorological                     
+            else if ((lc.indexOf("air") >= 0 && 
+                      lc.indexOf("temp") >= 0) ||
+                     lc.indexOf("atmp") >= 0)       tStandardName = lc.indexOf("anom") >= 0? //anomaly
+                                                                    "air_temperature_anomaly" :
+                                                                    "air_temperature"; 
+            else if (((lc.indexOf("air")   >= 0 || lc.indexOf("atmo") >= 0 || 
+                       lc.indexOf("cloud") >= 0 || lc.indexOf("surface") >= 0 ||
+                       lc.indexOf("tropopause") >= 0) && 
+                      lc.indexOf("press") >= 0) ||
+                     //lc.indexOf("|bar|") >= 0 ||
+                     lc.indexOf("|slp|") >= 0 ||
+                     lc.indexOf("baromet") >= 0)    tStandardName = lc.indexOf("anom") >= 0? //anomaly
+                                                                    "air_pressure_anomaly" :
+                                                                    (lc.indexOf("|slp|") >= 0 ||
+                                                                     lc.indexOf("surface") >= 0)?
+                                                                    "surface_air_pressure" :
+                                                                    "air_pressure"; 
+            else if (lcu.indexOf("bathymetry") >= 0 && isMeters)
+                                                    tStandardName = "sea_floor_depth";
+            else if ((lc.indexOf("|land") >= 0 && lc.indexOf("mask|") >= 0)) 
+                                                    tStandardName = "land_binary_mask";
+            else if ((lc.indexOf("cloud") >= 0 && lc.indexOf("fraction") >= 0) ||
+                     (lc.indexOf("cloud") >= 0 && lc.indexOf("cover") >= 0) ||
+                     lc.indexOf("|cldc|") >= 0)     tStandardName = "cloud_area_fraction"; 
+            else if (tSourceName.equals("depth"))   tStandardName = "depth"; 
+            else if ((lc.indexOf("|water|") >= 0 && 
+                      lc.indexOf("|equiv") >= 0 && 
+                      lc.indexOf("|snow|") >= 0 && 
+                      lc.indexOf("|surface|") >= 0))  tStandardName = "liquid_water_content_of_surface_snow"; 
+            else if ((lc.indexOf("dew") >= 0 && 
+                      lc.indexOf("point") >= 0) ||
+                     lc.indexOf("|dewp") >= 0)      tStandardName = "dew_point_temperature"; 
+
+            else if ((lc.indexOf("|evapo") >= 0 && 
+                      lc.indexOf("|rate|") >= 0))   tStandardName = "lwe_water_evaporation_rate";
+            else if ((lc.indexOf("|rain") >= 0 && 
+                      lc.indexOf("fall") >= 0 && 
+                      lc.indexOf("|rate|") >= 0))   tStandardName = "rainfall_rate";
+
+            else if ((lc.indexOf("surface") >= 0 || lc.indexOf("net") >= 0) && 
+                     lc.indexOf("|heat|flux|") >= 0) {
+                if (lc.indexOf("upward") >= 0) {
+                    tStandardName = 
+                        lc.indexOf("latent") >= 0?   "surface_upward_latent_heat_flux" : 
+                        lc.indexOf("sensible") >= 0? "surface_upward_sensible_heat_flux" :
+                                                     "surface_upward_heat_flux_in_air";                     
+                } else {
+                    tStandardName = 
+                        lc.indexOf("latent") >= 0?   "surface_downward_latent_heat_flux" : 
+                        lc.indexOf("sensible") >= 0? "surface_downward_sensible_heat_flux" :
+                                                     "surface_downward_heat_flux_in_air";                     
+                }}
+            else if (lc.indexOf("momentum|flux") >= 0) {
+                if (lc.indexOf("|uflx|") >= 0 ||
+                    lc.indexOf("|u|") >= 0 ||
+                    lc.indexOf("zonal") >= 0) {
+                    tStandardName = "downward_eastward_momentum_flux_in_air";
+                } else {
+                    tStandardName = "downward_northward_momentum_flux_in_air";
+                }}
+            else if ((lc.indexOf("surface") >= 0 || lc.indexOf("net") >= 0) && 
+                     lc.indexOf("|longwave|flux|") >= 0) 
+                                                    tStandardName = lc.indexOf("upward") >= 0?
+                                                        "surface_net_upward_longwave_flux" :
+                                                        "surface_net_downward_longwave_flux";
+            else if ((lc.indexOf("surface") >= 0 || lc.indexOf("net") >= 0) && 
+                     lc.indexOf("|shortwave|flux|") >= 0) 
+                                                    tStandardName = lc.indexOf("upward") >= 0?
+                                                        "surface_net_upward_shortwave_flux" :
+                                                        "surface_net_downward_shortwave_flux";
+            else if ((lc.indexOf("wave") >= 0 &&
+                      lc.indexOf("height") >= 0) ||
+                     lc.indexOf("|wvht|") >= 0)     tStandardName = lc.indexOf("swell") >= 0?
+                                                                    "sea_surface_swell_wave_significant_height" :
+                                                                    lc.indexOf("wind") >= 0?
+                                                                    "sea_surface_wind_wave_significant_height" :
+                                                                    "sea_surface_wave_significant_height";
+            else if ((lc.indexOf("wave") >= 0 && 
+                      lc.indexOf("period") >= 0) ||
+                     lc.indexOf("|dpd|") >= 0 ||
+                     lc.indexOf("|apd|") >= 0)      tStandardName = lc.indexOf("wind") >= 0?
+                                                                    "sea_surface_wind_wave_period" :
+                                                                    "sea_surface_swell_wave_period";                                                  
+            else if ((lc.indexOf("wave") >= 0 && 
+                      lc.indexOf("dir") >= 0) ||
+                     lc.indexOf("|mwd|") >= 0)      tStandardName = lc.indexOf("swell") >= 0?
+                                                                    "sea_surface_swell_wave_to_direction" :
+                                                                    lc.indexOf("wind") >= 0?
+                                                                    "sea_surface_wind_wave_to_direction" :
+                                                                    lc.indexOf("from") >= 0?
+                                                                    "sea_surface_wave_from_direction" : //only 'from' option
+                                                                    "sea_surface_wave_to_direction";            
+            else if ((lc.indexOf("water") >= 0 && 
+                      lc.indexOf("density") >= 0))  tStandardName = "sea_water_density"; 
+            else if (lc.indexOf("conduct") >= 0)    tStandardName = "sea_water_electrical_conductivity"; 
+            else if ((lc.indexOf("salinity") >= 0 || lc.indexOf("salt") >= 0) &&
+                     lc.indexOf("diffusion") < 0) {
+                if (lc.indexOf("fl|") >= 0 ||
+                    lc.indexOf("flx") >= 0 ||
+                    lc.indexOf("flux") >= 0 ||
+                    lc.indexOf("transport") >= 0) {
+                    if (lc.indexOf("|x|") >= 0 || 
+                        lc.indexOf("|u|") >= 0 || 
+                        lc.indexOf("east") >= 0) {
+                        tStandardName = "ocean_salt_x_transport"; 
+                    } else if (
+                        lc.indexOf("|y|") >= 0 ||  
+                        lc.indexOf("|v|") >= 0 ||  
+                        lc.indexOf("north") >= 0) {
+                        tStandardName = "ocean_salt_y_transport"; 
+                    } else if (
+                        lc.indexOf("river") >= 0) {
+                        tStandardName = "salt_flux_into_sea_water_from_rivers";
+                    } else {
+                        //no generic salt_flux
+                    }
+                } else {
+                    tStandardName = "sea_water_salinity"; 
+                }}
+            else if ((lc.indexOf("water") >= 0 && 
+                      lc.indexOf("temp") >= 0) ||
+                     lc.indexOf("|wtmp|") >= 0)     tStandardName = lc.indexOf("anom") >= 0? //anomaly
+                                                                    "surface_temperature_anomaly" : //no sea_water_temperature_anomaly
+                                                                    "sea_water_temperature"; //sea???
+            else if (lc.indexOf("sst") >= 0 &&
+                     lc.indexOf("time") < 0)        tStandardName = lc.indexOf("anom") >= 0? //anomaly
+                                                                    "surface_temperature_anomaly" : //no sea_surface_temperature_anomaly
+                                                                    "sea_surface_temperature";
+            else if ((lc.indexOf("current") >= 0 && 
+                      lc.indexOf("east") >= 0) ||
+                     lc.indexOf("current|u") >= 0 ||
+                     lc.indexOf("currentu") >= 0 ||
+                     lc.indexOf("ucur") >= 0 ||
+                     lc.indexOf("current|x") >= 0 ||
+                     lc.indexOf("|wu|") >= 0 ||
+                     lc.indexOf("water|u") >= 0 ||
+                     lc.indexOf("wateru") >= 0 ||
+                     lc.indexOf("water|x") >= 0)    tStandardName = "eastward_sea_water_velocity";
+            else if ((lc.indexOf("current") >= 0 && 
+                      lc.indexOf("north") >= 0) ||
+                     lc.indexOf("current|v|") >= 0 || //beware current_velocity
+                     lc.indexOf("currentv|") >= 0 ||
+                     lc.indexOf("vcur") >= 0 ||
+                     lc.indexOf("current|y") >= 0 ||
+                     lc.indexOf("|wv|") >= 0 ||
+                     lc.indexOf("water|v|") >= 0 ||  //beware water_velocity
+                     lc.indexOf("waterv|") >= 0 ||
+                     lc.indexOf("water|y") >= 0)    tStandardName = "northward_sea_water_velocity";
+            else if ((lc.indexOf("surface") >= 0 && lc.indexOf("roughness") >= 0 &&
+                      isMeters))                    tStandardName = "surface_roughness_length"; 
+            else if ((lc.indexOf("rel") >= 0 && 
+                      lc.indexOf("hum") >= 0) ||
+                     lc.indexOf("|rhum|") >= 0 ||
+                     lc.indexOf("|rh|") >= 0)       tStandardName = "relative_humidity"; 
+            else if ((lc.indexOf("spec") >= 0 && 
+                      lc.indexOf("hum") >= 0) ||
+                     lc.indexOf("|shum|") >= 0)     tStandardName = "specific_humidity"; 
+            else if (lcu.indexOf("|soil|") >= 0 && 
+                     lcu.indexOf("|moisture|") >= 0)tStandardName = "soil_moisture_content";
+            else if ((lc.indexOf("geopotential") >= 0 && 
+                      lc.indexOf("height") >= 0))   tStandardName = "geopotential_height"; 
+            else if ((lc.indexOf("surface") >= 0 && 
+                      lc.indexOf("height") >= 0) ||  //sea_surface_height
+                     lc.indexOf("ssh") >= 0 ||       //there are more specific, e.g. above geoid
+                     lc.indexOf("surf|el") >= 0 ||       //there are more specific, e.g. above geoid
+                     (lc.indexOf("|tide|") >= 0 && 
+                         lc.indexOf("current") < 0 &&
+                         lc.indexOf("angle") < 0 &&
+                         lc.indexOf("period") < 0))
+                                                    tStandardName = lc.indexOf("anom") >= 0? //anomaly
+                                                                    "sea_surface_elevation_anomaly" :
+                                                                    "sea_surface_height"; 
+            else if ((lc.indexOf("tidal") >= 0 && 
+                      lc.indexOf("angle") >= 0))    tStandardName = "direction_of_sea_water_velocity";
+            else if (lcSourceName.equals("omega"))  tStandardName = "omega";
+            else if ((lc.indexOf("|precip") >= 0 && 
+                      lc.indexOf("|rate|") >= 0))   tStandardName = "lwe_precipitation_rate";
+            else if ((lc.indexOf("|precipitable|") >= 0 && 
+                      lc.indexOf("|atmosphere|") >= 0 && 
+                      lc.indexOf("|water|") >= 0))  tStandardName = "water_content_of_atmosphere_layer";
+            else if ((lc.indexOf("stress") >= 0 && 
+                      lc.indexOf("x") >= 0 &&
+                      lc.indexOf("max") < 0) ||
+                     lc.indexOf("|upstr|") >= 0 || //coads
+                     lc.indexOf("|tauu|") >= 0 ||
+                     lc.indexOf("|tau|u|") >= 0 ||
+                     lc.indexOf("|taux|") >= 0 ||
+                     lc.indexOf("|tau|x|") >= 0)    tStandardName = "surface_downward_eastward_stress";
+            else if ((lc.indexOf("stress") >= 0 && 
+                      lc.indexOf("y") >= 0) ||
+                     lc.indexOf("|vpstr|") >= 0 || //coads
+                     lc.indexOf("|tauv|") >= 0 ||
+                     lc.indexOf("|tau|v|") >= 0 ||
+                     lc.indexOf("|tauy|") >= 0 ||
+                     lc.indexOf("|tau|y|") >= 0)    tStandardName = "surface_downward_northward_stress";
+            else if (lc.indexOf("|ptdy|") >= 0)     tStandardName = "tendency_of_air_pressure"; 
+            else if (lc.indexOf("visibility") >= 0 || 
+                     lc.indexOf("|vis|") >= 0)      tStandardName = "visibility_in_air"; 
+            else if ((lc.indexOf("east") >= 0 && 
+                      lc.indexOf("wind") >= 0) ||
+                     lc.indexOf("|u-wind|") >= 0 || 
+                     lc.indexOf("|wspu|") >= 0 || 
+                     lc.indexOf("|uwnd|") >= 0 ||                      
+                     lc.indexOf("|xwnd|") >= 0)     tStandardName = "eastward_wind";
+            else if ((lc.indexOf("north") >= 0 && 
+                      lc.indexOf("wind") >= 0) ||
+                     lc.indexOf("|v-wind|") >= 0 || 
+                     lc.indexOf("|wspv|") >= 0 ||
+                     lc.indexOf("|vwnd|") >= 0 ||                       
+                     lc.indexOf("|ywnd|") >= 0)     tStandardName = "northward_wind";
+            else if ((lc.indexOf("wind") >= 0 && 
+                      lc.indexOf("dir") >= 0) ||
+                     lc.indexOf("|wd|") >= 0)       tStandardName = "wind_from_direction";
+            else if (lc.indexOf("gust") >= 0 ||
+                     lc.indexOf("|gst|") >= 0)      tStandardName = "wind_speed_of_gust";
+            else if ((lc.indexOf("wind") >= 0 && 
+                      lc.indexOf("speed") >= 0) ||   //not wspd3, which should have a stdName but doesn't
+                     lc.indexOf("|wspd|") >= 0)      tStandardName = "wind_speed";
+
+            //chemistry
+            else if (lc.indexOf("ammoni") >= 0 ||
+                     lc.indexOf("|nh4|") >= 0)      tStandardName = "mole_concentration_of_ammonium_in_sea_water";
+            else if (lc.indexOf("|zooplankton|carbon|content|") >= 0) //no mass option      
+                                                    tStandardName = "mole_concentration_of_zooplankton_expressed_as_carbon_in_sea_water";
+            else if (lc.indexOf("chlorophyll") >= 0 ||       
+                     lc.indexOf("chl|a|")      >= 0 ||               
+                     lc.indexOf("chlor|a|")    >= 0 ||
+                     lc.indexOf("|chlora|")    >= 0 ||
+                     lc.indexOf("|chlormean|") >= 0 ||              //avoids mol vs. g 
+                     lc.indexOf("|chla|") >= 0)     tStandardName = lc.indexOf("anom") >= 0? //anomaly
+                                                                    "":
+                                                                    "concentration_of_chlorophyll_in_sea_water";
+            //else if ((lc.indexOf("no2") >= 0 && 
+            //          lc.indexOf("no3") >= 0) ||                     //catch NO2 NO3 together before separately
+            //         lc.indexOf("nitrogen") >= 0)   tStandardName = ??? there is no plain nitrogen, nox or noy in_sea_water
+            else if (lc.indexOf("nitrate") >= 0 ||                  //no g option
+                     lc.indexOf("|no3|") >= 0)      tStandardName = "mole_concentration_of_nitrate_in_sea_water";
+            else if (lc.indexOf("nitrite") >= 0 ||                   //no g option
+                     lc.indexOf("|no2|") >= 0)      tStandardName = "mole_concentration_of_nitrite_in_sea_water";
+            else if (lc.indexOf("|dissolved|oxygen|") >= 0)      
+                                                    tStandardName = moleUnits?
+                                                        "mole_concentration_of_dissolved_molecular_oxygen_in_sea_water" :
+                                                        gUnits?
+                                                        "mass_concentration_of_oxygen_in_sea_water" :
+                                                        "volume_fraction_of_oxygen_in_sea_water";
+
+            else if ((lc.indexOf("|apparent|") >= 0 || 
+                      lc.indexOf("|percent|") >= 0 || lc.indexOf('%') >= 0) &&
+                     lc.indexOf("|oxygen|saturation|") >= 0)      
+                                                    tStandardName = "fractional_saturation_of_oxygen_in_sea_water";
+            else if (lc.indexOf("phosphate") >= 0 ||
+                     lc.indexOf("|po4|") >= 0)      tStandardName = moleUnits?
+                                                         "mole_concentration_of_phosphate_in_sea_water" :
+                                                         "mass_concentration_of_phosphate_in_sea_water";
+            else if (lc.indexOf("silicate") >= 0 ||
+                     lc.indexOf("|si|") >= 0)       tStandardName = moleUnits?
+                                                         "mole_concentration_of_silicate_in_sea_water" :
+                                                         "mass_concentration_of_silicate_in_sea_water";
+
+        }
+        if (reallyVerbose && 
+            "|longitude|latitude|altitude|time|".indexOf("|" + tStandardName + "|") < 0)
+            String2.log("    tStandardName=" + tStandardName);
+
         //colorBar  (if these are specified, WMS works and graphs in general work better)
+        //    (These are not crucial. If it's wrong, it isn't terrible.)
         if (tryToAddColorBarMinMax &&
             Double.isNaN(tSourceAtts.getDouble("colorBarMinimum")) &&
             Double.isNaN(tSourceAtts.getDouble("colorBarMaximum"))) { 
@@ -2855,23 +4189,160 @@ public abstract class EDD {
             //assign based on standard_name first (more consistent and less extreme than valid_min/max from other sources)
             //Fortunately, the penalty for being wrong (e.g., different units than expected) is small: bad default colorBar range.
             //FUTURE: These are CF standard_names.  Add standard_names from other standards.
-            if      (tStandardName.endsWith("_from_direction"           ) ||
+            if (testUnits.indexOf("interpolation|error|fields") >= 0 ||
+                tUnitsLC.indexOf("difference") >= 0) {
+                if (testUnits.indexOf("fraction") >= 0 || 
+                    (testUnits.indexOf("1") >= 0 && testUnits.indexOf("-1") < 0)) {
+                    tMin = -0.1;  tMax = 0.1;
+                } else if ((testUnits.indexOf("psu") >= 0 && testUnits.indexOf("psue") < 0) || //psuedo
+                    testUnits.indexOf("pss") >= 0) {
+                    tMin = -1;    tMax = 1;
+                } else if (isDegreesC || isDegreesF || isDegreesK ||
+                    testUnits.indexOf("percent") >= 0) {
+                    tMin = -5;    tMax = 5;
+                } else {
+                    tMin = -10;   tMax = 10;
+                }}
+
+            else if (lcu.indexOf("stddev")       >= 0 || 
+                lcu.indexOf("|sd|")         >= 0 || 
+                lcu.indexOf("|s.d.|")       >= 0 ||
+                lcu.indexOf("variance")     >= 0 ||
+                lcu.indexOf("confidence")   >= 0 ||
+                lcu.indexOf("error")        >= 0 || 
+                lcu.indexOf("standard|deviation") >= 0 ||
+                lcu.indexOf("standard|error") >= 0) {
+                if (testUnits.indexOf("fraction") >= 0 || 
+                    (testUnits.indexOf("1") >= 0 && testUnits.indexOf("-1") < 0)) {
+                    tMin = 0;    tMax = 0.1;
+                } else if ((testUnits.indexOf("psu") >= 0 && testUnits.indexOf("psue") < 0) || //psuedo
+                    testUnits.indexOf("pss") >= 0) {
+                    tMin = 0;    tMax = 1;
+                } else if (isDegreesC || isDegreesF || isDegreesK ||
+                    testUnits.indexOf("percent") >= 0) {
+                    tMin = 0;    tMax = 5;
+                } else {
+                    tMin = 0;    tMax = 50;
+                }}
+
+
+            //see similar CATCH STATISTICS above and below     catch before others
+            //here just catch n and count and make a crude guess at 0 to 100
+            else if (lcu.indexOf("number")       >= 0 || 
+                     lcu.indexOf("count")        >= 0 || 
+                     lcu.indexOf("radius|influence|grid|points") >= 0)     {tMin = 0;    tMax = 100;}
+
+            else if (lcu.indexOf("|mask|on|") >= 0 && 
+                     lcu.indexOf("points|") >= 0)                          {tMin = 0;    tMax = 1.5;}
+            else if (lcu.indexOf("mask") >= 0 && tSourceAtts.get("actual_range") == null)
+                                                                           {tMin = 0;    tMax = 127;}
+
+            else if (lcu.indexOf("processing|param") >= 0)                 {tMin = 0;    tMax = 10;}                    
+
+            //see similar CATCH QUALITY above and below        catch before others
+            else if (lcu.indexOf("qc")           >= 0 || 
+                     lcu.indexOf("qa")           >= 0 || 
+                    (lcu.indexOf("quality") >= 0 && lcu.indexOf("science|quality") < 0) || 
+                     lcu.indexOf("flag")         >= 0                   )  {tMin = 0;    tMax = 128;}
+
+            //special: catch "percent" 
+            else if (tUnitsLC.indexOf("percent") >= 0 ||
+                     tUnits.indexOf('%') >= 0)                             {tMin = 0;    tMax = 100;}
+
+            else if (tUnitsLC.indexOf("yyyy") >= 0                      )  {tMin = 1950; tMax = 2020;}  //special case ("fraction part of year")
+
+            //special: catch fraction  e.g., "cloud_area_fraction" "sea_ice_area_fraction"
+            else if ((lcu.indexOf("fraction") >= 0 && tUnits.length() == 0) ||
+                     tUnitsLC.indexOf("unitless") >= 0 ||
+                     tUnitsLC.indexOf("fraction") >= 0 ||
+                     tUnitsLC.equals("1")                               )  {tMin = 0;    tMax = 1;}
+
+            //catch 0 - 360   
+            else if (tStandardName.endsWith("_from_direction"           ) ||
                      tStandardName.endsWith("_to_direction"             ) ||
+                     tStandardName.startsWith("direction_of_"           ) ||
                      tUnits.equals("degrees_true"                       )) {tMin = 0;    tMax = 360;}
-            else if (tStandardName.equals("air_pressure"                ) ||
-                     tStandardName.startsWith("air_pressure_at"         )) {tMin = 970;  tMax = 1030;}
-            else if (tStandardName.equals("air_pressure_anomaly"        )) {tMin = -30;  tMax =  30;}//?
+
+            //catch z in Coastal Relief Model
+            else if (tSourceName.equals("z") && 
+                    isMeters && 
+                    "up".equals(tSourceAtts.getString("positive"))) {
+                tMin = -8000; tMax = 8000;
+                tAddAtts.add("colorBarPalette", "Topography");
+                }
+
+            //catch normal things
+            else if (tStandardName.equals("surface_air_pressure"        ) ||
+                     tStandardName.equals("air_pressure"                ) ||
+                     tStandardName.startsWith("air_pressure_at"         )) {
+                if (tUnitsLC.startsWith("pa")) {  //or pascals
+                    if (lc.indexOf("tropopause") >= 0) {
+                        tMin = 0;  tMax = 40000;
+                    } else if (lc.indexOf("high|cloud") >= 0) {
+                        tMin = 25000;  tMax = 50000;
+                    } else if (lc.indexOf("cloud") >= 0) {
+                        tMin = 30000;  tMax = 90000;
+                    } else {
+                        tMin = 97000;  tMax = 103000;
+                    }
+                } else {
+                    tMin = 970;  tMax = 1030;
+                }}
+            else if (tStandardName.equals("air_pressure_anomaly"        )) {
+                if (tUnitsLC.equals("pa")) {
+                    tMin = -3000; tMax = 3000;
+                } else {
+                    tMin = -30;   tMax = 30;
+                }}                
             else if (tStandardName.equals("air_temperature"             ) ||
-                     tStandardName.equals("air_potential_temperature"   )) {tMin = -10;  tMax = 40;}        
+                     tStandardName.equals("air_potential_temperature"   )) {
+                if (isDegreesK) {
+                    if (lc.indexOf("tropopause") >= 0) {
+                        tMin = 190;  tMax = 230;
+                    } else {
+                        tMin = 263;  tMax = 313;
+                    }
+                } else if (isDegreesF) {
+                    tMin = 14;   tMax = 104;
+                } else {
+                    tMin = -10;  tMax = 40;
+                }}
+            else if (tStandardName.equals("air_temperature_anomaly"     )) {tMin = -10;  tMax = 10;}
+            else if (tStandardName.equals("water_content_of_atmosphere_layer"))
+                                                                           {tMin = 0;    tMax = 50;}
+            else if (tStandardName.equals("atmosphere_cloud_condensed_water_content") ||
+                     tStandardName.equals("atmosphere_cloud_ice_content") ||
+                     tStandardName.equals("atmosphere_cloud_liquid_water_content)"))
+                                                                           {tMin = 0;    tMax = 0.5;}
+
+            else if (lcu.indexOf("bottom") >= 0 && 
+                     lcu.indexOf("roughness") >= 0)                        {tMin = 0;    tMax = 0.1;}
             else if (tStandardName.equals("concentration_of_chlorophyll_in_sea_water") ||
                      tStandardName.equals("chlorophyll_concentration_in_sea_water") ||
+                     tStandardName.equals("mass_concentration_of_chlorophyll_a_in_sea_water") ||
                      tStandardName.equals("mass_concentration_of_chlorophyll_in_sea_water"
                                                                         )) {tMin = 0.03; tMax = 30; colorBarScale = "Log";}
             else if (lcSourceName.equals("chloranomaly"                 )) {tMin = -5;   tMax = 5;}
-            else if (tStandardName.equals("dew_point_temperature"       )) {tMin = 0;    tMax = 40;}
-                     //fraction  e.g., "cloud_area_fraction" "sea_ice_area_fraction"
-            else if (tStandardName.indexOf("fraction") >= 0             )  {tMin = 0;    tMax = 1;}
+            else if (tStandardName.equals("dew_point_temperature"       )) {
+                if (isDegreesK) {
+                    tMin = 273; tMax = 313;                  
+                } else if (isDegreesF) {
+                    tMin = 14;  tMax = 104;                  
+                } else {
+                    tMin = 0;   tMax = 40;
+                }}                  
+            else if (lcu.indexOf("dilution|of|precision") >= 0          )  {tMin = 0;    tMax = 1;}
+            else if (lcu.indexOf("lwe_water_evaporation_rate") >= 0     )  {tMin = -1e-4;tMax = 1e-4;}
+            else if (lcu.indexOf("|u-flux|") >= 0 ||
+                     lcu.indexOf("|v-flux|") >= 0)                         {tMin = -1e6; tMax = 1e6;}
+            else if (tStandardName.equals("geopotential_height")          ){tMin = -50;  tMax = 1000;}
+            else if (lcSourceName.indexOf("graphics") >= 0              )  {tMin = 0;    tMax = 20;}
             else if (lcSourceName.indexOf("k490") >= 0                  )  {tMin = 0;    tMax = 0.5;}
+            else if (tStandardName.equals("lagrangian_tendency_of_air_pressure")) 
+                                                                           {tMin = -0.02;tMax = 0.02;}
+            else if (lcSourceName.indexOf("|lifted|index|") >= 0        )  {tMin = -10;  tMax = 50;}
+            else if (tStandardName.equals("ocean_mixed_layer_thickness") ||
+                     tStandardName.equals("mixed_layer_depth")           ) {tMin = 0;    tMax = 100;}
             else if (tStandardName.equals("mole_concentration_of_ammonium_in_sea_water")) 
                                                                            {tMin = 0;    tMax = 5;}
             else if (tStandardName.equals("mole_concentration_of_nitrate_in_sea_water")) 
@@ -2882,43 +4353,156 @@ public abstract class EDD {
                                                                            {tMin = 0;    tMax = 4;}
             else if (tStandardName.equals("mole_concentration_of_silicate_in_sea_water")) 
                                                                            {tMin = 0;    tMax = 50;}
+            else if (tStandardName.equals("mole_concentration_of_zooplankton_expressed_as_carbon_in_sea_water")) 
+                                                                           {tMin = 0;    tMax = 100;}
+            else if (tStandardName.equals("mole_fraction_of_o3_in_air")) 
+                                                                           {tMin = 0;    tMax = 30;}            
+            else if (tStandardName.equals("downward_eastward_momentum_flux_in_air") ||
+                     tStandardName.equals("downward_northward_momentum_flux_in_air"))
+                                                                           {tMin = -1;   tMax = 1;}
+            else if (lcu.indexOf("momentum|component") >= 0)               {tMin = -0.3; tMax = 0.3;}
+            else if (lcu.indexOf("momentum|stress") >= 0)                  {tMin = -0.1; tMax = 0.1;}
+
             else if (tStandardName.equals("net_primary_productivity_of_carbon")) 
                                                                            {tMin = 0;    tMax = 2000;}
-            else if (tUnits.toLowerCase().startsWith("percent"          ) ||
-                     tUnits.startsWith("%"                              )) {tMin = 0;    tMax = 100;}
+            else if (tStandardName.equals("eastward_ocean_heat_transport")) 
+                                                                           {tMin = -1e-4;tMax = 1e-4;}
+            else if (tStandardName.equals("northward_ocean_heat_transport")) 
+                                                                           {tMin = -1e-4;tMax = 1e-4;}
+
+            else if (tStandardName.equals("ocean_meridional_overturning_streamfunction")) 
+                                                                           {tMin = 0;    tMax = 40;}            
+            else if (tStandardName.equals("ocean_salt_x_transport") ||
+                     tStandardName.equals("ocean_salt_y_transport") ||
+                     lcu.indexOf("|salt|flux|") >= 0 ||
+                     lcu.indexOf("|salinity|flux|") >= 0)                  {tMin = -2e-6;tMax = 2e-6;}
+            else if (tUnitsLC.equals("okta")                             ) {tMin = 0;    tMax = 9;}
+            else if (tStandardName.equals("omega"))                        {tMin = -0.1; tMax = 0.1;}
+            else if (lcu.indexOf("apparent|oxygen|utilization") >= 0    )  {tMin = -1;   tMax = 1;}                    
+            else if (tStandardName.equals("volume_fraction_of_oxygen_in_sea_water")
+                                                                        )  {tMin = 0;    tMax = 10;}                    
+            else if (tStandardName.indexOf("oxygen_in_sea_water") >= 0)    {tMin = 0;    tMax = 500;}                      
+            else if (tStandardName.indexOf("water_flux_into_ocean") >= 0)  {tMin = 0;    tMax = 1e-4;}
+            else if (tStandardName.indexOf("precipitation") >= 0 ||
+                     tStandardName.indexOf("snowfall") >= 0 ||
+                     tStandardName.indexOf("rainfall") >= 0 ||
+                     tStandardName.indexOf("runoff") >= 0 ||
+                     tStandardName.indexOf("graupel") >= 0) {
+                if (tStandardName.indexOf("flux") >= 0 ||
+                    tStandardName.indexOf("rate") >= 0) {
+                    tMin = 0;    tMax = 1e-4;
+                } else {
+                    tMin = 0;    tMax = 1;
+                }}                    
             else if (tStandardName.equals("relative_humidity"           )) {tMin = 20;   tMax = 100;}                    
-            else if (tStandardName.equals("sea_floor_depth_below_sea_level"
-                                                                        )) {tMin = 0;    tMax = 8000;}
+            else if (lcSourceName.indexOf("667") >= 0                   )  {
+                if (lcSourceName.indexOf("anom") >= 0) {
+                    tMin = -0.01; tMax = 0.01;
+                } else {
+                    tMin = -25000.055;tMax = -25000.035;
+                }}
+            else if (lcu.indexOf("ripple") >= 0 && 
+                     lcu.indexOf("length") >= 0)                           {tMin = 0;    tMax = 0.2;}
+            else if (lcu.indexOf("ripple") >= 0 && 
+                     lcu.indexOf("height") >= 0)                           {tMin = 0;    tMax = 0.02;}
+            else if (tStandardName.equals("sea_floor_depth") ||
+                     tStandardName.equals("sea_floor_depth_below_geoid") ||
+                     tStandardName.equals("sea_floor_depth_below_sea_level") ||
+                     tStandardName.equals("sea_floor_depth_below_sea_surface") ||
+                     tStandardName.equals("depth_at_nodes") ||
+                     tStandardName.equals("depth")) {
+                tMin = 0;    tMax = 8000;
+                tAddAtts.add("colorBarPalette", "OceanDepth");
+                }                
+            else if (tStandardName.equals("sea_ice_thickness"           )) {tMin = 0;   tMax = 2.5;}                    
+            else if (tStandardName.equals("eastward_sea_ice_velocity")  ||
+                     tStandardName.equals("northward_sea_ice_velocity") || 
+                     tStandardName.equals("sea_ice_x_velocity")         ||         
+                     tStandardName.equals("sea_ice_y_velocity"          )) {tMin = -0.1;tMax = 0.1;}                    
             else if (tStandardName.equals("sea_surface_height_above_geoid") ||
-                     tStandardName.equals("sea_surface_elevation"       )) {tMin = -2;   tMax = 2;}
-            else if (tStandardName.equals("sea_surface_swell_wave_period")){tMin = 0;    tMax = 20;}
-            else if (tStandardName.equals("sea_surface_swell_wave_significant_height"
-                                                                        )) {tMin = 0;    tMax = 10;}
-            else if (tStandardName.equals("sea_surface_temperature"     ) ||
+                     tStandardName.equals("sea_surface_height_above_reference_ellipsoid") ||
+                     tStandardName.equals("sea_surface_height_above_sea_level") ||
+                     tStandardName.equals("sea_surface_height") ||
+                     tStandardName.equals("sea_surface_elevation") ||
+                     tStandardName.equals("sea_surface_elevation_anomaly")){tMin = -2;   tMax = 2;}
+            else if (tStandardName.equals("sea_surface_foundation_temperature") ||
+                     tStandardName.equals("sea_surface_skin_temperature") ||
+                     tStandardName.equals("sea_surface_subskin_temperature") ||
                      tStandardName.equals("sea_surface_temperature"     ) ||
-                     tStandardName.equals("sea_water potential_temperature") ||
-                     tStandardName.equals("sea_water_temperature"       )) {tMin = 0;    tMax = 32;}
-            else if (tStandardName.equals("sea_water_density"           )) {tMin = 20;   tMax = 28;}
+                     tStandardName.equals("sea_water_potential_temperature") ||
+                     tStandardName.equals("sea_water_temperature"       ) ||
+                     tStandardName.equals("surface_temperature_where_sea")) {
+                if (isDegreesK) {
+                    tMin = 273; tMax = 305;
+                } else if (isDegreesF) {
+                    tMin = 32;  tMax = 89;
+                } else {
+                    tMin = 0;   tMax = 32;
+                }}                  
+            else if (tStandardName.equals("sea_water_density"           ) ||
+                     tStandardName.equals("sea_water_potential_density" )) {tMin = 20;   tMax = 28;}
             else if (tStandardName.equals("sea_water_electrical_conductivity"
                                                                         )) {tMin = 30;   tMax = 40;}
-            else if (tStandardName.equals("sea_water_pressure"          )) {tMin = 0;    tMax = 5000;}
-            else if (tStandardName.equals("sea_water_salinity"          ) ||
-                     //lcSourceName.indexOf(   "salinity") >= 0                || //!but river/bay salinity close to 0
-                     tUnits.toLowerCase().equals("psu"                  )) {tMin = 32;   tMax = 37;}
-            else if (tStandardName.equals("sea_water_speed"             )) {tMin = 0;    tMax = 0.5;}
+            else if (tStandardName.equals("sea_water_pressure_at_sea_floor"))         {tMin = 0;    tMax = 1000;}
+            else if (tStandardName.equals("sea_water_pressure_at_sea_water_surface")) {tMin = 4000; tMax = 5000;}
+            else if (tStandardName.equals("sea_water_pressure"          ))            {tMin = 0;    tMax = 5000;}
+            else if (tStandardName.equals("sea_surface_salinity"          ) ||
+                     tStandardName.equals("sea_water_salinity"          ) ||
+                     //lc.indexOf(   "salinity") >= 0     || //!but river/bay salinity close to 0
+                     tUnitsLC.equals("psu"                              ) ||
+                     tUnitsLC.equals("pss"                              )) {tMin = 32;   tMax = 37;}
+            else if (tStandardName.equals("sea_water_speed"))              {tMin = 0;    tMax = 0.5;}
             else if (tStandardName.indexOf("sea_water_x_velocity") >= 0 ||
                      tStandardName.indexOf("sea_water_y_velocity") >= 0 ||
-                     tStandardName.indexOf("sea_water_velocity") > 0    )  {tMin = -0.5; tMax = 0.5;}
-            else if (tStandardName.equals("specific_humidity"           ) ||
-                     tStandardName.equals("surface_specific_humidity"   )) {tMin = 0;    tMax = 30;}
+                     tStandardName.indexOf("sea_water_velocity") > 0)      {tMin = -0.5; tMax = 0.5;}
+            else if (tStandardName.indexOf("sea_water_z_velocity") >= 0 )  {tMin = -1e-7;tMax = 1e-7;}
+            else if (lcu.indexOf("sediment") >= 0 && 
+                     lcu.indexOf("size") >= 0)                             {tMin = 0;    tMax = 0.01;}
+            else if (lcu.indexOf("sediment") >= 0 && 
+                     lcu.indexOf("density") >= 0)                          {tMin = 0;    tMax = 4000;}
+            else if (lcu.indexOf("sediment") >= 0 && 
+                     lcu.indexOf("velocity") >= 0)                         {tMin = 0;    tMax = 0.1;}
+
+            else if (tStandardName.equals("soil_moisture_content"       )) {tMin = 0;    tMax = 5;}
+            else if (tStandardName.equals("specific_humidity"           ) || //units=1 caught above
+                     tStandardName.equals("surface_specific_humidity"   )) {
+                         tMin = 0;
+                         tMax = (tUnitsLC.equals("kg/kg") || tUnitsLC.equals("g/g"))?
+                             0.0005 : 30;
+                         }
             else if (tStandardName.equals("surface_altitude"            )) {tMin = -5;   tMax = 5;}
+            else if (tStandardName.equals("surface_carbon_dioxide_mole_flux"
+                                                                        )) {tMin = -1e-5;tMax = 1e-5;}
             else if (tStandardName.equals("surface_downward_x_stress") ||
                      tStandardName.equals("surface_downward_y_stress") ||
                      tStandardName.equals("surface_downward_eastward_stress") ||
                      tStandardName.equals("surface_downward_northward_stress")            
                                                                         )  {tMin = -0.5; tMax = 0.5;}
+            else if (tStandardName.equals("surface_roughness_length"))     {tMin = 0;   tMax = 0.001;}
+            else if (tStandardName.equals("surface_snow_mass") ||
+                     tStandardName.equals("liquid_water_content_of_surface_snow"))
+                                                                           {tMin = 0;   tMax = 1000;}
             else if (tStandardName.equals("surface_temperature_anomaly" )) {tMin = -3;   tMax = 3;}
+            else if (tStandardName.indexOf("surface_temperature") >= 0) {
+                if (isDegreesK) {
+                    tMin = 263;  tMax = 313;
+                } else if (isDegreesF) {
+                    tMin = 14;   tMax = 104;                                                                             
+                } else {
+                    tMin = -10;  tMax = 40;
+                }}                  
+            else if ((lcu.indexOf("suspended") >= 0 || lcu.indexOf("flux") >= 0) && 
+                     gUnits &&
+                     (lcu.indexOf("sand") >= 0 || lcu.indexOf("sediment") >= 0)) 
+                                                                           {tMin = 0;    tMax = 1;}
             else if (tStandardName.equals("tendency_of_air_pressure"    )) {tMin = -3;   tMax = 3;}
+            else if (lc.indexOf("tidal") >= 0 && 
+                     lc.indexOf("current") >= 0 &&
+                     tUnits.equals("meters second-1"))                     {tMin = 0;    tMax = 0.5;}
+            else if (tStandardName.indexOf("_wave") >= 0 &&
+                     tStandardName.indexOf("period") >= 0)                 {tMin = 0;    tMax = 20;}
+            else if (tStandardName.indexOf("wave") >= 0 &&
+                     tStandardName.indexOf("significant_height") >= 0    ) {tMin = 0;    tMax = 10;}
             else if (tStandardName.equals("eastward_wind"               ) ||
                      tStandardName.equals("northward_wind"              ) ||
                      tStandardName.equals("x_wind"                      ) ||
@@ -2926,39 +4510,94 @@ public abstract class EDD {
             else if (tStandardName.equals("wind_speed"                  )) {tMin = 0;    tMax = 15;}
             else if (tStandardName.equals("wind_speed_of_gust"          )) {tMin = 0;    tMax = 30;}
             else if (tStandardName.equals("visibility_in_air"           )) {tMin = 0;    tMax = 100;}
+            else if (tStandardName.equals("volume_fraction_of_water_in_soil")) 
+                                                                           {tMin = 0;    tMax = 200;}
+            else if (lc.indexOf("|ice|concentration|") >= 0)               {tMin = 0;    tMax = 1.5;}
+
+            //general things (if specific not caught above)
+            else if (isDegreesC)                                           {tMin = -10;  tMax = 40;}
+            else if (isDegreesF)                                           {tMin = 14;   tMax = 104;} 
+            else if (isDegreesK)                                           {tMin = 263;  tMax = 313;} 
+            else if (lcu.indexOf("anom") >= 0                           )  {tMin = -10;  tMax = 10;}
+            else if ((lc.indexOf("|radiative|") >= 0 && lc.indexOf("|flux|") >= 0) ||
+                     (lc.indexOf("|radiation|") >= 0 && lc.indexOf("|flux|") >= 0) ||
+                     (lc.indexOf("|shortwave|") >= 0 && lc.indexOf("|flux|") >= 0) ||
+                     (lc.indexOf("|longwave|")  >= 0 && lc.indexOf("|flux|") >= 0) ||
+                     (lc.indexOf("|solar|")     >= 0 && lc.indexOf("|flux|") >= 0) ||
+                     lcu.indexOf(          "|w/m^2|")        >= 0       )  {tMin = -500; tMax = 500;}
+            else if ((lc.indexOf("|heat|") >= 0 && lc.indexOf("|flux|") >= 0)
+                                                                        )  {tMin = -250; tMax = 250;}
+            else if (tUnits.equals("degrees_east") ||
+                     tUnits.equals("degree_east")                       )  {tMin = -180; tMax = 180;}
+            else if (tUnits.equals("degrees_north") ||
+                     tUnits.equals("degree_north")                      )  {tMin = -90;  tMax = 90;}
+            else if (tUnits.equals("radians")                           )  {tMin = -3.2; tMax = 3.2;}
+            else if (tUnits.startsWith("kg")) {
+                if (tUnits.endsWith("s-1")) {tMin = 0;  tMax = 1;   } 
+                else                        {tMin = 0;  tMax = 200; }}    
+             
+            if (reallyVerbose && 
+                "|longitude|latitude|altitude|time|".indexOf("|" + tStandardName + "|") < 0)
+                String2.log("    assigned tMin=" + tMin + " tMax=" + tMax);
 
             //next best: assign based on metadata
-            if (Double.isNaN(tMin)) tMin = tSourceAtts.getNiceDouble("valid_min");
-            if (Double.isNaN(tMax)) tMax = tSourceAtts.getNiceDouble("valid_max");
-            if (Double.isNaN(tMin)) tMin = tSourceAtts.getNiceDouble("fgdc_valid_min");
-            if (Double.isNaN(tMax)) tMax = tSourceAtts.getNiceDouble("fgdc_valid_max");
-            if (Double.isNaN(tMin) && Double.isNaN(tMax)) {
-                PrimitiveArray pa = tSourceAtts.get("valid_range");
-                if (pa != null && pa.size() == 2) {
-                    tMin = pa.getNiceDouble(0);
-                    tMax = pa.getNiceDouble(1);
-                }
-            }
-            if (Double.isNaN(tMin) && Double.isNaN(tMax)) {
+            if (Double.isNaN(tMin) || Double.isNaN(tMax)) {
+                tMin = Double.NaN;
+                tMax = Double.NaN;
                 PrimitiveArray pa = tSourceAtts.get("actual_range");
+                if (pa == null || pa.size() != 2)
+                    pa = tSourceAtts.get("valid_range");  //often too wide
                 if (pa != null && pa.size() == 2) {
-                    double tLow  = pa.getDouble(0);
-                    double tHigh = pa.getDouble(1);
-                    if (!Double.isNaN(tLow) && !Double.isNaN(tHigh)) {
-                        double d2[] = Math2.suggestLowHigh(tLow, tHigh);
-                        tMin = d2[0];
-                        tMax = d2[1];
-                    }
+                    tMin = pa.getDouble(0);
+                    tMax = pa.getDouble(1);
+                } 
+                if (Double.isNaN(tMin)) tMin = tSourceAtts.getNiceDouble("valid_min"); //often too wide
+                if (Double.isNaN(tMax)) tMax = tSourceAtts.getNiceDouble("valid_max");
+                if (Double.isNaN(tMin)) tMin = tSourceAtts.getNiceDouble("fgdc_valid_min");
+                if (Double.isNaN(tMax)) tMax = tSourceAtts.getNiceDouble("fgdc_valid_max");
+                if (!Double.isNaN(tMin) && !Double.isNaN(tMax)) {
+                    //all of theses need scale_factor and add_offset applied
+                    double tScaleFactor = tSourceAtts.getDouble("scale_factor");
+                    if (Double.isNaN(tScaleFactor))
+                        tScaleFactor = 1;
+                    double tAddOffset = tSourceAtts.getDouble("add_offset");
+                    if (Double.isNaN(tAddOffset))
+                        tAddOffset = 0;
+                    tMin = tMin * tScaleFactor + tAddOffset;
+                    tMax = tMax * tScaleFactor + tAddOffset;
+                    double d2[] = Math2.suggestLowHigh(tMin, tMax);
+                    tMin = d2[0];
+                    tMax = d2[1];
                 }
             }
 
-            //assign if known
-            if (!Double.isNaN(tMin) && !Double.isNaN(tMax)) { 
-                tAddAtts.add("colorBarMinimum", tMin);
-                tAddAtts.add("colorBarMaximum", tMax);
+            if (Double.isNaN(tMin) || Double.isNaN(tMax)) {
+                PrimitiveArray pa = tSourceAtts.get("unpacked_valid_range"); //often too wide
+                if (pa != null && pa.size() == 2) {
+                    double d2[] = Math2.suggestLowHigh(pa.getNiceDouble(0), pa.getNiceDouble(1));
+                    tMin = d2[0];
+                    tMax = d2[1];
+                }
             }
+                      
+
+            //???better something than nothing (so WMS service is available)? 
+            //most scientific measurements choose units so numbers are easy, e.g., +/-1000
+            //NO! poorly chosen values will just annoy people
+            //  and Make A Graph auto-determines range if none specified
+            if (Double.isNaN(tMin) && Double.isNaN(tMax) && 
+                isSomething(tStandardName) &&
+                !tStandardName.equals("longitude") && !tStandardName.equals("latitude") && 
+                !tStandardName.equals("depth")     && !tStandardName.equals("altitude") && 
+                !tStandardName.equals("time"))
+                if (verbose) String2.log("Note: no colorBarMin/Max for standard_name=" + tStandardName);
+
+
+            //assign if known
+            if (!Double.isNaN(tMin)) tAddAtts.add("colorBarMinimum", tMin);
+            if (!Double.isNaN(tMax)) tAddAtts.add("colorBarMaximum", tMax);
             if (colorBarScale != null)
-                tAddAtts.add("colorBarScale", "Log");
+                tAddAtts.add("colorBarScale", colorBarScale);
 
         }
 
@@ -2975,12 +4614,14 @@ public abstract class EDD {
 
         //units
         if (isSomething(tUnits)) {
-            tUnits = String2.replaceAll(tUnits, "%", "percent");
+            if (tUnits.indexOf("%Y%m%d") < 0)
+                tUnits = String2.replaceAll(tUnits, "%", "percent");
         } else {
             tUnits = tSourceAtts.getString("Units");  //wrong case?
             if (!isSomething(tUnits)) tUnits = tSourceAtts.getString("fgdc_units");
             if (!isSomething(tUnits)) tUnits = "";  //do after checking tSourceAtts
         }
+        tUnitsLC = tUnits.toLowerCase();
 
         //scale_factor or add_offset are strings?!
         //e.g., see fromThreddsCatalog test #56
@@ -3004,6 +4645,7 @@ public abstract class EDD {
             tUnits = String2.replaceAll(tUnits, "()",           "");  //e.g., (* 10)
             tUnits = tUnits.trim();  //e.g. space before "* 10"
         }
+        tUnitsLC = tUnits.toLowerCase();
 
 
         //do ioos_category last, since it uses standard_name, long_name, and units
@@ -3014,344 +4656,399 @@ public abstract class EDD {
             //Occasional errors are okay.
             //So my goal is >98% correct (<1 out of 50 incorrect).
 
-            /*
-        "Bathymetry", 
-        "Biology", //bob added
-        "Bottom Character", 
-        "Colored Dissolved Organic Matter", //added 2011-05-19
-        "Contaminants", "Currents", //was "Surface Currents" 
-        "Dissolved Nutrients", "Dissolved O2",
-        "Ecology", //bob added
-        "Fish Abundance", "Fish Species", 
-        "Heat Flux", 
-        "Hydrology", //bob added 2011-02-07
-        "Ice Distribution", "Identifier", 
-        LOCATION_CATEGORY,  //bob added
-        "Meteorology", //bob added; use if not Temperature or Wind
-        "Ocean Color", "Optical Properties",  //what is dividing line?
-        "Other", //bob added
-        "Pathogens", 
-        "pCO2", //added 2011-05-19
-        "Phytoplankton Species", //??the species name? better to use Taxonomy??
-        "Pressure", //bob added
-        "Productivity", //bob added
-        "Quality", //bob added 2010-11-10
-        "Salinity", "Sea Level", 
-        "Statistics", //bob added 2010-12-24
-        "Stream Flow", //added 2011-05-19
-        "Surface Waves", 
-        "Taxonomy", //bob added
-        "Temperature",            
-        TIME_CATEGORY, //bob added
-        "Total Suspended Matter", //added 2011-05-19
-        "Unknown", 
-        "Wind", //had Wind. 2011-05-19 has "Wind Speed and Direction", but that seems unnecessarily limited
-        "Zooplankton Species", //??the species name? better to use Taxonomy??
-        "Zooplankton Abundance"};       
-        */
+            //See EDV.IOOS_CATEGORIES list.
 
             //All ioos_category tests are in lowercase.
             //Beware of tested word within other English words, e.g., "si" (silicon) is in "since".
-            //Pipes allow me to test if a whole item is a specific string, e.g., "|si|".
-            String lc = "|" +  
-                (isSomething(tLongName)    ? tLongName.toLowerCase()     + "|" : "") +
-                (isSomething(tStandardName)? tStandardName.toLowerCase() + "|" : "") +
-                (isSomething(tUnits)       ? tUnits.toLowerCase()        + "|" : "") + 
-                tSourceName.toLowerCase() + "|"; 
+            //Pipes allow me to test consistently for whole words, e.g., "|si|".
+            ttLongName = tLongName.toLowerCase();
+            asl = ttLongName.indexOf(" at sigma level ");
+            if (asl > 0)
+                ttLongName = ttLongName.substring(0, asl);
+            lcu = "|" +  
+                ttLongName                  + "|" +
+                tStandardName.toLowerCase() + "|" +
+                tUnitsLC                    + "|" + 
+                tSourceName.toLowerCase()   + "|"; 
+            lcu = String2.replaceAll(lcu, '_', '|');
+            lcu = String2.replaceAll(lcu, ' ', '|');
 
-            if (lc.indexOf("bathym")       >= 0 ||
-                lc.indexOf("topo")         >= 0) {
+            //see similar CATCH STATISTICS above        catch before others
+            if (lcu.indexOf("sigma")        >= 0 &&
+                lcu.indexOf("theta")        >= 0) {
+                tAddAtts.add("ioos_category", "Physical Oceanography"); 
+
+            } else if (
+                lcu.indexOf("count")        >= 0 || 
+                //lcu.indexOf("mean")         >= 0 || //let it be the relevant ioos_category
+                lcu.indexOf("stddev")       >= 0 || 
+                lcu.indexOf("|sd|")         >= 0 || 
+                lcu.indexOf("|s.d.|")       >= 0 ||
+                lcu.indexOf("variance")     >= 0 ||
+                lcu.indexOf("confidence")   >= 0 ||
+                lcu.indexOf("precision")    >= 0 ||
+                lcu.indexOf("error")        >= 0 || //"interpolation error fields"
+                lcu.indexOf("number")       >= 0 || //"number of observations"
+                lcu.indexOf("radius|influence|grid|points") >= 0 ||
+                lcu.indexOf("standard|deviation") >= 0 ||
+                lcu.indexOf("standard|error") >= 0) {
+                //catch statistics first    including special cases from WOA 2001 
+                tAddAtts.add("ioos_category", "Statistics");
+
+            } else if (lcu.indexOf("sigma")        >= 0) {
+                //ambiguous   statistics or pressure
+                tAddAtts.add("ioos_category", 
+                    (lcu.indexOf("coordinate") >= 0 || lcu.indexOf("level") >= 0)?
+                        "Location" :
+                        "Unknown"); 
+
+            } else if (
+                //see similar CATCH QUALITY above        catch before others
+                lcu.indexOf("qc")           >= 0 || 
+                lcu.indexOf("qa")           >= 0 || 
+                (lcu.indexOf("quality") >= 0 && lcu.indexOf("science|quality") < 0) || 
+                lcu.indexOf("flag")         >= 0) { 
+                tAddAtts.add("ioos_category", "Quality");
+    
+
+            } else if (
+                lcu.indexOf("bathym")       >= 0 ||
+                lcu.indexOf("topo")         >= 0 ||
+                (tSourceName.equals("z") && isMeters && 
+                    "up".equals(tSourceAtts.getString("positive"))) ||
+                tSourceName.equals("land_binary_mask")) {
                 tAddAtts.add("ioos_category", "Bathymetry");
 
             } else if (                
-                lc.indexOf("birth")        >= 0 ||
-                lc.indexOf("chorion")      >= 0 ||
-                lc.indexOf("diet")         >= 0 ||
-                lc.indexOf("disease")      >= 0 ||
-                lc.indexOf("egg")          >= 0 ||
-                lc.indexOf("food")         >= 0 ||
-                lc.indexOf("larv")         >= 0 || 
-                lc.indexOf("myomere")      >= 0 ||
-                lc.indexOf("|sex|")        >= 0 ||
-                lc.indexOf("size")         >= 0 ||                
-                lc.indexOf("stage")        >= 0 ||                
-                lc.indexOf("yolk")         >= 0) {
+                lcu.indexOf("birth")        >= 0 ||
+                lcu.indexOf("chorion")      >= 0 ||
+                lcu.indexOf("diet")         >= 0 ||
+                lcu.indexOf("disease")      >= 0 ||
+                lcu.indexOf("egg")          >= 0 ||
+                lcu.indexOf("food")         >= 0 ||
+                lcu.indexOf("larv")         >= 0 || 
+                lcu.indexOf("myomere")      >= 0 ||
+                lcu.indexOf("|sex|")        >= 0 ||
+                lcu.indexOf("stage")        >= 0 ||                
+                lcu.indexOf("yolk")         >= 0) {
                 tAddAtts.add("ioos_category", "Biology");
 
             } else if (
-                lc.indexOf("cfc11")        >= 0 ||
-                lc.indexOf("debris")       >= 0 ||
-                lc.indexOf("freon")        >= 0) {
+                lcu.indexOf("co2")          >= 0 || 
+                lcu.indexOf("carbonate")    >= 0 ||
+                lcu.indexOf("co3")          >= 0 ||
+                lcu.indexOf("carbon|dioxide")>= 0) { 
+                tAddAtts.add("ioos_category", "CO2");
+
+            } else if (
+                lcu.indexOf("cfc11")        >= 0 ||
+                lcu.indexOf("debris")       >= 0 ||
+                lcu.indexOf("freon")        >= 0 ||
+                lcu.indexOf("ozone")        >= 0) {
                 tAddAtts.add("ioos_category", "Contaminants");
 
             } else if (
-                lc.indexOf("ammonia")      >= 0 ||
-                lc.indexOf("ammonium")     >= 0 ||
-                lc.indexOf("carbonate")    >= 0 ||
-                lc.indexOf("co3")          >= 0 ||
-                lc.indexOf("|n_n|")        >= 0 ||
-                lc.indexOf("nh3")          >= 0 ||
-                lc.indexOf("nh4")          >= 0 ||
-                lc.indexOf("nitrate")      >= 0 ||
-                lc.indexOf("nitrite")      >= 0 ||
-                lc.indexOf("no2")          >= 0 ||
-                lc.indexOf("no3")          >= 0 ||
-                lc.indexOf("phosphate")    >= 0 ||
-                lc.indexOf("po4")          >= 0 ||
-                lc.indexOf("silicate")     >= 0 ||
-                lc.indexOf("|si|")         >= 0) {
+                lcu.indexOf("ammonia")      >= 0 ||
+                lcu.indexOf("ammonium")     >= 0 ||
+                lcu.indexOf("|n|n|")        >= 0 ||
+                lcu.indexOf("nh3")          >= 0 ||
+                lcu.indexOf("nh4")          >= 0 ||
+                lcu.indexOf("nitrate")      >= 0 ||
+                lcu.indexOf("nitrite")      >= 0 ||
+                lcu.indexOf("no2")          >= 0 ||
+                lcu.indexOf("no3")          >= 0 ||
+                lcu.indexOf("phosphate")    >= 0 ||
+                lcu.indexOf("po4")          >= 0 ||
+                lcu.indexOf("silicate")     >= 0 ||
+                lcu.indexOf("|si|")         >= 0) {
                 tAddAtts.add("ioos_category", "Dissolved Nutrients");
 
             //Sea Level before Location and Currents so tide is caught correctly
             } else if (
-               (lc.indexOf("geopotential") >= 0 && lc.indexOf("height") >= 0) ||
-                lc.indexOf("ssh")                   >= 0 ||
-                lc.indexOf("sea_surface_elevation") >= 0 ||
-                lc.indexOf("sea surface height")    >= 0 ||
-                lc.indexOf("sea_surface_height")    >= 0 ||
-                lc.indexOf("seaSurfaceHeight")      >= 0 ||
-                lc.indexOf("tide")                  >= 0) { 
+                (lcu.indexOf("geopotential") >= 0 && lcu.indexOf("height") >= 0) ||
+                lcu.indexOf("ssh")                   >= 0 ||
+                lcu.indexOf("surf|el")               >= 0 ||
+                (lcu.indexOf("sea") >= 0 && lcu.indexOf("surface") >= 0 &&
+                    lcu.indexOf("wave") < 0 && //don't catch e.g., sea surface swell wave height
+                    (lcu.indexOf("elevation") >= 0 || lcu.indexOf("height") >= 0))) { 
                 tAddAtts.add("ioos_category", "Sea Level");
 
             } else if (
-                lc.indexOf("current")      >= 0 ||
-                lc.indexOf("water_dir")    >= 0 ||
-               (lc.indexOf("water")        >= 0 && 
-                   (lc.indexOf("direction")   >= 0 || 
-                    lc.indexOf("speed")       >= 0 || 
-                    lc.indexOf("spd")         >= 0 || 
-                    lc.indexOf("vel")         >= 0 || 
-                    lc.indexOf("velocity")    >= 0))) { 
+                (lcu.indexOf("ocean") >= 0 && lcu.indexOf("streamfunction") >= 0) ||
+                lcu.indexOf("momentum|component") >= 0 ||
+                lcu.indexOf("momentum|stress")    >= 0 ||
+                lcu.indexOf("|u-flux|")           >= 0 ||
+                lcu.indexOf("|v-flux|")           >= 0 ||
+                lcu.indexOf("current")            >= 0 ||
+                lcu.indexOf("water|dir")          >= 0 ||
+                (lcu.indexOf("water") >= 0 && 
+                   (lcu.indexOf("direction")   >= 0 || 
+                    lcu.indexOf("speed")       >= 0 || 
+                    lcu.indexOf("spd")         >= 0 || 
+                    lcu.indexOf("vel")         >= 0 || 
+                    lcu.indexOf("velocity")    >= 0))) { 
                 tAddAtts.add("ioos_category", "Currents");
 
             } else if (
-                (lc.indexOf("o2") >= 0 && lc.indexOf("co2") < 0) || //no2 was caught above
-                lc.indexOf("oxygen")       >= 0) { 
+                (lcu.indexOf("o2") >= 0 && lcu.indexOf("co2") < 0) || //no2 was caught above
+                lcu.indexOf("oxygen")       >= 0) { 
                 tAddAtts.add("ioos_category", "Dissolved O2");
 
             } else if (
-                lc.indexOf("predator")     >= 0 ||
-                lc.indexOf("prey")         >= 0 ||
-                lc.indexOf("|troph")       >= 0) {  //don't catch geostrophic
+                lcu.indexOf("predator")     >= 0 ||
+                lcu.indexOf("prey")         >= 0 ||
+                lcu.indexOf("|troph")       >= 0) {  //don't catch geostrophic
                 tAddAtts.add("ioos_category", "Ecology");
 
             } else if (
-                lc.indexOf("hflx")         >= 0 ||
-               (lc.indexOf("heat") >= 0 && (lc.indexOf("flux") >= 0 || lc.indexOf("flx") >= 0)) ||
-                lc.indexOf("lflx")         >= 0 ||
-                lc.indexOf("sflx")         >= 0) {
+               ((lcu.indexOf("heat") >= 0 || lcu.indexOf("radiative") >= 0) && 
+                (lcu.indexOf("flux") >= 0 || lcu.indexOf("flx") >= 0)) ||
+                lcu.indexOf("shortwave")      >= 0 ||  //"heat flux" not ideal; "radiant energy"?
+                lcu.indexOf("longwave")       >= 0 ||  //"heat flux" not ideal; "radiant energy"?
+                lcu.indexOf("hflx")           >= 0 ||
+                lcu.indexOf("lflx")           >= 0 ||
+                lcu.indexOf("sflx")           >= 0) {
                 tAddAtts.add("ioos_category", "Heat Flux");
 
+            //see Hydrology below
+
             } else if (
-                lc.indexOf("|ice")         >= 0 ||
-                lc.indexOf(" ice")         >= 0 || 
-                lc.indexOf("snow")         >= 0) {
+                lcu.indexOf("|ice")         >= 0 ||
+                lcu.indexOf("|snow")        >= 0) {
                 tAddAtts.add("ioos_category", "Ice Distribution");
 
             } else if (
-                lc.indexOf("|id|")         >= 0 ||
-                lc.indexOf("site_id")      >= 0 ||
-                lc.indexOf("station_id")   >= 0 ||
-                lc.indexOf("stationid")    >= 0) { 
+                lcu.indexOf("|mask|")       >= 0 ||
+                lcu.indexOf("|id|")         >= 0 ||
+                lcu.indexOf("site|id")      >= 0 ||
+                lcu.indexOf("station|id")   >= 0 ||
+                lcu.indexOf("stationid")    >= 0 ||
+                lcu.indexOf("|pi|")         >= 0 ||
+                lcu.indexOf("|project|")    >= 0) { 
                 tAddAtts.add("ioos_category", "Identifier");
 
-            } else if (
-                lc.indexOf("altitude")     >= 0 ||
-                lc.indexOf("depth")        >= 0 || 
-                lc.indexOf("geox")         >= 0 || 
-                lc.indexOf("geoy")         >= 0 || 
-                lc.indexOf("|lon|")        >= 0 ||
-                lc.indexOf("|lon_")        >= 0 ||
-                lc.indexOf("longitude")    >= 0 ||
-                lc.indexOf("|lat|")        >= 0 ||
-                lc.indexOf("|lat_")        >= 0 ||
-                lc.indexOf("latitude")     >= 0 ||
-                lc.indexOf("|x|")          >= 0 || 
-                lc.indexOf("xax")          >= 0 || //x axis
-                lc.indexOf("|xpos|")       >= 0 || 
-                lc.indexOf("|y|")          >= 0 ||
-                lc.indexOf("yax")          >= 0 || //y axis
-                lc.indexOf("|ypos|")       >= 0 || 
-                lc.indexOf("|z|")          >= 0 || 
-                lc.indexOf("zax")          >= 0 || //z axis
-                lc.indexOf("|zpos|")       >= 0 || 
-                lc.indexOf("zlev")         >= 0 ||
-                lc.indexOf("|srs|")        >= 0 ||
-                lc.indexOf("|datum|")      >= 0 ||
-                lc.indexOf("|vertdatum|")  >= 0 ||
-                lc.indexOf("location")   >= 0 ||
-                lc.indexOf("locality")   >= 0 ||
-                lc.indexOf("|city|")       >= 0 ||
-                lc.indexOf("|county|")     >= 0 ||
-                lc.indexOf("|province|")   >= 0 ||
-                lc.indexOf("|state|")      >= 0 ||
-                lc.indexOf("|country|")    >= 0 ||
-                lc.indexOf("|fips")        >= 0) {
-                tAddAtts.add("ioos_category", "Location");            
+            //see Location below
 
             } else if (
-                lc.indexOf("cldc")         >= 0 ||  //cloud cover
-                lc.indexOf("cloud")        >= 0 ||
-                lc.indexOf("cloud")        >= 0 ||
-                lc.indexOf("dew point")    >= 0 ||
-                lc.indexOf("dewp")         >= 0 ||
-                lc.indexOf("dewpt")        >= 0 ||
-               (lc.indexOf("front") >= 0 && lc.indexOf("probability") >= 0) ||
-                lc.indexOf("humidity")     >= 0 ||
-                lc.indexOf("rhum")         >= 0 ||
-                lc.indexOf("|shum|")       >= 0 ||
-                lc.indexOf("total electron content") >= 0 ||
-                lc.indexOf("visi")         >= 0) {
+                lcu.indexOf("cldc")         >= 0 ||  //cloud cover
+                lcu.indexOf("cloud")        >= 0 ||
+                lcu.indexOf("cloud")        >= 0 ||
+                lcu.indexOf("dew point")    >= 0 ||
+                lcu.indexOf("dewp")         >= 0 ||
+                lcu.indexOf("evapora")      >= 0 ||
+               (lcu.indexOf("front") >= 0 && lcu.indexOf("probability") >= 0) ||
+                lcu.indexOf("humidity")     >= 0 ||
+                lcu.indexOf("precipita")    >= 0 ||  //precipitable precipitation
+                lcu.indexOf("|rain")        >= 0 ||  //not "grain"
+                lcu.indexOf("rhum")         >= 0 ||
+                lcu.indexOf("|shum|")       >= 0 ||
+                lcu.indexOf("total electron content") >= 0 ||
+                lcu.indexOf("visi")         >= 0) {
                 tAddAtts.add("ioos_category", "Meteorology");
 
             } else if (
-                lc.indexOf("chlor")        >= 0 ||
-                lc.indexOf("chla")         >= 0 || 
-                lc.indexOf("chl_a")        >= 0 || 
-                lc.indexOf("k490")         >= 0 ||
-                lc.indexOf("|par|")        >= 0) {
+                lcu.indexOf("chlor")        >= 0 ||
+                lcu.indexOf("chla")         >= 0 || 
+                lcu.indexOf("chl|a|")       >= 0 || 
+                lcu.indexOf("k490")         >= 0 ||
+                lcu.indexOf("|par|")        >= 0) {
                 tAddAtts.add("ioos_category", "Ocean Color");
 
             } else if (
-                lc.indexOf("fluor")        >= 0) {
+                lcu.indexOf("optical")      >= 0 ||
+                lcu.indexOf("|rrs")         >= 0 ||
+                lcu.indexOf("667")          >= 0 ||
+                lcu.indexOf("fluor")        >= 0 ||
+                tSourceName.toLowerCase().equals("graphics")) {
                 tAddAtts.add("ioos_category", "Optical Properties");
 
-            } else if (
-                lc.indexOf("phytoplankton") >= 0) {  //not a great test
-                tAddAtts.add("ioos_category", "Phytoplankton Species");
+            //Physical Oceanography, see below
 
             } else if (
-                lc.indexOf("aprs")         >= 0 || //4 letter NDBC abbreviations
-                lc.indexOf("ptdy")         >= 0 ||
-                lc.indexOf("pressure")     >= 0 ||
-                lc.indexOf("sigma")        >= 0 ||
-                lc.indexOf("|mbar|")       >= 0 ||
-                lc.indexOf("|hpa|")        >= 0) {
+                lcu.indexOf("phytoplankton") >= 0) {  //not a great test
+                tAddAtts.add("ioos_category", "Phytoplankton Abundance");
+
+            } else if (
+                lcu.indexOf("aprs")         >= 0 || //4 letter NDBC abbreviations
+                lcu.indexOf("ptdy")         >= 0 ||
+                lcu.indexOf("pressure")     >= 0 ||
+                //lcu.indexOf("sigma")        >= 0 ||  //but caught above specially
+                lcu.indexOf("|mbar|")       >= 0 ||
+                lcu.indexOf("|hpa|")        >= 0) {
                 tAddAtts.add("ioos_category", "Pressure");
 
             } else if (
-                lc.indexOf("productivity") >= 0 || 
-                lc.indexOf("prim_prod")    >= 0 || 
-                lc.indexOf("primprod")     >= 0) { 
+                lcu.indexOf("productivity") >= 0 || 
+                lcu.indexOf("prim|prod")    >= 0 || 
+                lcu.indexOf("primprod")     >= 0) { 
                 tAddAtts.add("ioos_category", "Productivity");
-            
+
+            //see Quality above
+
             } else if (
-                lc.indexOf("|ph|")         >= 0 ||  //borderline
-                lc.indexOf("psu")          >= 0 ||
-                lc.indexOf("salinity")     >= 0 ||
-                lc.indexOf("conductivity") >= 0) {
+                lcu.indexOf("|ph|")         >= 0 ||  //borderline
+                lcu.indexOf("pss")          >= 0 ||
+                (lcu.indexOf("psu")         >= 0 && lcu.indexOf("psue") < 0) || //not "psuedo"
+                lcu.indexOf("salinity")     >= 0 ||
+                lcu.indexOf("salt")         >= 0 ||
+                lcu.indexOf("conductivity") >= 0) {
                 tAddAtts.add("ioos_category", "Salinity");
 
             //see Sea Level above
 
             } else if (
-                lc.indexOf("awpd")         >= 0 || //4 letter NDBC abbreviations
-                lc.indexOf("dwpd")         >= 0 ||
-                lc.indexOf("mwvd")         >= 0 ||
-                lc.indexOf("wvht")         >= 0 ||
-                lc.indexOf("wave")         >= 0) { 
+                lcu.indexOf("soil")         >= 0) { 
+                tAddAtts.add("ioos_category", "Soils");
+    
+
+            //see Statistics above
+
+            } else if (
+                (lcu.indexOf("surf") >= 0 && lcu.indexOf("roughness") >= 0) || //surface
+                lcu.indexOf("awpd")         >= 0 || //4 letter NDBC abbreviations
+                lcu.indexOf("dwpd")         >= 0 ||
+                lcu.indexOf("mwvd")         >= 0 ||
+                lcu.indexOf("wvht")         >= 0 ||
+                (lcu.indexOf("wave") >= 0 && lcu.indexOf("short") < 0 && lcu.indexOf("long") < 0)) { 
                 tAddAtts.add("ioos_category", "Surface Waves");
             
             } else if (
-                lc.indexOf("phylum")       >= 0 ||
-                lc.indexOf("order")        >= 0 ||
-                lc.indexOf("family")       >= 0 ||
-                lc.indexOf("genus")        >= 0 ||
-                lc.indexOf("genera")       >= 0 ||
-                lc.indexOf("species")      >= 0 ||
-                lc.indexOf("sp.")          >= 0 ||
-                lc.indexOf("spp.")         >= 0 ||
-                lc.indexOf("stock")        >= 0 ||
-                lc.indexOf("taxa")         >= 0 ||
-                lc.indexOf("commonname")   >= 0) { 
+                lcu.indexOf("phylum")       >= 0 ||
+                lcu.indexOf("order")        >= 0 ||
+                lcu.indexOf("family")       >= 0 ||
+                lcu.indexOf("genus")        >= 0 ||
+                lcu.indexOf("genera")       >= 0 ||
+                lcu.indexOf("species")      >= 0 ||
+                lcu.indexOf("sp.")          >= 0 ||
+                lcu.indexOf("spp")          >= 0 ||
+                lcu.indexOf("stock")        >= 0 ||
+                lcu.indexOf("taxa")         >= 0 ||
+                lcu.indexOf("scientific")   >= 0 ||
+                lcu.indexOf("vernacular")   >= 0 ||
+                lcu.indexOf("commonname")   >= 0) { 
                 tAddAtts.add("ioos_category", "Taxonomy");
 
             } else if (
-                lc.indexOf("airtemp")              >= 0 ||
-                lc.indexOf("air temp")             >= 0 ||
-                lc.indexOf("atemp")                >= 0 ||
-                lc.indexOf("atmp")                 >= 0 ||  //4 letter NDBC abbreviation
-                lc.indexOf("sst")                  >= 0 ||
-                lc.indexOf("temperature")          >= 0 ||
-                lc.indexOf("wtmp")                 >= 0 ||  //4 letter NDBC abbreviation
-                lc.indexOf("wtemp")                >= 0 || 
+                lcu.indexOf("airtemp")              >= 0 ||
+                lcu.indexOf("air|temp")             >= 0 ||
+                lcu.indexOf("atemp")                >= 0 ||
+                lcu.indexOf("atmp")                 >= 0 ||  //4 letter NDBC abbreviation
+                lcu.indexOf("sst")                  >= 0 ||
+                lcu.indexOf("temperature")          >= 0 ||
+                lcu.indexOf("wtmp")                 >= 0 ||  //4 letter NDBC abbreviation
+                lcu.indexOf("wtemp")                >= 0 || 
                 //temperature units often used with other units for other purposes
                 //but if alone, it means temperature
-                lc.indexOf("|°c|")                 >= 0 ||
-                lc.indexOf("|celsius|")            >= 0 ||
-                lc.indexOf("|degree_centigrade|")  >= 0 ||
-                lc.indexOf("|degree_celsius|")     >= 0 ||
-                lc.indexOf("|degrees_celsius|")    >= 0 ||
-                lc.indexOf("|degc|")               >= 0 ||
-                lc.indexOf("|degreec|")            >= 0 ||
-                lc.indexOf("|degreesc|")           >= 0 ||
-                lc.indexOf("|degree_c|")           >= 0 ||
-                lc.indexOf("|degrees_c|")          >= 0 ||
-                lc.indexOf("|deg_c|")              >= 0 ||
-                lc.indexOf("|degs_c|")             >= 0 ||
-                lc.indexOf("|cel|")                >= 0 || //ucum
-
-                lc.indexOf("|°f|")                 >= 0 ||
-                lc.indexOf("|fahrenheit|")         >= 0 ||
-                lc.indexOf("|degree_fahrenheit|")  >= 0 ||
-                lc.indexOf("|degrees_fahrenheit|") >= 0 ||
-                lc.indexOf("|degf|")               >= 0 ||
-                lc.indexOf("|degreef|")            >= 0 ||
-                lc.indexOf("|degreesf|")           >= 0 ||
-                lc.indexOf("|degree_f|")           >= 0 ||
-                lc.indexOf("|degrees_f|")          >= 0 ||
-                lc.indexOf("|deg_f|")              >= 0 ||
-                lc.indexOf("|degs_f|")             >= 0 ||
-                lc.indexOf("|[degf]|")             >= 0 || //ucum
-
-                lc.indexOf("|°k|")                 >= 0 ||
-                lc.indexOf("|kelvin|")             >= 0 ||
-                lc.indexOf("|degree_kelvin|")      >= 0 ||
-                lc.indexOf("|degrees_kelvin|")     >= 0 ||
-                lc.indexOf("|degk|")               >= 0 ||
-                lc.indexOf("|degreek|")            >= 0 ||
-                lc.indexOf("|degreesk|")           >= 0 ||
-                lc.indexOf("|degree_k|")           >= 0 ||
-                lc.indexOf("|degrees_k|")          >= 0 ||
-                lc.indexOf("|deg_k|")              >= 0 ||
-                lc.indexOf("|degs_k|")             >= 0 ||
-                lc.indexOf("|k|")                  >= 0) { //ucum
+                isDegreesC ||
+                isDegreesF ||
+                isDegreesK) {
 
                 tAddAtts.add("ioos_category", "Temperature");
 
             } else if (
-                lc.indexOf("|time")        >= 0 ||
-                lc.indexOf("|year")        >= 0 ||
-                lc.indexOf("|month")       >= 0 ||
-                lc.indexOf("|date")        >= 0 ||
-                lc.indexOf("|day")         >= 0 ||   //not "someday"
-                lc.indexOf("|hour")        >= 0 ||
-                lc.indexOf("|minute")      >= 0 ||
-                lc.indexOf("|second|")     >= 0 ||  //e.g., but not meters/second  secondRef
-                lc.indexOf("|seconds|")    >= 0 ||  //e.g., but not meters/second  secondRef
-                lc.indexOf(" since 19")    >= 0 ||
-                lc.indexOf(" since 20")    >= 0) { 
+                (lcu.indexOf("|time") >= 0 && lcu.indexOf("|time-averaged") < 0) ||
+                lcu.indexOf("|year")        >= 0 ||
+                lcu.indexOf("|month")       >= 0 ||
+                lcu.indexOf("|date")        >= 0 ||
+                lcu.indexOf("|day")         >= 0 ||   //not "someday"
+                lcu.indexOf("|hour")        >= 0 ||
+                lcu.indexOf("|minute")      >= 0 ||
+                lcu.indexOf("|second|")     >= 0 ||  //e.g., but not meters/second  secondRef
+                lcu.indexOf("|seconds|")    >= 0 ||  //e.g., but not meters/second  secondRef
+                tUnitsLC.indexOf(" since ") >= 0) { 
                 tAddAtts.add("ioos_category", "Time");
 
             } else if (
-                lc.indexOf("uwnd")         >= 0 ||
-                lc.indexOf("vwnd")         >= 0 ||
-                lc.indexOf("xwnd")         >= 0 ||
-                lc.indexOf("ywnd")         >= 0 ||
-                lc.indexOf("wdir")         >= 0 || //4 letter NDBC abbreviations
-                lc.indexOf("wspd")         >= 0 ||
-                lc.indexOf("wgst")         >= 0 ||
-                lc.indexOf("wspu")         >= 0 ||
-                lc.indexOf("wspv")         >= 0 ||
-                lc.indexOf("wind")         >= 0) { 
+               ((lcu.indexOf("atmosphere")     >= 0 || lcu.indexOf("air")    >= 0) &&
+                (lcu.indexOf("streamfunction") >= 0 || lcu.indexOf("stress") >= 0)) ||
+                lcu.indexOf("momentum|flux")>= 0 ||
+                lcu.indexOf("|u-flux|")     >= 0 ||
+                lcu.indexOf("|v-flux|")     >= 0 ||
+                lcu.indexOf("uwnd")         >= 0 ||
+                lcu.indexOf("vwnd")         >= 0 ||
+                lcu.indexOf("xwnd")         >= 0 ||
+                lcu.indexOf("ywnd")         >= 0 ||
+                lcu.indexOf("wdir")         >= 0 || //4 letter NDBC abbreviations
+                lcu.indexOf("wspd")         >= 0 ||
+                lcu.indexOf("wgst")         >= 0 ||
+                lcu.indexOf("wspu")         >= 0 ||
+                lcu.indexOf("wspv")         >= 0 ||
+                lcu.indexOf("wind")         >= 0) { 
                 tAddAtts.add("ioos_category", "Wind");
+           
+            } else if (
+                //Physical Oceanography here to catch "stress" other than wind
+                //this can be very inclusive
+                lcu.indexOf("stress")       >= 0 ||             
+                lcu.indexOf("density")      >= 0 ||             
+                lcu.indexOf("erosion")      >= 0 ||
+                lcu.indexOf("|sand|")       >= 0 ||
+                lcu.indexOf("sediment")     >= 0 ||
+                lcu.indexOf("roughness")    >= 0 ||
+                lcu.indexOf("tide")         >= 0 ||
+                lcu.indexOf("tidal")        >= 0 ||
+                lcu.indexOf("mixed|layer")  >= 0) {
+                tAddAtts.add("ioos_category", "Physical Oceanography");
             
             } else if (
-                lc.indexOf("zooplankton") >= 0) {  //not a great test
-                tAddAtts.add("ioos_category", "Zooplankton Species");
+                lcu.indexOf("zooplankton") >= 0) {  //not a great test
+                tAddAtts.add("ioos_category", "Zooplankton Abundance");
+
+            //Hydrology near end, so likely to catch other categories first (e.g., Temperature)
+            } else if (
+                lcu.indexOf("runoff")         >= 0 ||
+                lcu.indexOf("water|flux|into|ocean") >= 0 ||
+                (lcu.indexOf("stream") >= 0 && lcu.indexOf("flow") >= 0) ||
+                (lcu.indexOf("surface") >= 0 && lcu.indexOf("water") >= 0)) {
+                tAddAtts.add("ioos_category", "Hydrology");
+
+            //catch Location last   so e.g., ocean_salt_x_transport caught by Salinity
+            } else if (
+                lcu.indexOf("altitude")     >= 0 ||
+                (lcu.indexOf("depth")       >= 0 && lcu.indexOf("mixed|layer") < 0) ||
+                lcu.indexOf("geox")         >= 0 || 
+                lcu.indexOf("geoy")         >= 0 || 
+                lcu.indexOf("|lon|")        >= 0 ||
+                lcu.indexOf("longitude")    >= 0 ||
+                lcu.indexOf("|lat|")        >= 0 ||
+                lcu.indexOf("latitude")     >= 0 ||
+                lcu.indexOf("|x|")          >= 0 || 
+                lcu.indexOf("xax")          >= 0 || //x axis
+                lcu.indexOf("|xpos|")       >= 0 || 
+                lcu.indexOf("|y|")          >= 0 ||
+                lcu.indexOf("yax")          >= 0 || //y axis
+                lcu.indexOf("|ypos|")       >= 0 || 
+                lcu.indexOf("|z|")          >= 0 || 
+                lcu.indexOf("zax")          >= 0 || //z axis
+                lcu.indexOf("|zpos|")       >= 0 || 
+                lcu.indexOf("zlev")         >= 0 ||
+                lcu.indexOf("|cs|w|")       >= 0 ||
+                lcu.indexOf("|eta|rho|")    >= 0 ||
+                lcu.indexOf("|eta|u|")      >= 0 ||
+                lcu.indexOf("|eta|v|")      >= 0 ||
+                lcu.indexOf("|s|rho|")      >= 0 ||
+                lcu.indexOf("|s|w|")        >= 0 ||
+                lcu.indexOf("|xi|rho|")     >= 0 ||
+                lcu.indexOf("|xi|u|")       >= 0 ||
+                lcu.indexOf("|xi|v|")       >= 0 ||
+                lcu.indexOf("|nsites|")     >= 0 || 
+                lcu.indexOf("|srs|")        >= 0 ||
+                lcu.indexOf("|datum|")      >= 0 ||
+                lcu.indexOf("|vertdatum|")  >= 0 ||
+                lcu.indexOf("location")     >= 0 ||
+                lcu.indexOf("locality")     >= 0 ||
+                lcu.indexOf("|region|")     >= 0 ||
+                lcu.indexOf("|sites|")      >= 0 ||
+                lcu.indexOf("|city|")       >= 0 ||
+                lcu.indexOf("|county|")     >= 0 ||
+                lcu.indexOf("|province|")   >= 0 ||
+                lcu.indexOf("|state|")      >= 0 ||
+                lcu.indexOf("|country|")    >= 0 ||
+                lcu.indexOf("|fips")        >= 0) {
+                tAddAtts.add("ioos_category", "Location");            
 
             } else {
-                if (reallyVerbose) String2.log("    ioos_category=Unknown for " + lc);
+                if (reallyVerbose) String2.log("    ioos_category=Unknown for " + lcu);
                 tAddAtts.add("ioos_category", "Unknown");
             }        
         }
@@ -3377,7 +5074,15 @@ public abstract class EDD {
         if (con.indexOf("COARDS") < 0) 
             con += ", COARDS";
         if (con.indexOf("CF") < 0) 
-            con += ", CF-1.4";
+            con += ", CF-1.6";
+        else {
+            con = String2.replaceAll(con, "CF-1.0", "CF-1.6");
+            con = String2.replaceAll(con, "CF-1.1", "CF-1.6");
+            con = String2.replaceAll(con, "CF-1.2", "CF-1.6");
+            con = String2.replaceAll(con, "CF-1.3", "CF-1.6");
+            con = String2.replaceAll(con, "CF-1.4", "CF-1.6");
+            con = String2.replaceAll(con, "CF-1.5", "CF-1.6");
+        }
         if (con.indexOf("Unidata Dataset Discovery v1.0") < 0) 
             con += ", Unidata Dataset Discovery v1.0";
         if (con.startsWith(", "))
@@ -3545,7 +5250,7 @@ public abstract class EDD {
      *    The whole thing can be null 
      *    (it is for oldGenerateDatasetsXml methods, since the table has the source attributes), 
      *    or any element may be null.
-     * @param tryToCatchLLAT if true, this tries to catch and rename variables
+     * @param tryToFindLLAT if true, this tries to catch and rename variables
      *    to longitude, latitude, altitude, and time.
      *    <br>This should be true for tabular dataVariables and grid axis variables.
      *    <br>This should be false for grid data variables.
@@ -3555,7 +5260,7 @@ public abstract class EDD {
      */
     public static String writeVariablesForDatasetsXml(Table sourceTable, Table addTable,
         String variableType, boolean includeDataType, 
-        boolean tryToCatchLLAT, boolean questionDestinationName) throws Throwable {
+        boolean tryToFindLLAT, boolean questionDestinationName) throws Throwable {
 
         if (sourceTable != null)
             Test.ensureEqual(sourceTable.nColumns(), addTable.nColumns(),
@@ -3573,7 +5278,7 @@ public abstract class EDD {
             String tUnits = addAtts.getString("units");  
             if (tUnits == null && sourceTable != null) 
                 tUnits = sourceTable.columnAttributes(sTime).getString("units");
-            String suggestDestName = suggestDestinationName("time", tUnits, Float.NaN, tryToCatchLLAT);
+            String suggestDestName = suggestDestinationName("time", tUnits, Float.NaN, tryToFindLLAT);
             if (!suggestDestName.equals("time")) {
                 addTable.setColumnName(sTime, "time_");
                 sTime = -1;
@@ -3596,7 +5301,7 @@ public abstract class EDD {
             if (tUnits == null) 
                 tUnits = sourceAtts.getString("units");
             String suggestDestName = suggestDestinationName(tSourceName, tUnits, 
-                sourceAtts.getFloat("scale_factor"), tryToCatchLLAT);
+                sourceAtts.getFloat("scale_factor"), tryToFindLLAT);
             String tDestName = null;
             //String2.log("col=" + col + " sourceName=" + tSourceName + " units=" + tUnits + " suggestDestName=" + suggestDestName);
 
@@ -3667,14 +5372,14 @@ public abstract class EDD {
      * @param tScaleFactor from the "scale_factor" attribute, or NaN.
      *    This is used to look for the inverse of the scale_factor in the 
      *    variable name, e.g, "* 1000", and remove it.
-     * @param tryToCatchLLAT if true, this tries to catch and rename variables
+     * @param tryToFindLLAT if true, this tries to catch and rename variables
      *    to longitude, latitude, altitude, and time.
      *    <br>This should be true for tabular dataVariables and grid axis variables.
      *    <br>This should be false for grid data variables.
      * @return the suggested destinationName (which may be the same).
      */
     public static String suggestDestinationName(String tSourceName, String tUnits,
-        float tScaleFactor, boolean tryToCatchLLAT) {
+        float tScaleFactor, boolean tryToFindLLAT) {
 
         //remove (units) from SOS sourceNames, e.g., "name (units)"
         int po = tSourceName.indexOf(" (");
@@ -3689,13 +5394,14 @@ public abstract class EDD {
         if (po >= 0)
             tUnits = tUnits.substring(po + 3);  
 
-        if (tryToCatchLLAT) {
+        if (tryToFindLLAT) {
             if (tSourceName.equals("longitude") ||            
                 ((lcSourceName.indexOf("lon") >= 0 ||
                   lcSourceName.equals("x") ||
                   lcSourceName.equals("xax")) &&  //must check, since uCurrent and uWind use degrees_east, too
                  (tUnits.equals("degrees_east") ||
                   tUnits.equals("degree_east") ||
+                  tUnits.equals("degree_E") ||     //incorrect, but exists
                   tUnits.equals("degrees_west") || //bizarre, but sometimes used for negative degrees_east values
                   tUnits.equals("degree_west") ||
                   tUnits.equals("degrees") ||
@@ -3709,6 +5415,7 @@ public abstract class EDD {
                   lcSourceName.equals("yax")) &&  
                  (tUnits.equals("degrees_north") ||
                   tUnits.equals("degree_north") ||
+                  tUnits.equals("degree_N") ||     //incorrect, but exists
                   tUnits.equals("degrees") ||
                   tUnits.equals("degree")))) 
      
@@ -3852,12 +5559,12 @@ public abstract class EDD {
      * This returns a new, empty, badFileMap (a thead-safe map).
      */
     public ConcurrentHashMap newEmptyBadFileMap() {
-        return new ConcurrentHashMap();
+        return new ConcurrentHashMap(16, 0.75f, 4);
     }
 
     /** The name of the badFileMap file. */
     public String badFileMapFileName() {
-        return datasetInfoDir() + BADFILE_TABLE_FILENAME;
+        return datasetDir() + BADFILE_TABLE_FILENAME;
     }
 
     /**
@@ -4080,7 +5787,7 @@ public abstract class EDD {
             }
         }
         if (inQuotes)
-            throw new SimpleException("Query error: A closing doublequote is missing.");
+            throw new SimpleException(EDStatic.queryError + "A closing doublequote is missing.");
         return parts.toArray();
     }
 
@@ -4098,7 +5805,7 @@ public abstract class EDD {
     public static HashMap<String, String> userQueryHashMap(String userQuery, boolean namesLC) throws Throwable {
         HashMap<String, String> queryHash = new HashMap<String, String>();
         if (userQuery != null) {
-            String tParts[] = getUserQueryParts(userQuery); //userQuery="" returns String[1]  with #0=""
+            String tParts[] = getUserQueryParts(userQuery); //decoded.  userQuery="" returns String[1]  with #0=""
             for (int i = 0; i < tParts.length; i++) {
                 int po = tParts[i].indexOf('=');
                 if (po > 0) {
@@ -4216,6 +5923,7 @@ public abstract class EDD {
      */
     public Object[] readPngInfo(String loggedInAs, String userDapQuery, String fileTypeName) {
         String infoFileName = getPngInfoFileName(loggedInAs, userDapQuery, fileTypeName);
+        long eTime = System.currentTimeMillis();
         try {
             if (reallyVerbose) 
                 String2.log("  readPngInfo" +
@@ -4267,12 +5975,13 @@ public abstract class EDD {
 
             if (verbose)
                 String2.log("  readPngInfo succeeded" +
-                  "\n    graphDoubleWESN=" + String2.toCSVString(graphDoubleWESN) +
-                  "\n    graphIntWESN="  + String2.toCSVString(graphIntWESN));
+                  "\n    graphDoubleWESN=" + String2.toCSSVString(graphDoubleWESN) +
+                  "\n    graphIntWESN="  + String2.toCSSVString(graphIntWESN));
 
             return new Object[]{graphDoubleWESN, graphIntWESN};
         } catch (Throwable t) {
-            String2.log(ERROR + " while reading pngInfo image information for \n" + 
+            String2.log(ERROR + " (time=" + (System.currentTimeMillis() - eTime) + 
+                ") while reading pngInfo image information for \n" + 
                 "  userDapQuery=" + userDapQuery + "\n" +
                 "  fileTypeName=" + fileTypeName + "\n" +
                 "  infoFileName=" + infoFileName + "\n" + 

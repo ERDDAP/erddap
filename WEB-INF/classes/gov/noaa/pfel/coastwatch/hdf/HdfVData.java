@@ -77,7 +77,7 @@ public class HdfVData extends HdfTag {
         return "HdfVData" +
             "[tagType=0x" + Integer.toHexString(tagType) +
             ", referenceNumber=" + referenceNumber +
-            ", data=" + String2.toHexCSVString(data) +
+            ", data=" + String2.toHexCSSVString(data) +
             "]";
     }
 }

@@ -14,6 +14,7 @@ import gov.noaa.pfel.coastwatch.util.*;
 import gov.noaa.pfel.erddap.dataset.*;
 
 import java.io.FileWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.GregorianCalendar;
@@ -57,6 +58,227 @@ public class Projects2  {
     public final static String ERROR = String2.ERROR; 
 
 
+    /**
+     * One-time Use: Whenever possible, this grabs keyword metadata from a 
+     * newly auto-generated datasets.xml and inserts it into
+     * an older hand-generated datasets.xml.
+     */
+    public static void copyKeywords() throws Throwable {
+        String handXmlName = "c:/programs/tomcat/content/erddap/datasets2.xml";
+        String autoXmlName = "F:/temp/datasets20111019.xml";
+        String resultName  = "c:/programs/tomcat/content/erddap/datasets2New.xml";
+
+        //read handXml
+        String sar[] = String2.readFromFile(handXmlName);
+        if (sar[0].length() > 0) {
+            String2.log("Error reading handXml: " + sar[0]);
+            return;
+        }
+        StringBuilder handXml = new StringBuilder(sar[1]);
+
+        //read autoXml
+        sar = String2.readFromFile(autoXmlName);
+        if (sar[0].length() > 0) {
+            String2.log("Error reading autoXml: " + sar[0]);
+            return;
+        }
+        StringBuilder autoXml = new StringBuilder(sar[1]);
+        sar = null; //gc
+
+        String ip[] = {
+            "http://192.168.31.15:8080/", "http://coastwatch.pfeg.noaa.gov/", 
+            "http://192.168.31.18/"     , "http://oceanwatch.pfeg.noaa.gov/",
+            "http://192.168.31.27/"     , "http://thredds1.pfeg.noaa.gov/"  ,
+            "http://192.168.31.13/"     , "http://las.pfeg.noaa.gov/"       };
+            //don't want to find the datasets on upwell
+            //"http://192.168.31.6/"      , "http://upwell.pfeg.noaa.gov/"    };
+
+        int handXmlBasePo = 0;
+        while (true) {
+            //find the next dataset in handXml
+            int handXmlSource1Po = handXml.indexOf("<sourceUrl>", handXmlBasePo);
+            if (handXmlSource1Po < 0)
+                break;
+            int handXmlSource2Po = handXml.indexOf("</sourceUrl>", handXmlSource1Po);
+            if (handXmlSource2Po < 0)
+                break;
+            handXmlBasePo = handXmlSource2Po;
+
+            String url = handXml.substring(handXmlSource1Po + 11, handXmlSource2Po);
+            if (url.startsWith("http://upwell."))
+                continue;
+            if (url.endsWith("hdayCompress"))
+                break;
+            
+            for (int ipi = 0; ipi < ip.length; ipi+=2) {
+                if (url.startsWith(ip[ipi]))
+                    url = ip[ipi + 1] + url.substring(ip[ipi].length());
+            }
+
+
+            //find the license for that dataset in handXml
+            int handXmlLicensePo = handXml.indexOf("<att name=\"license\">", handXmlSource1Po);
+            String2.log(handXmlBasePo + " " + url);
+
+
+            //find that url in autoXml
+            int autoXmlUrlPo = autoXml.indexOf(url, 0);
+            if (autoXmlUrlPo < 0) {
+                String2.log("Warning: url not found in autoXml.");
+                continue;
+            }
+            int aaPo = autoXml.indexOf("<addAttributes>", autoXmlUrlPo);
+            if (aaPo < 0) {
+                String2.log("Warning: <addAttributes> not found in autoXml.");
+                continue;
+            }
+            int keywords1Po = autoXml.indexOf("<att name=\"keywords\">", aaPo);
+            if (keywords1Po < 0) {
+                String2.log("Warning: keywords not found in autoXml.");
+                continue;
+            }
+            int keywords2Po = autoXml.indexOf("</att>", keywords1Po);
+            if (keywords2Po < 0) {
+                String2.log("Warning: </att> not found in autoXml.");
+                continue;
+            }
+
+
+            //insert keywords into handXml
+            handXml.insert(handXmlLicensePo, 
+                autoXml.substring(keywords1Po, keywords2Po + 6) + "\n        ");
+
+        }
+        autoXml = null; //gc
+
+        //save the changes
+        String2.writeToFile(resultName, handXml.toString());
+        String2.log("Finished successfully");
+
+    }
+
+    /**
+     * One-time Use: For usgs_waterservices datasets, this replaces existing
+     * keywords with new auto-generated keywords.
+     */
+    public static void copyKeywordsUsgs() throws Throwable {
+        String handXmlName = "c:/programs/tomcat/content/erddap/datasets2.xml";
+        String resultName  = "c:/programs/tomcat/content/erddap/datasets2New.xml";
+
+        //read handXml
+        String sar[] = String2.readFromFile(handXmlName);
+        if (sar[0].length() > 0) {
+            String2.log("Error reading handXml: " + sar[0]);
+            return;
+        }
+        StringBuilder handXml = new StringBuilder(sar[1]);
+
+        int handXmlBasePo = 0;
+        while (true) {
+            //find the next dataset in handXml
+            int handXmlDataset1Po = handXml.indexOf("datasetID=\"usgs_waterservices", handXmlBasePo);
+            if (handXmlDataset1Po < 0)
+                break;
+            int handXmlDataset2Po = handXml.indexOf("\"", handXmlDataset1Po + 29);
+            if (handXmlDataset2Po < 0)
+                break;
+            String datasetID = handXml.substring(handXmlDataset1Po + 11, handXmlDataset2Po);
+
+            //find the "license"
+            int handXmlLicensePo = handXml.indexOf("<att name=\"license\">", handXmlDataset2Po);
+            if (handXmlLicensePo < 0)
+                break;
+            handXmlBasePo = handXmlLicensePo;
+
+            //try to make the new keywords
+            String newKeywords = getKeywords(datasetID).trim();
+            if (newKeywords.length() == 0)
+                continue;
+
+            //insert keywords into handXml
+            handXml.insert(handXmlLicensePo, newKeywords + 
+                "\n        " +
+                "<att name=\"keywords_vocabulary\">GCMD Science Keywords</att>" + 
+                "\n        ");
+
+        }
+
+        //save the changes
+        String2.writeToFile(resultName, handXml.toString());
+        String2.log("Finished successfully");
+
+    }
+
+    /**
+     * This tries to make the keywords for one existing dataset.
+     * If successful, it puts the recommended "keywords" on the clipboard.
+     */
+    public static String getKeywords(String datasetID) throws Throwable {
+        String servers[] = {
+            "http://coastwatch.pfeg.noaa.gov/erddap/griddap/",
+            "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/",
+            "http://upwell.pfeg.noaa.gov/erddap/griddap/",
+            "http://upwell.pfeg.noaa.gov/erddap/tabledap/"};
+
+        String keywords = "";
+        String2.log("datasetID=" + datasetID);
+        for (int serv = 0; serv < servers.length; serv++) {
+            try {
+                //try EDDGrid
+                String s = EDDGridFromDap.generateDatasetsXml(false, 
+                    servers[serv] + datasetID, 
+                    null, null, null, 10080, new Attributes());
+
+                int aaPo = s.indexOf("<addAttributes>", 0);
+                if (aaPo < 0) {
+                    String2.log("Warning: <addAttributes> not found in xml.");
+                    continue;
+                }
+                int keywords1Po = s.indexOf("<att name=\"keywords\">", aaPo);
+                if (keywords1Po < 0) {
+                    String2.log("Warning: keywords not found in addAttributes xml.");
+                    keywords1Po = s.indexOf("<att name=\"keywords\">", 0);
+                    if (keywords1Po < 0) {
+                        String2.log("Warning: keywords not found in sourceAttributes xml.");
+                        continue;
+                    }
+                }
+                int keywords2Po = s.indexOf("</att>", keywords1Po);
+                if (keywords2Po < 0) {
+                    String2.log("Warning: </att> not found in xml.");
+                    continue;
+                }
+
+                //keywords
+                keywords = s.substring(keywords1Po, keywords2Po + 6);
+                String2.setClipboardString("        " + keywords + "\n");
+                String2.log("\n" + keywords);
+
+                //success!
+                break;
+
+            } catch (Throwable t) {
+                String2.log(MustBe.throwableToString(t));
+            }
+        }
+        return keywords;
+    }
+
+    /**
+     * This repeatedly asks for the datasetID of a coastwatch erddap dataset,
+     * generates the ready-to-use datasets.xml for it, and
+     * puts the recommended "keywords" on the clipboard.
+     */
+    public static void getKeywords() throws Throwable {
+
+        while (true) {
+            String datasetID = String2.getStringFromSystemIn("\n\ndatasetID? ");
+            getKeywords(datasetID);
+        }
+    }
+
+
+    
     /** This processes NODC WOD data files from source to make consistent for ERDDAP.
      * 2011-04-25
      */
@@ -73,7 +295,7 @@ public class Projects2  {
             Table table = new Table();
             table.readFlat0Nc(inDir + fileName, null, 1, -1); //1=unpack, -1=read all rows
             int nRows = table.nRows();
-            String2.log(table.toCsvString());
+            String2.log(table.toCSVString());
 
             //reject if no data
             double d = table.getColumn("time").getDouble(0);
@@ -150,6 +372,9 @@ public class Projects2  {
 
     }
 
+    public static void touchUsgs() throws Throwable {
+SSR.touchUrl("http://upwell.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=usgs_waterservices_0125_011b_2920&flagKey=780628796", 60000);
+    }
 
 }
 

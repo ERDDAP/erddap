@@ -386,7 +386,7 @@ public class SSR {
      */
 /*    public static ArrayList cShell(String commandLine[]) throws Exception {
         if (verbose) 
-            String2.log.fine("cShell        in: " + String2.toCSVString(commandLine));
+            String2.log.fine("cShell        in: " + String2.toCSSVString(commandLine));
         String[] commandLine2 = new String[commandLine.length + 2];
         commandLine2[0] = "/bin/csh";
         commandLine2[1] = "-c";
@@ -454,7 +454,7 @@ public class SSR {
         process.getInputStream().close();
         if (timeOutSeconds > 0 && time >= timeOutMillis) 
             errPipe.print(
-                ERROR + ": shell command (" + String2.toCSVString(cmd) + ") timed out (" + timeOutSeconds + " s).\n");
+                ERROR + ": shell command (" + String2.toCSSVString(cmd) + ") timed out (" + timeOutSeconds + " s).\n");
         process.getErrorStream().close();
 
         return exitValue;
@@ -1126,7 +1126,7 @@ public class SSR {
      *   Prevent mass mailing worms from sending mail" is un-checked.
      *
      * @param smtpHost the name of the outgoing mail server
-     * @param smtpPort port to be used, usually 25
+     * @param smtpPort port to be used, usually 25 or 587
      * @param userName for the mail server
      * @param password for the mail server 
      *    (may be null or "" if only sending to local email account)
@@ -1134,7 +1134,7 @@ public class SSR {
      *     stored as pairs of Strings within a String (separated by |'s)
      *     e.g., "mail.smtp.starttls.enable|true|param2|value2".
      *     Use null or "" is there are none.
-     *     See 
+     *     See http://javamail.kenai.com/nonav/javadocs/com/sun/mail/smtp/package-summary.html
      * @param fromAddress the email address the email is coming from
      * @param toAddress the email address the email is going to
      * @param subject The subject is sent with UTF-8 encoding, 
@@ -1278,9 +1278,9 @@ public class SSR {
             else if (ch == '"') sb.append("%22");  //helps with urls in javascript code
             else if (ch == '\'') sb.append("%27"); //helps with urls in javascript code
             else if (ch == '=') sb.append("%3D");  //needed to distinguish = in value in &var=value
-            else if (ch == '#') sb.append("%23"); //needed for SOS    added 2009-09-28
-            else if (ch == '+') sb.append("%2B"); //before handling ' '
-            else if (ch == ' ') sb.append("%20"); //safer than '+'
+            else if (ch == '#') sb.append("%23");  //needed for SOS    added 2009-09-28
+            else if (ch == '+') sb.append("%2B");  //before handling ' '
+            else if (ch == ' ') sb.append("%20");  //safer than '+'
             else if (ch == '<') sb.append("%3C");
             else if (ch == '>') sb.append("%3E");
             else if (ch < 32 || ch >= 127) sb.append(percentEncode("" + ch)); //this handles any unicode char via utf-8
@@ -1419,7 +1419,7 @@ public class SSR {
 
 
     /**
-     * This downloads a file from a Url and saves it as a file.
+     * This downloads a file as bytes from a Url and saves it as a file.
      * If there is a failure, this doesn't try to delete the parially written file.
      * If the file is zipped, it will stay zipped.
      * Note that you may get a error-404-file-not-found error message stored in the file.
@@ -1522,7 +1522,7 @@ public class SSR {
      * @param urlString The query MUST be already percentEncoded as needed.
      *   <br>See http://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
-     * @return a String[] with the response.
+     * @return a String[] with the response (one string per line of the file).
      * @throws Exception if error occurs
      */
     public static String[] getUrlResponse(String urlString) throws Exception {
@@ -1864,7 +1864,7 @@ public class SSR {
      * receiveLocalDirs, receiveNames, receiveRemoteDirs, specify which
      * remoteDir+name is sent to localDir+name.
      * 
-     * @param hostName the name of the remote computer
+     * @param hostName the name of the remote computer, e.g., "coastwatch.pfeg.noaa.gov"
      * @param userName
      * @param password
      * @param commands contains a series of commands, separated by

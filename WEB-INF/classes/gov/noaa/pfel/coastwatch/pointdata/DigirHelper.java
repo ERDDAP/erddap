@@ -496,7 +496,7 @@ public class DigirHelper  {
 
             //test getting code column (mentioned in getMetadataTable docs
             String codes[] = ((StringArray)table.findColumn("code")).toArray();
-            String2.log("codes=" + String2.toCSVString(codes));
+            String2.log("codes=" + String2.toCSSVString(codes));
             Test.ensureTrue(codes.length >= 142, "codes.length=" + codes.length);
             Test.ensureTrue(String2.indexOf(codes, "GHMP") >= 0, "GHMP not found.");
             Test.ensureTrue(String2.indexOf(codes, "EMAP") >= 0, "EMAP not found.");
@@ -824,7 +824,7 @@ String2.log("inventoryTable:\n" + table.toString());
                 "darwin:ScientificName");
             String2.log("inventory table=" + table);
             Test.ensureTrue(table.nRows() >= 1, "nRows=" + table.nRows());
-            String colNames = String2.toCSVString(table.getColumnNames());
+            String colNames = String2.toCSSVString(table.getColumnNames());
             Test.ensureEqual(colNames, "Resource, darwin:ScientificName, Count", "");
             Test.ensureEqual(table.getStringData(0,0), "iziko Fish", "");
             Test.ensureEqual(table.getStringData(1,0), "Carcharodon carcharias", "");
@@ -843,7 +843,7 @@ String2.log("inventoryTable:\n" + table.toString());
                 "darwin:ScientificName");
             String2.log("inventory table=" + table);
             Test.ensureTrue(table.nRows() >= 1, "nRows=" + table.nRows());
-            String colNames = String2.toCSVString(table.getColumnNames());
+            String colNames = String2.toCSSVString(table.getColumnNames());
             Test.ensureEqual(colNames, "Resource, darwin:ScientificName, Count", "");
             Test.ensureEqual(table.getStringData(0,0), "OBIS-SEAMAP", "");
             //Test.ensureEqual(table.getStringData(1,0), "Carcharodon carcharias", "");
@@ -863,7 +863,7 @@ String2.log("inventoryTable:\n" + table.toString());
                 "darwin:ScientificName");
             String2.log("inventory table=" + table);
             Test.ensureTrue(table.nRows() >= 1, "nRows=" + table.nRows());
-            String colNames = String2.toCSVString(table.getColumnNames());
+            String colNames = String2.toCSSVString(table.getColumnNames());
             Test.ensureEqual(colNames, "Resource, darwin:ScientificName, Count", "");
             Test.ensureEqual(table.getStringData(0,0), "indobis", "");
             Test.ensureEqual(table.getStringData(1,0), "Carcharodon carcharias", "");
@@ -886,7 +886,7 @@ String2.log("inventoryTable:\n" + table.toString());
 //3  Abietinaria filicula
             String2.log("darwin:ScientificNames: " + table.getColumn(1).toString());
             Test.ensureTrue(table.nRows() >= 2, "nRows=" + table.nRows());
-            String colNames = String2.toCSVString(table.getColumnNames());
+            String colNames = String2.toCSSVString(table.getColumnNames());
             Test.ensureEqual(colNames, "Resource, darwin:ScientificName, Count", "");
             Test.ensureEqual(table.getStringData(0,0), "tisbe", "");
             Test.ensureEqual(table.getStringData(1,0), "Abietinaria abietina", "");
@@ -971,12 +971,12 @@ String2.log("inventoryTable:\n" + table.toString());
  
         long time = System.currentTimeMillis();
         String msg = "DigirHelper.searchDigir: " +
-            "\n  resources=" + String2.toCSVString(resources) +
+            "\n  resources=" + String2.toCSSVString(resources) +
             "\n  url=" + url +
-            "\n  resultsVariables=" + String2.toCSVString(resultsVariables) +
-            "\n  filterVars=" + String2.toCSVString(filterVariables) +
-            "\n  filterCops=" + String2.toCSVString(filterCops) +
-            "\n  filterValues=" + String2.toCSVString(filterValues);
+            "\n  resultsVariables=" + String2.toCSSVString(resultsVariables) +
+            "\n  filterVars=" + String2.toCSSVString(filterVariables) +
+            "\n  filterCops=" + String2.toCSSVString(filterCops) +
+            "\n  filterValues=" + String2.toCSSVString(filterValues);
         if (verbose) String2.log("\n" + msg);
         String errorInMethod = ERROR + " in " + msg +
             "\n  error message: ";
@@ -1182,7 +1182,7 @@ String2.log("inventoryTable:\n" + table.toString());
                 tTable.addColumn(col, name, new StringArray(nr, true));
             } else if (tCol < col) {
                 Test.error(errorInMethod + "Duplicate column name in " + 
-                    String2.toCSVString(tTable.getColumnNames()));
+                    String2.toCSSVString(tTable.getColumnNames()));
             } else if (tCol == col) {
                 //do nothing
             } else {
@@ -1246,10 +1246,10 @@ String2.log("inventoryTable:\n" + table.toString());
         String validVars[] = getDarwin2ObisVariables(); 
         for (int i = 0; i < resultsVariables.length; i++)
             if (String2.indexOf(validVars, resultsVariables[i]) < 0)
-                Test.error(errorInMethod + "Unsupported resultsVariable=" + resultsVariables[i] + "\nValid=" + String2.toCSVString(validVars));
+                Test.error(errorInMethod + "Unsupported resultsVariable=" + resultsVariables[i] + "\nValid=" + String2.toCSSVString(validVars));
         for (int i = 0; i < filterVariables.length; i++)
             if (String2.indexOf(validVars, filterVariables[i]) < 0)
-                Test.error(errorInMethod + "Unsupported filterVariable=" + filterVariables[i] + "\nValid=" + String2.toCSVString(validVars));
+                Test.error(errorInMethod + "Unsupported filterVariable=" + filterVariables[i] + "\nValid=" + String2.toCSSVString(validVars));
 
         //add the xyzt variables
         StringArray getVariables = new StringArray(resultsVariables);
@@ -1412,12 +1412,12 @@ String2.log("inventoryTable:\n" + table.toString());
         String resultsVariables[]) throws Exception {
 
         if (reallyVerbose) String2.log(
-            "\n*** digirHelper.searchBmde resources=" + String2.toCSVString(resources) +
+            "\n*** digirHelper.searchBmde resources=" + String2.toCSSVString(resources) +
             "\n  url=" + url +
-            "\n  filterVars=" + String2.toCSVString(filterVariables) +
-            "\n  filterCops=" + String2.toCSVString(filterCops) +
-            "\n  filterVals=" + String2.toCSVString(filterValues) +
-            "\n  resultsVars=" + String2.toCSVString(resultsVariables));
+            "\n  filterVars=" + String2.toCSSVString(filterVariables) +
+            "\n  filterCops=" + String2.toCSSVString(filterCops) +
+            "\n  filterVals=" + String2.toCSSVString(filterValues) +
+            "\n  resultsVars=" + String2.toCSSVString(resultsVariables));
 
         String errorInMethod = ERROR + " in DigirHelper.searchBmde: ";
 
@@ -1425,10 +1425,10 @@ String2.log("inventoryTable:\n" + table.toString());
         String validVars[] = getBmdeVariables(); 
         for (int i = 0; i < resultsVariables.length; i++)
             if (String2.indexOf(validVars, resultsVariables[i]) < 0)
-                Test.error(errorInMethod + "Unsupported resultsVariable=" + resultsVariables[i] + "\nValid=" + String2.toCSVString(validVars));
+                Test.error(errorInMethod + "Unsupported resultsVariable=" + resultsVariables[i] + "\nValid=" + String2.toCSSVString(validVars));
         for (int i = 0; i < filterVariables.length; i++)
             if (String2.indexOf(validVars, filterVariables[i]) < 0)
-                Test.error(errorInMethod + "Unsupported filterVariable=" + filterVariables[i] + "\nValid=" + String2.toCSVString(validVars));
+                Test.error(errorInMethod + "Unsupported filterVariable=" + filterVariables[i] + "\nValid=" + String2.toCSSVString(validVars));
 
         //get data from the provider
         Table table = new Table();
@@ -1684,7 +1684,7 @@ String2.log("inventoryTable:\n" + table.toString());
                 String2.log("\nresulting table is: " + table);
                 Test.ensureTrue(table.nRows() >= 60, "nRows=" + table.nRows());
                 Test.ensureEqual(table.nColumns(), 7, "");
-                Test.ensureEqual(String2.toCSVString(table.getColumnNames()),
+                Test.ensureEqual(String2.toCSSVString(table.getColumnNames()),
                     "darwin:InstitutionCode, darwin:CollectionCode, darwin:CatalogNumber, " +
                     "darwin:ScientificName, darwin:Longitude, darwin:Latitude, " +
                     "obis:Temperature",
@@ -1774,7 +1774,7 @@ String2.log("inventoryTable:\n" + table.toString());
                 NetcdfDataset ncd = NetcdfDataset.openDataset(testName);
                 try {
                     Object o[] = ncd.getCoordinateAxes().toArray();
-                    String so = String2.toCSVString(o);
+                    String so = String2.toCSSVString(o);
                     String2.log("axes=" + so);
                     Test.ensureEqual(o.length, 4, "");
                     Test.ensureTrue(so.indexOf("_CoordinateAxisType = \"Lon\"") >= 0, "");
@@ -1831,7 +1831,7 @@ String2.log("inventoryTable:\n" + table.toString());
     //      2             NCL INDOBIS-DATASE         101652 Carcharodon ca              0              0            NaN
                 Test.ensureEqual(table.nColumns(), 7, "");
                 Test.ensureEqual(table.nRows(), 7, "");
-                Test.ensureEqual(String2.toCSVString(table.getColumnNames()), 
+                Test.ensureEqual(String2.toCSSVString(table.getColumnNames()), 
                     "darwin:InstitutionCode, darwin:CollectionCode, darwin:CatalogNumber, " +
                     "darwin:ScientificName, darwin:Longitude, darwin:Latitude, obis:Temperature", 
                     "");
@@ -1879,12 +1879,12 @@ String2.log("inventoryTable:\n" + table.toString());
 //  2            VLIZ          Tisbe         415428 Abietinaria ab           1.95          51.23            NaN
 //  3            VLIZ          Tisbe         562956 Abietinaria ab           1.62          50.77            NaN
 
-                String results = table.dataToCsvString();
+                String results = table.dataToCSVString();
                 String expected =
-"darwin:InstitutionCode, darwin:CollectionCode, darwin:CatalogNumber, darwin:ScientificName, darwin:Longitude, darwin:Latitude, obis:Temperature\n" +
-"VLIZ, Tisbe, 405183, Abietinaria abietina, -20.0, 46.0, \n" +
-"VLIZ, Tisbe, 415428, Abietinaria abietina, 1.95, 51.229, \n" +
-"VLIZ, Tisbe, 562956, Abietinaria abietina, 1.615055, 50.77295, \n";
+"darwin:InstitutionCode,darwin:CollectionCode,darwin:CatalogNumber,darwin:ScientificName,darwin:Longitude,darwin:Latitude,obis:Temperature\n" +
+"VLIZ,Tisbe,405183,Abietinaria abietina,-20.0,46.0,\n" +
+"VLIZ,Tisbe,415428,Abietinaria abietina,1.95,51.229,\n" +
+"VLIZ,Tisbe,562956,Abietinaria abietina,1.615055,50.77295,\n";
                 Test.ensureEqual(results, expected, "results=\n" + results);
             }
 
@@ -2203,20 +2203,20 @@ String2.log("inventoryTable:\n" + table.toString());
      */
     public static void testObisAbietinariaTable(Table table) {
         String2.log("\nresulting table is: " + table);
-        Test.ensureEqual(String2.toCSVString(table.getColumnNames()), 
+        Test.ensureEqual(String2.toCSSVString(table.getColumnNames()), 
             "LON, LAT, DEPTH, TIME, ID, darwin:InstitutionCode, darwin:CollectionCode, "+
             "darwin:ScientificName, obis:Temperature", 
             "");
 
-        String results = table.dataToCsvString();
+        String results = table.dataToCSVString();
         String expected =
 //pre 2010-07-27 was 7 rows
-"LON, LAT, DEPTH, TIME, ID, darwin:InstitutionCode, darwin:CollectionCode, darwin:ScientificName, obis:Temperature\n" +
-"-20.0, 46.0, , , VLIZ:Tisbe:405183, VLIZ, Tisbe, Abietinaria abietina, \n" +
-"1.606355, 50.73067, , , VLIZ:Tisbe:407878, VLIZ, Tisbe, Abietinaria filicula, \n" +
-"-4.54935, 54.2399, , , VLIZ:Tisbe:411870, VLIZ, Tisbe, Abietinaria filicula, \n" +
-"1.95, 51.229, , , VLIZ:Tisbe:415428, VLIZ, Tisbe, Abietinaria abietina, \n" +
-"1.615055, 50.77295, , , VLIZ:Tisbe:562956, VLIZ, Tisbe, Abietinaria abietina, \n";
+"LON,LAT,DEPTH,TIME,ID,darwin:InstitutionCode,darwin:CollectionCode,darwin:ScientificName,obis:Temperature\n" +
+"-20.0,46.0,,,VLIZ:Tisbe:405183,VLIZ,Tisbe,Abietinaria abietina,\n" +
+"1.606355,50.73067,,,VLIZ:Tisbe:407878,VLIZ,Tisbe,Abietinaria filicula,\n" +
+"-4.54935,54.2399,,,VLIZ:Tisbe:411870,VLIZ,Tisbe,Abietinaria filicula,\n" +
+"1.95,51.229,,,VLIZ:Tisbe:415428,VLIZ,Tisbe,Abietinaria abietina,\n" +
+"1.615055,50.77295,,,VLIZ:Tisbe:562956,VLIZ,Tisbe,Abietinaria abietina,\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
     }
@@ -2265,7 +2265,7 @@ String2.log("inventoryTable:\n" + table.toString());
         reallyVerbose = true;
 
 /*        //one time things
-        String2.log(String2.noLongLines(
+        String2.log(String2.noLongLinesAtSpace(
             "Available genera (and number of records): " + getObisInventoryString(
                 "http://aadc-maps.aad.gov.au/digir/digir.php",
                 "argos_tracking",
@@ -2290,7 +2290,7 @@ String2.log("inventoryTable:\n" + table.toString());
             "darwin:Longitude, darwin:Latitude, darwin:Latitude, " +
             "darwin:Species", "");
         Test.ensureEqual(filterCops.toString(), 
-            String2.toCSVString(COP_NAMES), "");
+            String2.toCSSVString(COP_NAMES), "");
         Test.ensureEqual(filterValues.toString(), 
             "Bob, %rocystis, 54, 53, 0, 78, 77, \"option1,option2,option3\"", "");
 

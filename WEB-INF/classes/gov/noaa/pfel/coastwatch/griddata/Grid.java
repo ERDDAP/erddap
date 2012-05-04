@@ -360,7 +360,7 @@ public class Grid  {
             "minData=" + minData + ", maxData=" + maxData + 
                 ", nValidPoints=" + nValidPoints + "\n");
         if (printAllData)
-            sb.append("gridData=\n" + String2.toCSVString(data));
+            sb.append("gridData=\n" + String2.toCSSVString(data));
         sb.append("\n");
 
         return sb.toString();
@@ -719,8 +719,8 @@ public class Grid  {
         double fileLatSpacing = (fileMaxLat - fileMinLat) / (fileNLatPoints - 1);
         double fileLon[] = DataHelper.getRegularArray(fileNLonPoints, fileMinLon, fileLonSpacing);
         double fileLat[] = DataHelper.getRegularArray(fileNLatPoints, fileMinLat, fileLatSpacing); 
-        //String2.log("fileLon=" + String2.toCSVString(fileLon).substring(0, 70));
-        //String2.log("fileLat=" + String2.toCSVString(fileLat).substring(0, 70));
+        //String2.log("fileLon=" + String2.toCSSVString(fileLon).substring(0, 70));
+        //String2.log("fileLat=" + String2.toCSSVString(fileLat).substring(0, 70));
 
         //make the desired lon and lat arrays   (n, min, spacing)
         //String2.log("  desiredNLonPoints=" + desiredNLonPoints + " desiredNLatPoints=" + desiredNLatPoints);
@@ -1702,7 +1702,7 @@ switch to finally clause
         //  cleanly align at 0 and still get my two test points exactly.
         //  But that is part of the nature of having to move the data columns around.
         grid.readGrd(testDir + tName, -45, 135, 30, 30, 37, 1); //180 range / 5 = 36 + 1
-        String2.log("lon=" + String2.toCSVString(grid.lon));
+        String2.log("lon=" + String2.toCSSVString(grid.lon));
         Test.ensureEqual(grid.lon, DataHelper.getRegularArray(37, -45, 5), "");
         Test.ensureEqual(grid.lat, new double[]{30}, "");
         Test.ensureEqual((float)grid.data[0], (float)0.039, "");
@@ -1806,7 +1806,7 @@ switch to finally clause
                     dfntType + ".");
             }
 
-            //String2.log("  count=" + count + " dar=" + String2.noLongerThan(String2.toCSVString(dar), 300));
+            //String2.log("  count=" + count + " dar=" + String2.noLongerThan(String2.toCSSVString(dar), 300));
 
             if (count == 0) {
                 //save dar as data
@@ -2145,7 +2145,7 @@ try {
             data = new double[nLon * nLat];
             int po = 0;
             //String2.log("  rank=" + array.getRank() + " size=" + array.getSize() + 
-            //    " shape=" + String2.toCSVString(array.getShape()));
+            //    " shape=" + String2.toCSSVString(array.getShape()));
 
             //gather data in desired order
             //do directly so as not to waste memory which is precious here since array may be huge
@@ -2181,7 +2181,7 @@ try {
                         data[po++] = abd2.get(tLat, tLon);
             } else throw new RuntimeException(errorInMethod + "grid array is of unknown type: " + 
                 array + "\nrank=" + array.getRank() + " size=" + array.getSize() + 
-                " shape=" + String2.toCSVString(array.getShape()));
+                " shape=" + String2.toCSSVString(array.getShape()));
             Test.ensureEqual(po, data.length, "po");
             setLonLatSpacing();
 
@@ -2478,7 +2478,7 @@ try {
                         (destinationLonIndex == -1? "" : "" + tLon[destinationLonIndex]) + 
                         " ?) for " + lon[0] + 
                         " in " + tLon[0] + " to " + tLon[newNLon - 1] + " spacing=" + lonSpacing + 
-                        "\n  lon=" + String2.toCSVString(tLon));
+                        "\n  lon=" + String2.toCSSVString(tLon));
                 System.arraycopy(data, 0, tData, destinationLonIndex * nLat, nLat * nLon);
                 nLon = newNLon;
                 lon = tLon;
@@ -2735,8 +2735,8 @@ try {
             );
          
          //if lon or lat is not ascending, jump out
-         //String2.log("lon=" + String2.toCSVString(lon));
-         //String2.log("lat=" + String2.toCSVString(lat));
+         //String2.log("lon=" + String2.toCSSVString(lon));
+         //String2.log("lat=" + String2.toCSSVString(lat));
          if (lon.length > 1 && lon[0] > lon[1]) {
              String2.log("Grid.subset is doing nothing because lon is sorted in descending order.");
              return true;
@@ -4358,8 +4358,8 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         int nLat = grid2.lat.length;
         int nLon = grid2.lon.length;
         Test.ensureTrue(grid1.equals(grid2), "TestNetCDF");//tests lat, lon, data
-        Test.ensureEqual(grid2.globalAttributes().get("Conventions"),                new StringArray(new String[]{"COARDS, CF-1.4, Unidata Dataset Discovery v1.0, CWHDF"}), "Conventions");
-        Test.ensureEqual(grid2.globalAttributes().get("Metadata_Conventions"),       new StringArray(new String[]{"COARDS, CF-1.4, Unidata Dataset Discovery v1.0, CWHDF"}), "Metadata_Conventions");
+        Test.ensureEqual(grid2.globalAttributes().get("Conventions"),                new StringArray(new String[]{"COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF"}), "Conventions");
+        Test.ensureEqual(grid2.globalAttributes().get("Metadata_Conventions"),       new StringArray(new String[]{"COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF"}), "Metadata_Conventions");
         Test.ensureEqual(grid2.globalAttributes().get("title"),                      new StringArray(new String[]{"SST, NOAA POES AVHRR, LAC, 0.0125 degrees, West US, Day and Night"}), "title");
         Test.ensureEqual(grid2.globalAttributes().get("summary"),                    new StringArray(new String[]{"NOAA CoastWatch provides sea surface temperature (SST) products derived from NOAA's Polar Operational Environmental Satellites (POES).  This data is provided at high resolution (0.0125 degrees) for the North Pacific Ocean.  Measurements are gathered by the Advanced Very High Resolution Radiometer (AVHRR) instrument, a multiband radiance sensor carried aboard the NOAA POES satellites."}), "summary");
         Test.ensureEqual(grid2.globalAttributes().get("keywords"),                   new StringArray(new String[]{"EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature"}), "keywords");
@@ -4858,7 +4858,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         if (args == null || args.length != 2) {
             throw new Exception(
                 ERROR + ": Incorrect number of input arguments.\nargs=" +
-                String2.toCSVString(args) + "\n\n" + msg);
+                String2.toCSSVString(args) + "\n\n" + msg);
         }
 
         //pick apart the file names

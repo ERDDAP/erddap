@@ -69,8 +69,8 @@ public class FileNameUtility  {
     public static String getAcknowledgement() {return "NOAA NESDIS COASTWATCH, NOAA SWFSC ERD"; }
     public static String getCDMDataType() {return "Grid";  }
     public static String getContributorRole() {return "Source of level 2 data."; }
-    public static String getConventions()         {return "COARDS, CF-1.4, Unidata Dataset Discovery v1.0, CWHDF"; }
-    public static String getMetadataConventions() {return "COARDS, CF-1.4, Unidata Dataset Discovery v1.0, CWHDF"; }
+    public static String getConventions()         {return "COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF"; }
+    public static String getMetadataConventions() {return "COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF"; }
     public static String getCreatorEmail() { return DataHelper.CW_CREATOR_EMAIL;  }
     public static String getCreatorName() {return DataHelper.CW_CREATOR_NAME;  }
     public static String getCreatorURL() {return DataHelper.CW_CREATOR_URL;  }
@@ -112,7 +112,7 @@ public class FileNameUtility  {
             if (verbose || trouble) {
                 String2.log(
                     (trouble? errorInMethod : "") +
-                    "tRegionInfo[" + i + "]=" + String2.toCSVString(regionInfo[i])); 
+                    "tRegionInfo[" + i + "]=" + String2.toCSSVString(regionInfo[i])); 
                     Test.ensureEqual(regionInfo[i].length, 8, tRegionInfo[i]);
             }
 
@@ -982,7 +982,7 @@ public class FileNameUtility  {
 
     /** 
      * This returns the keywords, 
-     * e.g., "EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature"
+     * e.g., "Oceans > Ocean Temperature > Sea Surface Temperature"
      * (see MetaMetadata.txt).
      * Usually these are GCMD Science keywords: 
      * see http://gcmd.gsfc.nasa.gov/Resources/valids/gcmd_parameters.html .
@@ -1414,8 +1414,8 @@ public class FileNameUtility  {
             Test.ensureEqual(fnu.getDataFractionDigits(names[i]), 1, "getDataFractionDigits");
             Test.ensureEqual(fnu.getReadableUnits(names[i]),  "degree C", "getReadableUnits");
             Test.ensureEqual(fnu.getUdUnits(names[i]),  "degree_C", "getUDUnits");
-            Test.ensureEqual(getConventions(), "COARDS, CF-1.4, Unidata Dataset Discovery v1.0, CWHDF", "getConvention");
-            Test.ensureEqual(getMetadataConventions(), "COARDS, CF-1.4, Unidata Dataset Discovery v1.0, CWHDF", "getMetadataConvention");
+            Test.ensureEqual(getConventions(), "COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF", "getConvention");
+            Test.ensureEqual(getMetadataConventions(), "COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF", "getMetadataConvention");
             Test.ensureEqual(fnu.getAbstract(names[i]), "NOAA CoastWatch provides sea surface temperature (SST) products derived from NOAA's Polar Operational Environmental Satellites (POES).  This data is provided at high resolution (0.0125 degrees) for the North Pacific Ocean.  Measurements are gathered by the Advanced Very High Resolution Radiometer (AVHRR) instrument, a multiband radiance sensor carried aboard the NOAA POES satellites.", "getAbstract");
             Test.ensureEqual(fnu.getKeywords(names[i]), "EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature", "getKeywords");
             Test.ensureEqual(getNamingAuthority(), "gov.noaa.pfeg.coastwatch", "getNamingAuthority");

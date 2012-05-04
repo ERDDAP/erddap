@@ -86,7 +86,8 @@ class AxisHolderPropertyPanel extends PropertyPanel
   private boolean suppressEvent_ = false;
   private int autoScale, userRange;
   private int titleAuto, title;
-  private String format_ = "yyyy-MM-dd hh:mm";
+  //2011-12-15 Bob Simons changed space to 'T'  and hh to HH (24 hour)
+  private String format_ = "yyyy-MM-dd'T'HH:mm";
   private String[] xAxisPosition = {"Bottom", "Top", "Manual"};
   private String[] yAxisPosition = {"Left", "Right", "Manual"};
 

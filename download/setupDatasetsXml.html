@@ -49,7 +49,7 @@ in [tomcat]/content/erddap/ to describe the datasets that your ERDDAP installati
 
 <h2>Table of Contents</h2>
 <ul>
-<li><a href="#introduction">Introduction</a> (Please read all of this.)
+<li><a href="#introduction"><b>Introduction</b></a> (Please read all of this.)
   <ul>
   <li><a href="#effort">Some Assembly Required</a> 
   <li><a href="#Tools">Tools</a>
@@ -69,7 +69,7 @@ in [tomcat]/content/erddap/ to describe the datasets that your ERDDAP installati
   <li><a href="#projections">Projected Gridded Data</a>
     <br>&nbsp;
   </ul>
-<li><a href="#datasetTypes">List of Dataset Types</a> (Read as needed)
+<li><a href="#datasetTypes"><b>List of Dataset Types</b></a> (Read as needed)
   <br>&nbsp;
 
 <li><a href="#datasetDescriptions">Detailed Descriptions of Dataset Types</a> (Read as needed)
@@ -89,7 +89,10 @@ in [tomcat]/content/erddap/ to describe the datasets that your ERDDAP installati
 
     <li><a href="#accessibleTo"><tt>&lt;accessibleTo&gt;</tt></a>
     <li><a href="#altitudeMetersPerSourceUnit"><tt>&lt;altitudeMetersPerSourceUnit&gt;</tt></a>
+    <li><a href="#fgdcFile"><tt>&lt;fgdcFile&gt;</tt></a>
+    <li><a href="#iso19115File"><tt>&lt;iso19115File&gt;</tt></a>
     <li><a href="#onChange"><tt>&lt;onChange&gt;</tt></a>
+
     <li><a href="#reloadEveryNMinutes"><tt>&lt;reloadEveryNMinutes&gt;</tt></a>
     <li><a href="#sourceCanConstrainStringEQNE"><tt>&lt;sourceCanConstrainStringEQNE&gt;</tt></a>
     <li><a href="#sourceCanConstrainStringGTLT"><tt>&lt;sourceCanConstrainStringGTLT&gt;</tt></a>
@@ -228,7 +231,7 @@ And if you get stuck, please send an email with the details to <tt>bob dot simon
       In general, the options in GenerateDatasetsXml generate a datasets.xml chunk
       for one dataset from one specific data source. An exception to this is the 
       EDDGridFromThreddsCatalog option. 
-      It generates all of the datasets.xml chunks needed for all of the datasets 
+      It generates all of the datasets.xml chunks needed for all of the EDDGridFromDap datasets 
       that it can find by crawling recursively through a THREDDS (sub) catalog.
       There are many forms of THREDDS catalog URLs.
       This option REQUIRES a THREDDS .xml URL with <tt>/thredds/catalog/</tt> in it, for example,
@@ -373,7 +376,7 @@ to verify that the result is well-formed XML by pasting the XML text into an XML
     lonRadians and latRadians, Make A Graph will make graphs (e.g., time series) instead of maps.
   <li>The time variable and related <a href="#units">timeStamp variables</a> are unique in that they
     always convert data values from the source's time format (what ever it is) into a numeric value
-    (seconds since 1970-01-01T00:00:00Z) or a String value (ISO 8601 format), depending on the
+    (seconds since 1970-01-01T00:00:00Z) or a String value (ISO 8601:2004(E) format), depending on the
     situation.
   <li>Note that ERDDAP does NOT follow the CF standard when converting "years since" and
     "months since" time values to "seconds since". The CF standard defines a year as a 
@@ -384,7 +387,7 @@ to verify that the result is well-formed XML by pasting the XML text into an XML
     So, ERDDAP interprets "years since" and "months since" as calendar years and months,
     and does not follow the strict CF standard.
   <li>When a user requests time data, they can request it by specifying the time as a numeric value
-    (seconds since 1970-01-01T00:00:00Z) or a String value (ISO 8601 format).
+    (seconds since 1970-01-01T00:00:00Z) or a String value (ISO 8601:2004(E) format).
   <li>See <a href="#units">units</a> for more information about time and timeStamp variables.
   <li>ERDDAP has a utility to 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Convert
@@ -568,6 +571,8 @@ Datasets fall into two categories.  (<a href="#dataStructures">Why?</a>)
   <a href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
   <a href="#altitudeMetersPerSourceUnit">&lt;altitudeMetersPerSourceUnit&gt;</a>...&lt;/altitudeMetersPerSourceUnit&gt; 
   <a href="#globalAttributes">&lt;addAttributes&gt;</a>...&lt;/addAttributes&gt;
@@ -640,6 +645,8 @@ a remote ERDDAP server.
 &lt;dataset type="EDDGridFromErddap" <a href="#datasetID">datasetID</a>="..." <a href="#active">active</a>="..." &gt;
   <a href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
 &lt;/dataset&gt;
 </pre>
@@ -649,6 +656,8 @@ a remote ERDDAP server.
 &lt;dataset type="EDDTableFromErddap" <a href="#datasetID">datasetID</a>="..." <a href="#active">active</a>="..." &gt;
   <a href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
 &lt;/dataset&gt;
 </pre>
@@ -778,9 +787,11 @@ allows fast random access to the data, and is already supported by ERDDAP.
 &lt;dataset type="EDDGridFrom...Files" <a href="#datasetID">datasetID</a>="..." <a href="#active">active</a>="..." &gt;
   <a href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
   <a href="#altitudeMetersPerSourceUnit">&lt;altitudeMetersPerSourceUnit&gt;</a>...&lt;/altitudeMetersPerSourceUnit&gt; 
-  &lt;fileDir&gt;...&lt;/fileDir&gt; &lt;-- The directory with the data files. --&gt;
+  &lt;fileDir&gt;...&lt;/fileDir&gt; &lt;-- The directory (absolute) with the data files. --&gt;
   &lt;recursive&gt;true|false&lt;/recursive&gt; &lt;-- Indicates if subdirectories
     of fileDir have data files, too. --&gt;
   &lt;fileNameRegex&gt;...&lt;/fileNameRegex&gt; &lt;-- A <a href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html">regular expression</a> 
@@ -812,6 +823,9 @@ So the GRIB files must be in a directory where the "user" that ran Tomcat has re
 aggregates two or more EDDGrid datasets (the children) side by side.
 <ul>
 <li>The resulting dataset has all of the variables from all of the child datasets.
+<li>The parent dataset and all of the child datasets MUST have different datasetIDs.
+  If any names in a family are exactly the same, the dataset will fail to load
+  (with the error message that the values of the aggregated axis are not in sorted order).
 <li>All children MUST have the same source values for axisVariables[1+] (e.g., latitude, longitude). 
 <li>The children may have different source values for axisVariables[0] (e.g., time), but they are
   usually largely the same.
@@ -834,6 +848,8 @@ aggregates two or more EDDGrid datasets (the children) side by side.
 &lt;dataset type="EDDGridSideBySide" <a href="#datasetID">datasetID</a>="..." <a href="#active">active</a>="..." &gt;
   &lt;dataset&gt;...&lt;/dataset&gt; &lt;!-- 2 or more --&gt;
   <a href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
 &lt;/dataset&gt;
 </pre>
@@ -847,7 +863,11 @@ aggregates two or more EDDGrid datasets based on different
   child might have 365 values (for 2005) for the time dimension.
 <li>All the values for all of the other dimensions (e.g., latitude, longitude) MUST be identical
   for all of the children.
-<li>Currently, the oldest child dataset MUST be an EDDGridFromDap dataset. 
+<li>The parent dataset and the child dataset MUST have different datasetIDs.
+  If any names in a family are exactly the same, the dataset will fail to load
+  (with the error message that the values of the aggregated axis are not in sorted order).
+<li>Currently, the child dataset MUST be an EDDGridFromDap dataset and MUST have
+  the lowest values of the aggregated dimension (usually the oldest time values). 
   All of the other children MUST be almost identical datasets (differing just in the values
   for the first dimension) and are specified by just their sourceUrl.
 <li>The aggregate dataset gets its metadata from the first child.
@@ -879,19 +899,29 @@ aggregates two or more EDDGrid datasets based on different
 &lt;dataset type="EDDGridAggregateExistingDimension" <a href="#datasetID">datasetID</a>="..." 
     <a href="#active">active</a>="..." &gt;
   &lt;dataset&gt;...&lt;/dataset&gt; &lt;!-- This is a regular <a href="#EDDGridFromDap">EDDGridFromDap</a> 
-    dataset description for the oldest child. --&gt;
+    dataset description child with the lowest values for the aggregated dimensions. --&gt;
   <a href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt; &lt;!-- 0 or many; the sourceUrls for 
-    other 
-    children. --&gt;
-  &lt;sourceUrls serverType="...", regex="..." recursive="true" 
-    &gt;...&lt;/sourceUrls&gt; &lt;!-- 0 or 1.  This specifies how to
-    find the other children, instead of using separate sourceUrl tags
-    for each child.  The advantage of this is: new children will be 
-    detected each time the dataset is reloaded.  serverType must be 
-    "thredds" or "hyrax".  regex example = ".*\.nc". --&gt;
+    other children.  These children must be listed in order of ascending values 
+    for the aggregated dimension. --&gt;
+  &lt;sourceUrls serverType="..." regex="..." recursive="true" 
+    &gt;http://<i>someServer</i>/thredds/<i>someSubdirectory</i>/catalog.xml&lt;/sourceUrls&gt; 
+    &lt;!-- 0 or 1. This specifies how to find the other children, instead 
+    of using separate sourceUrl tags for each child.  The advantage of this
+    is: new children will be detected each time the dataset is reloaded. 
+    The serverType must be "thredds" or "hyrax".  
+    An example of a <a href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html">regular expression</a> (regex) (<a href="http://www.vogella.de/articles/JavaRegularExpressions/article.html">tutorial</a>) is .*\.nc 
+    recursive can be "true" or "false".  
+    An example of a thredds catalogUrl is
+    http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml
+    An example of a hyrax catalogUrl is
+    http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html
+    When these children are sorted by file name, they must be in order of
+    ascending values for the aggregated dimension. --&gt;
   &lt;ensureAxisValuesAreEqual&gt;true(the default) or 
     false&lt;ensureAxisValuesAreEqual&gt; 
   <a href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
 &lt;/dataset&gt;
 </pre>
@@ -1026,6 +1056,8 @@ serves data from the local copy.
 &lt;dataset type="EDDGridCopy" <a href="#datasetID">datasetID</a>="..." <a href="#active">active</a>="..." &gt;
   <a href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
   <a href="#sourceNeedsExpandedFP_EQ">&lt;sourceNeedsExpandedFP_EQ&gt;</a>true(default)|false&lt;/sourceNeedsExpandedFP_EQ&gt;
   &lt;dataset&gt;...&lt;/dataset&gt; &lt;!-- 1 --&gt;
@@ -1056,6 +1088,8 @@ p><a name="EDDTableFromBMDE"><b>EDDTableFromBMDE</b></a> handles data from a
     is the value from one of the &lt;resource&gt;&lt;code&gt; tags. - -&gt;
   <a href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!- - 0 or 1 - -&gt;
   <a href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!- - 0 or 1 - -&gt;
+  <a href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!- - 0 or 1 - -&gt;
   <a href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!- - 0 or more - -&gt;
   <a href="#altitudeMetersPerSourceUnit">&lt;altitudeMetersPerSourceUnit&gt;</a>...&lt;/altitudeMetersPerSourceUnit&gt;
   <a href="#dataVariable">&lt;dataVariable&gt;</a>...&lt;/dataVariable&gt; &lt;!- - 1 or more - -&gt;
@@ -1085,6 +1119,8 @@ p><a name="EDDTableFromBMDE"><b>EDDTableFromBMDE</b></a> handles data from a
   <a href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
   <a href="#altitudeMetersPerSourceUnit">&lt;altitudeMetersPerSourceUnit&gt;</a>...&lt;/altitudeMetersPerSourceUnit&gt;
   &lt;outerSequenceName&gt;...&lt;/outerSequenceName&gt;
@@ -1188,14 +1224,28 @@ database table or <a href="http://en.wikipedia.org/wiki/View_(database)">view</a
     We haven't found a way to allow the administrator to enter the database password during
     ERDDAP's startup in Tomcat (which occurs without user input), so the password must be
     accessible in a file.
-  <li>When in ERDDAP, the password and other connection properties are kept "private".
-  <li>Requests from clients are parsed and checked for validity before generating requests for the 
-    database.
-  <li>Requests to the database are made with PreparedStatements, to avoid SQL injection.
+  <li>When in ERDDAP, the password and other connection properties are stored in "private" 
+    Java variables.
+  <li>Requests from clients are parsed and checked for validity before generating the SQL requests
+    for the database.
+  <li>Requests to the database are made with SQL PreparedStatements, to prevent SQL injection.
   <li>Requests to the database are submitted with executeQuery (not executeStatement) to limit
     requests to be read-only (so attempted SQL injection to alter the database will fail for this
     reason, too).
   </ul>
+<li>SQL - It is easy for ERDDAP to convert user requests into simple SQL PreparedStatements. 
+    For example, the ERDDAP request<tt>
+    <br>&nbsp;&nbsp;time,temperature&amp;time&gt;=2008-01-01T00:00:00&amp;time&lt;=2008-02-01T00:00:00</tt>
+    <br>will be converted into the SQL PreparedStatement<tt>
+    <br>&nbsp;&nbsp;SELECT time, temperature WHERE time >= 2008-01-01T00:00:00 AND
+    <br>&nbsp;&nbsp;time <= 2008-02-01T00:00:00</tt>
+    <br>ERDDAP requests with <tt>&amp;distinct()</tt> and/or <tt>&amp;orderBy(<i>variables</i>)</tt> will add
+      <tt>DISTINCT</tt> and/or <tt>ORDER BY <i>variables</i></tt> to the SQL prepared statement. In general, this will greatly slow down the response from the database.
+    <br>ERDDAP logs the PreparedStatement in 
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#log">log.txt</a>
+    as<tt> 
+    <br>&nbsp;&nbsp;statement=<i>thePreparedStatement</i></tt>.
+
 <li>Views - EDDTableFromDatabase is limited to getting data from one table, but that shouldn't be a problem.
   If a table of interest has foreign keys which link to other tables,
   we recommend that you ask the database administrator to create a 
@@ -1208,10 +1258,53 @@ database table or <a href="http://en.wikipedia.org/wiki/View_(database)">view</a
   <li>They increase abstraction (since the database can be changed without having to change how the
     VIEW appears to the client).
   </ul>
-<li>Speed - Or, if speed is an issue, you will probably get faster responses if you periodically
+<li>Speed - If speed is a problem:
+  <ul>
+  <li>Set the Fetch Size - Databases return the data to ERDDAP in chunks.
+    By default, different databases return a different number of rows in the chunks.
+    Often this number is very small and so very inefficient.
+    For example, the default for Oracle is 10!
+    Read the JDBC documentation for your database's JDBC driver
+    to find the connection property to set
+    in order to increase this, and add this to the dataset's description
+    in datasets.xml. For example, 
+    <br>For MySQL, use
+    <br><tt>&lt;connectionProperty name="defaultFetchSize"&gt;4096&lt;/connectionProperty&gt;</tt>
+    <br>For Oracle, use
+    <br><tt>&lt;connectionProperty name="defaultRowPrefetch"&gt;4096&lt;/connectionProperty&gt;</tt>
+    <br>For PostgreSQL, use
+    <br><tt>&lt;connectionProperty name="defaultFetchSize"&gt;4096&lt;/connectionProperty&gt;</tt>
+    <br>but feel free to change the number.  Note that setting the number too big will
+    <br>cause ERDDAP to use lots of memory and be more likely to run out of memory.
+
+  <li>ConnectionProperties - Each database has other connection properties which
+    can be specified in datasets.xml. Many of these will affect the performance
+    of the ERDDAP to database connection. Please read the documentation for 
+    your database's JDBC driver to see the options.
+    If you find connection properties that are useful, please 
+    send an email with the details to <tt>bob dot simons at noaa dot gov</tt>.
+
+  <li>Make a Table - You will probably get faster responses if you periodically
     (every day? whenever there is new data?) generate an actual table (similarly to how you
-    generated the VIEW) instead of using a VIEW. Since any request to the table can then be
+    generated the VIEW) and tell ERDDAP to get data from the table instead of the VIEW. 
+    Since any request to the table can then be
     fulfilled without JOINing another table, the response will be much faster.
+  <li>Optimize/Vacuum the Table -
+    <br>MySQL will respond much faster if you use
+    <a href="http://dev.mysql.com/doc/refman/5.1/en/optimize-table.html">OPTIMIZE TABLE</a>.
+    <br>PostgreSQL will respond much faster if you 
+    <a href="http://www.postgresql.org/docs/8.3/static/sql-vacuum.html">VACUUM</a> the table.
+    <br>Oracle doesn't have or need an analogous command.
+  <li>Connection Pooling - 
+    ERDDAP currently doesn't use connection pooling. ERDDAP makes a new connection 
+    to the database for each SQL query that it sends to the database. 
+    This adds about 0.1 seconds per request (sometimes longer, e.g., for remote databases), 
+    but is a more robust and safe approach.
+    We may add optional connection pooling in the future.
+  <li>If all else fails, consider storing the data in a collection of .nc files.
+      If they are logically organized (each with data for a chunk of space and time), 
+      ERDDAP can extract data from them very quickly.
+  </ul>
 <li>The skeleton XML for an EDDTableFromDapSequence dataset is:
 <pre>
 &lt;dataset type="EDDTableFromDatabase" <a href="#datasetID">datasetID</a>="..." <a href="#active">active</a>="..." &gt;
@@ -1247,6 +1340,8 @@ database table or <a href="http://en.wikipedia.org/wiki/View_(database)">view</a
   <a href="#sourceNeedsExpandedFP_EQ">&lt;sourceNeedsExpandedFP_EQ&gt;</a>true(default)|false&lt;/sourceNeedsExpandedFP_EQ&gt;
   <a href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
   <a href="#altitudeMetersPerSourceUnit">&lt;altitudeMetersPerSourceUnit&gt;</a>...&lt;/altitudeMetersPerSourceUnit&gt;
   <a href="#globalAttributes">&lt;addAttributes&gt;</a>...&lt;/addAttributes&gt;
@@ -1333,8 +1428,6 @@ allows fast random access to the data, and is already supported by ERDDAP.
     latitude range.
   <li>Because the valid file information table includes the minimum and maximum value of every 
     variable for every valid file, EDDTableFromFiles can often handle other queries quite efficiently.
-    (EDDTableFromHyraxFiles and EDDTableFromThreddsFiles only keep track of the min and max
-    for the axis variables, not the data variables.)
     For example, if some of the buoys don't have an air pressure sensor, and a client requests 
     data for <tt>airPressure!=NaN</tt>, EDDTableFromFiles can efficiently determine which buoys 
     have air pressure data.
@@ -1362,11 +1455,7 @@ allows fast random access to the data, and is already supported by ERDDAP.
 <li><b>Bad Files</b> - The table of bad files and the reasons the files were declared bad (corrupted file, 
   missing variables, incorrect axis values, etc.) is emailed to the emailEverythingTo email address 
   (probably you) every time the dataset is reloaded.
-  You should replace or repair these files as soon as possible.
-
-  <p>For EDDTableFromHyraxFiles and EDDTableFromThreddsFiles, the table of bad files is thrown out
-  each time the dataset is reloaded.
-  So an individual Hyrax file that is bad at some point, isn't marked as bad forever.
+  You should replace or repair these files as soon as possible.  
 <li><b><a name="EDDTableFromFiles_NearRealTimeData">Near Real Time Data</a></b> - 
     EDDTableFromFiles treats requests for very recent data as a special case.
   The problem: If the files making up the dataset are updated frequently, it is likely that the
@@ -1435,7 +1524,7 @@ allows fast random access to the data, and is already supported by ERDDAP.
   <li><tt>postExtractRegex</tt> is a regular expression used to identify text to be removed from
     the end of the file name.
     The removal only occurs if the regex is matched.
-    This usually ends with "$" to match the beginning of the file name.
+    This usually ends with "$" to match the end of the file name.
   <li><tt>extractRegex</tt> If present, this regular expression is used after preExtractRegex and 
     postExtractRegex to identify a string to be extracted from the file name (e.g., the stationID).
     If the regex isn't matched, the entire file name is used (minus preExtract and postExtract).
@@ -1444,6 +1533,36 @@ allows fast random access to the data, and is already supported by ERDDAP.
     A dataVariable with this sourceName must be in the dataVariables list (with any data type,
     but usually String).
   </ul>
+  For example, if a dataset has files with names like 
+  <tt>XYZAble.nc, XYZBaker.nc, XYZCharlie.nc,</tt> ...,
+  and you want to create a new variable (<tt>stationID</tt>) when each file is read 
+  which will have station ID values
+  (<tt>Able, Baker, Charlie,</tt> ...) extracted from the file names, you could use these tags:
+  <ul>
+  <li><tt>&lt;preExtractRegex&gt;^XYZ&lt;/preExtractRegex&gt;</tt>
+    <br>The initial ^ is a regular expression special character which 
+    forces ERDDAP to look for <tt>XYZ</tt> at the beginning of the file name.
+    This causes <tt>XYZ</tt>, if found at the beginning of the file name, to be removed
+    (e.g., the file name <tt>XYZAble.nc</tt> becomes <tt>Able.nc</tt>).
+  <li><tt>&lt;postExtractRegex&gt;\x2Enc$&lt;/postExtractRegex&gt;</tt> 
+    <br>The $ at the end is a regular expression special character which 
+    forces ERDDAP to look for <tt>.nc</tt> at the end of the file name.
+    Since . is a regular expression special character (which matches any character), 
+    it is encoded as <tt>\x2E</tt> here 
+    (because 2E is the hexadecimal character number for a period).
+    This causes <tt>.nc</tt>, if found at the end of the file name, to be removed
+    (e.g., the partial file name <tt>Able.nc</tt> becomes <tt>Able</tt>).
+  <li><tt>&lt;extractRegex&gt;.*&lt;/extractRegex&gt;</tt> 
+    <br>The .* regular expression matches all remaining characters
+    (e.g., the partial file name <tt>Able</tt> becomes the extract for the first file).
+  <li><tt>&lt;columnNameForExtract&gt;stationID&lt;/columnNameForExtract&gt;</tt> 
+    <br>This tells ERDDAP to create a new column called <tt>stationID</tt> when reading each file.
+    Every row of data for a given file will have the text extracted 
+    from its file name (e.g., <tt>Able</tt>) as the value in the <tt>stationID</tt> column.
+  </ul>
+  In most cases, there are numerous values for these extract tags that will yield the same results --
+  regular expressions are very flexible. But in a few cases, there is just one 
+  way to get the desired results.  
 <li><b><a name="globalSourceNames"><tt>global:</tt></a> sourceNames</b> - 
   Global metadata in each file can be converted to be data.
   If the sourceName of a variable starts with
@@ -1457,9 +1576,11 @@ allows fast random access to the data, and is already supported by ERDDAP.
     version 1.30, but is now ignored. --&gt;
   <a href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
   <a href="#altitudeMetersPerSourceUnit">&lt;altitudeMetersPerSourceUnit&gt;</a>...&lt;/altitudeMetersPerSourceUnit&gt; 
-  &lt;fileDir&gt;...&lt;/fileDir&gt; &lt;-- The directory with the data files. --&gt;
+  &lt;fileDir&gt;...&lt;/fileDir&gt; &lt;-- The directory (absolute) with the data files. --&gt;
   &lt;recursive&gt;true|false&lt;/recursive&gt; &lt;-- Indicates if subdirectories
     of fileDir have data files, too. --&gt;
   &lt;fileNameRegex&gt;...&lt;/fileNameRegex&gt; &lt;-- A <a href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html">regular expression</a> 
@@ -1509,7 +1630,7 @@ allows fast random access to the data, and is already supported by ERDDAP.
   <a href="#sourceNeedsExpandedFP_EQ">&lt;sourceNeedsExpandedFP_EQ&gt;</a>true(default)|false&lt;/sourceNeedsExpandedFP_EQ&gt;
   <a href="#globalAttributes">&lt;addAttributes&gt;</a>...&lt;/addAttributes&gt;
   <a href="#dataVariable">&lt;dataVariable&gt;</a>...&lt;/dataVariable&gt; &lt;!-- 1 or more --&gt;
-    &lt;-- For EDDTableFromHyraxFiles (and EDDTableFromNcFiles?) and 
+    &lt;-- For EDDTableFromHyraxFiles, EDDTableFromNcFiles, and 
     EDDTableFromThreddsFiles, the axis variables needn't be first or 
     in any specific order. --&gt;
 &lt;/dataset&gt;
@@ -1526,6 +1647,8 @@ allows fast random access to the data, and is already supported by ERDDAP.
   <a href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!- - 0 or 1 - -&gt;
   <a href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!- - 0 or 1 - -&gt;
+  <a href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!- - 0 or 1 - -&gt;
   <a href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!- - 0 or more - -&gt;
   &lt;longitudeSourceMinimum&gt;...&lt;/longitudeSourceMinimum&gt; &lt;- - OPTIONAL - -&gt;
   &lt;longitudeSourceMaximum&gt;...&lt;/longitudeSourceMaximum&gt; &lt;- - OPTIONAL - -&gt;
@@ -1558,26 +1681,28 @@ allows fast random access to the data, and is already supported by ERDDAP.
   one or more shared dimensions (e.g., time, altitude, latitude, longitude), and served by a 
   <a href="http://www.opendap.org/download/hyrax.html">Hyrax OPeNDAP server</a>.
 <ul>
-<li>THIS IS NOT ACTIVE. The data server we were using to test this dataset type changed its behavior. 
-<li>In all cases, each file has multiple values for the leftmost dimension, e.g. time.
+<li>In most cases, each file has multiple values for the leftmost dimension, e.g. time.
 <li>The files often (but don't have to) have a single value for the other dimensions (e.g., altitude,
   latitude, longitude).
 <li>The files may have character variables with an additional dimension (e.g., nCharacters).
-<li>Hyrax servers can be identified by the "/dods-bin/nph-dods/" (and sometimes by "/opendap/") in the URL.
-  For example, http://edac-dap.northerngulfinstitute.org/dods-bin/nph-dods/WCOS/nmsp/wcos/
+<li>Hyrax servers can be identified by the "/dods-bin/nph-dods/" or "/opendap/" in the URL.
+  <!-- For example, ??? -->
 <li>This class screen-scrapes the Hyrax web pages with the lists of files in each directory.
   Because of this, it is very specific to the current format of Hyrax web pages.
   We will try to adjust ERDDAP quickly if/when future versions of Hyrax change how the files are listed.
-<li>For the <tt>&lt;datasets&gt;</tt> tag in datasets.xml:
-  For <tt>&lt;fileDir&gt;</tt>, use the URL of the base directory of the dataset in the Hyrax server, for example,
-  <br>  <tt>&lt;fileDir&gt;http://edac-dap.northerngulfinstitute.org/dods-bin/nph-dods/WCOS/nmsp/wcos/&lt;fileDir&gt;</tt>
-  <br>The web page should have "OPeNDAP Server Index of [directoryName]" at the top.
-<li>Because some data requests are fulfilled by ERDDAP getting data from lots of remote files, some
-  responses will be slow.
-  If this is a problem, wrap this dataset in <a href="#EDDTableCopy">EDDTableCopy</a>.
+<li>The <tt>&lt;fileDir&gt;</tt> setting is ignored. Since this class downloads
+  and makes a local copy of each remote data file, ERDDAP forces the fileDir
+  to be <tt>[bigParentDirectory]/copy/<i>datasetID</i>/</tt>.
+<li>For <tt>&lt;sourceUrl&gt;</tt>, use the URL of the base directory of the dataset in the Hyrax server, for example,
+  <br>  <tt>&lt;sourceUrl&gt;http://edac-dap.northerngulfinstitute.org/dods-bin/nph-dods/WCOS/nmsp/wcos/&lt;/sourceUrl&gt;</tt>
+  <br>(although that server is no longer available).
+  <br>The sourceUrl web page usually has "OPeNDAP Server Index of [directoryName]" at the top.
+<li>Since this class always downloads and makes a local copy of each remote
+  data file, you should never wrap this dataset in <a href="#EDDTableCopy">EDDTableCopy</a>.
 <li>See this class' superclass, <a href="#EDDTableFromFiles">EDDTableFromFiles</a>, for details.
 <li>See the 1D, 2D, 3D, and 4D examples for <a href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a>.
 </ul>
+
 
 <p><a name="EDDTableFromNcFiles"><b>EDDTableFromNcFiles</b></a> 
 aggregates data from .nc files with several variables, each with one shared
@@ -1644,25 +1769,27 @@ aggregates data from .nc files with several variables, each with one shared
   served by a 
   <a href="http://www.unidata.ucar.edu/projects/THREDDS/">THREDDS OPeNDAP server</a>.
 <ul>
-<li>In all cases, each file has multiple values for the leftmost dimension, e.g. time.
+<li>In most cases, each file has multiple values for the leftmost dimension, e.g. time.
 <li>The files often (but don't have to) have a single value for the other dimensions (e.g., altitude,
   latitude, longitude).
 <li>The files may have character variables with an additional dimension (e.g., nCharacters).
-<li>THREDDS servers can be identified by the "/thredds/" in the URL.
-  For example, http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.html
+<li>THREDDS servers can be identified by the "/thredds/" in the URLs.
+  For example, 
+  <br>http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.html
 <li>This class reads the catalog.xml files served by THREDDS with the lists of 
   <tt>&lt;catalogRefs&gt;</tt>
   (references to additional catalog.xml sub-files) and <tt>&lt;dataset&gt;</tt>s (data files).
-<li>For the <tt>&lt;datasets&gt;</tt> tag in datasets.xml:
-  For <tt>&lt;fileDir&gt;</tt>, use the URL of the catalog.xml file for the dataset in the 
+<li>The <tt>&lt;fileDir&gt;</tt> setting is ignored. Since this class downloads
+  and makes a local copy of each remote data file, ERDDAP forces the fileDir
+  to be <tt>[bigParentDirectory]/copy/<i>datasetID</i>/</tt>.
+<li>For <tt>&lt;sourceUrl&gt;</tt>, use the URL of the catalog.xml file for the dataset in the 
   THREDDS server,
   for example: 
   for this URL which may be used in a web browser,
   <br>http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.html ,
-  <br>use <tt>&lt;fileDir&gt;http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml&lt;/fileDir&gt;</tt> .
-<li>Because some data requests are fulfilled by ERDDAP getting data from lots of remote files,
-  some responses will be slow.
-    If this is a problem, wrap this dataset in <a href="#EDDTableCopy">EDDTableCopy</a>.
+  <br>use <tt>&lt;sourceUrl&gt;http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml&lt;/sourceUrl&gt;</tt> .
+<li>Since this class always downloads and makes a local copy of each remote
+  data file, you should never wrap this dataset in <a href="#EDDTableCopy">EDDTableCopy</a>.
 <li>See this class' superclass, <a href="#EDDTableFromFiles">EDDTableFromFiles</a>, for details.
 <li>See the 1D, 2D, 3D, and 4D examples for <a href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a>.
 </ul>
@@ -1696,6 +1823,8 @@ which uses
     &lt;resource&gt;&lt;code&gt; tags. --&gt;
   <a href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
   &lt;-- All ...SourceMinimum and Maximum tags are OPTIONAL --&gt;
   &lt;longitudeSourceMinimum&gt;...&lt;/longitudeSourceMinimum&gt; 
@@ -1774,6 +1903,8 @@ Sensor Observation Service
   <a href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
   &lt;stationIdSourceName&gt;...&lt;/stationIdSourceName&gt; &lt;!-- 0 or 1. 
     Default="station_id". --&gt;
@@ -1791,12 +1922,12 @@ Sensor Observation Service
       string (with the format 
       "<i>units</i> since <i>baseTime</i>") describing how to interpret
       source time values (e.g., "seconds since 1970-01-01T00:00:00Z"),
-      where the base time is an ISO 8601 formatted date time string 
+      where the base time is an ISO 8601:2004(E) formatted date time string 
       (YYYY-MM-DDThh:mm:ssZ).
     * For String String data: an org.joda.time.format.DateTimeFormat 
       string (which is mostly compatible with java.text.SimpleDateFormat)
       describing how to interpret string times  (e.g., the 
-      ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ").  See <a href="http://joda-time.sourceforge.net/api-release/index.html">Joda Time</a> 
+      ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ss'Z'").  See <a href="http://joda-time.sourceforge.net/api-release/index.html">Joda Time</a> 
       and <a href="http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html">DateTimeFormat</a> --&gt;
   &lt;observationOfferingIdRegex&gt;...&lt;/observationOfferingIdRegex&gt;
     &lt;!-- Only observationOfferings with IDs (usually the station names) 
@@ -1973,6 +2104,8 @@ data and serves
 &lt;dataset type="EDDTableCopy" <a href="#datasetID">datasetID</a>="..." <a href="#active">active</a>="..." &gt;
   <a href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
   &lt;extractDestinationNames&gt;...&lt;/extractDestinationNames&gt;  &lt;!-- 1 --&gt;
   &lt;orderExtractBy&gt;...&lt;/orderExtractBy&gt; &lt;!-- 0 or 1 --&gt;
@@ -2098,8 +2231,11 @@ Here are detailed descriptions of common tags and attributes.
   <tt>&lt;dataset&gt;</tt> tag which assigns a short
   (usually &lt;15 characters), unique, identifying name to a dataset.
     <ul>
-    <li>Valid characters are A-Z, a-z, 0-9, _, -, and '.', but we recommend starting with a letter and
+    <li>Valid characters are A-Z, a-z, 0-9, _, and -, but we recommend starting with a letter and
       then just using A-Z, a-z, 0-9, and _.
+    <li>DatasetID's are case sensitive, but DON'T create two datasetID's that
+      only differ in upper/lower case letters.  It will cause problems
+      on Windows computers (yours and/or a user's computer).
     <li>Best practices: We recommend using <a href="http://en.wikipedia.org/wiki/CamelCase">camelCase</a>.
     <li>Best practices: We recommend that the first part be an acronym or abbreviation of the
       source institution's name and the second part be an acronym or abbreviation of the 
@@ -2147,7 +2283,7 @@ Here are detailed descriptions of common tags and attributes.
 <li><a name="altitudeMetersPerSourceUnit"><tt><b>&lt;altitudeMetersPerSourceUnit&gt;</b></tt></a>
   is an OPTIONAL tag within a <tt>&lt;dataset&gt;</tt> tag that specifies a 
   number which is multiplied by the source altitude or depth values (after 
-    <a href="#scale_factor">scale_factor and add_offset</a>
+    <a href="#scale_factor"><tt>scale_factor</tt>&nbsp;and&nbsp;<tt>add_offset</tt></a>
   have been applied) to convert them into altitude values (in meters above sea level).
   <ul>
   <li>For example, if the source is already measured in meters above sea level, use 1.
@@ -2158,6 +2294,32 @@ Here are detailed descriptions of common tags and attributes.
     <br><tt>&lt;altitudeMetersPerSourceUnit&gt;-1&lt;/altitudeMetersPerSourceUnit&gt;</tt>
     <br>&nbsp;
   </ul>
+
+<li><a name="fgdcFile"><tt><b>&lt;fgdcFile&gt;</b></tt></a> is an OPTIONAL tag
+  within a <tt>&lt;dataset&gt;</tt> tag that tells ERDDAP to use a pre-made FGDC file
+  that is somewhere on the server's file system
+  instead of having ERDDAP try to generate the file.  Usage:<tt>
+  <br>&lt;fgdcFile&gt;<i>fullFileName</i>&lt;/fgdcFile&gt;</tt>
+  <br>If <tt><i>fullFileName</i></tt>="" or the file isn't found, 
+    the dataset will have no FGDC metadata.
+    So this is also useful if you want to suppress the FGDC metadata
+    for a specific dataset.
+  <br>Or, you can put <tt>&lt;fgdcActive&gt;false&lt;/fgdcActive&gt;</tt>
+    in setup.xml to tell ERDDAP not to offer FGDC metadata for any dataset.
+  <br>&nbsp;
+
+<li><a name="iso19115File"><tt><b>&lt;iso19115File&gt;</b></tt></a> is an OPTIONAL tag
+  within a <tt>&lt;dataset&gt;</tt> tag that tells ERDDAP to use a pre-made ISO 19115 file
+  that is somewhere on the server's file system
+  instead of having ERDDAP try to generate the file.  Usage:<tt>
+  <br>&lt;iso19115File&gt;<i>fullFileName</i>&lt;/iso19115File&gt;</tt>
+  <br>If <tt><i>fullFileName</i></tt>="" or the file isn't found, 
+    the dataset will have no ISO 19115 metadata.
+    So this is also useful if you want to suppress the ISO 19115 metadata
+    for a specific dataset.
+  <br>Or, you can put <tt>&lt;iso19115Active&gt;false&lt;/iso19115Active&gt;</tt>
+    in setup.xml to tell ERDDAP not to offer ISO 19115 metadata for any dataset.
+  <br>&nbsp;
 
 <li><a name="onChange"><tt><b>&lt;onChange&gt;</b></tt></a>
   is an OPTIONAL tag within a <tt>&lt;dataset&gt;</tt> tag that specifies an action which 
@@ -2393,6 +2555,19 @@ Here are detailed descriptions of common tags and attributes.
      <li>See the <a href="#addAttributes"><tt><b>&lt;addAttributes&gt;</b></tt> information</a>
        which applies to 
        global and variable <tt><b>&lt;addAttributes&gt;</b></tt>.
+
+     <li><a href="http://www.fgdc.gov/">FGDC</a> and
+       <a href="http://en.wikipedia.org/wiki/Geospatial_metadata">ISO&nbsp;19115-2/19139</a>
+       Metadata
+       - Normally, ERDDAP will automatically generate
+       ISO 19115 and FGDC XML metadata files for each dataset using information
+       from the dataset's metadata. So, <b>good dataset metadata leads to good ERDDAP-generated 
+       ISO 19115 and FGDC metadata. Please consider putting lots of time and effort into
+       improving your datasets' metadata (which is a good thing to do anyway).</b>
+       Most of the dataset metadata attributes which are used generate the ISO 19115 
+       and FGDC metadata are from the 
+       <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD metadata standard</a> and are so noted below. 
+
      <li>Many global attributes are special in that ERDDAP looks for them and uses them in various ways.
        For example, a link to the infoUrl is included on web pages with lists of datasets, and
        other places, so that users can find out more about the dataset.
@@ -2400,9 +2575,9 @@ Here are detailed descriptions of common tags and attributes.
        longitude, latitude, altitude, and time ranges (for example, Southernmost_Northing,
        Northernmost_Northing, time_coverage_start, time_coverage_end) are automatically
        generated or updated.
-     <li>A sample global <tt>&lt;addAttributes&gt;</tt> is:<pre>
+     <li>A simple sample global <tt>&lt;addAttributes&gt;</tt> is:<pre>
 &lt;addAttributes&gt; 
-  &lt;att name="Conventions"&gt;COARDS, CF-1.4, Unidata Dataset 
+  &lt;att name="Conventions"&gt;COARDS, CF-1.6, Unidata Dataset 
   Discovery v1.0&lt;/att&gt;
   &lt;att name="infoUrl"&gt;http://coastwatch.pfeg.noaa.gov/infog/
   PH_ssta_las.html&lt;/att&gt;
@@ -2418,8 +2593,17 @@ Here are detailed descriptions of common tags and attributes.
     <p><b>Comments about global attributes that are special in ERDDAP:</b>
     <br>&nbsp;
       <ul>
-      <li><a name="cdm_altitude_proxy"><b>cdm_altitude_proxy</b></a> - for EDDTable datasets 
-          that don't have an altitude variable but do have 
+
+      <li><a name="acknowledgment"><b>acknowledgment</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is a RECOMMENDED way to acknowledge the group or groups that provided support 
+        (notably, financial)
+        for the project that created this data.
+
+      <li><a name="cdm_altitude_proxy"><b>cdm_altitude_proxy</b></a> is just for EDDTable datasets 
+        that don't have an altitude variable but do have 
         a variable that is a proxy for altitude (e.g., depth, pressure, sigma, bottleNumber),
         you may use this attribute to identify that variable.  For example,
         <br><tt>&lt;att name="cdm_altitude_proxy"&gt;depth&lt;/att&gt;</tt>
@@ -2427,16 +2611,21 @@ Here are detailed descriptions of common tags and attributes.
           and there is no altitude variable,
         cdm_altitude_proxy MUST be defined.
         If cdm_altitude_proxy is defined, ERDDAP will add the following metadata to the variable:
-        _CoordinateAxisType=Height and axis=Z.
+        <tt>_CoordinateAxisType=Height</tt> and <tt>axis=Z</tt>.
 
-      <li><a name="cdm_data_type"><b>cdm_data_type</b></a> - is a global attribute that indicates the 
+      <li><a name="cdm_data_type"><b>cdm_data_type</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is a global attribute that indicates the 
           Unidata <a href="http://www.unidata.ucar.edu/software/netcdf/CDM/">Common Data Model</a>
-        data type for the dataset.  The CDM standard is still evolving and is likely to change again soon.
+        data type for the dataset.  The CDM standard is still evolving and may change again.
         The best overview of the different feature types (but out-of-date!) is currently
           <a href="http://www.unidata.ucar.edu/software/netcdf-java/CDM/CDMfeatures.doc">Unidata's CDMfeatures.doc</a>.
-        ERDDAP currently complies with the May 10, 2011 ratified version of the 
-        <a href="https://cf-pcmdi.llnl.gov/trac/wiki/PointObservationConventions">CF Chapter 9
-          Discrete Sampling Geometries</a> (currently, that link is out-of-date)
+        <br>ERDDAP complies with the newly ratified 
+        <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries">Discrete&nbsp;Sampling&nbsp;Geometries</a> chapter of the 
+        <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html">CF 1.6</a>
+        metadata conventions
         (previously called the CF Point Observation Conventions).
         <ul>
         <li>Either the dataset's global <a href="#globalAttributes">sourceAttributes</a> 
@@ -2454,7 +2643,14 @@ Here are detailed descriptions of common tags and attributes.
           <a href="#errorMessages">error message</a>. (That's a good thing, in the sense that
              the error message will tell
           you what is wrong so that you can fix it.)
-          For EDDTable datasets, the cdm_data_type options (and related requirements) are 
+
+          <p>For all of these datasets, in the <tt>Conventions</tt> and
+            <tt>Metadata_Conventions</tt> global attributes, please refer to 
+            CF-1.6 (not CF-1.0, 1.1, 1.2, 1.3, 1.4, or 1.5), 
+            since CF-1.6 is the first version to include the changes related to 
+            Discrete Sampling Geometry conventions.
+
+          <p>For EDDTable datasets, the cdm_data_type options (and related requirements) are 
           <ul>
           <li>Point - for a dataset with unrelated points.
             <ul>
@@ -2524,16 +2720,105 @@ Here are detailed descriptions of common tags and attributes.
             cdm_data_type, use "Point" (which has few requirements) or "Other" 
             (which has no requirements) instead.
           <li>This information is used by ERDDAP in various ways, for example, when making
-            .ncCF files (.nc files which comply with the proposed 
-            <a href="https://cf-pcmdi.llnl.gov/trac/wiki/PointObservationConventions">CF Point Observation Conventions</a>).
+            .ncCF files (.nc files which comply with the 
+            Contiguous Ragged Array Representations associated with the dataset's cdm_data_type,
+            as defined in the newly ratified 
+            <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries">Discrete&nbsp;Sampling&nbsp;Geometries</a> chapter of the 
+            <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html">CF 1.6</a>
+               metadata conventions,
+            which were previously named "CF Point Observation Conventions").
           <li>Hint: Usually, a good starting point for <a href="#subsetVariables">subsetVariables</a>
-              is the combined
-            values of the cdm_..._variables.  For example, for TimeSeriesProfile, start with the 
+            is the combined values of the cdm_..._variables.  
+            For example, for TimeSeriesProfile, start with the 
             cdm_timeseries_variables plus the cdm_profile_variables.
           </ul>
         </ul>
+
+      <li><a name="contributor_name"><b>contributor_name</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is the RECOMMENDED way to identify a person, organization, or project 
+        which contributed to this dataset (e.g., the original creator of the data,
+        before it was reprocessd by the creator of this dataset).
+        If "contributor" doesn't really apply to a dataset, omit this attribute.
+        Compared to <a href="#creator_name">creator_name</a>, this is more
+        focused on the funding source.
+
+      <li><a name="contributor_role"><b>contributor_role</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is the RECOMMENDED way to identify the role of 
+        <a href="#creator_name">contributor_name</a>, 
+        e.g., <tt>Source of Level 2b data</tt>.
+        If "contributor" doesn't really apply to a dataset, omit this attribute.
+
+      <li><a name="creator_name"><b>creator_name</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is the RECOMMENDED way to identify the person, organization, or project 
+        (if not a specific person or organization), 
+        most responsible for the creation (or most recent reprocessing) of this data.
+        If the data was extensively reprocessed (e.g., satellite data from level 2 to level 3 or 4),
+        then usually the reprocessor is listed as the creator and
+        the original creator is listed via <a href="#contributor_name">contributor_name</a>.
+        Compared to <a href="#project">project</a>, this is more flexible,
+        since it may identify a person, an organization, or a project.
+
+      <li><a name="creator_email"><b>creator_email</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is the RECOMMENDED way to identify an email address 
+        (correctly formatted, e.g., john_smith@great.org) 
+        that provides a way to contact the creator.
+
+      <li><a name="creator_url"><b>creator_url</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is the RECOMMENDED way to identify a URL for organization that created the dataset, 
+        or a URL with 
+        the creator's information about this dataset (but that is more the purpose of
+        <a href="#infoUrl">infoUrl</a>).
+        
+      <li><a name="date_created"><b>date_created</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is the RECOMMENDED way to identify the date on which the data was created 
+        (e.g., processed into this form), 
+        in ISO 8601 format, e.g., <tt>2010-01-30</tt>.
+
+      <li><a name="date_modified"><b>date_modified</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is the RECOMMENDED way to identify the date on which the data was last modified 
+        (e.g., when an error was fixed or when the latest data was added), 
+        in ISO 8601 format, e.g., <tt>2012-03-15</tt>.
+
+      <li><a name="date_issued"><b>date_issued</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is the RECOMMENDED way to identify the date on which the data was made available to others, 
+        in ISO 8601 format, e.g., <tt>2012-03-15</tt>.
+        For example, the dataset may have a <a href="#date_created">date_created</a> of
+        <tt>2010-01-30</tt>, but was only made publicly available <tt>2010-07-30</tt>.
+
+      <li><a name="featureType"><b>featureType</b></a> 
+        (from the
+        <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html">CF</a>
+        metadata standard) 
+        is IGNORED and/or REPLACED.  If the dataset's <a href="#cdm_data_type"><tt>cdm_data_type</tt></a>
+        is appropriate, ERDDAP will automatically use it to create a
+        <tt>featureType</tt> attribute.  So there is no need for you to add it.
+
       <li><a name="globalDrawLandMask"><b>drawLandMask</b></a> - 
-        This is an OPTIONAL global attribute used by ERDDAP (and no metadata 
+        This is a RECOMMENDED global attribute used by ERDDAP (and no metadata 
         standards) which specifies the default value for the "Draw Land Mask" option on the dataset's
         Make A Graph form and for the <tt>&amp;.land</tt> parameter in a URL requesting 
         a graph/map of the data.
@@ -2547,25 +2832,32 @@ Here are detailed descriptions of common tags and attributes.
             <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>
           is used.  If none is specified there, "over" is the default.
         </ul>
-      <li><a name="history"><b>history</b></a> is a multi-line string global attribute with a line for
+
+      <li><a name="history"><b>history</b></a> 
+        (from the
+        <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html">CF</a> 
+        and
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standards) 
+        is a RECOMMENDED multi-line string global attribute with a line for
          every processing step that the data has undergone.
          <ul>
-         <li>Ideally, each line has an ISO-8601 formatted date and a description of the processing step.
-         <li>ERDDAP creates (if it doesn't exist) and adds to this automatically.
+         <li>Ideally, each line has an ISO 8601:2004(E) formatted date+timeZ 
+           (for example, <tt>1985-01-31T15:31:00Z</tt>) 
+           followed by a description of the processing step.
+         <li>ERDDAP creates this if it doesn't already exist.
          <li>If it already exists, ERDDAP will append new information to the existing information.
-         <li>"history" is important because it allows clients to backtrack to the original source of the data.
-         <li>"history" is used in the
-          <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.0/cf-conventions.html">CF</a> and 
-          <a href="http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html#Attribute-Conventions">netCDF</a>
-          metadata standards.
+         <li><tt>history</tt> is important because it allows clients to backtrack to the original source of the data.
          </ul>
-      <li><a name="infoUrl"><b>infoUrl</b></a> - is a global attribute with the URL of a web page with more
+
+      <li><a name="infoUrl"><b>infoUrl</b></a> 
+        is a REQUIRED global attribute with the URL of a web page with more
         information about this dataset (usually at the source institution's web site).
         <ul>
         <li>Either the dataset's global <a href="#globalAttributes">sourceAttributes</a> or its 
           global <tt>&lt;addAttributes&gt;</tt> MUST 
           include this attribute.
-        <li>"infoUrl" is important because it allows clients to find out more about the data
+        <li><tt>infoUrl</tt> is important because it allows clients to find out more about the data
           from the original source.
         <li>ERDDAP displays a link to the infoUrl on the dataset's Data Access Form, Make A Graph
           web page, and other web pages.
@@ -2580,9 +2872,16 @@ Here are detailed descriptions of common tags and attributes.
           converted to %HH form (ask a programmer for help).
         <li>Since datasets.xml is an XML file, you MUST also encode '&amp;', '&lt;', and '&gt;' in the
           URL as '&amp;amp;', '&amp;lt;', and '&amp;gt;'.
-        <li>"infoUrl" is unique to ERDDAP. It is not from any metadata standard.
+        <li><tt>infoUrl</tt> is unique to ERDDAP. It is not from any metadata standard.
         </ul>
-      <li><a name="institution"><b>institution</b></a> - is a global attribute with the short version of the
+
+      <li><a name="institution"><b>institution</b></a> 
+        (from the
+        <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html">CF</a>
+        and
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standards) 
+        is a REQUIRED global attribute with the short version of the
         name of the institution which is the source of this data (usually an acronym,
         usually &lt;20 characters).
         <ul>
@@ -2598,27 +2897,112 @@ Here are detailed descriptions of common tags and attributes.
            <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a> file,
           users can easily find datasets from the same institution via ERDDAP's 
           "Search for Datasets by Category" on the home page.
-        <li>"institution" is used in the
-          <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.0/cf-conventions.html">CF</a>
-          metadata standard.
         </ul>
-      <li><a name="license"><b>license</b></a> - is a global attribute with the license and/or usage
+
+      <li><a name="keywords"><b>keywords</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is a RECOMMENDED comma-separated list of words 
+        and short phrases (e.g.,
+        <a href="http://gcmd.nasa.gov/Resources/valids/archives/keyword_list.html">GCMD Science Keywords</a>) 
+        that describe the dataset in a general way, and not assuming any other knowledge of the
+        dataset (e.g., for oceanographic data, include <tt>ocean</tt>).
+
+      <li><a name="keywords_vocabulary"><b>keywords_vocabulary</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is a RECOMMENDED attribute: 
+        if you are following a guideline for the words/phrases in your <tt>keywords</tt> attribute
+        (e.g., GCMD Science Keywords), put the name of that guideline here.
+
+      <li><a name="license"><b>license</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is a STRONGLY RECOMMENDED global attribute with the license and/or usage
         restrictions.
         <ul>
         <li>If "<tt>[standard]</tt>" occurs in the attribute value, it will be replaced by the
           standard ERDDAP license from the <tt>&lt;standardLicense&gt;</tt> tag in 
            <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#messages.xml">messages.xml</a>.
         </ul>
-      <li><a name="sourceUrlAttribute"><b>sourceUrl</b></a> is a global attribute with the URL of the source
-         of the data.
+
+      <li><a name="processing_level"><b>processing_level</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is a RECOMMENDED textual description of the processing 
+        (e.g., <a href="http://en.wikipedia.org/wiki/Remote_sensing#Data_processing_levels">NASA
+        satellite data processing levels</a>, e.g., <tt>Level 3</tt>)
+        or quality control level (e.g., <tt>Science Quality</tt>) of the data.
+
+      <li><a name="project"><b>project</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is an OPTIONAL attribute to identify the project (e.g., GTSPP) that the dataset is part of.
+        If the dataset isn't part of a project, don't use this attribute.
+        Compared to <a href="#creator_name">creator_name</a>, this is 
+        focused on the project (not a person or an organization, which may
+        be involved in multiple projects).
+
+      <li><a name="publisher_name"><b>publisher_name</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is the RECOMMENDED way to identify the person, organization, or project 
+        which is publishing this dataset.
+        For example, you are the publisher if another person or group <a href="#creator_name">created</a>
+        the dataset and you are just re-serving it via ERDDAP.
+        If "publisher" doesn't really apply to a dataset, omit this attribute.
+        Compared to <a href="#creator_name">creator_name</a>, the publisher
+        probably didn't significantly modify or reprocess the data; the publisher
+        is just making the data available in a new venue.
+
+      <li><a name="publisher_email"><b>publisher_email</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is the RECOMMENDED way to identify an email address 
+        (correctly formatted, e.g., john_smith@great.org) 
+        that provides a way to contact the publisher.
+        If "publisher" doesn't really apply to a dataset, omit this attribute.
+
+      <li><a name="publisher_url"><b>publisher_url</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is the RECOMMENDED way to identify a URL for the organization that created the dataset, 
+        or a URL with the publisher's information about this dataset 
+        (but that is more the purpose of
+        <a href="#infoUrl">infoUrl</a>).
+        If "publisher" doesn't really apply to a dataset, omit this attribute.
+        
+      <li><a name="sourceUrlAttribute"><b>sourceUrl</b></a> 
+        is a global attribute with the URL of the source
+        of the data.
         <ul>
-        <li>ERDDAP always creates this global attribute automatically.
-        <li>"sourceUrl" is important because it allows clients to backtrack to the original source of the data.
-        <li>"sourceUrl" is unique to ERDDAP. It is not from any metadata standard.
+        <li>ERDDAP usually creates this global attribute automatically.
+          Two exceptions are EDDTableFromHyraxFiles and EDDTableFromThreddsFiles.
+        <li><tt>sourceUrl</tt> is important because it allows clients to backtrack to the original source of the data.
+        <li><tt>sourceUrl</tt> is unique to ERDDAP. It is not from any metadata standard.
         </ul>
 
-      <li><a name="subsetVariables"><b>subsetVariables</b></a> - (for EDDTable datasets only) 
-        this optional global attribute lets you specify
+      <li><a name="standard_name_vocabulary"><b>standard_name_vocabulary</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is a RECOMMENDED attribute to identify 
+        the name of the controlled vocabulary 
+        from which variable 
+        <a href="#standard_name">standard_name</a>s 
+        are taken (e.g., <tt>CF-19</tt> for version 19 of the 
+        <a href="http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/current/cf-standard-name-table.html/">CF standard name table</a>).
+
+      <li><a name="subsetVariables"><b>subsetVariables</b></a> (for EDDTable datasets only) 
+        is a RECOMMENDED global attribute that lets you specify
         a comma-separated list of destinationNames of variables which have a limited number of
         values (stated another way: variables for which each of the values has many duplicates).
         If this attribute is present, the dataset will have a .subset web page (and a link to it
@@ -2672,7 +3056,8 @@ Here are detailed descriptions of common tags and attributes.
             <tt>&lt;subsetVariables&gt;</tt>, 
             but the columns MAY be in any order.
           <li>It MAY have extra columns (they'll be removed and newly redundant rows will be removed).
-          <li>TimeStamp columns should have ISO T time strings.
+          <li>TimeStamp columns should have ISO 8601:2004(E) formatted date+timeZ strings
+           (for example, <tt>1985-01-31T15:31:00Z</tt>).
           <li>Missing values should be missing values (not fake numbers like -99).
           <li>.json files may be a little harder to create but deal with Unicode characters well.
             .json files are easy to create if you create them with ERDDAP.
@@ -2680,27 +3065,39 @@ Here are detailed descriptions of common tags and attributes.
             .csv files MUST have column names on the first row and data on subsequent rows.
           </ul>
         </ul>
-      <li><a name="summary"><b>summary</b></a> - is a global attribute with a long description of the 
-          dataset (usually &lt;500 characters).
+
+      <li><a name="summary"><b>summary</b></a> 
+        (from the
+        <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html">CF</a>
+        and 
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standards) 
+        is a REQUIRED global attribute with a long description of the 
+        dataset (usually &lt;500 characters).
         <ul>
         <li>Either the dataset's global <a href="#globalAttributes">sourceAttributes</a> or its 
           global <tt>&lt;addAttributes&gt;</tt> MUST 
           include this attribute.
-        <li>"summary" is important because it allows clients to read a description of the dataset 
+        <li><tt>summary</tt> is important because it allows clients to read a description of the dataset 
           that has more information than the title.
         <li>ERDDAP displays the summary on the dataset's Data Access Form, Make A Graph web page,
           and other web pages.
-        <li>"summary" is used in the
-            <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.0/cf-conventions.html">CF</a>
-            metadata standard.
         </ul>
-      <li><a name="title"><b>title</b></a> - is a global attribute with the short description of the dataset
+
+      <li><a name="title"><b>title</b></a> 
+        (from the
+        <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html">CF</a>
+        and
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standards) 
+        is a REQUIRED global attribute with the short description of the dataset
         (usually &lt;80 characters).
         <ul>
         <li>Either the dataset's global <a href="#globalAttributes">sourceAttributes</a> or its 
           global <tt>&lt;addAttributes&gt;</tt> MUST 
           include this attribute.
-        <li>"title" is important because every list of datasets presented by ERDDAP (other than search
+        <li><tt>title</tt> is important because every list of datasets presented by ERDDAP
+          (other than search
           results) lists the datasets in alphabetical order, by title. 
           So if you want to specify the order of datasets, or have some datasets grouped together, 
           you have to create titles with that in mind.
@@ -2710,13 +3107,9 @@ Here are detailed descriptions of common tags and attributes.
         <li>If a title is longer than 80 characters, only the first and last 40 characters will be 
           visible in the list of datasets (but the whole title can be seen by putting the mouse
           cursor over the adjacent "?" icon).
-        <li>"title" is used in the
-          <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.0/cf-conventions.html">CF</a> and 
-          <a href="http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html#Attribute-Conventions">netCDF</a>
-            metadata standards.
           <br>&nbsp;
         </ul>
-      </ul>
+      </ul> <!-- end of global attributes -->
 
   <li><a name="axisVariable"><tt><b>&lt;axisVariable&gt;</b></tt></a> 
     is a REQUIRED tag within a EDDGrid <tt>&lt;dataset&gt;</tt> tag, which is used to describe
@@ -2735,7 +3128,7 @@ Here are detailed descriptions of common tags and attributes.
       This is the name that ERDDAP will look for when data is returned from the data source.
       This is case sensitive.
       This is REQUIRED.
-      <li><tt>&lt;destinationName&gt;</tt> - is the name for the variable that will be shown to and used by ERDDAP users. 
+      <li><tt>&lt;destinationName&gt;</tt> is the name for the variable that will be shown to and used by ERDDAP users. 
         <ul>
         <li>This is OPTIONAL. If absent, the sourceName is used.
         <li>This is useful because it allows you to change a cryptic or odd sourceName.
@@ -2745,15 +3138,18 @@ Here are detailed descriptions of common tags and attributes.
             This restriction allows axis variable names to be used as variable names in a
             programming language (such as Matlab).
         </ul>
-      <li><a href="#globalAttributes"><tt>&lt;addAttributes&gt;</tt></a> - defines a set of attributes 
+      <li><a href="#globalAttributes"><tt>&lt;addAttributes&gt;</tt></a>  
+        defines an OPTIONAL set of attributes 
         (<i>name</i> = <i>value</i>)
         which are added to the source's attributes for a variable, to make the combined
-        attributes for a variable. This is OPTIONAL.
+        attributes for a variable. 
       </ul>
     <li>If the variable's <a href="#variableAttributes">sourceAttributes</a> or 
-      <tt>&lt;addAttributes&gt;</tt> include <tt>scale_factor</tt> and
-      <tt>add_offset</tt> attributes, their values will be used to unpack the data from the source 
-      before distribution to the client (resultValue = sourceValue * scale_factor + add_offset).
+      <tt>&lt;addAttributes&gt;</tt> include 
+      <a href="#scale_factor"><tt>scale_factor</tt>&nbsp;and/or&nbsp;<tt>add_offset</tt></a>      
+      attributes, their values will be used to unpack the data from the source 
+      before distribution to the client 
+      <br>(resultValue = sourceValue * scale_factor + add_offset) .
       The unpacked variable will be of the same data type (e.g., float) as the 
       <tt>scale_factor</tt> and <tt>add_offset</tt> values.
     <li>An example is:  <pre>
@@ -2796,7 +3192,8 @@ Here are detailed descriptions of common tags and attributes.
       <li><a name="dataType"><tt>&lt;dataType&gt;</tt></a> - specifies the data type coming from the source.
         <ul>
         <li>This is REQUIRED by some dataset types and IGNORED by others. 
-          Dataset types that require this for their dataVariables are: EDDTableFromXxxFiles,
+          Dataset types that require this for their dataVariables are: 
+          EDDGridFromXxxFiles, EDDTableFromXxxFiles,
           EDDTableFromMWFS, EDDTableFromNOS, EDDTableFromSOS.
           Other dataset types ignore this tag because they get the information from the source.
         <li>Valid values are: "double" (64-bit), "float" (32-bit), "long" (64-bit signed), 
@@ -2820,11 +3217,11 @@ Here are detailed descriptions of common tags and attributes.
         added to the source's attributes for a variable, to make the combined attributes
         for a variable. This is OPTIONAL.
       </ul>
+
     <li>If the variable's <a href="#variableAttributes">sourceAttributes</a> or 
       <tt>&lt;addAttributes&gt;</tt> include 
-      <a href="#scale_factor"><tt>scale_factor</tt></a> and/or
-      <a href="#add_offset"><tt>add_offset</tt></a> attributes, 
-      their values will be used to unpack the data from
+      <a href="#scale_factor"><tt>scale_factor</tt>&nbsp;and/or&nbsp;<tt>add_offset</tt></a>
+      attributes, their values will be used to unpack the data from
       the source before distribution to the client.
       The unpacked variable will be of the same data type (e.g., float) as the 
       <tt>scale_factor</tt> and <tt>add_offset</tt> values.
@@ -2885,14 +3282,16 @@ Here are detailed descriptions of common tags and attributes.
     <p><b>Comments about variable attributes that are special in ERDDAP:</b>
     <br>&nbsp;
       <ul>
-      <li><a name="actual_range"><b>actual_range</b></a> - This is an OPTIONAL variable attribute defined in the
-        <a href="http://www.cdc.noaa.gov/cdc/conventions/cdc_netcdf_standard.shtml">CDC COARDS</a>
-          metadata standard.
+
+      <li><a name="actual_range"><b>actual_range</b></a> 
+        (<a href="http://www.cdc.noaa.gov/cdc/conventions/cdc_netcdf_standard.shtml">CDC COARDS</a>)
+        is a RECOMMENDED variable attribute.
         <ul>
-        <li>If present, it is an array of two values of the same data type as variable,
-          representing the minimum and maximum of data in the data file.
-        <li>If the data is packed with <a href="#scale_factor">scale_factor</a> and/or 
-            <a href="#add_offset">add_offset</a>,
+        <li>If present, it is an array of two values of the same data type as the variable,
+          specifying the actual (not the theoretical or the allowed) minimum and maximum 
+          values of the data for that variable.
+        <li>If the data is packed with 
+          <a href="#scale_factor"><tt>scale_factor</tt>&nbsp;and/or&nbsp;<tt>add_offset</tt></a>,
           actual_range should have packed values.
         <li>If present, ERDDAP will extract the information and display it to the user on the
           Data Access Form and Make A Graph web pages for that dataset.
@@ -2900,8 +3299,9 @@ Here are detailed descriptions of common tags and attributes.
            to reflect the subset's range.
         <li>See also <a href="#data_min">data_min and data_max</a>.
         </ul>
+
       <li><a name="colorBar"><b>Color Bar Attributes</b></a> - 
-           There are several OPTIONAL variable attributes which specify the suggested
+        There are several OPTIONAL variable attributes which specify the suggested
         default attributes for a color bar (used to convert data values into colors on images)
         for this variable.
         <ul>
@@ -2918,10 +3318,10 @@ Here are detailed descriptions of common tags and attributes.
           <li>The dataset must be an EDDGrid... dataset.
           <li>The data variable MUST be a gridded variable.
           <li>The data variable MUST have longitude and latitude axis variables.
-            (Other axis variables are optional.)
+            (Other axis variables are OPTIONAL.)
           <li>There MUST be some longitude values between -180 and 180.
           <li>The colorBarMinimum and colorBarMaximum attributes MUST be specified.
-             (Other color bar attributes are optional.)
+             (Other color bar attributes are OPTIONAL.)
           </ul>
         <li>The attributes related to the color bar are:
           <ul>
@@ -2983,21 +3383,24 @@ Here are detailed descriptions of common tags and attributes.
           <br> &nbsp; &lt;att name="colorBarContinuous"&gt;true&lt;/att&gt;
           <br> &nbsp; &lt;att name="colorBarScale"&gt;Linear&lt;/att&gt; </tt>
         </ul>
+
       <li><a name="data_min"><tt><b>data_min</b></tt> and <tt><b>data_max</b></tt></a> - 
-        These are OPTIONAL variable attributes 
+        These are RECOMMENDED variable attributes 
         defined in the 
         <a href="http://woce.nodc.noaa.gov/wdiu/utils/netcdf/woce_conventions/report_nov_01_v3_mtg.htm">World Ocean Circulation</a>
           metadata description.
         <ul>
-        <li>If present, they are of the same data type as variable, representing the minimum and
-          maximum of data in the data fle.
-        <li>If the data is packed with <a href="#scale_factor">scale_factor</a> and/or 
-          <a href="#add_offset">add_offset</a>,
+        <li>If present, they are of the same data type as the variable, 
+          and specify the actual (not the theoretical or the allowed) minimum and maximum 
+          values of the data for that variable.
+        <li>If the data is packed with 
+          <a href="#scale_factor"><tt>scale_factor</tt>&nbsp;and/or&nbsp;<tt>add_offset</tt></a>,
           data_min and data_max should be packed values.
         <li>If present, ERDDAP will extract the information and display it to the user on the 
           Data Access Form and Make A Graph web pages for that dataset.
         <li>See also <a href="#actual_range">actual_range</a>.
         </ul>
+
       <li><a name="variableDrawLandMask"><b>drawLandMask</b></a> - 
         This is an OPTIONAL variable attribute used by ERDDAP (and no metadata standards) 
         which specifies the default value for the "Draw Land Mask" option on the dataset's
@@ -3012,6 +3415,7 @@ Here are detailed descriptions of common tags and attributes.
         <li>If any other value (or no value) is specified, the drawLandMask value from the dataset's
           <a href="#globalAttributes">global attributes</a> is used.
         </ul>
+
       <li><a name="ioos_category"><tt><b>ioos_category</b></tt></a> - 
         This is a REQUIRED variable attribute if <tt>&lt;variablesMustHaveIoosCategory&gt;</tt>
         is set to true in
@@ -3020,16 +3424,21 @@ Here are detailed descriptions of common tags and attributes.
         <ul>
         <li>(As of writing this) we aren't aware of formal definitions of these names.
         <li>The core names are from Zdenka Willis' .ppt "Integrated Ocean Observing System (IOOS)
-           NOAA's Approach to Building an Initial Operating Capability".
-        <li>We added additional names for other types of data.
+           NOAA's Approach to Building an Initial Operating Capability" and from the
+           <a href="http://www.ioos.gov/library/us_ioos_blueprint_ver1.pdf">US IOOS Blueprint</a>.
+        <li>Bob Simons added additional names (mostly based on the the names of scientific fields,
+          e.g., Biology, Ecology, Meteorology, Statistics, Taxonomy) for other types of data.
         <li>There is some overlap and ambiguity -- do your best.
         <li>It is likely that this list will be revised in the future.
-        <li>The current valid values are <tt>Bathymetry, Biology, Bottom Character, Contaminants,
+          If you have requests, please email <tt>bob.simons at noaa.gov</tt>.
+        <li>The current valid values are <tt>Bathymetry, Biology, Bottom Character, 
+          Colored Dissolved Organic Matter, Contaminants,
           Currents, Dissolved Nutrients, Dissolved O2, Ecology, Fish Abundance,
-          Fish Species, Heat Flux, Ice Distribution, Identifier, Location,
-          Meteorology, Ocean Color, Optical Properties, Other, Pathogens,
-          Phytoplankton Species, Pressure, Productivity, Salinity, Sea Level,
-          Surface Waves, Taxonomy, Temperature, Time, Unknown, Wind, 
+          Fish Species, Heat Flux, Hydrology, Ice Distribution, Identifier, Location,
+          Meteorology, Ocean Color, Optical Properties, Other, Pathogens, pCO2,
+          Phytoplankton Species, Pressure, Productivity, Quality, Salinity, Sea Level,
+          Statistics, Stream Flow, Surface Waves, Taxonomy, Temperature, Time, 
+          Total Suspended Matter, Unknown, Wind, 
           Zooplankton Species,</tt> and <tt>Zooplankton Abundance</tt>.
         <li>If you add ioos_category to the list of <tt>&lt;categoryAttributes&gt;</tt> 
           in ERDDAP's 
@@ -3037,12 +3446,15 @@ Here are detailed descriptions of common tags and attributes.
             file, users can easily find datasets with similar data via ERDDAP's
           "Search for Datasets by Category" on the home page.
         </ul>
-      <li><a name="long_name"><b>long_name</b></a> is an OPTIONAL variable attribute in ERDDAP, but is
-        recommended by many metadata standards
-          such as
-          <a href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a>,
-          <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.0/cf-conventions.html">CF</a>, and
-        <a href="http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html#Attribute-Conventions">netCDF</a>.
+
+      <li><a name="long_name"><b>long_name</b></a> 
+        (<a href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a>,
+        <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html">CF</a>, 
+        <a href="http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html#Attribute-Conventions">netCDF</a> 
+        and
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standards) 
+        is a RECOMMENDED variable attribute in ERDDAP.
         <ul>
         <li>ERDDAP uses the long_name for labeling axes on graphs.
         <li>Best practices: Capitalize the words in the long_name as if it were a title
@@ -3055,51 +3467,54 @@ Here are detailed descriptions of common tags and attributes.
           <tt>&lt;addAttributes&gt;</tt>, 
           ERDDAP will generate it by cleaning up the standard_name (if present) or the destinationName. 
         </ul>
+
       <li><a name="missing_value"><b>missing_value</b></a> (default = NaN)  and
         <a name="FillValue"><b>_FillValue</b></a> (default = NaN) 
-        are variable attributes 
-        defined in the
-        <a href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a>,
-        <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.0/cf-conventions.html">CF</a>, and
-        <a href="http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html#Attribute-Conventions">netCDF</a>
-        metadata standards which describe a number
+        (<a href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a>,
+        <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html">CF</a>, and
+        <a href="http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html#Attribute-Conventions">netCDF</a>)
+        are variable attributes which describe a number
         (for example, -9999) which is used to represent a missing value.
         <ul>
         <li>ERDDAP supports missing_value and _FillValue, since some data sources assign
           slightly different meanings to them.
         <li>If present, they should be of the same data type as the variable.
-        <li>If the data is packed with <a href="#scale_factor">scale_factor</a>
-            and/or <a href="#add_offset">add_offset</a>,
+        <li>If the data is packed with 
+          <a href="#scale_factor"><tt>scale_factor</tt>&nbsp;and/or&nbsp;<tt>add_offset</tt></a>,
           the missing_value and _FillValue values should be likewise packed.
         <li>If a variable uses these special numbers, the missing_value and/or _FillValue
           attributes are REQUIRED.
         <li>For some output data formats, ERDDAP will leave this special numbers intact.
         <li>For other output data formats, ERDDAP will replace these special numbers with NaN or "".
         </ul>
+
       <li><a name="scale_factor"><b>scale_factor</b></a> (default = 1) and 
         <a name="add_offset"><b>add_offset</b></a> (default = 0)
-        These are OPTIONAL variable attributes defined in the 
-          <a href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a>,
-          <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.0/cf-conventions.html">CF</a>, and 
-          <a href="http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html#Attribute-Conventions">netCDF</a>
-           metadata 
-         standards which describe data which is packed in a simpler data type via a simple 
-         transformation.
+        (<a href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a>,
+         <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html">CF</a>, and 
+         <a href="http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html#Attribute-Conventions">netCDF</a>)
+        are OPTIONAL variable attributes which describe data which is packed in a 
+        simpler data type via a simple transformation.
         <ul>
         <li>If present, their data type is different from the source data type and describes the
-          data type of  destination values.
-        <li>If present, ERDDAP will extract the information, remove the attributes, and automatically
-          unpack the data for the user:
-        <li><tt>destinationValue = sourceValue * scale_factor + add_offset</tt>
-        <li>For example, a data source might have stored float data values with one decimal digit
+          data type of the destination values.
+        <br>For example, a data source might have stored float data values with one decimal digit
           packed as short ints (int16), using scale_factor = 0.1 and add_offset = 0.
-        <li>In that case, ERDDAP would unpack the data ant present it to the user as float data values.
+        <br>In that case, ERDDAP would unpack the data and present it to the user as float data values.
+        <li>If present, ERDDAP will extract the values from these attributes,
+          remove the attributes, and automatically unpack the data for the user:
+        <br><tt>&nbsp;&nbsp;destinationValue = sourceValue * scale_factor + add_offset</tt>
+        <br>Or, stated another way:
+        <br><tt>&nbsp;&nbsp;unpackedValue = packedValue * scale_factor + add_offset</tt>
         </ul>
-      <li><a name="standard_name"><b>standard_name</b></a> is an OPTIONAL variable attribute in ERDDAP, 
-        but is recommended by many metadata standards such as 
-          <a href="http://cf-pcmdi.llnl.gov/">CF</a>, which maintains a 
-        list of
-          <a href="http://cf-pcmdi.llnl.gov/documents/cf-standard-names/">CF standard names</a>.
+
+      <li><a name="standard_name"><b>standard_name</b></a> 
+        (from the
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        is a RECOMMENDED variable attribute in ERDDAP.
+        (<a href="http://cf-pcmdi.llnl.gov/">CF</a> maintains a list of
+          <a href="http://cf-pcmdi.llnl.gov/documents/cf-standard-names/">CF standard names</a>)
         <ul>
         <li>If you add <tt>standard_name</tt> to variables' attributes and add 
           <tt>standard_name</tt> to the list of
@@ -3116,11 +3531,15 @@ Here are detailed descriptions of common tags and attributes.
           If you need additional terms, see if the standards committee will add them to the
           controlled  vocabulary.
         </ul>
-      <li><a name="units"><b>units</b></a> is a common variable attribute which is defined in the
-        <a href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a>,
-        <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.0/cf-conventions.html">CF</a>,
-        <a href="http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html#Attribute-Conventions">netCDF</a>,
-        and other metadata standards to define the units of the data values. 
+
+      <li><a name="units"><b>units</b></a> 
+        (<a href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a>,
+         <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html">CF</a>,
+         <a href="http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html#Attribute-Conventions">netCDF</a>
+         and
+        <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
+        metadata standard) 
+        defines the units of the data values. 
         <ul>
         <li>"units" is REQUIRED as either a sourceAttribute or an addAttribute for "time" variables
           and is STRONGLY RECOMMENDED for other variables whenever appropriate (which is
@@ -3129,7 +3548,7 @@ Here are detailed descriptions of common tags and attributes.
           <a href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUnits</a>-compatible
           units which is required by the 
           <a href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a> and
-          <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.0/cf-conventions.html">CF</a>
+          <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html">CF</a>
           standards.
         <li>Another common standard is <a href="http://aurora.regenstrief.org/~ucum/ucum.html">UCUM</a>
           - the Unified Code for Units of Measure.
@@ -3153,10 +3572,10 @@ Here are detailed descriptions of common tags and attributes.
             <a href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUnits</a>-compatible
             string (with the format <tt><i>units</i> since <i>baseTime</i></tt>) describing how to
             interpret source time values (e.g., <tt>seconds since 1970-01-01T00:00:00Z</tt>),
-            where the base time is an ISO 8601 formatted date time string (YYYY-MM-DDThh:mm:ssZ).
+            where the base time is an ISO 8601:2004(E) formatted date time string (YYYY-MM-DDThh:mm:ssZ).
           <li>For time data variables with String data: an org.joda.time.format.DateTimeFormat string
             (which is mostly compatible with java.text.SimpleDateFormat) describing how to interpret 
-            string times  (e.g., the ISO8601TZ_FORMAT <tt>yyyy-MM-dd'T'HH:mm:ssZ</tt>).
+            string times  (e.g., the ISO8601TZ_FORMAT <tt>yyyy-MM-dd'T'HH:mm:ss'Z'</tt>).
             See 
               <a href="http://joda-time.sourceforge.net/api-release/index.html">Joda Time</a> and
               <a href="http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html">DateTimeFormat</a> .
@@ -3167,7 +3586,7 @@ Here are detailed descriptions of common tags and attributes.
 
           <p>For tabular datasets, other variables can be timeStamp variables. They behave
           like the main time variable (converting the source's time format into 
-          "seconds since 1970-01-01T00:00:00Z" and/or ISO 8601 format), but have a
+          "seconds since 1970-01-01T00:00:00Z" and/or ISO 8601:2004(E) format), but have a
           different destinationName. TimeStamp variables are recognized by their "units"
           metadata, which must contain " since " (for numeric dateTimes) or "yy" or "YY"
           for formatted String dateTimes.
@@ -3180,7 +3599,7 @@ Here are detailed descriptions of common tags and attributes.
           <br>See <a href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html#erddap">How
             ERDDAP Deals with Time</a>.
         </ul>
-      </ul>
+      </ul> <!-- end of variable attributes -->
   </ul>
 </ul>
 
@@ -3194,7 +3613,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.36
+<p>ERDDAP, Version 1.38
 <br><a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

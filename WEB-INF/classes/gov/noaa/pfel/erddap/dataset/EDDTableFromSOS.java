@@ -169,6 +169,8 @@ public class EDDTableFromSOS extends EDDTable{
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         String tLocalSourceUrl = null, tObservationOfferingIdRegex = null;
         boolean tRequestObservedPropertiesSeparately = false;
         String tBBoxOffering = null;
@@ -238,6 +240,11 @@ public class EDDTableFromSOS extends EDDTable{
             else if (localTags.equals("</onChange>")) 
                 tOnChange.add(content); 
 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+
             else xmlReader.unexpectedTagException();
         }
         int ndv = tDataVariables.size();
@@ -246,7 +253,7 @@ public class EDDTableFromSOS extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromSOS(tDatasetID, tAccessibleTo,
-            tOnChange, tGlobalAttributes,
+            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
             tStationIdSourceName, tLongitudeSourceName, tLatitudeSourceName,
             tAltitudeSourceName, tAltitudeSourceMinimum, tAltitudeSourceMaximum, 
             tAltitudeMetersPerSourceUnit,
@@ -270,6 +277,11 @@ public class EDDTableFromSOS extends EDDTable{
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tAddGlobalAttributes are global attributes which will
      *   be added to (and take precedence over) the data source's global attributes.
      *   This may be null if you have nothing to add.
@@ -284,8 +296,8 @@ public class EDDTableFromSOS extends EDDTable{
      *   <li> "cdm_data_type" - one of the EDD.CDM_xxx options
      *   </ul>
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
-     *   Special case: if addGlobalAttributes name="license" value="[standard]",
-     *     the EDStatic.standardLicense will be used.
+     *   Special case: if combinedGlobalAttributes name="license", any instance of "[standard]"
+     *     will be converted to the EDStatic.standardLicense.
      *   Special case: if addGlobalAttributes name="summary",
      *     then "[standard]" within the value will be replaced by the standardSummary 
      *     (from this class).
@@ -355,7 +367,7 @@ public class EDDTableFromSOS extends EDDTable{
      * @throws Throwable if trouble
      */
     public EDDTableFromSOS(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         String tStationIdSourceName,
         String tLonSourceName,
@@ -380,13 +392,11 @@ public class EDDTableFromSOS extends EDDTable{
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
-        String tLicense = addGlobalAttributes.getString("license");
-        if (tLicense != null)
-            addGlobalAttributes.set("license", 
-                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
         localSourceUrl = tLocalSourceUrl;
         String tSummary = addGlobalAttributes.getString("summary");
@@ -429,6 +439,10 @@ public class EDDTableFromSOS extends EDDTable{
         sourceGlobalAttributes = new Attributes();
         sourceGlobalAttributes.add("subsetVariables", "station_id, longitude, latitude");
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
+        String tLicense = combinedGlobalAttributes.getString("license");
+        if (tLicense != null)
+            combinedGlobalAttributes.set("license", 
+                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         combinedGlobalAttributes.removeValue("null"); 
 
         //get all dv sourceObservedProperties
@@ -779,7 +793,7 @@ public class EDDTableFromSOS extends EDDTable{
             CDM_TIMESERIES, CDM_TIMESERIESPROFILE, CDM_TRAJECTORY, CDM_TRAJECTORYPROFILE};
         if (String2.indexOf(allowedCdmTypes, cdmType) < 0)
             throw new RuntimeException("Currently, EDDTableFromSOS only supports cdm_data_type=" +
-                String2.toCSVString(allowedCdmTypes) + ", not " + cdmType + ".");
+                String2.toCSSVString(allowedCdmTypes) + ", not " + cdmType + ".");
 
         //make the fixedVariables
         dataVariables = new EDV[nFixedVariables + tDataVariables.length];
@@ -1308,8 +1322,8 @@ public class EDDTableFromSOS extends EDDTable{
         //downloading data may take time
         //so write to file, then quickly read and process
         //also this simplifies catching/processing xml error
-        String grabFileName = EDStatic.fullCacheDirectory + datasetID + 
-            "/grabFile" + Math2.random(Integer.MAX_VALUE);
+        String grabFileName = cacheDirectory() + 
+            "grabFile" + Math2.random(Integer.MAX_VALUE);
         try {
             long downloadTime = System.currentTimeMillis();
             SSR.downloadFile(localSourceUrl + kvp, grabFileName, true);
@@ -1414,7 +1428,7 @@ public class EDDTableFromSOS extends EDDTable{
                     unexpectedColumns.add(sosTable.getColumnName(col));
             }
             if (unexpectedColumns.size() > 0) {
-                String2.log("dataVariableSourceNames=" + String2.toCSVString(dataVariableSourceNames));
+                String2.log("dataVariableSourceNames=" + String2.toCSSVString(dataVariableSourceNames));
                 throw new SimpleException(ERROR + ": unexpected column(s) in SOS response: " + 
                     unexpectedColumns.toString() + ".");
             }
@@ -1435,11 +1449,11 @@ public class EDDTableFromSOS extends EDDTable{
             //At least all NaNs is an appropriate response.
             if (notFound.size() > 0)
                 String2.log("WARNING: desired sourceNames not in SOS response: " + notFound.toString() +
-                    "\n  sosTable has " + String2.toCSVString(sosTable.getColumnNames()));
+                    "\n  sosTable has " + String2.toCSSVString(sosTable.getColumnNames()));
             else if (reallyVerbose) 
                 String2.log(
-                "SOS sourceNames=" + String2.toCSVString(sosTable.getColumnNames()) +
-                "\n  matchingColumnsInTable=" + String2.toCSVString(columnInSosTable));
+                "SOS sourceNames=" + String2.toCSSVString(sosTable.getColumnNames()) +
+                "\n  matchingColumnsInTable=" + String2.toCSSVString(columnInSosTable));
 
             //find sosTable columns with LLATI
             int sosTableLonCol       = sosTable.findColumnNumber(lonSourceName);
@@ -1975,6 +1989,7 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
 
     /**
      * This should work, but server is in flux so it often breaks.
+     * Send questions about NOS SOS to Andrea.Hardy@noaa.gov.
      *
      * @throws Throwable if trouble
      */
@@ -1994,18 +2009,18 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosATemp", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, air_temperature\n" +
-"degrees_east, degrees_north, , m, UTC, , degree_C\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1, -3.9\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:06:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1, -3.9\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:12:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1, -3.9\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:18:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1, -3.9\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:24:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1, -3.9\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:30:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1, -3.9\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:36:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1, -3.9\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:42:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1, -4.0\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:54:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1, -4.0\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T01:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1, -4.1\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,air_temperature\n" +
+"degrees_east,degrees_north,,m,UTC,,degree_C\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-3.9\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-3.9\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-3.9\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-3.9\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-3.9\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-3.9\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-3.9\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-4.0\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-4.0\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-4.1\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             
 
@@ -2016,18 +2031,18 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosATemp", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, air_temperature\n" +
-"degrees_east, degrees_north, , m, UTC, , degree_C\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.9\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:06:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.8\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:12:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.7\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:18:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.8\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:24:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.7\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:30:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.8\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:36:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.7\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:42:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.8\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:48:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.8\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:54:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.7\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,air_temperature\n" +
+"degrees_east,degrees_north,,m,UTC,,degree_C\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.9\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.7\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.7\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.7\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.7\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS nos AirTemperature .das\n");
@@ -2099,8 +2114,9 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting 167.7362;\n" +
+"    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.4;\n" +
 "    Float64 geospatial_lat_min -14.28;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -2156,24 +2172,24 @@ expected =
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosATempAllStations", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, air_temperature\n" +
-"degrees_east, degrees_north, , m, UTC, , degree_C\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.9\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:06:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.8\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:12:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.7\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:18:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.8\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:24:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.7\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:30:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.8\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:36:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.7\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:42:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.8\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:48:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.8\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T00:54:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.7\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340, NaN, 2008-10-26T01:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1, 24.8\n" +
-"-157.79, 21.4331, urn:ioos:station:NOAA.NOS.CO-OPS:1612480, NaN, 2008-10-26T00:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612480:D1, 22.9\n" +
-"-157.79, 21.4331, urn:ioos:station:NOAA.NOS.CO-OPS:1612480, NaN, 2008-10-26T00:06:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612480:D1, 22.8\n" +
-"-157.79, 21.4331, urn:ioos:station:NOAA.NOS.CO-OPS:1612480, NaN, 2008-10-26T00:12:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612480:D1, 23.0\n" +
-"-157.79, 21.4331, urn:ioos:station:NOAA.NOS.CO-OPS:1612480, NaN, 2008-10-26T00:18:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612480:D1, 22.9\n" +
-"-157.79, 21.4331, urn:ioos:station:NOAA.NOS.CO-OPS:1612480, NaN, 2008-10-26T00:24:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:1612480:D1, 23.0\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,air_temperature\n" +
+"degrees_east,degrees_north,,m,UTC,,degree_C\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.9\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.7\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.7\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.7\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.7\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.79,21.4331,urn:ioos:station:NOAA.NOS.CO-OPS:1612480,NaN,2008-10-26T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612480:D1,22.9\n" +
+"-157.79,21.4331,urn:ioos:station:NOAA.NOS.CO-OPS:1612480,NaN,2008-10-26T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612480:D1,22.8\n" +
+"-157.79,21.4331,urn:ioos:station:NOAA.NOS.CO-OPS:1612480,NaN,2008-10-26T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612480:D1,23.0\n" +
+"-157.79,21.4331,urn:ioos:station:NOAA.NOS.CO-OPS:1612480,NaN,2008-10-26T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612480:D1,22.9\n" +
+"-157.79,21.4331,urn:ioos:station:NOAA.NOS.CO-OPS:1612480,NaN,2008-10-26T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612480:D1,23.0\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
         } catch (Throwable t) {
@@ -2203,14 +2219,14 @@ expected =
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosATempStationList", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id\n" +
-"degrees_east, degrees_north, \n" +
-"122.6003, 37.7501, urn:ioos:station:NOAA.NOS.CO-OPS:1600012\n" +
-"-159.3561, 21.9544, urn:ioos:station:NOAA.NOS.CO-OPS:1611400\n" +
-"-157.867, 21.3067, urn:ioos:station:NOAA.NOS.CO-OPS:1612340\n" +
-"-157.79, 21.4331, urn:ioos:station:NOAA.NOS.CO-OPS:1612480\n" +
-"-156.4767, 20.895, urn:ioos:station:NOAA.NOS.CO-OPS:1615680\n" +
-"-155.8294, 20.0366, urn:ioos:station:NOAA.NOS.CO-OPS:1617433\n";
+"longitude,latitude,station_id\n" +
+"degrees_east,degrees_north,\n" +
+"122.6003,37.7501,urn:ioos:station:NOAA.NOS.CO-OPS:1600012\n" +
+"-159.3561,21.9544,urn:ioos:station:NOAA.NOS.CO-OPS:1611400\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340\n" +
+"-157.79,21.4331,urn:ioos:station:NOAA.NOS.CO-OPS:1612480\n" +
+"-156.4767,20.895,urn:ioos:station:NOAA.NOS.CO-OPS:1615680\n" +
+"-155.8294,20.0366,urn:ioos:station:NOAA.NOS.CO-OPS:1617433\n";
 //...
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
@@ -2242,18 +2258,18 @@ expected =
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosPressure", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, air_pressure\n" +
-"degrees_east, degrees_north, , m, UTC, , millibars\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1, 1010.7\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:06:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1, 1010.8\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:12:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1, 1010.7\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:18:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1, 1010.7\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:24:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1, 1010.7\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:30:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1, 1010.9\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:36:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1, 1011.1\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:42:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1, 1011.4\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:54:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1, 1011.4\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T01:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1, 1011.4\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,air_pressure\n" +
+"degrees_east,degrees_north,,m,UTC,,millibars\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1010.7\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1010.8\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1010.7\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1010.7\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1010.7\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1010.9\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1011.1\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1011.4\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1011.4\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:F1,1011.4\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             
 
@@ -2263,19 +2279,19 @@ expected =
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosPressure", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, air_pressure\n" +
-"degrees_east, degrees_north, , m, UTC, , millibars\n" +
-"-164.065, 67.5767, urn:ioos:station:NOAA.NOS.CO-OPS:9491094, NaN, 2008-09-01T00:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1, 1011.3\n" +
-"-164.065, 67.5767, urn:ioos:station:NOAA.NOS.CO-OPS:9491094, NaN, 2008-09-01T00:06:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1, 1011.2\n" +
-"-164.065, 67.5767, urn:ioos:station:NOAA.NOS.CO-OPS:9491094, NaN, 2008-09-01T00:12:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1, 1011.2\n" +
-"-164.065, 67.5767, urn:ioos:station:NOAA.NOS.CO-OPS:9491094, NaN, 2008-09-01T00:18:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1, 1011.1\n" +
-"-164.065, 67.5767, urn:ioos:station:NOAA.NOS.CO-OPS:9491094, NaN, 2008-09-01T00:24:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1, 1011.1\n" +
-"-164.065, 67.5767, urn:ioos:station:NOAA.NOS.CO-OPS:9491094, NaN, 2008-09-01T00:30:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1, 1011.1\n" +
-"-164.065, 67.5767, urn:ioos:station:NOAA.NOS.CO-OPS:9491094, NaN, 2008-09-01T00:36:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1, 1011.0\n" +
-"-164.065, 67.5767, urn:ioos:station:NOAA.NOS.CO-OPS:9491094, NaN, 2008-09-01T00:42:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1, 1010.9\n" +
-"-164.065, 67.5767, urn:ioos:station:NOAA.NOS.CO-OPS:9491094, NaN, 2008-09-01T00:48:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1, 1010.9\n" +
-"-164.065, 67.5767, urn:ioos:station:NOAA.NOS.CO-OPS:9491094, NaN, 2008-09-01T00:54:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1, 1010.9\n" +
-"-164.065, 67.5767, urn:ioos:station:NOAA.NOS.CO-OPS:9491094, NaN, 2008-09-01T01:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1, 1010.8\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,air_pressure\n" +
+"degrees_east,degrees_north,,m,UTC,,millibars\n" +
+"-164.065,67.5767,urn:ioos:station:NOAA.NOS.CO-OPS:9491094,NaN,2008-09-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1,1011.3\n" +
+"-164.065,67.5767,urn:ioos:station:NOAA.NOS.CO-OPS:9491094,NaN,2008-09-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1,1011.2\n" +
+"-164.065,67.5767,urn:ioos:station:NOAA.NOS.CO-OPS:9491094,NaN,2008-09-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1,1011.2\n" +
+"-164.065,67.5767,urn:ioos:station:NOAA.NOS.CO-OPS:9491094,NaN,2008-09-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1,1011.1\n" +
+"-164.065,67.5767,urn:ioos:station:NOAA.NOS.CO-OPS:9491094,NaN,2008-09-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1,1011.1\n" +
+"-164.065,67.5767,urn:ioos:station:NOAA.NOS.CO-OPS:9491094,NaN,2008-09-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1,1011.1\n" +
+"-164.065,67.5767,urn:ioos:station:NOAA.NOS.CO-OPS:9491094,NaN,2008-09-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1,1011.0\n" +
+"-164.065,67.5767,urn:ioos:station:NOAA.NOS.CO-OPS:9491094,NaN,2008-09-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1,1010.9\n" +
+"-164.065,67.5767,urn:ioos:station:NOAA.NOS.CO-OPS:9491094,NaN,2008-09-01T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1,1010.9\n" +
+"-164.065,67.5767,urn:ioos:station:NOAA.NOS.CO-OPS:9491094,NaN,2008-09-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1,1010.9\n" +
+"-164.065,67.5767,urn:ioos:station:NOAA.NOS.CO-OPS:9491094,NaN,2008-09-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9491094:F1,1010.8\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS nos Pressure .das\n");
@@ -2347,8 +2363,9 @@ expected =
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting 167.7362;\n" +
+"    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.4;\n" +
 "    Float64 geospatial_lat_min -14.28;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -2387,19 +2404,32 @@ expected =
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosCond", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, conductivity\n" +
-"degrees_east, degrees_north, , m, UTC, , mS cm-1\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1, 2.53\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:06:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1, 2.54\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:12:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1, 2.55\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:18:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1, 2.54\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:24:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1, 2.54\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:30:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1, 2.54\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:36:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1, 2.53\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:42:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1, 2.52\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:54:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1, 2.71\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T01:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1, 2.75\n";
-            Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+//"longitude,latitude,station_id,altitude,time,sensor_id,conductivity\n" +
+//"degrees_east,degrees_north,,m,UTC,,mS cm-1\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,2.53\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,2.54\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,2.55\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,2.54\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,2.54\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,2.54\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,2.53\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,2.52\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,2.71\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,2.75\n";
+//starting 2011-12-16, different by 10* !!!
+"longitude,latitude,station_id,altitude,time,sensor_id,conductivity\n" +
+"degrees_east,degrees_north,,m,UTC,,mS cm-1\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,25.3\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,25.4\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,25.5\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,25.4\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,25.4\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,25.4\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,25.3\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,25.2\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,27.1\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:G1,27.5\n";
+Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             
 
             String2.log("\n*** EDDTableFromSOS nos Conductivity test get one station .CSV data\n");
@@ -2408,33 +2438,33 @@ expected =
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosCond", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, conductivity\n" +
-"degrees_east, degrees_north, , m, UTC, , mS cm-1\n" +
-"-76.5783, 39.2667, urn:ioos:station:NOAA.NOS.CO-OPS:8574680, NaN, 2008-09-01T00:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1, 16.702\n" +
-"-76.5783, 39.2667, urn:ioos:station:NOAA.NOS.CO-OPS:8574680, NaN, 2008-09-01T00:06:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1, 16.671\n" +
-"-76.5783, 39.2667, urn:ioos:station:NOAA.NOS.CO-OPS:8574680, NaN, 2008-09-01T00:12:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1, 16.681\n" +
-"-76.5783, 39.2667, urn:ioos:station:NOAA.NOS.CO-OPS:8574680, NaN, 2008-09-01T00:18:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1, 16.693\n" +
-"-76.5783, 39.2667, urn:ioos:station:NOAA.NOS.CO-OPS:8574680, NaN, 2008-09-01T00:24:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1, 16.685\n" +
-"-76.5783, 39.2667, urn:ioos:station:NOAA.NOS.CO-OPS:8574680, NaN, 2008-09-01T00:30:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1, 16.714\n" +
-"-76.5783, 39.2667, urn:ioos:station:NOAA.NOS.CO-OPS:8574680, NaN, 2008-09-01T00:36:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1, 16.725\n" +
-"-76.5783, 39.2667, urn:ioos:station:NOAA.NOS.CO-OPS:8574680, NaN, 2008-09-01T00:42:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1, 16.74\n" +
-"-76.5783, 39.2667, urn:ioos:station:NOAA.NOS.CO-OPS:8574680, NaN, 2008-09-01T00:48:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1, 16.772\n" +
-"-76.5783, 39.2667, urn:ioos:station:NOAA.NOS.CO-OPS:8574680, NaN, 2008-09-01T00:54:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1, 16.809\n" +
-"-76.5783, 39.2667, urn:ioos:station:NOAA.NOS.CO-OPS:8574680, NaN, 2008-09-01T01:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1, 16.811\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,conductivity\n" +
+"degrees_east,degrees_north,,m,UTC,,mS cm-1\n" +
+"-76.5783,39.2667,urn:ioos:station:NOAA.NOS.CO-OPS:8574680,NaN,2008-09-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1,16.702\n" +
+"-76.5783,39.2667,urn:ioos:station:NOAA.NOS.CO-OPS:8574680,NaN,2008-09-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1,16.671\n" +
+"-76.5783,39.2667,urn:ioos:station:NOAA.NOS.CO-OPS:8574680,NaN,2008-09-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1,16.681\n" +
+"-76.5783,39.2667,urn:ioos:station:NOAA.NOS.CO-OPS:8574680,NaN,2008-09-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1,16.693\n" +
+"-76.5783,39.2667,urn:ioos:station:NOAA.NOS.CO-OPS:8574680,NaN,2008-09-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1,16.685\n" +
+"-76.5783,39.2667,urn:ioos:station:NOAA.NOS.CO-OPS:8574680,NaN,2008-09-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1,16.714\n" +
+"-76.5783,39.2667,urn:ioos:station:NOAA.NOS.CO-OPS:8574680,NaN,2008-09-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1,16.725\n" +
+"-76.5783,39.2667,urn:ioos:station:NOAA.NOS.CO-OPS:8574680,NaN,2008-09-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1,16.74\n" +
+"-76.5783,39.2667,urn:ioos:station:NOAA.NOS.CO-OPS:8574680,NaN,2008-09-01T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1,16.772\n" +
+"-76.5783,39.2667,urn:ioos:station:NOAA.NOS.CO-OPS:8574680,NaN,2008-09-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1,16.809\n" +
+"-76.5783,39.2667,urn:ioos:station:NOAA.NOS.CO-OPS:8574680,NaN,2008-09-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8574680:G1,16.811\n";
 /* pre 2010-06-02
-"longitude, latitude, station_id, altitude, time, Conductivity\n" +
-"degrees_east, degrees_north, , m, UTC, mS cm-1\n" +
-"-76.5783, 39.2667, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680, NaN, 2008-09-01T00:00:00Z, 16.702\n" +
-"-76.5783, 39.2667, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680, NaN, 2008-09-01T00:06:00Z, 16.671\n" +
-"-76.5783, 39.2667, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680, NaN, 2008-09-01T00:12:00Z, 16.681\n" +
-"-76.5783, 39.2667, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680, NaN, 2008-09-01T00:18:00Z, 16.693\n" +
-"-76.5783, 39.2667, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680, NaN, 2008-09-01T00:24:00Z, 16.685\n" +
-"-76.5783, 39.2667, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680, NaN, 2008-09-01T00:30:00Z, 16.714\n" +
-"-76.5783, 39.2667, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680, NaN, 2008-09-01T00:36:00Z, 16.725\n" +
-"-76.5783, 39.2667, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680, NaN, 2008-09-01T00:42:00Z, 16.74\n" +
-"-76.5783, 39.2667, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680, NaN, 2008-09-01T00:48:00Z, 16.772\n" +
-"-76.5783, 39.2667, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680, NaN, 2008-09-01T00:54:00Z, 16.809\n" +
-"-76.5783, 39.2667, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680, NaN, 2008-09-01T01:00:00Z, 16.811\n";
+"longitude,latitude,station_id,altitude,time,Conductivity\n" +
+"degrees_east,degrees_north,,m,UTC,mS cm-1\n" +
+"-76.5783,39.2667,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680,NaN,2008-09-01T00:00:00Z,16.702\n" +
+"-76.5783,39.2667,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680,NaN,2008-09-01T00:06:00Z,16.671\n" +
+"-76.5783,39.2667,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680,NaN,2008-09-01T00:12:00Z,16.681\n" +
+"-76.5783,39.2667,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680,NaN,2008-09-01T00:18:00Z,16.693\n" +
+"-76.5783,39.2667,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680,NaN,2008-09-01T00:24:00Z,16.685\n" +
+"-76.5783,39.2667,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680,NaN,2008-09-01T00:30:00Z,16.714\n" +
+"-76.5783,39.2667,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680,NaN,2008-09-01T00:36:00Z,16.725\n" +
+"-76.5783,39.2667,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680,NaN,2008-09-01T00:42:00Z,16.74\n" +
+"-76.5783,39.2667,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680,NaN,2008-09-01T00:48:00Z,16.772\n" +
+"-76.5783,39.2667,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680,NaN,2008-09-01T00:54:00Z,16.809\n" +
+"-76.5783,39.2667,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8574680,NaN,2008-09-01T01:00:00Z,16.811\n";
 */
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
@@ -2505,8 +2535,9 @@ expected =
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting -70.5633;\n" +
+"    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 43.32;\n" +
 "    Float64 geospatial_lat_min 29.48;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -2519,7 +2550,8 @@ expected =
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error " + datasetIdPrefix + "nosSosCond. NOS SOS Server is in flux." +
+                "\n(Starting 2012-03-16 station=...8419317 not found.)" +
+                "\nUnexpected(?) error " + datasetIdPrefix + "nosSosCond. NOS SOS Server is in flux." +
                 "\nPress ^C to stop or Enter to continue..."); 
         }
     }
@@ -2647,8 +2679,9 @@ expected =
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting -66.15883;\n" +
+"    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 61.27822;\n" +
 "    Float64 geospatial_lat_min 17.86167;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -2700,7 +2733,7 @@ expected =
 " s {\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -94.985, -70.5633;\n" +
+"    Float64 actual_range -94.985, -71.1641;\n" + //changed 2012-03-16
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -2709,7 +2742,7 @@ expected =
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range 29.48, 43.32;\n" +
+"    Float64 actual_range 29.48, 41.7043;\n" + //pre 2012-03-16 was 43.32
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -2746,19 +2779,47 @@ expected =
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosSalinity", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = //salinity is low because this is in estuary/river, not in ocean
-"longitude, latitude, station_id, altitude, time, sensor_id, sea_water_salinity\n" +
-"degrees_east, degrees_north, , m, UTC, , PSU\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 2.283\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:06:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 2.286\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:12:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 2.295\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:18:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 2.286\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:24:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 2.286\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:30:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 2.286\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:36:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 2.283\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:42:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 2.267\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T00:54:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 2.448\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2006-01-01T01:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 2.486\n";
-            Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+//"longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
+//"degrees_east,degrees_north,,m,UTC,,PSU\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,2.283\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,2.286\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,2.295\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,2.286\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,2.286\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,2.286\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,2.283\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,2.267\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,2.448\n" +
+//"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,2.486\n";
+//no it is because data was off by a factor of 10!!!
+/*starting 2011-12-16:
+"longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
+"degrees_east,degrees_north,,m,UTC,,PSU\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,27.075\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,27.192\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,27.226\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,27.192\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,27.192\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,27.192\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,27.075\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,26.791\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,28.319\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,28.692\n";
+*/
+//No! Wait!  after lunch 2011-12-16 the results became:
+"longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
+"degrees_east,degrees_north,,m,UTC,,PSU\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,27.158\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,27.192\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,27.31\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,27.192\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,27.192\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,27.192\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,27.158\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,26.957\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,29.2\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,29.675\n";    
+Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             
 
             String2.log("\n*** EDDTableFromSOS nos Salinity test get one station .CSV data\n");
@@ -2772,68 +2833,100 @@ expected =
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = //salinity is low because this is in estuary/river, not in ocean
 /*pre 2010-01-20, was 
-"longitude, latitude, station_id, altitude, time, Salinity\n" +
-"degrees_east, degrees_north, , m, UTC, PSU\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:00:00Z, 4.245\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:06:00Z, 4.245\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:12:00Z, 4.245\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:18:00Z, 4.245\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:24:00Z, 4.254\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:30:00Z, 4.245\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:36:00Z, 4.245\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:42:00Z, 4.254\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:48:00Z, 4.245\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:54:00Z, 4.245\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T01:00:00Z, 4.245\n";
+"longitude,latitude,station_id,altitude,time,Salinity\n" +
+"degrees_east,degrees_north,,m,UTC,PSU\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:00:00Z,4.245\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:06:00Z,4.245\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:12:00Z,4.245\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:18:00Z,4.245\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:24:00Z,4.254\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:30:00Z,4.245\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:36:00Z,4.245\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:42:00Z,4.254\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:48:00Z,4.245\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:54:00Z,4.245\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T01:00:00Z,4.245\n";
 */
 /* pre 2010-06-02
-"longitude, latitude, station_id, altitude, time, Salinity\n" +
-"degrees_east, degrees_north, , m, UTC, PSU\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:00:00Z, 4.395\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:06:00Z, 4.395\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:12:00Z, 4.395\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:18:00Z, 4.395\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:24:00Z, 4.405\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:30:00Z, 4.395\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:36:00Z, 4.395\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:42:00Z, 4.405\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:48:00Z, 4.395\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:54:00Z, 4.395\n" +
-"-70.5633, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T01:00:00Z, 4.395\n";
+"longitude,latitude,station_id,altitude,time,Salinity\n" +
+"degrees_east,degrees_north,,m,UTC,PSU\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:00:00Z,4.395\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:06:00Z,4.395\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:12:00Z,4.395\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:18:00Z,4.395\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:24:00Z,4.405\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:30:00Z,4.395\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:36:00Z,4.395\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:42:00Z,4.405\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:48:00Z,4.395\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:54:00Z,4.395\n" +
+"-70.5633,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T01:00:00Z,4.395\n";
 */
 /* pre 2011-03-29 this was
-"longitude, latitude, station_id, altitude, time, Salinity\n" +
-"degrees_east, degrees_north, , m, UTC, PSU\n" +
-"-70.56331, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:00:00Z, 4.395\n" +
-"-70.56331, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:06:00Z, 4.395\n" +
-"-70.56331, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:12:00Z, 4.395\n" +
-"-70.56331, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:18:00Z, 4.395\n" +
-"-70.56331, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:24:00Z, 4.405\n" +
-"-70.56331, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:30:00Z, 4.395\n" +
-"-70.56331, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:36:00Z, 4.395\n" +
-"-70.56331, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:42:00Z, 4.405\n" +
-"-70.56331, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:48:00Z, 4.395\n" +
-"-70.56331, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T00:54:00Z, 4.395\n" +
-"-70.56331, 43.32, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317, NaN, 2009-04-05T01:00:00Z, 4.395\n";
+"longitude,latitude,station_id,altitude,time,Salinity\n" +
+"degrees_east,degrees_north,,m,UTC,PSU\n" +
+"-70.56331,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:00:00Z,4.395\n" +
+"-70.56331,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:06:00Z,4.395\n" +
+"-70.56331,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:12:00Z,4.395\n" +
+"-70.56331,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:18:00Z,4.395\n" +
+"-70.56331,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:24:00Z,4.405\n" +
+"-70.56331,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:30:00Z,4.395\n" +
+"-70.56331,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:36:00Z,4.395\n" +
+"-70.56331,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:42:00Z,4.405\n" +
+"-70.56331,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:48:00Z,4.395\n" +
+"-70.56331,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T00:54:00Z,4.395\n" +
+"-70.56331,43.32,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8419317,NaN,2009-04-05T01:00:00Z,4.395\n";
 */
-"longitude, latitude, station_id, altitude, time, sensor_id, sea_water_salinity\n" +
-"degrees_east, degrees_north, , m, UTC, , PSU\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2009-04-05T00:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 4.368\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2009-04-05T00:06:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 4.381\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2009-04-05T00:12:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 4.381\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2009-04-05T00:18:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 4.381\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2009-04-05T00:24:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 4.391\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2009-04-05T00:30:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 4.381\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2009-04-05T00:36:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 4.381\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2009-04-05T00:42:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 4.391\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2009-04-05T00:48:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 4.381\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2009-04-05T00:54:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 4.368\n" +
-"-70.5633, 43.32, urn:ioos:station:NOAA.NOS.CO-OPS:8419317, NaN, 2009-04-05T01:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY, 4.368\n";
-            Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+/*"longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
+"degrees_east,degrees_north,,m,UTC,,PSU\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,4.368\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,4.381\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,4.381\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,4.381\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,4.391\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,4.381\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,4.381\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,4.391\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,4.381\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,4.368\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,4.368\n";
+*/
+/*starting 2011-12-16   vastly different!:
+"longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
+"degrees_east,degrees_north,,m,UTC,,PSU\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,54.003\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,54.003\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,54.003\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,54.003\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,54.133\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,54.003\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,54.003\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,54.133\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,54.003\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,54.003\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,54.003\n";
+*/
+//No! Wait! after lunch 2011-12-16, the values changed again: 
+"longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
+"degrees_east,degrees_north,,m,UTC,,PSU\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,53.669\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,53.835\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,53.835\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,53.835\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,53.965\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,53.835\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,53.835\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,53.965\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,53.835\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,53.669\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2009-04-05T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,53.669\n";
+
+Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error " + datasetIdPrefix + "nosSosSalinity." +
+                "\n(Starting 2012-03-16 no station=...8419317 )" +
+                "\nUnexpected(?) error " + datasetIdPrefix + "nosSosSalinity." +
                 "\nNOS SOS Server is in flux." +
                 "\nPress ^C to stop or Enter to continue..."); 
         }
@@ -2863,19 +2956,19 @@ expected =
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosWind", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, wind_from_direction, wind_speed, wind_speed_of_gust\n" +
-"degrees_east, degrees_north, , m, UTC, , degrees_true, m s-1, m s-1\n" +
-"-165.43, 64.5, urn:ioos:station:NOAA.NOS.CO-OPS:9468756, NaN, 2009-04-06T00:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1, 79.0, 7.8, 9.5\n" +
-"-165.43, 64.5, urn:ioos:station:NOAA.NOS.CO-OPS:9468756, NaN, 2009-04-06T00:06:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1, 81.0, 7.4, 9.5\n" +
-"-165.43, 64.5, urn:ioos:station:NOAA.NOS.CO-OPS:9468756, NaN, 2009-04-06T00:12:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1, 80.0, 7.8, 9.5\n" +
-"-165.43, 64.5, urn:ioos:station:NOAA.NOS.CO-OPS:9468756, NaN, 2009-04-06T00:18:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1, 79.0, 8.1, 10.1\n" +
-"-165.43, 64.5, urn:ioos:station:NOAA.NOS.CO-OPS:9468756, NaN, 2009-04-06T00:24:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1, 79.0, 7.3, 9.0\n" +
-"-165.43, 64.5, urn:ioos:station:NOAA.NOS.CO-OPS:9468756, NaN, 2009-04-06T00:30:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1, 76.0, 7.6, 8.9\n" +
-"-165.43, 64.5, urn:ioos:station:NOAA.NOS.CO-OPS:9468756, NaN, 2009-04-06T00:36:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1, 82.0, 7.2, 8.5\n" +
-"-165.43, 64.5, urn:ioos:station:NOAA.NOS.CO-OPS:9468756, NaN, 2009-04-06T00:42:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1, 79.0, 8.1, 9.2\n" +
-"-165.43, 64.5, urn:ioos:station:NOAA.NOS.CO-OPS:9468756, NaN, 2009-04-06T00:48:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1, 80.0, 7.3, 9.4\n" +
-"-165.43, 64.5, urn:ioos:station:NOAA.NOS.CO-OPS:9468756, NaN, 2009-04-06T00:54:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1, 81.0, 8.0, 9.4\n" +
-"-165.43, 64.5, urn:ioos:station:NOAA.NOS.CO-OPS:9468756, NaN, 2009-04-06T01:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1, 80.0, 7.9, 10.3\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,wind_from_direction,wind_speed,wind_speed_of_gust\n" +
+"degrees_east,degrees_north,,m,UTC,,degrees_true,m s-1,m s-1\n" +
+"-165.43,64.5,urn:ioos:station:NOAA.NOS.CO-OPS:9468756,NaN,2009-04-06T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1,79.0,7.8,9.5\n" +
+"-165.43,64.5,urn:ioos:station:NOAA.NOS.CO-OPS:9468756,NaN,2009-04-06T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1,81.0,7.4,9.5\n" +
+"-165.43,64.5,urn:ioos:station:NOAA.NOS.CO-OPS:9468756,NaN,2009-04-06T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1,80.0,7.8,9.5\n" +
+"-165.43,64.5,urn:ioos:station:NOAA.NOS.CO-OPS:9468756,NaN,2009-04-06T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1,79.0,8.1,10.1\n" +
+"-165.43,64.5,urn:ioos:station:NOAA.NOS.CO-OPS:9468756,NaN,2009-04-06T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1,79.0,7.3,9.0\n" +
+"-165.43,64.5,urn:ioos:station:NOAA.NOS.CO-OPS:9468756,NaN,2009-04-06T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1,76.0,7.6,8.9\n" +
+"-165.43,64.5,urn:ioos:station:NOAA.NOS.CO-OPS:9468756,NaN,2009-04-06T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1,82.0,7.2,8.5\n" +
+"-165.43,64.5,urn:ioos:station:NOAA.NOS.CO-OPS:9468756,NaN,2009-04-06T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1,79.0,8.1,9.2\n" +
+"-165.43,64.5,urn:ioos:station:NOAA.NOS.CO-OPS:9468756,NaN,2009-04-06T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1,80.0,7.3,9.4\n" +
+"-165.43,64.5,urn:ioos:station:NOAA.NOS.CO-OPS:9468756,NaN,2009-04-06T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1,81.0,8.0,9.4\n" +
+"-165.43,64.5,urn:ioos:station:NOAA.NOS.CO-OPS:9468756,NaN,2009-04-06T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9468756:C1,80.0,7.9,10.3\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS nos Wind .das\n");
@@ -2962,8 +3055,9 @@ expected =
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting 167.7362;\n" +
+"    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.4;\n" +
 "    Float64 geospatial_lat_min -14.28;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -3063,8 +3157,9 @@ expected =
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting 167.7362;\n" +
+"    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.4;\n" +
 "    Float64 geospatial_lat_min -14.28;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -3086,33 +3181,33 @@ expected =
 "zztop\n";
 
 /*//pre 2009-11-15 and post 2009-12-13
-"longitude, latitude, station_id, altitude, time, WaterLevel\n" +
-"degrees_east, degrees_north, , m, UTC, m\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:00:00Z, 75.014\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:06:00Z, 75.014\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:12:00Z, 75.018\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:18:00Z, 75.015\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:24:00Z, 75.012\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:30:00Z, 75.012\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:36:00Z, 75.016\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:42:00Z, 75.018\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:48:00Z, 75.02\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:54:00Z, 75.019\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T15:00:00Z, 75.017\n";
+"longitude,latitude,station_id,altitude,time,WaterLevel\n" +
+"degrees_east,degrees_north,,m,UTC,m\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:00:00Z,75.014\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:06:00Z,75.014\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:12:00Z,75.018\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:18:00Z,75.015\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:24:00Z,75.012\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:30:00Z,75.012\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:36:00Z,75.016\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:42:00Z,75.018\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:48:00Z,75.02\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:54:00Z,75.019\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T15:00:00Z,75.017\n";
   */        
-/*"longitude, latitude, station_id, altitude, time, WaterLevel\n" +
-"degrees_east, degrees_north, , m, UTC, m\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:00:00Z, 75.021\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:06:00Z, 75.022\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:12:00Z, 75.025\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:18:00Z, 75.023\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:24:00Z, 75.02\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:30:00Z, 75.019\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:36:00Z, 75.023\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:42:00Z, 75.025\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:48:00Z, 75.027\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T14:54:00Z, 75.026\n" +
-"-75.9345, 44.3311, urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062, -999.0, 2008-08-01T15:00:00Z, 75.024\n";
+/*"longitude,latitude,station_id,altitude,time,WaterLevel\n" +
+"degrees_east,degrees_north,,m,UTC,m\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:00:00Z,75.021\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:06:00Z,75.022\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:12:00Z,75.025\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:18:00Z,75.023\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:24:00Z,75.02\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:30:00Z,75.019\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:36:00Z,75.023\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:42:00Z,75.025\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:48:00Z,75.027\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:54:00Z,75.026\n" +
+"-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T15:00:00Z,75.024\n";
 */
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
@@ -3203,8 +3298,9 @@ expected =
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting 167.7362;\n" +
+"    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.4;\n" +
 "    Float64 geospatial_lat_min -14.28;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -3222,18 +3318,18 @@ expected =
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosWTemp", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, sea_water_temperature\n" +
-"degrees_east, degrees_north, , m, UTC, , degree_C\n" +
-"-75.9345, 44.3311, urn:ioos:station:NOAA.NOS.CO-OPS:8311062, NaN, 2008-08-01T14:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1, 22.349\n" +
-"-75.9345, 44.3311, urn:ioos:station:NOAA.NOS.CO-OPS:8311062, NaN, 2008-08-01T14:06:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1, 22.4\n" +
-"-75.9345, 44.3311, urn:ioos:station:NOAA.NOS.CO-OPS:8311062, NaN, 2008-08-01T14:12:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1, 22.4\n" +
-"-75.9345, 44.3311, urn:ioos:station:NOAA.NOS.CO-OPS:8311062, NaN, 2008-08-01T14:18:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1, 22.4\n" +
-"-75.9345, 44.3311, urn:ioos:station:NOAA.NOS.CO-OPS:8311062, NaN, 2008-08-01T14:24:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1, 22.366\n" +
-"-75.9345, 44.3311, urn:ioos:station:NOAA.NOS.CO-OPS:8311062, NaN, 2008-08-01T14:30:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1, 22.4\n" +
-"-75.9345, 44.3311, urn:ioos:station:NOAA.NOS.CO-OPS:8311062, NaN, 2008-08-01T14:36:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1, 22.37\n" +
-"-75.9345, 44.3311, urn:ioos:station:NOAA.NOS.CO-OPS:8311062, NaN, 2008-08-01T14:42:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1, 22.379\n" +
-"-75.9345, 44.3311, urn:ioos:station:NOAA.NOS.CO-OPS:8311062, NaN, 2008-08-01T14:48:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1, 22.382\n" +
-"-75.9345, 44.3311, urn:ioos:station:NOAA.NOS.CO-OPS:8311062, NaN, 2008-08-01T14:54:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1, 22.389\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,sea_water_temperature\n" +
+"degrees_east,degrees_north,,m,UTC,,degree_C\n" +
+"-75.9345,44.3311,urn:ioos:station:NOAA.NOS.CO-OPS:8311062,NaN,2008-08-01T14:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1,22.349\n" +
+"-75.9345,44.3311,urn:ioos:station:NOAA.NOS.CO-OPS:8311062,NaN,2008-08-01T14:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1,22.4\n" +
+"-75.9345,44.3311,urn:ioos:station:NOAA.NOS.CO-OPS:8311062,NaN,2008-08-01T14:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1,22.4\n" +
+"-75.9345,44.3311,urn:ioos:station:NOAA.NOS.CO-OPS:8311062,NaN,2008-08-01T14:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1,22.4\n" +
+"-75.9345,44.3311,urn:ioos:station:NOAA.NOS.CO-OPS:8311062,NaN,2008-08-01T14:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1,22.366\n" +
+"-75.9345,44.3311,urn:ioos:station:NOAA.NOS.CO-OPS:8311062,NaN,2008-08-01T14:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1,22.4\n" +
+"-75.9345,44.3311,urn:ioos:station:NOAA.NOS.CO-OPS:8311062,NaN,2008-08-01T14:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1,22.37\n" +
+"-75.9345,44.3311,urn:ioos:station:NOAA.NOS.CO-OPS:8311062,NaN,2008-08-01T14:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1,22.379\n" +
+"-75.9345,44.3311,urn:ioos:station:NOAA.NOS.CO-OPS:8311062,NaN,2008-08-01T14:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1,22.382\n" +
+"-75.9345,44.3311,urn:ioos:station:NOAA.NOS.CO-OPS:8311062,NaN,2008-08-01T14:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8311062:E1,22.389\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             
 
@@ -3243,18 +3339,18 @@ expected =
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosWTemp", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, sea_water_temperature\n" +
-"degrees_east, degrees_north, , m, UTC, , degree_C\n" +
-"-124.322, 43.345, urn:ioos:station:NOAA.NOS.CO-OPS:9432780, NaN, 2008-09-01T14:00:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1, 11.6\n" +
-"-124.322, 43.345, urn:ioos:station:NOAA.NOS.CO-OPS:9432780, NaN, 2008-09-01T14:06:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1, 11.6\n" +
-"-124.322, 43.345, urn:ioos:station:NOAA.NOS.CO-OPS:9432780, NaN, 2008-09-01T14:12:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1, 11.6\n" +
-"-124.322, 43.345, urn:ioos:station:NOAA.NOS.CO-OPS:9432780, NaN, 2008-09-01T14:18:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1, 11.7\n" +
-"-124.322, 43.345, urn:ioos:station:NOAA.NOS.CO-OPS:9432780, NaN, 2008-09-01T14:24:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1, 11.7\n" +
-"-124.322, 43.345, urn:ioos:station:NOAA.NOS.CO-OPS:9432780, NaN, 2008-09-01T14:30:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1, 11.6\n" +
-"-124.322, 43.345, urn:ioos:station:NOAA.NOS.CO-OPS:9432780, NaN, 2008-09-01T14:36:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1, 11.6\n" +
-"-124.322, 43.345, urn:ioos:station:NOAA.NOS.CO-OPS:9432780, NaN, 2008-09-01T14:42:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1, 11.6\n" +
-"-124.322, 43.345, urn:ioos:station:NOAA.NOS.CO-OPS:9432780, NaN, 2008-09-01T14:48:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1, 11.6\n" +
-"-124.322, 43.345, urn:ioos:station:NOAA.NOS.CO-OPS:9432780, NaN, 2008-09-01T14:54:00Z, urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1, 11.6\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,sea_water_temperature\n" +
+"degrees_east,degrees_north,,m,UTC,,degree_C\n" +
+"-124.322,43.345,urn:ioos:station:NOAA.NOS.CO-OPS:9432780,NaN,2008-09-01T14:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1,11.6\n" +
+"-124.322,43.345,urn:ioos:station:NOAA.NOS.CO-OPS:9432780,NaN,2008-09-01T14:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1,11.6\n" +
+"-124.322,43.345,urn:ioos:station:NOAA.NOS.CO-OPS:9432780,NaN,2008-09-01T14:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1,11.6\n" +
+"-124.322,43.345,urn:ioos:station:NOAA.NOS.CO-OPS:9432780,NaN,2008-09-01T14:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1,11.7\n" +
+"-124.322,43.345,urn:ioos:station:NOAA.NOS.CO-OPS:9432780,NaN,2008-09-01T14:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1,11.7\n" +
+"-124.322,43.345,urn:ioos:station:NOAA.NOS.CO-OPS:9432780,NaN,2008-09-01T14:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1,11.6\n" +
+"-124.322,43.345,urn:ioos:station:NOAA.NOS.CO-OPS:9432780,NaN,2008-09-01T14:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1,11.6\n" +
+"-124.322,43.345,urn:ioos:station:NOAA.NOS.CO-OPS:9432780,NaN,2008-09-01T14:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1,11.6\n" +
+"-124.322,43.345,urn:ioos:station:NOAA.NOS.CO-OPS:9432780,NaN,2008-09-01T14:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1,11.6\n" +
+"-124.322,43.345,urn:ioos:station:NOAA.NOS.CO-OPS:9432780,NaN,2008-09-01T14:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9432780:E1,11.6\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -3524,7 +3620,7 @@ expected =
 "2 = questionable or suspect data\n" +
 "3 = good data/passed quality test\n" +
 "9 = missing data\";\n" +
-"    String ioos_category \"Currents\";\n" +
+"    String ioos_category \"Quality\";\n" +
 "    String long_name \"Quality Flags\";\n" +
 "    String observedProperty \"http://mmisw.org/ont/cf/parameter/currents\";\n" +
 "  }\n" +
@@ -3533,8 +3629,9 @@ expected =
 "    String cdm_data_type \"TimeSeriesProfile\";\n" +
 "    String cdm_profile_variables \"time\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting -66.58;\n" +
+"    String featureType \"TimeSeriesProfile\";\n" +
 "    Float64 geospatial_lat_max 60.8;\n" +
 "    Float64 geospatial_lat_min 17.19;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -3548,6 +3645,11 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 "/tabledap/" + datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
+"    String keywords \"Atmosphere > Altitude > Station Height,\n" +
+"Oceans > Ocean Circulation > Ocean Currents,\n" +
+"Oceans > Ocean Temperature > Water Temperature,\n" +
+"altitude, angle, atmosphere, bad, beam, bin, circulation, correlation, currents, direction, direction_of_sea_water_velocity, echo, error, flags, good, height, identifier, intensity, magnitude, ndbc, noaa, ocean, oceans, orientation, percent, pitch, platform, quality, rejected, roll, sea, sea_water_speed, sea_water_temperature, seawater, sensor, sos, speed, station, temperature, time, upward, upward_sea_water_velocity, velocity, water\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -3555,7 +3657,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 60.8;\n" +
 "    String sourceUrl \"http://sdf.ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing 17.19;\n" +
@@ -3580,19 +3682,19 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbc_test1", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, bin, direction_of_sea_water_velocity, sea_water_speed, upward_sea_water_velocity, error_velocity, platform_orientation, platform_pitch_angle, platform_roll_angle, sea_water_temperature, pct_good_3_beam, pct_good_4_beam, pct_rejected, pct_bad, echo_intensity_beam1, echo_intensity_beam2, echo_intensity_beam3, echo_intensity_beam4, correlation_magnitude_beam1, correlation_magnitude_beam2, correlation_magnitude_beam3, correlation_magnitude_beam4, quality_flags\n" +
-"degrees_east, degrees_north, , m, UTC, , count, degrees_true, cm/s, cm/s, cm/s, degrees_true, degree, degree, Cel, percent, percent, percent, percent, count, count, count, count, count, count, count, count, \n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -56.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 1, 83, 30.2, -2.6, -4.7, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 189, 189, 189, 193, 241, 239, 242, 240, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -88.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 2, 96, 40.5, -2.5, -3.7, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 177, 174, 180, 178, 237, 235, 230, 237, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -120.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 3, 96, 40.7, -1.3, -9.6, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 165, 163, 159, 158, 232, 234, 238, 236, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -152.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 4, 96, 35.3, -2.0, -2.2, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 151, 147, 160, 153, 232, 235, 237, 241, 3;9;3;3;3;3;3;3;0\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,bin,direction_of_sea_water_velocity,sea_water_speed,upward_sea_water_velocity,error_velocity,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,pct_good_3_beam,pct_good_4_beam,pct_rejected,pct_bad,echo_intensity_beam1,echo_intensity_beam2,echo_intensity_beam3,echo_intensity_beam4,correlation_magnitude_beam1,correlation_magnitude_beam2,correlation_magnitude_beam3,correlation_magnitude_beam4,quality_flags\n" +
+"degrees_east,degrees_north,,m,UTC,,count,degrees_true,cm/s,cm/s,cm/s,degrees_true,degree,degree,Cel,percent,percent,percent,percent,count,count,count,count,count,count,count,count,\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-56.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,1,83,30.2,-2.6,-4.7,NaN,NaN,NaN,NaN,0,100,0,NaN,189,189,189,193,241,239,242,240,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-88.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,2,96,40.5,-2.5,-3.7,NaN,NaN,NaN,NaN,0,100,0,NaN,177,174,180,178,237,235,230,237,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-120.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,3,96,40.7,-1.3,-9.6,NaN,NaN,NaN,NaN,0,100,0,NaN,165,163,159,158,232,234,238,236,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-152.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,4,96,35.3,-2.0,-2.2,NaN,NaN,NaN,NaN,0,100,0,NaN,151,147,160,153,232,235,237,241,3;9;3;3;3;3;3;3;0\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
             expected = 
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -952.8, 2008-06-01T14:23:00Z, urn:ioos:sensor:wmo:42376::adcp0, 29, 89, 4.0, 0.5, 0.0, NaN, NaN, NaN, NaN, 100, 0, 0, NaN, 74, 75, 96, 48, 236, 237, NaN, 239, 2;9;2;3;9;3;3;3;2\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -984.8, 2008-06-01T14:23:00Z, urn:ioos:sensor:wmo:42376::adcp0, 30, 0, 0.0, 0.0, 0.0, NaN, NaN, NaN, NaN, 0, 0, 0, NaN, 69, 69, 93, 39, NaN, NaN, NaN, 217, 1;9;2;1;9;1;1;1;2\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -1016.8, 2008-06-01T14:23:00Z, urn:ioos:sensor:wmo:42376::adcp0, 31, 0, 0.0, 0.0, 0.0, NaN, NaN, NaN, NaN, 0, 0, 0, NaN, 62, 65, 89, 33, NaN, NaN, NaN, 245, 1;9;2;1;9;1;1;1;2\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -1048.8, 2008-06-01T14:23:00Z, urn:ioos:sensor:wmo:42376::adcp0, 32, 0, 0.0, 0.0, 0.0, NaN, NaN, NaN, NaN, 0, 0, 0, NaN, 199, 111, 73, 1, NaN, NaN, NaN, 212, 1;9;2;1;9;1;1;1;2\n";
+"-87.94,29.16,urn:ioos:station:wmo:42376,-952.8,2008-06-01T14:23:00Z,urn:ioos:sensor:wmo:42376::adcp0,29,89,4.0,0.5,0.0,NaN,NaN,NaN,NaN,100,0,0,NaN,74,75,96,48,236,237,NaN,239,2;9;2;3;9;3;3;3;2\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-984.8,2008-06-01T14:23:00Z,urn:ioos:sensor:wmo:42376::adcp0,30,0,0.0,0.0,0.0,NaN,NaN,NaN,NaN,0,0,0,NaN,69,69,93,39,NaN,NaN,NaN,217,1;9;2;1;9;1;1;1;2\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-1016.8,2008-06-01T14:23:00Z,urn:ioos:sensor:wmo:42376::adcp0,31,0,0.0,0.0,0.0,NaN,NaN,NaN,NaN,0,0,0,NaN,62,65,89,33,NaN,NaN,NaN,245,1;9;2;1;9;1;1;1;2\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-1048.8,2008-06-01T14:23:00Z,urn:ioos:sensor:wmo:42376::adcp0,32,0,0.0,0.0,0.0,NaN,NaN,NaN,NaN,0,0,0,NaN,199,111,73,1,NaN,NaN,NaN,212,1;9;2;1;9;1;1;1;2\n";
             Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "RESULTS=\n" + results);
 
             //test quality_flags regex (just GOOD data): &quality_flags=~"3;.*"
@@ -3603,18 +3705,18 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbc_test1", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, bin, direction_of_sea_water_velocity, sea_water_speed, upward_sea_water_velocity, error_velocity, platform_orientation, platform_pitch_angle, platform_roll_angle, sea_water_temperature, pct_good_3_beam, pct_good_4_beam, pct_rejected, pct_bad, echo_intensity_beam1, echo_intensity_beam2, echo_intensity_beam3, echo_intensity_beam4, correlation_magnitude_beam1, correlation_magnitude_beam2, correlation_magnitude_beam3, correlation_magnitude_beam4, quality_flags\n" +
-"degrees_east, degrees_north, , m, UTC, , count, degrees_true, cm/s, cm/s, cm/s, degrees_true, degree, degree, Cel, percent, percent, percent, percent, count, count, count, count, count, count, count, count, \n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -56.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 1, 83, 30.2, -2.6, -4.7, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 189, 189, 189, 193, 241, 239, 242, 240, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -88.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 2, 96, 40.5, -2.5, -3.7, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 177, 174, 180, 178, 237, 235, 230, 237, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -120.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 3, 96, 40.7, -1.3, -9.6, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 165, 163, 159, 158, 232, 234, 238, 236, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -152.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 4, 96, 35.3, -2.0, -2.2, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 151, 147, 160, 153, 232, 235, 237, 241, 3;9;3;3;3;3;3;3;0\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,bin,direction_of_sea_water_velocity,sea_water_speed,upward_sea_water_velocity,error_velocity,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,pct_good_3_beam,pct_good_4_beam,pct_rejected,pct_bad,echo_intensity_beam1,echo_intensity_beam2,echo_intensity_beam3,echo_intensity_beam4,correlation_magnitude_beam1,correlation_magnitude_beam2,correlation_magnitude_beam3,correlation_magnitude_beam4,quality_flags\n" +
+"degrees_east,degrees_north,,m,UTC,,count,degrees_true,cm/s,cm/s,cm/s,degrees_true,degree,degree,Cel,percent,percent,percent,percent,count,count,count,count,count,count,count,count,\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-56.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,1,83,30.2,-2.6,-4.7,NaN,NaN,NaN,NaN,0,100,0,NaN,189,189,189,193,241,239,242,240,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-88.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,2,96,40.5,-2.5,-3.7,NaN,NaN,NaN,NaN,0,100,0,NaN,177,174,180,178,237,235,230,237,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-120.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,3,96,40.7,-1.3,-9.6,NaN,NaN,NaN,NaN,0,100,0,NaN,165,163,159,158,232,234,238,236,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-152.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,4,96,35.3,-2.0,-2.2,NaN,NaN,NaN,NaN,0,100,0,NaN,151,147,160,153,232,235,237,241,3;9;3;3;3;3;3;3;0\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
             expected = //this is different from previous test
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -600.8, 2008-06-01T14:23:00Z, urn:ioos:sensor:wmo:42376::adcp0, 18, 160, 4.6, 0.1, -0.2, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 119, 120, 88, 108, 240, 239, 240, 242, 3;9;3;3;3;3;3;3;3\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -632.8, 2008-06-01T14:23:00Z, urn:ioos:sensor:wmo:42376::adcp0, 19, 166, 5.9, -0.6, -0.7, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 112, 113, 89, 106, 241, 240, 240, 240, 3;9;3;3;3;3;3;3;3\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -664.8, 2008-06-01T14:23:00Z, urn:ioos:sensor:wmo:42376::adcp0, 20, 142, 3.7, -1.7, -3.8, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 107, 108, 90, 102, 241, 240, 240, 240, 3;9;3;3;3;3;3;3;3\n";
+"-87.94,29.16,urn:ioos:station:wmo:42376,-600.8,2008-06-01T14:23:00Z,urn:ioos:sensor:wmo:42376::adcp0,18,160,4.6,0.1,-0.2,NaN,NaN,NaN,NaN,0,100,0,NaN,119,120,88,108,240,239,240,242,3;9;3;3;3;3;3;3;3\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-632.8,2008-06-01T14:23:00Z,urn:ioos:sensor:wmo:42376::adcp0,19,166,5.9,-0.6,-0.7,NaN,NaN,NaN,NaN,0,100,0,NaN,112,113,89,106,241,240,240,240,3;9;3;3;3;3;3;3;3\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-664.8,2008-06-01T14:23:00Z,urn:ioos:sensor:wmo:42376::adcp0,20,142,3.7,-1.7,-3.8,NaN,NaN,NaN,NaN,0,100,0,NaN,107,108,90,102,241,240,240,240,3;9;3;3;3;3;3;3;3\n";
             Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "RESULTS=\n" + results);
 
 
@@ -3627,43 +3729,43 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
 //Before revamping 2008-10, test returned values below.   NOW DIFFERENT!
-//    "urn:ioos:station:wmo:41035, -77.28, 34.48, -1.6, 2008-06-01T14:00:00Z, 223, 3.3\n" +    now 74, 15.2
-//    "urn:ioos:station:wmo:42376, -87.94, 29.16, -3.8, 2008-06-01T14:00:00Z, 206, 19.0\n";
-"longitude, latitude, station_id, altitude, time, sensor_id, bin, direction_of_sea_water_velocity, sea_water_speed, upward_sea_water_velocity, error_velocity, platform_orientation, platform_pitch_angle, platform_roll_angle, sea_water_temperature, pct_good_3_beam, pct_good_4_beam, pct_rejected, pct_bad, echo_intensity_beam1, echo_intensity_beam2, echo_intensity_beam3, echo_intensity_beam4, correlation_magnitude_beam1, correlation_magnitude_beam2, correlation_magnitude_beam3, correlation_magnitude_beam4, quality_flags\n" +
-"degrees_east, degrees_north, , m, UTC, , count, degrees_true, cm/s, cm/s, cm/s, degrees_true, degree, degree, Cel, percent, percent, percent, percent, count, count, count, count, count, count, count, count, \n" +
-"-77.28, 34.48, urn:ioos:station:wmo:41035, -1.6, 2008-06-01T14:00:00Z, urn:ioos:sensor:wmo:41035::pscm0, 1, 74, 15.2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -56.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 1, 83, 30.2, -2.6, -4.7, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 189, 189, 189, 193, 241, 239, 242, 240, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -88.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 2, 96, 40.5, -2.5, -3.7, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 177, 174, 180, 178, 237, 235, 230, 237, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -120.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 3, 96, 40.7, -1.3, -9.6, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 165, 163, 159, 158, 232, 234, 238, 236, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -152.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 4, 96, 35.3, -2.0, -2.2, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 151, 147, 160, 153, 232, 235, 237, 241, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -184.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 5, 89, 31.9, -1.9, -1.1, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 145, 144, 151, 151, 239, 241, 237, 241, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -216.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 6, 90, 25.2, -2.7, -3.8, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 144, 145, 141, 148, 240, 240, 239, 239, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -248.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 7, 74, 22.5, -2.6, -4.0, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 142, 144, 133, 131, 240, 238, 241, 241, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -280.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 8, 65, 21.5, -1.7, -0.8, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 132, 133, 133, 119, 237, 237, 241, 234, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -312.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 9, 71, 16.4, -0.2, 1.9, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 115, 117, 132, 124, 238, 238, 239, 240, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -344.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 10, 96, 13.8, -1.2, 0.6, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 101, 102, 135, 133, 242, 241, 239, 240, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -376.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 11, 110, 14.2, -0.5, 0.0, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 101, 102, 133, 133, 240, 241, 240, 242, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -408.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 12, 121, 12.9, -1.6, -4.4, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 103, 105, 125, 137, 241, 240, 240, 240, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -440.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 13, 111, 7.4, -1.9, -4.6, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 106, 108, 116, 136, 239, 240, 241, 240, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -472.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 14, 6, 2.0, 0.1, 0.4, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 110, 114, 104, 130, 241, 241, 240, 241, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -504.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 15, 17, 2.8, 1.0, 2.3, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 118, 122, 94, 125, 242, 241, 241, 241, 3;9;3;3;3;3;3;3;0\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -536.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 16, 37, 3.8, 0.6, 2.5, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 121, 124, 89, 122, 240, 240, 241, 240, 3;9;3;3;3;3;3;3;3\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -568.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 17, 124, 0.4, 1.2, 2.3, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 122, 124, 88, 115, 240, 240, 239, 240, 3;9;3;3;3;3;3;3;3\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -600.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 18, 147, 4.5, 0.0, 0.5, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 119, 120, 88, 108, 240, 240, 241, 241, 3;9;3;3;3;3;3;3;3\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -632.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 19, 167, 5.7, -0.1, -1.2, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 113, 114, 89, 105, 241, 240, 240, 239, 3;9;3;3;3;3;3;3;3\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -664.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 20, 150, 3.8, -0.8, -3.1, NaN, NaN, NaN, NaN, 0, 100, 0, NaN, 108, 109, 90, 101, 241, 241, 240, 239, 3;9;3;3;3;3;3;3;3\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -696.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 21, 317, 4.1, 0.0, 0.0, NaN, NaN, NaN, NaN, 100, 0, 0, NaN, 104, 104, 92, 98, 241, 242, NaN, 239, 2;9;2;3;9;3;3;3;3\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -728.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 22, 31, 2.9, 0.3, 0.0, NaN, NaN, NaN, NaN, 100, 0, 0, NaN, 102, 103, 96, 97, 240, 240, NaN, 241, 2;9;2;3;9;3;3;3;2\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -760.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 23, 62, 3.4, -0.6, 0.0, NaN, NaN, NaN, NaN, 100, 0, 0, NaN, 98, 100, 99, 87, 239, 240, NaN, 240, 2;9;2;3;9;3;3;3;2\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -792.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 24, 24, 4.4, 0.2, 0.0, NaN, NaN, NaN, NaN, 100, 0, 0, NaN, 92, 95, 102, 88, 241, 241, NaN, 241, 2;9;2;3;9;3;3;3;2\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -824.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 25, 56, 4.8, -0.2, 0.0, NaN, NaN, NaN, NaN, 100, 0, 0, NaN, 88, 90, 103, 81, 239, 240, NaN, 240, 2;9;2;3;9;3;3;3;2\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -856.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 26, 55, 2.8, 0.0, 0.0, NaN, NaN, NaN, NaN, 100, 0, 0, NaN, 87, 87, 103, 112, 240, 240, NaN, 239, 2;9;2;3;9;3;3;3;2\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -888.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 27, 68, 4.6, -0.3, 0.0, NaN, NaN, NaN, NaN, 100, 0, 0, NaN, 86, 87, 104, 166, 240, 239, NaN, 238, 2;9;2;3;9;3;3;3;2\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -920.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 28, 68, 5.2, -0.3, 0.0, NaN, NaN, NaN, NaN, 100, 0, 0, NaN, 78, 80, 99, 78, 238, 238, NaN, 238, 2;9;2;3;9;3;3;3;2\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -952.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 29, 75, 4.3, 0.4, 0.0, NaN, NaN, NaN, NaN, 100, 0, 0, NaN, 73, 75, 96, 48, 237, 238, NaN, 240, 2;9;2;3;9;3;3;3;2\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -984.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 30, 0, 0.0, 0.0, 0.0, NaN, NaN, NaN, NaN, 0, 0, 0, NaN, 69, 68, 92, 37, NaN, NaN, NaN, 222, 1;9;2;1;9;1;1;1;2\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -1016.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 31, 0, 0.0, 0.0, 0.0, NaN, NaN, NaN, NaN, 0, 0, 0, NaN, 63, 64, 89, 31, NaN, NaN, NaN, 244, 1;9;2;1;9;1;1;1;2\n" +
-"-87.94, 29.16, urn:ioos:station:wmo:42376, -1048.8, 2008-06-01T14:03:00Z, urn:ioos:sensor:wmo:42376::adcp0, 32, 0, 0.0, 0.0, 0.0, NaN, NaN, NaN, NaN, 0, 0, 0, NaN, 197, 112, 72, 0, NaN, NaN, NaN, 215, 1;9;2;1;9;1;1;1;2\n";
+//    "urn:ioos:station:wmo:41035,-77.28,34.48,-1.6,2008-06-01T14:00:00Z,223,3.3\n" +    now 74,15.2
+//    "urn:ioos:station:wmo:42376,-87.94,29.16,-3.8,2008-06-01T14:00:00Z,206,19.0\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,bin,direction_of_sea_water_velocity,sea_water_speed,upward_sea_water_velocity,error_velocity,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,pct_good_3_beam,pct_good_4_beam,pct_rejected,pct_bad,echo_intensity_beam1,echo_intensity_beam2,echo_intensity_beam3,echo_intensity_beam4,correlation_magnitude_beam1,correlation_magnitude_beam2,correlation_magnitude_beam3,correlation_magnitude_beam4,quality_flags\n" +
+"degrees_east,degrees_north,,m,UTC,,count,degrees_true,cm/s,cm/s,cm/s,degrees_true,degree,degree,Cel,percent,percent,percent,percent,count,count,count,count,count,count,count,count,\n" +
+"-77.28,34.48,urn:ioos:station:wmo:41035,-1.6,2008-06-01T14:00:00Z,urn:ioos:sensor:wmo:41035::pscm0,1,74,15.2,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-56.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,1,83,30.2,-2.6,-4.7,NaN,NaN,NaN,NaN,0,100,0,NaN,189,189,189,193,241,239,242,240,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-88.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,2,96,40.5,-2.5,-3.7,NaN,NaN,NaN,NaN,0,100,0,NaN,177,174,180,178,237,235,230,237,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-120.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,3,96,40.7,-1.3,-9.6,NaN,NaN,NaN,NaN,0,100,0,NaN,165,163,159,158,232,234,238,236,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-152.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,4,96,35.3,-2.0,-2.2,NaN,NaN,NaN,NaN,0,100,0,NaN,151,147,160,153,232,235,237,241,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-184.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,5,89,31.9,-1.9,-1.1,NaN,NaN,NaN,NaN,0,100,0,NaN,145,144,151,151,239,241,237,241,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-216.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,6,90,25.2,-2.7,-3.8,NaN,NaN,NaN,NaN,0,100,0,NaN,144,145,141,148,240,240,239,239,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-248.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,7,74,22.5,-2.6,-4.0,NaN,NaN,NaN,NaN,0,100,0,NaN,142,144,133,131,240,238,241,241,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-280.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,8,65,21.5,-1.7,-0.8,NaN,NaN,NaN,NaN,0,100,0,NaN,132,133,133,119,237,237,241,234,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-312.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,9,71,16.4,-0.2,1.9,NaN,NaN,NaN,NaN,0,100,0,NaN,115,117,132,124,238,238,239,240,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-344.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,10,96,13.8,-1.2,0.6,NaN,NaN,NaN,NaN,0,100,0,NaN,101,102,135,133,242,241,239,240,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-376.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,11,110,14.2,-0.5,0.0,NaN,NaN,NaN,NaN,0,100,0,NaN,101,102,133,133,240,241,240,242,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-408.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,12,121,12.9,-1.6,-4.4,NaN,NaN,NaN,NaN,0,100,0,NaN,103,105,125,137,241,240,240,240,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-440.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,13,111,7.4,-1.9,-4.6,NaN,NaN,NaN,NaN,0,100,0,NaN,106,108,116,136,239,240,241,240,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-472.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,14,6,2.0,0.1,0.4,NaN,NaN,NaN,NaN,0,100,0,NaN,110,114,104,130,241,241,240,241,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-504.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,15,17,2.8,1.0,2.3,NaN,NaN,NaN,NaN,0,100,0,NaN,118,122,94,125,242,241,241,241,3;9;3;3;3;3;3;3;0\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-536.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,16,37,3.8,0.6,2.5,NaN,NaN,NaN,NaN,0,100,0,NaN,121,124,89,122,240,240,241,240,3;9;3;3;3;3;3;3;3\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-568.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,17,124,0.4,1.2,2.3,NaN,NaN,NaN,NaN,0,100,0,NaN,122,124,88,115,240,240,239,240,3;9;3;3;3;3;3;3;3\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-600.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,18,147,4.5,0.0,0.5,NaN,NaN,NaN,NaN,0,100,0,NaN,119,120,88,108,240,240,241,241,3;9;3;3;3;3;3;3;3\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-632.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,19,167,5.7,-0.1,-1.2,NaN,NaN,NaN,NaN,0,100,0,NaN,113,114,89,105,241,240,240,239,3;9;3;3;3;3;3;3;3\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-664.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,20,150,3.8,-0.8,-3.1,NaN,NaN,NaN,NaN,0,100,0,NaN,108,109,90,101,241,241,240,239,3;9;3;3;3;3;3;3;3\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-696.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,21,317,4.1,0.0,0.0,NaN,NaN,NaN,NaN,100,0,0,NaN,104,104,92,98,241,242,NaN,239,2;9;2;3;9;3;3;3;3\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-728.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,22,31,2.9,0.3,0.0,NaN,NaN,NaN,NaN,100,0,0,NaN,102,103,96,97,240,240,NaN,241,2;9;2;3;9;3;3;3;2\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-760.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,23,62,3.4,-0.6,0.0,NaN,NaN,NaN,NaN,100,0,0,NaN,98,100,99,87,239,240,NaN,240,2;9;2;3;9;3;3;3;2\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-792.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,24,24,4.4,0.2,0.0,NaN,NaN,NaN,NaN,100,0,0,NaN,92,95,102,88,241,241,NaN,241,2;9;2;3;9;3;3;3;2\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-824.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,25,56,4.8,-0.2,0.0,NaN,NaN,NaN,NaN,100,0,0,NaN,88,90,103,81,239,240,NaN,240,2;9;2;3;9;3;3;3;2\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-856.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,26,55,2.8,0.0,0.0,NaN,NaN,NaN,NaN,100,0,0,NaN,87,87,103,112,240,240,NaN,239,2;9;2;3;9;3;3;3;2\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-888.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,27,68,4.6,-0.3,0.0,NaN,NaN,NaN,NaN,100,0,0,NaN,86,87,104,166,240,239,NaN,238,2;9;2;3;9;3;3;3;2\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-920.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,28,68,5.2,-0.3,0.0,NaN,NaN,NaN,NaN,100,0,0,NaN,78,80,99,78,238,238,NaN,238,2;9;2;3;9;3;3;3;2\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-952.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,29,75,4.3,0.4,0.0,NaN,NaN,NaN,NaN,100,0,0,NaN,73,75,96,48,237,238,NaN,240,2;9;2;3;9;3;3;3;2\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-984.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,30,0,0.0,0.0,0.0,NaN,NaN,NaN,NaN,0,0,0,NaN,69,68,92,37,NaN,NaN,NaN,222,1;9;2;1;9;1;1;1;2\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-1016.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,31,0,0.0,0.0,0.0,NaN,NaN,NaN,NaN,0,0,0,NaN,63,64,89,31,NaN,NaN,NaN,244,1;9;2;1;9;1;1;1;2\n" +
+"-87.94,29.16,urn:ioos:station:wmo:42376,-1048.8,2008-06-01T14:03:00Z,urn:ioos:sensor:wmo:42376::adcp0,32,0,0.0,0.0,0.0,NaN,NaN,NaN,NaN,0,0,0,NaN,197,112,72,0,NaN,NaN,NaN,215,1;9;2;1;9;1;1;1;2\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
 
@@ -3674,38 +3776,38 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbc_test2", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, bin, direction_of_sea_water_velocity, sea_water_speed, upward_sea_water_velocity, error_velocity, platform_orientation, platform_pitch_angle, platform_roll_angle, sea_water_temperature, pct_good_3_beam, pct_good_4_beam, pct_rejected, pct_bad, echo_intensity_beam1, echo_intensity_beam2, echo_intensity_beam3, echo_intensity_beam4, correlation_magnitude_beam1, correlation_magnitude_beam2, correlation_magnitude_beam3, correlation_magnitude_beam4, quality_flags\n" +
-"degrees_east, degrees_north, , m, UTC, , count, degrees_true, cm/s, cm/s, cm/s, degrees_true, degree, degree, Cel, percent, percent, percent, percent, count, count, count, count, count, count, count, count, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -5.0, 2008-06-01T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 1, 56, 6.3, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -7.0, 2008-06-01T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 2, 59, 14.8, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -9.0, 2008-06-01T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 3, 57, 20.6, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -11.0, 2008-06-01T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 4, 56, 22.2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -13.0, 2008-06-01T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 5, 59, 25.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -15.0, 2008-06-01T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 6, 63, 27.6, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -17.0, 2008-06-01T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 7, 70, 31.8, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -19.0, 2008-06-01T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 8, 73, 33.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -21.0, 2008-06-01T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 9, 74, 33.8, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -23.0, 2008-06-01T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 10, 75, 33.5, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -25.0, 2008-06-01T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 11, 76, 32.8, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -27.0, 2008-06-01T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 12, 75, 31.5, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -29.0, 2008-06-01T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 13, 77, 28.9, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -31.0, 2008-06-01T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 14, 78, 25.4, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -33.0, 2008-06-01T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 15, 80, 23.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -5.0, 2008-06-01T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 1, 52, 14.9, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -7.0, 2008-06-01T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 2, 63, 23.8, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -9.0, 2008-06-01T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 3, 68, 28.9, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -11.0, 2008-06-01T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 4, 71, 31.5, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -13.0, 2008-06-01T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 5, 74, 32.5, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -15.0, 2008-06-01T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 6, 81, 31.9, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -17.0, 2008-06-01T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 7, 83, 31.3, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -19.0, 2008-06-01T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 8, 85, 31.3, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -21.0, 2008-06-01T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 9, 84, 32.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -23.0, 2008-06-01T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 10, 85, 30.7, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -25.0, 2008-06-01T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 11, 86, 29.6, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -27.0, 2008-06-01T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 12, 85, 28.2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -29.0, 2008-06-01T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 13, 86, 26.9, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -31.0, 2008-06-01T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 14, 86, 25.2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -33.0, 2008-06-01T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 15, 85, 22.6, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n";
+"longitude,latitude,station_id,altitude,time,sensor_id,bin,direction_of_sea_water_velocity,sea_water_speed,upward_sea_water_velocity,error_velocity,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,pct_good_3_beam,pct_good_4_beam,pct_rejected,pct_bad,echo_intensity_beam1,echo_intensity_beam2,echo_intensity_beam3,echo_intensity_beam4,correlation_magnitude_beam1,correlation_magnitude_beam2,correlation_magnitude_beam3,correlation_magnitude_beam4,quality_flags\n" +
+"degrees_east,degrees_north,,m,UTC,,count,degrees_true,cm/s,cm/s,cm/s,degrees_true,degree,degree,Cel,percent,percent,percent,percent,count,count,count,count,count,count,count,count,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-5.0,2008-06-01T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,1,56,6.3,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-7.0,2008-06-01T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,2,59,14.8,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-9.0,2008-06-01T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,3,57,20.6,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-11.0,2008-06-01T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,4,56,22.2,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-13.0,2008-06-01T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,5,59,25.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-15.0,2008-06-01T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,6,63,27.6,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-17.0,2008-06-01T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,7,70,31.8,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-19.0,2008-06-01T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,8,73,33.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-21.0,2008-06-01T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,9,74,33.8,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-23.0,2008-06-01T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,10,75,33.5,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-25.0,2008-06-01T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,11,76,32.8,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-27.0,2008-06-01T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,12,75,31.5,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-29.0,2008-06-01T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,13,77,28.9,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-31.0,2008-06-01T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,14,78,25.4,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-33.0,2008-06-01T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,15,80,23.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-5.0,2008-06-01T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,1,52,14.9,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-7.0,2008-06-01T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,2,63,23.8,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-9.0,2008-06-01T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,3,68,28.9,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-11.0,2008-06-01T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,4,71,31.5,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-13.0,2008-06-01T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,5,74,32.5,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-15.0,2008-06-01T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,6,81,31.9,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-17.0,2008-06-01T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,7,83,31.3,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-19.0,2008-06-01T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,8,85,31.3,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-21.0,2008-06-01T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,9,84,32.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-23.0,2008-06-01T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,10,85,30.7,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-25.0,2008-06-01T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,11,86,29.6,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-27.0,2008-06-01T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,12,85,28.2,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-29.0,2008-06-01T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,13,86,26.9,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-31.0,2008-06-01T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,14,86,25.2,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-33.0,2008-06-01T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,15,85,22.6,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             //many stations   (this was "long hard test", now with text/csv it is quick and easy)
@@ -3715,14 +3817,14 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbc_test3", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, bin, direction_of_sea_water_velocity, sea_water_speed, upward_sea_water_velocity, error_velocity, platform_orientation, platform_pitch_angle, platform_roll_angle, sea_water_temperature, pct_good_3_beam, pct_good_4_beam, pct_rejected, pct_bad, echo_intensity_beam1, echo_intensity_beam2, echo_intensity_beam3, echo_intensity_beam4, correlation_magnitude_beam1, correlation_magnitude_beam2, correlation_magnitude_beam3, correlation_magnitude_beam4, quality_flags\n" +
-"degrees_east, degrees_north, , m, UTC, , count, degrees_true, cm/s, cm/s, cm/s, degrees_true, degree, degree, Cel, percent, percent, percent, percent, count, count, count, count, count, count, count, count, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -25.0, 2008-06-14T00:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 11, 93, 22.4, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -25.0, 2008-06-14T01:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 11, 96, 19.7, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -25.0, 2008-06-14T02:00:00Z, urn:ioos:sensor:wmo:41012::adcp0, 11, 103, 19.7, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-76.95, 34.21, urn:ioos:station:wmo:41036, -25.0, 2008-06-14T00:00:00Z, urn:ioos:sensor:wmo:41036::adcp0, 13, 170, 11.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-76.95, 34.21, urn:ioos:station:wmo:41036, -25.0, 2008-06-14T01:00:00Z, urn:ioos:sensor:wmo:41036::adcp0, 13, 190, 11.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n" +
-"-76.95, 34.21, urn:ioos:station:wmo:41036, -25.0, 2008-06-14T02:00:00Z, urn:ioos:sensor:wmo:41036::adcp0, 13, 220, 9.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, \n";
+"longitude,latitude,station_id,altitude,time,sensor_id,bin,direction_of_sea_water_velocity,sea_water_speed,upward_sea_water_velocity,error_velocity,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,pct_good_3_beam,pct_good_4_beam,pct_rejected,pct_bad,echo_intensity_beam1,echo_intensity_beam2,echo_intensity_beam3,echo_intensity_beam4,correlation_magnitude_beam1,correlation_magnitude_beam2,correlation_magnitude_beam3,correlation_magnitude_beam4,quality_flags\n" +
+"degrees_east,degrees_north,,m,UTC,,count,degrees_true,cm/s,cm/s,cm/s,degrees_true,degree,degree,Cel,percent,percent,percent,percent,count,count,count,count,count,count,count,count,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-25.0,2008-06-14T00:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,11,93,22.4,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-25.0,2008-06-14T01:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,11,96,19.7,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-25.0,2008-06-14T02:00:00Z,urn:ioos:sensor:wmo:41012::adcp0,11,103,19.7,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-76.95,34.21,urn:ioos:station:wmo:41036,-25.0,2008-06-14T00:00:00Z,urn:ioos:sensor:wmo:41036::adcp0,13,170,11.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-76.95,34.21,urn:ioos:station:wmo:41036,-25.0,2008-06-14T01:00:00Z,urn:ioos:sensor:wmo:41036::adcp0,13,190,11.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n" +
+"-76.95,34.21,urn:ioos:station:wmo:41036,-25.0,2008-06-14T02:00:00Z,urn:ioos:sensor:wmo:41036::adcp0,13,220,9.0,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
 
@@ -3825,8 +3927,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting -65.927;\n" +
+"    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 60.8;\n" +
 "    Float64 geospatial_lat_min 17.93;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -3840,6 +3943,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 "/tabledap/" + datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
+"    String keywords \"Atmosphere > Altitude > Station Height,\n" +
+"Oceans > Salinity/Density > Salinity,\n" +
+"altitude, atmosphere, density, height, identifier, ndbc, noaa, oceans, salinity, sea, sea_water_salinity, seawater, sensor, sos, station, time, water\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -3847,7 +3954,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 60.8;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing 17.93;\n" +
@@ -3869,10 +3976,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbcSosSalinity", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, sea_water_salinity\n" +
-"degrees_east, degrees_north, , m, UTC, , PSU\n" +
-"-123.32, 38.23, urn:ioos:station:wmo:46013, -1.0, 2008-08-01T20:50:00Z, urn:ioos:sensor:wmo:46013::ct1, 33.89\n" +
-"-123.32, 38.23, urn:ioos:station:wmo:46013, -1.0, 2008-08-01T22:50:00Z, urn:ioos:sensor:wmo:46013::ct1, 33.89\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
+"degrees_east,degrees_north,,m,UTC,,PSU\n" +
+"-123.32,38.23,urn:ioos:station:wmo:46013,-1.0,2008-08-01T20:50:00Z,urn:ioos:sensor:wmo:46013::ct1,33.89\n" +
+"-123.32,38.23,urn:ioos:station:wmo:46013,-1.0,2008-08-01T22:50:00Z,urn:ioos:sensor:wmo:46013::ct1,33.89\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             
@@ -3882,20 +3989,20 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbcSosSalinityAll", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = //46081 appeared 2010-07-20
-"longitude, latitude, station_id, altitude, time, sensor_id, sea_water_salinity\n" +
-"degrees_east, degrees_north, , m, UTC, , PSU\n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -1.0, 2010-05-27T00:50:00Z, urn:ioos:sensor:wmo:41012::ct1, 35.58\n" +
-"-65.927, 42.312, urn:ioos:station:wmo:44024, -1.0, 2010-05-27T01:00:00Z, urn:ioos:sensor:wmo:44024::ct1, 32.4\n" +
-"-70.57, 42.52, urn:ioos:station:wmo:44029, -1.0, 2010-05-27T00:00:00Z, urn:ioos:sensor:wmo:44029::ct1, 30.2\n" +
-"-70.57, 42.52, urn:ioos:station:wmo:44029, -1.0, 2010-05-27T01:00:00Z, urn:ioos:sensor:wmo:44029::ct1, 30.2\n" +
-"-70.43, 43.18, urn:ioos:station:wmo:44030, -1.0, 2010-05-27T01:00:00Z, urn:ioos:sensor:wmo:44030::ct1, 30.5\n" +
-"-69.0, 44.06, urn:ioos:station:wmo:44033, -1.0, 2010-05-27T01:00:00Z, urn:ioos:sensor:wmo:44033::ct1, 30.8\n" +
-"-68.11, 44.11, urn:ioos:station:wmo:44034, -1.0, 2010-05-27T00:00:00Z, urn:ioos:sensor:wmo:44034::ct1, 31.6\n" +
-"-68.11, 44.11, urn:ioos:station:wmo:44034, -1.0, 2010-05-27T01:00:00Z, urn:ioos:sensor:wmo:44034::ct1, 31.6\n" +
-"-148.28, 60.8, urn:ioos:station:wmo:46081, -2.5, 2010-05-27T00:50:00Z, urn:ioos:sensor:wmo:46081::ct1, 25.24\n" +
-"-73.926, 42.027, urn:ioos:station:wmo:anrn6, NaN, 2010-05-27T00:45:00Z, urn:ioos:sensor:wmo:anrn6::ct1, 0.1\n" +
-"-73.926, 42.027, urn:ioos:station:wmo:anrn6, NaN, 2010-05-27T01:00:00Z, urn:ioos:sensor:wmo:anrn6::ct1, 0.1\n" +
-"-84.875, 29.786, urn:ioos:station:wmo:apqf1, NaN, 2010-05-27T00:15:00Z, urn:ioos:sensor:wmo:apqf1::ct1, 2.2\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
+"degrees_east,degrees_north,,m,UTC,,PSU\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-1.0,2010-05-27T00:50:00Z,urn:ioos:sensor:wmo:41012::ct1,35.58\n" +
+"-65.927,42.312,urn:ioos:station:wmo:44024,-1.0,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:44024::ct1,32.4\n" +
+"-70.57,42.52,urn:ioos:station:wmo:44029,-1.0,2010-05-27T00:00:00Z,urn:ioos:sensor:wmo:44029::ct1,30.2\n" +
+"-70.57,42.52,urn:ioos:station:wmo:44029,-1.0,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:44029::ct1,30.2\n" +
+"-70.43,43.18,urn:ioos:station:wmo:44030,-1.0,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:44030::ct1,30.5\n" +
+"-69.0,44.06,urn:ioos:station:wmo:44033,-1.0,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:44033::ct1,30.8\n" +
+"-68.11,44.11,urn:ioos:station:wmo:44034,-1.0,2010-05-27T00:00:00Z,urn:ioos:sensor:wmo:44034::ct1,31.6\n" +
+"-68.11,44.11,urn:ioos:station:wmo:44034,-1.0,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:44034::ct1,31.6\n" +
+"-148.28,60.8,urn:ioos:station:wmo:46081,-2.5,2010-05-27T00:50:00Z,urn:ioos:sensor:wmo:46081::ct1,25.24\n" +
+"-73.926,42.027,urn:ioos:station:wmo:anrn6,NaN,2010-05-27T00:45:00Z,urn:ioos:sensor:wmo:anrn6::ct1,0.1\n" +
+"-73.926,42.027,urn:ioos:station:wmo:anrn6,NaN,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:anrn6::ct1,0.1\n" +
+"-84.875,29.786,urn:ioos:station:wmo:apqf1,NaN,2010-05-27T00:15:00Z,urn:ioos:sensor:wmo:apqf1::ct1,2.2\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -3932,11 +4039,11 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 "\nnRows ~= " + (results.length()/80));
 
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, sea_water_temperature\n" +
-"degrees_east, degrees_north, , m, UTC, , degree_C\n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -0.6, 2008-07-21T20:50:00Z, urn:ioos:sensor:wmo:41012::watertemp1, 28.0\n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -0.6, 2008-07-21T21:50:00Z, urn:ioos:sensor:wmo:41012::watertemp1, 28.0\n" +
-"-80.55, 30.04, urn:ioos:station:wmo:41012, -0.6, 2008-07-21T22:50:00Z, urn:ioos:sensor:wmo:41012::watertemp1, 28.0\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,sea_water_temperature\n" +
+"degrees_east,degrees_north,,m,UTC,,degree_C\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-0.6,2008-07-21T20:50:00Z,urn:ioos:sensor:wmo:41012::watertemp1,28.0\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-0.6,2008-07-21T21:50:00Z,urn:ioos:sensor:wmo:41012::watertemp1,28.0\n" +
+"-80.55,30.04,urn:ioos:station:wmo:41012,-0.6,2008-07-21T22:50:00Z,urn:ioos:sensor:wmo:41012::watertemp1,28.0\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, 
                 "RESULTS=\n" + results.substring(0, nb));
 
@@ -3944,7 +4051,8 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             //but the data just doesn't go back nearly as far as cwwcNDBCMet.
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error. NDBC SOS Server is in flux." +
+                "\n\nAs of 2012-04-09, this fails because requests again limited to 30 days." +
+                "\nNDBC SOS Server is in flux." +
                 "\nPress ^C to stop or Enter to continue..."); 
         }
     }
@@ -4030,8 +4138,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting 178.27;\n" +
+"    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 57.5;\n" +
 "    Float64 geospatial_lat_min -46.92;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -4047,6 +4156,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 "/tabledap/" + datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
+"    String keywords \"Oceans > Bathymetry/Seafloor Topography > Bathymetry,\n" +
+"altitude, atmosphere, averaging, below, depth, floor, height, identifier, interval, level, ndbc, noaa, sea, sea level, sensor, sos, station, surface, time\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -4054,7 +4166,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 57.5;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -46.92;\n" +
@@ -4077,13 +4189,13 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbcSosWLevel", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, averaging_interval\n" +
-"degrees_east, degrees_north, , m, UTC, , s\n" +
-"160.56, -46.92, urn:ioos:station:wmo:55015, -4944.303, 2008-08-01T14:00:00Z, urn:ioos:sensor:wmo:55015::tsunameter0, 900\n" +
-"160.56, -46.92, urn:ioos:station:wmo:55015, -4944.215, 2008-08-01T14:15:00Z, urn:ioos:sensor:wmo:55015::tsunameter0, 900\n" +
-"160.56, -46.92, urn:ioos:station:wmo:55015, -4944.121, 2008-08-01T14:30:00Z, urn:ioos:sensor:wmo:55015::tsunameter0, 900\n" +
-"160.56, -46.92, urn:ioos:station:wmo:55015, -4944.025, 2008-08-01T14:45:00Z, urn:ioos:sensor:wmo:55015::tsunameter0, 900\n" +
-"160.56, -46.92, urn:ioos:station:wmo:55015, -4943.93, 2008-08-01T15:00:00Z, urn:ioos:sensor:wmo:55015::tsunameter0, 900\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,averaging_interval\n" +
+"degrees_east,degrees_north,,m,UTC,,s\n" +
+"160.56,-46.92,urn:ioos:station:wmo:55015,-4944.303,2008-08-01T14:00:00Z,urn:ioos:sensor:wmo:55015::tsunameter0,900\n" +
+"160.56,-46.92,urn:ioos:station:wmo:55015,-4944.215,2008-08-01T14:15:00Z,urn:ioos:sensor:wmo:55015::tsunameter0,900\n" +
+"160.56,-46.92,urn:ioos:station:wmo:55015,-4944.121,2008-08-01T14:30:00Z,urn:ioos:sensor:wmo:55015::tsunameter0,900\n" +
+"160.56,-46.92,urn:ioos:station:wmo:55015,-4944.025,2008-08-01T14:45:00Z,urn:ioos:sensor:wmo:55015::tsunameter0,900\n" +
+"160.56,-46.92,urn:ioos:station:wmo:55015,-4943.93,2008-08-01T15:00:00Z,urn:ioos:sensor:wmo:55015::tsunameter0,900\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -4124,7 +4236,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range -14.551, 60.8;\n" +
+"    Float64 actual_range -14.551, 70.875;\n" +
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -4148,7 +4260,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.1712528e+9, NaN;\n" +
+"    Float64 actual_range 1.1540346e+9, NaN;\n" +
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -4175,9 +4287,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting 180.0;\n" +
-"    Float64 geospatial_lat_max 60.8;\n" +
+"    String featureType \"TimeSeries\";\n" +
+"    Float64 geospatial_lat_max 70.875;\n" +
 "    Float64 geospatial_lat_min -14.551;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max 180.0;\n" +
@@ -4190,6 +4303,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 "/tabledap/" + datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
+"    String keywords \"Atmosphere > Altitude > Station Height,\n" +
+"Oceans > Ocean Temperature > Water Temperature,\n" +
+"altitude, atmosphere, height, identifier, ndbc, noaa, ocean, oceans, sea, sea_water_temperature, seawater, sensor, sos, station, temperature, time, water\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -4197,8 +4314,8 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
-"    Float64 Northernmost_Northing 60.8;\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    Float64 Northernmost_Northing 70.875;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -14.551;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
@@ -4206,7 +4323,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_water_temperature data.\n" +
 "\n" +
 "Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.\";\n" +
-"    String time_coverage_start \"2007-02-12T04:00:00Z\";\n" +
+"    String time_coverage_start \"2006-07-27T21:10:00Z\";\n" +
 "    String title \"NOAA NDBC SOS - sea_water_temperature\";\n" +
 "    Float64 Westernmost_Easting -178.343;\n" +
 "  }\n" +
@@ -4219,14 +4336,14 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbcSosWTemp", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, sea_water_temperature\n" +
-"degrees_east, degrees_north, , m, UTC, , degree_C\n" +
-"-123.32, 38.23, urn:ioos:station:wmo:46013, -0.6, 2008-08-01T14:50:00Z, urn:ioos:sensor:wmo:46013::watertemp1, 10.9\n" +
-"-123.32, 38.23, urn:ioos:station:wmo:46013, -0.6, 2008-08-01T15:50:00Z, urn:ioos:sensor:wmo:46013::watertemp1, 10.9\n" +
-"-123.32, 38.23, urn:ioos:station:wmo:46013, -0.6, 2008-08-01T16:50:00Z, urn:ioos:sensor:wmo:46013::watertemp1, 10.9\n" +
-"-123.32, 38.23, urn:ioos:station:wmo:46013, -0.6, 2008-08-01T17:50:00Z, urn:ioos:sensor:wmo:46013::watertemp1, 10.9\n" +
-"-123.32, 38.23, urn:ioos:station:wmo:46013, -0.6, 2008-08-01T18:50:00Z, urn:ioos:sensor:wmo:46013::watertemp1, 11.0\n" +
-"-123.32, 38.23, urn:ioos:station:wmo:46013, -0.6, 2008-08-01T19:50:00Z, urn:ioos:sensor:wmo:46013::watertemp1, 11.1\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,sea_water_temperature\n" +
+"degrees_east,degrees_north,,m,UTC,,degree_C\n" +
+"-123.32,38.23,urn:ioos:station:wmo:46013,-0.6,2008-08-01T14:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,10.9\n" +
+"-123.32,38.23,urn:ioos:station:wmo:46013,-0.6,2008-08-01T15:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,10.9\n" +
+"-123.32,38.23,urn:ioos:station:wmo:46013,-0.6,2008-08-01T16:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,10.9\n" +
+"-123.32,38.23,urn:ioos:station:wmo:46013,-0.6,2008-08-01T17:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,10.9\n" +
+"-123.32,38.23,urn:ioos:station:wmo:46013,-0.6,2008-08-01T18:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,11.0\n" +
+"-123.32,38.23,urn:ioos:station:wmo:46013,-0.6,2008-08-01T19:50:00Z,urn:ioos:sensor:wmo:46013::watertemp1,11.1\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -4503,8 +4620,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting 179.0;\n" +
+"    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 60.8;\n" +
 "    Float64 geospatial_lat_min -19.713;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -4518,6 +4636,16 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 "/tabledap/" + datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
+"    String keywords \"Atmosphere > Altitude > Station Height,\n" +
+"Oceans > Ocean Temperature > Water Temperature,\n" +
+"Oceans > Ocean Waves > Significant Wave Height,\n" +
+"Oceans > Ocean Waves > Swells,\n" +
+"Oceans > Ocean Waves > Wave Frequency,\n" +
+"Oceans > Ocean Waves > Wave Period,\n" +
+"Oceans > Ocean Waves > Wave Speed/Direction,\n" +
+"Oceans > Ocean Waves > Wind Waves,\n" +
+"altitude, atmosphere, bandwidths, calculation, center, coordinate, direction, energy, frequencies, height, identifier, mean, mean_wave_direction, method, ndbc, noaa, number, ocean, oceans, peak, period, polar, principal, rate, sampling, sea, sea_surface_swell_wave_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_to_direction, sea_surface_wave_mean_period, sea_surface_wave_peak_period, sea_surface_wave_significant_height, sea_surface_wave_to_direction, sea_surface_wind_wave_period, sea_surface_wind_wave_significant_height, sea_surface_wind_wave_to_direction, sea_water_temperature, seawater, sensor, significant, sos, spectral, speed, station, surface, surface waves, swell, swells, temperature, time, water, wave, waves, wind\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -4525,7 +4653,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 60.8;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -19.713;\n" +
@@ -4550,29 +4678,29 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
 /* was
-"longitude, latitude, station_id, altitude, time, SignificantWaveHeight, DominantWavePeriod, AverageWavePeriod, SwellHeight, SwellPeriod, WindWaveHeight, WindWavePeriod, WaterTemperature, WaveDuration, CalculationMethod, SamplingRate, NumberOfFrequencies, CenterFrequencies, Bandwidths, SpectralEnergy, MeanWaveDirectionPeakPeriod, SwellWaveDirection, WindWaveDirection, MeanWaveDirection, PrincipalWaveDirection, PolarCoordinateR1, PolarCoordinateR2, DirectionalWaveParameter, FourierCoefficientA1, FourierCoefficientA2, FourierCoefficientB1, FourierCoefficientB2\n" +
-"degrees_east, degrees_north, , m, UTC, m, s, s, m, s, m, s, degree_C, s, , Hz, count, Hz, Hz, m2 Hz-1, degrees_true, degrees_true, degrees_true, degrees_true, degrees_true, degrees_true, degrees_true, degrees_true, m, m, m, m\n" +
-//before 2008-10-29 (last week?), I think the DirectionalWaveParameters were different
+"longitude,latitude,station_id,altitude,time,SignificantWaveHeight,DominantWavePeriod,AverageWavePeriod,SwellHeight,SwellPeriod,WindWaveHeight,WindWavePeriod,WaterTemperature,WaveDuration,CalculationMethod,SamplingRate,NumberOfFrequencies,CenterFrequencies,Bandwidths,SpectralEnergy,MeanWaveDirectionPeakPeriod,SwellWaveDirection,WindWaveDirection,MeanWaveDirection,PrincipalWaveDirection,PolarCoordinateR1,PolarCoordinateR2,DirectionalWaveParameter,FourierCoefficientA1,FourierCoefficientA2,FourierCoefficientB1,FourierCoefficientB2\n" +
+"degrees_east,degrees_north,,m,UTC,m,s,s,m,s,m,s,degree_C,s,,Hz,count,Hz,Hz,m2 Hz-1,degrees_true,degrees_true,degrees_true,degrees_true,degrees_true,degrees_true,degrees_true,degrees_true,m,m,m,m\n" +
+//before 2008-10-29 (last week?),I think the DirectionalWaveParameters were different
 //it changed again (~11am) vs earlier today (~9am)  2008-10-29
 //see email to jeffDlB 2008-10-29
-  "-123.32, 38.23, urn:ioos:station:wmo:46013, NaN, 2008-08-01T14:50:00Z, 1.62, 14.81, 5.21, 1.12, 14.8, 1.17, 4.3, NaN, NaN, Longuet-Higgins (1964), NaN, 46, 0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850, 0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200, 0;0;0;0;0;0.779157;0.372876;2.02274;0.714328;0.675131;0.296029;0.138154;0.605274;1.96737;1.16217;0.884235;0.462599;0.57436;0.504724;0.218129;0.38115;0.504237;0.45285;0.708456;0.626689;0.747685;0.883292;0.632856;0.448383;0.331531;0.123811;0.265022;0.214203;0.208534;0.21145;0.223251;0.114582;0.10544;0.130131;0.118191;0.0652535;0.0604571;0.0167055;0.0158453;0.00866108;0.00483522, 176.0, 176.0, 312.0, 158.0;336.0;188.0;11.0;78.0;263.0;189.0;176.0;196.0;212.0;249.0;182.0;267.0;292.0;299.0;306.0;290.0;299.0;304.0;294.0;301.0;304.0;320.0;314.0;311.0;303.0;312.0;317.0;315.0;307.0;316.0;314.0;305.0;317.0;306.0;311.0;310.0;303.0;294.0;308.0;298.0;302.0;303.0;113.0;127.0;113.0, 183.0;8.0;181.0;7.0;3.0;301.0;275.0;134.0;123.0;262.0;279.0;92.0;281.0;293.0;299.0;308.0;292.0;306.0;310.0;300.0;304.0;306.0;326.0;317.0;310.0;303.0;312.0;318.0;316.0;309.0;319.0;318.0;306.0;319.0;307.0;313.0;309.0;305.0;286.0;309.0;271.0;296.0;254.0;111.0;99.0;92.0, 0.212213;0.112507;0.304966;0.35902;0.254397;0.488626;0.263791;0.515939;0.462758;0.430386;0.497566;0.12097;0.497566;0.653071;0.826652;0.841777;0.702193;0.768824;0.797214;0.741445;0.797214;0.797214;0.826652;0.841777;0.857178;0.841777;0.938514;0.921652;0.905092;0.8118;0.826652;0.826652;0.78289;0.872861;0.905092;0.857178;0.88883;0.841777;0.768824;0.857178;0.677187;0.826652;0.629814;0.797214;0.677187;0.715041, 0.768824;0.78289;0.826652;0.497566;0.220049;0.263791;0.488626;0.372277;0.125437;0.386024;0.304966;0.278536;0.310546;0.365588;0.653071;0.66502;0.607386;0.488626;0.525379;0.430386;0.462758;0.446279;0.585756;0.544779;0.564896;0.534991;0.78289;0.768824;0.66502;0.43826;0.525379;0.462758;0.379088;0.715041;0.689577;0.585756;0.641337;0.544779;0.333904;0.554746;0.137339;0.564896;0.134872;0.372277;0.108501;0.340013, , , , , \n" +
-//"-123.32, 38.23, urn:ioos:station:wmo:46013, NaN, 2008-08-01T14:50:00Z, 1.62, 14.81, 5.21, 1.12, 14.8, 1.17, 4.3, NaN, NaN, Longuet-Higgins (1964), NaN, 46, 0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850, 0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200, 0;0;0;0;0;0.779157;0.372876;2.02274;0.714328;0.675131;0.296029;0.138154;0.605274;1.96737;1.16217;0.884235;0.462599;0.57436;0.504724;0.218129;0.38115;0.504237;0.45285;0.708456;0.626689;0.747685;0.883292;0.632856;0.448383;0.331531;0.123811;0.265022;0.214203;0.208534;0.21145;0.223251;0.114582;0.10544;0.130131;0.118191;0.0652535;0.0604571;0.0167055;0.0158453;0.00866108;0.00483522, 176.0, 176.0, 312.0, 158.0;336.0;188.0;11.0;78.0;263.0;189.0;176.0;196.0;212.0;249.0;182.0;267.0;292.0;299.0;306.0;290.0;299.0;304.0;294.0;301.0;304.0;320.0;314.0;311.0;303.0;312.0;317.0;315.0;307.0;316.0;314.0;305.0;317.0;306.0;311.0;310.0;303.0;294.0;308.0;298.0;302.0;303.0;113.0;127.0;113.0, 0.2;0.1;0.3;0.4;0.3;0.5;0.3;0.5;0.5;0.4;0.5;0.1;0.5;0.7;0.8;0.8;0.7;0.8;0.8;0.7;0.8;0.8;0.8;0.8;0.9;0.8;0.9;0.9;0.9;0.8;0.8;0.8;0.8;0.9;0.9;0.9;0.9;0.8;0.8;0.9;0.7;0.8;0.6;0.8;0.7;0.7, 0.212213;0.112507;0.304966;0.35902;0.254397;0.488626;0.263791;0.515939;0.462758;0.430386;0.497566;0.12097;0.497566;0.653071;0.826652;0.841777;0.702193;0.768824;0.797214;0.741445;0.797214;0.797214;0.826652;0.841777;0.857178;0.841777;0.938514;0.921652;0.905092;0.8118;0.826652;0.826652;0.78289;0.872861;0.905092;0.857178;0.88883;0.841777;0.768824;0.857178;0.677187;0.826652;0.629814;0.797214;0.677187;0.715041, 0.768824;0.78289;0.826652;0.497566;0.220049;0.263791;0.488626;0.372277;0.125437;0.386024;0.304966;0.278536;0.310546;0.365588;0.653071;0.66502;0.607386;0.488626;0.525379;0.430386;0.462758;0.446279;0.585756;0.544779;0.564896;0.534991;0.78289;0.768824;0.66502;0.43826;0.525379;0.462758;0.379088;0.715041;0.689577;0.585756;0.641337;0.544779;0.333904;0.554746;0.137339;0.564896;0.134872;0.372277;0.108501;0.340013, , , , , \n" +
-//"-123.32, 38.23, urn:ioos:station:wmo:46013, NaN, 2008-08-01T14:50:00Z, 1.62, 14.81, 5.21, 1.12, 14.8, 1.17, 4.3, NaN, NaN, Longuet-Higgins (1964), NaN, 46, 0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850, 0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200, 0;0;0;0;0;0.779157;0.372876;2.02274;0.714328;0.675131;0.296029;0.138154;0.605274;1.96737;1.16217;0.884235;0.462599;0.57436;0.504724;0.218129;0.38115;0.504237;0.45285;0.708456;0.626689;0.747685;0.883292;0.632856;0.448383;0.331531;0.123811;0.265022;0.214203;0.208534;0.21145;0.223251;0.114582;0.10544;0.130131;0.118191;0.0652535;0.0604571;0.0167055;0.0158453;0.00866108;0.00483522, 176.0, 176.0, 312.0, 158.0;336.0;188.0;11.0;78.0;263.0;189.0;176.0;196.0;212.0;249.0;182.0;267.0;292.0;299.0;306.0;290.0;299.0;304.0;294.0;301.0;304.0;320.0;314.0;311.0;303.0;312.0;317.0;315.0;307.0;316.0;314.0;305.0;317.0;306.0;311.0;310.0;303.0;294.0;308.0;298.0;302.0;303.0;113.0;127.0;113.0, 0.2;0.1;0.3;0.4;0.3;0.5;0.3;0.5;0.5;0.4;0.5;0.1;0.5;0.7;0.8;0.8;0.7;0.8;0.8;0.7;0.8;0.8;0.8;0.8;0.9;0.8;0.9;0.9;0.9;0.8;0.8;0.8;0.8;0.9;0.9;0.9;0.9;0.8;0.8;0.9;0.7;0.8;0.6;0.8;0.7;0.7, 0.212213;0.112507;0.304966;0.35902;0.254397;0.488626;0.263791;0.515939;0.462758;0.430386;0.497566;0.12097;0.497566;0.653071;0.826652;0.841777;0.702193;0.768824;0.797214;0.741445;0.797214;0.797214;0.826652;0.841777;0.857178;0.841777;0.938514;0.921652;0.905092;0.8118;0.826652;0.826652;0.78289;0.872861;0.905092;0.857178;0.88883;0.841777;0.768824;0.857178;0.677187;0.826652;0.629814;0.797214;0.677187;0.715041, 0.212213;0.112507;0.304966;0.35902;0.254397;0.488626;0.263791;0.515939;0.462758;0.430386;0.497566;0.12097;0.497566;0.653071;0.826652;0.841777;0.702193;0.768824;0.797214;0.741445;0.797214;0.797214;0.826652;0.841777;0.857178;0.841777;0.938514;0.921652;0.905092;0.8118;0.826652;0.826652;0.78289;0.872861;0.905092;0.857178;0.88883;0.841777;0.768824;0.857178;0.677187;0.826652;0.629814;0.797214;0.677187;0.715041, , , , , \n" +
-  "-123.32, 38.23, urn:ioos:station:wmo:46013, NaN, 2008-08-01T15:50:00Z, 1.52, 9.09, 4.98, 1.0, 9.1, 1.15, 5.6, NaN, NaN, Longuet-Higgins (1964), NaN, 46, 0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850, 0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200, 0;0;0;0;0;0.244172;0.874391;0.950049;0.992051;0.292122;0.416385;0.116264;0.32567;1.0886;1.49577;0.707195;0.412901;0.383;0.336784;0.162325;0.507266;0.721374;0.521185;0.317616;0.580232;0.620904;0.720338;0.544952;0.400361;0.457406;0.340211;0.190368;0.295531;0.258054;0.13138;0.178793;0.207494;0.162191;0.0901461;0.101774;0.0468724;0.036226;0.0442694;0.0218615;0.0143249;0.00447678, 291.0, 291.0, 297.0, 245.0;180.0;16.0;1.0;157.0;253.0;192.0;221.0;234.0;193.0;171.0;182.0;331.0;297.0;291.0;287.0;304.0;296.0;295.0;307.0;306.0;297.0;309.0;309.0;310.0;301.0;321.0;300.0;296.0;315.0;295.0;305.0;311.0;311.0;312.0;312.0;311.0;309.0;305.0;310.0;317.0;304.0;303.0;125.0;132.0;122.0, 179.0;190.0;1.0;1.0;176.0;292.0;110.0;311.0;321.0;118.0;143.0;131.0;335.0;305.0;296.0;290.0;313.0;310.0;298.0;321.0;306.0;298.0;308.0;308.0;310.0;301.0;323.0;300.0;294.0;320.0;295.0;308.0;312.0;313.0;315.0;311.0;311.0;310.0;305.0;311.0;316.0;309.0;298.0;121.0;132.0;109.0, 0.153123;0.340013;0.288822;0.254397;0.372277;0.379088;0.400278;0.430386;0.299487;0.14767;0.228175;0.393087;0.534991;0.741445;0.78289;0.857178;0.702193;0.741445;0.797214;0.689577;0.857178;0.921652;0.905092;0.768824;0.905092;0.88883;0.921652;0.88883;0.872861;0.872861;0.872861;0.872861;0.921652;0.88883;0.857178;0.857178;0.88883;0.857178;0.78289;0.797214;0.728123;0.741445;0.826652;0.8118;0.872861;0.728123, 0.768824;0.575231;0.564896;0.689577;0.575231;0.497566;0.150371;0.259051;0.259051;0.728123;0.400278;0.393087;0.728123;0.689577;0.66502;0.677187;0.607386;0.400278;0.575231;0.534991;0.677187;0.8118;0.75501;0.365588;0.741445;0.741445;0.8118;0.689577;0.653071;0.653071;0.629814;0.618498;0.768824;0.689577;0.585756;0.596473;0.66502;0.629814;0.454444;0.415059;0.283632;0.216095;0.488626;0.488626;0.618498;0.236601, , , , , \n" +
-//"-123.32, 38.23, urn:ioos:station:wmo:46013, NaN, 2008-08-01T15:50:00Z, 1.52, 9.09, 4.98, 1.0, 9.1, 1.15, 5.6, NaN, NaN, Longuet-Higgins (1964), NaN, 46, 0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850, 0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200, 0;0;0;0;0;0.244172;0.874391;0.950049;0.992051;0.292122;0.416385;0.116264;0.32567;1.0886;1.49577;0.707195;0.412901;0.383;0.336784;0.162325;0.507266;0.721374;0.521185;0.317616;0.580232;0.620904;0.720338;0.544952;0.400361;0.457406;0.340211;0.190368;0.295531;0.258054;0.13138;0.178793;0.207494;0.162191;0.0901461;0.101774;0.0468724;0.036226;0.0442694;0.0218615;0.0143249;0.00447678, 291.0, 291.0, 297.0, 245.0;180.0;16.0;1.0;157.0;253.0;192.0;221.0;234.0;193.0;171.0;182.0;331.0;297.0;291.0;287.0;304.0;296.0;295.0;307.0;306.0;297.0;309.0;309.0;310.0;301.0;321.0;300.0;296.0;315.0;295.0;305.0;311.0;311.0;312.0;312.0;311.0;309.0;305.0;310.0;317.0;304.0;303.0;125.0;132.0;122.0, 0.2;0.3;0.3;0.3;0.4;0.4;0.4;0.4;0.3;0.1;0.2;0.4;0.5;0.7;0.8;0.9;0.7;0.7;0.8;0.7;0.9;0.9;0.9;0.8;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.8;0.8;0.7;0.7;0.8;0.8;0.9;0.7, 0.153123;0.340013;0.288822;0.254397;0.372277;0.379088;0.400278;0.430386;0.299487;0.14767;0.228175;0.393087;0.534991;0.741445;0.78289;0.857178;0.702193;0.741445;0.797214;0.689577;0.857178;0.921652;0.905092;0.768824;0.905092;0.88883;0.921652;0.88883;0.872861;0.872861;0.872861;0.872861;0.921652;0.88883;0.857178;0.857178;0.88883;0.857178;0.78289;0.797214;0.728123;0.741445;0.826652;0.8118;0.872861;0.728123, 0.768824;0.575231;0.564896;0.689577;0.575231;0.497566;0.150371;0.259051;0.259051;0.728123;0.400278;0.393087;0.728123;0.689577;0.66502;0.677187;0.607386;0.400278;0.575231;0.534991;0.677187;0.8118;0.75501;0.365588;0.741445;0.741445;0.8118;0.689577;0.653071;0.653071;0.629814;0.618498;0.768824;0.689577;0.585756;0.596473;0.66502;0.629814;0.454444;0.415059;0.283632;0.216095;0.488626;0.488626;0.618498;0.236601, , , , , \n" +
-//"-123.32, 38.23, urn:ioos:station:wmo:46013, NaN, 2008-08-01T15:50:00Z, 1.52, 9.09, 4.98, 1.0, 9.1, 1.15, 5.6, NaN, NaN, Longuet-Higgins (1964), NaN, 46, 0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850, 0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200, 0;0;0;0;0;0.244172;0.874391;0.950049;0.992051;0.292122;0.416385;0.116264;0.32567;1.0886;1.49577;0.707195;0.412901;0.383;0.336784;0.162325;0.507266;0.721374;0.521185;0.317616;0.580232;0.620904;0.720338;0.544952;0.400361;0.457406;0.340211;0.190368;0.295531;0.258054;0.13138;0.178793;0.207494;0.162191;0.0901461;0.101774;0.0468724;0.036226;0.0442694;0.0218615;0.0143249;0.00447678, 291.0, 291.0, 297.0, 245.0;180.0;16.0;1.0;157.0;253.0;192.0;221.0;234.0;193.0;171.0;182.0;331.0;297.0;291.0;287.0;304.0;296.0;295.0;307.0;306.0;297.0;309.0;309.0;310.0;301.0;321.0;300.0;296.0;315.0;295.0;305.0;311.0;311.0;312.0;312.0;311.0;309.0;305.0;310.0;317.0;304.0;303.0;125.0;132.0;122.0, 0.2;0.3;0.3;0.3;0.4;0.4;0.4;0.4;0.3;0.1;0.2;0.4;0.5;0.7;0.8;0.9;0.7;0.7;0.8;0.7;0.9;0.9;0.9;0.8;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.8;0.8;0.7;0.7;0.8;0.8;0.9;0.7, 0.153123;0.340013;0.288822;0.254397;0.372277;0.379088;0.400278;0.430386;0.299487;0.14767;0.228175;0.393087;0.534991;0.741445;0.78289;0.857178;0.702193;0.741445;0.797214;0.689577;0.857178;0.921652;0.905092;0.768824;0.905092;0.88883;0.921652;0.88883;0.872861;0.872861;0.872861;0.872861;0.921652;0.88883;0.857178;0.857178;0.88883;0.857178;0.78289;0.797214;0.728123;0.741445;0.826652;0.8118;0.872861;0.728123, 0.153123;0.340013;0.288822;0.254397;0.372277;0.379088;0.400278;0.430386;0.299487;0.14767;0.228175;0.393087;0.534991;0.741445;0.78289;0.857178;0.702193;0.741445;0.797214;0.689577;0.857178;0.921652;0.905092;0.768824;0.905092;0.88883;0.921652;0.88883;0.872861;0.872861;0.872861;0.872861;0.921652;0.88883;0.857178;0.857178;0.88883;0.857178;0.78289;0.797214;0.728123;0.741445;0.826652;0.8118;0.872861;0.728123, , , , , \n" +
-  "-123.32, 38.23, urn:ioos:station:wmo:46013, NaN, 2008-08-01T16:50:00Z, 1.49, 14.81, 5.11, 1.01, 14.8, 1.1, 4.8, NaN, NaN, Longuet-Higgins (1964), NaN, 46, 0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850, 0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200, 0;0;0;0;0;0.724702;0.909481;2.34661;0.698133;0.516662;0.499779;0.284884;0.407779;0.94326;1.08406;0.29313;0.464502;0.346171;0.393304;0.327266;0.531525;0.423195;0.328752;0.332852;0.702979;0.627516;0.379029;0.603016;0.337529;0.385623;0.308393;0.266641;0.207837;0.0681764;0.212742;0.18737;0.138199;0.122643;0.130927;0.0889706;0.0656523;0.0608267;0.0359928;0.0115031;0.0100742;0.00469153, 175.0, 175.0, 309.0, 287.0;208.0;76.0;353.0;123.0;193.0;205.0;175.0;198.0;155.0;196.0;246.0;285.0;304.0;297.0;324.0;298.0;296.0;299.0;303.0;299.0;298.0;304.0;306.0;309.0;304.0;311.0;299.0;317.0;301.0;308.0;314.0;314.0;325.0;315.0;301.0;312.0;322.0;306.0;305.0;324.0;302.0;326.0;119.0;139.0;137.0, 350.0;193.0;12.0;13.0;171.0;135.0;151.0;161.0;162.0;158.0;143.0;301.0;313.0;303.0;304.0;321.0;320.0;303.0;302.0;306.0;299.0;300.0;307.0;305.0;311.0;302.0;316.0;299.0;317.0;299.0;308.0;317.0;320.0;346.0;313.0;304.0;312.0;327.0;305.0;306.0;331.0;299.0;333.0;115.0;139.0;143.0, 0.177024;0.224075;0.333904;0.393087;0.273532;0.310546;0.299487;0.534991;0.506669;0.43826;0.249826;0.327905;0.340013;0.8118;0.78289;0.585756;0.653071;0.741445;0.826652;0.826652;0.857178;0.797214;0.841777;0.857178;0.905092;0.88883;0.872861;0.921652;0.905092;0.88883;0.872861;0.872861;0.8118;0.728123;0.872861;0.905092;0.857178;0.8118;0.872861;0.826652;0.841777;0.826652;0.857178;0.78289;0.797214;0.8118, 0.596473;0.544779;0.488626;0.228175;0.316228;0.506669;0.479847;0.415059;0.372277;0.236601;0.228175;0.346234;0.479847;0.66502;0.534991;0.534991;0.288822;0.554746;0.728123;0.641337;0.728123;0.525379;0.653071;0.575231;0.768824;0.702193;0.618498;0.741445;0.741445;0.689577;0.629814;0.618498;0.430386;0.400278;0.629814;0.75501;0.629814;0.446279;0.641337;0.488626;0.585756;0.454444;0.618498;0.340013;0.454444;0.422653, , , , , \n";
-//"-123.32, 38.23, urn:ioos:station:wmo:46013, NaN, 2008-08-01T16:50:00Z, 1.49, 14.81, 5.11, 1.01, 14.8, 1.1, 4.8, NaN, NaN, Longuet-Higgins (1964), NaN, 46, 0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850, 0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200, 0;0;0;0;0;0.724702;0.909481;2.34661;0.698133;0.516662;0.499779;0.284884;0.407779;0.94326;1.08406;0.29313;0.464502;0.346171;0.393304;0.327266;0.531525;0.423195;0.328752;0.332852;0.702979;0.627516;0.379029;0.603016;0.337529;0.385623;0.308393;0.266641;0.207837;0.0681764;0.212742;0.18737;0.138199;0.122643;0.130927;0.0889706;0.0656523;0.0608267;0.0359928;0.0115031;0.0100742;0.00469153, 175.0, 175.0, 309.0, 287.0;208.0;76.0;353.0;123.0;193.0;205.0;175.0;198.0;155.0;196.0;246.0;285.0;304.0;297.0;324.0;298.0;296.0;299.0;303.0;299.0;298.0;304.0;306.0;309.0;304.0;311.0;299.0;317.0;301.0;308.0;314.0;314.0;325.0;315.0;301.0;312.0;322.0;306.0;305.0;324.0;302.0;326.0;119.0;139.0;137.0, 0.2;0.2;0.3;0.4;0.3;0.3;0.3;0.5;0.5;0.4;0.2;0.3;0.3;0.8;0.8;0.6;0.7;0.7;0.8;0.8;0.9;0.8;0.8;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.8;0.7;0.9;0.9;0.9;0.8;0.9;0.8;0.8;0.8;0.9;0.8;0.8;0.8, 0.177024;0.224075;0.333904;0.393087;0.273532;0.310546;0.299487;0.534991;0.506669;0.43826;0.249826;0.327905;0.340013;0.8118;0.78289;0.585756;0.653071;0.741445;0.826652;0.826652;0.857178;0.797214;0.841777;0.857178;0.905092;0.88883;0.872861;0.921652;0.905092;0.88883;0.872861;0.872861;0.8118;0.728123;0.872861;0.905092;0.857178;0.8118;0.872861;0.826652;0.841777;0.826652;0.857178;0.78289;0.797214;0.8118, 0.596473;0.544779;0.488626;0.228175;0.316228;0.506669;0.479847;0.415059;0.372277;0.236601;0.228175;0.346234;0.479847;0.66502;0.534991;0.534991;0.288822;0.554746;0.728123;0.641337;0.728123;0.525379;0.653071;0.575231;0.768824;0.702193;0.618498;0.741445;0.741445;0.689577;0.629814;0.618498;0.430386;0.400278;0.629814;0.75501;0.629814;0.446279;0.641337;0.488626;0.585756;0.454444;0.618498;0.340013;0.454444;0.422653, , , , , \n";
-//"-123.32, 38.23, urn:ioos:station:wmo:46013, NaN, 2008-08-01T16:50:00Z, 1.49, 14.81, 5.11, 1.01, 14.8, 1.1, 4.8, NaN, NaN, Longuet-Higgins (1964), NaN, 46, 0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850, 0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200, 0;0;0;0;0;0.724702;0.909481;2.34661;0.698133;0.516662;0.499779;0.284884;0.407779;0.94326;1.08406;0.29313;0.464502;0.346171;0.393304;0.327266;0.531525;0.423195;0.328752;0.332852;0.702979;0.627516;0.379029;0.603016;0.337529;0.385623;0.308393;0.266641;0.207837;0.0681764;0.212742;0.18737;0.138199;0.122643;0.130927;0.0889706;0.0656523;0.0608267;0.0359928;0.0115031;0.0100742;0.00469153, 175.0, 175.0, 309.0, 287.0;208.0;76.0;353.0;123.0;193.0;205.0;175.0;198.0;155.0;196.0;246.0;285.0;304.0;297.0;324.0;298.0;296.0;299.0;303.0;299.0;298.0;304.0;306.0;309.0;304.0;311.0;299.0;317.0;301.0;308.0;314.0;314.0;325.0;315.0;301.0;312.0;322.0;306.0;305.0;324.0;302.0;326.0;119.0;139.0;137.0, 0.2;0.2;0.3;0.4;0.3;0.3;0.3;0.5;0.5;0.4;0.2;0.3;0.3;0.8;0.8;0.6;0.7;0.7;0.8;0.8;0.9;0.8;0.8;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.8;0.7;0.9;0.9;0.9;0.8;0.9;0.8;0.8;0.8;0.9;0.8;0.8;0.8, 0.177024;0.224075;0.333904;0.393087;0.273532;0.310546;0.299487;0.534991;0.506669;0.43826;0.249826;0.327905;0.340013;0.8118;0.78289;0.585756;0.653071;0.741445;0.826652;0.826652;0.857178;0.797214;0.841777;0.857178;0.905092;0.88883;0.872861;0.921652;0.905092;0.88883;0.872861;0.872861;0.8118;0.728123;0.872861;0.905092;0.857178;0.8118;0.872861;0.826652;0.841777;0.826652;0.857178;0.78289;0.797214;0.8118, 0.177024;0.224075;0.333904;0.393087;0.273532;0.310546;0.299487;0.534991;0.506669;0.43826;0.249826;0.327905;0.340013;0.8118;0.78289;0.585756;0.653071;0.741445;0.826652;0.826652;0.857178;0.797214;0.841777;0.857178;0.905092;0.88883;0.872861;0.921652;0.905092;0.88883;0.872861;0.872861;0.8118;0.728123;0.872861;0.905092;0.857178;0.8118;0.872861;0.826652;0.841777;0.826652;0.857178;0.78289;0.797214;0.8118, , , , , \n";
+  "-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T14:50:00Z,1.62,14.81,5.21,1.12,14.8,1.17,4.3,NaN,NaN,Longuet-Higgins (1964),NaN,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.779157;0.372876;2.02274;0.714328;0.675131;0.296029;0.138154;0.605274;1.96737;1.16217;0.884235;0.462599;0.57436;0.504724;0.218129;0.38115;0.504237;0.45285;0.708456;0.626689;0.747685;0.883292;0.632856;0.448383;0.331531;0.123811;0.265022;0.214203;0.208534;0.21145;0.223251;0.114582;0.10544;0.130131;0.118191;0.0652535;0.0604571;0.0167055;0.0158453;0.00866108;0.00483522,176.0,176.0,312.0,158.0;336.0;188.0;11.0;78.0;263.0;189.0;176.0;196.0;212.0;249.0;182.0;267.0;292.0;299.0;306.0;290.0;299.0;304.0;294.0;301.0;304.0;320.0;314.0;311.0;303.0;312.0;317.0;315.0;307.0;316.0;314.0;305.0;317.0;306.0;311.0;310.0;303.0;294.0;308.0;298.0;302.0;303.0;113.0;127.0;113.0,183.0;8.0;181.0;7.0;3.0;301.0;275.0;134.0;123.0;262.0;279.0;92.0;281.0;293.0;299.0;308.0;292.0;306.0;310.0;300.0;304.0;306.0;326.0;317.0;310.0;303.0;312.0;318.0;316.0;309.0;319.0;318.0;306.0;319.0;307.0;313.0;309.0;305.0;286.0;309.0;271.0;296.0;254.0;111.0;99.0;92.0,0.212213;0.112507;0.304966;0.35902;0.254397;0.488626;0.263791;0.515939;0.462758;0.430386;0.497566;0.12097;0.497566;0.653071;0.826652;0.841777;0.702193;0.768824;0.797214;0.741445;0.797214;0.797214;0.826652;0.841777;0.857178;0.841777;0.938514;0.921652;0.905092;0.8118;0.826652;0.826652;0.78289;0.872861;0.905092;0.857178;0.88883;0.841777;0.768824;0.857178;0.677187;0.826652;0.629814;0.797214;0.677187;0.715041,0.768824;0.78289;0.826652;0.497566;0.220049;0.263791;0.488626;0.372277;0.125437;0.386024;0.304966;0.278536;0.310546;0.365588;0.653071;0.66502;0.607386;0.488626;0.525379;0.430386;0.462758;0.446279;0.585756;0.544779;0.564896;0.534991;0.78289;0.768824;0.66502;0.43826;0.525379;0.462758;0.379088;0.715041;0.689577;0.585756;0.641337;0.544779;0.333904;0.554746;0.137339;0.564896;0.134872;0.372277;0.108501;0.340013,,,,,\n" +
+//"-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T14:50:00Z,1.62,14.81,5.21,1.12,14.8,1.17,4.3,NaN,NaN,Longuet-Higgins (1964),NaN,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.779157;0.372876;2.02274;0.714328;0.675131;0.296029;0.138154;0.605274;1.96737;1.16217;0.884235;0.462599;0.57436;0.504724;0.218129;0.38115;0.504237;0.45285;0.708456;0.626689;0.747685;0.883292;0.632856;0.448383;0.331531;0.123811;0.265022;0.214203;0.208534;0.21145;0.223251;0.114582;0.10544;0.130131;0.118191;0.0652535;0.0604571;0.0167055;0.0158453;0.00866108;0.00483522,176.0,176.0,312.0,158.0;336.0;188.0;11.0;78.0;263.0;189.0;176.0;196.0;212.0;249.0;182.0;267.0;292.0;299.0;306.0;290.0;299.0;304.0;294.0;301.0;304.0;320.0;314.0;311.0;303.0;312.0;317.0;315.0;307.0;316.0;314.0;305.0;317.0;306.0;311.0;310.0;303.0;294.0;308.0;298.0;302.0;303.0;113.0;127.0;113.0,0.2;0.1;0.3;0.4;0.3;0.5;0.3;0.5;0.5;0.4;0.5;0.1;0.5;0.7;0.8;0.8;0.7;0.8;0.8;0.7;0.8;0.8;0.8;0.8;0.9;0.8;0.9;0.9;0.9;0.8;0.8;0.8;0.8;0.9;0.9;0.9;0.9;0.8;0.8;0.9;0.7;0.8;0.6;0.8;0.7;0.7,0.212213;0.112507;0.304966;0.35902;0.254397;0.488626;0.263791;0.515939;0.462758;0.430386;0.497566;0.12097;0.497566;0.653071;0.826652;0.841777;0.702193;0.768824;0.797214;0.741445;0.797214;0.797214;0.826652;0.841777;0.857178;0.841777;0.938514;0.921652;0.905092;0.8118;0.826652;0.826652;0.78289;0.872861;0.905092;0.857178;0.88883;0.841777;0.768824;0.857178;0.677187;0.826652;0.629814;0.797214;0.677187;0.715041,0.768824;0.78289;0.826652;0.497566;0.220049;0.263791;0.488626;0.372277;0.125437;0.386024;0.304966;0.278536;0.310546;0.365588;0.653071;0.66502;0.607386;0.488626;0.525379;0.430386;0.462758;0.446279;0.585756;0.544779;0.564896;0.534991;0.78289;0.768824;0.66502;0.43826;0.525379;0.462758;0.379088;0.715041;0.689577;0.585756;0.641337;0.544779;0.333904;0.554746;0.137339;0.564896;0.134872;0.372277;0.108501;0.340013,,,,,\n" +
+//"-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T14:50:00Z,1.62,14.81,5.21,1.12,14.8,1.17,4.3,NaN,NaN,Longuet-Higgins (1964),NaN,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.779157;0.372876;2.02274;0.714328;0.675131;0.296029;0.138154;0.605274;1.96737;1.16217;0.884235;0.462599;0.57436;0.504724;0.218129;0.38115;0.504237;0.45285;0.708456;0.626689;0.747685;0.883292;0.632856;0.448383;0.331531;0.123811;0.265022;0.214203;0.208534;0.21145;0.223251;0.114582;0.10544;0.130131;0.118191;0.0652535;0.0604571;0.0167055;0.0158453;0.00866108;0.00483522,176.0,176.0,312.0,158.0;336.0;188.0;11.0;78.0;263.0;189.0;176.0;196.0;212.0;249.0;182.0;267.0;292.0;299.0;306.0;290.0;299.0;304.0;294.0;301.0;304.0;320.0;314.0;311.0;303.0;312.0;317.0;315.0;307.0;316.0;314.0;305.0;317.0;306.0;311.0;310.0;303.0;294.0;308.0;298.0;302.0;303.0;113.0;127.0;113.0,0.2;0.1;0.3;0.4;0.3;0.5;0.3;0.5;0.5;0.4;0.5;0.1;0.5;0.7;0.8;0.8;0.7;0.8;0.8;0.7;0.8;0.8;0.8;0.8;0.9;0.8;0.9;0.9;0.9;0.8;0.8;0.8;0.8;0.9;0.9;0.9;0.9;0.8;0.8;0.9;0.7;0.8;0.6;0.8;0.7;0.7,0.212213;0.112507;0.304966;0.35902;0.254397;0.488626;0.263791;0.515939;0.462758;0.430386;0.497566;0.12097;0.497566;0.653071;0.826652;0.841777;0.702193;0.768824;0.797214;0.741445;0.797214;0.797214;0.826652;0.841777;0.857178;0.841777;0.938514;0.921652;0.905092;0.8118;0.826652;0.826652;0.78289;0.872861;0.905092;0.857178;0.88883;0.841777;0.768824;0.857178;0.677187;0.826652;0.629814;0.797214;0.677187;0.715041,0.212213;0.112507;0.304966;0.35902;0.254397;0.488626;0.263791;0.515939;0.462758;0.430386;0.497566;0.12097;0.497566;0.653071;0.826652;0.841777;0.702193;0.768824;0.797214;0.741445;0.797214;0.797214;0.826652;0.841777;0.857178;0.841777;0.938514;0.921652;0.905092;0.8118;0.826652;0.826652;0.78289;0.872861;0.905092;0.857178;0.88883;0.841777;0.768824;0.857178;0.677187;0.826652;0.629814;0.797214;0.677187;0.715041,,,,,\n" +
+  "-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T15:50:00Z,1.52,9.09,4.98,1.0,9.1,1.15,5.6,NaN,NaN,Longuet-Higgins (1964),NaN,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.244172;0.874391;0.950049;0.992051;0.292122;0.416385;0.116264;0.32567;1.0886;1.49577;0.707195;0.412901;0.383;0.336784;0.162325;0.507266;0.721374;0.521185;0.317616;0.580232;0.620904;0.720338;0.544952;0.400361;0.457406;0.340211;0.190368;0.295531;0.258054;0.13138;0.178793;0.207494;0.162191;0.0901461;0.101774;0.0468724;0.036226;0.0442694;0.0218615;0.0143249;0.00447678,291.0,291.0,297.0,245.0;180.0;16.0;1.0;157.0;253.0;192.0;221.0;234.0;193.0;171.0;182.0;331.0;297.0;291.0;287.0;304.0;296.0;295.0;307.0;306.0;297.0;309.0;309.0;310.0;301.0;321.0;300.0;296.0;315.0;295.0;305.0;311.0;311.0;312.0;312.0;311.0;309.0;305.0;310.0;317.0;304.0;303.0;125.0;132.0;122.0,179.0;190.0;1.0;1.0;176.0;292.0;110.0;311.0;321.0;118.0;143.0;131.0;335.0;305.0;296.0;290.0;313.0;310.0;298.0;321.0;306.0;298.0;308.0;308.0;310.0;301.0;323.0;300.0;294.0;320.0;295.0;308.0;312.0;313.0;315.0;311.0;311.0;310.0;305.0;311.0;316.0;309.0;298.0;121.0;132.0;109.0,0.153123;0.340013;0.288822;0.254397;0.372277;0.379088;0.400278;0.430386;0.299487;0.14767;0.228175;0.393087;0.534991;0.741445;0.78289;0.857178;0.702193;0.741445;0.797214;0.689577;0.857178;0.921652;0.905092;0.768824;0.905092;0.88883;0.921652;0.88883;0.872861;0.872861;0.872861;0.872861;0.921652;0.88883;0.857178;0.857178;0.88883;0.857178;0.78289;0.797214;0.728123;0.741445;0.826652;0.8118;0.872861;0.728123,0.768824;0.575231;0.564896;0.689577;0.575231;0.497566;0.150371;0.259051;0.259051;0.728123;0.400278;0.393087;0.728123;0.689577;0.66502;0.677187;0.607386;0.400278;0.575231;0.534991;0.677187;0.8118;0.75501;0.365588;0.741445;0.741445;0.8118;0.689577;0.653071;0.653071;0.629814;0.618498;0.768824;0.689577;0.585756;0.596473;0.66502;0.629814;0.454444;0.415059;0.283632;0.216095;0.488626;0.488626;0.618498;0.236601,,,,,\n" +
+//"-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T15:50:00Z,1.52,9.09,4.98,1.0,9.1,1.15,5.6,NaN,NaN,Longuet-Higgins (1964),NaN,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.244172;0.874391;0.950049;0.992051;0.292122;0.416385;0.116264;0.32567;1.0886;1.49577;0.707195;0.412901;0.383;0.336784;0.162325;0.507266;0.721374;0.521185;0.317616;0.580232;0.620904;0.720338;0.544952;0.400361;0.457406;0.340211;0.190368;0.295531;0.258054;0.13138;0.178793;0.207494;0.162191;0.0901461;0.101774;0.0468724;0.036226;0.0442694;0.0218615;0.0143249;0.00447678,291.0,291.0,297.0,245.0;180.0;16.0;1.0;157.0;253.0;192.0;221.0;234.0;193.0;171.0;182.0;331.0;297.0;291.0;287.0;304.0;296.0;295.0;307.0;306.0;297.0;309.0;309.0;310.0;301.0;321.0;300.0;296.0;315.0;295.0;305.0;311.0;311.0;312.0;312.0;311.0;309.0;305.0;310.0;317.0;304.0;303.0;125.0;132.0;122.0,0.2;0.3;0.3;0.3;0.4;0.4;0.4;0.4;0.3;0.1;0.2;0.4;0.5;0.7;0.8;0.9;0.7;0.7;0.8;0.7;0.9;0.9;0.9;0.8;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.8;0.8;0.7;0.7;0.8;0.8;0.9;0.7,0.153123;0.340013;0.288822;0.254397;0.372277;0.379088;0.400278;0.430386;0.299487;0.14767;0.228175;0.393087;0.534991;0.741445;0.78289;0.857178;0.702193;0.741445;0.797214;0.689577;0.857178;0.921652;0.905092;0.768824;0.905092;0.88883;0.921652;0.88883;0.872861;0.872861;0.872861;0.872861;0.921652;0.88883;0.857178;0.857178;0.88883;0.857178;0.78289;0.797214;0.728123;0.741445;0.826652;0.8118;0.872861;0.728123,0.768824;0.575231;0.564896;0.689577;0.575231;0.497566;0.150371;0.259051;0.259051;0.728123;0.400278;0.393087;0.728123;0.689577;0.66502;0.677187;0.607386;0.400278;0.575231;0.534991;0.677187;0.8118;0.75501;0.365588;0.741445;0.741445;0.8118;0.689577;0.653071;0.653071;0.629814;0.618498;0.768824;0.689577;0.585756;0.596473;0.66502;0.629814;0.454444;0.415059;0.283632;0.216095;0.488626;0.488626;0.618498;0.236601,,,,,\n" +
+//"-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T15:50:00Z,1.52,9.09,4.98,1.0,9.1,1.15,5.6,NaN,NaN,Longuet-Higgins (1964),NaN,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.244172;0.874391;0.950049;0.992051;0.292122;0.416385;0.116264;0.32567;1.0886;1.49577;0.707195;0.412901;0.383;0.336784;0.162325;0.507266;0.721374;0.521185;0.317616;0.580232;0.620904;0.720338;0.544952;0.400361;0.457406;0.340211;0.190368;0.295531;0.258054;0.13138;0.178793;0.207494;0.162191;0.0901461;0.101774;0.0468724;0.036226;0.0442694;0.0218615;0.0143249;0.00447678,291.0,291.0,297.0,245.0;180.0;16.0;1.0;157.0;253.0;192.0;221.0;234.0;193.0;171.0;182.0;331.0;297.0;291.0;287.0;304.0;296.0;295.0;307.0;306.0;297.0;309.0;309.0;310.0;301.0;321.0;300.0;296.0;315.0;295.0;305.0;311.0;311.0;312.0;312.0;311.0;309.0;305.0;310.0;317.0;304.0;303.0;125.0;132.0;122.0,0.2;0.3;0.3;0.3;0.4;0.4;0.4;0.4;0.3;0.1;0.2;0.4;0.5;0.7;0.8;0.9;0.7;0.7;0.8;0.7;0.9;0.9;0.9;0.8;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.8;0.8;0.7;0.7;0.8;0.8;0.9;0.7,0.153123;0.340013;0.288822;0.254397;0.372277;0.379088;0.400278;0.430386;0.299487;0.14767;0.228175;0.393087;0.534991;0.741445;0.78289;0.857178;0.702193;0.741445;0.797214;0.689577;0.857178;0.921652;0.905092;0.768824;0.905092;0.88883;0.921652;0.88883;0.872861;0.872861;0.872861;0.872861;0.921652;0.88883;0.857178;0.857178;0.88883;0.857178;0.78289;0.797214;0.728123;0.741445;0.826652;0.8118;0.872861;0.728123,0.153123;0.340013;0.288822;0.254397;0.372277;0.379088;0.400278;0.430386;0.299487;0.14767;0.228175;0.393087;0.534991;0.741445;0.78289;0.857178;0.702193;0.741445;0.797214;0.689577;0.857178;0.921652;0.905092;0.768824;0.905092;0.88883;0.921652;0.88883;0.872861;0.872861;0.872861;0.872861;0.921652;0.88883;0.857178;0.857178;0.88883;0.857178;0.78289;0.797214;0.728123;0.741445;0.826652;0.8118;0.872861;0.728123,,,,,\n" +
+  "-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T16:50:00Z,1.49,14.81,5.11,1.01,14.8,1.1,4.8,NaN,NaN,Longuet-Higgins (1964),NaN,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.724702;0.909481;2.34661;0.698133;0.516662;0.499779;0.284884;0.407779;0.94326;1.08406;0.29313;0.464502;0.346171;0.393304;0.327266;0.531525;0.423195;0.328752;0.332852;0.702979;0.627516;0.379029;0.603016;0.337529;0.385623;0.308393;0.266641;0.207837;0.0681764;0.212742;0.18737;0.138199;0.122643;0.130927;0.0889706;0.0656523;0.0608267;0.0359928;0.0115031;0.0100742;0.00469153,175.0,175.0,309.0,287.0;208.0;76.0;353.0;123.0;193.0;205.0;175.0;198.0;155.0;196.0;246.0;285.0;304.0;297.0;324.0;298.0;296.0;299.0;303.0;299.0;298.0;304.0;306.0;309.0;304.0;311.0;299.0;317.0;301.0;308.0;314.0;314.0;325.0;315.0;301.0;312.0;322.0;306.0;305.0;324.0;302.0;326.0;119.0;139.0;137.0,350.0;193.0;12.0;13.0;171.0;135.0;151.0;161.0;162.0;158.0;143.0;301.0;313.0;303.0;304.0;321.0;320.0;303.0;302.0;306.0;299.0;300.0;307.0;305.0;311.0;302.0;316.0;299.0;317.0;299.0;308.0;317.0;320.0;346.0;313.0;304.0;312.0;327.0;305.0;306.0;331.0;299.0;333.0;115.0;139.0;143.0,0.177024;0.224075;0.333904;0.393087;0.273532;0.310546;0.299487;0.534991;0.506669;0.43826;0.249826;0.327905;0.340013;0.8118;0.78289;0.585756;0.653071;0.741445;0.826652;0.826652;0.857178;0.797214;0.841777;0.857178;0.905092;0.88883;0.872861;0.921652;0.905092;0.88883;0.872861;0.872861;0.8118;0.728123;0.872861;0.905092;0.857178;0.8118;0.872861;0.826652;0.841777;0.826652;0.857178;0.78289;0.797214;0.8118,0.596473;0.544779;0.488626;0.228175;0.316228;0.506669;0.479847;0.415059;0.372277;0.236601;0.228175;0.346234;0.479847;0.66502;0.534991;0.534991;0.288822;0.554746;0.728123;0.641337;0.728123;0.525379;0.653071;0.575231;0.768824;0.702193;0.618498;0.741445;0.741445;0.689577;0.629814;0.618498;0.430386;0.400278;0.629814;0.75501;0.629814;0.446279;0.641337;0.488626;0.585756;0.454444;0.618498;0.340013;0.454444;0.422653,,,,,\n";
+//"-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T16:50:00Z,1.49,14.81,5.11,1.01,14.8,1.1,4.8,NaN,NaN,Longuet-Higgins (1964),NaN,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.724702;0.909481;2.34661;0.698133;0.516662;0.499779;0.284884;0.407779;0.94326;1.08406;0.29313;0.464502;0.346171;0.393304;0.327266;0.531525;0.423195;0.328752;0.332852;0.702979;0.627516;0.379029;0.603016;0.337529;0.385623;0.308393;0.266641;0.207837;0.0681764;0.212742;0.18737;0.138199;0.122643;0.130927;0.0889706;0.0656523;0.0608267;0.0359928;0.0115031;0.0100742;0.00469153,175.0,175.0,309.0,287.0;208.0;76.0;353.0;123.0;193.0;205.0;175.0;198.0;155.0;196.0;246.0;285.0;304.0;297.0;324.0;298.0;296.0;299.0;303.0;299.0;298.0;304.0;306.0;309.0;304.0;311.0;299.0;317.0;301.0;308.0;314.0;314.0;325.0;315.0;301.0;312.0;322.0;306.0;305.0;324.0;302.0;326.0;119.0;139.0;137.0,0.2;0.2;0.3;0.4;0.3;0.3;0.3;0.5;0.5;0.4;0.2;0.3;0.3;0.8;0.8;0.6;0.7;0.7;0.8;0.8;0.9;0.8;0.8;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.8;0.7;0.9;0.9;0.9;0.8;0.9;0.8;0.8;0.8;0.9;0.8;0.8;0.8,0.177024;0.224075;0.333904;0.393087;0.273532;0.310546;0.299487;0.534991;0.506669;0.43826;0.249826;0.327905;0.340013;0.8118;0.78289;0.585756;0.653071;0.741445;0.826652;0.826652;0.857178;0.797214;0.841777;0.857178;0.905092;0.88883;0.872861;0.921652;0.905092;0.88883;0.872861;0.872861;0.8118;0.728123;0.872861;0.905092;0.857178;0.8118;0.872861;0.826652;0.841777;0.826652;0.857178;0.78289;0.797214;0.8118,0.596473;0.544779;0.488626;0.228175;0.316228;0.506669;0.479847;0.415059;0.372277;0.236601;0.228175;0.346234;0.479847;0.66502;0.534991;0.534991;0.288822;0.554746;0.728123;0.641337;0.728123;0.525379;0.653071;0.575231;0.768824;0.702193;0.618498;0.741445;0.741445;0.689577;0.629814;0.618498;0.430386;0.400278;0.629814;0.75501;0.629814;0.446279;0.641337;0.488626;0.585756;0.454444;0.618498;0.340013;0.454444;0.422653,,,,,\n";
+//"-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T16:50:00Z,1.49,14.81,5.11,1.01,14.8,1.1,4.8,NaN,NaN,Longuet-Higgins (1964),NaN,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.724702;0.909481;2.34661;0.698133;0.516662;0.499779;0.284884;0.407779;0.94326;1.08406;0.29313;0.464502;0.346171;0.393304;0.327266;0.531525;0.423195;0.328752;0.332852;0.702979;0.627516;0.379029;0.603016;0.337529;0.385623;0.308393;0.266641;0.207837;0.0681764;0.212742;0.18737;0.138199;0.122643;0.130927;0.0889706;0.0656523;0.0608267;0.0359928;0.0115031;0.0100742;0.00469153,175.0,175.0,309.0,287.0;208.0;76.0;353.0;123.0;193.0;205.0;175.0;198.0;155.0;196.0;246.0;285.0;304.0;297.0;324.0;298.0;296.0;299.0;303.0;299.0;298.0;304.0;306.0;309.0;304.0;311.0;299.0;317.0;301.0;308.0;314.0;314.0;325.0;315.0;301.0;312.0;322.0;306.0;305.0;324.0;302.0;326.0;119.0;139.0;137.0,0.2;0.2;0.3;0.4;0.3;0.3;0.3;0.5;0.5;0.4;0.2;0.3;0.3;0.8;0.8;0.6;0.7;0.7;0.8;0.8;0.9;0.8;0.8;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.9;0.8;0.7;0.9;0.9;0.9;0.8;0.9;0.8;0.8;0.8;0.9;0.8;0.8;0.8,0.177024;0.224075;0.333904;0.393087;0.273532;0.310546;0.299487;0.534991;0.506669;0.43826;0.249826;0.327905;0.340013;0.8118;0.78289;0.585756;0.653071;0.741445;0.826652;0.826652;0.857178;0.797214;0.841777;0.857178;0.905092;0.88883;0.872861;0.921652;0.905092;0.88883;0.872861;0.872861;0.8118;0.728123;0.872861;0.905092;0.857178;0.8118;0.872861;0.826652;0.841777;0.826652;0.857178;0.78289;0.797214;0.8118,0.177024;0.224075;0.333904;0.393087;0.273532;0.310546;0.299487;0.534991;0.506669;0.43826;0.249826;0.327905;0.340013;0.8118;0.78289;0.585756;0.653071;0.741445;0.826652;0.826652;0.857178;0.797214;0.841777;0.857178;0.905092;0.88883;0.872861;0.921652;0.905092;0.88883;0.872861;0.872861;0.8118;0.728123;0.872861;0.905092;0.857178;0.8118;0.872861;0.826652;0.841777;0.826652;0.857178;0.78289;0.797214;0.8118,,,,,\n";
 */
 
 //Their bug: (see constraint above) Starting with switch to text/csv 2010-06-07, calculation_method became UNKNOWN!
 //Fixed 2010-06-22
-"longitude, latitude, station_id, altitude, time, sensor_id, sea_surface_wave_significant_height, sea_surface_wave_peak_period, sea_surface_wave_mean_period, sea_surface_swell_wave_significant_height, sea_surface_swell_wave_period, sea_surface_wind_wave_significant_height, sea_surface_wind_wave_period, sea_water_temperature, sea_surface_wave_to_direction, sea_surface_swell_wave_to_direction, sea_surface_wind_wave_to_direction, number_of_frequencies, center_frequencies, bandwidths, spectral_energy, mean_wave_direction, principal_wave_direction, polar_coordinate_r1, polar_coordinate_r2, calculation_method, sampling_rate\n" +
-"degrees_east, degrees_north, , m, UTC, , m, s, s, m, s, m, s, degrees_C, degrees_true, degrees_true, degrees_true, count, Hz, Hz, m^2/Hz, degrees_true, degrees_true, 1, 1, , Hz\n" +
-"-123.32, 38.23, urn:ioos:station:wmo:46013, NaN, 2008-08-01T14:50:00Z, urn:ioos:sensor:wmo:46013::wpm1, 1.62, 14.81, 5.21, 1.12, 14.8, 1.17, 4.3, NaN, 176.0, 176.0, 312.0, 46, 0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850, 0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200, 0;0;0;0;0;0.779157;0.372876;2.02274;0.714328;0.675131;0.296029;0.138154;0.605274;1.96737;1.16217;0.884235;0.462599;0.57436;0.504724;0.218129;0.38115;0.504237;0.45285;0.708456;0.626689;0.747685;0.883292;0.632856;0.448383;0.331531;0.123811;0.265022;0.214203;0.208534;0.21145;0.223251;0.114582;0.10544;0.130131;0.118191;0.0652535;0.0604571;0.0167055;0.0158453;0.00866108;0.00483522, 158.0;336.0;188.0;11.0;78.0;263.0;189.0;176.0;196.0;212.0;249.0;182.0;267.0;292.0;299.0;306.0;290.0;299.0;304.0;294.0;301.0;304.0;320.0;314.0;311.0;303.0;312.0;317.0;315.0;307.0;316.0;314.0;305.0;317.0;306.0;311.0;310.0;303.0;294.0;308.0;298.0;302.0;303.0;113.0;127.0;113.0, 183.0;8.0;181.0;7.0;3.0;301.0;275.0;134.0;123.0;262.0;279.0;92.0;281.0;293.0;299.0;308.0;292.0;306.0;310.0;300.0;304.0;306.0;326.0;317.0;310.0;303.0;312.0;318.0;316.0;309.0;319.0;318.0;306.0;319.0;307.0;313.0;309.0;305.0;286.0;309.0;271.0;296.0;254.0;111.0;99.0;92.0, 0.212213;0.112507;0.304966;0.35902;0.254397;0.488626;0.263791;0.515939;0.462758;0.430386;0.497566;0.12097;0.497566;0.653071;0.826652;0.841777;0.702193;0.768824;0.797214;0.741445;0.797214;0.797214;0.826652;0.841777;0.857178;0.841777;0.938514;0.921652;0.905092;0.8118;0.826652;0.826652;0.78289;0.872861;0.905092;0.857178;0.88883;0.841777;0.768824;0.857178;0.677187;0.826652;0.629814;0.797214;0.677187;0.715041, 0.768824;0.78289;0.826652;0.497566;0.220049;0.263791;0.488626;0.372277;0.125437;0.386024;0.304966;0.278536;0.310546;0.365588;0.653071;0.66502;0.607386;0.488626;0.525379;0.430386;0.462758;0.446279;0.585756;0.544779;0.564896;0.534991;0.78289;0.768824;0.66502;0.43826;0.525379;0.462758;0.379088;0.715041;0.689577;0.585756;0.641337;0.544779;0.333904;0.554746;0.137339;0.564896;0.134872;0.372277;0.108501;0.340013, Longuet-Higgins (1964), NaN\n" +
-"-123.32, 38.23, urn:ioos:station:wmo:46013, NaN, 2008-08-01T15:50:00Z, urn:ioos:sensor:wmo:46013::wpm1, 1.52, 9.09, 4.98, 1.0, 9.1, 1.15, 5.6, NaN, 291.0, 291.0, 297.0, 46, 0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850, 0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200, 0;0;0;0;0;0.244172;0.874391;0.950049;0.992051;0.292122;0.416385;0.116264;0.32567;1.0886;1.49577;0.707195;0.412901;0.383;0.336784;0.162325;0.507266;0.721374;0.521185;0.317616;0.580232;0.620904;0.720338;0.544952;0.400361;0.457406;0.340211;0.190368;0.295531;0.258054;0.13138;0.178793;0.207494;0.162191;0.0901461;0.101774;0.0468724;0.036226;0.0442694;0.0218615;0.0143249;0.00447678, 245.0;180.0;16.0;1.0;157.0;253.0;192.0;221.0;234.0;193.0;171.0;182.0;331.0;297.0;291.0;287.0;304.0;296.0;295.0;307.0;306.0;297.0;309.0;309.0;310.0;301.0;321.0;300.0;296.0;315.0;295.0;305.0;311.0;311.0;312.0;312.0;311.0;309.0;305.0;310.0;317.0;304.0;303.0;125.0;132.0;122.0, 179.0;190.0;1.0;1.0;176.0;292.0;110.0;311.0;321.0;118.0;143.0;131.0;335.0;305.0;296.0;290.0;313.0;310.0;298.0;321.0;306.0;298.0;308.0;308.0;310.0;301.0;323.0;300.0;294.0;320.0;295.0;308.0;312.0;313.0;315.0;311.0;311.0;310.0;305.0;311.0;316.0;309.0;298.0;121.0;132.0;109.0, 0.153123;0.340013;0.288822;0.254397;0.372277;0.379088;0.400278;0.430386;0.299487;0.14767;0.228175;0.393087;0.534991;0.741445;0.78289;0.857178;0.702193;0.741445;0.797214;0.689577;0.857178;0.921652;0.905092;0.768824;0.905092;0.88883;0.921652;0.88883;0.872861;0.872861;0.872861;0.872861;0.921652;0.88883;0.857178;0.857178;0.88883;0.857178;0.78289;0.797214;0.728123;0.741445;0.826652;0.8118;0.872861;0.728123, 0.768824;0.575231;0.564896;0.689577;0.575231;0.497566;0.150371;0.259051;0.259051;0.728123;0.400278;0.393087;0.728123;0.689577;0.66502;0.677187;0.607386;0.400278;0.575231;0.534991;0.677187;0.8118;0.75501;0.365588;0.741445;0.741445;0.8118;0.689577;0.653071;0.653071;0.629814;0.618498;0.768824;0.689577;0.585756;0.596473;0.66502;0.629814;0.454444;0.415059;0.283632;0.216095;0.488626;0.488626;0.618498;0.236601, Longuet-Higgins (1964), NaN\n" +
-"-123.32, 38.23, urn:ioos:station:wmo:46013, NaN, 2008-08-01T16:50:00Z, urn:ioos:sensor:wmo:46013::wpm1, 1.49, 14.81, 5.11, 1.01, 14.8, 1.1, 4.8, NaN, 175.0, 175.0, 309.0, 46, 0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850, 0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200, 0;0;0;0;0;0.724702;0.909481;2.34661;0.698133;0.516662;0.499779;0.284884;0.407779;0.94326;1.08406;0.29313;0.464502;0.346171;0.393304;0.327266;0.531525;0.423195;0.328752;0.332852;0.702979;0.627516;0.379029;0.603016;0.337529;0.385623;0.308393;0.266641;0.207837;0.0681764;0.212742;0.18737;0.138199;0.122643;0.130927;0.0889706;0.0656523;0.0608267;0.0359928;0.0115031;0.0100742;0.00469153, 287.0;208.0;76.0;353.0;123.0;193.0;205.0;175.0;198.0;155.0;196.0;246.0;285.0;304.0;297.0;324.0;298.0;296.0;299.0;303.0;299.0;298.0;304.0;306.0;309.0;304.0;311.0;299.0;317.0;301.0;308.0;314.0;314.0;325.0;315.0;301.0;312.0;322.0;306.0;305.0;324.0;302.0;326.0;119.0;139.0;137.0, 350.0;193.0;12.0;13.0;171.0;135.0;151.0;161.0;162.0;158.0;143.0;301.0;313.0;303.0;304.0;321.0;320.0;303.0;302.0;306.0;299.0;300.0;307.0;305.0;311.0;302.0;316.0;299.0;317.0;299.0;308.0;317.0;320.0;346.0;313.0;304.0;312.0;327.0;305.0;306.0;331.0;299.0;333.0;115.0;139.0;143.0, 0.177024;0.224075;0.333904;0.393087;0.273532;0.310546;0.299487;0.534991;0.506669;0.43826;0.249826;0.327905;0.340013;0.8118;0.78289;0.585756;0.653071;0.741445;0.826652;0.826652;0.857178;0.797214;0.841777;0.857178;0.905092;0.88883;0.872861;0.921652;0.905092;0.88883;0.872861;0.872861;0.8118;0.728123;0.872861;0.905092;0.857178;0.8118;0.872861;0.826652;0.841777;0.826652;0.857178;0.78289;0.797214;0.8118, 0.596473;0.544779;0.488626;0.228175;0.316228;0.506669;0.479847;0.415059;0.372277;0.236601;0.228175;0.346234;0.479847;0.66502;0.534991;0.534991;0.288822;0.554746;0.728123;0.641337;0.728123;0.525379;0.653071;0.575231;0.768824;0.702193;0.618498;0.741445;0.741445;0.689577;0.629814;0.618498;0.430386;0.400278;0.629814;0.75501;0.629814;0.446279;0.641337;0.488626;0.585756;0.454444;0.618498;0.340013;0.454444;0.422653, Longuet-Higgins (1964), NaN\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,sea_surface_wave_significant_height,sea_surface_wave_peak_period,sea_surface_wave_mean_period,sea_surface_swell_wave_significant_height,sea_surface_swell_wave_period,sea_surface_wind_wave_significant_height,sea_surface_wind_wave_period,sea_water_temperature,sea_surface_wave_to_direction,sea_surface_swell_wave_to_direction,sea_surface_wind_wave_to_direction,number_of_frequencies,center_frequencies,bandwidths,spectral_energy,mean_wave_direction,principal_wave_direction,polar_coordinate_r1,polar_coordinate_r2,calculation_method,sampling_rate\n" +
+"degrees_east,degrees_north,,m,UTC,,m,s,s,m,s,m,s,degrees_C,degrees_true,degrees_true,degrees_true,count,Hz,Hz,m^2/Hz,degrees_true,degrees_true,1,1,,Hz\n" +
+"-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T14:50:00Z,urn:ioos:sensor:wmo:46013::wpm1,1.62,14.81,5.21,1.12,14.8,1.17,4.3,NaN,176.0,176.0,312.0,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.779157;0.372876;2.02274;0.714328;0.675131;0.296029;0.138154;0.605274;1.96737;1.16217;0.884235;0.462599;0.57436;0.504724;0.218129;0.38115;0.504237;0.45285;0.708456;0.626689;0.747685;0.883292;0.632856;0.448383;0.331531;0.123811;0.265022;0.214203;0.208534;0.21145;0.223251;0.114582;0.10544;0.130131;0.118191;0.0652535;0.0604571;0.0167055;0.0158453;0.00866108;0.00483522,158.0;336.0;188.0;11.0;78.0;263.0;189.0;176.0;196.0;212.0;249.0;182.0;267.0;292.0;299.0;306.0;290.0;299.0;304.0;294.0;301.0;304.0;320.0;314.0;311.0;303.0;312.0;317.0;315.0;307.0;316.0;314.0;305.0;317.0;306.0;311.0;310.0;303.0;294.0;308.0;298.0;302.0;303.0;113.0;127.0;113.0,183.0;8.0;181.0;7.0;3.0;301.0;275.0;134.0;123.0;262.0;279.0;92.0;281.0;293.0;299.0;308.0;292.0;306.0;310.0;300.0;304.0;306.0;326.0;317.0;310.0;303.0;312.0;318.0;316.0;309.0;319.0;318.0;306.0;319.0;307.0;313.0;309.0;305.0;286.0;309.0;271.0;296.0;254.0;111.0;99.0;92.0,0.212213;0.112507;0.304966;0.35902;0.254397;0.488626;0.263791;0.515939;0.462758;0.430386;0.497566;0.12097;0.497566;0.653071;0.826652;0.841777;0.702193;0.768824;0.797214;0.741445;0.797214;0.797214;0.826652;0.841777;0.857178;0.841777;0.938514;0.921652;0.905092;0.8118;0.826652;0.826652;0.78289;0.872861;0.905092;0.857178;0.88883;0.841777;0.768824;0.857178;0.677187;0.826652;0.629814;0.797214;0.677187;0.715041,0.768824;0.78289;0.826652;0.497566;0.220049;0.263791;0.488626;0.372277;0.125437;0.386024;0.304966;0.278536;0.310546;0.365588;0.653071;0.66502;0.607386;0.488626;0.525379;0.430386;0.462758;0.446279;0.585756;0.544779;0.564896;0.534991;0.78289;0.768824;0.66502;0.43826;0.525379;0.462758;0.379088;0.715041;0.689577;0.585756;0.641337;0.544779;0.333904;0.554746;0.137339;0.564896;0.134872;0.372277;0.108501;0.340013,Longuet-Higgins (1964),NaN\n" +
+"-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T15:50:00Z,urn:ioos:sensor:wmo:46013::wpm1,1.52,9.09,4.98,1.0,9.1,1.15,5.6,NaN,291.0,291.0,297.0,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.244172;0.874391;0.950049;0.992051;0.292122;0.416385;0.116264;0.32567;1.0886;1.49577;0.707195;0.412901;0.383;0.336784;0.162325;0.507266;0.721374;0.521185;0.317616;0.580232;0.620904;0.720338;0.544952;0.400361;0.457406;0.340211;0.190368;0.295531;0.258054;0.13138;0.178793;0.207494;0.162191;0.0901461;0.101774;0.0468724;0.036226;0.0442694;0.0218615;0.0143249;0.00447678,245.0;180.0;16.0;1.0;157.0;253.0;192.0;221.0;234.0;193.0;171.0;182.0;331.0;297.0;291.0;287.0;304.0;296.0;295.0;307.0;306.0;297.0;309.0;309.0;310.0;301.0;321.0;300.0;296.0;315.0;295.0;305.0;311.0;311.0;312.0;312.0;311.0;309.0;305.0;310.0;317.0;304.0;303.0;125.0;132.0;122.0,179.0;190.0;1.0;1.0;176.0;292.0;110.0;311.0;321.0;118.0;143.0;131.0;335.0;305.0;296.0;290.0;313.0;310.0;298.0;321.0;306.0;298.0;308.0;308.0;310.0;301.0;323.0;300.0;294.0;320.0;295.0;308.0;312.0;313.0;315.0;311.0;311.0;310.0;305.0;311.0;316.0;309.0;298.0;121.0;132.0;109.0,0.153123;0.340013;0.288822;0.254397;0.372277;0.379088;0.400278;0.430386;0.299487;0.14767;0.228175;0.393087;0.534991;0.741445;0.78289;0.857178;0.702193;0.741445;0.797214;0.689577;0.857178;0.921652;0.905092;0.768824;0.905092;0.88883;0.921652;0.88883;0.872861;0.872861;0.872861;0.872861;0.921652;0.88883;0.857178;0.857178;0.88883;0.857178;0.78289;0.797214;0.728123;0.741445;0.826652;0.8118;0.872861;0.728123,0.768824;0.575231;0.564896;0.689577;0.575231;0.497566;0.150371;0.259051;0.259051;0.728123;0.400278;0.393087;0.728123;0.689577;0.66502;0.677187;0.607386;0.400278;0.575231;0.534991;0.677187;0.8118;0.75501;0.365588;0.741445;0.741445;0.8118;0.689577;0.653071;0.653071;0.629814;0.618498;0.768824;0.689577;0.585756;0.596473;0.66502;0.629814;0.454444;0.415059;0.283632;0.216095;0.488626;0.488626;0.618498;0.236601,Longuet-Higgins (1964),NaN\n" +
+"-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T16:50:00Z,urn:ioos:sensor:wmo:46013::wpm1,1.49,14.81,5.11,1.01,14.8,1.1,4.8,NaN,175.0,175.0,309.0,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.724702;0.909481;2.34661;0.698133;0.516662;0.499779;0.284884;0.407779;0.94326;1.08406;0.29313;0.464502;0.346171;0.393304;0.327266;0.531525;0.423195;0.328752;0.332852;0.702979;0.627516;0.379029;0.603016;0.337529;0.385623;0.308393;0.266641;0.207837;0.0681764;0.212742;0.18737;0.138199;0.122643;0.130927;0.0889706;0.0656523;0.0608267;0.0359928;0.0115031;0.0100742;0.00469153,287.0;208.0;76.0;353.0;123.0;193.0;205.0;175.0;198.0;155.0;196.0;246.0;285.0;304.0;297.0;324.0;298.0;296.0;299.0;303.0;299.0;298.0;304.0;306.0;309.0;304.0;311.0;299.0;317.0;301.0;308.0;314.0;314.0;325.0;315.0;301.0;312.0;322.0;306.0;305.0;324.0;302.0;326.0;119.0;139.0;137.0,350.0;193.0;12.0;13.0;171.0;135.0;151.0;161.0;162.0;158.0;143.0;301.0;313.0;303.0;304.0;321.0;320.0;303.0;302.0;306.0;299.0;300.0;307.0;305.0;311.0;302.0;316.0;299.0;317.0;299.0;308.0;317.0;320.0;346.0;313.0;304.0;312.0;327.0;305.0;306.0;331.0;299.0;333.0;115.0;139.0;143.0,0.177024;0.224075;0.333904;0.393087;0.273532;0.310546;0.299487;0.534991;0.506669;0.43826;0.249826;0.327905;0.340013;0.8118;0.78289;0.585756;0.653071;0.741445;0.826652;0.826652;0.857178;0.797214;0.841777;0.857178;0.905092;0.88883;0.872861;0.921652;0.905092;0.88883;0.872861;0.872861;0.8118;0.728123;0.872861;0.905092;0.857178;0.8118;0.872861;0.826652;0.841777;0.826652;0.857178;0.78289;0.797214;0.8118,0.596473;0.544779;0.488626;0.228175;0.316228;0.506669;0.479847;0.415059;0.372277;0.236601;0.228175;0.346234;0.479847;0.66502;0.534991;0.534991;0.288822;0.554746;0.728123;0.641337;0.728123;0.525379;0.653071;0.575231;0.768824;0.702193;0.618498;0.741445;0.741445;0.689577;0.629814;0.618498;0.430386;0.400278;0.629814;0.75501;0.629814;0.446279;0.641337;0.488626;0.585756;0.454444;0.618498;0.340013;0.454444;0.422653,Longuet-Higgins (1964),NaN\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             //same test, but with  superfluous string data regex test
@@ -4649,7 +4777,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.1712528e+9, NaN;\n" +
+"    Float64 actual_range 1.1540346e+9, NaN;\n" +
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -4702,8 +4830,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting 180.0;\n" +
+"    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 80.81;\n" +
 "    Float64 geospatial_lat_min -19.713;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
@@ -4717,6 +4846,11 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 "/tabledap/" + datasetIdPrefix + "ndbcSosWind.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
+"    String keywords \"Atmosphere > Altitude > Station Height,\n" +
+"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
+"Atmosphere > Atmospheric Winds > Vertical Wind Motion,\n" +
+"air, altitude, atmosphere, atmospheric, direction, from, gust, height, identifier, ndbc, noaa, sensor, sos, speed, station, surface, time, upward, velocity, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -4724,7 +4858,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 80.81;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -19.713;\n" +
@@ -4733,7 +4867,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have winds data.\n" +
 "\n" +
 "Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.\";\n" +
-"    String time_coverage_start \"2007-02-12T04:00:00Z\";\n" +
+"    String time_coverage_start \"2006-07-27T21:10:00Z\";\n" +
 "    String title \"NOAA NDBC SOS - winds\";\n" +
 "    Float64 Westernmost_Easting -177.75;\n" +
 "  }\n" +
@@ -4746,12 +4880,12 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbcSosWind", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"longitude, latitude, station_id, altitude, time, sensor_id, wind_from_direction, wind_speed, wind_speed_of_gust, upward_air_velocity\n" +
-"degrees_east, degrees_north, , m, UTC, , degrees_true, m s-1, m s-1, m s-1\n" +
-"-79.09, 32.5, urn:ioos:station:wmo:41004, 5.0, 2008-08-01T00:50:00Z, urn:ioos:sensor:wmo:41004::anemometer1, 229.0, 10.1, 12.6, NaN\n" +
-"-79.09, 32.5, urn:ioos:station:wmo:41004, 5.0, 2008-08-01T01:50:00Z, urn:ioos:sensor:wmo:41004::anemometer1, 232.0, 9.3, 11.3, NaN\n" +
-"-79.09, 32.5, urn:ioos:station:wmo:41004, 5.0, 2008-08-01T02:50:00Z, urn:ioos:sensor:wmo:41004::anemometer1, 237.0, 7.8, 11.5, NaN\n" +
-"-79.09, 32.5, urn:ioos:station:wmo:41004, 5.0, 2008-08-01T03:50:00Z, urn:ioos:sensor:wmo:41004::anemometer1, 236.0, 8.0, 9.3, NaN\n";
+"longitude,latitude,station_id,altitude,time,sensor_id,wind_from_direction,wind_speed,wind_speed_of_gust,upward_air_velocity\n" +
+"degrees_east,degrees_north,,m,UTC,,degrees_true,m s-1,m s-1,m s-1\n" +
+"-79.09,32.5,urn:ioos:station:wmo:41004,5.0,2008-08-01T00:50:00Z,urn:ioos:sensor:wmo:41004::anemometer1,229.0,10.1,12.6,NaN\n" +
+"-79.09,32.5,urn:ioos:station:wmo:41004,5.0,2008-08-01T01:50:00Z,urn:ioos:sensor:wmo:41004::anemometer1,232.0,9.3,11.3,NaN\n" +
+"-79.09,32.5,urn:ioos:station:wmo:41004,5.0,2008-08-01T02:50:00Z,urn:ioos:sensor:wmo:41004::anemometer1,237.0,7.8,11.5,NaN\n" +
+"-79.09,32.5,urn:ioos:station:wmo:41004,5.0,2008-08-01T03:50:00Z,urn:ioos:sensor:wmo:41004::anemometer1,236.0,8.0,9.3,NaN\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -4761,7 +4895,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
     }
 
     /**
-     * testOostethys should work. This tests datasetID=gomoosBuoy.
+     * testOostethys  This tests datasetID=gomoosBuoy.
      *
      * @throws Throwable if trouble
      */
@@ -4784,6 +4918,7 @@ So I will make ERDDAP able to read
   and neracoos sos server (older version, less strict)
 2010-04-29
 */
+        try {
         String2.log("\n*** testOostethys");
         testVerboseOn();
 reallyReallyVerbose = true;
@@ -4808,7 +4943,7 @@ reallyReallyVerbose = true;
             eddTable.sosMaxLat.getNiceDouble(0) + " time=" +
             eddTable.sosMinTime.getNiceDouble(0) + ", " +
             eddTable.sosMaxTime.getNiceDouble(0));
-//        String2.log(String2.toCSVString(eddTable.sosObservedProperties()));
+//        String2.log(String2.toCSSVString(eddTable.sosObservedProperties()));
 
         Test.ensureTrue(eddTable.sosOfferings.size() >= 9, //was 15
             "nOfferings=" + eddTable.sosOfferings.size()); //changes sometimes
@@ -4825,7 +4960,7 @@ reallyReallyVerbose = true;
         Test.ensureEqual(eddTable.sosMaxLat.getNiceDouble(which), 42.5232, "");
         Test.ensureEqual(eddTable.sosMinTime.getNiceDouble(which), 9.94734E8, "");
         Test.ensureEqual(eddTable.sosMaxTime.getNiceDouble(which), Double.NaN, "");
-//        Test.ensureEqual(String2.toCSVString(eddTable.sosObservedProperties()), 
+//        Test.ensureEqual(String2.toCSSVString(eddTable.sosObservedProperties()), 
 //            "http://marinemetadata.org/cf#sea_water_salinity, " +
 //            "http://marinemetadata.org/cf#sea_water_temperature", 
 //            "");
@@ -4840,71 +4975,71 @@ reallyReallyVerbose = true;
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected =
 // before 2010-02-11 was
-//"longitude, latitude, altitude, time, station_id, sea_water_temperature, sea_water_salinity\n" +
-//"degrees_east, degrees_north, m, UTC, , degree_C, PSU\n" +
-//"-69.8891420948262, 43.7813123586226, -1.0, 2007-07-04T00:00:00Z, D01, 13.5, 29.3161296844482\n" +
-//"-69.8891420948262, 43.7813123586226, -20.0, 2007-07-04T00:00:00Z, D01, 9.28999996185303, 31.24924659729\n" +
-//"-69.8891420948262, 43.7813123586226, -35.0, 2007-07-04T00:00:00Z, D01, 8.30000019073486, NaN\n" +
-//"-69.8891420948262, 43.7813123586226, -1.0, 2007-07-04T01:00:00Z, D01, 13.5100002288818, 29.192590713501\n" +
-//"-69.8891420948262, 43.7813123586226, -20.0, 2007-07-04T01:00:00Z, D01, 9.06999969482422, 31.2218112945557\n" +
-//"-69.8891420948262, 43.7813123586226, -35.0, 2007-07-04T01:00:00Z, D01, 8.51000022888184, NaN\n" +
-//"-69.9878833333333, 43.7617166666667, -1.0, 2007-07-04T00:00:00Z, D02, 13.460000038147, 29.9242057800293\n" +
-//"-69.9878833333333, 43.7617166666667, -10.0, 2007-07-04T00:00:00Z, D02, 11.8699998855591, 31.2601585388184\n" +
-//"-69.9878833333333, 43.7617166666667, -1.0, 2007-07-04T00:30:00Z, D02, 13.4200000762939, 29.9195117950439\n" +
-//"-69.9878833333333, 43.7617166666667, -1.0, 2007-07-04T01:00:00Z, D02, 13.3699998855591, 29.930046081543\n" +
-//"-69.9878833333333, 43.7617166666667, -10.0, 2007-07-04T01:00:00Z, D02, 11.6599998474121, 31.2559909820557\n" +
-//"-69.3549346923828, 43.7136993408203, -1.0, 2007-07-04T00:00:00Z, E01, 13.7600002288818, 31.1920852661133\n" +
-//"-69.3549346923828, 43.7136993408203, -2.0, 2007-07-04T00:00:00Z, E01, 13.7034998, NaN\n" +
-//"-69.3549346923828, 43.7136993408203, -20.0, 2007-07-04T00:00:00Z, E01, 7.65000009536743, 31.8228702545166\n" +
-//"-69.3549346923828, 43.7136993408203, -50.0, 2007-07-04T00:00:00Z, E01, 5.84700012207031, 32.1141357421875\n" +
-//"-69.3549346923828, 43.7136993408203, -1.0, 2007-07-04T00:30:00Z, E01, 13.8900003433228, 31.1868896484375\n" +
-//"-69.3549346923828, 43.7136993408203, -1.0, 2007-07-04T01:00:00Z, E01, 13.8500003814697, 31.1843872070312\n" +
-//"-69.3549346923828, 43.7136993408203, -2.0, 2007-07-04T01:00:00Z, E01, 13.8292704, NaN\n" +
-//"-69.3549346923828, 43.7136993408203, -20.0, 2007-07-04T01:00:00Z, E01, 7.57000017166138, 31.833927154541\n" +
-//"-69.3549346923828, 43.7136993408203, -50.0, 2007-07-04T01:00:00Z, E01, 5.81699991226196, 32.0988731384277\n";
+//"longitude,latitude,altitude,time,station_id,sea_water_temperature,sea_water_salinity\n" +
+//"degrees_east,degrees_north,m,UTC,,degree_C,PSU\n" +
+//"-69.8891420948262,43.7813123586226,-1.0,2007-07-04T00:00:00Z,D01,13.5,29.3161296844482\n" +
+//"-69.8891420948262,43.7813123586226,-20.0,2007-07-04T00:00:00Z,D01,9.28999996185303,31.24924659729\n" +
+//"-69.8891420948262,43.7813123586226,-35.0,2007-07-04T00:00:00Z,D01,8.30000019073486,NaN\n" +
+//"-69.8891420948262,43.7813123586226,-1.0,2007-07-04T01:00:00Z,D01,13.5100002288818,29.192590713501\n" +
+//"-69.8891420948262,43.7813123586226,-20.0,2007-07-04T01:00:00Z,D01,9.06999969482422,31.2218112945557\n" +
+//"-69.8891420948262,43.7813123586226,-35.0,2007-07-04T01:00:00Z,D01,8.51000022888184,NaN\n" +
+//"-69.9878833333333,43.7617166666667,-1.0,2007-07-04T00:00:00Z,D02,13.460000038147,29.9242057800293\n" +
+//"-69.9878833333333,43.7617166666667,-10.0,2007-07-04T00:00:00Z,D02,11.8699998855591,31.2601585388184\n" +
+//"-69.9878833333333,43.7617166666667,-1.0,2007-07-04T00:30:00Z,D02,13.4200000762939,29.9195117950439\n" +
+//"-69.9878833333333,43.7617166666667,-1.0,2007-07-04T01:00:00Z,D02,13.3699998855591,29.930046081543\n" +
+//"-69.9878833333333,43.7617166666667,-10.0,2007-07-04T01:00:00Z,D02,11.6599998474121,31.2559909820557\n" +
+//"-69.3549346923828,43.7136993408203,-1.0,2007-07-04T00:00:00Z,E01,13.7600002288818,31.1920852661133\n" +
+//"-69.3549346923828,43.7136993408203,-2.0,2007-07-04T00:00:00Z,E01,13.7034998,NaN\n" +
+//"-69.3549346923828,43.7136993408203,-20.0,2007-07-04T00:00:00Z,E01,7.65000009536743,31.8228702545166\n" +
+//"-69.3549346923828,43.7136993408203,-50.0,2007-07-04T00:00:00Z,E01,5.84700012207031,32.1141357421875\n" +
+//"-69.3549346923828,43.7136993408203,-1.0,2007-07-04T00:30:00Z,E01,13.8900003433228,31.1868896484375\n" +
+//"-69.3549346923828,43.7136993408203,-1.0,2007-07-04T01:00:00Z,E01,13.8500003814697,31.1843872070312\n" +
+//"-69.3549346923828,43.7136993408203,-2.0,2007-07-04T01:00:00Z,E01,13.8292704,NaN\n" +
+//"-69.3549346923828,43.7136993408203,-20.0,2007-07-04T01:00:00Z,E01,7.57000017166138,31.833927154541\n" +
+//"-69.3549346923828,43.7136993408203,-50.0,2007-07-04T01:00:00Z,E01,5.81699991226196,32.0988731384277\n";
 //before 12/17/07 was -69.8876
-//before 5/19/08 was -69.9879, 43.7617, 
+//before 5/19/08 was -69.9879,43.7617,
 //changed again 2009-03-26:
-//"longitude, latitude, altitude, time, station_id, sea_water_temperature, sea_water_salinity\n" +
-//"degrees_east, degrees_north, m, UTC, , degree_C, PSU\n" +
-//"-69.9878833333333, 43.7617166666667, -1.0, 2007-07-04T00:00:00Z, D02, 13.460000038147, 29.9242057800293\n" +
-//"-69.9878833333333, 43.7617166666667, -10.0, 2007-07-04T00:00:00Z, D02, 11.8699998855591, 31.2601585388184\n" +
-//"-69.9878833333333, 43.7617166666667, -1.0, 2007-07-04T00:30:00Z, D02, 13.4200000762939, 29.9195117950439\n" +
-//"-69.9878833333333, 43.7617166666667, -1.0, 2007-07-04T01:00:00Z, D02, 13.3699998855591, 29.930046081543\n" +
-//"-69.9878833333333, 43.7617166666667, -10.0, 2007-07-04T01:00:00Z, D02, 11.6599998474121, 31.2559909820557\n" +
-//"-69.3549346923828, 43.7136993408203, -1.0, 2007-07-04T00:00:00Z, E01, 13.7600002288818, 31.1920852661133\n" +
-//"-69.3549346923828, 43.7136993408203, -2.0, 2007-07-04T00:00:00Z, E01, 13.7034998, NaN\n" +
-//"-69.3549346923828, 43.7136993408203, -20.0, 2007-07-04T00:00:00Z, E01, 7.65000009536743, 31.8228702545166\n" +
-//"-69.3549346923828, 43.7136993408203, -50.0, 2007-07-04T00:00:00Z, E01, 5.84700012207031, 32.1141357421875\n" +
-//"-69.3549346923828, 43.7136993408203, -1.0, 2007-07-04T00:30:00Z, E01, 13.8900003433228, 31.1868896484375\n" +
-//"-69.3549346923828, 43.7136993408203, -1.0, 2007-07-04T01:00:00Z, E01, 13.8500003814697, 31.1843872070312\n" +
-//"-69.3549346923828, 43.7136993408203, -2.0, 2007-07-04T01:00:00Z, E01, 13.8292704, NaN\n" +
-//"-69.3549346923828, 43.7136993408203, -20.0, 2007-07-04T01:00:00Z, E01, 7.57000017166138, 31.833927154541\n" +
-//"-69.3549346923828, 43.7136993408203, -50.0, 2007-07-04T01:00:00Z, E01, 5.81699991226196, 32.0988731384277\n";
-//2010-07-08 When I switch to ALL_PLATFORMS BBOX request, 
+//"longitude,latitude,altitude,time,station_id,sea_water_temperature,sea_water_salinity\n" +
+//"degrees_east,degrees_north,m,UTC,,degree_C,PSU\n" +
+//"-69.9878833333333,43.7617166666667,-1.0,2007-07-04T00:00:00Z,D02,13.460000038147,29.9242057800293\n" +
+//"-69.9878833333333,43.7617166666667,-10.0,2007-07-04T00:00:00Z,D02,11.8699998855591,31.2601585388184\n" +
+//"-69.9878833333333,43.7617166666667,-1.0,2007-07-04T00:30:00Z,D02,13.4200000762939,29.9195117950439\n" +
+//"-69.9878833333333,43.7617166666667,-1.0,2007-07-04T01:00:00Z,D02,13.3699998855591,29.930046081543\n" +
+//"-69.9878833333333,43.7617166666667,-10.0,2007-07-04T01:00:00Z,D02,11.6599998474121,31.2559909820557\n" +
+//"-69.3549346923828,43.7136993408203,-1.0,2007-07-04T00:00:00Z,E01,13.7600002288818,31.1920852661133\n" +
+//"-69.3549346923828,43.7136993408203,-2.0,2007-07-04T00:00:00Z,E01,13.7034998,NaN\n" +
+//"-69.3549346923828,43.7136993408203,-20.0,2007-07-04T00:00:00Z,E01,7.65000009536743,31.8228702545166\n" +
+//"-69.3549346923828,43.7136993408203,-50.0,2007-07-04T00:00:00Z,E01,5.84700012207031,32.1141357421875\n" +
+//"-69.3549346923828,43.7136993408203,-1.0,2007-07-04T00:30:00Z,E01,13.8900003433228,31.1868896484375\n" +
+//"-69.3549346923828,43.7136993408203,-1.0,2007-07-04T01:00:00Z,E01,13.8500003814697,31.1843872070312\n" +
+//"-69.3549346923828,43.7136993408203,-2.0,2007-07-04T01:00:00Z,E01,13.8292704,NaN\n" +
+//"-69.3549346923828,43.7136993408203,-20.0,2007-07-04T01:00:00Z,E01,7.57000017166138,31.833927154541\n" +
+//"-69.3549346923828,43.7136993408203,-50.0,2007-07-04T01:00:00Z,E01,5.81699991226196,32.0988731384277\n";
+//2010-07-08 When I switch to ALL_PLATFORMS BBOX request,
 //  D01 (which is not currently in GetCapabilities) returned to the response
-"longitude, latitude, altitude, time, station_id, sea_water_temperature, sea_water_salinity\n" +
-"degrees_east, degrees_north, m, UTC, , degree_C, PSU\n" +
-"-69.8891420948262, 43.7813123586226, -1.0, 2007-07-04T00:00:00Z, D01, 13.5, 29.3161296844482\n" +
-"-69.8891420948262, 43.7813123586226, -20.0, 2007-07-04T00:00:00Z, D01, 9.28999996185303, 31.24924659729\n" +
-"-69.8891420948262, 43.7813123586226, -35.0, 2007-07-04T00:00:00Z, D01, 8.30000019073486, NaN\n" +
-"-69.8891420948262, 43.7813123586226, -1.0, 2007-07-04T01:00:00Z, D01, 13.5100002288818, 29.192590713501\n" +
-"-69.8891420948262, 43.7813123586226, -20.0, 2007-07-04T01:00:00Z, D01, 9.06999969482422, 31.2218112945557\n" +
-"-69.8891420948262, 43.7813123586226, -35.0, 2007-07-04T01:00:00Z, D01, 8.51000022888184, NaN\n" +
-"-69.9878833333333, 43.7617166666667, -1.0, 2007-07-04T00:00:00Z, D02, 13.460000038147, 29.9242057800293\n" +
-"-69.9878833333333, 43.7617166666667, -10.0, 2007-07-04T00:00:00Z, D02, 11.8699998855591, 31.2601585388184\n" +
-"-69.9878833333333, 43.7617166666667, -1.0, 2007-07-04T00:30:00Z, D02, 13.4200000762939, 29.9195117950439\n" +
-"-69.9878833333333, 43.7617166666667, -1.0, 2007-07-04T01:00:00Z, D02, 13.3699998855591, 29.930046081543\n" +
-"-69.9878833333333, 43.7617166666667, -10.0, 2007-07-04T01:00:00Z, D02, 11.6599998474121, 31.2559909820557\n" +
-"-69.3549346923828, 43.7136993408203, -1.0, 2007-07-04T00:00:00Z, E01, 13.7600002288818, 31.1920852661133\n" +
-"-69.3549346923828, 43.7136993408203, -2.0, 2007-07-04T00:00:00Z, E01, 13.7034998, NaN\n" +
-"-69.3549346923828, 43.7136993408203, -20.0, 2007-07-04T00:00:00Z, E01, 7.65000009536743, 31.8228702545166\n" +
-"-69.3549346923828, 43.7136993408203, -50.0, 2007-07-04T00:00:00Z, E01, 5.84700012207031, 32.1141357421875\n" +
-"-69.3549346923828, 43.7136993408203, -1.0, 2007-07-04T00:30:00Z, E01, 13.8900003433228, 31.1868896484375\n" +
-"-69.3549346923828, 43.7136993408203, -1.0, 2007-07-04T01:00:00Z, E01, 13.8500003814697, 31.1843872070312\n" +
-"-69.3549346923828, 43.7136993408203, -2.0, 2007-07-04T01:00:00Z, E01, 13.8292704, NaN\n" +
-"-69.3549346923828, 43.7136993408203, -20.0, 2007-07-04T01:00:00Z, E01, 7.57000017166138, 31.833927154541\n" +
-"-69.3549346923828, 43.7136993408203, -50.0, 2007-07-04T01:00:00Z, E01, 5.81699991226196, 32.0988731384277\n";
+"longitude,latitude,altitude,time,station_id,sea_water_temperature,sea_water_salinity\n" +
+"degrees_east,degrees_north,m,UTC,,degree_C,PSU\n" +
+"-69.8891420948262,43.7813123586226,-1.0,2007-07-04T00:00:00Z,D01,13.5,29.3161296844482\n" +
+"-69.8891420948262,43.7813123586226,-20.0,2007-07-04T00:00:00Z,D01,9.28999996185303,31.24924659729\n" +
+"-69.8891420948262,43.7813123586226,-35.0,2007-07-04T00:00:00Z,D01,8.30000019073486,NaN\n" +
+"-69.8891420948262,43.7813123586226,-1.0,2007-07-04T01:00:00Z,D01,13.5100002288818,29.192590713501\n" +
+"-69.8891420948262,43.7813123586226,-20.0,2007-07-04T01:00:00Z,D01,9.06999969482422,31.2218112945557\n" +
+"-69.8891420948262,43.7813123586226,-35.0,2007-07-04T01:00:00Z,D01,8.51000022888184,NaN\n" +
+"-69.9878833333333,43.7617166666667,-1.0,2007-07-04T00:00:00Z,D02,13.460000038147,29.9242057800293\n" +
+"-69.9878833333333,43.7617166666667,-10.0,2007-07-04T00:00:00Z,D02,11.8699998855591,31.2601585388184\n" +
+"-69.9878833333333,43.7617166666667,-1.0,2007-07-04T00:30:00Z,D02,13.4200000762939,29.9195117950439\n" +
+"-69.9878833333333,43.7617166666667,-1.0,2007-07-04T01:00:00Z,D02,13.3699998855591,29.930046081543\n" +
+"-69.9878833333333,43.7617166666667,-10.0,2007-07-04T01:00:00Z,D02,11.6599998474121,31.2559909820557\n" +
+"-69.3549346923828,43.7136993408203,-1.0,2007-07-04T00:00:00Z,E01,13.7600002288818,31.1920852661133\n" +
+"-69.3549346923828,43.7136993408203,-2.0,2007-07-04T00:00:00Z,E01,13.7034998,NaN\n" +
+"-69.3549346923828,43.7136993408203,-20.0,2007-07-04T00:00:00Z,E01,7.65000009536743,31.8228702545166\n" +
+"-69.3549346923828,43.7136993408203,-50.0,2007-07-04T00:00:00Z,E01,5.84700012207031,32.1141357421875\n" +
+"-69.3549346923828,43.7136993408203,-1.0,2007-07-04T00:30:00Z,E01,13.8900003433228,31.1868896484375\n" +
+"-69.3549346923828,43.7136993408203,-1.0,2007-07-04T01:00:00Z,E01,13.8500003814697,31.1843872070312\n" +
+"-69.3549346923828,43.7136993408203,-2.0,2007-07-04T01:00:00Z,E01,13.8292704,NaN\n" +
+"-69.3549346923828,43.7136993408203,-20.0,2007-07-04T01:00:00Z,E01,7.57000017166138,31.833927154541\n" +
+"-69.3549346923828,43.7136993408203,-50.0,2007-07-04T01:00:00Z,E01,5.81699991226196,32.0988731384277\n";
     Test.ensureEqual(results, expected, results);
 
         //data for mapExample  (no time)  just uses station table data
@@ -4914,120 +5049,130 @@ reallyReallyVerbose = true;
         //String2.log(results);
         expected = //this changes a little periodically (NOT GOOD, stations have 1 point (which applies to historic data and changes!)
 //before 2009-01-12 this was
-//"longitude, latitude\n" +
-//"degrees_east, degrees_north\n" +
-//"-69.8891, 43.7813\n" +
-//"-69.9885, 43.7612\n" +
-//"-69.3578, 43.7148\n" +
-//"-68.998, 44.0548\n" +
-//"-68.1087, 44.1058\n" +
-//"-67.0123, 44.8893\n" +
-//"-66.5541, 43.6276\n" +
-//"-67.8798, 43.4907\n" +
-//"-65.9118, 42.3279\n";
+//"longitude,latitude\n" +
+//"degrees_east,degrees_north\n" +
+//"-69.8891,43.7813\n" +
+//"-69.9885,43.7612\n" +
+//"-69.3578,43.7148\n" +
+//"-68.998,44.0548\n" +
+//"-68.1087,44.1058\n" +
+//"-67.0123,44.8893\n" +
+//"-66.5541,43.6276\n" +
+//"-67.8798,43.4907\n" +
+//"-65.9118,42.3279\n";
 //before 2009-03-23 this was
-//"longitude, latitude\n" +
-//"degrees_east, degrees_north\n" +
-//"-69.8891, 43.7813\n" +
-//"-69.9885, 43.7612\n" +
-//"-69.3578, 43.7148\n" +
-//"-68.998, 44.0548\n" +
-//"-68.1085, 44.1057\n" +
-//"-67.0123, 44.8893\n" +
-//"-66.5541, 43.6276\n" +
-//"-67.8798, 43.4907\n" +
-//"-65.9118, 42.3279\n"; 
+//"longitude,latitude\n" +
+//"degrees_east,degrees_north\n" +
+//"-69.8891,43.7813\n" +
+//"-69.9885,43.7612\n" +
+//"-69.3578,43.7148\n" +
+//"-68.998,44.0548\n" +
+//"-68.1085,44.1057\n" +
+//"-67.0123,44.8893\n" +
+//"-66.5541,43.6276\n" +
+//"-67.8798,43.4907\n" +
+//"-65.9118,42.3279\n"; 
 //before 2009-03-26 was
-//"longitude, latitude\n" +
-//"degrees_east, degrees_north\n" +
-//"-69.8891, 43.7813\n" +
-//"-69.9885, 43.7612\n" +
-//"-69.3578, 43.7148\n" +
-//"-68.998, 44.0548\n" +
-//"-68.108, 44.1052\n" +
-//"-67.0123, 44.8893\n" +
-//"-66.5541, 43.6276\n" +
-//"-67.8798, 43.4907\n" +
-//"-65.9118, 42.3279\n";
-//"longitude, latitude\n" +
-//"degrees_east, degrees_north\n" +
-//"-69.8891, 43.7813\n" +
-//"-69.9877, 43.7628\n" +
-//"-69.3578, 43.7148\n" +
-//"-68.9982, 44.0555\n" +
-//"-68.108, 44.1052\n" +
-//"-67.0123, 44.8893\n" +
-//"-66.5541, 43.6276\n" +
-//"-67.8798, 43.4907\n" +
-//"-65.9118, 42.3279\n";
-//"longitude, latitude\n" +
-//"degrees_east, degrees_north\n" +
-//"-69.8891, 43.7813\n" +
-//"-69.9877, 43.7628\n" +
-//"-69.3578, 43.7148\n" +
-//"-68.9982, 44.0555\n" +
-//"-68.108, 44.1052\n" +
-//"-67.0123, 44.8893\n" +
-//"-66.5541, 43.6276\n" +
-//"-67.8798, 43.4907\n" +
-//"-65.9096, 42.3276\n";
-//"longitude, latitude\n" +
-//"degrees_east, degrees_north\n" +
-//"-69.8891, 43.7813\n" +
-//"-69.9877, 43.7628\n" +
-//"-69.3578, 43.7148\n" +
-//"-68.9982, 44.0555\n" +
-//"-68.1087, 44.1058\n" +
-//"-67.0123, 44.8893\n" +
-//"-66.5541, 43.6276\n" +
-//"-67.8798, 43.4907\n" +
-//"-65.9096, 42.3276\n";
-//"longitude, latitude\n" +  //starting 2009-09-28
-//"degrees_east, degrees_north\n" +
-//"-69.8891, 43.7813\n" +
-//"-69.9877, 43.7628\n" +
-//"-69.3578, 43.7148\n" +
-//"-68.9982, 44.0555\n" +
-//"-68.1087, 44.1058\n" +
-//"-67.0122575759888, 44.8892910480499\n" +
-//"-66.5541088046873, 43.6276378712505\n" +
-//"-67.8798, 43.4907\n" +
-//"-65.9066314697266, 42.3259010314941\n";
-//"longitude, latitude\n" +  //starting 2010-02-11
-//"degrees_east, degrees_north\n" +
-//"-69.9877, 43.7628\n" +
-//"-69.3578, 43.7148\n" +
-//"-68.9982, 44.0555\n" +
-//"-68.1087, 44.1058\n" +
-//"-67.8798, 43.4907\n" +
-//"-65.9066314697266, 42.3259010314941\n";
-//"longitude, latitude\n" + //starting 2010-07-08
-//"degrees_east, degrees_north\n" +
-//"-69.9877, 43.7628\n" +
-//"-69.3578, 43.7148\n" +
-//"-69.32, 43.7065\n" + //added 2010-10-01
-//"-68.9982, 44.0555\n" +
-//"-68.1087, 44.1058\n" +
-//"-67.8716659545898, 43.490140914917\n" +  //small lat lon changes 2010-08-05
-//"-65.9081802368164, 42.3263664245605\n";
-//"longitude, latitude\n" + //starting 2011-02-15
-//"degrees_east, degrees_north\n" +
-//"-69.9877, 43.7628\n" +
-//"-69.3578, 43.7148\n" +
-//"-69.319580078125, 43.7063484191895\n" +
-//"-68.9977645874023, 44.0548324584961\n" +
-//"-68.1087, 44.1058\n" +
-//"-67.8716659545898, 43.490140914917\n" +
-//"-65.9081802368164, 42.3263664245605\n";
-"longitude, latitude\n" +  //starting 2011-07-24
-"degrees_east, degrees_north\n" +
-"-69.9877, 43.7628\n" +
-"-69.3552169799805, 43.714298248291\n" +
-"-69.319580078125, 43.7063484191895\n" +
-"-68.9977645874023, 44.0548324584961\n" +
-"-68.1087, 44.1058\n" +
-"-67.8798, 43.4907\n" +
-"-65.9081802368164, 42.3263664245605\n";
+//"longitude,latitude\n" +
+//"degrees_east,degrees_north\n" +
+//"-69.8891,43.7813\n" +
+//"-69.9885,43.7612\n" +
+//"-69.3578,43.7148\n" +
+//"-68.998,44.0548\n" +
+//"-68.108,44.1052\n" +
+//"-67.0123,44.8893\n" +
+//"-66.5541,43.6276\n" +
+//"-67.8798,43.4907\n" +
+//"-65.9118,42.3279\n";
+//"longitude,latitude\n" +
+//"degrees_east,degrees_north\n" +
+//"-69.8891,43.7813\n" +
+//"-69.9877,43.7628\n" +
+//"-69.3578,43.7148\n" +
+//"-68.9982,44.0555\n" +
+//"-68.108,44.1052\n" +
+//"-67.0123,44.8893\n" +
+//"-66.5541,43.6276\n" +
+//"-67.8798,43.4907\n" +
+//"-65.9118,42.3279\n";
+//"longitude,latitude\n" +
+//"degrees_east,degrees_north\n" +
+//"-69.8891,43.7813\n" +
+//"-69.9877,43.7628\n" +
+//"-69.3578,43.7148\n" +
+//"-68.9982,44.0555\n" +
+//"-68.108,44.1052\n" +
+//"-67.0123,44.8893\n" +
+//"-66.5541,43.6276\n" +
+//"-67.8798,43.4907\n" +
+//"-65.9096,42.3276\n";
+//"longitude,latitude\n" +
+//"degrees_east,degrees_north\n" +
+//"-69.8891,43.7813\n" +
+//"-69.9877,43.7628\n" +
+//"-69.3578,43.7148\n" +
+//"-68.9982,44.0555\n" +
+//"-68.1087,44.1058\n" +
+//"-67.0123,44.8893\n" +
+//"-66.5541,43.6276\n" +
+//"-67.8798,43.4907\n" +
+//"-65.9096,42.3276\n";
+//"longitude,latitude\n" +  //starting 2009-09-28
+//"degrees_east,degrees_north\n" +
+//"-69.8891,43.7813\n" +
+//"-69.9877,43.7628\n" +
+//"-69.3578,43.7148\n" +
+//"-68.9982,44.0555\n" +
+//"-68.1087,44.1058\n" +
+//"-67.0122575759888,44.8892910480499\n" +
+//"-66.5541088046873,43.6276378712505\n" +
+//"-67.8798,43.4907\n" +
+//"-65.9066314697266,42.3259010314941\n";
+//"longitude,latitude\n" +  //starting 2010-02-11
+//"degrees_east,degrees_north\n" +
+//"-69.9877,43.7628\n" +
+//"-69.3578,43.7148\n" +
+//"-68.9982,44.0555\n" +
+//"-68.1087,44.1058\n" +
+//"-67.8798,43.4907\n" +
+//"-65.9066314697266,42.3259010314941\n";
+//"longitude,latitude\n" + //starting 2010-07-08
+//"degrees_east,degrees_north\n" +
+//"-69.9877,43.7628\n" +
+//"-69.3578,43.7148\n" +
+//"-69.32,43.7065\n" + //added 2010-10-01
+//"-68.9982,44.0555\n" +
+//"-68.1087,44.1058\n" +
+//"-67.8716659545898,43.490140914917\n" +  //small lat lon changes 2010-08-05
+//"-65.9081802368164,42.3263664245605\n";
+//"longitude,latitude\n" + //starting 2011-02-15
+//"degrees_east,degrees_north\n" +
+//"-69.9877,43.7628\n" +
+//"-69.3578,43.7148\n" +
+//"-69.319580078125,43.7063484191895\n" +
+//"-68.9977645874023,44.0548324584961\n" +
+//"-68.1087,44.1058\n" +
+//"-67.8716659545898,43.490140914917\n" +
+//"-65.9081802368164,42.3263664245605\n";
+//"longitude,latitude\n" +  //starting 2011-07-24
+//"degrees_east,degrees_north\n" +
+//"-69.9877,43.7628\n" +
+//"-69.3552169799805,43.714298248291\n" +
+//"-69.319580078125,43.7063484191895\n" +
+//"-68.9977645874023,44.0548324584961\n" +
+//"-68.1087,44.1058\n" +
+//"-67.8798,43.4907\n" +
+//"-65.907,42.3303\n";   //pre 2011-09-05 was "-65.9081802368164,42.3263664245605\n";
+"longitude,latitude\n" + //starting 2012-03-16
+"degrees_east,degrees_north\n" +
+"-69.9877,43.7628\n" +
+"-69.3578,43.7148\n" +
+"-69.319580078125,43.7063484191895\n" +
+"-68.9981,44.055\n" +
+"-68.8308,44.3878\n" +
+"-68.1087,44.1058\n" +
+"-67.8798,43.4907\n" +
+"-65.907,42.3303\n"; 
        Test.ensureEqual(results, expected, "\nresults=\n" + results);  
 
 
@@ -5039,37 +5184,37 @@ reallyReallyVerbose = true;
         expected = 
 //changed a little on 2008-02-28, 2008-05-19, 2008-09-24, 2008-10-09 2009-01-12   -70.5658->-70.5655 42.5226->42.5232
 //change a little on 2009-03-26, 2009-09-18
-//"longitude, latitude\n" +
-//"degrees_east, degrees_north\n" +
-//"-70.5652267750436, 42.5227725835475\n" +
-//"-70.4273380011109, 43.18053298369\n" +
-//"-70.0584772405338, 43.5671424043496\n" +
-//"-69.8876, 43.7823\n" +
-//"-69.9878833333333, 43.7617166666667\n" +
-//"-69.3563516790217, 43.7138879949396\n" +
-//"-68.9979781363549, 44.0556086654547\n" +
-//"-68.1087458631928, 44.1053852961787\n" +
-//"-67.0122575759888, 44.8892910480499\n";
+//"longitude,latitude\n" +
+//"degrees_east,degrees_north\n" +
+//"-70.5652267750436,42.5227725835475\n" +
+//"-70.4273380011109,43.18053298369\n" +
+//"-70.0584772405338,43.5671424043496\n" +
+//"-69.8876,43.7823\n" +
+//"-69.9878833333333,43.7617166666667\n" +
+//"-69.3563516790217,43.7138879949396\n" +
+//"-68.9979781363549,44.0556086654547\n" +
+//"-68.1087458631928,44.1053852961787\n" +
+//"-67.0122575759888,44.8892910480499\n";
 //starting 2010-02-11:
-//"longitude, latitude\n" +  
-//"degrees_east, degrees_north\n" +
-//"-70.5652267750436, 42.5227725835475\n" +
-//"-70.4273380011109, 43.18053298369\n" +
-//"-69.9878833333333, 43.7617166666667\n" +
-//"-69.3563516790217, 43.7138879949396\n" +
-//"-68.9979781363549, 44.0556086654547\n" +
-//"-68.1087458631928, 44.1053852961787\n";
-//starting 2010-07-08 with new ALL_PLATFORMS BBOX request,   D01 returns:
-"longitude, latitude\n" +
-"degrees_east, degrees_north\n" +
-"-70.5652267750436, 42.5227725835475\n" +
-"-70.4273380011109, 43.18053298369\n" +
-"-70.0584772405338, 43.5671424043496\n" +
-"-69.8876, 43.7823\n" +
-"-69.9878833333333, 43.7617166666667\n" +
-"-69.3563516790217, 43.7138879949396\n" +
-"-68.9979781363549, 44.0556086654547\n" +
-"-68.1087458631928, 44.1053852961787\n";
+//"longitude,latitude\n" +  
+//"degrees_east,degrees_north\n" +
+//"-70.5652267750436,42.5227725835475\n" +
+//"-70.4273380011109,43.18053298369\n" +
+//"-69.9878833333333,43.7617166666667\n" +
+//"-69.3563516790217,43.7138879949396\n" +
+//"-68.9979781363549,44.0556086654547\n" +
+//"-68.1087458631928,44.1053852961787\n";
+//starting 2010-07-08 with new ALL_PLATFORMS BBOX request,  D01 returns:
+"longitude,latitude\n" +
+"degrees_east,degrees_north\n" +
+"-70.5652267750436,42.5227725835475\n" +
+"-70.4273380011109,43.18053298369\n" +
+"-70.0584772405338,43.5671424043496\n" +
+"-69.8876,43.7823\n" +
+"-69.9878833333333,43.7617166666667\n" +
+"-69.3563516790217,43.7138879949396\n" +
+"-68.9979781363549,44.0556086654547\n" +
+"-68.1087458631928,44.1053852961787\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);  
 
         //data for all variables 
@@ -5079,29 +5224,35 @@ reallyReallyVerbose = true;
         //String2.log(results);
         expected = //changed a little on 2008-02-28, 2008-05-19, 2008-09-24, 2008-10-09 2009-01-12   -70.5658->-70.5655 42.5226->42.5232
            //change a little on 2009-03-26, 2009-09-18
-"longitude, latitude, station_id, altitude, time, air_temperature, chlorophyll, direction_of_sea_water_velocity, dominant_wave_period, sea_level_pressure, sea_water_density, sea_water_electrical_conductivity, sea_water_salinity, sea_water_speed, sea_water_temperature, wave_height, visibility_in_air, wind_from_direction, wind_gust, wind_speed\n" +
-"degrees_east, degrees_north, , m, UTC, degree_C, mg m-3, degrees_true, s, mbar, kg m-3, S m-1, PSU, cm s-1, degree_C, m, m, degrees_true, m s-1, m s-1\n" +
-"-70.5652267750436, 42.5227725835475, A01, 4.0, 2007-12-11T00:00:00Z, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 332.100006103516, 3.94600009918213, 3.36700010299683\n" +
-"-70.5652267750436, 42.5227725835475, A01, 3.0, 2007-12-11T00:00:00Z, 0.899999976158142, NaN, NaN, NaN, 1024.82849121094, NaN, NaN, NaN, NaN, NaN, NaN, 2920.6796875, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, 0.0, 2007-12-11T00:00:00Z, NaN, NaN, NaN, 5.33333349, NaN, NaN, NaN, NaN, NaN, NaN, 0.644578338, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -1.0, 2007-12-11T00:00:00Z, NaN, NaN, NaN, NaN, NaN, 25.3888969421387, 33.2410011291504, 32.4736976623535, NaN, 7.30000019073486, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -2.0, 2007-12-11T00:00:00Z, NaN, NaN, 174.5672, NaN, NaN, NaN, NaN, NaN, 9.38560009, 7.34996223, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -3.0, 2007-12-11T00:00:00Z, NaN, 0.965432941913605, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -10.0, 2007-12-11T00:00:00Z, NaN, NaN, 182.0, NaN, NaN, NaN, NaN, NaN, 4.016217, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -14.0, 2007-12-11T00:00:00Z, NaN, NaN, 197.0, NaN, NaN, NaN, NaN, NaN, 3.605551, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -18.0, 2007-12-11T00:00:00Z, NaN, NaN, 212.0, NaN, NaN, NaN, NaN, NaN, 3.471311, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -20.0, 2007-12-11T00:00:00Z, NaN, NaN, NaN, NaN, NaN, 25.3971004486084, 33.2999992370605, 32.4910888671875, NaN, 7.34000015258789, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -22.0, 2007-12-11T00:00:00Z, NaN, NaN, 193.0, NaN, NaN, NaN, NaN, NaN, 3.671512, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -26.0, 2007-12-11T00:00:00Z, NaN, NaN, 192.0, NaN, NaN, NaN, NaN, NaN, 2.505993, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -30.0, 2007-12-11T00:00:00Z, NaN, NaN, 207.0, NaN, NaN, NaN, NaN, NaN, 2.475884, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -34.0, 2007-12-11T00:00:00Z, NaN, NaN, 189.0, NaN, NaN, NaN, NaN, NaN, 3.534119, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -38.0, 2007-12-11T00:00:00Z, NaN, NaN, 173.0, NaN, NaN, NaN, NaN, NaN, 4.356604, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -42.0, 2007-12-11T00:00:00Z, NaN, NaN, 185.0, NaN, NaN, NaN, NaN, NaN, 4.846648, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -46.0, 2007-12-11T00:00:00Z, NaN, NaN, 157.0, NaN, NaN, NaN, NaN, NaN, 4.527693, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -50.0, 2007-12-11T00:00:00Z, NaN, NaN, 174.0, NaN, NaN, 25.400972366333, 33.2970008850098, 32.4925308227539, 3.255764, 7.32000017166138, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -54.0, 2007-12-11T00:00:00Z, NaN, NaN, 220.0, NaN, NaN, NaN, NaN, NaN, 0.72111, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -58.0, 2007-12-11T00:00:00Z, NaN, NaN, 323.0, NaN, NaN, NaN, NaN, NaN, 3.956008, NaN, NaN, NaN, NaN, NaN, NaN\n";
+"longitude,latitude,station_id,altitude,time,air_temperature,chlorophyll,direction_of_sea_water_velocity,dominant_wave_period,sea_level_pressure,sea_water_density,sea_water_electrical_conductivity,sea_water_salinity,sea_water_speed,sea_water_temperature,wave_height,visibility_in_air,wind_from_direction,wind_gust,wind_speed\n" +
+"degrees_east,degrees_north,,m,UTC,degree_C,mg m-3,degrees_true,s,mbar,kg m-3,S m-1,PSU,cm s-1,degree_C,m,m,degrees_true,m s-1,m s-1\n" +
+"-70.5652267750436,42.5227725835475,A01,4.0,2007-12-11T00:00:00Z,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,332.100006103516,3.94600009918213,3.36700010299683\n" +
+"-70.5652267750436,42.5227725835475,A01,3.0,2007-12-11T00:00:00Z,0.899999976158142,NaN,NaN,NaN,1024.82849121094,NaN,NaN,NaN,NaN,NaN,NaN,2920.6796875,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,0.0,2007-12-11T00:00:00Z,NaN,NaN,NaN,5.33333349,NaN,NaN,NaN,NaN,NaN,NaN,0.644578338,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-1.0,2007-12-11T00:00:00Z,NaN,NaN,NaN,NaN,NaN,25.3888969421387,33.2410011291504,32.4736976623535,NaN,7.30000019073486,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-2.0,2007-12-11T00:00:00Z,NaN,NaN,174.5672,NaN,NaN,NaN,NaN,NaN,9.38560009,7.34996223,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-3.0,2007-12-11T00:00:00Z,NaN,0.965432941913605,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-10.0,2007-12-11T00:00:00Z,NaN,NaN,182.0,NaN,NaN,NaN,NaN,NaN,4.016217,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-14.0,2007-12-11T00:00:00Z,NaN,NaN,197.0,NaN,NaN,NaN,NaN,NaN,3.605551,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-18.0,2007-12-11T00:00:00Z,NaN,NaN,212.0,NaN,NaN,NaN,NaN,NaN,3.471311,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-20.0,2007-12-11T00:00:00Z,NaN,NaN,NaN,NaN,NaN,25.3971004486084,33.2999992370605,32.4910888671875,NaN,7.34000015258789,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-22.0,2007-12-11T00:00:00Z,NaN,NaN,193.0,NaN,NaN,NaN,NaN,NaN,3.671512,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-26.0,2007-12-11T00:00:00Z,NaN,NaN,192.0,NaN,NaN,NaN,NaN,NaN,2.505993,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-30.0,2007-12-11T00:00:00Z,NaN,NaN,207.0,NaN,NaN,NaN,NaN,NaN,2.475884,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-34.0,2007-12-11T00:00:00Z,NaN,NaN,189.0,NaN,NaN,NaN,NaN,NaN,3.534119,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-38.0,2007-12-11T00:00:00Z,NaN,NaN,173.0,NaN,NaN,NaN,NaN,NaN,4.356604,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-42.0,2007-12-11T00:00:00Z,NaN,NaN,185.0,NaN,NaN,NaN,NaN,NaN,4.846648,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-46.0,2007-12-11T00:00:00Z,NaN,NaN,157.0,NaN,NaN,NaN,NaN,NaN,4.527693,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-50.0,2007-12-11T00:00:00Z,NaN,NaN,174.0,NaN,NaN,25.400972366333,33.2970008850098,32.4925308227539,3.255764,7.32000017166138,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-54.0,2007-12-11T00:00:00Z,NaN,NaN,220.0,NaN,NaN,NaN,NaN,NaN,0.72111,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-58.0,2007-12-11T00:00:00Z,NaN,NaN,323.0,NaN,NaN,NaN,NaN,NaN,3.956008,NaN,NaN,NaN,NaN,NaN,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);  
+
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                "\nExpected error.  gomoos server shut down ~2012-04-18. Waiting for new URL." +
+                "\nPress ^C to stop or Enter to continue..."); 
+        }
     }
 
     /**
@@ -5134,7 +5285,7 @@ reallyReallyVerbose = true;
             eddTable.sosMaxLat.getNiceDouble(0) + " time=" +
             eddTable.sosMinTime.getNiceDouble(0) + ", " +
             eddTable.sosMaxTime.getNiceDouble(0));
-//        String2.log(String2.toCSVString(eddTable.sosObservedProperties()));
+//        String2.log(String2.toCSSVString(eddTable.sosObservedProperties()));
 
         Test.ensureTrue(eddTable.sosOfferings.size() >= 9, //was 15
             "nOfferings=" + eddTable.sosOfferings.size()); //changes sometimes
@@ -5147,7 +5298,7 @@ reallyReallyVerbose = true;
         Test.ensureEqual(eddTable.sosMaxLat.getNiceDouble(which), 42.5232, "");
         Test.ensureEqual(eddTable.sosMinTime.getNiceDouble(which), 9.94734E8, "");
         Test.ensureEqual(eddTable.sosMaxTime.getNiceDouble(which), Double.NaN, "");
-//        Test.ensureEqual(String2.toCSVString(eddTable.sosObservedProperties()), 
+//        Test.ensureEqual(String2.toCSSVString(eddTable.sosObservedProperties()), 
 //            "http://marinemetadata.org/cf#sea_water_salinity, " +
 //            "http://marinemetadata.org/cf#sea_water_temperature", 
 //            "");
@@ -5163,28 +5314,28 @@ reallyReallyVerbose = true;
         expected =
 //before 2010-07-08 when I started using ALL_PLATFORMS and BBOX,
 //  there was no data for D01 in the response
-"longitude, latitude, altitude, time, station_id, sea_water_temperature, sea_water_salinity\n" +
-"degrees_east, degrees_north, m, UTC, , degree_C, PSU\n" +
-"-69.8891420948262, 43.7813123586226, -1.0, 2007-07-04T00:00:00Z, D01, 13.5, 29.3161296844482\n" +
-"-69.8891420948262, 43.7813123586226, -20.0, 2007-07-04T00:00:00Z, D01, 9.28999996185303, 31.24924659729\n" +
-"-69.8891420948262, 43.7813123586226, -35.0, 2007-07-04T00:00:00Z, D01, 8.30000019073486, NaN\n" +
-"-69.8891420948262, 43.7813123586226, -1.0, 2007-07-04T01:00:00Z, D01, 13.5100002288818, 29.192590713501\n" +
-"-69.8891420948262, 43.7813123586226, -20.0, 2007-07-04T01:00:00Z, D01, 9.06999969482422, 31.2218112945557\n" +
-"-69.8891420948262, 43.7813123586226, -35.0, 2007-07-04T01:00:00Z, D01, 8.51000022888184, NaN\n" +
-"-69.9878833333333, 43.7617166666667, -1.0, 2007-07-04T00:00:00Z, D02, 13.460000038147, 29.9242057800293\n" +
-"-69.9878833333333, 43.7617166666667, -10.0, 2007-07-04T00:00:00Z, D02, 11.8699998855591, 31.2601585388184\n" +
-"-69.9878833333333, 43.7617166666667, -1.0, 2007-07-04T00:30:00Z, D02, 13.4200000762939, 29.9195117950439\n" +
-"-69.9878833333333, 43.7617166666667, -1.0, 2007-07-04T01:00:00Z, D02, 13.3699998855591, 29.930046081543\n" +
-"-69.9878833333333, 43.7617166666667, -10.0, 2007-07-04T01:00:00Z, D02, 11.6599998474121, 31.2559909820557\n" +
-"-69.3549346923828, 43.7136993408203, -1.0, 2007-07-04T00:00:00Z, E01, 13.7600002288818, 31.1920852661133\n" +
-"-69.3549346923828, 43.7136993408203, -2.0, 2007-07-04T00:00:00Z, E01, 13.7034998, NaN\n" +
-"-69.3549346923828, 43.7136993408203, -20.0, 2007-07-04T00:00:00Z, E01, 7.65000009536743, 31.8228702545166\n" +
-"-69.3549346923828, 43.7136993408203, -50.0, 2007-07-04T00:00:00Z, E01, 5.84700012207031, 32.1141357421875\n" +
-"-69.3549346923828, 43.7136993408203, -1.0, 2007-07-04T00:30:00Z, E01, 13.8900003433228, 31.1868896484375\n" +
-"-69.3549346923828, 43.7136993408203, -1.0, 2007-07-04T01:00:00Z, E01, 13.8500003814697, 31.1843872070312\n" +
-"-69.3549346923828, 43.7136993408203, -2.0, 2007-07-04T01:00:00Z, E01, 13.8292704, NaN\n" +
-"-69.3549346923828, 43.7136993408203, -20.0, 2007-07-04T01:00:00Z, E01, 7.57000017166138, 31.833927154541\n" +
-"-69.3549346923828, 43.7136993408203, -50.0, 2007-07-04T01:00:00Z, E01, 5.81699991226196, 32.0988731384277\n";
+"longitude,latitude,altitude,time,station_id,sea_water_temperature,sea_water_salinity\n" +
+"degrees_east,degrees_north,m,UTC,,degree_C,PSU\n" +
+"-69.8891420948262,43.7813123586226,-1.0,2007-07-04T00:00:00Z,D01,13.5,29.3161296844482\n" +
+"-69.8891420948262,43.7813123586226,-20.0,2007-07-04T00:00:00Z,D01,9.28999996185303,31.24924659729\n" +
+"-69.8891420948262,43.7813123586226,-35.0,2007-07-04T00:00:00Z,D01,8.30000019073486,NaN\n" +
+"-69.8891420948262,43.7813123586226,-1.0,2007-07-04T01:00:00Z,D01,13.5100002288818,29.192590713501\n" +
+"-69.8891420948262,43.7813123586226,-20.0,2007-07-04T01:00:00Z,D01,9.06999969482422,31.2218112945557\n" +
+"-69.8891420948262,43.7813123586226,-35.0,2007-07-04T01:00:00Z,D01,8.51000022888184,NaN\n" +
+"-69.9878833333333,43.7617166666667,-1.0,2007-07-04T00:00:00Z,D02,13.460000038147,29.9242057800293\n" +
+"-69.9878833333333,43.7617166666667,-10.0,2007-07-04T00:00:00Z,D02,11.8699998855591,31.2601585388184\n" +
+"-69.9878833333333,43.7617166666667,-1.0,2007-07-04T00:30:00Z,D02,13.4200000762939,29.9195117950439\n" +
+"-69.9878833333333,43.7617166666667,-1.0,2007-07-04T01:00:00Z,D02,13.3699998855591,29.930046081543\n" +
+"-69.9878833333333,43.7617166666667,-10.0,2007-07-04T01:00:00Z,D02,11.6599998474121,31.2559909820557\n" +
+"-69.3549346923828,43.7136993408203,-1.0,2007-07-04T00:00:00Z,E01,13.7600002288818,31.1920852661133\n" +
+"-69.3549346923828,43.7136993408203,-2.0,2007-07-04T00:00:00Z,E01,13.7034998,NaN\n" +
+"-69.3549346923828,43.7136993408203,-20.0,2007-07-04T00:00:00Z,E01,7.65000009536743,31.8228702545166\n" +
+"-69.3549346923828,43.7136993408203,-50.0,2007-07-04T00:00:00Z,E01,5.84700012207031,32.1141357421875\n" +
+"-69.3549346923828,43.7136993408203,-1.0,2007-07-04T00:30:00Z,E01,13.8900003433228,31.1868896484375\n" +
+"-69.3549346923828,43.7136993408203,-1.0,2007-07-04T01:00:00Z,E01,13.8500003814697,31.1843872070312\n" +
+"-69.3549346923828,43.7136993408203,-2.0,2007-07-04T01:00:00Z,E01,13.8292704,NaN\n" +
+"-69.3549346923828,43.7136993408203,-20.0,2007-07-04T01:00:00Z,E01,7.57000017166138,31.833927154541\n" +
+"-69.3549346923828,43.7136993408203,-50.0,2007-07-04T01:00:00Z,E01,5.81699991226196,32.0988731384277\n";
         Test.ensureEqual(results, expected, results);
 
         //data for mapExample  (no time)  just uses station table data
@@ -5193,34 +5344,61 @@ reallyReallyVerbose = true;
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-//"longitude, latitude, station_id\n" +
-//"degrees_east, degrees_north, \n" +
-//"-69.9877, 43.7628, D02\n" +
-//"-69.3578, 43.7148, E01\n" +
-//"-69.32, 43.7065, E02\n" + //added 2010-10-01
-//"-68.9982, 44.0555, F01\n" +
-//"-68.1087, 44.1058, I01\n" +
-//"-67.8716659545898, 43.490140914917, M01\n" + //pre 2010-06-22 was "-67.8798, 43.4907, M01\n" +
-//"-65.9081802368164, 42.3263664245605, N01\n";  //small changes 2010-08-05
+//"longitude,latitude,station_id\n" +
+//"degrees_east,degrees_north,\n" +
+//"-69.9877,43.7628,D02\n" +
+//"-69.3578,43.7148,E01\n" +
+//"-69.32,43.7065,E02\n" + //added 2010-10-01
+//"-68.9982,44.0555,F01\n" +
+//"-68.1087,44.1058,I01\n" +
+//"-67.8716659545898,43.490140914917,M01\n" + //pre 2010-06-22 was "-67.8798,43.4907,M01\n" +
+//"-65.9081802368164,42.3263664245605,N01\n";  //small changes 2010-08-05
 //starting 2011-02-15
-//"longitude, latitude, station_id\n" +
-//"degrees_east, degrees_north, \n" +
-//"-69.9877, 43.7628, D02\n" +
-//"-69.3578, 43.7148, E01\n" +
-//"-69.319580078125, 43.7063484191895, E02\n" +
-//"-68.9977645874023, 44.0548324584961, F01\n" +
-//"-68.1087, 44.1058, I01\n" +
-//"-67.8716659545898, 43.490140914917, M01\n" +
-//"-65.9081802368164, 42.3263664245605, N01\n";
-"longitude, latitude, station_id\n" + //starting on 2011-07-24
-"degrees_east, degrees_north, \n" +
-"-69.9877, 43.7628, D02\n" +
-"-69.3552169799805, 43.714298248291, E01\n" +
-"-69.319580078125, 43.7063484191895, E02\n" +
-"-68.9977645874023, 44.0548324584961, F01\n" +
-"-68.1087, 44.1058, I01\n" +
-"-67.8798, 43.4907, M01\n" +
-"-65.9081802368164, 42.3263664245605, N01\n";
+//"longitude,latitude,station_id\n" +
+//"degrees_east,degrees_north,\n" +
+//"-69.9877,43.7628,D02\n" +
+//"-69.3578,43.7148,E01\n" +
+//"-69.319580078125,43.7063484191895,E02\n" +
+//"-68.9977645874023,44.0548324584961,F01\n" +
+//"-68.1087,44.1058,I01\n" +
+//"-67.8716659545898,43.490140914917,M01\n" +
+//"-65.9081802368164,42.3263664245605,N01\n";
+//"longitude,latitude,station_id\n" + //starting on 2011-07-24
+//"degrees_east,degrees_north,\n" +
+//"-69.9877,43.7628,D02\n" +
+//"-69.3552169799805,43.714298248291,E01\n" +
+//"-69.319580078125,43.7063484191895,E02\n" +
+//"-68.9977645874023,44.0548324584961,F01\n" +
+//"-68.1087,44.1058,I01\n" +
+//"-67.8798,43.4907,M01\n" +
+//"-65.907,42.3303,N01\n";  //pre 2011-09-05 was "-65.9081802368164,42.3263664245605,N01\n";
+//"longitude,latitude,station_id\n" +  //starting 2011-12-16
+//"degrees_east,degrees_north,\n" +
+//"-63.4082,44.5001,CDIP176\n" +
+//"-69.9877,43.7628,D02\n" +
+//"-69.3552169799805,43.714298248291,E01\n" +
+//"-69.319580078125,43.7063484191895,E02\n" +
+//"-68.9977645874023,44.0548324584961,F01\n" +
+//"-68.1087,44.1058,I01\n" +
+//"-67.8798,43.4907,M01\n" +
+//"-65.907,42.3303,N01\n" +
+//"-54.688,46.9813,SMB-MO-01\n" +
+//"-54.1317,47.3255,SMB-MO-04\n" +
+//"-54.0488,47.7893,SMB-MO-05\n";
+"longitude,latitude,station_id\n" + //starting 2012-03-16
+"degrees_east,degrees_north,\n" +
+"-63.4082,44.5001,CDIP176\n" +
+"-69.9877,43.7628,D02\n" +
+"-69.3578,43.7148,E01\n" +
+"-69.319580078125,43.7063484191895,E02\n" +
+"-68.9982,44.0555,F01\n" + //2012-04-20 was -68.9981,44.055,F01
+"-68.8308,44.3878,F02\n" +
+"-68.1087,44.1058,I01\n" +
+"-67.8798,43.4907,M01\n" +
+"-65.907,42.3303,N01\n" +
+"-54.688,46.9813,SMB-MO-01\n" +
+"-54.1317,47.3255,SMB-MO-04\n" +
+"-54.0488,47.7893,SMB-MO-05\n"; 
        Test.ensureEqual(results, expected, "\nresults=\n" + results);  
 
 
@@ -5232,16 +5410,17 @@ reallyReallyVerbose = true;
         expected = 
 //before 2010-07-08 when I started using ALL_PLATFORMS and BBOX,
 //  there was no data for D01 (-69.8876, 43.7823) in the response
-"longitude, latitude\n" +
-"degrees_east, degrees_north\n" +
-"-70.5652267750436, 42.5227725835475\n" +
-"-70.4273380011109, 43.18053298369\n" +
-"-70.0584772405338, 43.5671424043496\n" +
-"-69.8876, 43.7823\n" +
-"-69.9878833333333, 43.7617166666667\n" +
-"-69.3563516790217, 43.7138879949396\n" +
-"-68.9979781363549, 44.0556086654547\n" +
-"-68.1087458631928, 44.1053852961787\n";
+"longitude,latitude\n" +
+"degrees_east,degrees_north\n" +
+"-70.5652267750436,42.5227725835475\n" +
+"-70.4273380011109,43.18053298369\n" +
+"-70.0584772405338,43.5671424043496\n" +
+"-69.8876,43.7823\n" +
+"-69.9878833333333,43.7617166666667\n" +
+"-69.3563516790217,43.7138879949396\n" +
+"-68.9979781363549,44.0556086654547\n" +
+"-68.1087458631928,44.1053852961787\n" +
+"-67.0122575759888,44.8892910480499\n"; //this line added 2011-12-16
         Test.ensureEqual(results, expected, "\nresults=\n" + results);  
 
         //data for all variables 
@@ -5250,28 +5429,28 @@ reallyReallyVerbose = true;
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude, latitude, station_id, altitude, time, air_temperature, chlorophyll, direction_of_sea_water_velocity, dominant_wave_period, sea_level_pressure, sea_water_density, sea_water_electrical_conductivity, sea_water_salinity, sea_water_speed, sea_water_temperature, wave_height, visibility_in_air, wind_from_direction, wind_gust, wind_speed\n" +
-"degrees_east, degrees_north, , m, UTC, degree_C, mg m-3, degrees_true, s, mbar, kg m-3, S m-1, PSU, cm s-1, degree_C, m, m, degrees_true, m s-1, m s-1\n" +
-"-70.5652267750436, 42.5227725835475, A01, 4.0, 2007-12-11T00:00:00Z, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, 332.100006103516, 3.94600009918213, 3.36700010299683\n" +
-"-70.5652267750436, 42.5227725835475, A01, 3.0, 2007-12-11T00:00:00Z, 0.899999976158142, NaN, NaN, NaN, 1024.82849121094, NaN, NaN, NaN, NaN, NaN, NaN, 2920.6796875, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, 0.0, 2007-12-11T00:00:00Z, NaN, NaN, NaN, 5.33333349, NaN, NaN, NaN, NaN, NaN, NaN, 0.644578338, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -1.0, 2007-12-11T00:00:00Z, NaN, NaN, NaN, NaN, NaN, 25.3888969421387, 33.2410011291504, 32.4736976623535, NaN, 7.30000019073486, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -2.0, 2007-12-11T00:00:00Z, NaN, NaN, 174.5672, NaN, NaN, NaN, NaN, NaN, 9.38560009, 7.34996223, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -3.0, 2007-12-11T00:00:00Z, NaN, 0.965432941913605, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -10.0, 2007-12-11T00:00:00Z, NaN, NaN, 182.0, NaN, NaN, NaN, NaN, NaN, 4.016217, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -14.0, 2007-12-11T00:00:00Z, NaN, NaN, 197.0, NaN, NaN, NaN, NaN, NaN, 3.605551, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -18.0, 2007-12-11T00:00:00Z, NaN, NaN, 212.0, NaN, NaN, NaN, NaN, NaN, 3.471311, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -20.0, 2007-12-11T00:00:00Z, NaN, NaN, NaN, NaN, NaN, 25.3971004486084, 33.2999992370605, 32.4910888671875, NaN, 7.34000015258789, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -22.0, 2007-12-11T00:00:00Z, NaN, NaN, 193.0, NaN, NaN, NaN, NaN, NaN, 3.671512, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -26.0, 2007-12-11T00:00:00Z, NaN, NaN, 192.0, NaN, NaN, NaN, NaN, NaN, 2.505993, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -30.0, 2007-12-11T00:00:00Z, NaN, NaN, 207.0, NaN, NaN, NaN, NaN, NaN, 2.475884, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -34.0, 2007-12-11T00:00:00Z, NaN, NaN, 189.0, NaN, NaN, NaN, NaN, NaN, 3.534119, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -38.0, 2007-12-11T00:00:00Z, NaN, NaN, 173.0, NaN, NaN, NaN, NaN, NaN, 4.356604, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -42.0, 2007-12-11T00:00:00Z, NaN, NaN, 185.0, NaN, NaN, NaN, NaN, NaN, 4.846648, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -46.0, 2007-12-11T00:00:00Z, NaN, NaN, 157.0, NaN, NaN, NaN, NaN, NaN, 4.527693, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -50.0, 2007-12-11T00:00:00Z, NaN, NaN, 174.0, NaN, NaN, 25.400972366333, 33.2970008850098, 32.4925308227539, 3.255764, 7.32000017166138, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -54.0, 2007-12-11T00:00:00Z, NaN, NaN, 220.0, NaN, NaN, NaN, NaN, NaN, 0.72111, NaN, NaN, NaN, NaN, NaN, NaN\n" +
-"-70.5652267750436, 42.5227725835475, A01, -58.0, 2007-12-11T00:00:00Z, NaN, NaN, 323.0, NaN, NaN, NaN, NaN, NaN, 3.956008, NaN, NaN, NaN, NaN, NaN, NaN\n";
+"longitude,latitude,station_id,altitude,time,air_temperature,chlorophyll,direction_of_sea_water_velocity,dominant_wave_period,sea_level_pressure,sea_water_density,sea_water_electrical_conductivity,sea_water_salinity,sea_water_speed,sea_water_temperature,wave_height,visibility_in_air,wind_from_direction,wind_gust,wind_speed\n" +
+"degrees_east,degrees_north,,m,UTC,degree_C,mg m-3,degrees_true,s,mbar,kg m-3,S m-1,PSU,cm s-1,degree_C,m,m,degrees_true,m s-1,m s-1\n" +
+"-70.5652267750436,42.5227725835475,A01,4.0,2007-12-11T00:00:00Z,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,332.100006103516,3.94600009918213,3.36700010299683\n" +
+"-70.5652267750436,42.5227725835475,A01,3.0,2007-12-11T00:00:00Z,0.899999976158142,NaN,NaN,NaN,1024.82849121094,NaN,NaN,NaN,NaN,NaN,NaN,2920.6796875,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,0.0,2007-12-11T00:00:00Z,NaN,NaN,NaN,5.33333349,NaN,NaN,NaN,NaN,NaN,NaN,0.644578338,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-1.0,2007-12-11T00:00:00Z,NaN,NaN,NaN,NaN,NaN,25.3888969421387,33.2410011291504,32.4736976623535,NaN,7.30000019073486,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-2.0,2007-12-11T00:00:00Z,NaN,NaN,174.5672,NaN,NaN,NaN,NaN,NaN,9.38560009,7.34996223,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-3.0,2007-12-11T00:00:00Z,NaN,0.965432941913605,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-10.0,2007-12-11T00:00:00Z,NaN,NaN,182.0,NaN,NaN,NaN,NaN,NaN,4.016217,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-14.0,2007-12-11T00:00:00Z,NaN,NaN,197.0,NaN,NaN,NaN,NaN,NaN,3.605551,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-18.0,2007-12-11T00:00:00Z,NaN,NaN,212.0,NaN,NaN,NaN,NaN,NaN,3.471311,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-20.0,2007-12-11T00:00:00Z,NaN,NaN,NaN,NaN,NaN,25.3971004486084,33.2999992370605,32.4910888671875,NaN,7.34000015258789,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-22.0,2007-12-11T00:00:00Z,NaN,NaN,193.0,NaN,NaN,NaN,NaN,NaN,3.671512,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-26.0,2007-12-11T00:00:00Z,NaN,NaN,192.0,NaN,NaN,NaN,NaN,NaN,2.505993,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-30.0,2007-12-11T00:00:00Z,NaN,NaN,207.0,NaN,NaN,NaN,NaN,NaN,2.475884,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-34.0,2007-12-11T00:00:00Z,NaN,NaN,189.0,NaN,NaN,NaN,NaN,NaN,3.534119,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-38.0,2007-12-11T00:00:00Z,NaN,NaN,173.0,NaN,NaN,NaN,NaN,NaN,4.356604,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-42.0,2007-12-11T00:00:00Z,NaN,NaN,185.0,NaN,NaN,NaN,NaN,NaN,4.846648,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-46.0,2007-12-11T00:00:00Z,NaN,NaN,157.0,NaN,NaN,NaN,NaN,NaN,4.527693,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-50.0,2007-12-11T00:00:00Z,NaN,NaN,174.0,NaN,NaN,25.400972366333,33.2970008850098,32.4925308227539,3.255764,7.32000017166138,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-54.0,2007-12-11T00:00:00Z,NaN,NaN,220.0,NaN,NaN,NaN,NaN,NaN,0.72111,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"-70.5652267750436,42.5227725835475,A01,-58.0,2007-12-11T00:00:00Z,NaN,NaN,323.0,NaN,NaN,NaN,NaN,NaN,3.956008,NaN,NaN,NaN,NaN,NaN,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);  
         
     }
@@ -5376,16 +5555,16 @@ reallyReallyVerbose = true;
             //String2.log("tags=" + tags + xmlReader.content());
 
             if (tags.endsWith("<ows:ServiceIdentification></ows:Title>")) {
-                title = "???" + xmlReader.content();
+                title = xmlReader.content();
 
             } else if (tags.endsWith("<ows:ServiceIdentification></ows:Abstract>")) {
-                summary = "???" + xmlReader.content();
+                summary = xmlReader.content();
 
             } else if (tags.endsWith("<ows:ServiceProvider></ows:ProviderName>")) {
-                institution = "???" + xmlReader.content();
+                institution = xmlReader.content();
 
             } else if (tags.endsWith("<ows:ServiceProvider><ows:ProviderSite>")) {
-                infoUrl = "???" + xmlReader.attributeValue("xlink:href");
+                infoUrl = xmlReader.attributeValue("xlink:href");
 
             } else if (tags.startsWith(offeringTag)) {
                 String endOfTag = tags.substring(offeringTag.length());
@@ -5550,8 +5729,8 @@ reallyReallyVerbose = true;
             //addDummy before add "standard_name"
             addDummyRequiredVariableAttributesForDatasetsXml(varAtts, dvName, false); 
             varAtts.add("observedProperty", prop);
-            varAtts.add("standard_name", "???" + dvName);
-            //varAtts.set("long_name", "???" + EDV.suggestLongName(null, dvName, null));
+            varAtts.add("standard_name", dvName);
+            //varAtts.set("long_name", EDV.suggestLongName(null, dvName, null));
             table.addColumn(op, dvName, new DoubleArray(), varAtts);
         }
 
@@ -5566,12 +5745,12 @@ reallyReallyVerbose = true;
             "-->\n\n");
 
         sb.append(
-            "<dataset type=\"EDDTableFromSOS\" datasetID=\"???" + suggestDatasetID(tPublicSourceUrl) + 
+            "<dataset type=\"EDDTableFromSOS\" datasetID=\"" + suggestDatasetID(tPublicSourceUrl) + 
                     "\" active=\"true\">\n" +
             "    <sourceUrl>" + tLocalSourceUrl + "</sourceUrl>\n" +
-            "    <reloadEveryNMinutes>???1440</reloadEveryNMinutes>\n" +
+            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
             "    <observationOfferingIdRegex>.+</observationOfferingIdRegex>\n" +
-            "    <requestObservedPropertiesSeparately>???false</requestObservedPropertiesSeparately>\n" +
+            "    <requestObservedPropertiesSeparately>false</requestObservedPropertiesSeparately>\n" +
             "    <longitudeSourceName>longitude</longitudeSourceName>\n" +
             "    <latitudeSourceName>latitude</latitudeSourceName>\n" +
             "    <altitudeSourceName>???depth???ioos:VerticalPosition</altitudeSourceName>\n" +
@@ -5580,7 +5759,7 @@ reallyReallyVerbose = true;
             "    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ss'Z'</timeSourceFormat>\n");
         sb.append(writeAttsForDatasetsXml(true, table.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
-        //last 3 params: includeDataType, tryToCatchLLAT, questionDestinationName
+        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(null, table, "dataVariable", true, true, true));
         sb.append(
             "</dataset>\n");
@@ -5615,8 +5794,8 @@ String expected1 =
 "\n" +
 "  n  Station (shortened)                 Has ObservedProperty\n" +
 "---  ----------------------------------  ------------------------------------------------------------\n" +
-"  0  urn:ioos:network:noaa.nws.ndbc:all  ABCDEF\n" +
-"  1  wmo:21413:                            C";
+"  0  urn:ioos:network:noaa.nws.ndbc:all  ABCDEFGHI\n" +
+"  1  wmo:21401                           ";
 
             Test.ensureEqual(results.substring(0, expected1.length()), expected1, 
                 "results=\n" + results);
@@ -5624,43 +5803,44 @@ String expected1 =
 String expected2 = 
 " id  ObservedProperty\n" +
 "---  --------------------------------------------------\n" +
-"  A  http://mmisw.org/ont/cf/parameter/currents\n" +
-"  B  http://mmisw.org/ont/cf/parameter/sea_water_salinity\n" +
-"  C  http://mmisw.org/ont/cf/parameter/sea_floor_depth_below_sea_surface\n" +
-"  D  http://mmisw.org/ont/cf/parameter/sea_water_temperature\n" +
-"  E  http://mmisw.org/ont/cf/parameter/waves\n" +
-"  F  http://mmisw.org/ont/cf/parameter/winds\n" +
+"  A  http://mmisw.org/ont/cf/parameter/air_temperature\n" +
+"  B  http://mmisw.org/ont/cf/parameter/air_pressure_at_sea_level\n" +
+"  C  http://mmisw.org/ont/cf/parameter/sea_water_electrical_conductivity\n" +
+"  D  http://mmisw.org/ont/cf/parameter/currents\n" +
+"  E  http://mmisw.org/ont/cf/parameter/sea_water_salinity\n" +
+"  F  http://mmisw.org/ont/cf/parameter/sea_floor_depth_below_sea_surface\n" +
+"  G  http://mmisw.org/ont/cf/parameter/sea_water_temperature\n" +
+"  H  http://mmisw.org/ont/cf/parameter/waves\n" +
+"  I  http://mmisw.org/ont/cf/parameter/winds\n" +
 "\n" +
-"<!-- Directions:\n" +
+"<!--\n" +
+" DISCLAIMER:\n" +
+"   The chunk of datasets.xml made by GenerageDatasetsXml isn't perfect.\n" +
+"   YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.\n" +
+"   GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always\n" +
+"   correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML\n" +
+"   THAT YOU ADD TO ERDDAP'S datasets.xml FILE.\n" +
+"\n" +
+" DIRECTIONS:\n" +
 " * Read about this type of dataset in\n" +
 "   http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
 " * Read http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
 "   so that you understand about sourceAttributes and addAttributes.\n" +
-" * All of the content below that starts with \"???\" is a guess. It must be edited.\n" +
-" * All of the other tags and their content are based on information from the source.\n" +
-" * For the att tags, you should either:\n" +
-"    * Delete the att tag (so ERDDAP will use the unchanged source attribute).\n" +
-"    * Change the att tag's value (because it isn't quite right).\n" +
-"    * Or, remove the att tag's value, but leave the att tag\n" +
-"      (so the source attribute will be removed by ERDDAP).\n" +
-" * You can reorder data variables, but don't reorder axis variables.\n" +
-" * The current IOOS category options are:\n" +
-"      Bathymetry, Biology, Bottom Character, Contaminants, Currents, Dissolved\n" +
-"      Nutrients, Dissolved O2, Ecology, Fish Abundance, Fish Species, Heat\n" +
-"      Flux, Ice Distribution, Identifier, Location, Meteorology, Ocean Color,\n" +
-"      Optical Properties, Other, Pathogens, Phytoplankton Species, Pressure,\n" +
-"      Productivity, Quality, Salinity, Sea Level, Surface Waves, Taxonomy,\n" +
-"      Temperature, Time, Unknown, Wind, Zooplankton Species, Zooplankton\n" +
-"      Abundance\n" +
-" * For longitude, latitude, altitude (or depth), and time variables:\n" +
-"   * If the sourceName isn't \"longitude\", \"latitude\", \"altitude\", or \"time\",\n" +
-"     you need to specify \"longitude\", \"latitude\", \"altitude\", or \"time\"\n" +
-"     with a destinationName tag.\n" +
-"   * For EDDTable datasets: if possible, add an actual_range attribute\n" +
-"     if one isn't already there.\n" +
-"   * (Usually) remove all other attributes. They usually aren't needed.\n" +
-"     Attributes will be added automatically.\n" +
-"-->\n" +
+" * Note: Global sourceAttributes and variable sourceAttributes are listed\n" +
+"   below as comments, for informational purposes only.\n" +
+"   ERDDAP combines sourceAttributes and addAttributes (which have\n" +
+"   precedence) to make the combinedAttributes that are shown to the user.\n" +
+"   (And other attributes are automatically added to longitude, latitude,\n" +
+"   altitude, and time variables).\n" +
+" * If you don't like a sourceAttribute, override it by adding an\n" +
+"   addAttribute with the same name but a different value\n" +
+"   (or no value, if you want to remove it).\n" +
+" * All of the addAttributes are computer-generated suggestions. Edit them!\n" +
+"   If you don't like an addAttribute, change it.\n" +
+" * If you want to add other addAttributes, add them.\n" +
+" * If you want to change a destinationName, change it.\n" +
+"   But don't change sourceNames.\n" +
+" * You can change the order of the dataVariables or remove any of them.\n" +
 "\n" +
 "<!-- For SOS datasets, you must look at the observedProperty's\n" +
 "phenomenaDictionary URL (or an actual GetObservations response)\n" +
@@ -5668,11 +5848,11 @@ String expected2 =
 "(longitude, latitude, altitude, and time are handled separately.)\n" +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDTableFromSOS\" datasetID=\"???noaa_ndbc_493d_54c5_3a38\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromSOS\" datasetID=\"noaa_ndbc_ba12_4f37_91da\" active=\"true\">\n" +
 "    <sourceUrl>http://sdf.ndbc.noaa.gov/sos/server.php</sourceUrl>\n" +
-"    <reloadEveryNMinutes>???1440</reloadEveryNMinutes>\n" +
+"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <observationOfferingIdRegex>.+</observationOfferingIdRegex>\n" +
-"    <requestObservedPropertiesSeparately>???false</requestObservedPropertiesSeparately>\n" +
+"    <requestObservedPropertiesSeparately>false</requestObservedPropertiesSeparately>\n" +
 "    <longitudeSourceName>longitude</longitudeSourceName>\n" +
 "    <latitudeSourceName>latitude</latitudeSourceName>\n" +
 "    <altitudeSourceName>???depth???ioos:VerticalPosition</altitudeSourceName>\n" +
@@ -5681,15 +5861,55 @@ String expected2 =
 "    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ss'Z'</timeSourceFormat>\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Station</att>\n" +
-"        <att name=\"Conventions\">???COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"infoUrl\">???http://sdf.ndbc.noaa.gov/</att>\n" +
-"        <att name=\"institution\">???National Data Buoy Center</att>\n" +
+"        <att name=\"Conventions\">???COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"infoUrl\">http://sdf.ndbc.noaa.gov/</att>\n" +
+"        <att name=\"institution\">National Data Buoy Center</att>\n" +
 "        <att name=\"license\">???[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">???COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Metadata_Conventions\">???COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"standard_name_vocabulary\">???CF-12</att>\n" +
-"        <att name=\"summary\">???National Data Buoy Center SOS</att>\n" +
-"        <att name=\"title\">???National Data Buoy Center SOS</att>\n" +
+"        <att name=\"summary\">National Data Buoy Center SOS</att>\n" +
+"        <att name=\"title\">National Data Buoy Center SOS</att>\n" +
 "    </addAttributes>\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"    -->\n" +
+"    <dataVariable>\n" +
+"        <sourceName>air_temperature</sourceName>\n" +
+"        <destinationName>air_temperature</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">???Temperature</att>\n" +
+"            <att name=\"long_name\">???Air Temperature</att>\n" +
+"            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/air_temperature</att>\n" +
+"            <att name=\"standard_name\">air_temperature</att>\n" +
+"            <att name=\"units\">???</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>air_pressure_at_sea_level</sourceName>\n" +
+"        <destinationName>air_pressure_at_sea_level</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">???Pressure</att>\n" +
+"            <att name=\"long_name\">???Air Pressure</att>\n" +
+"            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/air_pressure_at_sea_level</att>\n" +
+"            <att name=\"standard_name\">air_pressure_at_sea_level</att>\n" +
+"            <att name=\"units\">???</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+"    <dataVariable>\n" +
+"        <sourceName>sea_water_electrical_conductivity</sourceName>\n" +
+"        <destinationName>sea_water_electrical_conductivity</destinationName>\n" +
+"        <dataType>double</dataType>\n" +
+"        <addAttributes>\n" +
+"            <att name=\"ioos_category\">???Salinity</att>\n" +
+"            <att name=\"long_name\">???Sea Water Electrical Conductivity</att>\n" +
+"            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/sea_water_electrical_conductivity</att>\n" +
+"            <att name=\"standard_name\">sea_water_electrical_conductivity</att>\n" +
+"            <att name=\"units\">???</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>currents</sourceName>\n" +
 "        <destinationName>currents</destinationName>\n" +
@@ -5698,7 +5918,7 @@ String expected2 =
 "            <att name=\"ioos_category\">???Currents</att>\n" +
 "            <att name=\"long_name\">???Currents</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/currents</att>\n" +
-"            <att name=\"standard_name\">???currents</att>\n" +
+"            <att name=\"standard_name\">currents</att>\n" +
 "            <att name=\"units\">???</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -5710,7 +5930,7 @@ String expected2 =
 "            <att name=\"ioos_category\">???Salinity</att>\n" +
 "            <att name=\"long_name\">???Sea Water Salinity</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/sea_water_salinity</att>\n" +
-"            <att name=\"standard_name\">???sea_water_salinity</att>\n" +
+"            <att name=\"standard_name\">sea_water_salinity</att>\n" +
 "            <att name=\"units\">???</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -5722,7 +5942,7 @@ String expected2 =
 "            <att name=\"ioos_category\">???Location</att>\n" +
 "            <att name=\"long_name\">???Sea Floor Depth Below Sea Surface</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/sea_floor_depth_below_sea_surface</att>\n" +
-"            <att name=\"standard_name\">???sea_floor_depth_below_sea_surface</att>\n" +
+"            <att name=\"standard_name\">sea_floor_depth_below_sea_surface</att>\n" +
 "            <att name=\"units\">???</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -5734,7 +5954,7 @@ String expected2 =
 "            <att name=\"ioos_category\">???Temperature</att>\n" +
 "            <att name=\"long_name\">???Sea Water Temperature</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/sea_water_temperature</att>\n" +
-"            <att name=\"standard_name\">???sea_water_temperature</att>\n" +
+"            <att name=\"standard_name\">sea_water_temperature</att>\n" +
 "            <att name=\"units\">???</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -5746,7 +5966,7 @@ String expected2 =
 "            <att name=\"ioos_category\">???Surface Waves</att>\n" +
 "            <att name=\"long_name\">???Waves</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/waves</att>\n" +
-"            <att name=\"standard_name\">???waves</att>\n" +
+"            <att name=\"standard_name\">waves</att>\n" +
 "            <att name=\"units\">???</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -5758,7 +5978,7 @@ String expected2 =
 "            <att name=\"ioos_category\">???Wind</att>\n" +
 "            <att name=\"long_name\">???Winds</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/winds</att>\n" +
-"            <att name=\"standard_name\">???winds</att>\n" +
+"            <att name=\"standard_name\">winds</att>\n" +
 "            <att name=\"units\">???</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -6150,8 +6370,8 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
 "    <bboxParameter>featureofinterest=BBOX:</bboxParameter>\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Station</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"infoUrl\">" + tInfoUrl + "</att>\n" +
 "        <att name=\"institution\">" + tInstitution + "</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
@@ -6190,7 +6410,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
             Attributes addAtts = new Attributes();
             sourceAtts.add("standard_name", colNameNoParen);  //add now, remove later
             addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
-                sourceAtts, colNameNoParen, true); //true=tryToAdd colorBarMinMax
+                sourceAtts, colNameNoParen, true, true); //true=tryToAdd colorBarMinMax, tryToFindLLAT
             if (tUnits != null) 
                 addAtts.add("units", tUnits);
             sourceAtts.remove("standard_name");
@@ -6208,8 +6428,8 @@ for (int col = 0; col < nCol; col++)
     String2.log(String2.left(sosTable.getColumn(col).elementClassString(), 10) + sosTable.getColumnName(col));
 
         //writeVariablesForDatasetsXml
-        //last 3 params: includeDataType, tryToCatchLLAT, questionDestinationName
-String2.log("sosTable columnNames=" + String2.toCSVString(sosTable.getColumnNames()));
+        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
+String2.log("sosTable columnNames=" + String2.toCSSVString(sosTable.getColumnNames()));
         sb.append(
             writeVariablesForDatasetsXml(sosTable, addTable, 
                 "dataVariable", true, false, false));
@@ -6279,8 +6499,8 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 "    <bboxParameter>featureofinterest=BBOX:</bboxParameter>\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Station</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"infoUrl\">" + tInfoUrl + "</att>\n" +
 "        <att name=\"institution\">" + tInstitution + "</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
@@ -6303,7 +6523,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Sensor Id</att>\n" +
 "            <att name=\"observedProperty\">sea_water_salinity</att>\n" +
 "            <att name=\"standard_name\">sensor_id</att>\n" +
@@ -6601,13 +6821,13 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
                 eddTable.className() + "_Data2", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
-            expected = "longitude, latitude, altitude, time, station_id, wvht, dpd, wtmp, dewp\n";
+            expected = "longitude,latitude,altitude,time,station_id,wvht,dpd,wtmp,dewp\n";
             Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
-            expected = "degrees_east, degrees_north, m, UTC, , m, s, degree_C, degree_C\n";
+            expected = "degrees_east,degrees_north,m,UTC,,m,s,degree_C,degree_C\n";
             Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
-            expected = "-48.13, -27.7, NaN, 2005-04-19T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:31201, 1.4, 9.0, 24.4, NaN\n"; //time above
+            expected = "-48.13,-27.7,NaN,2005-04-19T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:31201,1.4,9.0,24.4,NaN\n"; //time above
             Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
-            expected = "-48.13, -27.7, NaN, 2005-04-25T18:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:31201, 3.9, 8.0, 23.9, NaN\n"; //this time
+            expected = "-48.13,-27.7,NaN,2005-04-25T18:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:31201,3.9,8.0,23.9,NaN\n"; //this time
             Test.ensureTrue(results.indexOf(expected) >= 0, "\nresults=\n" + results);
 
             //test requesting a lat lon area
@@ -6620,25 +6840,25 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
             expected = 
-"longitude, latitude, altitude, time, station_id, wvht, dpd, wtmp, dewp\n" +
-"degrees_east, degrees_north, m, UTC, , m, s, degree_C, degree_C\n" +
-"-122.88, 37.36, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46012, 2.55, 12.5, 13.7, NaN\n" +
-"-123.32, 38.23, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46013, 2.3, 12.9, 13.9, NaN\n" +
-"-122.82, 37.75, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46026, 1.96, 12.12, 14.0, NaN\n" +
-"-121.89, 35.74, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46028, 2.57, 12.9, 16.3, NaN\n" +
-"-122.42, 36.75, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46042, 2.21, 17.39, 14.5, NaN\n" +
-"-121.9, 36.83, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46091, NaN, NaN, NaN, NaN\n" +
-"-122.02, 36.75, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46092, NaN, NaN, NaN, NaN\n" +
-"-122.41, 36.69, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46093, NaN, NaN, 14.3, NaN\n" +
-"-123.28, 37.57, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46214, 2.5, 9.0, 12.8, NaN\n" +
-"-122.3, 37.77, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:AAMC1, NaN, NaN, 15.5, NaN\n" +
-"-123.71, 38.91, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:ANVC1, NaN, NaN, NaN, NaN\n" +
-"-122.47, 37.81, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:FTPC1, NaN, NaN, NaN, NaN\n" +
-"-121.89, 36.61, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:MTYC1, NaN, NaN, 15.1, NaN\n" +
-"-122.04, 38.06, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:PCOC1, NaN, NaN, 14.9, NaN\n" +
-"-123.74, 38.96, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:PTAC1, NaN, NaN, NaN, NaN\n" +
-"-122.4, 37.93, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:RCMC1, NaN, NaN, 14.0, NaN\n" +
-"-122.21, 37.51, NaN, 2005-04-01T00:00:00Z, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:RTYC1, NaN, NaN, 14.2, NaN\n";
+"longitude,latitude,altitude,time,station_id,wvht,dpd,wtmp,dewp\n" +
+"degrees_east,degrees_north,m,UTC,,m,s,degree_C,degree_C\n" +
+"-122.88,37.36,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46012,2.55,12.5,13.7,NaN\n" +
+"-123.32,38.23,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46013,2.3,12.9,13.9,NaN\n" +
+"-122.82,37.75,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46026,1.96,12.12,14.0,NaN\n" +
+"-121.89,35.74,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46028,2.57,12.9,16.3,NaN\n" +
+"-122.42,36.75,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46042,2.21,17.39,14.5,NaN\n" +
+"-121.9,36.83,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46091,NaN,NaN,NaN,NaN\n" +
+"-122.02,36.75,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46092,NaN,NaN,NaN,NaN\n" +
+"-122.41,36.69,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46093,NaN,NaN,14.3,NaN\n" +
+"-123.28,37.57,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46214,2.5,9.0,12.8,NaN\n" +
+"-122.3,37.77,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:AAMC1,NaN,NaN,15.5,NaN\n" +
+"-123.71,38.91,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:ANVC1,NaN,NaN,NaN,NaN\n" +
+"-122.47,37.81,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:FTPC1,NaN,NaN,NaN,NaN\n" +
+"-121.89,36.61,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:MTYC1,NaN,NaN,15.1,NaN\n" +
+"-122.04,38.06,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:PCOC1,NaN,NaN,14.9,NaN\n" +
+"-123.74,38.96,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:PTAC1,NaN,NaN,NaN,NaN\n" +
+"-122.4,37.93,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:RCMC1,NaN,NaN,14.0,NaN\n" +
+"-122.21,37.51,NaN,2005-04-01T00:00:00Z,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:RTYC1,NaN,NaN,14.2,NaN\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
             //test that constraint vars are sent to low level data request
@@ -6650,25 +6870,25 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
             expected = 
-"longitude, latitude, altitude, station_id, wvht, dpd, wtmp, dewp\n" +
-"degrees_east, degrees_north, m, , m, s, degree_C, degree_C\n" +
-"-122.88, 37.36, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46012, 2.55, 12.5, 13.7, NaN\n" +
-"-123.32, 38.23, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46013, 2.3, 12.9, 13.9, NaN\n" +
-"-122.82, 37.75, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46026, 1.96, 12.12, 14.0, NaN\n" +
-"-121.89, 35.74, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46028, 2.57, 12.9, 16.3, NaN\n" +
-"-122.42, 36.75, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46042, 2.21, 17.39, 14.5, NaN\n" +
-"-121.9, 36.83, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46091, NaN, NaN, NaN, NaN\n" +
-"-122.02, 36.75, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46092, NaN, NaN, NaN, NaN\n" +
-"-122.41, 36.69, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46093, NaN, NaN, 14.3, NaN\n" +
-"-123.28, 37.57, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46214, 2.5, 9.0, 12.8, NaN\n" +
-"-122.3, 37.77, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:AAMC1, NaN, NaN, 15.5, NaN\n" +
-"-123.71, 38.91, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:ANVC1, NaN, NaN, NaN, NaN\n" +
-"-122.47, 37.81, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:FTPC1, NaN, NaN, NaN, NaN\n" +
-"-121.89, 36.61, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:MTYC1, NaN, NaN, 15.1, NaN\n" +
-"-122.04, 38.06, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:PCOC1, NaN, NaN, 14.9, NaN\n" +
-"-123.74, 38.96, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:PTAC1, NaN, NaN, NaN, NaN\n" +
-"-122.4, 37.93, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:RCMC1, NaN, NaN, 14.0, NaN\n" +
-"-122.21, 37.51, NaN, urn:ioos:Station:1.0.0.127.cwwcNDBCMet:RTYC1, NaN, NaN, 14.2, NaN\n";
+"longitude,latitude,altitude,station_id,wvht,dpd,wtmp,dewp\n" +
+"degrees_east,degrees_north,m,,m,s,degree_C,degree_C\n" +
+"-122.88,37.36,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46012,2.55,12.5,13.7,NaN\n" +
+"-123.32,38.23,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46013,2.3,12.9,13.9,NaN\n" +
+"-122.82,37.75,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46026,1.96,12.12,14.0,NaN\n" +
+"-121.89,35.74,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46028,2.57,12.9,16.3,NaN\n" +
+"-122.42,36.75,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46042,2.21,17.39,14.5,NaN\n" +
+"-121.9,36.83,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46091,NaN,NaN,NaN,NaN\n" +
+"-122.02,36.75,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46092,NaN,NaN,NaN,NaN\n" +
+"-122.41,36.69,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46093,NaN,NaN,14.3,NaN\n" +
+"-123.28,37.57,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:46214,2.5,9.0,12.8,NaN\n" +
+"-122.3,37.77,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:AAMC1,NaN,NaN,15.5,NaN\n" +
+"-123.71,38.91,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:ANVC1,NaN,NaN,NaN,NaN\n" +
+"-122.47,37.81,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:FTPC1,NaN,NaN,NaN,NaN\n" +
+"-121.89,36.61,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:MTYC1,NaN,NaN,15.1,NaN\n" +
+"-122.04,38.06,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:PCOC1,NaN,NaN,14.9,NaN\n" +
+"-123.74,38.96,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:PTAC1,NaN,NaN,NaN,NaN\n" +
+"-122.4,37.93,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:RCMC1,NaN,NaN,14.0,NaN\n" +
+"-122.21,37.51,NaN,urn:ioos:Station:1.0.0.127.cwwcNDBCMet:RTYC1,NaN,NaN,14.2,NaN\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -6681,54 +6901,54 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
             expected = 
-"longitude, latitude, wtmp\n" +
-"degrees_east, degrees_north, degree_C\n" +
-"-80.17, 28.5, 21.2\n" +
-"-78.47, 28.95, 23.7\n" +
-"-80.6, 30.0, 20.1\n" +
-"-46.0, 14.53, 25.3\n" +
-"-65.01, 20.99, 25.7\n" +
-"-71.49, 27.47, 23.8\n" +
-"-69.649, 31.9784, 22.0\n" +
-"-80.53, 28.4, 21.6\n" +
-"-80.22, 27.55, 21.7\n" +
-"-89.67, 25.9, 24.1\n" +
-"-94.42, 25.17, 23.4\n" +
-"-85.94, 26.07, 26.1\n" +
-"-94.05, 22.01, 24.4\n" +
-"-85.06, 19.87, 26.8\n" +
-"-67.5, 15.01, 26.4\n" +
-"-84.245, 27.3403, 20.2\n" +
-"-88.09, 29.06, 21.7\n" +
-"-157.79, 17.14, 24.3\n" +
-"-160.74, 19.16, 24.7\n" +
-"-152.48, 17.52, 24.0\n" +
-"-153.87, 0.02, 25.0\n" +
-"-158.12, 21.67, 24.3\n" +
-"-157.68, 21.42, 24.2\n" +
-"144.79, 13.54, 28.1\n" +
-"-90.42, 29.78, 20.4\n" +
-"-64.92, 18.34, 27.7\n" +
-"-81.87, 26.65, 22.2\n" +
-"-80.1, 25.59, 23.5\n" +
-"-156.47, 20.9, 25.0\n" +
-"167.74, 8.74, 27.6\n" +
-"-81.81, 24.55, 23.9\n" +
-"-80.86, 24.84, 23.8\n" +
-"-64.75, 17.7, 26.0\n" +
-"-67.05, 17.97, 27.1\n" +
-"-80.38, 25.01, 24.2\n" +
-"-81.81, 26.13, 23.7\n" +
-"-170.688, -14.28, 29.6\n" +
-"-157.87, 21.31, 25.5\n" +
-"-96.4, 28.45, 20.1\n" +
-"-82.77, 24.69, 22.8\n" +
-"-97.22, 26.06, 20.1\n" +
-"-82.63, 27.76, 21.7\n" +
-"-66.12, 18.46, 28.3\n" +
-"-177.36, 28.21, 21.8\n" +
-"-80.59, 28.42, 22.7\n" +
-"166.62, 19.29, 27.9\n";
+"longitude,latitude,wtmp\n" +
+"degrees_east,degrees_north,degree_C\n" +
+"-80.17,28.5,21.2\n" +
+"-78.47,28.95,23.7\n" +
+"-80.6,30.0,20.1\n" +
+"-46.0,14.53,25.3\n" +
+"-65.01,20.99,25.7\n" +
+"-71.49,27.47,23.8\n" +
+"-69.649,31.9784,22.0\n" +
+"-80.53,28.4,21.6\n" +
+"-80.22,27.55,21.7\n" +
+"-89.67,25.9,24.1\n" +
+"-94.42,25.17,23.4\n" +
+"-85.94,26.07,26.1\n" +
+"-94.05,22.01,24.4\n" +
+"-85.06,19.87,26.8\n" +
+"-67.5,15.01,26.4\n" +
+"-84.245,27.3403,20.2\n" +
+"-88.09,29.06,21.7\n" +
+"-157.79,17.14,24.3\n" +
+"-160.74,19.16,24.7\n" +
+"-152.48,17.52,24.0\n" +
+"-153.87,0.02,25.0\n" +
+"-158.12,21.67,24.3\n" +
+"-157.68,21.42,24.2\n" +
+"144.79,13.54,28.1\n" +
+"-90.42,29.78,20.4\n" +
+"-64.92,18.34,27.7\n" +
+"-81.87,26.65,22.2\n" +
+"-80.1,25.59,23.5\n" +
+"-156.47,20.9,25.0\n" +
+"167.74,8.74,27.6\n" +
+"-81.81,24.55,23.9\n" +
+"-80.86,24.84,23.8\n" +
+"-64.75,17.7,26.0\n" +
+"-67.05,17.97,27.1\n" +
+"-80.38,25.01,24.2\n" +
+"-81.81,26.13,23.7\n" +
+"-170.688,-14.28,29.6\n" +
+"-157.87,21.31,25.5\n" +
+"-96.4,28.45,20.1\n" +
+"-82.77,24.69,22.8\n" +
+"-97.22,26.06,20.1\n" +
+"-82.63,27.76,21.7\n" +
+"-66.12,18.46,28.3\n" +
+"-177.36,28.21,21.8\n" +
+"-80.59,28.42,22.7\n" +
+"166.62,19.29,27.9\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -6830,7 +7050,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
                 new FileInputStream("f:/programs/nos/stations.xml"));
             Table table = getStationTable(bis, 
                 "http://mmisw.org/ont/cf/parameter/winds");
-            String2.log(table.toCsvString());
+            String2.log(table.toCSSVString());
             String2.log("\n *** Done.  nRows=" + table.nRows());
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -6849,7 +7069,8 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         testVerboseOn();
  
         // usually run
-        testOostethys(); //gomoosBuoy         //TimeSeriesProfile
+/* */
+        testOostethys(); //gomoosBuoy   gone! starting ~2012-04-18       //TimeSeriesProfile
         testNeracoos(); 
 
         testNdbcSosCurrents("");      //TimeSeriesProfile

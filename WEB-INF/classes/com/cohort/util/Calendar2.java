@@ -401,7 +401,7 @@ public class Calendar2 {
      * round works symmetrically with + and - numbers.
      *
      * @param seconds  with optional fractional part
-     * @return isoZuluString with 'T'.
+     * @return isoZuluString with 'T' (without the trailing Z)
      * @throws Exception if trouble (e.g., seconds is NaN)
      */
     public static String epochSecondsToIsoStringT(double seconds) {
@@ -435,7 +435,7 @@ public class Calendar2 {
      * round works symmetrically with + and - numbers.
      *
      * @param seconds   with optional fractional part
-     * @return isoZuluString with space.
+     * @return isoZuluString with space (without the trailing Z)
      * @throws Exception if trouble (e.g., seconds is NaN)
      */
     public static String epochSecondsToIsoStringSpace(double seconds) {
@@ -454,7 +454,7 @@ public class Calendar2 {
      * round works symmetrically with + and - numbers.
      *
      * @param hours
-     * @return isoZuluString 'T'.
+     * @return isoZuluString 'T' (without the trailing Z).
      *    If hours==Integer.MAX_VALUE, this returns null.
      * @throws Exception if trouble (e.g., hours is Integer.MAX_VALUE)
      */
@@ -813,7 +813,7 @@ public class Calendar2 {
      * [was calendarToString]
      *
      * @param gc
-     * @return the corresponding dateTime String.
+     * @return the corresponding dateTime String (without the trailing Z).
      * @throws Exception if trouble (e.g., gc is null)
      */
     public static String formatAsISODateTimeT(GregorianCalendar gc) {
@@ -835,7 +835,7 @@ public class Calendar2 {
      * [was calendarToString]
      *
      * @param gc
-     * @return the corresponding dateTime String.
+     * @return the corresponding dateTime String (without the trailing Z).
      * @throws Exception if trouble (e.g., gc is null)
      */
     public static String formatAsISODateTimeSpace(GregorianCalendar gc) {
@@ -847,26 +847,6 @@ public class Calendar2 {
         //this method is influenced by the format's timeZone
         //synchronized (isoDateTimeFormat) {
         //    return isoDateTimeFormat.format(gc.getTime());
-        //}
-    }
-
-    /**
-     * This returns a partial ISO-style formatted [-]YYYY-MM-DD HH:MM string e.g., 
-     * "2004-01-02 03:04"
-     * using its current get() values (not influenced by the format's timeZone).
-     *
-     * @param gc a GregorianCalendar object
-     * @return the date in gc, formatted as (for example) "2004-01-02 03:04".
-     * @throws Exception if trouble (e.g., gc is null)
-     */
-    public static String formatAsIsoDateHM(GregorianCalendar gc) {
-        return formatAsISODate(gc) + " " + 
-            String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2) + ":" +
-            String2.zeroPad("" + gc.get(MINUTE), 2);
-
-        //this method is influenced by the format's timeZone
-        //synchronized (isoDateHMFormat) {
-        //    return isoDateHMFormat.format(gc.getTime());
         //}
     }
 
@@ -1481,7 +1461,7 @@ public class Calendar2 {
     /**
      * This returns the current local dateTime in ISO T format.
      *
-     * @return the current local dateTime in ISO T format
+     * @return the current local dateTime in ISO T format (without the trailing Z)
      */
     public static String getCurrentISODateTimeStringLocal() {
         return formatAsISODateTimeT(newGCalendarLocal());
@@ -1490,7 +1470,7 @@ public class Calendar2 {
     /**
      * This returns the current Zulu dateTime in ISO T format.
      *
-     * @return the current Zulu dateTime in ISO T format
+     * @return the current Zulu dateTime in ISO T format (without the trailing Z)
      */
     public static String getCurrentISODateTimeStringZulu() {
         return formatAsISODateTimeT(newGCalendarZulu());
@@ -1538,7 +1518,7 @@ public class Calendar2 {
      * This converts millis since 1970-01-01T00:00:00Z to an ISO Zulu DateTime string.
      *
      * @param millis the millis since 1970-01-01T00:00:00Z
-     * @return the ISO Zulu DateTime string 'T' 
+     * @return the ISO Zulu DateTime string 'T' (without the trailing Z)
      * @throws Exception if trouble (e.g., millis is Long.MAX_VALUE)
      */
     public static String millisToIsoZuluString(long millis) {

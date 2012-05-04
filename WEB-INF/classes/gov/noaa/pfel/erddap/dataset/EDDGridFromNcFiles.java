@@ -27,6 +27,7 @@ import gov.noaa.pfel.erddap.GenerateDatasetsXml;
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 
@@ -57,7 +58,7 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
 
     /** The constructor just calls the super constructor. */
     public EDDGridFromNcFiles(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object[][] tAxisVariables,
@@ -67,7 +68,8 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
         boolean tEnsureAxisValuesAreExactlyEqual) 
         throws Throwable {
 
-        super("EDDGridFromNcFiles", tDatasetID, tAccessibleTo, tOnChange, 
+        super("EDDGridFromNcFiles", tDatasetID, tAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File,
             tAddGlobalAttributes,
             tAltMetersPerSourceUnit, 
             tAxisVariables,
@@ -233,8 +235,10 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
             for (int dvi = 0; dvi < ndv; dvi++) {
                 Variable var = ncFile.findVariable(tDataVariables[dvi].sourceName());  
                 if (var == null) 
-                    throw new RuntimeException("dataVariable=" + tDataVariables[dvi].sourceName() +
-                        " not found in " + fileName); //don't show directory
+                    throw new RuntimeException(
+                        MessageFormat.format(EDStatic.errorNotFoundIn,
+                            "dataVariableSourceName=" + tDataVariables[dvi].sourceName(),
+                            fileName)); //don't show directory
                 Array array = var.read(selection);
                 Object object = NcHelper.getArray(array);
                 paa[dvi] = PrimitiveArray.factory(object); 
@@ -300,14 +304,6 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
         StringBuilder sb = new StringBuilder();
 
         try {
-            //global attributes in the axis...Table
-            NcHelper.getGlobalAttributes(ncFile, axisSourceTable.globalAttributes());
-            axisAddTable.globalAttributes().set(
-                makeReadyToUseAddGlobalAttributesForDatasetsXml(
-                    axisSourceTable.globalAttributes(), 
-                    "Grid",  //another cdm type could be better; this is ok
-                    tFileDir, externalAddGlobalAttributes));
-
             //look at all variables with dimensions, find ones which share same max nDim
             List allVariables = ncFile.getVariables(); 
             int maxDim = 0;
@@ -345,7 +341,7 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
                             sourceAtts); 
                         axisAddTable.addColumn(   avi, axisName, new DoubleArray(), //type doesn't matter
                             makeReadyToUseAddVariableAttributesForDatasetsXml(
-                                sourceAtts, axisName, false)); //addColorBarMinMax            
+                                sourceAtts, axisName, false, true)); //addColorBarMinMax, tryToFindLLAT
 
                     }
 
@@ -374,8 +370,17 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
                 dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, pa, sourceAtts);
                 dataAddTable.addColumn(   dataAddTable.nColumns(),    varName, pa, 
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
-                        sourceAtts, varName, true)); //addColorBarMinMax 
+                        sourceAtts, varName, true, false)); //addColorBarMinMax, tryToFindLLAT
             }
+
+            //after dataVariables known, add global attributes in the axisAddTable
+            NcHelper.getGlobalAttributes(ncFile, axisSourceTable.globalAttributes());
+            axisAddTable.globalAttributes().set(
+                makeReadyToUseAddGlobalAttributesForDatasetsXml(
+                    axisSourceTable.globalAttributes(), 
+                    "Grid",  //another cdm type could be better; this is ok
+                    tFileDir, externalAddGlobalAttributes, 
+                    suggestKeywords(dataSourceTable, dataAddTable)));
 
             //gather the results 
             String tDatasetID = suggestDatasetID(tFileDir + tFileNameRegex);
@@ -400,7 +405,7 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
             sb.append(writeAttsForDatasetsXml(false, axisSourceTable.globalAttributes(), "    "));
             sb.append(writeAttsForDatasetsXml(true,  axisAddTable.globalAttributes(),    "    "));
             
-            //last 3 params: includeDataType, tryToCatchLLAT, questionDestinationName
+            //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
             sb.append(writeVariablesForDatasetsXml(axisSourceTable, axisAddTable, "axisVariable", false, true,  false));
             sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, "dataVariable", true,  false, false));
             sb.append(
@@ -514,8 +519,13 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"Westernmost_Easting\" type=\"double\">0.125</att>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.0, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"keywords\">\n" +
+"Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
+"Oceans &gt; Ocean Winds &gt; Surface Winds,\n" +
+"atmosphere, atmospheric, coastwatch, composite, day, global, meridional, modulus, noaa, ocean, oceans, quality, quikscat, science, science quality, surface, wcn, wind, winds, x_wind, y_wind, zonal</att>\n" +
+"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"original_institution\">NOAA CoastWatch, West Coast Node</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
@@ -654,7 +664,7 @@ directionsForGenerateDatasetsXml() +
         EDD edd = oneFromXmlFragment(results);
         Test.ensureEqual(edd.datasetID(), "erdQSwind1day_576b_a0c9_bd3d", "");
         Test.ensureEqual(edd.title(), "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)", "");
-        Test.ensureEqual(String2.toCSVString(edd.dataVariableDestinationNames()), 
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
             "x_wind, y_wind, mod", "");
 
 
@@ -680,9 +690,9 @@ directionsForGenerateDatasetsXml() +
         //  /*
         String id = "testGriddedNcFiles";
         if (deleteCachedDatasetInfo) { 
-            File2.delete(datasetInfoDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + BADFILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
         }
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
 
@@ -783,7 +793,7 @@ directionsForGenerateDatasetsXml() +
 "    String composite \"true\";\n" +
 "    String contributor_name \"Remote Sensing Systems, Inc\";\n" +
 "    String contributor_role \"Source of level 2 data.\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String creator_email \"dave.foley@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
@@ -811,7 +821,7 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das\";
 "    String keywords \"EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
 "    Float64 Northernmost_Northing 89.875;\n" +
 "    String origin \"Remote Sensing Systems, Inc\";\n" +
@@ -888,19 +898,19 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das\";
         expected = 
 //verified with 
 //http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwind1day.csv?y_wind[(1.1999664e9)][0][(36.5)][(230):3:(238)]
-"time, altitude, latitude, longitude, y_wind\n" +
-"UTC, m, degrees_north, degrees_east, m s-1\n" +
-"2008-01-10T12:00:00Z, 0.0, 36.625, 230.125, 3.555585\n" +
-"2008-01-10T12:00:00Z, 0.0, 36.625, 230.875, 2.82175\n" +
-"2008-01-10T12:00:00Z, 0.0, 36.625, 231.625, 4.539375\n" +
-"2008-01-10T12:00:00Z, 0.0, 36.625, 232.375, 4.975015\n" +
-"2008-01-10T12:00:00Z, 0.0, 36.625, 233.125, 5.643055\n" +
-"2008-01-10T12:00:00Z, 0.0, 36.625, 233.875, 2.72394\n" +
-"2008-01-10T12:00:00Z, 0.0, 36.625, 234.625, 1.39762\n" +
-"2008-01-10T12:00:00Z, 0.0, 36.625, 235.375, 2.10711\n" +
-"2008-01-10T12:00:00Z, 0.0, 36.625, 236.125, 3.019165\n" +
-"2008-01-10T12:00:00Z, 0.0, 36.625, 236.875, 3.551915\n" +
-"2008-01-10T12:00:00Z, 0.0, 36.625, 237.625, NaN\n";          //test of NaN
+"time,altitude,latitude,longitude,y_wind\n" +
+"UTC,m,degrees_north,degrees_east,m s-1\n" +
+"2008-01-10T12:00:00Z,0.0,36.625,230.125,3.555585\n" +
+"2008-01-10T12:00:00Z,0.0,36.625,230.875,2.82175\n" +
+"2008-01-10T12:00:00Z,0.0,36.625,231.625,4.539375\n" +
+"2008-01-10T12:00:00Z,0.0,36.625,232.375,4.975015\n" +
+"2008-01-10T12:00:00Z,0.0,36.625,233.125,5.643055\n" +
+"2008-01-10T12:00:00Z,0.0,36.625,233.875,2.72394\n" +
+"2008-01-10T12:00:00Z,0.0,36.625,234.625,1.39762\n" +
+"2008-01-10T12:00:00Z,0.0,36.625,235.375,2.10711\n" +
+"2008-01-10T12:00:00Z,0.0,36.625,236.125,3.019165\n" +
+"2008-01-10T12:00:00Z,0.0,36.625,236.875,3.551915\n" +
+"2008-01-10T12:00:00Z,0.0,36.625,237.625,NaN\n";          //test of NaN
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -914,12 +924,12 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das\";
         expected = 
 //verified with 
 //http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwind1day.csv?y_wind[(1.1991888e9):3:(1.1999664e9)][0][(36.5)][(230)]
-"time, altitude, latitude, longitude, y_wind\n" +
-"UTC, m, degrees_north, degrees_east, m s-1\n" +
-"2008-01-01T12:00:00Z, 0.0, 36.625, 230.125, 7.6282454\n" +
-"2008-01-04T12:00:00Z, 0.0, 36.625, 230.125, -12.3\n" +
-"2008-01-07T12:00:00Z, 0.0, 36.625, 230.125, -5.974585\n" +
-"2008-01-10T12:00:00Z, 0.0, 36.625, 230.125, 3.555585\n";
+"time,altitude,latitude,longitude,y_wind\n" +
+"UTC,m,degrees_north,degrees_east,m s-1\n" +
+"2008-01-01T12:00:00Z,0.0,36.625,230.125,7.6282454\n" +
+"2008-01-04T12:00:00Z,0.0,36.625,230.125,-12.3\n" +
+"2008-01-07T12:00:00Z,0.0,36.625,230.125,-5.974585\n" +
+"2008-01-10T12:00:00Z,0.0,36.625,230.125,3.555585\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
         //  */
     }
@@ -945,9 +955,9 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das\";
         //  /*
         String id = "testGribFiles";
         if (deleteCachedDatasetInfo) {
-            File2.delete(datasetInfoDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + BADFILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
         }
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
 
@@ -1022,7 +1032,7 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das\";
 "    String _CoordinateModelRunDate \"1981-01-01T12:00:00Z\";\n" +
 "    String cdm_data_type \"Grid\";\n" +
 "    String CF:feature_type \"GRID\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 //"    String creator_name \"UK Meteorological Office Bracknell (RSMC) subcenter = 0\";\n" +
 "    Float64 Easternmost_Easting 356.25;\n" +
 "    String file_format \"GRIB-1\";\n" +
@@ -1040,6 +1050,8 @@ today + " (local files)\n" +
 today + " http://127.0.0.1:8080/cwexperimental/griddap/testGribFiles.das\";\n" +
 "    String infoUrl \"http://www.nceas.ucsb.edu/scicomp/GISSeminar/UseCases/ExtractGRIBClimateWithR/ExtractGRIBClimateWithR.html\";\n" +
 "    String institution \"UK Met RSMC\";\n" +
+"    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -1048,7 +1060,7 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGribFiles.das\";\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +    
 "    String location \"f:/u00/cwatch/testData/grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 88.75;\n" +
 "    String Originating_center \"UK Meteorological Office Bracknell (RSMC) subcenter = 0\";\n" +
 "    String Product_Type \"Initialized analysis product\";\n" +
@@ -1097,20 +1109,20 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGribFiles.das\";\n" +
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"time, height_above_ground, latitude, longitude, wind_speed\n" +
-"UTC, m, degrees_north, degrees_east, m s-1\n" +
-"1982-09-01T12:00:00Z, 10.0, 36.25, 198.75, 8.129883\n" +
-"1982-09-01T12:00:00Z, 10.0, 36.25, 217.5, 5.25\n" +
-"1982-09-01T12:00:00Z, 10.0, 36.25, 236.25, 3.1298828\n" +
-"1983-07-01T12:00:00Z, 10.0, 36.25, 198.75, 5.379883\n" +
-"1983-07-01T12:00:00Z, 10.0, 36.25, 217.5, 5.25\n" +
-"1983-07-01T12:00:00Z, 10.0, 36.25, 236.25, 2.6298828\n" +
-"1984-05-01T12:00:00Z, 10.0, 36.25, 198.75, 5.38\n" +
-"1984-05-01T12:00:00Z, 10.0, 36.25, 217.5, 7.7501173\n" +
-"1984-05-01T12:00:00Z, 10.0, 36.25, 236.25, 3.88\n" +
-"1985-03-01T12:00:00Z, 10.0, 36.25, 198.75, 8.629883\n" +
-"1985-03-01T12:00:00Z, 10.0, 36.25, 217.5, 9.0\n" +
-"1985-03-01T12:00:00Z, 10.0, 36.25, 236.25, 3.25\n";
+"time,height_above_ground,latitude,longitude,wind_speed\n" +
+"UTC,m,degrees_north,degrees_east,m s-1\n" +
+"1982-09-01T12:00:00Z,10.0,36.25,198.75,8.129883\n" +
+"1982-09-01T12:00:00Z,10.0,36.25,217.5,5.25\n" +
+"1982-09-01T12:00:00Z,10.0,36.25,236.25,3.1298828\n" +
+"1983-07-01T12:00:00Z,10.0,36.25,198.75,5.379883\n" +
+"1983-07-01T12:00:00Z,10.0,36.25,217.5,5.25\n" +
+"1983-07-01T12:00:00Z,10.0,36.25,236.25,2.6298828\n" +
+"1984-05-01T12:00:00Z,10.0,36.25,198.75,5.38\n" +
+"1984-05-01T12:00:00Z,10.0,36.25,217.5,7.7501173\n" +
+"1984-05-01T12:00:00Z,10.0,36.25,236.25,3.88\n" +
+"1985-03-01T12:00:00Z,10.0,36.25,198.75,8.629883\n" +
+"1985-03-01T12:00:00Z,10.0,36.25,217.5,9.0\n" +
+"1985-03-01T12:00:00Z,10.0,36.25,236.25,3.25\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //  */
@@ -1137,9 +1149,9 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGribFiles.das\";\n" +
         try {   
         String id = "testGrib2";
         if (deleteCachedDatasetInfo) {
-            File2.delete(datasetInfoDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + BADFILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
         }
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
 
@@ -1434,7 +1446,7 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGribFiles.das\";\n" +
 "    String _CoordinateModelRunDate \"2009-06-01T06:00:00Z\";\n" +
 "    String cdm_data_type \"Grid\";\n" +
 "    String CF:feature_type \"GRID\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting 359.5;\n" +
 "    String file_format \"GRIB-2\";\n" +
 "    String Generating_Model \"Global Multi-Grid Wave Model\";\n" +
@@ -1451,6 +1463,10 @@ today + " (local files)\n" +
 today + " http://127.0.0.1:8080/cwexperimental/griddap/testGrib2.das\";\n" +
 "    String infoUrl \"???\";\n" +
 "    String institution \"???\";\n" +
+"    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
+"Oceans > Ocean Waves > Wave Height,\n" +
+"Oceans > Ocean Waves > Wave Speed/Direction\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -1459,7 +1475,7 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGrib2.das\";\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String location \"/u00/data/geosgrib/multi_1.glo_30m.all.grb2\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 90.0;\n" +
 "    String Originating_center \"US National Weather Service - NCEP(WMC) (7)\";\n" +
 "    String Product_Status \"Operational products\";\n" +
@@ -1603,24 +1619,24 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGrib2.das\";\n" +
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"time, latitude, longitude, Wind_speed\n" +
-"UTC, degrees_north, degrees_east, m s-1\n" +
-"2009-06-01T06:00:00Z, 30.0, 200.0, 6.17\n" +
-"2009-06-01T06:00:00Z, 30.0, 202.5, 6.73\n" +
-"2009-06-01T06:00:00Z, 30.0, 205.0, 8.13\n" +
-"2009-06-01T06:00:00Z, 30.0, 207.5, 6.7\n" +
-"2009-06-01T06:00:00Z, 30.0, 210.0, 4.62\n" +
-"2009-06-01T06:00:00Z, 30.0, 212.5, 1.48\n" +
-"2009-06-01T06:00:00Z, 30.0, 215.0, 3.03\n" +
-"2009-06-01T06:00:00Z, 30.0, 217.5, 4.63\n" +
-"2009-06-01T06:00:00Z, 30.0, 220.0, 5.28\n" +
-"2009-06-01T06:00:00Z, 30.0, 222.5, 5.3\n" +
-"2009-06-01T06:00:00Z, 30.0, 225.0, 4.04\n" +
-"2009-06-01T06:00:00Z, 30.0, 227.5, 3.64\n" +
-"2009-06-01T06:00:00Z, 30.0, 230.0, 5.3\n" +
-"2009-06-01T06:00:00Z, 30.0, 232.5, 2.73\n" +
-"2009-06-01T06:00:00Z, 30.0, 235.0, 3.15\n" +
-"2009-06-01T06:00:00Z, 30.0, 237.5, 4.23\n";
+"time,latitude,longitude,Wind_speed\n" +
+"UTC,degrees_north,degrees_east,m s-1\n" +
+"2009-06-01T06:00:00Z,30.0,200.0,6.17\n" +
+"2009-06-01T06:00:00Z,30.0,202.5,6.73\n" +
+"2009-06-01T06:00:00Z,30.0,205.0,8.13\n" +
+"2009-06-01T06:00:00Z,30.0,207.5,6.7\n" +
+"2009-06-01T06:00:00Z,30.0,210.0,4.62\n" +
+"2009-06-01T06:00:00Z,30.0,212.5,1.48\n" +
+"2009-06-01T06:00:00Z,30.0,215.0,3.03\n" +
+"2009-06-01T06:00:00Z,30.0,217.5,4.63\n" +
+"2009-06-01T06:00:00Z,30.0,220.0,5.28\n" +
+"2009-06-01T06:00:00Z,30.0,222.5,5.3\n" +
+"2009-06-01T06:00:00Z,30.0,225.0,4.04\n" +
+"2009-06-01T06:00:00Z,30.0,227.5,3.64\n" +
+"2009-06-01T06:00:00Z,30.0,230.0,5.3\n" +
+"2009-06-01T06:00:00Z,30.0,232.5,2.73\n" +
+"2009-06-01T06:00:00Z,30.0,235.0,3.15\n" +
+"2009-06-01T06:00:00Z,30.0,237.5,4.23\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //  */
@@ -1650,9 +1666,9 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGrib2.das\";\n" +
         //  /*
         String id = "testCwHdf";
         if (deleteCachedDatasetInfo) {
-            File2.delete(datasetInfoDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetInfoDir(id) + BADFILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
         }
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
 
@@ -1711,12 +1727,14 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGrib2.das\";\n" +
 "    String autonav_performed \"true\";\n" +
 "    Int32 autonav_quality 2;\n" +
 "    String cdm_data_type \"Grid\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String history \"Direct read of HDF4 file through CDM library\n" +
 today + " (local files)\n" +
 today + " http://127.0.0.1:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
 "    String infoUrl \"???\";\n" +
 "    String institution \"NOAA CoastWatch\";\n" +
+"    String keywords \"Oceans > Ocean Temperature > Sea Surface Temperature\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -1724,7 +1742,7 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String origin \"USDOC/NOAA/NESDIS CoastWatch\";\n" +
 "    String pass_type \"day\";\n" +
 "    String projection \"Mercator\";\n" +
@@ -1774,24 +1792,24 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"rows, cols, sst\n" +
-"count, count, celsius\n" +
-"600, 500, 21.07\n" +
-"600, 501, 20.96\n" +
-"600, 502, 21.080000000000002\n" +
-"600, 503, 20.93\n" +
-"602, 500, 21.16\n" +
-"602, 501, 21.150000000000002\n" +
-"602, 502, 21.2\n" +
-"602, 503, 20.95\n" +
-"604, 500, 21.34\n" +
-"604, 501, 21.13\n" +
-"604, 502, 21.13\n" +
-"604, 503, 21.25\n" +
-"606, 500, 21.37\n" +
-"606, 501, 21.11\n" +
-"606, 502, 21.0\n" +
-"606, 503, 21.02\n";
+"rows,cols,sst\n" +
+"count,count,celsius\n" +
+"600,500,21.07\n" +
+"600,501,20.96\n" +
+"600,502,21.080000000000002\n" +
+"600,503,20.93\n" +
+"602,500,21.16\n" +
+"602,501,21.150000000000002\n" +
+"602,502,21.2\n" +
+"602,503,20.95\n" +
+"604,500,21.34\n" +
+"604,501,21.13\n" +
+"604,502,21.13\n" +
+"604,503,21.25\n" +
+"606,500,21.37\n" +
+"606,501,21.11\n" +
+"606,502,21.0\n" +
+"606,503,21.02\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         //  */

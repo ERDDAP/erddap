@@ -74,7 +74,8 @@ public interface TimeAxisStyle {
   public String getDefaultMinorLabelFormat();
   /**
    * Get the default major label format. The default major labels are
-   * "yyyy-MM-dd HH", "yyyy-MM-dd", "yyyy-MM", "yyyy", and "yyyy" for
+   * (2011-12-15 Bob Simons changed space to 'T')
+   * "yyyy-MM-dd'T'HH", "yyyy-MM-dd", "yyyy-MM", "yyyy", and "yyyy" for
    * <code>MINUTE_HOUR</code>,
    * <code>HOUR_DAY</code>, <code>DAY_MONTH</code>, <code>MONTH_YEAR</code>,
    * and <code>YEAR_DECADE</code>, respectively.

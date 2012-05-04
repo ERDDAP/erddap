@@ -60,6 +60,8 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         double tAltitudeMetersPerSourceUnit = 1; 
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         ArrayList tAxisVariables = new ArrayList();
         ArrayList tDataVariables = new ArrayList();
         IntArray tAxisLengths;
@@ -108,6 +110,11 @@ public class EDDGridFromBinaryFile extends EDDGrid {
             else if (localTags.equals("</onChange>")) 
                 tOnChange.add(content); 
 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+
             else xmlReader.unexpectedTagException();
         }
 
@@ -121,7 +128,8 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         for (int i = 0; i < tDataVariables.size(); i++)
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 */
-        return new EDDGridFromBinaryFile(tDatasetID, tAccessibleTo, tOnChange, tGlobalAttributes,
+        return new EDDGridFromBinaryFile(tDatasetID, tAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
             tAltitudeMetersPerSourceUnit, 
             new Object[1][3], new Object[1][3], //ttAxisVariables, ttDataVariables,
             tReloadEveryNMinutes,
@@ -144,10 +152,15 @@ public class EDDGridFromBinaryFile extends EDDGrid {
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @throws Throwable if trouble
      */
     public EDDGridFromBinaryFile(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange,
+        StringArray tOnChange, String tFgdcFile, String tIso19115File,
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object tAxisVariables[][],
@@ -166,15 +179,17 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         sourceGlobalAttributes = new Attributes();
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
-        String tLicense = addGlobalAttributes.getString("license");
-        if (tLicense != null)
-            addGlobalAttributes.set("license", 
-                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
+        String tLicense = combinedGlobalAttributes.getString("license");
+        if (tLicense != null)
+            combinedGlobalAttributes.set("license", 
+                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         combinedGlobalAttributes.removeValue("null");
         if (combinedGlobalAttributes.getString("cdm_data_type") == null)
             combinedGlobalAttributes.add("cdm_data_type", "Grid");
@@ -350,8 +365,8 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         double fileLatSpacing = (fileMaxLat - fileMinLat) / (fileNLatPoints - 1);
         double fileLon[] = DataHelper.getRegularArray(fileNLonPoints, fileMinLon, fileLonSpacing);
         double fileLat[] = DataHelper.getRegularArray(fileNLatPoints, fileMinLat, fileLatSpacing); 
-        //String2.log("fileLon=" + String2.toCSVString(fileLon).substring(0, 70));
-        //String2.log("fileLat=" + String2.toCSVString(fileLat).substring(0, 70));
+        //String2.log("fileLon=" + String2.toCSSVString(fileLon).substring(0, 70));
+        //String2.log("fileLat=" + String2.toCSSVString(fileLat).substring(0, 70));
 
         //make the desired lon and lat arrays   (n, min, spacing)
         //String2.log("  desiredNLonPoints=" + desiredNLonPoints + " desiredNLatPoints=" + desiredNLatPoints);

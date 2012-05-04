@@ -100,6 +100,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         String tType = xmlReader.attributeValue("type"); 
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         Attributes tGlobalAttributes = null;
         double tAltitudeMetersPerSourceUnit = 1; 
         ArrayList tAxisVariables = new ArrayList();
@@ -151,6 +153,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             //    tEnsureAxisValuesAreExactlyEqual = String2.parseBoolean(content); 
             else if (localTags.equals( "<onChange>")) {}
             else if (localTags.equals("</onChange>")) tOnChange.add(content); 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
             else xmlReader.unexpectedTagException();
         }
         int nav = tAxisVariables.size();
@@ -167,7 +173,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             tType = "";
         if (tType.equals("EDDGridFromNcFiles")) 
             return new EDDGridFromNcFiles(tDatasetID, tAccessibleTo,
-                tOnChange, tGlobalAttributes,
+                tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
                 tAltitudeMetersPerSourceUnit,
                 ttAxisVariables,
                 ttDataVariables,
@@ -192,6 +198,11 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tAddGlobalAttributes are global attributes which will
      *   be added to (and take precedence over) the data source's global attributes.
      *   This may be null if you have nothing to add.
@@ -206,8 +217,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *   <li> "cdm_data_type" - one of the EDD.CDM_xxx options
      *   </ul>
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
-     *   Special case: if addGlobalAttributes name="license" value="[standard]",
-     *     the EDStatic.standardLicense will be used.
+     *   Special case: if combinedGlobalAttributes name="license", any instance of "[standard]"
+     *     will be converted to the EDStatic.standardLicense
      * @param tAltMetersPerSourceUnit the factor needed to convert the source
      *    alt values to/from meters above sea level.
      * @param tAxisVariables is an Object[nAxisVariables][3]: 
@@ -265,7 +276,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * @throws Throwable if trouble
      */
     public EDDGridFromFiles(String tClassName, String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object[][] tAxisVariables,
@@ -287,19 +298,17 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         //ensure valid for creation of datasetInfo files below
         if (!String2.isFileNameSafe(datasetID)) 
             throw new IllegalArgumentException(errorInMethod + "datasetID=" + datasetID + " isn't fileNameSafe.");
-        File2.makeDirectory(datasetInfoDir()); //based on datasetID
-        String dirTableFileName  = datasetInfoDir() +  DIR_TABLE_FILENAME;
-        String fileTableFileName = datasetInfoDir() + FILE_TABLE_FILENAME;
+        File2.makeDirectory(datasetDir()); //based on datasetID
+        String dirTableFileName  = datasetDir() +  DIR_TABLE_FILENAME;
+        String fileTableFileName = datasetDir() + FILE_TABLE_FILENAME;
 
         setAccessibleTo(tAccessibleTo);
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
-        String tLicense = addGlobalAttributes.getString("license");
-        if (tLicense != null)
-            addGlobalAttributes.set("license", 
-                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         fileDir = tFileDir;
         recursive = tRecursive;
@@ -345,13 +354,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             sourceDataAttributes[dv] = new Attributes();
         }
         if (reallyVerbose) String2.log("sourceDataNames=" + sourceDataNames +
-            "\nsourceDataTypes=" + String2.toCSVString(sourceDataTypes));
-
-        //starting 2011-01-03 with the switch to .nc files in subdirectories, 
-        //delete the obsolete .json files   
-        File2.delete(EDStatic.fullDatasetInfoDirectory + datasetID + ".dirs.json");
-        File2.delete(EDStatic.fullDatasetInfoDirectory + datasetID + ".files.json");
-        File2.delete(EDStatic.fullDatasetInfoDirectory + datasetID + ".bad.json");
+            "\nsourceDataTypes=" + String2.toCSSVString(sourceDataTypes));
 
         //load cached dirTable->dirList
         Table dirTable = tryToLoadDirFileTable(dirTableFileName); //may be null
@@ -360,7 +363,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 dirTable.nRows() + " rows in old dirTable");
             if (reallyVerbose) String2.log(
                 "first 5 rows=\n" + 
-                dirTable.dataToCsvString(5));
+                dirTable.dataToCSVString(5));
         }
 
 
@@ -371,7 +374,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 fileTable.nRows() + " rows in old fileTable");
             if (reallyVerbose) String2.log(
                 "first 5 rows=\n" + 
-                fileTable.dataToCsvString(5));
+                fileTable.dataToCSVString(5));
         }
 
         //ensure fileTable has correct columns and data types
@@ -480,7 +483,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         //remove "badFiles" if they no longer exist (in tAvailableFiles)
         {
             //make hashset with all tAvailableFiles
-            HashSet tFileSet = new HashSet();
+            HashSet tFileSet = new HashSet(Math2.roundToInt(1.4 * tAvailableFiles.length));
             for (int i = 0; i < tAvailableFiles.length; i++)
                 tFileSet.add(tAvailableFiles[i]);
 
@@ -914,6 +917,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
         //make combinedGlobalAttributes
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
+        String tLicense = combinedGlobalAttributes.getString("license");
+        if (tLicense != null)
+            combinedGlobalAttributes.set("license", 
+                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         combinedGlobalAttributes.removeValue("null");
         if (combinedGlobalAttributes.getString("cdm_data_type") == null)
             combinedGlobalAttributes.add("cdm_data_type", "Grid");
@@ -1012,7 +1019,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     /** 
      * Try to load the dirTable or fileTable.
      *
-     * @param fileName datasetInfoDir() + DIR_TABLE_FILENAME or FILE_TABLE_FILENAME
+     * @param fileName datasetDir() + DIR_TABLE_FILENAME or FILE_TABLE_FILENAME
      * @return the dirTable fileTable (null if trouble).  (No exception if trouble.)
      */
     protected Table tryToLoadDirFileTable(String fileName) {
@@ -1109,9 +1116,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         throws Throwable {
 
         //load the dirTable and fileTable
-        Table dirTable = tryToLoadDirFileTable(datasetInfoDir() + DIR_TABLE_FILENAME);
+        Table dirTable = tryToLoadDirFileTable(datasetDir() + DIR_TABLE_FILENAME);
         Table fileTable = dirTable == null? null : 
-            tryToLoadDirFileTable(datasetInfoDir() + FILE_TABLE_FILENAME);
+            tryToLoadDirFileTable(datasetDir() + FILE_TABLE_FILENAME);
         if (dirTable == null || fileTable == null) {
             requestReloadASAP(); 
             throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain +

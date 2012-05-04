@@ -37,7 +37,7 @@ public class TableWriterOrderBy extends TableWriterAll {
      * The constructor.
      *
      * @param tDir a private cache directory for storing the intermediate files,
-     *    usually EDStatic.fullCacheDirectory + datasetID + "/"
+     *    usually cacheDirectory(datasetID)
      * @param tFileNameNoExt is the fileName without dir or extension (used as basis for temp files).
      *     A random number will be added to it for safety.
      * @param tOtherTableWriter the tableWriter that will receive the unique rows
@@ -50,7 +50,7 @@ public class TableWriterOrderBy extends TableWriterAll {
         super(tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
         if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0)
-            throw new SimpleException("Query error: " +
+            throw new SimpleException(EDStatic.queryError +
                "No column names were specified for 'orderBy'.");
         orderBy = String2.split(tOrderByCsv, ',');
     }
@@ -95,7 +95,7 @@ public class TableWriterOrderBy extends TableWriterAll {
             keys[ob] = table.findColumnNumber(orderBy[ob]);
             ascending[ob] = true;
             if (keys[ob] < 0)
-                throw new SimpleException("Query error: " +
+                throw new SimpleException(EDStatic.queryError +
                     "'orderBy' column=" + orderBy[ob] + " isn't in the results table.");
         }
         table.sort(keys, ascending);

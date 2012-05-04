@@ -105,6 +105,8 @@ public class EDDTableFromDatabase extends EDDTable{
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         String tDataSourceName = null;
         String tLocalSourceUrl = null;
         String tDriverName = null;
@@ -167,6 +169,11 @@ public class EDDTableFromDatabase extends EDDTable{
             else if (localTags.equals("</onChange>")) 
                 tOnChange.add(content); 
 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+
             else xmlReader.unexpectedTagException();
         }
         int ndv = tDataVariables.size();
@@ -175,7 +182,8 @@ public class EDDTableFromDatabase extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         if (subclass.equals("Post"))
-            return new EDDTableFromPostDatabase(tDatasetID, tAccessibleTo, tOnChange, 
+            return new EDDTableFromPostDatabase(tDatasetID, tAccessibleTo, 
+                tOnChange, tFgdcFile, tIso19115File, 
                 tGlobalAttributes,
                 tAltitudeMetersPerSourceUnit,
                 ttDataVariables,
@@ -185,7 +193,8 @@ public class EDDTableFromDatabase extends EDDTable{
                 tConnectionProperties.toArray(),
                 tCatalogName, tSchemaName, tTableName, tOrderBy,
                 tSourceNeedsExpandedFP_EQ);
-        else return new EDDTableFromDatabase(tDatasetID, tAccessibleTo, tOnChange, 
+        else return new EDDTableFromDatabase(tDatasetID, tAccessibleTo, 
+                tOnChange, tFgdcFile, tIso19115File, 
                 tGlobalAttributes,
                 tAltitudeMetersPerSourceUnit,
                 ttDataVariables,
@@ -263,6 +272,11 @@ public class EDDTableFromDatabase extends EDDTable{
      *    <br>If "", no one will have access to this dataset.
      * @param tOnChange 0 or more actions (starting with "http://" or "mailto:")
      *    to be done whenever the dataset changes significantly
+     * @param tFgdcFile This should be the fullname of a file with the FGDC
+     *    that should be used for this dataset, or "" (to cause ERDDAP not
+     *    to try to generate FGDC metadata for this dataset), or null (to allow
+     *    ERDDAP to try to generate FGDC metadata for this dataset).
+     * @param tIso19115 This is like tFgdcFile, but for the ISO 19119-2/19139 metadata.
      * @param tAddGlobalAttributes are global attributes which define 
      *   the data source's global attributes (since there are no source attributes).
      *   This may be null if you have nothing to add.
@@ -277,8 +291,8 @@ public class EDDTableFromDatabase extends EDDTable{
      *   <li> "cdm_data_type" - one of the EDD.CDM_xxx options
      *   </ul>
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
-     *   Special case: if addGlobalAttributes name="license" value="[standard]",
-     *     the EDStatic.standardLicense will be used.
+     *   Special case: if combinedGlobalAttributes name="license", any instance of value="[standard]"
+     *     will be converted to the EDStatic.standardLicense.
      * @param tAltMetersPerSourceUnit the factor needed to convert the source
      *    alt values to/from meters above sea level.
      * @param tDataVariables is an Object[nDataVariables][3]: 
@@ -345,7 +359,7 @@ public class EDDTableFromDatabase extends EDDTable{
      * @throws Throwable if trouble
      */
     public EDDTableFromDatabase(String tDatasetID, String tAccessibleTo, 
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
@@ -369,13 +383,11 @@ public class EDDTableFromDatabase extends EDDTable{
         datasetID = tDatasetID;
         setAccessibleTo(tAccessibleTo);
         onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
-        String tLicense = addGlobalAttributes.getString("license");
-        if (tLicense != null)
-            addGlobalAttributes.set("license", 
-                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         Test.ensureNotNothing(tLocalSourceUrl, "'sourceUrl' wasn't defined.");
         Test.ensureNotNothing(tDriverName, "'driverName' wasn't defined.");
@@ -424,6 +436,10 @@ public class EDDTableFromDatabase extends EDDTable{
         //set global attributes
         sourceGlobalAttributes = new Attributes();
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
+        String tLicense = combinedGlobalAttributes.getString("license");
+        if (tLicense != null)
+            combinedGlobalAttributes.set("license", 
+                String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         combinedGlobalAttributes.removeValue("null");
 
         //create dataVariables[]
@@ -569,7 +585,7 @@ public class EDDTableFromDatabase extends EDDTable{
         //distinct?  orderBy?  databases can handle them
         //making database do distinct seems useful (maybe it can optimize, data transfer greatly reduced
         //but orderBy may be slow/hard for database (faster to do it in erddap?)
-        String[] parts = getUserQueryParts(userDapQuery);
+        String[] parts = getUserQueryParts(userDapQuery); //decoded.  
         boolean distinct = false;
         boolean queryHasOrderBy = false;
         boolean queryHasOrderByMax = false;
@@ -639,6 +655,7 @@ public class EDDTableFromDatabase extends EDDTable{
 
             //add constraints to query  
             int nCv = constraintVariables.size();
+            StringBuilder humanQuery = new StringBuilder(query);
             for (int cv = 0; cv < nCv; cv++) {    
                 String constraintVariable = constraintVariables.get(cv);
                 int dv = String2.indexOf(dataVariableSourceNames(), constraintVariable);
@@ -654,14 +671,17 @@ public class EDDTableFromDatabase extends EDDTable{
 
                 //again, no danger of sql injection since query has been parsed and
                 //  constraintVariables must be known sourceNames
-                query.append(
-                    (cv == 0? " WHERE " : " AND ") +
+                String ts = (cv == 0? " WHERE " : " AND ") +
                     constraintVariables.get(cv) + " " + 
-                    tOp + " ?");
+                    tOp; 
+                query.append(ts + " ?");
+                humanQuery.append(ts + " '" + constraintValues.get(cv) + "'");
             }
-            if (orderBySB.length() > 0) 
-                query.append(" ORDER BY " + orderBySB.toString());
-            //if (verbose) String2.log("  query=" + query);
+            if (orderBySB.length() > 0) {
+                String ts = " ORDER BY " + orderBySB.toString();
+                query.append(ts);
+                humanQuery.append(ts);
+            }
 
             //fill in the '?' in the preparedStatement
             //***!!! This method avoids SQL Injection Vulnerability !!!***
@@ -692,7 +712,8 @@ public class EDDTableFromDatabase extends EDDTable{
                 else if (tClass == char.class)    statement.setString( tv, val.length() == 0? "\u0000" : val.substring(0, 1)); //FFFF??? 
                 else throw new RuntimeException("Prepared statements don't support class type=" + edv.sourceDataType() + ".");            
             }
-            if (verbose) String2.log("  statement=" + statement);
+            if (verbose) String2.log("  statement=" + statement.toString() + "\n" +
+                                     " statement~=" + humanQuery.toString());
 
             //execute the query
             ResultSet rs = statement.executeQuery();
@@ -976,7 +997,7 @@ public class EDDTableFromDatabase extends EDDTable{
             "    <altitudeMetersPerSourceUnit>???1</altitudeMetersPerSourceUnit>\n");
         sb.append(writeAttsForDatasetsXml(true, table.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToCatchLLAT, questionDestinationName
+        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(null, table, "dataVariable", true, true, true));
         sb.append(
             "</dataset>\n");
@@ -1110,7 +1131,7 @@ public class EDDTableFromDatabase extends EDDTable{
             PrimitiveArray pa = PrimitiveArray.sqlFactory(sqlType);
             Attributes sourceAtts = new Attributes();
             Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
-                sourceAtts, sqlName, true); //addColorBarMinMax
+                sourceAtts, sqlName, true, true); //addColorBarMinMax, tryToFindLLAT
             if (isTime) {
                 addAtts.add("ioos_category", "Time");
                 addAtts.add("units", "seconds since 1970-01-01T00:00:00Z");  //no "???"
@@ -1145,6 +1166,7 @@ public class EDDTableFromDatabase extends EDDTable{
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", "(local database)");
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
+        //after dataVariables known, add global attributes in the axisAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
@@ -1154,7 +1176,8 @@ public class EDDTableFromDatabase extends EDDTable{
                     (catalogName == null? "" : catalogName + "/") +
                     (schemaName  == null? "" : schemaName + "/") +
                     tableName + "/", 
-                externalAddGlobalAttributes));
+                externalAddGlobalAttributes, 
+                suggestKeywords(dataSourceTable, dataAddTable)));
         
         //sort the column names?
         //if (sortColumnsByName)
@@ -1164,12 +1187,12 @@ public class EDDTableFromDatabase extends EDDTable{
         StringBuilder sb = new StringBuilder();
         sb.append(
             directionsForGenerateDatasetsXml() +
-            " * Since the source files don't have any metadata, you must add metadata\n" +
+            " *** Since the database doesn't have any metadata, you must add metadata\n" +
             "   below, notably 'units' for each of the dataVariables.\n" +
             "-->\n\n" +
             "<dataset type=\"EDDTableFromDatabase\" datasetID=\"" + 
-                ((catalogName != null && catalogName.length() > 0)? catalogName + "." : "") +
-                (( schemaName != null &&  schemaName.length() > 0)?  schemaName + "." : "") +
+                ((catalogName != null && catalogName.length() > 0)? catalogName + "_" : "") +
+                (( schemaName != null &&  schemaName.length() > 0)?  schemaName + "_" : "") +
                 tableName + 
                 "\" active=\"true\">\n" +
             "    <sourceUrl>" + url + "</sourceUrl>\n" +
@@ -1190,7 +1213,7 @@ public class EDDTableFromDatabase extends EDDTable{
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
-        //last 3 params: includeDataType, tryToCatchLLAT, questionDestinationName
+        //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(dataSourceTable, dataAddTable, 
             "dataVariable", true, true, false));
         sb.append(
@@ -1247,71 +1270,77 @@ public class EDDTableFromDatabase extends EDDTable{
 
 
     /**
-     * This tests getDatabaseInfo.
+     * This tests generateDatasetsXml.
      * 
      * @throws Throwable if trouble
      */
-    public static void testGetDatbaseInfo() throws Throwable {
-        String2.log("\n*** EDDTableFromDatabase.testGetDatbaseInfo");
+    public static void testGenerateDatasetsXml() throws Throwable {
+        String2.log("\n*** EDDTableFromDatabase.testGenerateDatasetsXml");
         testVerboseOn();
-        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String name, tName, gdiResults, results, tResults, expected, userDapQuery, tQuery;
 
         try {
             String tCatalogName = "";
             String tSchemaName = "erd";
             String tTableName = "detection";
-            results = getDatabaseInfo(
-                postUrl, postDriver, 
-                postProperties(),
-                tCatalogName, tSchemaName, tTableName,
-                false, false);
+            //gdiResults = getDatabaseInfo(
+            //    postUrl, postDriver, 
+            //    postProperties(),
+            //    tCatalogName, tSchemaName, tTableName,
+            //    false, false);
 
             //GenerateDatasetsXml
             GenerateDatasetsXml.doIt(new String[]{"-verbose", 
-                "oldEDDTableFromDatabase",                
-                postUrl, postDriver, 
-                String2.toSVString(postProperties(), "|", false),
-                tCatalogName, tSchemaName, tTableName,
-                "false", "false"},
+                "EDDTableFromDatabase",                
+                postUrl, //s1
+                postDriver, //s2
+                String2.toSVString(postProperties(), "|", false), //s3
+                tCatalogName, tSchemaName, tTableName,  //s4,5,6
+                "", //s7 orderBy csv
+                "10080", //s8 reloadEveryNMinutes
+                "", //s9  infoUrl
+                "", //s10 institution
+                "", //s11 summary
+                ""}, //s12 title
                 false); //doIt loop?
-            String gdxResults = String2.getClipboardString();
-            Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+            results = String2.getClipboardString();
+            //Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 
 expected = 
-"<!-- Directions:\n" +
+"<!--\n" +
+" DISCLAIMER:\n" +
+"   The chunk of datasets.xml made by GenerageDatasetsXml isn't perfect.\n" +
+"   YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.\n" +
+"   GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always\n" +
+"   correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML\n" +
+"   THAT YOU ADD TO ERDDAP'S datasets.xml FILE.\n" +
+"\n" +
+" DIRECTIONS:\n" +
 " * Read about this type of dataset in\n" +
 "   http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html .\n" +
 " * Read http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes\n" +
 "   so that you understand about sourceAttributes and addAttributes.\n" +
-" * All of the content below that starts with \"???\" is a guess. It must be edited.\n" +
-" * All of the other tags and their content are based on information from the source.\n" +
-" * For the att tags, you should either:\n" +
-"    * Delete the att tag (so ERDDAP will use the unchanged source attribute).\n" +
-"    * Change the att tag's value (because it isn't quite right).\n" +
-"    * Or, remove the att tag's value, but leave the att tag\n" +
-"      (so the source attribute will be removed by ERDDAP).\n" +
-" * You can reorder data variables, but don't reorder axis variables.\n" +
-" * The current IOOS category options are:\n" +
-"      Bathymetry, Biology, Bottom Character, Contaminants, Currents, Dissolved\n" +
-"      Nutrients, Dissolved O2, Ecology, Fish Abundance, Fish Species, Heat\n" +
-"      Flux, Ice Distribution, Identifier, Location, Meteorology, Ocean Color,\n" +
-"      Optical Properties, Other, Pathogens, Phytoplankton Species, Pressure,\n" +
-"      Productivity, Quality, Salinity, Sea Level, Surface Waves, Taxonomy,\n" +
-"      Temperature, Time, Unknown, Wind, Zooplankton Species, Zooplankton\n" +
-"      Abundance\n" +
-" * For longitude, latitude, altitude (or depth), and time variables:\n" +
-"   * If the sourceName isn't \"longitude\", \"latitude\", \"altitude\", or \"time\",\n" +
-"     you need to specify \"longitude\", \"latitude\", \"altitude\", or \"time\"\n" +
-"     with a destinationName tag.\n" +
-"   * For EDDTable datasets: if possible, add an actual_range attribute\n" +
-"     if one isn't already there.\n" +
-"   * (Usually) remove all other attributes. They usually aren't needed.\n" +
-"     Attributes will be added automatically.\n" +
+" * Note: Global sourceAttributes and variable sourceAttributes are listed\n" +
+"   below as comments, for informational purposes only.\n" +
+"   ERDDAP combines sourceAttributes and addAttributes (which have\n" +
+"   precedence) to make the combinedAttributes that are shown to the user.\n" +
+"   (And other attributes are automatically added to longitude, latitude,\n" +
+"   altitude, and time variables).\n" +
+" * If you don't like a sourceAttribute, override it by adding an\n" +
+"   addAttribute with the same name but a different value\n" +
+"   (or no value, if you want to remove it).\n" +
+" * All of the addAttributes are computer-generated suggestions. Edit them!\n" +
+"   If you don't like an addAttribute, change it.\n" +
+" * If you want to add other addAttributes, add them.\n" +
+" * If you want to change a destinationName, change it.\n" +
+"   But don't change sourceNames.\n" +
+" * You can change the order of the dataVariables or remove any of them.\n" +
+" *** Since the database doesn't have any metadata, you must add metadata\n" +
+"   below, notably 'units' for each of the dataVariables.\n" +
 "-->\n" +
-"<!-- Since the source files don't have any metadata, you must add metadata\n" +
-"     below, notably 'units' for each of the dataVariables. -->\n" +
-"<dataset type=\"EDDTableFromDatabase\" datasetID=\"???erd.detection\" active=\"true\">\n" +
+"\n" +
+"<dataset type=\"EDDTableFromDatabase\" datasetID=\"erd_detection\" active=\"true\">\n" +
 "    <sourceUrl>jdbc:postgresql://142.22.58.155:5432/postparse</sourceUrl>\n" +
 "    <driverName>org.postgresql.Driver</driverName>\n" +
 "    <connectionProperty name=\"user\">erduser</connectionProperty>\n" +
@@ -1324,238 +1353,26 @@ expected =
 "    <catalogName></catalogName>\n" +
 "    <schemaName>erd</schemaName>\n" +
 "    <tableName>detection</tableName>\n" +
-"    <orderBy>???</orderBy>\n" +
-"    <reloadEveryNMinutes>???10080</reloadEveryNMinutes>\n" +
-"    <altitudeMetersPerSourceUnit>???1</altitudeMetersPerSourceUnit>\n" +
-"    <addAttributes>\n" +
-"        <att name=\"cdm_data_type\">???" + String2.toSVString(CDM_TYPES, "|", false) + "</att>\n" +
-"        <att name=\"Conventions\">???COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"infoUrl\">???</att>\n" +
-"        <att name=\"institution\">???</att>\n" +
-"        <att name=\"license\">???[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">???COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"standard_name_vocabulary\">???CF-12</att>\n" +
-"        <att name=\"subsetVariables\">???</att>\n" +
-"        <att name=\"summary\">???Data from a local source.</att>\n" +
-"        <att name=\"title\">???Erd detection</att>\n" +
-"    </addAttributes>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>common_name</sourceName>\n" +
-"        <destinationName>common_name</destinationName>\n" +
-"        <dataType>String</dataType>\n" +
-"        <addAttributes>\n" +
-"            <att name=\"ioos_category\">???Unknown</att>\n" +
-"            <att name=\"long_name\">???Common Name</att>\n" +
-"            <att name=\"standard_name\">???</att>\n" +
-"            <att name=\"units\">???</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>detection_timestamp</sourceName>\n" +
-"        <destinationName>???time</destinationName>\n" +
-"        <dataType>double</dataType>\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">NaN</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">NaN</att>\n" +
-"            <att name=\"ioos_category\">???Time</att>\n" +
-"            <att name=\"long_name\">???Time</att>\n" +
-"            <att name=\"standard_name\">???time</att>\n" +
-"            <att name=\"units\">seconds since 1970-01-01T00:00:00Z</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>tag_id_code</sourceName>\n" +
-"        <destinationName>tag_id_code</destinationName>\n" +
-"        <dataType>String</dataType>\n" +
-"        <addAttributes>\n" +
-"            <att name=\"ioos_category\">???Unknown</att>\n" +
-"            <att name=\"long_name\">???Tag Id Code</att>\n" +
-"            <att name=\"standard_name\">???</att>\n" +
-"            <att name=\"units\">???</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>tag_sn</sourceName>\n" +
-"        <destinationName>tag_sn</destinationName>\n" +
-"        <dataType>String</dataType>\n" +
-"        <addAttributes>\n" +
-"            <att name=\"ioos_category\">???Unknown</att>\n" +
-"            <att name=\"long_name\">???Tag Sn</att>\n" +
-"            <att name=\"standard_name\">???</att>\n" +
-"            <att name=\"units\">???</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>latitude</sourceName>\n" +
-"        <destinationName>latitude</destinationName>\n" +
-"        <dataType>double</dataType>\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">NaN</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">NaN</att>\n" +
-"            <att name=\"ioos_category\">???Location</att>\n" +
-"            <att name=\"long_name\">???Latitude</att>\n" +
-"            <att name=\"standard_name\">???latitude</att>\n" +
-"            <att name=\"units\">???degrees_north</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>longitude</sourceName>\n" +
-"        <destinationName>longitude</destinationName>\n" +
-"        <dataType>double</dataType>\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">NaN</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">NaN</att>\n" +
-"            <att name=\"ioos_category\">???Location</att>\n" +
-"            <att name=\"long_name\">???Longitude</att>\n" +
-"            <att name=\"standard_name\">???longitude</att>\n" +
-"            <att name=\"units\">???degrees_east</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>surgery_id</sourceName>\n" +
-"        <destinationName>surgery_id</destinationName>\n" +
-"        <dataType>int</dataType>\n" +
-"        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">NaN</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">NaN</att>\n" +
-"            <att name=\"ioos_category\">???Unknown</att>\n" +
-"            <att name=\"long_name\">???Surgery Id</att>\n" +
-"            <att name=\"standard_name\">???</att>\n" +
-"            <att name=\"units\">???</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>pi</sourceName>\n" +
-"        <destinationName>pi</destinationName>\n" +
-"        <dataType>String</dataType>\n" +
-"        <addAttributes>\n" +
-"            <att name=\"ioos_category\">???Unknown</att>\n" +
-"            <att name=\"long_name\">???Pi</att>\n" +
-"            <att name=\"standard_name\">???</att>\n" +
-"            <att name=\"units\">???</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"    <dataVariable>\n" +
-"        <sourceName>project</sourceName>\n" +
-"        <destinationName>project</destinationName>\n" +
-"        <dataType>String</dataType>\n" +
-"        <addAttributes>\n" +
-"            <att name=\"ioos_category\">???Unknown</att>\n" +
-"            <att name=\"long_name\">???Project</att>\n" +
-"            <att name=\"standard_name\">???</att>\n" +
-"            <att name=\"units\">???</att>\n" +
-"        </addAttributes>\n" +
-"    </dataVariable>\n" +
-"</dataset>\n";
-            int po = results.indexOf("name=\"ssl\"");
-            Test.ensureEqual(results.substring(po), expected, "results=" + results);
-
-        } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected EDDTableFromDatabase.testGetDatbaseInfo error:\n" +
-                "Press ^C to stop or Enter to continue..."); 
-        }
-
-    }
-
-    /**
-     * This tests generateDatasetsXml.
-     * 
-     * @throws Throwable if trouble
-     */
-    public static void testGenerateDatasetsXml() throws Throwable {
-        String2.log("\n*** EDDTableFromDatabase.testGenerateDatasetsXml");
-        testVerboseOn();
-        String name, tName, results, tResults, expected, userDapQuery, tQuery;
-
-        try {
-            String tCatalogName = "";
-            String tSchemaName = "erd";
-            String tTableName = "detection";
-            String tSummary = 
-"This dataset has tag detection records from the Pacific Ocean\n" +
-"Shelf Tracking project (POST).  POST is a research tool for\n" +
-"tracking the movement and estimated survival of marine animals along\n" +
-"the West Coast of North America, using acoustic transmitters implanted\n" +
-"in animals and a series of receivers running in lines across the\n" +
-"continental shelf.  It is one of fourteen field projects of the\n" +
-"Census of Marine Life assessing the distribution, diversity and\n" +
-"abundance of marine organisms internationally.  (V3)\n" +
-"\n" +
-"Note that the first detection for each animal is from its release.\n" +
-"\n" +
-"By accessing this dataset, you agree to the terms of the POST License\n" +
-"in the dataset's metadata.\n";
-
-            results = generateDatasetsXml(
-                postUrl, postDriver, 
-                postProperties(),
-                tCatalogName, tSchemaName, tTableName,
-                "", //tOrderBy,
-                10080, "http://www.postprogram.org/", "POST", tSummary,
-                "POST Tag Detections",
-                null);
-
-            //GenerateDatasetsXml
-            GenerateDatasetsXml.doIt(new String[]{"-verbose", 
-                "EDDTableFromDatabase",
-                postUrl, postDriver, 
-                String2.toSVString(postProperties(), "|", false),
-                tCatalogName, tSchemaName, tTableName,
-                "", //tOrderBy,
-                "10080", "http://www.postprogram.org/", "POST", tSummary,
-                "POST Tag Detections"},
-                false); //doIt loop?
-            String gdxResults = String2.getClipboardString();
-            Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
-
-
-expected = 
-directionsForGenerateDatasetsXml() +
-" * Since the source files don't have any metadata, you must add metadata\n" +
-"   below, notably 'units' for each of the dataVariables.\n" +
-"-->\n" +
-"\n" +
-"<dataset type=\"EDDTableFromDatabase\" datasetID=\"erd.detection\" active=\"true\">\n" +
-"    <sourceUrl>jdbc:postgresql://142.22.58.155:5432/postparse</sourceUrl>\n" +
-"    <driverName>org.postgresql.Driver</driverName>\n" +
-"    <connectionProperty name=\"user\">erduser</connectionProperty>\n" +
-"    <connectionProperty name=\"password\">";
-
-String expected2 = 
-"    <connectionProperty name=\"ssl\">true</connectionProperty>\n" +
-"    <connectionProperty name=\"sslfactory\">org.postgresql.ssl.NonValidatingFactory</connectionProperty>\n" +
-"    <catalogName></catalogName>\n" +
-"    <schemaName>erd</schemaName>\n" +
-"    <tableName>detection</tableName>\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
+"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
+"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
+"    -->\n" +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"infoUrl\">http://www.postprogram.org/</att>\n" +
-"        <att name=\"institution\">POST</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"infoUrl\">???</att>\n" +
+"        <att name=\"institution\">???</att>\n" +
+"        <att name=\"keywords\">code, common, detection, erd, identifier, name, project, surgery, tag, time, timestamp</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">COARDS, CF-1.4, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"sourceUrl\">(local database)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
-"        <att name=\"summary\">This dataset has tag detection records from the Pacific Ocean\n" +
-"Shelf Tracking project (POST).  POST is a research tool for\n" +
-"tracking the movement and estimated survival of marine animals along\n" +
-"the West Coast of North America, using acoustic transmitters implanted\n" +
-"in animals and a series of receivers running in lines across the\n" +
-"continental shelf.  It is one of fourteen field projects of the\n" +
-"Census of Marine Life assessing the distribution, diversity and\n" +
-"abundance of marine organisms internationally.  (V3)\n" +
-"\n" +
-"Note that the first detection for each animal is from its release.\n" +
-"\n" +
-"By accessing this dataset, you agree to the terms of the POST License\n" +
-"in the dataset&#039;s metadata.\n" +
-"</att>\n" +
-"        <att name=\"title\">POST Tag Detections</att>\n" +
+"        <att name=\"summary\">Data from a local source.</att>\n" +
+"        <att name=\"title\">Erd detection</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>common_name</sourceName>\n" +
@@ -1587,7 +1404,7 @@ String expected2 =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Tag Id Code</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -1609,6 +1426,8 @@ String expected2 =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">90.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-90.0</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Latitude</att>\n" +
 "            <att name=\"standard_name\">latitude</att>\n" +
@@ -1622,6 +1441,8 @@ String expected2 =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">180.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-180.0</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Longitude</att>\n" +
 "            <att name=\"standard_name\">longitude</att>\n" +
@@ -1635,7 +1456,7 @@ String expected2 =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Surgery Id</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -1646,7 +1467,7 @@ String expected2 =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Pi</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -1657,22 +1478,20 @@ String expected2 =
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Project</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=" + results);
+            int po = results.indexOf("name=\"ssl\"");
+            Test.ensureEqual(results.substring(po), expected, "results=" + results);
 
-            int po = results.indexOf(expected2.substring(0, 50));
-            Test.ensureEqual(results.substring(po), expected2, "results=" + results);
 
             //ensure it is ready-to-use by making a dataset from it
             EDD edd = oneFromXmlFragment(results);
-            Test.ensureEqual(edd.datasetID(), "erd.detection", "");
-            Test.ensureEqual(edd.title(), "POST Tag Detections", "");
-            Test.ensureEqual(String2.toCSVString(edd.dataVariableDestinationNames()), 
+            Test.ensureEqual(edd.datasetID(), "erd_detection", "");
+            Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "common_name, time, tag_id_code, tag_sn, latitude, longitude, surgery_id, pi, project", 
                 "");
 
@@ -1757,13 +1576,19 @@ String expected2 =
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"Point\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"" + today + " (source database)\n" +
 today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet.das\";\n" +
-"    String infoUrl \"http://www.postprogram.org/\";\n" +
+"    String infoUrl \"http://www.postcoml.org/\";\n" +
 "    String institution \"POST\";\n" +
+"    String keywords \"Biosphere > Aquatic Ecosystems > Coastal Habitat,\n" +
+"Biosphere > Aquatic Ecosystems > Marine Habitat,\n" +
+"Biosphere > Aquatic Ecosystems > Pelagic Habitat,\n" +
+"Biosphere > Aquatic Ecosystems > Estuarine Habitat,\n" +
+"Biosphere > Aquatic Ecosystems > Rivers/Stream Habitat\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
@@ -1771,7 +1596,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet.das\";\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String sourceUrl \"(source database)\";\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String summary \"The dataset has tag detection records from the Pacific Ocean\n" +
@@ -1806,7 +1631,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet.das\";\n" +
 "  } s;\n" +
 "} s;\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
-
+/* */
 
             //testErdDetection1Var();        
             //SELECT DISTINCT common_name FROM erd.detection  95.7s
@@ -1842,6 +1667,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet.das\";\n" +
 
             
             //testErdDetection2Vars();       //2009-05-22: 192s    (15ms in EDDTableReplicate)
+            //                               //2012-03-20  1159.3s
             //SELECT DISTINCT pi, common_name FROM erd.detection
             eTime = System.currentTimeMillis();
             tQuery = "pi,common_name&distinct()";
@@ -1849,34 +1675,35 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet.das\";\n" +
                 tedd.className() + "_peb_Data_pc", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = //this will change
-"pi, common_name\n" +
-", \n" +
-"BARRY BEREJIKIAN, STEELHEAD\n" +
-"CEDAR CHITTENDEN, COHO\n" +
-"CHRIS WOOD, \"SOCKEYE, KOKANEE\"\n" +
-"CHUCK BOGGS, COHO\n" +
-"DAVID WELCH, CHINOOK\n" +
-"DAVID WELCH, COHO\n" +
-"DAVID WELCH, DOLLY VARDEN\n" +
-"DAVID WELCH, \"SOCKEYE, KOKANEE\"\n" +
-"DAVID WELCH, STEELHEAD\n" +
-"FRED GOETZ, CHINOOK\n" +
-"FRED GOETZ, CUTTHROAT\n" +
-"JACK TIPPING, STEELHEAD\n" +
-"JEFF MARLIAVE, BLACK ROCKFISH\n" +
-"JOHN PAYNE, SQUID\n" +
-"LYSE GODBOUT, \"SOCKEYE, KOKANEE\"\n" +
-"MIKE MELNYCHUK, COHO\n" +
-"MIKE MELNYCHUK, \"SOCKEYE, KOKANEE\"\n" +
-"MIKE MELNYCHUK, STEELHEAD\n" +
-"ROBERT BISON, STEELHEAD\n" +
-"SCOTT STELTZNER, CHINOOK\n" +
-"SCOTT STELTZNER, COHO\n";
+"pi,common_name\n" +
+",\n" +
+"BARRY BEREJIKIAN,STEELHEAD\n" +
+"CEDAR CHITTENDEN,COHO\n" +
+"CHRIS WOOD,\"SOCKEYE, KOKANEE\"\n" +
+"CHUCK BOGGS,COHO\n" +
+"DAVID WELCH,CHINOOK\n" +
+"DAVID WELCH,COHO\n" +
+"DAVID WELCH,DOLLY VARDEN\n" +
+"DAVID WELCH,\"SOCKEYE, KOKANEE\"\n" +
+"DAVID WELCH,STEELHEAD\n" +
+"FRED GOETZ,CHINOOK\n" +
+"FRED GOETZ,CUTTHROAT\n" +
+"JACK TIPPING,STEELHEAD\n" +
+"JEFF MARLIAVE,BLACK ROCKFISH\n" +
+"JOHN PAYNE,SQUID\n" +
+"LYSE GODBOUT,\"SOCKEYE, KOKANEE\"\n" +
+"MIKE MELNYCHUK,COHO\n" +
+"MIKE MELNYCHUK,\"SOCKEYE, KOKANEE\"\n" +
+"MIKE MELNYCHUK,STEELHEAD\n" +
+"ROBERT BISON,STEELHEAD\n" +
+"SCOTT STELTZNER,CHINOOK\n" +
+"SCOTT STELTZNER,COHO\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
             String2.log("*** testErdDetection2Vars FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
 
 
             //testErdDetection1Pi();         //2009-05-22: 152s     (~62ms in EDDTableReplicate)
+            //                               //2012-03-20 499.06s
             //SELECT DISTINCT pi, common_name, surgery_id FROM erd.detection WHERE pi = DAVID WELCH AND common_name = COHO
             eTime = System.currentTimeMillis();
             tQuery = "pi,common_name,surgery_id&pi=\"DAVID WELCH\"&common_name=\"COHO\"&distinct()";
@@ -1885,53 +1712,54 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet.das\";\n" +
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             String2.log(results);
             expected =   //time strings converted from e.g., 2004-04-16T05:16:42-07:00"  to hour=12 Z
-"pi, common_name, surgery_id\n" +
-", , \n" +
-"DAVID WELCH, COHO, 1\n" +
-"DAVID WELCH, COHO, 2\n" +
-"DAVID WELCH, COHO, 3\n" +
-"DAVID WELCH, COHO, 4\n" +
-"DAVID WELCH, COHO, 5\n";
+"pi,common_name,surgery_id\n" +
+",,\n" +
+"DAVID WELCH,COHO,1\n" +
+"DAVID WELCH,COHO,2\n" +
+"DAVID WELCH,COHO,3\n" +
+"DAVID WELCH,COHO,4\n" +
+"DAVID WELCH,COHO,5\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
             String2.log("*** testErdDetection1Pi FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
 
 
 
             //testErdDetection1Tag();        //2009-05-22: 5.7s     (15ms (with diagnostic msgs off) in EDDTableReplicate)
-            //.csv   detections for one tag
+            //.csv   detections for one tag  //2012-03-20 49.8s
             eTime = System.currentTimeMillis();
             tQuery = "&surgery_id=4540";
             tName = tedd.makeNewFileForDapQuery(null, null, tQuery, EDStatic.fullTestCacheDirectory, 
                 tedd.className() + "_peb_Data_detect", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   //time strings converted from e.g., 2004-04-16T05:16:42-07:00"  to hour=12 Z
-"longitude, latitude, time, common_name, pi, project, surgery_id, tag_id_code, tag_sn\n" +
-"degrees_east, degrees_north, UTC, , , , , , \n" +
-"-127.00323, 50.55336, 2004-06-19T17:15:16Z, COHO, DAVID WELCH, KINTAMA RESEARCH, 4540, 1784, 1034575\n" +
-"-127.00323, 50.55336, 2004-06-19T17:18:21Z, COHO, DAVID WELCH, KINTAMA RESEARCH, 4540, 1784, 1034575\n" +
-"-127.00323, 50.55336, 2004-06-19T17:22:55Z, COHO, DAVID WELCH, KINTAMA RESEARCH, 4540, 1784, 1034575\n" +
-"-127.00323, 50.55336, 2004-06-19T17:25:44Z, COHO, DAVID WELCH, KINTAMA RESEARCH, 4540, 1784, 1034575\n" +
-"-127.00323, 50.55336, 2004-06-19T17:26:55Z, COHO, DAVID WELCH, KINTAMA RESEARCH, 4540, 1784, 1034575\n" +
-"-127.00323, 50.55336, 2004-06-19T17:29:31Z, COHO, DAVID WELCH, KINTAMA RESEARCH, 4540, 1784, 1034575\n";
+//Note that all data is in triplicate! How bizarre!
+"longitude,latitude,time,common_name,pi,project,surgery_id,tag_id_code,tag_sn\n" +
+"degrees_east,degrees_north,UTC,,,,,,\n" +
+"-127.00323,50.55336,2004-06-19T17:15:16Z,COHO,DAVID WELCH,KINTAMA RESEARCH,4540,1784,1034575\n" +
+"-127.00323,50.55336,2004-06-19T17:15:16Z,COHO,DAVID WELCH,KINTAMA RESEARCH,4540,1784,1034575\n" +
+"-127.00323,50.55336,2004-06-19T17:15:16Z,COHO,DAVID WELCH,KINTAMA RESEARCH,4540,1784,1034575\n" +
+"-127.00323,50.55336,2004-06-19T17:18:21Z,COHO,DAVID WELCH,KINTAMA RESEARCH,4540,1784,1034575\n" +
+"-127.00323,50.55336,2004-06-19T17:18:21Z,COHO,DAVID WELCH,KINTAMA RESEARCH,4540,1784,1034575\n" +
+"-127.00323,50.55336,2004-06-19T17:18:21Z,COHO,DAVID WELCH,KINTAMA RESEARCH,4540,1784,1034575\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
             String2.log("*** testErdDetection1Tag FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
 
             //change internal orderBy, get results in a different order 
             //This is just for test purposes -- since I can't change datasets.xml for these tests.
-            /* this changed so needs work
-            String oldOrderBy[] = tedd.orderBy;
-            tedd.orderBy = new String[]{"common_name", "surgery_id", "detection_timestamp"};
-            tName = tedd.makeNewFileForDapQuery(null, null, tQuery, EDStatic.fullTestCacheDirectory, 
-                tedd.className() + "_peb_Data", ".csv"); 
-            results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
-            expected = 
-"zztop\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-            tedd.orderBy = oldOrderBy; //return to original orderBy
-            */
+            // this changed so needs work
+            //String oldOrderBy[] = tedd.orderBy;
+            //tedd.orderBy = new String[]{"common_name", "surgery_id", "detection_timestamp"};
+            //tName = tedd.makeNewFileForDapQuery(null, null, tQuery, EDStatic.fullTestCacheDirectory, 
+            //    tedd.className() + "_peb_Data", ".csv"); 
+            //results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+            //expected = 
+//"zztop\n";
+            //Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+            //tedd.orderBy = oldOrderBy; //return to original orderBy
 
-            //testErdDetectionConstraints(); //2009-05-22: 8.5s
-            //testTime();                    //2009-05-22:          (31 ms for EDDTableReplicate)
+
+            //testErdDetectionConstraints //2009-05-22: 8.5s
+            //                            //2012-03-20  50.3s  and 76.2s
             eTime = System.currentTimeMillis();
             tQuery = "&pi=\"DAVID WELCH\"&common_name=\"CHINOOK\"&latitude>50" +
                 "&surgery_id>=1201&surgery_id<1202&time>=2007-05-01T08&time<2007-05-01T09";
@@ -1939,17 +1767,19 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet.das\";\n" +
                 tedd.className() + "_peb_constrained", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =  
-"longitude, latitude, time, common_name, pi, project, surgery_id, tag_id_code, tag_sn\n" +
-"degrees_east, degrees_north, UTC, , , , , , \n" +
-"-127.48843, 50.78142, 2007-05-01T08:43:33Z, CHINOOK, DAVID WELCH, KINTAMA RESEARCH, 1201, 1054, 1030254\n" +
-"-127.48843, 50.78142, 2007-05-01T08:48:23Z, CHINOOK, DAVID WELCH, KINTAMA RESEARCH, 1201, 1054, 1030254\n" +
-"-127.48843, 50.78142, 2007-05-01T08:51:14Z, CHINOOK, DAVID WELCH, KINTAMA RESEARCH, 1201, 1054, 1030254\n" +
-"-127.48843, 50.78142, 2007-05-01T08:53:18Z, CHINOOK, DAVID WELCH, KINTAMA RESEARCH, 1201, 1054, 1030254\n" +
-"-127.48843, 50.78142, 2007-05-01T08:56:23Z, CHINOOK, DAVID WELCH, KINTAMA RESEARCH, 1201, 1054, 1030254\n" +
-"-127.48843, 50.78142, 2007-05-01T08:59:27Z, CHINOOK, DAVID WELCH, KINTAMA RESEARCH, 1201, 1054, 1030254\n";
+//Note that all data is in triplicate! How bizarre!
+"longitude,latitude,time,common_name,pi,project,surgery_id,tag_id_code,tag_sn\n" +
+"degrees_east,degrees_north,UTC,,,,,,\n" +
+"-127.48843,50.78142,2007-05-01T08:43:33Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.48843,50.78142,2007-05-01T08:43:33Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.48843,50.78142,2007-05-01T08:43:33Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.48843,50.78142,2007-05-01T08:48:23Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.48843,50.78142,2007-05-01T08:48:23Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.48843,50.78142,2007-05-01T08:48:23Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
             String2.log("*** testErdDetectionConstraints FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
 
+            //2012-03-21   61.4s and 70.5s
             eTime = System.currentTimeMillis();
             tQuery = "&surgery_id=1201&time<2007-04-28"; //implied 00:00:00+0000
 //I think query sent to database is correct  (when use setTimestamp):
@@ -1980,20 +1810,24 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet.das\";\n" +
 //All timezone-aware dates and times are stored internally in UTC. They are converted to local time in the zone specified by the timezone 
 //configuration parameter before being displayed to the client.
             expected =  
-//"common_name, time, tag_id_code, tag_sn, latitude, longitude, surgery_id, pi, project\n" +
-//", UTC, , , degrees_north, degrees_east, , , \n" +
-"-127.4745, 50.7986, 2007-04-27T23:51:24Z, CHINOOK, DAVID WELCH, KINTAMA RESEARCH, 1201, 1054, 1030254\n" +
-"-127.4745, 50.7986, 2007-04-27T23:53:48Z, CHINOOK, DAVID WELCH, KINTAMA RESEARCH, 1201, 1054, 1030254\n";
-                Test.ensureEqual(results.substring(results.length()-expected.length()), 
+//Note that all data is in triplicate! How bizarre!
+"longitude,latitude,time,common_name,pi,project,surgery_id,tag_id_code,tag_sn\n" +
+"degrees_east,degrees_north,UTC,,,,,,\n" +
+"-127.3507,50.68383,2004-05-23T17:27:04Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.3507,50.68383,2004-05-23T17:27:04Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.3507,50.68383,2004-05-23T17:27:04Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.3507,50.68383,2004-05-23T17:49:10Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.3507,50.68383,2004-05-23T17:49:10Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.3507,50.68383,2004-05-23T17:49:10Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n" +
+"-127.3507,50.68383,2004-05-23T17:50:41Z,CHINOOK,DAVID WELCH,KINTAMA RESEARCH,1201,1054,1030254\n";
+                Test.ensureEqual(results.substring(0, expected.length()), 
                 expected, "\nresults=\n" + results);
             String2.log("*** testTime FINISHED.  TIME=" + (System.currentTimeMillis() - eTime)); 
-
-            String2.getStringFromSystemIn("\nEnd of EDDTableFromDatabase.testErdDetection().\n" +
-                "NOT EXPECTED TO GET HERE. Press Enter -> ");
+            
+            /* */
 
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "DATABASE TABLE CHANGED 2009-08-24. THIS TEST NEEDS TO BE FIXED.\n" +
                 "\nUnexpected EDDTableFromDatabase.testTime error:\n" +
                 "Press ^C to stop or Enter to continue..."); 
         }
@@ -2056,7 +1890,6 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet.das\";\n" +
         String2.log("\n****************** EDDTableFromDatabase.test() *****************\n");
 
         //tests usually run
-        testGetDatbaseInfo();
         testGenerateDatasetsXml();
         testErdDetection();
 

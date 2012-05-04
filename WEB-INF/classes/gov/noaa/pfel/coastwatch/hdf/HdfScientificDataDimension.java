@@ -110,9 +110,9 @@ public class HdfScientificDataDimension extends HdfTag {
             "[tagType=0x" + Integer.toHexString(tagType) +
             ", referenceNumber=" + referenceNumber +
             ", rank=" + rank +
-            ", dim_n=" + String2.toCSVString(dim_n) +
+            ", dim_n=" + String2.toCSSVString(dim_n) +
             ", data_NT_ref_n=" + data_NT_ref +
-            ", scale_NT_ref_n=" + String2.toCSVString(scale_NT_ref_n) +
+            ", scale_NT_ref_n=" + String2.toCSSVString(scale_NT_ref_n) +
             "]";
     }
 

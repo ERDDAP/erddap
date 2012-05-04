@@ -174,8 +174,8 @@ public class OneOf {
     private String hereIsAlt;
     private String clickOnMapToSeeTimeSeries;
 
-    private String emailSmtpHost, emailUserName,
-        emailFromAddress, emailEverythingTo, emailDailyReportTo; 
+    private String emailSmtpHost, emailSmtpProperties, emailSmtpPassword,
+        emailUserName, emailFromAddress, emailEverythingTo, emailDailyReportTo; 
     private int emailSmtpPort;
 
     private String vectorInfo[][];    //[originalVectorIndex][VIXxx]
@@ -199,7 +199,7 @@ public class OneOf {
     //yes, static.   Shared by all apps using same public directory (e.g., cwexperimental)
     //key is gifPdfFileName  value is
     //when public dir cache is cleaned, it is cleaned, too (see cleanPublicDirectory)
-    private static ConcurrentHashMap graphLocationHashMap = new ConcurrentHashMap(); //thread-safe
+    private static ConcurrentHashMap graphLocationHashMap = new ConcurrentHashMap(128, 0.75f, 4); //thread-safe
 
     public final static String imageExtension = ".png"; //was/could be .gif, but .gif is slower
 
@@ -249,6 +249,8 @@ public class OneOf {
 
             //email  (do early on so email can be sent if trouble later in this method)
             emailSmtpHost      = classRB2.getString("emailSmtpHost",  null);
+            emailSmtpProperties= classRB2.getString("emailSmtpProperties",  null);
+            emailSmtpPassword  = classRB2.getString("emailSmtpPassword",  null);
             emailSmtpPort      = classRB2.getInt(   "emailSmtpPort",  25);
             emailUserName      = classRB2.getString("emailUserName",  null);
             emailFromAddress   = classRB2.getString("emailFromAddress", null);
@@ -452,8 +454,8 @@ public class OneOf {
             Test.ensureNotNull(trajectoryGetAllTitles,  notInClassPropertiesFile("trajectoryGetAllTitles"));
             boolean trouble = gridGetOptions.length != gridGetTitles.length;
             if (verbose || trouble) {
-                String2.log("gridGetOptions: "  + String2.toCSVString(gridGetOptions));
-                String2.log("gridGetTitles: "   + String2.toCSVString(gridGetTitles));
+                String2.log("gridGetOptions: "  + String2.toCSSVString(gridGetOptions));
+                String2.log("gridGetTitles: "   + String2.toCSSVString(gridGetTitles));
                 if (trouble) 
                     Test.error(errorInMethod +
                         "nGridGetOptions "      + gridGetOptions.length + 
@@ -461,8 +463,8 @@ public class OneOf {
             }
             trouble = bathymetryGetOptions.length != bathymetryGetTitles.length;
             if (verbose || trouble) {
-                String2.log("bathymetryGetOptions: "  + String2.toCSVString(bathymetryGetOptions));
-                String2.log("bathymetryGetTitles: "   + String2.toCSVString(bathymetryGetTitles));
+                String2.log("bathymetryGetOptions: "  + String2.toCSSVString(bathymetryGetOptions));
+                String2.log("bathymetryGetTitles: "   + String2.toCSSVString(bathymetryGetTitles));
                 if (trouble) 
                     Test.error(errorInMethod +
                         "nBathymetryGetOptions "      + bathymetryGetOptions.length + 
@@ -470,8 +472,8 @@ public class OneOf {
             }
             trouble = gridGetTSOptions.length != gridGetTSTitles.length;
             if (verbose || trouble) {
-                String2.log("gridGetTSOptions: "  + String2.toCSVString(gridGetTSOptions));
-                String2.log("gridGetTSTitles: "   + String2.toCSVString(gridGetTSTitles));
+                String2.log("gridGetTSOptions: "  + String2.toCSSVString(gridGetTSOptions));
+                String2.log("gridGetTSTitles: "   + String2.toCSSVString(gridGetTSTitles));
                 if (trouble) 
                     Test.error(errorInMethod +
                         "nGridGetTSOptions "      + gridGetTSOptions.length + 
@@ -479,8 +481,8 @@ public class OneOf {
             }
             trouble = gridVectorGetOptions.length != gridVectorGetTitles.length;
             if (verbose || trouble) {
-                String2.log("gridVectorGetOptions: "  + String2.toCSVString(gridVectorGetOptions));
-                String2.log("gridVectorGetTitles: "   + String2.toCSVString(gridVectorGetTitles));
+                String2.log("gridVectorGetOptions: "  + String2.toCSSVString(gridVectorGetOptions));
+                String2.log("gridVectorGetTitles: "   + String2.toCSSVString(gridVectorGetTitles));
                 if (trouble) 
                     Test.error(errorInMethod +
                         "nGridVectorGetOptions "      + gridVectorGetOptions.length + 
@@ -488,8 +490,8 @@ public class OneOf {
             }
             trouble = pointGetAvgOptions.length != pointGetAvgTitles.length;
             if (verbose || trouble) {
-                String2.log("pointGetAvgOptions: "  + String2.toCSVString(pointGetAvgOptions));
-                String2.log("pointGetAvgTitles: "   + String2.toCSVString(pointGetAvgTitles));
+                String2.log("pointGetAvgOptions: "  + String2.toCSSVString(pointGetAvgOptions));
+                String2.log("pointGetAvgTitles: "   + String2.toCSSVString(pointGetAvgTitles));
                 if (trouble) 
                     Test.error(errorInMethod +
                         "n pointGetAvgOptions "      + pointGetAvgOptions.length + 
@@ -497,8 +499,8 @@ public class OneOf {
             }
             trouble = pointGetTSOptions.length != pointGetTSTitles.length;
             if (verbose || trouble) {
-                String2.log("pointGetTSOptions: "  + String2.toCSVString(pointGetTSOptions));
-                String2.log("pointGetTSTitles: "   + String2.toCSVString(pointGetTSTitles));
+                String2.log("pointGetTSOptions: "  + String2.toCSSVString(pointGetTSOptions));
+                String2.log("pointGetTSTitles: "   + String2.toCSSVString(pointGetTSTitles));
                 if (trouble) 
                     Test.error(errorInMethod +
                         "n pointGetTSOptions "      + pointGetTSOptions.length + 
@@ -506,8 +508,8 @@ public class OneOf {
             }
             trouble = trajectoryGetSelectedOptions.length != trajectoryGetSelectedTitles.length;
             if (verbose || trouble) {
-                String2.log("trajectoryGetSelectedOptions: "  + String2.toCSVString(trajectoryGetSelectedOptions));
-                String2.log("trajectoryGetSelectedTitles: "   + String2.toCSVString(trajectoryGetSelectedTitles));
+                String2.log("trajectoryGetSelectedOptions: "  + String2.toCSSVString(trajectoryGetSelectedOptions));
+                String2.log("trajectoryGetSelectedTitles: "   + String2.toCSSVString(trajectoryGetSelectedTitles));
                 if (trouble) 
                     Test.error(errorInMethod +
                         "n trajectoryGetSelectedOptions "      + trajectoryGetSelectedOptions.length + 
@@ -515,8 +517,8 @@ public class OneOf {
             }
             trouble = trajectoryGetAllOptions.length != trajectoryGetAllTitles.length;
             if (verbose || trouble) {
-                String2.log("trajectoryGetAllOptions: "  + String2.toCSVString(trajectoryGetAllOptions));
-                String2.log("trajectoryGetAllTitles: "   + String2.toCSVString(trajectoryGetAllTitles));
+                String2.log("trajectoryGetAllOptions: "  + String2.toCSSVString(trajectoryGetAllOptions));
+                String2.log("trajectoryGetAllTitles: "   + String2.toCSSVString(trajectoryGetAllTitles));
                 if (trouble) 
                     Test.error(errorInMethod +
                         "n trajectoryGetAllOptions "      + trajectoryGetAllOptions.length + 
@@ -567,7 +569,7 @@ public class OneOf {
             if (verbose || trouble) {
                 String2.log(
                     (trouble? String2.ERROR + " in OneOf.constructor:\n" : "") +
-                    "regionOptions: "     + String2.toCSVString(regionOptions) + "\n" +
+                    "regionOptions: "     + String2.toCSSVString(regionOptions) + "\n" +
                     "regionTitles: "      + String2.toNewlineString(regionTitles));
                 Test.ensureEqual(nRegionOptions, regionOptions.length,    errorInMethod + "regionOptions.length"); 
                 Test.ensureEqual(nRegionOptions, regionTitles.length - 1, errorInMethod + "regionTitles.length"); //0 is main title
@@ -582,7 +584,7 @@ public class OneOf {
                 if (verbose || trouble) {
                     String2.log(
                         (trouble? ERROR + " in OneOf.constructor:\n" : "") +
-                        "tRegionInfo[" + i + "]=" + String2.toCSVString(regionInfo[i])); 
+                        "tRegionInfo[" + i + "]=" + String2.toCSSVString(regionInfo[i])); 
                         Test.ensureEqual(regionInfo[i].length, 8, tRegionInfo[i]);
                 }
             }
@@ -755,7 +757,7 @@ public class OneOf {
                 if (ch == 'O') pointVectorOptions[i] += "*";
                 if (ch == 'T') pointVectorOptions[i] += "*";
             }
-            String2.log("pointVectorOptions=" + String2.toCSVString(pointVectorOptions));
+            String2.log("pointVectorOptions=" + String2.toCSSVString(pointVectorOptions));
 
             pointsDir = classRB2.getString("pointsDir", null);
 
@@ -1445,8 +1447,8 @@ public class OneOf {
             if (emailAddress != null &&
                 emailAddress.length() > 0)
                 SSR.sendEmail(emailSmtpHost, emailSmtpPort, emailUserName, 
-                    "", //no password; it would be security trouble to have password in .properties file
-                    null, //no extra properties
+                    emailSmtpPassword, 
+                    emailSmtpProperties,
                     emailFromAddress, emailAddress, subject, content);
         } catch (Exception e) {
             String2.log(MustBe.throwable(ERROR + ": Sending email failed.", e));

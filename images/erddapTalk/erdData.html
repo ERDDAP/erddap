@@ -4,7 +4,7 @@
 <head>
 <title>Bob's Guidelines for Data Distribution Systems</title>
 <link rel="shortcut icon" href="http://coastwatch.pfeg.noaa.gov/erddap/images/favicon.ico">
-<link href="../images/erddap.css" rel="stylesheet" type="text/css">
+<link href="../erddap.css" rel="stylesheet" type="text/css">
 </head>
 
 <body> 
@@ -39,6 +39,8 @@ There are probably lots of other useful guidelines, but this is our current list
 <li><a href="#theProblem">The Problem</a>
 <li><a href="#users">Focus on the User's Point of View</a>
 <li><a href="#diverse">Clients Have Diverse Needs</a>
+<li><a href="#serverSide">Client-side vs. Server-side Solutions</a>
+<li><a href="#allBrowsers">Support All Browsers</a>
 <li><a href="#webPages">Web Pages</a>
 <li><a href="#webServices">Web Services</a>
 <li><a href="#federations">Federations of Web Services</a>
@@ -65,7 +67,7 @@ There are probably lots of other useful guidelines, but this is our current list
 <a href="#contact">Comments? Questions? Suggestions?</a>
 <br>See also the <a href="#disclaimer">Disclaimer</a>.
 <small><br>Created: 2009-07-19
-<br>Last modified: 2011-03-23</small>
+<br>Last modified: 2011-09-15</small>
 
 <hr noshade> 
 
@@ -93,7 +95,7 @@ these best practices may or may not apply.
 
 <h2><a name="users">Focus on the User's Point of View</a></h2>
 Since we are thinking about how to <b>distribute</b> data, it is easy to forget (or minimize)
-the user's point of view: "How do I <b>get</b> the data?". 
+the user's point of view: "How do I <b>get</b> the data into my favorite application?". 
 That would be a serious mistake. 
 In the end, if a system doesn't meet the user's needs, 
 doesn't fit into the user's work flow, or isn't easy to use,
@@ -142,6 +144,51 @@ as time goes by. The system needs to be able to evolve.
 <p>In fact, we probably won't be able to predict all of our clients needs.
 So it is probably best to make our systems (at least some of them) as
 flexible as possible.
+
+<h2><a name="serverSide">Client-side vs. Server-side Solutions</a></h2>
+Plug-ins and libraries (client-side solutions) can be great.
+They work at the point-of-need.
+Sometimes they are the best or only solution.
+However, they have disadvantages:
+<ul>
+<li>You may have to make different versions for different operating systems
+  or for different versions of the software they plug into.
+<li>Some users are reluctant to install them.
+<li>Some users don't have permission to install any software.
+<li>Some users will have difficulty installing them.
+<li>Plug-ins may break when the application is updated. 
+<li>If there is a new version of the plug-in (e.g., with a bug fix),
+  it is impossible to get all users to update.
+  You probably don't even know who they are.
+</ul>
+
+<p>We prefer server-side solutions: web applications/services running on servers. 
+They don't need a new plug-in or library.
+They don't have these problems.
+When there is a new version, one administrator updates one program on one server 
+and the changes apply to all users, immediately.
+For developers and users, that is a wonderful feature.
+
+
+<h2><a name="allBrowsers">Support All Browsers</a></h2>
+All of your potential clients matter, not just the ones using a certain browser.
+When making a web page/ web application, it can be tempting to take advantage
+of the great new features offered by a certain browser or by the latest version of HTML.
+Don't do it. Web pages should work on all reasonably modern browsers.
+It isn't that hard to do: just use the features supported by all reasonably modern browsers.  
+If a feature isn't universally supported, don't use it.
+Yes, sometimes you have to have code to do things one way for some browsers 
+and another way for other browsers. But try to minimize this.  
+You will be glad you did:
+<ul>
+<li>You won't have to write those annoying warnings (e.g., 
+"This page only works with Google Chrome 13.034 or above").
+<li>Your tech support efforts will be minimized.
+<li>The page won't require changes everytime a browser is updated.
+<li>Part of the beauty of the web is its universality.
+</ul>
+And more important, your users will thank you (or at least they'll have one
+less thing to complain about). 
 
 <h2><a name="webPages">Web Pages</a></h2>
 When thinking about clients' needs, 

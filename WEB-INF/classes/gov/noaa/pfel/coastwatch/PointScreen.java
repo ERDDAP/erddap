@@ -394,7 +394,7 @@ public class PointScreen extends Screen {
                 averageTable = pointDataSet.makeAveragedTimeSeries(currentMinX, currentMaxX,
                     currentMinY, currentMaxY, depthDouble, depthDouble, centeredTimeValue, centeredTimeValue, 
                     timePeriodValue);
-                //String2.log("  columnNames=" + String2.toCSVString(averageTable.getColumnNames()));
+                //String2.log("  columnNames=" + String2.toCSSVString(averageTable.getColumnNames()));
 
                 //convert to alt units
                 if (unitsIndex == 1) {
@@ -463,8 +463,8 @@ public class PointScreen extends Screen {
 
             //do the timeSeries GUI stuff
             timeSeriesOptions = timeSeriesOptionsSA.toArray();
-String2.log("  timeSeriesOptions" + whichPointScreen1 + "=" + String2.toCSVString(timeSeriesOptions));
-String2.log("  session timeSeries=" + timeSeries.getValue(session));
+            //String2.log("  timeSeriesOptions" + whichPointScreen1 + "=" + String2.toCSSVString(timeSeriesOptions));
+            //String2.log("  session timeSeries=" + timeSeries.getValue(session));
             timeSeriesValue = timeSeries.setOptionsAndValidate(timeSeriesOptions, session, 0);
             timeSeriesIndex = timeSeries.indexOf(timeSeriesValue);
             if (doTally)

@@ -196,7 +196,8 @@ public class File2 {
      * last modified time is older than the specified time.
      *
      * @param dir the full name of the main directory
-     * @param time System.currentTimeMillis of oldest file to be kept
+     * @param time System.currentTimeMillis of oldest file to be kept.
+     *     Files will a smaller lastModified will be deleted.
      * @param recursive if true, subdirectories are searched, too
      * @param deleteEmptySubdirectories  this is only used if recursive is true
      * @return number of files that remain (or -1 if trouble)
@@ -237,7 +238,10 @@ public class File2 {
                     }
                 }
             }
-            String2.log("File2.deleteIfOld(" + dir + ") nDir=" + nDir + 
+            if (nRemain > 0) String2.log("File2.deleteIfOld(" + dir + 
+                (time == Long.MAX_VALUE? "" : 
+                    ", " + Calendar2.safeEpochSecondsToIsoStringTZ(time / 1000.0, "" + time)) +
+                ") nDir=" + nDir + 
                 " nDeleted=" + (files.length - nDir + nRemain) + 
                 " nRemain=" + nRemain);
             return nRemain;
@@ -381,7 +385,7 @@ public class File2 {
             //if (!file.exists()) return false;
             return file.setLastModified(millis);
         } catch (Exception e) {
-            if (verbose) String2.log(MustBe.throwable("File2.touchTime(" + dirName + ")", e));
+            if (verbose) String2.log(MustBe.throwable("File2.setLastModified(" + dirName + ")", e));
             return false;
         }
     }

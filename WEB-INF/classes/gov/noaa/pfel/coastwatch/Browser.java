@@ -99,7 +99,7 @@ public abstract class Browser extends HttpServlet {
     public static boolean drawLandAsMask = true;  //This was Dave's request  2006-03-29.
 
     public String fullClassName;
-    public ConcurrentHashMap userHashMap = new ConcurrentHashMap(); //thread-safe
+    public ConcurrentHashMap userHashMap = new ConcurrentHashMap(16, 0.75f, 4); //thread-safe
     public String[] dontTallyIPAddresses;
     public String numberOfRequestsByUsersDomain;
     public long    constructorMillis;
@@ -161,10 +161,10 @@ public abstract class Browser extends HttpServlet {
 
         //dontTallyIPAddresses
         dontTallyIPAddresses = String2.split(oneOf.classRB2().getString("dontTallyIPAddresses", ""), ',');
-        String2.log("dontTallyIPAddresses=" + String2.toCSVString(dontTallyIPAddresses));
+        String2.log("dontTallyIPAddresses=" + String2.toCSSVString(dontTallyIPAddresses));
         numberOfRequestsByUsersDomain = 
             "Number of Requests by User's Domain:\n" +
-            "    (\"(numeric)\" doesn't include " + String2.toCSVString(dontTallyIPAddresses) + ")";
+            "    (\"(numeric)\" doesn't include " + String2.toCSSVString(dontTallyIPAddresses) + ")";
 
         //specialThings
         specialThings();
@@ -896,7 +896,7 @@ public abstract class Browser extends HttpServlet {
                 String2.log("n=" + n + " af[0]=" + af[0] + " af[n-1]=" + af[n - 1]);
 
                 //Object structures[] = dods.getStructures().toArray();
-                //String2.log(structures.length + " structures: " + String2.toCSVString(structures));
+                //String2.log(structures.length + " structures: " + String2.toCSSVString(structures));
                 //DODSStructure structure = dods.findStructureByShortName("uy10");
                 dodsVariable = dods.findVariableByShortName("uy10");
                 arrayFloat = (ArrayFloat)dodsVariable.read();
@@ -2554,7 +2554,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                         String2.parseDouble(maxDepthValue), 
                                         TBeginTimeValue, TEndTimeValue, standardTimePeriodValue);
                                     String2.log("  GET subsetTable: creating new file: " + tDataName + ".nc");
-                                    //String2.log("  columnNames=" + String2.toCSVString(subsetTable.getColumnNames()));
+                                    //String2.log("  columnNames=" + String2.toCSSVString(subsetTable.getColumnNames()));
 
                                     //only standard units, so no convert to alt units
 
@@ -2850,7 +2850,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                         String2.parseDouble(maxDepthValue), 
                                         TBeginTimeValue, TEndTimeValue, standardTimePeriodValue);
                                     String2.log("  GET subsetTable: creating new file: " + tDataName + ".nc");
-                                    //String2.log("  columnNames=" + String2.toCSVString(subsetTable.getColumnNames()));
+                                    //String2.log("  columnNames=" + String2.toCSSVString(subsetTable.getColumnNames()));
 
                                     //only standard units, so no convert to alt units
 
@@ -3164,7 +3164,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                     subsetTable = tableDataSet.makeSubset(null, null,
                                         individualsValue, dataVariablesValue);
                                     String2.log("  GET subsetTable: creating new file: " + tDataName + ".nc");
-                                    //String2.log("  columnNames=" + String2.toCSVString(subsetTable.getColumnNames()));
+                                    //String2.log("  columnNames=" + String2.toCSSVString(subsetTable.getColumnNames()));
 
                                     //only standard units, so no convert to alt units
 
@@ -3199,7 +3199,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                         "  <name>" + XML.encodeAsXML(tableDataSet.datasetName()) + "</name>\n" +
                                         //<description> appears in balloon
                                         "  <description><![CDATA[" +
-                                        "\n<br />    Individuals: " + XML.encodeAsXML(String2.toCSVString(individualsValue)) +
+                                        "\n<br />    Individuals: " + XML.encodeAsXML(String2.toCSSVString(individualsValue)) +
                                         nbrCourtesy + 
                                         //link to download data
                                         "\n<br />    <a href=\"" + fullUrl + "?" +
@@ -3275,7 +3275,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                                                     "get="              + SSR.minimalPercentEncode(cleanGetValue) + 
                                                     "&amp;dataSet="     + SSR.minimalPercentEncode(dataSetValue) +
                                                     "&amp;individuals=" + SSR.minimalPercentEncode(String2.replaceAll(
-                                                        String2.toCSVString(individualsValue), " ", "")) +
+                                                        String2.toCSSVString(individualsValue), " ", "")) +
                                                     "&amp;dataVariables=" + //none specified -> all
                                                     "&amp;fileType=.html" +
                                                 ">All data</a>\n");
@@ -4668,7 +4668,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
     public static String[] clean(String[] sar) {
         int n = sar.length;
         String sar2[] = new String[n];
-        //String2.log("pre clean() sar=" + String2.toCSVString(sar));
+        //String2.log("pre clean() sar=" + String2.toCSSVString(sar));
         for (int i = 0; i < n; i++) 
             sar2[i] = clean(sar[i]);
         return sar2;
@@ -5269,7 +5269,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             GraphDataLayer.DRAW_MARKERS, false, false,
             "", "",
             tableDataSet.datasetName(), 
-            String2.toCSVString(individualsValue), //title2
+            String2.toCSSVString(individualsValue), //title2
             courtesyValue,
             null, //title4
             table, null, null,
@@ -5381,7 +5381,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 startPo = endPo + 1; //after the searchFor char
             }
             searchFor = searchFor == '='? ',' : '=';
-            String2.log("alternate=" + String2.toCSVString(alternate.toArray()));
+            String2.log("alternate=" + String2.toCSSVString(alternate.toArray()));
         }
         for (int i = 0; i < alternate.size(); i++) {
             if (Math2.odd(i))
@@ -5409,7 +5409,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "Close it, then press ^C to stop or Enter to continue..."); 
         } catch (Exception e) {
             String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-                "\nThis test required cwexperimental CWBrowserWW360.\n" +
+                "\nThis test requires cwexperimental CWBrowserWW360.\n" +
                 "Press ^C to stop or Enter to continue..."); 
         }
 
@@ -5427,7 +5427,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 "Close it, then press ^C to stop or Enter to continue..."); 
         } catch (Exception e) {
             String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-                "\nThis test required cwexperimental CWBrowserWW360.\n" +
+                "\nThis test requires cwexperimental CWBrowserWW360.\n" +
                 "Press ^C to stop or Enter to continue..."); 
         }
 

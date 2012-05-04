@@ -89,8 +89,8 @@ public class HdfNumericDataGroup extends HdfTag {
         return "HdfNumericDataGroup" +
             "[tagType=0x" + Integer.toHexString(tagType) +
             ", referenceNumber=" + referenceNumber +
-            ", tag_n=" + String2.toHexCSVString(tag_n) +
-            ", ref_n=" + String2.toCSVString(ref_n) +
+            ", tag_n=" + String2.toHexCSSVString(tag_n) +
+            ", ref_n=" + String2.toCSSVString(ref_n) +
             "]";
     }
 }

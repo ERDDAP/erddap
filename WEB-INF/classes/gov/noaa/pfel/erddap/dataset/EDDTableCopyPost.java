@@ -59,6 +59,8 @@ public class EDDTableCopyPost extends EDDTableCopy {
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
         String tExtractDestinationNames = "";
         String tOrderExtractBy = "";
         boolean checkSourceData = defaultCheckSourceData;
@@ -82,6 +84,10 @@ public class EDDTableCopyPost extends EDDTableCopy {
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
             else if (localTags.equals( "<onChange>")) {}
             else if (localTags.equals("</onChange>")) tOnChange.add(content); 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<extractDestinationNames>")) {}
@@ -114,7 +120,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         }
 
         return new EDDTableCopyPost(tDatasetID, 
-            tAccessibleTo, tOnChange, tReloadEveryNMinutes, 
+            tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, tReloadEveryNMinutes, 
             tExtractDestinationNames, tOrderExtractBy, tSourceNeedsExpandedFP_EQ,
             tSourceEdd);
     }
@@ -126,12 +132,15 @@ public class EDDTableCopyPost extends EDDTableCopy {
      * @throws Throwable if trouble
      */
     public EDDTableCopyPost(String tDatasetID, 
-        String tAccessibleTo, StringArray tOnChange, int tReloadEveryNMinutes,
+        String tAccessibleTo, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        int tReloadEveryNMinutes,
         String tExtractDestinationNames, String tOrderExtractBy, 
         Boolean tSourceNeedsExpandedFP_EQ,
         EDDTable tSourceEdd) throws Throwable {
 
-        super(tDatasetID, tAccessibleTo, tOnChange, tReloadEveryNMinutes,
+        super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
+            tReloadEveryNMinutes,
             tExtractDestinationNames, tOrderExtractBy, tSourceNeedsExpandedFP_EQ, 
             tSourceEdd);
 
@@ -145,7 +154,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
      *  and constructor will try again in 15 min.
      */
     EDDTableFromFiles makeLocalEdd(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
         double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
@@ -158,7 +167,8 @@ public class EDDTableCopyPost extends EDDTableCopy {
         boolean tSourceNeedsExpandedFP_EQ) 
         throws Throwable {
 
-        return new EDDTableFromPostNcFiles(tDatasetID, tAccessibleTo, tOnChange, 
+        return new EDDTableFromPostNcFiles(tDatasetID, tAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File,
             tAddGlobalAttributes, tAltMetersPerSourceUnit,
             tDataVariables, tReloadEveryNMinutes, 
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
@@ -198,7 +208,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
     }
 
     /** 
-     * This returns the name of the file in datasetInfoDir()
+     * This returns the name of the file in datasetDir()
      * which has all of the distinct data combinations for the current subsetVariables.
      * The file is deleted by setSubsetVariablesCSV(), which is called whenever
      * the dataset is reloaded.
@@ -214,7 +224,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
     }
 
     /** 
-     * This returns the name of the file in datasetInfoDir()
+     * This returns the name of the file in datasetDir()
      * which has all of the distinct values for the current subsetVariables.
      * The file is deleted by setSubsetVariablesCSV(), which is called whenever
      * the dataset is reloaded.
@@ -936,7 +946,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             "(View this in a wide window so the lines don't wrap around.)\n\n");
         fastSwimmerResults.sort(new int[]{resultsPiPaI, resultsTagPaI, resultsErrorPaI}, 
                             new boolean[]{true, true, true});
-        resultsSB.append(fastSwimmerResults.dataToCsvString());
+        resultsSB.append(fastSwimmerResults.dataToCSVString());
         resultsSB.append("\n");
 
         //long   (This was Issue #9 and Issue #10. Now just Of Interest.)
@@ -961,7 +971,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             "View this in a wide window so the lines don't wrap around.\n\n");
         longResults.sort(new int[]{resultsPiPaI, resultsTagPaI, resultsErrorPaI}, 
                      new boolean[]{true, true, true});
-        resultsSB.append(longResults.dataToCsvString());
+        resultsSB.append(longResults.dataToCSVString());
         resultsSB.append("\n");
 
         String2.log(resultsSB.toString());
@@ -1215,7 +1225,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             "    the surgery_timestamp = " + nBefore + "\n\n");
         resultsTable.sort(new int[]{resultsPiPaI, resultsTagPaI, resultsErrorPaI}, 
                           new boolean[]{true, true, true});
-        resultsSB.append(resultsTable.dataToCsvString());
+        resultsSB.append(resultsTable.dataToCSVString());
         resultsSB.append("\n\n");
 
         String2.log(resultsSB.toString());
@@ -1353,7 +1363,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             "\n\n");
         resultsTable.sort(new int[]{resultsPiPaI, resultsTagPaI, resultsErrorPaI}, 
                           new boolean[]{true, true, true});
-        resultsSB.append(resultsTable.dataToCsvString());
+        resultsSB.append(resultsTable.dataToCSVString());
         resultsSB.append("\n");
 
         String2.log(resultsSB.toString());
@@ -1399,13 +1409,13 @@ public class EDDTableCopyPost extends EDDTableCopy {
         Table surg3Table = surg3.getTwawmForDapQuery(EDStatic.loggedInAsSuperuser, "", 
             "role&unique_tag_id=%22" + SSR.minimalPercentEncode(unique_tag_id) + 
             "%22&distinct()").cumulativeTable(); 
-        String2.log(surg3Table.dataToCsvString(1000000));
+        String2.log(surg3Table.dataToCSVString(1000000));
 
         EDDTable det3 = (EDDTable)oneFromDatasetXml("testPostDet3"); 
         Table det3Table = det3.getTwawmForDapQuery(EDStatic.loggedInAsSuperuser, "",
             "role&unique_tag_id=%22" + SSR.minimalPercentEncode(unique_tag_id) + 
             "%22&distinct()").cumulativeTable(); 
-        String2.log(det3Table.dataToCsvString(1000000));
+        String2.log(det3Table.dataToCSVString(1000000));
 
     }
 
@@ -1855,7 +1865,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
             "Here are the tags that have problems:\n\n");
         resultsTable.sort(new int[]{resultsPiPaI, resultsTagPaI, resultsErrorPaI}, 
                           new boolean[]{true, true, true});
-        resultsSB.append(resultsTable.dataToCsvString());
+        resultsSB.append(resultsTable.dataToCSVString());
         resultsSB.append("\n");
         //String2.log("\n\nTags where surgery release_time is BEFORE first detection time:\n");
         //String2.log(String2.noLongLinesAtSpace(beforeTags, 75, "").toString());

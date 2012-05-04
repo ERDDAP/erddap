@@ -124,8 +124,9 @@ public class TimeAxis2 extends Axis implements Cloneable{
    * <pre>
    *   |..........|..........|..........|..........|
    *   15         30         45         00         15
-   *                   1987-06-07 13
+   *                   1987-06-07T13
    * </pre>
+   * Bob modified to add the 'T'.
    */
   public static final int MINUTE_HOUR = 5;
 
