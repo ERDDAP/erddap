@@ -1892,7 +1892,7 @@ public abstract class PrimitiveArray {
 
     /**
      * This appends the data in another primitiveArray to the current data.
-     * WARNING: information may be lost from incoming primitiveArray this
+     * WARNING: information may be lost from the incoming primitiveArray if this
      * primitiveArray is of a simpler type.
      *
      * @param primitiveArray primitiveArray must be a narrower data type,

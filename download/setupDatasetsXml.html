@@ -1720,7 +1720,7 @@ aggregates data from .nc files with several variables, each with one shared
   <li>You might have a set of .nc data files where each file has one month's worth of data from one
     drifting buoy.
   <li>Each file will have 1 dimension, e.g., time (size = [many]).
-  <li>Each file will have many 1D variables which use that dimension, e.g., time, longitude,
+  <li>Each file will have one or more 1D variables which use that dimension, e.g., time, longitude,
     latitude, air temperature, ....
   <li>Each file may have 2D character variables, e.g., with dimensions (time,nCharacters).
   </ul>
@@ -1732,7 +1732,7 @@ aggregates data from .nc files with several variables, each with one shared
   <li>Each file will have 2 1D variables with the same names as the dimensions and using the
     same-name dimension, e.g., time(time), id(id).
     These 1D variables should be included in the list of <tt>&lt;dataVariable&gt;</tt>'s in the dataset's XML. 
-  <li>Each file will have many 2D variables, e.g., longitude, latitude, air temperature, water
+  <li>Each file will have one or more 2D variables, e.g., longitude, latitude, air temperature, water
     temperature, ...
   <li>Each file may have 3D character variables, e.g., with dimensions (time,id,nCharacters).
   </ul>
@@ -1744,7 +1744,7 @@ aggregates data from .nc files with several variables, each with one shared
   <li>Each file will have 3 1D variables with the same names as the dimensions and using the
     same-name dimension, e.g., time(time), lat(lat), lon(lon).
     These 1D variables should be included in the list of <tt>&lt;dataVariable&gt;</tt>'s in the dataset's XML. 
-  <li>Each file will have many 3D variables, e.g., air temperature, water temperature, ...
+  <li>Each file will have one or more 3D variables, e.g., air temperature, water temperature, ...
   <li>Each file may have 4D character variables, e.g., with dimensions (time,lat,lon,nCharacters).
   <li>The file's name might have the buoy's name within the file's name.
   </ul>
@@ -1757,7 +1757,7 @@ aggregates data from .nc files with several variables, each with one shared
   <li>Each file will have 4 1D variables with the same names as the dimensions and using the
     same-name dimension, e.g., time(time), depth(depth), lat(lat), lon(lon).
     These 1D variables should be included in the list of <tt>&lt;dataVariable&gt;</tt>'s in the dataset's XML. 
-  <li>Each file will have many 4D variables, e.g., air temperature, water temperature, ...
+  <li>Each file will have one or more 4D variables, e.g., air temperature, water temperature, ...
   <li>Each file may have 5D character variables, e.g., with dimensions (time,depth,lat,lon,nCharacters).
   <li>The file's name might have the buoy's name within the file's name.
   </ul>
@@ -2754,6 +2754,16 @@ Here are detailed descriptions of common tags and attributes.
         e.g., <tt>Source of Level 2b data</tt>.
         If "contributor" doesn't really apply to a dataset, omit this attribute.
 
+      <li><a name="coverage_content_type"><b>coverage_content_type</b></a> 
+        (from the
+        <a href="http://en.wikipedia.org/wiki/Geospatial_metadata">ISO 19115</a> 
+        metadata standard) 
+        is the RECOMMENDED way to identify the type of gridded data (in EDDGrid datasets). 
+        The only allowed values are auxiliaryInformation, image, modelResult, 
+        physicalMeasurement (the default when ISO 19115 metadata is generated), 
+        qualityInformation, referenceInformation, and thematicClassification.
+        (Don't use this tag for EDDTable datasets.)
+
       <li><a name="creator_name"><b>creator_name</b></a> 
         (from the
         <a href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
@@ -3531,6 +3541,44 @@ Here are detailed descriptions of common tags and attributes.
           If you need additional terms, see if the standards committee will add them to the
           controlled  vocabulary.
         </ul>
+<!-- commented out until release of version 1.40
+      <li><a name="time_precision"><b>time_precision</b></a> 
+        <ul>
+        <li>time_precision is an OPTIONAL attribute used by ERDDAP (and no metadata standards)
+          for time and timestamp variables.           
+          It specifies the precision to be used when displaying time values from the variable
+          on web pages in ERDDAP.  The only data file output format that uses
+          this is .htmlTable.
+        <li>Valid values are <tt>1970-01, 1970-01-01, 1970-01-01T00Z,
+          1970-01-01T00:00Z, 1970-01-01T00:00:00Z</tt> (the default), 
+          <tt>1970-01-01T00:00:00.0Z, 1970-01-01T00:00:00.00Z, 1970-01-01T00:00:00.000Z</tt>.
+          [<tt>1970</tt> is not an option because it is a single number,
+          so ERDDAP can't know if it is a formatted time string (a year) or if it is 
+          some number of seconds since 1970-01-01T00:00:00T.]
+        <li>If time_precision isn't specified or the value isn't matched,
+          the default value will be used.
+        <li>Here, as in other parts of ERDDAP, any fields of the formatted time that are 
+          not displayed are assumed to have the minimum value.  For example,
+          <tt>1985-07, 1985-07-01, 1985-07-01T00Z, 1985-07-01T00:00Z,</tt> 
+          and <tt>1985-07-01T00:00:00Z</tt> are all considered equivalent,
+          although with different levels of precision implied.
+          This matches the 
+          <a href="http://www.iso.org/iso/date_and_time_format">ISO 8601:2004 "extended" Time Format Specification</a>.
+        <li><b>WARNING:</b> You should only use a limited time_precision to the extent that 
+          <b>all</b> of the data values for the variable have only the minimum value 
+          for all of the fields that are hidden.
+          <ul>
+          <li>For example, you can use a time_precision of <tt>1970-01-01</tt> 
+            if all of the data vaules are like
+            <tt>2005-03-04T00:00:00Z</tt> and <tt>2005-03-05T00:00:00Z</tt>. 
+          <li>For example, don't use a time_precision of <tt>1970-01-01</tt> 
+            if there are data values like <tt>2005-03-05T12:00:00Z</tt>,
+            because the non-default hour value wouldn't be displayed.
+            <br>Otherwise, if a user asks for all data with <tt>time=2005-03-05</tt>,
+            the request will fail unexpectedly.
+          </ul>
+        </ul>
+-->        
 
       <li><a name="units"><b>units</b></a> 
         (<a href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a>,

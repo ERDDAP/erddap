@@ -42,7 +42,8 @@ public class ShortArray extends PrimitiveArray {
     }
 
     /**
-     * This constructs a ShortArray from the PrimitiveArray via append().
+     * This constructs a ShortArray by copying elements from the incoming
+     * PrimitiveArray (using append()).
      *
      * @param primitiveArray a primitiveArray of any type 
      */
@@ -975,7 +976,7 @@ public class ShortArray extends PrimitiveArray {
 
     /**
      * This appends the data in another primitiveArray to the current data.
-     * WARNING: information may be lost from incoming primitiveArray this
+     * WARNING: information may be lost from the incoming primitiveArray if this
      * primitiveArray is of a simpler type.
      *
      * @param primitiveArray primitiveArray must be the same or a narrower 

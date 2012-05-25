@@ -2257,7 +2257,8 @@ public class TestUtil {
      */
     public static void testCalendar2() throws Exception {
         String2.log("*********************************************************** testCalendar2");
-
+        String s;
+        double d;
 
         //factorToGetSeconds
         Test.ensureEqual(Calendar2.factorToGetSeconds("ms"), 0.001, "a");
@@ -2333,7 +2334,7 @@ public class TestUtil {
 
         //newGCalendar, parse/format ISODate, YYYYDDD, IsoDateHM, CompactDateTime 
         String2.log("test parse/format USDate, ISODate, YYYYDDD, IsoDateHM, CompactDateTime");
-        String s = "2004-03-02T14:35:08"; //'T'
+        s = "2004-03-02T14:35:08"; //'T'
         GregorianCalendar localGC = Calendar2.newGCalendarLocal();
         GregorianCalendar zuluGC  = Calendar2.newGCalendarZulu();
         Test.ensureEqual(Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTime(localGC, s)), s, "nL");
@@ -2350,6 +2351,41 @@ public class TestUtil {
         s2 = "1970-01-01 00:00:00.000 1:00";
         Test.ensureEqual(Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu(s2)), 
             "1969-12-31T23:00:00", "");
+
+        //2012-05-22 new harder tests of modified Calendar2 methods
+        Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
+            "1970-1-2Q3:4:5.678")),       "1970-01-02T03:04:05.678", "");
+        Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
+            "1970-1-2!3:4:5.67")),        "1970-01-02T03:04:05.670", "");
+        Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
+            "1970-1-2 3:4:5.6")),         "1970-01-02T03:04:05.600", "");
+        Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
+            "1970-1-2 3:4:5.678 1")),     "1970-01-02T02:04:05.678", "");
+        Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
+            "1970-1-2 3:4:5.678+1")),     "1970-01-02T02:04:05.678", "");
+        Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
+            "1970-1-2 3:4:5.678-1")),     "1970-01-02T04:04:05.678", "");
+        Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
+            "1970-1-2 3:4:5.678 1:12")), "1970-01-02T01:52:05.678", "");
+        Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
+            "1970-1-2 3:4:5.678+1:12")), "1970-01-02T01:52:05.678", "");
+        Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
+            "1970-1-2 3:4:5.678-1:12")), "1970-01-02T04:16:05.678", "");
+        //jump to timezone
+        Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
+            "1970-1-2 3:4:5 1:00")),     "1970-01-02T02:04:05.000", "");
+        Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
+            "1970-1-2 3:4 1:00")),       "1970-01-02T02:04:00.000", "");
+        Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
+            "1970-1-2 3 1:00")),         "1970-01-02T02:00:00.000", "");
+        //just (part of) date
+        Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
+            "1971-2-3")),                "1971-02-03T00:00:00.000", "");
+        Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
+            "1971-2")),                  "1971-02-01T00:00:00.000", "");
+        Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
+            "1971")),                    "1971-01-01T00:00:00.000", "");
+
         
         try {
             Calendar2.formatAsISODateTimeT(null); 
@@ -2898,7 +2934,7 @@ public class TestUtil {
 
         da = Calendar2.getTimeBaseAndFactor("years since 0001-01-01"); //some datasets use this!
         s = "1985-01-01T00:00:00";
-        double d = Calendar2.isoStringToEpochSeconds(s);
+        d = Calendar2.isoStringToEpochSeconds(s);
         double us = Calendar2.epochSecondsToUnitsSince(da[0], da[1], d);
         String2.log(s + " = " + us + " years since 0001-01-01  base=" + da[0] + " factor=" + da[1]);
         Test.ensureEqual(us, 1984, "");
@@ -3193,6 +3229,84 @@ public class TestUtil {
         double epochSec = Calendar2.gcToEpochSeconds(Calendar2.newGCalendarZulu());
         Test.ensureTrue(Math.abs(systemSec - epochSec) < 1, 
             "systemSec=" + systemSec + " epochSec=" + epochSec);
+
+        //limitedEpochSecondsToIsoStringT
+        s = "2005-08-31T16:01:02.123";
+        d = Calendar2.isoStringToEpochSeconds(s);
+        String2.log(s + " = " + d);
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970", Double.NaN, "."), ".", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            null,                       d, "."), "2005-08-31T16:01:02Z", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970",                     d, "."), "2005", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01",                  d, "."), "2005-08", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01",               d, "."), "2005-08-31", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00",            d, "."), "2005-08-31T16", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00Z",           d, "."), "2005-08-31T16Z", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00",         d, "."), "2005-08-31T16:01", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00Z",        d, "."), "2005-08-31T16:01Z", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00",      d, "."), "2005-08-31T16:01:02", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00Z",     d, "."), "2005-08-31T16:01:02Z", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00.0",    d, "."), "2005-08-31T16:01:02.1", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00.0Z",   d, "."), "2005-08-31T16:01:02.1Z", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00.00",   d, "."), "2005-08-31T16:01:02.12", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00.00Z",  d, "."), "2005-08-31T16:01:02.12Z", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00.000",  d, "."), "2005-08-31T16:01:02.123", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00.000Z", d, "."), "2005-08-31T16:01:02.123Z", "");
+
+        //test negative year
+        s = "-0005-08-31T16:01:02.123";
+        d = Calendar2.isoStringToEpochSeconds(s);
+        String2.log(s + " = " + d);
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970", Double.NaN, "."), ".", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            null,                       d, "."), "-0005-08-31T16:01:02Z", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970",                     d, "."), "-0005", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01",                  d, "."), "-0005-08", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01",               d, "."), "-0005-08-31", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00",            d, "."), "-0005-08-31T16", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00Z",           d, "."), "-0005-08-31T16Z", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00",         d, "."), "-0005-08-31T16:01", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00Z",        d, "."), "-0005-08-31T16:01Z", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00",      d, "."), "-0005-08-31T16:01:02", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00Z",     d, "."), "-0005-08-31T16:01:02Z", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00.0",    d, "."), "-0005-08-31T16:01:02.1", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00.0Z",   d, "."), "-0005-08-31T16:01:02.1Z", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00.00",   d, "."), "-0005-08-31T16:01:02.12", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00.00Z",  d, "."), "-0005-08-31T16:01:02.12Z", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00.000",  d, "."), "-0005-08-31T16:01:02.123", "");
+        Test.ensureEqual(Calendar2.limitedEpochSecondsToIsoStringT(
+            "1970-01-01T00:00:00.000Z", d, "."), "-0005-08-31T16:01:02.123Z", "");
        
         Math2.gc(1000);
     }

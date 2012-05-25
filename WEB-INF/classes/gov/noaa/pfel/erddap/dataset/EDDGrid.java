@@ -4965,8 +4965,9 @@ Attributes {
                         otherInfo.append(td + " E"); //° didn't work
                     else if (av == latIndex) 
                         otherInfo.append(td + " N"); //° didn't work
-                    else if (av == timeIndex)
-                        otherInfo.append(Calendar2.epochSecondsToIsoStringT(td) + "Z");
+                    else if (axisVar instanceof EDVTimeGridAxis) 
+                        otherInfo.append(Calendar2.limitedEpochSecondsToIsoStringT(
+                            axisVar.combinedAttributes().getString(EDV.time_precision), td, "NaN"));
                     else {
                         String avUnits = axisVar.units();
                         avUnits = avUnits == null? "" : " " + avUnits;
@@ -11431,7 +11432,13 @@ writer.write(
 } //end of ii loop
 
 
-//contentInfo  (dataVariables)
+//contentInfo  (dataVariables)    See Ted Habermann's emails 2012-05-10 and 11.  
+String coverageType = combinedGlobalAttributes.getString("coverage_content_type"); //used by GOES-R
+String validCoverageTypes[] = { //in 19115-1
+    "image", "thematicClassification", "physicalMeasurement", "auxiliaryInformation", 
+    "qualityInformation", "referenceInformation", "modelResult"};
+if (String2.indexOf(validCoverageTypes, coverageType) < 0)
+    coverageType = "physicalMeasurement";   //default 
 writer.write(
 "  <gmd:contentInfo>\n" +
 "    <gmi:MI_CoverageDescription>\n" +
@@ -11440,7 +11447,7 @@ writer.write(
 "      <gmd:contentType>\n" +
 "        <gmd:MD_CoverageContentTypeCode " +
            "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:MD_CoverageContentTypeCode\" " +
-           "codeListValue=\"physicalMeasurement\">physicalMeasurement</gmd:MD_CoverageContentTypeCode>\n" +
+           "codeListValue=\"" + coverageType + "\">" + coverageType + "</gmd:MD_CoverageContentTypeCode>\n" +
 "      </gmd:contentType>\n");
 
 //dataVariables

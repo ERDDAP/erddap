@@ -205,7 +205,7 @@ public class Calendar2 {
     public static double unitsSinceToEpochSeconds(double baseSeconds, 
         double factorToGetSeconds, double unitsSince)  {
         if (factorToGetSeconds >= 30 * SECONDS_PER_DAY) {
-            if (Double.isNaN(unitsSince))
+            if (!Math2.isFinite(unitsSince))
                 return Double.NaN;
             int field;
             if (factorToGetSeconds == 30 * SECONDS_PER_DAY)       field = MONTH;
@@ -232,7 +232,7 @@ public class Calendar2 {
     public static double epochSecondsToUnitsSince(double baseSeconds, 
         double factorToGetSeconds, double epochSeconds)  {
         if (factorToGetSeconds >= 30 * SECONDS_PER_DAY) {
-            if (Double.isNaN(epochSeconds))
+            if (!Math2.isFinite(epochSeconds))
                 return Double.NaN;
             GregorianCalendar es = epochSecondsToGc(epochSeconds);
             GregorianCalendar bs = epochSecondsToGc(baseSeconds);
@@ -307,7 +307,8 @@ public class Calendar2 {
      
     /**
      * This converts an ISO Zulu dateTime String to seconds since 1970-01-01T00:00:00Z,
-     * rounded to the nearest milli, then remove millis.
+     * rounded to the nearest milli.
+     * [Before 2012-05-22, millis were removed. Now they are kept.]
      * In many ways trunc would be better, but doubles are often bruised.
      * round works symmetrically with + and - numbers.
      * If any of the end of the dateTime is missing, a trailing portion of 
@@ -321,7 +322,8 @@ public class Calendar2 {
      * @throws exception if trouble (e.g., input is null or invalid format)
      */
     public static double isoStringToEpochSeconds(String isoZuluString) {
-        return Math2.floorDiv(isoZuluStringToMillis(isoZuluString), 1000);
+        //pre 2012-05-22 was return Math2.floorDiv(isoZuluStringToMillis(isoZuluString), 1000);
+        return isoZuluStringToMillis(isoZuluString) / 1000.0;
     }
 
     /**
@@ -329,7 +331,8 @@ public class Calendar2 {
      */
     public static double safeIsoStringToEpochSeconds(String isoZuluString) {
         try {
-            return Math2.floorDiv(isoZuluStringToMillis(isoZuluString), 1000);
+            //pre 2012-05-22 was return Math2.floorDiv(isoZuluStringToMillis(isoZuluString), 1000);
+            return isoZuluStringToMillis(isoZuluString) / 1000.0;
         } catch (Exception e) {
             return Double.NaN;
         }
@@ -369,7 +372,7 @@ public class Calendar2 {
      * @throws exception if trouble (e.g., seconds is NaN)
      */
     public static GregorianCalendar epochSecondsToGc(double seconds) {
-        if (Double.isNaN(seconds))
+        if (!Math2.isFinite(seconds))
             Test.error(ERROR + " in epochSecondsToGc: seconds value is NaN!");
         return newGCalendarZulu(Math2.roundToLong(seconds * 1000.0));
     }
@@ -405,17 +408,27 @@ public class Calendar2 {
      * @throws Exception if trouble (e.g., seconds is NaN)
      */
     public static String epochSecondsToIsoStringT(double seconds) {
-        if (Double.isNaN(seconds))
+        if (!Math2.isFinite(seconds))
             Test.error(ERROR + " in epochSecondsToIsoStringT: seconds is NaN!");
         return millisToIsoZuluString(Math2.roundToLong(seconds * 1000));
+    }
+
+    /**
+     * This is like epochSecondsToIsoStringT, but includes millis.
+     */
+    public static String epochSecondsToIsoStringT3(double seconds) {
+        if (!Math2.isFinite(seconds))
+            Test.error(ERROR + " in epochSecondsToIsoStringT3: seconds is NaN!");
+        return millisToIso3ZuluString(Math2.roundToLong(seconds * 1000));
     }
 
     /**
      * This is like epochSecondsToIsoStringT, but returns NaNString if seconds is NaN.
      */
     public static String safeEpochSecondsToIsoStringT(double seconds, String NaNString) {
-        return Double.isNaN(seconds)? NaNString :
-            millisToIsoZuluString(Math2.roundToLong(seconds * 1000));
+        return Math2.isFinite(seconds)? 
+            millisToIsoZuluString(Math2.roundToLong(seconds * 1000)) :
+            NaNString;
     }
 
     /**
@@ -423,14 +436,55 @@ public class Calendar2 {
      * and returns NaNString if seconds is NaN..
      */
     public static String safeEpochSecondsToIsoStringTZ(double seconds, String NaNString) {
-        return Double.isNaN(seconds)? NaNString :
-            millisToIsoZuluString(Math2.roundToLong(seconds * 1000)) + "Z";
+        return Math2.isFinite(seconds)? 
+            millisToIsoZuluString(Math2.roundToLong(seconds * 1000)) + "Z" :
+            NaNString;
+    }
+
+    /**
+     * This is like epochSecondsToIsoStringT3, but returns NaNString if seconds is NaN.
+     */
+    public static String safeEpochSecondsToIsoStringT3(double seconds, String NaNString) {
+        return Math2.isFinite(seconds)? 
+            millisToIso3ZuluString(Math2.roundToLong(seconds * 1000)) :
+            NaNString;
+    }
+
+    /**
+     * This is like epochSecondsToIsoStringT3, but add "Z" at end of time,
+     * and returns NaNString if seconds is NaN..
+     */
+    public static String safeEpochSecondsToIsoStringT3Z(double seconds, String NaNString) {
+        return Math2.isFinite(seconds)? 
+            millisToIso3ZuluString(Math2.roundToLong(seconds * 1000)) + "Z" :
+            NaNString;
+    }
+
+    /**
+     * This is like safeEpochSecondsToIsoStringT3Z, but returns a 
+     * limited precision string.
+     *
+     * @param time_precision can be "1970", "1970-01", "1970-01-01", "1970-01-01T00Z",
+     *    "1970-01-01T00:00Z", "1970-01-01T00:00:00Z" (used if time_precision not matched), 
+     *    "1970-01-01T00:00:00.0Z", "1970-01-01T00:00:00.00Z", "1970-01-01T00:00:00.000Z".
+     *    Or any of those without "Z".
+     */
+    public static String limitedEpochSecondsToIsoStringT(String time_precision,
+        double seconds, String NaNString) {
+
+        if (!Math2.isFinite(seconds)) 
+            return NaNString;
+
+        //should be floor(?), but round avoids issues with computer precision
+        return limitedFormatAsISODateTimeT(time_precision, 
+            newGCalendarZulu(Math2.roundToLong(seconds * 1000))); 
     }
 
     /**
      * This converts seconds since 1970-01-01T00:00:00Z  
      * to an ISO Zulu dateTime String with space.
-     * The doubles are rounded to the nearest milli, then millis removed.
+     * The doubles are rounded to the nearest milli.
+     * [Before 2012-05-22, millis were removed. Now they are kept.]
      * In many ways trunc would be better, but doubles are often bruised.
      * round works symmetrically with + and - numbers.
      *
@@ -439,7 +493,7 @@ public class Calendar2 {
      * @throws Exception if trouble (e.g., seconds is NaN)
      */
     public static String epochSecondsToIsoStringSpace(double seconds) {
-        if (Double.isNaN(seconds))
+        if (!Math2.isFinite(seconds))
             Test.error(ERROR + " in epochSecondsToIsoStringSpace: seconds value is NaN!");
         String s = millisToIsoZuluString(Math2.roundToLong(seconds * 1000));
         return String2.replaceAll(s, 'T', ' ');
@@ -829,6 +883,98 @@ public class Calendar2 {
     }
 
     /**
+     * Like formatAsISODateTimeT, but seconds will have 3 decimal digits.
+     *
+     * @param gc
+     * @return the corresponding dateTime String (without the trailing Z).
+     * @throws Exception if trouble (e.g., gc is null)
+     */
+    public static String formatAsISODateTimeT3(GregorianCalendar gc) {
+        return formatAsISODate(gc) + "T" + 
+            String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2) + ":" +
+            String2.zeroPad("" + gc.get(MINUTE), 2) + ":" +
+            String2.zeroPad("" + gc.get(SECOND), 2) + "." +
+            String2.zeroPad("" + gc.get(MILLISECOND), 3);
+    }
+
+   
+    /**
+     * This is like formatAsISODateTime, but returns a 
+     * limited precision string.
+     *
+     * @param time_precision can be "1970", "1970-01", "1970-01-01", "1970-01-01T00Z",
+     *    "1970-01-01T00:00Z", "1970-01-01T00:00:00Z" (used if time_precision not matched), 
+     *    "1970-01-01T00:00:00.0Z", "1970-01-01T00:00:00.00Z", "1970-01-01T00:00:00.000Z".
+     *    Versions without 'Z' are allowed.
+     */
+    public static String limitedFormatAsISODateTimeT(String time_precision,
+        GregorianCalendar gc) {
+
+        String zString = "";  
+        if (time_precision == null || time_precision.length() == 0) 
+            time_precision = "Z";
+        if (time_precision.charAt(time_precision.length() - 1) == 'Z') {
+            time_precision = time_precision.substring(0, time_precision.length() - 1);
+            zString = "Z";
+        }
+
+        //build it    
+        //Warning: year may be 5 chars, e.g., -0003
+        StringBuilder sb = new StringBuilder(formatAsISOYear(gc)); 
+        if (time_precision.equals("1970"))
+            return sb.toString();
+
+        sb.append("-" + String2.zeroPad("" + (gc.get(MONTH) + 1), 2));
+        if (time_precision.equals("1970-01"))
+            return sb.toString();
+        
+        sb.append("-" + String2.zeroPad("" + gc.get(DATE), 2));
+        if (time_precision.equals("1970-01-01"))
+            return sb.toString();
+
+        sb.append("T" + String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2));
+        if (time_precision.equals("1970-01-01T00")) {
+            sb.append(zString);
+            return sb.toString();
+        }
+        
+        sb.append(":" + String2.zeroPad("" + gc.get(MINUTE), 2));
+        if (time_precision.equals("1970-01-01T00:00")) {
+            sb.append(zString);
+            return sb.toString();
+        }
+               
+        sb.append(":" + String2.zeroPad("" + gc.get(SECOND), 2));
+        if (time_precision.length() == 0 || //-> default
+            time_precision.equals("1970-01-01T00:00:00")) {
+            sb.append(zString);
+            return sb.toString();
+        }
+        
+        sb.append("." + String2.zeroPad("" + gc.get(MILLISECOND), 3));
+        if (time_precision.equals("1970-01-01T00:00:00.0")) {
+            sb.setLength(sb.length() - 2);
+            sb.append(zString);
+            return sb.toString();
+        }
+        if (time_precision.equals("1970-01-01T00:00:00.00")) {
+            sb.setLength(sb.length() - 1);
+            sb.append(zString);
+            return sb.toString();
+        }
+        if (time_precision.equals("1970-01-01T00:00:00.000")) {
+            sb.append(zString);
+            return sb.toString();
+        }
+
+        //default
+        sb.setLength(sb.length() - 4);
+        sb.append('Z');  //default has Z
+        return sb.toString();
+    }
+
+
+    /**
      * This converts a GregorianCalendar object into an ISO-format 
      * dateTime string (with space separator: [-]YYYY-MM-DD HH:MM:SS)
      * using its current get() values (not influenced by the format's timeZone).
@@ -1017,10 +1163,12 @@ public class Calendar2 {
             return;  
         }
         int po1, po2 = -1;
+        //String2.log("parseN " + s);
 
-        //search for digits, non-digit.   "1970-01-01T00:00:00-01:00"
+        //search for digits, non-digit.   "1970-01-01T00:00:00.000-01:00"
         boolean mMode = s.charAt(0) == '-'; //initial '-' is required and included when evaluating number
-        for (int i = 0; i < resultsN.length; i++) {
+        int nParts = separatorN.length;
+        for (int part = 0; part < nParts; part++) {
             if (po2 + 1 < sLength) {
                 //accumulate digits
                 po1 = po2 + 1;
@@ -1034,58 +1182,93 @@ public class Calendar2 {
                 //if no number, return; we're done
                 if (po2 == po1)
                     return;
-                resultsN[i] = String2.parseInt(s.substring(po1, po2));
+                if (part > 0 && separatorN[part - 1] == '.') {
+                    resultsN[part] = Math2.roundToInt(1000 * 
+                        String2.parseDouble("0." + s.substring(po1, po2)));
+                    //String2.log("  millis=" + resultsN[part]);
+                } else {
+                    resultsN[part] = String2.parseInt(s.substring(po1, po2));
+                }
+
 
                 //if invalid number, return trouble
-                if (resultsN[i] == Integer.MAX_VALUE) {
+                if (resultsN[part] == Integer.MAX_VALUE) {
                     resultsN[0] = Integer.MAX_VALUE;
                     return; 
                 }
 
-                //eat decimal part
-                while (po2 < sLength && 
-                    (String2.isDigit(s.charAt(po2)) || s.charAt(po2) == '.')) po2++; //digit or decimalpoint
+                //if no more source characters, we're done
+                if (po2 >= sLength) {
+                    //String2.log("  " + String2.toCSSVString(resultsN));
+                    return;
+                }
 
                 //if invalid separator, stop trying to read more; return trouble
                 mMode = false;
-                if (po2 >= sLength)
-                    return;
                 char ch = s.charAt(po2);
-                if (separatorN[i] == '\u0000') {
-                } else if (separatorN[i] == '±') {
+                if (separatorN[part] == '\u0000') {
+
+                } else if (separatorN[part] == '±') {
                     if (ch == '+') { //do nothing
                     }else if (ch == '-') {
                         po2--; //number starts with -
                         mMode = true;
-                    } else {resultsN[0] = Integer.MAX_VALUE; return; }
-                } else if (ch != separatorN[i]) { //if not exact match ...
+                    } else {
+                        resultsN[0] = Integer.MAX_VALUE; return; 
+                    }
+
+                } else if (ch != separatorN[part]) { //if not exact match ...
+
+                    //if current part is ':' or '.' and not matched, try to skip forward to '±'
+                    if ((separatorN[part] == ':' || separatorN[part] == '.') && 
+                        part < nParts - 1) {
+                        int pmPart = String2.indexOf(separatorN, '±', part + 1);
+                        if (pmPart >= 0) {
+                            //String2.log("  jump to +/-");
+                            part = pmPart; 
+                            if (ch == '+') { //do nothing
+                            }else if (ch == '-') {
+                                po2--; //number starts with -
+                                mMode = true;
+                            } else {
+                                resultsN[0] = Integer.MAX_VALUE; return; 
+                            }
+                            continue;
+                        } //if < 0, fall through to failure
+                    }
                     resultsN[0] = Integer.MAX_VALUE;
+                    //String2.log("  " + String2.toCSSVString(resultsN));
                     return;  
                 }
             }
         }
+        //String2.log("  " + String2.toCSSVString(resultsN));
     }
 
+
     /**
-     * This converts an ISO date time string ([-]YYYY-MM-DDTHH:MM:SS.SS±ZZ:ZZ) into
+     * This converts an ISO date time string ([-]YYYY-MM-DDTHH:MM:SS.SSS±ZZ:ZZ) into
      *   a GregorianCalendar object.
      * <br>It is lenient; so Jan 32 is converted to Feb 1;
      * <br>The 'T' may be any non-digit.
+     * <br>The time zone can be omitted.
+     * <br>The parts at the end of the time can be omitted.
+     * <br>If there is no time, the end parts of the date can be omitted.  Year is required.
      * <br>This tries hard to be tolerant of non-valid formats (e.g., "1971-1-2", "1971-01")
      * <br>As of 11/9/2006, NO LONGER TRUE: If year is 0..49, it is assumed to be 2000..2049.
      * <br>As of 11/9/2006, NO LONGER TRUE: If year is 50..99, it is assumed to be 1950..1999.
-     * <br>If the string is too short, the end of "1970-01-01T00:00:00" will be added (effectively).
+     * <br>If the string is too short, the end of "1970-01-01T00:00:00.000" will be added (effectively).
      * <br>If the string is too long, the excess will be ignored.
-     * <br>If a separator is invalid, no more fields will be read.
-     * <br>Otherwise, if the date is improperly formatted, it returns null.
+     * <br>If a required separator is incorrect, it is an error.
+     * <br>If the date is improperly formatted, it returns null.
      * <br>Timezone "Z" or "" is treated as "-00:00" (UTC/Zulu time)
-     * <br>Timezones: 2007-01-02T03:04:05-01:00 is same as 2007-01-02T04:04:05
+     * <br>Timezones: e.g., 2007-01-02T03:04:05-01:00 is same as 2007-01-02T04:04:05
      *
      * @param gc a GregorianCalendar object. The dateTime will be interpreted
      *   as being in gc's time zone.
      *   Timezone info is relative to the gc's time zone.
-     * @param s the dateTimeString in the ISO format (YYYY-MM-DDTHH:MM:SS±ZZ:ZZ
-     *   or -YYYY-MM-DDTHH:MM:SS±ZZ:ZZ for years B.C.)
+     * @param s the dateTimeString in the ISO format (YYYY-MM-DDTHH:MM:SS.SSS±ZZ:ZZ
+     *   or -YYYY-MM-DDTHH:MM:SS.SSS±ZZ:ZZ for years B.C.)
      *   For years B.C., use calendar2Year = 1 - BCYear.  
      *   Note that BCYears are 1..., so 1 BC is calendar2Year 0 (or 0000),
      *   and 2 BC is calendar2Year -1 (or -0001).
@@ -1106,8 +1289,8 @@ public class Calendar2 {
         if (gc == null) 
             Test.error(ERROR + " in parseISODateTime: gc is null!");
 
-        //default ymdhms     year is the only required value
-        int ymdhms[] = {Integer.MAX_VALUE, 1, 1, 0, 0, 0, 0, 0};
+        //default ymdhmsmom     year is the only required value
+        int ymdhmsmom[] = {Integer.MAX_VALUE, 1, 1, 0, 0, 0, 0, 0, 0};
 
 
         //remove trailing Z or "UTC"
@@ -1117,40 +1300,33 @@ public class Calendar2 {
             s = s.substring(0, s.length() - 3);
         s = s.trim();
 
-        //if e.g., 1970-01-01 00:00:00.000 0:00, change last ' ' to '+'
-        if (s.length() >= 21) {
-            int po = s.indexOf(' ', 19);
-            if (po > 0) {
-                s = s.substring(0, po) + '+' + s.substring(po + 1);
-            }
-        }
+        //if e.g., 1970-01-01 00:00:00 0:00, change ' ' to '+' (first ' '->'+' is irrelevant)
+        s = String2.replaceAll(s, ' ', '+');
 
         //separators (\u0000=any non-digit)
-        char separator[] = {'-','-','\u0000',':',':','±', ':', '\u0000'}; 
-        parseN(s, separator, ymdhms);
-        if (ymdhms[0] == Integer.MAX_VALUE) {
+        char separator[] = {'-','-','\u0000',':',':','.','±', ':', '\u0000'}; 
+        parseN(s, separator, ymdhmsmom);
+        if (ymdhmsmom[0] == Integer.MAX_VALUE) {
             Test.error(ERROR + " in parseISODateTime: dateTime='" + s + "' has an invalid format!");
         }
 
-        //clean up year
-        //if (ymdhms[0] >=  0 && ymdhms[0] <= 49) ymdhms[0] += 2000;
-        //if (ymdhms[0] >= 50 && ymdhms[0] <= 99) ymdhms[0] += 1900;
-
         //do time zone adjustment
-        //String2.log("#6=" + ymdhms[6] + " #7=" + ymdhms[7]);
-        if (ymdhms[6] != 0)
-            ymdhms[3] -= ymdhms[6];
-        if (ymdhms[7] != 0) 
-            ymdhms[4] -= ymdhms[6] < 0? -ymdhms[7] : ymdhms[7];
+        //String2.log("#7=" + ymdhmsmom[7] + " #8=" + ymdhmsmom[8]);
+        if (ymdhmsmom[7] != 0)
+            ymdhmsmom[3] -= ymdhmsmom[7];
+        if (ymdhmsmom[8] != 0) 
+            ymdhmsmom[4] -= ymdhmsmom[7] < 0? -ymdhmsmom[8] : ymdhmsmom[8];
 
         //set gc      month -1 since gc month is 0..
-        gc.set((negative? -1 : 1) * ymdhms[0], ymdhms[1] - 1, ymdhms[2], ymdhms[3], ymdhms[4], ymdhms[5]);
-        gc.set(MILLISECOND, 0);
+        gc.set((negative? -1 : 1) * ymdhmsmom[0], ymdhmsmom[1] - 1, ymdhmsmom[2], 
+            ymdhmsmom[3], ymdhmsmom[4], ymdhmsmom[5]);
+        gc.set(MILLISECOND, ymdhmsmom[6]);
         gc.get(YEAR); //force recalculations
 
         //synchronized (isoDateTimeFormat) {
         //    gc.setTime(isoDateTimeFormat.parse(isoDateTimeString));
         //}
+        //String2.log("  " + gc.getTimeInMillis() + " = " + formatAsISODateTimeT3(gc));
         return gc;
     }
 
@@ -1527,6 +1703,18 @@ public class Calendar2 {
     }
 
     /**
+     * This converts millis since 1970-01-01T00:00:00Z to an ISO Zulu DateTime string.
+     *
+     * @param millis the millis since 1970-01-01T00:00:00Z
+     * @return the ISO Zulu DateTime string 'T' (with 3 decimal places) (without the trailing Z)
+     * @throws Exception if trouble (e.g., millis is Long.MAX_VALUE)
+     */
+    public static String millisToIso3ZuluString(long millis) {
+        GregorianCalendar gc = newGCalendarZulu(millis); 
+        return formatAsISODateTimeT3(gc);
+    }
+
+    /**
      * Remove any spaces, dashes (except optional initial dash), colons, and T's from s.
      *
      * @param s a string
@@ -1716,7 +1904,7 @@ public class Calendar2 {
      *  (or "infinite[!]" if trouble, e.g., millis is Double.NaN).
      */
     public static String elapsedTimeString(double millis) {
-        if (Double.isNaN(millis))
+        if (!Math2.isFinite(millis))
             return "infinity";
 
         long time = Math2.roundToLong(millis);
@@ -1818,9 +2006,9 @@ public class Calendar2 {
      * @return seconds since epoch for the start of a day, n days back from max (or from now if max=NaN).
      */
     public static double backNDays(int nDays, double max) throws Exception {
-        GregorianCalendar gc = Double.isNaN(max)?
-            Calendar2.newGCalendarZulu() :
-            Calendar2.epochSecondsToGc(max);
+        GregorianCalendar gc = Math2.isFinite(max)?
+            Calendar2.epochSecondsToGc(max) :
+            Calendar2.newGCalendarZulu();
         //round to previous midnight, then go back nDays
         Calendar2.clearSmallerFields(gc, Calendar2.DATE);
         return Calendar2.gcToEpochSeconds(gc) - Calendar2.SECONDS_PER_DAY * nDays;

@@ -29,7 +29,8 @@ import org.joda.time.format.*;
 public class EDVTimeGridAxis extends EDVGridAxis { 
 
     /** special case format supports suffix 'Z' or +/-HH:MM */
-    public final static String ISO8601TZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ"; 
+    public final static String ISO8601TZ_FORMAT  = "yyyy-MM-dd'T'HH:mm:ssZ"; 
+    public final static String ISO8601T3Z_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"; 
 
     /** Set by the constructor. */
     protected String sourceTimeFormat; 
@@ -39,6 +40,7 @@ public class EDVTimeGridAxis extends EDVGridAxis {
     protected double sourceTimeBase = Double.NaN;   //set if sourceTimeIsNumeric
     protected double sourceTimeFactor = Double.NaN;
     protected DateTimeFormatter dateTimeFormatter;  //set if !sourceTimeIsNumeric
+    protected String time_precision; //see Calendar2.limitedEpochSecondsToIsoStringT
 
     /**
      * The constructor.
@@ -70,6 +72,17 @@ public class EDVTimeGridAxis extends EDVGridAxis {
         throws Throwable {
 
         super(tSourceName, TIME_NAME, tSourceAttributes, tAddAttributes, tSourceValues); 
+
+        //time_precision e.g., 1970-01-01T00:00:00Z
+        time_precision = combinedAttributes.getString(EDV.time_precision);
+        if (time_precision != null) {
+            //ensure not just year (can't distinguish user input a year vs. epochSeconds)
+            if (time_precision.equals("1970"))
+               time_precision = null;
+            //ensure Z at end of time
+            if (time_precision.length() >= 13 && !time_precision.endsWith("Z"))
+               time_precision = null;
+        }
 
         //currently, EDVTimeGridAxis doesn't support scaleAddOffset  or String sourceValues
         String errorInMethod = "datasets.xml/EDVTimeGridAxis constructor error for sourceName=" + tSourceName + ":\n";
@@ -203,7 +216,7 @@ if (sourceValues instanceof StringArray)
      * @return destination String
      */
     public String destinationToString(double destD) {
-        return Double.isNaN(destD)? "" : Calendar2.epochSecondsToIsoStringT(destD) + "Z";
+        return Calendar2.limitedEpochSecondsToIsoStringT(time_precision, destD, "");
     }
 
     /**
@@ -242,6 +255,15 @@ if (sourceValues instanceof StringArray)
         return destinationToString(destinationMax); 
     }
 
+
+    /** 
+     * An indication of the precision of the time values, e.g., 
+     * "1970-01-01T00:00:00Z" (default) or null (goes to default).  
+     * See Calendar2.limitedEpochSecondsToIsoStringT()
+     */
+    public String time_precision() {
+        return time_precision; 
+    }
 
     /**
      * If sourceTimeIsNumeric, this converts a source time to an ISO T time.
@@ -327,8 +349,8 @@ if (sourceValues instanceof StringArray)
         StringArray sa = new StringArray(n, false);
         if (source instanceof StringArray) {
             for (int i = 0; i < n; i++)
-                sa.add(Calendar2.safeEpochSecondsToIsoStringTZ(
-                    sourceTimeToEpochSeconds(source.getString(i)), ""));
+                sa.add(Calendar2.limitedEpochSecondsToIsoStringT(
+                    time_precision, sourceTimeToEpochSeconds(source.getString(i)), ""));
         } else {
             for (int i = 0; i < n; i++)
                 sa.add(sourceTimeToIsoStringT(source.getNiceDouble(i))); 
@@ -418,7 +440,7 @@ if (sourceValues instanceof StringArray)
     }
 
     /**
-     * This converts a source time to a destination ISO T time.
+     * This converts a source time to a destination ISO TZ time.
      *
      * @param sourceTime 
      * @return an ISO T Time (e.g., "1993-12-31T23:59:59Z").
