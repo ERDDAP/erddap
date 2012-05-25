@@ -213,8 +213,9 @@ public class TestAll  {
         
 //    crawl UAF clean catalog      Results put in datasets.xml in EditPlus. 
 //      Log file is in [bigParent]/cache/_test/. Sort it. Look at problems. Make improvements.
-//    EDDGridFromDap.testUAFSubThreddsCatalog(2);   //2012-04-30 newer clean catalog   about 5h
-//    EDDGridFromDap.testUAFSubThreddsCatalog(50);  //official catalog about 2h 4m
+//      Look for "error", "no colorBarMin/Max", "ioos_category=Unknown for"
+//    EDDGridFromDap.testUAFSubThreddsCatalog(2); //newer clean catalog, last done 2012-05-09, ~2h
+//    EDDGridFromDap.testUAFSubThreddsCatalog(50);  //official catalog, ~2h
 //    EDDGridFromDap.testGetUrlsFromHyraxCatalog();
 //    EDDGridFromDap.testGetUrlsFromThreddsCatalog();
 //    EDDGridFromDap.testGraphics();
@@ -606,7 +607,7 @@ public class TestAll  {
 //** To update pmelTAO data ~3th day of every month:
 //1) Overnight, use FileZilla (FTP) 
 //  a) Rename/retire F:\data\tao\sites\  and make a new sites\
-//  b) connect to ftp://taopmelftp@ftp.pmel.noaa.gov  password protected
+//  b) connect to pmelTao: ftp://taopmelftp@ftp.pmel.noaa.gov  password protected
 //     Copy cdf/sites/daily|5day|monthly|quarterly 
 //     to   f:/data/tao/sites/daily|...          (about 1h 45m)
 //2) Ingest all TAO files    (about 10m)
@@ -615,7 +616,7 @@ public class TestAll  {
 //3) Test lots of things, including: are there new stations?  (about 2 minutes)
 //     EDDTableFromTaoFiles.test();
 //4) (Best before 9am or after 11am) FTP from c:/u00/data/points/ tao/... 
-//     to coastwatch /u00/data/points/ tao/...
+//     to coastwatch /u00/data/points/ tao/...     //RENAME into place after transfer complete
 //5) Run touchAllTao.bat in c:/content/bat   
 //6) Email ERDDAP log info ("tabledap DatasetID (since startup)") for pmelTao.* datasets
 //   (and the Current Time and Startup Time) to Dai.C.Mcclurg@noaa.gov
@@ -680,8 +681,11 @@ public class TestAll  {
 
 //    String2.log(EDDTableFromThreddsFiles.generateDatasetsXml(
 //        "http://coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/2012/catalog.xml", 
-//        "WTEP_20120215.*",
-//        "http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2012/WTEP_20120215v10002.nc",
+//          "WTEP_20120215.*",
+//          "http://coaps.fsu.edu/thredds/dodsC/samos/data/quick/WTEP/2012/WTEP_20120215v10002.nc",
+//        "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/catalog.xml",
+//          "BodegaMarineLabBuoyCombined.nc",
+//          "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoyCombined.nc",
 //        60,
 //        "", "", "", "", "",
 //        "time", null)); 
@@ -737,6 +741,7 @@ public class TestAll  {
 //    NetCheck nc = new NetCheck("c:/content/bat/NetCheck.xml", true); //testmode
 //    OpendapHelper.testGetAttributes();
 //    OpendapHelper.testParseStartStrideStop();
+//    OpendapHelper.testFindAllScalarOrMultiDimVars();
 //    OpendapHelper.testFindVarsWithSharedDimensions();
 //    OpendapHelper.testDapToNcDArray();
 
@@ -1209,7 +1214,7 @@ TaskThread tt;
 WaitThenTryAgainException wttae;
 
 
-/* */ 
+/* */  
 
         //convert isoDate to/from epoch seconds (a common utility I need)
         String2.log("Enter an ISO date/time or secondsSinceEpoch or YYYYDDD (or \"\" to stop)...");
@@ -1390,7 +1395,6 @@ WaitThenTryAgainException wttae;
         CfToFromGcmd.test();
         EDStatic.test();
         EDV.test();
-        EDVTime.test();
         EDVTimeStamp.test();
         EDUnits.test();
         Table.testXml();

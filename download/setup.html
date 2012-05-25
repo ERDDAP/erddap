@@ -400,6 +400,28 @@ into a  temporary directory.
     </ul>
   </ul>
 
+<li><b><a name="shutdown">Tomcat Shutdown Sometimes Slow</a></b> - 
+  On Linux and Macs, when you use 
+  <br>&nbsp;&nbsp;<tt>[tomcat]/bin/shutdown.sh</tt> 
+  <br>to 
+  shutdown Tomcat (and ERDDAP), Tomcat (and ERDDAP) may not be completely shut down
+  for a few minutes.  
+  The reason is: ERDDAP sends a message to its background threads
+  to tell them to stop, but sometimes it takes these threads a few minutes
+  to get to a good stopping place.
+  So, you should always use 
+  <br>&nbsp;&nbsp;<tt>ps -u <i>tomcatUser</i></tt> 
+  <br>(or with other switches)
+  to ensure that the tomcat thread has stopped running before using 
+  <br>&nbsp;&nbsp;<tt>[tomcat]/bin/startup.sh</tt> 
+  <br>to restart tomcat (and ERDDAP).
+  If you don't want to wait for Tomcat (and ERDDAP) to stop by itself, 
+  you can use 
+  <br>&nbsp;&nbsp;<tt>kill -9 <i>processID</i></tt> 
+  <br>to force the tomcat process to stop immediately.
+  <br>(Sorry, I don't know the analogous commands for Windows servers.)
+  <br>&nbsp;
+
 <li><b><a name="tomcatLogs">Tomcat Log Files</a></b> - Tomcat errors are logged to
   [tomcat]/logs/catalina.(today).log or 
   [tomcat]/logs/catalina.out.
@@ -1169,10 +1191,16 @@ when making graphs and maps.
 These are things that only a programmer who intends to work with ERDDAP's Java classes needs to know.
 <ul>
 
-<li><b><a name="sourceCode">Source Code</a></b> - The source code for ERDDAP is in the erddap.war file.
-  ERDDAP has a very liberal, open-source <a href="#license">license</a>,
-    so you can use the code for any purpose.
-  <br>&nbsp;
+<li><b><a name="sourceCode">Source Code</a></b> 
+  <ul>
+  <li>The source code for the current version of ERDDAP is always in the current erddap.war file.
+  <li>The source code for recent public versions and in-development versions 
+    is available via <a href="https://github.com/BobSimons">GitHub</a>.
+    Please read the <a href="https://github.com/BobSimons/erddap/wiki">Wiki</a> for that project.
+  <li>ERDDAP has a very liberal, open-source <a href="#license">license</a>,
+    so you can use the source code for any purpose.  
+    <br>&nbsp;
+  </ul>
 
 <li><b><a name="useTheCode">Use the Code for Other Projects</a></b> 
   While you are welcome to use parts of the ERDDAP code for other projects, be warned that the code 

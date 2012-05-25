@@ -2594,6 +2594,7 @@ public abstract class EDDTable extends EDD {
         int latCol  = table.findColumnNumber(EDV.LAT_NAME);
         int altCol  = table.findColumnNumber(EDV.ALT_NAME); 
         int timeCol = table.findColumnNumber(EDV.TIME_NAME);
+        EDVTime edvTime = timeIndex < 0? null : (EDVTime)dataVariables[timeIndex];
         if (lonCol < 0 || latCol < 0)
             throw new SimpleException(EDStatic.queryError +
                 MessageFormat.format(EDStatic.queryErrorLL, ".kml"));
@@ -2642,8 +2643,12 @@ public abstract class EDDTable extends EDD {
                 //at least a week
                 double tMinTime = Math.min(minTime, maxTime - 7 * Calendar2.SECONDS_PER_DAY);
                 moreTime =  // >  <
-                    "&time%3E=" + Calendar2.epochSecondsToIsoStringT(tMinTime) +  
-                    "&time%3C=" + Calendar2.epochSecondsToIsoStringT(maxTime);
+                    "&time%3E=" + 
+                    Calendar2.limitedEpochSecondsToIsoStringT(
+                        edvTime.time_precision(), tMinTime, "NaN") +  
+                    "&time%3C=" + 
+                    Calendar2.limitedEpochSecondsToIsoStringT(
+                        edvTime.time_precision(), maxTime, "NaN");
             }
         } else {
             //look for time in constraints
@@ -2657,12 +2662,14 @@ public abstract class EDDTable extends EDD {
                         maxTime = Double.isNaN(maxTime)? tTime : Math.max(maxTime, tTime);
                 }
             }
-            if (!Double.isNaN(minTime)) 
+            if (Math2.isFinite(minTime)) 
                 moreTime = "&time%3E=" +  
-                    Calendar2.epochSecondsToIsoStringT(minTime - 7 * Calendar2.SECONDS_PER_DAY);
-            if (!Double.isNaN(maxTime)) 
+                    Calendar2.limitedEpochSecondsToIsoStringT(edvTime.time_precision(),
+                        minTime - 7 * Calendar2.SECONDS_PER_DAY, "NaN");
+            if (Math2.isFinite(maxTime)) 
                 moreTime = "&time%3C=" + 
-                    Calendar2.epochSecondsToIsoStringT(maxTime + 7 * Calendar2.SECONDS_PER_DAY);
+                    Calendar2.limitedEpochSecondsToIsoStringT(edvTime.time_precision(),
+                        maxTime + 7 * Calendar2.SECONDS_PER_DAY, "NaN");
         }
 
         //Google Earth .kml
@@ -2674,6 +2681,7 @@ public abstract class EDDTable extends EDD {
         String columnUnits[] = new String[table.nColumns()];
         boolean columnIsString[] = new boolean[table.nColumns()];
         boolean columnIsTimeStamp[] = new boolean[table.nColumns()];
+        String columnTimeFormat[] = new String[table.nColumns()];
         for (int col = 0; col < table.nColumns(); col++) {
             String units = table.columnAttributes(col).getString("units");
             //test isTimeStamp before prepending " "
@@ -2683,6 +2691,7 @@ public abstract class EDDTable extends EDD {
                 " " + units;
             columnUnits[col] = units;
             columnIsString[col] = table.getColumn(col) instanceof StringArray;
+            columnTimeFormat[col] = table.columnAttributes(col).getString(EDV.time_precision);
         }
 
         //based on kmz example from http://www.coriolis.eu.org/cdc/google_earth.htm
@@ -2783,8 +2792,9 @@ public abstract class EDDTable extends EDD {
                         //String2.log("col=" + col + " name=" + table.getColumnName(col) + " units=" + columnUnits[col] + " isTimestamp=" + columnIsTimeStamp[col]);
                         writer.write("\n<br />" + 
                             XML.encodeAsXML(table.getColumnName(col) + " = " +
-                                (columnIsTimeStamp[col] ? 
-                                    (Double.isNaN(td)? "" : Calendar2.epochSecondsToIsoStringT(td) + "Z") :
+                                (columnIsTimeStamp[col]? 
+                                     Calendar2.limitedEpochSecondsToIsoStringT(
+                                        columnTimeFormat[col], td, "") :
                                  columnIsString[col]? ts :
                                  (Double.isNaN(td)? "NaN" : ts) + columnUnits[col])));
                     }
@@ -4750,6 +4760,7 @@ public abstract class EDDTable extends EDD {
                 writer.write('\t');  //since Type and other columns were written above
                 if (isTimeStamp[col]) {
                     //no Z at end;  ODV ignores time zone info (see 2010-06-15 notes)
+                    //!!! Keep as ISO 8601, not time_precision.
                     writer.write(Calendar2.safeEpochSecondsToIsoStringT(table.getDoubleData(col, row), "")); 
                     //missing numeric will be empty cell; that's fine
                 } else {
@@ -4888,6 +4899,7 @@ public abstract class EDDTable extends EDD {
         double tMax = twawm.columnMaxValue(timeCol);
         if (verbose) String2.log("  found time min=" + tMin + "=" +
             (Double.isNaN(tMin)? "" : Calendar2.epochSecondsToIsoStringT(tMin)) + 
+            " max=" + tMax + "=" +
             (Double.isNaN(tMax)? "" : Calendar2.epochSecondsToIsoStringT(tMax)));
         if (!Double.isNaN(tMin)) dataVariables[timeIndex].setDestinationMin(tMin); //scaleFactor,addOffset not supported
         if (!Double.isNaN(tMax)) dataVariables[timeIndex].setDestinationMax(tMax);
@@ -5000,6 +5012,8 @@ public abstract class EDDTable extends EDD {
             boolean isTime = dv == timeIndex;
             boolean isTimeStamp = edv instanceof EDVTimeStamp;
             boolean isString = edv.destinationDataTypeClass() == String.class;
+            String tTime_precision = isTimeStamp? ((EDVTimeStamp)edv).time_precision() : null;
+
             writer.write("<tr>\n");
             
             //get the extra info   
@@ -5043,9 +5057,8 @@ public abstract class EDDTable extends EDD {
                         tValD[putIn] = String2.parseDouble(tValS[putIn]);
                         if (isTimeStamp) {
                             //time constraint will be stored as double (then as a string)
-                            //convert to iso format
-                            if (!Double.isNaN(tValD[putIn]))
-                                tValS[putIn] = Calendar2.epochSecondsToIsoStringT(tValD[putIn]) + "Z";
+                            tValS[putIn] = Calendar2.limitedEpochSecondsToIsoStringT(
+                                tTime_precision, tValD[putIn], "");
                         }
                         constraintVariables.remove(tConi);
                         constraintOps.remove(tConi);
@@ -5055,13 +5068,15 @@ public abstract class EDDTable extends EDD {
             } else {
                 if (isTime) {
                     double ttMax = tMax;
-                    if (!Double.isNaN(ttMax)) {
+                    if (Math2.isFinite(ttMax)) {
                         //only set max request if tMax is known
                         tValD[1] = ttMax;
-                        tValS[1] = Calendar2.epochSecondsToIsoStringT(ttMax) + "Z";
+                        tValS[1] = Calendar2.limitedEpochSecondsToIsoStringT(
+                            tTime_precision, ttMax, "");
                     }
-                    tValD[0] = Calendar2.backNDays(7, ttMax);
-                    tValS[0] = Calendar2.epochSecondsToIsoStringT(tValD[0]) + "Z";
+                    tValD[0] = Calendar2.backNDays(7, ttMax); //NaN -> now
+                    tValS[0] = Calendar2.limitedEpochSecondsToIsoStringT(
+                        tTime_precision, tValD[0], "");
                 }
             }
 
@@ -6951,7 +6966,8 @@ public abstract class EDDTable extends EDD {
                         double d = Calendar2.backNDays(-1, conEdv.destinationMax()); //coming midnight
                         if (con == 0) 
                             d = Calendar2.backNDays(7, d); 
-                        conVal[cv][con] = Calendar2.epochSecondsToIsoStringT(d) + "Z";
+                        conVal[cv][con] = Calendar2.limitedEpochSecondsToIsoStringT(
+                            conEdv.combinedAttributes().getString(EDV.time_precision), d, "");
                         if (con == 0) timeMin = d;
                         else timeMax = d;
                     }
@@ -7691,9 +7707,10 @@ public abstract class EDDTable extends EDD {
             boolean zoomTime = !Double.isNaN(timeMin) && !Double.isNaN(timeMax);
             if (zoomTime) {
 
-                EDV edvTime = dataVariables[timeIndex];
+                EDVTimeStamp edvTime = (EDVTimeStamp)dataVariables[timeIndex];
                 double edvTimeMin = edvTime.destinationMin();  //may be NaN
                 double edvTimeMax = edvTime.destinationMax();  //may be NaN
+                String tTime_precision = edvTime.time_precision();
                 if (!Double.isNaN(edvTimeMin) && Double.isNaN(edvTimeMax))
                     edvTimeMax = Calendar2.backNDays(-1, edvTimeMax);
 
@@ -7757,8 +7774,10 @@ public abstract class EDDTable extends EDD {
                     EDStatic.magTimeRangeTooltip, 
                     1, Calendar2.IDEAL_N_OPTIONS, idealTimeN - 1, //-1 so index=0 .. 99
                     "onChange='" + gqnt + 
-                    "&amp;time%3E=" + Calendar2.epochSecondsToIsoStringT(timeMin) + "Z" +
-                    "&amp;time%3C"  + Calendar2.epochSecondsToIsoStringT(timeMax) + "Z" +
+                    "&amp;time%3E=" + 
+                    Calendar2.limitedEpochSecondsToIsoStringT(tTime_precision, timeMin, "") +
+                    "&amp;time%3C"  + 
+                    Calendar2.limitedEpochSecondsToIsoStringT(tTime_precision, timeMax, "") +
                     "&amp;.timeRange=\" + this.options[this.selectedIndex].text + \"," + 
                     Calendar2.IDEAL_UNITS_OPTIONS[idealTimeUnits] + "\";'")); 
 
@@ -7768,8 +7787,10 @@ public abstract class EDDTable extends EDD {
                     EDStatic.magTimeRangeTooltip, 
                     1, Calendar2.IDEAL_UNITS_OPTIONS, idealTimeUnits, 
                     "onChange='" + gqnt + 
-                    "&amp;time%3E=" + Calendar2.epochSecondsToIsoStringT(timeMin) + "Z" +
-                    "&amp;time%3C"  + Calendar2.epochSecondsToIsoStringT(timeMax) + "Z" +
+                    "&amp;time%3E=" + 
+                    Calendar2.limitedEpochSecondsToIsoStringT(tTime_precision, timeMin, "") +
+                    "&amp;time%3C"  + 
+                    Calendar2.limitedEpochSecondsToIsoStringT(tTime_precision, timeMax, "") +
                     "&amp;.timeRange=" + idealTimeN + ",\" + " +
                     "this.options[this.selectedIndex].text;'")); 
 
@@ -7796,8 +7817,10 @@ public abstract class EDDTable extends EDD {
                             EDStatic.imageDirUrl(loggedInAs) + "arrowLL.gif", 
                             MessageFormat.format(EDStatic.magTimeRangeFirst, timeRangeString),
                             "align=\"top\" onMouseUp='" + gqnt + 
-                            "&amp;time%3E=" + Calendar2.formatAsISODateTimeT(tidMinGc) + "Z" +
-                            "&amp;time%3C"  + Calendar2.formatAsISODateTimeT(tidMaxGc) + "Z" +
+                            "&amp;time%3E=" + 
+                            Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMinGc) +
+                            "&amp;time%3C"  + 
+                            Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMaxGc) +
                             timeRangeParam + "\";'"));
                     } else {
                         writer.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
@@ -7819,8 +7842,10 @@ public abstract class EDDTable extends EDD {
                         EDStatic.imageDirUrl(loggedInAs) + "minus.gif", 
                         MessageFormat.format(EDStatic.magTimeRangeBack, timeRangeString),
                         "align=\"top\" onMouseUp='" + gqnt + 
-                        "&amp;time%3E=" + Calendar2.formatAsISODateTimeT(idMinGc) + "Z" +
-                        "&amp;time%3C"  + Calendar2.formatAsISODateTimeT(idMaxGc) + "Z" +
+                        "&amp;time%3E=" + 
+                        Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMinGc) + 
+                        "&amp;time%3C"  + 
+                        Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMaxGc) +
                         timeRangeParam + "\";'"));
                     idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);                                 
                     idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);                                 
@@ -7845,8 +7870,10 @@ public abstract class EDDTable extends EDD {
                         EDStatic.imageDirUrl(loggedInAs) + "plus.gif", 
                         MessageFormat.format(EDStatic.magTimeRangeForward, timeRangeString),
                         "align=\"top\" onMouseUp='" + gqnt + 
-                        "&amp;time%3E=" +          Calendar2.formatAsISODateTimeT(idMinGc) + "Z" +
-                        "&amp;time%3C"  + equals + Calendar2.formatAsISODateTimeT(idMaxGc) + "Z" +
+                        "&amp;time%3E=" +          
+                        Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMinGc) + 
+                        "&amp;time%3C"  + equals + 
+                        Calendar2.limitedFormatAsISODateTimeT(tTime_precision, idMaxGc) + 
                         timeRangeParam + "\";'"));
                     idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);                                 
                     idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);                                 
@@ -7876,8 +7903,10 @@ public abstract class EDDTable extends EDD {
                             EDStatic.imageDirUrl(loggedInAs) + "arrowRR.gif", 
                             MessageFormat.format(EDStatic.magTimeRangeLast, timeRangeString),
                             "align=\"top\" onMouseUp='" + gqnt + 
-                            "&amp;time%3E=" + Calendar2.formatAsISODateTimeT(tidMinGc) + "Z" +
-                            "&amp;time%3C=" + Calendar2.formatAsISODateTimeT(tidMaxGc) + "Z" +  //yes, =
+                            "&amp;time%3E=" + 
+                            Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMinGc) +
+                            "&amp;time%3C=" + 
+                            Calendar2.limitedFormatAsISODateTimeT(tTime_precision, tidMaxGc) +  //yes, =
                             timeRangeParam + "\";'"));
                     } else {
                         writer.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\n");
@@ -8140,15 +8169,20 @@ public abstract class EDDTable extends EDD {
             String tParam = param[p];
             if (tParam == null || p == lastP)  //don't include lastP param in bigTable
                 continue;
-
-            boolean isTime = subsetVariables[p].equals("time");
+ 
+            EDV edv = findDataVariableByDestinationName(subsetVariables[p]);
+            EDVTimeStamp edvTimeStamp = edv instanceof EDVTimeStamp? (EDVTimeStamp)edv : 
+                null;
+            String tTime_precision = edvTimeStamp == null? null : 
+                edvTimeStamp.time_precision();
             PrimitiveArray pa = subsetTable.findColumn(subsetVariables[p]);
-            if (!isTime && !(pa instanceof StringArray) && tParam.equals("NaN"))
+            if (edvTimeStamp == null && !(pa instanceof StringArray) && tParam.equals("NaN"))
                 tParam = "";  //e.g., doubleArray.getString() for NaN returns ""
             for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
-                String value = isTime?
-                    Calendar2.safeEpochSecondsToIsoStringTZ(pa.getDouble(row), "NaN") :
-                    pa.getString(row);
+                String value = edvTimeStamp == null?
+                    pa.getString(row) :
+                    Calendar2.limitedEpochSecondsToIsoStringT(
+                        tTime_precision, pa.getDouble(row), "NaN");
                 keep.set(row, tParam.equals(value));  //tParam isn't null; pa.getString might be
             }
         }
@@ -8165,14 +8199,21 @@ public abstract class EDDTable extends EDD {
             String tParam = param[lastP];
             keep = new BitSet(nRows);
             keep.set(0, nRows); //set all to true
-            boolean isTime = subsetVariables[lastP].equals("time");
+
+            EDV edv = findDataVariableByDestinationName(subsetVariables[lastP]);
+            EDVTimeStamp edvTimeStamp = edv instanceof EDVTimeStamp? (EDVTimeStamp)edv : 
+                null;
+            String tTime_precision = edvTimeStamp == null? null : 
+                edvTimeStamp.time_precision();
+
             PrimitiveArray pa = subsetTable.findColumn(subsetVariables[lastP]);
-            if (!isTime && !(pa instanceof StringArray) && tParam.equals("NaN"))
+            if (edvTimeStamp == null && !(pa instanceof StringArray) && tParam.equals("NaN"))
                 tParam = "";  //e.g., doubleArray.getString() for NaN returns ""
             for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
-                String value = isTime?
-                    Calendar2.safeEpochSecondsToIsoStringTZ(pa.getDouble(row), "NaN") :
-                    pa.getString(row);
+                String value = edvTimeStamp == null?
+                    pa.getString(row) :
+                    Calendar2.limitedEpochSecondsToIsoStringT(
+                        tTime_precision, pa.getDouble(row), "NaN");
                 //if (value.startsWith(" ")) String2.log("value=\"" + value + "\"");
                 keep.set(row, tParam.equals(value));  //tParam isn't null; pa.getString might be
             }
@@ -8395,15 +8436,20 @@ public abstract class EDDTable extends EDD {
             for (int p = 0; p < subsetVariables.length; p++) {
                 String pName = subsetVariables[p];
                 EDV edv = findDataVariableByDestinationName(pName);
-                boolean isTime = pName.equals("time");
+                EDVTimeStamp edvTimeStamp = edv instanceof EDVTimeStamp? (EDVTimeStamp)edv : 
+                    null;
+                String tTime_precision = edvTimeStamp == null? null : 
+                    edvTimeStamp.time_precision();
+
                 //work on a copy
                 PrimitiveArray pa = p == lastP? (PrimitiveArray)lastPPA.clone() :
                     (PrimitiveArray)(subsetTable.findColumn(pName).clone());
-                if (pName.equals("time")) {
+                if (edvTimeStamp != null) {
                     int paSize = pa.size();
                     StringArray ta = new StringArray(paSize, false);
                     for (int row = 0; row < paSize; row++) 
-                        ta.add(Calendar2.safeEpochSecondsToIsoStringTZ(pa.getDouble(row), "NaN"));
+                        ta.add(Calendar2.limitedEpochSecondsToIsoStringT(
+                            tTime_precision, pa.getDouble(row), "NaN"));
                     pa = ta;
                 }
                 pa.sortIgnoreCase();
@@ -8427,7 +8473,7 @@ public abstract class EDDTable extends EDD {
                     if (countsVariables.length() > 0) 
                         countsVariables.append(',');
                     countsVariables.append(SSR.minimalPercentEncode(pName));
-                    if ((pa instanceof StringArray) || isTime) {
+                    if ((pa instanceof StringArray) || edvTimeStamp != null) {
                         String tq = "&" + SSR.minimalPercentEncode(pName) + "=" + 
                             SSR.minimalPercentEncode("\"" + param[p] + "\"");
                         newConstraints.append(tq);
@@ -8815,15 +8861,15 @@ public abstract class EDDTable extends EDD {
                     "\">" + EDStatic.subsetRefineSubsetDownload + "</a>)\n");
 
                 try {                    
-                    //get the distinct data
-                    PrimitiveArray varPA = (PrimitiveArray)lastPPA.clone(); //work on a copy
-
+                    //get the distinct data; work on a copy
+                    int n = lastPPA.size();
+                    EDV edv = findDataVariableByDestinationName(subsetVariables[lastP]);
+                    PrimitiveArray varPA = (PrimitiveArray)lastPPA.clone(); 
                     Table countTable = new Table();
-                    countTable.addColumn(lastPName, varPA);
+                    countTable.addColumn(0, lastPName, varPA, edv.combinedAttributes());
 
                     //sort, count, remove duplicates
                     varPA.sortIgnoreCase();
-                    int n = varPA.size();
                     IntArray countPA = new IntArray(n, false);
                     countTable.addColumn(EDStatic.subsetCount, countPA);
                     int lastCount = 1;
@@ -8951,7 +8997,8 @@ public abstract class EDDTable extends EDD {
                         twa); 
                     PrimitiveArray varPA = twa.column(0);
                     Table countTable = new Table();
-                    countTable.addColumn(lastPName, varPA);
+                    EDV edv = findDataVariableByDestinationName(subsetVariables[lastP]);
+                    countTable.addColumn(0, lastPName, varPA, edv.combinedAttributes());
 
                     //sort, count, remove duplicates
                     varPA.sortIgnoreCase();
@@ -9001,7 +9048,7 @@ public abstract class EDDTable extends EDD {
                     writer.write("<p>" +
                         MessageFormat.format(EDStatic.subsetTotalCount,
                             "" + Math2.roundToLong(total)) + 
-                        ".\n");
+                        "\n");
                 } catch (Throwable t) {
                     String message = MustBe.getShortErrorMessage(t);
                     String2.log(ERROR + ":\n" + MustBe.throwableToString(t)); //log full message with stack trace
@@ -9460,6 +9507,7 @@ public abstract class EDDTable extends EDD {
         Table distinctTable = distinctSubsetVariablesDataTable(loggedInAs, subsetVariables());
         String distinctOptions[][] = new String[subsetVariables.length][];
         for (int sv = 0; sv < subsetVariables.length; sv++) {
+            EDV edv = findDataVariableByDestinationName(subsetVariables[sv]);
             PrimitiveArray pa = distinctTable.getColumn(sv);
 
             //avoid excess StringArray conversions (which canonicalize the Strings)
@@ -9486,16 +9534,17 @@ public abstract class EDDTable extends EDD {
                     distinctOptions[sv][i + 1] = String2.toJson(sa.get(i));
                 }
 
-            } else if (EDV.TIME_NAME.equals(subsetVariables[sv]) &&
-                       pa instanceof DoubleArray) {  //it should always be DoubleArray
+            } else if (edv instanceof EDVTimeStamp) { 
 
                 //convert epochSeconds to iso Strings
-                DoubleArray da = (DoubleArray)pa;
-                int n = da.size();
+                String tTime_precision = ((EDVTimeStamp)edv).time_precision();
+                int n = pa.size();
                 distinctOptions[sv] = new String[n + 1];
                 distinctOptions[sv][0] = "";
                 for (int i = 0; i < n; i++) { 
-                    distinctOptions[sv][i + 1] = Calendar2.safeEpochSecondsToIsoStringT(da.get(i), "NaN");
+                    distinctOptions[sv][i + 1] = 
+                        Calendar2.limitedEpochSecondsToIsoStringT(
+                            tTime_precision, pa.getDouble(i), "NaN");
                 }
 
             } else { 
@@ -13456,7 +13505,7 @@ String adminCntinfo =
 
 //start writing xml
         writer.write(
-"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +   //or ISO-8859-1 ???
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +   //or ISO-8859-1 charset???
 "<metadata xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
 "xsi:noNamespaceSchemaLocation=\"http://fgdcxml.sourceforge.net/schema/fgdc-std-012-2002/fgdc-std-012-2002.xsd\" " +
 //http://lab.usgin.org/groups/etl-debug-blog/fgdc-xml-schema-woes 

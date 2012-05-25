@@ -3777,12 +3777,14 @@ public abstract class EDD {
         lc = String2.replaceAll(lc, ' ', '|'); 
         lc = String2.replaceAll(lc, '_', '|'); 
         lc = String2.replaceAll(lc, ',', '|'); 
+        lc = String2.replaceAll(lc, '/', '|'); 
         String lcu = lc + 
             tStandardName.toLowerCase() + "|" +
             tUnitsLC                    + "|";
         lcu = String2.replaceAll(lcu, ' ', '|');
         lcu = String2.replaceAll(lcu, '_', '|');
         lcu = String2.replaceAll(lcu, ',', '|');
+        lcu = String2.replaceAll(lcu, '/', '|');
         if (reallyVerbose && 
             "|longitude|latitude|altitude|time|".indexOf("|" + tStandardName + "|") < 0)
             String2.log("  sourceName=" + tSourceName + " lcu=" + lcu);
@@ -3915,18 +3917,18 @@ public abstract class EDD {
                                                     tStandardName = "surface_downward_latent_heat_flux";
 
             //oceanographic and meteorological                     
-            else if ((lc.indexOf("air") >= 0 && 
-                      lc.indexOf("temp") >= 0) ||
-                     lc.indexOf("atmp") >= 0)       tStandardName = lc.indexOf("anom") >= 0? //anomaly
+            else if ((lc.indexOf("|air") >= 0 && 
+                      lc.indexOf("|temp") >= 0) ||
+                     lc.indexOf("|atmp") >= 0)       tStandardName = lc.indexOf("anom") >= 0? //anomaly
                                                                     "air_temperature_anomaly" :
                                                                     "air_temperature"; 
-            else if (((lc.indexOf("air")   >= 0 || lc.indexOf("atmo") >= 0 || 
+            else if (((lc.indexOf("|air")   >= 0 || lc.indexOf("|atmo") >= 0 || 
                        lc.indexOf("cloud") >= 0 || lc.indexOf("surface") >= 0 ||
                        lc.indexOf("tropopause") >= 0) && 
-                      lc.indexOf("press") >= 0) ||
+                      lc.indexOf("|press") >= 0) ||
                      //lc.indexOf("|bar|") >= 0 ||
                      lc.indexOf("|slp|") >= 0 ||
-                     lc.indexOf("baromet") >= 0)    tStandardName = lc.indexOf("anom") >= 0? //anomaly
+                     lc.indexOf("baromet") >= 0)    tStandardName = lc.indexOf("|anom") >= 0? //anomaly
                                                                     "air_pressure_anomaly" :
                                                                     (lc.indexOf("|slp|") >= 0 ||
                                                                      lc.indexOf("surface") >= 0)?
@@ -4181,6 +4183,7 @@ public abstract class EDD {
             lcu = String2.replaceAll(lcu, ' ', '|');
             lcu = String2.replaceAll(lcu, '_', '|');
             lcu = String2.replaceAll(lcu, ',', '|');
+            lcu = String2.replaceAll(lcu, '/', '|');
 
         }
         if (reallyVerbose && 
@@ -4686,15 +4689,19 @@ public abstract class EDD {
             lcu = String2.replaceAll(lcu, '_', '|');
             lcu = String2.replaceAll(lcu, ' ', '|');
             lcu = String2.replaceAll(lcu, ',', '|');
+            lcu = String2.replaceAll(lcu, '/', '|');
 
-            //see similar CATCH STATISTICS above        catch before others
+            //see similar CATCH STATISTICS         catch before others
             if (lcu.indexOf("sigma")        >= 0 &&
                 lcu.indexOf("theta")        >= 0) {
                 tAddAtts.add("ioos_category", "Physical Oceanography"); 
 
+            //CATCH STATISTICS
             } else if (
+                lcu.indexOf("|average|")    >= 0 || 
                 lcu.indexOf("count")        >= 0 || 
                 //lcu.indexOf("mean")         >= 0 || //let it be the relevant ioos_category
+                //lcu.indexOf("|average|")    >= 0 || // ditto
                 lcu.indexOf("stddev")       >= 0 || 
                 lcu.indexOf("|sd|")         >= 0 || 
                 lcu.indexOf("|s.d.|")       >= 0 ||
@@ -4721,6 +4728,7 @@ public abstract class EDD {
                 //see similar CATCH QUALITY above        catch before others
                 lcu.indexOf("qc")           >= 0 || 
                 lcu.indexOf("qa")           >= 0 || 
+                lcu.indexOf("reliability")  >= 0 || 
                 lcu.indexOf("uncertainty")  >= 0 || 
                 (lcu.indexOf("quality") >= 0 && lcu.indexOf("science|quality") < 0) || 
                 lcu.indexOf("flag")         >= 0) { 
@@ -4784,25 +4792,27 @@ public abstract class EDD {
                 (lcu.indexOf("geopotential") >= 0 && lcu.indexOf("height") >= 0) ||
                 lcu.indexOf("ssh")                   >= 0 ||
                 lcu.indexOf("surf|el")               >= 0 ||
+                lcu.indexOf("|sea|height|")          >= 0 ||
                 (lcu.indexOf("|sea|") >= 0 && lcu.indexOf("surface") >= 0 &&
                     lcu.indexOf("wave") < 0 && //don't catch e.g., sea surface swell wave height
                     (lcu.indexOf("elevation") >= 0 || lcu.indexOf("height") >= 0))) { 
                 tAddAtts.add("ioos_category", "Sea Level");
 
+            //Currents: water or air, or things measuring them (tracer)
             } else if (
                 (lcu.indexOf("ocean") >= 0 && lcu.indexOf("streamfunction") >= 0) ||
                 lcu.indexOf("momentum|component") >= 0 ||
                 lcu.indexOf("momentum|stress")    >= 0 ||
                 lcu.indexOf("|u-flux|")           >= 0 ||
                 lcu.indexOf("|v-flux|")           >= 0 ||
+                lcu.indexOf("tracer")             >= 0 ||
                 lcu.indexOf("current")            >= 0 ||
                 lcu.indexOf("water|dir")          >= 0 ||
-                (lcu.indexOf("water") >= 0 && 
-                   (lcu.indexOf("direction")   >= 0 || 
-                    lcu.indexOf("speed")       >= 0 || 
-                    lcu.indexOf("spd")         >= 0 || 
-                    lcu.indexOf("vel")         >= 0 || 
-                    lcu.indexOf("velocity")    >= 0))) { 
+                lcu.indexOf("direction")          >= 0 || 
+                lcu.indexOf("speed")              >= 0 || 
+                lcu.indexOf("spd")                >= 0 || 
+                lcu.indexOf("vel")                >= 0 || 
+                lcu.indexOf("velocity")           >= 0) { 
                 tAddAtts.add("ioos_category", "Currents");
 
             } else if (
@@ -4961,6 +4971,9 @@ public abstract class EDD {
                 lcu.indexOf("air|temp")             >= 0 ||
                 lcu.indexOf("atemp")                >= 0 ||
                 lcu.indexOf("atmp")                 >= 0 ||  //4 letter NDBC abbreviation
+                lcu.indexOf("|degree|c|")           >= 0 ||
+                lcu.indexOf("|degrees|c|")          >= 0 ||
+                lcu.indexOf("heating")              >= 0 ||
                 lcu.indexOf("sst")                  >= 0 ||
                 lcu.indexOf("temperature")          >= 0 ||
                 lcu.indexOf("wtmp")                 >= 0 ||  //4 letter NDBC abbreviation
@@ -4973,18 +4986,6 @@ public abstract class EDD {
 
                 tAddAtts.add("ioos_category", "Temperature");
 
-            } else if (
-                (lcu.indexOf("|time") >= 0 && lcu.indexOf("|time-averaged") < 0) ||
-                lcu.indexOf("|year")        >= 0 ||
-                lcu.indexOf("|month")       >= 0 ||
-                lcu.indexOf("|date")        >= 0 ||
-                lcu.indexOf("|day")         >= 0 ||   //not "someday"
-                lcu.indexOf("|hour")        >= 0 ||
-                lcu.indexOf("|minute")      >= 0 ||
-                lcu.indexOf("|second|")     >= 0 ||  //e.g., but not meters/second  secondRef
-                lcu.indexOf("|seconds|")    >= 0 ||  //e.g., but not meters/second  secondRef
-                tUnitsLC.indexOf(" since ") >= 0) { 
-                tAddAtts.add("ioos_category", "Time");
 
             } else if (
                ((lcu.indexOf("atmosphere")     >= 0 || lcu.indexOf("air")    >= 0) &&
@@ -5029,6 +5030,29 @@ public abstract class EDD {
                 (lcu.indexOf("stream") >= 0 && lcu.indexOf("flow") >= 0) ||
                 (lcu.indexOf("surface") >= 0 && lcu.indexOf("water") >= 0)) {
                 tAddAtts.add("ioos_category", "Hydrology");
+
+            //catch time near end
+            //let other things be caught above, e.g., wind in m/s, temperature change/day
+            } else if (
+                lcu.indexOf("|age|")        >= 0 ||
+                lcu.indexOf("|calendar|")   >= 0 ||
+                lcu.indexOf("|date")        >= 0 ||
+                lcu.indexOf("|day")         >= 0 ||   //not "someday"
+                lcu.indexOf("|hour")        >= 0 ||
+                lcu.indexOf("|minute")      >= 0 ||
+                lcu.indexOf("|month")       >= 0 ||
+                //lcu.indexOf("|s|")          >= 0 || //too likely something else   .../s
+                lcu.indexOf("|second|")     >= 0 || 
+                lcu.indexOf("|seconds|")    >= 0 ||
+                tUnitsLC.indexOf(" since ") >= 0 || 
+                (lcu.indexOf("|time") >= 0 && lcu.indexOf("|time-averaged") < 0) ||
+                lcu.indexOf("|year")        >= 0) {
+                tAddAtts.add("ioos_category", "Time");
+
+            //catch Quality at end if not caught above
+            } else if (
+                lcu.indexOf("bits")         >= 0) { //eg flag bits
+                tAddAtts.add("ioos_category", "Quality");
 
             //catch Location last   so e.g., ocean_salt_x_transport caught by Salinity
             } else if (
@@ -5081,7 +5105,9 @@ public abstract class EDD {
                 tAddAtts.add("ioos_category", "Location");            
 
             } else if (
-                //last resort statistics
+                //last resort statistics    (catch things not caught above)
+                lcu.indexOf("|average|")    >= 0 || 
+                lcu.indexOf("|mean|")       >= 0 || 
                 lcu.indexOf("|nav|")        >= 0 || 
                 lcu.indexOf("|ngrids|")     >= 0 || 
                 lcu.indexOf("|nmodels|")    >= 0 || 

@@ -934,7 +934,6 @@ public class OpendapHelper  {
     }
 
     /** 
-     * This finds vars with the same dimensions.
      * This finds the vars with the most dimensions.
      * If there are more than 1 groups with the same number of dimensions,
      * but different dimensions, the first group will be be found.
@@ -1041,7 +1040,489 @@ public class OpendapHelper  {
 
     }
 
+    /**
+     * This tests if baseType is an instanceof a 
+     *   scalar (DBoolean, DByte, DFloat32, DFloat64, DInt16, DInt32, DString) 
+     *   and multidimensional (DGrid, DArray) variable.
+     *
+     * @param baseType
+     * @return true or false
+     */
+    public static boolean instanceofScalarOrMultiDimVar(BaseType baseType) {
+        return  baseType instanceof DGrid    ||
+                baseType instanceof DArray   ||
+                baseType instanceof DString  ||
+                baseType instanceof DByte    ||
+                baseType instanceof DInt16   ||
+                baseType instanceof DInt32   ||
+                baseType instanceof DFloat32 ||
+                baseType instanceof DFloat64 ||
+                baseType instanceof DBoolean;
+    }
 
+    /** 
+     * This finds all 
+     *   scalar (DBoolean, DByte, DFloat32, DFloat64, DInt16, DInt32, DString) 
+     *   and multidimensional (DGrid, DArray) variables.
+     * This won't find DVectors, DLists, DStructures or DSequences.
+     *
+     * <p>Currently, this won't find variables in a sequence.
+     *
+     * @param dds
+     * @return String varNames[]
+     * @param throws Exception if trouble
+     */
+    public static String[] findAllScalarOrMultiDimVars(DDS dds) 
+        throws Exception {
+  
+        Enumeration en = dds.getVariables();
+        StringArray dimNames = new StringArray();
+        StringArray varNames = new StringArray(); //vars with same dimNames
+        while (en.hasMoreElements()) {
+            BaseType baseType = (BaseType)en.nextElement();
+            if (instanceofScalarOrMultiDimVar(baseType))
+                varNames.add(baseType.getName());
+        }
+        return varNames.toArray();
+    }
+
+    /** This tests findAllVars. */
+    public static void testFindAllScalarOrMultiDimVars() throws Throwable {
+        String2.log("\n\n*** OpendapHelper.findAllScalarOrMultiDimVars");
+        String expected, results;      
+        DConnect dConnect;
+        DDS dds;
+        String url;
+
+        /*
+        //test of Sequence DAP dataset        
+        String2.log("\n*** test of Sequence DAP dataset");
+        url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1";
+        dConnect = new DConnect(url, true, 1, 1);
+        dds = dConnect.getDDS(DEFAULT_TIMEOUT);
+        results = String2.toCSSVString(findVarsWithSharedDimensions(dds));
+        expected = 
+"zztop";
+        Test.ensureEqual(results, expected, "results=" + results);
+        */
+
+
+        //test of DArray DAP dataset
+        String2.log("\n*** test of DArray DAP dataset");
+        url = "http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+        dConnect = new DConnect(url, true, 1, 1);
+        dds = dConnect.getDDS(DEFAULT_TIMEOUT);
+        results = String2.toCSSVString(findAllScalarOrMultiDimVars(dds));
+        expected = 
+"time, lat, lon, PL_HD, PL_CRS, DIR, PL_WDIR, PL_SPD, SPD, PL_WSPD, P, T, RH, date, time_of_day, flag, history";
+        Test.ensureEqual(results, expected, "results=" + results);
+
+
+        //***** test of DGrid DAP dataset
+        String2.log("\n*** test of DGrid DAP dataset");
+        url = "http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday";
+        dConnect = new DConnect(url, true, 1, 1);
+        dds = dConnect.getDDS(DEFAULT_TIMEOUT);
+        results = String2.toCSSVString(findAllScalarOrMultiDimVars(dds));
+        expected = 
+"time, altitude, latitude, longitude, x_wind, y_wind, divw, mod";
+        Test.ensureEqual(results, expected, "results=" + results);
+
+        //***** test of NODC template dataset
+        String2.log("\n*** test of NODC template dataset");
+        url = "http://data.nodc.noaa.gov/thredds/dodsC/testdata/netCDFTemplateExamples/timeSeries/BodegaMarineLabBuoyCombined.nc";
+        dConnect = new DConnect(url, true, 1, 1);
+        dds = dConnect.getDDS(DEFAULT_TIMEOUT);
+        results = String2.toCSSVString(findAllScalarOrMultiDimVars(dds));
+        expected = 
+"time, lat, lon, alt, station_name, temperature, salinity, density, conductivity, " +
+"turbidity, fluorescence, platform1, temperature_qc, salinity_qc, density_qc, " +
+"conductivity_qc, turbidity_qc, fluorescence_qc, instrument1, instrument2, " +
+"instrument3, ht_wgs84, ht_mllw, crs";
+        Test.ensureEqual(results, expected, "results=" + results);
+
+        //***** test of sequence dataset  (no vars should be found
+        String2.log("\n*** test of sequence dataset");
+        url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCAMarCatLY";
+        dConnect = new DConnect(url, true, 1, 1);
+        dds = dConnect.getDDS(DEFAULT_TIMEOUT);
+        results = String2.toCSSVString(findAllScalarOrMultiDimVars(dds));
+        expected = "";
+        Test.ensureEqual(results, expected, "results=" + results);
+
+
+        /* */
+        String2.log("\n*** OpendapHelper.findAllScalarOrMultiDimVars finished.");
+
+    }
+
+
+
+    /**
+     * Get all of the data from allScalarOrMultiDimVars in an Opendap dataset
+     * and save in .nc file.
+     *
+     * @param dapUrl       the base DAP URL
+     * @param varNames     the scalar, DGrid or DArray var names 
+     *   <br>If a var isn't present from the dapUrl, it will be skipped.
+     *   <br>If varNames is null or varNames.length==0, then allScalarOrMultiDimVars
+     *     will be downloaded.
+     *   <br>If a DGrid or DArray uses a dimension (and its dimension variable),
+     *     they will be added to varNames (if not already there).
+     * @param fullFileName the complete name (dir+name+extension) for the .nc file
+     */
+/* NOT FINISHED    public static void allDapToNc(String dapUrl, String varNameArray[], 
+        String fullFileName) throws Throwable {
+
+        StringArray varNames = new StringArray(varNameArray == null? new String[0] :
+            varNameArray);
+        String beginError = "OpendapHelper.allDapToNc" +
+            "\n  url=" + dapUrl + 
+            "\n  varNames=" + varNames.toString() + 
+            "\n  file=" + fullFileName;
+        if (verbose) String2.log(beginError); 
+        beginError = "ERROR in " + beginError + "\n"; 
+        long time = System.currentTimeMillis();
+
+        //get dConnect.  If this fails, no clean up needed.
+        DConnect dConnect = new DConnect(dapUrl, true, 1, 1);
+        DAS das = dConnect.getDAS(DEFAULT_TIMEOUT);
+        DDS dds = dConnect.getDDS(DEFAULT_TIMEOUT);
+
+        if (varNames.size() == 0) {
+            //find all vars
+            varNames.add(findAllScalarOrMultiDimVars(dds));
+            if (varNames.size() == 0)
+                throw new RuntimeException(beginError + "No variables found!");
+        }
+
+        //check that each varName exists (if not, set varNames[v] = null) 
+        //  and get the var (a baseType)
+        //  and ensure it is a ScalarOrMultiDimVar
+        BaseType vars[] = new BaseType[nVars];
+        boolean someValidVars = false;
+        for (int v = 0; v < nVars; v++) {
+            if (varNames[v] == null || varNames[v].length() == 0) {
+                varNames[v] = null;
+                continue;
+            }
+            try {
+                vars[v] = dds.getVariable(varNames[v]);
+                if (instanceofScalarOrMultiDimVar(vars[v])) {
+                    someValidVars = true;
+String2.log("varName=" + varNames[v] + " has typeName=" + vars[v].getTypeName());
+                } else {
+                    varNames[v] = null;
+                    if (verbose) String2.log("  Skipping varName=" + varNames[v] + 
+                        ".  It is a " + vars[v].getTypeName() + ".");
+                }
+            } catch (Throwable t) {
+                varNames[v] = null;
+                if (verbose) String2.log("  No such variable: " + varNames[v]);
+            }
+        }
+        if (!someValidVars)
+            throw new RuntimeException(beginError + "None of the varNames were found!");
+
+
+        //if projection is null or "", figure out the projection for each var
+        String projections[] = new String[nVars];
+        if (projection == null || projection.length() == 0) {
+            StringBuilder sb = new StringBuilder();
+            for (int v = 0; v < nVars; v++) { 
+                if (varNames[v] == null)
+                    continue;
+                BaseType baseType = dds.getVariable(varNames[v]);
+                DArray dArray;
+                if (baseType instanceof DGrid) {
+                    //dGrid has main dArray + dimensions
+                    DGrid dGrid = (DGrid)baseType;
+                    dArray = (DArray)dGrid.getVar(0);
+                } else if (baseType instanceof DArray) {
+                    //dArray is usually 1 dim, but may be multidimensional
+                    dArray = (DArray)baseType;
+                } else {
+                    throw new RuntimeException(beginError + 
+                        "var=" + varNames[v] + " has unexpected baseType=" + 
+                        baseType.getClass().getName());
+                }
+                int nDim = dArray.numDimensions();
+                if (nDim == 0) 
+                    throw new RuntimeException(beginError + 
+                        "var=" + varNames[v] + " is a DArray with 0 dimensions.");
+                for (int d = 0; d < nDim; d++) {//0..
+                    sb.append("[0:" + (dArray.getDimension(d).getSize() - 1) + "]");
+                }
+            }
+
+            if (sb.length() == 0) 
+                throw new RuntimeException(beginError + 
+                    "File not created!  None of the requested varNames were found.");
+            projection = sb.toString();
+            if (verbose) String2.log("  created projection=" + projection);
+        }
+        int sss[] = parseStartStrideStop(projection); //throws Exception if trouble
+        //if (true) throw new RuntimeException("stop here");
+
+        //delete any existing file
+        File2.delete(fullFileName);
+
+        //If procedure fails half way through, there won't be a half-finished file.
+        int randomInt = Math2.random(Integer.MAX_VALUE);
+
+        //*Then* make ncOut.    If createNew fails, no clean up needed.
+        File2.makeDirectory(File2.getDirectory(fullFileName));
+        ucar.nc2.NetcdfFileWriteable ncOut =
+            ucar.nc2.NetcdfFileWriteable.createNew(fullFileName + randomInt,
+                false); //false says: create a new file and don't fill with missing_values
+
+        try {
+
+            //define the data variables in ncOut
+            Attributes varAtts[] = new Attributes[nVars];
+            ucar.nc2.Dimension varCharDims[][] = new ucar.nc2.Dimension[nVars][];
+            int varCharShapes[][] = new int[nVars][];
+
+            boolean firstValidVar = true;
+            int nDims = sss.length / 3;
+            ucar.nc2.Dimension dims[] = new ucar.nc2.Dimension[nDims];
+            int shape[] = new int[nDims];
+            boolean isDGrid = true; //change if false
+
+            for (int v = 0; v < nVars; v++) {
+                //String2.log("  create var=" + varNames[v]);
+                if (varNames[v] == null) 
+                    continue;
+                varAtts[v] = new Attributes();
+                getAttributes(das, varNames[v], varAtts[v]);
+
+                BaseType baseType = dds.getVariable(varNames[v]);
+                if (baseType instanceof DGrid) {
+                    //dGrid has main dArray + dimensions
+                    if (firstValidVar) {
+                    } else {
+                        if (!isDGrid) 
+                            throw new RuntimeException(beginError + "var=" + varNames[v] + 
+                                " is a DGrid but the previous vars are DArrays.");
+                    }                        
+                    DGrid dGrid = (DGrid)baseType;
+                    if (dGrid.elementCount(true)-1 != nDims)
+                        throw new RuntimeException(beginError + "var=" + varNames[v] + 
+                            " has a different nDimensions than projection=\"" + 
+                            projection + "\".");
+                    for (int d = 0; d < nDims; d++) {
+                        String dimName = dGrid.getVar(d + 1).getName();
+                        if (firstValidVar) {
+                            //define the dimensions and their variables
+                            int dimSize = calculateNValues(sss[d*3], sss[d*3+1], sss[d*3+2]);
+                            //String2.log("    dim#" + d + "=" + dimName + " size=" + dimSize);
+                            shape[d] = dimSize;
+                            dims[d] = ncOut.addDimension(dimName, dimSize, true, false, false);
+                            PrimitiveVector pv = ((DVector)dds.getVariable(dimName)).getPrimitiveVector(); //has no data
+                            ncOut.addVariable(dimName, 
+                                NcHelper.getDataType(getElementClass(pv)), 
+                                new ucar.nc2.Dimension[]{dims[d]}); 
+                        } else {
+                            //check that dimension names are the same
+                            if (!dimName.equals(dims[d].getName()))
+                                throw new RuntimeException(beginError + "var=" + varNames[v] + 
+                                    " has different dimensions than previous vars.");
+                        }
+                    }
+                    firstValidVar = false;
+
+                    //make the dataVariable
+                    PrimitiveVector pv = ((DArray)dGrid.getVar(0)).getPrimitiveVector(); //has no data
+                    Class tClass = getElementClass(pv);
+                    //String2.log("pv=" + pv.toString() + " tClass=" + tClass);
+                    ncOut.addVariable(varNames[v], NcHelper.getDataType(tClass), dims);
+
+                } else if (baseType instanceof DArray) {
+                    //dArray is usually 1 dim, but may be multidimensional
+                    if (firstValidVar) {
+                        isDGrid = false;
+                    } else {
+                        if (isDGrid)
+                            throw new RuntimeException(beginError + "var=" + varNames[v] + 
+                                " is a DArray but the previous vars are DGrids.");
+                    }
+                    DArray dArray = (DArray)baseType;
+                    if (dArray.numDimensions() != nDims)
+                        throw new RuntimeException(beginError + "var=" + varNames[v] + 
+                            " has a different nDimensions than projection=\"" + 
+                            projection + "\".");
+                    for (int d = 0; d < nDims; d++) {//0..
+                        DArrayDimension dim = dArray.getDimension(d);
+                        String dimName = dim.getName();
+                        if (firstValidVar) {
+                            //define the dimensions
+                            int dimSize = calculateNValues(sss[d*3], sss[d*3+1], sss[d*3+2]);
+                            //String2.log("    DArray dim#" + d + "=" + dimName + " size=" + dimSize);
+                            shape[d] = dimSize;
+                            dims[d] = ncOut.addDimension(dimName, dimSize, 
+                                true, false, false);
+                            //don't make a related variable
+                        } else {
+                            //check that dimension names are the same
+                            if (!dimName.equals(dims[d].getName()))
+                                throw new RuntimeException(beginError + "var=" + varNames[v] + 
+                                    " has different dimensions than previous vars.");
+                        }
+                    }
+                    firstValidVar = false;
+
+                    //make the dataVariable
+                    PrimitiveVector pv = dArray.getPrimitiveVector(); //has no data
+                    Class tClass = getElementClass(pv);
+                    //String2.log("  pv tClass=" + tClass);
+
+                    if (tClass == String.class) {
+                        //a String variable.  Add a dim for nchars
+                        varCharDims[v] = new ucar.nc2.Dimension[nDims + 1];
+                        varCharShapes[v] = new int[nDims + 1];
+                        System.arraycopy(dims,  0, varCharDims[v],   0, nDims);
+                        System.arraycopy(shape, 0, varCharShapes[v], 0, nDims);
+                        int nChars = varAtts[v].getInt("DODS_strlen");
+                        if (nChars == Integer.MAX_VALUE) {
+                            if (verbose) String2.log(beginError + "String var=" + varNames[v] + 
+                                " has no DODS_strlen attribute.");
+                            varNames[v] = null;
+                            continue;
+                        }
+                        varCharDims[v][nDims] = ncOut.addDimension(varNames[v] + "StringLength", 
+                            nChars, true, false, false);
+                        varCharShapes[v][nDims] = nChars;
+
+                        ncOut.addVariable(varNames[v], ucar.ma2.DataType.CHAR, varCharDims[v]);
+
+                    } else {
+                        //a regular variable
+                        ncOut.addVariable(varNames[v], NcHelper.getDataType(tClass), dims);
+                    }
+
+                } else {
+                   throw new RuntimeException(beginError + 
+                       "var=" + varNames[v] + " has unexpected baseType=" + 
+                        baseType.getClass().getName());
+                }
+            }
+
+            //write global attributes in ncOut
+            Attributes tAtts = new Attributes();
+            getAttributes(das, "GLOBAL", tAtts);
+            NcHelper.setAttributes(ncOut, "NC_GLOBAL", tAtts);
+
+            //write dimension attributes in ncOut
+            if (isDGrid) {
+                for (int dim = 0; dim < nDims; dim++) {
+                    String dimName = dims[dim].getName();               
+                    tAtts.clear();
+                    getAttributes(das, dimName, tAtts);
+                    NcHelper.setAttributes(ncOut, dimName, tAtts);
+                }
+            }
+
+            //write data variable attributes in ncOut
+            for (int v = 0; v < nVars; v++) {
+                if (varNames[v] == null)
+                    continue;
+                NcHelper.setAttributes(ncOut, varNames[v], varAtts[v]);
+            }
+
+            //leave "define" mode in ncOut
+            ncOut.create();
+
+            //read and write the dimensions
+            if (isDGrid) {
+                for (int d = 0; d < nDims; d++) {
+                    String tProjection = "[" + sss[d*3] + ":" + sss[d*3+1] + ":" + sss[d*3+2] + "]"; 
+                    PrimitiveArray pas[] = getPrimitiveArrays(dConnect, 
+                        "?" + dims[d].getName() + tProjection); 
+                    pas[0].trimToSize(); //so underlying array is exact size
+                    ncOut.write(dims[d].getName(), 
+                        ucar.ma2.Array.factory(pas[0].toObjectArray()));
+                }
+            }
+
+            //read and write the data variables
+            firstValidVar = true;
+            for (int v = 0; v < nVars; v++) {
+                if (varNames[v] == null)
+                    continue;
+                long vTime = System.currentTimeMillis();
+
+                if (jplMode) {
+                    //read in chunks
+                    int origin[] = {0, 0, 0}; //nc uses: start stop! stride
+                    for (int chunk = 0; chunk < jplNChunks; chunk++) {
+                        int base = chunk * jplLatChunk;
+                        origin[1] = base;
+                        //change that lat part of the projection
+                        String tProjection = String2.replaceAll(projection, 
+                            "[0:" + (jplLatSize - 1) + "]", 
+                            "[" + base + ":" + (base + jplLatChunk - 1) + "]");
+                        PrimitiveArray pas[] = getPrimitiveArrays(
+                            dConnect, "?" + varNames[v] + tProjection); 
+                        pas[0].trimToSize(); //so underlying array is exact size
+                        //String2.log("pas[0]=" + pas[0].toString());
+                        ncOut.write(varNames[v], origin,
+                            ucar.ma2.Array.factory(pas[0].elementClass(), 
+                                jplChunkShape, pas[0].toObjectArray()));
+                    }
+                } else {
+                    //DGrid and DArray: read it, write it
+
+                    PrimitiveArray pas[] = getPrimitiveArrays(
+                        dConnect, "?" + varNames[v] + projection); 
+                    pas[0].trimToSize(); //so underlying array is exact size
+                    //String2.log("pas[0].size=" + pas[0].size());
+                    if (varCharShapes[v] == null) {
+                        //non-String variable
+                        ncOut.write(varNames[v], 
+                            ucar.ma2.Array.factory(pas[0].elementClass(), 
+                                shape, pas[0].toObjectArray()));
+                    } else {
+                        //String variable
+                        int n = pas[0].size();
+                        ucar.ma2.ArrayObject.D1 ao = new 
+                            ucar.ma2.ArrayObject.D1(String.class, n); 
+                        for (int i = 0; i < n; i++)
+                            ao.set(i, pas[0].getString(i));
+                        ncOut.writeStringData(varNames[v], ao);
+                    }
+                }
+
+                firstValidVar = false;
+                if (verbose) String2.log("  v#" + v + "=" + varNames[v] + " finished. time=" + 
+                    Calendar2.elapsedTimeString(System.currentTimeMillis() - vTime));
+            }
+
+            //if close throws Throwable, it is trouble
+            ncOut.close(); //it calls flush() and doesn't like flush called separately
+
+            //rename the file to the specified name
+            File2.rename(fullFileName + randomInt, fullFileName);
+
+            //diagnostic
+            if (verbose) String2.log("  OpendapHelper.allDapToNc finished.  TIME=" + 
+                Calendar2.elapsedTimeString(System.currentTimeMillis() - time) + "\n");
+            //String2.log(NcHelper.dumpString(fullFileName, false));
+
+        } catch (Throwable t) {
+            //try to close the file
+            try {
+                ncOut.close(); //it calls flush() and doesn't like flush called separately
+            } catch (Throwable t2) {
+                //don't care
+            }
+
+            //delete the partial file
+            File2.delete(fullFileName + randomInt);
+
+            throw t;
+        }
+    }
+*/
     /**
      * Get data from a common type of Opendap grid request and save in .nc file.
      * <p>Currently, this won't work with variables in a sequence.
@@ -2244,6 +2725,7 @@ today + " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n"
         testGetAttributes();
         testParseStartStrideStop();
         testFindVarsWithSharedDimensions();
+        testFindAllScalarOrMultiDimVars();
         testDapToNcDArray();
         testDapToNcDGrid();
 
