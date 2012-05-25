@@ -156,7 +156,9 @@ public class TaskThread extends Thread {
                         "  TASK_DAP_TO_NC \n" + 
                         "    dapUrl=" + dapUrl +
                         "    vars=" + vars + " projection=" + projection +
-                        "    file=" + fullFileName + " at=" + lastModified;
+                        "    file=" + fullFileName + 
+                            " lastMod=" + Calendar2.safeEpochSecondsToIsoStringT(
+                                lastModified.longValue() / 1000.0, "NaN");
                     String2.log(taskSummary);
 
                     OpendapHelper.dapToNc(dapUrl, vars.toArray(),

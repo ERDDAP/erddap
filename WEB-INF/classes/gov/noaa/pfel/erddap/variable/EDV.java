@@ -56,6 +56,7 @@ public class EDV {
         ALT_NAME  = "altitude",  ALT_LONGNAME  = "Altitude",  ALT_STANDARD_NAME = "altitude",  ALT_UNITS = "m",
         TIME_NAME = "time",      TIME_LONGNAME = "Time",      TIME_STANDARD_NAME = "time",     TIME_UNITS = Calendar2.SECONDS_SINCE_1970;
 
+    /** */
     public static String TIME_UCUM_UNITS = EDUnits.udunitsToUcum(TIME_UNITS);
 
     /** The optional string for no units. 
@@ -142,6 +143,10 @@ public class EDV {
     
     /** This is the same as VALID_SCALES, but with option0="". */
     public final static String VALID_SCALES0[] = {"", "Linear", "Log"};     
+
+    /** The time variable attribute that has the precision specification for 
+        Calendar2.limitedEpochSecondsToIsoStringT. */
+    public final static String time_precision = "time_precision"; 
 
     /** This is the standard slider size. */
     public final static int SLIDER_PIXELS = 501;

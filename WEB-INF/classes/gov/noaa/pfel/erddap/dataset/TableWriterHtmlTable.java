@@ -4,6 +4,7 @@
  */
 package gov.noaa.pfel.erddap.dataset;
 
+import com.cohort.array.Attributes;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.SimpleException;
@@ -38,6 +39,7 @@ public class TableWriterHtmlTable extends TableWriter {
     protected boolean isTimeStamp[];
     protected boolean isString[];
     protected BufferedWriter writer;
+    protected String time_precision[];
 
     /**
      * The constructor.
@@ -91,11 +93,17 @@ public class TableWriterHtmlTable extends TableWriter {
 
     /**
      * This adds the current contents of table (a chunk of data) to the OutputStream.
-     * This calls ensureCompatible each time it is called.
-     * If this is the first time this is called, this does first time things
+     * <br>This calls ensureCompatible each time it is called.
+     * <br>If this is the first time this is called, this does first time things
      *   (e.g., call OutputStreamSource.outputStream() and write file header).
-     * The number of columns, the column names, and the types of columns 
+     * <br>The number of columns, the column names, and the types of columns 
      *   must be the same each time this is called.
+     *
+     * <p>TimeStamp columns are detected by 
+     *   units=EDV.TIME_UNITS ("seconds since 1970-01-01T00:00:00Z") or
+     *   EDV.TIME_UCUM_UNITS ("s{since 1970-01-01T00:00:00Z}").
+     *   If a timeStamp column has a time_precision attribute, it is used
+     *   to format the times.
      *
      * <p>The table should have missing values stored as destinationMissingValues
      * or destinationFillValues.
@@ -120,10 +128,14 @@ public class TableWriterHtmlTable extends TableWriter {
         int nColumns = table.nColumns();
         if (firstTime) {
             isTimeStamp = new boolean[nColumns];
+            time_precision = new String[nColumns];
             for (int col = 0; col < nColumns; col++) {
-                String u = table.columnAttributes(col).getString("units");
+                Attributes catts = table.columnAttributes(col);
+                String u = catts.getString("units");
                 isTimeStamp[col] = u != null && 
                     (u.equals(EDV.TIME_UNITS) || u.equals(EDV.TIME_UCUM_UNITS));
+                if (isTimeStamp[col] && !xhtmlMode)
+                    time_precision[col] = catts.getString(EDV.time_precision);
             }
 
             //write the header
@@ -204,7 +216,9 @@ public class TableWriterHtmlTable extends TableWriter {
                     if (Double.isNaN(d))
                          writer.write("<td>" + emptyCell);
                     else  
-                        writer.write("<td" + noWrap + ">" + Calendar2.epochSecondsToIsoStringT(d) + "Z");
+                        writer.write("<td" + noWrap + ">" + 
+                            Calendar2.limitedEpochSecondsToIsoStringT(
+                                time_precision[col], d, ""));
                 } else {
                     String s = table.getStringData(col, row);
                     if (s.length() == 0)

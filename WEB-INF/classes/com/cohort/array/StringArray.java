@@ -56,7 +56,8 @@ public class StringArray extends PrimitiveArray {
     }
 
     /**
-     * This constructs a StringArray from the PrimitiveArray via append().
+     * This constructs a StringArray by copying elements from the incoming
+     * PrimitiveArray (using append()).
      *
      * @param primitiveArray a primitiveArray of any type 
      */

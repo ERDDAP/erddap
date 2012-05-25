@@ -37,10 +37,12 @@ import org.joda.time.format.*;
 public class EDVTimeStamp extends EDV { 
 
     /** Format for ISO date time without a suffix (assumed to be UTC) */
-    public final static String ISO8601T_FORMAT = "yyyy-MM-dd'T'HH:mm:ss"; 
+    public final static String ISO8601T_FORMAT  = "yyyy-MM-dd'T'HH:mm:ss"; 
+    public final static String ISO8601T3_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS"; 
 
     /** special case format supports suffix 'Z' or +/-HH:MM */
-    public final static String ISO8601TZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ"; 
+    public final static String ISO8601TZ_FORMAT  = "yyyy-MM-dd'T'HH:mm:ssZ"; 
+    public final static String ISO8601T3Z_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"; 
 
     /** Set by the constructor. */
     protected String sourceTimeFormat; 
@@ -50,6 +52,7 @@ public class EDVTimeStamp extends EDV {
     protected double sourceTimeBase = Double.NaN;  //set if sourceTimeIsNumeric
     protected double sourceTimeFactor = Double.NaN;
     protected DateTimeFormatter dateTimeFormatter; //set if !sourceTimeIsNumeric
+    protected String time_precision;  //see Calendar2.limitedEpochSecondsToIsoStringT
  
     /**
      * This class holds information about the time variable,
@@ -66,7 +69,7 @@ public class EDVTimeStamp extends EDV {
      *      ISO 8601 formatted date time string (YYYY-MM-DDThh:mm:ss).
      *    <li> a org.joda.time.format.DateTimeFormat string
      *      (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
-     *      string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
+     *      string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ss.SSSZ", see 
      *      http://joda-time.sourceforge.net/api-release/index.html or 
      *      http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html),
      *    </ul>
@@ -85,6 +88,17 @@ public class EDVTimeStamp extends EDV {
         super(tSourceName, tDestinationName, tSourceAttributes, tAddAttributes,
             tSourceDataType, 
             Double.NaN, Double.NaN); //destinationMin and max are set below (via actual_range)
+
+        //time_precision e.g., 1970-01-01T00:00:00Z
+        time_precision = combinedAttributes.getString(EDV.time_precision);
+        if (time_precision != null) {
+            //ensure not just year (can't distinguish user input a year vs. epochSeconds)
+            if (time_precision.equals("1970"))
+               time_precision = null;
+            //ensure Z at end of time
+            if (time_precision.length() >= 13 && !time_precision.endsWith("Z"))
+               time_precision = null;
+        }
         
         //currently, EDVTimeStamp doesn't support scaleAddOffset
         String errorInMethod = "datasets.xml/EDVTimeStamp error for sourceName=" + tSourceName + ":\n";
@@ -126,6 +140,9 @@ public class EDVTimeStamp extends EDV {
             if (sourceTimeFormat.equals(ISO8601TZ_FORMAT)) {
                 String2.log("Using special ISO8601TZ_FORMAT.");
                 dateTimeFormatter = ISODateTimeFormat.dateTimeNoMillis().withZone(DateTimeZone.UTC);
+            } else if (sourceTimeFormat.equals(ISO8601T3Z_FORMAT)) {
+                String2.log("Using special ISO8601T3Z_FORMAT.");
+                dateTimeFormatter = ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC);
             } else {
                 //future: support time zones  
                 dateTimeFormatter = DateTimeFormat.forPattern(sourceTimeFormat).withZone(DateTimeZone.UTC);
@@ -248,7 +265,8 @@ public class EDVTimeStamp extends EDV {
      * @return destination String
      */
     public String destinationToString(double destD) {
-        return Calendar2.safeEpochSecondsToIsoStringTZ(destD, "");
+        return Calendar2.limitedEpochSecondsToIsoStringT(
+            time_precision, destD, "");
     }
 
     /** 
@@ -269,6 +287,15 @@ public class EDVTimeStamp extends EDV {
      */
     public String destinationMaxString() {
         return destinationToString(destinationMax); 
+    }
+
+    /**
+     * An indication of the precision of the time values, e.g., 
+     * "1970-01-01T00:00:00Z" (default) or null (goes to default).  
+     * See Calendar2.limitedEpochSecondsToIsoStringT()
+     */
+    public String time_precision() {
+        return time_precision; 
     }
 
     /** 
@@ -418,17 +445,18 @@ String2.log("sourceTime=" + sourceTime +
 
 
     /**
-     * This converts a source time to a destination ISO T time.
+     * This converts a source time to a destination ISO TZ time.
      *
      * @param sourceTime either a number (as a string) or a string
-     * @return an ISO T Time (e.g., 1993-12-31T23:59:59).
+     * @return an ISO T Time (e.g., 1993-12-31T23:59:59Z).
      *   If sourceTime is invalid or is sourceMissingValue, this returns "".
      */
     public String sourceTimeToIsoStringT(String sourceTime) {
         double d = sourceTimeToEpochSeconds(sourceTime);
         if (Double.isNaN(d) || Math2.almostEqual(5, sourceMissingValue, d))
             return "";
-        return Calendar2.epochSecondsToIsoStringT(sourceTimeToEpochSeconds(d));
+        return Calendar2.limitedEpochSecondsToIsoStringT(
+            time_precision, sourceTimeToEpochSeconds(d), "");
     }
 
     /**
@@ -491,11 +519,14 @@ String2.log("sourceTime=" + sourceTime +
             //get the values from Calendar2
             double values[] = Calendar2.getNEvenlySpaced(tMin, tMax, SLIDER_MAX_NVALUES);
             StringBuilder sb = new StringBuilder(toSliderString( //first value
-                Calendar2.epochSecondsToIsoStringT(tMin) + "Z", isTime)); 
+                Calendar2.limitedEpochSecondsToIsoStringT(time_precision, tMin, ""), 
+                isTime)); 
             int nValues = values.length;
             for (int i = 1; i < nValues; i++) { 
                 sb.append(", ");
-                sb.append(toSliderString(Calendar2.epochSecondsToIsoStringT(values[i]) + "Z", isTime));
+                sb.append(toSliderString(
+                    Calendar2.limitedEpochSecondsToIsoStringT(time_precision, values[i], ""),
+                    isTime));
             }
 
             //store in compact utf8 format
@@ -538,6 +569,27 @@ String2.log("sourceTime=" + sourceTime +
         Test.ensureEqual(eta.epochSecondsToSourceTimeString(d), t1, "b2");
 
 
+        //***with 3Z
+        String2.log("\n*** test with 3Z");
+        eta = new EDVTimeStamp("sourceName", "time",
+            null, 
+            (new Attributes()).add("units", ISO8601T3Z_FORMAT).
+                add("actual_range", new StringArray(new String[]{"1970-01-01T00:00:00.000Z", "2007-01-01T00:00:00.000Z"})),
+            "String");
+
+        //test 'Z'
+        String t13 = "2007-01-02T03:04:05.123Z";
+        d = eta.sourceTimeToEpochSeconds(t13);
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT3(d)+"Z", t13, "a1");
+        Test.ensureEqual(eta.epochSecondsToSourceTimeString(d), t13, "a2");
+
+        //test -01:00
+        String t23 = "2007-01-02T02:04:05.123-01:00";
+        d = eta.sourceTimeToEpochSeconds(t23);
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT3(d)+"Z", t13, "b1");
+        Test.ensureEqual(eta.epochSecondsToSourceTimeString(d), t13, "b2");
+
+
         //*** no Z
         String2.log("\n*** test no Z");
         eta = new EDVTimeStamp("sourceName", "myTimeStamp",
@@ -551,6 +603,21 @@ String2.log("sourceTime=" + sourceTime +
         d = eta.sourceTimeToEpochSeconds(t4);
         Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(d)+"Z", t1, "b1");
         Test.ensureEqual(eta.epochSecondsToSourceTimeString(d)+"Z", t1, "b2");
+
+
+        //*** 3, no Z
+        String2.log("\n*** test 3, no Z");
+        eta = new EDVTimeStamp("sourceName", "myTimeStamp",
+            null, (new Attributes()).add("units", ISO8601T3_FORMAT).  //without Z
+                add("actual_range", new StringArray(new String[]{
+                    "1970-01-01T00:00:00.000", "2007-01-01T00:00:00.000"})),  //without Z
+            "String");
+
+        //test no suffix    
+        t4 = "2007-01-02T03:04:05.123"; //without Z
+        d = eta.sourceTimeToEpochSeconds(t4);
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT3(d)+"Z", t13, "b1");
+        Test.ensureEqual(eta.epochSecondsToSourceTimeString( d)+"Z", t13, "b2");
 
     }
 }
