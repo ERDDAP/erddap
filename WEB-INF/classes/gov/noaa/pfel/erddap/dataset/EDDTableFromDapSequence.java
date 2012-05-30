@@ -899,6 +899,74 @@ public class EDDTableFromDapSequence extends EDDTable{
         Test.ensureEqual(co.toString(), "=", "");
         Test.ensureEqual(cv2.toString(), "0", "");
 
+        //e.g., now-5days
+        GregorianCalendar gc = Calendar2.newGCalendarZulu();
+        gc.set(Calendar2.MILLISECOND, 0);
+        gc.add(Calendar2.SECOND, 1);  //now it is "now"
+        long nowMillis = gc.getTimeInMillis();
+        String s;
+
+        gc = Calendar2.newGCalendarZulu(nowMillis); 
+        String2.log("now          = " + Calendar2.formatAsISODateTimeT3(gc));
+        globecBottle.parseUserDapQuery("time&time=now", rv, cv, co, cv2, false);  
+        Test.ensureEqual(rv.toString(), "time", "");
+        Test.ensureEqual(cv.toString(), "time", "");
+        Test.ensureEqual(co.toString(), "=", "");        
+        Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+
+        gc = Calendar2.newGCalendarZulu(nowMillis); 
+        gc.add(Calendar2.SECOND, -1);
+        String2.log("now-1second  = " + Calendar2.formatAsISODateTimeT3(gc));
+        globecBottle.parseUserDapQuery("time&time=now-1second", rv, cv, co, cv2, false);  
+        Test.ensureEqual(rv.toString(), "time", "");
+        Test.ensureEqual(cv.toString(), "time", "");
+        Test.ensureEqual(co.toString(), "=", "");        
+        Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+
+        gc = Calendar2.newGCalendarZulu(nowMillis); 
+        gc.add(Calendar2.SECOND, 2);
+        String2.log("now+2seconds = " + Calendar2.formatAsISODateTimeT3(gc));
+        globecBottle.parseUserDapQuery("time&time=now%2B2seconds", rv, cv, co, cv2, false);  
+        Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+
+        //non-%encoded '+' will be decoded as ' ', so treat ' ' as equal to '+' 
+        gc = Calendar2.newGCalendarZulu(nowMillis); 
+        gc.add(Calendar2.SECOND, 2);
+        String2.log("now 2seconds = " + Calendar2.formatAsISODateTimeT3(gc));
+        globecBottle.parseUserDapQuery("time&time=now 2seconds", rv, cv, co, cv2, false);  
+        Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+
+        gc = Calendar2.newGCalendarZulu(nowMillis); 
+        gc.add(Calendar2.MINUTE, -3);
+        String2.log("now-3minutes = " + Calendar2.formatAsISODateTimeT3(gc));
+        globecBottle.parseUserDapQuery("time&time=now-3minutes", rv, cv, co, cv2, false);  
+        Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+
+        gc = Calendar2.newGCalendarZulu(nowMillis); 
+        gc.add(Calendar2.HOUR, -4);
+        String2.log("now-4hours   = " + Calendar2.formatAsISODateTimeT3(gc));
+        globecBottle.parseUserDapQuery("time&time=now-4hours", rv, cv, co, cv2, false);  
+        Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+
+        gc = Calendar2.newGCalendarZulu(nowMillis); 
+        gc.add(Calendar2.DATE, -5);
+        String2.log("now-5days    = " + Calendar2.formatAsISODateTimeT3(gc));
+        globecBottle.parseUserDapQuery("time&time=now-5days", rv, cv, co, cv2, false);  
+        Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+
+        gc = Calendar2.newGCalendarZulu(nowMillis); 
+        gc.add(Calendar2.MONTH, -6);
+        String2.log("now-6months  = " + Calendar2.formatAsISODateTimeT3(gc));
+        globecBottle.parseUserDapQuery("time&time=now-6months", rv, cv, co, cv2, false);  
+        Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+
+        gc = Calendar2.newGCalendarZulu(nowMillis); 
+        gc.add(Calendar2.YEAR, -7);
+        String2.log("now-7years   = " + Calendar2.formatAsISODateTimeT3(gc));
+        globecBottle.parseUserDapQuery("time&time=now-7years", rv, cv, co, cv2, false);  
+        Test.ensureEqual(cv2.toString(), "" + Calendar2.gcToEpochSeconds(gc), "");
+        //if (true) throw new RuntimeException("stop here");
+
         //longitude converted to lon
         //altitude is fixed value, so test done by getSourceQueryFromDapQuery
         //time test deferred till later, so 'datetime_epoch' included in sourceQuery
@@ -1033,6 +1101,21 @@ public class EDDTableFromDapSequence extends EDDTable{
         Test.ensureEqual(String2.split(error, '\n')[0], 
             "SimpleException: Query error: Numeric tests of NaN must use \"NaN\", " +
             "not value=\"0|longitude>-180\".", "error=" + error);
+
+        error = "";
+        String nowQ[] = {"nowa", "now-day", "now-", "now-4", "now-5date", "now-9dayss"};
+        for (int i = 0; i < nowQ.length; i++) {
+            try {
+                globecBottle.getSourceQueryFromDapQuery("time&time=" + nowQ[i], 
+                    rv, cv, co, cv2);  //invalid query format caught as invalid NaN
+            } catch (Throwable t) {
+                error = MustBe.throwableToString(t);
+            }
+            Test.ensureEqual(String2.split(error, '\n')[0], 
+                "SimpleException: Query error: Timestamp constraints with \"now\" must be in " +
+                "the form \"now(+|-)[integer](seconds|minutes|hours|days|months|years)\"" +
+                ".  \"" + nowQ[i] + "\" is invalid.", "error=" + error);
+        }
 
         //impossible queries
         String impossibleQuery[] = new String[]{

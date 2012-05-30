@@ -349,7 +349,7 @@ public class Calendar2 {
     public static boolean isIsoDate(String s) {
         if (s == null)
             return false;
-        return s.matches("\\d{4}-\\d{2}.*");
+        return s.matches("-?\\d{4}-\\d{2}.*");
     }
 
     /**
