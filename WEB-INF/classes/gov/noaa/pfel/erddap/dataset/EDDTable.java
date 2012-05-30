@@ -1770,6 +1770,81 @@ public abstract class EDDTable extends EDD {
                             "" + valueD);
                         if (reallyVerbose) String2.log("  TIME CONSTRAINT converted in parseUserDapQuery: " +
                             tValue + " -> " + valueD);
+                    } else if (tValue.startsWith("now")) {
+                        //now is next second (ms=0)
+                        GregorianCalendar gc = Calendar2.newGCalendarZulu();
+                        gc.add(Calendar2.SECOND, 1);
+                        gc.set(Calendar2.MILLISECOND, 0); 
+                        String tError = EDStatic.queryError +
+                            "Timestamp constraints with \"now\" must be in the form " +
+                            "\"now(+|-)[integer](seconds|minutes|hours|days|months|years)\".  " +
+                            "\"" + tValue + "\" is invalid.";
+                        if (tValue.length() > 3) {
+                            // e.g., now-5hours
+                            char ch = tValue.charAt(3);
+                            int start = -1;  //trouble
+                            //non-%encoded '+' will be decoded as ' ', so treat ' ' as equal to '+' 
+                            if (ch == '+' || ch == ' ') start = 4;  
+                            else if (ch == '-') start = 3;
+                            else if (repair)    {} //fall through, leave value as "now"  
+                            else throw new SimpleException(tError);
+
+                            //keep going?  parse the number
+                            int n = 0;
+                            if (start > 0) {
+                                int end = 4;
+                                while (tValue.length() > end && String2.isDigit(tValue.charAt(end)))
+                                    end++;
+                                n = String2.parseInt(tValue.substring(start, end));
+                                if (n == Integer.MAX_VALUE) {
+                                    if (repair) start = -1;
+                                    else throw new SimpleException(tError);
+                                } else { 
+                                    start = end;
+                                }
+                            }
+
+                            //keep going?  find the units, adjust gc
+                            if (start > 0) {
+                                //test sUnits.equals to ensure no junk at end of constraint
+                                String sUnits = tValue.substring(start);  
+                                if (     sUnits.equals("second") || 
+                                         sUnits.equals("seconds"))
+                                    gc.add(Calendar2.SECOND, n);
+                                else if (sUnits.equals("minute") || 
+                                         sUnits.equals("minutes"))
+                                    gc.add(Calendar2.MINUTE, n);
+                                else if (sUnits.equals("hour") || 
+                                         sUnits.equals("hours"))
+                                    gc.add(Calendar2.HOUR, n);
+                                else if (sUnits.equals("day") || 
+                                         sUnits.equals("days"))
+                                    gc.add(Calendar2.DATE, n);
+                                else if (sUnits.equals("month") || 
+                                         sUnits.equals("months"))
+                                    gc.add(Calendar2.MONTH, n);
+                                else if (sUnits.equals("year") || 
+                                         sUnits.equals("years"))
+                                    gc.add(Calendar2.YEAR, n);
+                                else if (repair) {} //leave gc unchanged
+                                else throw new SimpleException(tError);
+                            }
+                        } 
+                        constraintValues.set(constraintValues.size() - 1,
+                            "" + Calendar2.gcToEpochSeconds(gc));
+                    } else {
+                        //it must be a number (epochSeconds)
+                        //test that value=NaN must use "NaN", not somthing just a badly formatted number
+                        double td = String2.parseDouble(tValue);
+                        if (Double.isNaN(td) && !tValue.equals("NaN")) {
+                            if (repair) {
+                                tValue = "NaN";
+                                constraintValues.set(constraintValues.size() - 1, tValue);
+                            } else {
+                                throw new SimpleException(EDStatic.queryError +
+                                    "Numeric tests of NaN must use \"NaN\", not value=\"" + tValue + "\".");
+                            }
+                        } //else constraintValues already ok
                     }
                 }
 
@@ -5904,7 +5979,7 @@ public abstract class EDDTable extends EDD {
             "      <br>these extensions (notably \"=~\") sometimes aren't practical because tabledap\n" +
             "      <br>may need to download lots of extra data from the source (which takes time)\n" +
             "      <br>in order to test the constraint.\n" +
-            "    <li>tabledap always stores date/time values as numbers (in seconds since 1970-01-01T00:00:00Z).\n" +
+            "    <li><a name=\"timeConstraints\">tabledap</a> always stores date/time values as numbers (in seconds since 1970-01-01T00:00:00Z).\n" +
             "      <br>Here is an example of a query which includes date/time numbers:\n" +
             "      <br><a href=\"" + EDStatic.phEncode(fullValueExample) + "\"><tt>" + 
                                      XML.encodeAsHTML( fullValueExample) + "</tt></a>\n" +
@@ -5925,7 +6000,21 @@ public abstract class EDDTable extends EDD {
             "      <br>Here is an example of a query which includes ISO date/time values:\n" +
             "      <br><a href=\"" + EDStatic.phEncode(fullTimeExample) + "\"><tt>" + 
                                      XML.encodeAsHTML( fullTimeExample) + "</tt></a> .\n" +
-            "    </ul>\n" +
+/*            "    <li><a name=\"now\">tabledap</a> extends the OPeNDAP standard to allow you to specify constraints for\n" +
+            "      <br>time and timestamp variables relative to <tt>now</tt>. The constraint can be simply,\n" +
+            "      <br>for example, <tt>time&lt;now</tt>, but usually the constraint is in the form\n" +
+            "      <br><tt>&nbsp;&nbsp;now(+| |-)<i>positiveInteger</i>(second|seconds|minute|minutes|\n" +
+            "      <br>&nbsp;&nbsp;hour|hours|day|days|month|months|year|years)</tt>\n" +
+            "      <br>for example, <tt>now-7days</tt>.\n" +
+            "      <br>Months and years are interpreted as calendar months and years (not\n" +
+            "      <br>UDUNITS-like constant values).\n" +
+            "      <br>This feature is especially useful when creating a URL for an &lt;img&gt; (image)\n" +
+            "      <br>tag on a web page, since it allows you to specify that the image will always\n" +
+            "      <br>show, for example, the last 7 days worth of data (<tt>time&gt;now-7days</tt>).\n" +
+            "      <br>Note that a '+' in the URL is percent-decoded as ' ', so you should\n" +
+            "      <br>percent-encode '+' as %2B.  However, ERDDAP interprets <tt>\"now \"</tt> as <tt>\"now+\"</tt>,\n" +
+            "      <br>so in practice you don't have to percent-encode it.\n" +
+*/            "    </ul>\n" +
             "  <li><a name=\"functions\"><b>Server-side Functions</b></a> - The OPeNDAP standard supports the idea of\n" +
             "    <br>server-side functions, but doesn't define any.\n" +
             "    <br>TableDAP supports some server-side functions that modify the results table before\n" +

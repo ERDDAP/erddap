@@ -76,7 +76,6 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
     protected long cumNNotRead = 0;  //either don't have matching data or do ('distinct' and 1 value matches)
     protected long cumNReadHaveMatch = 0, cumNReadNoMatch = 0; //read the data file to look for matching data
-    protected int cumTime = 0;
 
     /**
      * This constructs an EDDTableFromFiles based on the information in an .xml file.
@@ -1827,10 +1826,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 String dsMax    = minMaxTable.getStringData(dv, 1);
                 int    dsHasNaN = minMaxTable.getIntData(   dv, 2);
                 if (!isOK(dsMin, dsMax, dsHasNaN, tOp, tValue)) {
-                    reasonNotOk = "Dataset rejected because " +
-                        constraintVariables.get(con) + tOp + constraintValues.get(con) + 
-                        " failed when dataset min=\"" + dsMin + "\", max=\"" + dsMax + 
-                        "\", hasNaN=" + (dsHasNaN != 0) + ".";
+                    reasonNotOk = "No data matches " +
+                        edv.destinationName() + tOp + constraintValues.get(con) + 
+                        " because the variable's min=\"" + dsMin + "\", max=\"" + dsMax + 
+                        "\", and hasNaN=" + (dsHasNaN != 0) + ".";
                     if (reallyVerbose) String2.log(reasonNotOk);
                     break;
                 }
@@ -1839,11 +1838,17 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 double dsMin    = minMaxTable.getDoubleData(dv, 0);
                 double dsMax    = minMaxTable.getDoubleData(dv, 1);
                 int    dsHasNaN = minMaxTable.getIntData(   dv, 2);
+                double conValD = String2.parseDouble(constraintValues.get(con));
                 if (!isOK(dsMin, dsMax, dsHasNaN, tOp, String2.parseDouble(tValue))) {
-                    reasonNotOk = "Dataset rejected because " +
-                        constraintVariables.get(con) + tOp + constraintValues.get(con) + 
-                        " failed when dataset min=" + dsMin + ", max=" + dsMax + 
-                        ", hasNaN=" + (dsHasNaN != 0) + ".";
+                    reasonNotOk = "No data matches " +
+                        edv.destinationName() + tOp + 
+                        (edv instanceof EDVTimeStamp? 
+                            Calendar2.safeEpochSecondsToIsoStringT(conValD, "NaN") : 
+                            constraintValues.get(con)) + 
+                        " because the variable's min=" + 
+                        edv.destinationMinString() +  //works well with numbers and EDVTimeStamp
+                        ", max=" + edv.destinationMaxString() + 
+                        ", and hasNaN=" + (dsHasNaN != 0) + ".";
                     if (reallyVerbose) String2.log(reasonNotOk);
                     break;
                 }
@@ -2115,8 +2120,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         cumNNotRead       += nNotRead;
         cumNReadHaveMatch += nReadHaveMatch;
         cumNReadNoMatch   += nReadNoMatch;
-        cumTime = (cumTime+1) % 5; //print every 5th time
-        if (reallyVerbose || (verbose && cumTime == 0)) { 
+        if (reallyVerbose) { 
             long total = Math.max(1, nNotRead + nReadHaveMatch + nReadNoMatch);
             String2.log("     notRead="       + String2.right("" + (nNotRead       * 100 / total), 3) +
                         "%    readHaveMatch=" + String2.right("" + (nReadHaveMatch * 100 / total), 3) +

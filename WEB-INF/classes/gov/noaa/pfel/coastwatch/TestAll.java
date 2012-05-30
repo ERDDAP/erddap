@@ -100,7 +100,7 @@ public class TestAll  {
 //    String2.log("tl=" + tl + " td=" + td); 
 //    
 //
-//    DasDds.main(new String[]{"rGlobecBottle", "-verbose"});
+//    DasDds.main(new String[]{"aco_adcp", "-verbose"});
 //    String2.log(DigirHelper.getObisInventoryString(
 //        "http://iobis.marine.rutgers.edu/digir2/DiGIR.php", 
 //        "OBIS-SEAMAP", 
@@ -510,9 +510,7 @@ public class TestAll  {
 //    EDDTableFromNcFiles.testTransparentPng();
 
 //    *** To update GTSPP (~10th of every month):
-//*** NEXT TIME: again allow flag=5 data
 //*** NEXT TIME: reprocess all and add source_id (e.g., =IOS) metadata as data?
-//*** NEXT TIME: add other metadata, instrument id?
 //Melanie may provide a list or URL of source_id's.
 //    1) (Thursday night?) Use FileZilla to download newly changed files 
 //      from ftp.nodc.noaa.gov (name=anonymous  pwd=bob.simons@noaa.gov)
@@ -521,21 +519,22 @@ public class TestAll  {
 //      !!! So sort by lastModified time to check if "older" files have a recent last-modified-time.
 //    2) (Friday night?) Unzip and consolidate the profiles (full run takes 2 days 14 hours)
 //*** Consider temporarily switching off parts of McAfee : Virus Scan Console  (2X speedup!)
-//      On Access Scan : All Processes
+//      On Access Scanner : All Processes
 //        Scan Items: check: specified file types only (instead of usual All Files) 
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(1990, 1, 2012, 3, false);  //first/last year(1990..)/month(1..), testMode
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(1990, 1, 2012, 4, false);  //first/last year(1990..)/month(1..), testMode
 //       EDDTableFromNcFiles.bobConsolidateGtsppTgz(1990, 1, 1990, 1, false);  //first/last year(1990..)/month(1..), testMode
 //       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2000, 1, 2000, 1, false);  //first/last year(1990..)/month(1..), testMode
 //       log file is F:/data/gtspp/log.txt 
 //      2b) Email the "good" but "impossible" stations to Charles Sun, Melanie Hamilton and Meilin.Chen@noaa.gov.
+//      2c) Undo changes to McAfee scanner
 //    3) In datasetsUAF.xml, for erdGtsppBest and datasets2.xml for testErdGtsppBest, 
 //       update the summary
 //       (e.g., "(currently, up to and including the [lastMonth] 2011 data)")
 //    4) * Delete [tomcat]/content/erddap/subset/testErdGtsppBest.csv
 //         * Load testErdGtsppBest in localHost ERDDAP.
-//         * Generate .csv file from
+//         * Generate .json file from
 //           http://127.0.0.1:8080/cwexperimental/tabledap/testErdGtsppBest.json?platform,cruise,org,type&distinct() 
-//           and save it as [tomcat]/content/erddap/subset/testErdGtsppBest.csv
+//           and save it as [tomcat]/content/erddap/subset/testErdGtsppBest.json
 //         * Reload ERDDAP to ensure it loads quickly.
 //    5) Run and update this test:
 //       //one time: File2.touch("F:/data/gtspp/bestNcConsolidated/2011/09/2011-09_0E_0N.nc"); //one time
@@ -545,8 +544,8 @@ public class TestAll  {
 //         from my F:/data/gtspp/bestNcConsolidated/ e.g., 2010/06/
 //         to upwell /Volumes/ServerStorage/u00/data/points/gtspp/bestNcConsolidated/  e.g., 2010/06/
 //              aka     /Volumes/ServerStorage/erddap
-//       * Copy from local  [tomcat]/content/erddap/subset/testErdGtsppBest.csv
-//              to   upwell [tomcat]/content/erddap/subset/erdGtsppBest.csv
+//       * Copy from local  [tomcat]/content/erddap/subset/testErdGtsppBest.json
+//              to   upwell [tomcat]/content/erddap/subset/erdGtsppBest.json
 //    7) Copy datasetsUAF.xml to upwell and rename to datasets.xml
 //    8) Ping the gtspp flag url on ERDDAP (it is in "flag" bookmarks)
 //       http://upwell.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=erdGtsppBest&flagKey=3912861017
