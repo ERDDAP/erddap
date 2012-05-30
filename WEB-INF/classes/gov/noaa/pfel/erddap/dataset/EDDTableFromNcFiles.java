@@ -2930,8 +2930,10 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
         File2.makeDirectory(tempDir);
         //http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm
         //1=correct, 2=probably correct, 5=modified (so now correct)
-        //pre 2012-04-15   was {1,2,5}
-        int okQF[] = {1,2};  
+        //pre 2012-04-15 was {1,2,5}
+        //pre 2012-05-25 was {1,2}
+        int okQF[] = {1,2,5}; 
+        String okQFCsv = String2.toCSSVString(okQF);
         float depthMV       = 99999; //was -99;
         float temperatureMV = 99999; //was -99;
         float salinityMV    = 99999; //was -99;
@@ -3792,45 +3794,53 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
                     "impossibleMaxSalinity    = " + impossibleMaxSalinity.size() + "\n");
 
                 //lon
-                String2.log("\n*** " + impossibleNanLon.size() + " stations had invalid lon" +  
-                    " and good pos quality flags (1|2).");
+                String2.log("\n*** " + impossibleNanLon.size() + 
+                    " stations had invalid lon" +  
+                    " and good pos quality flags (" + okQFCsv + ").");
                 impossibleNanLon.sortIgnoreCase();
                 String2.log(impossibleNanLon.toNewlineString());
 
-                String2.log("\n*** " + impossibleMinLon.size() + " stations had lon<" + minLon +  
-                    " and good pos quality flags (1|2).");
+                String2.log("\n*** " + impossibleMinLon.size() + 
+                    " stations had lon<" + minLon +  
+                    " and good pos quality flags (" + okQFCsv + ").");
                 impossibleMinLon.sortIgnoreCase();
                 String2.log(impossibleMinLon.toNewlineString());
 
-                String2.log("\n*** " + impossibleMaxLon.size() + " stations had lon>" + maxLon +  
-                    " and good pos quality flags (1|2).");
+                String2.log("\n*** " + impossibleMaxLon.size() + 
+                    " stations had lon>" + maxLon +  
+                    " and good pos quality flags (" + okQFCsv + ").");
                 impossibleMaxLon.sortIgnoreCase();
                 String2.log(impossibleMaxLon.toNewlineString());
 
                 //lat
-                String2.log("\n*** " + impossibleNanLat.size() + " stations had invalid lat" +  
-                    " and good pos quality flags (1|2).");
+                String2.log("\n*** " + impossibleNanLat.size() + 
+                    " stations had invalid lat" +  
+                    " and good pos quality flags (" + okQFCsv + ").");
                 impossibleNanLat.sortIgnoreCase();
                 String2.log(impossibleNanLat.toNewlineString());
 
-                String2.log("\n*** " + impossibleMinLat.size() + " stations had lat<" + minLat +  
-                    " and good pos quality flags (1|2).");
+                String2.log("\n*** " + impossibleMinLat.size() + 
+                    " stations had lat<" + minLat +  
+                    " and good pos quality flags (" + okQFCsv + ").");
                 impossibleMinLat.sortIgnoreCase();
                 String2.log(impossibleMinLat.toNewlineString());
 
-                String2.log("\n*** " + impossibleMaxLat.size() + " stations had lat>" + maxLat +  
-                    " and good pos quality flags (1|2).");
+                String2.log("\n*** " + impossibleMaxLat.size() + 
+                    " stations had lat>" + maxLat +  
+                    " and good pos quality flags (" + okQFCsv + ").");
                 impossibleMaxLat.sortIgnoreCase();
                 String2.log(impossibleMaxLat.toNewlineString());
 
                 //depth 
-                String2.log("\n*** " + impossibleMinDepth.size() + " stations had depth<" + minDepth +  
-                    " and good depth quality flags (1|2).");
+                String2.log("\n*** " + impossibleMinDepth.size() + 
+                    " stations had depth<" + minDepth +  
+                    " and good depth quality flags (" + okQFCsv + ").");
                 impossibleMinDepth.sortIgnoreCase();
                 String2.log(impossibleMinDepth.toNewlineString());
 
-                String2.log("\n*** " + impossibleMaxDepth.size() + " stations had depth>" + maxDepth + 
-                    " and good depth quality flags (1|2).");
+                String2.log("\n*** " + impossibleMaxDepth.size() + 
+                    " stations had depth>" + maxDepth + 
+                    " and good depth quality flags (" + okQFCsv + ").");
                 impossibleMaxDepth.sortIgnoreCase();
                 String2.log(impossibleMaxDepth.toNewlineString());
 
@@ -3840,23 +3850,27 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
                 //    " and good q_pos quality flags.");
                 //String2.log(String2.toNewlineString(sa));
 
-                String2.log("\n*** " + impossibleMinTemperature.size() + " stations had temperature<" + minTemperature + 
-                    " and good temperature quality flags (1|2).");
+                String2.log("\n*** " + impossibleMinTemperature.size() + 
+                    " stations had temperature<" + minTemperature + 
+                    " and good temperature quality flags (" + okQFCsv + ").");
                 impossibleMinTemperature.sortIgnoreCase();
                 String2.log(impossibleMinTemperature.toNewlineString());
 
-                String2.log("\n*** " + impossibleMaxTemperature.size() + " stations had temperature>" + maxTemperature + 
-                    " and good temperature quality flags (1|2).");
+                String2.log("\n*** " + impossibleMaxTemperature.size() + 
+                    " stations had temperature>" + maxTemperature + 
+                    " and good temperature quality flags (" + okQFCsv + ").");
                 impossibleMaxTemperature.sortIgnoreCase();
                 String2.log(impossibleMaxTemperature.toNewlineString());
 
-                String2.log("\n*** " + impossibleMinSalinity.size() + " stations had salinity<" + minSalinity + 
-                    " and good salinity quality flags (1|2).");
+                String2.log("\n*** " + impossibleMinSalinity.size() + 
+                    " stations had salinity<" + minSalinity + 
+                    " and good salinity quality flags (" + okQFCsv + ").");
                 impossibleMinSalinity.sortIgnoreCase();
                 String2.log(impossibleMinSalinity.toNewlineString());
 
-                String2.log("\n*** " + impossibleMaxSalinity.size() + " stations had salinity>" + maxSalinity + 
-                    " and good salinity quality flags (1|2).");
+                String2.log("\n*** " + impossibleMaxSalinity.size() + 
+                    " stations had salinity>" + maxSalinity + 
+                    " and good salinity quality flags (" + okQFCsv + ").");
                 impossibleMaxSalinity.sortIgnoreCase();
                 String2.log(impossibleMaxSalinity.toNewlineString());
 
@@ -3875,7 +3889,8 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 
         }  //end of month/year loop
 
-        String2.log("\n*** bobConsolidateGtspp completely finished " + firstYear + "-" + firstMonth +
+        String2.log("\n*** bobConsolidateGtspp completely finished " + 
+            firstYear + "-" + firstMonth +
             " through " + lastYear + "-" + lastMonth);
 
         String2.log("\n***" +
@@ -4746,7 +4761,7 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "    String long_name \"Data Type\";\n" +
 "  }\n" +
 "  station_id {\n" +
-"    Int32 actual_range 1, 13811993;\n" +
+"    Int32 actual_range 1, 14004823;\n" +  //changes every month
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -4786,7 +4801,7 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 6.31152e+8, 1.33323804e+9;\n" + //2nd value changes
+"    Float64 actual_range 6.31152e+8, 1.33578e+9;\n" + //2nd value changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -4810,7 +4825,7 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "    String units \"m\";\n" +
 "  }\n" +
 "  temperature {\n" +
-"    Float32 actual_range -3.79, 40.0;\n" +
+"    Float32 actual_range -3.91, 40.0;\n" +
 "    String C_format \"%9.4f\";\n" +
 "    String cell_methods \"time: point longitude: point latitude: point depth: point\";\n" +
 "    Float64 colorBarMaximum 32.0;\n" +
@@ -4840,7 +4855,7 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "  }\n" +
 " }\n" +
 "  NC_GLOBAL {\n" +   //date at end of next line changes
-"    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-04-28 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +
+"    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-05-25 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"org, type, station_id, longitude, latitude, time\";\n" +
@@ -4862,10 +4877,10 @@ today + " http://127.0.0.1:8080?station,longitude,latitude&distinct()\";\n" +
 "    String gtspp_ConventionVersion \"GTSPP4.0\";\n" +
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
-"    String gtspp_programVersion \"1.4\";\n" +  //dates on next line and 3rd line change
-"    String history \"2012-04-10T12:37:55Z csun writeGTSPPnc40.f90 Version 1.4\n" +
+"    String gtspp_programVersion \"1.7\";\n" +  //dates on next line and 3rd line change
+"    String history \"2012-05-01T20:18:27Z  writeGTSPPnc40.f90 Version 1.7\n" +
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (http://www.nodc.noaa.gov/GTSPP/)\n" +
-"2012-04-28 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n" +
+"2012-05-25 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n" +
 today + " (local files)\n" +
 today + " http://127.0.0.1:8080/cwexperimental/tabledap/testErdGtsppBest.das\";\n" +
 "    String id \"gtsppBest\";\n" +
@@ -4877,7 +4892,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/testErdGtsppBest.das\";\
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-04-28 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-05-25 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -4902,19 +4917,19 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/testErdGtsppBest.das\";\
 "* a small time bounding box (at most, a few days), and/or\n" +
 "* a small longitude and latitude bounding box (at most, several degrees square).\n" +
 "Requesting data for a specific platform, cruise, org, type, and/or station_id may be slow, but it works.\n" +
-"\n" +
-"*** This ERDDAP dataset has data for the entire world for all available times (currently, up to and including the March 2012 data) but is a subset of the original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT or 2=PROBABLY GOOD. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
-"* Profiles with a position_quality_flag or a time_quality_flag other than 1|2 were removed.\n" +
-"* Rows with a depth (z) value less than 0 or greater than 10000 or a z_variable_quality_flag other than 1|2 were removed.\n" +
-"* Temperature values less than -4 or greater than 40 or with a temperature_quality_flag other than 1|2 were set to NaN.\n" +
-"* Salinity values less than 0 or greater than 41 or with a salinity_quality_flag other than 1|2 were set to NaN.\n" +
+"\n" +                                                            //month on next line changes
+"*** This ERDDAP dataset has data for the entire world for all available times (currently, up to and including the April 2012 data) but is a subset of the original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT or 2=PROBABLY GOOD. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
+"* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\n" +
+"* Rows with a depth (z) value less than 0 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\n" +
+"* Temperature values less than -4 or greater than 40 or with a temperature_quality_flag other than 1|2|5 were set to NaN.\n" +
+"* Salinity values less than 0 or greater than 41 or with a salinity_quality_flag other than 1|2|5 were set to NaN.\n" +
 "* Time values were converted from \\\"days since 1900-01-01 00:00:00\\\" to \\\"seconds since 1970-01-01T00:00:00\\\".\n" +
 "\n" +
 "See the Quality Flag definitions on page 5 and \\\"Table 2.1: Global Impossible Parameter Values\\\" on page 61 of\n" +
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\n" +
 "The Quality Flag definitions are also at\n" +
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
-"    String time_coverage_end \"2012-03-31T23:54:00Z\";\n" + //changes
+"    String time_coverage_end \"2012-04-30T10:00:00Z\";\n" + //changes
 "    String time_coverage_start \"1990-01-01T00:00:00Z\";\n" +
 "    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
