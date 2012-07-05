@@ -11,6 +11,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -115,13 +116,11 @@ public class FloatArray extends PrimitiveArray {
      */
     public PrimitiveArray subset(int startIndex, int stride, int stopIndex) {
         if (startIndex < 0)
-            throw new IndexOutOfBoundsException(String2.ERROR + 
-                " in FloatArray.subset: startIndex=" + startIndex +
-                " must be at least 0.");
+            throw new IndexOutOfBoundsException(MessageFormat.format(
+                ArraySubsetStart, getClass().getSimpleName(), "" + startIndex));
         if (stride < 1)
-            throw new IllegalArgumentException(String2.ERROR + 
-                " in FloatArray.subset: stride=" + stride +
-                " must greater than 0.");
+            throw new IllegalArgumentException(MessageFormat.format(
+                ArraySubsetStride, getClass().getSimpleName(), "" + stride));
         if (stopIndex >= size)
             stopIndex = size - 1;
         if (stopIndex < startIndex)
@@ -191,7 +190,8 @@ public class FloatArray extends PrimitiveArray {
     public void addN(int n, float value) {
         if (n == 0) return;
         if (n < 0)
-            throw new IllegalArgumentException(String2.ERROR + " in FloatArray.addN: n (" + n + ") < 0");
+            throw new IllegalArgumentException(MessageFormat.format(
+                ArrayAddN, getClass().getSimpleName(), "" + n));
         ensureCapacity(size + (long)n);
         Arrays.fill(array, size, size + n, value);
         size += n;
@@ -315,8 +315,8 @@ public class FloatArray extends PrimitiveArray {
      */
     public void remove(int index) {
         if (index >= size)
-            throw new IllegalArgumentException(String2.ERROR + " in FloatArray.remove: index (" + 
-                index + ") >= size (" + size + ").");
+            throw new IllegalArgumentException(MessageFormat.format(
+                ArrayRemove, getClass().getSimpleName(), "" + index, "" + size));
         System.arraycopy(array, index + 1, array, index, size - index - 1);
         size--;
 
@@ -1057,6 +1057,7 @@ public class FloatArray extends PrimitiveArray {
                 }
             }
         }
+        //String2.log("FloatArray.switch from=" + tFrom + " to=" + tTo + " n=" + count);
         return count;
     }
 
@@ -1088,13 +1089,15 @@ public class FloatArray extends PrimitiveArray {
         if (size == 0)
             return "";
         if (!Math2.isFinite(array[0]))
-            return "FloatArray isn't sorted in ascending order: [0]=" + array[0] + ".";
+            return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
+                "[0]=" + array[0]);
         for (int i = 1; i < size; i++) {
             if (!Math2.isFinite(array[i]))
-                return "FloatArray isn't sorted in ascending order: [" + i + "]=" + array[i] + ".";
+                return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
+                    "[" + i + "]=" + array[i]);
             if (array[i - 1] > array[i]) {
-                return "FloatArray isn't sorted in ascending order: [" + (i-1) + "]=" + array[i-1] + 
-                    " > [" + i + "]=" + array[i] + ".";
+                return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
+                    "[" + (i-1) + "]=" + array[i-1] + " > [" + i + "]=" + array[i]);
             }
         }
         return "";
@@ -1112,13 +1115,16 @@ public class FloatArray extends PrimitiveArray {
         if (size == 0)
             return "";
         if (!Math2.isFinite(array[0]))
-            return "FloatArray isn't sorted in descending order: [0]=" + array[0] + ".";
+            return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
+                "[0]=" + array[0]);
         for (int i = 1; i < size; i++) {
             if (!Math2.isFinite(array[i]))
-                return "FloatArray isn't sorted in descending order: [" + i + "]=" + array[i] + ".";
+                return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
+                    "[" + i + "]=" + array[i]);
             if (array[i - 1] < array[i]) {
-                return "FloatArray isn't sorted in descending order: [" + (i-1) + "]=" + array[i-1] + 
-                    " < [" + i + "]=" + array[i] + ".";
+                return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
+                    "[" + (i-1) + "]=" + array[i-1] + 
+                     " < [" + i + "]=" + array[i]);
             }
         }
         return "";
@@ -1165,12 +1171,9 @@ public class FloatArray extends PrimitiveArray {
                 Math2.almostEqual(2, (array[i] - array[i - 1]) * 1e7, diff * 1e7)) { 
                 //String2.log(i + " passed second test " + (array[i] - array[i - 1]) + " " + diff);
             } else {
-                return "FloatArray isn't evenly spaced: #" + 
-                    (i - 1) + "=" + array[i - 1] + 
-                    ", #" + i + "=" + array[i] + 
-                    ", spacing=" + (array[i] - array[i-1]) +
-                    ", expected spacing=" + diff + ".";
-                //+ "\n" + toString();
+                return MessageFormat.format(ArrayNotEvenlySpaced, getClass().getSimpleName(),
+                    "" + (i - 1), "" + array[i - 1], "" + i, "" + array[i],
+                    "" + (array[i] - array[i-1]), "" + diff);
             }
         }
 
@@ -1197,12 +1200,9 @@ public class FloatArray extends PrimitiveArray {
                 Math2.almostEqual(2, (array[i] - array[i - 1]) * 1e7, diff * 1e7)) { 
                 //String2.log(i + " passed second test " + (array[i] - array[i - 1]) + " " + diff);
             } else {
-                return "FloatArray isn't evenly spaced: #" + 
-                    (i - 1) + "=" + array[i - 1] + 
-                    ", #" + i + "=" + array[i] + 
-                    ", spacing=" + (array[i] - array[i-1]) +
-                    ", expected spacing=" + diff + ".";
-                //+ "\n" + toString();
+                return MessageFormat.format(ArrayNotEvenlySpaced, getClass().getSimpleName(),
+                    "" + (i - 1), "" + array[i - 1], "" + i, "" + array[i],
+                    "" + (array[i] - array[i-1]), "" + diff);
             }
         }
 
@@ -1490,7 +1490,7 @@ public class FloatArray extends PrimitiveArray {
         String2.log("\nevenlySpaced test #2");
         anArray.set(2, 30.1f);
         Test.ensureEqual(anArray.isEvenlySpaced(), 
-            "FloatArray isn't evenly spaced: #1=20.0, #2=30.1, spacing=10.1, expected spacing=10.0.", "");
+            "FloatArray isn't evenly spaced: [1]=20.0, [2]=30.1, spacing=10.1, expected spacing=10.0.", "");
 
         //these are unevenly spaced, but the secondary precision test allows it
         //should fail first test, but pass second test
@@ -1501,7 +1501,7 @@ public class FloatArray extends PrimitiveArray {
         String2.log("\nevenlySpaced test #4");
         anArray.set(2, 1.23081f); 
         Test.ensureEqual(anArray.isEvenlySpaced(), 
-            "FloatArray isn't evenly spaced: #1=1.2307, #2=1.23081, spacing=1.10030174E-4, expected spacing=1.00016594E-4.", "");
+            "FloatArray isn't evenly spaced: [1]=1.2307, [2]=1.23081, spacing=1.10030174E-4, expected spacing=1.00016594E-4.", "");
 
         //isAscending
         anArray = new FloatArray(new float[] {10,10,30});

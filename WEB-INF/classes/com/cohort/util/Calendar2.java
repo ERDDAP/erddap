@@ -58,8 +58,6 @@ import java.util.TimeZone;
  */
 public class Calendar2 {
 
-    final static String ERROR = String2.ERROR;
-
     //useful static variables
     public final static int ERA         = Calendar.ERA;
     public final static int BC          = GregorianCalendar.BC;
@@ -178,7 +176,7 @@ public class Calendar2 {
      * @throws Exception if trouble (tsUnits is null or invalid)
      */
     public static double[] getTimeBaseAndFactor(String tsUnits) throws Exception {
-        String errorInMethod = ERROR + " in Calendar2.getTimeBaseAndFactor(" + tsUnits + "):\n";
+        String errorInMethod = String2.ERROR + " in Calendar2.getTimeBaseAndFactor(" + tsUnits + "):\n";
 
         Test.ensureNotNull(tsUnits, errorInMethod + "units string is null.");       
         int sincePo = tsUnits.toLowerCase().indexOf(" since ");
@@ -211,7 +209,7 @@ public class Calendar2 {
             if (factorToGetSeconds == 30 * SECONDS_PER_DAY)       field = MONTH;
             else if (factorToGetSeconds == 360 * SECONDS_PER_DAY) field = YEAR;
             else throw new RuntimeException(
-                ERROR + " in Calendar2.unitsSinceToEpochSeconds: factorToGetSeconds=\"" + 
+                String2.ERROR + " in Calendar2.unitsSinceToEpochSeconds: factorToGetSeconds=\"" + 
                 factorToGetSeconds + "\" not expected.");
             GregorianCalendar gc = epochSecondsToGc(baseSeconds);
             gc.add(field, Math2.roundToInt(unitsSince)); 
@@ -245,7 +243,7 @@ public class Calendar2 {
                 //years
                 return getYear(es) - getYear(bs);               
             } else throw new RuntimeException(
-                ERROR + " in Calendar2.epochSecondsToUnitsSince: factorToGetSeconds=\"" + 
+                String2.ERROR + " in Calendar2.epochSecondsToUnitsSince: factorToGetSeconds=\"" + 
                 factorToGetSeconds + "\" not expected.");
         }
         return (epochSeconds - baseSeconds) / factorToGetSeconds;
@@ -301,7 +299,7 @@ public class Calendar2 {
             units.equals("yrs") || 
             units.equals("year") || 
             units.equals("years")) return 360 * SECONDS_PER_DAY;   
-        Test.error(ERROR + " in Calendar2.factorToGetSeconds: units=\"" + units + "\" is invalid.");
+        Test.error(String2.ERROR + " in Calendar2.factorToGetSeconds: units=\"" + units + "\" is invalid.");
         return Double.NaN; //won't happen, but method needs return statement
     }
      
@@ -373,7 +371,7 @@ public class Calendar2 {
      */
     public static GregorianCalendar epochSecondsToGc(double seconds) {
         if (!Math2.isFinite(seconds))
-            Test.error(ERROR + " in epochSecondsToGc: seconds value is NaN!");
+            Test.error(String2.ERROR + " in epochSecondsToGc: seconds value is NaN!");
         return newGCalendarZulu(Math2.roundToLong(seconds * 1000.0));
     }
 
@@ -409,7 +407,7 @@ public class Calendar2 {
      */
     public static String epochSecondsToIsoStringT(double seconds) {
         if (!Math2.isFinite(seconds))
-            Test.error(ERROR + " in epochSecondsToIsoStringT: seconds is NaN!");
+            Test.error(String2.ERROR + " in epochSecondsToIsoStringT: seconds is NaN!");
         return millisToIsoZuluString(Math2.roundToLong(seconds * 1000));
     }
 
@@ -418,7 +416,7 @@ public class Calendar2 {
      */
     public static String epochSecondsToIsoStringT3(double seconds) {
         if (!Math2.isFinite(seconds))
-            Test.error(ERROR + " in epochSecondsToIsoStringT3: seconds is NaN!");
+            Test.error(String2.ERROR + " in epochSecondsToIsoStringT3: seconds is NaN!");
         return millisToIso3ZuluString(Math2.roundToLong(seconds * 1000));
     }
 
@@ -494,7 +492,7 @@ public class Calendar2 {
      */
     public static String epochSecondsToIsoStringSpace(double seconds) {
         if (!Math2.isFinite(seconds))
-            Test.error(ERROR + " in epochSecondsToIsoStringSpace: seconds value is NaN!");
+            Test.error(String2.ERROR + " in epochSecondsToIsoStringSpace: seconds value is NaN!");
         String s = millisToIsoZuluString(Math2.roundToLong(seconds * 1000));
         return String2.replaceAll(s, 'T', ' ');
     }
@@ -514,7 +512,7 @@ public class Calendar2 {
      */
     public static String epochHoursToIsoString(int hours) {
         if (hours == Integer.MAX_VALUE)
-            Test.error(ERROR + " in epochHoursToIsoString: hours value is Integer.MAX_VALUE!");
+            Test.error(String2.ERROR + " in epochHoursToIsoString: hours value is Integer.MAX_VALUE!");
         return millisToIsoZuluString(hours * MILLIS_PER_HOUR);
     }
 
@@ -564,7 +562,7 @@ public class Calendar2 {
      */
     public static GregorianCalendar newGCalendarLocal(long millis) {
         if (millis == Long.MAX_VALUE)
-            Test.error(ERROR + " in newGCalendarLocal: millis value is Long.MAX_VALUE!");
+            Test.error(String2.ERROR + " in newGCalendarLocal: millis value is Long.MAX_VALUE!");
         GregorianCalendar gcL = newGCalendarLocal();
         gcL.setTimeInMillis(millis);
         return gcL;
@@ -600,7 +598,7 @@ public class Calendar2 {
      */
     public static GregorianCalendar newGCalendarZulu(long millis) {
         if (millis == Long.MAX_VALUE)
-            Test.error(ERROR + " in newGCalendarZulu: millis value is Long.MAX_VALUE!");
+            Test.error(String2.ERROR + " in newGCalendarZulu: millis value is Long.MAX_VALUE!");
         GregorianCalendar gcZ = newGCalendarZulu();
         gcZ.setTimeInMillis(millis);
         return gcZ;
@@ -696,7 +694,7 @@ public class Calendar2 {
      */
     public static GregorianCalendar newGCalendarLocal(int year, int month, int dayOfMonth) {
         if (year == Integer.MAX_VALUE)
-            Test.error(ERROR + " in newGCalendarLocal: year value is Integer.MAX_VALUE!");
+            Test.error(String2.ERROR + " in newGCalendarLocal: year value is Integer.MAX_VALUE!");
         return new GregorianCalendar(year, month - 1, dayOfMonth); 
     }
 
@@ -714,7 +712,7 @@ public class Calendar2 {
      */
     public static GregorianCalendar newGCalendarZulu(int year, int month, int dayOfMonth) {
         if (year == Integer.MAX_VALUE)
-            Test.error(ERROR + " in newGCalendarZulu: year is Integer.MAX_VALUE!");
+            Test.error(String2.ERROR + " in newGCalendarZulu: year is Integer.MAX_VALUE!");
         return newGCalendarZulu(year, month, dayOfMonth, 0, 0, 0, 0); 
     }
 
@@ -738,7 +736,7 @@ public class Calendar2 {
             int hour, int minute, int second, int millis) {
 
         if (year == Integer.MAX_VALUE)
-            Test.error(ERROR + " in newGCalendarLocal: year value is Integer.MAX_VALUE!");
+            Test.error(String2.ERROR + " in newGCalendarLocal: year value is Integer.MAX_VALUE!");
         GregorianCalendar gc = 
             new GregorianCalendar(year, month - 1, dayOfMonth, hour, minute, second); 
         gc.add(MILLISECOND, millis);
@@ -765,7 +763,7 @@ public class Calendar2 {
             int hour, int minute, int second, int millis) {
 
         if (year == Integer.MAX_VALUE)
-            Test.error(ERROR + " in newGCalendarZulu: year value is Integer.MAX_VALUE!");
+            Test.error(String2.ERROR + " in newGCalendarZulu: year value is Integer.MAX_VALUE!");
         GregorianCalendar gc = new GregorianCalendar(zuluTimeZone);
         gc.clear();
         gc.set(year, month - 1, dayOfMonth, hour, minute, second); 
@@ -787,7 +785,7 @@ public class Calendar2 {
      */
     public static GregorianCalendar newGCalendarLocal(int year, int dayOfYear) {
         if (year == Integer.MAX_VALUE)
-            Test.error(ERROR + " in newGCalendarLocal: year value is Integer.MAX_VALUE!");
+            Test.error(String2.ERROR + " in newGCalendarLocal: year value is Integer.MAX_VALUE!");
         GregorianCalendar gc = new GregorianCalendar(year, 0, 1); 
         gc.set(Calendar.DAY_OF_YEAR, dayOfYear);
         gc.get(YEAR); //force recalculations
@@ -807,7 +805,7 @@ public class Calendar2 {
      */
     public static GregorianCalendar newGCalendarZulu(int year, int dayOfYear) {
         if (year == Integer.MAX_VALUE)
-            Test.error(ERROR + " in newGCalendarLocal: year value is Integer.MAX_VALUE!");
+            Test.error(String2.ERROR + " in newGCalendarLocal: year value is Integer.MAX_VALUE!");
         GregorianCalendar gc = newGCalendarZulu(year, 1, 1); 
         gc.set(Calendar.DAY_OF_YEAR, dayOfYear);
         gc.get(YEAR); //force recalculations
@@ -1285,9 +1283,9 @@ public class Calendar2 {
         if (negative) 
             s = s.substring(1);
         if (s.length() < 1 || !String2.isDigit(s.charAt(0))) 
-            Test.error(ERROR + " in parseISODateTime: for first character of dateTime='" + s + "' isn't a digit!");
+            Test.error(String2.ERROR + " in parseISODateTime: for first character of dateTime='" + s + "' isn't a digit!");
         if (gc == null) 
-            Test.error(ERROR + " in parseISODateTime: gc is null!");
+            Test.error(String2.ERROR + " in parseISODateTime: gc is null!");
 
         //default ymdhmsmom     year is the only required value
         int ymdhmsmom[] = {Integer.MAX_VALUE, 1, 1, 0, 0, 0, 0, 0, 0};
@@ -1307,7 +1305,7 @@ public class Calendar2 {
         char separator[] = {'-','-','\u0000',':',':','.','±', ':', '\u0000'}; 
         parseN(s, separator, ymdhmsmom);
         if (ymdhmsmom[0] == Integer.MAX_VALUE) {
-            Test.error(ERROR + " in parseISODateTime: dateTime='" + s + "' has an invalid format!");
+            Test.error(String2.ERROR + " in parseISODateTime: dateTime='" + s + "' has an invalid format!");
         }
 
         //do time zone adjustment
@@ -1373,7 +1371,7 @@ public class Calendar2 {
         if (mdyhms[0] == Integer.MAX_VALUE ||
             mdyhms[1] == Integer.MAX_VALUE ||
             mdyhms[2] == Integer.MAX_VALUE) {
-            Test.error(ERROR + " in parseUSSlash24: s=" + s + " has an invalid format!");
+            Test.error(String2.ERROR + " in parseUSSlash24: s=" + s + " has an invalid format!");
         }
 
         //clean up year
@@ -1425,10 +1423,10 @@ public class Calendar2 {
             s = s.substring(1);
         int sLength = s.length();
         if (sLength < 8)
-            Test.error(ERROR + " in parseCompactDateTime: s=" + s + " has an invalid format!");
+            Test.error(String2.ERROR + " in parseCompactDateTime: s=" + s + " has an invalid format!");
         for (int i = 0; i < sLength; i++)
             if (!String2.isDigit(s.charAt(i)))
-                Test.error(ERROR + " in parseCompactDateTime: s=" + s + " has an invalid format!");
+                Test.error(String2.ERROR + " in parseCompactDateTime: s=" + s + " has an invalid format!");
 
         s += String2.makeString('0', 14 - sLength); 
         gc.clear();
@@ -1489,7 +1487,7 @@ public class Calendar2 {
             !String2.isDigit(s.charAt(8)) ||
             !String2.isDigit(s.charAt(9)) ||
             !String2.isDigit(s.charAt(10)))
-            Test.error(ERROR + " in parseDDMonYYYY: s=" + s + " has an invalid format!");
+            Test.error(String2.ERROR + " in parseDDMonYYYY: s=" + s + " has an invalid format!");
 
         gc.clear();
         int hour = 0, min = 0, sec = 0;
@@ -1501,7 +1499,7 @@ public class Calendar2 {
                 !String2.isDigit(s.charAt(15)) ||
                 !String2.isDigit(s.charAt(16)) ||
                 s.charAt(17) != ':')
-                Test.error(ERROR + " in parseDDMonYYYY: s=" + s + " has an invalid format!");
+                Test.error(String2.ERROR + " in parseDDMonYYYY: s=" + s + " has an invalid format!");
             hour = String2.parseInt(s.substring(12, 14));
             min  = String2.parseInt(s.substring(15, 17));
             sec  = String2.parseInt(s.substring(18, 20));
@@ -1514,7 +1512,7 @@ public class Calendar2 {
                 break;
             mon++;
         }
-        if (mon == 12) Test.error(ERROR + " in parseDDMonYYYY: s=" + s + " has an invalid format!");
+        if (mon == 12) Test.error(String2.ERROR + " in parseDDMonYYYY: s=" + s + " has an invalid format!");
 
         gc.set(
             (negative? -1 : 1) * String2.parseInt(s.substring(7, 11)),
@@ -1561,10 +1559,10 @@ public class Calendar2 {
             s = s.substring(1);
         int sLength = s.length();
         if (sLength != 7)
-            Test.error(ERROR + " in parseYYYYDDD: s=" + s + " has an invalid format!");
+            Test.error(String2.ERROR + " in parseYYYYDDD: s=" + s + " has an invalid format!");
         for (int i = 0; i < sLength; i++)
             if (!String2.isDigit(s.charAt(i)))
-                Test.error(ERROR + " in parseYYYYDDD: s=" + s + " has an invalid format!");
+                Test.error(String2.ERROR + " in parseYYYYDDD: s=" + s + " has an invalid format!");
 
         gc.clear();
         gc.set(
@@ -1600,7 +1598,7 @@ public class Calendar2 {
      */
     public static String getParseErrorString(String s, Exception e) {
         String error = MustBe.throwable(
-            ERROR + " while parsing \"" + s + "\".", e);
+            String2.ERROR + " while parsing \"" + s + "\".", e);
         //String2.log(error);
         return error;
     }
@@ -1623,10 +1621,10 @@ public class Calendar2 {
             s = s.substring(1);
         int sLength = s.length();
         if (sLength != 7)
-            Test.error(ERROR + " in yyyydddToIsoDate: yyyyddd='" + s + "' has an invalid format!");
+            Test.error(String2.ERROR + " in yyyydddToIsoDate: yyyyddd='" + s + "' has an invalid format!");
         for (int i = 0; i < sLength; i++)
             if (!String2.isDigit(s.charAt(i)))
-                Test.error(ERROR + " in yyyydddToIsoDate: yyyyddd='" + s + "' has an invalid format!");
+                Test.error(String2.ERROR + " in yyyydddToIsoDate: yyyyddd='" + s + "' has an invalid format!");
 
         GregorianCalendar gc = newGCalendarZulu(
             (negative? -1 : 1) * Integer.parseInt(s.substring(0, 4)),
@@ -1752,7 +1750,7 @@ public class Calendar2 {
     public static int binaryFindClosest(String isoDates[], String timeValue) {
         try {       
             if (isoDates[0].startsWith("-"))
-                throw new RuntimeException(ERROR + 
+                throw new RuntimeException(String2.ERROR + 
                     ": Calendar2.binaryFindClosest doesn't work with years < 0.");
 
             //likely place for exception thrown (that's ok)
@@ -1803,7 +1801,7 @@ public class Calendar2 {
     public static int binaryFindLastLE(String[] isoDates, String timeValue) {
         try {
             if (isoDates[0].startsWith("-"))
-                throw new RuntimeException(ERROR + 
+                throw new RuntimeException(String2.ERROR + 
                     ": Calendar2.binaryFindLastLE doesn't work with years < 0.");
 
             //likely place for exception thrown (that's ok)
@@ -1851,7 +1849,7 @@ public class Calendar2 {
     public static int binaryFindFirstGE(String[] isoDates, String timeValue) {
         try {        
             if (isoDates[0].startsWith("-"))
-                throw new RuntimeException(ERROR + 
+                throw new RuntimeException(String2.ERROR + 
                     ": Calendar2.binaryFindFirstGE doesn't work with years < 0.");
 
             //likely place for exception thrown (that's ok)
@@ -1888,7 +1886,7 @@ public class Calendar2 {
         throws Exception {
        
         if (n == Integer.MAX_VALUE)
-            Test.error(ERROR + " in Calendar2.isoDateTimeAdd: invalid addN=" + n);
+            Test.error(String2.ERROR + " in Calendar2.isoDateTimeAdd: invalid addN=" + n);
         GregorianCalendar gc = parseISODateTimeZulu(isoDate);
         gc.add(field, n);  //no need to adjust for B.C.   gc handles it.
         return gc;
@@ -1986,7 +1984,7 @@ public class Calendar2 {
             field == MONTH ||
             field == YEAR) {
         } else {
-            Test.error(ERROR + " in Calendar2.clearSmallerFields: unsupported field=" + field);
+            Test.error(String2.ERROR + " in Calendar2.clearSmallerFields: unsupported field=" + field);
         }
                                   if (field == MILLISECOND) return gc;
         gc.set(MILLISECOND, 0);   if (field == SECOND) return gc;

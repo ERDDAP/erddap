@@ -53,10 +53,6 @@ public class FishBase  {
     public static boolean verbose = false;
 
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
-
     /** 2011-06-01 Bob used this to convert all manually saved FishBase .html files
      * to .nc.
      * To save from .mdb file to .html:

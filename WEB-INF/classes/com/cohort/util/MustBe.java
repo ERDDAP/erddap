@@ -8,6 +8,7 @@ import com.cohort.array.StringComparatorIgnoreCase;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -46,8 +47,20 @@ import java.util.Map;
  */
 public class MustBe {
     public static String lineSeparator = "\n"; //not String2.lineSeparator;
-    /** This matches the standard DAP message (except different case) for no data found. */
+
+    /** 
+     * This matches the standard DAP message (except different case) for no data found. 
+     * This is NOT final so EDStatic can change it. (I'm not sure if that is a good idea.)
+     */
     public static String THERE_IS_NO_DATA = "Your query produced no matching results.";
+
+    /**
+     * These are MessageFormat-style strings that are NOT final so EDStatic can change them.
+     */
+    public static String NotNull = "{0} must not be null."; 
+    public static String NotEmpty = "{0} must not be an empty string.";
+    public static String InternalError = "Internal Error";
+    public static String OutOfMemoryError = "Out of Memory Error";
 
     /**
      * This gets the current stack trace, which can be useful for debugging.
@@ -95,9 +108,12 @@ public class MustBe {
 
     /**
      * Given a throwable, this generates a multiline string
-     *   (with lineSeparator's) with the method stack trace.
-     * The first line is "In [ThreadName] Thread".
-     *
+     *   (with lineSeparator's) with the method stack trace, e.g.,
+     * <pre>
+         java.lang.Exception: I threw this exception!
+         at com.cohort.util.TestUtil.testMustBe(TestUtil.java:3330)
+         at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:1006)
+     * </pre>
      * @param throwable is the Throwable object providing the information
      * @param nRemoveLines determines how many lines should be
      *   removed from the start of the stack trace.
@@ -221,7 +237,7 @@ public class MustBe {
      */
     public static String notNull(String classAndMethodName, String valueName) {
         return classAndMethodName + ":" + lineSeparator +
-            "'" + valueName + "' must not be null." + lineSeparator + 
+            MessageFormat.format(NotNull, String2.toJson(valueName)) + lineSeparator + 
             stackTrace();
     }
 
@@ -235,7 +251,7 @@ public class MustBe {
      */
     public static String notEmpty(String classAndMethodName, String valueName) {
         return classAndMethodName + ":" + lineSeparator + 
-            "'" + valueName + "' must not be an empty string." + lineSeparator +
+            MessageFormat.format(NotEmpty, String2.toJson(valueName)) + lineSeparator +
             stackTrace();
     }
 
@@ -249,7 +265,7 @@ public class MustBe {
      */
     public static String internalError(String classAndMethodName, String message) {
         return classAndMethodName + ":" + lineSeparator + 
-            "Internal error: " + message + lineSeparator +
+            InternalError + ": " + message + lineSeparator +
             stackTrace();
     }
 
@@ -280,12 +296,13 @@ public class MustBe {
      */
     public static String throwable(String classAndMethodName,
         Throwable throwable) {
-        return throwableWithMessage(classAndMethodName, String2.ERROR + ":" + lineSeparator, throwable);
+        return throwableWithMessage(classAndMethodName, 
+            String2.ERROR + ":" + lineSeparator, throwable);
     }
 
     /**
      * This returns an error message like: <pre>
-     *   DataRound:
+     *   DataRound.testRound:
      *   ERROR: NullPointerException
      *   at DataRound.run(200);
      *   at DataRound.testRound(175)
@@ -297,6 +314,10 @@ public class MustBe {
      *   In general, outOfMemory possibility can't just be ignored and caught.
      *   Methods need to try to catch it so that method can recover nicely.
      * </UL>
+     * 
+     * @param classAndMethodName e.g., DataRound.testRound
+     * @param message e.g., ERROR: Null
+     * 
      */
     public static String throwableWithMessage(String classAndMethodName,
         String message, Throwable throwable) {
@@ -305,7 +326,7 @@ public class MustBe {
             //unfortunately, there isn't (ever?) a stack trace for out of memory errors
             return classAndMethodName + ":" + lineSeparator + 
                 message + lineSeparator +
-                "Out of memory." + lineSeparator +
+                OutOfMemoryError + lineSeparator +
                 throwableStackTrace(throwable, 0, true, true, true) +
                 "\nMustBe.throwableWithMessage detected OutOfMemoryError at\n" +
                 getStackTrace();  
@@ -364,7 +385,7 @@ public class MustBe {
             //write to StringBuilder
             StringBuilder sb = new StringBuilder();
             sb.append("Number of " + (hideTomcatWaitingThreads? "non-Tomcat-waiting " : "") + 
-                    "threads in this JVM = " + count + "\n" +
+                "threads in this JVM = " + count + "\n" +
                 "(format: #threadNumber Thread[threadName,threadPriority,threadGroup] threadStatus)\n\n");
             for (int i = 0; i < count; i++) 
                 sb.append("#" + (i + 1) + " " + sar[i]);
@@ -404,8 +425,7 @@ public class MustBe {
 
                 //further modify the message?
                 if (tError.startsWith("OutOfMemoryError")) //the Java message
-                    //this message is also in messages.xml thereIsTooMuchData
-                    tError = "OutOfMemoryError: Your query produced too much data.  Try to request less data.";
+                    tError = OutOfMemoryError + ": " + Math2.memoryTooMuchData;
                 else if (tError.startsWith("Exception:") ||
                     tError.startsWith("RuntimeException:")) {
                     //completely remove bland exceptions

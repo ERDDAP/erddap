@@ -35,9 +35,7 @@ public class Index  {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-    private final static int bufferSize = 8192;
+    private static int bufferSize = 8192;
 
     private String baseIndexName; 
     private int nIndices = 0;
@@ -83,7 +81,7 @@ public class Index  {
             lastFiniteRow = nRows - 1;
         }
         
-        String errorInMethod = ERROR + " in Index.addIndex:\n";
+        String errorInMethod = String2.ERROR + " in Index.addIndex:\n";
         Test.ensureEqual(pa.size(), nRows,
             errorInMethod + "pa.size != size for axis '" + name + "'.");
         long time = System.currentTimeMillis();
@@ -120,7 +118,7 @@ public class Index  {
             if (bufferPo == bufferSize) {
                 byteBuffer.flip(); //makes written bytes ready for writing
                 Test.ensureEqual(out.write(byteBuffer), bufferSize, 
-                    "ERROR in Index.addIndex: not all of buffer was written.");
+                    String2.ERROR + " in Index.addIndex: not all of buffer was written.");
                 byteBuffer.rewind();
                 bufferPo = 0;
             }
@@ -135,7 +133,7 @@ public class Index  {
         byteBuffer.flip(); //makes written bytes ready for writing
         Test.ensureEqual(out.write(byteBuffer), //it knows po (bytes to write) internally
             bufferPo, 
-            "ERROR in Index.addIndex: not all of buffer was written.");
+            String2.ERROR + " in Index.addIndex: not all of buffer was written.");
 
         lastFiniteRow = Math.min(tLastFiniteRow, lastFiniteRow);
 
@@ -203,7 +201,7 @@ public class Index  {
                     //it would be best to keep track of nBytes read for each,
                     //  but I need to keep them in synch to simplify reading from them
                     Test.ensureEqual(in[index].read(byteBuffer[index], filePo), desiredBytes, 
-                        "ERROR in Index.subset while filling buffers.");
+                        String2.ERROR + " in Index.subset while filling buffers.");
                 }
                 filePo += bufferSize;
                 bufferPo = 0;

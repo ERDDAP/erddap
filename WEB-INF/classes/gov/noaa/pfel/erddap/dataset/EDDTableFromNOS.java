@@ -305,7 +305,7 @@ public class EDDTableFromNOS extends EDDTable{
         sourceNeedsExpandedFP_EQ = false;
         sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; //stationID, lon, lat, time, but not others
         sourceCanConstrainStringData  = CONSTRAIN_PARTIAL; //stationName anything, but others nothing
-        sourceCanConstrainStringRegex = REGEX_OP; //partial: stationName only
+        sourceCanConstrainStringRegex = PrimitiveArray.REGEX_OP; //partial: stationName only
 
         Test.ensureNotNothing(tLocalSourceUrl,   "sourceUrl wasn't specified.");
         Test.ensureNotNothing(xmlns,             "xmlns wasn't specified.");
@@ -508,7 +508,7 @@ public class EDDTableFromNOS extends EDDTable{
         //constraints are used as needed below.
         //sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; //stationID, lon, lat, time, but not others
         //sourceCanConstrainStringData  = CONSTRAIN_PARTIAL; //stationName anything, but others nothing
-        //sourceCanConstrainStringRegex = REGEX_OP; //partial: stationName only
+        //sourceCanConstrainStringRegex = PrimitiveArray.REGEX_OP; //partial: stationName only
 
         //convert constraintVariables to the dv index
         EDVTime timeVariable = timeIndex < 0? null :
@@ -543,6 +543,7 @@ public class EDDTableFromNOS extends EDDTable{
 
         //go through the stations   
         int nStations = stationTable.nRows();
+        STATION_LOOP:
         for (int station = 0; station < nStations; station++) {
             //get info from stationTable
             String tName      = stationTable.getColumn(STATION_NAME_COL).getString(station);
@@ -574,9 +575,9 @@ public class EDDTableFromNOS extends EDDTable{
                 //lon or lat
                 if (conDVI == lonIndex || conDVI == latIndex) {
                     double t = conDVI == lonIndex? tLon : tLat;
-                    boolean pass = op.equals(REGEX_OP)?
-                        Table.testValueOpValue("" + t, op, sValue) :
-                        Table.testValueOpValue(t, op, dValue);
+                    boolean pass = op.equals(PrimitiveArray.REGEX_OP)?
+                        PrimitiveArray.testValueOpValue("" + t, op, sValue) :
+                        PrimitiveArray.testValueOpValue(t, op, dValue);
                     if (!pass) {
                         //if (reallyVerbose) String2.log("  rejecting station=" + station + 
                         //    " because lon/lat failure: " + t + op + sValue);
@@ -592,7 +593,7 @@ public class EDDTableFromNOS extends EDDTable{
 
                         //can do crude test based on station start time
                         if (!Double.isNaN(tStartTime)) {
-                            boolean pass = Table.testValueOpValue(tStartTime, "<", dValue);
+                            boolean pass = PrimitiveArray.testValueOpValue(tStartTime, "<", dValue);
                             if (!pass) {
                                 //if (reallyVerbose) String2.log("  rejecting station=" + station + 
                                 //    " because tStartTime=" + tStartTime + " >= <=constraint=" + dValue);
@@ -610,7 +611,7 @@ public class EDDTableFromNOS extends EDDTable{
                 //stationName or stationID
                 } else if (conDVI == stationNameIndex || conDVI == stationIDIndex) {
                     String t = conDVI == stationNameIndex? tName : tID;
-                    boolean pass = Table.testValueOpValue(t, op, sValue);
+                    boolean pass = PrimitiveArray.testValueOpValue(t, op, sValue);
                     if (!pass) {
                         //if (reallyVerbose) String2.log("  rejecting station=" + station + 
                         //    " because '" + t + "' " + op + " '" + sValue + "'.");
@@ -633,7 +634,7 @@ public class EDDTableFromNOS extends EDDTable{
                     table.getColumn(3).addString(tID);
                 } else {
                     if (requestedBeginTime > requestedEndTime)  //epochSeconds
-                        throw new SimpleException(EDStatic.THERE_IS_NO_DATA + 
+                        throw new SimpleException(MustBe.THERE_IS_NO_DATA + 
                             " (The requested beginTime=" +
                             Calendar2.epochSecondsToIsoStringT(requestedBeginTime) +
                             " is after the requested endTime=" +
@@ -783,6 +784,10 @@ public class EDDTableFromNOS extends EDDTable{
                             o2 = makeTable();
                             table = (Table)o2[0];
                             xr = (XMLReader)o2[1];
+                            if (tableWriter.noMoreDataPlease) {
+                                tableWriter.logCaughtNoMoreDataPlease(datasetID);
+                                break STATION_LOOP;
+                            }
                         }
 
                         //increment requested times   (epochSeconds)
@@ -1093,7 +1098,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 
         //.asc test of just station data          REGEX
         userDapQuery = "longitude,latitude,station_name,station_id" +
-            "&station_name" + REGEX_OP + "\"P.*e.*\""; 
+            "&station_name" + PrimitiveArray.REGEX_OP + "\"P.*e.*\""; 
         tName = wind.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             wind.className() + "_station2", ".asc"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -1183,7 +1188,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 
         //sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; //stationID, lon, lat, time, but not others
         //sourceCanConstrainStringData  = CONSTRAIN_PARTIAL; //stationName anything, but others nothing
-        //sourceCanConstrainStringRegex = REGEX_OP; //partial: stationName only
+        //sourceCanConstrainStringRegex = PrimitiveArray.REGEX_OP; //partial: stationName only
 
         //.csv    test 1 lon,lat point    test numeric > < for lon and wind_speed
         userDapQuery = "longitude,latitude,time,station_id,station_name,wind_from_direction" + //no wind_speed

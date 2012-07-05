@@ -91,9 +91,6 @@ public class Grid  {
     /** (Almost always) evenly spaced longitude values, in ascending order. */
     public double lon[]; 
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     /** The distance between values in the lat array. 
      * For now, all files must have even lat and lon spacing.
      * [Someday, remove this and modify code to allow uneven spacing.]
@@ -420,7 +417,7 @@ public class Grid  {
 
             return true;
         } catch (Exception e) {
-            String2.log(MustBe.throwable(ERROR + " in Grid.equals", e));
+            String2.log(MustBe.throwable(String2.ERROR + " in Grid.equals", e));
             return false;
         }
     }
@@ -703,7 +700,7 @@ public class Grid  {
         //ensure desired range is acceptable
         if (verbose) String2.log("Grid.readBinary");
         clear();
-        String errorInMethod = ERROR + " in Grid.readBinary(" + fullFileName + "): "; 
+        String errorInMethod = String2.ERROR + " in Grid.readBinary(" + fullFileName + "): "; 
         if (desiredMinLon > desiredMaxLon) 
             Test.error(errorInMethod +
                 "desiredMinLon (" + desiredMinLon + ") must be <= desiredMaxLon (" + desiredMaxLon + ").");
@@ -882,7 +879,7 @@ switch to finally clause
                 lat[0] > desiredMaxLat || lat[lat.length - 1] < desiredMinLat) return false;
             return true;
         } catch (Exception e) {
-            if (verbose) String2.log(MustBe.throwable(ERROR + " in Grid.grdHasData: " + fullFileName, e));
+            if (verbose) String2.log(MustBe.throwable(String2.ERROR + " in Grid.grdHasData: " + fullFileName, e));
             if (grdFile != null)
                 grdFile.close();
             return false;
@@ -961,10 +958,10 @@ switch to finally clause
             "\n  desired nX=" + desiredNLon + " nY=" + desiredNLat);
         long time = System.currentTimeMillis();
         if (desiredMinLon > desiredMaxLon) 
-            Test.error(ERROR + " in Grid.readGrd:\n" +
+            Test.error(String2.ERROR + " in Grid.readGrd:\n" +
                 "minX (" + desiredMinLon + ") must be <= maxX (" + desiredMaxLon + ").");
         if (desiredMinLat > desiredMaxLat) 
-            Test.error(ERROR + " in Grid.readGrd:\n" +
+            Test.error(String2.ERROR + " in Grid.readGrd:\n" +
                 "minY (" + desiredMinLat + ") must be <= maxY (" + desiredMaxLat + ").");
 
         nValidPoints = Integer.MIN_VALUE;
@@ -1160,7 +1157,7 @@ switch to finally clause
             int getLatStart = DataHelper.binaryFindStartIndex(fileLat, getMinLat); 
             int getLatEnd   = DataHelper.binaryFindEndIndex(fileLat, getMaxLat);
             if (getLonStart < 0 || getLonEnd < 0 || getLatStart < 0 || getLatEnd < 0)
-                Test.error(DataHelper.THERE_IS_NO_DATA);
+                Test.error(MustBe.THERE_IS_NO_DATA);
             getMinLat = fileLat[getLatStart];
             getMaxLat = fileLat[getLatEnd];
 
@@ -1295,7 +1292,7 @@ switch to finally clause
         //get desired subset (after makeLonPM180 so desired... are appropriate)
         if (!subset(desiredMinLon, desiredMaxLon, desiredMinLat, desiredMaxLat,
                 desiredNLon, desiredNLat))
-            Test.error(DataHelper.THERE_IS_NO_DATA);
+            Test.error(MustBe.THERE_IS_NO_DATA);
     }
 
 
@@ -1934,16 +1931,16 @@ switch to finally clause
 
         if (verbose) String2.log("Grid.readNetCDF " + dataName);
         if (desiredMinLon > desiredMaxLon) 
-            Test.error(ERROR + " in Grid.readNetCDF:\n" +
+            Test.error(String2.ERROR + " in Grid.readNetCDF:\n" +
                 "minX (" + desiredMinLon + ") must be <= maxX (" + desiredMaxLon + ").");
         if (desiredMinLat > desiredMaxLat) 
-            Test.error(ERROR + " in Grid.readNetCDF:\n" +
+            Test.error(String2.ERROR + " in Grid.readNetCDF:\n" +
                 "minY (" + desiredMinLat + ") must be <= maxY (" + desiredMaxLat + ").");
 
         nValidPoints = Integer.MIN_VALUE;
         minData = Double.NaN;
         maxData = Double.NaN;
-        String errorInMethod = ERROR + " in Grid.readNetCDF(" + fullFileName + "): "; 
+        String errorInMethod = String2.ERROR + " in Grid.readNetCDF(" + fullFileName + "): "; 
 
         //open the file (before 'try'); if it fails, no temp file to delete
         NetcdfFile ncFile = NcHelper.openFile(fullFileName);
@@ -2106,7 +2103,7 @@ try {
             int latEnd   = DataHelper.binaryFindEndIndex(  lat, desiredMaxLat);
             if (latStart < 0 || latEnd < 0) {
                 ncFile.close();
-                Test.error(DataHelper.THERE_IS_NO_DATA);
+                Test.error(MustBe.THERE_IS_NO_DATA);
             }
             int lonStart = 0;
             int lonEnd   = nLon - 1;
@@ -2409,7 +2406,7 @@ try {
     public void makeLonPM180(boolean pm180) throws Exception {
         int nLon = lon.length;
         int nLat = lat.length;
-        String errorIn = ERROR + " in Grid.makeLonPM180:\n";
+        String errorIn = String2.ERROR + " in Grid.makeLonPM180:\n";
         Test.ensureEqual(data.length, nLon * nLat, 
             "data.length != nLon(" + nLon + ") * nLat(" + nLat + ")");
 
@@ -2815,7 +2812,7 @@ try {
         Test.ensureTrue(
             lat != null && lon != null && data != null && 
             lat.length > 0 && lon.length > 0 && data.length > 0,
-            DataHelper.THERE_IS_NO_DATA);
+            MustBe.THERE_IS_NO_DATA);
     }
 
 
@@ -2956,7 +2953,7 @@ try {
         if (false) {
             String[] rff = String2.readFromFile(directory + name + ext);
             if (rff[0].length() > 0)
-                throw new Exception(ERROR + ":\n" + rff[0]);
+                throw new Exception(String2.ERROR + ":\n" + rff[0]);
             String2.log("grid.saveAsASCII: " + directory + name + ext + " contains:\n" +
                 String2.annotatedString(
                     rff[1].substring(0, Math.min(rff[1].length(), 1000))));
@@ -3391,7 +3388,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
             //delete the test file
             Test.ensureTrue(File2.delete(testDir + testName + "Test.hdf"), 
-                ERROR + " in Grid.testHDF: unable to delete " + 
+                String2.ERROR + " in Grid.testHDF: unable to delete " + 
                 testDir + testName + "Test.hdf");
         }
     }
@@ -4668,7 +4665,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         if (verbose) {
             String[] rff = String2.readFromFile(directory + name + ext);
             if (rff[0].length() > 0)
-                throw new Exception(ERROR + ":\n" + rff[0]);
+                throw new Exception(String2.ERROR + ":\n" + rff[0]);
             String2.log("grid.saveAsXYZ: " + directory + name + ext + " contains:\n" +
                 String2.annotatedString(
                     rff[1].substring(0, Math.min(rff[1].length(), 200))));
@@ -4757,7 +4754,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
             saveAsType != SAVE_AS_MATLAB &&
             saveAsType != SAVE_AS_NETCDF &&
             saveAsType != SAVE_AS_XYZ)
-            throw new RuntimeException(ERROR + " in Grid.saveAs: invalid saveAsType=" + saveAsType);
+            throw new RuntimeException(String2.ERROR + " in Grid.saveAs: invalid saveAsType=" + saveAsType);
        
         String ext = SAVE_AS_EXTENSIONS[saveAsType];
 
@@ -4857,7 +4854,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         //ensure args.length = 2
         if (args == null || args.length != 2) {
             throw new Exception(
-                ERROR + ": Incorrect number of input arguments.\nargs=" +
+                String2.ERROR + ": Incorrect number of input arguments.\nargs=" +
                 String2.toCSSVString(args) + "\n\n" + msg);
         }
 
@@ -4884,7 +4881,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         String outDaveName = outDaveNameExt.substring(0, 
             outDaveNameExt.length() - outExt.length());
         Test.ensureEqual(inDaveName, outDaveName, 
-            ERROR + ": The file names (not counting directories or extensions) must be the same.\n\n" + msg);
+            String2.ERROR + ": The file names (not counting directories or extensions) must be the same.\n\n" + msg);
 
         //gather the file names
         String nameList[];
@@ -4919,7 +4916,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
                 try {
                     tInCWName = FileNameUtility.convertDaveNameToCWBrowserName(tDaveName);
                 } catch (Exception e) {
-                    String2.log(MustBe.throwable(ERROR + ": Unable to convert DaveName (" + 
+                    String2.log(MustBe.throwable(String2.ERROR + ": Unable to convert DaveName (" + 
                         tDaveName + ") to CWBrowserName.", e));
                 }
                 String tOutCWName = tInCWName;
@@ -4944,7 +4941,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
                         Double.NaN, Double.NaN, Double.NaN, Double.NaN, 
                         Integer.MAX_VALUE, Integer.MAX_VALUE);
                 }
-                else throw new Exception(ERROR + ": Input type \"" + inExt + 
+                else throw new Exception(String2.ERROR + ": Input type \"" + inExt + 
                     "\" not supported.\n\n" + msg);
 
                 if (inZip || inGz)
@@ -4982,7 +4979,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
                 }
 
             } catch (Exception e) {
-                String2.log(ERROR + ": " + MustBe.throwableToString(e));
+                String2.log(String2.ERROR + ": " + MustBe.throwableToString(e));
                 trouble.add(inDir + nameList[i]);
             }
         }
@@ -5253,7 +5250,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         //generate the CWBrowser version of the grd name
         String daveName = File2.getNameAndExtension(fullDaveGrdFileName);
         Test.ensureTrue(daveName.toLowerCase().endsWith(".grd"),  
-            ERROR + "in Grid.convertDaveGrdToNetCDF: the input file name (" + 
+            String2.ERROR + "in Grid.convertDaveGrdToNetCDF: the input file name (" + 
             fullDaveGrdFileName + ") must end in \".grd\".");
         daveName = daveName.substring(0, daveName.length() - 4);
         String cwBrowserName = FileNameUtility.convertDaveNameToCWBrowserName(daveName);
@@ -5262,7 +5259,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         String ncDir = File2.getDirectory(fullNetCDFFileName);
         String ncName = File2.getNameAndExtension(fullNetCDFFileName);
         Test.ensureTrue(ncName.toLowerCase().endsWith(".nc"), 
-            ERROR + "in Grid.convertDaveGrdToNetCDF: the ouput file name (" + 
+            String2.ERROR + "in Grid.convertDaveGrdToNetCDF: the ouput file name (" + 
             fullNetCDFFileName + ") must end in \".nc\".");
         ncName = ncName.substring(0, ncName.length() - 3);
 
@@ -5302,7 +5299,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         //generate the CWBrowser version of the ncName
         String daveName = File2.getNameAndExtension(fullDaveNcFileName);
         Test.ensureTrue(daveName.toLowerCase().endsWith(".nc"),  
-            ERROR + " in Grid.convertDaveNetCDFToGrd: the input file name (" + 
+            String2.ERROR + " in Grid.convertDaveNetCDFToGrd: the input file name (" + 
             fullDaveNcFileName + ") must end in \".nc\".");
         daveName = daveName.substring(0, daveName.length() - 3);
         String cwBrowserName = FileNameUtility.convertDaveNameToCWBrowserName(daveName);
@@ -5311,7 +5308,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         String grdDir = File2.getDirectory(fullGrdFileName);
         String grdName = File2.getNameAndExtension(fullGrdFileName);
         Test.ensureTrue(grdName.toLowerCase().endsWith(".grd"), 
-            ERROR + "in Grid.convertDaveNetCDFToGrd: the ouput file name (" + 
+            String2.ERROR + "in Grid.convertDaveNetCDFToGrd: the ouput file name (" + 
             fullGrdFileName + ") must end in \".grd\".");
         grdName = grdName.substring(0, grdName.length() - 4);
 

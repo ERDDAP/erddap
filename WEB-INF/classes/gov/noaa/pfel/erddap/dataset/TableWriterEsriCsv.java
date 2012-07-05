@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.util.Calendar2;
+import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
@@ -53,6 +54,8 @@ public class TableWriterEsriCsv extends TableWriter {
     protected boolean isFloat[];
     protected HashSet uniqueColNames = new HashSet();
     protected BufferedWriter writer;
+
+    public long totalNRows = 0;
 
     /**
      * The constructor.
@@ -134,8 +137,12 @@ public class TableWriterEsriCsv extends TableWriter {
         //*** do everyTime stuff
         convertToStandardMissingValues(table);  //NaNs; not the method in Table, so metadata is unchanged
 
-        //write the data
+        //avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
         int nRows = table.nRows();
+        totalNRows += nRows;
+        EDStatic.ensureArraySizeOkay(totalNRows, "ESRI CSV");
+
+        //write the data
         for (int row = 0; row < nRows; row++) {
             for (int col = 0; col < nColumns; col++) {
                 if (isTimeStamp[col]) {
@@ -192,12 +199,12 @@ public class TableWriterEsriCsv extends TableWriter {
     /**
      * This writes any end-of-file info to the stream and flush the stream.
      *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
-        //check for EDStatic.THERE_IS_NO_DATA
+        //check for MustBe.THERE_IS_NO_DATA
         if (writer == null)
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
 
         writer.flush(); //essential
 

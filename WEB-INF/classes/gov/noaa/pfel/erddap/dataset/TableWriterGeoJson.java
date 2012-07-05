@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.util.Calendar2;
+import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 
@@ -44,6 +45,8 @@ public class TableWriterGeoJson extends TableWriter {
 
     //other
     protected boolean rowsWritten = false;
+
+    public long totalNRows = 0;
 
     /**
      * The constructor.
@@ -154,7 +157,12 @@ public class TableWriterGeoJson extends TableWriter {
         //*** do everyTime stuff
         convertToStandardMissingValues(table);  //NaNs; not the method in Table, so metadata is unchanged
 
+        //avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
         int nRows = table.nRows();
+        totalNRows += nRows;
+        EDStatic.ensureArraySizeOkay(totalNRows, "GeoJson");
+
+        //write the data
         if (nColumns == 2) {
             /* if nColumns = 2, just write points in a multipoint    example:
             {
@@ -253,12 +261,12 @@ public class TableWriterGeoJson extends TableWriter {
     /**
      * This writes any end-of-file info to the stream and flushes the stream.
      *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
-        //check for EDStatic.THERE_IS_NO_DATA
+        //check for MustBe.THERE_IS_NO_DATA
         if (writer == null)
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
 
         //end of big array
         writer.write(

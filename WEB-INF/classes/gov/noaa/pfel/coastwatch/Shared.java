@@ -45,9 +45,6 @@ import java.util.Vector;
  */
 public class Shared extends Thread {
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     // ************ things set by run()   
     private String runError = ""; //set by run() if trouble
     private long resetTime;
@@ -107,7 +104,7 @@ public class Shared extends Thread {
             long startTime = System.currentTimeMillis();
             long tTime;
 
-            String errorInMethod = ERROR + " in Shared.run for " + 
+            String errorInMethod = String2.ERROR + " in Shared.run for " + 
                 oneOf.shortClassName() + ":\n";
             String2.log("\n" + String2.makeString('*', 80) +  
                 "\nShared.run for " + oneOf.shortClassName() + " " + 
@@ -138,7 +135,7 @@ public class Shared extends Thread {
                             false); //not testMode
                     } catch (Exception e) {
                         String msg = errorInMethod + 
-                            ERROR + " in NdbcMetStation.addLastNDaysInfo:\n" + 
+                            String2.ERROR + " in NdbcMetStation.addLastNDaysInfo:\n" + 
                             MustBe.throwableToString(e);
                         String2.log(msg);
                         oneOf.email(oneOf.emailEverythingTo(), 
@@ -294,7 +291,7 @@ String2.log("!!!Category=" + category);
                     if (ts.equals(yDataSetInternalName)) yDataSetIndex = dataSetI;
                 }
                 if (xDataSetIndex == -1 || yDataSetIndex == -1) {
-                    String2.log(ERROR + ": vector " + vectorI + 
+                    String2.log(String2.ERROR + ": vector " + vectorI + 
                         " xDataSet=" + xDataSetInternalName + 
                         " or yDataSet=" + yDataSetInternalName + " not found.");
                     continue;
@@ -408,7 +405,7 @@ String2.log("!!!Category=" + category);
                         oneOf.regionMinY(), oneOf.regionMaxY());
             } catch (Exception e) {
                 String msg = errorInMethod + 
-                    ERROR + " in NdbcMetStation.addPointDataSets:\n" + 
+                    String2.ERROR + " in NdbcMetStation.addPointDataSets:\n" + 
                     MustBe.throwableToString(e);
                 String2.log(msg);
                 oneOf.email(oneOf.emailEverythingTo(), 
@@ -431,7 +428,7 @@ String2.log("!!!Category=" + category);
                         activeCaches, activePointDataSets); 
                 } catch (Exception e) {
                     String msg = errorInMethod + 
-                        ERROR + " in makeMbariSqCachesAndDataSets:\n" + 
+                        String2.ERROR + " in makeMbariSqCachesAndDataSets:\n" + 
                         MustBe.throwableToString(e);
                     String2.log(msg);
                     oneOf.email(oneOf.emailEverythingTo(), 
@@ -448,7 +445,7 @@ String2.log("!!!Category=" + category);
                         activeCaches, activePointDataSets); 
                 } catch (Exception e) {
                     String msg = errorInMethod + 
-                        ERROR + " in makeMbariNrtCachesAndDataSets:\n" + 
+                        String2.ERROR + " in makeMbariNrtCachesAndDataSets:\n" + 
                         MustBe.throwableToString(e);
                     String2.log(msg);
                     oneOf.email(oneOf.emailEverythingTo(), 
@@ -524,7 +521,7 @@ String2.log("!!!Category=" + category);
                     if (ts.equals(yDataSetInternalName)) yDataSetIndex = dataSetI;
                 }
                 if (xDataSetIndex == -1 || yDataSetIndex == -1) {
-                    String2.log(ERROR + ": pointVector " + pointVectorI + " " + tOption + 
+                    String2.log(String2.ERROR + ": pointVector " + pointVectorI + " " + tOption + 
                             " xDataSet=" + xDataSetInternalName + "(" + xDataSetIndex + 
                         ") or yDataSet=" + yDataSetInternalName + "(" + yDataSetIndex + ") not found.");
                     continue;
@@ -537,7 +534,7 @@ String2.log("!!!Category=" + category);
                 //ensure the time data is available for x and yPointDataSet overlap
                 if (xPointDataSet.firstTime.after(yPointDataSet.lastTime) ||
                     yPointDataSet.firstTime.after(xPointDataSet.lastTime)) {
-                    String2.log(ERROR + ": pointVector " + pointVectorI + " " + tOption +
+                    String2.log(String2.ERROR + ": pointVector " + pointVectorI + " " + tOption +
                         " x/y first/last times don't overlap:\n" +
                         " xFirst=" + Calendar2.formatAsISODateTimeT(xPointDataSet.firstTime) + 
                         " xLast="  + Calendar2.formatAsISODateTimeT(xPointDataSet.lastTime) + 
@@ -588,7 +585,7 @@ String2.log("!!!Category=" + category);
                         "NDBC_.+_met\\.nc"));
 
                 } catch (Exception e) {
-                    String msg = ERROR + " while generating ndbcMet Trajectory data sets:\n" + 
+                    String msg = String2.ERROR + " while generating ndbcMet Trajectory data sets:\n" + 
                         MustBe.throwableToString(e);
                     String2.log(msg);
                     oneOf.email(oneOf.emailEverythingTo(), 
@@ -637,7 +634,7 @@ String2.log("!!!Category=" + category);
                 "Shared.run for " + oneOf.shortClassName() + " done. TOTAL TIME=" + 
                     Calendar2.elapsedTimeString(resetTime) + "\n");
         } catch (Exception e) {
-            runError = MustBe.throwable(ERROR + " in Shared.run.", e);
+            runError = MustBe.throwable(String2.ERROR + " in Shared.run.", e);
             String2.log(runError.toString());
         }
     }
@@ -657,7 +654,7 @@ String2.log("!!!Category=" + category);
             StringArray tActiveGridDataSetOptions, StringArray tActiveGridDataSet7Names,
             Vector activeGridDataSets) {
 
-        String errorInMethod = ERROR + " in Shared.tryToLoad for " + internalName + ":\n";
+        String errorInMethod = String2.ERROR + " in Shared.tryToLoad for " + internalName + ":\n";
 
         try {
             //all types of datasets have XXXxxxxFileInfo in DataSet.properties

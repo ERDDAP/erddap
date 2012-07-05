@@ -49,15 +49,16 @@ import java.util.WeakHashMap;
  */
 public class String2 {
 
-    /** the source code version number. */
+    /** the source code version number. (Obviously, this is not really used.) */
     public static final double version = 1.000;
 
     /**
      * ERROR is a constant so that it will be consistent, so that one can 
      * search for it in output files.
+     * This is NOT final, so EDStatic can change it.
      * This is the original definition, referenced by many other classes.
      */
-    public final static String ERROR = "ERROR";
+    public static String ERROR = "ERROR";
 
     //public static Logger log = Logger.getLogger("com.cohort.util");
     private static boolean logToSystemOut = false;
@@ -3081,8 +3082,9 @@ public class String2 {
     /** 
      * This converts String representation of a long. 
      * Leading or trailing spaces are automatically removed.
+     * This *doesn't* round. So floating point values lead to Long.MAX_VALUE.
      *
-     * @param s a String representation of a long value
+     * @param s a valid String representation of a long value
      * @return a long (or Long.MAX_VALUE if trouble).
      */
     public static long parseLong(String s) {

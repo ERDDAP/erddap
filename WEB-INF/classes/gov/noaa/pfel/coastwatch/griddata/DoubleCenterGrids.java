@@ -102,7 +102,6 @@ public class DoubleCenterGrids {
                 "    If absent, the program will sleep between files and will sleep\n" +
                 "    periodically for a whole minute.");
 
-        String ERROR = String2.ERROR;
         long time = System.currentTimeMillis();
 
         //get fileNameUtility
@@ -120,18 +119,18 @@ public class DoubleCenterGrids {
             fast = true;
 
         if (oldBaseDir.equals(newBaseDir))
-            Test.error(ERROR + ": oldBaseDir can't equal newBaseDir.");
+            Test.error(String2.ERROR + ": oldBaseDir can't equal newBaseDir.");
 
         //ensure oldBaseDir exists
         if (!File2.isDirectory(oldBaseDir))
-            Test.error(ERROR + ": oldBaseDir doesn't exist!");
+            Test.error(String2.ERROR + ": oldBaseDir doesn't exist!");
         File oldBaseDirFile = new File(oldBaseDir);
 
         //ensure newBaseDir exists
         File newBaseDirFile = new File(newBaseDir);
         if (!File2.isDirectory(newBaseDir)) 
             Test.ensureTrue(newBaseDirFile.mkdirs(),  //mkdirs makes parents, too, if needed
-                ERROR + ": Unable to create " + newBaseDir); 
+                String2.ERROR + ": Unable to create " + newBaseDir); 
 
         //get all the directories and file names
         String [] oldFiles = RegexFilenameFilter.recursiveFullNameList(
@@ -175,7 +174,7 @@ public class DoubleCenterGrids {
                 File newDir = new File(newName);
                 //throw exception if can't create directory
                 Test.ensureTrue(newDir.mkdirs(), 
-                    ERROR + ": unable to create directory " + newName); 
+                    String2.ERROR + ": unable to create directory " + newName); 
                 continue;
             }
                 

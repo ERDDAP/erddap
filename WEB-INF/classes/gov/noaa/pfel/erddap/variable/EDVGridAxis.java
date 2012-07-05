@@ -235,7 +235,7 @@ public class EDVGridAxis extends EDV {
      * <p>Because there are always numbers for EDVGridAxes, this always returns a valid list.
      * <b>If the values range from high to low, this returns a high to low list.
      */
-    public String sliderCsvValues() {
+    public String sliderCsvValues() throws Throwable {
         if (sliderCsvValues != null) 
             return String2.utf8ToString(sliderCsvValues);
         
@@ -333,6 +333,7 @@ public class EDVGridAxis extends EDV {
             sliderNCsvValues = count; //do last       
             return csv;
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             String2.log(MustBe.throwableToString(t));
             return null;
         }

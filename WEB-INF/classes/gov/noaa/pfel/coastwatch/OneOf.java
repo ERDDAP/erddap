@@ -52,9 +52,6 @@ import java.util.Vector;
  */
 public class OneOf {
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     public final static int N_DUMMY_GRID_DATASETS = 2; //because 0=(None) 1=Bathymetry
     public final static int N_DUMMY_OTHER_DATASETS = 1;  //becasue 0=(None)
 
@@ -222,7 +219,7 @@ public class OneOf {
             classRB2 = fileNameUtility.classRB2(); 
             dataSetRB2 = fileNameUtility.dataSetRB2();
 
-            String errorInMethod = ERROR + " in OneOf constructor: ";
+            String errorInMethod = String2.ERROR + " in OneOf constructor: ";
 
             verbose = classRB2.getBoolean("verbose", false);
             Boundaries.verbose = verbose;
@@ -583,7 +580,7 @@ public class OneOf {
                 trouble = regionInfo[i].length != 8;
                 if (verbose || trouble) {
                     String2.log(
-                        (trouble? ERROR + " in OneOf.constructor:\n" : "") +
+                        (trouble? String2.ERROR + " in OneOf.constructor:\n" : "") +
                         "tRegionInfo[" + i + "]=" + String2.toCSSVString(regionInfo[i])); 
                         Test.ensureEqual(regionInfo[i].length, 8, tRegionInfo[i]);
                 }
@@ -784,7 +781,7 @@ public class OneOf {
 
         } catch (Exception e) {
             String error = MustBe.throwableToString(e);
-            email(emailEverythingTo, ERROR + " in " + shortClassName + " oneOf constructor", error);
+            email(emailEverythingTo, String2.ERROR + " in " + shortClassName + " oneOf constructor", error);
             Test.error(error);
         }
     }
@@ -796,7 +793,7 @@ public class OneOf {
      * @param the name of the item not found
      */
     public String notInClassPropertiesFile(String name) {
-        return ERROR + " in OneOf constructor:\n" + name + " not found in " + 
+        return String2.ERROR + " in OneOf constructor:\n" + name + " not found in " + 
             shortClassName + ".properties file.";
     }
 
@@ -807,7 +804,7 @@ public class OneOf {
      * @param the name of the item not found
      */
     public String notInDataSetPropertiesFile(String name) {
-        return ERROR + " in OneOf constructor:\n" + name + " not found in DataSet.properties file.";
+        return String2.ERROR + " in OneOf constructor:\n" + name + " not found in DataSet.properties file.";
     }
 
     /** 
@@ -934,7 +931,7 @@ public class OneOf {
         if (dataServerCatalogUrl.length() > 0) {
 
             //this method goes to great lengths to throw very descriptive exceptions if trouble
-            String error = ERROR + " in OneOf.ensureDataServerUp\n  dataServerCatalogUrl=" + dataServerCatalogUrl + "\n";
+            String error = String2.ERROR + " in OneOf.ensureDataServerUp\n  dataServerCatalogUrl=" + dataServerCatalogUrl + "\n";
 
             //get the urlResponse
             String catalog = null;
@@ -1332,7 +1329,7 @@ public class OneOf {
         if (fgdcTemplate == null || gridDataSet.fgdcSubstitutions == null) 
             Test.error(sorryNoFgdcInfo());
 
-        String errorInMethod = ERROR + " in OneOf.makeFgdcFile for " + 
+        String errorInMethod = String2.ERROR + " in OneOf.makeFgdcFile for " + 
             gridDataSet.internalName + ":\n";
 
         //calculate %cloud 
@@ -1439,7 +1436,7 @@ public class OneOf {
      * This won't throw an exception if trouble.
      *
      * @param emailAddress   (if null or "", silent error)
-     * @param subject If error, recommended: OneOf.ERROR + " in " + fullClassName
+     * @param subject If error, recommended: String2.ERROR + " in " + fullClassName
      * @param content If error, recommended: MustBe.throwableToString(t);
      */
     public void email(String emailAddress, String subject, String content) {
@@ -1451,7 +1448,7 @@ public class OneOf {
                     emailSmtpProperties,
                     emailFromAddress, emailAddress, subject, content);
         } catch (Exception e) {
-            String2.log(MustBe.throwable(ERROR + ": Sending email failed.", e));
+            String2.log(MustBe.throwable(String2.ERROR + ": Sending email failed.", e));
         }
     }
 

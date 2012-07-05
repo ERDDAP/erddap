@@ -61,12 +61,16 @@ public class NcHelper  {
      */
     public static boolean reallyVerbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
+    /** 
+     * varName + StringLengthSuffix is used to create the name for the char dimension 
+     * of a String variable. "_strlen" is what netcdf-java uses.
+     */
+    public final static String StringLengthSuffix = "_strlen"; //pre 2012-06-05 was StringLength="StringLength"; 
 
-    /** varName + StringLength is used to create the name for the char dimension 
-        of a String variable.*/
-    public final static String StringLength = "StringLength"; 
+    /**
+     * If saving longs as Strings, this is the maxStringLength.
+     */
+    public final static int LONG_MAXSTRINGLENGTH = 20;
 
     /**
      * This generates a String with a dump of the contents of a netcdf file.
@@ -171,6 +175,7 @@ public class NcHelper  {
         }
         return sb.toString();
     }
+
     
     /**
      * This is like fromJson, but specifically designed to 
@@ -218,7 +223,7 @@ public class NcHelper  {
             n = ((ArrayChar.D2)array).getShape()[0]; 
         } else n = array.getSize();
         Test.ensureTrue(n < Integer.MAX_VALUE,  
-            ERROR + " in NcHelper.getSize; n = " + n);
+            String2.ERROR + " in NcHelper.getSize; n = " + n);
         return (int)n; //safe since checked above
 
     }
@@ -248,8 +253,9 @@ public class NcHelper  {
      * ucar.nc2.ArrayXxx.D1.
      * The o array is used as the storage for the Array.
      *
-     * @param o the String or array of primitives
-     * @return an ArrayXxx.D1.  A String is converted to a ArrayChar.D1.
+     * @param o the String or array of primitives (e.g., int[])
+     * @return an ArrayXxx.D1.  A String is converted to a ArrayChar.D2.
+     *    A long[] is converted to a String[] and then to ArrayChar.D2 (nc3 files don't support longs).
      */
     public static Array get1DArray(Object o) {
         if (o instanceof String) {
@@ -261,14 +267,17 @@ public class NcHelper  {
         if (o instanceof byte[])   return Array.factory(byte.class,   new int[]{((byte[])o).length}, o);
         if (o instanceof short[])  return Array.factory(short.class,  new int[]{((short[])o).length}, o);
         if (o instanceof int[])    return Array.factory(int.class,    new int[]{((int[])o).length}, o);
-        if (o instanceof long[])   return Array.factory(long.class,   new int[]{((long[])o).length}, o);
+        if (o instanceof long[])   {
+            o = new StringArray(new LongArray((long[])o));
+            //then falls through to String[] handling
+        }
         if (o instanceof float[])  return Array.factory(float.class,  new int[]{((float[])o).length}, o);
         if (o instanceof double[]) return Array.factory(double.class, new int[]{((double[])o).length}, o);
         if (o instanceof String[]) {
             //make ArrayChar.D2
             String[] sar = (String[])o;
             //String2.log("NcHelper.get1DArray sar=" + String2.toCSSVString(sar));
-            int max = 0;
+            int max = 1; //nc wants at least 1
             for (int i = 0; i < sar.length; i++) {
                 //if (sar[i].length() > max) String2.log("new max=" + sar[i].length() + " s=\"" + sar[i] + "\"");
                 max = Math.max(max, sar[i].length());
@@ -287,7 +296,7 @@ public class NcHelper  {
             return ac;
         }
 
-        Test.error(ERROR + " in NcHelper.get1DArray: unexpected object type: " + o);
+        Test.error(String2.ERROR + " in NcHelper.get1DArray: unexpected object type: " + o);
         return null;
     }
 
@@ -428,7 +437,7 @@ public class NcHelper  {
          if (dataType == DataType.SHORT)   return short.class;
          if (dataType == DataType.STRING)  return String.class;
          //STRUCTURE not converted
-         Test.error(ERROR + " in NcHelper.getElementType:\n" +
+         Test.error(String2.ERROR + " in NcHelper.getElementType:\n" +
              " unrecognized DataType: " + dataType.toString());
          return null;
      }
@@ -454,7 +463,7 @@ public class NcHelper  {
          if (elementClass == short.class)   return DataType.SHORT;
          if (elementClass == String.class)  return DataType.STRING;
          //STRUCTURE not converted
-         Test.error(ERROR + " in NcHelper.getDataType:\n" +
+         Test.error(String2.ERROR + " in NcHelper.getDataType:\n" +
              " unrecognized ElementType: " + elementClass.toString());
          return null;
      }
@@ -545,6 +554,25 @@ public class NcHelper  {
         }
 
     }
+
+    /**
+     * THIS IS IMPERFECT/UNFINISHED. 
+     * This generates a .dds-like list of variables in a .nc file.
+     * 
+     */
+    public static String dds(String fileName) throws Exception {
+        String sar[] = String2.splitNoTrim(readCDL(fileName), '\n');
+        int n = sar.length;
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < n; i++) {
+            String trimS = sar[i].trim();
+            if (trimS.length() > 0 && !trimS.startsWith(":"))
+                sb.append(sar[i] + "\n");
+            sar[i] = null;
+        }
+        return sb.toString();
+    }
+
     
 
     /**
@@ -602,7 +630,7 @@ public class NcHelper  {
             for (int i = 0; i < variableNames.length; i++) {
                 Variable variable = netcdfFile.findVariable(variableNames[i]);
                 Test.ensureNotNull(variable, 
-                    ERROR + " in NcHelper.findVariables: '" + variableNames[i] + 
+                    String2.ERROR + " in NcHelper.findVariables: '" + variableNames[i] + 
                     "' not found."); 
                 list.add(variable);
             }
@@ -639,7 +667,7 @@ public class NcHelper  {
         if (mainDimension == null) {
             List dimensions = netcdfFile.getDimensions(); //next nc version: getRootGroup().getDimensions();  //was netcdfFile.getDimensions()
             if (dimensions.size() == 0)
-                Test.error(ERROR + " in NcHelper.findVariables: the file has no dimensions.");
+                Test.error(String2.ERROR + " in NcHelper.findVariables: the file has no dimensions.");
             for (int i = 0; i < dimensions.size(); i++) {
                 Dimension tDimension = (Dimension)dimensions.get(i);
                 if (tDimension.isUnlimited()) {
@@ -683,7 +711,7 @@ public class NcHelper  {
             }
             //check for no dimensions
             if (mainDimension == null)
-                Test.error(ERROR + " in NcHelper.findVariables: the file doesn't use dimensions.");
+                Test.error(String2.ERROR + " in NcHelper.findVariables: the file doesn't use dimensions.");
         }
 
         //get a list of all variables which use just mainDimension
@@ -759,7 +787,7 @@ public class NcHelper  {
             for (int i = 0; i < variableNames.length; i++) {
                 Variable variable = netcdfFile.findVariable(variableNames[i]);
                 Test.ensureNotNull(variable, 
-                    ERROR + " in NcHelper.find4DVariables: '" + variableNames[i] + 
+                    String2.ERROR + " in NcHelper.find4DVariables: '" + variableNames[i] + 
                     "' not found."); 
                 list.add(variable);
             }
@@ -812,7 +840,7 @@ public class NcHelper  {
     public static Variable findVariable(NetcdfFile netcdfFile, String variableName) {
         Variable variable = netcdfFile.findVariable(variableName);
         Test.ensureNotNull(variable, 
-            ERROR + " in NcHelper.findVariable: '" + variableName + 
+            String2.ERROR + " in NcHelper.findVariable: '" + variableName + 
             "' not found."); 
         return variable;
     }
@@ -1253,7 +1281,7 @@ public class NcHelper  {
         //eek! opendap returns a full-sized array! 
         //     netcdf  returns a shape-sized array
         if (pa.size() < nRows) 
-            Test.error(ERROR + " in NcHelper.getPrimitiveArray(firstRow=" + 
+            Test.error(String2.ERROR + " in NcHelper.getPrimitiveArray(firstRow=" + 
                 firstRow + " lastRow=" + lastRow + ")\n" +
                 "variable.read returned too few (" + pa.size() + ").");
         if (pa.size() > nRows) {
@@ -1375,7 +1403,7 @@ public class NcHelper  {
     }
 
     /**
-     * This sets a series of values in a Variable from a NetcdfFileWriteable.
+     * This writes values to a 1D netcdf variable in a NetcdfFileWriteable.
      * This works with all PrimitiveArray types, but
      * <br>LongArray is stored as a StringArray, so retrieve with 
      * <br>pa = new LongArray(pa), and
@@ -1384,24 +1412,33 @@ public class NcHelper  {
      *
      * @param netcdfFileWriteable
      * @param variableName
-     * @param firstRow 
-     * @param values will be converted to the appropriate numeric type
+     * @param firstRow   
+     * @param pa will be converted to the appropriate numeric type
      * @param maxStringLength is the maxLength to use for String data.
-     *    If PrimitiveArray is not a StringArray, this is ignored.
+     *    If pa is not a StringArray, this is ignored.
      *    If <= 0, maxLength is calculated from the strings.
+     *    What really matters is maxLength when var created; 
+     *    longer strings here will be truncated.
      * @throws Exception if trouble
      */
-    public static void setValues(NetcdfFileWriteable netcdfFileWriteable, 
-        String variableName, int firstRow, PrimitiveArray values, 
+    public static void write(NetcdfFileWriteable netcdfFileWriteable, 
+        String variableName, int firstRow, PrimitiveArray pa, 
         int maxStringLength) throws Exception {
-    
-        if (values.elementClass() == char.class) 
-            values = new ShortArray(((CharArray)values).toArray());
-        if (values.elementClass() == long.class) 
-            values = new StringArray(values);
 
-        if (values.elementClass() == String.class) {
-            StringArray sa = (StringArray)values;
+        write(netcdfFileWriteable, variableName, 
+            new int[]{firstRow}, new int[]{pa.size()}, pa);
+
+        /* pre 2012-06-06 was...
+        if (pa.elementClass() == char.class) 
+            pa = new ShortArray(((CharArray)pa).toArray());
+        else if (pa.elementClass() == long.class) 
+            pa = new StringArray(pa);
+
+        if (pa.elementClass() == String.class) {
+            StringArray sa = (StringArray)pa;
+            //maxStringLength here doesn't matter much 
+            //(may be more or less than var expects).
+            //Longer strings will be truncated.
             if (maxStringLength <= 0)
                 maxStringLength = sa.maxStringLength();
             int n = sa.size();
@@ -1413,11 +1450,46 @@ public class NcHelper  {
             netcdfFileWriteable.write(variableName, rowOrigin, ac);         
 
         } else {
-            Array array = get1DArray(values.toObjectArray());
-            int rowOrigin[] = {firstRow}; //for string, need to include dim[1]length
+            Array array = get1DArray(pa.toObjectArray());
+            int rowOrigin[] = {firstRow}; 
             netcdfFileWriteable.write(variableName, rowOrigin, array);         
         }
+        */
     }
+
+    /* * 
+     * This is a thin wrapper to call netcdfFileWriteable.writeStringData (for StringArray)
+     * or netcdfFileWriteable.write to write the pa to the file.
+     *
+     * <p>This will convert CharArray to ShortArray and LongArray to StringArray, 
+     *    but it usually saves memory if caller does it.
+     *
+     * @param netcdfFileWriteable
+     * @param varName
+     * @param origin  The start of where the data will be written in the var.
+     *    Don't include the StringLength dimension.
+     * @param shape   The shape that the data will be arranged into in the var.
+     *    Don't include StringLength dimension.
+     * @param pa   the data to be written 
+     */
+    public static void write(NetcdfFileWriteable netcdfFileWriteable, 
+        String varName, int origin[], int shape[], PrimitiveArray pa) throws Exception {
+
+        if (pa.elementClass() == char.class) 
+            pa = new ShortArray(((CharArray)pa).toArray());
+        else if (pa.elementClass() == long.class)
+            pa = new StringArray(pa);
+
+        if (pa instanceof StringArray) {
+            netcdfFileWriteable.writeStringData(varName, origin, 
+                Array.factory(String.class, shape, pa.toObjectArray()));         
+        } else {
+            netcdfFileWriteable.write(varName, origin, 
+                Array.factory(pa.elementClass(), shape, pa.toObjectArray()));         
+        }
+    }
+
+
 
     /** 
      * This opens an opendap dataset as a NetcdfDataset.
@@ -1452,7 +1524,7 @@ public class NcHelper  {
     public static BitSet testRows(Variable testVariables[], double min[], double max[]) 
         throws Exception {
 
-        String errorInMethod = ERROR + " in testNcRows: ";
+        String errorInMethod = String2.ERROR + " in testNcRows: ";
         long time = System.currentTimeMillis();
       
         BitSet okRows = null;
@@ -1526,6 +1598,7 @@ public class NcHelper  {
                 String name = varNames.get(var);
                 tpas[var] = pas[var];
                 if (tpas[var].elementClass() == char.class) {
+                    //nc 'char' is 1 byte!  So store java char (2 bytes) as shorts.
                     tpas[var] = new ShortArray(((CharArray)pas[var]).toArray());
                 } else if (tpas[var].elementClass() == long.class) {
                     //these will always be decoded by fromJson as-is; no need to encode with toJson
@@ -1552,7 +1625,7 @@ public class NcHelper  {
                 Dimension dimension  = nc.addDimension(name, tpas[var].size());
                 if (type == String.class) {
                     int max = Math.max(1, ((StringArray)tpas[var]).maxStringLength()); //nc libs want at least 1; 0 happens if no data
-                    Dimension lengthDimension  = nc.addDimension(name + NcHelper.StringLength, max);
+                    Dimension lengthDimension  = nc.addDimension(name + StringLengthSuffix, max);
                     nc.addVariable(name, DataType.CHAR, 
                         new Dimension[]{dimension, lengthDimension}); 
                     if (pas[var].elementClass() == long.class) 
@@ -1636,7 +1709,7 @@ public class NcHelper  {
                     netcdfFile.findVariable(loadVarNames[v]);
                 if (tVariable == null)
                     throw new RuntimeException(
-                        "ERROR: Expected variable #" + v + " not found while reading " + fullName + 
+                        String2.ERROR + ": Expected variable #" + v + " not found while reading " + fullName + 
                         " (loadVarNames=" + String2.toCSSVString(loadVarNames) + ").");
                 List tDimensions = tVariable.getDimensions();
                 int nDimensions = tDimensions.size();
@@ -1803,8 +1876,10 @@ String2.log(pas13.toString());
     /**
      * This tests the methods in this class.
      */
-    public static void test() throws Exception {
+    public static void test() throws Throwable {
         String2.log("\n*** NcHelper.test...");
+        String fullName;
+
 
         //getArray  get1DArray, get1DArrayLength
         Object o;
@@ -1868,7 +1943,7 @@ String2.log(pas13.toString());
         for (int i = 0; i < 65536; i++) 
             sa.add("a" + (char)i + "z");  
         //write to file
-        String fullName = "c:/temp/PAsInNc.nc";
+        fullName = "c:/temp/PAsInNc.nc";
         File2.delete(fullName); //for test, make double sure it doesn't already exist
         StringArray varNames = new StringArray(new String[]{
             "ba", "sha", "ia", "la", "ca", "fa", "da", "sa"});
@@ -1962,7 +2037,7 @@ String2.log(pas13.toString());
             throw new RuntimeException("shouldn't get here");
         } catch (Exception e) {
             if (e.toString().indexOf(
-                "ERROR: Expected variable #0 not found while reading " +
+                String2.ERROR + ": Expected variable #0 not found while reading " +
                 "c:/temp/AttsInNc.nc (loadVarNames=zztop).") < 0)
             throw e;
         }
@@ -1972,16 +2047,137 @@ String2.log(pas13.toString());
             throw new RuntimeException("shouldn't get here");
         } catch (Exception e) {
             if (e.toString().indexOf(
-                "ERROR: Expected variable #0 not found while reading " +
+                String2.ERROR + ": Expected variable #0 not found while reading " +
                 "c:/temp/AttsInNc.nc (loadVarNames=zztop).") < 0)
             throw e;
         }
+
+        //test if defining >2GB throws exception
+        fullName = "c:/temp/TooBig.nc";
+        File2.delete(fullName);
+        NetcdfFileWriteable ncOut = null;
+        try {
+            //"define" mode    2vars * 3000*50000*8bytes = 2,400,000,000
+            ncOut = NetcdfFileWriteable.createNew(fullName, false); //fill=false
+            Dimension dim0 = ncOut.addDimension("dim0", 3000);
+            Dimension dim1 = ncOut.addDimension("dim1", 50000);
+            ArrayList dims = new ArrayList();
+            dims.add(dim0);
+            dims.add(dim1);
+            ncOut.addVariable("d1", DataType.DOUBLE, dims); 
+            ncOut.addVariable("d2", DataType.DOUBLE, dims); 
+
+            //define a var above 2GB  (This is what causes the problem)
+            dims = new ArrayList();
+            dims.add(dim0);
+            ncOut.addVariable("b3", DataType.BYTE,   dims); 
+
+            //"create" mode   (and error isn't triggered till here)
+            ncOut.create();
+            ncOut.close(); //it calls flush() and doesn't like flush called separately
+            ncOut = null;
+            File2.delete(fullName);
+            if (true)
+                throw new RuntimeException("Shouldn't get here.");
+
+        } catch (Throwable t) {
+            try { 
+                if (ncOut != null) {
+                    ncOut.close(); 
+                    File2.delete(fullName);
+                }
+            } catch (Exception e) {
+            }
+
+            String msg = t.toString();
+            String2.log("Intentional error:\n" + msg);
+
+            if (!msg.equals(
+                "java.lang.IllegalArgumentException: Variable starting pos=2400000172 " +
+                "may not exceed 2147483647"))
+                throw t;
+        }
+
+        //test writing Strings to nc files
+        //Must the char[][] be the exact right size?  What if too long?
+        fullName = "c:/temp/StringsInNc.nc";
+        File2.delete(fullName);
+        ncOut = null;
+        try {
+            //"define" mode
+            ncOut = NetcdfFileWriteable.createNew(fullName, false); //fill=false
+            Dimension dim0 = ncOut.addDimension("dim0", 2);
+            Dimension dim1 = ncOut.addDimension("dim1", 3);
+            ArrayList dims = new ArrayList();
+            dims.add(dim0);
+            dims.add(dim1);
+            ncOut.addStringVariable("s1", dims, 4); //test strLength not long enough for all strings!
+            Array ar;
+
+            //"create" mode
+            ncOut.create();
+            String sa6[] = {"", "a", "abcde", "abc", "abcd", "abcde"};
+
+            //this fails: so origin and ar must be correct nDimensions and size
+            //ar = Array.factory(String.class, new int[]{6}, sa6);         
+            //ncOut.writeStringData("s1", new int[]{0}, ar);
+
+            ar = Array.factory(String.class, new int[]{2,3}, sa6);         
+            ncOut.writeStringData("s1", new int[]{0, 0}, ar);
+
+            //close file
+            ncOut.close(); //it calls flush() and doesn't like flush called separately
+            ncOut = null;
+
+            //Strings are truncated to maxCharLength specified in "define" mode.
+            String results = dumpString(fullName, true); //printData
+            String expected = 
+"netcdf StringsInNc.nc {\n" +
+" dimensions:\n" +
+"   dim0 = 2;\n" +
+"   dim1 = 3;\n" +
+"   s1_strlen = 4;\n" +
+" variables:\n" +
+"   char s1(dim0=2, dim1=3, s1_strlen=4);\n" +
+" data:\n" +
+"s1 =\n" +
+"  {\"\", \"a\", \"abcd\",\"abc\", \"abcd\", \"abcd\"\n" +
+"  }\n" +
+"}\n";
+            String2.log("results=\n" + results);
+            Test.ensureEqual(results, expected, "");
+
+            //nc chars are essentially unsigned bytes!
+            String2.log(File2.hexDump(fullName, 1000000)); 
+
+        } catch (Throwable t) {
+            try { 
+                if (ncOut != null) {
+                    ncOut.close(); 
+                    File2.delete(fullName);
+                }
+            } catch (Exception e) {
+            }
+
+            throw t;
+        }
+        
         
  
         //done
         String2.log("\n***** NcHelper.test finished successfully");
         Math2.incgc(2000);
     } 
+
+    /**
+     * An experiment with NetcdfDataset accessing a DAP sequence dataset.
+     */
+    public static void testSequence() throws Throwable {
+        NetcdfDataset ncd = NetcdfDataset.openDataset(
+            "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCAMarCatSY");
+        String2.log(ncd.toString());
+        ncd.close();
+    }
 
 
 }

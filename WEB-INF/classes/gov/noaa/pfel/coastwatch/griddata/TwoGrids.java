@@ -66,9 +66,6 @@ import ucar.unidata.geoloc.LatLonPointImpl;
  */
 public class TwoGrids  {
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     /**
      * Set this to true (by calling verbose=true in your program, not but changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
@@ -202,7 +199,7 @@ public class TwoGrids  {
 
         //delete the test file
         Test.ensureTrue(File2.delete(testDir + testName + "Test.hdf"), 
-            ERROR + " in Grid.testHDF: unable to delete " + 
+            String2.ERROR + " in Grid.testHDF: unable to delete " + 
             testDir + testName + "Test.hdf");
     }
 */
@@ -227,7 +224,7 @@ public class TwoGrids  {
     public static void saveAsMatlab(Grid grid1, Grid grid2, String directory, 
         String name, String varName1, String varName2) throws Exception {
 
-        String errorInMethod = ERROR + " in TwoGrids.saveAsMatlab:\n";
+        String errorInMethod = String2.ERROR + " in TwoGrids.saveAsMatlab:\n";
 
         //POLICY: because this procedure may be used in more than one thread,
         //do work on unique temp files names using randomInt, then rename to proper file name.
@@ -316,7 +313,7 @@ public class TwoGrids  {
     public static void saveAsNetCDF(Grid grid1, Grid grid2, 
         String directory, String name, String dataName1, String dataName2) throws Exception {
 
-        String errorInMethod = ERROR + " in TwoGrids.saveAsNetCDF:\n";
+        String errorInMethod = String2.ERROR + " in TwoGrids.saveAsNetCDF:\n";
         long time = System.currentTimeMillis();
 
         //delete any existing file
@@ -511,7 +508,7 @@ public class TwoGrids  {
     public static void saveAsXyz(Grid grid1, Grid grid2, String directory, String name, 
             String NaNString) throws Exception {
 
-        String errorInMethod = ERROR + " in TwoGrids.saveAsMatlab:\n";
+        String errorInMethod = String2.ERROR + " in TwoGrids.saveAsMatlab:\n";
 
         //delete any existing file
         String ext = Grid.SAVE_AS_EXTENSIONS[Grid.SAVE_AS_XYZ];
@@ -560,7 +557,7 @@ public class TwoGrids  {
         if (false) {
             String[] rff = String2.readFromFile(directory + name + ext);
             if (rff[0].length() > 0)
-                throw new Exception(ERROR + ":\n" + rff[0]);
+                throw new Exception(String2.ERROR + ":\n" + rff[0]);
             String2.log("grid.saveAsXYZ: " + directory + name + ext + " contains:\n" +
                 String2.annotatedString(
                     rff[1].substring(0, Math.min(rff[1].length(), 200))));
@@ -734,7 +731,7 @@ public class TwoGrids  {
             saveAsType != SAVE_AS_MATLAB &&
             saveAsType != SAVE_AS_NETCDF &&
             saveAsType != SAVE_AS_XYZ)
-            throw new RuntimeException(ERROR + " in Grid.saveAs: invalid saveAsType=" + saveAsType);
+            throw new RuntimeException(String2.ERROR + " in Grid.saveAs: invalid saveAsType=" + saveAsType);
        
         String ext = SAVE_AS_EXTENSIONS[saveAsType];
 

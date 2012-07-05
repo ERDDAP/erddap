@@ -5,8 +5,11 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
+import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
@@ -30,16 +33,36 @@ import java.io.OutputStreamWriter;
  */
 public class TableWriterHtmlTable extends TableWriter {
 
+    /** 
+     * This prevents naive requests for large amounts of data in an HtmlTable
+     * from crashing the user's browser.     
+     * It specifies the maximum number of MegaBytes that will ever be written to 
+     * an HTML table (since large tables often crash browsers).
+     * It is not final so EDstatic can change it from htmTableMaxMB in messages.xml.
+     * (Note that XHTML tables have no limit since they are intended for 
+     * processing by a program, usually other than a browser.)
+     * 50 here causes Firefox 13.0.1 on Windows XP to crash.
+     * 25 here causes Google Chrome 19.0 on Windows XP to crash.
+     */
+//FUTURE: can browsers handle more (and faster?) if I use .css and class= to properties are shared?
+    public static int htmlTableMaxMB = 15;
+
     //set by constructor
     protected String loggedInAs, fileNameNoExt, preTableHtml, postTableHtml;
     protected boolean writeHeadAndBodyTags, xhtmlMode, encode, writeUnits;
-    protected int totalRows = 0, rowsShown = 0, showFirstNRows;
+    protected int totalRows = 0, rowsShown = 0;
+    protected int showFirstNRows;  //perhaps modified by htmlTableMaxMB in "do firstTime stuff"
+    protected String noWrap;
 
     //set firstTime
     protected boolean isTimeStamp[];
     protected boolean isString[];
     protected BufferedWriter writer;
     protected String time_precision[];
+
+    //set later
+    public boolean isMBLimited = false; //ie, did htmlTableMaxMB reduce showFirstNRows?
+    public boolean allDataDisplayed = true;
 
     /**
      * The constructor.
@@ -52,6 +75,8 @@ public class TableWriterHtmlTable extends TableWriter {
      * @param tFileNameNoExt is the fileName without dir or extension (used for the web page title).
      * @param tXhtmlMode if true, the table is stored as an XHTML table.
      *   If false, it is stored as an HTML table.
+     *   HTML tables are limited by htmlTableMaxMB.  
+     *   HTML and XHTML tables are limited by tShowFirstNRows.
      * @param tPreTableHtml is valid html (or xhtml) text to be inserted at the 
      *   start of the body of the document, before the table tag
      *   (or "" if none).
@@ -80,7 +105,8 @@ public class TableWriterHtmlTable extends TableWriter {
         postTableHtml = tPostTableHtml;
         encode = tEncode;
         writeUnits = tWriteUnits;
-        showFirstNRows = tShowFirstNRows;
+        showFirstNRows = tShowFirstNRows >= 0? tShowFirstNRows : Integer.MAX_VALUE;
+        noWrap = xhtmlMode? " nowrap=\"nowrap\"" : " nowrap"; 
     }
 
     /** This encodes s as XML or HTML */
@@ -113,8 +139,14 @@ public class TableWriterHtmlTable extends TableWriter {
      * @throws Throwable if trouble
      */
     public void writeSome(Table table) throws Throwable {
+//Future: use try/catch and EDStatic.htmlForException(Exception e) ???
+
         if (table.nRows() == 0) 
             return;
+        if (rowsShown >= showFirstNRows) {
+            noMoreDataPlease = true;
+            return;
+        }
 
         //ensure the table's structure is the same as before
         boolean firstTime = columnNames == null;
@@ -129,6 +161,8 @@ public class TableWriterHtmlTable extends TableWriter {
         if (firstTime) {
             isTimeStamp = new boolean[nColumns];
             time_precision = new String[nColumns];
+            int bytesPerRow = (xhtmlMode? 10 : 5) +  //e.g., <tr> </tr> \n
+                nColumns * (xhtmlMode? 9 : 4) ;      //e.g., <td> </td>
             for (int col = 0; col < nColumns; col++) {
                 Attributes catts = table.columnAttributes(col);
                 String u = catts.getString("units");
@@ -136,12 +170,36 @@ public class TableWriterHtmlTable extends TableWriter {
                     (u.equals(EDV.TIME_UNITS) || u.equals(EDV.TIME_UCUM_UNITS));
                 if (isTimeStamp[col] && !xhtmlMode)
                     time_precision[col] = catts.getString(EDV.time_precision);
+
+                if (isTimeStamp[col]) {
+                    bytesPerRow += 20 + noWrap.length();
+                } else {
+                    PrimitiveArray pa = table.getColumn(col);
+                    if (pa instanceof StringArray) {
+                        bytesPerRow += noWrap.length() +
+                            Math.max(10, ((StringArray)pa).maxStringLength());
+                    } else {
+                        bytesPerRow += (3 * pa.elementSize()) / 2 + 14;  //1.5*nBytes->~nChar.  14: align="right"
+                    }
+                }
+            }
+
+            //adjust showFirstNRows
+            if (!xhtmlMode) {
+                int tMaxRows = Math2.roundToInt(
+                    (htmlTableMaxMB * (double)Math2.BytesPerMB) / bytesPerRow);
+                if (reallyVerbose) String2.log("htmlTableMaxMB=" + htmlTableMaxMB +
+                    " bytesPerRow=" + bytesPerRow + " tMaxRows=" + tMaxRows +
+                    " oShowFirstNRows=" + showFirstNRows);
+                if (tMaxRows < showFirstNRows) {
+                    isMBLimited = true;
+                    showFirstNRows = tMaxRows;
+                }
             }
 
             //write the header
             writer = new BufferedWriter(new OutputStreamWriter(
                 outputStreamSource.outputStream("UTF-8"), "UTF-8")); 
-//Future: use try/catch and EDStatic.htmlForException(Exception e) ???
             if (writeHeadAndBodyTags) {
                 if (xhtmlMode)
                     writer.write(
@@ -202,12 +260,16 @@ public class TableWriterHtmlTable extends TableWriter {
         //*** do everyTime stuff
         convertToStandardMissingValues(table);  //NaNs; not the method in Table, so metadata is unchanged
 
-        //write the data
-        String noWrap = xhtmlMode? " nowrap=\"nowrap\"" : " nowrap"; //if xhtml, need: nowrap="nowrap"
+        //write how many rows?
         int nRows = table.nRows();
         int showNRows = nRows;
-        if (showFirstNRows >= 0 && rowsShown + nRows > showFirstNRows)
-            showNRows = showFirstNRows - rowsShown;
+        if (rowsShown + nRows > showFirstNRows) {    //there are excess rows
+            showNRows = showFirstNRows - rowsShown;  //may be negative        
+            allDataDisplayed = false;
+            noMoreDataPlease = true;
+        }
+
+        //write the data
         for (int row = 0; row < showNRows; row++) {
             writer.write("<tr>\n");
             for (int col = 0; col < nColumns; col++) {
@@ -248,16 +310,23 @@ public class TableWriterHtmlTable extends TableWriter {
     /**
      * This writes any end-of-file info to the stream and flushes the stream.
      *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
-        //check for EDStatic.THERE_IS_NO_DATA
+        //check for MustBe.THERE_IS_NO_DATA
         if (writer == null)
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
 
         //close the table
         writer.write(
             "</table>\n");
+
+        //  isMBLimited and !allDataDisplayed
+        if (isMBLimited &&  !allDataDisplayed) 
+            writer.write("<font class=\"warningColor\">" + 
+                EDStatic.htmlTableMaxMessage + "</font>" +
+                (xhtmlMode? "<br />" : "<br>") +
+                "\n");  
 
         //close the document
         writer.write(postTableHtml);

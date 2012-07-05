@@ -29,8 +29,6 @@ import java.util.Vector;
  */
 public abstract class PointDataSet implements Comparable { 
 
-    final static String ERROR = String2.ERROR;
-
     /**
      * Set this to true (by calling verbose=true in your program, not but changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
@@ -209,7 +207,7 @@ public abstract class PointDataSet implements Comparable {
      * @throws Exception if trouble
      */
     public void ensureValid() throws Exception {
-        String errorInMethod = ERROR + " in PointDataSet.ensureValid for " + internalName + ":\n";
+        String errorInMethod = String2.ERROR + " in PointDataSet.ensureValid for " + internalName + ":\n";
         
         //altXxx see below
         Test.ensureNotNull( boldTitle,                errorInMethod + "boldTitle is null!");
@@ -367,7 +365,7 @@ public abstract class PointDataSet implements Comparable {
         int timePeriodNSeconds = timePeriodNHours * Calendar2.SECONDS_PER_HOUR;
         int oneMonthsHours = TimePeriods.getNHours("1 month");
         Test.ensureTrue(timePeriodNHours <= oneMonthsHours, 
-            ERROR + " in " + info + ":\n timePeriod (" + timePeriod + ") is longer than 1 month.");
+            String2.ERROR + " in " + info + ":\n timePeriod (" + timePeriod + ") is longer than 1 month.");
         boolean timePeriodIs1Month = timePeriodNHours == oneMonthsHours;
 
         //calculate the clean  isoMinT and maxT
@@ -567,7 +565,7 @@ public abstract class PointDataSet implements Comparable {
                 int last  = Math2.binaryFindLastLAE9(timePeriodBeginTime, tTime); //last of interest
                 /*
                 if (first > last) 
-                    String2.log(ERROR + " in " + info + ":\n  firstGE or lastLE error:\n " +
+                    String2.log(String2.ERROR + " in " + info + ":\n  firstGE or lastLE error:\n " +
                         " firstGE=" + first + 
                         " lastLE=" + last + " n=" + nTimePeriods + 
                         " time=" + tTime + "=" + Calendar2.epochSecondsToIsoStringT(tTime));

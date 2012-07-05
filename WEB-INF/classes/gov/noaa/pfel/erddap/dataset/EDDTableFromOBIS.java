@@ -648,7 +648,14 @@ public class EDDTableFromOBIS extends EDDTable{
                 table, true, //true=includeXYZTID because I often want T and ID (otherwise hard to get)
                 resultsVariables.toArray());
         } catch (Throwable t) {
-            throw new Throwable(EDStatic.errorFromDataSource + t.toString(), t);
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+
+            //if too much data, rethrow t
+            String tToString = t.toString();
+            if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+                throw t;
+
+            throw new Throwable(EDStatic.errorFromDataSource + tToString, t);
         }
         //if (reallyVerbose) String2.log(table.toString());
         table.setColumnName(table.findColumnNumber("LON"),   "darwin:Longitude");
@@ -1370,7 +1377,7 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
 
 
         try {
-            EDDTable dukeSeamap = (EDDTable)oneFromDatasetXml("dukeSeamap"); //should work
+            EDDTable dukeSeamap = (EDDTable)oneFromDatasetXml("dukeSeamap"); 
             userDapQuery = "longitude,latitude,time,ID,Genus,Species,Citation&Genus=\"Carcharodon\"&time>=1990-01-01"; 
             tName = dukeSeamap.makeNewFileForDapQuery(null, null, userDapQuery, 
                 EDStatic.fullTestCacheDirectory, dukeSeamap.className() + "duke", ".csv"); 
@@ -1408,7 +1415,7 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
         String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
 
         EDDTable argos = (EDDTable)oneFromDatasetXml("aadcArgos"); 
-        userDapQuery = "longitude,latitude,time,ID,Genus,Species&Genus=Aptenodytes&time<=2008-01-01"; 
+        userDapQuery = "longitude,latitude,time,ID,Genus,Species&Genus=\"Aptenodytes\"&time<=2008-01-01"; 
         tName = argos.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
             argos.className() + "Argos", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -1426,8 +1433,8 @@ Ursus (25), Xiphias (16), Zalophus (4668), Ziphius (455)
         testGenerateDatasetsXml();
 
         //not usually done
-        //testSeamap();
-        //testArgos();
+        //testSeamap();  //doesn't work
+        //testArgos();   //doesn't work
         //EDD.testDasDds("rutgersGhmp");
         //EDD.testDasDds("rutgersSeamap");
         //EDD.testDasDds("rutgersGombis");

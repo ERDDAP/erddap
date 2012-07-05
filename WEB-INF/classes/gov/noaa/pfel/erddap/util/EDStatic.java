@@ -4,6 +4,7 @@
  */
 package gov.noaa.pfel.erddap.util;
 
+import com.cohort.array.PrimitiveArray;
 import com.cohort.array.Attributes;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -652,6 +653,7 @@ public static boolean developmentMode = false;
         fileHelpTable_nc,
         fileHelp_ncHeader,
         fileHelp_ncCF,
+        fileHelp_ncCFMA,
         fileHelpGrid_odvTxt,
         fileHelpTable_odvTxt,
         fileHelp_subset,
@@ -682,6 +684,7 @@ public static boolean developmentMode = false;
         functionOrderBySortLeast,
         functionOrderBySortRowMax,
         getStartedHtml,
+        htmlTableMaxMessage,
         imageDataCourtesyOf,
         indexViewAll,
         indexSearchWith,
@@ -819,7 +822,7 @@ public static boolean developmentMode = false;
         magZoomData,
         magZoomOutData,
         magGridHtml,
-        magTableHtml,
+        magTableHtml,        
         metadataDownload,
         moreInformation,
         nMatching1,
@@ -1032,8 +1035,6 @@ public static boolean developmentMode = false;
         subsetNotSetUp,
         subsetLongNotShown,
 
-        THERE_IS_NO_DATA,
-        thereIsTooMuchData,
         unknownDatasetID,
         unknownProtocol,
         unsupportedFileType,
@@ -1613,6 +1614,19 @@ wcsActive = false;
         advancedSearchWithCriteria = messages.getNotNothingString("advancedSearchWithCriteria", errorInMethod);
         advancedSearchFewerCriteria = messages.getNotNothingString("advancedSearchFewerCriteria", errorInMethod);
         advancedSearchNoCriteria   = messages.getNotNothingString("advancedSearchNoCriteria",   errorInMethod);
+        PrimitiveArray.ArrayAddN           = messages.getNotNothingString("ArrayAddN",          errorInMethod);
+        PrimitiveArray.ArrayAppendTables   = messages.getNotNothingString("ArrayAppendTables",  errorInMethod);
+        PrimitiveArray.ArrayDiff           = messages.getNotNothingString("ArrayDiff",          errorInMethod);
+        PrimitiveArray.ArrayDifferentSize  = messages.getNotNothingString("ArrayDifferentSize", errorInMethod);
+        PrimitiveArray.ArrayDifferentValue = messages.getNotNothingString("ArrayDifferentValue",errorInMethod);
+        PrimitiveArray.ArrayDiffString     = messages.getNotNothingString("ArrayDiffString",    errorInMethod);
+        PrimitiveArray.ArrayMissingValue   = messages.getNotNothingString("ArrayMissingValue",  errorInMethod);
+        PrimitiveArray.ArrayNotAscending   = messages.getNotNothingString("ArrayNotAscending",  errorInMethod);
+        PrimitiveArray.ArrayNotDescending  = messages.getNotNothingString("ArrayNotDescending", errorInMethod);
+        PrimitiveArray.ArrayNotEvenlySpaced= messages.getNotNothingString("ArrayNotEvenlySpaced",errorInMethod);
+        PrimitiveArray.ArrayRemove         = messages.getNotNothingString("ArrayRemove",        errorInMethod);
+        PrimitiveArray.ArraySubsetStart    = messages.getNotNothingString("ArraySubsetStart",   errorInMethod);
+        PrimitiveArray.ArraySubsetStride   = messages.getNotNothingString("ArraySubsetStride",  errorInMethod);
         categoryTitleHtml          = messages.getNotNothingString("categoryTitleHtml",          errorInMethod);
         category1Html              = messages.getNotNothingString("category1Html",              errorInMethod);
         category2Html              = messages.getNotNothingString("category2Html",              errorInMethod);
@@ -1796,6 +1810,7 @@ wcsActive = false;
         fileHelpTable_nc           = messages.getNotNothingString("fileHelpTable_nc",           errorInMethod);
         fileHelp_ncHeader          = messages.getNotNothingString("fileHelp_ncHeader",          errorInMethod);
         fileHelp_ncCF              = messages.getNotNothingString("fileHelp_ncCF",              errorInMethod);
+        fileHelp_ncCFMA            = messages.getNotNothingString("fileHelp_ncCFMA",            errorInMethod);
         fileHelpGrid_odvTxt        = messages.getNotNothingString("fileHelpGrid_odvTxt",        errorInMethod);
         fileHelpTable_odvTxt       = messages.getNotNothingString("fileHelpTable_odvTxt",       errorInMethod);
         fileHelp_subset            = messages.getNotNothingString("fileHelp_subset",            errorInMethod);
@@ -1826,6 +1841,8 @@ wcsActive = false;
         functionOrderBySortLeast   = messages.getNotNothingString("functionOrderBySortLeast",   errorInMethod);
         functionOrderBySortRowMax  = messages.getNotNothingString("functionOrderBySortRowMax",  errorInMethod);
         getStartedHtml             = messages.getNotNothingString("getStartedHtml",             errorInMethod);
+        TableWriterHtmlTable.htmlTableMaxMB     = messages.getInt("htmlTableMaxMB", TableWriterHtmlTable.htmlTableMaxMB);                                   
+        htmlTableMaxMessage        = messages.getNotNothingString("htmlTableMaxMessage",        errorInMethod);
         imageDataCourtesyOf        = messages.getNotNothingString("imageDataCourtesyOf",        errorInMethod);
         imageWidths                = String2.toIntArray(String2.split(messages.getNotNothingString("imageWidths",  errorInMethod), ','));
         imageHeights               = String2.toIntArray(String2.split(messages.getNotNothingString("imageHeights", errorInMethod), ','));
@@ -1966,8 +1983,17 @@ wcsActive = false;
         magZoomOutData             = messages.getNotNothingString("magZoomOutData",             errorInMethod);
         magGridHtml                = messages.getNotNothingString("magGridHtml",                errorInMethod);
         magTableHtml               = messages.getNotNothingString("magTableHtml",               errorInMethod);
+        Math2.memoryTooMuchData    = messages.getNotNothingString("memoryTooMuchData",          errorInMethod);
+        Math2.memoryArraySize      = messages.getNotNothingString("memoryArraySize",            errorInMethod);
+      Math2.memoryThanCurrentlySafe= messages.getNotNothingString("memoryThanCurrentlySafe",    errorInMethod);
+        Math2.memoryThanSafe       = messages.getNotNothingString("memoryThanSafe",             errorInMethod);
         metadataDownload           = messages.getNotNothingString("metadataDownload",           errorInMethod);
         moreInformation            = messages.getNotNothingString("moreInformation",            errorInMethod);
+        MustBe.THERE_IS_NO_DATA    = messages.getNotNothingString("MustBeThereIsNoData",        errorInMethod);
+        MustBe.NotNull             = messages.getNotNothingString("MustBeNotNull",              errorInMethod);
+        MustBe.NotEmpty            = messages.getNotNothingString("MustBeNotEmpty",             errorInMethod);
+        MustBe.InternalError       = messages.getNotNothingString("MustBeInternalError",        errorInMethod);
+        MustBe.OutOfMemoryError    = messages.getNotNothingString("MustBeOutOfMemoryError",     errorInMethod);
         nMatching1                 = messages.getNotNothingString("nMatching1",                 errorInMethod);
         nMatchingAlphabetical      = messages.getNotNothingString("nMatchingAlphabetical",      errorInMethod);
         nMatchingMostRelevant      = messages.getNotNothingString("nMatchingMostRelevant",      errorInMethod);
@@ -2181,13 +2207,12 @@ wcsActive = false;
         subsetLongNotShown         = messages.getNotNothingString("subsetLongNotShown",         errorInMethod);
 
         theLongDescriptionHtml     = messages.getNotNothingString("theLongDescriptionHtml",     errorInMethod);
-        THERE_IS_NO_DATA           = messages.getNotNothingString("thereIsNoData",              errorInMethod);
-        thereIsTooMuchData         = messages.getNotNothingString("thereIsTooMuchData",         errorInMethod);
         unknownDatasetID           = messages.getNotNothingString("unknownDatasetID",           errorInMethod);
         unknownProtocol            = messages.getNotNothingString("unknownProtocol",            errorInMethod);
         unsupportedFileType        = messages.getNotNothingString("unsupportedFileType",        errorInMethod);
         viewAllDatasetsHtml        = messages.getNotNothingString("viewAllDatasetsHtml",        errorInMethod);
         waitThenTryAgain           = messages.getNotNothingString("waitThenTryAgain",           errorInMethod);
+        gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException.waitThenTryAgain = waitThenTryAgain;
         sosDescriptionHtml         = messages.getNotNothingString("sosDescriptionHtml",         errorInMethod);
         sosLongDescriptionHtml     = messages.getNotNothingString("sosLongDescriptionHtml",     errorInMethod); 
         wcsDescriptionHtml         = messages.getNotNothingString("wcsDescriptionHtml",         errorInMethod);
@@ -2699,15 +2724,17 @@ wcsActive = false;
         //if it is a small request, don't take the time/effort to check 
         if (nBytes < partialRequestMaxBytes) 
             return;
+        String attributeToParen = 
+            attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")";
         
         //is the request too big under any circumstances?
         if (nBytes > Math2.maxSafeMemory) {
             tally.add("Request refused: not enough memory ever (since startup)", attributeTo);
             tally.add("Request refused: not enough memory ever (since last daily report)", attributeTo);
-            throw new RuntimeException(
-                "The request needs more memory (" + (nBytes / Math2.BytesPerMB) + 
-                " MB) than is ever safely available in this Java setup (" + 
-                (Math2.maxSafeMemory / Math2.BytesPerMB) + " MB) (" + attributeTo + ")."); 
+            throw new RuntimeException(Math2.memoryTooMuchData + "  " +
+                MessageFormat.format(Math2.memoryThanSafe, "" + (nBytes / Math2.BytesPerMB),  
+                    "" + (Math2.maxSafeMemory / Math2.BytesPerMB)) +
+                attributeToParen); 
         }
 
         //request is fine without gc?
@@ -2734,9 +2761,11 @@ wcsActive = false;
         if (memoryInUse + nBytes > Math2.maxSafeMemory) {
             tally.add("Request refused: not enough memory currently (since startup)", attributeTo);
             tally.add("Request refused: not enough memory currently (since last daily report)", attributeTo);
-            throw new RuntimeException(thereIsTooMuchData +
-                " The request needs more memory (" + (nBytes / Math2.BytesPerMB) + 
-                " MB) than is currently available (" + attributeTo + ")."); 
+            throw new RuntimeException(Math2.memoryTooMuchData + "  " +
+                MessageFormat.format(Math2.memoryThanCurrentlySafe,
+                    "" + (nBytes / Math2.BytesPerMB), 
+                    "" + ((Math2.maxSafeMemory - memoryInUse) / Math2.BytesPerMB)) +
+                attributeToParen); 
         }
     }
 
@@ -2755,9 +2784,10 @@ wcsActive = false;
         if (tSize >= Integer.MAX_VALUE) {
             tally.add("Request refused: array size >= Integer.MAX_VALUE (since startup)", attributeTo);
             tally.add("Request refused: array size >= Integer.MAX_VALUE (since last daily report)", attributeTo);
-            throw new RuntimeException(thereIsTooMuchData +
-                " The request needs an array size (" + tSize + 
-                ") bigger than Java ever allows (" + Integer.MAX_VALUE + "). (" + attributeTo + ")"); 
+            throw new RuntimeException(Math2.memoryTooMuchData + "  " +
+                MessageFormat.format(Math2.memoryArraySize, 
+                    "" + tSize, "" + Integer.MAX_VALUE) +
+                (attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")"));
         }
     }
 
@@ -3030,7 +3060,8 @@ wcsActive = false;
         //    "\nexpPassword=" + expected);
 
         boolean ok = observed.equals(expected);
-        String2.log("loggedInAs=" + loggedInAs + " password matched: " + ok);
+        if (reallyVerbose)
+            String2.log("loggedInAs=" + loggedInAs + " password matched: " + ok);
         return ok; 
     }
 
@@ -3062,9 +3093,10 @@ wcsActive = false;
      *
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param datasetID  or use "" for general login.
+     * @throws Throwable (notably ClientAbortException)
      */
     public static void redirectToLogin(String loggedInAs, 
-        HttpServletResponse response, String datasetID) {
+        HttpServletResponse response, String datasetID) throws Throwable {
 
         String message = null;
         try {
@@ -3095,6 +3127,7 @@ wcsActive = false;
             return;
 
         } catch (Throwable t2) {
+            EDStatic.rethrowClientAbortException(t2);  //first thing in catch{}
             String2.log("Error in redirectToLogin:\n" + 
                 (message == null? "" : message + "\n") +
                 MustBe.throwableToString(t2));
@@ -3803,7 +3836,7 @@ wcsActive = false;
         if (searchFor == null)
             searchFor = "";
         return new String[] {
-            THERE_IS_NO_DATA,
+            MustBe.THERE_IS_NO_DATA,
             (searchFor.length()     >  0? searchSpelling + " " : "") +
             (searchFor.indexOf(' ') >= 0? searchFewerWords : "")};
     }
@@ -3892,6 +3925,35 @@ wcsActive = false;
     }
 
 
+    /**
+     * This indicates if t is a ClientAbortException.
+     *
+     * @param t the exception
+     * @return true if t is a ClientAbortException.
+     * @throws Throwable
+     */
+    public static boolean isClientAbortException(Throwable t) {
+        String tString = t.toString();
+        return tString.indexOf("ClientAbortException") >= 0;
+    }
+
+    /**
+     * If t is a ClientAbortException, this will rethrow it.
+     * org.apache.catalina.connector.ClientAbortException is hard to catch
+     * since catalina code is linked in after deployment.
+     * So this looks for the string.
+     *
+     * Normal use: Use this first thing in catch, before calling 
+     * requestReloadASAP and throwing WaitThenTryAgainException.
+     *
+     * @param t the exception which will be thrown again if it is a ClientAbortException
+     * @throws Throwable
+     */
+    public static void rethrowClientAbortException(Throwable t) throws Throwable {
+        if (isClientAbortException(t)) 
+            throw t;
+    }
+    
 
     /** 
      * This tests some of the methods in this class.

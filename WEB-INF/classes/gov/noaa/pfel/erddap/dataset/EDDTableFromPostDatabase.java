@@ -926,7 +926,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
                 results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 throw new Exception("Shouldn't get here.");
             } catch (Throwable t) {
-                if (t.toString().indexOf(EDStatic.THERE_IS_NO_DATA) < 0)
+                if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                     throw new Exception("Should have been THERE_IS_NO_DATA: " +
                         MustBe.throwableToString(t));
             }
@@ -941,7 +941,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postSurg3.das\";\n" +
                 results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 throw new Exception("Shouldn't get here.");
             } catch (Throwable t) {
-                if (t.toString().indexOf(EDStatic.THERE_IS_NO_DATA) < 0)
+                if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                     throw new Exception("Should have been THERE_IS_NO_DATA: " +
                         MustBe.throwableToString(t));
             }
@@ -1279,7 +1279,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet3.das\";\n" +
                 results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 throw new Exception("Shouldn't get here.");
             } catch (Throwable t) {
-                if (t.toString().indexOf(EDStatic.THERE_IS_NO_DATA) < 0)
+                if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                     throw new Exception("Should have been THERE_IS_NO_DATA: " +
                         MustBe.throwableToString(t));
             }
@@ -1294,7 +1294,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet3.das\";\n" +
                 results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 throw new Exception("Shouldn't get here.");
             } catch (Throwable t) {
-                if (t.toString().indexOf(EDStatic.THERE_IS_NO_DATA) < 0)
+                if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                     throw new Exception("Should have been THERE_IS_NO_DATA: " +
                         MustBe.throwableToString(t));
             }

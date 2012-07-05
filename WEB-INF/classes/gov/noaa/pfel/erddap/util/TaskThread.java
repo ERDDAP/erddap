@@ -26,9 +26,6 @@ import java.util.ArrayList;
  */
 public class TaskThread extends Thread {
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
 //PLEASE: make parameters from objects that have nice .toString(),
 //e.g., StringArray instead of String[].
 

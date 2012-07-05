@@ -43,9 +43,6 @@ import dods.dap.*;
  */
 public class Opendap  {
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     /**
      * Set this to true (by calling verbose=true in your program, not but changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
@@ -168,7 +165,7 @@ public class Opendap  {
                 return das.getAttributeTable(s);
             }
         }
-        Test.error(ERROR + " in Opendap.getGlobalAttributeTable:\n" +
+        Test.error(String2.ERROR + " in Opendap.getGlobalAttributeTable:\n" +
             "'GLOBAL' attribute table not found for " + url);
         return null;
     }
@@ -267,7 +264,7 @@ Dataset {
     public void getGridInfo(DAS das, DDS dds, String gridName, String defaultMissingValue) 
             throws Exception {
         long time = System.currentTimeMillis();
-        String errorInMethod = ERROR + " in Opendap.getGridInfo(" + gridName + "):\n  ";
+        String errorInMethod = String2.ERROR + " in Opendap.getGridInfo(" + gridName + "):\n  ";
 
         if (verbose) 
             String2.log("Opendap.getGridInfo for " + gridName);
@@ -469,7 +466,7 @@ Dataset {
         IntArray timeOptionsIndexIA = new IntArray();
         int nTimeValues = timeArray.length;
         String errorInMethod =
-            ERROR + " in Opendap.getTimeOptions\n  url = " + url + "\n  ";
+            String2.ERROR + " in Opendap.getTimeOptions\n  url = " + url + "\n  ";
         if (verbose) String2.log("timeLongName=" + timeLongName);
         for (int i = 0; i < nTimeValues; i++) {
             double d = timeArray[i];
@@ -554,7 +551,7 @@ Dataset {
         if (verbose) {
             String2.log(msg);
         }
-        String errorInMethod = ERROR + " in " + msg + ":\n";
+        String errorInMethod = String2.ERROR + " in " + msg + ":\n";
 
         if (minX > maxX) 
             Test.error(errorInMethod +
@@ -685,7 +682,7 @@ Dataset {
                         "\n  timeDimensionName=" + gridDimensionNames[gridTimeDimension] +
                         "\n  expectedTime=" + expectedTime +
                         "\n  times=" + times);
-                    throw new RuntimeException(ERROR + ":\n" + 
+                    throw new RuntimeException(String2.ERROR + ":\n" + 
                         WAIT_THEN_TRY_AGAIN); //this message encourages getting new Shared in Browser.java
                 }
 
@@ -703,7 +700,7 @@ Dataset {
         if (minIndex[gridLatDimension] == -1 || 
             maxIndex[gridLatDimension] == -1) {
             throw new RuntimeException(errorInMethod +
-                "  " + DataHelper.THERE_IS_NO_DATA + "\n" +
+                "  " + MustBe.THERE_IS_NO_DATA + "\n" +
                 "  requested: minY=" + String2.genEFormat10(minY) + 
                             " maxY=" + String2.genEFormat10(maxY) + "\n" +
                 "  available: minY=" + String2.genEFormat10(getLat(0)) + 
@@ -853,7 +850,7 @@ Dataset {
             if (minIndex[gridLonDimension] == -1 || 
                 maxIndex[gridLonDimension] == -1) 
                 throw new RuntimeException(errorInMethod +
-                    "  " + DataHelper.THERE_IS_NO_DATA + "\n" +
+                    "  " + MustBe.THERE_IS_NO_DATA + "\n" +
                     "  requested: getMinX=" + String2.genEFormat10(getMinX) + 
                                 " getMaxX=" + String2.genEFormat10(getMaxX) + "\n" +
                     "  available: minX=" + String2.genEFormat10(getLon(0)) + 
@@ -997,7 +994,7 @@ Dataset {
             double expectedMinTime = gridDimensionData[gridTimeDimension][minIndex[gridTimeDimension]];
             if (observedMinTime != expectedMinTime) {
                 String2.log(
-                    ERROR + ": Opendap.makeGrid post-check of time failed!" +
+                    String2.ERROR + ": Opendap.makeGrid post-check of time failed!" +
                     "\n  url=" + url +
                     "\n  timeDimensionName=" + gridDimensionNames[gridTimeDimension] +
                     "\n  expectedMinTime=" + expectedMinTime +

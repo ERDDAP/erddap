@@ -97,12 +97,6 @@ public abstract class EDDTable extends EDD {
     public final static String dapProtocol = "tabledap"; 
     public final static String SEQUENCE_NAME = "s"; //same for all datasets
    
-
-    /** The regular expression operator. The OPeNDAP spec says =~, so that is the ERDDAP standard.
-     * But some implementations use ~=, so see sourceRegexOp. 
-     * See also Table.REGEX_OP. */
-    public final static String REGEX_OP = "=~";
-
     /** 
      * This is a list of all operator symbols (for my convenience in parseUserDapQuery: 
      * 2 letter ops are first). 
@@ -116,12 +110,12 @@ public abstract class EDDTable extends EDD {
      */
     public final static String OPERATORS[] = { 
         //EDDTableFromFiles.isOK relies on this order
-        "!=", REGEX_OP, "<=", ">=",   
+        "!=", PrimitiveArray.REGEX_OP, "<=", ">=",   
         "=", "<", ">"}; 
     /** Partially Percent Encoded Operators ('=' is not encoded)*/
     public final static String PPE_OPERATORS[] = { 
         //EDDTableFromFiles.isOK relies on this order
-        "!=", REGEX_OP, "%3C=", "%3E=",   
+        "!=", PrimitiveArray.REGEX_OP, "%3C=", "%3E=",   
         "=", "%3C", "%3E"}; 
     private final static int opDefaults[] = {
         String2.indexOf(OPERATORS, ">="),
@@ -130,14 +124,14 @@ public abstract class EDDTable extends EDD {
     /** These parallel OPERATORS, but &gt; and &lt; operators are reversed.
         These are used when converting altitude constraints to depth constraints. */
     public final static String REVERSED_OPERATORS[] = { 
-        "!=", REGEX_OP, ">=", "<=",   
+        "!=", PrimitiveArray.REGEX_OP, ">=", "<=",   
         "=", ">", "<"}; 
 
     /** A list of the greater-than less-than operators, which some sources can't handle for strings. */
     public final static String GTLT_OPERATORS[] = {
         "<=", ">=", "<", ">"}; 
     /** The index of REGEX_OP in OPERATORS. */
-    public static int REGEX_OP_INDEX = String2.indexOf(OPERATORS, REGEX_OP);
+    public static int REGEX_OP_INDEX = String2.indexOf(OPERATORS, PrimitiveArray.REGEX_OP);
 
     /** This is used in many file types as the row identifier. */
     public final static String ROW_NAME = "row";
@@ -147,12 +141,12 @@ public abstract class EDDTable extends EDD {
         ".asc", ".csv", ".csvp", ".das", ".dds", 
         ".dods", ".esriCsv", ".fgdc", ".geoJson", ".graph", ".help", ".html", 
         ".htmlTable", ".iso19115", ".json", ".mat", ".nc", ".ncHeader", 
-        ".ncCF", ".odvTxt", ".subset", ".tsv", ".tsvp", ".xhtml"};
+        ".ncCF", ".ncCFMA", ".odvTxt", ".subset", ".tsv", ".tsvp", ".xhtml"};
     public final static String[] dataFileTypeExtensions = {
         ".asc", ".csv", ".csv", ".das", ".dds", 
         ".dods", ".csv", ".xml", ".json", ".html", ".html", ".html", 
         ".html", ".xml", ".json", ".mat", ".nc", ".txt",
-        ".nc", ".txt", ".html",   ".tsv", ".tsv", ".xhtml"};
+        ".nc", ".nc", ".txt", ".html",   ".tsv", ".tsv", ".xhtml"};
     //These all used to have " (It may take a while. Please be patient.)" at the end.
     public static String[] dataFileTypeDescriptions = {
         EDStatic.fileHelp_asc,
@@ -174,6 +168,7 @@ public abstract class EDDTable extends EDD {
         EDStatic.fileHelpTable_nc,
         EDStatic.fileHelp_ncHeader,
         EDStatic.fileHelp_ncCF,
+        EDStatic.fileHelp_ncCFMA,
         EDStatic.fileHelpTable_odvTxt,
         EDStatic.fileHelp_subset,
         EDStatic.fileHelp_tsv,
@@ -200,7 +195,8 @@ public abstract class EDDTable extends EDD {
         "http://www.mathworks.com/", //mat
         "http://www.unidata.ucar.edu/software/netcdf/", //nc
         "http://www.unidata.ucar.edu/software/netcdf/docs/ncdump-man-1.html", //ncHeader
-        "https://cf-pcmdi.llnl.gov/trac/wiki/PointObservationConventions", //ncCF Discrete Sampling Geometries (out-of-date)
+        "http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries", //ncCF Discrete Sampling Geometries 
+        "http://www.nodc.noaa.gov/data/formats/netcdf/", //.ncCFMA
         "http://odv.awi.de/en/documentation/", //odv
         "http://en.wikipedia.org/wiki/Faceted_search",  //subset
         "http://www.cs.tut.fi/~jkorpela/TSV.html",  //tsv
@@ -256,7 +252,8 @@ public abstract class EDDTable extends EDD {
           "application/json",     
         "application/x-matlab-mat",  //??? made up, x=nonstandard
           "application/x-netcdf",       //see http://www.wussu.com/various/mimetype.htm
-          "application/x-netcdf", //nccf, see http://www.wussu.com/various/mimetype.htm
+          "application/x-netcdf", //ncCF, see http://www.wussu.com/various/mimetype.htm
+          "application/x-netcdf", //ncCFMA
           "text/tab-separated-values",     
         "application/xhtml+xml"};
     /** These are the corresponding tabledap dataFileTypeNames, not the final file extensions. */
@@ -274,6 +271,7 @@ public abstract class EDDTable extends EDD {
         ".mat",     
           ".nc", 
           ".ncCF", 
+          ".ncCFMA", 
           ".odvTxt",     
         ".xhtml"};
     //** And there are analogouse arrays for image formats (enable these when variables can be accessed separately)
@@ -345,7 +343,7 @@ public abstract class EDDTable extends EDD {
     protected boolean sourceNeedsExpandedFP_EQ = false; //but some subclasses default to true
     /** Some sources can constrain String regexes (use =~ or ~=); some can't (use ""). 
         standardizeResultsTable always (re)tests regex constraints (so =~ here acts like PARTIAL).
-        See REGEX_OP.*/
+        See PrimitiveArray.REGEX_OP.*/
     protected String sourceCanConstrainStringRegex = ""; 
 
     /** If present, these dataVariables[xxxIndex] values are set by the constructor.  
@@ -464,7 +462,7 @@ public abstract class EDDTable extends EDD {
                 String colName = table.getColumnName(col);
                 int which = String2.indexOf(dataVariableDestinationNames(), colName);                    
                 if (which < 0) 
-                    throw new SimpleException(ERROR + ": column=" + colName + 
+                    throw new SimpleException(String2.ERROR + ": column=" + colName + 
                         " in subsetVariables isn't in dataVariables=\"" +
                         String2.toCSSVString(dataVariableDestinationNames()) + "\".");
                 EDV edv = dataVariables[which];
@@ -781,7 +779,7 @@ public abstract class EDDTable extends EDD {
             //Only valid numeric constraintValue NaN is "NaN".
             //Test this because it helps discover other constraint syntax errors.
             if (destClass != String.class &&
-                !constraintOp.equals(REGEX_OP) &&
+                !constraintOp.equals(PrimitiveArray.REGEX_OP) &&
                 Double.isNaN(constraintValueD) && 
                 !constraintValue.equals("NaN"))
                 throw new SimpleException(EDStatic.queryError +
@@ -794,18 +792,19 @@ public abstract class EDDTable extends EDD {
                 //it's a fixedValue; do constraint now
                 //pass=that's nice    fail=NO DATA
                 boolean tPassed = false;
-                if (edv.sourceDataTypeClass() == float.class) 
-                    tPassed = Table.testValueOpValue(String2.parseFloat(edv.fixedValue()),
-                        constraintOp, constraintValueD);
-                else if (edv.sourceDataTypeClass() == double.class) 
-                    tPassed = Table.testValueOpValue(String2.parseDouble(edv.fixedValue()),
-                        constraintOp, constraintValueD);
-                else
-                    tPassed = Table.testValueOpValue(edv.fixedValue(),  
+                if (edv.sourceDataTypeClass() == String.class ||
+                    constraintOp.equals(PrimitiveArray.REGEX_OP)) 
+                    tPassed = PrimitiveArray.testValueOpValue(edv.fixedValue(),  
                         constraintOp, constraintValue);
+                else if (edv.sourceDataTypeClass() == float.class) 
+                    tPassed = PrimitiveArray.testValueOpValue(String2.parseFloat(edv.fixedValue()),
+                        constraintOp, constraintValueD);
+                else  
+                    tPassed = PrimitiveArray.testValueOpValue(String2.parseDouble(edv.fixedValue()),
+                        constraintOp, constraintValueD);
 
                 if (!tPassed)
-                    throw new SimpleException(EDStatic.THERE_IS_NO_DATA + " " +
+                    throw new SimpleException(MustBe.THERE_IS_NO_DATA + " " +
                         MessageFormat.format(EDStatic.noDataFixedValue, edv.destinationName(), 
                             edv.fixedValue() + constraintOp + constraintValueD));
 
@@ -819,7 +818,7 @@ public abstract class EDDTable extends EDD {
             //constraint source is String                  
             } else if (sourceClass == String.class) {
                 if (sourceCanConstrainStringData == CONSTRAIN_NO ||
-                    (constraintOp.equals(REGEX_OP) && sourceCanConstrainStringRegex.length() == 0)) {
+                    (constraintOp.equals(PrimitiveArray.REGEX_OP) && sourceCanConstrainStringRegex.length() == 0)) {
                     //remove from constraints and constrain after the fact in standardizeResultsTable
                     constraintVariables.remove(cv);
                     constraintOps.remove(cv);
@@ -833,7 +832,7 @@ public abstract class EDDTable extends EDD {
                 //if source handling is NO or PARTIAL, data is needed to do the test in standardizeResultsTable
                 if (sourceCanConstrainStringData == CONSTRAIN_NO ||
                     sourceCanConstrainStringData == CONSTRAIN_PARTIAL ||
-                    constraintOp.equals(REGEX_OP)) {    //regex always (also) done in standardizeResultsTable
+                    constraintOp.equals(PrimitiveArray.REGEX_OP)) {    //regex always (also) done in standardizeResultsTable
                     if (resultsVariables.indexOf(constraintVariable) < 0)
                         resultsVariables.add(constraintVariable);
                 }
@@ -841,7 +840,7 @@ public abstract class EDDTable extends EDD {
             //constraint source is numeric
             } else {  
                 if (sourceCanConstrainNumericData == CONSTRAIN_NO ||
-                    constraintOp.equals(REGEX_OP)) {
+                    constraintOp.equals(PrimitiveArray.REGEX_OP)) {
                     //remove from constraints and constrain after the fact in standardizeResultsTable
                     constraintVariables.remove(cv);
                     constraintOps.remove(cv);
@@ -884,7 +883,7 @@ public abstract class EDDTable extends EDD {
                 //if source handling is NO or PARTIAL, data is needed to do the test below
                 if (sourceCanConstrainNumericData == CONSTRAIN_NO ||
                     sourceCanConstrainNumericData == CONSTRAIN_PARTIAL ||
-                    constraintOp.equals(REGEX_OP)) {
+                    constraintOp.equals(PrimitiveArray.REGEX_OP)) {
                     if (resultsVariables.indexOf(constraintVariable) < 0)
                         resultsVariables.add(constraintVariable);
                 }
@@ -902,7 +901,7 @@ public abstract class EDDTable extends EDD {
             EDV edv = findDataVariableByDestinationName(constraintVariables.get(cv));
             constraintEdv[cv] = edv;
             constraintVarIsString[cv] = edv.sourceDataTypeClass() == String.class;
-            constraintOpIsRegex[cv] = constraintOps.get(cv).equals(REGEX_OP);
+            constraintOpIsRegex[cv] = constraintOps.get(cv).equals(PrimitiveArray.REGEX_OP);
             constraintValD[cv] = constraintValues.getDouble(cv);
             constraintValDIsNaN[cv] = Double.isNaN(constraintValD[cv]);
         }
@@ -914,7 +913,7 @@ public abstract class EDDTable extends EDD {
                 continue;
             EDV edv1 = constraintEdv[cv1];
             String op1 = constraintOps.get(cv1);
-            if (op1.equals(REGEX_OP))
+            if (op1.equals(PrimitiveArray.REGEX_OP))
                 continue;
             char ch1 = op1.charAt(0);
             double val1 = constraintValD[cv1];
@@ -1100,7 +1099,7 @@ public abstract class EDDTable extends EDD {
      *   If it doesn't, the variables are assumed to be all missing values.
      *   It may have additional variables.
      *   It doesn't need to already have globalAttributes or variable attributes.
-     *   If nRows=0, this throws SimpleException(EDStatic.THERE_IS_NO_DATA).
+     *   If nRows=0, this throws SimpleException(MustBe.THERE_IS_NO_DATA).
      * @throws Throwable if trouble (e.g., improper format or
      *    unrecognized variable).
      *    Because this may be called separately for each station, 
@@ -1114,7 +1113,7 @@ public abstract class EDDTable extends EDD {
         if (reallyVerbose) String2.log("\nstandardizeResultsTable incoming cols=" + table.getColumnNamesCSSVString());
         //String2.log("table=\n" + table.toString());
         if (table.nRows() == 0) 
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
 
         //pick the query apart
         StringArray resultsVariables    = new StringArray();
@@ -1152,13 +1151,15 @@ public abstract class EDDTable extends EDD {
                 continue;
             }
 
-            //convert source values to destination values
-            //missing values stay as source missing values
+            //set the attributes
             //String2.log("  col=" + col + " dv=" + dv + " nRows=" + nRows);
             EDV edv = dataVariables[dv];
             table.setColumnName(col, edv.destinationName());
             table.columnAttributes(col).clear(); //remove any existing atts
             table.columnAttributes(col).set(edv.combinedAttributes()); //make a copy
+
+            //convert source values to destination values
+            //(source fill&missing values become destination fill&missing values)
             table.setColumn(col, edv.toDestination(table.getColumn(col)));
         }
 
@@ -1173,13 +1174,15 @@ public abstract class EDDTable extends EDD {
 
 
     /**
-     * Given a table that contains the resultsVariables and constraintVariables,
+     * Given a table that contains the destination values (and destinationMV)
+     * for the resultsVariables and constraintVariables,
      * this applies the constraints (removing some rows of the table),
      * removes non-resultsVariables variables, sets results variable attributes,
      * and unsets actual_range metadata.
      *
-     * @param table  which contains the resultsVariables and constraintVariables,
-     *    and will be modified.
+     *
+     * @param table  which contains the destination values (and destinationMV)
+     *    for the resultsVariables and constraintVariables and will be modified.
      *    If a given variable is missing, it is assumed to be all missing values.
      * @param applyAllConstraints  if true, all constraints will be applied.
      *    If false, CONSTRAIN_YES constraints are not applied.
@@ -1217,8 +1220,10 @@ public abstract class EDDTable extends EDD {
                         "variable=" + edv.destinationName() + 
                         " not found in results table.");
                     col = table.nColumns();
+                    double dmv = edv.safeDestinationMissingValue();
                     table.addColumn(col, edv.destinationName(), 
-                        PrimitiveArray.factory(edv.destinationDataTypeClass(), nRows, ""),
+                        PrimitiveArray.factory(edv.destinationDataTypeClass(), nRows, 
+                            (Double.isNaN(dmv)? "" : "" + dmv)),
                         new Attributes(edv.combinedAttributes()));
 
                 } else if (col < rv) {
@@ -1267,7 +1272,7 @@ public abstract class EDDTable extends EDD {
                 } else if (sourceClass == String.class) {
                     if (sourceCanConstrainStringData == CONSTRAIN_NO ||
                         sourceCanConstrainStringData == CONSTRAIN_PARTIAL ||
-                        constraintOp.equals(REGEX_OP)) {  //always do all regex tests here (perhaps in addition to source)
+                        constraintOp.equals(PrimitiveArray.REGEX_OP)) {  //always do all regex tests here (perhaps in addition to source)
                         //fall through to test below
                     } else {
                         //source did the test
@@ -1278,7 +1283,7 @@ public abstract class EDDTable extends EDD {
                 } else {
                     if (sourceCanConstrainNumericData == CONSTRAIN_NO ||
                         sourceCanConstrainNumericData == CONSTRAIN_PARTIAL ||
-                        constraintOp.equals(REGEX_OP)) { //always do all regex tests here
+                        constraintOp.equals(PrimitiveArray.REGEX_OP)) { //always do all regex tests here
                         //fall through to test below
                     } else {
                         //source did the test
@@ -1289,59 +1294,32 @@ public abstract class EDDTable extends EDD {
 
             //The constraint needs to be tested here. Test it now.
             //Note that Time and Alt values have been converted to standardized units above.
+            PrimitiveArray dataPa = table.findColumn(constraintVariable); //throws Throwable if not found
             String constraintValue = constraintValues.get(cv);
-            double constraintValueD = String2.parseDouble(constraintValue);
             if (reallyVerbose) String2.log("  Handling constraint #" + cv + " here: " + 
                 constraintVariable + " " + constraintOp + " " + constraintValue);
-            boolean doStringTest = destClass == String.class ||
-                constraintOp.equals(REGEX_OP); //do numeric regex test via string Table.testValueOpValue
-            boolean doFloatTest = destClass == float.class && !constraintOp.equals(REGEX_OP);
-            //String2.log("    colNames=" + String2.toCSSVString(table.getColumnNames()));
-            PrimitiveArray dataPa = table.findColumn(constraintVariable); //throws Throwable if not found
-            int nStillGood = 0;
-            //just test the rows where keep==true
-            for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
-                boolean b = doStringTest?
-                    Table.testValueOpValue(dataPa.getString(row), constraintOp, constraintValue) :
-                    doFloatTest?
-                    Table.testValueOpValue(dataPa.getFloat(row), constraintOp, 
-                        //do constrantValue=NaN tests with safeDestinationMissingValue
-                        Double.isNaN(constraintValueD)? (float)edv.safeDestinationMissingValue() : (float)constraintValueD) :
-                    Table.testValueOpValue(dataPa.getDouble(row), constraintOp,
-                        //do constrantValue=NaN tests with safeDestinationMissingValue
-                        Double.isNaN(constraintValueD)? edv.safeDestinationMissingValue() : constraintValueD);
-                if (b) {
-                    nStillGood++;
-                } else {
-                    /*if (false) {
-                        if (doStringTest) {
-                            String2.log(
-                                "    constraint failed string test:" + 
-                                " data=" + dataPa.getString(row) + " " + constraintOp + 
-                                " constr=" + constraintValue);
-                        } else if (doFloatTest) {
-                            String2.log(
-                                "    constraint failed float test:" +
-                                " data=" + dataPa.getFloat(row) + " " + constraintOp + 
-                                " constr=" + (float)constraintValueD);
-                        } else {
-                            String2.log(
-                                "    constraint failed double test:" +
-                                " data=" + dataPa.getDouble(row) + " " + constraintOp + 
-                                " constr=" + constraintValueD);
-                        }
-                    }*/
-                    keep.clear(row);
-                }               
+            int nSwitched = 0;
+            if (sourceClass != String.class) {
+                nSwitched = dataPa.convertToStandardMissingValues(
+                    edv.destinationFillValue(), edv.destinationMissingValue());            
+                //String2.log("    nSwitched=" + nSwitched);
             }
+            int nStillGood = dataPa.applyConstraint(keep, constraintOp, constraintValue);
             if (reallyVerbose) String2.log("    nStillGood=" + nStillGood);
-        }
+            if (nStillGood == 0)
+                break;
+            if (nSwitched > 0)
+                dataPa.switchNaNToFakeMissingValue(edv.safeDestinationMissingValue());            
 
-        //remove the non-keep rows
-        table.justKeep(keep);
+            //if (cv == constraintVariables.size() - 1 && nStillGood > 0) String2.log(table.toString());
+
+        }
 
         //discard excess columns (presumably constraintVariables not handled by source)
         table.removeColumns(resultsVariables.size(), table.nColumns());
+
+        //remove the non-keep rows
+        table.justKeep(keep);
 
         //unsetActualRangeAndBoundingBox  (see comments in method javadocs above)
         //(see TableWriterAllWithMetadata which adds them back)
@@ -1762,7 +1740,7 @@ public abstract class EDDTable extends EDD {
                 }                
 
                 //if not for regex, convert isoString to epochSeconds 
-                if (OPERATORS[op] != REGEX_OP) {
+                if (OPERATORS[op] != PrimitiveArray.REGEX_OP) {
                     if (Calendar2.isIsoDate(tValue)) {
                         double valueD = repair? Calendar2.safeIsoStringToEpochSeconds(tValue) :
                             Calendar2.isoStringToEpochSeconds(tValue);
@@ -1873,7 +1851,7 @@ public abstract class EDDTable extends EDD {
                 //numeric variables
 
                 //if op=regex, value must have "'s around it
-                if (OPERATORS[op] == REGEX_OP) {
+                if (OPERATORS[op] == PrimitiveArray.REGEX_OP) {
                     if ((tValue.startsWith("\"") && tValue.endsWith("\"")) || repair) {
                         //repair if needed
                         if (!tValue.startsWith("\""))
@@ -2059,7 +2037,7 @@ public abstract class EDDTable extends EDD {
                 if (requestedMin[i] > requestedMax[i]) {
                     String minS = i == 3? Calendar2.epochSecondsToIsoStringT(requestedMin[3]) : "" + requestedMin[i];
                     String maxS = i == 3? Calendar2.epochSecondsToIsoStringT(requestedMax[3]) : "" + requestedMax[i];
-                    throw new SimpleException(EDStatic.THERE_IS_NO_DATA +
+                    throw new SimpleException(MustBe.THERE_IS_NO_DATA +
                         "\n(" + tName + " min=" + minS +
                         " is greater than max=" + maxS + ")");
                 }
@@ -2239,6 +2217,7 @@ public abstract class EDDTable extends EDD {
                 if (EDStatic.displayDiagnosticInfo) 
                     EDStatic.writeDiagnosticInfoHtml(writer);
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
             }
             writer.write(EDStatic.endBodyHtml(tErddapUrl));
@@ -2379,7 +2358,8 @@ public abstract class EDDTable extends EDD {
 
                 File2.isFile(cacheFullName, 5); //for possible waiting thread, wait till file is visible via operating system
 
-            } else if (fileTypeName.equals(".ncCF")) {
+            } else if (fileTypeName.equals(".ncCF") ||
+                       fileTypeName.equals(".ncCFMA")) {
                 //quick reject?
                 if (accessibleViaNcCF().length() > 0)
                     throw new SimpleException(accessibleViaNcCF);
@@ -2414,7 +2394,7 @@ public abstract class EDDTable extends EDD {
                     }
                     if (!ok) {
                         throw new SimpleException(EDStatic.queryError +
-                            ".ncCF queries for this dataset must at least one variable not on this list : " +
+                            ".ncCF and .ncCFMA queries for this dataset must at least one variable not on this list : " +
                             String2.toCSSVString(outerCfVariables) + ".");                    
                     }
                 }
@@ -2423,17 +2403,18 @@ public abstract class EDDTable extends EDD {
                 //get the data
                 twawm = getTwawmForDapQuery(loggedInAs, requestUrl, userDapQuery);
 
-                //make .ncCF file
+                //make .ncCF or .ncCFMA file
+                boolean nodcMode = fileTypeName.equals(".ncCFMA");
                 String cdmType = combinedGlobalAttributes.getString("cdm_data_type");
-                if (CDM_POINT.equals(cdmType))
+                if (CDM_POINT.equals(cdmType)) 
                     saveAsNcCF0(cacheFullName, twawm); 
                 else if (CDM_TIMESERIES.equals(cdmType) ||
                     CDM_PROFILE.equals(cdmType) ||
                     CDM_TRAJECTORY.equals(cdmType))
-                    saveAsNcCF1(cacheFullName, twawm); 
+                    saveAsNcCF1(nodcMode, cacheFullName, twawm); 
                 else if (CDM_TIMESERIESPROFILE.equals(cdmType) ||
                          CDM_TRAJECTORYPROFILE.equals(cdmType))
-                    saveAsNcCF2(cacheFullName, twawm); 
+                    saveAsNcCF2(nodcMode, cacheFullName, twawm); 
                 else  //shouldn't happen, since accessibleViaNcCF checks this
                     throw new SimpleException("unexpected cdm_data_type=" + cdmType);
 
@@ -2699,7 +2680,7 @@ public abstract class EDDTable extends EDD {
             maxLat = stats[PrimitiveArray.STATS_MAX];
         }
         if (Double.isNaN(minLon) || Double.isNaN(minLat))
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA + " " +
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " " +
                 EDStatic.noDataNoLL);
         double lonRange = maxLon - minLon;
         double latRange = maxLat - minLat;
@@ -3610,6 +3591,7 @@ public abstract class EDDTable extends EDD {
             if (debugMode) String2.log("saveAsImage 9");
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             ok = false;
             try {
                 String msg = MustBe.getShortErrorMessage(t);
@@ -3657,7 +3639,9 @@ public abstract class EDDTable extends EDD {
                     }
                 }
             } catch (Throwable t2) {
-                String2.log("ERROR2 while creating image:\n" + MustBe.throwableToString(t2)); 
+                EDStatic.rethrowClientAbortException(t2);  //first thing in catch{}
+                String2.log(String2.ERROR + "2 while creating error image:\n" + 
+                    MustBe.throwableToString(t2)); 
                 if (pdf) {
                     if (pdfInfo == null) throw t;
                 } else {
@@ -3708,9 +3692,9 @@ public abstract class EDDTable extends EDD {
         //make sure there is data
         long tnRows = twawm.nRows();
         if (tnRows == 0)
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
         if (tnRows >= Integer.MAX_VALUE)
-            throw new SimpleException(EDStatic.thereIsTooMuchData + " " +
+            throw new SimpleException(Math2.memoryTooMuchData + "  " +
                 MessageFormat.format(EDStatic.errorMoreThan2GB,
                     ".mat", tnRows + " " + EDStatic.rows));
         int nCols = twawm.nColumns();
@@ -3739,7 +3723,7 @@ public abstract class EDDTable extends EDD {
         }
 
         if (cumSize >= Integer.MAX_VALUE - 1000)
-            throw new SimpleException(EDStatic.thereIsTooMuchData + " " +
+            throw new SimpleException(Math2.memoryTooMuchData + "  " +
                 MessageFormat.format(EDStatic.errorMoreThan2GB,
                     ".mat", (cumSize / Math2.BytesPerMB) + " MB"));
 
@@ -3845,13 +3829,13 @@ public abstract class EDDTable extends EDD {
 
         //test for too much data
         if (twawm.nRows() >= Integer.MAX_VALUE)
-            throw new SimpleException(EDStatic.thereIsTooMuchData + " " +
+            throw new SimpleException(Math2.memoryTooMuchData + "  " +
                 MessageFormat.format(EDStatic.errorMoreThan2GB,
                     ".nc", twawm.nRows() + " " + EDStatic.rows));
         int nRows = (int)twawm.nRows(); //safe since checked above
         int nColumns = twawm.nColumns();
         if (nRows == 0) 
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
 
         //POLICY: because this procedure may be used in more than one thread,
         //do work on unique temp files names using randomInt, then rename to proper file name.
@@ -3876,7 +3860,7 @@ public abstract class EDDTable extends EDD {
                 if (type == String.class) {
                     int max = Math.max(1, twawm.columnMaxStringLength(col)); //nc libs want at least 1; 0 happens if no data
                     Dimension lengthDimension = nc.addDimension(
-                        tColName + NcHelper.StringLength, max);
+                        tColName + NcHelper.StringLengthSuffix, max);
                     nc.addVariable(tColName, DataType.CHAR, 
                         new Dimension[]{dimension, lengthDimension}); 
                 } else {
@@ -3963,14 +3947,29 @@ public abstract class EDDTable extends EDD {
 
     }
 
+    /** Ensure a conventions string includes "CF-1.6" (or already >1.6). */
+    public static String ensureAtLeastCF16(String conv) {
+        if (conv == null || conv.length() == 0) {
+            conv = "CF-1.6";
+        } else if (conv.indexOf("CF-") < 0) {
+            conv += ", CF-1.6";
+        } else {
+            for (int i = 0; i < 6; i++)
+                conv = String2.replaceAll(conv, "CF-1." + i, "CF-1.6");
+        }
+        return conv;
+    }
+
     /**
      * Create a Point .ncCF file (Discrete Sampling Geometries).  Specifically:
-     * <br>"9.1 Point Data" 
-     * at https://cf-pcmdi.llnl.gov/trac/wiki/PointObservationConventions
+     * <br>"Point Data" at
+     * http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries
      * <br>This assumes cdm_data_type=Point. 
+     *
+     * <p>This also handles .ncCFMA.  No changes needed.
      * 
+     * @param ncCFName the complete name of the file that will be created
      * @param twawm
-     * @param ncCFName the file that will be created
      * @throws Throwable if trouble 
      */
     public void saveAsNcCF0(String ncCFName, TableWriterAllWithMetadata twawm) 
@@ -3993,18 +3992,10 @@ public abstract class EDDTable extends EDD {
         //add metadata 
         Attributes globalAtts = twawm.globalAttributes();
         globalAtts.set("featureType", "Point");
-        String tConv = globalAtts.getString("Conventions");
-        if (tConv != null) {
-            tConv = String2.replaceAll(tConv, "CF-1.4", "CF-1.6");
-            tConv = String2.replaceAll(tConv, "CF-1.5", "CF-1.6");
-            globalAtts.set("Conventions", tConv);
-        }
-        tConv = globalAtts.getString("Metadata_Conventions");
-        if (tConv != null) {
-            tConv = String2.replaceAll(tConv, "CF-1.4", "CF-1.6");
-            tConv = String2.replaceAll(tConv, "CF-1.5", "CF-1.6");
-            globalAtts.set("Metadata_Conventions", tConv);
-        }
+        globalAtts.set(                            "Conventions", 
+            ensureAtLeastCF16(globalAtts.getString("Conventions")));
+        globalAtts.set(                            "Metadata_Conventions", 
+            ensureAtLeastCF16(globalAtts.getString("Metadata_Conventions")));
 
         //set the variable attributes
         //section 9.1.1 says "The coordinates attribute must identify the variables 
@@ -4038,24 +4029,26 @@ public abstract class EDDTable extends EDD {
         saveAsFlatNc(ncCFName, twawm);
     }
 
+
     /**
-     * Create a one-level TimeSeries, Trajectory, or Profile .ncCF file
+     * Create a one-level TimeSeries, Trajectory, or Profile .ncCF or .ncCFMA file
      * (Discrete Sampling Geometries).
-     * Specifically:
-     * <br>TimeSeries: "9.2.4 Contiguous ragged array representation of timeSeries" 
-     * <br>Profile:    "9.3.4 Contiguous ragged array representation of profiles"
-     * <br>Trajectory: "9.4.3 Contiguous ragged array representation of trajectories"
-     * at https://cf-pcmdi.llnl.gov/trac/wiki/PointObservationConventions (out-of-date)
+     * http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries
      * <br>This assumes cdm_data_type=TimeSeries|Trajectory|Profile and 
      * cdm_timeseries_variables, cdm_trajectory_variables, or 
      * cdm_profile_variables are defined correctly. 
      * 
-     * @param ncCFName the file that will be created
+     * @param nodcMode If true, data will be saved in .ncCFMA file conforming to
+     *    NODC Templates http://www.nodc.noaa.gov/data/formats/netcdf/
+     *    with Multidimensional Array Representation.
+     *    If false, data will be saved in .ncCF file with 
+     *    Contiguous Ragged Array Representation.
+     * @param ncCFName the complete name of the file that will be created
      * @param twawm
      * @throws Throwable if trouble 
      */
-    public void saveAsNcCF1(String ncCFName, TableWriterAllWithMetadata twawm) 
-        throws Throwable {
+    public void saveAsNcCF1(boolean nodcMode, String ncCFName, 
+        TableWriterAllWithMetadata twawm) throws Throwable {
         if (reallyVerbose) String2.log("EDDTable.convertFlatNcToNcCF1 " + ncCFName); 
         long time = System.currentTimeMillis();
         String rowSizeName = "rowSize";
@@ -4090,15 +4083,17 @@ public abstract class EDDTable extends EDD {
         NetcdfFileWriteable ncCF = null;
         try {
             //get info from twawm
-            //Note: this uses "thing" as stand-in for profile|timeseries|trajectory
+            //Note: this uses "feature" as stand-in for profile|timeseries|trajectory
             String ncColNames[] = twawm.columnNames();
             //String2.log("  ncColNames=" + String2.toCSSVString(ncColNames));
             int ncNCols = twawm.nColumns();
-            boolean isThingVar[] = new boolean[ncNCols];
-            String thingVars[] = combinedGlobalAttributes.getStringsFromCSV(
+            boolean isFeatureVar[] = new boolean[ncNCols];
+            String featureVars[] = combinedGlobalAttributes.getStringsFromCSV(
                 "cdm_" + lcCdmType + "_variables");
+            EDV colEdv[] = new EDV[ncNCols];
             for (int col = 0; col < ncNCols; col++) {
-                isThingVar[col] = String2.indexOf(thingVars, ncColNames[col]) >= 0;
+                isFeatureVar[col] = String2.indexOf(featureVars, ncColNames[col]) >= 0;
+                colEdv[col] = findVariableByDestinationName(ncColNames[col]);
             }
 
             //ensure profile_id|timeseries_id|trajectory_id variable is in flatNc file
@@ -4111,7 +4106,7 @@ public abstract class EDDTable extends EDD {
             //String2.log("  idPA=" + idPA.toString());
 
             //rank id rows
-            //!!! this assumes already sorted by time and will stay sorted when rearranged by thing. 
+            //!!! this assumes already sorted by time/depth/... and will stay sorted when rearranged. 
             //  PrimitiveArray.rank promises stable sort.
             ArrayList tTable = new ArrayList();
             tTable.add(idPA);
@@ -4119,74 +4114,105 @@ public abstract class EDDTable extends EDD {
             tTable = null;
             //String2.log("  rank=" + String2.toCSSVString(rank));
 
-            //find unique things: thingFirstRow (first row in CF file for each thing)
-            int thingTableNRows = idPA.size();
-            //first row has first thing
-            IntArray thingFirstRow = new IntArray(); //'row' after data is sorted
-            thingFirstRow.add(0);            
+            //find unique features (e.g., station|profile|trajectory): 
+            int totalNObs = idPA.size();
+            //first row has first feature (first row in CF file for each feature)
+            IntArray featureFirstRow = new IntArray(); //'row' after data is sorted
+            featureFirstRow.add(0);            
             int prevFirstRow = 0;                      //'row' after data is sorted
-            IntArray thingRowSize = new IntArray();  //'row' after data is sorted
-            BitSet thingKeep = new BitSet(); //initially all false
-            thingKeep.set(0);                        //'row' after data is sorted
+            IntArray featureNRows = new IntArray();  
+            BitSet featureKeep = new BitSet(); //initially all false
+            featureKeep.set(0);                        //'row' after data is sorted
             //'row' after data is sorted
-            for (int row = 1; row < thingTableNRows; row++) {  //1 since comparing to previous row
+            for (int row = 1; row < totalNObs; row++) {  //1 since comparing to previous row
                 if (idPA.compare(rank[row - 1], rank[row]) != 0) {
-                    //found a new thing
-                    thingFirstRow.add(row);               //for this thing
-                    thingRowSize.add(row - prevFirstRow); //for the previous thing
-                    thingKeep.set(row);
+                    //found a new feature
+                    featureFirstRow.add(row);             //for this feature
+                    featureNRows.add(row - prevFirstRow); //for the previous feature
+                    featureKeep.set(row);
                     prevFirstRow = row;
                 }
             }
-            thingRowSize.add(thingTableNRows - prevFirstRow);
-            int nThings = thingFirstRow.size();
-            //String2.log("  nThings=" + nThings + 
-            //    "\n  thingFirstRow=" + thingFirstRow.toString() +
-            //    "\n  thingRowSize="  + thingRowSize.toString());
+            featureNRows.add(totalNObs - prevFirstRow);
+            int maxFeatureNRows = Math2.roundToInt(
+                featureNRows.calculateStats()[PrimitiveArray.STATS_MAX]);
+            int nFeatures = featureFirstRow.size();
+            if (reallyVerbose) String2.log("  nFeatures=" + nFeatures + 
+                "\n  featureFirstRow=" + featureFirstRow.toString() +
+                "\n  featureNRows="    + featureNRows.toString() +
+                "\n  maxFeatureNRows=" + maxFeatureNRows);
             //conserve memory
             idPA = null;
+
+//do a fileSize check here.  <2GB?
 
             //** Create the .ncCF file
             ncCF = NetcdfFileWriteable.createNew(ncCFName + randomInt, false);
             //define the dimensions
-            Dimension thingDimension = ncCF.addDimension(lcCdmType, nThings);
-            Dimension obsDimension     = ncCF.addDimension("obs", thingTableNRows);
+            Dimension featureDimension = ncCF.addDimension(lcCdmType, nFeatures);
+            Dimension obsDimension     = ncCF.addDimension("obs", 
+                nodcMode? maxFeatureNRows : totalNObs);
 
-            //add the thing variables, then the obs variables
-            for (int so = 0; so < 2; so++) {  //0=thing 1=obs
+            //add the feature variables, then the obs variables
+            for (int so = 0; so < 2; so++) {  //0=feature 1=obs
                 for (int col = 0; col < ncNCols; col++) {
-                    if (( isThingVar[col] && so == 0) || //is var in currently desired group?
-                        (!isThingVar[col] && so == 1)) {
+                    if (( isFeatureVar[col] && so == 0) || //is var in currently desired group?
+                        (!isFeatureVar[col] && so == 1)) {
                         //keep going
                     } else {
                         continue;
                     }
                     String tColName = ncColNames[col];
-                    Dimension tDimension = isThingVar[col]? thingDimension : obsDimension;
-                    EDV edv = findVariableByDestinationName(tColName);
-                    Class type = edv.destinationDataTypeClass();
-                    if (type == String.class) {
-                        Dimension sDim = ncCF.addDimension(
-                            tColName + NcHelper.StringLength, 
-                            Math.max(1, twawm.columnMaxStringLength(col))); //nclib wants at least 1
-                        ncCF.addVariable(tColName, DataType.CHAR, 
-                            new Dimension[]{tDimension, sDim}); 
-                    } else {
-                        ncCF.addVariable(tColName, DataType.getType(type), 
-                            new Dimension[]{tDimension}); 
+                    Class type = colEdv[col].destinationDataTypeClass();
+                    int maxStringLength = 1;  //nclib wants at least 1
+                    if (type == String.class)
+                        maxStringLength = Math.max(1, twawm.columnMaxStringLength(col));
+                    if (type == long.class) {
+                        //store longs as Strings since nc3 doesn't support longs
+                        type = String.class; 
+                        maxStringLength = NcHelper.LONG_MAXSTRINGLENGTH;
                     }
+                    ArrayList tDims = new ArrayList();
+                    if (nodcMode) {
+                        if (isFeatureVar[col]) {
+                            tDims.add(featureDimension);
+                        } else {
+                            //obsVar[feature][obs]
+                            tDims.add(featureDimension);
+                            tDims.add(obsDimension);
+                        }
+                    } else {
+                        tDims.add(isFeatureVar[col]? featureDimension : obsDimension);
+                    }
+                    if (type == String.class) {
+                        ncCF.addStringVariable(tColName, tDims, maxStringLength);
+                    } else {
+                        ncCF.addVariable(tColName, DataType.getType(type), tDims); 
+                    }
+
+                    //nodcMode: ensure all numeric obs variables have missing_value or _FillValue
+                    //(String vars would have "", but that isn't a valid attribute)
+                    if (nodcMode && so == 1 && type != String.class) {
+                        Attributes atts = twawm.columnAttributes(col);
+                        if (atts.getString("missing_value") == null && //getString so distinguish null and NaN
+                            atts.getString("_FillValue")    == null) {
+                            //"" will become native numeric MV, e.g., 127 for ByteArray
+                            atts.set("_FillValue", PrimitiveArray.factory(type, 1, "")); 
+                        }
+                    }
+                    
                 }
 
-                //at end of thing vars, add the rowSize variable
-                if (so == 0) {
+                //at end of feature vars, add the rowSize variable
+                if (!nodcMode && so == 0) {
                     ncCF.addVariable(rowSizeName, DataType.getType(int.class), 
-                        new Dimension[]{thingDimension}); 
+                        new Dimension[]{featureDimension}); 
                     //String2.log("  rowSize variable added");
                 }
             }
             
             //set the global attributes
-            //currently, only the .nc saveAs types use attributes!
+            //currently, only the .nc saveAs file types use attributes!
             Attributes cdmGlobalAttributes = twawm.globalAttributes();
             String featureType = cdmType;
             cdmGlobalAttributes.set("featureType", featureType);
@@ -4195,20 +4221,12 @@ public abstract class EDDTable extends EDD {
             //from http://www.unidata.ucar.edu/software/netcdf-java/formats/UnidataObsConvention.html
             //but inappropriate here since not a simple obs dimension
             //cdmGlobalAttributes.set("observationDimension", "obs");  
-            String tConv = cdmGlobalAttributes.getString("Conventions");
-            if (tConv != null) {
-                tConv = String2.replaceAll(tConv, "CF-1.4", "CF-1.6");
-                tConv = String2.replaceAll(tConv, "CF-1.5", "CF-1.6");
-                cdmGlobalAttributes.set("Conventions", tConv);
-            }
-            tConv = cdmGlobalAttributes.getString("Metadata_Conventions");
-            if (tConv != null) {
-                tConv = String2.replaceAll(tConv, "CF-1.4", "CF-1.6");
-                tConv = String2.replaceAll(tConv, "CF-1.5", "CF-1.6");
-                cdmGlobalAttributes.set("Metadata_Conventions", tConv);
-            }
-
+            cdmGlobalAttributes.set(                            "Conventions", 
+                ensureAtLeastCF16(cdmGlobalAttributes.getString("Conventions")));
+            cdmGlobalAttributes.set(                            "Metadata_Conventions", 
+                ensureAtLeastCF16(cdmGlobalAttributes.getString("Metadata_Conventions")));
             NcHelper.setAttributes(ncCF, "NC_GLOBAL", cdmGlobalAttributes);
+
 
             //set the variable attributes
             //section 9.1.1 says "The coordinates attribute must identify the variables 
@@ -4232,37 +4250,86 @@ public abstract class EDDTable extends EDD {
             }
             for (int col = 0; col < ncNCols; col++) {
                 Attributes atts = twawm.columnAttributes(col);
-                if (!isThingVar[col] && !isCoordinateVar[col])
+                if (!isFeatureVar[col] && !isCoordinateVar[col])
                     atts.add("coordinates", coordinates);
                 NcHelper.setAttributes(ncCF, ncColNames[col], atts);
             }
 
             //set the rowSize attributes
-            NcHelper.setAttributes(ncCF, rowSizeName, new Attributes()
-                .add("ioos_category", "Identifier")
-                .add("long_name", "Number of Observations for this " + cdmType)
-                .add("sample_dimension", "obs"));  
+            if (!nodcMode) {
+                NcHelper.setAttributes(ncCF, rowSizeName, new Attributes()
+                    .add("ioos_category", "Identifier")
+                    .add("long_name", "Number of Observations for this " + cdmType)
+                    .add("sample_dimension", "obs"));  
+            }
 
             //** leave "define" mode
+            //If offset to last var is >2GB, netcdf-java library will throw an exception here.
             ncCF.create();
 
             //write the variables  
             //One var at a time makes it reasonably memory efficient.
             //This needs to reorder the values, which needs all values at once, so can't do in chunks.
             for (int col = 0; col < ncNCols; col++) {
+                EDV tEdv = colEdv[col];
+                double tSafeMV = tEdv.safeDestinationMissingValue();
                 PrimitiveArray pa = twawm.column(col);
                 //first re-order
                 pa.reorder(rank);
-                //then just keep unique thing info 
-                if (isThingVar[col]) 
-                    pa.justKeep(thingKeep);
-                //write to ncCF
-                NcHelper.setValues(ncCF, ncColNames[col], 0, pa, 
-                    twawm.columnMaxStringLength(col)); 
+
+                //convert LongArray to StringArray (since nc3 doesn't support longs)
+                if (pa instanceof LongArray)
+                    pa = new StringArray(pa);
+
+                if (isFeatureVar[col]) {
+                    //write featureVar[feature]
+                    pa.justKeep(featureKeep);
+                    NcHelper.write(ncCF, ncColNames[col], 0, pa, 
+                        twawm.columnMaxStringLength(col)); 
+
+                } else if (nodcMode) {
+                    //write nodc obsVar[feature][obs]
+                    int origin[] = {0, 0};
+                    for (int feature = 0; feature < nFeatures; feature++) { 
+                        //write the data for this feature
+                        origin[0] = feature;
+                        origin[1] = 0;
+                        int firstRow = featureFirstRow.get(feature);
+                        int tNRows   = featureNRows.get(feature);
+                        int stopRow  = firstRow + tNRows - 1;
+                        PrimitiveArray subsetPa = pa.subset(firstRow, 1, stopRow);
+                        subsetPa.trimToSize(); //so toObjectArray will be underlying array
+                        NcHelper.write(ncCF, ncColNames[col], 
+                            origin, new int[]{1, tNRows}, subsetPa);         
+
+                        //and write missing values
+                        if (tNRows < maxFeatureNRows) {
+                            origin[1] = tNRows;
+                            //String2.log("  writeMVs: feature=" + feature + " origin[1]=" + origin[1] + 
+                            //  " tNRows=" + tNRows + " maxFeatureNRows=" + maxFeatureNRows);
+                            tNRows = maxFeatureNRows - tNRows;
+                            subsetPa.clear();
+                            if (tEdv.destinationDataTypeClass() == long.class)
+                                subsetPa.addNStrings(tNRows, "" + tSafeMV);
+                            else if (subsetPa instanceof StringArray)
+                                subsetPa.addNStrings(tNRows, "");
+                            else
+                                subsetPa.addNDoubles(tNRows, tSafeMV);
+                            NcHelper.write(ncCF, ncColNames[col], 
+                                origin, new int[]{1, tNRows}, subsetPa);         
+                        }
+                    }
+
+                } else {
+                    //write obsVar[obs]
+                    NcHelper.write(ncCF, ncColNames[col], 0, pa, 
+                        twawm.columnMaxStringLength(col)); 
+                }
             }
 
             //write the rowSize values
-            NcHelper.setValues(ncCF, rowSizeName, 0, thingRowSize, 0); 
+            if (!nodcMode)
+                NcHelper.write(ncCF, rowSizeName, 0, featureNRows, 0); 
 
             //if close throws Throwable, it is trouble
             ncCF.close(); //it calls flush() and doesn't like flush called separately
@@ -4289,25 +4356,28 @@ public abstract class EDDTable extends EDD {
             throw t;
         }
 
-    }  //end of convertFlatNcToNcCF1
+    }  //end of saveAsNcCF1
 
     /**
-     * Create a two-level TimeSeriesProfile or TrajectoryProfile .ncCF file
+     * Create a two-level TimeSeriesProfile or TrajectoryProfile .ncCF or .ncCFMA file
      * (Discrete Sampling Geometries). 
-     * Specifically:
-     * <br>TimeSeriesProfile: "9.5.3 Ragged array representation of timeSeriesProfiles" 
-     * <br>TrajectoryProfile: "9.6.3 Ragged array representation of trajectoryProfiles"
-     * at https://cf-pcmdi.llnl.gov/trac/wiki/PointObservationConventions (out-of-date)
+     * http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries
      * <br>This assumes cdm_data_type=TimeSeriesProfile|TrajectoryProfile and 
      * cdm_timeseries_variables, cdm_trajectory_variables, and/or cdm_profile_variables 
      * are defined correctly. 
      * 
-     * @param ncCFName the file that will be created
+     * @param nodcMode If true, data will be saved in .ncCFMA file conforming to
+     *    NODC Templates http://www.nodc.noaa.gov/data/formats/netcdf/
+     *    with Multidimensional Array Representation.
+     *    If false, data will be saved in .ncCF file with 
+     *    Contiguous Ragged Array Representation.
+     * @param ncCFName the complete name of the file that will be created
      * @param twawm
      * @throws Throwable if trouble 
      */
-    public void saveAsNcCF2(String ncCFName, TableWriterAllWithMetadata twawm) 
-        throws Throwable {
+    public void saveAsNcCF2(boolean nodcMode, String ncCFName, 
+        TableWriterAllWithMetadata twawm) throws Throwable {
+
         if (reallyVerbose) String2.log("EDDTable.convertFlatNcToNcCF2 " + ncCFName); 
         long time = System.currentTimeMillis();
         String rowSizeName = "rowSize";
@@ -4351,21 +4421,24 @@ public abstract class EDDTable extends EDD {
         NetcdfFileWriteable ncCF = null;
         try {
             //get info from twawm
-            //Note: this uses 'other' as stand-in for timeseries|trajectory 
+            //Note: this uses 'feature' as stand-in for timeseries|trajectory 
             String ncColNames[] = twawm.columnNames();
             //String2.log("  ncColNames=" + String2.toCSSVString(ncColNames));
             int ncNCols = twawm.nColumns();
-            boolean isOtherVar[] = new boolean[ncNCols];
+            boolean isFeatureVar[] = new boolean[ncNCols];
             boolean isProfileVar[] = new boolean[ncNCols];
-            String otherVars[] = combinedGlobalAttributes.getStringsFromCSV(
+            String featureVars[] = combinedGlobalAttributes.getStringsFromCSV(
                 "cdm_" + olcCdmName + "_variables");
             String profileVars[] = combinedGlobalAttributes.getStringsFromCSV(
                 "cdm_profile_variables");
+            EDV colEdv[] = new EDV[ncNCols];
             for (int col = 0; col < ncNCols; col++) {
-                isOtherVar[  col] = String2.indexOf(otherVars,   ncColNames[col]) >= 0;
+                isFeatureVar[col] = String2.indexOf(featureVars, ncColNames[col]) >= 0;
                 isProfileVar[col] = String2.indexOf(profileVars, ncColNames[col]) >= 0;
+                colEdv[col] = findVariableByDestinationName(ncColNames[col]);
             }
-            //String2.log("  isOtherVar=" + String2.toCSSVString(isOtherVar));
+
+            //String2.log("  isFeatureVar=" + String2.toCSSVString(isFeatureVar));
             //String2.log("  isProfileVar=" + String2.toCSSVString(isProfileVar));
 
             //ensure profile_id and timeseries_id|trajectory_id variable is in flatNc file
@@ -4376,14 +4449,14 @@ public abstract class EDDTable extends EDD {
             if (pidPo < 0) //but already checked before calling this method
                 throw new SimpleException("The .nc file must have " + pidName);
 
-            //read oid ('other'_id) and pid (profile_id) PA from flatNc file
+            //read oid ('feature'_id) and pid (profile_id) PA from flatNc file
             PrimitiveArray oidPA = twawm.column(oidPo);
             PrimitiveArray pidPA = twawm.column(pidPo);
             //String2.log("  oidPA=" + oidPA.toString());
             //String2.log("  pidPA=" + pidPA.toString());
 
             //rank oid+pid rows
-            //!!! this assumes already sorted by time and will stay sorted when re-sorted. 
+            //!!! this assumes already sorted by time/depth/... and will stay sorted when re-sorted. 
             //  PrimitiveArray.rank promises stable sort.
             ArrayList tTable = new ArrayList();
             tTable.add(oidPA);
@@ -4393,51 +4466,67 @@ public abstract class EDDTable extends EDD {
             int tTableNRows = oidPA.size();
             //String2.log("  rank=" + String2.toCSSVString(rank));
 
-            //find unique others (timeseries|trajectory):
-            //otherFirstRow (first row in CF file for each other)            
-            IntArray otherIndex = new IntArray();    //'other' number for each profile
-            otherIndex.add(0);                      
-            BitSet otherKeep = new BitSet();         //initially all false
-            otherKeep.set(0);                        //'row' after data is sorted
-            int nOthers = 1;
+            //find unique features (timeseries|trajectory):
+            //featureFirstRow (first row in CF file for each feature)            
+            IntArray featureIndex = new IntArray();    //'feature' number for each profile
+            featureIndex.add(0);                      
+            IntArray profileIndexInThisFeature = new IntArray();  //0,1,2, 0,1,2,3, ...
+            int tProfileIndexInThisFeature = 0; //first is #0
+            profileIndexInThisFeature.add(tProfileIndexInThisFeature);
+            BitSet featureKeep = new BitSet();         //initially all false
+            featureKeep.set(0);                        //'row' after data is sorted
+            int nFeatures = 1;
+            IntArray nProfilesPerFeature = new IntArray();
+            nProfilesPerFeature.add(1);                //for the initial row
 
             //find unique profiles:
             //profileFirstRow (first row in CF file for each profile)
-            IntArray profileFirstRow = new IntArray(); //'row' after data is sorted
-            profileFirstRow.add(0);                    //first row has first profile
+            IntArray profileFirstObsRow = new IntArray(); //'row' after data is sorted
+            profileFirstObsRow.add(0);                    //first row has first profile
             int prevFirstRow = 0;                      //'row' after data is sorted
-            IntArray profileRowSize = new IntArray();  //'row' after data is sorted
+            IntArray nObsPerProfile = new IntArray();  
             BitSet profileKeep = new BitSet(); //initially all false
             profileKeep.set(0);                        //'row' after data is sorted
+
             //'row' after data is sorted
             for (int row = 1; row < tTableNRows; row++) {  //1 since comparing to previous row
-                //keeping the tests separate and using otherChanged allows 
-                //   profile_id to be only unique within an 'other' 
+                //keeping the tests separate and using featureChanged allows 
+                //   profile_id to be only unique within an 'feature' 
                 //   (it doesn't have to be globally unique)
-                boolean otherChanged = false;                
+                boolean featureChanged = false;                
                 if (oidPA.compare(rank[row - 1], rank[row]) != 0) {
-                    //found a new other
-                    otherChanged = true;
-                    otherKeep.set(row);
-                    nOthers++;
+                    //found a new feature
+                    featureChanged = true;
+                    featureKeep.set(row);
+                    nFeatures++;
+                    nProfilesPerFeature.add(0); 
+                    tProfileIndexInThisFeature = -1;
                 }
-                if (otherChanged || pidPA.compare(rank[row - 1], rank[row]) != 0) {
+                if (featureChanged || pidPA.compare(rank[row - 1], rank[row]) != 0) {
                     //found a new profile
-                    otherIndex.add(nOthers - 1);            //yes, one for each profile
-                    profileFirstRow.add(row);               //for this profile
-                    profileRowSize.add(row - prevFirstRow); //for the previous profile
+                    featureIndex.add(nFeatures - 1);      //yes, one for each profile
+                    tProfileIndexInThisFeature++;
+                    profileIndexInThisFeature.add(tProfileIndexInThisFeature);
+                    nProfilesPerFeature.set(nFeatures - 1, tProfileIndexInThisFeature + 1);
+                    profileFirstObsRow.add(row);             //for this profile
+                    nObsPerProfile.add(row - prevFirstRow); //for the previous profile
                     profileKeep.set(row);
                     prevFirstRow = row;
                 }
             }
-            profileRowSize.add(tTableNRows - prevFirstRow);
-            int nProfiles = profileFirstRow.size();
-            String2.log(
-                  "  nOthers="         + nOthers + 
-                "\n  OtherIndex="      + otherIndex.toString() +
-                "\n  nProfiles="       + nProfiles + 
-                "\n  ProfileFirstRow=" + profileFirstRow.toString() +
-                "\n  ProfileRowSize="  + profileRowSize.toString());
+            nObsPerProfile.add(tTableNRows - prevFirstRow);
+            int nProfiles = profileFirstObsRow.size();
+            int maxObsPerProfile = Math2.roundToInt(
+                nObsPerProfile.calculateStats()[PrimitiveArray.STATS_MAX]);
+            int maxProfilesPerFeature = Math2.roundToInt(
+                nProfilesPerFeature.calculateStats()[PrimitiveArray.STATS_MAX]);
+            if (reallyVerbose) String2.log(
+                  "  nFeatures="           + nFeatures + 
+                "\n  nProfilesPerFeature=" + nProfilesPerFeature.toString() +
+                "\n  nProfiles="           + nProfiles + 
+                "\n  featureIndex="        + featureIndex.toString() +
+                "\n  profileFirstObsRow="  + profileFirstObsRow.toString() +
+                "\n  nObsPerProfile="      + nObsPerProfile.toString());
             //conserve memory
             oidPA = null;
             pidPA = null;
@@ -4445,46 +4534,86 @@ public abstract class EDDTable extends EDD {
             //** Create the .ncCF file
             ncCF = NetcdfFileWriteable.createNew(ncCFName + randomInt, false);
             //define the dimensions
-            Dimension otherDimension   = ncCF.addDimension(olcCdmName, nOthers);
-            Dimension profileDimension = ncCF.addDimension("profile",  nProfiles);
-            Dimension obsDimension     = ncCF.addDimension("obs",      tTableNRows);
+            Dimension featureDimension = ncCF.addDimension(olcCdmName, nFeatures);
+            Dimension profileDimension = ncCF.addDimension("profile",  
+                nodcMode? maxProfilesPerFeature : nProfiles);
+            Dimension obsDimension     = ncCF.addDimension("obs",
+                nodcMode? maxObsPerProfile : tTableNRows);
 
-            //add the other variables, then profile variables, then obs variables
-            for (int opo = 0; opo < 3; opo++) {  //0=other 1=profile 2=obs
+            //add the feature variables, then profile variables, then obs variables
+            for (int opo = 0; opo < 3; opo++) {  //0=feature 1=profile 2=obs
                 for (int col = 0; col < ncNCols; col++) {
-                    if (( isOtherVar[col] && opo == 0) ||   //is var in currently desired group?
+                    if (( isFeatureVar[col] && opo == 0) ||   //is var in currently desired group?
                         ( isProfileVar[col] && opo == 1) ||
-                        (!isOtherVar[col] && !isProfileVar[col] && opo == 2)) {
+                        (!isFeatureVar[col] && !isProfileVar[col] && opo == 2)) {
                         //keep going
                     } else {
                         continue;
                     }
                     String tColName = ncColNames[col];
                     //String2.log(" opo=" + opo + " col=" + col + " name=" + tColName);
-                    Dimension tDimension = 
-                        isOtherVar[col]?   otherDimension : 
-                        isProfileVar[col]? profileDimension : obsDimension;
-                    EDV edv = findVariableByDestinationName(tColName);
-                    Class type = edv.destinationDataTypeClass();
-                    if (type == String.class) {
-                        Dimension sDim = ncCF.addDimension(
-                            tColName + NcHelper.StringLength, 
-                            Math.max(1, twawm.columnMaxStringLength(col))); //nclib wants at least 1
-                        ncCF.addVariable(tColName, DataType.CHAR, 
-                            new Dimension[]{tDimension, sDim}); 
+                    ArrayList tDims = new ArrayList();
+                    if (nodcMode) {
+                        if (isFeatureVar[col]) {
+                            //featureVar[feature]     
+                            tDims.add(featureDimension);
+                        } else if (isProfileVar[col]) {  
+                            //profileVar[feature][profile]
+                            tDims.add(featureDimension);
+                            tDims.add(profileDimension);
+                        } else {  
+                            //obsVar[feature][profile][obs]
+                            tDims.add(featureDimension);
+                            tDims.add(profileDimension);
+                            tDims.add(obsDimension);
+                        }
                     } else {
-                        ncCF.addVariable(tColName, DataType.getType(type), 
-                            new Dimension[]{tDimension}); 
+                        if (isFeatureVar[col]) {  
+                            //featureVar[feature]     
+                            tDims.add(featureDimension);
+                        } else if (isProfileVar[col]) {
+                            //profileVar[profile]
+                            tDims.add(profileDimension);
+                        } else {
+                            //obsVar[obs]
+                            tDims.add(obsDimension);
+                        }
+                    }
+                    Class type = colEdv[col].destinationDataTypeClass();
+                    int maxStringLength = 1;
+                    if (type == String.class) {
+                        maxStringLength = Math.max(1, twawm.columnMaxStringLength(col)); //nclib wants at least 1
+                    } else if (type == long.class) {
+                        //store longs as Strings since nc3 doesn't support longs
+                        type = String.class; 
+                        maxStringLength = NcHelper.LONG_MAXSTRINGLENGTH;
+                    }
+
+                    if (type == String.class) {
+                        ncCF.addStringVariable(tColName, tDims, maxStringLength);
+                    } else {
+                        ncCF.addVariable(tColName, DataType.getType(type), tDims); 
+                    }
+
+                    //nodcMode: ensure all numeric obs variables have missing_value or _FillValue
+                    //(String vars would have "", but that isn't a valid attribute)
+                    if (nodcMode && opo == 2 && type != String.class) {
+                        Attributes atts = twawm.columnAttributes(col);
+                        if (atts.getString("missing_value") == null && //getString so distinguish null and NaN
+                            atts.getString("_FillValue")    == null) {
+                            //"" will become native numeric MV, e.g., 127 for ByteArray
+                            atts.set("_FillValue", PrimitiveArray.factory(type, 1, "")); 
+                        }
                     }
                 }
 
-                //at end of profile vars, add 'other'Index and rowSize variables
-                if (opo == 1) {
+                //at end of profile vars, add 'feature'Index and rowSize variables
+                if (!nodcMode && opo == 1) {
                     ncCF.addVariable(indexName, DataType.getType(int.class), 
                         new Dimension[]{profileDimension}); //yes, profile, since there is one for each profile
                     ncCF.addVariable(rowSizeName, DataType.getType(int.class), 
                         new Dimension[]{profileDimension}); 
-                    //String2.log("  otherIndex and rowSize variable added");
+                    //String2.log("  featureIndex and rowSize variable added");
                 }
             }
             
@@ -4498,18 +4627,10 @@ public abstract class EDDTable extends EDD {
             //from http://www.unidata.ucar.edu/software/netcdf-java/formats/UnidataObsConvention.html
             //but inappropriate here since not a simple obs dimension
             //cdmGlobalAttributes.set("observationDimension", "obs");  
-            String tConv = cdmGlobalAttributes.getString("Conventions");
-            if (tConv != null) {
-                tConv = String2.replaceAll(tConv, "CF-1.4", "CF-1.6");
-                tConv = String2.replaceAll(tConv, "CF-1.5", "CF-1.6");
-                cdmGlobalAttributes.set("Conventions", tConv);
-            }
-            tConv = cdmGlobalAttributes.getString("Metadata_Conventions");
-            if (tConv != null) {
-                tConv = String2.replaceAll(tConv, "CF-1.4", "CF-1.6");
-                tConv = String2.replaceAll(tConv, "CF-1.5", "CF-1.6");
-                cdmGlobalAttributes.set("Metadata_Conventions", tConv);
-            }
+            cdmGlobalAttributes.set(                            "Conventions", 
+                ensureAtLeastCF16(cdmGlobalAttributes.getString("Conventions")));
+            cdmGlobalAttributes.set(                            "Metadata_Conventions", 
+                ensureAtLeastCF16(cdmGlobalAttributes.getString("Metadata_Conventions")));
             NcHelper.setAttributes(ncCF, "NC_GLOBAL", cdmGlobalAttributes);
 
             //set the variable attributes
@@ -4534,24 +4655,27 @@ public abstract class EDDTable extends EDD {
             }
             for (int col = 0; col < ncNCols; col++) {
                 Attributes atts = twawm.columnAttributes(col);
-                if (!isOtherVar[col] && !isProfileVar[col] && !isCoordinateVar[col])
+                if (!isFeatureVar[col] && !isProfileVar[col] && !isCoordinateVar[col])
                     atts.add("coordinates", coordinates);
                 NcHelper.setAttributes(ncCF, ncColNames[col], atts);
             }
 
-            //set the index attributes
-            NcHelper.setAttributes(ncCF, indexName, new Attributes()
-                .add("ioos_category", "Identifier")
-                .add("long_name", "The " + olcCdmName + " to which this profile is associated.")
-                .add("instance_dimension", olcCdmName));
+            if (!nodcMode) {
+                //set the index attributes
+                NcHelper.setAttributes(ncCF, indexName, new Attributes()
+                    .add("ioos_category", "Identifier")
+                    .add("long_name", "The " + olcCdmName + " to which this profile is associated.")
+                    .add("instance_dimension", olcCdmName));
 
-            //set the rowSize attributes
-            NcHelper.setAttributes(ncCF, rowSizeName, new Attributes()
-                .add("ioos_category", "Identifier")
-                .add("long_name", "Number of Observations for this Profile")
-                .add("sample_dimension", "obs"));
+                //set the rowSize attributes
+                NcHelper.setAttributes(ncCF, rowSizeName, new Attributes()
+                    .add("ioos_category", "Identifier")
+                    .add("long_name", "Number of Observations for this Profile")
+                    .add("sample_dimension", "obs"));
+            }
 
             //** leave "define" mode
+            //If offset to last var is >2GB, netcdf-java library will throw an exception here.
             ncCF.create();
 
             //write the variables  
@@ -4559,21 +4683,102 @@ public abstract class EDDTable extends EDD {
             //This needs to reorder the values, which needs all values at once, so can't do in chunks.
             for (int col = 0; col < ncNCols; col++) {
                 PrimitiveArray pa = twawm.column(col);
+                EDV tEdv = colEdv[col];
+                double tSafeMV = tEdv.safeDestinationMissingValue();
+
                 //first re-order
                 pa.reorder(rank);
-                //then just keep unique other info or profile info
-                if (isOtherVar[col]) 
-                    pa.justKeep(otherKeep);
-                else if (isProfileVar[col]) 
+                if (pa instanceof LongArray)
+                    pa = new StringArray(pa);
+
+                if (isFeatureVar[col]) {
+                    //write featureVar[feature]
+                    pa.justKeep(featureKeep);
+                    NcHelper.write(ncCF, ncColNames[col], 0, pa, 
+                        twawm.columnMaxStringLength(col));
+
+                } else if (isProfileVar[col]) {
                     pa.justKeep(profileKeep);
-                //write to ncCF
-                NcHelper.setValues(ncCF, ncColNames[col], 0, pa, 
-                    twawm.columnMaxStringLength(col));
+                    if (nodcMode) {
+                        //write nodc profileVar[feature][profile]
+                        int origin[] = new int[2];
+                        int firstRow;
+                        int lastRow = -1;
+                        for (int feature = 0; feature < nFeatures; feature++) { 
+                            //write data
+                            origin[0] = feature;
+                            origin[1] = 0;
+                            int tnProfiles = nProfilesPerFeature.get(feature);
+                            firstRow = lastRow + 1;
+                            lastRow = firstRow + tnProfiles - 1;
+                            PrimitiveArray tpa = pa.subset(firstRow, 1, lastRow);                        
+                            NcHelper.write(ncCF, ncColNames[col], 
+                                origin, new int[]{1, tnProfiles}, tpa);   
+                            
+                            //write fill values
+                            int nmv = maxProfilesPerFeature - tnProfiles;
+                            if (nmv > 0) {
+                                origin[1] = tnProfiles;
+                                tpa.clear();
+                                if (tEdv.destinationDataTypeClass() == long.class)
+                                    tpa.addNStrings(nmv, "" + tSafeMV);
+                                else if (tpa instanceof StringArray) 
+                                    tpa.addNStrings(nmv, "");
+                                else
+                                    tpa.addNDoubles(nmv, tSafeMV);
+                                NcHelper.write(ncCF, ncColNames[col], 
+                                    origin, new int[]{1, nmv}, tpa);         
+                            }
+                        }
+                    } else {
+                        //write ragged array var[profile]
+                        NcHelper.write(ncCF, ncColNames[col], 
+                            new int[]{0}, new int[]{pa.size()}, pa);         
+                    }
+
+                } else if (nodcMode) {
+                    //write nodc obsVar[feature][profile][obs] as MultidimensionalArray
+                    int origin[] = {0, 0, 0};
+                    
+                    //fill with mv
+                    PrimitiveArray subsetPa = PrimitiveArray.factory(
+                        pa.elementClass(), maxObsPerProfile, 
+                        pa.elementClass() == String.class? "" : "" + tSafeMV);
+                    int shape[] = {1, 1, maxObsPerProfile};
+                    for (int feature = 0; feature < nFeatures; feature++) { 
+                        origin[0] = feature;
+                        for (int profile = 0; profile < maxProfilesPerFeature; profile++) { 
+                            origin[1] = profile;
+                            NcHelper.write(ncCF, ncColNames[col],
+                                origin, shape, subsetPa);
+                        }
+                    }
+
+                    //write obsVar[feature][profile][obs] as MultidimensionalArray
+                    for (int profile = 0; profile < nProfiles; profile++) { 
+                        origin[0] = featureIndex.get(profile);  //feature#
+                        origin[1] = profileIndexInThisFeature.get(profile);
+                        origin[2] = 0;
+                        int firstRow = profileFirstObsRow.get(profile);
+                        int tNRows   = nObsPerProfile.get(profile);
+                        int stopRow  = firstRow + tNRows - 1;
+                        subsetPa = pa.subset(firstRow, 1, stopRow);
+                        shape[2] = tNRows;
+                        NcHelper.write(ncCF, ncColNames[col], origin, shape, subsetPa);         
+                    }
+
+                } else {
+                    //write obsVar[obs] as Contiguous Ragged Array
+                    NcHelper.write(ncCF, ncColNames[col], 0, pa, 
+                        twawm.columnMaxStringLength(col));
+                }
             }
 
-            //write the otherIndex and rowSize values
-            NcHelper.setValues(ncCF, indexName,   0, otherIndex,     0); 
-            NcHelper.setValues(ncCF, rowSizeName, 0, profileRowSize, 0); 
+            if (!nodcMode) {
+                //write the featureIndex and rowSize values
+                NcHelper.write(ncCF, indexName,   0, featureIndex, 0); 
+                NcHelper.write(ncCF, rowSizeName, 0, nObsPerProfile, 0); 
+            }
 
             //if close throws Throwable, it is trouble
             ncCF.close(); //it calls flush() and doesn't like flush called separately
@@ -4600,7 +4805,7 @@ public abstract class EDDTable extends EDD {
             throw t;
         } 
 
-    }  //end of convertFlatNcToNcCF2
+    }  //end of saveAsNcCF2
 
     /**
      * Save the TableWriterAllWithMetadata data as an ODV .tsv file.
@@ -4629,7 +4834,7 @@ public abstract class EDDTable extends EDD {
         //make sure there is data
         long tnRows = twawm.nRows();
         if (tnRows == 0)
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
         //the other params are all required by EDD, so it's a programming error if they are missing
         if (tDatasetID == null || tDatasetID.length() == 0)
             throw new SimpleException(EDStatic.errorInternal + 
@@ -5013,6 +5218,7 @@ public abstract class EDDTable extends EDD {
             parseUserDapQuery(userDapQuery, resultsVariables,
                 constraintVariables, constraintOps, constraintValues, true);
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             String2.log(MustBe.throwableToString(t));
             userDapQuery = ""; //as if no userDapQuery
         }
@@ -5177,7 +5383,7 @@ public abstract class EDDTable extends EDD {
                 String tVal = tValS[con];
                 if (tVal == null) {
                     tVal = "";
-                } else if (tOp[con].equals(REGEX_OP) || isString) {
+                } else if (tOp[con].equals(PrimitiveArray.REGEX_OP) || isString) {
                     tVal = String2.toJson(tVal); //enclose in "
                 } 
                 writer.write(widgets.textField(valueWidgetName + con, tTooltip,
@@ -5640,10 +5846,25 @@ public abstract class EDDTable extends EDD {
             "  <br>(These instructions are a modified version of\n" +
             "    <a href=\"http://resources.arcgis.com/content/kbase?fa=articleShow&amp;d=27589\">ESRI's instructions</a>.)\n" +
             "\n" +
+            //Ferret
+            "  <p><b><a href=\"http://www.ferret.noaa.gov/Ferret/\">Ferret</a></b> \n" +
+            "    <a name=\"Ferret\">is</a> a free program for visualizing and analyzing large and complex\n" +
+            "  <br><b>gridded</b> datasets.  Because tabledap's <b>tabular</b> datasets are very different\n" +
+            "  <br>from gridded datasets, it is necessary to use Ferret in a very specific way to\n" +
+            "  <br>avoid serious problems and misunderstandings:<ol>\n" +
+            "    <li>With the ERDDAP web pages, download a subset of a dataset in a plain .nc file.\n" +
+            "    <li>Open that file in Ferret.  The data isn't in an ideal format for Ferret, but\n" +
+            "      <br>you should be able to get it to work.\n" +
+            "    </ol>\n" +
+            "  <br>WARNING: Ferret won't like profile data (and perhaps other data), because the time\n" +
+            "  <br>variable will have the same time value for all of the rows of data for a given\n" +
+            "  <br>profile.  In fact, Ferret will add some number of seconds to the time values\n" +
+            "  <br>to make them all unique! So treat these time values accordingly.\n" +
+            "\n" +
             //IDL
             "  <p><b><a href=\"http://www.ittvis.com/language/en-us/productsservices/idl.aspx/\">IDL</a></b> - \n" +
-            "    <a name=\"IDL\">IDL</a> is a commercial scientific data visualization program.\n" +
-            "  <br>To get data from ERDDAP into IDL, first use ERDDAP to select a subset of data and download a .nc file.\n" +
+            "    <a name=\"IDL\">IDL</a> is a commercial scientific data visualization program. To get data from\n" +
+            "  <br>ERDDAP into IDL, first use ERDDAP to select a subset of data and download a .nc file.\n" +
             "  <br>Then, use these\n" +
             "    <a href=\"http://www.atmos.umd.edu/~gcm/usefuldocs/hdf_netcdf/IDL_hdf-netcdf.html\">instructions</a>\n" +
             "    to import the data from the .nc file into IDL.\n" +
@@ -5657,8 +5878,8 @@ public abstract class EDDTable extends EDD {
             "  <p><b><a href=\"http://niryariv.wordpress.com/2009/05/05/jsonp-quickly/\">JSONP</a>\n" +
             "    <a href=\"http://www.json.org/\">.json</a> and\n" +
             "    <a href=\"http://wiki.geojson.org/Main_Page\">.geoJson</a></b>\n" +
-            "      - <a name=\"jsonp\">Requests</a> for .json and .geoJson files may include an optional jsonp request by\n" +
-            "  <br>adding <tt>&amp;.jsonp=<i>functionName</i></tt> to the end of the query.\n" +
+            "      - <a name=\"jsonp\">Requests</a> for .json and .geoJson files may include an\n" +
+            "  <br>optional jsonp request by adding <tt>&amp;.jsonp=<i>functionName</i></tt> to the end of the query.\n" +
             "  <br>Basically, this just tells ERDDAP to add <tt><i>functionName</i>(</tt> to the beginning of the response \n" +
             "  <br>and <tt>\")\"</tt> to the end of the response.\n" +
             "  <br>If originally there was no query, leave off the \"&amp;\" in your query.\n" +
@@ -5666,8 +5887,8 @@ public abstract class EDDTable extends EDD {
             //matlab
             "  <p><b><a href=\"http://www.mathworks.com/products/matlab/\">MATLAB</a>\n" +
             "     <a href=\"http://www.serc.iisc.ernet.in/ComputingFacilities/software/matfile_format.pdf\">.mat</a></b>\n" +
-            "   - <a name=\"matlab\">Matlab</a> users can use griddap's .mat file type to download data from within MATLAB.\n" +
-            "  <br>Here is a one line example:<pre>\n" +
+            "   - <a name=\"matlab\">Matlab</a> users can use griddap's .mat file type to download data from within\n" +
+            "  <br>MATLAB.  Here is a one line example:<pre>\n" +
                  "load(urlwrite('" + XML.encodeAsHTML(fullTimeMatExample) + "', 'test.mat'));</pre>\n" +
             "  The data will be in a MATLAB structure. The structure's name will be the datasetID\n" +
             "  <br>(for example, <tt>" + XML.encodeAsHTML(EDStatic.EDDTableIdExample) + "</tt>). \n" +
@@ -5677,6 +5898,11 @@ public abstract class EDDTable extends EDD {
                 XML.encodeAsHTML(EDStatic.EDDTableIdExample) + ")</tt>). \n" +
             "  <br>You can then make a scatterplot of any two columns. For example:<pre>\n" +
                 XML.encodeAsHTML(EDStatic.EDDTableMatlabPlotExample) + "</pre>\n" +
+            "  <p>ERDDAP stores datetime values in .mat files as \"seconds since 1970-01-01T00:00:00Z\".\n" +
+            "  <br>To display one of these values as a String in Matlab, you can use, e.g.,\n" +
+            "  <br><tt>datastr(cwwcNDBCMet.time(1)/86400 + 719529)</tt>\n" +
+            "  <br>86400 converts ERDDAP's \"seconds since\" to Matlab's \"days since\". 719529 converts\n" +
+            "  <br>ERDDAP's base time of \"1970-01-01T00:00:00Z\" to Matlab's \"0000-01-00T00:00:00Z\".\n" +
             "\n" +
             //nc
             "  <p><b><a href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF</a>\n" +
@@ -5684,13 +5910,14 @@ public abstract class EDDTable extends EDD {
             "     - <a name=\"nc\">Requests</a> for .nc files will always return the data in a table-like, version 3, 32-bit, .nc file:\n" +
             "  <ul>\n" +
             "  <li>All variables will use the file's \"row\" dimension.\n" +
-            "  <li>All String variables will also have a dimension indicating the maximum number of characters for that variable.\n" +
+            "  <li>All String variables will also have a dimension indicating the maximum number of\n" +
+            "    <br>characters for that variable.\n" +
             "  </ul>\n" +
             "\n" +
             //ncHeader
             "  <p><b>.ncHeader</b>\n" +
-            "    - <a name=\"ncHeader\">Requests</a> for .ncHeader files will return the header information (text) that would be generated\n" +
-            "  <br>if you used\n" +
+            "    - <a name=\"ncHeader\">Requests</a> for .ncHeader files will return the header information (text) that\n" +
+            "  <br>would be generated if you used\n" +
             "    <a href=\"http://www.unidata.ucar.edu/software/netcdf/docs/ncdump-man-1.html\">ncdump -h <i>fileName</i></a>\n" +
             "    on the corresponding .nc file.\n" +
             "\n" +
@@ -5702,7 +5929,7 @@ public abstract class EDDTable extends EDD {
             "   <br>Contiguous Ragged Array Representation associated with the dataset's cdm_data_type,\n" +
             "   <br>as defined in the newly ratified\n" +
             "     <a href=\"http://cf-pcmdi.llnl.gov/documents/cf-conventions\">CF</a>\n" +
-            "     <a href=\"http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/aph.html\">Discrete Geometries</a> conventions\n" +
+            "     <a href=\"http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries\">Discrete Geometries</a> conventions\n" +
             "   <br>(which were previously named \"CF Point Observation Conventions\").\n" +
             "   <ul>\n" +
             "   <li>Point - Appendix H.1 Point Data\n" +
@@ -5717,6 +5944,21 @@ public abstract class EDDTable extends EDD {
             "   <br>The file will include longitude, latitude, time, and other required descriptive variables, even if\n" +
             "   <br>you don't request them.\n" +
             "   <br>Since these are the newly ratified file formats, one can hope that they won't change again.\n" +
+            "\n" +  
+            //ncCFMA
+            "  <p><a name=\"ncCFMA\"><b>.ncCFMA</b></a>\n" +
+            "     - Requests for a .ncCFMA file will return a verion 3, 32-bit,\n" +
+            "    <a href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF .nc</a> file\n" +
+            "   <br>(Complete or Incomplete (depending on the data) Multidimensional Array Representation associated\n" +
+            "   <br>with the dataset's cdm_data_type, as defined in the\n" +
+            "     <a href=\"http://cf-pcmdi.llnl.gov/documents/cf-conventions\">CF</a>\n" +
+            "     <a href=\"http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries\">Discrete Sampling Geometries</a> conventions\n" +
+            "   <br>(which were previously named \"CF Point Observation Conventions\").\n" +
+            "   <br>This is the file type used by the <a href=\"http://www.nodc.noaa.gov/data/formats/netcdf/\">NODC Templates</a>.\n" +
+            "   <br>A request will succeed only if the dataset has a cdm_data_type other than \"Other\"\n" +
+            "   <br>and if the request includes at least one data variable (not just the outer, descriptive variables).\n" +
+            "   <br>The file will include longitude, latitude, time, and other required descriptive variables, even if\n" +
+            "   <br>you don't request them.\n" +
             "\n" +  
             //odv
             "  <p><b><a href=\"http://odv.awi.de/\">Ocean Data View</a> .odvTxt</b>\n" +
@@ -5736,6 +5978,19 @@ public abstract class EDDTable extends EDD {
             "    </ul>\n" +
             "  <li>See ODV's <tt>Help</tt> menu for more help using ODV.\n" +
             "  </ol>\n" +
+            "\n" +
+            //Pydap Client
+            "  <p><b><a href=\"http://pydap.org/client.html\">Pydap Client</a></b>\n" +
+            "    <a name=\"PydapClient\">users</a>\n" +
+            "    can access tabledap datasets via ERDDAP's standard OPeNDAP services.\n" +
+            "  <br>See the\n" + 
+            "    <a href=\"http://pydap.org/client.html#accessing-sequential-data/\">Pydap Client instructions for accessing sequential data</a>.\n" +
+            "  <br>Note that the name of a dataset in tabledap will always be a single word, e.g., " + EDStatic.EDDTableIdExample + "\n" +
+            "  <br>in the OPeNDAP dataset URL\n" +
+            "  <br>" + datasetBase + "\n" +
+            "  <br>and won't ever have a file extension (unlike, for example, .cdp for the sample dataset in the\n" +
+            "  <br>Pydap instructions).  Also, the name of the sequence in tabledap datasets will always be \"" + SEQUENCE_NAME + "\"\n" +
+            "  <br>(unlike \"location\" for the sample dataset in the Pydap instructions).\n" +
             "\n" +
             //R
             "  <p><b><a href=\"http://www.r-project.org/\">R Statistical Package</a></b> -\n" +
@@ -5902,7 +6157,7 @@ public abstract class EDDTable extends EDD {
             "      <a href=\"http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf\">DAP</a>\n" +
             "      <a href=\"http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Constraint_Expressions\">selection constraints</a>,\n" +
             "      <br>but with a few additional features.\n" +
-            "    <li>Each constraint is in the form <tt>&lt;variable&gt;&lt;operator&gt;&lt;value&gt;</tt>\n" +
+            "    <li>Each constraint is in the form <tt><i>variable</i><i>operator</i><i>value</i></tt>\n" +
             "      <br>(for example, <tt>latitude&gt;45</tt>).\n" +
             "    <li>The valid operators are =, != (not equals),\n" +
             "       =~ (a <a href=\"#regularExpression\">regular expression test</a>),\n" +
@@ -5919,7 +6174,7 @@ public abstract class EDDTable extends EDD {
             "        <br>the right-hand-side value MUST be enclosed in double quotes (e.g., <tt>id=\"NDBC41201\"</tt>)\n" +
             "        <br>and any internal special characters must be backslash encoded: \\ into \\\\, \" into \\\",\n" +
             "        <br>newline into \\n, and tab into \\t.\n" +
-            "    <li><a name=\"PercentEncode\">For</a> all constraints, the <tt>&lt;variable&gt;&lt;operator&gt;&lt;value&gt;</tt>\n" +
+            "    <li><a name=\"PercentEncode\">For</a> all constraints, the <tt><i>variable</i><i>operator</i><i>value</i></tt>\n" +
             "        MUST be <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>.\n" +
             "        <br>If you submit the request via a browser, the browser will do the percent encoding\n" +
             "        <br>for you. If you submit the request via a computer program, then the program\n" +
@@ -5930,7 +6185,7 @@ public abstract class EDDTable extends EDD {
             "        <br>all characters above #126 to their %HH form (where HH is the 2-digit hex value).\n" +
             "        <br>Unicode characters above #255 must be UTF-8 encoded and then each byte\n" +
             "        <br> must be converted to %HH form (ask a programmer for help).\n" +
-            "      <li>WARNING: Numeric queries involving =, !=, &lt;=, or &gt;= may not work as desired with\n" +
+            "      <li><a name=\"comparingFloats\">WARNING:</a> Numeric queries involving =, !=, &lt;=, or &gt;= may not work as desired with\n" +
             "          <br>floating point numbers. For example, a search for <tt>longitude=220.2</tt> may\n" +
             "          <br>fail if the value is stored as 220.20000000000001. This problem arises because\n" +
             "          <br>floating point numbers are " +
@@ -5938,15 +6193,26 @@ public abstract class EDDTable extends EDD {
             "          <br>When ERDDAP performs these tests, it allows for minor variations and tries\n" +
             "          <br>to avoid the problem. But it is possible that some datasets will still\n" +
             "          <br>have problems with these queries and return unexpected and incorrect results.\n" +
-            "      <li>For numeric variables, you can test <tt>&lt;variable&gt;=NaN</tt> (Not-a-Number)\n" +
-            "          <br>and <tt>&lt;variable&gt;!=NaN</tt>, but not &lt;, &lt;=, &gt;, or &gt;=NaN.\n" +
+            "      <li><a href=\"http://en.wikipedia.org/wiki/NaN\">NaN (Not-a-Number)</a> -\n" +
+            "            <a name=\"NaN\">Many</a> numeric variables have an attribute which identifies a\n" +
+            "          <br>number (e.g., -99) as a missing_value or a _FillValue. When ERDDAP tests\n" +
+            "          <br>constraints, it always treats these values as NaN's. So:\n" +
+            "          <br>Don't create constraints like <tt>temperature!=-99</tt> .\n" +
+            "          <br>Do&nbsp;&nbsp;&nbsp;&nbsp; create constraints like <tt>temperature!=NaN</tt> .\n" +
+            "        <ul>\n" +
+            "        <li>For numeric variables, tests of <tt><i>variable</i>=NaN</tt> (Not-a-Number) and <tt><i>variable</i>!=NaN</tt>\n" +
+            "          <br>will usually work as expected.\n" +
             "          <br><b>WARNING: numeric queries with =NaN and !=NaN may not work as desired</b>\n" +
             "          <br>since many data sources don't offer native support for these queries and\n" +
             "          <br>ERDDAP can't always work around this problem.\n" +
             "          <br>For some datasets, queries with =NaN or !=NaN may fail with an error message\n" +
             "          <br>(insufficient memory or timeout) or erroneously report\n" +
-            "          <br><tt>" + EDStatic.THERE_IS_NO_DATA + "</tt>\n" +
-            "      <li><a name=\"regularExpression\"><i>variable</i>=~<i>regularExpression</i></a>" +
+            "          <br><tt>" + MustBe.THERE_IS_NO_DATA + "</tt>\n" +
+            "        <li>For numeric variables, tests of <tt><i>variable</i>&lt;NaN</tt> (Not-a-Number) (or &lt;=, &gt;, &gt;=) will\n" +
+            "          <br>return false for any value of the variable, even NaN.  NaN isn't a number so these\n" +
+            "          <br>tests are nonsensical.\n" +
+            "        </ul>\n" +
+            "      <li><a name=\"regularExpression\"><i>variable</i>=~\"<i>regularExpression</i>\"</a>" +
             "          tests if the value from the variable on the left matches the \n" +
             "         <br><a href=\"http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html\">regular expression</a>\n" +
             "         on the right.\n" +
@@ -5967,7 +6233,7 @@ public abstract class EDDTable extends EDD {
             "          <br>ERDDAP sometimes has to get the entire dataset to do the test itself.\n" +
             "          <br>For some datasets, queries with =~ may fail with an error message\n" +
             "          <br>(insufficient memory or timeout) or erroneously report\n" +
-            "          <br><tt>" + EDStatic.THERE_IS_NO_DATA + "</tt>\n" +
+            "          <br><tt>" + MustBe.THERE_IS_NO_DATA + "</tt>\n" +
             "          <br>.\n" +
             "        </ul>\n" +
             "      </ul>\n" +
@@ -6640,6 +6906,7 @@ public abstract class EDDTable extends EDD {
                         }
                     }           
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     String2.log("Error while trying to read &.click? value.\n" + 
                         MustBe.throwableToString(t));
                 }
@@ -6705,6 +6972,7 @@ public abstract class EDDTable extends EDD {
                     }
 
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     String2.log("Error while trying to process &.zoom=" + partValue + "\n" + 
                         MustBe.throwableToString(t));
                 }
@@ -8047,6 +8315,7 @@ public abstract class EDDTable extends EDD {
                 "<hr>\n");
             writeGeneralDapHtmlInstructions(tErddapUrl, writer, false); 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
         if (EDStatic.displayDiagnosticInfo) 
@@ -8445,7 +8714,7 @@ public abstract class EDDTable extends EDD {
                 }
 
             } catch (Exception e) {
-                String2.log(ERROR + " while decoding \"&.click=\":\n" + MustBe.throwableToString(e));
+                String2.log(String2.ERROR + " while decoding \"&.click=\":\n" + MustBe.throwableToString(e));
                 userClicked = false;
             }
         }      
@@ -8494,7 +8763,7 @@ public abstract class EDDTable extends EDD {
                     requestUrl + "?" + userQuery); 
 
                 //error message?
-                writer.write("<font class=\"warningColor\">" + EDStatic.THERE_IS_NO_DATA + 
+                writer.write("<font class=\"warningColor\">" + MustBe.THERE_IS_NO_DATA + 
                     " " + EDStatic.resetTheFormWas + "</font>\n");
 
                 //reset all
@@ -8867,7 +9136,7 @@ public abstract class EDDTable extends EDD {
                         writer.write(EDStatic.subsetClickResetClosest + "\n");
                             //EDStatic.htmlTooltipImage(loggedInAs, 
                             //    "Unfortunately, after you click, some data sources respond with" +
-                            //    "<br><tt>" + EDStatic.THERE_IS_NO_DATA + "</tt>" +
+                            //    "<br><tt>" + MustBe.THERE_IS_NO_DATA + "</tt>" +
                             //    "<br>because they can't handle requests for specific longitude and" +
                             //    "<br>latitude values, but there will still be useful information above."));
 
@@ -9006,8 +9275,9 @@ public abstract class EDDTable extends EDD {
                             "" + Math2.roundToLong(total)) + 
                         "\n");
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     String message = MustBe.getShortErrorMessage(t);
-                    String2.log(ERROR + ":\n" + MustBe.throwableToString(t)); //log full message with stack trace
+                    String2.log(String2.ERROR + ":\n" + MustBe.throwableToString(t)); //log full message with stack trace
                     writer.write( 
                         //"<p>An error occurred while getting the data:\n" +
                         "<pre>" + XML.encodeAsPreHTML(message, 120) +
@@ -9139,8 +9409,9 @@ public abstract class EDDTable extends EDD {
                             "" + Math2.roundToLong(total)) + 
                         "\n");
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     String message = MustBe.getShortErrorMessage(t);
-                    String2.log(ERROR + ":\n" + MustBe.throwableToString(t)); //log full message with stack trace
+                    String2.log(String2.ERROR + ":\n" + MustBe.throwableToString(t)); //log full message with stack trace
                     writer.write( 
                         //"<p>An error occurred while getting the data:\n" +
                         "<pre>" + XML.encodeAsPreHTML(message, 120) +
@@ -9232,7 +9503,7 @@ public abstract class EDDTable extends EDD {
                         TableWriterHtmlTable.writeAllAndFinish(loggedInAs,
                             relatedTable, new OutputStreamSourceSimple(out),
                             false, "", false, "", "", 
-                            true, true);          
+                            true, true, -1);          
 
                         //counts
                         writer.write("<p>In total, there are " + twaNRows + 
@@ -9248,8 +9519,9 @@ public abstract class EDDTable extends EDD {
                         */
 
                     } catch (Throwable t) {
+                        EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                         String message = MustBe.getShortErrorMessage(t);
-                        String2.log(ERROR + ":\n" + MustBe.throwableToString(t)); //log full message with stack trace
+                        String2.log(String2.ERROR + ":\n" + MustBe.throwableToString(t)); //log full message with stack trace
                         writer.write( 
                             //"<p>An error occurred while getting the data:\n" +
                             "<pre>" + XML.encodeAsPreHTML(message, 120) +
@@ -9266,6 +9538,7 @@ public abstract class EDDTable extends EDD {
 
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
         writer.write(EDStatic.endBodyHtml(tErddapUrl));
@@ -9766,7 +10039,7 @@ public abstract class EDDTable extends EDD {
                         throw new SimpleException(
                             "<subsetVariables> wasn't set up correctly: \"" + 
                             sa.get(i) + "\" isn't a valid variable destinationName.");
-                        //String2.log(ERROR + " for datasetID=" + datasetID + ": " + tAccessibleViaSubset);
+                        //String2.log(String2.ERROR + " for datasetID=" + datasetID + ": " + tAccessibleViaSubset);
                         //tSubsetVariables = new String[0];
                         //break;
                     }
@@ -9927,12 +10200,12 @@ public abstract class EDDTable extends EDD {
      
 
     /** 
-     * This indicates why the dataset isn't accessible via .ncCF file type
+     * This indicates why the dataset isn't accessible via .ncCF and .ncCFMA file type
      * (or "" if it is).
      * Currently, this is only for some of the Discrete Sampling Geometries
      * (was PointObservationConventions) cdm_data_type 
      * representations at
-     * https://cf-pcmdi.llnl.gov/trac/wiki/PointObservationConventions (currently, out-of-date)
+     * http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries
      *
      * @throws SimpleException if trouble (e.g., something set up wrong).
      */
@@ -10133,10 +10406,10 @@ public abstract class EDDTable extends EDD {
                 outerVars.add(cdmVars[0]);
                 outerVars.add(cdmVars[2]);
 
-            //the cdmType (e.g., Other) doesn't support .ncCF
+            //the cdmType (e.g., Other) doesn't support .ncCF/.ncCFMA
             } else {
                 accessibleViaNcCF = String2.canonical(
-                    MessageFormat.format(EDStatic.noXxxBecause2, ".ncCF", 
+                    MessageFormat.format(EDStatic.noXxxBecause2, ".ncCF/.ncCFMA", 
                         MessageFormat.format(EDStatic.noXxxNoCdmDataType, cdmType)));
             }
 
@@ -11132,7 +11405,7 @@ public abstract class EDDTable extends EDD {
             TableWriterAllWithMetadata twawm = getTwawmForDapQuery(
                 loggedInAs, requestUrl, dapQuery); 
             if (twawm.nRows() == 0)
-                throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+                throw new SimpleException(MustBe.THERE_IS_NO_DATA);
 
             //convert UDUNITS to UCUM units  (before direct use of twawm or get cumulativeTable)
             if (EDStatic.units_standard.equals("UDUNITS")) {
@@ -11581,7 +11854,7 @@ public abstract class EDDTable extends EDD {
         }
         int nValidOfferings = keepBitset.cardinality();
         if (nValidOfferings == 0)
-            throw new SimpleException(DataHelper.THERE_IS_NO_DATA + 
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + 
                 " (There are no valid offerings.)");
             
 

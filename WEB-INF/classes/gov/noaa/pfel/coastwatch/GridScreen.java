@@ -748,7 +748,7 @@ public class GridScreen extends Screen {
                 MustBe.throwableToString(e);
             String2.log(error);
             oneOf.email(oneOf.emailEverythingTo(), 
-                OneOf.ERROR + " in " + oneOf.shortClassName(), error);
+                String2.ERROR + " in " + oneOf.shortClassName(), error);
 
             return null;            
         }
@@ -1047,11 +1047,12 @@ public class GridScreen extends Screen {
                     minLon, maxLon, minLat, maxLat, imageWidth, imageHeight);
             else return null;
         } catch (Exception e) {
-            String error = "Exception caught in GridScreen.getGrid:\n" + MustBe.throwableToString(e);
+            String error = "Exception caught in GridScreen.getGrid:\n" + 
+                MustBe.throwableToString(e);
             String2.log(error);
-            if (error.indexOf(DataHelper.THERE_IS_NO_DATA) < 0)
+            if (error.indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                 oneOf.email(oneOf.emailEverythingTo(), 
-                    OneOf.ERROR + " in " + oneOf.shortClassName(), error);
+                    String2.ERROR + " in " + oneOf.shortClassName(), error);
             plotBathymetryData = false;
             plotData = false;
             return null;
@@ -1083,7 +1084,9 @@ public class GridScreen extends Screen {
             String backButtonForm) throws Exception {
 
         //error
-        Test.error(OneOf.ERROR + " in GridScreen.respondToSubmitter: Unexpected submitter: " + submitter);
+        Test.error(String2.ERROR + 
+            " in GridScreen.respondToSubmitter: Unexpected submitter: " + 
+            submitter);
 
     }
 

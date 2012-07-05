@@ -150,7 +150,7 @@ public class GridDataSetCWLocalClimatology extends GridDataSetCWLocal {
             String regex = fileNameRegex + ".*\\.grd\\.zip";
             String grds[] = RegexFilenameFilter.list(dir, regex);
             if (grds == null) {
-                String2.log(ERROR + " in GridDataSetCWLocalClimatology: trouble with dir=" + 
+                String2.log(String2.ERROR + " in GridDataSetCWLocalClimatology: trouble with dir=" + 
                     dir + " and regex=" + regex + ".");
                 grds = new String[0];
             }
@@ -178,7 +178,8 @@ public class GridDataSetCWLocalClimatology extends GridDataSetCWLocal {
                                 ":" + grds[grdI].substring(14, 16);  //sec
                         } else {
                             //trouble
-                            Test.error(ERROR + " It shouldn't have been an 'h'-type file name."); //FILE NAME SHOWN BELOW
+                            Test.error(String2.ERROR + 
+                                ": It shouldn't have been an 'h'-type file name."); //FILE NAME SHOWN BELOW
                         }
                     } else { 
                         //2nd date is end date   
@@ -191,7 +192,8 @@ public class GridDataSetCWLocalClimatology extends GridDataSetCWLocal {
                         String beginTimeString = Calendar2.yyyydddToIsoDate(  //throws exception if trouble
                             grds[grdI].substring(2, 9)); 
                         if (expectedNHours == 0 || expectedNHours % 24 != 0) {   //this handles 25hour and 33hour correctly
-                            Test.error(ERROR + " It should have been an 'h'-type file name."); //FILE NAME SHOWN BELOW
+                            Test.error(String2.ERROR + 
+                                ": It should have been an 'h'-type file name."); //FILE NAME SHOWN BELOW
                         } else if (expectedNHours == 30*24) {
                             //monthly       e.g., PC0001091_0001120_ssta.grd.zip
                             String tDates = grds[grdI].substring(2, 17);
@@ -202,7 +204,8 @@ public class GridDataSetCWLocalClimatology extends GridDataSetCWLocal {
                                 }
                             }
                             if (tOption.length() == 0) 
-                                Test.error(ERROR + " Unexpected month.");  //FILE NAME SHOWN BELOW
+                                Test.error(String2.ERROR + 
+                                    ": Unexpected month.");  //FILE NAME SHOWN BELOW
                         } else if (expectedNHours % 24 == 0 && expectedNHours >= 24 && expectedNHours < 30*24) {
                             //expectedNHours is >1 day but <month
                             //NOT FINISHED
@@ -212,10 +215,12 @@ public class GridDataSetCWLocalClimatology extends GridDataSetCWLocal {
                             if (nDays == expectedNHours / 24) {
                                 tOption = DataHelper.centerOfStartDateAndInclusiveEndDate(beginTimeString, endDateString);
                             } else {
-                                Test.error(ERROR + " Unexpected nDays (" + nDays + ")."); //FILE NAME SHOWN BELOW
+                                Test.error(String2.ERROR + 
+                                    ": Unexpected nDays (" + nDays + ")."); //FILE NAME SHOWN BELOW
                             }
                         } else {
-                            Test.error(ERROR + " Unexpected expectedNHours=" + expectedNHours + ".");//FILE NAME SHOWN BELOW
+                            Test.error(String2.ERROR + 
+                                ": Unexpected expectedNHours=" + expectedNHours + ".");//FILE NAME SHOWN BELOW
                         }
                     }
                 } catch (Exception e) {
@@ -226,9 +231,10 @@ public class GridDataSetCWLocalClimatology extends GridDataSetCWLocal {
                 //important for vector common dates: just keep valid dates
                 if (tOption.length() > 0) {
                     //make sure it isn't a duplicate date (when 2 files for same date match regex)!
-                    String previousDate = keepDates.size() > 0? keepDates.get(keepDates.size() - 1) : "";
+                    String previousDate = keepDates.size() > 0? 
+                        keepDates.get(keepDates.size() - 1) : "";
                     if (tOption.equals(previousDate)) {
-                        String2.log(ERROR + " Duplicate file entries:" + grds[grdI] + 
+                        String2.log(String2.ERROR + ": Duplicate file entries:" + grds[grdI] + 
                             " and " + previousDate);
                         tOption = "";
                     } else {
@@ -240,7 +246,7 @@ public class GridDataSetCWLocalClimatology extends GridDataSetCWLocal {
                 
                 //need to display rest of error message?
                 if (tOption.length() == 0) {
-                    String2.log(ERROR + " in GridDataSetCWLocalClimatology constructor\n" +
+                    String2.log(String2.ERROR + " in GridDataSetCWLocalClimatology constructor\n" +
                         "  (dir = " + dir + " regex=" + fileNameRegex + ")\n" +
                         "  Trouble with grds[" + grdI + "]: date=" + grds[grdI]);
                 }

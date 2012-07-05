@@ -151,9 +151,6 @@ public class Table  {
      */
     public boolean opendapAcceptDeflate = true;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     /** Since users use these numbers (not names) from the command line,
      * the value for a given option shouldn't ever change.
      */
@@ -167,11 +164,6 @@ public class Table  {
     //public static final int SAVE_AS_HDF = 4;
     public static final String SAVE_AS_EXTENSIONS[] = {
         ".asc", ".nc", ".nc", ".mat"};
-
-    /** The regular expression operator. The OPeNDAP spec says =~, so that is the ERDDAP standard.
-     * But some implementations use ~=, so see sourceRegexOp. 
-     * See also Table.REGEX_OP. */
-    public final static String REGEX_OP = "=~";
 
     public static String BGCOLOR = "#ffffcc"; 
 
@@ -309,7 +301,7 @@ public class Table  {
     public PrimitiveArray getColumn(int col) {
         if (col < 0 || col >= columns.size())
             throw new IllegalArgumentException(
-                ERROR + " in Table.getColumn: col=" + col + " must be 0 ... " + (columns.size()-1) + "."); 
+                String2.ERROR + " in Table.getColumn: col=" + col + " must be 0 ... " + (columns.size()-1) + "."); 
         return (PrimitiveArray)columns.get(col);
     }
 
@@ -324,7 +316,7 @@ public class Table  {
         int col = findColumnNumber(columnName);
         if (col < 0)
             throw new IllegalArgumentException(
-                ERROR + " in Table.getColumn: columnName=" + columnName + " not found."); 
+                String2.ERROR + " in Table.getColumn: columnName=" + columnName + " not found."); 
         return (PrimitiveArray)columns.get(col);
     }
 
@@ -338,10 +330,10 @@ public class Table  {
     public void setColumn(int col, PrimitiveArray pa) {
         if (col >= columns.size())
             throw new IllegalArgumentException(
-                ERROR + " in Table.setColumn: col (" + col + ") is >= size (" + columns.size() + ")."); 
+                String2.ERROR + " in Table.setColumn: col (" + col + ") is >= size (" + columns.size() + ")."); 
         if (pa == null)
             throw new IllegalArgumentException(
-                ERROR + " in Table.setColumn(col=" + col + ", pa): pa is null."); 
+                String2.ERROR + " in Table.setColumn(col=" + col + ", pa): pa is null."); 
         columns.set(col, pa);
     }
 
@@ -438,13 +430,13 @@ public class Table  {
      */
     public int addColumn(int position, String name, PrimitiveArray pa, Attributes attributes) {
         if (pa == null)
-            throw new SimpleException(ERROR + " in Table.addColumn: pa is null.");
+            throw new SimpleException(String2.ERROR + " in Table.addColumn: pa is null.");
         if (attributes == null)
-            throw new SimpleException(ERROR + " in Table.addColumn: attributes is null.");
+            throw new SimpleException(String2.ERROR + " in Table.addColumn: attributes is null.");
         int size = columns.size();
         if (position > size) 
             throw new IllegalArgumentException(
-                ERROR + " in Table.addColumn: position (" + position + 
+                String2.ERROR + " in Table.addColumn: position (" + position + 
                 ") is beyond size (" + size  + ").");
         if (name == null) 
             name = "Column" + position;
@@ -507,7 +499,7 @@ public class Table  {
         int col = findColumnNumber(columnName);
         if (col < 0)
             throw new IllegalArgumentException(
-                ERROR + " in Table.removeColumn: columnName=" + columnName + " not found."); 
+                String2.ERROR + " in Table.removeColumn: columnName=" + columnName + " not found."); 
         removeColumn(col);
     }
 
@@ -561,7 +553,7 @@ public class Table  {
     public String getColumnName(int col) {
         if (col < 0 || col >= nColumns())
             throw new IllegalArgumentException(
-                ERROR + " in Table.getColumnName: col " + col + " is invalid.");
+                String2.ERROR + " in Table.getColumnName: col " + col + " is invalid.");
         return columnNames.get(col);
     }
 
@@ -594,7 +586,7 @@ public class Table  {
     public PrimitiveArray findColumn(String columnName) {
         int col = findColumnNumber(columnName);
         if (col < 0) 
-            throw new IllegalArgumentException(ERROR + " in Table.findColumn: columnName=" + 
+            throw new IllegalArgumentException(String2.ERROR + " in Table.findColumn: columnName=" + 
                 columnName + " not found.");
         return getColumn(col);
     }
@@ -609,7 +601,7 @@ public class Table  {
     public void setColumnName(int col, String newName) {
         if (col < 0 || col >= nColumns())
             throw new IllegalArgumentException(
-                ERROR + " in Table.setColumnName: col " + col + " is invalid.");
+                String2.ERROR + " in Table.setColumnName: col " + col + " is invalid.");
         columnNames.set(col, newName);
     }
 
@@ -1039,8 +1031,8 @@ public class Table  {
             PrimitiveArray pa = getColumn(col);
             if (pa instanceof StringArray) {
                 StringArray sa = (StringArray)pa;
-                sb.append("\t" + getColumnName(col) + "StringLength = " + 
-                    sa.maxStringLength() + " ;\n");
+                sb.append("\t" + getColumnName(col) + NcHelper.StringLengthSuffix + 
+                    " = " + sa.maxStringLength() + " ;\n");
             }
         }
 
@@ -1052,7 +1044,7 @@ public class Table  {
             if (pa instanceof StringArray) {
                 StringArray sa = (StringArray)pa;
                 sb.append("\tchar " + columnName + "(" + dimensionName + ", " +
-                    columnName + "StringLength) ;\n");
+                    columnName + NcHelper.StringLengthSuffix + ") ;\n");
             } else {
                 sb.append("\t" + pa.elementClassString() + 
                     " " + columnName + "(" + dimensionName + ") ;\n");
@@ -1285,7 +1277,7 @@ public class Table  {
         int col = findColumnNumber(columnName);
         if (col < 0)
             throw new IllegalArgumentException(
-                ERROR + " in Table.getColumn: columnName=" + columnName + " not found."); 
+                String2.ERROR + " in Table.getColumn: columnName=" + columnName + " not found."); 
         return columnAttributes(col);
     }
 
@@ -1700,7 +1692,7 @@ public class Table  {
      */
     public boolean equals(Object o, boolean ensureColumnTypesEqual) {
 
-        String errorInMethod = ERROR + " in Table.equals while testing ";
+        String errorInMethod = String2.ERROR + " in Table.equals while testing ";
         try {
 
             Table table2 = (Table)o;
@@ -1885,7 +1877,7 @@ public class Table  {
         //validate parameters
         if (verbose) String2.log("Table.readASCII " + fileName); 
         long time = System.currentTimeMillis();
-        String errorInMethod = ERROR + " in Table.readASCII(" + fileName + "):\n";
+        String errorInMethod = String2.ERROR + " in Table.readASCII(" + fileName + "):\n";
         if (testColumns == null)
             testColumns = new String[0];
         else {
@@ -2131,7 +2123,7 @@ public class Table  {
 
         if (verbose) String2.log("Table.readStandardTabbedASCII " + fileName); 
         long time = System.currentTimeMillis();
-        String errorInMethod = ERROR + " in Table.readStandardTabbedASCII(" + fileName + "):\n";
+        String errorInMethod = String2.ERROR + " in Table.readStandardTabbedASCII(" + fileName + "):\n";
 
         char colSeparator = '\t';
         int columnNamesLine = 0;
@@ -2322,7 +2314,7 @@ public class Table  {
         String startDate, String endDate, 
         String loadColumns[]) throws Exception {
 
-        String errorInMethod = ERROR + " in Table.readIobis: ";
+        String errorInMethod = String2.ERROR + " in Table.readIobis: ";
         clear();
         if (genus     == null) genus = "";   
         if (species   == null) species = "";
@@ -3307,8 +3299,7 @@ Dataset {
 
         //no data?
         if (nRows() == 0) {
-            writer.write(
-                DataHelper.THERE_IS_NO_DATA);
+            writer.write(MustBe.THERE_IS_NO_DATA);
         } else {
 
             writer.write(
@@ -3361,8 +3352,7 @@ Dataset {
                     writer.write(allowWrap? "<td>" : "<td nowrap>"); //no 6 spaces to left: make document smaller
                     if (col == timeColumn) {
                         double d = getDoubleData(col, row);
-                        writer.write(
-                            Double.isNaN(d)? "&nbsp;" : Calendar2.epochSecondsToIsoStringSpace(d));
+                        writer.write(Calendar2.safeEpochSecondsToIsoStringT(d, "&nbsp;"));
                     } else {
                         String s = getStringData(col, row);
                         if (needEncodingAsXml) 
@@ -3756,7 +3746,7 @@ Dataset {
 
         if (verbose) String2.log("Table.read4DNc " + fullName); 
         long time = System.currentTimeMillis();
-        String errorInMethod = ERROR + " in Table.read4DNc " + fullName + ":\n";
+        String errorInMethod = String2.ERROR + " in Table.read4DNc " + fullName + ":\n";
         //get information
         NetcdfFile ncFile = NcHelper.openFile(fullName);
         try {
@@ -3932,7 +3922,7 @@ Dataset {
             (constraintAxisVarName == null? "" :
                 "\n  constrain:" + constraintAxisVarName + " >=" + constraintMin + " <=" + constraintMax)); 
         long time = System.currentTimeMillis();
-        String errorInMethod = ERROR + " in Table.readNDNc " + fullName + ":\n";
+        String errorInMethod = String2.ERROR + " in Table.readNDNc " + fullName + ":\n";
         //get information
         NetcdfFile ncFile = NcHelper.openFile(fullName);
         try {
@@ -4530,9 +4520,9 @@ Dataset {
 "{\n" +
 "dimensions:\n" +
 "\trow = 11 ;\n" +
-"\tWOD_cruise_identifierStringLength = 8 ;\n" +
-"\tProjectStringLength = 49 ;\n" +
-"\tdatasetStringLength = 14 ;\n" +
+"\tWOD_cruise_identifier_strlen = 8 ;\n" +
+"\tProject_strlen = 49 ;\n" +
+"\tdataset_strlen = 14 ;\n" +
 "variables:\n" +
 "\tfloat z(row) ;\n" +
 "\t\tz:long_name = \"depth_below_sea_level\" ;\n" +
@@ -4551,7 +4541,7 @@ Dataset {
 "\tint Temperature_sigfigs(row) ;\n" +
 "\tint Temperature_WODflag(row) ;\n" +
 "\t\tTemperature_WODflag:flag_definitions = \"WODf\" ;\n" +
-"\tchar WOD_cruise_identifier(row, WOD_cruise_identifierStringLength) ;\n" +
+"\tchar WOD_cruise_identifier(row, WOD_cruise_identifier_strlen) ;\n" +
 "\t\tWOD_cruise_identifier:comment = \"two byte country code + WOD cruise number (unique to country code)\" ;\n" +
 "\t\tWOD_cruise_identifier:country = \"UNITED STATES\" ;\n" +
 "\t\tWOD_cruise_identifier:long_name = \"WOD_cruise_identifier\" ;\n" +
@@ -4580,10 +4570,10 @@ Dataset {
 "\t\tAccess_no:comment = \"used to find original data at NODC\" ;\n" +
 "\t\tAccess_no:long_name = \"NODC_accession_number\" ;\n" +
 "\t\tAccess_no:units = \"NODC_code\" ;\n" +
-"\tchar Project(row, ProjectStringLength) ;\n" +
+"\tchar Project(row, Project_strlen) ;\n" +
 "\t\tProject:comment = \"name or acronym of project under which data were measured\" ;\n" +
 "\t\tProject:long_name = \"Project_name\" ;\n" +
-"\tchar dataset(row, datasetStringLength) ;\n" +
+"\tchar dataset(row, dataset_strlen) ;\n" +
 "\t\tdataset:long_name = \"WOD_dataset\" ;\n" +
 "\tfloat ARGOS_last_fix(row) ;\n" +
 "\t\tARGOS_last_fix:units = \"hours\" ;\n" +
@@ -4638,15 +4628,15 @@ Dataset {
 "{\n" +
 "dimensions:\n" +
 "\trow = 11 ;\n" +
-"\tWOD_cruise_identifierStringLength = 8 ;\n" +
-"\tProjectStringLength = 49 ;\n" +
-"\tdatasetStringLength = 14 ;\n" +
+"\tWOD_cruise_identifier_strlen = 8 ;\n" +
+"\tProject_strlen = 49 ;\n" +
+"\tdataset_strlen = 14 ;\n" +
 "variables:\n" +
 "\tfloat z(row) ;\n" +
 "\tfloat Temperature(row) ;\n" +
 "\tint Temperature_sigfigs(row) ;\n" +
 "\tint Temperature_WODflag(row) ;\n" +
-"\tchar WOD_cruise_identifier(row, WOD_cruise_identifierStringLength) ;\n" +
+"\tchar WOD_cruise_identifier(row, WOD_cruise_identifier_strlen) ;\n" +
 "\tint wod_unique_cast(row) ;\n" +
 "\tfloat lat(row) ;\n" +
 "\tfloat lon(row) ;\n" +
@@ -4654,8 +4644,8 @@ Dataset {
 "\tint date(row) ;\n" +
 "\tfloat GMT_time(row) ;\n" +
 "\tint Access_no(row) ;\n" +
-"\tchar Project(row, ProjectStringLength) ;\n" +
-"\tchar dataset(row, datasetStringLength) ;\n" +
+"\tchar Project(row, Project_strlen) ;\n" +
+"\tchar dataset(row, dataset_strlen) ;\n" +
 "\tfloat ARGOS_last_fix(row) ;\n" +
 "\tfloat ARGOS_next_fix(row) ;\n" +
 "\tint crs(row) ;\n" +
@@ -4783,7 +4773,7 @@ Dataset {
     public void appendNcRows(Variable loadVariables[], BitSet okRows) throws Exception {
         //this is tested in PointSubset
 
-        String errorInMethod = ERROR + " in appendNcRows: ";
+        String errorInMethod = String2.ERROR + " in appendNcRows: ";
         long time = System.currentTimeMillis();
 
         //get the desired rows   (first call adds pa's to data and adds columnNames)
@@ -4832,7 +4822,7 @@ Dataset {
     public void blockAppendNcRows(Variable loadVariables[], BitSet okRows) throws Exception {
         //this is tested in PointSubset
 
-        String errorInMethod = ERROR + " in blockAppendNcRows: ";
+        String errorInMethod = String2.ERROR + " in blockAppendNcRows: ";
         long time = System.currentTimeMillis();
       
         //!!****THIS HASN'T BEEN MODIFIED TO DO BLOCK READ YET
@@ -4987,7 +4977,7 @@ Dataset {
      *     '1' and '2' only work if the attributes scale_factor and add_offset are specified.
      */
     public void tryToUnpack(int column, int unpack) {
-        String errorInMethod = ERROR + " in Table.tryToUnpack(" + column + "):\n";
+        String errorInMethod = String2.ERROR + " in Table.tryToUnpack(" + column + "):\n";
         Test.ensureBetween(unpack, 0, 2, errorInMethod + "unpack");
         if (unpack == 0)
             return; //do nothing
@@ -5365,7 +5355,7 @@ Dataset {
         //setup
         long time = System.currentTimeMillis();
         clear();
-        String errorInMethod = ERROR + " in Table.readNetCDF(" + fullFileName + "):\n"; 
+        String errorInMethod = String2.ERROR + " in Table.readNetCDF(" + fullFileName + "):\n"; 
 
         //*** ncdump  //this is very slow for big files
         //if (verbose) DataHelper.ncDump("Start of Table.readNetCDF", fullFileName, false);
@@ -5577,7 +5567,7 @@ Dataset {
     public void readOpendapSequence(String url, boolean skipDapperSpacerRows) throws Exception {
 
         if (verbose) String2.log("Table.readOpendapSequence url=\n" + url);
-        String errorInMethod = ERROR + " in Table.readOpendapSequence(" + url + "):\n";
+        String errorInMethod = String2.ERROR + " in Table.readOpendapSequence(" + url + "):\n";
         long time = System.currentTimeMillis();
         clear();
         DConnect dConnect = new DConnect(url, opendapAcceptDeflate, 1, 1);
@@ -5985,7 +5975,7 @@ Dataset {
 
         if (debug) String2.log("\ntryToApplyConstraint " + conVar + conOp + conVal);
 
-        PrimitiveArray idPa = idCol >= 0? getColumn(idCol) : null;
+        //PrimitiveArray idPa = idCol >= 0? getColumn(idCol) : null;
 
         //is conVar in the table?
         int conVarCol = findColumnNumber(conVar);
@@ -5997,70 +5987,11 @@ Dataset {
             if (reallyVerbose) String2.log(msg);
             return keep.cardinality(); //unfortunate that time is perhaps wasted to calculate this
         }
-        PrimitiveArray conPa = getColumn(conVarCol);
 
         //test the keep=true rows for this constraint
-        int nKeep = 0;
-        //float
-        if (conPa.elementClass() == float.class &&
-            !conOp.equals(REGEX_OP)) {  //regex is always tested via strings
+        PrimitiveArray conPa = getColumn(conVarCol);
+        int nKeep = conPa.applyConstraint(keep, conOp, conVal);
 
-            float tConVal = String2.parseFloat(conVal);
-            while (row >= 0) {
-                float tValue = conPa.getFloat(row);  //for different data types, only this changes
-                boolean pass = testValueOpValue(tValue, conOp, tConVal);
-                if (pass) {
-                    nKeep++;
-                } else {
-                    if (debug) 
-                        String2.log("  rejecting " +
-                            (idCol >= 0? "id=" + idPa.getString(row) : "row=" + row) + 
-                            " because " + conVar + "=\"" + tValue + "\" isn't " + conOp + 
-                            " " + tConVal);
-                    keep.clear(row);
-                }
-                row = keep.nextSetBit(row + 1);
-            }
-
-        //double
-        } else if (conPa.elementClass() == double.class && 
-                   !conOp.equals(REGEX_OP)) {  //regex is always tested via strings
-
-            double tConVal = String2.parseDouble(conVal);
-            while (row >= 0) {
-                double tValue = conPa.getDouble(row); //for different data types, only this changes
-                boolean pass = testValueOpValue(tValue, conOp, tConVal);
-                if (pass) {
-                    nKeep++;
-                } else {
-                    if (debug) 
-                        String2.log("  rejecting " +
-                            (idCol >= 0? "id=" + idPa.getString(row) : "row=" + row) + 
-                            " because " + conVar + "=\"" + tValue + "\" isn't " + conOp + 
-                            " " + tConVal);
-                    keep.clear(row);
-                }
-                row = keep.nextSetBit(row + 1);
-            }
-
-        //String (or regex)
-        } else { //all other data types
-            while (row >= 0) {
-                String tValue = conPa.getString(row); //for different data types, only this changes
-                boolean pass = testValueOpValue(tValue, conOp, conVal);
-                if (pass) {
-                    nKeep++;
-                } else {
-                    if (debug) 
-                        String2.log("  rejecting " +
-                            (idCol >= 0? "id=" + idPa.getString(row) : "row=" + row) + 
-                            " because " + conVar + "=\"" + tValue + "\" isn't " + conOp + 
-                            " \"" + conVal + "\"");
-                    keep.clear(row);
-                }
-                row = keep.nextSetBit(row + 1);
-            }
-        }
         if (reallyVerbose || debug) 
             String2.log("  applyConstraint: after " + conVar + conOp + "\"" + conVal + "\", " +
                 nKeep + " rows remain");
@@ -6085,225 +6016,6 @@ Dataset {
     }
 
 
-    /**
-     * This tests if 'value1 op value2' is true.
-     * The &lt;=, &gt;=, and = tests are (partly) done with Math2.almostEqual9
-     *   so there is a little fudge factor.
-     * The =~ regex test must be tested with String testValueOpValue, not here,
-     *   because value2 is a regex (not a double).
-     * 
-     * @param value1
-     * @param op one of OPERATORS
-     * @param value2
-     * @return true if 'value1 op value2' is true.
-     *    <br>Tests of "NaN = NaN" will evaluate to true.
-     *    <br>Tests of "nonNaN != NaN" will evaluate to true.
-     *    <br>All other tests where value1 is NaN or value2 is NaN will evaluate to false.
-     * @throws RuntimeException if trouble (e.g., invalid op)
-     */
-     public static boolean testValueOpValue(float value1, String op, float value2) {
-         //String2.log("testValueOpValue: " + value1 + op + value2);
-         if (op.equals("<=")) return value1 <= value2 || Math2.almostEqual(6, value1, value2);
-         if (op.equals(">=")) return value1 >= value2 || Math2.almostEqual(6, value1, value2);
-         if (op.equals("="))  return (Double.isNaN(value1) && Double.isNaN(value2)) ||
-                                     Math2.almostEqual(6, value1, value2);
-         if (op.equals("<"))  return value1 < value2;
-         if (op.equals(">"))  return value1 > value2;
-         if (op.equals("!=")) return Double.isNaN(value1) && Double.isNaN(value2)? false :
-                                         value1 != value2;
-         //Regex test has to be handled via String testValueOpValue 
-         //  if (op.equals(REGEX_OP))  
-         throw new SimpleException("Query error: " +
-             "Unknown operator=\"" + op + "\".");
-     }
-
-    /**
-     * This tests if 'value1 op value2' is true.
-     * The &lt;=, &gt;=, and = tests are (partly) done with Math2.almostEqual9
-     *   so there is a little fudge factor.
-     * The =~ regex test must be tested with String testValueOpValue, not here,
-     *   because value2 is a regex (not a double).
-     * 
-     * @param value1
-     * @param op one of OPERATORS
-     * @param value2
-     * @return true if 'value1 op value2' is true.
-     *    <br>Tests of "NaN = NaN" will evaluate to true. (also &gt;=  &lt;= because of '=')
-     *    <br>Tests of "nonNaN != NaN" will evaluate to true.
-     *    <br>All other tests where value1 is NaN or value2 is NaN will evaluate to false.
-     * @throws RuntimeException if trouble (e.g., invalid op)
-     */
-     public static boolean testValueOpValue(double value1, String op, double value2) {
-         //String2.log("testValueOpValue: " + value1 + op + value2);
-         if (Double.isNaN(value2) && Double.isNaN(value1)) { //test2 first, less likely to be NaN
-             return (op.equals("=") || op.equals("<=") || op.equals(">=")); //the '=' matters 
-         }
-         if (op.equals("<=")) return value1 <= value2 || Math2.almostEqual(9, value1, value2);
-         if (op.equals(">=")) return value1 >= value2 || Math2.almostEqual(9, value1, value2);
-         if (op.equals("="))  return Math2.almostEqual(9, value1, value2);
-         if (op.equals("<"))  return value1 < value2;
-         if (op.equals(">"))  return value1 > value2;
-         if (op.equals("!=")) return value1 != value2;
-         //Regex test has to be handled via String testValueOpValue 
-         //  if (op.equals(REGEX_OP))  
-         throw new SimpleException("Query error: " +
-             "Unknown operator=\"" + op + "\".");
-     }
-
-    /**
-     * This tests if 'value1 op value2' is true.
-     * The ops containing with &lt; and &gt; compare value1.toLowerCase()
-     * and value2.toLowerCase().
-     *
-     * <p>Note that "" is not treated specially.  "" isn't like NaN.  
-     * <br>testValueOpValue("a" &gt; "")  will return true.
-     * <br>testValueOpValue("a" &lt; "")  will return false.
-     * <br>testValueOpValue(""  &lt; "a") will return true.
-     * <br>testValueOpValue(""  &gt; "a") will return false.
-     * <br>testValueOpValue(""  =    "")  will return true.
-     * <br>Users should add another constraint (&amp;col2!="") if they don't want "" values.
-     * <br>[I might like it to parallel NaN, but that would be just me --
-     * <br>it would defy common tests in all computer languages. 
-     * <br>And ERDDAP doesn't support null (hard to represent in many file types).]
-     * <br>Stated another way, "" (as value1 or value2) behaves almost like char#0.
-     * 
-     * @param value1   (shouldn't be null)
-     * @param op one of OPERATORS
-     * @param value2   (shouldn't be null)
-     * @return true if 'value1 op value2' is true.
-     * @throws RuntimeException if trouble (e.g., invalid op)
-     */
-     public static boolean testValueOpValue(String value1, String op, String value2) {
-         //String2.log("testValueOpValue: " + value1 + op + value2);
-         if (op.equals("="))  return value1.equals(value2);
-         if (op.equals("!=")) return !value1.equals(value2);
-         if (op.equals(REGEX_OP)) return value1.matches(value2);  //regex test
-
-         int t = value1.toLowerCase().compareTo(value2.toLowerCase());
-         if (op.equals("<=")) return t <= 0;  
-         if (op.equals(">=")) return t >= 0;
-         if (op.equals("<"))  return t < 0;
-         if (op.equals(">"))  return t > 0;
-         throw new SimpleException("Query error: " +
-             "Unknown operator=\"" + op + "\".");
-     }
-
-    /** 
-     * @throws RuntimeException if trouble
-     */
-    public static void testTestValueOpValue() {
-        String2.log("* Table.testTestValueOpValue()");
-
-        //numeric Table.testValueOpValue
-        //"!=", REGEX_OP, "<=", ">=", "=", "<", ">"}; 
-        double nan = Double.NaN;
-        Test.ensureEqual(testValueOpValue(1,   "=",  1), true,  "");
-        Test.ensureEqual(testValueOpValue(1,   "=",  2), false, "");
-        Test.ensureEqual(testValueOpValue(1,   "=",  nan), false, "");
-        Test.ensureEqual(testValueOpValue(nan, "=",  1), false, "");
-        Test.ensureEqual(testValueOpValue(nan, "=",  nan), true, "");
-
-        Test.ensureEqual(testValueOpValue(1,   "!=", 1), false,  "");
-        Test.ensureEqual(testValueOpValue(1,   "!=", 2), true, "");
-        Test.ensureEqual(testValueOpValue(1,   "!=", nan), true, "");
-        Test.ensureEqual(testValueOpValue(nan, "!=", 1), true, "");
-        Test.ensureEqual(testValueOpValue(nan, "!=", nan), false, "");
-
-        Test.ensureEqual(testValueOpValue(1,   "<=", 1), true,  "");
-        Test.ensureEqual(testValueOpValue(1,   "<=", 2), true, "");
-        Test.ensureEqual(testValueOpValue(2,   "<=", 1), false, "");
-        Test.ensureEqual(testValueOpValue(1,   "<=", nan), false, "");
-        Test.ensureEqual(testValueOpValue(nan, "<=", 1), false, "");
-        Test.ensureEqual(testValueOpValue(nan, "<=", nan), true, "");
-
-        Test.ensureEqual(testValueOpValue(1,   "<",  1), false,  "");
-        Test.ensureEqual(testValueOpValue(1,   "<",  2), true, "");
-        Test.ensureEqual(testValueOpValue(1,   "<",  nan), false, "");
-        Test.ensureEqual(testValueOpValue(nan, "<",  1), false, "");
-        Test.ensureEqual(testValueOpValue(nan, "<",  nan), false, "");
-
-        Test.ensureEqual(testValueOpValue(1,   ">=", 1), true,  "");
-        Test.ensureEqual(testValueOpValue(1,   ">=", 2), false, "");
-        Test.ensureEqual(testValueOpValue(2,   ">=", 1), true, "");
-        Test.ensureEqual(testValueOpValue(1,   ">=", nan), false, "");
-        Test.ensureEqual(testValueOpValue(nan, ">=", 1), false, "");
-        Test.ensureEqual(testValueOpValue(nan, ">=", nan), true, "");
-
-        Test.ensureEqual(testValueOpValue(2,   ">",  1), true,  "");
-        Test.ensureEqual(testValueOpValue(1,   ">",  2), false, "");
-        Test.ensureEqual(testValueOpValue(1,   ">",  nan), false, "");
-        Test.ensureEqual(testValueOpValue(nan, ">",  1), false, "");
-        Test.ensureEqual(testValueOpValue(nan, ">",  nan), false, "");
-        //regex tests always via testValueOpValue(string)
-
-        //string testValueOpValue
-        //"!=", REGEX_OP, "<=", ">=", "=", "<", ">"}; 
-        String s = "";
-        Test.ensureEqual(testValueOpValue("a", "=",  "a"), true,  "");
-        Test.ensureEqual(testValueOpValue("a", "=",  "B"), false, "");
-        Test.ensureEqual(testValueOpValue("a", "=",  s), false, "");
-        Test.ensureEqual(testValueOpValue(s,   "=",  "a"), false, "");
-        Test.ensureEqual(testValueOpValue(s,   "=",  s), true, "");
-
-        Test.ensureEqual(testValueOpValue("a", "!=", "a"), false,  "");
-        Test.ensureEqual(testValueOpValue("a", "!=", "B"), true, "");
-        Test.ensureEqual(testValueOpValue("a", "!=", s), true, "");
-        Test.ensureEqual(testValueOpValue(s,   "!=", "a"), true, "");
-        Test.ensureEqual(testValueOpValue(s,   "!=", s), false, "");
-
-        Test.ensureEqual(testValueOpValue("a", "<=", "a"), true,  "");
-        Test.ensureEqual(testValueOpValue("a", "<=", "B"), true, "");
-        Test.ensureEqual(testValueOpValue("B", "<=", "a"), false, "");
-        Test.ensureEqual(testValueOpValue("a", "<=", s), false, "");
-        Test.ensureEqual(testValueOpValue(s,   "<=", "a"), true, "");
-        Test.ensureEqual(testValueOpValue(s,   "<=", s), true, "");
-
-        Test.ensureEqual(testValueOpValue("a", "<",  "a"), false,  "");
-        Test.ensureEqual(testValueOpValue("a", "<",  "B"), true, "");
-
-        Test.ensureEqual(testValueOpValue("a", ">=", "a"), true,  "");
-        Test.ensureEqual(testValueOpValue("a", ">=", "B"), false, "");
-        Test.ensureEqual(testValueOpValue("B", ">=", "a"), true, "");
-
-        Test.ensureEqual(testValueOpValue("B", ">",  "a"), true,  "");
-        Test.ensureEqual(testValueOpValue("a", ">",  "B"), false, "");
-
-        Test.ensureEqual(testValueOpValue("12345", REGEX_OP, "[0-9]+"), true,  "");
-        Test.ensureEqual(testValueOpValue("12a45", REGEX_OP, "[0-9]+"), false, "");
-
-        //test speed
-        long tTime = System.currentTimeMillis();
-        int n = 1000000;
-        for (int i = 0; i < n; i++) {
-            Test.ensureEqual(testValueOpValue("abcdefghijk", "=",  "abcdefghijk"), true,  "");
-            Test.ensureEqual(testValueOpValue("abcdefghijk", "!=", "abcdefghijk"), false,  "");
-            Test.ensureEqual(testValueOpValue("abcdefghijk", "<=", "abcdefghijk"), true, "");
-            Test.ensureEqual(testValueOpValue("abcdefghijk", "<",  "abcdefghijk"), false,  "");
-            Test.ensureEqual(testValueOpValue("abcdefghijk", ">=", "abcdefghijk"), true,  "");
-            Test.ensureEqual(testValueOpValue("abcdefghijk", ">",  "abcdefghijk"), false,  "");
-            Test.ensureEqual(testValueOpValue("12345", REGEX_OP, "[0-9]+"), true,  "");
-        }
-        String2.log("time for " + (7 * n) + " testValueOpValue(string): " + (System.currentTimeMillis() - tTime));
-
-        tTime = System.currentTimeMillis();
-        for (int i = 0; i < n; i++) {
-            Test.ensureEqual(testValueOpValue(1, "=",  1), true,  "");
-            Test.ensureEqual(testValueOpValue(1, "!=", 1), false,  "");
-            Test.ensureEqual(testValueOpValue(1, "<=", 1), true,  "");
-            Test.ensureEqual(testValueOpValue(1, "<",  1), false,  "");
-            Test.ensureEqual(testValueOpValue(1, ">=", 1), true,  "");
-            Test.ensureEqual(testValueOpValue(2, ">",  1), true,  "");
-            Test.ensureEqual(testValueOpValue(1, ">",  2), false, "");
-            //regex tests always via testValueOpValue(string)
-        }
-        String2.log("time for " + (7 * n) + " testValueOpValue(double): " + (System.currentTimeMillis() - tTime));
-
-        tTime = System.currentTimeMillis();
-        for (int i = 0; i < 7*n; i++) {
-            Test.ensureEqual(testValueOpValue(1, "<=",  1), true,  "");
-        }
-        String2.log("time for " + (7 * n) + " testValueOpValue(double <=): " + (System.currentTimeMillis() - tTime));
-    }
 
 
     /**
@@ -6738,11 +6450,11 @@ Dataset {
         if (verbose) String2.log("Table.saveAsMatlab outputStream"); 
         long time = System.currentTimeMillis();
 
-        String errorInMethod = ERROR + " in Table.saveAsMatlab:\n";
+        String errorInMethod = String2.ERROR + " in Table.saveAsMatlab:\n";
 
         //make sure there is data
         if (nRows() == 0)
-            throw new SimpleException(errorInMethod + DataHelper.THERE_IS_NO_DATA);
+            throw new SimpleException(errorInMethod + MustBe.THERE_IS_NO_DATA);
 
         //open a dataOutputStream 
         DataOutputStream dos = new DataOutputStream(outputStream);
@@ -6800,11 +6512,11 @@ Dataset {
         if (verbose) String2.log("Table.saveAsMatlab outputStream"); 
         long time = System.currentTimeMillis();
 
-        String errorInMethod = ERROR + " in Table.saveAsMatlab:\n";
+        String errorInMethod = String2.ERROR + " in Table.saveAsMatlab:\n";
 
         //make sure there is data
         if (nRows() == 0)
-            throw new SimpleException(errorInMethod + DataHelper.THERE_IS_NO_DATA);
+            throw new SimpleException(errorInMethod + MustBe.THERE_IS_NO_DATA);
 
         //calculate the size of the structure
         int nCols = nColumns();
@@ -7032,8 +6744,8 @@ Dataset {
             int nRows = nRows();
             int nColumns = nColumns();
             if (nRows == 0) {
-                throw new Exception(ERROR + " in Table.saveAsFlatNc:\n" + 
-                    DataHelper.THERE_IS_NO_DATA);
+                throw new Exception(String2.ERROR + " in Table.saveAsFlatNc:\n" + 
+                    MustBe.THERE_IS_NO_DATA);
             }
 
             //define the dimensions
@@ -7050,7 +6762,7 @@ Dataset {
                 if (type == String.class) {
                     int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nc libs want at least 1; 0 happens if no data
                     Dimension lengthDimension = nc.addDimension(
-                        tColName + NcHelper.StringLength, max);
+                        tColName + NcHelper.StringLengthSuffix, max);
                     nc.addVariable(tColName, DataType.CHAR, 
                         new Dimension[]{dimension, lengthDimension}); 
                 } else {
@@ -7213,7 +6925,7 @@ Dataset {
 
 
         //ensure there is data
-        String errorInMethod = ERROR + " in Table.saveAs4DNc:\n";
+        String errorInMethod = String2.ERROR + " in Table.saveAs4DNc:\n";
         if (stringVariableName != null) {
             Test.ensureNotEqual(stringVariableName.length(), 0, errorInMethod + "stringVariableName is \"\".");
             if (stringVariableValue == null)
@@ -7221,7 +6933,7 @@ Dataset {
             Test.ensureNotEqual(stringVariableValue.length(), 0, errorInMethod + "stringVariableValue is \"\".");
         }
         if (nRows() == 0) {
-            throw new Exception(errorInMethod + DataHelper.THERE_IS_NO_DATA);
+            throw new Exception(errorInMethod + MustBe.THERE_IS_NO_DATA);
         }
 
         //open the file (before 'try'); if it fails, no temp file to delete
@@ -7278,7 +6990,7 @@ Dataset {
             int nRows = nRows();
             int nColumns = nColumns();
             if (nRows == 0) {
-                throw new Exception(ERROR + " in Table.saveAs4DNc:\nThe table has no data.");
+                throw new Exception(String2.ERROR + " in Table.saveAs4DNc:\nThe table has no data.");
             }
             int stringLength[] = new int[nColumns];
 
@@ -7309,7 +7021,7 @@ Dataset {
                         int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nc libs want at least 1; 0 happens if no data
                         stringLength[col] = max;
                         Dimension lengthDimension = nc.addDimension(
-                            tColName + NcHelper.StringLength, max);
+                            tColName + NcHelper.StringLengthSuffix, max);
                         nc.addVariable(tColName, DataType.CHAR, 
                             new Dimension[]{aDimension, lengthDimension}); 
                     } else {
@@ -7326,7 +7038,7 @@ Dataset {
                         int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nc libs want at least 1; 0 happens if no data
                         stringLength[col] = max;
                         Dimension lengthDimension  = nc.addDimension(
-                            tColName + NcHelper.StringLength, max);
+                            tColName + NcHelper.StringLengthSuffix, max);
                         nc.addVariable(tColName, DataType.CHAR, 
                             new Dimension[]{tDimension, zDimension, yDimension, xDimension, lengthDimension}); 
                     } else {
@@ -7359,7 +7071,7 @@ Dataset {
                 stringVariableName = String2.replaceAll(stringVariableName, " ", "_");
 
                 Dimension lengthDimension = nc.addDimension(
-                    stringVariableName + NcHelper.StringLength, 
+                    stringVariableName + NcHelper.StringLengthSuffix, 
                     Math.max(1, stringVariableValue.length())); //nclib wants at least 1
                 nc.addVariable(stringVariableName, DataType.CHAR, 
                     new Dimension[]{lengthDimension}); 
@@ -7445,7 +7157,7 @@ Dataset {
                         }*/
                         ar = tar;
                     } else throw new SimpleException(
-                        ERROR + " in Table.saveAs4DNc: unexpected object type: " + 
+                        String2.ERROR + " in Table.saveAs4DNc: unexpected object type: " + 
                         pa.elementClass().toString());
 
                 }
@@ -7561,7 +7273,7 @@ Dataset {
                     Timestamp ts = rs.getTimestamp(1 + col);
                     paArray[col].addDouble(ts == null? Double.NaN : ts.getTime() / 1000.0);                    
                 } else throw new SimpleException(
-                    ERROR + " in Table.readSqlResultSet: process unknown column(" + 
+                    String2.ERROR + " in Table.readSqlResultSet: process unknown column(" + 
                     col + ") type."); 
             }
         }
@@ -7677,7 +7389,7 @@ Dataset {
 //    *    time columns.  (The Date and Timestamp columns are already UTC.)
 
         if (verbose) String2.log("Table.saveAsSql(" + tableName + ")");
-        String errorInMethod = ERROR + " in Table.saveAsSql(" + tableName + "):\n";
+        String errorInMethod = String2.ERROR + " in Table.saveAsSql(" + tableName + "):\n";
         long elapsedTime = System.currentTimeMillis();
         if (dateCols == null) dateCols = new int[0];
         if (timestampCols == null) timestampCols = new int[0];
@@ -7879,7 +7591,7 @@ Dataset {
                     errorInMethod +
                     "[C ERROR] " + MustBe.throwableToString(caughtException) + 
                     "[RB ERROR] " + rbe.toString());
-                String2.log(ERROR + " in Table.saveAsSql during rollback:\n" + 
+                String2.log(String2.ERROR + " in Table.saveAsSql during rollback:\n" + 
                     MustBe.throwableToString(caughtException));
             }
         } 
@@ -7948,7 +7660,7 @@ Dataset {
         String types[]) throws Exception {
 
         if (schema == null)
-            throw new SimpleException(ERROR + " in Table.getSqlTableList: schema is null.");
+            throw new SimpleException(String2.ERROR + " in Table.getSqlTableList: schema is null.");
 
         //getTables(catalogPattern, schemaPattern, tableNamePattern, String[] types)
         //"%" means match any substring of 0 or more characters, and 
@@ -7974,9 +7686,9 @@ Dataset {
         String tableName) throws Exception {
 
         if (schema == null)
-            throw new SimpleException(ERROR + " in Table.getSqlTableType: schema is null.");
+            throw new SimpleException(String2.ERROR + " in Table.getSqlTableType: schema is null.");
         if (tableName == null)
-            throw new SimpleException(ERROR + " in Table.getSqlTableType: tableName is null.");
+            throw new SimpleException(String2.ERROR + " in Table.getSqlTableType: tableName is null.");
 
         //getTables(catalogPattern, schemaPattern, tableNamePattern, String[] types)
         //"%" means match any substring of 0 or more characters, and 
@@ -8043,7 +7755,7 @@ Dataset {
     public int isoStringToEpochSeconds(int col, int type, 
         int timeZoneOffset, boolean strict) throws Exception {
        
-        String errorInMethod = ERROR + " in Table.isoStringToEpochSeconds(col=" + col + "):\n";
+        String errorInMethod = String2.ERROR + " in Table.isoStringToEpochSeconds(col=" + col + "):\n";
         Test.ensureTrue(type >= 0 && type <= 2, errorInMethod + "type=" + type +
             " must be between 0 and 2.");
         String isoDatePattern = "[1-2][0-9]{3}\\-[0-1][0-9]\\-[0-3][0-9]";
@@ -8110,7 +7822,7 @@ Dataset {
 /*    public int epochSecondsToIsoString(int col, int type, int timeZoneOffset,
         String missingValueString) throws Exception {
        
-        String errorInMethod = ERROR + " in Table.epochSecondsToIsoString(col=" + col + "):\n";
+        String errorInMethod = String2.ERROR + " in Table.epochSecondsToIsoString(col=" + col + "):\n";
         Test.ensureTrue(type >= 0 && type <= 2, errorInMethod + "type=" + type +
             " must be between 0 and 2.");
         DoubleArray da = (DoubleArray)getColumn(col);
@@ -8244,9 +7956,10 @@ Dataset {
             } catch (Exception e) {
                 //this error is expected
                 //make sure it has both parts of the error message
-                String2.log("\nEXPECTED ERROR:\n" + MustBe.throwableToString(e));
+                String2.log("\nEXPECTED " + String2.ERROR + ":\n" + MustBe.throwableToString(e));
                 Test.ensureTrue(e.toString().indexOf(
-                    "PSQLException: ERROR: duplicate key violates unique constraint \"temptest_pkey\"") >= 0, 
+                    "PSQLException: " + String2.ERROR + 
+                    ": duplicate key violates unique constraint \"temptest_pkey\"") >= 0, 
                     "(A) The error was: " + e.toString());
                 Test.ensureTrue(e.toString().indexOf(
                     "java.sql.BatchUpdateException: Batch entry 3 INSERT INTO TempTest (") >= 0, 
@@ -8274,9 +7987,10 @@ Dataset {
             } catch (Exception e) {
                 //this error is expected
                 //make sure it is the right error
-                String2.log("\nEXPECTED ERROR:\n" + MustBe.throwableToString(e));
+                String2.log("\nEXPECTED " + String2.ERROR + ":\n" + MustBe.throwableToString(e));
                 Test.ensureTrue(e.toString().indexOf(
-                    "java.lang.RuntimeException: ERROR in Table.saveAsSql(TempTest):\nTime format must be " +
+                    "java.lang.RuntimeException: ERROR in Table.saveAsSql(TempTest):\n" +
+                        "Time format must be " +
                         "HH:MM:SS. Bad value=20.1/30 in row=3 col=9") >= 0, 
                     "error=" + e.toString());
             }
@@ -8451,8 +8165,8 @@ Dataset {
 
         //ensure there is data
         if (nRows() == 0) {
-            throw new Exception(ERROR + " in Table.saveAsSeparatedAscii:\n" + 
-                DataHelper.THERE_IS_NO_DATA);
+            throw new Exception(String2.ERROR + " in Table.saveAsSeparatedAscii:\n" + 
+                MustBe.THERE_IS_NO_DATA);
         }
 
         long time = System.currentTimeMillis();
@@ -8694,7 +8408,7 @@ Dataset {
         if (verbose) String2.log("Table.readJson " + fileName); 
         long time = System.currentTimeMillis();
         String note = "In Table.readJson(" + fileName + "): ";
-        String errorInMethod = ERROR + " in Table.readJson(" + fileName + "):\n";
+        String errorInMethod = String2.ERROR + " in Table.readJson(" + fileName + "):\n";
 
         //clear everything
         clear();
@@ -8862,7 +8576,7 @@ Dataset {
         //validate parameters
         if (verbose) String2.log("Table.readJson " + fileName); 
         long time = System.currentTimeMillis();
-        String errorInMethod = ERROR + " in Table.readJson(" + fileName + "):\n";
+        String errorInMethod = String2.ERROR + " in Table.readJson(" + fileName + "):\n";
 
         //clear everything
         clear();
@@ -8986,7 +8700,7 @@ Dataset {
         //validate parameters
         if (verbose) String2.log("Table.readJson " + fileName); 
         long time = System.currentTimeMillis();
-        String errorInMethod = ERROR + " in Table.readJson(" + fileName + "):\n";
+        String errorInMethod = String2.ERROR + " in Table.readJson(" + fileName + "):\n";
 
         //clear everything
         clear();
@@ -9113,7 +8827,7 @@ touble: because table is JsonObject, info may not be in expected order
 
         if (verbose) String2.log("Table.readJson " +url); 
         long time = System.currentTimeMillis();
-        String errorInMethod = ERROR + " in Table.readJson(" + url + "):\n";
+        String errorInMethod = String2.ERROR + " in Table.readJson(" + url + "):\n";
 
         //clear everything
         clear();
@@ -9212,7 +8926,7 @@ touble: because table is JsonObject, info may not be in expected order
         String ncssvMust = "Name, Last modified, Size, Description";
         if (!ncssvMust.equals(ncssv))
              throw new SimpleException(
-                "ERROR in directoryListing(), the table's column\n" +
+                String2.ERROR + " in directoryListing(), the table's column\n" +
                 "names must be \"" + ncssvMust + "\".\n" +
                 "The names are \"" + ncssv + "\".");
         PrimitiveArray namePA        = getColumn(0);
@@ -9228,7 +8942,7 @@ touble: because table is JsonObject, info may not be in expected order
         String tcssvMust = "String, long, long, String";
         if (!tcssvMust.equals(tcssv))
              throw new SimpleException(
-                "ERROR in directoryListing(), the table's column\n" +
+                String2.ERROR + " in directoryListing(), the table's column\n" +
                 "types must be \"" + tcssvMust + "\".\n" +
                 "The types are \"" + tcssv + "\".");
 
@@ -9508,7 +9222,7 @@ touble: because table is JsonObject, info may not be in expected order
                 ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").size(), 2,  ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").getString(0), 
-                "2012-04-04 Most recent downloading and reformatting of all " + //changes monthly
+                "2012-06-04 Most recent downloading and reformatting of all " + //changes monthly
                 "cdf/sites/... files from PMEL TAO's FTP site by bob.simons at noaa.gov.", 
                 ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").getString(1), 
@@ -9554,7 +9268,7 @@ touble: because table is JsonObject, info may not be in expected order
             saveAsType != SAVE_AS_4D_NC &&
             saveAsType != SAVE_AS_MATLAB
             )
-            throw new RuntimeException(ERROR + " in Table.saveAs: invalid saveAsType=" + saveAsType);
+            throw new RuntimeException(String2.ERROR + " in Table.saveAs: invalid saveAsType=" + saveAsType);
        
         String ext = SAVE_AS_EXTENSIONS[saveAsType];
 
@@ -9648,7 +9362,7 @@ touble: because table is JsonObject, info may not be in expected order
             table.readFlatNc(inFullName, null, 0); //don't unpack
         else if (inType == READ_OPENDAP_SEQUENCE)
             table.readOpendapSequence(inFullName, false);
-        else throw new Exception(ERROR + " in Table.convert: unrecognized inType: " + inType);
+        else throw new Exception(String2.ERROR + " in Table.convert: unrecognized inType: " + inType);
 
         //if input file was unzipped, delete the unzipped file
         if (unzipped)
@@ -10125,7 +9839,7 @@ touble: because table is JsonObject, info may not be in expected order
 "<th>Strings\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>1970-01-01 00:00:00\n" +
+"<td nowrap>1970-01-01T00:00:00\n" +
 "<td nowrap>-3\n" +
 "<td nowrap>1.0\n" +
 "<td nowrap>-1.0E300\n" +
@@ -10136,7 +9850,7 @@ touble: because table is JsonObject, info may not be in expected order
 "<td nowrap>a\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>2005-08-31 16:01:02\n" +
+"<td nowrap>2005-08-31T16:01:02\n" +
 "<td nowrap>-2\n" +
 "<td nowrap>1.5\n" +
 "<td nowrap>3.123\n" +
@@ -10147,7 +9861,7 @@ touble: because table is JsonObject, info may not be in expected order
 "<td nowrap>bb\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>2005-11-02 18:04:09\n" +
+"<td nowrap>2005-11-02T18:04:09\n" +
 "<td nowrap>-1\n" +
 "<td nowrap>2.0\n" +
 "<td nowrap>1.0E300\n" +
@@ -10170,9 +9884,9 @@ touble: because table is JsonObject, info may not be in expected order
         Test.ensureEqual(csv, 
 "Time,Longitude,Latitude,Double Data,Long Data,Int Data,Short Data,Byte Data,String Data\n" +
 "UTC,degrees_east,degrees_north,doubles,longs,ints,shorts,bytes,Strings\n" +
-"1970-01-01 00:00:00,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,a\n" +
-"2005-08-31 16:01:02,-2,1.5,3.123,2,2,7,8,bb\n" +
-"2005-11-02 18:04:09,-1,2.0,1.0E300,2000000000000000,2000000000,32000,120,ccc\n",
+"1970-01-01T00:00:00,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,a\n" +
+"2005-08-31T16:01:02,-2,1.5,3.123,2,2,7,8,bb\n" +
+"2005-11-02T18:04:09,-1,2.0,1.0E300,2000000000000000,2000000000,32000,120,ccc\n",
             csv);
 
         //test readHtml - treat 2nd row as units
@@ -10181,9 +9895,9 @@ touble: because table is JsonObject, info may not be in expected order
         csv = table2.dataToCSVString();
         Test.ensureEqual(csv, 
 "Time,Longitude,Latitude,Double Data,Long Data,Int Data,Short Data,Byte Data,String Data\n" +
-"1970-01-01 00:00:00,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,a\n" +
-"2005-08-31 16:01:02,-2,1.5,3.123,2,2,7,8,bb\n" +
-"2005-11-02 18:04:09,-1,2.0,1.0E300,2000000000000000,2000000000,32000,120,ccc\n",
+"1970-01-01T00:00:00,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,a\n" +
+"2005-08-31T16:01:02,-2,1.5,3.123,2,2,7,8,bb\n" +
+"2005-11-02T18:04:09,-1,2.0,1.0E300,2000000000000000,2000000000,32000,120,ccc\n",
             csv);
         Test.ensureEqual(table2.columnAttributes(0).getString("units"), "UTC", "");
         Test.ensureEqual(table2.columnAttributes(1).getString("units"), "degrees_east", "");
@@ -11015,7 +10729,7 @@ touble: because table is JsonObject, info may not be in expected order
         } catch (Exception e) {
             String2.getStringFromSystemIn(
                 MustBe.throwableToString(e) +
-                "\nUnexpected ERROR.  Press ^C to stop or Enter to continue..."); 
+                "\nUnexpected " + String2.ERROR + ".  Press ^C to stop or Enter to continue..."); 
         }
     }
 
@@ -11440,11 +11154,11 @@ touble: because table is JsonObject, info may not be in expected order
 "{\n" +
 "dimensions:\n" +
 "\trow = 4 ;\n" +
-"\tbbStringLength = 2 ;\n" +
+"\tbb_strlen = 2 ;\n" +
 "variables:\n" +
 "\tint aa(row) ;\n" +
 "\t\taa:missing_value = -99999 ;\n" +
-"\tchar bb(row, bbStringLength) ;\n" +
+"\tchar bb(row, bb_strlen) ;\n" +
 "\t\tbb:long_name = \"hey bb\" ;\n" +
 "\tlong cc(row) ;\n" +
 "\t\tcc:missing_value = -9999999 ;\n" +
@@ -11466,19 +11180,19 @@ touble: because table is JsonObject, info may not be in expected order
 "{\n" +
 "dimensions:\n" +
 "\trow = 6 ;\n" +
-"\tzeroStringLength = 1 ;\n" +
-"\tbbStringLength = 2 ;\n" +
-"\ttwoStringLength = 2 ;\n" +
+"\tzero_strlen = 1 ;\n" +
+"\tbb_strlen = 2 ;\n" +
+"\ttwo_strlen = 2 ;\n" +
 "variables:\n" +
-"\tchar zero(row, zeroStringLength) ;\n" +
+"\tchar zero(row, zero_strlen) ;\n" +
 "\t\tzero:long_name = \"hey zero\" ;\n" +
 "\tint one(row) ;\n" +
 "\t\tone:missing_value = -99999 ;\n" +
-"\tchar bb(row, bbStringLength) ;\n" +
+"\tchar bb(row, bb_strlen) ;\n" +
 "\t\tbb:long_name = \"hey bb\" ;\n" +
 "\tlong cc(row) ;\n" +
 "\t\tcc:missing_value = -9999999 ;\n" +
-"\tchar two(row, twoStringLength) ;\n" +
+"\tchar two(row, two_strlen) ;\n" +
 "\t\ttwo:long_name = \"hey two\" ;\n" +
 "\n" +
 "// global attributes:\n" +
@@ -11517,19 +11231,19 @@ touble: because table is JsonObject, info may not be in expected order
 "{\n" +
 "dimensions:\n" +
 "\trow = 6 ;\n" +
-"\tzeroStringLength = 1 ;\n" +
-"\ttwoStringLength = 4 ;\n" +
-"\tthreeStringLength = 3 ;\n" +
+"\tzero_strlen = 1 ;\n" +
+"\ttwo_strlen = 4 ;\n" +
+"\tthree_strlen = 3 ;\n" +
 "variables:\n" +
-"\tchar zero(row, zeroStringLength) ;\n" +
+"\tchar zero(row, zero_strlen) ;\n" +
 "\t\tzero:long_name = \"hey zero\" ;\n" +
 "\tint one(row) ;\n" +
 "\t\tone:missing_value = -99999 ;\n" +
-"\tchar two(row, twoStringLength) ;\n" +
+"\tchar two(row, two_strlen) ;\n" +
 "\t\ttwo:long_name = \"hey two\" ;\n" +
 "\tlong cc(row) ;\n" +
 "\t\tcc:missing_value = -9999999 ;\n" +
-"\tchar three(row, threeStringLength) ;\n" +
+"\tchar three(row, three_strlen) ;\n" +
 "\t\tthree:long_name = \"hey three\" ;\n" +
 "\n" +
 "// global attributes:\n" +
@@ -11597,7 +11311,6 @@ touble: because table is JsonObject, info may not be in expected order
 
         /* */
         testLittleMethods();
-        testTestValueOpValue();
         testSortColumnsByName();
         
         //readWrite tests

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.io.Writer;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -284,13 +285,11 @@ public class StringArray extends PrimitiveArray {
      */
     public PrimitiveArray subset(int startIndex, int stride, int stopIndex) {
         if (startIndex < 0)
-            throw new RuntimeException(String2.ERROR + 
-                " in StringArray.subset: startIndex=" + startIndex +
-                " must be at least 0.");
+            throw new IndexOutOfBoundsException(MessageFormat.format(
+                ArraySubsetStart, getClass().getSimpleName(), "" + startIndex));
         if (stride < 1)
-            throw new RuntimeException(String2.ERROR + 
-                " in StringArray.subset: stride=" + stride +
-                " must greater than 0.");
+            throw new IllegalArgumentException(MessageFormat.format(
+                ArraySubsetStride, getClass().getSimpleName(), "" + stride));
         if (stopIndex >= size)
             stopIndex = size - 1;
         if (stopIndex < startIndex)
@@ -381,7 +380,8 @@ public class StringArray extends PrimitiveArray {
     public void addN(int n, String value) {
         if (n == 0) return;
         if (n < 0)
-            throw new IllegalArgumentException(String2.ERROR + " in StringArray.addN: n (" + n + ") < 0");
+            throw new IllegalArgumentException(MessageFormat.format(
+                ArrayAddN, getClass().getSimpleName(), "" + n));
         value = String2.canonical(value);
         ensureCapacity(size + (long)n);
         Arrays.fill(array, size, size + n, value);
@@ -506,8 +506,8 @@ public class StringArray extends PrimitiveArray {
      */
     public void remove(int index) {
         if (index >= size)
-            throw new IllegalArgumentException(String2.ERROR + " in StringArray.remove: index (" + 
-                index + ") >= size (" + size + ").");
+            throw new IllegalArgumentException(MessageFormat.format(
+                ArrayRemove, getClass().getSimpleName(), "" + index, "" + size));
         System.arraycopy(array, index + 1, array, index, size - index - 1);
         size--;
 
@@ -1657,13 +1657,16 @@ public class StringArray extends PrimitiveArray {
         if (size == 0)
             return "";
         if (array[0] == null) 
-            return "StringArray isn't sorted in ascending order: [0]=null.";
+            return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
+                "[0]=null");
         for (int i = 1; i < size; i++) {
             if (array[i] == null)
-                return "StringArray isn't sorted in ascending order: [" + i + "]=null.";
+                return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
+                    "[" + i + "]=null");
             if (array[i - 1].compareTo(array[i]) > 0) {
-                return "StringArray isn't sorted in ascending order: [" + (i-1) + "]=\"" + array[i-1] + 
-                    "\" > [" + i + "]=\"" + array[i] + "\".";
+                return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
+                    "[" + (i-1) + "]=" + String2.toJson(array[i-1]) + 
+                     " > [" + i + "]=" + String2.toJson(array[i]));
             }
         }
         return "";
@@ -1681,13 +1684,16 @@ public class StringArray extends PrimitiveArray {
         if (size == 0)
             return "";
         if (array[0] == null) 
-            return "StringArray isn't sorted in descending order: [0]=null.";
+            return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
+                "[0]=null");
         for (int i = 1; i < size; i++) {
             if (array[i] == null)
-                return "StringArray isn't sorted in descending order: [" + i + "]=null.";
+                return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
+                    "[" + i + "]=null");
             if (array[i - 1].compareTo(array[i]) < 0) {
-                return "StringArray isn't sorted in descending order: [" + (i-1) + "]=\"" + array[i-1] + 
-                    "\" < [" + i + "]=\"" + array[i] + "\".";
+                return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
+                    "[" + (i-1) + "]=" + String2.toJson(array[i-1]) + 
+                     " < [" + i + "]=" + String2.toJson(array[i]));
             }
         }
         return "";
@@ -1727,11 +1733,9 @@ public class StringArray extends PrimitiveArray {
         double expected = getDouble(1) - getDouble(0);
         for (int i = 2; i < size; i++) {
             if (!Math2.almostEqual(9, getDouble(i) - getDouble(i - 1), expected)) {
-                return "StringArray isn't evenly spaced: #" + 
-                    (i - 1) + "=" + array[i - 1] + 
-                    ", #" + i + "=" + array[i] + 
-                    ", spacing=" + (getDouble(i) - getDouble(i-1)) +
-                    ", expected spacing=" + expected + ".";
+                return MessageFormat.format(ArrayNotEvenlySpaced, getClass().getSimpleName(),
+                    "" + (i - 1), "" + getDouble(i - 1), "" + i, "" + getDouble(i),
+                    "" + (getDouble(i) - getDouble(i-1)), "" + expected);
             }
         }
         return "";
@@ -2133,7 +2137,7 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(anArray.isEvenlySpaced(), "", "");
         anArray.set(2, "30.1");
         Test.ensureEqual(anArray.isEvenlySpaced(), 
-            "StringArray isn't evenly spaced: #1=20, #2=30.1, spacing=10.100000000000001, expected spacing=10.0.", "");
+            "StringArray isn't evenly spaced: [1]=20.0, [2]=30.1, spacing=10.100000000000001, expected spacing=10.0.", "");
 
         //fromCSV
         Test.ensureEqual(fromCSV(null).toString(), "", "");
@@ -2186,13 +2190,13 @@ public class StringArray extends PrimitiveArray {
         anArray2 = new StringArray(new String[] {"0", "11", "22"});
         String s = anArray.diffString(anArray2);  Test.ensureEqual(s, "", "s=" + s);
         anArray2.add("33");
-        s = anArray.diffString(anArray2);  Test.ensureEqual(s, "  old index #3=33,\n  new index #3=null.", "s=" + s);
+        s = anArray.diffString(anArray2);  Test.ensureEqual(s, "  old [3]=33,\n  new [3]=null.", "s=" + s);
         anArray2.set(2, "23");
-        s = anArray.diffString(anArray2);  Test.ensureEqual(s, "  old index #2=23,\n  new index #2=22.", "s=" + s);
+        s = anArray.diffString(anArray2);  Test.ensureEqual(s, "  old [2]=23,\n  new [2]=22.", "s=" + s);
         IntArray ia = new IntArray(new int[]{0, 11, 22});
         s = anArray.diffString(ia);  Test.ensureEqual(s, "", "s=" + s);
         ia.set(2, 23);
-        s = anArray.diffString(ia);  Test.ensureEqual(s, "  old index #2=23,\n  new index #2=22.", "s=" + s);
+        s = anArray.diffString(ia);  Test.ensureEqual(s, "  old [2]=23,\n  new [2]=22.", "s=" + s);
 
 
         //hashcode

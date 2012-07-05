@@ -153,8 +153,8 @@ public class iniFile {
     private void parseFile()  {
 
     
-	try {    
-            BufferedReader fp = new BufferedReader( new InputStreamReader( new FileInputStream(iniFile)));
+	try { //2012-06-17 Bob Simons added "ISO-8859-1". Not ideal, but better than default charset (e.g., on Mac)   
+        BufferedReader fp = new BufferedReader( new InputStreamReader( new FileInputStream(iniFile), "ISO-8859-1"));
 	
 	    boolean done = false;
 	    while(!done) {

@@ -47,9 +47,6 @@ import java.util.GregorianCalendar;
  */
 public class FileNameUtility  {
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     /**
      * Set this to true (by calling verbose=true in your program, not but changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
@@ -97,7 +94,7 @@ public class FileNameUtility  {
      * @param fullClassName e.g., gov.noaa.pfel.coastwatch.CWBrowser
      */
     public FileNameUtility(String fullClassName) throws Exception {
-        String errorInMethod = ERROR + " in FileNameUtility.constructor: \n";
+        String errorInMethod = String2.ERROR + " in FileNameUtility.constructor: \n";
         this.fullClassName = fullClassName;
         String defaultName = File2.getNameNoExtension(fullClassName) + ".BrowserDefault";
         classRB2 = new ResourceBundle2(fullClassName, defaultName); //primary and secondary resourceBundle2's
@@ -154,7 +151,7 @@ public class FileNameUtility  {
      * @throws Exception if invalid
      */
     public void ensureValidDataSetProperties(String seven, boolean thoroughlyCheckThreddsData) {
-        String errorInMethod = ERROR + " in FileNameUtility.ensureValid(" + seven + "): \n";
+        String errorInMethod = String2.ERROR + " in FileNameUtility.ensureValid(" + seven + "): \n";
         Test.ensureTrue(seven.length() > 0, errorInMethod + "sevenName is \"\".");
         String six = seven.substring(1);
         Test.ensurePrintable(dataSetRB2.getString(seven + "FileInfo", null), 
@@ -231,13 +228,13 @@ public class FileNameUtility  {
                 SSR.getUrlResponse(infoUrl);  
                 return;
             } catch (Exception e) {
-                throw new Exception(ERROR + " in FileNameUtility.ensureInfoUrlExists: error while reading InfoUrl for " + 
+                throw new Exception(String2.ERROR + " in FileNameUtility.ensureInfoUrlExists: error while reading InfoUrl for " + 
                     internal7Name + ":\n" + e);
             }
         } else {
             String infoUrlBaseDir = dataSetRB2.getString("infoUrlBaseDir", null);
             Test.ensureTrue(File2.isFile(infoUrlBaseDir + infoUrl), 
-                ERROR + " in FileNameUtility.ensureInfoUrlExists: file=" + 
+                String2.ERROR + " in FileNameUtility.ensureInfoUrlExists: file=" + 
                     infoUrlBaseDir + infoUrl + " doesn't exist (for " + 
                     internal7Name + ").");
         }
@@ -545,7 +542,7 @@ public class FileNameUtility  {
         String s = getTimePeriodString(fileName);
         int i = String2.indexOf(TimePeriods.IN_FILE_NAMES, s);
         if (i == -1)
-            throw new RuntimeException(ERROR + 
+            throw new RuntimeException(String2.ERROR + 
                 " in FileNameUtility.getTimePeriodIndex(" + fileName + "):\ntimePeriod '" + 
                 s + "' not recognized.");
         return i; 

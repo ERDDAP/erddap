@@ -33,7 +33,6 @@ public class SimpleXMLReader {
     private String content = "";
     private StringBuilder tagBuffer = new StringBuilder();
     private long lineNumber = 1, tagNumber = 0;
-    private final static String ERROR = String2.ERROR;
 
     /**
      * This constructor ensures that the first tag starts with "&lt;?xml " and 
@@ -484,7 +483,7 @@ public class SimpleXMLReader {
      */
     public void throwException(String message) throws Exception {
         close();
-        throw new Exception(ERROR + " in XML file on line #" + lineNumber +
+        throw new Exception(String2.ERROR + " in XML file on line #" + lineNumber +
             ": " + message);
     }
 
@@ -518,7 +517,7 @@ public class SimpleXMLReader {
     public static void main(String args[]) throws Exception {
 
         SimpleXMLReader xmlReader;
-        String2.log("SimpleXMLReader will now intentionall throw and catch several exceptions.");
+        String2.log("SimpleXMLReader will now intentionally throw and catch several exceptions.");
         
         //test invalid start of xml
         String error = "";

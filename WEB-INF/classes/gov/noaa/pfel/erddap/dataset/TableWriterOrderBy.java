@@ -60,7 +60,7 @@ public class TableWriterOrderBy extends TableWriterAll {
     /**
      * This sorts cumulativeTable, then writes it to otherTableWriter
      *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
         super.finish();
@@ -78,7 +78,7 @@ public class TableWriterOrderBy extends TableWriterAll {
      * If caller has the entire table, use this instead of repeated writeSome() + finish().
      * This overwrites the superclass method.
      *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void writeAllAndFinish(Table tCumulativeTable) throws Throwable {
         sort(tCumulativeTable);

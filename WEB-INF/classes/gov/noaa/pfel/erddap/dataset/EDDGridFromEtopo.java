@@ -434,7 +434,7 @@ public class EDDGridFromEtopo extends EDDGrid {
         int tPo;
         EDDGridFromEtopo data180 = new EDDGridFromEtopo("etopo180");
         EDDGridFromEtopo data360 = new EDDGridFromEtopo("etopo360");
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
 
         //*** test getting .nc for entire dataset
@@ -498,9 +498,13 @@ public class EDDGridFromEtopo extends EDDGrid {
 " :geospatial_lon_min = -180.0; // double\n" +
 " :geospatial_lon_resolution = 0.016666666666666666; // double\n" +
 " :geospatial_lon_units = \"degrees_east\";\n" +
-" :history = \"2011-03-14 Downloaded http://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/binary/etopo1_ice_g_i2.zip\n" +
-today + " (local file)\n" +
-today + " http://127.0.0.1:8080/cwexperimental/griddap/etopo180.nc?altitude[(-90):500:(90)][(-180):500:(180)]\";\n" +
+" :history = \"2011-03-14 Downloaded http://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/binary/etopo1_ice_g_i2.zip\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+//today + " (local file)\n" +
+//today + 
+expected =   
+" http://127.0.0.1:8080/cwexperimental/griddap/etopo180.nc?altitude[(-90):500:(90)][(-180):500:(180)]\";\n" +
 " :id = \"SampledFromETOPO1_ice_g_i2\";\n" +
 " :infoUrl = \"http://www.ngdc.noaa.gov/mgg/global/global.html\";\n" +
 " :institution = \"NOAA NGDC\";\n" +
@@ -557,7 +561,10 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/etopo180.nc?altitude[(-90
 "    {-2192, -1676, -1998, -1924, -2164, -1795, -2219, -1842, -1451, -1393, -1764, -1978, -1291, -626, -560, -1157, -2733, -2293, -1400, -1160, -3957, -3945, -3087, -3454, -4301, -3977, -3677, -3903, -3888, -3809, -3754, -3710, -3639, -3928, -3511, -4254, -4296, -4254, -4074, -2583, -1403, -3518, -3220, -2210}\n" +
 "  }\n" +
 "}\n";
-        Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+        int tpo = results.indexOf(expected.substring(0, 17));
+        if (tpo < 0) String2.log("results=\n" + results);
+        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, "results=\n" + results);
+
 
         tName = data360.makeNewFileForDapQuery(null, null, "altitude[(-90):2000:(90)][(0):2000:(360)]", 
             EDStatic.fullTestCacheDirectory, data360.className() + "_Entire", ".csv"); 

@@ -20,6 +20,6 @@ public class SimpleException extends RuntimeException {
 
     /** A constructor */
     public SimpleException(String message, Throwable t) {
-        super(message + "\nCause: " + t.toString(), t);
+        super(message + "\n(Cause: " + t.toString() + ")", t);
     }
 }

@@ -384,6 +384,7 @@ public class EDDTableFromMWFS extends EDDTable{
         SimpleXMLReader xmlReader = new SimpleXMLReader(
             SSR.getUrlInputStream(sourceUrl + constraint), "gml:FeatureCollection");
         String tags = xmlReader.allTags();
+        TAG_LOOP:
         do {
             //process the tags
             if (reallyVerbose) String2.log("tags=" + tags + xmlReader.content());
@@ -441,8 +442,14 @@ public class EDDTableFromMWFS extends EDDTable{
                         table.getColumn(nFixedVariables).addString(content);
 
                         //write to tableWriter?
-                        if (writeChunkToTableWriter(requestUrl, userDapQuery, table, tableWriter, false)) 
+                        if (writeChunkToTableWriter(requestUrl, userDapQuery, table, tableWriter, false)) {
                             table = makeTable();
+                            if (tableWriter.noMoreDataPlease) {
+                                tableWriter.logCaughtNoMoreDataPlease(datasetID);
+                                break TAG_LOOP;
+                            }
+                        }
+
 
                     } else {
                         error = "The " + invalid + " value wasn't set in the XML response.";

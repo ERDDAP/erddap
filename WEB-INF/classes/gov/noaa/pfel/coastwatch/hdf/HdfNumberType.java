@@ -40,7 +40,7 @@ public class HdfNumberType extends HdfTag {
         } else if (type == HdfConstants.DFNT_INT8)    {width =  8; classType = HdfConstants.DFNTI_MBO; //MotorolaByteOrder
         } else if (type == HdfConstants.DFNT_INT16)   {width = 16; classType = HdfConstants.DFNTI_MBO; 
         } else if (type == HdfConstants.DFNT_INT32)   {width = 32; classType = HdfConstants.DFNTI_MBO; 
-        } else throw new RuntimeException(ERROR + " in HdfNumberTypeConstructor: " +
+        } else throw new RuntimeException("ERROR in HdfNumberTypeConstructor: " +
             "unsupported dfntType (" + dfntType + ").");
     }
         

@@ -155,10 +155,6 @@ Some features are:
  */
 public abstract class EDD { 
 
-
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     /**
      * Set this to true (by calling verbose=true in your program, 
      * not but changing the code here)
@@ -1158,11 +1154,11 @@ public abstract class EDD {
     public abstract String accessibleViaWCS();
 
     /** 
-     * This indicates why the dataset isn't accessible via .ncCF file type
+     * This indicates why the dataset isn't accessible via .ncCF and .ncCFMA file types
      * (or "" if it is).
      * Currently, this is only for some of the Discrete Sampling Geometries cdm_data_type 
      * representations at
-     * https://cf-pcmdi.llnl.gov/trac/wiki/PointObservationConventions (currently out-of-date)
+     * http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries
      */
     public abstract String accessibleViaNcCF();
 
@@ -1792,12 +1788,14 @@ public abstract class EDD {
         creationTimeMillis = 0;
     }
 
+
     /**
      * This creates a flag file in the EDStatic.fullResetFlagDirectory
      * to mark this dataset so that it will be reloaded as soon as possible.
      *
-     * When an exception is thrown and this is called, EDStatic.waitThenTryAgain
-     * is usually at the start of the exception message.
+     * <p>Normal use: if unexpected error (so not ClientAbortException) 
+     *   is thrown while getting data, this is called and then a 
+     *   gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException is thrown.
      */
     public void requestReloadASAP() {
         requestReloadASAP(datasetID);
@@ -2502,6 +2500,7 @@ public abstract class EDD {
     }
 
     /**
+     * NOW, makeReadyToUseAddGlobalAttributesForDatasetsXml IS RECOMMENDED OVER THIS.
      * This is used by subclass's generateDatasetsXml methods to make
      * sure that the global attributes includes at least place holders (dummy values)
      * for the required/common global attributes.
@@ -3456,6 +3455,7 @@ public abstract class EDD {
             suggestedKeywords.remove("mar");
             suggestedKeywords.remove("march");
             suggestedKeywords.remove("may");
+            suggestedKeywords.remove("m/s");
             suggestedKeywords.remove("netcdf");
             suggestedKeywords.remove("nov");
             suggestedKeywords.remove("november");
@@ -3581,6 +3581,7 @@ public abstract class EDD {
 
 
     /**
+     * NOW, makeReadyToUseAddVariableAttributesForDatasetsXml() IS RECOMMENDED OVER THIS.
      * This is used by subclass's generateDatasetsXml methods to make
      * sure that a variable's attributes includes at least place holders (dummy values)
      * for the required/common attributes.
@@ -3776,6 +3777,7 @@ public abstract class EDD {
         String lc = "|" + lcSourceName + "|" + ttLongName + "|"; 
         lc = String2.replaceAll(lc, ' ', '|'); 
         lc = String2.replaceAll(lc, '_', '|'); 
+        lc = String2.replaceAll(lc, '=', '|'); 
         lc = String2.replaceAll(lc, ',', '|'); 
         lc = String2.replaceAll(lc, '/', '|'); 
         String lcu = lc + 
@@ -3783,6 +3785,7 @@ public abstract class EDD {
             tUnitsLC                    + "|";
         lcu = String2.replaceAll(lcu, ' ', '|');
         lcu = String2.replaceAll(lcu, '_', '|');
+        lcu = String2.replaceAll(lcu, '=', '|');
         lcu = String2.replaceAll(lcu, ',', '|');
         lcu = String2.replaceAll(lcu, '/', '|');
         if (reallyVerbose && 
@@ -3793,7 +3796,9 @@ public abstract class EDD {
         String testUnits = tUnits.toLowerCase(); 
         testUnits = String2.replaceAll(testUnits, ' ', '|');
         testUnits = String2.replaceAll(testUnits, '_', '|');
+        testUnits = String2.replaceAll(testUnits, '=', '|');
         testUnits = String2.replaceAll(testUnits, ',', '|');
+        testUnits = String2.replaceAll(testUnits, '/', '|');
         boolean isMeters = 
             tUnits.equals("m")       ||
             tUnits.equals("meter")   ||
@@ -4045,26 +4050,28 @@ public abstract class EDD {
                      lc.indexOf("time") < 0)        tStandardName = lc.indexOf("anom") >= 0? //anomaly
                                                                     "surface_temperature_anomaly" : //no sea_surface_temperature_anomaly
                                                                     "sea_surface_temperature";
-            else if ((lc.indexOf("current") >= 0 && 
-                      lc.indexOf("east") >= 0) ||
-                     lc.indexOf("current|u") >= 0 ||
-                     lc.indexOf("currentu") >= 0 ||
-                     lc.indexOf("ucur") >= 0 ||
-                     lc.indexOf("current|x") >= 0 ||
-                     lc.indexOf("|wu|") >= 0 ||
-                     lc.indexOf("water|u") >= 0 ||
-                     lc.indexOf("wateru") >= 0 ||
-                     lc.indexOf("water|x") >= 0)    tStandardName = "eastward_sea_water_velocity";
-            else if ((lc.indexOf("current") >= 0 && 
-                      lc.indexOf("north") >= 0) ||
-                     lc.indexOf("current|v|") >= 0 || //beware current_velocity
-                     lc.indexOf("currentv|") >= 0 ||
-                     lc.indexOf("vcur") >= 0 ||
-                     lc.indexOf("current|y") >= 0 ||
-                     lc.indexOf("|wv|") >= 0 ||
-                     lc.indexOf("water|v|") >= 0 ||  //beware water_velocity
-                     lc.indexOf("waterv|") >= 0 ||
-                     lc.indexOf("water|y") >= 0)    tStandardName = "northward_sea_water_velocity";
+            else if (lc.indexOf("wind") < 0 &&
+                     ((lc.indexOf("current") >= 0 && 
+                       lc.indexOf("east") >= 0) ||
+                      lc.indexOf("current|u") >= 0 ||
+                      lc.indexOf("currentu") >= 0 ||
+                      lc.indexOf("ucur") >= 0 ||
+                      lc.indexOf("current|x") >= 0 ||
+                      lc.indexOf("|wu|") >= 0 ||
+                      lc.indexOf("water|u") >= 0 ||
+                      lc.indexOf("wateru") >= 0 ||
+                      lc.indexOf("water|x") >= 0))    tStandardName = "eastward_sea_water_velocity";
+            else if (lc.indexOf("wind") < 0 &&
+                     ((lc.indexOf("current") >= 0 && 
+                       lc.indexOf("north") >= 0) ||
+                      lc.indexOf("current|v|") >= 0 || //beware current_velocity
+                      lc.indexOf("currentv|") >= 0 ||
+                      lc.indexOf("vcur") >= 0 ||
+                      lc.indexOf("current|y") >= 0 ||
+                      lc.indexOf("|wv|") >= 0 ||
+                      lc.indexOf("water|v|") >= 0 ||  //beware water_velocity
+                      lc.indexOf("waterv|") >= 0 ||
+                      lc.indexOf("water|y") >= 0))    tStandardName = "northward_sea_water_velocity";
             else if ((lc.indexOf("surface") >= 0 && lc.indexOf("roughness") >= 0 &&
                       isMeters))                    tStandardName = "surface_roughness_length"; 
             else if ((lc.indexOf("rel") >= 0 && 
@@ -4118,12 +4125,14 @@ public abstract class EDD {
             else if ((lc.indexOf("east") >= 0 && 
                       lc.indexOf("wind") >= 0) ||
                      lc.indexOf("|u-wind|") >= 0 || 
+                     lc.indexOf("|wind|u|") >= 0 || 
                      lc.indexOf("|wspu|") >= 0 || 
                      lc.indexOf("|uwnd|") >= 0 ||                      
                      lc.indexOf("|xwnd|") >= 0)     tStandardName = "eastward_wind";
             else if ((lc.indexOf("north") >= 0 && 
                       lc.indexOf("wind") >= 0) ||
                      lc.indexOf("|v-wind|") >= 0 || 
+                     lc.indexOf("|wind|v|") >= 0 || 
                      lc.indexOf("|wspv|") >= 0 ||
                      lc.indexOf("|vwnd|") >= 0 ||                       
                      lc.indexOf("|ywnd|") >= 0)     tStandardName = "northward_wind";
@@ -4182,6 +4191,7 @@ public abstract class EDD {
                 tUnitsLC                    + "|";
             lcu = String2.replaceAll(lcu, ' ', '|');
             lcu = String2.replaceAll(lcu, '_', '|');
+            lcu = String2.replaceAll(lcu, '=', '|');
             lcu = String2.replaceAll(lcu, ',', '|');
             lcu = String2.replaceAll(lcu, '/', '|');
 
@@ -4665,8 +4675,12 @@ public abstract class EDD {
 
 
         //do ioos_category last, since it uses standard_name, long_name, and units
+        //fix problem in some aoml datasets
+        String oIoosCat = tSourceAtts.getString("ioos_category");
+        if (oIoosCat != null && oIoosCat.equals("ocean_color"))
+                tAddAtts.add("ioos_category", "Ocean Color"); 
         if (EDStatic.variablesMustHaveIoosCategory && 
-            !isSomething(tSourceAtts.getString("ioos_category"))) {
+            !isSomething(oIoosCat)) {
             //It is hard to be absolutely certain when assigning ioos_category.
             //Fortunately, this isn't crucial information and is used mostly for data discovery.
             //Occasional errors are okay.
@@ -4687,6 +4701,7 @@ public abstract class EDD {
                 tUnitsLC                    + "|" + 
                 tSourceName.toLowerCase()   + "|"; 
             lcu = String2.replaceAll(lcu, '_', '|');
+            lcu = String2.replaceAll(lcu, '=', '|');
             lcu = String2.replaceAll(lcu, ' ', '|');
             lcu = String2.replaceAll(lcu, ',', '|');
             lcu = String2.replaceAll(lcu, '/', '|');
@@ -4698,7 +4713,6 @@ public abstract class EDD {
 
             //CATCH STATISTICS
             } else if (
-                lcu.indexOf("|average|")    >= 0 || 
                 lcu.indexOf("count")        >= 0 || 
                 //lcu.indexOf("mean")         >= 0 || //let it be the relevant ioos_category
                 //lcu.indexOf("|average|")    >= 0 || // ditto
@@ -4793,26 +4807,28 @@ public abstract class EDD {
                 lcu.indexOf("ssh")                   >= 0 ||
                 lcu.indexOf("surf|el")               >= 0 ||
                 lcu.indexOf("|sea|height|")          >= 0 ||
+                lcu.indexOf("|tide|")                >= 0 ||
                 (lcu.indexOf("|sea|") >= 0 && lcu.indexOf("surface") >= 0 &&
                     lcu.indexOf("wave") < 0 && //don't catch e.g., sea surface swell wave height
                     (lcu.indexOf("elevation") >= 0 || lcu.indexOf("height") >= 0))) { 
                 tAddAtts.add("ioos_category", "Sea Level");
 
             //Currents: water or air, or things measuring them (tracer)
-            } else if (
-                (lcu.indexOf("ocean") >= 0 && lcu.indexOf("streamfunction") >= 0) ||
-                lcu.indexOf("momentum|component") >= 0 ||
-                lcu.indexOf("momentum|stress")    >= 0 ||
-                lcu.indexOf("|u-flux|")           >= 0 ||
-                lcu.indexOf("|v-flux|")           >= 0 ||
-                lcu.indexOf("tracer")             >= 0 ||
-                lcu.indexOf("current")            >= 0 ||
-                lcu.indexOf("water|dir")          >= 0 ||
-                lcu.indexOf("direction")          >= 0 || 
-                lcu.indexOf("speed")              >= 0 || 
-                lcu.indexOf("spd")                >= 0 || 
-                lcu.indexOf("vel")                >= 0 || 
-                lcu.indexOf("velocity")           >= 0) { 
+            } else if (lcu.indexOf("wave") < 0 &&
+                       lcu.indexOf("wind") < 0 &&
+                ((lcu.indexOf("ocean") >= 0 && lcu.indexOf("streamfunction") >= 0) ||
+                 lcu.indexOf("momentum|component") >= 0 ||
+                 lcu.indexOf("momentum|stress")    >= 0 ||
+                 lcu.indexOf("|u-flux|")           >= 0 ||
+                 lcu.indexOf("|v-flux|")           >= 0 ||
+                 lcu.indexOf("tracer")             >= 0 ||
+                 lcu.indexOf("current")            >= 0 ||
+                 lcu.indexOf("water|dir")          >= 0 ||
+                 lcu.indexOf("direction")          >= 0 || 
+                 lcu.indexOf("speed")              >= 0 || 
+                 lcu.indexOf("spd")                >= 0 || 
+                 lcu.indexOf("|vel")               >= 0 ||  //not "level"
+                 lcu.indexOf("velocity")           >= 0)) { 
                 tAddAtts.add("ioos_category", "Currents");
 
             } else if (
@@ -5148,6 +5164,7 @@ public abstract class EDD {
         if (con.indexOf("CF") < 0) 
             con += ", CF-1.6";
         else {
+            con = String2.replaceAll(con, "CF-1.00","CF-1.6");
             con = String2.replaceAll(con, "CF-1.0", "CF-1.6");
             con = String2.replaceAll(con, "CF-1.1", "CF-1.6");
             con = String2.replaceAll(con, "CF-1.2", "CF-1.6");
@@ -5600,8 +5617,8 @@ public abstract class EDD {
      * @param text  usually one line of info
      */
     public static void addToHistory(Attributes attributes, String text) {
-        String add = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10) +
-            " " + text;
+        String add = Calendar2.getCurrentISODateTimeStringZulu() +
+            "Z " + text;
         String history = attributes.getString("history");
         if (history == null)
             history = add;
@@ -5685,7 +5702,7 @@ public abstract class EDD {
      * This makes a badFile table from a thread-safe ConcurrentHashMap  
      * (key=dir#/fileName, value=Object[0=(Double)lastMod, 1=(String)reason]).
      * and writes it to disk.
-     * <br>This won't throw an Exception. If the file can't be written, nothing is done.
+     * <br>If the file can't be written, an email is sent to emailEverythingTo.
      * <br>If there are no bad files, don't call this. There will be no file.
      *
      * @param badFilesMap
@@ -5964,7 +5981,7 @@ public abstract class EDD {
                 if (tError.length() == 0) {
                     if (verbose) String2.log("  writePngInfo succeeded"); 
                 } else {
-                    String2.log(ERROR + " while writing pngInfo image information to\n" +
+                    String2.log(String2.ERROR + " while writing pngInfo image information to\n" +
                         infoFileName + " :\n" +
                         tError);
                 }
@@ -5975,7 +5992,7 @@ public abstract class EDD {
                         sb.toString());
 
             } catch (Throwable t) {
-                String2.log(ERROR + " while writing pngInfo image information for\n" +
+                String2.log(String2.ERROR + " while writing pngInfo image information for\n" +
                     "  userDapQuery=" + userDapQuery + "\n" +
                     "  fileTypeName=" + fileTypeName + "\n" +
                     "  infoFileName=" + infoFileName + "\n" + 
@@ -6052,7 +6069,7 @@ public abstract class EDD {
 
             return new Object[]{graphDoubleWESN, graphIntWESN};
         } catch (Throwable t) {
-            String2.log(ERROR + " (time=" + (System.currentTimeMillis() - eTime) + 
+            String2.log(String2.ERROR + " (time=" + (System.currentTimeMillis() - eTime) + 
                 ") while reading pngInfo image information for \n" + 
                 "  userDapQuery=" + userDapQuery + "\n" +
                 "  fileTypeName=" + fileTypeName + "\n" +

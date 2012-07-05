@@ -31,9 +31,6 @@ public class LandMask  {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     /* The pointers point to the appropriate record. 
      * [lon -180..179 stored as 0..359][lat -90..89 stored as 0..179]
      */

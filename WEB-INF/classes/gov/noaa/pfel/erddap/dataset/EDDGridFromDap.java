@@ -629,6 +629,13 @@ public class EDDGridFromDap extends EDDGrid {
                 pa = OpendapHelper.getPrimitiveArrays(dConnect, 
                     "?" + tDataVariables[dv].sourceName() + constraint);
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+
+                //if too much data, rethrow t
+                String tToString = t.toString();
+                if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+                    throw t;
+
                 requestReloadASAP(); 
                 throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
                     "\n(" + EDStatic.errorFromDataSource + t.toString() + ")", 
@@ -970,13 +977,13 @@ public class EDDGridFromDap extends EDDGrid {
             System.out.print(ts);
 
         } catch (Throwable t) {
-            String2.log(ERROR + " in safelyGenerateDatasetsXml\n" +
+            String2.log(String2.ERROR + " in safelyGenerateDatasetsXml\n" +
                 "  for tLocalSourceUrl=" + tLocalSourceUrl + "\n" +
                 MustBe.throwableToString(t));
             time = System.currentTimeMillis() - time;
             String2.distribute(time, datasetFailureTimes);
             String ts = indent + tLocalSourceUrl + "  (" + time + " ms)\n" +
-                 indent + "  " + ERROR + ": " + 
+                 indent + "  " + String2.ERROR + ": " + 
                     String2.replaceAll(MustBe.getShortErrorMessage(t), "\n", "\n  " + indent) + 
                     "\n";
             summary.append(ts);
@@ -1413,7 +1420,7 @@ public class EDDGridFromDap extends EDDGrid {
             }
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
-            String ts = "  ERROR: " + 
+            String ts = "  " + String2.ERROR + ": " + 
                 String2.replaceAll(MustBe.throwableToShortString(t), "\n", "\n  ") +
                 "\n";
             summary.append(ts);
@@ -1659,8 +1666,8 @@ public class EDDGridFromDap extends EDDGrid {
 "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" +
 "        <att name=\"cwhdf_version\">3.4</att>\n" +
-"        <att name=\"date_created\">2012-04-20Z</att>\n" +  //changes
-"        <att name=\"date_issued\">2012-04-20Z</att>\n" + //changes
+"        <att name=\"date_created\">2012-04-11Z</att>\n" +  //changes
+"        <att name=\"date_issued\">2012-04-11Z</att>\n" + //changes
 "        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" +
 "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.041676313961565174 0.04167148975575877 0.0 0.0 -90.0</att>\n" +
 "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" +
@@ -1855,8 +1862,8 @@ String expected2 =
 //0
     "http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml", //erd
     "http://thredds1.pfeg.noaa.gov/thredds/catalog/catalog.xml",  //erd
-    //2012-04-30: test of new clean catalog from catalog cleaner
-    "http://ferret.pmel.noaa.gov/geoide/catalog/geoide/dunkel.pmel.noaa.gov_8787/thredds/geoIDECleanCatalog.xml",  
+    //2012-06-14: test of new clean catalog from catalog cleaner
+    "http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalogV2beta.xml",
     "http://data1.gfdl.noaa.gov:8380/thredds/ipcc/all_ipcc.xml",
     "http://cwcgom.aoml.noaa.gov/thredds/catalog.xml",
 //5
@@ -2179,18 +2186,18 @@ String expected2 =
             "http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html",
             "month.*flk\\.nc\\.gz", true);
         String expected[] = new String[]{
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M01/month_19880101_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M02/month_19880201_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M03/month_19880301_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M04/month_19880401_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M05/month_19880501_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M06/month_19880601_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M07/month_19880701_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M08/month_19880801_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M09/month_19880901_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M10/month_19881001_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M11/month_19881101_v11l35flk.nc.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M12/month_19881201_v11l35flk.nc.gz"}; 
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880101_v11l35flk.nc.gz",
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880201_v11l35flk.nc.gz",
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880301_v11l35flk.nc.gz",
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880401_v11l35flk.nc.gz",
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880501_v11l35flk.nc.gz",
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880601_v11l35flk.nc.gz",
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880701_v11l35flk.nc.gz",
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880801_v11l35flk.nc.gz",
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880901_v11l35flk.nc.gz",
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881001_v11l35flk.nc.gz",
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881101_v11l35flk.nc.gz",
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19881201_v11l35flk.nc.gz"}; 
         Test.ensureEqual(results, expected, "results=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -2471,7 +2478,7 @@ String expected2 =
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0],  //last # changes frequently
-            "SimpleException: Query error: For variable=chlorophyll axis#0=time Constraint=\"[(2007-02-06)[]\": Stop=\"\" is invalid.  It must be an integer between 0 and 438.", 
+            "SimpleException: Query error: For variable=chlorophyll axis#0=time Constraint=\"[(2007-02-06)[]\": Stop=\"\" is invalid.  It must be an integer between 0 and 447.", 
             "error=" + error);
 
         error = "";
@@ -2682,15 +2689,15 @@ String expected2 =
         //String2.log(results);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 439];\n" +   //439 will change sometimes
+"  Float64 time[time = 448];\n" +   //448 will change sometimes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4320];\n" +
 "  Float64 longitude[longitude = 8640];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 chlorophyll[time = 439][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+"      Float32 chlorophyll[time = 448][altitude = 1][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 439];\n" +
+"      Float64 time[time = 448];\n" +
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
@@ -2738,10 +2745,10 @@ String expected2 =
         expected = 
 "Dataset {\n" +
 "  GRID {\n" +
-"    ARRAY:\n" +   //439 will change sometimes
-"      Float32 chlorophyll[time = 439][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+"    ARRAY:\n" +   //448 will change sometimes
+"      Float32 chlorophyll[time = 448][altitude = 1][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 439];\n" +
+"      Float64 time[time = 448];\n" +
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
@@ -4177,14 +4184,14 @@ boolean testAll = true;
                 expected = 
 "netcdf " + tUrl + "/griddap/erdMHchla8day {\n" +
 " dimensions:\n" +
-"   time = 439;\n" +   // (has coord.var)\n" +  //changes sometimes
+"   time = 448;\n" +   // (has coord.var)\n" +  //changes sometimes
 "   altitude = 1;\n" +   // (has coord.var)\n" +
 "   latitude = 4320;\n" +   // (has coord.var)\n" +
 "   longitude = 8640;\n" +   // (has coord.var)\n" +
 " variables:\n" +
-"   double time(time=439);\n" +
+"   double time(time=448);\n" +
 "     :_CoordinateAxisType = \"Time\";\n" +
-"     :actual_range = 1.0260864E9, 1.3333248E9; // double\n" +  //2nd value changes sometimes
+"     :actual_range = 1.0260864E9, 1.3395456E9; // double\n" +  //2nd value changes sometimes
 "     :axis = \"T\";\n" +
 "     :fraction_digits = 0; // int\n" +
 "     :ioos_category = \"Time\";\n" +
@@ -4225,7 +4232,7 @@ boolean testAll = true;
 "     :point_spacing = \"even\";\n" +
 "     :standard_name = \"longitude\";\n" +
 "     :units = \"degrees_east\";\n" +
-"   float chlorophyll(time=439, altitude=1, latitude=4320, longitude=8640);\n" +
+"   float chlorophyll(time=448, altitude=1, latitude=4320, longitude=8640);\n" +
 "     :_CoordinateAxes = \"time altitude latitude longitude \";\n" +
 "     :_FillValue = -9999999.0f; // float\n" +
 "     :colorBarMaximum = 30.0; // double\n" +
@@ -4248,8 +4255,8 @@ boolean testAll = true;
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2012-04-08Z\";\n" + //changes
-" :date_issued = \"2012-04-08Z\";\n" + //changes
+" :date_created = \"2012-06-28Z\";\n" + //changes
+" :date_issued = \"2012-06-28Z\";\n" + //changes
 " :Easternmost_Easting = 360.0; // double\n" +
 " :geospatial_lat_max = 90.0; // double\n" +
 " :geospatial_lat_min = -90.0; // double\n" +
@@ -4275,7 +4282,7 @@ boolean testAll = true;
 " :Southernmost_Northing = -90.0; // double\n" +
 " :standard_name_vocabulary = \"CF-12\";\n" +
 " :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-" :time_coverage_end = \"2012-04-02T00:00:00Z\";\n" + //changes
+" :time_coverage_end = \"2012-06-13T00:00:00Z\";\n" + //changes
 " :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
 " :title = \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
 " :Westernmost_Easting = 0.0; // double\n" +
@@ -4765,7 +4772,7 @@ directionsForGenerateDatasetsXml() +
         String2.log("\n*** test for pmelOscar");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
         try {
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("pmelOscar"); 
         EDVGridAxis edvga;
@@ -4889,6 +4896,7 @@ directionsForGenerateDatasetsXml() +
 "  }\n";
         tResults = results.substring(0, expected.length());
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+
         expected = 
 "    String DATASUBTYPE \"unfiltered\";\n" +
 "    String DATATYPE \"5-Day Interval\";\n" +
@@ -4907,10 +4915,17 @@ directionsForGenerateDatasetsXml() +
 "    Float64 geospatial_vertical_min -15.0;\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"" + today + " http://dapper.pmel.noaa.gov/dapper/oscar/world-unfilter.nc\n" +
-today + " " + EDStatic.erddapUrl + //in tests, always non-https url
-            "/griddap/pmelOscar.das\";\n" +
-"    String infoUrl \"http://www.oscar.noaa.gov/\";\n" +
+"    String history \"" + today;
+        int tpo = results.indexOf(expected.substring(0, 17));
+        if (tpo < 0) String2.log("results=\n" + results);
+        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+            "results=\n" + results);
+        
+//        + " http://dapper.pmel.noaa.gov/dapper/oscar/world-unfilter.nc\n" +
+//today + " " + EDStatic.erddapUrl + //in tests, always non-https url
+//            "/griddap/pmelOscar.das\";\n" +
+expected = 
+    "String infoUrl \"http://www.oscar.noaa.gov/\";\n" +
 "    String institution \"NOAA PMEL\";\n" +
 "    String keywords \"Oceans > Ocean Circulation > Ocean Currents,\n" +
 "analyses, anomaly, circulation, current, currents, eastward, eastward_sea_water_velocity, meridional, noaa, northward, northward_sea_water_velocity, ocean, oceans, oscar, pmel, real, real time, sea, seawater, surface, time, velocity, water, zonal\";\n" +
@@ -4938,7 +4953,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 "    Float64 Westernmost_Easting 20.5;\n" +
 "  }\n" +
 "}\n";
-        int tpo = results.indexOf(expected.substring(0, 17));
+        tpo = results.indexOf(expected.substring(0, 17));
         if (tpo < 0) String2.log("results=\n" + results);
         Test.ensureEqual(results.substring(tpo), expected, "results=\n" + results);
 
@@ -5030,8 +5045,17 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 " :geospatial_lat_max = 69.5f; // float\n" +
 " :geospatial_lat_min = -60.5f; // float\n" +
 " :geospatial_lat_units = \"degrees_north\";\n" +
-" :history = \"" + today + " http://dapper.pmel.noaa.gov/dapper/oscar/world-unfilter.nc\n" +
-today + " " + EDStatic.erddapUrl + //in tests, always non-https url
+" :history = \"";
+        tpo = results.indexOf(expected.substring(0, 17));
+        if (tpo < 0) String2.log("results=\n" + results);
+        tResults = results.substring(tpo, tpo +  expected.length());
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+
+//note geospatial_lat_min max;  note that internal " are not slashed, but that is ncDump's problem
+//today + " http://dapper.pmel.noaa.gov/dapper/oscar/world-unfilter.nc\n" +
+//today + " " + EDStatic.erddapUrl + //in tests, always non-https url
+
+expected = 
     "/griddap/pmelOscar.nc?latitude[(69.5):10:(-69.5)]\";\n" +
 " :infoUrl = \"http://www.oscar.noaa.gov/\";\n" +
 " :institution = \"NOAA PMEL\";\n" +
@@ -5062,7 +5086,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 "}\n";
         tpo = results.indexOf(expected.substring(0, 17));
         if (tpo < 0) String2.log("results=\n" + results);
-        Test.ensureEqual(results.substring(tpo), expected, "results=\n" + results);
+        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, "results=\n" + results);
 
         //.csv data 
         userDapQuery = "u[0][0][(69.5):10:(-69.5)][0]"; 
@@ -5185,7 +5209,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
         String2.log("\n*** test for Ellyn");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z";
 
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("mb-7201adc"); 
 
@@ -6066,7 +6090,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         /*
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu() + "Z"
 
         try{
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("testNoAxisVariable"); 
@@ -6452,16 +6476,16 @@ EDStatic.startBodyHtml(null) + "\n" +
 
         String results = childUrls.toNewlineString();
         String expected = 
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/M07/month_19870701_v11l35flk.nc.gz\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/M08/month_19870801_v11l35flk.nc.gz\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/M09/month_19870901_v11l35flk.nc.gz\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/M10/month_19871001_v11l35flk.nc.gz\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/M11/month_19871101_v11l35flk.nc.gz\n" +
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/M12/month_19871201_v11l35flk.nc.gz\n";
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19870701_v11l35flk.nc.gz\n" +
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19870801_v11l35flk.nc.gz\n" +
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19870901_v11l35flk.nc.gz\n" +
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19871001_v11l35flk.nc.gz\n" +
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19871101_v11l35flk.nc.gz\n" +
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1987/month_19871201_v11l35flk.nc.gz\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         results = lastModified.toString();
-        expected = "1.17567E9, 1.17567E9, 1.17567E9, 1.17567E9, 1.17567E9, 1.17567E9";
+        expected = "1.336609915E9, 1.336785444E9, 1.336673639E9, 1.336196561E9, 1.336881763E9, 1.336705731E9";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
     }
@@ -6475,7 +6499,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 
         String2.log("\n****************** EDDGridFromDap.test() *****************\n");
 
-/* */    
+/* */
         // standard tests 
         testBasic1();
         testBasic2();

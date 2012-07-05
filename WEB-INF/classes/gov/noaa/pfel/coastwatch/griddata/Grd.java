@@ -60,9 +60,6 @@ import java.util.zip.ZipOutputStream;
  */
 public class Grd {
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     /**
      * Set this to true (by calling verbose=true in your program, not but changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
@@ -278,7 +275,7 @@ public class Grd {
                         "cellsize " + info[7] + "\n" +
                         "nodata_value NaN\n");
                     if (error.length() > 0)
-                        throw new Exception(ERROR + ":\n" + error);
+                        throw new Exception(String2.ERROR + ":\n" + error);
                     SSR.cShell("grd2xyz " + fullGrdName + " -Z" + 
                         (outType == MakeAsc? 'T' : 'B') + //Top vs Bottom
                         "La >> " + fullResultName + randomInt + ".asc"); 
@@ -301,7 +298,7 @@ public class Grd {
                     if (true) {
                         String[] rff = String2.readFromFile(fullResultName + ".asc");
                         if (rff[0].length() > 0)
-                            throw new Exception(ERROR + ":\n" + rff[0]);
+                            throw new Exception(String2.ERROR + ":\n" + rff[0]);
                         String2.log(fullResultName + ".asc contains:\n" +
                             String2.annotatedString(
                             rff[1].substring(0, Math.min(rff[1].length(), 200))));
@@ -504,7 +501,7 @@ public class Grd {
                     if (false) { // verbose) {
                         String[] rff = String2.readFromFile(fullResultName + ".xyz");
                         if (rff[0].length() > 0)
-                            throw new Exception(ERROR + ":\n" + rff[0]);
+                            throw new Exception(String2.ERROR + ":\n" + rff[0]);
                         String2.log(fullResultName + ".xyz contains:\n" +
                             rff[1].substring(0, Math.min(rff[1].length(), 200)));
                     }

@@ -146,8 +146,11 @@ or Mac server instead.
       <br>&nbsp;
 
     <li>On <a name="LinuxMemory">Linux</a> and <a name="MacMemory">Macs</a>, 
-      create a file [tomcat]/bin/setenv.sh (which is used by 
-      [tomcat]/bin/startup.sh and shutdown.sh) with should contain<tt>
+      create a file [tomcat]/bin/setenv.sh 
+      (or in Red Hat Enterprise Linux (RHEL), edit ~tomcat/conf/tomcat6.conf) 
+      to set environmental variables.
+      This file will be used by [tomcat]/bin/startup.sh and shutdown.sh.
+      The file should contain<tt>
       <br>export JAVA_HOME=/usr/local/jre1.6.0_24
       <br>export JAVA_OPTS='-server -Djava.awt.headless=true -Xmx1500M -Xms1500M'
       <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>7.0.10</i>
@@ -245,24 +248,16 @@ or Mac server instead.
       </ul>
     </ul>
 
-<li><a name="ProxyPass">Use</a> ProxyPass so users don't have to put :8080 in the URL.
-  <br>On Linux computers, if Tomcat is running in Apache, you need to modify the
-    /etc/httpd/conf/httpd.conf
-  file to allow HTTP traffic to/from ERDDAP:
-  <ol>
-  <li>Add the following lines right before <tt>#&lt;IfModule mod_proxy.c&gt;</tt> :<tt>
-    <br>&nbsp;&nbsp; ProxyPass /erddap <i>http://www.YourServer.org</i>:8080/erddap
-    <br>&nbsp;&nbsp; ProxyPassReverse /erddap <i>http://www.YourServer.org</i>:8080/erddap</tt>
-  <li>Then restart Apache: <tt>/usr/sbin/apachectl restart</tt> (but sometimes it is in a different directory).
-    <br>&nbsp;
-  </ol>
-
 <li><a name="erddapContent">Set up the [tomcat]/content/erddap configuration files.</a> 
   <br>On Linux, Mac, and Windows, download
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a> 
     (70,836 bytes, MD5=D927E8132F1F19A342274F37375619E6, Dated 2012-05-02) 
-    and unzip it into [tomcat], 
-  creating [tomcat]/content/erddap .
+    and unzip it into [tomcat], creating [tomcat]/content/erddap .
+  <p>For Red Hat Enterprise Linux (RHEL), unzip it into ~tomcat
+    and set the system property erddapContentDirectory=~tomcat/content/erddap
+    in ~tomcat/conf/tomcat6.conf so ERDDAP can find the directory.
+    
+  <p>Then,
   <ul>
   <li><a name="setup.xml">Read</a> the comments in [tomcat]/content/erddap/<b>setup.xml</b>
       and make the requested changes.
@@ -283,8 +278,10 @@ or Mac server instead.
     <a href="http://www.xml.com/pub/a/tools/ruwf/check.html">RUWF</a>.
 
   <p>In the unusual situation where you aren't allowed to modify the Tomcat directory,
-  you can put the ERDDAP content directory somewhere else. To let ERDDAP know where it is,
-  set the system property erddapContentDirectory=/usr/local/erddap/content/ (or wherever it is).
+  you can put the ERDDAP content directory somewhere else (e.g., /usr/local/erddap). 
+  To let ERDDAP know where it is,
+  set the system property erddapContentDirectory=/usr/local/erddap/content/erddap/
+  (or wherever it is).
   If you aren't allowed to set this property in startup.sh, perhaps you can set it in Tomcat's context.xml.
 
 <li><a name="erddap.war">Install</a> the erddap.war file.
@@ -296,6 +293,18 @@ or Mac server instead.
   The .war file is big because it contains high resolution coastline, boundary, 
   and elevation data needed to create maps.
   <br>&nbsp;
+
+<li><a name="ProxyPass">Use</a> ProxyPass so users don't have to put :8080 in the URL.
+  <br>On Linux computers, if Tomcat is running in Apache, you need to modify the
+    /etc/httpd/conf/httpd.conf
+  file to allow HTTP traffic to/from ERDDAP:
+  <ol>
+  <li>Add the following lines right before <tt>#&lt;IfModule mod_proxy.c&gt;</tt> :<tt>
+    <br>&nbsp;&nbsp; ProxyPass /erddap <i>http://www.YourServer.org</i>:8080/erddap
+    <br>&nbsp;&nbsp; ProxyPassReverse /erddap <i>http://www.YourServer.org</i>:8080/erddap</tt>
+  <li>Then restart Apache: <tt>/usr/sbin/apachectl restart</tt> (but sometimes it is in a different directory).
+    <br>&nbsp;
+  </ol>
 
 <li>Start Tomcat.
   <br>If Tomcat is already running, use [tomcat]/bin/shutdown.sh to shut down Tomcat.

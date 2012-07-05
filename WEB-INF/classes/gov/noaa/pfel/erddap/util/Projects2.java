@@ -54,10 +54,6 @@ public class Projects2  {
     public static boolean verbose = false;
 
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
-
     /**
      * One-time Use: Whenever possible, this grabs keyword metadata from a 
      * newly auto-generated datasets.xml and inserts it into

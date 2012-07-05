@@ -72,9 +72,6 @@ public class SdsWriter  {
      */
     public static boolean compatibleMode = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     /**
      * This creates an HDF SDS file.
      *
@@ -107,7 +104,7 @@ public class SdsWriter  {
 
         String2.log("SdsWriter.create(" + hdfFileName + ")\n" + Math2.memoryString());
         if (dims.length >= 1000) //better limit?
-            throw new RuntimeException(ERROR + " in SdsWriter.create: rank (" + 
+            throw new RuntimeException(String2.ERROR + " in SdsWriter.create: rank (" + 
                 dims.length + ") is too big.");
 
         //delete any existing file
@@ -407,7 +404,7 @@ public class SdsWriter  {
         //***** open the file and write the header
         String2.log("SdsWriter.create writing the file; " + Math2.memoryString());
         if (tagList.size() >= Short.MAX_VALUE)
-            throw new RuntimeException(ERROR + " in SdsWriter.create: too many tags (" + 
+            throw new RuntimeException(String2.ERROR + " in SdsWriter.create: too many tags (" + 
                 tagList.size() + ").");
         DataOutputStream stream = new DataOutputStream( new BufferedOutputStream(
             new FileOutputStream(hdfFileName)));
@@ -792,8 +789,8 @@ public class SdsWriter  {
         String2.log("SdsWriter.main look for dump differences");  //after close log files
         String miniDump[]  = String2.readFromFile(dir + "mini.hdf.dump");
         String mini2Dump[] = String2.readFromFile(dir + "mini2.hdf.dump");
-        Test.ensureEqual(miniDump[0].length() , 0, ERROR + " reading mini.hdf.dump");
-        Test.ensureEqual(mini2Dump[0].length(), 0, ERROR + " reading mini2.hdf.dump");
+        Test.ensureEqual(miniDump[0].length() , 0, String2.ERROR + " reading mini.hdf.dump");
+        Test.ensureEqual(mini2Dump[0].length(), 0, String2.ERROR + " reading mini2.hdf.dump");
         Test.ensureEqual(miniDump[1], mini2Dump[1], 
             "mini.hdf.dump and mini2.hdf.dump are different");
 

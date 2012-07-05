@@ -374,10 +374,10 @@ public class EDDTableFromNWISDV extends EDDTable{
         localSourceUrl = tLocalSourceUrl;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
       
-        //in general, WaterML sets all constraints to PARTIAL and regex to REGEX_OP
+        //in general, WaterML sets all constraints to PARTIAL and regex to PrimitiveArray.REGEX_OP
         sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; 
         sourceCanConstrainStringData  = CONSTRAIN_PARTIAL; 
-        sourceCanConstrainStringRegex = REGEX_OP; //standardizeResultsTable always (re)tests regex constraints
+        sourceCanConstrainStringRegex = PrimitiveArray.REGEX_OP; //standardizeResultsTable always (re)tests regex constraints
 
         //get global attributes
         combinedGlobalAttributes = new Attributes(addGlobalAttributes); 
@@ -587,7 +587,7 @@ public class EDDTableFromNWISDV extends EDDTable{
                     stationTable.findColumnNumber(conVar), 
                     conVar, conOp, conVal, keep);
             if (nKeep == 0)
-                throw new SimpleException(EDStatic.THERE_IS_NO_DATA + 
+                throw new SimpleException(MustBe.THERE_IS_NO_DATA + 
                     " (There are no matching sites.)");
         }
 
@@ -603,7 +603,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         endSeconds   = Math.floor(  endSeconds / spd) * spd;
         if (!Double.isNaN(beginSeconds) && !Double.isNaN(endSeconds) &&
             beginSeconds > endSeconds)  //e.g., begin=end=noon of some day
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA + 
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + 
                 " (The data for each day is associated with the start of each day: T00:00:00.)");
         String beginTime = ""; 
         String endTime   = "";
@@ -619,7 +619,7 @@ public class EDDTableFromNWISDV extends EDDTable{
                     //don't test
                     nKeep++;
                 } else {
-                    if (Table.testValueOpValue(beginTime, "<=", stationEndDate)) 
+                    if (PrimitiveArray.testValueOpValue(beginTime, "<=", stationEndDate)) 
                         nKeep++;
                     else 
                         keep.clear(row);
@@ -638,7 +638,7 @@ public class EDDTableFromNWISDV extends EDDTable{
                     //don't test
                     nKeep++;
                 } else {
-                    if (Table.testValueOpValue(endTime, ">=", stationBeginDate)) 
+                    if (PrimitiveArray.testValueOpValue(endTime, ">=", stationBeginDate)) 
                         nKeep++;
                     else 
                         keep.clear(row);
@@ -647,7 +647,7 @@ public class EDDTableFromNWISDV extends EDDTable{
             }
         }
         if (nKeep == 0)
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA + 
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + 
                 " (There are no matching sites (time).)");
 
 
@@ -719,7 +719,7 @@ public class EDDTableFromNWISDV extends EDDTable{
             if (nRows == 0) {
                 if (!reallyVerbose)  //if reallyVerbose, it was done above
                     String2.log(encodedSourceUrl);
-                throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+                throw new SimpleException(MustBe.THERE_IS_NO_DATA);
             }
 
             //verify site Information (stationTable vs here)
@@ -758,8 +758,14 @@ public class EDDTableFromNWISDV extends EDDTable{
             if (table.nRows() > 0)
                 standardizeResultsTable(requestUrl, userDapQuery, table);
 
-            if (table.nRows() > 0) 
+            if (table.nRows() > 0) {
                 tableWriter.writeSome(table);
+                //Activate this if stationRow loop reactivated
+                //if (tableWriter.noMoreDataPlease) {
+                //    tableWrite.logCaughtNoMoreDataPlease(datasetID);
+                //    break;
+                //}
+            }
 
         //    stationRow = keep.nextSetBit(stationRow + 1);
         //}

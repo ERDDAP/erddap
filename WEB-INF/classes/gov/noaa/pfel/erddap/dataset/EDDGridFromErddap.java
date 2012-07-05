@@ -468,24 +468,34 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         //String errorInMethod = "Error in EDDGridFromErddap.getSourceData for " + datasetID + ": "; 
         String constraint = buildDapArrayQuery(tConstraints);
 
+        //get results one var at a time (that's how OpendapHelper is set up)
         DConnect dConnect = new DConnect(localSourceUrl, acceptDeflate, 1, 1);
         PrimitiveArray results[] = new PrimitiveArray[axisVariables.length + tDataVariables.length];
         for (int dv = 0; dv < tDataVariables.length; dv++) {
-            //???why not get all the dataVariables at once?
-
             //get the data
             PrimitiveArray pa[] = null;
             try {
                 pa = OpendapHelper.getPrimitiveArrays(dConnect, 
                     "?" + tDataVariables[dv].sourceName() + constraint);
+
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+
+                //if too much data, rethrow t
+                String tToString = t.toString();
+                if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+                    throw t;
+
+                //request should be valid, so any other error is trouble with dataset
                 requestReloadASAP(); 
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain, t); 
+                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                    "\n(" + EDStatic.errorFromDataSource + t.toString() + ")", 
+                    t); 
             }
             if (pa.length != axisVariables.length + 1) {
                 requestReloadASAP(); 
                 throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
-                    "\nDetails: An unexpected data structure was returned from the source.");
+                    "\n(Details: An unexpected data structure was returned from the source.)");
             }
             results[axisVariables.length + dv] = pa[0];
             if (dv == 0) {
@@ -500,9 +510,9 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                         requestReloadASAP(); 
                         throw new WaitThenTryAgainException(
                             EDStatic.waitThenTryAgain +
-                            "\nDetails: The axis values for dataVariable=0,axis=" + av +  
-                            ")\ndon't equal the axis values for dataVariable=" + dv + ",axis=" + av + ".\n" +
-                            tError);
+                            "\n(Details: The axis values for dataVariable=0,axis=" + av +  
+                            "\ndon't equal the axis values for dataVariable=" + dv + ",axis=" + av + ".\n" +
+                            tError + ")");
                     }
                 }
             }
@@ -698,7 +708,7 @@ expected =
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0260864e+9, 1.3333248e+9;\n" + //last value changes periodically
+"    Float64 actual_range 1.0260864e+9, 1.3395456e+9;\n" + //last value changes periodically
 "    String axis \"T\";\n" +
 "    Int32 fraction_digits 0;\n" +
 "    String ioos_category \"Time\";\n" +
@@ -766,8 +776,8 @@ expected =
 "    String creator_email \"dave.foley@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
-"    String date_created \"2012-04-08Z\";\n" +  //changes
-"    String date_issued \"2012-04-08Z\";\n" +  //changes
+"    String date_created \"2012-06-28Z\";\n" +  //changes
+"    String date_issued \"2012-06-28Z\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
 "    Float64 geospatial_lat_max 90.0;\n" +
 "    Float64 geospatial_lat_min -90.0;\n" +
@@ -817,7 +827,7 @@ expected2 =
 "    Float64 Southernmost_Northing -90.0;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String summary \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-"    String time_coverage_end \"2012-04-02T00:00:00Z\";\n" + //changes
+"    String time_coverage_end \"2012-06-13T00:00:00Z\";\n" + //changes
 "    String time_coverage_start \"2002-07-08T00:00:00Z\";\n" +
 "    String title \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
@@ -846,15 +856,15 @@ expected2 =
             //String2.log(results);
             expected = 
     "Dataset {\n" +
-    "  Float64 time[time = 439];\n" +   //439 will change sometimes   (and a few places below)
+    "  Float64 time[time = 448];\n" +   //448 will change sometimes   (and a few places below)
     "  Float64 altitude[altitude = 1];\n" +
     "  Float64 latitude[latitude = 4320];\n" +
     "  Float64 longitude[longitude = 8640];\n" +
     "  GRID {\n" +
     "    ARRAY:\n" +
-    "      Float32 chlorophyll[time = 439][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+    "      Float32 chlorophyll[time = 448][altitude = 1][latitude = 4320][longitude = 8640];\n" +
     "    MAPS:\n" +
-    "      Float64 time[time = 439];\n" +
+    "      Float64 time[time = 448];\n" +
     "      Float64 altitude[altitude = 1];\n" +
     "      Float64 latitude[latitude = 4320];\n" +
     "      Float64 longitude[longitude = 8640];\n" +
@@ -1220,8 +1230,8 @@ expected2 =
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2012-04-08Z\";\n" + //changes periodically
-" :date_issued = \"2012-04-08Z\";\n" +  //changes periodically
+" :date_created = \"2012-06-28Z\";\n" + //changes periodically
+" :date_issued = \"2012-06-28Z\";\n" +  //changes periodically
 " :Easternmost_Easting = 246.65354786433613; // double\n" +
 " :geospatial_lat_max = 49.82403334105115; // double\n" +
 " :geospatial_lat_min = 28.985876360268577; // double\n" +
@@ -1316,6 +1326,7 @@ expected2 =
         String2.log("\n****************** EDDGridFromErddap.test() *****************\n");
 
         /* standard tests */
+        /* */
         testBasic(false);
         testBasic(true);
         testGenerateDatasetsXml();

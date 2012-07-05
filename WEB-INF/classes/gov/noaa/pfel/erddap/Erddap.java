@@ -123,9 +123,6 @@ import org.verisign.joid.consumer.OpenIdFilter;
  */
 public class Erddap extends HttpServlet {
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     /**
      * Set this to true (by calling verbose=true in your program, 
      * not but changing the code here)
@@ -557,10 +554,10 @@ public class Erddap extends HttpServlet {
                 
                 //Don't email common, unimportant exceptions   e.g., ClientAbortException
                 //Are there others I don't need to see?
-                if (message.indexOf("ClientAbortException") >= 0) {
+                if (EDStatic.isClientAbortException(t)) {
                     String2.log("#" + requestNumber + " Error: ClientAbortException");
 
-                } else if (message.indexOf(DataHelper.THERE_IS_NO_DATA) >= 0) {
+                } else if (message.indexOf(MustBe.THERE_IS_NO_DATA) >= 0) {
                     String2.log("#" + requestNumber + " " + message);
 
                 } else {
@@ -582,13 +579,13 @@ public class Erddap extends HttpServlet {
                 String2.distribute(responseTime, EDStatic.failureTimesDistributionTotal);
                 if (verbose) String2.log("}}}}#" + requestNumber + " FAILURE. TIME=" + responseTime + "\n");
 
-                //???if "ClientAbortException", should ERDDAP not send error code below?
             } catch (Throwable t2) {
                 String2.log("Error while handling error:\n" + MustBe.throwableToString(t2));
             }
 
             //if sendErrorCode fails because response.isCommitted(), it throws ServletException
             sendErrorCode(request, response, t); 
+
             if (verbose) String2.log("}}}}#" + requestNumber + " sendErrorCode done. Total TIME=" + 
                 (System.currentTimeMillis() - doGetTime) + "\n");
         }
@@ -834,6 +831,7 @@ public class Erddap extends HttpServlet {
             //end of table
             writer.write("</td>\n</tr>\n</table>\n");
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);   //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -856,6 +854,7 @@ public class Erddap extends HttpServlet {
             writer.write(EDStatic.youAreHere(loggedInAs, "Information"));
             writer.write(EDStatic.theLongDescriptionHtml(tErddapUrl));
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
         endHtmlWriter(out, writer, tErddapUrl, false);
@@ -885,6 +884,7 @@ public class Erddap extends HttpServlet {
                 EDStatic.legal(tErddapUrl));
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
         endHtmlWriter(out, writer, tErddapUrl, false);
@@ -1032,6 +1032,7 @@ public class Erddap extends HttpServlet {
                 }
             
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
             }
             endHtmlWriter(out, writer, tErddapUrl, false);
@@ -1082,6 +1083,7 @@ public class Erddap extends HttpServlet {
                         return;
                     }
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     response.sendRedirect(loginUrl +
                         "?message=" + 
                         SSR.minimalPercentEncode(EDStatic.loginFailed + ": " + 
@@ -1134,6 +1136,7 @@ public class Erddap extends HttpServlet {
                         String2.replaceAll(EDStatic.loginProblemsAfter, "&second;", ""));
                 }
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
             }
             
@@ -1183,6 +1186,7 @@ public class Erddap extends HttpServlet {
                     response.sendRedirect(s);
                     return;
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     response.sendRedirect(loginUrl +
                         "?message=" + SSR.minimalPercentEncode(
                             EDStatic.loginFailed + ": " + MustBe.getShortErrorMessage(t)));
@@ -1249,6 +1253,7 @@ public class Erddap extends HttpServlet {
 
                 }
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
             }
             
@@ -1267,6 +1272,7 @@ public class Erddap extends HttpServlet {
                 redMessage +
                 "<p>" + EDStatic.loginCanNot + "\n");       
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
         endHtmlWriter(out, writer, tErddapUrl, false);
@@ -1339,6 +1345,7 @@ public class Erddap extends HttpServlet {
                         }
                     }
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     writer.write(EDStatic.htmlForException(t));
                 }
                 endHtmlWriter(out, writer, tErddapUrl, false);                
@@ -1377,6 +1384,7 @@ public class Erddap extends HttpServlet {
             return;
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             response.sendRedirect(loginUrl + 
                 "?message=" + SSR.minimalPercentEncode(MustBe.getShortErrorMessage(t)));
             return;
@@ -1415,6 +1423,7 @@ public class Erddap extends HttpServlet {
             writer.write(XML.encodeAsHTML(sb.toString()));
             writer.write("</pre>");
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -1774,6 +1783,7 @@ public class Erddap extends HttpServlet {
                 "</table>\n");
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
         endHtmlWriter(out, writer, tErddapUrl, false);
@@ -2011,6 +2021,7 @@ public class Erddap extends HttpServlet {
                     if (protocol.equals("griddap"))       EDDGrid.writeGeneralDapHtmlInstructions(tErddapUrl, writer, true);
                     else if (protocol.equals("tabledap")) EDDTable.writeGeneralDapHtmlInstructions(tErddapUrl, writer, true);
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     writer.write(EDStatic.htmlForException(t));
                 }
                 endHtmlWriter(out, writer, tErddapUrl, false);
@@ -2091,6 +2102,7 @@ public class Erddap extends HttpServlet {
                     writer.write(EDStatic.endBodyHtml(tErddapUrl));
                     writer.write("\n</html>\n");
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     writer.write(EDStatic.htmlForException(t));
                 }
                 //essential
@@ -2197,7 +2209,7 @@ public class Erddap extends HttpServlet {
                 dataset.respondToDapQuery(request, response,
                     loggedInAs, requestUrl, userDapQuery, 
                     outputStreamSource, 
-                    cacheDir, fileName, fileTypeName);
+                    cacheDir, fileName, fileTypeName);            
             } catch (WaitThenTryAgainException wttae) {
                 String2.log("!!ERDDAP caught WaitThenTryAgainException");
                 //is response committed?
@@ -2235,7 +2247,7 @@ public class Erddap extends HttpServlet {
                             String2.log("!!ERDDAP successfully used dataset2 to respond to the request.");
                             break; //success! jump out of for(sec) loop
                         } catch (Throwable t) {
-                            String2.log("!!!!ERDDAP caught Exception while trying WaitThenTryAgainException:\n" +
+                            String2.log("!!!!ERDDAP caught Exception while handling WaitThenTryAgainException:\n" +
                                 MustBe.throwableToString(t));
                             throw wttae; //throw original error
                         }
@@ -2256,6 +2268,7 @@ public class Erddap extends HttpServlet {
             return;
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
 
             //deal with the DAP error
 
@@ -2545,6 +2558,7 @@ public class Erddap extends HttpServlet {
             } 
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -2634,6 +2648,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             try {
                 eddTable.sosDatasetHtml(loggedInAs, writer);
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
             }
             endHtmlWriter(out, writer, tErddapUrl, false);
@@ -2804,6 +2819,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             }
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
 
             //deal with SOS error
             //catch errors after the response has begun
@@ -2895,6 +2911,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "\n");
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
         endHtmlWriter(out, writer, tErddapUrl, false);
@@ -2977,6 +2994,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             try {
                 eddGrid.wcsDatasetHtml(loggedInAs, writer);
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
             }
             endHtmlWriter(out, writer, tErddapUrl, false);
@@ -3080,6 +3098,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             }
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
 
             //deal with the WCS error
             //catch errors after the response has begun
@@ -3155,6 +3174,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "<li><a href=\"http://www.gvsig.gva.es/index.php?id=gvsig&amp;L=2\">gvSIG</a> (free)\n" +
                 "</ul>\n");
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
         endHtmlWriter(out, writer, tErddapUrl, false);
@@ -3316,6 +3336,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             throw new SimpleException(EDStatic.queryError + "request='" + tRequest + "' isn't supported."); 
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
 
             String2.log("  doWms caught Exception:\n" + MustBe.throwableToString(t));
 
@@ -3769,6 +3790,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "</table>\n" +
                 "\n");
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -4244,9 +4266,11 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 fileName + extension, outputStreamSource.outputStream("")); 
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+
             //deal with the WMS error  
             //exceptions in this block fall to error handling in doWms
-
+            
             //catch errors after the response has begun
             if (neededToSendErrorCode(request, response, t))
                 return;
@@ -4277,7 +4301,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
                 //write exception in image   (if not THERE_IS_NO_DATA)
                 if (exceptions.equals("INIMAGE") &&
-                    msg.indexOf(DataHelper.THERE_IS_NO_DATA) < 0) {
+                    msg.indexOf(MustBe.THERE_IS_NO_DATA) < 0) {
                     int tHeight = 12; //pixels high
                     msg = String2.noLongLines(msg, (width * 10 / 6) / tHeight, "    ");
                     String lines[] = msg.split("\\n"); //not String2.split which trims
@@ -5285,6 +5309,7 @@ writer.write(
             writer.flush(); //Steve Souder says: the sooner you can send some html to user, the better
             writer.write(scripts.toString());
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -5672,11 +5697,11 @@ writer.write(
         String message;
         if (datasetID == null || datasetID.length() == 0 ||
             flagKey == null   || flagKey.length() == 0) {
-            message = ERROR + ": Incomplete request.";
+            message = String2.ERROR + ": Incomplete request.";
         } else if (!String2.isFileNameSafe(datasetID)) {
-            message = ERROR + ": Invalid datasetID.";
+            message = String2.ERROR + ": Invalid datasetID.";
         } else if (!EDD.flagKey(datasetID).equals(flagKey)) {
-            message = ERROR + ": Invalid flagKey.";
+            message = String2.ERROR + ": Invalid flagKey.";
         } else {
             //It's ok if it isn't an existing edd.  An inactive dataset is a valid one to flag.
             //And ok of it isn't even in datasets.xml.  Unknown files are removed.
@@ -5826,7 +5851,7 @@ writer.write(
                     if (tSize < 0 || tSize > 2) tSize = 1;
                     contentWidth = defaultContentWidth;
                     contentHeight = 20;                        
-                    content = "ERROR: No URL has been specified.\n";
+                    content = String2.ERROR + ": No URL has been specified.\n";
 
                 } else if (lcUrl.startsWith("file://")) {
                     //local file on client's computer
@@ -5835,7 +5860,7 @@ writer.write(
                     if (tSize < 0 || tSize > 2) tSize = 1;
                     contentWidth = defaultContentWidth;
                     contentHeight = 20;                        
-                    content = "ERROR: 'file://' URL's aren't supported (for security reasons).\n";
+                    content = String2.ERROR + ": 'file://' URL's aren't supported (for security reasons).\n";
                 
                 } else if ((tUrl.indexOf("/tabledap/") > 0 || tUrl.indexOf("/griddap/") > 0) &&
                     (ext.equals(".graph") || pngSize >= 0)) {
@@ -6107,6 +6132,7 @@ writer.write(
                 "</ul>\n" +
                 "\n");
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -6300,6 +6326,7 @@ writer.write(
 
 
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     writer.write(EDStatic.htmlForException(t));
                 }
 
@@ -6317,6 +6344,7 @@ writer.write(
             return;
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
 
             //deal with search error (or just need empty .html searchForm)
             OutputStream out = null;
@@ -6348,6 +6376,7 @@ writer.write(
                 //    "\n");
 
             } catch (Throwable t2) {
+                EDStatic.rethrowClientAbortException(t2);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t2));
             }
             endHtmlWriter(out, writer, tErddapUrl, false);
@@ -6627,7 +6656,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                     "  <entry>\n" +
                     "    <title>" + XML.encodeAsXML(title0) + "</title>\n" +
                     "    <link href=\"" + tErddapUrl + "/" + protocol + "/index.html\"/>\n" +
-                    "    <id>" + ERROR + "</id>\n" +
+                    "    <id>" + String2.ERROR + "</id>\n" +
                     "    <updated>" + Calendar2.millisToIsoZuluString(lastMajorLoadMillis) +
                         "Z</updated>\n" +
                     "    <content type=\"text\">" + XML.encodeAsXML(msg0) + "</content>\n" +
@@ -7057,6 +7086,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 writer.flush();
 
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
                 endHtmlWriter(out, writer, tErddapUrl, false);
                 return;
@@ -7275,7 +7305,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                     "<h2>" + EDStatic.advancedSearchResults + "</h2>\n");  
                 if (searchPerformed) {
                     if (resultsTable.nRows() == 0) {
-                         writer.write("<b>" + XML.encodeAsHTML(EDStatic.THERE_IS_NO_DATA) + "</b>\n" +
+                         writer.write("<b>" + XML.encodeAsHTML(MustBe.THERE_IS_NO_DATA) + "</b>\n" +
                              (searchFor.length() > 0? "<br>" + EDStatic.searchSpelling + "\n" : "") +
                              "<br>" + EDStatic.advancedSearchFewerCriteria + "\n");
                     } else {
@@ -7312,6 +7342,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 }
 
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
             }
             endHtmlWriter(out, writer, tErddapUrl, false);
@@ -7381,9 +7412,10 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
      *    for the info links.
      * @return a table with the results.
      *    It may have 0 rows.
+     * @throws Throwable, notably ClientAbortException
      */
     public Table getSearchTable(String loggedInAs, StringArray tDatasetIDs,
-        String searchFor, boolean toHtml, String fileTypeName) {
+        String searchFor, boolean toHtml, String fileTypeName) throws Throwable {
 
         tDatasetIDs = getSearchDatasetIDs(loggedInAs, tDatasetIDs, searchFor);
 
@@ -7405,9 +7437,10 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
      *    Special cases: "" and "all" return all datasets that loggedInAs has a right 
      *    to know exist, sorted by title.
      * @return a StringArray with the matching datasetIDs, in order best to worst.
+     * @throws Throwable, notably ClientAbortException
      */
     public StringArray getSearchDatasetIDs(String loggedInAs, StringArray tDatasetIDs,
-        String searchFor) {
+        String searchFor) throws Throwable {
 
         //*** respond to search request
         StringArray searchWords = StringArray.wordsAndQuotedPhrases(searchFor.toLowerCase());
@@ -7579,6 +7612,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                     }
 
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     throw new SimpleException(EDStatic.searchNotAvailable);
                 }
 
@@ -7790,6 +7824,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                         writeErrorHtml(writer, request, "categoryAttribute=\"" + attributeInURL + "\" is not an option.");
                     writeCategorizeOptionsHtml1(request, loggedInAs, writer, null, false);
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     writer.write(EDStatic.htmlForException(t));
                 }
                 endHtmlWriter(out, writer, tErddapUrl, false);
@@ -7871,6 +7906,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                         "</tr>\n" +
                         "</table>\n");
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     writer.write(EDStatic.htmlForException(t));
                 }
                 endHtmlWriter(out, writer, tErddapUrl, false);
@@ -8000,6 +8036,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                     "\n");
 
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
             }
 
@@ -8096,7 +8133,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             String error[] = null;
             if (nDatasets == 0) {
                 error = new String[] {
-                    EDStatic.THERE_IS_NO_DATA,
+                    MustBe.THERE_IS_NO_DATA,
                     ""};
             } else if (page > lastPage) {
                 error = EDStatic.noPage(page, lastPage);
@@ -8162,6 +8199,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                             "\n");
                     }
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     writer.write(EDStatic.htmlForException(t));
                 }
 
@@ -8378,6 +8416,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                     "\n");
 
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
             }
 
@@ -8462,6 +8501,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             else writer.write(
                 MessageFormat.format(EDStatic.subscriptionsNotAvailable, tErddapUrl) + "\n");
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -8584,6 +8624,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                         }
                         writer.write(EDStatic.subscriptionAddSuccess + "\n");
                     } catch (Throwable t) {
+                        EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                         writer.write("<p><font class=\"warningColor\">" +
                             EDStatic.subscriptionAddError + "\n<br>" + 
                             XML.encodeAsHTML(MustBe.getShortErrorMessage(t)) + "</font>\n");
@@ -8635,6 +8676,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             //link to list of subscriptions
             writer.write(requestSubscriptionListHtml(tErddapUrl, tEmail));
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -8708,6 +8750,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                         EDStatic.tally.add("Subscriptions (since last daily report)", "List successful");
                         return;
                     } catch (Throwable t) {
+                        EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                         writer.write("<p><font class=\"warningColor\">" +
                             EDStatic.subscriptionListError + "\n" + 
                             "<br>" + XML.encodeAsHTML(MustBe.getShortErrorMessage(t)) + "</font>\n");
@@ -8739,6 +8782,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 widgets.endForm() +
                 EDStatic.subscriptionAbuse + "\n");
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -8813,6 +8857,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                             EDStatic.tally.add("Subscriptions (since last daily report)", "Validate successful");
                         }
                     } catch (Throwable t) {
+                        EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                         writer.write("<p><font class=\"warningColor\">" +
                             EDStatic.subscriptionValidateError + "\n" +
                             "<br>" + XML.encodeAsHTML(MustBe.getShortErrorMessage(t)) + "</font>\n");
@@ -8850,6 +8895,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             //link to list of subscriptions
             writer.write(requestSubscriptionListHtml(tErddapUrl, ""));
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -8925,6 +8971,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                         EDStatic.tally.add("Subscriptions (since startup)", "Remove successful");
                         EDStatic.tally.add("Subscriptions (since last daily report)", "Remove successful");
                     } catch (Throwable t) {
+                        EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                         writer.write("<p><font class=\"warningColor\">" +
                             EDStatic.subscriptionRemoveError + "\n" +
                             "<br>" + XML.encodeAsHTML(MustBe.getShortErrorMessage(t)) + "</font>\n");
@@ -8963,6 +9010,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             writer.write(requestSubscriptionListHtml(tErddapUrl, "") +
                 "<br>" + EDStatic.subscriptionRemove2 + "\n");
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -9012,6 +9060,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 sendPlainTable(loggedInAs, request, response, 
                     EDStatic.fipsCountyTable(), "FipsCountyCodes", fileTypeName);
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 String2.log(MustBe.throwableToString(t));
                 throw new SimpleException("The FIPS county service is not available on this ERDDAP.");
             }
@@ -9065,6 +9114,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                     EDStatic.convertUnits + "\n" +
                 "</ul>\n");
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -9110,6 +9160,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         try {
             fipsTable = EDStatic.fipsCountyTable();
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             String2.log(MustBe.throwableToString(t));
             throw new SimpleException("The FIPS county service is not available on this ERDDAP.");
         }
@@ -9256,6 +9307,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             writer.write(EDStatic.convertFipsCountyService);
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -9459,6 +9511,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             writer.write(EDStatic.convertKeywordsService);
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -9510,6 +9563,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         try {
             tbf = Calendar2.getTimeBaseAndFactor(queryUnits);
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             tError = t.getMessage();
         }
 
@@ -9681,6 +9735,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             writer.write(EDStatic.convertTimeService);
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -9826,7 +9881,8 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             writer.write(EDStatic.convertUnitsFilter);
             writer.write('\n');
 
-            } catch (Throwable t) {
+        } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -9905,6 +9961,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             writer.write(getPostIndexHtml(loggedInAs, tErddapUrl));
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -9968,6 +10025,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 "</pre>\n");
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -10088,6 +10146,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 bigTable.readFlatNc(tDir + tBigFileName + ".nc", null, 0);
                 //String2.log("data from cached file");
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 String2.log("reading file=" + tDir + tBigFileName + ".nc" + "failed:\n" +
                     MustBe.throwableToString(t));
                 bigTable = null;
@@ -10104,6 +10163,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 bigTable = twawm.cumulativeTable();
                 //String2.log("data from surgeryEdd");
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 //e.g., no Data will occur if user generated invalid query (e.g., not by using web form)
                 String2.log("creating bigTable from bigUserDapQuery=" + bigUserDapQuery + " failed:\n" +
                     MustBe.throwableToString(t));
@@ -10122,6 +10182,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                     smallTable.readFlatNc(tDir + tSmallFileName + ".nc", null, 0);
                     //String2.log("data from cached file");
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     String2.log("reading file=" + tDir + tSmallFileName + ".nc" + "failed:\n" +
                         MustBe.throwableToString(t));
                     smallTable = null;
@@ -10138,6 +10199,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                     smallTable = twawm.cumulativeTable();
                     //String2.log("data from surgeryEdd");
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     //e.g., no Data will occur if user generated invalid query (e.g., not by using web form)
                     String2.log("creating smallTable from smallUserDapQuery=" + smallUserDapQuery + " failed:\n" +
                         MustBe.throwableToString(t));
@@ -10177,7 +10239,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             //if noData/invalid request tell user and reset all
             if (bigTable == null) {
                 //error message?
-                writer.write("<font class=\"warningColor\">" + EDStatic.THERE_IS_NO_DATA + 
+                writer.write("<font class=\"warningColor\">" + MustBe.THERE_IS_NO_DATA + 
                     " The form below has been reset.</font>\n");
 
                 //reset all
@@ -10597,6 +10659,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                     writer.write("<p>The total of the counts is " + 
                         Math2.roundToLong(total) + ".\n");
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     String message = MustBe.getShortErrorMessage(t);
                     String2.log("Caught:\n" + MustBe.throwableToString(t)); //log full message with stack trace
                     writer.write( 
@@ -10683,6 +10746,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
 
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -10880,7 +10944,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         }
 
         //just log it
-        String message = ERROR + " for " + request.getRequestURI() +  
+        String message = String2.ERROR + " for " + request.getRequestURI() +  
             EDStatic.questionQuery(request.getQueryString()) + //not decoded
             "\n" + MustBe.throwableToString(t); //log the details
         String2.log(message);
@@ -10893,14 +10957,18 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
      */
     public static void sendErrorCode(HttpServletRequest request, 
         HttpServletResponse response, Throwable t) throws ServletException {
-        
+
+        if (EDStatic.isClientAbortException(t))
+            return; //do nothing
+
+        //String2.log("Bob: sendErrorCode t.toString=" + t.toString());        
         String tError = MustBe.getShortErrorMessage(t);
 
         try {
 
             //log the error            
             String2.log(
-                "*** sendErrorCode ERROR for " +
+                "*** sendErrorCode " + String2.ERROR + " for " +
                     request.getRequestURI() + 
                     EDStatic.questionQuery(request.getQueryString()) + //not decoded
                 "\nisCommitted=" + response.isCommitted() +
@@ -10940,6 +11008,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             response.sendError(HttpServletResponse.SC_NOT_FOUND, 
                 EDStatic.resourceNotFound + " " + message);
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             throw new SimpleException(EDStatic.resourceNotFound + " " + message);
         }
     }
@@ -10961,14 +11030,14 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
         widgets.enterTextSubmitsForm = true;
-        StringBuilder sb = new StringBuilder(
-            widgets.beginForm("search", "GET", tErddapUrl + "/search/index.html", ""));
-        int pipp[] = EDStatic.getRequestedPIpp(request);
-        sb.append(widgets.hidden("page", "1")); //new search always resets to page 1
-        sb.append(widgets.hidden("itemsPerPage", "" + pipp[1]));
+        StringBuilder sb = new StringBuilder();
         sb.append(pretext + 
             "<a name=\"FullTextSearch\">" + EDStatic.searchDoFullTextHtml + "</a>" +
             posttext);
+        sb.append(widgets.beginForm("search", "GET", tErddapUrl + "/search/index.html", ""));
+        int pipp[] = EDStatic.getRequestedPIpp(request);
+        sb.append(widgets.hidden("page", "1")); //new search always resets to page 1
+        sb.append(widgets.hidden("itemsPerPage", "" + pipp[1]));
         if (searchFor == null)
             searchFor = "";
         widgets.htmlTooltips = false;
@@ -11117,7 +11186,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             EDStatic.htmlTooltipImage(loggedInAs, EDStatic.categoryClickHtml) +
             "</h3>\n");
         if (values.length == 0) {
-            writer.write(DataHelper.THERE_IS_NO_DATA);
+            writer.write(MustBe.THERE_IS_NO_DATA);
         } else {
             HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
             writer.write(widgets.select("cat2", "", Math.min(values.length, 12),
@@ -11621,11 +11690,11 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
 
         if (fileTypeName.equals(".json")) {
             OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
-                ERROR, ".json", ".json")).outputStream("UTF-8");
+                String2.ERROR, ".json", ".json")).outputStream("UTF-8");
             Writer writer = new OutputStreamWriter(out, "UTF-8");
             writer.write(
                 "{\n" +
-                "  \"" + ERROR + "\": " + String2.toJson(error) + "\n" +
+                "  \"" + String2.ERROR + "\": " + String2.toJson(error) + "\n" +
                 "}\n");
 
             //essential
@@ -11642,10 +11711,10 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             fileTypeName.equals(".xhtml")) {  
 
             OutputStream out = (new OutputStreamFromHttpResponse(request, response, 
-                ERROR, ".txt", ".txt")).outputStream("UTF-8");
+                String2.ERROR, ".txt", ".txt")).outputStream("UTF-8");
             Writer writer = new OutputStreamWriter(out, "UTF-8");
-            if (!error.startsWith(ERROR))
-                writer.write(ERROR + ": ");
+            if (!error.startsWith(String2.ERROR))
+                writer.write(String2.ERROR + ": ");
             writer.write(error + "\n");
 
             //essential
@@ -11723,7 +11792,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             expected = 
                 "Core Version: DAP/2.0\n" +
                 "Server Version: dods/3.7\n" +
-                "ERDDAP_version: 1.38\n";
+                "ERDDAP_version: 1.39\n";
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/griddap/version");
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/tabledap/version");

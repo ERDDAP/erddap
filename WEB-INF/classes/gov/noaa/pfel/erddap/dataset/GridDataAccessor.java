@@ -13,6 +13,7 @@ import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 
 import gov.noaa.pfel.erddap.util.EDStatic;
@@ -44,9 +45,6 @@ import java.util.Arrays;
  */
 public class GridDataAccessor { 
 
-    
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
 
     /**
      * Set this to true (by calling verbose=true in your program, 
@@ -485,6 +483,8 @@ public class GridDataAccessor {
 
     /**
      * This is used by increment and incrementChunk to get a chunk of data.
+     * "GridDataAccessor.getChunk" in stack trace is elsewhere used as indication
+     * of something seriously wrong with the data source.
      *
      * <p>This increments the driverIndex.
      *
@@ -492,7 +492,7 @@ public class GridDataAccessor {
      *    or unable to get the data.
      */
     protected void getChunk() throws Throwable {
-
+        
         //increment driverIndex
         boolean tb = rowMajor? driverIndex.increment() : driverIndex.incrementCM();
         if (!tb)
@@ -519,16 +519,38 @@ public class GridDataAccessor {
             } //no change if !avInDriver[av]
             pcPo += 3;
         }
-        if (reallyVerbose) String2.log("      calling getSourceData partialConstraints=" + partialConstraints);
 
         //get the data
-        long time = System.currentTimeMillis();
-        PrimitiveArray partialResults[] = eddGrid.getSourceData(dataVariables, partialConstraints);
-        if (reallyVerbose) String2.log("      getSourceData done. nDV=" + dataVariables.length +
-            " nElements/dv=" + partialResults[partialResults.length - 1].size() +
-            " time=" + (System.currentTimeMillis() - time));
-        //for (int i = 0; i < partialResults.length; i++)
-        //    String2.log("      pa[" + i + "]=" + partialResults[i]);
+        PrimitiveArray partialResults[] = null;
+        try {
+            if (reallyVerbose) 
+                String2.log("      calling getSourceData partialConstraints=" + partialConstraints);
+            long time = System.currentTimeMillis();
+            partialResults = eddGrid.getSourceData(dataVariables, partialConstraints);
+            if (reallyVerbose) 
+                String2.log("      getSourceData done. nDV=" + dataVariables.length +
+                    " nElements/dv=" + partialResults[partialResults.length - 1].size() +
+                    " time=" + (System.currentTimeMillis() - time));
+            //for (int i = 0; i < partialResults.length; i++)
+            //    String2.log("      pa[" + i + "]=" + partialResults[i]);
+
+        } catch (WaitThenTryAgainException twwae) {
+            throw twwae;
+
+        } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+
+            //if too much data, rethrow t
+            String tToString = t.toString();
+            if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+                throw t;
+
+            //rewrap it as WTTAE
+            eddGrid.requestReloadASAP();
+            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                "\n(" + EDStatic.errorFromDataSource + tToString + ")", 
+                t); 
+        }
 
         //check that axisValues are as expected
         for (int av = 0; av < nAxisVariables; av++) {
@@ -538,9 +560,9 @@ public class GridDataAccessor {
                     !Math2.almostEqual(9, pa.getDouble(0), avInDriverExpectedValues[av])) { //source values
                     eddGrid.requestReloadASAP();
                     throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain +
-                        "\nDetails: GridDataAccessor.increment: partialResults[" + av +
+                        "\n(Details: GridDataAccessor.increment: partialResults[" + av +
                         "]=\"" + pa + "\" was expected to be " + 
-                        avInDriverExpectedValues[av] + ".");
+                        avInDriverExpectedValues[av] + ".)");
                 }
             } else {
                 //convert source values to destination values
@@ -549,13 +571,13 @@ public class GridDataAccessor {
                 if (tError.length() > 0) {
                     eddGrid.requestReloadASAP();
                     throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain +
-                        "\nDetails: GridDataAccessor.increment: partialResults[" + 
+                        "\n(Details: GridDataAccessor.increment: partialResults[" + 
                         av + "] was not as expected.\n" + 
-                        tError);
+                        tError + ")");
                 }
             }
         }
-        
+            
         //process the results
         for (int dv = 0; dv < dataVariables.length; dv++) { //dv in the query
             //convert source values to destination values and store

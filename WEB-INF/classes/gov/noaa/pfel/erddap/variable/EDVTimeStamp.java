@@ -15,6 +15,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.griddata.DataHelper;
+import gov.noaa.pfel.erddap.util.EDStatic;
 
 import java.util.GregorianCalendar;
 
@@ -499,7 +500,7 @@ String2.log("sourceTime=" + sourceTime +
      * <p>If destinationMin or destinationMax (except time) aren't finite,
      * this returns null.
      */
-    public String sliderCsvValues() {
+    public String sliderCsvValues() throws Throwable {
         if (sliderCsvValues != null) 
             return String2.utf8ToString(sliderCsvValues);
 
@@ -536,6 +537,7 @@ String2.log("sourceTime=" + sourceTime +
             if (reallyVerbose) String2.log("EDVTimeStamp.sliderCsvValues nValues=" + nValues);
             return csv;
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             String2.log(MustBe.throwableToString(t));
             return null;
         }

@@ -31,10 +31,6 @@ public class FillGaps  {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
-
     /** The number of grids to be held at once while searching for nearest neighbors. 
      * It should be an odd number so there are an equal number of 
      * grids on either side of the time point in question. */
