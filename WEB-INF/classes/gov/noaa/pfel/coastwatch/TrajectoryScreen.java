@@ -412,7 +412,7 @@ public class TrajectoryScreen extends Screen {
                 MustBe.throwableToString(e);
             String2.log(error);
             oneOf.email(oneOf.emailEverythingTo(), 
-                OneOf.ERROR + " in " + oneOf.shortClassName(), error);
+                String2.ERROR + " in " + oneOf.shortClassName(), error);
 
             return null;            
         }
@@ -526,7 +526,7 @@ public class TrajectoryScreen extends Screen {
                 MustBe.throwableToString(e);
             String2.log(error);
             oneOf.email(oneOf.emailEverythingTo(), 
-                OneOf.ERROR + " in " + oneOf.shortClassName(), error);
+                String2.ERROR + " in " + oneOf.shortClassName(), error);
 
             return null;            
         }
@@ -653,7 +653,7 @@ public class TrajectoryScreen extends Screen {
             String backButtonForm) throws Exception {
 
         //failure
-        Test.error(OneOf.ERROR + ": Unexpected submitter: " + submitter);
+        Test.error(String2.ERROR + ": Unexpected submitter: " + submitter);
     }
 */
 

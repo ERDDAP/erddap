@@ -31,9 +31,6 @@ import java.util.Map;
  */
 public class GSHHS  {
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     /** The characters of the RESOLUTIONS string represent the 5 resolutions
      * in order of decreasing accuracy: "fhilc": 'f'ull, 'h'igh, 'i'ntermediate, 'l'ow, 'c'rude.
      */

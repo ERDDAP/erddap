@@ -28,11 +28,7 @@ import java.util.Arrays;
  * @author Bob Simons (bob.simons@noaa.gov) 2007-08-10
  */
 public class AxisDataAccessor { 
-
-    
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
+  
     /**
      * Set this to true (by calling verbose=true in your program, 
      * not but changing the code here)

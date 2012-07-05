@@ -49,41 +49,35 @@ public class DataHelper  {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
+//These Strings are NOT final so they can be changed at runtime.
 
     /** The string for no units. 
      * There doesn't seem to be a udUnits standard. But LAS uses "unitless".*/
-    public final static String UNITLESS = "unitless";
-
-    /** A standard error message saying there is no data. 
-     * This wording matches the standard DAP message (except different case). */
-    public final static String THERE_IS_NO_DATA = 
-        MustBe.THERE_IS_NO_DATA; //"Your query produced no matching results.";
+    public static String UNITLESS = "unitless";
 
     /** The creatorEmail for CoastWatch */
-    public final static String CW_CREATOR_EMAIL = "dave.foley@noaa.gov";  
+    public static String CW_CREATOR_EMAIL = "dave.foley@noaa.gov";  
 
     /** The creatorName for CoastWatch */
-    public final static String CW_CREATOR_NAME = "NOAA CoastWatch, West Coast Node"; 
+    public static String CW_CREATOR_NAME = "NOAA CoastWatch, West Coast Node"; 
 
     /** The creatorUrl for CoastWatch */
-    public final static String CW_CREATOR_URL = "http://coastwatch.pfeg.noaa.gov";
+    public static String CW_CREATOR_URL = "http://coastwatch.pfeg.noaa.gov";
 
     /** The project for CoastWatch */
-    public final static String CW_PROJECT = "CoastWatch (http://coastwatch.noaa.gov/)";
+    public static String CW_PROJECT = "CoastWatch (http://coastwatch.noaa.gov/)";
 
     /** The creatorEmail for ERD */
-    public final static String ERD_CREATOR_EMAIL = "Roy.Mendelssohn@noaa.gov";  
+    public static String ERD_CREATOR_EMAIL = "Roy.Mendelssohn@noaa.gov";  
 
     /** The creatorName for ERD */
-    public final static String ERD_CREATOR_NAME = "NOAA NMFS SWFSC ERD";
+    public static String ERD_CREATOR_NAME = "NOAA NMFS SWFSC ERD";
 
     /** The creatorUrl for ERD */
-    public final static String ERD_CREATOR_URL = "http://www.pfel.noaa.gov";
+    public static String ERD_CREATOR_URL = "http://www.pfel.noaa.gov";
 
     /** The project for ERD */
-    public final static String ERD_PROJECT = "NOAA NMFS SWFSC ERD (http://www.pfel.noaa.gov/)";
+    public static String ERD_PROJECT = "NOAA NMFS SWFSC ERD (http://www.pfel.noaa.gov/)";
 
     /**
      * The standard variable names of the first 5 columns in the TableDataSet.makeSubset 

@@ -6,6 +6,7 @@ package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.PrimitiveArray;
+import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -24,9 +25,6 @@ import gov.noaa.pfel.erddap.util.EDStatic;
  */
 public abstract class TableWriter {
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     /**
      * Set this to true (by calling verbose=true in your program, 
      * not but changing the code here)
@@ -35,7 +33,11 @@ public abstract class TableWriter {
     public static boolean verbose = false; 
     public static boolean reallyVerbose = false; 
 
-
+    /** 
+     * A subclass will set this to true when it doesn't want any more data
+     * (e.g., TableWriterHtmlTable when showFirstNRows is reached)
+     */
+    public boolean noMoreDataPlease = false;
 
     //these are set by the constructor
     protected long time;
@@ -144,7 +146,7 @@ public abstract class TableWriter {
     /**
      * This writes any end-of-file info to the stream and flushes the stream.
      *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public abstract void finish() throws Throwable;
 
@@ -154,7 +156,7 @@ public abstract class TableWriter {
      * entire table is available.
      * This default implementation just calls writeSome() and finish().
      *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void writeAllAndFinish(Table table) throws Throwable {
         writeSome(table);
@@ -217,7 +219,7 @@ public abstract class TableWriter {
      */
     public Table makeEmptyTable() {
         if (columnNames == null) 
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
 
         int nColumns = columnNames.length;
         Table table = new Table();
@@ -228,6 +230,11 @@ public abstract class TableWriter {
                 columnAttributes[col]);
         return table;
     }
+
+    public void logCaughtNoMoreDataPlease(String datasetID) {
+        String2.log("datasetID=" + datasetID + " caught tableWriter.noMoreDataPlease.");
+    }
+
 
 }
 

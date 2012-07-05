@@ -35,12 +35,6 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
 
     boolean verbose;
 
-    /**
-     * ERROR is a constant so that it will be consistent, so that one can 
-     * search for it in output files.
-     */
-    public final static String ERROR = String2.ERROR;
-
     public String runError = ""; //set by run() if trouble
     public StringBuilder runInfo = new StringBuilder();
 
@@ -110,7 +104,7 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
             runInfo.append("dataSetDirectories: " + String2.toCSSVString(dataSetDirectories) + "\n");
             runInfo.append("dataSetRegexs: " + String2.toCSSVString(dataSetRegexs) + "\n");
             if (trouble) 
-                throw new RuntimeException(ERROR + ": CWDataBrowser.reset " +
+                throw new RuntimeException(String2.ERROR + ": CWDataBrowser.reset " +
                     "nDataSetOptions " + dataSetOptions.length + 
                     " != nDataSetTitles " + dataSetTitles.length + 
                     " != nDataSetDirectories " + dataSetDirectories.length + 
@@ -131,7 +125,7 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
             runInfo.append("regionTitles: " + String2.toNewlineString(regionTitles) + "\n");
             runInfo.append("regionRegexs: " + String2.toCSSVString(regionRegexs) + "\n");
             if (trouble) 
-                throw new RuntimeException(ERROR + ": CWDataBrowser.reset " +
+                throw new RuntimeException(String2.ERROR + ": CWDataBrowser.reset " +
                     "nRegionOptions " + regionOptions.length + 
                     " != nRegionTitles " + regionTitles.length + 
                     " != nRegionRegexs " + regionRegexs.length +
@@ -151,7 +145,7 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
             runInfo.append("timePeriodTitles: " + String2.toNewlineString(timePeriodTitles) + "\n");
             runInfo.append("timePeriodDirectories: " + String2.toCSSVString(timePeriodDirectories) + "\n");
             if (trouble) 
-                throw new RuntimeException(ERROR + ": CWDataBrowser.reset " +
+                throw new RuntimeException(String2.ERROR + ": CWDataBrowser.reset " +
                     "nTimePeriodOptions " + timePeriodOptions.length + 
                     " != nTimePeriodTitles " + timePeriodTitles.length + " " +
                     " != nTimePeriodDirectories " + timePeriodDirectories.length);
@@ -175,7 +169,7 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
             runInfo.append("getExtensions: " + String2.toCSSVString(getExtensions) + "\n");
             runInfo.append("getRegexs: " + String2.toCSSVString(getRegexs) + "\n");
             if (trouble) 
-                throw new RuntimeException(ERROR + ": CWDataBrowser.reset \n" +
+                throw new RuntimeException(String2.ERROR + ": CWDataBrowser.reset \n" +
                     "nGetOptions " + getOptions.length + 
                     " != nGetTitles " + getTitles.length + 
                     " != nGetDirectories " + getDirectories.length + 
@@ -237,7 +231,7 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
                         String tDir = dir + "/" + getDirectories[0];
                         String gifs[] = RegexFilenameFilter.list(tDir, regex + getRegexs[0]);
                         if (gifs == null) {
-                            String2.log(ERROR + " in CWDataBrowserReset #1: trouble with tDir=" + 
+                            String2.log(String2.ERROR + " in CWDataBrowserReset #1: trouble with tDir=" + 
                                 tDir + " and regex=" + regex + getRegexs[0] + ".");
                             gifs = new String[0];
                         }
@@ -285,7 +279,7 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
                                 String files[] = RegexFilenameFilter.list(tDir, 
                                     regex + getRegexs[getI]);
                                 if (files == null) {
-                                    String2.log(ERROR + " in CWDataBrowserReset #2: trouble with tDir=" + 
+                                    String2.log(String2.ERROR + " in CWDataBrowserReset #2: trouble with tDir=" + 
                                         tDir + " and regex=" + regex + getRegexs[getI] + ".");
                                     files = new String[0];
                                 }
@@ -326,7 +320,7 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
                                 fileCount[getI] += nMatched;
                                 if (nMatched != nFiles) {
                                     notMatched += nFiles - nMatched;
-                                    runInfo.append(ERROR + ": " + 
+                                    runInfo.append(String2.ERROR + ": " + 
                                         nFiles + " files match \"" + 
                                             tDir + "/" + regex + getRegexs[getI] + "\"\n" + 
                                         "  but only " + nMatched + 
@@ -378,11 +372,11 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
                 }
             } //end of dataSets loop
             if (notMatched > 0)
-                runInfo.append(ERROR + ": In total, " + notMatched + 
+                runInfo.append(String2.ERROR + ": In total, " + notMatched + 
                     " files were found for which there was no matching .gif.\n");
             if (tActiveDataSetOptions.size() == 0)
                 throw new RuntimeException(
-                    ERROR + ": no valid .gifs so no active DataSets!");
+                    String2.ERROR + ": no valid .gifs so no active DataSets!");
             activeDataSetOptions  = String2.toStringArray(tActiveDataSetOptions.toArray());
             activeDataSetTitles   = String2.toStringArray(tActiveDataSetTitles.toArray());
             activeDataSetContents = tActiveDataSetContents; 
@@ -399,7 +393,7 @@ public class CWDataBrowserReset extends EmaClass implements Runnable {
                 ", sortTime = " + RegexFilenameFilter.sortTime + "\n");
             runInfo.append("  CWDataBrowserReset done. TOTAL TIME=" + (System.currentTimeMillis() - startTime) + " ms.\n");
         } catch (Exception e) {
-            runError = MustBe.throwable("CWDataBrowserReset.run [" + ERROR + "]", e);
+            runError = MustBe.throwable("CWDataBrowserReset.run [" + String2.ERROR + "]", e);
             String2.log(runError);
         }
     }

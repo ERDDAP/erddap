@@ -57,9 +57,6 @@ public class PointSubsetScaled {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     private String fullIndexName, altFullIndexName;
     private int size;
     private int nFiniteRows;
@@ -78,7 +75,7 @@ public class PointSubsetScaled {
             throws Exception {
         this.fullIndexName = fullIndexName;
 
-        String errorInMethod = ERROR + " in PointSubsetScaled constructor:\n";
+        String errorInMethod = String2.ERROR + " in PointSubsetScaled constructor:\n";
         size = t.size();
         nFiniteRows = size;
 
@@ -182,7 +179,7 @@ public class PointSubsetScaled {
      */
     private void store(int axis, PrimitiveArray pa) throws Exception {
 
-        String errorInMethod = ERROR + " in PointSubsetFull.store:\n";
+        String errorInMethod = String2.ERROR + " in PointSubsetFull.store:\n";
         Test.ensureEqual(size, pa.size(), 
             errorInMethod + "x.size != pa.size for axis " + axis + ".");
         long time = System.currentTimeMillis();
@@ -267,7 +264,7 @@ public class PointSubsetScaled {
      */
 /*    private void store(int axis, PrimitiveArray pa) throws Exception {
 
-        String errorInMethod = ERROR + " in PointSubsetScaled.store:\n";
+        String errorInMethod = String2.ERROR + " in PointSubsetScaled.store:\n";
         Test.ensureEqual(size, pa.size(), 
             errorInMethod + "x.size != pa.size for axis " + axis + ".");
         long time = System.currentTimeMillis();
@@ -370,7 +367,7 @@ public class PointSubsetScaled {
     //  and using the disk drive's cache.
     private void store(int axis, PrimitiveArray pa) throws Exception {
 
-        String errorInMethod = ERROR + " in PointSubsetScaled.store:\n";
+        String errorInMethod = String2.ERROR + " in PointSubsetScaled.store:\n";
         Test.ensureEqual(size, pa.size(), 
             errorInMethod + "x.size != pa.size for axis " + axis + ".");
         long time = System.currentTimeMillis();

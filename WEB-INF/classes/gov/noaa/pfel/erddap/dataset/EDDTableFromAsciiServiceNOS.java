@@ -149,7 +149,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
             //is this constraint for a column that's in the stationTable?
             int nKeep = stationTable.tryToApplyConstraint(stationIDCol, conVar, conOp, conVal, keep);
             if (nKeep == 0)
-                throw new SimpleException(EDStatic.THERE_IS_NO_DATA +
+                throw new SimpleException(MustBe.THERE_IS_NO_DATA +
                    " (There are no matching stations.)");
         }
         //ensure the required constraints were specified
@@ -267,8 +267,6 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
 
                     //swap newTable into place
                     table = newTable;
-
-
                 }
 
                 //figure out nRows (some cols have data, some don't)
@@ -323,17 +321,21 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                 }
 
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+
+                //basically ignore errors?!  (Or should a single error stop the request?)
                 if (verbose) {
-                    String2.log(ERROR + " for stationID=" + tStationID +
+                    String2.log(String2.ERROR + " for stationID=" + tStationID +
                         (errorPrinted? "" :
                             encodedSourceUrl + "\n" + MustBe.throwableToString(t)));
                     errorPrinted = true;
                 }
             }
 
-
             stationRow = keep.nextSetBit(stationRow + 1);
-
+            if (tableWriter.noMoreDataPlease) 
+                tableWriter.logCaughtNoMoreDataPlease(datasetID);
+                break;
         }
 
         tableWriter.finish();

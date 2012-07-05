@@ -64,9 +64,6 @@ public class Projects  {
     public static boolean verbose = false;
 
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     public final static String stationColumnName = "ID";
 
 
@@ -6897,7 +6894,7 @@ project)
         String2.log(beginError + 
                " jplMode=" + jplMode +
             "\n  fileName=" + fullFileName); 
-        beginError = "ERROR in " + beginError; 
+        beginError = String2.ERROR + " in " + beginError; 
         long time = System.currentTimeMillis();
 
         //delete any existing file

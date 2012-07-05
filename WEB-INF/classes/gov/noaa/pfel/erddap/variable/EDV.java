@@ -26,9 +26,6 @@ import java.util.GregorianCalendar;
  */
 public class EDV { 
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     /**
      * Set this to true (by calling verbose=true in your program, not but changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
@@ -784,7 +781,7 @@ public class EDV {
                 try {
                     ucumUnits = EDUnits.udunitsToUcum(units()); //null returns null
                 } catch (Throwable t) {
-                    String2.log(ERROR + " while converting udunits=" + units() + " to ucum:\n" +
+                    String2.log(String2.ERROR + " while converting udunits=" + units() + " to ucum:\n" +
                         MustBe.throwableToString(t));
                     ucumUnits = units();
                 }
@@ -1029,7 +1026,7 @@ public class EDV {
      * can't be created).
      * 
      */
-    public int sliderNCsvValues() {
+    public int sliderNCsvValues() throws Throwable {
         if (sliderNCsvValues == 0)
             sliderCsvValues(); //force creation
         return sliderNCsvValues;
@@ -1043,7 +1040,7 @@ public class EDV {
      * <p>If destinationMin or destinationMax (except time) aren't finite,
      * this returns null.
      */
-    public String sliderCsvValues() {
+    public String sliderCsvValues() throws Throwable {
         if (sliderCsvValues != null) 
             return String2.utf8ToString(sliderCsvValues);
 
@@ -1096,6 +1093,7 @@ public class EDV {
                 " base=" + base + " nValues=" + sliderNCsvValues);
             return csv;
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             String2.log(MustBe.throwableToString(t));
             return null;
         }
@@ -1169,7 +1167,8 @@ public class EDV {
     public double sourceFillValue() {return sourceFillValue;}
 
     /** 
-     * This is the value of the destination's missing value stand-in (e.g., -9999999.0). 
+     * This is the value of the destination's missing value stand-in (e.g., -9999999.0)
+     * (dest = source * scaleFactor + addOffset).
      * It may be NaN.
      * Grid axis variables should never have missing values.
      * 
@@ -1178,7 +1177,8 @@ public class EDV {
     public double destinationMissingValue() {return destinationMissingValue;}
 
     /** 
-     * This is the value of the destination's fill value stand-in (e.g., -9999999.0). 
+     * This is the value of the destination's fill value stand-in (e.g., -9999999.0)
+     * (dest = source * scaleFactor + addOffset). 
      * It may be NaN.
      * Grid axis variables should never have fill values.
      * 

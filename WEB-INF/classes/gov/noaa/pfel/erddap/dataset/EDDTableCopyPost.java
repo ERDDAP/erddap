@@ -384,7 +384,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                 String2.log("\nUnexpected results:\n" + results);
                 throw new Exception("Shouldn't get here.");
             } catch (Throwable t) {
-                if (t.toString().indexOf(EDStatic.THERE_IS_NO_DATA) < 0)
+                if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                     throw new Exception(
 "*** I think the problem is that this test looks for data that was not-yet-public,\n" +
 "but now it is public.\n" +
@@ -402,7 +402,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                 results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
                 throw new Exception("Shouldn't get here.");
             } catch (Throwable t) {
-                if (t.toString().indexOf(EDStatic.THERE_IS_NO_DATA) < 0)
+                if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                     throw new Exception("Should have been THERE_IS_NO_DATA: " +
                         MustBe.throwableToString(t));
             }
@@ -677,7 +677,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                     results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
                     throw new Exception("Shouldn't get here.");
                 } catch (Throwable t) {
-                    if (t.toString().indexOf(EDStatic.THERE_IS_NO_DATA) < 0)
+                    if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                         throw new Exception("Should have been THERE_IS_NO_DATA: " +
                             MustBe.throwableToString(t));
                 }
@@ -692,7 +692,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                     results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
                     throw new Exception("Shouldn't get here.");
                 } catch (Throwable t) {
-                    if (t.toString().indexOf(EDStatic.THERE_IS_NO_DATA) < 0)
+                    if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                         throw new Exception("Should have been THERE_IS_NO_DATA: " +
                             MustBe.throwableToString(t));
                 }
@@ -1827,7 +1827,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
                 
             } catch (Throwable t) {
                 String tError = t.toString();
-                if (tError.indexOf(EDStatic.THERE_IS_NO_DATA) >= 0) {
+                if (tError.indexOf(MustBe.THERE_IS_NO_DATA) >= 0) {
                     nMissing++;
                     error = "Tag isn't in detection3.";
                 } else {

@@ -90,7 +90,8 @@ public class GridDataSetCWLocal extends GridDataSetCW {
         String dataSetFileInfo[] = String2.split(fileNameUtility.dataSetRB2().getString(
             internalName + "FileInfo",  null), '`');
         Test.ensureEqual(dataSetFileInfo.length, 3, 
-            String2.ERROR + ": " + internalName + "FileInfo in DataSet.properties must have 3 items.");
+            String2.ERROR + ": " + 
+            internalName + "FileInfo in DataSet.properties must have 3 items.");
         directory     = dataSetFileInfo[OneOf.DSFIDirectory];  
         //(usually) add directory to localDataSetBaseDirectory
         if (directory.charAt(0) != '/') 
@@ -147,7 +148,7 @@ public class GridDataSetCWLocal extends GridDataSetCW {
             String regex = fileNameRegex + ".*\\.grd\\.zip";
             String grds[] = RegexFilenameFilter.list(dir, regex);
             if (grds == null) {
-                String2.log(ERROR + " in GridDataSetCWLocal: trouble with dir=" + 
+                String2.log(String2.ERROR + " in GridDataSetCWLocal: trouble with dir=" + 
                     dir + " and regex=" + regex + ".");
                 grds = new String[0];
             }
@@ -181,7 +182,8 @@ public class GridDataSetCWLocal extends GridDataSetCW {
                                 Calendar2.isoDateTimeAdd(tOption, 
                                     -expectedNHours * 60 / 2, Calendar2.MINUTE)); 
                         } else {
-                            Test.error(ERROR + " It shouldn't have been an 'h' type file name."); //FILE NAME SHOWN BELOW
+                            Test.error(String2.ERROR + 
+                                ": It shouldn't have been an 'h' type file name."); //FILE NAME SHOWN BELOW
                         }
                     } else { 
                         //2nd date is end date   e.g. AG2005152_2005181_tanm_westus.grd.zip
@@ -193,19 +195,21 @@ public class GridDataSetCWLocal extends GridDataSetCW {
                             grds[grdI].substring(2, 9)); 
 
                         if (expectedNHours == 0 || expectedNHours % 24 != 0) {   //this handles 25hour and 33hour correctly
-                            Test.error(ERROR + " It should have been an 'h' type file name."); //FILE NAME SHOWN BELOW
+                            Test.error(String2.ERROR + 
+                                ": It should have been an 'h' type file name."); //FILE NAME SHOWN BELOW
                         } else if (expectedNHours == 30*24) {
                             //monthly
                             GregorianCalendar tgc = Calendar2.parseISODateTimeZulu(endDateString); //throws Exception if trouble
                             if (!beginTimeString.substring(0, 8).equals(endDateString.substring(0,8))) {
-                                Test.error(ERROR + " monthly begin=" + beginTimeString + 
+                                Test.error(String2.ERROR + 
+                                    ": monthly begin=" + beginTimeString + 
                                     " end=" + endDateString + " not same month"); //FILE NAME SHOWN BELOW
                             } else if (!beginTimeString.substring(8, 10).equals("01")) {
-                                Test.error(ERROR + " monthly begin date=" + 
+                                Test.error(String2.ERROR + " monthly begin date=" + 
                                     beginTimeString + " not '01'."); //FILE NAME SHOWN BELOW
                             } else if (tgc.getActualMaximum(Calendar2.DATE) != 
                                     tgc.get(Calendar2.DATE)) {
-                                Test.error(ERROR + " monthly end date=" + 
+                                Test.error(String2.ERROR + " monthly end date=" + 
                                     endDateString + " not end of month."); //FILE NAME SHOWN BELOW
                             }
                         } else if (expectedNHours % 24 == 0 && expectedNHours >= 24 && 
@@ -215,10 +219,10 @@ public class GridDataSetCWLocal extends GridDataSetCW {
                             int endHours   = Calendar2.isoStringToEpochHours(endDateString);   //should be clean from above
                             int nDays = (endHours - beginHours)/24 + 1;
                             if (nDays != expectedNHours/24) {
-                                Test.error(ERROR + " unexpected nDays (" + nDays + ")."); //FILE NAME SHOWN BELOW
+                                Test.error(String2.ERROR + " unexpected nDays (" + nDays + ")."); //FILE NAME SHOWN BELOW
                             }
                         } else {
-                            Test.error(ERROR + " in GridDataSetCWLocal constructor\n" +
+                            Test.error(String2.ERROR + " in GridDataSetCWLocal constructor\n" +
                                 "unexpected expectedNHours=" + expectedNHours + "."); //FILE NAME SHOWN BELOW
                         }
 
@@ -237,7 +241,7 @@ public class GridDataSetCWLocal extends GridDataSetCW {
                     //make sure it isn't a duplicate date (when 2 files for same date match regex)!
                     String previousOption = keepDates.size() > 0? keepDates.get(keepDates.size() - 1) : "";
                     if (tOption.equals(previousOption)) {
-                        String msg = ERROR + " in GridDataSetCWLocal constructor\n" +
+                        String msg = String2.ERROR + " in GridDataSetCWLocal constructor\n" +
                             "  (dir = " + dir + " regex=" + fileNameRegex + ")\n" +
                             "  Duplicate file entries:" + grds[grdI] + 
                             " and " + keepGrds.get(keepGrds.size() - 1);
@@ -248,7 +252,7 @@ public class GridDataSetCWLocal extends GridDataSetCW {
                         keepDates.add(tOption);  //GridDataSet.makeTimeOptionsCanonical will call String2.canonical()
                     }
                 } else {
-                    String2.log(ERROR + " in GridDataSetCWLocal constructor\n" +
+                    String2.log(String2.ERROR + " in GridDataSetCWLocal constructor\n" +
                         "  (dir = " + dir + " regex=" + fileNameRegex + ")\n" +
                         "  Trouble with grds[" + grdI + "]: date=" + grds[grdI]);
                 }

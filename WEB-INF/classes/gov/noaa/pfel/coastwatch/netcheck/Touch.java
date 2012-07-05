@@ -25,9 +25,6 @@ public class Touch  {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
 
     /**
      * This ensures that the url response includes "Dataset {".
@@ -40,7 +37,7 @@ public class Touch  {
         String2.log("  touching " + base + urlEnd);
         String response = SSR.getUrlResponseString(base + urlEnd);
         Test.ensureTrue(response.indexOf(find) >= 0, 
-            ERROR + " in Touch.thredds while reading " + base + urlEnd + 
+            String2.ERROR + " in Touch.thredds while reading " + base + urlEnd + 
             ":\nfind=\"" + find + "\" not found in response=\n" + response);
     }
 

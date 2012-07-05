@@ -13,6 +13,7 @@ import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.XML;
@@ -93,7 +94,7 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
     /**
      * This is called to close the column streams and clean up the metadata.
      *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
         //close the column streams
@@ -166,9 +167,9 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
 
     /** This takes the gathered metadata and makes changes to the stored global and column metadata */
     private void finishMetadata() {
-        //check for EDStatic.THERE_IS_NO_DATA
+        //check for MustBe.THERE_IS_NO_DATA
         if (columnMinValue == null)
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
 
         int lonCol  = String2.indexOf(columnNames, EDV.LON_NAME);
         int latCol  = String2.indexOf(columnNames, EDV.LAT_NAME);

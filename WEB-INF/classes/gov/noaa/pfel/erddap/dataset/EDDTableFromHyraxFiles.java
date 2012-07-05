@@ -300,6 +300,9 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
      * This gets source data from one copied .nc file.
      * See documentation in EDDTableFromFiles.
      *
+     *
+     * @throws an exception if too much data.
+     *  This won't throw an exception if no data.
      */
     public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
@@ -471,9 +474,9 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
 
         try {
             String results = generateDatasetsXml(
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/", 
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/", 
 "pentad.*\\.nc\\.gz",
-"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/pentad_19870908_v11l35flk.nc.gz", 
+"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/pentad_19870705_v11l35flk.nc.gz", 
 2880,
 "", "", "", "", //extract
 "time", "time", new Attributes());
@@ -482,7 +485,7 @@ String expected =
 directionsForGenerateDatasetsXml() +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDTableFromHyraxFiles\" datasetID=\"nasa_jpl_37ad_770c_db20\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromHyraxFiles\" datasetID=\"nasa_jpl_91f4_69e3_32c9\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>2880</reloadEveryNMinutes>\n" +
 "    <fileDir></fileDir>\n" +
 "    <recursive>true</recursive>\n" +
@@ -496,9 +499,9 @@ directionsForGenerateDatasetsXml() +
 "    <sortFilesBySourceNames>time</sortFilesBySourceNames>\n" +
 "    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
-"        <att name=\"base_date\" type=\"shortList\">1987 9 8</att>\n" +
+"        <att name=\"base_date\" type=\"shortList\">1987 7 5</att>\n" +
 "        <att name=\"Conventions\">COARDS</att>\n" +
-"        <att name=\"description\">Time average of level3.0 products for the period: 1987-09-08 to 1987-09-12</att>\n" +
+"        <att name=\"description\">Time average of level3.0 products for the period: 1987-07-05 to 1987-07-09</att>\n" +
 "        <att name=\"history\">Created by NASA Goddard Space Flight Center under the NASA REASoN CAN: A Cross-Calibrated, Multi-Platform Ocean Surface Wind Velocity Product for Meteorological and Oceanographic Applications</att>\n" +
 "        <att name=\"title\">Atlas FLK v1.1 derived surface winds (level 3.5)</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -509,7 +512,7 @@ directionsForGenerateDatasetsXml() +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"infoUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/.html</att>\n" +
+"        <att name=\"infoUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/.html</att>\n" +
 "        <att name=\"institution\">NASA JPL</att>\n" +
 "        <att name=\"keywords\">\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
@@ -518,9 +521,9 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"sourceUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/</att>\n" +
+"        <att name=\"sourceUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
-"        <att name=\"summary\">Time average of level3.0 products for the period: 1987-09-08 to 1987-09-12</att>\n" +
+"        <att name=\"summary\">Time average of level3.0 products for the period: 1987-07-05 to 1987-07-09</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>lon</sourceName>\n" +
@@ -559,15 +562,15 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>time</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">6000.0 6000.0</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">4440.0 4440.0</att>\n" +
 "            <att name=\"avg_period\">0000-00-05 00:00:00</att>\n" +
 "            <att name=\"delta_t\">0000-00-05 00:00:00</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
 "            <att name=\"units\">hours since 1987-01-01 00:00:0.0</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">6300.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">5700.0</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">4700.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">4200.0</att>\n" +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
 "        </addAttributes>\n" +
@@ -577,7 +580,7 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>uwnd</destinationName>\n" +
 "        <dataType>short</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-17.119131 23.734001</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-15.897105 22.495602</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
 "            <att name=\"long_name\">u-wind at 10 meters</att>\n" +
 "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
@@ -597,7 +600,7 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>vwnd</destinationName>\n" +
 "        <dataType>short</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-17.053457 17.418158</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-16.493101 25.951406</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
 "            <att name=\"long_name\">v-wind at 10 meters</att>\n" +
 "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
@@ -617,7 +620,7 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>wspd</destinationName>\n" +
 "        <dataType>short</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.015208766 26.59628</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">0.040334757 29.29576</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">37.5</att>\n" +
 "            <att name=\"long_name\">wind speed at 10 meters</att>\n" +
 "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
@@ -637,7 +640,7 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>upstr</destinationName>\n" +
 "        <dataType>short</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-313.95215 631.23615</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-284.62888 657.83044</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
 "            <att name=\"long_name\">u-component of pseudostress at 10 meters</att>\n" +
 "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
@@ -657,7 +660,7 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>vpstr</destinationName>\n" +
 "        <dataType>short</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">-303.41635 386.9137</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">-305.23505 694.61383</att>\n" +
 "            <att name=\"add_offset\" type=\"float\">0.0</att>\n" +
 "            <att name=\"long_name\">v-component of pseudostress at 10 meters</att>\n" +
 "            <att name=\"missing_value\" type=\"short\">-32767</att>\n" +
@@ -788,7 +791,7 @@ directionsForGenerateDatasetsXml() +
         String error = "";
         int po;
         EDV edv;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         try {
         String id = "testEDDTableFromHyraxFiles";
@@ -925,8 +928,15 @@ directionsForGenerateDatasetsXml() +
 "    Float64 geospatial_lon_min 0.125;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"Created by NASA Goddard Space Flight Center under the NASA REASoN CAN: A Cross-Calibrated, Multi-Platform Ocean Surface Wind Velocity Product for Meteorological and Oceanographic Applications\n" +
-today + " http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/\n" +
-today + " http://127.0.0.1:8080/cwexperimental/tabledap/testEDDTableFromHyraxFiles.das\";\n" +
+today;
+        tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+
+        
+//        + " http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/\n" +
+//today + " http://127.0.0.1:8080/cwexperimental/
+expected = 
+"tabledap/testEDDTableFromHyraxFiles.das\";\n" +
 "    String infoUrl \"http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/M09/.html\";\n" +
 "    String institution \"NASA JPL\";\n" +
 "    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
@@ -952,7 +962,11 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/testEDDTableFromHyraxFil
 "    Float64 Westernmost_Easting 0.125;\n" +
 "  }\n" +
 "}\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            int tpo = results.indexOf(expected.substring(0, 17));
+            if (tpo < 0) String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+                "results=\n" + results);
+
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
                 "\nUnexpected error. Press ^C to stop or Enter to continue..."); 

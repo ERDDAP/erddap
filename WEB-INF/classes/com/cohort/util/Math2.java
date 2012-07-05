@@ -4,6 +4,7 @@
  */
 package com.cohort.util;
 
+import java.text.MessageFormat;
 import java.util.Arrays;
 
 /**
@@ -47,6 +48,20 @@ public class Math2 {
     public static long maxSafeMemory = Math.max(
         maxMemory - 500L * BytesPerMB,  //if maxMemory>2GB, just keep 500MB aside for safety
         maxMemory / 4 * 3); //operator order avoids numeric overflow 
+
+    /** 
+     * These are *not* final so EDStatic can replace them with translated Strings. 
+     * These are MessageFormat-style strings, so any single quote ' must be escaped as ''. 
+     */
+    public static String memoryTooMuchData = 
+        "Your query produced too much data.  Try to request less data.";
+    public static String memoryThanCurrentlySafe = "The request needs more memory ({0} MB) " +
+        "than is currently available ({1} MB).";
+    public static String memoryThanSafe = "The request needs more memory ({0} MB) " +
+        "than is ever safely available in this Java setup ({1} MB).";
+    public static String memoryArraySize = 
+        "The request needs an array size ({0}) bigger than Java ever allows ({1}).";
+
 
     /** If memory use jumps by this amount, a call to incgc will trigger a call
      * to System.gc.
@@ -430,13 +445,15 @@ public class Math2 {
 
         if (nBytes < 10000000) //10MB
             return;
-        
+        String attributeToParen = 
+            attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")";
+       
         //is the request too big under any circumstances?
         if (nBytes > maxSafeMemory) {
-            throw new RuntimeException(
-                "The request needs more memory (" + (nBytes / BytesPerMB) + 
-                " MB) than is ever safely available in this Java setup (" + (maxSafeMemory / BytesPerMB) + 
-                " MB) (" + attributeTo + ")."); 
+            throw new RuntimeException(memoryTooMuchData + "  " +
+                MessageFormat.format(memoryThanSafe, "" + (nBytes / BytesPerMB),  
+                    "" + (maxSafeMemory / BytesPerMB)) +
+                attributeToParen); 
         }
 
         //request is fine without gc?
@@ -457,13 +474,13 @@ public class Math2 {
             memoryInUse = Math2.getMemoryInUse();
         }
         if (memoryInUse > maxSafeMemory) {
-            String2.log("WARNING: memoryInUse > maxSafeMemory (" + attributeTo + ").");
+            String2.log("WARNING: memoryInUse > maxSafeMemory" + attributeToParen + ".");
         }
         if (memoryInUse + nBytes > maxSafeMemory) {
-            throw new RuntimeException(
-                "Your query produced too much data.  Try to request less data. " +
-                "The request needs more memory (" + (nBytes / BytesPerMB) + 
-                " MB) than is currently available (" + attributeTo + ")."); 
+            throw new RuntimeException(memoryTooMuchData + "  " +
+                MessageFormat.format(memoryThanCurrentlySafe,
+                    "" + (nBytes / BytesPerMB), "" + ((maxSafeMemory - memoryInUse) / BytesPerMB)) +
+                attributeToParen); 
         }
     }
 
@@ -479,12 +496,10 @@ public class Math2 {
      *  (equals is forbidden for safety since I often use if as missing value / trouble)
      */
     public static void ensureArraySizeOkay(long tSize, String attributeTo) { 
-        if (tSize >= Integer.MAX_VALUE)
-            throw new RuntimeException(
-                "Your query produced too much data.  Try to request less data. " +
-                "The request needs an array size (" + tSize + 
-                ") bigger than Java ever allows (" + Integer.MAX_VALUE + "). (" +
-                attributeTo + ")"); 
+        if (tSize >= Integer.MAX_VALUE) 
+            throw new RuntimeException(memoryTooMuchData + "  " +
+                MessageFormat.format(memoryArraySize, "" + tSize, "" + Integer.MAX_VALUE) +
+                (attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")"));
     }
 
     /**

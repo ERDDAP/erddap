@@ -432,7 +432,7 @@ public class EDDTableFromSOS extends EDDTable{
         sourceNeedsExpandedFP_EQ      = tSourceNeedsExpandedFP_EQ;
         sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; //just lat and lon
         sourceCanConstrainStringData  = CONSTRAIN_PARTIAL; //time (but not != or regex), station_id (even REGEX_OP), but nothing else
-        sourceCanConstrainStringRegex = REGEX_OP; //just for station_id
+        sourceCanConstrainStringRegex = PrimitiveArray.REGEX_OP; //just for station_id
 
       
         //set source attributes (none available from source)
@@ -920,8 +920,8 @@ public class EDDTableFromSOS extends EDDTable{
 
         //further prune constraints 
         //sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; //just lat and lon
-        //sourceCanConstrainStringData  = CONSTRAIN_PARTIAL; //time (but not != or regex), station_id (even REGEX_OP), but nothing else
-        //sourceCanConstrainStringRegex = REGEX_OP; //just for station_id
+        //sourceCanConstrainStringData  = CONSTRAIN_PARTIAL; //time (but not != or regex), station_id (even PrimitiveArray.REGEX_OP), but nothing else
+        //sourceCanConstrainStringRegex = PrimitiveArray.REGEX_OP; //just for station_id
         //work backwards since deleting some
         int conDVI[] = new int[nConstraints];
         boolean justStationTableInfo = true;
@@ -943,7 +943,7 @@ public class EDDTableFromSOS extends EDDTable{
 
             } else if (dv == timeIndex) {
                 //remove if != or regex
-                if (constraintOp.equals("!=") || constraintOp.equals(REGEX_OP)) {
+                if (constraintOp.equals("!=") || constraintOp.equals(PrimitiveArray.REGEX_OP)) {
                     //remove constraint
                     constraintVariables.remove(c);
                     constraintOps.remove(c);
@@ -1091,6 +1091,7 @@ public class EDDTableFromSOS extends EDDTable{
         int nStations = stationTable.nRows();
         boolean aConstraintShown = false;
         boolean matchingStation = false;
+        STATION_LOOP:
         for (int station = 0; station < nStations; station++) {
 
             String tStationLonString = "", tStationLatString = "", tStationAltString = "", 
@@ -1137,7 +1138,7 @@ public class EDDTableFromSOS extends EDDTable{
                 for (int con = 0; con < nConstraints; con++) {
                     if (conDVI[con] == idIndex) {
                         String op = constraintOps.get(con);
-                        boolean pass = Table.testValueOpValue(tStationID, op, constraintValues.get(con));
+                        boolean pass = PrimitiveArray.testValueOpValue(tStationID, op, constraintValues.get(con));
                         if (!pass) {
                             if (reallyVerbose) String2.log("  rejecting station=" + station + 
                                 " because stationID=\"" + tStationID + "\" isn't " + op + 
@@ -1284,20 +1285,24 @@ public class EDDTableFromSOS extends EDDTable{
 
                 } //end of non-ioosServer get chunk of data
 
-                //writeToTableWriter
                 if (reallyVerbose) String2.log("\nstation=" + tStationID + " tableNRows=" + table.nRows());
                 //if (reallyReallyVerbose) String2.log("table=\n" + table);
             } //end of obsProp loop
 
+            //writeToTableWriter
             //this can't be in obsProp loop (obsProps are merged)
             if (writeChunkToTableWriter(requestUrl, userDapQuery, table, tableWriter, false)) {
                 table = makeTable(tableDVI);
                 llatHash.clear(); //llat info -> table row number (as a String)
+                if (tableWriter.noMoreDataPlease) {
+                    tableWriter.logCaughtNoMoreDataPlease(datasetID);
+                    break STATION_LOOP;
+                }
             }
 
         } //end station loop
         if (!matchingStation)
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA + 
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + 
                 " (There was no matching station.)");
 
         //do the final writeToTableWriter
@@ -1429,7 +1434,7 @@ public class EDDTableFromSOS extends EDDTable{
             }
             if (unexpectedColumns.size() > 0) {
                 String2.log("dataVariableSourceNames=" + String2.toCSSVString(dataVariableSourceNames));
-                throw new SimpleException(ERROR + ": unexpected column(s) in SOS response: " + 
+                throw new SimpleException(String2.ERROR + ": unexpected column(s) in SOS response: " + 
                     unexpectedColumns.toString() + ".");
             }
             
@@ -1523,17 +1528,19 @@ public class EDDTableFromSOS extends EDDTable{
                     " processTime=" + processTime);
 
         } catch (Throwable t) {
-            String2.log("  ERROR is from requestUrl=" + localSourceUrl + kvp);
+            String2.log("  " + String2.ERROR + " is from requestUrl=" + localSourceUrl + kvp);
             throw t;
 
         } finally {
-            File2.delete(grabFileName);  //don't keep in cache. SOS datasets change frequently.
+            File2.simpleDelete(grabFileName);  //don't keep in cache. SOS datasets change frequently.
         }
     }
 
 
     /**
      * This gets the data from an Oostethys SOS server.
+     * Before 2012-04, was http://www.gomoos.org/cgi-bin/sos/V1.0/oostethys_sos.cgi 
+     * Now http://oceandata.gmri.org/cgi-bin/sos/V1.0/oostethys_sos.cgi
      *
      * @param kvp  the string to be added to the sourceUrl
      * @param table the table to which rows will be added
@@ -2046,7 +2053,7 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS nos AirTemperature .das\n");
-            String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+            String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosSosATemp", ".das"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -2125,8 +2132,8 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"" + today + " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //"-test"
-
+"    String history \"" + today;
+//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //"-test"
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
 expected = 
@@ -2295,7 +2302,7 @@ expected =
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS nos Pressure .das\n");
-            String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+            String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosSosPressure", ".das"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -2374,7 +2381,8 @@ expected =
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"" + today + " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
+"    String history \"" + today;
+//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -2469,7 +2477,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS nos Conductivity .das\n");
-            String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+            String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosSosCond", ".das"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -2546,7 +2554,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"" + today + " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
+"    String history \"" + today;
+//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -2605,7 +2614,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS NOS currents .das\n");
-            String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+            String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosCurrents", ".das"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -2690,7 +2699,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"" + today + " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
+"    String history \"" + today;
+//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
         if (true)
@@ -2724,7 +2734,6 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             eddTable = (EDDTable)oneFromDatasetXml(datasetIdPrefix + "nosSosSalinity");  
 
             String2.log("\n*** EDDTableFromSOS nos Salinity .das\n");
-            String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosSosSalinity", ".das"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -2972,7 +2981,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS nos Wind .das\n");
-            String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+            String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosSosWind", ".das"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -3066,7 +3075,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"" + today + " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
+"    String history \"" + today;
+//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -3090,7 +3100,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             eddTable = (EDDTable)oneFromDatasetXml(datasetIdPrefix + "nosSosWLevel");  
 
             String2.log("\n*** EDDTableFromSOS nos wLevel .das\n");
-            String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+            String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosSosWLevel", ".das"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -3168,7 +3178,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"" + today + " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
+"    String history \"" + today;
+//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
             
@@ -3231,7 +3242,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             eddTable = (EDDTable)oneFromDatasetXml(datasetIdPrefix + "nosSosWTemp");  
 
             String2.log("\n*** EDDTableFromSOS nos wtemp .das\n");
-            String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+            String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_nosSosWTemp", ".das"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -3309,7 +3320,8 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"" + today + " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
+"    String history \"" + today;
+//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS nos WTemp test get one station .CSV data\n");
@@ -3383,7 +3395,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             eddTable = (EDDTable)oneFromDatasetXml(datasetIdPrefix + "ndbcSosCurrents");  
 
             String2.log("\n*** EDDTableFromSOS ndbc currents .das\n");
-            String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+            String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_ndbc_test1", ".das"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -3640,9 +3652,16 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"" + today + " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
-today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
-                "/tabledap/" + datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
+"    String history \"" + today;
+        String tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+
+
+//+ " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
+//today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
+//                "/tabledap/" + 
+expected = 
+datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
 "    String keywords \"Atmosphere > Altitude > Station Height,\n" +
@@ -3673,7 +3692,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    Float64 Westernmost_Easting -172.17;\n" +
 "  }\n" +
 "}\n";
-            Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+        int tpo = results.indexOf(expected.substring(0, 17));
+        if (tpo < 0) String2.log("results=\n" + results);
+        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+            "results=\n" + results);
 
             //test lon lat (numeric) = > <, and time > <
             String2.log("\n*** EDDTableFromSOS currents test get one station .CSV data\n");
@@ -3723,7 +3745,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             //test station regex
             String2.log("\n*** EDDTableFromSOS Currents test get 2 stations from regex, 1 time, .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
-                "&station_id=~\"(urn\\:ioos\\:station\\:wmo\\:41035|urn\\:ioos\\:station\\:wmo\\:42376)\"" +
+                "&station_id=~\"(urn:ioos:station:wmo:41035|urn:ioos:station:wmo:42376)\"" +
                 "&time>=2008-06-01T14:00&time<=2008-06-01T14:15", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbc_test1b", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -3859,7 +3881,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             eddTable = (EDDTable)oneFromDatasetXml(datasetIdPrefix + "ndbcSosSalinity");  
 
             String2.log("\n*** EDDTableFromSOS ndbc salinity .das\n");
-            String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+            String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_ndbcSosSalinity", ".das"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -3938,9 +3960,15 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"" + today + " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
-today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
-                "/tabledap/" + datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
+"    String history \"" + today;
+        String tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+
+//+ " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
+//today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
+//                "/tabledap/" + 
+expected = 
+datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
 "    String keywords \"Atmosphere > Altitude > Station Height,\n" +
@@ -3968,7 +3996,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    Float64 Westernmost_Easting -151.719;\n" +
 "  }\n" +
 "}\n";
-            Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+            int tpo = results.indexOf(expected.substring(0, 17));
+            if (tpo < 0) String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+                "results=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS Salinity test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
@@ -4091,7 +4122,7 @@ java.lang.RuntimeException: Source Exception="InvalidParameterValue: eventTime: 
             eddTable = (EDDTable)oneFromDatasetXml(datasetIdPrefix + "ndbcSosWLevel");  
 
             String2.log("\n*** EDDTableFromSOS ndbc wLevel .das\n");
-            String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+            String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_ndbcSosWLevel", ".das"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -4171,9 +4202,15 @@ java.lang.RuntimeException: Source Exception="InvalidParameterValue: eventTime: 
 "    Float64 geospatial_vertical_min -8000.0;\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"" + today + " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
-today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
-                "/tabledap/" + datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
+"    String history \"" + today;
+        String tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+
+//+ " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
+//today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
+//                "/tabledap/" + 
+expected = 
+datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
 "    String keywords \"Oceans > Bathymetry/Seafloor Topography > Bathymetry,\n" +
@@ -4200,7 +4237,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    Float64 Westernmost_Easting -176.25;\n" +
 "  }\n" +
 "}\n";
-            Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+            int tpo = results.indexOf(expected.substring(0, 17));
+            if (tpo < 0) String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+                "results=\n" + results);
 
             
             String2.log("\n*** EDDTableFromSOS nos WLevel test get one station .CSV data\n");
@@ -4238,7 +4278,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             eddTable = (EDDTable)oneFromDatasetXml(datasetIdPrefix + "ndbcSosWTemp");  
 
             String2.log("\n*** EDDTableFromSOS ndbc wtemp .das\n");
-            String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+            String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_ndbcSosWTemp", ".das"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -4318,9 +4358,15 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"" + today + " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
-today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
-                "/tabledap/" + datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
+"    String history \"" + today;
+        String tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+
+//+ " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
+//today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
+//                "/tabledap/" + 
+expected = 
+datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
 "    String keywords \"Atmosphere > Altitude > Station Height,\n" +
@@ -4348,7 +4394,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    Float64 Westernmost_Easting -178.343;\n" +
 "  }\n" +
 "}\n";
-            Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+            int tpo = results.indexOf(expected.substring(0, 17));
+            if (tpo < 0) String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+                "results=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS ndbc WTemp test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
@@ -4427,7 +4476,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             eddTable = (EDDTable)oneFromDatasetXml(datasetIdPrefix + "ndbcSosWaves");  
 
             String2.log("\n*** EDDTableFromSOS ndbc waves .das\n");
-            String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+            String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_ndbcSosWaves", ".das"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -4651,9 +4700,15 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"" + today + " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
-today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
-                "/tabledap/" + datasetIdPrefix + "ndbcSosWaves.das\";\n" +
+"    String history \"" + today;
+        String tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+
+//+ " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
+//today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
+//                "/tabledap/" + 
+expected = 
+datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
 "    String keywords \"Atmosphere > Altitude > Station Height,\n" +
@@ -4687,7 +4742,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    Float64 Westernmost_Easting -177.75;\n" +
 "  }\n" +
 "}\n";
-            Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+            int tpo = results.indexOf(expected.substring(0, 17));
+            if (tpo < 0) String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+                "results=\n" + results);
 
             //test  station=    and superfluous string data > < constraints
             String2.log("\n*** EDDTableFromSOS Waves test get one station .CSV data\n");
@@ -4755,7 +4813,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             eddTable = (EDDTable)oneFromDatasetXml(datasetIdPrefix + "ndbcSosWind");  
 
             String2.log("\n*** EDDTableFromSOS ndbc wind .das\n");
-            String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+            String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
             tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
                 eddTable.className() + "_ndbcSosWind", ".das"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -4861,9 +4919,15 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"" + today + " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
-today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
-                "/tabledap/" + datasetIdPrefix + "ndbcSosWind.das\";\n" +
+"    String history \"" + today;
+        String tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+
+//+ " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
+//today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
+//                "/tabledap/" + 
+expected = 
+datasetIdPrefix + "ndbcSosWind.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
 "    String keywords \"Atmosphere > Altitude > Station Height,\n" +
@@ -4892,7 +4956,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    Float64 Westernmost_Easting -177.75;\n" +
 "  }\n" +
 "}\n";
-            Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+            int tpo = results.indexOf(expected.substring(0, 17));
+            if (tpo < 0) String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+                "results=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS Wind test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
@@ -4948,7 +5015,7 @@ reallyReallyVerbose = true;
         double tLon, tLat;
         String name, tName, results, expected, userDapQuery;
         String error = "";
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         EDDTable eddTable = (EDDTable)oneFromDatasetXml("gomoosBuoy"); //should work
 // /*
@@ -5191,7 +5258,7 @@ reallyReallyVerbose = true;
 "-69.9877,43.7628\n" +
 "-69.3578,43.7148\n" +
 "-69.319580078125,43.7063484191895\n" +
-"-68.9981,44.055\n" +
+"-68.9982,44.0555\n" + //pre 2012-06-18 was -68.9981,44.055
 "-68.8308,44.3878\n" +
 "-68.1087,44.1058\n" +
 "-67.8798,43.4907\n" +
@@ -5273,7 +5340,6 @@ reallyReallyVerbose = true;
 
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nExpected error.  gomoos server shut down ~2012-04-18. Waiting for new URL." +
                 "\nPress ^C to stop or Enter to continue..."); 
         }
     }
@@ -5290,7 +5356,7 @@ reallyReallyVerbose = true;
         double tLon, tLat;
         String name, tName, results, expected, userDapQuery;
         String error = "";
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         EDDTable eddTable = (EDDTable)oneFromDatasetXml("neracoosSos"); //should work
 
@@ -5493,7 +5559,7 @@ reallyReallyVerbose = true;
 reallyReallyVerbose = true;
         String name, tName, results, expected, userDapQuery;
         String error = "";
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         EDDTable eddTable = (EDDTable)oneFromDatasetXml("tamuSos"); 
 
@@ -6339,14 +6405,16 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
         //tBaseUrl  http://sdf.ndbc.noaa.gov/sos/server.php
         po = tLocalSourceUrl.indexOf('?');
         if (po < 0)
-            throw new SimpleException(ERROR + ": '?' not found in tLocalSourceUrl=" + tLocalSourceUrl);
+            throw new SimpleException(String2.ERROR + 
+                ": '?' not found in tLocalSourceUrl=" + tLocalSourceUrl);
         String tLocalBaseUrl = tLocalSourceUrl.substring(0, po);
         String tPublicBaseUrl = convertToPublicSourceUrl(tLocalBaseUrl);
 
         //tBBoxOffering  urn:ioos:network:noaa.nws.ndbc:all
         po = tLocalSourceUrl.indexOf("&offering=");
         if (po < 0)
-            throw new SimpleException(ERROR + ": '&offering=' not found in tLocalSourceUrl=" + tLocalSourceUrl);
+            throw new SimpleException(String2.ERROR + 
+                ": '&offering=' not found in tLocalSourceUrl=" + tLocalSourceUrl);
         po1 = tLocalSourceUrl.indexOf("&", po + 1);
         if (po1 < 0) po1 = tLocalSourceUrl.length();
         String tBBoxOffering = tLocalSourceUrl.substring(po + 1, po1);
@@ -6355,7 +6423,8 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
         //from &observedProperty=http://mmisw.org/ont/cf/parameter/sea_water_salinity
         po = tLocalSourceUrl.indexOf("&observedProperty=");
         if (po < 0)
-            throw new SimpleException(ERROR + ": '&observedProperty=' not found in sourceUrl=" + tLocalSourceUrl);
+            throw new SimpleException(String2.ERROR + 
+                ": '&observedProperty=' not found in sourceUrl=" + tLocalSourceUrl);
         po1 = tLocalSourceUrl.indexOf("&", po + 18);
         if (po1 < 0) po1 = tLocalSourceUrl.length();
         String tObservedProperty = tLocalSourceUrl.substring(po + 18, po1);
@@ -6750,7 +6819,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         String error = "";
         EDV edv;
         int po;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         try {
             EDDTable eddTable = (EDDTable)oneFromDatasetXml("testErddapSos"); 
@@ -7093,8 +7162,8 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
  
         // usually run
 /* */
-        testOostethys(); //gomoosBuoy   gone! starting ~2012-04-18       //TimeSeriesProfile
-     /*   testNeracoos(); 
+        testOostethys(); //gomoosBuoy    //TimeSeriesProfile
+        testNeracoos(); 
 
         testNdbcSosCurrents("");      //TimeSeriesProfile
         testNdbcSosLongTime("");

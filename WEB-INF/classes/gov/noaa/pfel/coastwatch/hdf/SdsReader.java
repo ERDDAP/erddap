@@ -32,9 +32,6 @@ public class SdsReader  {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     /** This will be filled with all of the tags. */
     public ArrayList tagList = new ArrayList();
 
@@ -50,7 +47,7 @@ public class SdsReader  {
      * @throws Exception if error
      */
     public SdsReader(String hdfFileName) throws Exception {
-        String errorIn = ERROR + " in SdsReader.read(" + hdfFileName + "): ";
+        String errorIn = String2.ERROR + " in SdsReader.read(" + hdfFileName + "): ";
 
         //first thing in file is magic number
         DataInputStream stream = new DataInputStream( new BufferedInputStream(

@@ -287,9 +287,24 @@ public final class SimpleCharStream
      ReInit(dstream, 1, 1, 4096);
   }
   public SimpleCharStream(java.io.InputStream dstream, int startline,
-  int startcolumn, int buffersize)
-  {
-     this(new java.io.InputStreamReader(dstream), startline, startcolumn, 4096);
+  int startcolumn, int buffersize) 
+  {  //2012-06-17 Bob Simons changed from new InputStreamReader(no charset)
+     this(iso8859Reader(dstream), startline, startcolumn, 4096);
+  }
+
+  /** 
+   * 2012-06-17 Bob Simons added this to specify "ISO-8859-1" (which is better than default
+   * charset, especially on a Mac).
+   * This is not ideal. Ideal would be to use charset found in header.
+   * But DDS is odd in that top of DataDDS is text and lower part is binary.
+   * So it is not trivial for me to change code to properly deal with this.
+   */
+  public static java.io.InputStreamReader iso8859Reader(java.io.InputStream is) {
+     try {
+         return new java.io.InputStreamReader(is, "ISO-8859-1");
+     } catch (java.io.UnsupportedEncodingException uee) {
+         throw new RuntimeException("Unsupported encoding=ISO-8859-1"); //shouldn't ever happen
+     }
   }
 
   public SimpleCharStream(java.io.InputStream dstream, int startline,
@@ -305,8 +320,8 @@ public final class SimpleCharStream
 
   public void ReInit(java.io.InputStream dstream, int startline,
                           int startcolumn, int buffersize)
-  {
-     ReInit(new java.io.InputStreamReader(dstream), startline, startcolumn, 4096);
+  {  //2012-06-17 Bob Simons changed from new InputStreamReader(no charset)
+     ReInit(iso8859Reader(dstream), startline, startcolumn, 4096);
   }
 
   public void ReInit(java.io.InputStream dstream)

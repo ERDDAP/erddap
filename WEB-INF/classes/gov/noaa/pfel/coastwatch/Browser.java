@@ -635,7 +635,7 @@ public abstract class Browser extends HttpServlet {
         } catch (Exception e) {
 
             //send email
-            String subject = OneOf.ERROR + " in " + oneOf.shortClassName() + ".processRequest";
+            String subject = String2.ERROR + " in " + oneOf.shortClassName() + ".processRequest";
             String msg = MustBe.throwableToString(e);
             oneOf.email(oneOf.emailEverythingTo(), subject, msg);
 
@@ -3361,8 +3361,8 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
 
                         } catch (Exception e) {
                             error = MustBe.throwableToString(e);
-                            if (error.indexOf(DataHelper.THERE_IS_NO_DATA) >= 0)
-                                error = "<b>" + DataHelper.THERE_IS_NO_DATA + "</b>";
+                            if (error.indexOf(MustBe.THERE_IS_NO_DATA) >= 0)
+                                error = "<b>" + MustBe.THERE_IS_NO_DATA + "</b>";
                             else if (error.indexOf(oneOf.sorryNoFgdcInfo()) >= 0)
                                 error = "<b>" + oneOf.sorryNoFgdcInfo() + "</b>";
                             else error = String2.replaceAll(

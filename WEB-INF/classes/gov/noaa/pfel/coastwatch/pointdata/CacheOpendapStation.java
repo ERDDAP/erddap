@@ -60,9 +60,6 @@ public class CacheOpendapStation {
     public static boolean verbose = false;
     public static boolean reallyVerbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     protected String url;
     protected String fullStationFileName;
     protected String variableNames[];

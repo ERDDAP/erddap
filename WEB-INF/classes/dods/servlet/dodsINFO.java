@@ -170,9 +170,10 @@ public class dodsINFO {
 
 
 	//Try to open and read the override file for this dataset.
-        try {
+    try {
 	    File fin = new File(infoDir + overrideFile);
-            BufferedReader svIn = new BufferedReader(new InputStreamReader(new FileInputStream(fin)));
+        //2012-06-17 Bob Simons added "ISO-8859-1". Not ideal, but better than default charset (e.g., on Mac)
+        BufferedReader svIn = new BufferedReader(new InputStreamReader(new FileInputStream(fin), "ISO-8859-1"));
 
 	    boolean done = false;
 
@@ -212,7 +213,8 @@ public class dodsINFO {
 	//Try to open and read the Dataset specific information file.
         try {
 	    File fin = new File(infoDir + dataSet + ".html");
-            BufferedReader svIn = new BufferedReader(new InputStreamReader(new FileInputStream(fin)));
+        //2012-06-17 Bob Simons added "ISO-8859-1". Not ideal, but better than default charset (e.g., on Mac)
+        BufferedReader svIn = new BufferedReader(new InputStreamReader(new FileInputStream(fin), "ISO-8859-1"));
 
 	    boolean done = false;
 
@@ -243,7 +245,8 @@ public class dodsINFO {
 	    String serverFile = infoDir + serverName + ".html";
 	    if(_Debug) System.out.println("Server Info File: "+serverFile);
 	    File fin = new File(serverFile);
-            BufferedReader svIn = new BufferedReader(new InputStreamReader(new FileInputStream(fin)));
+        //2012-06-17 Bob Simons added "ISO-8859-1". Not ideal, but better than default charset (e.g., on Mac)
+        BufferedReader svIn = new BufferedReader(new InputStreamReader(new FileInputStream(fin), "ISO-8859-1"));
 
 	    boolean done = false;
 

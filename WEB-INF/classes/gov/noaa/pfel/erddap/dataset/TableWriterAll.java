@@ -46,6 +46,8 @@ import java.util.Arrays;
  */
 public class TableWriterAll extends TableWriter {
 
+    public static String attributeTo = "gathering data in TableWriterAll";
+
     //set by constructor
     protected String dir;
     protected String fileNameNoExt;
@@ -115,23 +117,29 @@ public class TableWriterAll extends TableWriter {
                     dir + fileNameNoExt + "." + randomInt + "." + columnNames[0]);
         }
 
+        //avoid gathering more data than can be processed
+        //(although in some cases, perhaps more could be handled)
+        long newTotalNRows = totalNRows + table.nRows();
+        EDStatic.ensureArraySizeOkay(newTotalNRows, attributeTo);
+        EDStatic.ensureMemoryAvailable(newTotalNRows * 8, attributeTo); //to process one PA
+
         //do everyTime stuff
         //write the data
         for (int col = 0; col < nColumns; col++) 
             table.getColumn(col).writeDos(columnStreams[col]);
-        totalNRows += table.nRows();
+        totalNRows = newTotalNRows;
     }
 
     
     /**
      * This writes any end-of-file info to the stream and flushes the stream.
      *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
-        //check for EDStatic.THERE_IS_NO_DATA
+        //check for MustBe.THERE_IS_NO_DATA
         if (columnStreams == null)
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
         //String2.log("TableWriterAll.finish  n columnStreams=" + columnStreams.length);
         for (int col = 0; col < columnStreams.length; col++) {
             //close the stream

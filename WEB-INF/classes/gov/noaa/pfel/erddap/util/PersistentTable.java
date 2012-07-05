@@ -41,9 +41,6 @@ import java.util.Arrays;
  */
 public class PersistentTable {
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     /**
      * Set this to true (by calling verbose=true in your program, 
      * not but changing the code here)
@@ -124,7 +121,7 @@ public class PersistentTable {
         //open the file;   
         raf = new RandomAccessFile(fullFileName, mode); 
         long longNRows = raf.length() / nBytesPerRow; //integer division causes partial row at end to be ignored 
-        Math2.ensureArraySizeOkay(longNRows, "PersistentTable");
+        EDStatic.ensureArraySizeOkay(longNRows, "PersistentTable");
         nRows = (int)longNRows; //save since checked above
         if (verbose) String2.log("PersistentTable " + fullFileName + " is open.\n  mode=" + mode + " nRows=" + nRows);
     }

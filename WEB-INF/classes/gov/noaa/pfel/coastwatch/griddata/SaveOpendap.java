@@ -49,9 +49,6 @@ public class SaveOpendap  {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     /**
      * This generates a String with a dump of the contents of a netcdf file.
      * WARNING: if the file is big, this can be very slow.

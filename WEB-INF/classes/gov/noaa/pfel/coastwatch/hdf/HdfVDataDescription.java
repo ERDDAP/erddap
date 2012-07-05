@@ -62,19 +62,24 @@ public class HdfVDataDescription extends HdfTag {
         String fldnm, short type_n, int nvert, int isize_n) throws Exception {
 
         if (name.length() >= Short.MAX_VALUE)
-            throw new RuntimeException(ERROR + " in HdfVDataDescription constructor: 'name' is too long (" + 
+            throw new RuntimeException(String2.ERROR + 
+                " in HdfVDataDescription constructor: 'name' is too long (" + 
                 name.length() + " characters).");
         if (className.length() >= Short.MAX_VALUE)
-            throw new RuntimeException(ERROR + " in HdfVDataDescription constructor: 'className' is too long (" + 
+            throw new RuntimeException(String2.ERROR + 
+                " in HdfVDataDescription constructor: 'className' is too long (" + 
                 className.length() + " characters).");
         if (fldnm.length() >= Short.MAX_VALUE)
-            throw new RuntimeException(ERROR + " in HdfVDataDescription constructor: 'fldnm' is too long (" + 
+            throw new RuntimeException(String2.ERROR + 
+                " in HdfVDataDescription constructor: 'fldnm' is too long (" + 
                 fldnm.length() + " characters).");
         if (isize_n >= Short.MAX_VALUE)
-            throw new RuntimeException(ERROR + " in HdfVDataDescription constructor: too much data (isize_n=" + 
+            throw new RuntimeException(String2.ERROR + 
+                " in HdfVDataDescription constructor: too much data (isize_n=" + 
                 isize_n + " bytes) for name=" + name + ".");
         if (nvert >= Short.MAX_VALUE)
-            throw new RuntimeException(ERROR + " in HdfVDataDescription constructor: too much data (nvert=" + 
+            throw new RuntimeException(String2.ERROR + 
+                " in HdfVDataDescription constructor: too much data (nvert=" + 
                 nvert + ") for name=" + name + ".");
 
         tagType = 0x07aa;

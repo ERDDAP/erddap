@@ -97,9 +97,6 @@ clear sst2
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     /** Data Types: see MAT File Format, Ver 7, Table 1-1, pg 1-9 */
     public final static int miINT8       = 1;
     public final static int miUINT8      = 2;

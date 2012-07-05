@@ -1029,7 +1029,7 @@ public class CWUser extends User  {
 
             //send email
             oneOf.email(oneOf.emailEverythingTo(), 
-                OneOf.ERROR + " in " + oneOf.shortClassName(), htmlSB.toString());
+                String2.ERROR + " in " + oneOf.shortClassName(), htmlSB.toString());
 
         } //end of 'catch'
 
@@ -1398,7 +1398,7 @@ public class CWUser extends User  {
     private String createAnimatedGif(HttpSession session, StringBuilder htmlSB) throws Exception {
 
         String2.log("createAnimatedGif");
-        String errorInMethod = OneOf.ERROR + " in createAnimatedGif:\n";
+        String errorInMethod = String2.ERROR + " in createAnimatedGif:\n";
         long time = System.currentTimeMillis();
         int animationN = String2.parseInt(mapScreen.animationNValue);
         String timePeriod = mapScreen.animationTimePeriodValue;

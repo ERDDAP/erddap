@@ -39,8 +39,6 @@ import java.util.Vector;
  */
 public abstract class TableDataSet implements Comparable { 
 
-    final static String ERROR = String2.ERROR;
-
     /**
      * Set this to true (by calling verbose=true in your program, not but changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
@@ -168,7 +166,7 @@ public abstract class TableDataSet implements Comparable {
      * @throws Exception if invalid
      */
     public void ensureValid() throws Exception {
-        String errorInMethod = ERROR + " in TableDataSet.ensureValid for " + internalName + ":\n";
+        String errorInMethod = String2.ERROR + " in TableDataSet.ensureValid for " + internalName + ":\n";
 
         Test.ensureNotNull(internalName,      errorInMethod + "internalName is null!");
         Test.ensureNotNull(datasetName,       errorInMethod + "datasetName is null!");
@@ -243,7 +241,7 @@ public abstract class TableDataSet implements Comparable {
         //protected, not public, because data may be stored differently in future (hashmap?)
         int whichIndividual = String2.indexOf(individuals, individual);
         if (whichIndividual < 0) 
-            Test.error(ERROR + " in TableDataSet4DNc.whichIndividual: invalid individual (" + 
+            Test.error(String2.ERROR + " in TableDataSet4DNc.whichIndividual: invalid individual (" + 
                 individual + ").");
         return whichIndividual;
     }
@@ -259,7 +257,7 @@ public abstract class TableDataSet implements Comparable {
         //protected, not public, because data may be stored differently in future (hashmap?)
         int which = String2.indexOf(dataVariableNames, dataVariableName);
         if (which < 0) 
-            Test.error(ERROR + " in TableDataSet4DNc.whichDataVariableName():\n" +
+            Test.error(String2.ERROR + " in TableDataSet4DNc.whichDataVariableName():\n" +
                 "invalid dataVariableName (" + dataVariableName + ").");
         return which;
     }
@@ -275,7 +273,7 @@ public abstract class TableDataSet implements Comparable {
         //protected, not public, because data may be stored differently in future (hashmap?)
         int which = String2.indexOf(dataLongNames, dataLongName);
         if (which < 0) 
-            Test.error(ERROR + " in TableDataSet4DNc.whichDataLongName():\n" +
+            Test.error(String2.ERROR + " in TableDataSet4DNc.whichDataLongName():\n" +
                 "invalid dataLongName (" + dataLongName + ").");
         return which;
     }
@@ -297,7 +295,7 @@ public abstract class TableDataSet implements Comparable {
         //is data name?
         which = String2.indexOf(dataLongNames, longName);
         if (which < 0) 
-            Test.error(ERROR + " in TableDataSet4DNc.convertLongNameToVariableName():\n" +
+            Test.error(String2.ERROR + " in TableDataSet4DNc.convertLongNameToVariableName():\n" +
                 "invalid longName (" + longName + ").");
         return dataVariableNames[which];
     }
@@ -497,7 +495,7 @@ public abstract class TableDataSet implements Comparable {
      */
     public String formattedUnits(int which) {
         if (which < 0) //most likely error
-            Test.error(ERROR + " in TableDataSet.formattedUnits: which=" + which + " is less than 0.");
+            Test.error(String2.ERROR + " in TableDataSet.formattedUnits: which=" + which + " is less than 0.");
         String tUnits = units(which);
         if (tUnits.length() == 0 || tUnits.equals(DataHelper.UNITLESS))
             return "";
@@ -749,7 +747,7 @@ public abstract class TableDataSet implements Comparable {
         int timePeriodNSeconds = timePeriodNHours * Calendar2.SECONDS_PER_HOUR;
         int oneMonthsHours = TimePeriods.getNHours("1 month");
         Test.ensureTrue(timePeriodNHours <= oneMonthsHours, 
-            ERROR + " in " + info + ":\n timePeriod (" + timePeriod + ") is longer than 1 month.");
+            String2.ERROR + " in " + info + ":\n timePeriod (" + timePeriod + ") is longer than 1 month.");
         boolean timePeriodIs1Month = timePeriodNHours == oneMonthsHours;
 
         //calculate the clean  isoMinT and maxT
@@ -948,7 +946,7 @@ public abstract class TableDataSet implements Comparable {
                 int first = Math2.binaryFindFirstGAE9(timePeriodEndTime, tTime);  //first of interest
                 int last  = Math2.binaryFindLastLAE9(timePeriodBeginTime, tTime); //last of interest
                 if (first > last) 
-                    String2.log(ERROR + " in " + info + ":\n  firstGE or lastLE error:\n " +
+                    String2.log(String2.ERROR + " in " + info + ":\n  firstGE or lastLE error:\n " +
                         " firstGE=" + first + 
                         " lastLE=" + last + " n=" + nTimePeriods + 
                         " time=" + tTime + "=" + Calendar2.epochSecondsToIsoStringT(tTime));

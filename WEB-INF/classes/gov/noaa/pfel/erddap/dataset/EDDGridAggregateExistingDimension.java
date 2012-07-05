@@ -710,8 +710,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "\n" +
 "<dataset type=\"EDDGridAggregateExistingDimension\" datasetID=\"nasa_jpl_790b_dd75_9ec2\" active=\"true\">\n" +
 "\n" +
-"<dataset type=\"EDDGridFromDap\" datasetID=\"nasa_jpl_adfc_4221_1009\" active=\"true\">\n" +
-"    <sourceUrl>http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M01/month_19880101_v11l35flk.nc.gz</sourceUrl>\n" +
+"<dataset type=\"EDDGridFromDap\" datasetID=\"nasa_jpl_03ee_a693_74ed\" active=\"true\">\n" +
+"    <sourceUrl>http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880101_v11l35flk.nc.gz</sourceUrl>\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
@@ -724,7 +724,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"infoUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/M01/month_19880101_v11l35flk.nc.gz.html</att>\n" +
+"        <att name=\"infoUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880101_v11l35flk.nc.gz.html</att>\n" +
 "        <att name=\"institution\">NASA JPL</att>\n" +
 "        <att name=\"keywords\">\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +

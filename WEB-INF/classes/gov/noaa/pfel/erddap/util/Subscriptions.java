@@ -34,9 +34,6 @@ public class Subscriptions {
 //(I think ConcurrentHashMap not enough since often a few data structures need to be modified atomically.)
 //But currently, it is low-use so no need to switch.
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     /**
      * Set this to true (by calling verbose=true in your program, 
      * not but changing the code here)
@@ -336,12 +333,12 @@ public class Subscriptions {
      */
     public synchronized void ensureEmailValid(String email) throws Throwable {
         if (!String2.isEmailAddress(email)) 
-            throw new Exception(ERROR + ": \"" + email + "\" is in not a valid email address.");
+            throw new Exception(String2.ERROR + ": \"" + email + "\" is in not a valid email address.");
         if (email.length() > EMAIL_LENGTH) 
-            throw new Exception(ERROR + ": email=" + email + " has more than " + 
+            throw new Exception(String2.ERROR + ": email=" + email + " has more than " + 
                 EMAIL_LENGTH + " characters.");
         if (emailBlacklist.contains(email))
-            throw new Exception(ERROR + ": \"" + email + "\" is on the email blacklist.");
+            throw new Exception(String2.ERROR + ": \"" + email + "\" is on the email blacklist.");
     }
 
     /**
@@ -376,7 +373,7 @@ public class Subscriptions {
 
 
 //            if (!action.equals("mailto:" + email)) {
-//                throw new Exception(ERROR + ": For mailto actions (e.g., " + action + 
+//                throw new Exception(String2.ERROR + ": For mailto actions (e.g., " + action + 
 //                    "), the mailto address must match the subscription email address (" + 
 //                    email + ").");
 //            }
@@ -401,9 +398,9 @@ public class Subscriptions {
 
         //check if parameters valid
         if (!String2.isFileNameSafe(datasetID)) 
-            throw new Exception(ERROR + ": \"" + datasetID + "\" is not a valid datasetID.");
+            throw new Exception(String2.ERROR + ": \"" + datasetID + "\" is not a valid datasetID.");
         if (datasetID.length() > DATASETID_LENGTH) 
-            throw new Exception(ERROR + ": datasetID=\"" + datasetID + "\" has more than " + 
+            throw new Exception(String2.ERROR + ": datasetID=\"" + datasetID + "\" has more than " + 
                 DATASETID_LENGTH + " characters.");
 
         ensureEmailValid(email);
@@ -414,11 +411,11 @@ public class Subscriptions {
         if        (action.startsWith("mailto:") && action.length() > "mailto:".length()) {
         } else if (action.startsWith("http://") && action.length() > "http://".length()) {
         } else {
-            throw new Exception(ERROR + ": action=" + action + 
+            throw new Exception(String2.ERROR + ": action=" + action + 
                 " must begin with \"http://\" or \"mailto://\".");
         } 
         if (action.length() > ACTION_LENGTH) 
-            throw new Exception(ERROR + ": action=" + action + " has more than " + 
+            throw new Exception(String2.ERROR + ": action=" + action + " has more than " + 
                 ACTION_LENGTH + " characters.");
 
         //try to find identical pending or valid subscription
@@ -524,17 +521,17 @@ public class Subscriptions {
 
         int nRows = persistentTable.nRows();
         if (row < 0 || row >= nRows) 
-            return ERROR + ": There is no subscriptionID=" + row + ".";
+            return String2.ERROR + ": There is no subscriptionID=" + row + ".";
 
         byte status = readStatus(row);
         if (status == STATUS_EMPTY)
-            return ERROR + ": The subscription request (if any) has expired.";
+            return String2.ERROR + ": The subscription request (if any) has expired.";
         if (status == STATUS_VALID) //ignore key
             return "";
 
         int storedKey = readKey(row);
         if (storedKey != key)
-            return ERROR + ": For subscriptionID=" + row + ", " + key + " is not the right key.";
+            return String2.ERROR + ": For subscriptionID=" + row + ", " + key + " is not the right key.";
         writeStatus(row, STATUS_VALID);
         persistentTable.flush();
         String comboKey = readComboKey(row);
@@ -606,7 +603,7 @@ public class Subscriptions {
 
         int nRows = persistentTable.nRows();
         if (row < 0 || row >= nRows) 
-            return ERROR + ": There is no subscriptionID=" + row + ".";
+            return String2.ERROR + ": There is no subscriptionID=" + row + ".";
 
         byte status = readStatus(row);
         if (status == STATUS_EMPTY)
@@ -614,7 +611,7 @@ public class Subscriptions {
 
         int storedKey = readKey(row);
         if (storedKey != key)
-            return ERROR + ": For subscriptionID=" + row + ", " + key + " is not the right key.";
+            return String2.ERROR + ": For subscriptionID=" + row + ", " + key + " is not the right key.";
         String datasetID = readDatasetID(row); //read things before clearRow
         String email     = readEmail(row);
         String action    = readAction(row);
@@ -775,7 +772,7 @@ public class Subscriptions {
         Test.ensureEqual(sub.emailSubscriptions.size(), 0, "");
         Test.ensureEqual(sub.validSubscriptions.size(), 0, "");
         Test.ensureEqual(sub.pendingSubscriptions.size(), 0, "");
-        Test.ensureEqual(sub.validate(0, 12345), "ERROR: There is no subscriptionID=0.", "");
+        Test.ensureEqual(sub.validate(0, 12345), String2.ERROR + ": There is no subscriptionID=0.", "");
         Test.ensureEqual(sub.listActions(sampleDatasetID).toString(), "", "");
         results = sub.listSubscriptions("(unknownIPAddress)", sampleEmail);
         Test.ensureEqual(results,
@@ -783,7 +780,7 @@ public class Subscriptions {
 "\n" +
 "Currently, you have no valid or pending subscriptions.", 
             "results=\n" + results);
-        Test.ensureEqual(sub.remove(0, 12345), "ERROR: There is no subscriptionID=0.", "");
+        Test.ensureEqual(sub.remove(0, 12345), String2.ERROR + ": There is no subscriptionID=0.", "");
         results = sub.listSubscriptions();
         Test.ensureEqual(results, 
 "List of Valid and Pending Subscriptions:\n" +
@@ -798,7 +795,7 @@ public class Subscriptions {
             results = t.getMessage();
         }
         Test.ensureEqual(results, 
-            "ERROR: action=nonsense must begin with \"http://\" or \"mailto://\".",
+            String2.ERROR + ": action=nonsense must begin with \"http://\" or \"mailto://\".",
             "results=\n" + results);
 
         //add a subscription (twice -- no change)
@@ -859,7 +856,7 @@ public class Subscriptions {
         //validate (twice -- 2nd time no change)
         for (int i = 0; i < 2; i++) {
             Test.ensureEqual(sub.remove(0, key+1), 
-                "ERROR: For subscriptionID=0, " + (key + 1) + " is not the right key.", "");
+                String2.ERROR + ": For subscriptionID=0, " + (key + 1) + " is not the right key.", "");
             Test.ensureEqual(sub.validate(0, key), "", "");
             Test.ensureEqual(sub.persistentTable.nRows(), 1, "");
             Test.ensureEqual(sub.datasetSubscriptions.size(), 1, "");
@@ -892,7 +889,7 @@ public class Subscriptions {
         for (int i = 0; i < 2; i++) {
             Test.ensureEqual(sub.remove(0, key+1), 
                 (i==0? 
-                    "ERROR: For subscriptionID=0, " + (key + 1) + " is not the right key." : 
+                    String2.ERROR + ": For subscriptionID=0, " + (key + 1) + " is not the right key." : 
                     ""), //no error 2nd time
                 "");
             Test.ensureEqual(sub.remove(0, key), "", "");
@@ -1023,7 +1020,7 @@ public class Subscriptions {
             results = t.getMessage();
         }
         Test.ensureEqual(results, 
-            "ERROR: \"john.smith@company.com\" is on the email blacklist.",
+            String2.ERROR + ": \"john.smith@company.com\" is on the email blacklist.",
             "results=\n" + results);
 
         results = "";
@@ -1033,7 +1030,7 @@ public class Subscriptions {
             results = t.getMessage();
         }
         Test.ensureEqual(results, 
-            "ERROR: \"john.smith@company.com\" is on the email blacklist.",
+            String2.ERROR + ": \"john.smith@company.com\" is on the email blacklist.",
             "results=\n" + results);
 
         Test.ensureEqual(sub.setEmailBlacklist(""), 0, "");

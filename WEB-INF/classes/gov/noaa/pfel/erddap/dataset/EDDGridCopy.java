@@ -441,7 +441,7 @@ public class EDDGridCopy extends EDDGrid {
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
         EDDGrid eddGrid = null;
 
         try {
@@ -580,8 +580,15 @@ public class EDDGridCopy extends EDDGrid {
     "    String geospatial_vertical_units \"m\";\n" +
     "    String history \"Remote Sensing Systems, Inc\n" +
     "2008-08-29T00:31:43Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
-    today + " http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n" +
-    today + " http://127.0.0.1:8080/cwexperimental/griddap/testGridCopy.das\";\n" + //different
+today;
+        tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+    
+//+ " http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n" +
+//today + 
+
+expected = 
+    " http://127.0.0.1:8080/cwexperimental/griddap/testGridCopy.das\";\n" + //different
     "    String infoUrl \"http://coastwatch.pfel.noaa.gov/infog/QS_ux10_las.html\";\n" +
     "    String institution \"NOAA CoastWatch, West Coast Node\";\n" +
     "    String keywords \"EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds\";\n" +
@@ -609,7 +616,9 @@ public class EDDGridCopy extends EDDGrid {
     "    Float64 Westernmost_Easting 0.125;\n" +
     "  }\n" +
     "}\n";
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            int tpo = results.indexOf(expected.substring(0, 17));
+            if (tpo < 0) String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, "results=\n" + results);
             
             //*** test getting dds for entire dataset
             tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 

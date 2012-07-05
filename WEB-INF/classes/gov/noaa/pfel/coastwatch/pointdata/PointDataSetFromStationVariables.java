@@ -704,7 +704,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
         Attributes zAttributes, Attributes tAttributes, Attributes idAttributes, 
         Attributes dataAttributes, Class elementClass) throws Exception {
 
-        String errorInMethod = ERROR + " in PointDataSetGroupVariables.constructor:\n";
+        String errorInMethod = String2.ERROR + " in PointDataSetGroupVariables.constructor:\n";
         groupVariables = tGroupVariables;
         this.globalAttributes = globalAttributes;
         this.xAttributes = xAttributes;
@@ -1034,7 +1034,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
             ensureUpToDate = true;
 
         //ensure pointFilesDir for this data exists
-        String errorInMethod = ERROR + " in PointDataSetFromStationVariables.makeCachesAndDataSets:\n";
+        String errorInMethod = String2.ERROR + " in PointDataSetFromStationVariables.makeCachesAndDataSets:\n";
         String dir = pointFilesDir + stationBaseName + "/";
         if (!File2.isDirectory(dir)) {
             File tDir = new File(dir);

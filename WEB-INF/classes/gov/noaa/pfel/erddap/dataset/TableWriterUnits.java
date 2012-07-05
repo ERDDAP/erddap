@@ -96,7 +96,7 @@ public class TableWriterUnits extends TableWriter {
     /**
      * This calls otherTableWriter.finish.
      *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
 
@@ -109,7 +109,7 @@ public class TableWriterUnits extends TableWriter {
      * If caller has the entire table, use this instead of repeated writeSome() + finish().
      * This overwrites the superclass method.
      *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void writeAllAndFinish(Table tCumulativeTable) throws Throwable {
         changeUnits(tCumulativeTable, fromUnits, toUnits);
@@ -132,7 +132,7 @@ public class TableWriterUnits extends TableWriter {
     /**
      * This changesUnits for this table.
      *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public static void changeUnits(Table table, String fromUnits, String toUnits) 
             throws Throwable {

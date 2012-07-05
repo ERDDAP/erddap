@@ -33,9 +33,6 @@ public class StoredIndex  {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     /* groups one row for each group and has columns for 
      *   "First Row", "N Finite", 
      *   then, for each index: indexName+" Min", indexName+" Max"

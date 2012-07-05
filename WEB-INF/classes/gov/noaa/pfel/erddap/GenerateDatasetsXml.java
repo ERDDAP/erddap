@@ -219,8 +219,9 @@ public class GenerateDatasetsXml {
 
                 } else if (eddType.equals("EDDTableFromErddap")) {
                     s1 = get(args, 1, s1, "URL of remote ERDDAP (ending in (\"/erddap\")");
+                    s2 = get(args, 2, s2, "Keep original datasetIDs (true|false)");
                     System.out.println("working...");
-                    println(EDDTableFromErddap.generateDatasetsXml(s1));
+                    println(EDDTableFromErddap.generateDatasetsXml(s1, String2.parseBoolean(s2)));
 
                 //INACTIVE: "EDDTableFromHyraxFiles"
 

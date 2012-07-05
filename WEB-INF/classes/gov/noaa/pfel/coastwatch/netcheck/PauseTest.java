@@ -42,7 +42,7 @@ public class PauseTest extends NetCheckTest {
      * @throws Exception if trouble
      */
     public PauseTest(SimpleXMLReader xmlReader) throws Exception {
-        String errorIn = ERROR + " in PauseTest constructor: ";
+        String errorIn = String2.ERROR + " in PauseTest constructor: ";
 
         //ensure the xmlReader is just starting with this class
         Test.ensureEqual(xmlReader.allTags(), "<netCheck><pauseTest>", 
@@ -101,7 +101,7 @@ public class PauseTest extends NetCheckTest {
      * @throws Exception if trouble
      */
     public void ensureValid() throws Exception {
-        String errorIn = ERROR + " in PauseTest.ensureValid: ";
+        String errorIn = String2.ERROR + " in PauseTest.ensureValid: ";
 
         //ensure that required items were set
         Test.ensureEqual(title == null || title.length() == 0, false, 

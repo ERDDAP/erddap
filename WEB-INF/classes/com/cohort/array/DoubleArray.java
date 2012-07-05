@@ -11,6 +11,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -119,13 +120,11 @@ public class DoubleArray extends PrimitiveArray {
      */
     public PrimitiveArray subset(int startIndex, int stride, int stopIndex) {
         if (startIndex < 0)
-            throw new IndexOutOfBoundsException(String2.ERROR + 
-                " in DoubleArray.subset: startIndex=" + startIndex +
-                " must be at least 0.");
+            throw new IndexOutOfBoundsException(MessageFormat.format(
+                ArraySubsetStart, getClass().getSimpleName(), "" + startIndex));
         if (stride < 1)
-            throw new IllegalArgumentException(String2.ERROR + 
-                " in DoubleArray.subset: stride=" + stride +
-                " must greater than 0.");
+            throw new IllegalArgumentException(MessageFormat.format(
+                ArraySubsetStride, getClass().getSimpleName(), "" + stride));
         if (stopIndex >= size)
             stopIndex = size - 1;
         if (stopIndex < startIndex)
@@ -195,7 +194,8 @@ public class DoubleArray extends PrimitiveArray {
     public void addN(int n, double value) {
         if (n == 0) return;
         if (n < 0)
-            throw new IllegalArgumentException(String2.ERROR + " in DoubleArray.addN: n (" + n + ") < 0");
+            throw new IllegalArgumentException(MessageFormat.format(
+                ArrayAddN, getClass().getSimpleName(), "" + n));
         ensureCapacity(size + (long)n);
         Arrays.fill(array, size, size + n, value);
         size += n;
@@ -319,8 +319,8 @@ public class DoubleArray extends PrimitiveArray {
      */
     public void remove(int index) {
         if (index >= size)
-            throw new IllegalArgumentException(String2.ERROR + " in DoubleArray.remove: index (" + 
-                index + ") >= size (" + size + ").");
+            throw new IllegalArgumentException(MessageFormat.format(
+                ArrayRemove, getClass().getSimpleName(), "" + index, "" + size));
         System.arraycopy(array, index + 1, array, index, size - index - 1);
         size--;
 
@@ -1076,13 +1076,15 @@ public class DoubleArray extends PrimitiveArray {
         if (size == 0)
             return "";
         if (!Math2.isFinite(array[0]))
-            return "DoubleArray isn't sorted in ascending order: [0]=" + array[0] + ".";
+            return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
+                "[0]=" + array[0]);
         for (int i = 1; i < size; i++) {
             if (!Math2.isFinite(array[i]))
-                return "DoubleArray isn't sorted in ascending order: [" + i + "]=" + array[i] + ".";
+                return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
+                    "[" + i + "]=" + array[i]);
             if (array[i - 1] > array[i]) {
-                return "DoubleArray isn't sorted in ascending order: [" + (i-1) + "]=" + array[i-1] + 
-                    " > [" + i + "]=" + array[i] + ".";
+                return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
+                    "[" + (i-1) + "]=" + array[i-1] + " > [" + i + "]=" + array[i]);
             }
         }
         return "";
@@ -1100,13 +1102,16 @@ public class DoubleArray extends PrimitiveArray {
         if (size == 0)
             return "";
         if (!Math2.isFinite(array[0]))
-            return "DoubleArray isn't sorted in descending order: [0]=" + array[0] + ".";
+            return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
+                "[0]=" + array[0]);
         for (int i = 1; i < size; i++) {
             if (!Math2.isFinite(array[i]))
-                return "DoubleArray isn't sorted in descending order: [" + i + "]=" + array[i] + ".";
+                return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
+                    "[" + i + "]=" + array[i]);
             if (array[i - 1] < array[i]) {
-                return "DoubleArray isn't sorted in descending order: [" + (i-1) + "]=" + array[i-1] + 
-                    " < [" + i + "]=" + array[i] + ".";
+                return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
+                    "[" + (i-1) + "]=" + array[i-1] + 
+                     " < [" + i + "]=" + array[i]);
             }
         }
         return "";
@@ -1154,12 +1159,9 @@ public class DoubleArray extends PrimitiveArray {
                 Math2.almostEqual( 2, (array[i] - array[i - 1]) * 1e7, diff * 1e7)) { 
                 //String2.log(i + " passed second test " + (array[i] - array[i - 1]) + " " + diff);
             } else {
-                return "DoubleArray isn't evenly spaced: #" + 
-                    (i - 1) + "=" + array[i - 1] + 
-                    ", #" + i + "=" + array[i] + 
-                    ", spacing=" + (array[i] - array[i-1]) +
-                    ", expected spacing=" + diff + ".";
-                //+ "\n" + toString();
+                return MessageFormat.format(ArrayNotEvenlySpaced, getClass().getSimpleName(),
+                    "" + (i - 1), "" + array[i - 1], "" + i, "" + array[i],
+                    "" + (array[i] - array[i-1]), "" + diff);
             }
         }
         return "";
@@ -1194,6 +1196,8 @@ public class DoubleArray extends PrimitiveArray {
         return new int[]{n, tmini, tmaxi};
     }
 
+
+
     /**
      * This tests the methods of this class.
      *
@@ -1204,6 +1208,8 @@ public class DoubleArray extends PrimitiveArray {
 
         //** test default constructor and many of the methods
         DoubleArray anArray = new DoubleArray();
+        String2.log("getClass().getName()=" + anArray.getClass().getName());
+        String2.log("getClass().getSimpleName()=" + anArray.getClass().getSimpleName());
         Test.ensureEqual(anArray.size(), 0, "");
         anArray.add(1e307);
         Test.ensureEqual(anArray.size(), 1, "");
@@ -1466,7 +1472,7 @@ public class DoubleArray extends PrimitiveArray {
         String2.log("\nevenlySpaced test #2");
         anArray.set(2, 30.1);
         Test.ensureEqual(anArray.isEvenlySpaced(), 
-            "DoubleArray isn't evenly spaced: #1=20.0, #2=30.1, spacing=10.100000000000001, expected spacing=10.0.", "");
+            "DoubleArray isn't evenly spaced: [1]=20.0, [2]=30.1, spacing=10.100000000000001, expected spacing=10.0.", "");
 
         //these are unevenly spaced, but the secondary precision test allows it
         //should fail first test, but pass second test
@@ -1477,7 +1483,7 @@ public class DoubleArray extends PrimitiveArray {
         String2.log("\nevenlySpaced test #4");
         anArray.set(2, 1.234567890801); 
         Test.ensureEqual(anArray.isEvenlySpaced(), 
-            "DoubleArray isn't evenly spaced: #1=1.2345678907, #2=1.234567890801, " +
+            "DoubleArray isn't evenly spaced: [1]=1.2345678907, [2]=1.234567890801, " +
             "spacing=1.0100009717461944E-10, expected spacing=1.000000082740371E-10.", "");
 
         //isAscending

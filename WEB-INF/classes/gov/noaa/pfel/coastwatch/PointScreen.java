@@ -626,7 +626,7 @@ public class PointScreen extends Screen {
                 MustBe.throwableToString(e);
             String2.log(error);
             oneOf.email(oneOf.emailEverythingTo(), 
-                OneOf.ERROR + " in " + oneOf.shortClassName(), error);
+                String2.ERROR + " in " + oneOf.shortClassName(), error);
 
             return null;            
         }
@@ -671,7 +671,7 @@ public class PointScreen extends Screen {
                 MustBe.throwableToString(e);
             String2.log(error);
             oneOf.email(oneOf.emailEverythingTo(), 
-                OneOf.ERROR + " in " + oneOf.shortClassName(), error);
+                String2.ERROR + " in " + oneOf.shortClassName(), error);
 
             return null;            
         }

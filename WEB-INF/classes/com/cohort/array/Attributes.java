@@ -27,9 +27,6 @@ public class Attributes {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     /** The backing data structure.  It is thread-safe. */
     private ConcurrentHashMap hashmap = new ConcurrentHashMap(16, 0.75f, 4);
 
@@ -620,7 +617,7 @@ public class Attributes {
 
             return true;
         } catch (Exception e) {
-            String2.log(MustBe.throwable(ERROR + " in Attributes.equals", e));
+            String2.log(MustBe.throwable(String2.ERROR + " in Attributes.equals", e));
             return false;
         }
     }

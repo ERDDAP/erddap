@@ -590,7 +590,7 @@ public abstract class EDDGrid extends EDD {
 
         if (accessibleViaNcCF == null) {
             return accessibleViaNcCF = 
-                "Currently, the .ncCF file type is for tabular data only. " +
+                "Currently, the .ncCF and .ncCFMA file types are for tabular data only. " +
                 "For this dataset, use the .nc file type.";
             //String cdmType = combinedAttributes.getString("cdm_data_type");
             //if (cdmType.equals(CDM_GRID))
@@ -1402,7 +1402,7 @@ public abstract class EDDGrid extends EDD {
                 if (Math2.greaterThanAE(precision, startDestD, av.destinationCoarseMin())) {
                 } else {
                     if (repair) startDestD = av.firstDestinationValue();
-                    else throw new SimpleException(EDStatic.THERE_IS_NO_DATA + " " +
+                    else throw new SimpleException(MustBe.THERE_IS_NO_DATA + " " +
                         EDStatic.queryError +
                         diagnostic + ": " +
                         MessageFormat.format(EDStatic.queryErrorGridLessMin,
@@ -1414,7 +1414,7 @@ public abstract class EDDGrid extends EDD {
                 if (Math2.lessThanAE(precision, startDestD, av.destinationCoarseMax())) {
                 } else {
                     if (repair) startDestD = av.lastDestinationValue();
-                    else throw new SimpleException(EDStatic.THERE_IS_NO_DATA +
+                    else throw new SimpleException(MustBe.THERE_IS_NO_DATA +
                         diagnostic + ": " +
                         MessageFormat.format(EDStatic.queryErrorGridGreaterMax,
                             EDStatic.EDDGridStart, "" + startDestD, 
@@ -1466,7 +1466,7 @@ public abstract class EDDGrid extends EDD {
                 if (Math2.greaterThanAE(precision, stopDestD, av.destinationCoarseMin())) {
                 } else {
                     if (repair) stopDestD = av.firstDestinationValue();
-                    else throw new SimpleException(EDStatic.THERE_IS_NO_DATA +
+                    else throw new SimpleException(MustBe.THERE_IS_NO_DATA +
                         diagnostic + ": " +
                         MessageFormat.format(EDStatic.queryErrorGridLessMin,
                             EDStatic.EDDGridStop, "" + stopDestD, 
@@ -1477,7 +1477,7 @@ public abstract class EDDGrid extends EDD {
                 if (Math2.lessThanAE(   precision, stopDestD, av.destinationCoarseMax())) {
                 } else {
                     if (repair) stopDestD = av.lastDestinationValue();
-                    else throw new SimpleException(EDStatic.THERE_IS_NO_DATA +
+                    else throw new SimpleException(MustBe.THERE_IS_NO_DATA +
                         diagnostic + ": " +
                         MessageFormat.format(EDStatic.queryErrorGridGreaterMax,
                             EDStatic.EDDGridStop, "" + stopDestD, 
@@ -2021,6 +2021,7 @@ public abstract class EDDGrid extends EDD {
                     "<hr>\n");
                 writeGeneralDapHtmlInstructions(tErddapUrl, writer, false); 
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 writer.write(EDStatic.htmlForException(t));
             }
             if (EDStatic.displayDiagnosticInfo) 
@@ -2610,6 +2611,7 @@ public abstract class EDDGrid extends EDD {
                         }
                     }           
                 } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                     String2.log("Error while trying to read &.click? value.\n" + 
                         MustBe.throwableToString(t));
                 }
@@ -3595,6 +3597,7 @@ public abstract class EDDGrid extends EDD {
                 sliderNThumbs, sliderUserValuesCsvs, 
                 sliderInitFromPositions, sliderInitToPositions, EDV.SLIDER_PIXELS - 1));
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
         }
 
@@ -5469,13 +5472,12 @@ Attributes {
             }
 
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             ok = false;
             try {
                 String msg = MustBe.getShortErrorMessage(t);
                 String fullMsg = MustBe.throwableToString(t);
                 String2.log(fullMsg); //log full message with stack trace
-                if (msg.indexOf("The other primitiveArray has a different value") >= 0) 
-                    requestReloadASAP();  //it logs a message about this                    
 
                 if (png && drawLegend.equals(LEGEND_ONLY)) {
                     //return a transparent 1x1 pixel image
@@ -5520,7 +5522,8 @@ Attributes {
                     }
                 }
             } catch (Throwable t2) {
-                String2.log("ERROR2 while creating image:\n" + MustBe.throwableToString(t2));
+                EDStatic.rethrowClientAbortException(t2);  //first thing in catch{}
+                String2.log("ERROR2 while creating error image:\n" + MustBe.throwableToString(t2));
                 if (pdf) {
                     if (pdfInfo == null) throw t;
                 } else {
@@ -6312,7 +6315,7 @@ Attributes {
                 tDataVariables[dv].destinationDataTypeClass(), dvNDIndex[dv]);
         }
         if (cumSize >= Integer.MAX_VALUE - 1000)
-            throw new SimpleException(EDStatic.thereIsTooMuchData + " " +
+            throw new SimpleException(Math2.memoryTooMuchData + "  " +
                 MessageFormat.format(EDStatic.errorMoreThan2GB,
                     ".mat", (cumSize / Math2.BytesPerMB) + " MB"));
                 //"Error: " +
@@ -6537,7 +6540,7 @@ Attributes {
         //   And even if so, what about OS limit ERDDAP is running on? and client OS?
         //Or, view this as protection against accidental requests for too much data (e.g., whole dataset).
         if (mainGda.totalNBytes() > 2100000000) //leave some space for axis vars, etc.
-            throw new SimpleException(EDStatic.thereIsTooMuchData + " " +
+            throw new SimpleException(Math2.memoryTooMuchData + "  " +
                 MessageFormat.format(EDStatic.errorMoreThan2GB,
                     ".nc", ((mainGda.totalNBytes() + 100000) / Math2.BytesPerMB) + " MB"));
 
@@ -6992,6 +6995,10 @@ Attributes {
                 tw.writeSome(table);
                 table.removeAllRows();
                 tRows = 0;
+                if (tw.noMoreDataPlease) {
+                    tw.logCaughtNoMoreDataPlease(datasetID);
+                    break;
+                }
             }
         }
         if (tRows > 0) 
@@ -7029,6 +7036,7 @@ Attributes {
                      parseAxisDapQuery(userDapQuery, destinationNames, constraints, true); 
                 else parseDataDapQuery(userDapQuery, destinationNames, constraints, true); 
             } catch (Throwable t) {
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
                 String2.log(MustBe.throwableToString(t));
                 userDapQuery = ""; //as if no userDapQuery
             }
@@ -7499,11 +7507,21 @@ Attributes {
             "  </ul>\n" +
             "\n" +
             "  <p>Shapefiles - Sorry, ERDDAP currently does not distribute grid data as shapefiles.\n" +
+            "\n" +                
+            //Ferret
+            "  <p><b><a href=\"http://www.ferret.noaa.gov/Ferret/\">Ferret</a></b>\n" +
+            "    <a name=\"Ferret\">is</a> a free program for visualizing and analyzing large and complex gridded\n" +
+            "  <br>datasets. Ferret should work well with all datasets in griddap since griddap is\n" +
+            "  <br>fully compatible with OPeNDAP. See the\n" +
+            "    <a href=\"http://ferret.pmel.noaa.gov/Ferret/documentation\">Ferret documentation</a>.\n" +
+            "  <br>Note that the griddap dataset's OPeNDAP base URL that you use with Ferret's\n" +
+            "  <br><tt>set data</tt>, for example, " + datasetBase + " ,\n" +           
+            "  <br>won't ever have a file extension at the end.\n" +
             "\n" +
             //IDL
             "  <p><b><a href=\"http://www.ittvis.com/language/en-us/productsservices/idl.aspx/\">IDL</a></b> - \n" +
-            "    <a name=\"IDL\">IDL</a> is a commercial scientific data visualization program.\n" +
-            "  <br>To get data from ERDDAP into IDL, first use ERDDAP to select a subset of data and download a .nc file.\n" +
+            "    <a name=\"IDL\">IDL</a> is a commercial scientific data visualization program. To get data from ERDDAP\n" +
+            "  <br>into IDL, first use ERDDAP to select a subset of data and download a .nc file.\n" +
             "  <br>Then, use these\n" +
             "    <a href=\"http://www.atmos.umd.edu/~gcm/usefuldocs/hdf_netcdf/IDL_hdf-netcdf.html\">instructions</a>\n" +
             "    to import the data from the .nc file into IDL.\n" +
@@ -7538,9 +7556,14 @@ Attributes {
             "  The numbers at the end of the first line specify the range for the color mapping. \n" +
             "  <br>The 'set' command flips the map to make it upright.\n" +
             "  <p>There are also Matlab <a href=\"http://coastwatch.pfeg.noaa.gov/xtracto/\">Xtractomatic</a> scripts for ERDDAP,\n" +
-            "    which are particularly useful for getting environmental\n" +
-            "  <br>data related to points along an animal's track (e.g.,\n" +
+            "    which are particularly useful for\n" +
+            "  <br>getting environmental data related to points along an animal's track (e.g.,\n" +
             "    <a href=\"http://gtopp.org/\">GTOPP</a> data).\n" +
+            "  <p>ERDDAP stores datetime values in .mat files as \"seconds since 1970-01-01T00:00:00Z\".\n" +
+            "  <br>To display one of these values as a String in Matlab, you can use, e.g.,\n" +
+            "  <br><tt>datastr(cwwcNDBCMet.time(1)/86400 + 719529)</tt>\n" +
+            "  <br>86400 converts ERDDAP's \"seconds since\" to Matlab's \"days since\".  719529 converts\n" +
+            "  <br>ERDDAP's base time of \"1970-01-01T00:00:00Z\" to Matlab's \"0000-01-00T00:00:00Z\".\n" +
             "\n" +
             //nc
             "  <p><b><a href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF</a>\n" +
@@ -7549,16 +7572,16 @@ Attributes {
             "\n" +
             //ncHeader
             "  <p><b>.ncHeader</b>\n" +
-            "    - <a name=\"ncHeader\">Requests</a> for .ncHeader files will return the header information (text) that would be generated\n" +
-            "  <br>if you used\n" +
+            "    - <a name=\"ncHeader\">Requests</a> for .ncHeader files will return the header information (text) that\n" +
+            "  <br>would be generated if you used\n" +
             "    <a href=\"http://www.unidata.ucar.edu/software/netcdf/docs/ncdump-man-1.html\">ncdump -h <i>fileName</i></a>\n" +
             "    on the corresponding .nc file.\n" +
             "\n" +
             //odv
             "  <p><b><a href=\"http://odv.awi.de/\">Ocean Data View</a> .odvTxt</b>\n" +
             "    - <a name=\"ODV\">ODV</a> users can download data in a\n" +
-            "    <a href=\"http://odv.awi.de/en/documentation/\">ODV Generic Spreadsheet Format .txt file</a>\n" +
-            "  <br>by requesting griddap's .odvTxt fileType.\n" +
+            "  <br><a href=\"http://odv.awi.de/en/documentation/\">ODV Generic Spreadsheet Format .txt file</a>\n" +
+            "    by requesting griddap's .odvTxt fileType.\n" +
             "  <br>The dataset MUST include longitude, latitude, and time dimensions.\n" +
             "  <br>Any longitude values (0 to 360, or -180 to 180) are fine.\n" +
             "  <br>After saving the resulting file (with the extension .txt) in your computer:\n" +
@@ -7572,7 +7595,8 @@ Attributes {
             "    </ul>\n" +
             "  <li>If you downloaded a longitude, latitude slice of a dataset, use:\n" +
             "    <ul>\n" +
-            "    <li>Press F12 or <tt>View : Layout Templates : 1 SURFACE Window</tt> to view the default isosurface variable.\n" + 
+            "    <li>Press F12 or <tt>View : Layout Templates : 1 SURFACE Window</tt> to view the\n" +
+            "      <br>default isosurface variable.\n" + 
             "    <li>If you want to view a different isosurface variable,\n" +
             "      <ul>\n" +
             "      <li>To define a new isosurface variable, use <tt>View : Isosurface Variables</tt>.\n" +
@@ -7584,19 +7608,32 @@ Attributes {
             "  <li>See ODV's <tt>Help</tt> menu for more help using ODV.\n" +
             "  </ol>\n" +
             "\n" +
+            //Pydap Client
+            "  <p><b><a href=\"http://pydap.org/client.html\">Pydap Client</a></b>\n" +
+            "    <a name=\"PydapClient\">users</a>\n" +
+            "    can access griddap datasets via ERDDAP's standard OPeNDAP services.\n" +
+            "  <br>See the\n" +
+            "    <a href=\"http://pydap.org/client.html#accessing-gridded-data/\">Pydap Client instructions for accessing gridded data</a>.\n" +
+            "  <br>Note that the name of a dataset in ERDDAP will always be a single word,\n" +
+            "  <br>e.g., " + EDStatic.EDDGridIdExample + " in the OPeNDAP dataset URL\n" +
+            "  <br>" + datasetBase + "\n" +
+            "  <br>and won't ever have a file extension (unlike, for example, .nc for the\n" +
+            "  <br>sample dataset in the Pydap instructions).\n" +
+            "\n" +
             //R
             "  <p><b><a href=\"http://www.r-project.org/\">R Statistical Package</a></b> -\n" +
             "    <a name=\"R\">R</a> is an open source statistical package for many operating systems.\n" +
             "  <br>In R, you can download a NetCDF version 3 .nc file from ERDDAP. For example:\n" +
             "<pre>  download.file(url=\"" + fullTimeNcExample + "\", destfile=\"/home/bsimons/test.nc\")</pre>\n" +
-            "  Then import data from that .nc file into R with the RNetCDF, ncdf, or ncdf4 packages available from\n" +
-            "  <a href=\"http://cran.r-project.org/\">CRAN</a>.\n" +
-            "  <br>Or, if you want the data in tabular form, download and import the data in a .csv file. For example,\n" +
+            "  Then import data from that .nc file into R with the RNetCDF, ncdf, or ncdf4 packages available\n" +
+            "  <br>from <a href=\"http://cran.r-project.org/\">CRAN</a>.\n" +
+            "    Or, if you want the data in tabular form, download and import the data in a .csv file.\n" +
+            "  <br>For example,\n" +
             "<pre>  download.file(url=\"" + fullTimeCsvExample + "\", destfile=\"/home/bsimons/test.csv\")\n" +
                  "  test&lt;-read.csv(file=\"/home/bsimons/test.csv\")</pre>\n" +
             "  There are also R <a href=\"http://coastwatch.pfeg.noaa.gov/xtracto/\">Xtractomatic</a> scripts for ERDDAP,\n" +
-            "    which are particularly useful for getting environmental\n" +
-            "  <br>data related to points along an animal's track (e.g.,\n" +
+            "    which are particularly useful for getting\n" +
+            "  <br>environmental data related to points along an animal's track (e.g.,\n" +
             "    <a href=\"http://gtopp.org/\">GTOPP</a> data).\n" +
             "\n");
             
@@ -7818,10 +7855,11 @@ Attributes {
             "       <a href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
             "       ERDDAP Deals with Time</a>.\n" +
             "   <li>For the time dimension, griddap extends the OPeNDAP standard by allowing you to specify an\n" +
-            "     <br>ISO 8601 date/time values in parentheses, which griddap then converts to the internal\n" +
-            "     <br>number (in seconds since 1970-01-01T00:00:00Z) and then to the appropriate array index.\n" +
-            "     <br>The ISO date/time value should be in the form: <i>YYYY-MM-DD</i>T<i>hh:mm:ssZ</i>, where Z is 'Z'\n" +
-            "     <br>or a &plusmn;hh:mm offset from UTC.\n" +
+            "     <br><a href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" date/time string</a>\n" +
+            "       in parentheses, which griddap then converts to the\n" +
+            "     <br>internal number (in seconds since 1970-01-01T00:00:00Z) and then to the appropriate\n" +
+            "     <br>array index.  The ISO date/time value should be in the form: <i>YYYY-MM-DD</i>T<i>hh:mm:ssZ</i>,\n" +
+            "     <br>where Z is 'Z' or a &plusmn;hh:mm offset from UTC.\n" +
             "     <br>If you omit Z (or the &plusmn;hh:mm offset), :ssZ, :mm:ssZ, or Thh:mm:ssZ from the ISO date/time\n" +
             "     <br>that you specify, the missing fields are assumed to be 0.\n" +
             "     <br>The example below is equivalent (at least at the time of writing this) to the examples above:\n" +
@@ -9374,7 +9412,7 @@ Attributes {
             "  </tr>\n" +
             "  <tr>\n" +
             "    <td nowrap>coverage=<i>coverage</i></td>\n" +
-            "    <td>The name of a &lt;coverage&gt; from the list in GetCapabilities. Required.</td>\n" +
+            "    <td>The name of a coverage from the list in GetCapabilities. Required.</td>\n" +
             "  </tr>\n" +
             //change this behavior???
             "  <tr>\n" +

@@ -488,6 +488,7 @@ public class EDDTableFromDatabase extends EDDTable{
         }
 
         //get the connection
+        //This is also an important test of ability to make a connection.
         Connection connection = makeConnection(dataSourceName, dataSource, 
             localSourceUrl, driverName, connectionProperties);
         try {
@@ -600,194 +601,215 @@ public class EDDTableFromDatabase extends EDDTable{
 
         //no need to further prune constraints
 
-        //make sure the connection is valid
+        try {
+            //make sure the connection is valid
 //??? Use a ConnectionPool???  See JDBC API Tutorial book, pg 640; or search web.
 //For now, make a new connection each time???  I think that is excessive, but simple.
 //  see connection.close() below.
 
-        //See javadocs for isClosed -- it isn't very useful. So do quick test:
-        /*if (connection != null && !connection.isClosed()) {
-            try {
-                connection.getCatalog(); //simple test; ignore the response
-            } catch (Throwable t) {
-                String2.log("The existing connection isn't working. Closing it and creating a new one...");
+            //See javadocs for isClosed -- it isn't very useful. So do quick test:
+            /*if (connection != null && !connection.isClosed()) {
                 try {
-                    connection.close();
-                } catch (Throwable t2) {
+                    connection.getCatalog(); //simple test; ignore the response
+                } catch (Throwable t) {
+                    String2.log("The existing connection isn't working. Closing it and creating a new one...");
+                    try {
+                        connection.close();
+                    } catch (Throwable t2) {
+                    }
+                    connection = null; //so new one will be created below
                 }
-                connection = null; //so new one will be created below
             }
-        }
 
-        //open a new connection?
-        if (connection == null || connection.isClosed()) */
-        Connection connection = makeConnection(dataSourceName, dataSource,
-            localSourceUrl, driverName, connectionProperties);        
-        try {
+            //open a new connection?
+            if (connection == null || connection.isClosed()) */
+            Connection connection = makeConnection(dataSourceName, dataSource,
+                localSourceUrl, driverName, connectionProperties);        
+            try {
 
-            //build the sql query
-            StringBuilder query = new StringBuilder();
-            int nRv = resultsVariables.size();
-            String distinctString = distinct? "DISTINCT " : "";
-            for (int rv = 0; rv < nRv; rv++) 
-                //no danger of sql injection since query has been parsed and
-                //  resultsVariables must be known sourceNames
-                //Note that I tried to use '?' for resultsVariables, but never got it to work: wierd results.
-                query.append((rv == 0? "SELECT " + distinctString : ", ") + resultsVariables.get(rv)); 
-            query.append(" FROM " + 
-                (catalogName.equals("")? "" : catalogName + catalogSeparator) + 
-                (schemaName.equals( "")? "" : schemaName  + ".") + 
-                tableName);
+                //build the sql query
+                StringBuilder query = new StringBuilder();
+                int nRv = resultsVariables.size();
+                String distinctString = distinct? "DISTINCT " : "";
+                for (int rv = 0; rv < nRv; rv++) 
+                    //no danger of sql injection since query has been parsed and
+                    //  resultsVariables must be known sourceNames
+                    //Note that I tried to use '?' for resultsVariables, but never got it to work: wierd results.
+                    query.append((rv == 0? "SELECT " + distinctString : ", ") + resultsVariables.get(rv)); 
+                query.append(" FROM " + 
+                    (catalogName.equals("")? "" : catalogName + catalogSeparator) + 
+                    (schemaName.equals( "")? "" : schemaName  + ".") + 
+                    tableName);
 
-            //add orderBy
-            StringBuilder orderBySB = new StringBuilder();
-            if (distinct || queryHasOrderBy || queryHasOrderByMax) {
-                //let TableWriterXxx handle it (probably more efficient since in memory)
-            } else {
-                //append predefined orderBy variables
-                for (int ob = 0; ob < orderBy.length; ob++) {
-                    if (resultsVariables.indexOf(orderBy[ob]) >= 0) {
-                        if (orderBySB.length() > 0) orderBySB.append(", ");
-                        orderBySB.append(orderBy[ob]);
+                //add orderBy
+                StringBuilder orderBySB = new StringBuilder();
+                if (distinct || queryHasOrderBy || queryHasOrderByMax) {
+                    //let TableWriterXxx handle it (probably more efficient since in memory)
+                } else {
+                    //append predefined orderBy variables
+                    for (int ob = 0; ob < orderBy.length; ob++) {
+                        if (resultsVariables.indexOf(orderBy[ob]) >= 0) {
+                            if (orderBySB.length() > 0) orderBySB.append(", ");
+                            orderBySB.append(orderBy[ob]);
+                        }
                     }
                 }
-            }
 
-            //add constraints to query  
-            int nCv = constraintVariables.size();
-            StringBuilder humanQuery = new StringBuilder(query);
-            for (int cv = 0; cv < nCv; cv++) {    
-                String constraintVariable = constraintVariables.get(cv);
-                int dv = String2.indexOf(dataVariableSourceNames(), constraintVariable);
-                EDV edv = dataVariables[dv];
+                //add constraints to query  
+                int nCv = constraintVariables.size();
+                StringBuilder humanQuery = new StringBuilder(query);
+                for (int cv = 0; cv < nCv; cv++) {    
+                    String constraintVariable = constraintVariables.get(cv);
+                    int dv = String2.indexOf(dataVariableSourceNames(), constraintVariable);
+                    EDV edv = dataVariables[dv];
 
-                //sql uses "<>", not "!=";  other sql operators are the same as tableDap
-                String tOp = constraintOps.get(cv);
-                if (tOp.equals("!=")) 
-                    tOp = "<>"; 
+                    //sql uses "<>", not "!=";  other sql operators are the same as tableDap
+                    String tOp = constraintOps.get(cv);
+                    if (tOp.equals("!=")) 
+                        tOp = "<>"; 
 
-                //convert time constraints (epochSeconds) to source units
-                //No need! Use Java's setTimeStamp below.
+                    //convert time constraints (epochSeconds) to source units
+                    //No need! Use Java's setTimeStamp below.
 
-                //again, no danger of sql injection since query has been parsed and
-                //  constraintVariables must be known sourceNames
-                String ts = (cv == 0? " WHERE " : " AND ") +
-                    constraintVariables.get(cv) + " " + 
-                    tOp; 
-                query.append(ts + " ?");
-                humanQuery.append(ts + " '" + constraintValues.get(cv) + "'");
-            }
-            if (orderBySB.length() > 0) {
-                String ts = " ORDER BY " + orderBySB.toString();
-                query.append(ts);
-                humanQuery.append(ts);
-            }
+                    //again, no danger of sql injection since query has been parsed and
+                    //  constraintVariables must be known sourceNames
+                    String ts = (cv == 0? " WHERE " : " AND ") +
+                        constraintVariables.get(cv) + " " + 
+                        tOp; 
+                    query.append(ts + " ?");
+                    humanQuery.append(ts + " '" + constraintValues.get(cv) + "'");
+                }
+                if (orderBySB.length() > 0) {
+                    String ts = " ORDER BY " + orderBySB.toString();
+                    query.append(ts);
+                    humanQuery.append(ts);
+                }
 
-            //fill in the '?' in the preparedStatement
-            //***!!! This method avoids SQL Injection Vulnerability !!!***
-            //(see http://en.wikipedia.org/wiki/SQL_injection) by using
-            //preparedStatements (so String values are properly escaped and
-            //numbers are assured to be numbers).
-            PreparedStatement statement = connection.prepareStatement(query.toString());
-            EDV constraintEDVs[] = new EDV[nCv];
-            for (int cv = 0; cv < nCv; cv++) {
-                int tv = cv + 1; //+1 since sql uses 1..
-                EDV edv = findDataVariableBySourceName(constraintVariables.get(cv));
-                constraintEDVs[cv] = edv;
-                Class tClass = edv.sourceDataTypeClass();
-                String val = constraintValues.get(cv);
-                //String2.log("cv=" + cv + " tClass=" + PrimitiveArray.elementClassToString(tClass));
-                if (edv instanceof EDVTimeStamp &&
-                    !constraintOps.get(cv).equals(REGEX_OP)) statement.setTimestamp(tv, 
-                                                  //round to nearest milli
-                                                  new Timestamp(Math.round(String2.parseDouble(val)*1000)));
-                else if (edv.isBoolean())         statement.setBoolean(tv, String2.parseBoolean(val)); //special case
-                else if (tClass == String.class)  statement.setString( tv, val);
-                else if (tClass == double.class)  statement.setDouble( tv, String2.parseDouble(val));
-                else if (tClass == float.class)   statement.setFloat(  tv, String2.parseFloat(val));
-                else if (tClass == long.class)    statement.setLong(   tv, String2.parseLong(val));
-                else if (tClass == int.class)     statement.setInt(    tv, String2.parseInt(val)); //???NaN???
-                else if (tClass == short.class)   statement.setShort(  tv, Math2.narrowToShort(String2.parseInt(val))); 
-                else if (tClass == byte.class)    statement.setByte(   tv, Math2.narrowToByte(String2.parseInt(val))); 
-                else if (tClass == char.class)    statement.setString( tv, val.length() == 0? "\u0000" : val.substring(0, 1)); //FFFF??? 
-                else throw new RuntimeException("Prepared statements don't support class type=" + edv.sourceDataType() + ".");            
-            }
-            if (verbose) String2.log("  statement=" + statement.toString() + "\n" +
-                                     " statement~=" + humanQuery.toString());
-
-            //execute the query
-            ResultSet rs = statement.executeQuery();
-
-            //make empty table with a column for each resultsVariable
-            int tableColToRsCol[]= new int[nRv]; //stored as 1..
-            EDV resultsEDVs[] = new EDV[nRv];
-            for (int rv = 0; rv < nRv; rv++) {
-                String tName = resultsVariables.get(rv); //a sourceName
-                resultsEDVs[rv] = findDataVariableBySourceName(tName);
-
-                //find corresponding resultSet column (should be 1:1) and other info
-                tableColToRsCol[rv] = rs.findColumn(tName); //stored as 1..    throws Throwable if not found
-            }
-            int triggerNRows = EDStatic.partialRequestMaxCells / resultsEDVs.length;
-            Table table = makeTable(resultsEDVs, triggerNRows);
-            PrimitiveArray paArray[] = new PrimitiveArray[nRv];
-            for (int rv = 0; rv < nRv; rv++) 
-                paArray[rv] = table.getColumn(rv);
-
-            //process the resultSet rows of data
-            while (rs.next()) {
-                for (int rv = 0; rv < nRv; rv++) {
-                    int rsCol = tableColToRsCol[rv];
-                    EDV edv = resultsEDVs[rv];
+                //fill in the '?' in the preparedStatement
+                //***!!! This method avoids SQL Injection Vulnerability !!!***
+                //(see http://en.wikipedia.org/wiki/SQL_injection) by using
+                //preparedStatements (so String values are properly escaped and
+                //numbers are assured to be numbers).
+                PreparedStatement statement = connection.prepareStatement(query.toString());
+                EDV constraintEDVs[] = new EDV[nCv];
+                for (int cv = 0; cv < nCv; cv++) {
+                    int tv = cv + 1; //+1 since sql uses 1..
+                    EDV edv = findDataVariableBySourceName(constraintVariables.get(cv));
+                    constraintEDVs[cv] = edv;
                     Class tClass = edv.sourceDataTypeClass();
-                    if (debugMode) String2.log(rv + " " + rs.getString(rsCol));
-                    if (edv.isBoolean()) { //special case
-                        boolean tb = rs.getBoolean(rsCol);
-                        paArray[rv].addInt(rs.wasNull()? Integer.MAX_VALUE : tb? 1 : 0);
-                    } else if (edv instanceof EDVTimeStamp) {
-                        Timestamp tts = rs.getTimestamp(rsCol);         //zulu millis -> epoch seconds
-                        paArray[rv].addDouble(tts == null? Double.NaN : tts.getTime() / 1000.0); 
-                    } else if (tClass == String.class) {
-                        String ts = rs.getString(rsCol); //it may return null
-                        paArray[rv].addString(ts == null? "" : ts); 
-                    } else if (tClass == double.class) {
-                        double d = rs.getDouble(rsCol);
-                        paArray[rv].addDouble(rs.wasNull()? Double.NaN : d); 
-                    } else if (tClass == float.class) {
-                        float f = rs.getFloat(rsCol);
-                        paArray[rv].addFloat(rs.wasNull()? Float.NaN : f); 
-                    } else if (tClass == long.class) {
-                        long tl = rs.getLong(rsCol);
-                        paArray[rv].addLong(rs.wasNull()? Long.MAX_VALUE : tl); 
-                    } else {
-                        int ti = rs.getInt(rsCol);
-                        paArray[rv].addInt(rs.wasNull()? Integer.MAX_VALUE : ti); 
+                    String val = constraintValues.get(cv);
+                    //String2.log("cv=" + cv + " tClass=" + PrimitiveArray.elementClassToString(tClass));
+                    if (edv instanceof EDVTimeStamp &&
+                        !constraintOps.get(cv).equals(PrimitiveArray.REGEX_OP)) statement.setTimestamp(tv, 
+                                                      //round to nearest milli
+                                                      new Timestamp(Math.round(String2.parseDouble(val)*1000)));
+                    else if (edv.isBoolean())         statement.setBoolean(tv, String2.parseBoolean(val)); //special case
+                    else if (tClass == String.class)  statement.setString( tv, val);
+                    else if (tClass == double.class)  statement.setDouble( tv, String2.parseDouble(val));
+                    else if (tClass == float.class)   statement.setFloat(  tv, String2.parseFloat(val));
+                    else if (tClass == long.class)    statement.setLong(   tv, String2.parseLong(val));
+                    else if (tClass == int.class)     statement.setInt(    tv, String2.parseInt(val)); //???NaN???
+                    else if (tClass == short.class)   statement.setShort(  tv, Math2.narrowToShort(String2.parseInt(val))); 
+                    else if (tClass == byte.class)    statement.setByte(   tv, Math2.narrowToByte(String2.parseInt(val))); 
+                    else if (tClass == char.class)    statement.setString( tv, val.length() == 0? "\u0000" : val.substring(0, 1)); //FFFF??? 
+                    else throw new RuntimeException("Prepared statements don't support class type=" + edv.sourceDataType() + ".");            
+                }
+                if (verbose) String2.log("  statement=" + statement.toString() + "\n" +
+                                         " statement~=" + humanQuery.toString());
+
+                //execute the query
+                ResultSet rs = statement.executeQuery();
+
+                //make empty table with a column for each resultsVariable
+                int tableColToRsCol[]= new int[nRv]; //stored as 1..
+                EDV resultsEDVs[] = new EDV[nRv];
+                for (int rv = 0; rv < nRv; rv++) {
+                    String tName = resultsVariables.get(rv); //a sourceName
+                    resultsEDVs[rv] = findDataVariableBySourceName(tName);
+
+                    //find corresponding resultSet column (should be 1:1) and other info
+                    tableColToRsCol[rv] = rs.findColumn(tName); //stored as 1..    throws Throwable if not found
+                }
+                int triggerNRows = EDStatic.partialRequestMaxCells / resultsEDVs.length;
+                Table table = makeTable(resultsEDVs, triggerNRows);
+                PrimitiveArray paArray[] = new PrimitiveArray[nRv];
+                for (int rv = 0; rv < nRv; rv++) 
+                    paArray[rv] = table.getColumn(rv);
+
+                //process the resultSet rows of data
+                while (rs.next()) {
+                    for (int rv = 0; rv < nRv; rv++) {
+                        int rsCol = tableColToRsCol[rv];
+                        EDV edv = resultsEDVs[rv];
+                        Class tClass = edv.sourceDataTypeClass();
+                        if (debugMode) String2.log(rv + " " + rs.getString(rsCol));
+                        if (edv.isBoolean()) { //special case
+                            boolean tb = rs.getBoolean(rsCol);
+                            paArray[rv].addInt(rs.wasNull()? Integer.MAX_VALUE : tb? 1 : 0);
+                        } else if (edv instanceof EDVTimeStamp) {
+                            Timestamp tts = rs.getTimestamp(rsCol);         //zulu millis -> epoch seconds
+                            paArray[rv].addDouble(tts == null? Double.NaN : tts.getTime() / 1000.0); 
+                        } else if (tClass == String.class) {
+                            String ts = rs.getString(rsCol); //it may return null
+                            paArray[rv].addString(ts == null? "" : ts); 
+                        } else if (tClass == double.class) {
+                            double d = rs.getDouble(rsCol);
+                            paArray[rv].addDouble(rs.wasNull()? Double.NaN : d); 
+                        } else if (tClass == float.class) {
+                            float f = rs.getFloat(rsCol);
+                            paArray[rv].addFloat(rs.wasNull()? Float.NaN : f); 
+                        } else if (tClass == long.class) {
+                            long tl = rs.getLong(rsCol);
+                            paArray[rv].addLong(rs.wasNull()? Long.MAX_VALUE : tl); 
+                        } else {
+                            int ti = rs.getInt(rsCol);
+                            paArray[rv].addInt(rs.wasNull()? Integer.MAX_VALUE : ti); 
+                        }
+                    }
+
+                    if (paArray[0].size() >= triggerNRows) {
+                        //String2.log(table.toString("rows",5));
+                        preStandardizeResultsTable(loggedInAs, table); 
+                        if (table.nRows() > 0) {
+                            standardizeResultsTable(requestUrl, userDapQuery, table); //changes sourceNames to destinationNames
+                            tableWriter.writeSome(table);
+                        }
+
+                        table = makeTable(resultsEDVs, triggerNRows);
+                        for (int rv = 0; rv < nRv; rv++) 
+                            paArray[rv] = table.getColumn(rv);
+                        if (tableWriter.noMoreDataPlease) {
+                            tableWriter.logCaughtNoMoreDataPlease(datasetID);
+                            break;
+                        }
                     }
                 }
+                statement.close();
+                preStandardizeResultsTable(loggedInAs, table); 
+                standardizeResultsTable(requestUrl, userDapQuery, table);
+                tableWriter.writeSome(table);
+                tableWriter.finish();
+            } catch (Throwable t) {
+                connection.close();
+                EDStatic.rethrowClientAbortException(t);  //(almost) first thing in catch{}
 
-                if (paArray[0].size() >= triggerNRows) {
-                    //String2.log(table.toString("rows",5));
-                    preStandardizeResultsTable(loggedInAs, table); 
-                    if (table.nRows() > 0) {
-                        standardizeResultsTable(requestUrl, userDapQuery, table); //changes sourceNames to destinationNames
-                        tableWriter.writeSome(table);
-                    }
+                //if too much data, rethrow t
+                String tToString = t.toString();
+                if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+                    throw t;
 
-                    table = makeTable(resultsEDVs, triggerNRows);
-                    for (int rv = 0; rv < nRv; rv++) 
-                        paArray[rv] = table.getColumn(rv);
-                }
+                throw new Throwable(EDStatic.errorFromDataSource + t.toString(), t);
+            } finally {
+                connection.close();
             }
-            statement.close();
-            preStandardizeResultsTable(loggedInAs, table); 
-            standardizeResultsTable(requestUrl, userDapQuery, table);
-            tableWriter.writeSome(table);
-            tableWriter.finish();
         } catch (Throwable t) {
-            connection.close();
-            throw new Throwable(EDStatic.errorFromDataSource + t.toString(), t);
-        } finally {
-            connection.close();
+            //can't make connection!
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+
+            requestReloadASAP();
+            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                "\n(" + EDStatic.errorFromDataSource + t.toString() + ")", 
+                t); 
         }
     }
 
@@ -1850,7 +1872,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/postDet.das\";\n" +
                 String tName = tedd.makeNewFileForDapQuery(null, null, tQuery, EDStatic.fullTestCacheDirectory, 
                     tedd.className() + "_peb_booleanT", ".csv"); 
             } catch (Throwable t) {
-                if (t.toString().indexOf(EDStatic.THERE_IS_NO_DATA) < 0)
+                if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                     throw new Exception("'No Data' exception was expected.", t); 
             }
 

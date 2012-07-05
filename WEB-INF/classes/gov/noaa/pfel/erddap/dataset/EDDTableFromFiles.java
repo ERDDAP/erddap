@@ -561,7 +561,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         sourceNeedsExpandedFP_EQ = tSourceNeedsExpandedFP_EQ;
         sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; //all partially handled
         sourceCanConstrainStringData  = CONSTRAIN_PARTIAL; //all partially handled
-        sourceCanConstrainStringRegex = REGEX_OP; //partially
+        sourceCanConstrainStringRegex = PrimitiveArray.REGEX_OP; //partially
 
         //load cached dirTable->dirList
         Table dirTable = tryToLoadDirFileTable(dirTableFileName); //may be null
@@ -1455,7 +1455,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             }
         } catch (Throwable t) {
             table = null; 
-            String2.log(ERROR + " reading table " + fileName + "\n" + 
+            String2.log(String2.ERROR + " reading table " + fileName + "\n" + 
                 MustBe.throwableToString(t));  
         }
         return table;
@@ -1551,6 +1551,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * @throws Throwable if trouble.
      *   If the file doesn't have a sourceDataName, it isn't an error -- it returns a column of mv's.
      *   If there is trouble, this doesn't call addBadFile or requestReloadASAP().
+     *
+     * @throws an exception if too much data.
+     *  This won't throw an exception if no data.
      */
     public abstract Table lowGetSourceDataFromFile(String fileDir, String fileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
@@ -1564,6 +1567,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * a file's global metadata to be a data column).
      * See lowGetSourceDataFromFile params.
      *
+     * @throws an exception if too much data.
+     *  This won't (shouldn't) throw an exception if no data.
      */
     public Table getSourceDataFromFile(String fileDir, String fileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
@@ -1728,7 +1733,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         if (dirTable == null || fileTable == null) {
             requestReloadASAP(); 
             throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain +
-                "\nDetails: unable to read fileTable."); 
+                "\n(Details: unable to read fileTable.)"); 
         }
         StringArray dirList         = (StringArray)dirTable.getColumn(0);
         ShortArray  ftDirIndex      = (ShortArray)fileTable.getColumn(0);
@@ -1741,7 +1746,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         //minMaxTable and testing each file (below) deal with constraints.
         //sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; //all partially handled
         //sourceCanConstrainStringData  = CONSTRAIN_PARTIAL; //all partially handled
-        //sourceCanConstrainStringRegex = REGEX_OP; //partially
+        //sourceCanConstrainStringRegex = PrimitiveArray.REGEX_OP; //partially
 
         //remove extractColumn from requested variables
         int tExtractIndex = -1;
@@ -1791,9 +1796,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
             constraintValuesD[con] = String2.parseDouble(constraintValues.get(con));
         }
 
-        //convert REGEX_OP to sourceCanConstrainStringRegex
+        //convert PrimitiveArray.REGEX_OP to sourceCanConstrainStringRegex
         if (sourceCanConstrainStringRegex.length() > 0)
-            constraintOps.switchFromTo(REGEX_OP, sourceCanConstrainStringRegex);
+            constraintOps.switchFromTo(PrimitiveArray.REGEX_OP, sourceCanConstrainStringRegex);
 
         //distinct?    sometimes minMaxTable indicates there is only 1 value in the file
         String[] parts = getUserQueryParts(userDapQuery); //decoded.  
@@ -1809,7 +1814,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             String tOp = constraintOps.get(con);
             String tValue = constraintValues.get(con);
 
-            if ((edv instanceof EDVTimeStamp) && !tOp.equals(REGEX_OP)) {
+            if ((edv instanceof EDVTimeStamp) && !tOp.equals(PrimitiveArray.REGEX_OP)) {
                 double epSec = String2.parseDouble(tValue);
 
                 //when testing whole dataset, ignore any constraints for time>yesterday
@@ -1821,7 +1826,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 tValue = ((EDVTimeStamp)edv).epochSecondsToSourceTimeString(epSec);
             }
 
-            if (edv.sourceDataTypeClass() == String.class || tOp.equals(REGEX_OP)) {
+            if (edv.sourceDataTypeClass() == String.class || tOp.equals(PrimitiveArray.REGEX_OP)) {
                 String dsMin    = minMaxTable.getStringData(dv, 0);
                 String dsMax    = minMaxTable.getStringData(dv, 1);
                 int    dsHasNaN = minMaxTable.getIntData(   dv, 2);
@@ -1834,7 +1839,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     break;
                 }
             } else {
-                //numeric variables (and not REGEX_OP)
+                //numeric variables (and not PrimitiveArray.REGEX_OP)
                 double dsMin    = minMaxTable.getDoubleData(dv, 0);
                 double dsMax    = minMaxTable.getDoubleData(dv, 1);
                 int    dsHasNaN = minMaxTable.getIntData(   dv, 2);
@@ -1856,7 +1861,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         }
         if (reasonNotOk != null) {
             cumNNotRead += fileTable.nRows();
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA + " (" + reasonNotOk + ")");
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (" + reasonNotOk + ")");
         }
 
         //if dataset has sortedColumnName, look for min,max constraints for it.
@@ -1872,7 +1877,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
                     //convert time constraints from epochSeconds to source values
                     if (edv instanceof EDVTimeStamp) {
-                        if (op.equals(REGEX_OP))
+                        if (op.equals(PrimitiveArray.REGEX_OP))
                             continue;
                         valD = ((EDVTimeStamp)dataVariables[sortedDVI]).epochSecondsToSourceTimeDouble(valD);
                     }
@@ -1900,6 +1905,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         Table distinctTable = null;
         long nNotRead = 0;  //either don't have matching data or do ('distinct' and 1 value matches)
         long nReadHaveMatch = 0, nReadNoMatch = 0; //read the data file to look for matching data
+        FILE_LOOP:
         for (int f = 0; f < nFiles; f++) {
             //can file be rejected based on constraints?
             boolean ok = true;
@@ -1907,7 +1913,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 String op = constraintOps.get(con);
                 int dv = cdvi[con];
                 EDV edv = dataVariables[dv];
-                if ((edv instanceof EDVTimeStamp) && !op.equals(REGEX_OP)) {
+                if ((edv instanceof EDVTimeStamp) && !op.equals(PrimitiveArray.REGEX_OP)) {
                     //constraintValue is epochSeconds (not source time units), so convert fMin,fMax to epSeconds
                     EDVTimeStamp tdv = (EDVTimeStamp)edv;
                     double fMin = tdv.sourceTimeToEpochSeconds(fileTable.getStringData(dv0 + dv*3 + 0, f));
@@ -1936,7 +1942,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                         break;
                     }                  
 
-                } else if (edv.sourceDataTypeClass() == String.class || op.equals(REGEX_OP)) {
+                } else if (edv.sourceDataTypeClass() == String.class || op.equals(PrimitiveArray.REGEX_OP)) {
                     //String variables
                     String fMin = fileTable.getStringData(dv0 + dv*3 + 0, f);
                     String fMax = fileTable.getStringData(dv0 + dv*3 + 1, f);
@@ -1952,7 +1958,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     }
 
                 } else {
-                    //numeric variables (and not REGEX_OP)
+                    //numeric variables (and not PrimitiveArray.REGEX_OP)
                     double fMin = fileTable.getDoubleData(dv0 + dv*3 + 0, f); 
                     double fMax = fileTable.getDoubleData(dv0 + dv*3 + 1, f); 
                     int    fNaN = fileTable.getIntData(   dv0 + dv*3 + 2, f);
@@ -2047,6 +2053,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 if (distinctTable.nRows() > 0) {
                     standardizeResultsTable(requestUrl, userDapQuery, distinctTable);
                     tableWriter.writeSome(distinctTable);
+                    if (tableWriter.noMoreDataPlease) {
+                        tableWriter.logCaughtNoMoreDataPlease(datasetID);
+                        break FILE_LOOP;
+                    }
                 }
                 distinctTable = null;
             }
@@ -2062,22 +2072,39 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 table = getSourceDataFromFile(tDir, tName,
                     resultsVariablesNEC, resultsTypes, 
                     ftSortedSpacing.get(f), minSorted, maxSorted, false, true); 
+
+            } catch (WaitThenTryAgainException twwae) {
+                throw twwae;
+
             } catch (Throwable t) {
-                //if so, sleep and give it one more try
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+
+                //if too much data, rethrow t
+                String tToString = t.toString();
+                if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+                    throw t;
+
+                //sleep and give it one more try
                 try {
                     Thread.sleep(1000);
                     table = getSourceDataFromFile(tDir, tName,
                         resultsVariablesNEC, resultsTypes, 
                         ftSortedSpacing.get(f), minSorted, maxSorted, false, true); 
+
+                } catch (WaitThenTryAgainException twwae) {
+                    throw twwae;
+
                 } catch (Throwable t2) {
+                    EDStatic.rethrowClientAbortException(t2);  //first thing in catch{}
+
                     if (filesAreLocal) {
                         //mark the file as bad   and reload the dataset
                         addBadFileToTableOnDisk(ftDirIndex.get(f), tName, ftLastMod.get(f), 
                             MustBe.throwableToShortString(t));
-                        requestReloadASAP();
                     }
                     //an exception here will cause data request to fail (as it should)
-                    throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain, t); //the original exception
+                    requestReloadASAP();
+                    throw new WaitThenTryAgainException(t); //the original exception
                 }
             }
             if (reallyVerbose) String2.log("  table.nRows=" + table.nRows());
@@ -2099,6 +2126,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     standardizeResultsTable(requestUrl, userDapQuery, table);
                     tableWriter.writeSome(table);
                     nReadHaveMatch++;
+                    if (tableWriter.noMoreDataPlease) {
+                        tableWriter.logCaughtNoMoreDataPlease(datasetID);
+                        break FILE_LOOP;
+                    }
                 } else {
                     nReadNoMatch++;
                 }
@@ -2148,11 +2179,11 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
 
     /**
-     * For String variables (or numeric variables and REGEX_OP), 
+     * For String variables (or numeric variables and PrimitiveArray.REGEX_OP), 
      * given a min, max, hasNaN value for a given file (or the whole dataset),
      * this returns true if the file *may* have data matching opIndex,opValue.
      *
-     * <p>See Table.testValueOpValue: Note that "" is not treated specially.  "" isn't like NaN.  
+     * <p>See PrimitiveArray.testValueOpValue: Note that "" is not treated specially.  "" isn't like NaN.  
      * <br>testValueOpValue("a" &gt; "")  will return true.
      * <br>testValueOpValue("a" &lt; "")  will return false.
      * <br>Having min here be exclusive of "" allows better testing
@@ -2171,7 +2202,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         //deal with special tests when hasNaN  (where hasNaN=1 makes a difference)
         if (hasNaN == 1) {
             if (conValue.equals("") &&                           // ""="" returns true
-                (conOp.equals(REGEX_OP) || conOp.equals("=") || 
+                (conOp.equals(PrimitiveArray.REGEX_OP) || conOp.equals("=") || 
                  conOp.equals(">=")     || conOp.equals("<=")))
                 return true;
             else if (conOp.equals("<")) 
@@ -2187,7 +2218,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         //0"!=", 1REGEX_OP, 2"<=", 3">=", 4"=", 5"<", 6">"};         
         if (conOp.equals("!=")) {
             if (min.equals(max) && min.equals(conValue)) return false; 
-        } else if (conOp.equals(REGEX_OP)) {
+        } else if (conOp.equals(PrimitiveArray.REGEX_OP)) {
             if (min.equals(max) && !min.matches(conValue)) return false;
         } else if (conOp.equals("<=")) {
             return minC <= 0; 
@@ -2205,14 +2236,14 @@ public abstract class EDDTableFromFiles extends EDDTable{
     }
 
     /**
-     * For numeric variables when op isn't REGEX_OP,
+     * For numeric variables when op isn't PrimitiveArray.REGEX_OP,
      * given a min and a max value for a given file (or the whole dataset),
      * this returns true if the file may have data matching opIndex,opValue.
      *
      * @param min if no valid values, this should be NaN
      * @param max if no valid values, this should be NaN
      * @param hasNaN 0=false 1=true
-     * @param conOp    Must *not* be REGEX_OP  
+     * @param conOp    Must *not* be PrimitiveArray.REGEX_OP  
      * @param conValue the constaintValue
      */
     public static boolean isOK(double min, double max, int hasNaN, String conOp, double conValue) {
@@ -2240,7 +2271,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         int p = 5; //precision    not very precise so works with floats and doubles; for time, this is ~28 hours
         if (conOp.equals("!=")) {
             if (min == max && min == conValue) return false;    //be strict to reject
-        //REGEX_OP is handled by String isOK
+        //PrimitiveArray.REGEX_OP is handled by String isOK
         } else if (conOp.equals("<=")) {
             return Math2.lessThanAE(p, min, conValue); 
         } else if (conOp.equals(">=")) {
@@ -2262,7 +2293,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         //0"!=", 1REGEX_OP, 2"<=", 3">=", 4"=", 5"<", 6">"};         
         //isOK(String min, String max, int hasNaN, String conOp, String conValue) {
         //isOK(double min, double max, int hasNaN, String conOp, double conValue) {
-        String ROP = REGEX_OP;
+        String ROP = PrimitiveArray.REGEX_OP;
 
         Test.ensureEqual(String2.max("a", ""), "a", "");  //"" sorts lower than any string with characters       
 

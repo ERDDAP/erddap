@@ -516,6 +516,9 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      * This gets source data from one copied .nc file.
      * See documentation in EDDTableFromFiles.
      *
+     *
+     * @throws an exception if too much data.
+     *  This won't throw an exception if no data.
      */
     public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
@@ -724,8 +727,8 @@ directionsForGenerateDatasetsXml() +
 "    <sortFilesBySourceNames>stationID Time</sortFilesBySourceNames>\n" +
 "    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
-"        <att name=\"Conventions\">CF-1.4</att>\n" +
-"        <att name=\"History\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2010/00/10 03:00 CST. Original dataset URL:</att>\n" +
+"        <att name=\"Conventions\">CF-1.4</att>\n" +                                                 //dates below change
+"        <att name=\"History\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2012/31/11 20:31 CST. Original dataset URL:</att>\n" +
 "        <att name=\"Mooring_ID\">WES001</att>\n" +
 "        <att name=\"Version\">2</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -736,8 +739,8 @@ directionsForGenerateDatasetsXml() +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Other</att>\n" +
 "        <att name=\"Conventions\">CF-1.6, COARDS, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"History\">null</att>\n" +
-"        <att name=\"history\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2010/00/10 03:00 CST. Original dataset URL:</att>\n" +
+"        <att name=\"History\">null</att>\n" +                            //date below changes
+"        <att name=\"history\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2012/31/11 20:31 CST. Original dataset URL:</att>\n" +
 "        <att name=\"infoUrl\">http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
 "        <att name=\"institution\">NOAA NODC</att>\n" +
 "        <att name=\"keywords\">\n" +
@@ -927,7 +930,7 @@ directionsForGenerateDatasetsXml() +
 
         try {
 
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
 
         String id = "nmspWcosTemp";
@@ -974,7 +977,7 @@ directionsForGenerateDatasetsXml() +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
 "    Float64 _FillValue -9999.0;\n" +
-"    Float64 actual_range 1.0971834e+9, 1.27905816e+9;\n" +  //changes sometimes   see time_coverage_end below
+"    Float64 actual_range 1.0971834e+9, 1.29749592e+9;\n" +  //changes sometimes   see time_coverage_end below
 "    String axis \"T\";\n" +
 "    String cf_role \"profile_id\";\n" +
 "    String ioos_category \"Time\";\n" +
@@ -1033,8 +1036,14 @@ directionsForGenerateDatasetsXml() +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"Created by the NCDDC PISCO Temperature Profile to NetCDF converter.\n" +
-today + " http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\n" +
-today + " http://127.0.0.1:8080/cwexperimental/tabledap/nmspWcosTemp.das\";\n" +
+today;
+        tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+    
+//+ " http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml\n" +
+//today + " http://127.0.0.1:8080/cwexperimental/tabledap/
+expected = 
+"nmspWcosTemp.das\";\n" +
 "    String infoUrl \"http://www.ncddc.noaa.gov/activities/wcos\";\n" +
 "    String institution \"NOAA NMSP\";\n" +
 "    String keywords \"Oceans > Ocean Temperature > Water Temperature\";\n" +
@@ -1055,14 +1064,17 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/nmspWcosTemp.das\";\n" +
 "    String summary \"The West Coast Observing System (WCOS) project provides access to temperature and currents data collected at four of the five National Marine Sanctuary sites, including Olympic Coast, Gulf of the Farallones, Monterey Bay, and Channel Islands. A semi-automated end-to-end data management system transports and transforms the data from source to archive, making the data acessible for discovery, access and analysis from multiple Internet points of entry.\n" +
 "\n" +
 "The stations (and their code names) are Ano Nuevo (ANO001), San Miguel North (BAY), Santa Rosa North (BEA), Big Creek (BIG001), Bodega Head (BOD001), Cape Alava 15M (CA015), Cape Alava 42M (CA042), Cape Alava 65M (CA065), Cape Alava 100M (CA100), Cannery Row (CAN001), Cape Elizabeth 15M (CE015), Cape Elizabeth 42M (CE042), Cape Elizabeth 65M (CE065), Cape Elizabeth 100M (CE100), Cuyler Harbor (CUY), Esalen (ESA001), Point Joe (JOE001), Kalaloch 15M (KL015), Kalaloch 27M (KL027), La Cruz Rock (LAC001), Lopez Rock (LOP001), Makah Bay 15M (MB015), Makah Bay 42M (MB042), Pelican/Prisoners Area (PEL), Pigeon Point (PIG001), Plaskett Rock (PLA001), Southeast Farallon Island (SEF001), San Miguel South (SMS), Santa Rosa South (SRS), Sunset Point (SUN001), Teawhit Head 15M (TH015), Teawhit Head 31M (TH031), Teawhit Head 42M (TH042), Terrace Point 7 (TPT007), Terrace Point 8 (TPT008), Valley Anch (VAL), Weston Beach (WES001).\";\n" +
-"    String time_coverage_end \"2010-07-13T21:56:00Z\";\n" + //changes
+"    String time_coverage_end \"2011-02-12T07:32:00Z\";\n" + //changes
 "    String time_coverage_start \"2004-10-07T21:10:00Z\";\n" +
 "    String title \"West Coast Observing System (WCOS) Temperature Data\";\n" +
 "    String Version \"2\";\n" +
 "    Float64 Westernmost_Easting -124.932;\n" +
 "  }\n" +
 "}\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            int tpo = results.indexOf(expected.substring(0, 17));
+            if (tpo < 0) String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+                "results=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
                 "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
@@ -1218,7 +1230,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 
         try {
 
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         String id = "fsuNoaaShipWTEP";
         if (deleteCachedInfo) {
@@ -1235,7 +1247,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
             eddTable.className() + "_ShipEntire", ".das"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
-        expected = 
+        expected =      
 "Attributes {\n" +
 " s {\n" +
 "  cruise_id {\n" +
@@ -1264,7 +1276,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.32778656e+9, 1.32788154e+9;\n" +
+"    Float64 actual_range 1.1886048e+9, 1.34023674e+9;\n" +
 "    String axis \"T\";\n" +
 "    Int32 data_interval 60;\n" +
 "    String ioos_category \"Time\";\n" +
@@ -1277,7 +1289,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float32 actual_range 44.6, 48.48;\n" +
+"    Float32 actual_range -46.45, 70.05856;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1295,7 +1307,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float32 actual_range 234.53, 236.09;\n" +
+"    Float32 actual_range 0.0, 328.91;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1313,7 +1325,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  airPressure {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 1006.25, 1025.6;\n" +
+"    Float32 actual_range 958.88, 1047.82;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1338,7 +1350,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  airTemperature {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 7.6, 17.25;\n" +
+"    Float32 actual_range -13.77, 18.97;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1362,7 +1374,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  conductivity {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.0, 3.83;\n" +
+"    Float32 actual_range 0.0, 4.78;\n" +
 "    String average_center \"unknown\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1386,7 +1398,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  relativeHumidity {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 35.0, 101.0;\n" +
+"    Float32 actual_range 24.7, 101.0;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1410,7 +1422,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  salinity {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.02, 32.56;\n" +
+"    Float32 actual_range 0.0, 9672.92;\n" +
 "    String average_center \"unknown\";\n" +
 "    Int16 average_length -9999;\n" +
 "    String average_method \"average\";\n" +
@@ -1435,7 +1447,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  seaTemperature {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 8.12, 16.75;\n" +
+"    Float32 actual_range -1.1, 7777777.0;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1460,7 +1472,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  windDirection {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 46.75, 301.77;\n" +
+"    Float32 actual_range 0.0, 360.0;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1485,7 +1497,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  windSpeed {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.545264, 13.2921;\n" +
+"    Float32 actual_range 0.0, 2850253.0;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1510,7 +1522,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  platformCourse {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.03, 359.17;\n" +
+"    Float32 actual_range 0.0, 360.0;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1530,7 +1542,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  platformHeading {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.55, 359.04;\n" +
+"    Float32 actual_range 0.0, 360.0;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1550,7 +1562,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  platformSpeed {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.0, 6.862096;\n" +
+"    Float32 actual_range 0.0, 2850255.0;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1570,7 +1582,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  platformWindDirection {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.1, 359.8;\n" +
+"    Float32 actual_range 0.0, 360.0;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1596,7 +1608,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  platformWindSpeed {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.0, 13.85794;\n" +
+"    Float32 actual_range 0.0, 36.09545;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1659,21 +1671,26 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String creator_email \"samos@coaps.fsu.edu\";\n" +
 "    String creator_name \"Shipboard Automated Meteorological and Oceanographic System (SAMOS)\";\n" +
 "    String creator_url \"http://samos.coaps.fsu.edu/html/\";\n" +
-"    String Data_modification_date \"02/08/2012 10:23:10 EST\";\n" +
+"    String Data_modification_date \"07/03/2012 11:15:34 EDT\";\n" + //changes
 "    String data_provider \"Timothy Salisbury\";\n" +
-"    Float64 Easternmost_Easting 236.09;\n" +
+"    Float64 Easternmost_Easting 328.91;\n" +
 "    Int16 elev 0;\n" +
-"    String end_date_time \"2012/01/29 -- 23:59  UTC\";\n" +
 "    String featureType \"Point\";\n" +
 "    String fsu_version \"300\";\n" +
-"    Float64 geospatial_lat_max 48.48;\n" +
-"    Float64 geospatial_lat_min 44.6;\n" +
+"    Float64 geospatial_lat_max 70.05856;\n" +
+"    Float64 geospatial_lat_min -46.45;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
-"    Float64 geospatial_lon_max 236.09;\n" +
-"    Float64 geospatial_lon_min 234.53;\n" +
+"    Float64 geospatial_lon_max 328.91;\n" +
+"    Float64 geospatial_lon_min 0.0;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
-"    String history \"" + today + " http://coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\n" +
-today + " http://127.0.0.1:8080/cwexperimental/tabledap/fsuNoaaShipWTEP.das\";\n" +
+"    String history \"" + today;
+        tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+
+//+ " http://coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\n" +
+//today + " http://127.0.0.1:8080/cwexperimental/tabledap/
+expected = 
+"fsuNoaaShipWTEP.das\";\n" +
 "    String infoUrl \"http://samos.coaps.fsu.edu/html/\";\n" +
 "    String institution \"FSU\";\n" +
 "    String keywords \"Atmosphere > Atmospheric Pressure > Atmospheric Pressure Measurements,\n" +
@@ -1695,26 +1712,35 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/fsuNoaaShipWTEP.das\";\n
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    String Metadata_modification_date \"02/08/2012 10:23:10 EST\";\n" +
-"    Float64 Northernmost_Northing 48.48;\n" +
-"    String publisher_email \"Lynn.Dewitt@noaa.gov\";\n" +
-"    String publisher_name \"Lynn Dewitt\";\n" +
+"    String Metadata_modification_date \"07/03/2012 11:15:34 EDT\";\n" + //changes
+"    Float64 Northernmost_Northing 70.05856;\n" +
 "    String receipt_order \"01\";\n" +
 "    String sourceUrl \"http://coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\";\n" +
-"    Float64 Southernmost_Northing 44.6;\n" +
+"    Float64 Southernmost_Northing -46.45;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
-"    String start_date_time \"2012/01/29 -- 00:00  UTC\";\n" +
 "    String subsetVariables \"cruise_id, expocode, facility, ID, IMO, platform, platform_version, site\";\n" +
-"    String summary \"NOAA Ship Oscar Dyson Underway Meteorological Data (updated daily) are from the Shipboard Automated Meteorological and Oceanographic System (SAMOS) program.\n" +
+"    String summary \"NOAA Ship Oscar Dyson Underway Meteorological Data (delayed ~10 days for quality control) are from the Shipboard Automated Meteorological and Oceanographic System (SAMOS) program.\n" +
 "\n" +
-"Quality Flags: Each data variable's metadata includes a qcindex which points to a character number in the flag data.  ALWAYS check the flag data for each row of data to see which data is good (flag='Z') and which data isn't.\";\n" +
-"    String time_coverage_end \"2012-01-29T23:59:00Z\";\n" +
-"    String time_coverage_start \"2012-01-28T21:36:00Z\";\n" +
-"    String title \"NOAA Ship Oscar Dyson Underway Meteorological Data\";\n" +
-"    Float64 Westernmost_Easting 234.53;\n" +
+"IMPORTANT: ALWAYS USE THE QUALITY FLAG DATA! Each data variable's metadata includes a qcindex attribute which indicates a character number in the flag data.  ALWAYS check the flag data for each row of data to see which data is good (flag='Z') and which data isn't.  For example, to extract just data where time (qcindex=1), latitude (qcindex=2), longitude (qcindex=3), and airTemperature (qcindex=12) are 'good' data, include this constraint in your ERDDAP query:\n" +
+"  flag=~\\\"ZZZ........Z.*\\\"\n" +
+"in your query.\n" +
+"'=~' indicates this is a regular expression constraint.\n" +
+"The 'Z's are literal characters.  In this dataset, 'Z' indicates 'good' data.\n" +
+"The '.'s say to match any character.\n" +
+"The '*' says to match the previous character 0 or more times.\n" +
+"(Don't include backslashes in your query.)\n" +
+"See the tutorial for regular expressions at\n" +
+"http://www.vogella.de/articles/JavaRegularExpressions/article.html\";\n" +
+"    String time_coverage_end \"2012-06-20T23:59:00Z\";\n" +  //changes
+"    String time_coverage_start \"2007-09-01T00:00:00Z\";\n" +
+"    String title \"NOAA Ship Oscar Dyson Underway Meteorological Data, Quality Controlled\";\n" +
+"    Float64 Westernmost_Easting 0.0;\n" +
 "  }\n" +
 "}\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            int tpo = results.indexOf(expected.substring(0, 17));
+            if (tpo < 0) String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+                "results=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
                 "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
@@ -1907,13 +1933,13 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/fsuNoaaShipWTEP.das\";\n
             sb.append(Calendar2.millisToIsoZuluString(fileLastMod.get(i)) + "\n");
         results = sb.toString();
         expected = 
-"2009-09-28T06:45:08\n" +
-"2010-01-05T09:16:32\n" +
-"2010-01-07T21:55:36\n" +
-"2010-01-09T22:13:44\n" +
-"2010-01-10T21:16:10\n" +
-"2010-01-10T21:35:00\n" +
-"2009-10-02T05:01:10\n";
+"2012-05-18T05:42:56\n" +
+"2012-05-11T01:03:50\n" +
+"2012-05-12T14:37:14\n" +
+"2012-05-14T12:55:06\n" +
+"2012-05-10T07:25:54\n" +
+"2012-05-11T17:41:56\n" +
+"2012-05-14T20:46:04\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
         }
 
