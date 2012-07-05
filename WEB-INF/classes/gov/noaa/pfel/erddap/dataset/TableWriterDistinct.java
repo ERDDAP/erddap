@@ -7,6 +7,7 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.IntArray;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
+import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 
@@ -86,7 +87,7 @@ public class TableWriterDistinct extends TableWriterAll {
     /**
      * This reconstructs the table, sorts and removes duplicates, and sends table to otherTableWriter.
      *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
 
@@ -104,7 +105,7 @@ public class TableWriterDistinct extends TableWriterAll {
     /**
      * If caller has the entire table, use this instead of repeated writeSome() + finish().
      *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void writeAllAndFinish(Table tCumulativeTable) throws Throwable {
         lowFinish(tCumulativeTable);
@@ -113,9 +114,9 @@ public class TableWriterDistinct extends TableWriterAll {
     
     /** Given a cumulativeTable, this sorts it and removes duplicate rows. */
     private void lowFinish(Table cumulativeTable) throws Throwable {
-        //check for EDStatic.THERE_IS_NO_DATA
+        //check for MustBe.THERE_IS_NO_DATA
         if (cumulativeTable.nRows() == 0)
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
 
         //sortAndRemoveDuplicates
         sortAndRemoveDuplicates(cumulativeTable);

@@ -64,10 +64,6 @@ import javax.imageio.ImageIO;
  */
 public class SgtUtil  {
 
-
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     /**
      * Set this to true (by calling verbose=true in your program, not but changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
@@ -123,7 +119,7 @@ public class SgtUtil  {
         //minor or major failures return a default font ("Dialog"!)
         Font font = new Font(fontFamily, Font.PLAIN, 10); //Font.ITALIC
         if (!font.getFamily().equals(fontFamily)) 
-            Test.error(ERROR + " in SgtUtil.getFont: " + fontFamily + " not available.\n" +
+            Test.error(String2.ERROR + " in SgtUtil.getFont: " + fontFamily + " not available.\n" +
                 String2.javaInfo() + "\n" +
                 "Fonts available: " + 
                 String2.noLongLinesAtSpace(String2.toCSSVString(

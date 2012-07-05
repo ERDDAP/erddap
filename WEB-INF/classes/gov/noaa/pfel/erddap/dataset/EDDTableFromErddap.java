@@ -186,7 +186,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         sourceNeedsExpandedFP_EQ = false;
         sourceCanConstrainNumericData = CONSTRAIN_YES;
         sourceCanConstrainStringData  = CONSTRAIN_YES;
-        sourceCanConstrainStringRegex = REGEX_OP;
+        sourceCanConstrainStringRegex = PrimitiveArray.REGEX_OP;
       
         //open the connection to the opendap source
         //Design decision: this doesn't use e.g., ucar.nc2.dt.StationDataSet 
@@ -402,9 +402,10 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      * @param tLocalSourceUrl the base url for the dataset, e.g., 
      *   "http://coastwatch.pfeg.noaa.gov/erddap".
      *   This is a localSourceUrl since it has to be accessible, but usually it is also a publicSourceUrl.
+     * @param keepOriginalDatasetIDs
      * @throws Throwable if trouble
      */
-    public static String generateDatasetsXml(String tLocalSourceUrl) 
+    public static String generateDatasetsXml(String tLocalSourceUrl, boolean keepOriginalDatasetIDs) 
         throws Throwable {
 
         String2.log("EDDTableFromErddap.generateDatasetsXml\n  tLocalSourceUrl=" + tLocalSourceUrl);
@@ -453,7 +454,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
                 //Use unchanged tPublicSourceUrl or via suggestDatasetID?
                 //I guess suggestDatasetID because it ensures a unique name for use in local ERDDAP.
                 //?? Does it cause trouble to use a different datasetID here?
-                String newID = suggestDatasetID(tPublicSourceUrl);
+                String newID = keepOriginalDatasetIDs? id : suggestDatasetID(tPublicSourceUrl);
                 sb.append(
 "<dataset type=\"EDDTableFromErddap\" datasetID=\"" + newID + "\" active=\"true\">\n" +
 "    <!-- " + XML.encodeAsXML(String2.replaceAll(titleCol.getString(row), "--", "- - ")) + " -->\n" +
@@ -501,16 +502,17 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
     public static void testGenerateDatasetsXml() throws Throwable {
         testVerboseOn();
 
-        //test local generateDatasetsXml
-        try {
-            String results = generateDatasetsXml(EDStatic.erddapUrl); //in tests, always use non-https url                
+        //test local generateDatasetsXml.  In tests, always use non-https url.
+        try { 
+            String results = generateDatasetsXml(EDStatic.erddapUrl, false); 
             String2.log("results=\n" + results);
 
             //GenerateDatasetsXml
             GenerateDatasetsXml.doIt(new String[]{"-verbose", 
                 "EDDTableFromErddap",
-                EDStatic.erddapUrl},
-                false); //doIt loop?
+                EDStatic.erddapUrl,
+                "false"}, //keep original names?
+              false); //doIt loop?
             String gdxResults = String2.getClipboardString();
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
@@ -579,7 +581,7 @@ try {
         String name, tName, results, tResults, expected, expected2, expected3, userDapQuery, tQuery;
         String error = "";
         int epo, tPo;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10); //just 10 till 1.40 released, then 14
         String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&altitude>-5&time>=2002-08-03";
         userDapQuery = "longitude,NO3,time,ship&latitude>0&time>=2002-08-03";
         String localUrl = EDStatic.erddapUrl + //in tests, always use non-https url                
@@ -843,7 +845,7 @@ try {
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"cast, longitude, latitude, time\";\n" +
 "    String cdm_trajectory_variables \"cruise_id, ship\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting -124.1;\n" +
 "    String featureType \"TrajectoryProfile\";\n" +
 "    Float64 geospatial_lat_max 44.65;\n" +
@@ -852,7 +854,11 @@ try {
 "    Float64 geospatial_lon_max -124.1;\n" +
 "    Float64 geospatial_lon_min -126.2;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
-"    String history \"" + today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n";
+"    String history \"" + today;
+            Test.ensureEqual(results.substring(0, expected.length()), expected, 
+                "\nresults=\n" + results);
+    
+// +" http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n";
 //this part varies local vs. remote
 //today + " http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das\n" +
 //today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
@@ -883,7 +889,7 @@ expected2 =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 44.65;\n" +
 "    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\";\n" +
 "    Float64 Southernmost_Northing 41.9;\n" +
@@ -923,15 +929,19 @@ expected2 =
 "    Float64 Westernmost_Easting -126.2;\n" +
 "  }\n" +
 "}\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-            tPo = results.indexOf("    String infoUrl ");
-            Test.ensureEqual(results.substring(tPo), expected2, "\nresults=\n" + results);
+            int tpo = results.indexOf(expected2.substring(0, 17));
+            if (tpo < 0) String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, tpo + expected2.length()), expected2, 
+                "results=\n" + results);
 
             if (testLocalErddapToo) {
                 results = SSR.getUrlResponseString(localUrl + ".das");
                 Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
-                tPo = results.indexOf("    String infoUrl ");
-                Test.ensureEqual(results.substring(tPo), expected2, "\nresults=\n" + results);
+
+                tpo = results.indexOf(expected2.substring(0, 17));
+                if (tpo < 0) String2.log("results=\n" + results);
+                Test.ensureEqual(results.substring(tpo, tpo + expected2.length()), expected2, 
+                    "results=\n" + results);
             }
             
             //*** test getting dds for entire dataset
@@ -1107,7 +1117,7 @@ expected2 =
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"cast, longitude, latitude, time\";\n" +
 "    String cdm_trajectory_variables \"cruise_id, ship\";\n" +
-"    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" + 
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" + 
 "    Float64 Easternmost_Easting -124.1;\n" +
 "    String featureType \"TrajectoryProfile\";\n" +
 "    Float64 geospatial_lat_max 44.65;\n" +
@@ -1116,10 +1126,18 @@ expected2 =
 "    Float64 geospatial_lon_max -124.1;\n" +
 "    Float64 geospatial_lon_min -126.2;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
-"    String history \"" + today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
-today + " http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das\n" +
-today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
-today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" +
+"    String history \"" + today;
+        tpo = results.indexOf(expected.substring(0, 17));
+        if (tpo < 0) String2.log("results=\n" + results);
+        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+            "results=\n" + results);
+            
+//+ " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
+//today + " http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das\n" +
+//today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
+//today + " http://127.0.0.1:8080/cwexperimental/
+expected =
+"tabledap/rGlobecBottle.das\";\n" +
 "    String infoUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";\n" +
 "    String institution \"GLOBEC\";\n" +
 "    String keywords \"10um,\n" +
@@ -1145,7 +1163,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" 
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 44.65;\n" +
 "    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\";\n" +
 "    Float64 Southernmost_Northing 41.9;\n" +
@@ -1185,8 +1203,10 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" 
 "    Float64 Westernmost_Easting -126.2;\n" +
 "  }\n" +
 "}\n";
-            int tpo = results.indexOf(expected.substring(0, 5));
-            Test.ensureEqual(results.substring(tpo), expected, "\nresults=\n" + results);
+            tpo = results.indexOf(expected.substring(0, 17));
+            if (tpo < 0) String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+                "results=\n" + results);
 
             //.dds 
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
@@ -1253,7 +1273,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" 
 "netcdf EDDTableFromErddap_Data.nc {\n" +
 " dimensions:\n" +
 "   row = 100;\n" +
-"   shipStringLength = 11;\n" +
+"   ship_strlen = 11;\n" +
 " variables:\n" +
 "   float longitude(row=100);\n" +
 "     :_CoordinateAxisType = \"Lon\";\n" +
@@ -1285,7 +1305,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" 
 "     :standard_name = \"time\";\n" +
 "     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
 "     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"   char ship(row=100, shipStringLength=11);\n" +
+"   char ship(row=100, ship_strlen=11);\n" +
 "     :ioos_category = \"Identifier\";\n" +
 "     :long_name = \"Ship\";\n" +
 "\n" +
@@ -1293,7 +1313,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" 
 " :cdm_data_type = \"TrajectoryProfile\";\n" +
 " :cdm_profile_variables = \"cast, longitude, latitude, time\";\n" +
 " :cdm_trajectory_variables = \"cruise_id, ship\";\n" +
-" :Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" + 
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" + 
 //goofy lat=double  lon=float!
 " :Easternmost_Easting = -124.8f; // float\n" +
 " :featureType = \"TrajectoryProfile\";\n" +
@@ -1301,10 +1321,17 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" 
 " :geospatial_lon_max = -124.8f; // float\n" +
 " :geospatial_lon_min = -125.67f; // float\n" +
 " :geospatial_lon_units = \"degrees_east\";\n" +
-" :history = \"" + today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
-today + " http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das\n" +
-today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
-today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.nc?longitude,NO3,time,ship&latitude>0&time>=2002-08-14&time<=2002-08-15\";\n" +
+" :history = \"" + today;
+        tResults = results.substring(0, tHeader.length());
+        Test.ensureEqual(tResults, tHeader, "\nresults=\n" + results);
+
+
+//+ " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
+//today + " http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das\n" +
+//today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
+//today + " http://127.0.0.1:8080/cwexperimental/
+String tHeader2 =
+"tabledap/rGlobecBottle.nc?longitude,NO3,time,ship&latitude>0&time>=2002-08-14&time<=2002-08-15\";\n" +
 " :id = \"EDDTableFromErddap_Data\";\n" +
 " :infoUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";\n" +
 " :institution = \"GLOBEC\";\n" +
@@ -1331,7 +1358,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.nc?longitu
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :observationDimension = \"row\";\n" +
 " :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\";\n" +
 " :standard_name_vocabulary = \"CF-12\";\n" +
@@ -1370,7 +1397,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.nc?longitu
 " :Westernmost_Easting = -125.67f; // float\n" +
 " data:\n";
 
-            expected = tHeader +
+            expected = tHeader2 +
     "longitude =\n" +
     "  {-124.8, -124.8, -124.8, -124.8, -124.8, -124.8, -124.8, -124.8, -124.9, -124.9, -124.9, -124.9, -124.9, -124.9, -124.9, -124.9, -124.9, -125.0, -125.0, -125.0, -125.0, -125.0, -125.0, -125.0, -125.0, -125.0, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2, -125.43, -125.43, -125.43, -125.43, -125.43, -125.43, -125.43, -125.43, -125.43, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.66, -125.66, -125.66, -125.66, -125.66, -125.66, -125.66, -125.66, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.5, -125.5, -125.5, -125.5, -125.5, -125.5, -125.5, -125.5, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2}\n" +
     "NO3 =\n" +
@@ -1379,7 +1406,10 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.nc?longitu
     "  {1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9}\n" +
     "ship =\"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\"\n" +
     "}\n";
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            tpo = results.indexOf(tHeader2.substring(0, 17));
+            if (tpo < 0) String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, tpo + tHeader2.length()), tHeader2, 
+                "results=\n" + results);
 
             //.ncHeader
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
@@ -1387,8 +1417,14 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.nc?longitu
             //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             String2.log(results);
-            expected = tHeader + "}\n";
-            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            tResults = results.substring(0, tHeader.length());
+            Test.ensureEqual(tResults, tHeader, "\nresults=\n" + results);
+
+            expected = tHeader2 + "}\n";
+            tpo = results.indexOf(expected.substring(0, 17));
+            if (tpo < 0) String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+                "results=\n" + results);
 
             //test .png
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
@@ -1422,6 +1458,22 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.nc?longitu
         String2.log(edd.toString());
     }
 
+    public static void testDegreesSignAttribute() throws Throwable {
+        String2.log("\n*** EDDTableFromErddap.testDegreesSignAttribute");
+        String url = 
+            //"http://127.0.0.1:8080/cwexperimental/tabledap/erdCalcofiSur";
+            "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCalcofiSur";
+        DConnect dConnect = new DConnect(url, true, 1, 1);
+        DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
+        String results = OpendapHelper.getDasString(das);
+        //String expected = "zztop";
+        //Test.ensureEqual(results, expected, "results=\n" + results);
+
+        EDDTable edd = (EDDTableFromErddap)oneFromDatasetXml("testCalcofiSurFromErddap"); 
+        String2.log(edd.toString());
+
+    }
+
     
     /**
      * This tests the methods in this class.
@@ -1433,10 +1485,10 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.nc?longitu
         testVerboseOn();
         
         //always done
-/* 
+        /* */
         testBasic(false);
         testBasic(true);
-   */     testGenerateDatasetsXml();
+        testGenerateDatasetsXml();
         
         //not usually done
 

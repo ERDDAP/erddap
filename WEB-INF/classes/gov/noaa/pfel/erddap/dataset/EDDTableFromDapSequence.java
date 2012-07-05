@@ -590,7 +590,7 @@ public class EDDTableFromDapSequence extends EDDTable{
                 }
 
                 //convert time constraints (epochSeconds) to source String format
-                if ((edv instanceof EDVTimeStamp) && !op.equals(REGEX_OP)) { //but if regex, leave as string
+                if ((edv instanceof EDVTimeStamp) && !op.equals(PrimitiveArray.REGEX_OP)) { //but if regex, leave as string
                     constraintValues.set(c, 
                         ((EDVTimeStamp)edv).epochSecondsToSourceTimeString(
                             String2.parseDouble(constraintValues.get(c))));
@@ -601,7 +601,7 @@ public class EDDTableFromDapSequence extends EDDTable{
 
             } else {
                 //convert time constraints (epochSeconds) to source units
-                if ((edv instanceof EDVTimeStamp) && !op.equals(REGEX_OP)) { //but if regex, leave as string
+                if ((edv instanceof EDVTimeStamp) && !op.equals(PrimitiveArray.REGEX_OP)) { //but if regex, leave as string
                     constraintValues.set(c, 
                         ((EDVTimeStamp)edv).epochSecondsToSourceTimeString(
                             String2.parseDouble(constraintValues.get(c))));
@@ -610,7 +610,7 @@ public class EDDTableFromDapSequence extends EDDTable{
             }
 
             //convert REGEX_OP to sourceCanConstrainStringRegex
-            if (op.equals(REGEX_OP)) {
+            if (op.equals(PrimitiveArray.REGEX_OP)) {
                 constraintOps.set(c, sourceCanConstrainStringRegex);
             }
         }
@@ -635,10 +635,22 @@ public class EDDTableFromDapSequence extends EDDTable{
             table.readOpendapSequence(localSourceUrl + "?" + encodedSourceDapQuery,  
                 skipDapperSpacerRows);
         } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+
             //if no data, convert to ERDDAP standard message
-            if (t.toString().indexOf("Your Query Produced No Matching Results.") >= 0) //the DAP standard
-                throw new SimpleException(DataHelper.THERE_IS_NO_DATA);
-            throw new Throwable(EDStatic.errorFromDataSource + t.toString(), t);
+            String tToString = t.toString();
+            if (tToString.indexOf("Your Query Produced No Matching Results.") >= 0) //the DAP standard
+                throw new SimpleException(MustBe.THERE_IS_NO_DATA);
+
+            //if too much data, rethrow t
+            if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+                throw t;
+
+            //any other error is real trouble
+            requestReloadASAP();
+            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                "\n(" + EDStatic.errorFromDataSource + tToString + ")", 
+                t); 
         }
         //String2.log(table.toString());
         standardizeResultsTable(requestUrl, userDapQuery, table);
@@ -827,7 +839,7 @@ public class EDDTableFromDapSequence extends EDDTable{
         String error = "";
         EDV edv;
         int po, epo;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         //*** test things that should throw exceptions
         StringArray rv = new StringArray();
@@ -838,7 +850,7 @@ public class EDDTableFromDapSequence extends EDDTable{
         String mapDapQuery = "longitude,latitude,NO3,time&latitude>0&altitude>-5&time>=2002-08-03";
         userDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-03";
         String regexDapQuery = "longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-03" +
-            "&longitude" + REGEX_OP + "\".*11.*\"";
+            "&longitude" + PrimitiveArray.REGEX_OP + "\".*11.*\"";
 
         //testGlobecBottle is like erdGlobecBottle, but with the addition
         //  of a fixed value altitude=0 variable
@@ -1592,9 +1604,14 @@ public class EDDTableFromDapSequence extends EDDTable{
 "    Float64 geospatial_vertical_min 0.0;[10]\n" +
 "    String geospatial_vertical_positive \"up\";[10]\n" +
 "    String geospatial_vertical_units \"m\";[10]\n" +
-"    String history \"" + today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle[10]\n" +
-today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
-    "/tabledap/testGlobecBottle.das\";[10]\n" +
+"    String history \"" + today;
+        int tpo = results.indexOf(expected.substring(0, 17));
+        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+            "\nresults=\n" + results);
+
+//+ " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle[10]\n" +
+//today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
+expected = "/tabledap/testGlobecBottle.das\";[10]\n" +
 "    String infoUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";[10]\n" +
 "    String institution \"GLOBEC\";[10]\n" +
 "    String keywords \"Oceans > Salinity/Density > Salinity\";[10]\n" +
@@ -1647,8 +1664,9 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "  }[10]\n" +
 "}[10]\n" +
 "[end]";
-        int tpo = results.indexOf(expected.substring(0, 5));
-        Test.ensureEqual(results.substring(tpo), expected, "\nresults=\n" + results);
+        tpo = results.indexOf(expected.substring(0, 17));
+        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+            "\nresults=\n" + results);
 
         //.dds 
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
@@ -2016,11 +2034,11 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         tName = globecBottle.makeNewFileForDapQuery(null, null, tUserDapQuery, 
             EDStatic.fullTestCacheDirectory, globecBottle.className() + "_Data", ".nc"); 
         results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
-        String tHeader = 
+        String tHeader1 = 
 "netcdf EDDTableFromDapSequence_Data.nc {\n" +
 " dimensions:\n" +
 "   row = 100;\n" +
-"   shipStringLength = 11;\n" +
+"   ship_strlen = 11;\n" +
 " variables:\n" +
 "   float longitude(row=100);\n" +
 "     :_CoordinateAxisType = \"Lon\";\n" +
@@ -2052,7 +2070,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "     :standard_name = \"time\";\n" +  
 "     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
 "     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"   char ship(row=100, shipStringLength=11);\n" +
+"   char ship(row=100, ship_strlen=11);\n" +
 "     :ioos_category = \"Identifier\";\n" +
 "     :long_name = \"Ship\";\n" +
 "\n" +
@@ -2068,9 +2086,14 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 " :geospatial_lon_units = \"degrees_east\";\n" +
 " :geospatial_vertical_positive = \"up\";\n" +
 " :geospatial_vertical_units = \"m\";\n" +
-" :history = \"" + today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
-today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
-                "/tabledap/testGlobecBottle.nc?longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-14&time<=2002-08-15\";\n" +
+" :history = \"" + today;
+        tResults = results.substring(0, tHeader1.length());
+        Test.ensureEqual(tResults, tHeader1, "\nresults=\n" + results);
+        
+//        + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
+//today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
+String tHeader2 = 
+"/tabledap/testGlobecBottle.nc?longitude,NO3,time,ship&latitude>0&altitude>-5&time>=2002-08-14&time<=2002-08-15\";\n" +
 " :id = \"EDDTableFromDapSequence_Data\";\n" +
 " :infoUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";\n" +
 " :institution = \"GLOBEC\";\n" +
@@ -2121,8 +2144,12 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 " :title = \"GLOBEC NEP Rosette Bottle Data (2002)\";\n" +
 " :Westernmost_Easting = -125.67f; // float\n" +
 " data:\n";
+        tpo = results.indexOf(tHeader2.substring(0, 17));
+        if (tpo < 0) String2.log("results=\n" + results);
+        Test.ensureEqual(results.substring(tpo, tpo + tHeader2.length()), tHeader2, 
+            "results=\n" + results);
 
-        expected = tHeader +
+expected = 
 "longitude =\n" +
 "  {-124.8, -124.8, -124.8, -124.8, -124.8, -124.8, -124.8, -124.8, -124.9, -124.9, -124.9, -124.9, -124.9, -124.9, -124.9, -124.9, -124.9, -125.0, -125.0, -125.0, -125.0, -125.0, -125.0, -125.0, -125.0, -125.0, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2, -125.43, -125.43, -125.43, -125.43, -125.43, -125.43, -125.43, -125.43, -125.43, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.66, -125.66, -125.66, -125.66, -125.66, -125.66, -125.66, -125.66, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.67, -125.5, -125.5, -125.5, -125.5, -125.5, -125.5, -125.5, -125.5, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2, -125.2}\n" +
 "NO3 =\n" +
@@ -2131,7 +2158,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "  {1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9}\n" +
 "ship =\"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\"\n" +
 "}\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        tpo = results.indexOf(expected.substring(0, 17));
+        if (tpo < 0) String2.log("results=\n" + results);
+        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+            "results=\n" + results);
 
         //.ncHeader
         tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
@@ -2139,8 +2169,15 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
         //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         String2.log(results);
-        expected = tHeader + "}\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        tResults = results.substring(0, tHeader1.length());
+        Test.ensureEqual(tResults, tHeader1, "\nresults=\n" + results);
+
+        expected = tHeader2 + "}\n";
+        tpo = results.indexOf(expected.substring(0, 17));
+        if (tpo < 0) String2.log("results=\n" + results);
+        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+            "results=\n" + results);
 
 
         //.odvTxt
@@ -2153,7 +2190,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
             //String2.log(results);
             expected = 
     "//<Creator>http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle</Creator>\n" +
-    "//<CreateTime>" + today + "T";
+    "//<CreateTime>" + today;
             Test.ensureEqual(results.substring(0, expected.length()), expected, 
                 "\nresults=\n" + String2.annotatedString(results));
 
@@ -2161,7 +2198,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
     //T21:09:15
             expected = 
     "</CreateTime>\n" +
-    "//<Software>ERDDAP - Version 1.38</Software>\n" +
+    "//<Software>ERDDAP - Version 1.39</Software>\n" +
     "//<Source>http://127.0.0.1:8080/cwexperimental/tabledap/testGlobecBottle.html</Source>\n" +
     "//<Version>ODV Spreadsheet V4.0</Version>\n" +
     "//<DataField>GeneralField</DataField>\n" +
@@ -2404,7 +2441,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
                 true, //NeedsExpandedFP_EQ
                 true, //sourceCanConstrainStringEQNE
                 true, //sourceCanConstrainStringGTLT
-                REGEX_OP,
+                PrimitiveArray.REGEX_OP,
                 false); 
 
             //.xhtml from local dataset made from Erddap
@@ -3228,8 +3265,7 @@ String expected2 =
 "Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,\n" +
 "Atmosphere &gt; Atmospheric Water Vapor &gt; Humidity,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"Oceans &gt; Ocean Circulation &gt; Ocean Currents,\n" +
-"air, air_temperature, atmosphere, atmospheric, circulation, currents, depth, direction, eastward, eastward_sea_water_velocity, epic, from, humidity, identifier, m/s, meteorology, noaa, northward, northward_sea_water_velocity, ocean, oceans, percent, pmel, quality, relative, relative_humidity, sea, seawater, sequence, series, source, speed, surface, tao, temperature, time, time series, vapor, velocity, water, wind, wind_from_direction, wind_speed, winds</att>\n" +
+"air, air_temperature, atmosphere, atmospheric, depth, direction, eastward, eastward_wind, epic, from, humidity, identifier, meteorology, noaa, northward, northward_wind, percent, pmel, quality, relative, relative_humidity, sea, seawater, sequence, series, source, speed, surface, tao, temperature, time, time series, vapor, water, wind, wind_from_direction, wind_speed, winds</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Metadata_Conventions\">epic-insitu-1.0, COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
@@ -3464,10 +3500,10 @@ String expected2 =
 "            <att name=\"units\">m s-1</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">0.5</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-0.5</att>\n" +
-"            <att name=\"ioos_category\">Currents</att>\n" +
-"            <att name=\"standard_name\">northward_sea_water_velocity</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-15.0</att>\n" +
+"            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"standard_name\">northward_wind</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -3520,10 +3556,10 @@ String expected2 =
 "            <att name=\"units\">m s-1</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">0.5</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-0.5</att>\n" +
-"            <att name=\"ioos_category\">Currents</att>\n" +
-"            <att name=\"standard_name\">eastward_sea_water_velocity</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">15.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-15.0</att>\n" +
+"            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"standard_name\">eastward_wind</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
@@ -3837,16 +3873,16 @@ String expected2 =
         }
 
         try {        
-            //try getting no data -- exception should be DataHelper.THERE_IS_NO_DATA
+            //try getting no data -- exception should be MustBe.THERE_IS_NO_DATA
             tName = tedd.makeNewFileForDapQuery(null, null, baseQuery + "&flight_dir>=4000", 
                 EDStatic.fullTestCacheDirectory, tedd.className() + "_bird2", ".csv"); 
             throw new Exception("Shouldn't have gotten here.");      
         } catch (Throwable t) {
             //test that this is the expected exception
-            if (t.toString().indexOf(DataHelper.THERE_IS_NO_DATA) < 0)
+            if (t.toString().indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                 throw new RuntimeException( 
-                    "Exception should have been DataHelper.THERE_IS_NO_DATA=\"" + 
-                    DataHelper.THERE_IS_NO_DATA + "\":\n" +
+                    "Exception should have been MustBe.THERE_IS_NO_DATA=\"" + 
+                    MustBe.THERE_IS_NO_DATA + "\":\n" +
                     MustBe.throwableToString(t));
         }
 
@@ -4626,7 +4662,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
     /** Test that info from subsetVariables gets back to variable's ranges */
     public static void testSubsetVariablesRange() throws Throwable {
         String2.log("\n*** EDDTableFromDapSequence.testSubsetVariablesRange\n");
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         //before I fixed this, time had destinationMin/Max = NaN
         EDDTable edd = (EDDTable)oneFromDatasetXml("nwioosCoral"); 
@@ -4742,8 +4778,14 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "    Float64 geospatial_vertical_min 11.0;[10]\n" +
 "    String geospatial_vertical_positive \"up\";[10]\n" +
 "    String geospatial_vertical_units \"m\";[10]\n" +
-"    String history \"" + today + " http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005[10]\n" +
-today + " http://127.0.0.1:8080/cwexperimental/tabledap/nwioosCoral.das\";[10]\n" +
+"    String history \"" + today;
+        String tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+        
+//+ " http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005[10]\n" +
+//today + " http://127.0.0.1:8080/cwexperimental/
+expected = 
+"tabledap/nwioosCoral.das\";[10]\n" +
 "    String infoUrl \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005.das.info\";[10]\n" +
 "    String institution \"NOAA NWFSC\";[10]\n" +
 "    String keywords \"Biosphere > Aquatic Ecosystems > Coastal Habitat,[10]\n" +
@@ -4805,8 +4847,10 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/nwioosCoral.das\";[10]\n
 "  }[10]\n" +
 "}[10]\n" +
 "[end]";
-        
-        Test.ensureEqual(results, expected, "results=" + results);
+        int tpo = results.indexOf(expected.substring(0, 17));
+        if (tpo < 0) String2.log("results=\n" + results);
+        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+            "results=\n" + results);
 
     }
 
@@ -4820,7 +4864,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/nwioosCoral.das\";[10]\n
         String2.log("\n****************** EDDTableFromDapSequence.test() *****************\n");
         testVerboseOn();
 
-/* */
+/* */ 
         //always done        
         testBasic();
         testGraphics(doAllGraphicsTests);

@@ -86,8 +86,6 @@ public class NetCheck  {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
     public final static String passPercent = "(Passed=";
     public final static String CurrentStatusPASS = "Status=PASS ";
     public final static String CurrentStatusFAIL = "Status=FAIL ";
@@ -133,7 +131,7 @@ public class NetCheck  {
         this.testMode = testMode;
         Test.ensureTrue( //do first, so no log file is created if .xml doesn't exist
             File2.isFile(xmlFileName),  
-            ERROR + ": the .xml file (" + xmlFileName + ") was not found.");
+            String2.ERROR + ": the .xml file (" + xmlFileName + ") was not found.");
 
         //route calls to a logger to com.cohort.util.String2Log
         String2.setupCommonsLogging(-1);
@@ -170,7 +168,7 @@ public class NetCheck  {
      * @throws Exception if trouble
      */
     private void setup(String xmlFileName) throws Exception {
-        String errorIn = ERROR + " in NetCheck.setup: ";
+        String errorIn = String2.ERROR + " in NetCheck.setup: ";
 
         //reset to defaults
         minutesBetweenTests = Double.NaN; 
@@ -329,7 +327,7 @@ public class NetCheck  {
     public String test(boolean doStatusReport, boolean firstStatusReport) {
         String2.log("testMode=" + testMode);
         if (doStatusReport) String2.log("Status Report:");
-        String errorInNoColon = ERROR + " in NetCheck.test";
+        String errorInNoColon = String2.ERROR + " in NetCheck.test";
         String errorIn = errorInNoColon + ": ";
         StringBuilder errorSB = new StringBuilder();
         String result[] = new String[netCheckTests.size()];
@@ -379,7 +377,7 @@ public class NetCheck  {
                 result[i] = testThread.getResult();
                 if (wasStopped || result[i] == null) //it will often be null if thread was interrupted or stopped
                     result[i] = netCheckTest.getDescription() +
-                        "  " + ERROR + ": no response (mustRespondWithinSeconds = " + 
+                        "  " + String2.ERROR + ": no response (mustRespondWithinSeconds = " + 
                         tMustRespondWithinSeconds + ").\n";
 
                 boolean pass = result[i].length() == 0;
@@ -504,7 +502,7 @@ public class NetCheck  {
             try {
                 SSR.sendEmail(smtpServer, smtpPort, smtpUser, smtpPassword, smtpProperties,
                     smtpFromAddress, smtpFromAddress, 
-                    "ERROR while running NetCheck tests", errorSB.toString());
+                    String2.ERROR + " while running NetCheck tests", errorSB.toString());
             } catch (Exception e) {
                 errorSB.append(MustBe.throwable(errorIn, e));
             }

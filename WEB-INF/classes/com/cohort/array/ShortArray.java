@@ -11,6 +11,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -147,13 +148,11 @@ public class ShortArray extends PrimitiveArray {
      */
     public PrimitiveArray subset(int startIndex, int stride, int stopIndex) {
         if (startIndex < 0)
-            throw new IndexOutOfBoundsException(String2.ERROR + 
-                " in ShortArray.subset: startIndex=" + startIndex +
-                " must be at least 0.");
+            throw new IndexOutOfBoundsException(MessageFormat.format(
+                ArraySubsetStart, getClass().getSimpleName(), "" + startIndex));
         if (stride < 1)
-            throw new IllegalArgumentException(String2.ERROR + 
-                " in ShortArray.subset: stride=" + stride +
-                " must greater than 0.");
+            throw new IllegalArgumentException(MessageFormat.format(
+                ArraySubsetStride, getClass().getSimpleName(), "" + stride));
         if (stopIndex >= size)
             stopIndex = size - 1;
         if (stopIndex < startIndex)
@@ -223,7 +222,8 @@ public class ShortArray extends PrimitiveArray {
     public void addN(int n, short value) {
         if (n == 0) return;
         if (n < 0)
-            throw new IllegalArgumentException(String2.ERROR + " in ShortArray.addN: n (" + n + ") < 0");
+            throw new IllegalArgumentException(MessageFormat.format(
+                ArrayAddN, getClass().getSimpleName(), "" + n));
         ensureCapacity(size + (long)n);
         Arrays.fill(array, size, size + n, value);
         size += n;
@@ -347,8 +347,8 @@ public class ShortArray extends PrimitiveArray {
      */
     public void remove(int index) {
         if (index >= size)
-            throw new IllegalArgumentException(String2.ERROR + " in ShortArray.remove: index (" + 
-                index + ") >= size (" + size + ").");
+            throw new IllegalArgumentException(MessageFormat.format(
+                ArrayRemove, getClass().getSimpleName(), "" + index, "" + size));
         System.arraycopy(array, index + 1, array, index, size - index - 1);
         size--;
 
@@ -1113,13 +1113,13 @@ public class ShortArray extends PrimitiveArray {
             return "";
         for (int i = 1; i < size; i++) {
             if (array[i - 1] > array[i]) {
-                return "ShortArray isn't sorted in ascending order: [" + (i-1) + "]=" + array[i-1] + 
-                    " > [" + i + "]=" + array[i] + ".";
+                return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
+                    "[" + (i-1) + "]=" + array[i-1] + " > [" + i + "]=" + array[i]);
             }
         }
         if (array[size - 1] == Short.MAX_VALUE) 
-            return "ShortArray isn't sorted in ascending order: [" + (size-1) + 
-                "]=(missing value).";
+            return MessageFormat.format(ArrayNotAscending, getClass().getSimpleName(),
+                "[" + (size-1) + "]=(" + ArrayMissingValue + ")");
         return "";
     }
 
@@ -1135,11 +1135,13 @@ public class ShortArray extends PrimitiveArray {
         if (size == 0)
             return "";
         if (array[0] == Short.MAX_VALUE) 
-            return "ShortArray isn't sorted in descending order: [0]=(missing value).";
+            return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
+                "[0]=(" + ArrayMissingValue + ")");
         for (int i = 1; i < size; i++) {
             if (array[i - 1] < array[i]) {
-                return "ShortArray isn't sorted in descending order: [" + (i-1) + "]=" + array[i-1] + 
-                    " < [" + i + "]=" + array[i] + ".";
+                return MessageFormat.format(ArrayNotDescending, getClass().getSimpleName(), 
+                    "[" + (i-1) + "]=" + array[i-1] + 
+                     " < [" + i + "]=" + array[i]);
             }
         }
         return "";
@@ -1170,14 +1172,12 @@ public class ShortArray extends PrimitiveArray {
     public String isEvenlySpaced() {
         if (size <= 2)
             return "";
-        int expected = array[1] - array[0];
+        int expected = array[1] - (int)array[0];
         for (int i = 2; i < size; i++) {
             if (array[i] - array[i - 1] != expected) {
-                return "ShortArray isn't evenly spaced: #" + 
-                    (i - 1) + "=" + array[i - 1] + 
-                    ", #" + i + "=" + array[i] + 
-                    ", spacing=" + (array[i] - array[i-1]) +
-                    ", expected spacing=" + expected + ".";
+                return MessageFormat.format(ArrayNotEvenlySpaced, getClass().getSimpleName(),
+                    "" + (i - 1), "" + array[i - 1], "" + i, "" + array[i],
+                    "" + (array[i] - (int)array[i-1]), "" + expected);
             }
         }
         return "";
@@ -1457,7 +1457,7 @@ public class ShortArray extends PrimitiveArray {
         Test.ensureEqual(anArray.isEvenlySpaced(), "", "");
         anArray.set(2, (short)31);
         Test.ensureEqual(anArray.isEvenlySpaced(), 
-            "ShortArray isn't evenly spaced: #1=20, #2=31, spacing=11, expected spacing=10.", "");
+            "ShortArray isn't evenly spaced: [1]=20, [2]=31, spacing=11, expected spacing=10.", "");
 
         //isAscending
         anArray = new ShortArray(new short[] {10,10,30});

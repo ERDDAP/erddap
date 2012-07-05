@@ -89,9 +89,6 @@ public class DigirHelper  {
     public static boolean verbose = false;
     public static boolean reallyVerbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     public static ResourceBundle2 digirDarwin2Properties = new ResourceBundle2(
         "gov.noaa.pfel.coastwatch.pointdata.DigirDarwin2"); 
     public static ResourceBundle2 digirObisProperties = new ResourceBundle2(
@@ -231,7 +228,7 @@ public class DigirHelper  {
         String xmlnsPrefix[], String xmlnsNS[], String xmlnsXSD[]) throws Exception {
 
         //validate the xml info
-        String errorInMethod = ERROR + " in DigirHelper.makePreDestinationRequest: \n";
+        String errorInMethod = String2.ERROR + " in DigirHelper.makePreDestinationRequest: \n";
         Test.ensureNotNull(xmlnsPrefix, errorInMethod + "xmlnsPrefix is null.");
         Test.ensureNotNull(xmlnsNS,     errorInMethod + "xmlnsNS is null.");
         Test.ensureNotNull(xmlnsXSD,    errorInMethod + "xmlnsXSD is null.");
@@ -304,7 +301,7 @@ public class DigirHelper  {
         throws Exception {
 
         //validate the input
-        String errorInMethod = ERROR + " in DigirHelper.getFilterRequest: \n";
+        String errorInMethod = String2.ERROR + " in DigirHelper.getFilterRequest: \n";
         if (filterVariables == null || filterVariables.length == 0) 
             return //a simple filter that is always true
                 "    <filter>\n" +
@@ -385,7 +382,7 @@ public class DigirHelper  {
         */
 
         //make the request
-        String errorInMethod = ERROR + " in DigirHelper.getMetadataXml: \n";
+        String errorInMethod = String2.ERROR + " in DigirHelper.getMetadataXml: \n";
         StringBuilder requestSB = new StringBuilder();
         requestSB.append(getPreDestinationRequest(version,
             //only digir (not darwin or obis or ...) namespace and schema is needed
@@ -596,7 +593,7 @@ public class DigirHelper  {
         */
 
         //create the request
-        String errorInMethod = ERROR + " in DigirHelper.getInventory: \n";
+        String errorInMethod = String2.ERROR + " in DigirHelper.getInventory: \n";
         String filterRequest = filterVariables == null || filterVariables.length == 0? "" :
             getFilterRequest(filterVariables, filterCops, filterValues);
         StringBuilder requestSB = new StringBuilder();
@@ -978,7 +975,7 @@ String2.log("inventoryTable:\n" + table.toString());
             "\n  filterCops=" + String2.toCSSVString(filterCops) +
             "\n  filterValues=" + String2.toCSSVString(filterValues);
         if (verbose) String2.log("\n" + msg);
-        String errorInMethod = ERROR + " in " + msg +
+        String errorInMethod = String2.ERROR + " in " + msg +
             "\n  error message: ";
 
         /* my by-hand test was:
@@ -1240,7 +1237,7 @@ String2.log("inventoryTable:\n" + table.toString());
         String filterVariables[], String filterCops[], String filterValues[],
         Table table, boolean includeXYZT, String resultsVariables[]) throws Exception {
 
-        String errorInMethod = ERROR + " in DigirHelper.searchObis: ";
+        String errorInMethod = String2.ERROR + " in DigirHelper.searchObis: ";
 
         //pre check that filterVariables and resultsVariables are valid darwin or obis variables?
         String validVars[] = getDarwin2ObisVariables(); 
@@ -1419,7 +1416,7 @@ String2.log("inventoryTable:\n" + table.toString());
             "\n  filterVals=" + String2.toCSSVString(filterValues) +
             "\n  resultsVars=" + String2.toCSSVString(resultsVariables));
 
-        String errorInMethod = ERROR + " in DigirHelper.searchBmde: ";
+        String errorInMethod = String2.ERROR + " in DigirHelper.searchBmde: ";
 
         //pre check that filterVariables and resultsVariables are valid bmde variables?
         String validVars[] = getBmdeVariables(); 
@@ -1890,7 +1887,8 @@ String2.log("inventoryTable:\n" + table.toString());
 
         } catch (Exception e) {
             String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-                "\nUNEXPECTED DigirHelper ERROR: Press ^C to stop or Enter to continue..."); 
+                "\nUNEXPECTED DigirHelper " + String2.ERROR + 
+                ": Press ^C to stop or Enter to continue..."); 
 
         }
 
@@ -1955,7 +1953,7 @@ String2.log("inventoryTable:\n" + table.toString());
     public static void parseQuery(String query, StringArray resultsVariables,
         StringArray filterVariables, StringArray filterCops, StringArray filterValues) {
 
-        String errorInMethod = ERROR + " in DigirHelper.parseQuery:\n(query=" + query + ")\n";
+        String errorInMethod = String2.ERROR + " in DigirHelper.parseQuery:\n(query=" + query + ")\n";
         if (query.charAt(query.length() - 1) == '&')
             Test.error(errorInMethod + "query ends with ampersand.");
 
@@ -2043,7 +2041,7 @@ String2.log("inventoryTable:\n" + table.toString());
         for (int i = 0; i < filterVariables.length; i++) {
             int op = String2.indexOf(COP_NAMES, filterCops[i]);
             if (op < 0) 
-                Test.error(ERROR + " in DigirHelper.getOpendapConstraint:\n" +
+                Test.error(String2.ERROR + " in DigirHelper.getOpendapConstraint:\n" +
                     "Invalid operator=" + filterCops[i] + ".");
             sb.append("&" + filterVariables[i] + COP_SYMBOLS[op] + filterValues[i]);
         }

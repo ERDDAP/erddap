@@ -131,9 +131,6 @@ import com.sshtools.j2ssh.configuration.ConfigurationLoader;
  */
 public class SSR {
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     /**
      * Set this to true (by calling verbose=true in your program, not but changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
@@ -280,7 +277,7 @@ public class SSR {
                 String2.log(s);
             else 
                 throw new Exception(
-                    ERROR + " in SSR.dosShell:\n" + s);
+                    String2.ERROR + " in SSR.dosShell:\n" + s);
         }
         return outCatcher.getArrayList();
     }
@@ -316,7 +313,7 @@ public class SSR {
                 String2.log(s);
             else 
                 throw new Exception(
-                    ERROR + " in SSR.cShell:\n" + s);
+                    String2.ERROR + " in SSR.cShell:\n" + s);
         }
         return outCatcher.getArrayList();
     }
@@ -454,7 +451,7 @@ public class SSR {
         process.getInputStream().close();
         if (timeOutSeconds > 0 && time >= timeOutMillis) 
             errPipe.print(
-                ERROR + ": shell command (" + String2.toCSSVString(cmd) + ") timed out (" + timeOutSeconds + " s).\n");
+                String2.ERROR + ": shell command (" + String2.toCSSVString(cmd) + ") timed out (" + timeOutSeconds + " s).\n");
         process.getErrorStream().close();
 
         return exitValue;
@@ -522,13 +519,13 @@ public class SSR {
         if (includeDirectoryInfo) {
             //ensure slash at end of removeDirPrefix
             if ("\\/".indexOf(removeDirPrefix.charAt(removeDirPrefix.length() - 1)) < 0)
-                throw new IllegalArgumentException(ERROR + 
+                throw new IllegalArgumentException(String2.ERROR + 
                     " in SSR.zip: removeDirPrefix must end with a slash.");
 
             //ensure dirNames start with removeDirPrefix
             for (int i = 0; i < dirNames.length; i++)
                 if (!dirNames[i].startsWith(removeDirPrefix))
-                    throw new IllegalArgumentException(ERROR + " in SSR.zip: dirName[" + 
+                    throw new IllegalArgumentException(String2.ERROR + " in SSR.zip: dirName[" + 
                         i + "] doesn't start with " + removeDirPrefix + ".");
         }
 
@@ -642,13 +639,13 @@ public class SSR {
         if (includeDirectoryInfo) {
             //ensure slash at end of removeDirPrefix
             if ("\\/".indexOf(removeDirPrefix.charAt(removeDirPrefix.length() - 1)) < 0)
-                throw new IllegalArgumentException(ERROR + 
+                throw new IllegalArgumentException(String2.ERROR + 
                     " in SSR.gzip: removeDirPrefix must end with a slash.");
 
             //ensure dirNames start with removeDirPrefix
             for (int i = 0; i < dirNames.length; i++)
                 if (!dirNames[i].startsWith(removeDirPrefix))
-                    throw new IllegalArgumentException(ERROR + " in SSR.zip: dirName[" + 
+                    throw new IllegalArgumentException(String2.ERROR + " in SSR.zip: dirName[" + 
                         i + "] doesn't start with " + removeDirPrefix + ".");
         }
 
@@ -1034,7 +1031,7 @@ public class SSR {
                    int where = Arrays.binarySearch(topN, ts);
                    if (where >= 0)
                        //it is already in the array -- shouldn't ever happen 
-                       sb.append(ERROR + ": SSR.getTopN wants to insert \"" + ts + "\"\n" +
+                       sb.append(String2.ERROR + ": SSR.getTopN wants to insert \"" + ts + "\"\n" +
                            "at " + where + ", where values are\n" +
                            String2.toNewlineString(topN) + "\n");
                    else {
@@ -1154,7 +1151,8 @@ public class SSR {
         //    "  toAddress=" + toAddress);
 
         if (smtpPort < 0 || smtpPort == Integer.MAX_VALUE) 
-            throw new Exception("ERROR in sendEmail: smtpPort=" + smtpPort + " is invalid.");
+            throw new Exception(String2.ERROR + " in sendEmail: smtpPort=" + smtpPort +
+                " is invalid.");
         //I'm not sure if System.getProperties returns a new Properties 
         //  or a reference to the same system properties object
         //  so use new Properties to make System properties just the defaults
@@ -1413,7 +1411,7 @@ public class SSR {
             in.close();
             return sb.toString();
         } catch (Exception e) {
-            throw new Exception(ERROR + " from url=" + urlString + " : " + e.toString());
+            throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e.toString());
         }
     } 
 
@@ -1537,7 +1535,7 @@ public class SSR {
             in.close();
             return String2.toStringArray(al.toArray());
         } catch (Exception e) {
-            throw new Exception(ERROR + " from url=" + urlString + " : " + e.toString());
+            throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e.toString());
         }
     } 
 
@@ -1582,7 +1580,7 @@ public class SSR {
             return ba.toArray();
         } catch (Exception e) {
             //String2.log(e.toString());
-            throw new Exception(ERROR + " from url=" + urlString + " : " + e.toString());
+            throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e.toString());
         }
     } 
 
@@ -1938,7 +1936,7 @@ public class SSR {
                 else if (command.equals("symlink")) sftp.symlink(parameter1, parameter2);
                 else if (command.equals("")) {}
                 else throw new IllegalArgumentException(
-                    ERROR + " in SSR.sftp: unrecognized command #" + 
+                    String2.ERROR + " in SSR.sftp: unrecognized command #" + 
                     i + " (" + commandAr[i] + ").");
             }
 
@@ -2012,7 +2010,7 @@ public class SSR {
             
         if (error.length() > 0)
             throw new RuntimeException(
-                ERROR + " in  SSR.windowsSftp while creating batch file\n  (" +
+                String2.ERROR + " in  SSR.windowsSftp while creating batch file\n  (" +
                 batchName + "):\n  " + error);
 
         try {

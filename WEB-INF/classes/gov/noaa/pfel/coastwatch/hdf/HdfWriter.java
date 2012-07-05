@@ -33,9 +33,6 @@ public class HdfWriter  {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     private boolean open = false;
 
     //private variables
@@ -58,7 +55,7 @@ public class HdfWriter  {
     public int sdStart(String hdfFileName, int mode) throws Exception {
   
         //validate parameters
-        String errorIn = ERROR + " in HDFWriter.sdStart: ";
+        String errorIn = String2.ERROR + " in HDFWriter.sdStart: ";
         if (mode != HdfConstants.DFACC_CREATE)
             throw new RuntimeException(errorIn + "unsupported mode (" + mode + ").");
         if (openFileID != 0)
@@ -99,7 +96,7 @@ public class HdfWriter  {
         //see SDcreate in hdf4.2r1/mfhdf/libsrc/mfsd.c
         
         //validate parameters
-        String errorIn = ERROR + " in HDFWriter.sdCreate: ";
+        String errorIn = String2.ERROR + " in HDFWriter.sdCreate: ";
         if (openFileID == 0)
             throw new RuntimeException(errorIn + "use sdStart first.");
         if (fileID != openFileID)
@@ -147,7 +144,7 @@ public class HdfWriter  {
         Object dataArray) {
         
         //validate parameters
-        String errorIn = ERROR + " in HDFWriter.sdWriteData: ";
+        String errorIn = String2.ERROR + " in HDFWriter.sdWriteData: ";
         if (openFileID == 0)
             throw new RuntimeException(errorIn + "use sdStart first.");
         if (openSdsID == 0)
@@ -180,7 +177,7 @@ public class HdfWriter  {
     public boolean sdEndAccess(int sdsID) {
 
         //validate parameters
-        String errorIn = ERROR + " in HDFWriter.sdEndAccess: ";
+        String errorIn = String2.ERROR + " in HDFWriter.sdEndAccess: ";
         if (openFileID == 0)
             throw new RuntimeException(errorIn + "use sdStart first.");
         if (openSdsID == 0)
@@ -205,7 +202,7 @@ public class HdfWriter  {
     public int sdSelect(int fileID, int varNumber) {
 
         //validate parameters
-        String errorIn = ERROR + " in HDFWriter.sdSelect: ";
+        String errorIn = String2.ERROR + " in HDFWriter.sdSelect: ";
         if (openFileID == 0)
             throw new RuntimeException(errorIn + "use sdCreate first.");
         if (fileID != openFileID)
@@ -234,7 +231,7 @@ public class HdfWriter  {
     public boolean sdSetAttr(int id, String name, Object o) {
 
         //validate parameters
-        String errorIn = ERROR + " in HDFWriter.sdSetAttr: ";
+        String errorIn = String2.ERROR + " in HDFWriter.sdSetAttr: ";
         if (openFileID == 0)
             throw new RuntimeException(errorIn + "use sdStart first.");
         if (id != openFileID && id != openSdsID)
@@ -263,7 +260,7 @@ public class HdfWriter  {
     public boolean sdSetAattr(int id, String name, Object o) throws Exception {
 
         //validate parameters
-        String errorIn = ERROR + " in HDFWriter.sdSetAttr: ";
+        String errorIn = String2.ERROR + " in HDFWriter.sdSetAttr: ";
         if (openFileID == 0)
             throw new RuntimeException(errorIn + "use sdStart first.");
         if (id != openFileID && id != openSdsID)
@@ -307,7 +304,7 @@ public class HdfWriter  {
     public boolean sdEnd(int fileID) {
 
         //validate parameters
-        String errorIn = ERROR + " in HDFWriter.sdEnd: ";
+        String errorIn = String2.ERROR + " in HDFWriter.sdEnd: ";
         if (openFileID == 0)
             throw new RuntimeException(errorIn + "use sdStart first.");
         if (openSdsID != 0)

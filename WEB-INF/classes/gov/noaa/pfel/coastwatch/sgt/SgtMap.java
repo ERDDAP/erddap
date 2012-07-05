@@ -60,10 +60,6 @@ import javax.swing.JFrame;
  */
 public class SgtMap  {
 
-
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     /**
      * Set this to true (by calling verbose=true in your program, not but changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
@@ -1229,7 +1225,7 @@ public class SgtMap  {
                         } else String2.log("  SgtMap: No data for vectors.\nspl=" + gdl.toString());
 
                     } else {
-                        Test.error(ERROR + " in SgtMap.makeMap: Unsupported GraphDataLayer.draw value: " + 
+                        Test.error(String2.ERROR + " in SgtMap.makeMap: Unsupported GraphDataLayer.draw value: " + 
                             gdl.draw + "\nspl=" + gdl.toString());
                     }
 
@@ -1306,7 +1302,7 @@ public class SgtMap  {
                             g2.fillPolygon(xPoints, yPoints, 3);
                             g2.drawPolygon(xPoints, yPoints, 3);
                         } else {
-                            Test.error(ERROR + " in SgtMap.makeMap: Unsupported GraphDataLayer.draw value: " + 
+                            Test.error(String2.ERROR + " in SgtMap.makeMap: Unsupported GraphDataLayer.draw value: " + 
                                 gdl.draw + "\nspl=" + gdl.toString());
                         }
                             
@@ -1355,7 +1351,7 @@ public class SgtMap  {
                             g2.drawPolygon(xPoints, yPoints, 3);
                             legendTextY += labelHeightPixels * 3/2; //from center of vector
                         } else {
-                            Test.error(ERROR + " in SgtMap.makeMap: Unsupported GraphDataLayer.draw value: " + 
+                            Test.error(String2.ERROR + " in SgtMap.makeMap: Unsupported GraphDataLayer.draw value: " + 
                                 gdl.draw + "\nspl=" + gdl.toString());
                         }
                         legendTextY += labelHeightPixels;
@@ -2810,7 +2806,7 @@ String2.log("err: " + errCatcher.getString());
             for (int region = 0; region < tRegionInfo.length; region++) {  
                 regionInfo[region] = String2.split(tRegionInfo[region], ',');
                 Test.ensureEqual(regionInfo[region].length, 8, 
-                    ERROR + " in SgtMap.makePlainRegionsMap, region=" + region);
+                    String2.ERROR + " in SgtMap.makePlainRegionsMap, region=" + region);
             }
             int regionsResult[] = makeRegionsMap(
                 classRB2.getInt("regionMapMaxWidth",  228),

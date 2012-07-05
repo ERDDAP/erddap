@@ -52,7 +52,7 @@ public class SftpTest extends NetCheckTest {
      * @throws Exception if trouble
      */
     public SftpTest(SimpleXMLReader xmlReader) throws Exception {
-        String errorIn = ERROR + " in SftpTest constructor: ";
+        String errorIn = String2.ERROR + " in SftpTest constructor: ";
 
         //ensure the xmlReader is just starting with this class
         Test.ensureEqual(xmlReader.allTags(), "<netCheck><sftpTest>", 
@@ -125,7 +125,7 @@ public class SftpTest extends NetCheckTest {
     public SftpTest(String title, String hostName, String userName, 
         String localDirectory, String remoteDirectory, String fileName) throws Exception {
 
-        String errorIn = ERROR + " in SftpTest constructor: ";
+        String errorIn = String2.ERROR + " in SftpTest constructor: ";
     
         //required 
         this.title = title;
@@ -149,7 +149,7 @@ public class SftpTest extends NetCheckTest {
      * @throws Exception if trouble
      */
     public void ensureValid() throws Exception {
-        String errorIn = ERROR + " in SftpTest.ensureValid: ";
+        String errorIn = String2.ERROR + " in SftpTest.ensureValid: ";
 
         //ensure that required items were set
         Test.ensureEqual(title == null || title.length() == 0, false, 
@@ -221,14 +221,14 @@ public class SftpTest extends NetCheckTest {
                 SSR.sftp(hostName, userName, password, command);
             } catch (Exception e) {
                 String error = String2.replaceAll(MustBe.throwableToString(e), "\n", "\n    ");
-                return "  " + ERROR + " from SSR.sftp: " + error + "\n";
+                return "  " + String2.ERROR + " from SSR.sftp: " + error + "\n";
             }
             time = System.currentTimeMillis() - time;
             
             //check mustRespondWithinSeconds
             StringBuilder errorSB = new StringBuilder();
             if (Math2.isFinite(mustRespondWithinSeconds) && time > mustRespondWithinSeconds * 1000) {
-                errorSB.append("  " + ERROR + ": response time (" + (time/1000.0) + 
+                errorSB.append("  " + String2.ERROR + ": response time (" + (time/1000.0) + 
                     " s) was too slow (mustRespondWithinSeconds = " + 
                     mustRespondWithinSeconds + ").\n");
             }          
@@ -237,7 +237,7 @@ public class SftpTest extends NetCheckTest {
             long differAt = File2.whereDifferent(localDirectory + tempFileName1,
                 localDirectory + tempFileName2);
             if (differAt >= 0) 
-                errorSB.append("  " + ERROR + ": the returned file is different at byte #" +
+                errorSB.append("  " + String2.ERROR + ": the returned file is different at byte #" +
                     differAt +".\n");
 
             //if there was trouble, include info (at the start) of the error message
@@ -293,7 +293,7 @@ public class SftpTest extends NetCheckTest {
         sftpTest.setMustRespondWithinSeconds(30);
         String2.log(sftpTest.getDescription());
         String error = sftpTest.test();
-        Test.ensureEqual(error, "", ERROR + " in SftpTest.unitTest:\n" + error);
+        Test.ensureEqual(error, "", String2.ERROR + " in SftpTest.unitTest:\n" + error);
         String2.log("netcheck.SftpTest finished successfully   time=" + 
             (System.currentTimeMillis() - time));
     }

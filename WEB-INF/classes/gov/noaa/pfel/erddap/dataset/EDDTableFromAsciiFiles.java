@@ -78,6 +78,9 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
      * This gets source data from one file.
      * See documentation in EDDTableFromFiles.
      *
+     *
+     * @throws an exception if too much data.
+     *  This won't throw an exception if no data.
      */
     public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
@@ -493,7 +496,7 @@ directionsForGenerateDatasetsXml() +
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         String id = "testTableAscii";
         if (deleteCachedDatasetInfo) {
@@ -609,8 +612,14 @@ directionsForGenerateDatasetsXml() +
 "    Float64 geospatial_vertical_min 0.0;\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"" + today + " The source URL.\n" +
-today + " http://127.0.0.1:8080/cwexperimental/tabledap/testTableAscii.das\";\n" +
+"    String history \"" + today;
+        tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+        
+//+ " The source URL.\n" +
+//today + " http://127.0.0.1:8080/cwexperimental/tabledap/
+expected =
+"testTableAscii.das\";\n" +
 "    String infoUrl \"The Info Url\";\n" +
 "    String institution \"NDBC\";\n" +
 "    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds\";\n" +
@@ -635,7 +644,10 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/testTableAscii.das\";\n"
 "    Float64 Westernmost_Easting -122.88;\n" +
 "  }\n" +
 "}\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        int tpo = results.indexOf(expected.substring(0, 17));
+        if (tpo < 0) String2.log("results=\n" + results);
+        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
+            "results=\n" + results);
         
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 

@@ -44,10 +44,12 @@ public class HdfVGroup extends HdfTag {
         String name, String className) {
 
         if (name.length() >= Short.MAX_VALUE)
-            throw new RuntimeException(ERROR + " in HdfVGroup constructor: 'name' is too long (" + 
+            throw new RuntimeException(String2.ERROR + 
+                " in HdfVGroup constructor: 'name' is too long (" + 
                 name.length() + " characters).");
         if (className.length() >= Short.MAX_VALUE)
-            throw new RuntimeException(ERROR + " in HdfVGroup constructor: 'name' is too long (" + 
+            throw new RuntimeException(String2.ERROR + 
+                " in HdfVGroup constructor: 'name' is too long (" + 
                 className.length() + " characters).");
 
         tagType = 0x07ad;

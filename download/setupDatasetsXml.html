@@ -227,22 +227,22 @@ And if you get stuck, please send an email with the details to <tt>bob dot simon
       YOU ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML THAT YOU
       ADD TO ERDDAP'S datasets.xml FILE.
 
-      <p>EDDGridFromThreddsCatalog - 
+      <p><a name="EDDGridFromThreddsCatalog">EDDGridFromThreddsCatalog</a> - 
       In general, the options in GenerateDatasetsXml generate a datasets.xml chunk
       for one dataset from one specific data source. An exception to this is the 
       EDDGridFromThreddsCatalog option. 
       It generates all of the datasets.xml chunks needed for all of the EDDGridFromDap datasets 
       that it can find by crawling recursively through a THREDDS (sub) catalog.
       There are many forms of THREDDS catalog URLs.
-      This option REQUIRES a THREDDS .xml URL with <tt>/thredds/catalog/</tt> in it, for example,
+      This option REQUIRES a THREDDS .xml URL with <tt>/catalog/</tt> in it, for example,
       <br>http://oceanwatch.pfeg.noaa.gov/thredds/catalog/catalog.xml or
       <br>http://oceanwatch.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml
       <br>(note that the comparable .html catalog is at
       <br>http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMH/chla/catalog.html ).
       <br>If you have problems with EDDGridFromThreddsCatalog:
       <ul>
-      <li>Make sure the URL you are using is valid, includes <tt>/thredds/catalog/</tt>,
-        and has the extension .xml.
+      <li>Make sure the URL you are using is valid, includes <tt>/catalog/</tt>,
+        and ends with /catalog.xml .
       <li>If possible, use a public URL (e.g., with oceanwatch.pfeg.noaa.gov) in the
         URL, not a private numeric IP address (e.g., with 12.34.56.78).
         If the THREDDS is only accessible privately, you can use
@@ -1208,6 +1208,12 @@ database table or <a href="http://en.wikipedia.org/wiki/View_(database)">view</a
   have access to.
   ERDDAP tries to do things in a secure way, too.
   <ul>
+  <li>Consider replicating, on a different computer, the database and database tables 
+    with the data that you want ERDDAP to serve.  
+    (Yes, for commercial databases like Oracle, this involves
+    addtional licensing fees. But for open source databases, like PostgreSQL and MySQL,
+    this costs nothing.)  This gives you a high level of security and also 
+    prevents ERDDAP requests from slowing down the original database.
   <li>We encourage you to set up ERDDAP to connect to the database as a database user that only has
     access to the <b>relevant</b> database(s) and only has READ privileges.
   <li>We encourage you to set up the connection from ERDDAP to the database so that it 

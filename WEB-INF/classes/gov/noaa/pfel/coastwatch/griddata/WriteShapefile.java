@@ -40,9 +40,6 @@ public class WriteShapefile {
     private final static boolean little = true;
     private final static boolean big = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
 
     /* *
      * This writes a shapefile header to the file.

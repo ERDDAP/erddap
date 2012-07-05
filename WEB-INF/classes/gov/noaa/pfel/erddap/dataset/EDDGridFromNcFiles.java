@@ -685,7 +685,7 @@ directionsForGenerateDatasetsXml() +
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         //  /*
         String id = "testGriddedNcFiles";
@@ -814,8 +814,14 @@ directionsForGenerateDatasetsXml() +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"Remote Sensing Systems, Inc\n" +
 "2008-08-29T00:31:43Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" + 
-today + " http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n" +
-today + " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das\";\n" +
+today;
+        tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+
+//            + " http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n" +
+//today + 
+
+expected = " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das\";\n" +
 "    String infoUrl \"http://coastwatch.pfel.noaa.gov/infog/QS_ux10_las.html\";\n" +
 "    String institution \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String keywords \"EARTH SCIENCE > Oceans > Ocean Winds > Surface Winds\";\n" +
@@ -843,7 +849,10 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das\";
 "    Float64 Westernmost_Easting 0.125;\n" +
 "  }\n" +
 "}\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        int tpo = results.indexOf(expected.substring(0, 17));
+        if (tpo < 0) String2.log("results=\n" + results);
+        tResults = results.substring(tpo, tpo +  expected.length());
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
@@ -1046,8 +1055,15 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das\";
 "    Float64 geospatial_lon_resolution 3.75;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"Direct read of GRIB-1 into NetCDF-Java 4 API\n" +
-today + " (local files)\n" +
-today + " http://127.0.0.1:8080/cwexperimental/griddap/testGribFiles.das\";\n" +
+today;
+        tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+
+//+ " (local files)\n" +
+//today + 
+
+expected = 
+" http://127.0.0.1:8080/cwexperimental/griddap/testGribFiles.das\";\n" +
 "    String infoUrl \"http://www.nceas.ucsb.edu/scicomp/GISSeminar/UseCases/ExtractGRIBClimateWithR/ExtractGRIBClimateWithR.html\";\n" +
 "    String institution \"UK Met RSMC\";\n" +
 "    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds\";\n" +
@@ -1075,7 +1091,10 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGribFiles.das\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
 "  }\n" +
 "}\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        int tpo = results.indexOf(expected.substring(0, 17));
+        if (tpo < 0) String2.log("results=\n" + results);
+        tResults = results.substring(tpo, tpo +  expected.length());
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
@@ -1459,8 +1478,14 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGribFiles.das\";\n" +
 "    Float64 geospatial_lon_resolution 0.5;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"Direct read of GRIB-2 into NetCDF-Java 4 API\n" +
-today + " (local files)\n" +
-today + " http://127.0.0.1:8080/cwexperimental/griddap/testGrib2.das\";\n" +
+today;
+        tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+
+//+ " (local files)\n" +
+//today + 
+expected= 
+" http://127.0.0.1:8080/cwexperimental/griddap/testGrib2.das\";\n" +
 "    String infoUrl \"???\";\n" +
 "    String institution \"???\";\n" +
 "    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
@@ -1491,7 +1516,10 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGrib2.das\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
 "  }\n" +
 "}\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        int tpo = results.indexOf(expected.substring(0, 17));
+        if (tpo < 0) String2.log("results=\n" + results);
+        tResults = results.substring(tpo, tpo +  expected.length());
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
         //*** test getting dds for entire dataset
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
@@ -1659,7 +1687,7 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGrib2.das\";\n" +
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
-        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         //generateDatasetsXml
         
@@ -1729,8 +1757,15 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testGrib2.das\";\n" +
 "    String cdm_data_type \"Grid\";\n" +
 "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String history \"Direct read of HDF4 file through CDM library\n" +
-today + " (local files)\n" +
-today + " http://127.0.0.1:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
+today;
+        tResults = results.substring(0, expected.length());
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+        
+//+ " (local files)\n" +
+//today + 
+    
+expected =
+" http://127.0.0.1:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
 "    String infoUrl \"???\";\n" +
 "    String institution \"NOAA CoastWatch\";\n" +
 "    String keywords \"Oceans > Ocean Temperature > Sea Surface Temperature\";\n" +
@@ -1755,7 +1790,9 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
 "    String title \"Test of CoastWatch HDF files\";\n" +
 "  }\n" +
 "}\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        int tpo = results.indexOf(expected.substring(0, 17));
+        if (tpo < 0) String2.log("results=\n" + results);
+        tResults = results.substring(tpo, tpo +  expected.length());
         
         //*** test getting dds for entire dataset
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
@@ -1845,7 +1882,7 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
         int expectedMs[] = new int[]  {  //now Java 1.6 times,    was java 1.5 times
             734, 6391, 6312, 15, 15, 156, //1250, 9750, 9562, 15, 15, 547,
             16875,                        //18859, 
-            63, 47, 8312,                 //93, 31, 12156, 
+            63, 47, 2032,                 //93, 31, ...,
             6422, 203, 234, 250,          //9621, 625, 500, 500, 
             9547, 6297, 6281, 8625,       //13278, 8766, 8844, 11469, 
             656, 110,                     //687, 94, 
@@ -1855,7 +1892,7 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
         int bytes[]    = new int[]   {
             5875592, 25807661, 25807667, 6006, 303, 2085486, 
             4701074, 
-            53173, 51428, 71559643, 
+            53173, 51428, 14770799, 
             31827797, 2085800, 2090600, 5285, 
             24337084, 23734053, 23734063, 90604796, 
             523113, 3601, 
@@ -1924,12 +1961,14 @@ today + " http://127.0.0.1:8080/cwexperimental/griddap/testCwHdf.das\";\n" +
      * @throws Throwable if trouble
      */
     public static void test(boolean deleteCachedDatasetInfo) throws Throwable {
+        /* */
         testNc(deleteCachedDatasetInfo);
         testGrib(deleteCachedDatasetInfo);
         testCwHdf(deleteCachedDatasetInfo);
         testGrib2(deleteCachedDatasetInfo);
         testGenerateDatasetsXml();
         testSpeed(-1);
+
     }
 
 

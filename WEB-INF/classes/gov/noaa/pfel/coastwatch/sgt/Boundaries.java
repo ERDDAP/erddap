@@ -29,9 +29,6 @@ import java.util.Map;
  */
 public class Boundaries  {
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     /**
      * Set this to true (by calling verbose=true in your program, not but changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
@@ -421,7 +418,8 @@ public class Boundaries  {
                     }
                     tempLon.add(tLon);
                     tempLat.add(tLat);
-                } else String2.log("ERROR at readSGTLine items.length!=2 (" + items.length + ") s=" + s);
+                } else String2.log(String2.ERROR + " at readSGTLine items.length!=2 (" + 
+                    items.length + ") s=" + s);
             }
             s = bufferedReader.readLine();
         }
@@ -504,7 +502,7 @@ public class Boundaries  {
                     } else {
                         bufferedReader.close();
                         dos.close();
-                        throw new RuntimeException("ERROR in convertSGTLine, s=" + s);
+                        throw new RuntimeException(String2.ERROR + " in convertSGTLine, s=" + s);
                     }
                 }
             }

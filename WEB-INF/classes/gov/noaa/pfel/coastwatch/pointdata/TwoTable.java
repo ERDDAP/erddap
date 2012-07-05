@@ -69,14 +69,9 @@ public class TwoTable  {
     public int dataIDColumn;
     public int groupIDColumn;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     /** testDir is used for tests. */
     public static String testDir = 
         String2.getClassPath() + "gov/noaa/pfel/coastwatch/pointdata/";
-
-
 
 
     /**
@@ -144,7 +139,7 @@ public class TwoTable  {
                 if (type == String.class) {
                     int max = Math.max(1, ((StringArray)pa).maxStringLength()); //nclib wants at least 1
                     Dimension lengthDimension = nc.addDimension(
-                        tcolName + NcHelper.StringLength, max);
+                        tcolName + NcHelper.StringLengthSuffix, max);
                     nc.addVariable(tColName, char.class, 
                         new Dimension[]{observationDimension, lengthDimension}); 
                 } else {

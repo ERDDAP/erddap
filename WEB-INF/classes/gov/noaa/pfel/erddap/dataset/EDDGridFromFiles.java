@@ -1033,7 +1033,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             }
         } catch (Throwable t) {
             table = null; 
-            String2.log(ERROR + " reading table " + fileName + "\n" + 
+            String2.log(String2.ERROR + " reading table " + fileName + "\n" + 
                 MustBe.throwableToString(t));  
         }
         return table;
@@ -1122,7 +1122,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         if (dirTable == null || fileTable == null) {
             requestReloadASAP(); 
             throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain +
-                "\nDetails: unable to read fileTable."); 
+                "\n(Details: unable to read fileTable.)"); 
         }
 
         //get the dirTable and fileTable PrimitiveArrays
@@ -1181,19 +1181,27 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 tResults = getSourceDataFromFile(tFileDir, tFileName, 
                     tDataVariables, ttConstraints);
             } catch (Throwable t) {
-                //if so, sleep and give it one more try
+                EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+
+                //if too much data, rethrow t
+                String tToString = t.toString();
+                if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
+                    throw t;
+
+                //sleep and give it one more try
                 try {
                     Thread.sleep(1000); //not Math2.sleep(1000);
                     tResults = getSourceDataFromFile(tFileDir, tFileName, 
                         tDataVariables, ttConstraints);
                 } catch (Throwable t2) {
+                    EDStatic.rethrowClientAbortException(t2);  //first thing in catch{}
+
                     //mark the file as bad   and reload the dataset
                     addBadFileToTableOnDisk(ftDirIndex.get(ftRow), tFileName, 
                         ftLastMod.get(ftRow), MustBe.throwableToShortString(t)); 
                     requestReloadASAP();
-
                     //an exception here will cause data request to fail (as it should)
-                    throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain, t); //the original exception
+                    throw new WaitThenTryAgainException(t);  //original exception
                 }
             }
 

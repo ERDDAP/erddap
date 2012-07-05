@@ -81,9 +81,6 @@ import org.apache.lucene.index.Term;
  */
 public class LoadDatasets extends Thread {
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     /**
      * Set this to true (by calling verbose=true in your program, 
      * not but changing the code here)

@@ -268,9 +268,9 @@ public class VectorScreen extends Screen {
         } catch (Exception e) {
             String error = "Exception caught in VectorScreen.getXGrid:\n" + MustBe.throwableToString(e);
             String2.log(error);
-            if (error.indexOf(DataHelper.THERE_IS_NO_DATA) < 0)
+            if (error.indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                 oneOf.email(oneOf.emailEverythingTo(), 
-                    OneOf.ERROR + " in " + oneOf.shortClassName(), error);
+                    String2.ERROR + " in " + oneOf.shortClassName(), error);
             plotData = false;
             return null;
         }
@@ -301,9 +301,9 @@ public class VectorScreen extends Screen {
         } catch (Exception e) {
             String error = "Exception caught in VectorScreen.getYGrid:\n" + MustBe.throwableToString(e);
             String2.log(error);
-            if (error.indexOf(DataHelper.THERE_IS_NO_DATA) < 0)
+            if (error.indexOf(MustBe.THERE_IS_NO_DATA) < 0)
                 oneOf.email(oneOf.emailEverythingTo(), 
-                    OneOf.ERROR + " in " + oneOf.shortClassName(), error);
+                    String2.ERROR + " in " + oneOf.shortClassName(), error);
             plotData = false;
             return null;
         }
@@ -356,7 +356,7 @@ public class VectorScreen extends Screen {
             String backButtonForm) throws Exception {
 
         //failure
-        Test.error(OneOf.ERROR + ": Unexpected submitter: " + submitter);
+        Test.error(String2.ERROR + ": Unexpected submitter: " + submitter);
 
     }
 

@@ -56,7 +56,7 @@ public class OpendapTest extends NetCheckTest {
      * @throws Exception if trouble
      */
     public OpendapTest(SimpleXMLReader xmlReader) throws Exception {
-        String errorIn = ERROR + " in OpendapTest constructor: ";
+        String errorIn = String2.ERROR + " in OpendapTest constructor: ";
 
         //ensure the xmlReader is just starting with this class
         Test.ensureEqual(xmlReader.allTags(), "<netCheck><opendapTest>", 
@@ -147,7 +147,7 @@ public class OpendapTest extends NetCheckTest {
         String dasMustContain, String ddsMustContain, 
         int gridNLonValues, int gridNLatValues) throws Exception {
 
-        String errorIn = ERROR + " in OpendapTest constructor: ";
+        String errorIn = String2.ERROR + " in OpendapTest constructor: ";
     
         //required 
         this.title = title;
@@ -173,7 +173,7 @@ public class OpendapTest extends NetCheckTest {
      * @throws Exception if trouble
      */
     public void ensureValid() throws Exception {
-        String errorIn = ERROR + " in OpendapTest.ensureValid: ";
+        String errorIn = String2.ERROR + " in OpendapTest.ensureValid: ";
 
         //ensure that required items were set
         Test.ensureTrue(title != null && title.length() > 0,  
@@ -225,7 +225,7 @@ public class OpendapTest extends NetCheckTest {
             //String2.log("opendap time=" + time);
             StringBuilder errorSB = new StringBuilder();
             if (Math2.isFinite(mustRespondWithinSeconds) && time > mustRespondWithinSeconds * 1000) {
-                errorSB.append("  " + ERROR + ": response time (" + (time/1000.0) + 
+                errorSB.append("  " + String2.ERROR + ": response time (" + (time/1000.0) + 
                     " s) was too slow (mustRespondWithinSeconds = " + 
                     mustRespondWithinSeconds + ").\n");
             }          
@@ -234,7 +234,7 @@ public class OpendapTest extends NetCheckTest {
             if (dasMustContain != null && dasMustContain.length() > 0) {
                 String dasString = OpendapHelper.getDasString(das);
                 if (dasString.indexOf(dasMustContain) < 0) {
-                    errorSB.append("  " + ERROR + ": dasMustContain (" + 
+                    errorSB.append("  " + String2.ERROR + ": dasMustContain (" + 
                         dasMustContain + ") wasn't found in das:\n" + dasString);
                 }
             }          
@@ -243,21 +243,21 @@ public class OpendapTest extends NetCheckTest {
             if (ddsMustContain != null && ddsMustContain.length() > 0) {
                 String ddsString = OpendapHelper.getDdsString(dds);
                 if (ddsString.indexOf(ddsMustContain) < 0) {
-                    errorSB.append("  " + ERROR + ": ddsMustContain (" + 
+                    errorSB.append("  " + String2.ERROR + ": ddsMustContain (" + 
                         ddsMustContain + ") wasn't found in dds:\n" + ddsString);
                 }
             }          
 
             //check gridNLonValues
             if (gridNLonValues >=0 && opendap.gridNLonValues != gridNLonValues) {
-                errorSB.append("  " + ERROR + ": opendap.gridNLonValues (" + 
+                errorSB.append("  " + String2.ERROR + ": opendap.gridNLonValues (" + 
                     opendap.gridNLonValues + ") wasn't the expected value (" +
                     gridNLonValues + ").\n");
             }          
 
             //check gridNLatValues
             if (gridNLatValues >= 0 && opendap.gridNLatValues != gridNLatValues) {
-                errorSB.append("  " + ERROR + ": opendap.gridNLatValues (" + 
+                errorSB.append("  " + String2.ERROR + ": opendap.gridNLatValues (" + 
                     opendap.gridNLatValues + ") wasn't the expected value (" +
                     gridNLatValues + ").\n");
             }          
@@ -318,7 +318,7 @@ public class OpendapTest extends NetCheckTest {
             1501); //</gridNLatValues>
         if (verbose) String2.log(opendapTest.getDescription());
         error = opendapTest.test();
-        Test.ensureEqual(error, "", ERROR + " in OpendapTest.unitTest:\n" + error);
+        Test.ensureEqual(error, "", String2.ERROR + " in OpendapTest.unitTest:\n" + error);
         String2.log("netcheck.OpendapTest THREDDS AGssta 3day finished successfully   time=" + 
             (System.currentTimeMillis() - time));
 
@@ -338,7 +338,7 @@ public class OpendapTest extends NetCheckTest {
             26); //</gridNLatValues>
         if (verbose) String2.log(opendapTest.getDescription());
         error = opendapTest.test();
-        Test.ensureEqual(error, "", ERROR + " in OpendapTest.unitTest:\n" + error);
+        Test.ensureEqual(error, "", String2.ERROR + " in OpendapTest.unitTest:\n" + error);
         String2.log("netcheck.OpendapTest THREDDS CMusfc hday finished successfully   time=" + 
             (System.currentTimeMillis() - time));
 
@@ -358,7 +358,7 @@ public class OpendapTest extends NetCheckTest {
             2100); //</gridNLatValues>
         if (verbose) String2.log(opendapTest.getDescription());
         error = opendapTest.test();
-        Test.ensureEqual(error, "", ERROR + " in OpendapTest.unitTest:\n" + error);
+        Test.ensureEqual(error, "", String2.ERROR + " in OpendapTest.unitTest:\n" + error);
         String2.log("netcheck.OpendapTest THREDDS GAssta hday finished successfully   time=" + 
             (System.currentTimeMillis() - time));
 
@@ -378,7 +378,7 @@ public class OpendapTest extends NetCheckTest {
             4401); //</gridNLatValues>
         if (verbose) String2.log(opendapTest.getDescription());
         error = opendapTest.test();
-        Test.ensureEqual(error, "", ERROR + " in OpendapTest.unitTest:\n" + error);
+        Test.ensureEqual(error, "", String2.ERROR + " in OpendapTest.unitTest:\n" + error);
         String2.log("netcheck.OpendapTest THREDDS MBchla 1day finished successfully   time=" + 
             (System.currentTimeMillis() - time));
 
@@ -399,7 +399,7 @@ public class OpendapTest extends NetCheckTest {
             1201); //</gridNLatValues>
         if (verbose) String2.log(opendapTest.getDescription());
         error = opendapTest.test();
-        Test.ensureEqual(error, "", ERROR + " in OpendapTest.unitTest:\n" + error);
+        Test.ensureEqual(error, "", String2.ERROR + " in OpendapTest.unitTest:\n" + error);
         String2.log("netcheck.OpendapTest THREDDS QScurl 8day finished successfully   time=" + 
             (System.currentTimeMillis() - time));
         /* */

@@ -100,7 +100,7 @@ public class TestAll  {
 //    String2.log("tl=" + tl + " td=" + td); 
 //    
 //
-//    DasDds.main(new String[]{"aco_adcp", "-verbose"});
+//    DasDds.main(new String[]{"jplL4AvhrrOIv1fv2", "-verbose"});
 //    String2.log(DigirHelper.getObisInventoryString(
 //        "http://iobis.marine.rutgers.edu/digir2/DiGIR.php", 
 //        "OBIS-SEAMAP", 
@@ -180,7 +180,7 @@ public class TestAll  {
 //    EDDGridAggregateExistingDimension.testRtofs();
 //    EDDGridCopy.testBasic(true); //  defaultCheckSourceData 
 //    String2.log("\n" + EDDGridFromDap.generateDatasetsXml(false, //directions
-//        "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/HadleyCenter/HadISSTDecomp",
+//        "http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MUR/ssta/1day",
 //        "http://oceanwatch.pifsc.noaa.gov/thredds/dodsC/altim/monthly",
 //        "http://data1.gfdl.noaa.gov:8380/thredds3/dodsC/ipcc_ar4_CM2.0_R1_20C3M-0_3hr_atmos_19910101-20001231",
 //        "http://www.ncdc.noaa.gov/thredds/dodsC/gpcp/daily/gpcp_1dd_v1.1_p1d.199610.gz",
@@ -188,8 +188,8 @@ public class TestAll  {
 //        "http://geoport.whoi.edu/thredds/dodsC/ncom_relo/sendai",
 //        "http://ecowatch.ncddc.noaa.gov/thredds/dodsC/dwh/ctd/Brooks_McCall/Cruise5/Brooks_McCall_Cruise_5.nc",
 //        "http://tds.hycom.org/thredds/dodsC/glb_analysis",
-//        "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/lftx.sfc.1948.nc",
-//        null, null, null, 10080, null));
+//        "http://thredds.jpl.nasa.gov/thredds/dodsC/sea_surface_temperature/ALL_NCDC-L4LRblend-GLOB-AVHRR_OI_v01-fv02.nc",
+//        null, null, null, 180, null));
 //    EDDGridFromDap.generateErdThreddsDatasetXml("Satellite/aggregsat", "satellite"));
 //    EDDGridFromDap.generateErdThreddsDatasetXml("Hfradar/aggreghfradar", "satellite"));
 //    EDDGridFromDap.testAccessibleTo();
@@ -214,7 +214,7 @@ public class TestAll  {
 //    crawl UAF clean catalog      Results put in datasets.xml in EditPlus. 
 //      Log file is in [bigParent]/cache/_test/. Sort it. Look at problems. Make improvements.
 //      Look for "error", "no colorBarMin/Max", "ioos_category=Unknown for"
-//    EDDGridFromDap.testUAFSubThreddsCatalog(2); //newer clean catalog, last done 2012-05-09, ~2h
+//    EDDGridFromDap.testUAFSubThreddsCatalog(2); //newer clean catalog, last done 2012-06-13, ~3h
 //    EDDGridFromDap.testUAFSubThreddsCatalog(50);  //official catalog, ~2h
 //    EDDGridFromDap.testGetUrlsFromHyraxCatalog();
 //    EDDGridFromDap.testGetUrlsFromThreddsCatalog();
@@ -443,10 +443,13 @@ public class TestAll  {
 //    String2.log(EDDTableFromDatabase.getPostTableInfo(null, null, "!!!LIST!!!", false, true));
 //    String2.log(EDDTableFromDatabase.getPostTableInfo("", "erd", "detection3", true, false));
 //    String2.log(EDDTableFromDatabase.getCSV("erdRole2"));
-//    EDDTableFromErddap.testFromErddapFromErddap();
 //    EDDTableFromDatabase.test();
 //    EDDTableFromDatabase.testTime();
+
+//    String2.log(EDDTableFromErddap.generateDatasetsXml("http://coastwatch.pfeg.noaa.gov/erddap", true)); 
 //    EDDTableFromErddap.testBasic(true);
+//    EDDTableFromErddap.testFromErddapFromErddap();
+//    EDDTableFromErddap.testDegreesSignAttribute();
 //    EDDTableFromFiles.testRegex();
 //    String2.log(EDDTableFromHyraxFiles.generateDatasetsXml(
 //        "http://data.nodc.noaa.gov/opendap/wod/monthly/APB/201103-201103/", 
@@ -496,6 +499,7 @@ public class TestAll  {
 //    EDDTableFromNcFiles.testGlobal();
 //    EDDTableFromNcFiles.testId();
 //    EDDTableFromNcFiles.testManyYears();
+//    EDDTableFromNcFiles.testMV();
 //    EDDTableFromNcFiles.testNcCFPoint();
 //    EDDTableFromNcFiles.testNcCFStation();
 //    EDDTableFromNcFiles.testNcCFTrajectoryProfile();
@@ -511,6 +515,7 @@ public class TestAll  {
 
 //    *** To update GTSPP (~10th of every month):
 //*** NEXT TIME: reprocess all and add source_id (e.g., =IOS) metadata as data?
+//*** NEXT TIME reprocess all, consider larger lat lon tiles (so fewer files). Time testErdGtsppBest() before and after.
 //Melanie may provide a list or URL of source_id's.
 //    1) (Thursday night?) Use FileZilla to download newly changed files 
 //      from ftp.nodc.noaa.gov (name=anonymous  pwd=bob.simons@noaa.gov)
@@ -521,16 +526,14 @@ public class TestAll  {
 //*** Consider temporarily switching off parts of McAfee : Virus Scan Console  (2X speedup!)
 //      On Access Scanner : All Processes
 //        Scan Items: check: specified file types only (instead of usual All Files) 
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(1990, 1, 2012, 4, false);  //first/last year(1990..)/month(1..), testMode
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(1990, 1, 1990, 1, false);  //first/last year(1990..)/month(1..), testMode
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2000, 1, 2000, 1, false);  //first/last year(1990..)/month(1..), testMode
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2011, 11, 2012,  5, false);  //first/last year(1990..)/month(1..), testMode
 //       log file is F:/data/gtspp/log.txt 
 //      2b) Email the "good" but "impossible" stations to Charles Sun, Melanie Hamilton and Meilin.Chen@noaa.gov.
 //      2c) Undo changes to McAfee scanner
 //    3) In datasetsUAF.xml, for erdGtsppBest and datasets2.xml for testErdGtsppBest, 
 //       update the summary
 //       (e.g., "(currently, up to and including the [lastMonth] 2011 data)")
-//    4) * Delete [tomcat]/content/erddap/subset/testErdGtsppBest.csv
+//    4) * Delete [tomcat]/content/erddap/subset/testErdGtsppBest.json
 //         * Load testErdGtsppBest in localHost ERDDAP.
 //         * Generate .json file from
 //           http://127.0.0.1:8080/cwexperimental/tabledap/testErdGtsppBest.json?platform,cruise,org,type&distinct() 
@@ -617,6 +620,8 @@ public class TestAll  {
 //4) (Best before 9am or after 11am) FTP from c:/u00/data/points/ tao/... 
 //     to coastwatch /u00/data/points/ tao/...     //RENAME into place after transfer complete
 //5) Run touchAllTao.bat in c:/content/bat   
+//     Always takes longer than I expect because datasets ftp latest data when they load.  
+//     Daily is longest.   30 minutes total for all datasets?
 //6) Email ERDDAP log info ("tabledap DatasetID (since startup)") for pmelTao.* datasets
 //   (and the Current Time and Startup Time) to Dai.C.Mcclurg@noaa.gov
 //ERDDAP TAO monthly update
@@ -724,31 +729,34 @@ public class TestAll  {
 //    NdbcMetStation.main(null); //used for monthly updates  !!!check pxoc1. make historic file if needed.
 //    NcHelper.dump("TestAll",
 //        "f:/data/ndbcMet/46088.nc", true);
+//    NcHelper.testSequence();
 //    String2.log(NcHelper.dumpString("c:/downloads/MLMLseawater.nc", false)); //false=don't print data
 //    String2.log(NcHelper.dumpString("c:/downloads/MLMLseawater.nc", "lon,lat,altitude")); 
 //    String2.log(NcHelper.dumpString("c:/programs/seadas/MODIS.2007219.074906.gcoos.seadas_sst.hdf", false));
+//    NcHelper.test();
 //    NcHelper.testJplG1SST();
-
+//    String2.log(NcHelper.dds("f:/data/nodcTemplates/pointKachemakBay.nc"));
 //    NetcdfDataset in = NetcdfDataset.openDataset(
 //        //"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/HadleyCenter/HadISST");
 //        "http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdHadISST");
 //    System.out.println("netcdfDataset=" + in.toString());
 //    FeatureType featureType = FeatureDatasetFactoryManager.findFeatureType(in);
-//   System.out.println(featureType.toString());
+//    System.out.println(featureType.toString());
 
 //    NetCheck.verbose = true;
 //    NetCheck nc = new NetCheck("c:/content/bat/NetCheck.xml", true); //testmode
+//    OpendapHelper.testAllDapToNc(-1); //-1 for all tests, or 0... for just one
 //    OpendapHelper.testGetAttributes();
 //    OpendapHelper.testParseStartStrideStop();
 //    OpendapHelper.testFindAllScalarOrMultiDimVars();
 //    OpendapHelper.testFindVarsWithSharedDimensions();
 //    OpendapHelper.testDapToNcDArray();
-
 //    Pattern pattern = Pattern.compile("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}");
 //        Matcher matcher = pattern.matcher("test 2009-01-02 12:13:14abcaaaaab");
 //        if (matcher.find(1)) String2.log("matched at start=" + matcher.start());
 //        else String2.log("didn't match");
 //    post.TestJdbc.test();
+//    PrimitiveArray.testTestValueOpValue();
 //    Projects.calcofiBio();
 //    Projects.calcofiSub();
 //    Projects.calcofiSur();
@@ -986,7 +994,6 @@ public class TestAll  {
 //    Table.testReadStandardTabbedASCII();  
 //    Table.testSaveAsSpeed();
 //    Table.testSortColumnsByName(); 
-//    Table.testTestValueOpValue();
 //    Table.testUpdate();
 //    Table.testXml();
 //    TestListFiles.main(new String[]{"c:/"});
@@ -1213,7 +1220,7 @@ TaskThread tt;
 WaitThenTryAgainException wttae;
 
 
-/* */  
+/* */
 
         //convert isoDate to/from epoch seconds (a common utility I need)
         String2.log("Enter an ISO date/time or secondsSinceEpoch or YYYYDDD (or \"\" to stop)...");

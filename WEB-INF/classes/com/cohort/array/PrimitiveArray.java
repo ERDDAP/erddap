@@ -13,10 +13,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.sql.Types;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * PrimitiveArray defines the methods to be implemented by various XxxArray classes
@@ -53,6 +56,43 @@ public abstract class PrimitiveArray {
     public final static int CLASS_INDEX_DOUBLE = 6;
     public final static int CLASS_INDEX_STRING = 7;     
 
+    /** The regular expression operator. The OPeNDAP spec says =~, so that is the ERDDAP standard.
+     * But some implementations use ~=, so see sourceRegexOp. 
+     * See also Table.REGEX_OP. */
+    public final static String REGEX_OP = "=~";
+
+    /** 
+     * These are *not* final so EDStatic can replace them with translated Strings. 
+     * These are MessageFormat-style strings, so any single quote ' must be escaped as ''. 
+     * Note that some are errors; some are just messages.
+     */
+    public static String ArrayAddN =
+        String2.ERROR + " in {0}.addN: n ({1}) < 0.";
+    public static String ArrayAppendTables =
+        String2.ERROR + " in PrimitiveArray.append:\n" +
+        "the tables have a different number of columns ({0} != {1}).";
+    public static String ArrayDiff =                      
+        String2.ERROR + ": The PrimitiveArrays differ at [{0}] ({1} != {2}).";
+    public static String ArrayDifferentSize =
+        "The other primitiveArray has a different size ({0} != {1}).";
+    public static String ArrayDifferentValue =
+        "The other primitiveArray has a different value for [{0}] ({1} != {2}).";
+    public static String ArrayDiffString =
+        "old [{0}]={1},\n  new [{0}]={2}.";  //keep 2 spaces before "new"
+    public static String ArrayMissingValue = 
+        "missing value";
+    public static String ArrayNotAscending =
+        "{0} isn''t sorted in ascending order: {1}.";
+    public static String ArrayNotDescending =
+        "{0} isn''t sorted in descending order: {1}.";
+    public static String ArrayNotEvenlySpaced =
+        "{0} isn''t evenly spaced: [{1}]={2}, [{3}]={4}, spacing={5}, expected spacing={6}.";
+    public static String ArrayRemove =
+        String2.ERROR + " in {0}.remove: index ({1}) >= size ({2}).";
+    public static String ArraySubsetStart =
+        String2.ERROR + " in {0}.subset: startIndex={1} must be at least 0.";
+    public static String ArraySubsetStride =
+        String2.ERROR + " in {0}.subset: stride={1} must greater than 0.";
 
     /** 
      * This returns a PrimitiveArray wrapped around a String[] or array of primitives.
@@ -91,6 +131,9 @@ public abstract class PrimitiveArray {
             return sa;
         }
 
+        if (o == null)
+            throw new IllegalArgumentException(String2.ERROR + 
+                " in PrimitiveArray.factory: o is null.");
         throw new IllegalArgumentException(String2.ERROR + 
             " in PrimitiveArray.factory: unexpected object type: " + o.toString());
     }
@@ -497,11 +540,10 @@ public abstract class PrimitiveArray {
     }
 
     /**
-     * This indicates if a given type (e.g., float.class) can be contained in a long.
+     * This indicates if a given type (e.g., short.class) can be contained in a long.
      *
-     * @param type an element type (e.g., float.class)
-     * @return true if the given type (e.g., float.class) can be contained in a long.
-     * @throws exception if not one of the PrimitiveArray types
+     * @param type an element type (e.g., short.class)
+     * @return true if the given type (e.g., short.class) can be contained in a long.
      */
     public static boolean isIntegerType(Class type) {
         return 
@@ -1269,9 +1311,8 @@ public abstract class PrimitiveArray {
      *     other=null throws an exception.
      */
     public String almostEqual(PrimitiveArray other) {
-        String msg = "The other primitiveArray has a different ";
         if (size != other.size())
-            return msg + "size (" + size + " != " + other.size() + ")";
+            return MessageFormat.format(ArrayDifferentSize, "" + size, "" + other.size());
         
         if (this instanceof StringArray ||
             other instanceof StringArray) {
@@ -1281,7 +1322,8 @@ public abstract class PrimitiveArray {
                 if (s1 == null && s2 == null) {
                 } else if (s1 != null && s2 != null && s1.equals(s2)) {
                 } else {
-                    return msg + "value #" + i + " (\"" + s1 + "\" != \"" + s2 + "\")";
+                    return MessageFormat.format(ArrayDifferentValue, "" + i, 
+                        String2.toJson(s1), String2.toJson(s2));
                 }
             }
             return "";
@@ -1290,7 +1332,8 @@ public abstract class PrimitiveArray {
         if (this instanceof LongArray && other instanceof LongArray) {
             for (int i = 0; i < size; i++)
                 if (!Test.equal(getLong(i), other.getLong(i)))  //this says NaN==NaN is true
-                    return msg + "value #" + i + " (" + getLong(i) + " != " + other.getLong(i) + ")";
+                    return MessageFormat.format(ArrayDifferentValue, "" + i, 
+                        "" + getLong(i), "" + other.getLong(i));
             return "";
         }
 
@@ -1298,7 +1341,8 @@ public abstract class PrimitiveArray {
             other instanceof DoubleArray || other instanceof LongArray) {
             for (int i = 0; i < size; i++)
                 if (!Test.equal(getDouble(i), other.getDouble(i)))  //this says NaN==NaN is true
-                    return msg + "value #" + i + " (" + getDouble(i) + " != " + other.getDouble(i) + ")";
+                    return MessageFormat.format(ArrayDifferentValue, "" + i, 
+                        "" + getDouble(i), "" + other.getDouble(i));
             return "";
         }
 
@@ -1306,13 +1350,15 @@ public abstract class PrimitiveArray {
             other instanceof FloatArray) {
             for (int i = 0; i < size; i++)
                 if (!Test.equal(getFloat(i), other.getFloat(i))) //this says NaN==NaN is true
-                    return msg + "value #" + i + " (" + getFloat(i) + " != " + other.getFloat(i) + ")";
+                    return MessageFormat.format(ArrayDifferentValue, "" + i, 
+                        "" + getFloat(i), "" + other.getFloat(i));
             return "";
         }
 
         for (int i = 0; i < size; i++)
             if (getInt(i) != other.getInt(i))
-                return msg + "value #" + i + " (" + getInt(i) + " != " + other.getInt(i) + ")";
+                return MessageFormat.format(ArrayDifferentValue, "" + i, 
+                    "" + getInt(i), "" + other.getInt(i));
         return "";
     }
         
@@ -2201,14 +2247,9 @@ public abstract class PrimitiveArray {
      */
     public static void append(List table1, List table2) {
 
-        String errorInMethod = String2.ERROR + " in PrimitiveArray.append:\n";
-        Test.ensureEqual(table1.size(), table2.size(), 
-            errorInMethod + "the tables have a different number of columns.");
-
-        //ensure that columns in table1 have data types at least as wide as table2
-        //for (int i = 0; i < table1.length; i++)
-        //    Test.ensureEqual(table1[i].elementClass(), table2[i].elementClass(), 
-        //        errorInMethod + "the column #" + i + "'s have different element types.");        
+        if (table1.size() != table2.size())
+            throw new RuntimeException(MessageFormat.format(ArrayAppendTables,
+                "" + table1.size(), "" + table2.size()));
 
         //append table2 to the end of table1
         for (int col = 0; col < table1.size(); col++) {
@@ -2349,7 +2390,8 @@ public abstract class PrimitiveArray {
     public abstract int switchFromTo(String from, String to);
 
     /**
-     * If the primitiveArray has fake _FillValue and/or missing_values (e.g., -9999999),
+     * For non-StringArray, 
+     * if the primitiveArray has fake _FillValue and/or missing_values (e.g., -9999999),
      * those values are converted to PrimitiveArray-style missing values 
      * (NaN, or MAX_VALUE for integer types).
      *
@@ -2359,7 +2401,7 @@ public abstract class PrimitiveArray {
      */
     public int convertToStandardMissingValues(double fakeFillValue, double fakeMissingValue) {
         //do nothing to String columns
-        if (this instanceof StringArray)
+        if (elementClass() == String.class)
             return 0;
 
         //is _FillValue used?    switch data to standard mv
@@ -2377,16 +2419,14 @@ public abstract class PrimitiveArray {
     }
 
     /**
-     * For FloatArray and DoubleArray, this changes all standard 
-     * missing values (NaN's) to fakeMissingValues.
+     * For any non-StringArray, this changes all standard 
+     * missing values (MAX_VALUE or NaN's) to fakeMissingValues.
      *
      * @param fakeMissingValue
      * @return the number of values switched
      */
     public int switchNaNToFakeMissingValue(double fakeMissingValue) {
-        if (Math2.isFinite(fakeMissingValue) &&
-//???why just FloatArray and DoubleArray???
-            (this instanceof FloatArray || this instanceof DoubleArray))
+        if (Math2.isFinite(fakeMissingValue) && elementClass() != String.class)
             return switchFromTo("", "" + fakeMissingValue);
         return 0;
     }
@@ -2470,7 +2510,7 @@ public abstract class PrimitiveArray {
 
     /**
      * This compares this PrimitiveArray's values to anothers, string representation by string representation, 
-     * and returns String indicating where different (or "" if not different).
+     * and returns a String indicating where different (or "" if not different).
      * this.get(i)=null and other.get(i)==null is treated as same value.
      *  
      * @param other (or old)
@@ -2482,9 +2522,7 @@ public abstract class PrimitiveArray {
             return "";
         String s1 = diffi == size? null : getString(diffi);
         String s2 = diffi == other.size()? null : other.getString(diffi);
-        return 
-            "  old index #" + diffi + "=" + s2 + ",\n" +
-            "  new index #" + diffi + "=" + s1 + ".";
+        return MessageFormat.format("  " + ArrayDiffString, "" + diffi, s2, s1);
     }
 
     /**
@@ -2501,7 +2539,8 @@ public abstract class PrimitiveArray {
             return;
         String s1 = diffi == size? null : getString(diffi);
         String s2 = diffi == other.size()? null : other.getString(diffi);
-        Test.ensureEqual(s1, s2, "The PrimitiveArrays differ at index=" + diffi);
+        if (!Test.equal(s1, s2))
+            throw new RuntimeException(MessageFormat.format(ArrayDiff, "" + diffi, s1, s2));
     }
 
     /**
@@ -2554,12 +2593,237 @@ public abstract class PrimitiveArray {
     public abstract PrimitiveArray subset(int startIndex, int stride, int stopIndex);
 
     /**
+     * This tests if 'value1 op value2' is true.
+     * The =~ regex test must be tested with String testValueOpValue, not here,
+     *   because value2 is a regex (not a double).
+     * 
+     * @param value1  Long.MAX_VALUE is treated as NaN
+     * @param op one of EDDTable.OPERATORS
+     * @param value2
+     * @return true if 'value1 op value2' is true.
+     *    <br>Tests of "NaN = NaN" will evaluate to true.
+     *    <br>Tests of "nonNaN != NaN" will evaluate to true.
+     *    <br>All other tests where value1 is NaN or value2 is NaN will evaluate to false.
+     * @throws RuntimeException if trouble (e.g., invalid op)
+     */
+     public static boolean testValueOpValue(long value1, String op, long value2) {
+         //String2.log("testValueOpValue (long): " + value1 + op + value2);
+         if (op.equals("="))  return value1 == value2;
+         if (op.equals("!=")) return value1 != value2;
+
+         if (value1 == Long.MAX_VALUE || value2 == Long.MAX_VALUE)
+             return false;
+         if (op.equals("<=")) return value1 <= value2;
+         if (op.equals(">=")) return value1 >= value2;
+         if (op.equals("<"))  return value1 <  value2;
+         if (op.equals(">"))  return value1 >  value2;
+
+         //Regex test has to be handled via String testValueOpValue 
+         //  if (op.equals(PrimitiveArray.REGEX_OP))  
+         throw new SimpleException("Query error: " +
+             "Unknown operator=\"" + op + "\".");
+     }
+
+    /**
+     * This tests if 'value1 op value2' is true.
+     * The &lt;=, &gt;=, and = tests are (partly) done with Math2.almostEqual9
+     *   so there is a little fudge factor.
+     * The =~ regex test must be tested with String testValueOpValue, not here,
+     *   because value2 is a regex (not a double).
+     * 
+     * @param value1
+     * @param op one of EDDTable.OPERATORS
+     * @param value2
+     * @return true if 'value1 op value2' is true.
+     *    <br>Tests of "NaN = NaN" will evaluate to true.
+     *    <br>Tests of "nonNaN != NaN" will evaluate to true.
+     *    <br>All other tests where value1 is NaN or value2 is NaN will evaluate to false.
+     * @throws RuntimeException if trouble (e.g., invalid op)
+     */
+     public static boolean testValueOpValue(float value1, String op, float value2) {
+         //String2.log("testValueOpValue (float): " + value1 + op + value2);
+         if (op.equals("<=")) return value1 <= value2 || Math2.almostEqual(6, value1, value2);
+         if (op.equals(">=")) return value1 >= value2 || Math2.almostEqual(6, value1, value2);
+         if (op.equals("="))  return (Float.isNaN(value1) && Float.isNaN(value2)) ||
+                                     Math2.almostEqual(6, value1, value2);
+         if (op.equals("<"))  return value1 < value2;
+         if (op.equals(">"))  return value1 > value2;
+         if (op.equals("!=")) return Float.isNaN(value1) && Float.isNaN(value2)? false :
+                                         value1 != value2;
+         //Regex test has to be handled via String testValueOpValue 
+         //  if (op.equals(PrimitiveArray.REGEX_OP))  
+         throw new SimpleException("Query error: " +
+             "Unknown operator=\"" + op + "\".");
+     }
+
+    /**
+     * This tests if 'value1 op value2' is true.
+     * The &lt;=, &gt;=, and = tests are (partly) done with Math2.almostEqual9
+     *   so there is a little fudge factor.
+     * The =~ regex test must be tested with String testValueOpValue, not here,
+     *   because value2 is a regex (not a double).
+     * 
+     * @param value1
+     * @param op one of EDDTable.OPERATORS
+     * @param value2
+     * @return true if 'value1 op value2' is true.
+     *    <br>Tests of "NaN = NaN" will evaluate to true. 
+     *    <br>Tests of "nonNaN != NaN" will evaluate to true.
+     *    <br>All other tests where value1 is NaN or value2 is NaN will evaluate to false.
+     * @throws RuntimeException if trouble (e.g., invalid op)
+     */
+     public static boolean testValueOpValue(double value1, String op, double value2) {
+         //String2.log("testValueOpValue (double): " + value1 + op + value2);
+         //if (Double.isNaN(value2) && Double.isNaN(value1)) { //test2 first, less likely to be NaN
+         //    return (op.equals("=") || op.equals("<=") || op.equals(">=")); //the '=' matters 
+         //}
+         if (op.equals("<=")) return value1 <= value2 || Math2.almostEqual(9, value1, value2);
+         if (op.equals(">=")) return value1 >= value2 || Math2.almostEqual(9, value1, value2);
+         if (op.equals("="))  return (Double.isNaN(value1) && Double.isNaN(value2)) ||
+                                     Math2.almostEqual(9, value1, value2);
+         if (op.equals("<"))  return value1 < value2;
+         if (op.equals(">"))  return value1 > value2;
+         if (op.equals("!=")) return Double.isNaN(value1) && Double.isNaN(value2)? false : 
+                                     value1 != value2;
+         //Regex test has to be handled via String testValueOpValue 
+         //  if (op.equals(PrimitiveArray.REGEX_OP))  
+         throw new SimpleException("Query error: " +
+             "Unknown operator=\"" + op + "\".");
+     }
+
+    /**
+     * This tests if 'value1 op value2' is true.
+     * The ops containing with &lt; and &gt; compare value1.toLowerCase()
+     * and value2.toLowerCase().
+     *
+     * <p>Note that "" is not treated specially.  "" isn't like NaN.  
+     * <br>testValueOpValue("a" &gt; "")  will return true.
+     * <br>testValueOpValue("a" &lt; "")  will return false.
+     * <br>testValueOpValue(""  &lt; "a") will return true.
+     * <br>testValueOpValue(""  &gt; "a") will return false.
+     * <br>testValueOpValue(""  =    "")  will return true.
+     * <br>Users should add another constraint (&amp;col2!="") if they don't want "" values.
+     * <br>[I might like it to parallel NaN, but that would be just me --
+     * <br>it would defy common tests in all computer languages. 
+     * <br>And ERDDAP doesn't support null (hard to represent in many file types).]
+     * <br>Stated another way, "" (as value1 or value2) behaves almost like char#0.
+     * 
+     * @param value1   (shouldn't be null)
+     * @param op one of EDDTable.OPERATORS
+     * @param value2   (shouldn't be null)
+     * @return true if 'value1 op value2' is true.
+     * @throws RuntimeException if trouble (e.g., invalid op)
+     */
+     public static boolean testValueOpValue(String value1, String op, String value2) {
+         //String2.log("testValueOpValue (String): " + value1 + op + value2);
+         if (op.equals("="))  return value1.equals(value2);
+         if (op.equals("!=")) return !value1.equals(value2);
+         if (op.equals(REGEX_OP)) return value1.matches(value2);  //regex test
+
+         int t = value1.toLowerCase().compareTo(value2.toLowerCase());
+         if (op.equals("<=")) return t <= 0;  
+         if (op.equals(">=")) return t >= 0;
+         if (op.equals("<"))  return t < 0;
+         if (op.equals(">"))  return t > 0;
+         throw new SimpleException("Query error: " +
+             "Unknown operator=\"" + op + "\".");
+     }
+
+    /**
+     * This tests the keep=true elements to see if 'get(element) op value2' is true.
+     *   If the test is false, the keep element is set to false.
+     * <br>For float and double tests, the &lt;=, &gt;=, and = tests are (partly) 
+     *   done with Math2.almostEqual(6) and (9), so there is a little fudge factor.
+     * <br>The =~ regex test is tested with String testValueOpValue,
+     *   because value2 is a regex (not a numeric type).
+     *
+     * <p>For integer-type PrimitiveArrays, MAX_VALUE is treated as a NaN.
+     * <br>Tests of "NaN = NaN" will evaluate to true.
+     * <br>Tests of "nonNaN != NaN" will evaluate to true.
+     * <br>All other tests where value1 is NaN or value2 is NaN will evaluate to false.
+     * 
+     * @param keep   The test is only applied to keep=true elements.
+     *   If the test is false, the keep element is set to false.
+     * @param op one of EDDTable.OPERATORS
+     * @param value2
+     * @return nStillGood
+     * @throws RuntimeException if trouble (e.g., invalid op or invalid keep element)
+     */
+    public int applyConstraint(BitSet keep, String op, String value2) {
+
+        //regex
+        if (op.equals(REGEX_OP)) {
+            //String2.log("applyConstraint(regex)");
+            int nStillGood = 0;
+            Pattern p = Pattern.compile(value2);  //big time savings
+            for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
+                if (p.matcher(getString(row)).matches()) 
+                    nStillGood++;
+                else keep.clear(row);
+            }
+            return nStillGood;
+        }
+
+        //string
+        if (elementClass() == String.class) {
+            //String2.log("applyConstraint(String)");
+            int nStillGood = 0;
+            for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
+                if (testValueOpValue(getString(row), op, value2)) 
+                    nStillGood++;
+                else keep.clear(row);
+            }
+            return nStillGood;
+        }
+
+        //int types
+        long value2l = String2.parseLong(value2);
+        if (value2l != Long.MAX_VALUE &&   //value2 parsed cleanly as a long
+            isIntegerType(elementClass())) {
+            //String2.log("applyConstraint(long)");
+            int nStillGood = 0;
+            for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
+                if (testValueOpValue(getLong(row), op, value2l)) 
+                    nStillGood++;
+                else keep.clear(row);
+            }
+            return nStillGood;
+        }
+
+        //float
+        if (elementClass() == float.class) {
+            //String2.log("applyConstraint(float)");
+            int nStillGood = 0;
+            float value2f = String2.parseFloat(value2);
+            for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
+                if (testValueOpValue(getFloat(row), op, value2f)) 
+                    nStillGood++;
+                else keep.clear(row);
+            }
+            return nStillGood;
+        }
+
+        //treat everything else via double tests (that should be all that is left)
+        //String2.log("applyConstraint(double)");
+        int nStillGood = 0;
+        double value2d = String2.parseDouble(value2);
+        for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
+            if (testValueOpValue(getDouble(row), op, value2d)) 
+                nStillGood++;
+            else keep.clear(row);
+        }
+        return nStillGood;
+    }
+
+
+
+    /**
      * This tests the methods of this class.
      *
      * @throws Exception if trouble.
      */
-    public static void test() throws Throwable {
-        String2.log("*** Testing PrimitiveArray");
+    public static void testBasic() throws Throwable {
+        String2.log("*** PrimitiveArray.testBasic");
 
 
         //test factory 
@@ -3155,8 +3419,332 @@ public abstract class PrimitiveArray {
         ia.scaleAddOffset(1.5, 10);
         Test.ensureEqual(ia.toString(), "10, 12, 13, 15, 2147483647", "");
 
-        String2.log("PrimitiveArray.test finished successfully.");
+        String2.log("PrimitiveArray.testBasic finished successfully.");
     }
+
+
+    /** 
+     * @throws RuntimeException if trouble
+     */
+    public static void testTestValueOpValue() {
+        String2.log("\n*** PrimitiveArray.testTestValueOpValue()");
+
+        //numeric Table.testValueOpValue
+        //"!=", PrimitiveArray.REGEX_OP, "<=", ">=", "=", "<", ">"}; 
+        long   lnan = Long.MAX_VALUE;
+        float  fnan = Float.NaN;
+        double dnan = Double.NaN;
+        Test.ensureEqual(testValueOpValue(1,    "=",  1), true,  "");
+        Test.ensureEqual(testValueOpValue(1,    "=",  2), false, "");
+        Test.ensureEqual(testValueOpValue(1,    "=",  lnan), false, "");
+        Test.ensureEqual(testValueOpValue(lnan, "=",  1), false, "");
+        Test.ensureEqual(testValueOpValue(lnan, "=",  lnan), true, "");
+
+        Test.ensureEqual(testValueOpValue(1f,   "=",  1f), true,  "");
+        Test.ensureEqual(testValueOpValue(1f,   "=",  2f), false, "");
+        Test.ensureEqual(testValueOpValue(1f,   "=",  fnan), false, "");
+        Test.ensureEqual(testValueOpValue(fnan, "=",  1f), false, "");
+        Test.ensureEqual(testValueOpValue(fnan, "=",  fnan), true, "");
+
+        Test.ensureEqual(testValueOpValue(1d,   "=",  1d), true,  "");
+        Test.ensureEqual(testValueOpValue(1d,   "=",  2d), false, "");
+        Test.ensureEqual(testValueOpValue(1d,   "=",  dnan), false, "");
+        Test.ensureEqual(testValueOpValue(dnan, "=",  1d), false, "");
+        Test.ensureEqual(testValueOpValue(dnan, "=",  dnan), true, "");
+
+        Test.ensureEqual(testValueOpValue(1,    "!=", 1), false,  "");
+        Test.ensureEqual(testValueOpValue(1,    "!=", 2), true, "");
+        Test.ensureEqual(testValueOpValue(1,    "!=", lnan), true, "");
+        Test.ensureEqual(testValueOpValue(lnan, "!=", 1), true, "");
+        Test.ensureEqual(testValueOpValue(lnan, "!=", lnan), false, "");
+
+        Test.ensureEqual(testValueOpValue(1f,   "!=", 1f), false,  "");
+        Test.ensureEqual(testValueOpValue(1f,   "!=", 2f), true, "");
+        Test.ensureEqual(testValueOpValue(1f,   "!=", fnan), true, "");
+        Test.ensureEqual(testValueOpValue(fnan, "!=", 1f), true, "");
+        Test.ensureEqual(testValueOpValue(fnan, "!=", fnan), false, "");
+
+        Test.ensureEqual(testValueOpValue(1d,   "!=", 1d), false,  "");
+        Test.ensureEqual(testValueOpValue(1d,   "!=", 2d), true, "");
+        Test.ensureEqual(testValueOpValue(1d,   "!=", dnan), true, "");
+        Test.ensureEqual(testValueOpValue(dnan, "!=", 1d), true, "");
+        Test.ensureEqual(testValueOpValue(dnan, "!=", dnan), false, "");
+
+        Test.ensureEqual(testValueOpValue(1,    "<=", 1), true,  "");
+        Test.ensureEqual(testValueOpValue(1,    "<=", 2), true, "");
+        Test.ensureEqual(testValueOpValue(2,    "<=", 1), false, "");
+        Test.ensureEqual(testValueOpValue(1,    "<=", lnan), false, "");
+        Test.ensureEqual(testValueOpValue(lnan, "<=", 1), false, "");
+        Test.ensureEqual(testValueOpValue(lnan, "<=", lnan), false, "");
+
+        Test.ensureEqual(testValueOpValue(1f,   "<=", 1f), true,  "");
+        Test.ensureEqual(testValueOpValue(1f,   "<=", 2f), true, "");
+        Test.ensureEqual(testValueOpValue(2f,   "<=", 1f), false, "");
+        Test.ensureEqual(testValueOpValue(1f,   "<=", fnan), false, "");
+        Test.ensureEqual(testValueOpValue(fnan, "<=", 1f), false, "");
+        Test.ensureEqual(testValueOpValue(fnan, "<=", fnan), false, "");
+
+        Test.ensureEqual(testValueOpValue(1d,   "<=", 1d), true,  "");
+        Test.ensureEqual(testValueOpValue(1d,   "<=", 2d), true, "");
+        Test.ensureEqual(testValueOpValue(2d,   "<=", 1d), false, "");
+        Test.ensureEqual(testValueOpValue(1d,   "<=", dnan), false, "");
+        Test.ensureEqual(testValueOpValue(dnan, "<=", 1d), false, "");
+        Test.ensureEqual(testValueOpValue(dnan, "<=", dnan), false, "");
+
+        Test.ensureEqual(testValueOpValue(1,    "<",  1), false,  "");
+        Test.ensureEqual(testValueOpValue(1,    "<",  2), true, "");
+        Test.ensureEqual(testValueOpValue(1,    "<",  lnan), false, "");
+        Test.ensureEqual(testValueOpValue(lnan, "<",  1), false, "");
+        Test.ensureEqual(testValueOpValue(lnan, "<",  lnan), false, "");
+
+        Test.ensureEqual(testValueOpValue(1f,   "<",  1f), false,  "");
+        Test.ensureEqual(testValueOpValue(1f,   "<",  2f), true, "");
+        Test.ensureEqual(testValueOpValue(1f,   "<",  fnan), false, "");
+        Test.ensureEqual(testValueOpValue(fnan, "<",  1f), false, "");
+        Test.ensureEqual(testValueOpValue(fnan, "<",  fnan), false, "");
+
+        Test.ensureEqual(testValueOpValue(1d,   "<",  1d), false,  "");
+        Test.ensureEqual(testValueOpValue(1d,   "<",  2d), true, "");
+        Test.ensureEqual(testValueOpValue(1d,   "<",  dnan), false, "");
+        Test.ensureEqual(testValueOpValue(dnan, "<",  1d), false, "");
+        Test.ensureEqual(testValueOpValue(dnan, "<",  dnan), false, "");
+
+        Test.ensureEqual(testValueOpValue(1,    ">=", 1), true,  "");
+        Test.ensureEqual(testValueOpValue(1,    ">=", 2), false, "");
+        Test.ensureEqual(testValueOpValue(2,    ">=", 1), true, "");
+        Test.ensureEqual(testValueOpValue(1,    ">=", lnan), false, "");
+        Test.ensureEqual(testValueOpValue(lnan, ">=", 1), false, "");
+        Test.ensureEqual(testValueOpValue(lnan, ">=", lnan), false, "");
+
+        Test.ensureEqual(testValueOpValue(1f,   ">=", 1f), true,  "");
+        Test.ensureEqual(testValueOpValue(1f,   ">=", 2f), false, "");
+        Test.ensureEqual(testValueOpValue(2f,   ">=", 1f), true, "");
+        Test.ensureEqual(testValueOpValue(1f,   ">=", fnan), false, "");
+        Test.ensureEqual(testValueOpValue(fnan, ">=", 1f), false, "");
+        Test.ensureEqual(testValueOpValue(fnan, ">=", fnan), false, "");
+
+        Test.ensureEqual(testValueOpValue(1d,   ">=", 1d), true,  "");
+        Test.ensureEqual(testValueOpValue(1d,   ">=", 2d), false, "");
+        Test.ensureEqual(testValueOpValue(2d,   ">=", 1d), true, "");
+        Test.ensureEqual(testValueOpValue(1d,   ">=", dnan), false, "");
+        Test.ensureEqual(testValueOpValue(dnan, ">=", 1d), false, "");
+        Test.ensureEqual(testValueOpValue(dnan, ">=", dnan), false, "");
+
+        Test.ensureEqual(testValueOpValue(2,    ">",  1), true,  "");
+        Test.ensureEqual(testValueOpValue(1,    ">",  2), false, "");
+        Test.ensureEqual(testValueOpValue(1,    ">",  lnan), false, "");
+        Test.ensureEqual(testValueOpValue(lnan, ">",  1), false, "");
+        Test.ensureEqual(testValueOpValue(lnan, ">",  lnan), false, "");
+
+        Test.ensureEqual(testValueOpValue(2f,   ">",  1f), true,  "");
+        Test.ensureEqual(testValueOpValue(1f,   ">",  2f), false, "");
+        Test.ensureEqual(testValueOpValue(1f,   ">",  fnan), false, "");
+        Test.ensureEqual(testValueOpValue(fnan, ">",  1f), false, "");
+        Test.ensureEqual(testValueOpValue(fnan, ">",  fnan), false, "");
+
+        Test.ensureEqual(testValueOpValue(2d,   ">",  1d), true,  "");
+        Test.ensureEqual(testValueOpValue(1d,   ">",  2d), false, "");
+        Test.ensureEqual(testValueOpValue(1d,   ">",  dnan), false, "");
+        Test.ensureEqual(testValueOpValue(dnan, ">",  1d), false, "");
+        Test.ensureEqual(testValueOpValue(dnan, ">",  dnan), false, "");
+
+        //regex tests always via testValueOpValue(string)
+
+        //string testValueOpValue
+        //"!=", PrimitiveArray.REGEX_OP, "<=", ">=", "=", "<", ">"}; 
+        String s = "";
+        Test.ensureEqual(testValueOpValue("a", "=",  "a"), true,  "");
+        Test.ensureEqual(testValueOpValue("a", "=",  "B"), false, "");
+        Test.ensureEqual(testValueOpValue("a", "=",  s), false, "");
+        Test.ensureEqual(testValueOpValue(s,   "=",  "a"), false, "");
+        Test.ensureEqual(testValueOpValue(s,   "=",  s), true, "");
+
+        Test.ensureEqual(testValueOpValue("a", "!=", "a"), false,  "");
+        Test.ensureEqual(testValueOpValue("a", "!=", "B"), true, "");
+        Test.ensureEqual(testValueOpValue("a", "!=", s), true, "");
+        Test.ensureEqual(testValueOpValue(s,   "!=", "a"), true, "");
+        Test.ensureEqual(testValueOpValue(s,   "!=", s), false, "");
+
+        Test.ensureEqual(testValueOpValue("a", "<=", "a"), true,  "");
+        Test.ensureEqual(testValueOpValue("a", "<=", "B"), true, "");
+        Test.ensureEqual(testValueOpValue("B", "<=", "a"), false, "");
+        Test.ensureEqual(testValueOpValue("a", "<=", s), false, "");
+        Test.ensureEqual(testValueOpValue(s,   "<=", "a"), true, "");
+        Test.ensureEqual(testValueOpValue(s,   "<=", s), true, "");
+
+        Test.ensureEqual(testValueOpValue("a", "<",  "a"), false,  "");
+        Test.ensureEqual(testValueOpValue("a", "<",  "B"), true, "");
+
+        Test.ensureEqual(testValueOpValue("a", ">=", "a"), true,  "");
+        Test.ensureEqual(testValueOpValue("a", ">=", "B"), false, "");
+        Test.ensureEqual(testValueOpValue("B", ">=", "a"), true, "");
+
+        Test.ensureEqual(testValueOpValue("B", ">",  "a"), true,  "");
+        Test.ensureEqual(testValueOpValue("a", ">",  "B"), false, "");
+
+        Test.ensureEqual(testValueOpValue("12345", PrimitiveArray.REGEX_OP, "[0-9]+"), true,  "");
+        Test.ensureEqual(testValueOpValue("12a45", PrimitiveArray.REGEX_OP, "[0-9]+"), false, "");
+
+        //test speed
+        long tTime = System.currentTimeMillis();
+        int n = 1000000;
+        for (int i = 0; i < n; i++) {
+            Test.ensureEqual(testValueOpValue("abcdefghijk", "=",  "abcdefghijk"), true,  "");
+            Test.ensureEqual(testValueOpValue("abcdefghijk", "!=", "abcdefghijk"), false,  "");
+            Test.ensureEqual(testValueOpValue("abcdefghijk", "<=", "abcdefghijk"), true, "");
+            Test.ensureEqual(testValueOpValue("abcdefghijk", "<",  "abcdefghijk"), false,  "");
+            Test.ensureEqual(testValueOpValue("abcdefghijk", ">=", "abcdefghijk"), true,  "");
+            Test.ensureEqual(testValueOpValue("abcdefghijk", ">",  "abcdefghijk"), false,  "");
+        }
+        String2.log("time for " + (6 * n) + " testValueOpValue(string): " + 
+            (System.currentTimeMillis() - tTime) + " (2012-06-29: 1859 ms)");
+
+        //regex simple
+        for (int i = 0; i < n; i++) {
+            Test.ensureEqual(testValueOpValue("12345", PrimitiveArray.REGEX_OP, "[0-9]+"), true,  "");
+        }
+        String2.log("time for " + n + " regex testValueOpValue(string, regex): " + 
+            (System.currentTimeMillis() - tTime) + " (2012-06-29: 4453 ms)");
+
+        //long
+        tTime = System.currentTimeMillis();
+        for (int i = 0; i < n; i++) {
+            Test.ensureEqual(testValueOpValue(1, "=",  1), true,  "");
+            Test.ensureEqual(testValueOpValue(1, "!=", 1), false,  "");
+            Test.ensureEqual(testValueOpValue(1, "<=", 1), true,  "");
+            Test.ensureEqual(testValueOpValue(1, "<",  1), false,  "");
+            Test.ensureEqual(testValueOpValue(1, ">=", 1), true,  "");
+            Test.ensureEqual(testValueOpValue(2, ">",  1), true,  "");
+            Test.ensureEqual(testValueOpValue(1, ">",  2), false, "");
+            //regex tests always via testValueOpValue(string)
+        }
+        String2.log("time for " + (7 * n) + " testValueOpValue(long): " + 
+            (System.currentTimeMillis() - tTime) + " (2012-06-29: 328 ms)");
+
+        //float
+        tTime = System.currentTimeMillis();
+        for (int i = 0; i < n; i++) {
+            Test.ensureEqual(testValueOpValue(1, "=",  1f), true,  "");
+            Test.ensureEqual(testValueOpValue(1, "!=", 1f), false,  "");
+            Test.ensureEqual(testValueOpValue(1, "<=", 1f), true,  "");
+            Test.ensureEqual(testValueOpValue(1, "<",  1f), false,  "");
+            Test.ensureEqual(testValueOpValue(1, ">=", 1f), true,  "");
+            Test.ensureEqual(testValueOpValue(2, ">",  1f), true,  "");
+            Test.ensureEqual(testValueOpValue(1, ">",  2f), false, "");
+            //regex tests always via testValueOpValue(string)
+        }
+        String2.log("time for " + (7 * n) + " testValueOpValue(float): " + 
+            (System.currentTimeMillis() - tTime) + " (2012-06-29: 328 ms)");
+
+        //double
+        tTime = System.currentTimeMillis();
+        for (int i = 0; i < n; i++) {
+            Test.ensureEqual(testValueOpValue(1, "=",  1d), true,  "");
+            Test.ensureEqual(testValueOpValue(1, "!=", 1d), false,  "");
+            Test.ensureEqual(testValueOpValue(1, "<=", 1d), true,  "");
+            Test.ensureEqual(testValueOpValue(1, "<",  1d), false,  "");
+            Test.ensureEqual(testValueOpValue(1, ">=", 1d), true,  "");
+            Test.ensureEqual(testValueOpValue(2, ">",  1d), true,  "");
+            Test.ensureEqual(testValueOpValue(1, ">",  2d), false, "");
+            //regex tests always via testValueOpValue(string)
+        }
+        String2.log("time for " + (7 * n) + " testValueOpValue(double): " + 
+            (System.currentTimeMillis() - tTime) + " (2012-06-29: 329 ms)");
+
+        tTime = System.currentTimeMillis();
+        for (int i = 0; i < 7*n; i++) {
+            Test.ensureEqual(testValueOpValue(1, "<=",  1), true,  "");
+        }
+        String2.log("time for " + (7 * n) + " testValueOpValue(double <=): " + 
+            (System.currentTimeMillis() - tTime) + " (2012-06-29: 234 ms)");
+
+        //**********  test applyConstraint
+        PrimitiveArray pa;
+        BitSet keep;
+
+        //regex
+        pa = factory(int.class, n, "5");
+        pa.addInt(10);
+        pa.addString("");
+        keep = new BitSet();
+        keep.set(0, pa.size());
+        tTime = System.currentTimeMillis();
+        pa.applyConstraint(keep, "=~", "(10|zztop)");
+        pa.justKeep(keep);
+        Test.ensureEqual(pa.size(), 1, "");
+        Test.ensureEqual(pa.getDouble(0), 10, "");
+        String2.log("time for applyConstraint(regex) n=" + n + ": " + 
+            (System.currentTimeMillis() - tTime) + " (2012-06-29: 500 ms)");
+
+        //string
+        pa = factory(String.class, n, "Apple");
+        pa.addString("Nate");
+        pa.addString("");
+        keep = new BitSet();
+        keep.set(0, pa.size());
+        tTime = System.currentTimeMillis();
+        pa.applyConstraint(keep, ">=", "hubert");  //>= uses case insensitive test
+        pa.justKeep(keep);
+        Test.ensureEqual(pa.size(), 1, "");
+        Test.ensureEqual(pa.getString(0), "Nate", "");
+        String2.log("time for applyConstraint(String) n=" + n + ": " + 
+            (System.currentTimeMillis() - tTime) + " (2012-06-29: 406 ms)");
+
+        //float
+        pa = factory(float.class, n, "5");
+        pa.addInt(10);
+        pa.addString("");
+        keep = new BitSet();
+        keep.set(0, pa.size());
+        tTime = System.currentTimeMillis();
+        pa.applyConstraint(keep, ">=", "9");
+        pa.justKeep(keep);
+        Test.ensureEqual(pa.size(), 1, "");
+        Test.ensureEqual(pa.getDouble(0), 10, "");
+        String2.log("time for applyConstraint(float) n=" + n + ": " + 
+            (System.currentTimeMillis() - tTime) + " (2012-06-29: 140 ms)");
+
+        //double
+        pa = factory(double.class, n, "5");
+        pa.addInt(10);
+        pa.addString("");
+        keep = new BitSet();
+        keep.set(0, pa.size());
+        tTime = System.currentTimeMillis();
+        pa.applyConstraint(keep, ">=", "9");
+        pa.justKeep(keep);
+        Test.ensureEqual(pa.size(), 1, "");
+        Test.ensureEqual(pa.getDouble(0), 10, "");
+        String2.log("time for applyConstraint(double) n=" + n + ": " + 
+            (System.currentTimeMillis() - tTime) + " (2012-06-29: 125 ms)");
+
+        //int
+        pa = factory(int.class, n, "5");
+        pa.addInt(10);
+        pa.addString("");
+        keep = new BitSet();
+        keep.set(0, pa.size());
+        tTime = System.currentTimeMillis();
+        pa.applyConstraint(keep, ">=", "9");
+        pa.justKeep(keep);
+        Test.ensureEqual(pa.size(), 1, "");
+        Test.ensureEqual(pa.getDouble(0), 10, "");
+        String2.log("time for applyConstraint(int) n=" + n + ": " + 
+            (System.currentTimeMillis() - tTime) + " (2012-06-29: 141 ms)");
+
+    }
+
+    /**
+     * This tests the methods of this class.
+     *
+     * @throws Exception if trouble.
+     */
+    public static void test() throws Throwable {
+        String2.log("*** PrimitiveArray.test");
+        testBasic();
+        testTestValueOpValue();
+    }
+
 
     /**
      * This runs test.

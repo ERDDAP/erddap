@@ -52,9 +52,6 @@ public class PointSubsetFull  {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     private String fullIndexName; 
     private int size;
     private int nFiniteRows;
@@ -73,7 +70,7 @@ public class PointSubsetFull  {
             throws Exception {
         this.fullIndexName = fullIndexName;
 
-        String errorInMethod = ERROR + " in PointSubsetFull constructor:\n";
+        String errorInMethod = String2.ERROR + " in PointSubsetFull constructor:\n";
         size = t.size();
         nFiniteRows = size;
 
@@ -115,7 +112,7 @@ public class PointSubsetFull  {
      */
     private void store(int axis, PrimitiveArray pa) throws Exception {
 
-        String errorInMethod = ERROR + " in PointSubsetFull.store:\n";
+        String errorInMethod = String2.ERROR + " in PointSubsetFull.store:\n";
         Test.ensureEqual(size, pa.size(), 
             errorInMethod + "x.size != pa.size for axis " + axis + ".");
         long time = System.currentTimeMillis();
@@ -160,7 +157,7 @@ public class PointSubsetFull  {
      */
 /*    private void store(int axis, PrimitiveArray pa) throws Exception {
 
-        String errorInMethod = ERROR + " in PointSubsetFull.store:\n";
+        String errorInMethod = String2.ERROR + " in PointSubsetFull.store:\n";
         Test.ensureEqual(size, pa.size(), 
             errorInMethod + "x.size != pa.size for axis " + axis + ".");
         long time = System.currentTimeMillis();

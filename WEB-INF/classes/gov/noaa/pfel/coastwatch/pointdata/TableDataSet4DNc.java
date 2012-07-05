@@ -96,7 +96,7 @@ public class TableDataSet4DNc extends TableDataSet {
             "\n  directory=" + directory + " regex=" + regex);
         String errorInMethod = "TableDataSet4DNc(" + internalName + ")";
         if (verbose) String2.log(errorInMethod);
-        errorInMethod = ERROR + " in " + errorInMethod + ":\n";
+        errorInMethod = String2.ERROR + " in " + errorInMethod + ":\n";
         long time = System.currentTimeMillis();
         this.internalName = internalName;
         this.datasetName = datasetName;

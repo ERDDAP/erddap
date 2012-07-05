@@ -152,7 +152,7 @@ public abstract class GridDataSetCW extends GridDataSet {
         super.checkValidity();
 
         //things specific to GridDataSetCW
-        String errorInMethod = ERROR + " in GridDataSetCW.checkValidity for " + 
+        String errorInMethod = String2.ERROR + " in GridDataSetCW.checkValidity for " + 
             internalName + ":\n ";
         Test.ensureNotEqual(latLonFractionDigits, Integer.MAX_VALUE,           errorInMethod + "'latLonFractionDigits' wasn't set.");
         if (altUdUnits.length() > 0) {

@@ -21,9 +21,6 @@ import java.util.GregorianCalendar;
  */
 public class TimePeriods {
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     public final static String _25HOUR_OPTION = "25 hour";
     public final static String _33HOUR_OPTION = "33 hour";
     public final static String MONTHLY_OPTION = "monthly";
@@ -157,7 +154,7 @@ public class TimePeriods {
      */
     public static int getNHours(String option) {
         int index = exactTimePeriod(option);
-        Test.ensureNotEqual(index, -1, ERROR + " in TimePeriods.getNHours: '" + option + 
+        Test.ensureNotEqual(index, -1, String2.ERROR + " in TimePeriods.getNHours: '" + option + 
             "' not in TimePeriods.OPTIONS.");
         return N_HOURS[index];
     }
@@ -171,7 +168,7 @@ public class TimePeriods {
      */
     public static String getInFileName(String option) {
         int index = exactTimePeriod(option);
-        Test.ensureNotEqual(index, -1, ERROR + " in TimePeriods.getInFileName: '" + option + 
+        Test.ensureNotEqual(index, -1, String2.ERROR + " in TimePeriods.getInFileName: '" + option + 
             "' not in TimePeriods.OPTIONS.");
         return IN_FILE_NAMES[index];
     }
@@ -691,7 +688,7 @@ public class TimePeriods {
         }
         double tEndTimeSeconds = Calendar2.isoStringToEpochSeconds(centeredTimeValue); //throws exception if trouble
         Test.ensureNotEqual(tEndTimeSeconds, Double.NaN, 
-            ERROR + " in TimePeriods.suggestBeginTime:\ninvalid centeredTime: " + centeredTimeValue);
+            String2.ERROR + " in TimePeriods.suggestBeginTime:\ninvalid centeredTime: " + centeredTimeValue);
         int timePeriodNHours = getNHours(timePeriodValue);
 
         if (Double.isNaN(tBeginTimeSeconds) || 

@@ -45,9 +45,6 @@ public class PointIndex  {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     /* groups one row for each group and has columns for 
      *   "First Row", "N Finite", 
      *   then, for each index: indexName+" Min", indexName+" Max"
@@ -197,7 +194,7 @@ public class PointIndex  {
      */
     public void addIndex(String name, PrimitiveArray pa) throws Exception {
 
-        String errorInMethod = ERROR + " in Index.addIndex:\n";
+        String errorInMethod = String2.ERROR + " in Index.addIndex:\n";
         Test.ensureEqual(pa.size(), nDataRows,
             errorInMethod + "pa.size != nDataRows for axis '" + name + "'.");
         long time = System.currentTimeMillis();

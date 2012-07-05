@@ -66,9 +66,6 @@ public class CWDataBrowser extends EmaClass  {
 
     String contextDirectory;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     //these are not null after reset is request, but before it is done and handled
     private CWDataBrowserReset cwDataBrowserReset;
     private Thread resetThread;
@@ -189,7 +186,7 @@ public class CWDataBrowser extends EmaClass  {
                 "dataSetDirectories: " + String2.toCSSVString(dataSetDirectories) + "\n" +
                 "dataSetRegexs: " + String2.toCSSVString(dataSetRegexs));
         if (trouble) 
-            throw new RuntimeException(ERROR + ": CWDataBrowser.reset " +
+            throw new RuntimeException(String2.ERROR + ": CWDataBrowser.reset " +
                 "nDataSetOptions " + dataSetOptions.length + 
                 " != nDataSetTitles " + dataSetTitles.length + 
                 " != nDataSetDirectories " + dataSetDirectories.length + 
@@ -211,7 +208,7 @@ public class CWDataBrowser extends EmaClass  {
                 "regionTitles: " + String2.toNewlineString(regionTitles) + "\n" +
                 "regionRegexs: " + String2.toCSSVString(regionRegexs));
         if (trouble) 
-            throw new RuntimeException(ERROR + ": CWDataBrowser.reset " +
+            throw new RuntimeException(String2.ERROR + ": CWDataBrowser.reset " +
                 "nRegionOptions " + regionOptions.length + 
                 " != nRegionTitles " + regionTitles.length + 
                 " != nRegionRegexs " + regionRegexs.length +
@@ -231,7 +228,7 @@ public class CWDataBrowser extends EmaClass  {
                 "timePeriodTitles: " + String2.toNewlineString(timePeriodTitles) + "\n" +
                 "timePeriodDirectories: " + String2.toCSSVString(timePeriodDirectories));
         if (trouble) 
-            throw new RuntimeException(ERROR + ": CWDataBrowser.reset " +
+            throw new RuntimeException(String2.ERROR + ": CWDataBrowser.reset " +
                 "nTimePeriodOptions " + timePeriodOptions.length + 
                 " != nTimePeriodTitles " + timePeriodTitles.length + " " +
                 " != nTimePeriodDirectories " + timePeriodDirectories.length);
@@ -257,7 +254,7 @@ public class CWDataBrowser extends EmaClass  {
                 "getExtensions: " + String2.toCSSVString(getExtensions) + "\n" +
                 "getRegexs: " + String2.toCSSVString(getRegexs));
         if (trouble) 
-            throw new RuntimeException(ERROR + ": CWDataBrowser.reset \n" +
+            throw new RuntimeException(String2.ERROR + ": CWDataBrowser.reset \n" +
                 "nGetOptions " + getOptions.length + 
                 " != nGetTitles " + getTitles.length + 
                 " != nGetDirectories " + getDirectories.length + 
@@ -272,7 +269,7 @@ public class CWDataBrowser extends EmaClass  {
         resetThread.join();
         boolean ok = getDataFromReset(); //it should succeed first try
         if (!ok)
-            throw new RuntimeException(ERROR + " in CWDataBrowserReset.");
+            throw new RuntimeException(String2.ERROR + " in CWDataBrowserReset.");
     }
 
     /**
@@ -281,7 +278,7 @@ public class CWDataBrowser extends EmaClass  {
     void runCWDataBrowserReset() {
         //is there already a reset thread?
         if (resetThread != null) {
-            String2.log(ERROR + " in runCWDataBrowserReset: resetThread!=null");
+            String2.log(String2.ERROR + " in runCWDataBrowserReset: resetThread!=null");
             return;
         }
 

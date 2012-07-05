@@ -40,7 +40,7 @@ public class HttpTest extends NetCheckTest {
      * @throws Exception if trouble
      */
     public HttpTest(SimpleXMLReader xmlReader) throws Exception {
-        String errorIn = ERROR + " in HttpTest constructor: ";
+        String errorIn = String2.ERROR + " in HttpTest constructor: ";
 
         //ensure the xmlReader is just starting with this class
         Test.ensureEqual(xmlReader.allTags(), "<netCheck><httpTest>", 
@@ -103,7 +103,7 @@ public class HttpTest extends NetCheckTest {
      */
     public HttpTest(String title, String url) throws Exception {
 
-        String errorIn = ERROR + " in HttpTest constructor: ";
+        String errorIn = String2.ERROR + " in HttpTest constructor: ";
     
         //required 
         this.title = title;
@@ -119,7 +119,7 @@ public class HttpTest extends NetCheckTest {
      * @throws Exception if trouble
      */
     public void ensureValid() throws Exception {
-        String errorIn = ERROR + " in HttpTest.ensureValid: ";
+        String errorIn = String2.ERROR + " in HttpTest.ensureValid: ";
 
         //ensure that required items were set
         Test.ensureTrue(title != null && title.length() > 0,  
@@ -136,7 +136,7 @@ public class HttpTest extends NetCheckTest {
      * @param mustInclude
      */
     public void addResponseMustInclude(String mustInclude) {
-        String errorIn = ERROR + " in HttpTest.addResponseMustInclude: ";
+        String errorIn = String2.ERROR + " in HttpTest.addResponseMustInclude: ";
         Test.ensureNotNull(mustInclude, errorIn + " mustInclude is null.");
         Test.ensureTrue(mustInclude.length() > 0, errorIn + " mustInclude must not be \"\".");
         responseMustInclude.add(mustInclude);
@@ -149,7 +149,7 @@ public class HttpTest extends NetCheckTest {
      * @param mustNotInclude
      */
     public void addResponseMustNotInclude(String mustNotInclude) {
-        String errorIn = ERROR + " in HttpTest.addResponseMustNotInclude: ";
+        String errorIn = String2.ERROR + " in HttpTest.addResponseMustNotInclude: ";
         Test.ensureNotNull(mustNotInclude, errorIn + " mustNotInclude is null.");
         Test.ensureTrue(mustNotInclude.length() > 0, errorIn + " mustNotInclude must not be \"\".");
         responseMustNotInclude.add(mustNotInclude);
@@ -175,7 +175,7 @@ public class HttpTest extends NetCheckTest {
             //check mustRespondWithinSeconds
             StringBuilder errorSB = new StringBuilder();
             if (Math2.isFinite(mustRespondWithinSeconds) && time > mustRespondWithinSeconds * 1000) {
-                errorSB.append("  " + ERROR + ": response time (" + (time/1000.0) + 
+                errorSB.append("  " + String2.ERROR + ": response time (" + (time/1000.0) + 
                     " s) was too slow (mustRespondWithinSeconds = " + 
                     mustRespondWithinSeconds + ").\n");
             }          
@@ -184,14 +184,14 @@ public class HttpTest extends NetCheckTest {
             for (int i = 0; i < responseMustInclude.size(); i++) {
                 String required = (String)responseMustInclude.get(i);
                 if (response.indexOf(required) < 0)
-                    errorSB.append("  " + ERROR + ": response must include \"" + required + "\".\n");
+                    errorSB.append("  " + String2.ERROR + ": response must include \"" + required + "\".\n");
             }          
 
             //check for responseMustNotInclude
             for (int i = 0; i < responseMustNotInclude.size(); i++) {
                 String undesired = (String)responseMustNotInclude.get(i);
                 if (response.indexOf(undesired) >= 0)
-                    errorSB.append("  " + ERROR + ": response must not include \"" + undesired + "\".\n");
+                    errorSB.append("  " + String2.ERROR + ": response must not include \"" + undesired + "\".\n");
             }          
 
             //if there was trouble, include the url (at the start) and response (at the end) of the error message
@@ -234,7 +234,7 @@ public class HttpTest extends NetCheckTest {
         httpTest.addResponseMustNotInclude("ZZTop");
         String2.log(httpTest.getDescription());
         String error = httpTest.test();
-        Test.ensureEqual(error, "", ERROR + " in HttpTest.unitTest:\n" + error);
+        Test.ensureEqual(error, "", String2.ERROR + " in HttpTest.unitTest:\n" + error);
         String2.log("netcheck.HttpTest finished successfully   time=" + 
             (System.currentTimeMillis() - time));
     }

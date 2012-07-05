@@ -86,9 +86,6 @@ public class CompoundColorMap extends ColorMap {
     public long cumulativeTotalTime = -1;  //-1 indicate not used
     public long cumulativeCount = 0;  //0 indicates not used
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     /**
      * This returns a shallow copy of this colormap.
      */
@@ -158,7 +155,7 @@ public class CompoundColorMap extends ColorMap {
         //set up a colorMap based on info in the .cpt file
         String[] results = String2.readFromFile(cptFileName);
         if (results[0].length() > 0)
-            throw new RuntimeException(ERROR + " while reading " + cptFileName + ":\n  " + results[0]);
+            throw new RuntimeException(String2.ERROR + " while reading " + cptFileName + ":\n  " + results[0]);
         String[] lines = String2.splitNoTrim(results[1], '\n');
 
         //set up temporary PrimitiveArrays
@@ -211,11 +208,11 @@ public class CompoundColorMap extends ColorMap {
                             String2.parseInt(items[2]),
                             String2.parseInt(items[3])));
                 } else {
-                    String2.log(ERROR + ": CompoundColorMap unexpected line in " + 
+                    String2.log(String2.ERROR + ": CompoundColorMap unexpected line in " + 
                         cptFileName + "\n" + lines[i]);
                 }
             } else if (lines[i].trim().length() > 0) {
-                String2.log(ERROR + ": CompoundColorMap unexpected line in " + 
+                String2.log(String2.ERROR + ": CompoundColorMap unexpected line in " + 
                     cptFileName + "\n" + lines[i]);
             }
         }
@@ -247,7 +244,7 @@ public class CompoundColorMap extends ColorMap {
         double minData, double maxData, int atLeastNPieces, boolean continuous, 
         String resultDir) throws Exception {
 
-        String errorInMethod = ERROR + " in CompoundColorMap(dates, minData=" + minData + 
+        String errorInMethod = String2.ERROR + " in CompoundColorMap(dates, minData=" + minData + 
             " maxData=" + maxData + "): ";
 
         //regardless of dataIsMillis, internal calculations are done in seconds
@@ -649,7 +646,7 @@ public class CompoundColorMap extends ColorMap {
 
         //validate minData and maxData
         if (!Math2.isFinite(minData) || !Math2.isFinite(maxData))
-            throw new RuntimeException(ERROR + " in CompoundColorMap.makeCPT: minData (" + 
+            throw new RuntimeException(String2.ERROR + " in CompoundColorMap.makeCPT: minData (" + 
                 minData + ") and/or maxData (" + maxData + ") is invalid.");
         if (maxData < minData) {
             double d = minData; minData = maxData; maxData = d;}
@@ -823,7 +820,7 @@ public class CompoundColorMap extends ColorMap {
             int randomInt = Math2.random(Integer.MAX_VALUE);
             String error = String2.writeToFile(fullResultCpt + randomInt, results.toString());
             if (error.length() > 0) 
-                throw new RuntimeException(ERROR + " in CompoundColorMap.makeCPT:\n" + error);
+                throw new RuntimeException(String2.ERROR + " in CompoundColorMap.makeCPT:\n" + error);
 
             File2.renameIfNewDoesntExist(fullResultCpt + randomInt, fullResultCpt); 
 

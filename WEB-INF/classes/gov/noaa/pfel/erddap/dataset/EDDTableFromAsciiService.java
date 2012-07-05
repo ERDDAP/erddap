@@ -265,7 +265,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         //in general, AsciiService sets all constraints to PARTIAL and regex to REGEX_OP
         sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; 
         sourceCanConstrainStringData  = CONSTRAIN_PARTIAL; 
-        sourceCanConstrainStringRegex = REGEX_OP; //standardizeResultsTable always (re)tests regex constraints
+        sourceCanConstrainStringRegex = PrimitiveArray.REGEX_OP; //standardizeResultsTable always (re)tests regex constraints
 
         //get global attributes
         combinedGlobalAttributes = new Attributes(addGlobalAttributes); 
@@ -461,7 +461,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
 
         while (s != null) {
             if (s.indexOf(noData) >= 0) 
-                throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+                throw new SimpleException(MustBe.THERE_IS_NO_DATA);
             int po = s.indexOf(find);
             if (po >= 0) {
                 //success
@@ -492,7 +492,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         if (s != null && s.length() == 0)
             s = in.readLine();
         if (s == null) 
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
 
         //make the empty table with all of the columns (even fixedValue)
         Table table = makeEmptySourceTable();
@@ -505,7 +505,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         boolean stopAfterThisLine = false;
         while (s != null) {
             if (s.indexOf(noData) >= 0) 
-                throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+                throw new SimpleException(MustBe.THERE_IS_NO_DATA);
             int po = s.indexOf(afterData);
             if (po == 0) {
                 //stop now

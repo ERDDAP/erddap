@@ -71,7 +71,7 @@ import ucar.unidata.geoloc.Station;
 /** 
  * This class represents a table of data from a collection of FeatureDatasets
  * using CF Discrete Sampling Geometries (was Point Observation Conventions), 
- * http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/aph.html
+ * http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2011-01-27
  */
@@ -138,6 +138,9 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
      * See documentation in EDDTableFromFiles.
      * 
      * <p>For this class, sortedColumn is always time. See constructor.
+     *
+     * @throws an exception if too much data.
+     *  This won't throw an exception if no data.
      */
     public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
@@ -154,7 +157,6 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
 
     /**
      * This gets source data from one source (e.g., a file).
-     * See documentation in EDDTableFromFiles.
      *
      * @param sourceDataNames If null, all available will be returned
      * @param sourceDataTypes If null, they will be returned with their native dataTypes

@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.util.Calendar2;
+import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 
@@ -34,6 +35,8 @@ public class TableWriterDodsAscii extends TableWriter {
     //set by firstTime
     protected boolean isStringCol[];
     protected OutputStreamWriter writer;
+
+    public long totalNRows = 0;
 
     /**
      * The constructor.
@@ -100,6 +103,10 @@ public class TableWriterDodsAscii extends TableWriter {
         //do everyTime stuff
         //leave missing values as destinationMissingValues or destinationFillValues
 
+        //avoid writing more data than can be reasonable processed (Integer.MAX_VALUES rows)
+        totalNRows += nRows;
+        EDStatic.ensureArraySizeOkay(totalNRows, "DODS Ascii sequence");
+
         //write the data  //DAP 2.0, 7.3.2.3
         //write elements of the sequence, in dds order
         for (int row = 0; row < nRows; row++) {
@@ -120,12 +127,12 @@ public class TableWriterDodsAscii extends TableWriter {
     /**
      * This writes any end-of-file info to the stream and flushes the stream.
      *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
-        //check for EDStatic.THERE_IS_NO_DATA
+        //check for MustBe.THERE_IS_NO_DATA
         if (writer == null)
-            throw new SimpleException(EDStatic.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
 
         //end of data
         writer.flush(); //essential

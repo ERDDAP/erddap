@@ -39,8 +39,6 @@ import java.util.Vector;
  */
 public abstract class GridDataSet { 
 
-    String ERROR = String2.ERROR;
-
     /**
      * Set this to true (by calling verbose=true in your program, not but changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
@@ -266,7 +264,7 @@ public abstract class GridDataSet {
      */
     public void checkValidity() {
 
-        String errorInMethod = ERROR + " in GridDataSet.checkValidity for " + 
+        String errorInMethod = String2.ERROR + " in GridDataSet.checkValidity for " + 
             internalName + ":\n ";
 
         Test.ensureNotNull(activeTimePeriodOptions,                            errorInMethod + "'activeTimePeriodOptions' wasn't set.");
@@ -588,7 +586,7 @@ public abstract class GridDataSet {
        
         //Currently, this should always be false
         boolean useAlternateUnits = FileNameUtility.getAlternateUnits(fileName);
-        Test.ensureTrue(!useAlternateUnits, ERROR + " in GridDataSetThredds.setAttributes:\n" + 
+        Test.ensureTrue(!useAlternateUnits, String2.ERROR + " in GridDataSetThredds.setAttributes:\n" + 
             "file is using alternate units!\nfileName=" + fileName);
         double lat[] = grid.lat;
         double lon[] = grid.lon;

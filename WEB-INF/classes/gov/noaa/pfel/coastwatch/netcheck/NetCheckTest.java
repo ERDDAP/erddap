@@ -28,9 +28,6 @@ public abstract class NetCheckTest {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR;
-
     /** A constant value used to separate an error message's short section and long section. */
     public final static String END_SHORT_SECTION = "[END_SHORT_SECTION]\n";
 
@@ -83,7 +80,7 @@ public abstract class NetCheckTest {
      * @param emailAddress
      */
     public void addEmailStatusTo(String emailAddress) {
-        String errorIn = ERROR + " in NetCheckTest.addEmailStatusTo: ";
+        String errorIn = String2.ERROR + " in NetCheckTest.addEmailStatusTo: ";
         Test.ensureNotNull(emailAddress, errorIn + " emailAddress is null.");
         Test.ensureTrue(emailAddress.length() > 0, errorIn + " emailAddress must not be \"\".");
         emailStatusTo.add(emailAddress);
@@ -105,7 +102,7 @@ public abstract class NetCheckTest {
      * @param emailAddress
      */
     public void addEmailStatusHeadlinesTo(String emailAddress) {
-        String errorIn = ERROR + " in NetCheckTest.addEmailStatusHeadlinesTo: ";
+        String errorIn = String2.ERROR + " in NetCheckTest.addEmailStatusHeadlinesTo: ";
         Test.ensureNotNull(emailAddress, errorIn + " emailAddress is null.");
         Test.ensureTrue(emailAddress.length() > 0, errorIn + " emailAddress must not be \"\".");
         emailStatusHeadlinesTo.add(emailAddress);
@@ -128,7 +125,7 @@ public abstract class NetCheckTest {
      * @param emailAddress
      */
     public void addEmailChangesTo(String emailAddress) {
-        String errorIn = ERROR + " in NetCheckTest.addEmailChangesTo: ";
+        String errorIn = String2.ERROR + " in NetCheckTest.addEmailChangesTo: ";
         Test.ensureNotNull(emailAddress, errorIn + " emailAddress is null.");
         Test.ensureTrue(emailAddress.length() > 0, errorIn + " emailAddress must not be \"\".");
         emailChangesTo.add(emailAddress);
@@ -150,7 +147,7 @@ public abstract class NetCheckTest {
      * @param emailAddress
      */
     public void addEmailChangeHeadlinesTo(String emailAddress) {
-        String errorIn = ERROR + " in NetCheckTest.addEmailChangeHeadlinesTo: ";
+        String errorIn = String2.ERROR + " in NetCheckTest.addEmailChangeHeadlinesTo: ";
         Test.ensureNotNull(emailAddress, errorIn + " emailAddress is null.");
         Test.ensureTrue(emailAddress.length() > 0, errorIn + " emailAddress must not be \"\".");
         emailChangeHeadlinesTo.add(emailAddress);

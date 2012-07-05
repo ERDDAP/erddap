@@ -23,9 +23,6 @@ public abstract class HdfTag  {
      */
     public static boolean verbose = false;
 
-    /** "ERROR" is defined here (from String2.ERROR) so that it is consistent in log files. */
-    public final static String ERROR = String2.ERROR; 
-
     //private variables
     public short tagType;
     public short referenceNumber;
