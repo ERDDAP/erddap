@@ -20,10 +20,10 @@
       </td> 
     <td align="right"><font size="-1"> 
       <br>Brought to you by 
-      <a title="National Oceanic and Atmospheric Administration" href="http://www.noaa.gov">NOAA</a>  
-      <a title="National Marine Fisheries Service"               href="http://www.nmfs.noaa.gov">NMFS</a>  
-      <a title="Southwest Fisheries Science Center"              href="http://swfsc.noaa.gov">SWFSC</a>  
-      <a title="Environmental Research Division" href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
+      <a title="National Oceanic and Atmospheric Administration" rel="bookmark" href="http://www.noaa.gov">NOAA</a>  
+      <a title="National Marine Fisheries Service"               rel="bookmark" href="http://www.nmfs.noaa.gov">NMFS</a>  
+      <a title="Southwest Fisheries Science Center"              rel="bookmark" href="http://swfsc.noaa.gov">SWFSC</a>  
+      <a title="Environmental Research Division" rel="bookmark" href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
       &nbsp; &nbsp;
       </font></td> 
   </tr> 
@@ -42,18 +42,18 @@
 <center>
 <big><big><big><b>Set Up Your Own ERDDAP</b></big></big></big>
 <br>&nbsp;<br>Why? |
-<a href="#initialSetup">Initial Setup</a> | 
-<a href="#update">Update</a> | 
-<a href="#needToKnow">Need To Know</a> | 
-<a href="#dontNeedToKnow">Don't Need To Know</a> | 
+<a rel="help" href="#initialSetup">Initial Setup</a> | 
+<a rel="help" href="#update">Update</a> | 
+<a rel="help" href="#needToKnow">Need To Know</a> | 
+<a rel="help" href="#dontNeedToKnow">Don't Need To Know</a> | 
 <br>
-<a href="#programmersGuide">Programmer's Guide</a> | 
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/changes.html">List of Changes</a> | 
-<a href="#credits">Credits</a> | 
-<a href="#license">License</a> |
-<a href="#contact">Contact</a>
+<a rel="help" href="#programmersGuide">Programmer's Guide</a> | 
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/changes.html">List of Changes</a> | 
+<a rel="copyright" href="#credits">Credits</a> | 
+<a rel="copyright" href="#license">License</a> |
+<a rel="help" href="#contact">Contact</a>
 <p>And see the related document 
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><b>Working with the datasets.xml File</b></a>
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><b>Working with the datasets.xml File</b></a>
 </center>
 
 <p>ERDDAP is an all-open source, all-Java (servlet), web application that runs in a web application server 
@@ -84,7 +84,7 @@ If you get stuck, email me at <tt>bob dot simons at noaa dot gov</tt> .  I will 
 <!-- ******* -->
 <h2><a name="initialSetup">How</a> To Do the Initial Setup of ERDDAP on Your Server</h2>
 ERDDAP can run on any server that supports Java and Tomcat (and perhaps other application servers).  
-RDDAP has been tested on Linux, Mac, and Windows computers. 
+ERDDAP has been tested on Linux, Mac, and Windows computers. 
 
 <p>Running ERDDAP on Windows may have problems: notably, ERDDAP may be unable to delete 
 and/or rename files quickly. This is probably due to antivirus software (e.g., from MacAfee
@@ -96,26 +96,26 @@ or Mac server instead.
 <ol>
 <li><a name="java">Set up Java.</a>  
     <br>Type "java -version" from your server's command line to make sure you have 
-    <a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java</a> (JRE or JDK) 
+    <a rel="bookmark" href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java</a> (JRE or JDK) 
     version 1.6 update 24 (or higher) installed.  (Previous versions have security bugs!)
     ERDDAP works with 32 bit or 64 bit Java. 64 bit is preferred for 64-bit operating systems. 
     On Linux, we recommend that you download and install Java even if your computer came with Java
     installed. This lets you be in control of which Java you have and where it is (usr/local?).
     To install Java on Linux, see these
-      <a href="http://www.java.com/en/download/help/linux_install.xml">instructions</a>.
+      <a rel="help" href="http://www.java.com/en/download/help/linux_install.xml">instructions</a>.
     <br>&nbsp;
 
-<li><a name="tomcat">Set</a> up <a href="http://tomcat.apache.org/">Tomcat</a>.    
+<li><a name="tomcat">Set</a> up <a rel="help" href="http://tomcat.apache.org/">Tomcat</a>.    
     <br>Below, the Tomcat directory will be referred to as [tomcat] .
     Warning! If you already have a Tomcat running some other web application (especially THREDDS), 
-    we recommend that you install ERDDAP in <a href="#secondTomcat">a&nbsp;second&nbsp;Tomcat</a>,
+    we recommend that you install ERDDAP in <a rel="help" href="#secondTomcat">a&nbsp;second&nbsp;Tomcat</a>,
        because ERDDAP may need different settings 
     and shouldn't have to contend with other applications for memory.
     <br>&nbsp;
     <ul>
 
     <li>Follow the instructions at 
-      <a href="http://tomcat.apache.org/">http://tomcat.apache.org/</a> 
+      <a rel="help" href="http://tomcat.apache.org/">http://tomcat.apache.org/</a> 
       to set up Tomcat on your server.
       <br>On Linux, we recommend installing it in /usr/local.
       <br>On a Mac, it is probably already installed in /Library/Tomcat.
@@ -179,18 +179,19 @@ or Mac server instead.
         You can see if Tomcat, Java, and ERDDAP are indeed running in 64 bit mode by searching for 
         " bit," in ERDDAP's Daily Report email or in the 
         &lt;<i>bigParentDirectory</i>&gt;/logs/log.txt file (as specified in 
-          <a href="#setup.xml">setup.xml</a>). 
+          <a rel="help" href="#setup.xml">setup.xml</a>). 
         <br>&nbsp;
       </ul>
 
       <!--p>Optional: You can add <tt>-verbose:gc</tt> to the JAVA_OPTS (or to the list of Java Options
       <br>in the Window's Tomcat Manager icon in the systemtry). It tells Java to send   
-  <a href="http://download.oracle.com/javase/technologies/hotspot/gc/gc_tuning_6.html">Java garbage collection</a>
+  <a rel="help" href="http://download.oracle.com/javase/technologies/hotspot/gc/gc_tuning_6.html">Java garbage collection</a>
       information to [tomcat]/logs/catalina.out (or some other Tomcat log file) 
       which is useful if your ERDDAP has memory problems. -->
 
     <li><a name="permissions">On</a> Linux and Macs, change the permissions of all 
-      [tomcat]/bin/*.sh to be executable by the owner.
+      *.sh files in [tomcat]/bin/ to be executable by the owner, e.g., with
+      <br><tt>chmod +x *.sh</tt>
       <br>&nbsp;
 
     <li><a name="fonts">Fonts</a> for images: We strongly prefer the free Vera Sans fonts 
@@ -200,7 +201,7 @@ or Mac server instead.
       setup.xml to <tt>&lt;fontFamily&gt;SansSerif&lt;/fontFamily&gt;</tt> .
 
     <p>To install the fonts, please download 
-        <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/BitstreamVeraSans.zip">BitstreamVeraSans.zip</a> 
+        <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/BitstreamVeraSans.zip">BitstreamVeraSans.zip</a> 
         (344,753 bytes, MD5=E16AF0C9838FD2443434F6E0E9FD0A0D) 
         and unzip the font files to a temporary directory.
       <ul>
@@ -223,7 +224,7 @@ or Mac server instead.
            <a href="http://coastwatch.pfeg.noaa.gov:8080/">http://coastwatch.pfeg.noaa.gov:8080/</a>).
         <br>You should see the Tomcat "Congratulations" page. 
         <br>If there is trouble, see the Tomcat log file [tomcat]/logs/catalina.out.
-      <li>Mac (run tomcat as the system administator user):
+      <li>Mac (run tomcat as the system administrator user):
         <br>Run <tt>[tomcat]/bin/startup.sh</tt>
         <br>View your URL + ":8080/" in your browser (e.g., 
            <a href="http://coastwatch.pfeg.noaa.gov:8080/">http://coastwatch.pfeg.noaa.gov:8080/</a>).
@@ -241,7 +242,7 @@ or Mac server instead.
       <ul>
       <li>See the Tomcat log file [tomcat]/logs/catalina.out.  
         Tomcat problems are almost always indicated there.
-      <li>See the <a href="http://tomcat.apache.org/">Tomcat</a> web site or search the web for help,
+      <li>See the <a rel="help" href="http://tomcat.apache.org/">Tomcat</a> web site or search the web for help,
         but please let us know the problems you had and the solutions you found.
       <li>Email me at <tt>bob dot simons at noaa dot gov</tt> .  I will try to help you.
         <br>&nbsp;
@@ -250,8 +251,9 @@ or Mac server instead.
 
 <li><a name="erddapContent">Set up the [tomcat]/content/erddap configuration files.</a> 
   <br>On Linux, Mac, and Windows, download
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a> 
-    (70,836 bytes, MD5=D927E8132F1F19A342274F37375619E6, Dated 2012-05-02) 
+    <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a> 
+<!-- (70,836 bytes, MD5=D927E8132F1F19A342274F37375619E6, Dated 2012-05-02) -->
+     (72,108 bytes, MD5=2D110CC2472F39FF1FC4B27C8C1C720F)
     and unzip it into [tomcat], creating [tomcat]/content/erddap .
   <p>For Red Hat Enterprise Linux (RHEL), unzip it into ~tomcat
     and set the system property erddapContentDirectory=~tomcat/content/erddap
@@ -263,7 +265,7 @@ or Mac server instead.
       and make the requested changes.
     setup.xml is the file with all of the settings which specify how your ERDDAP behaves.
   <li><a name="datasets.xml">Read</a> the comments in 
-      <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><b>Working with the datasets.xml File</b></a>, then modify the XML in 
+      <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><b>Working with the datasets.xml File</b></a>, then modify the XML in 
     [tomcat]/content/erddap/<b>datasets.xml</b> to specify all of the datasets 
       you want your ERDDAP to serve.
   <li>(Unlikely) Now or (slightly more likely) in the future, 
@@ -275,7 +277,7 @@ or Mac server instead.
   </ul>
   After you edit the .xml files, it is a good idea to verify that the result is well-formed XML
   by pasting the XML text into an XML checker like
-    <a href="http://www.xml.com/pub/a/tools/ruwf/check.html">RUWF</a>.
+    <a rel="help" href="http://www.xml.com/pub/a/tools/ruwf/check.html">RUWF</a>.
 
   <p>In the unusual situation where you aren't allowed to modify the Tomcat directory,
   you can put the ERDDAP content directory somewhere else (e.g., /usr/local/erddap). 
@@ -287,8 +289,9 @@ or Mac server instead.
 <li><a name="erddap.war">Install</a> the erddap.war file.
   <br>On Linux, Mac, and Windows, download 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    <!-- ver, size, md5 duplicated below -->
-    (version 1.38, size=478,799,083 bytes, MD5=7270FB700CAEF85A1F1A3B3326FAFE98) 
+    <!-- ver, size, md5 duplicated below 
+    (version 1.38, size=478,799,083 bytes, MD5=7270FB700CAEF85A1F1A3B3326FAFE98) -->
+    (version 1.40, size=477,338,971 bytes, MD5=138F354918668AB8414A8174365BD036)
     into [tomcat]/webapps .  
   The .war file is big because it contains high resolution coastline, boundary, 
   and elevation data needed to create maps.
@@ -340,12 +343,12 @@ or Mac server instead.
     make the same changes to the new messages.xml in the temporary directory.
   <li>Move messages.xml from the temporary directory to be
     [tomcat]/content/erddap/messages.xml .
-  <li>Keep using your current <a href="#setup.xml">setup.xml</a> and datasets.xml.
+  <li>Keep using your current <a rel="help" href="#setup.xml">setup.xml</a> and datasets.xml.
     <br>&nbsp;
   </ul>
 
 <li>Make the changes listed in 
-  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/changes.html">Changes</a> 
+  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/changes.html">Changes</a> 
   in the section entitled "Things ERDDAP Administrators Need to Know and Do"
   for all of the ERDDAP versions since the version you were using.
   <br>&nbsp;
@@ -378,7 +381,7 @@ into a  temporary directory.
   <li>It includes statistics regarding the number of requests, memory usage, thread stack traces, 
     the taskThread, etc.
   <li>Because the Status Page can be viewed by anyone, it doesn't include quite as much information
-    as the <a href="#dailyReport">Daily Report</a>.
+    as the <a rel="help" href="#dailyReport">Daily Report</a>.
     <br>&nbsp;
   </ul>
 
@@ -387,7 +390,7 @@ into a  temporary directory.
   it is very useful to look at the diagnostic messages in the ERDDAP log file.  
   <ul>
   <li>The log file is the log.txt file in [bigParentDirectory]/logs 
-      (as specified in <a href="#setup.xml">setup.xml</a>).
+      (as specified in <a rel="help" href="#setup.xml">setup.xml</a>).
   <li>When the log.txt files gets to 5 MB, it is renamed log.txt.previous and a new log.txt file is created.
     So log files don't accumulate.
   <li>Whenever you restart ERDDAP, it makes an archive copy of the log.txt and log.txt.previous files with 
@@ -404,7 +407,7 @@ into a  temporary directory.
       These are pretty rare.
     <li>Anything else is just an informative message. 
       You can control how much information is logged with <tt>&lt;logLevel&gt;</tt> in 
-        <a href="#setup.xml">setup.xml</a>.
+        <a rel="help" href="#setup.xml">setup.xml</a>.
       <br>&nbsp;
     </ul>
   </ul>
@@ -440,7 +443,7 @@ into a  temporary directory.
 <li><b><a name="emailLog">emailLogYEAR-MM-DD.txt</a></b> -
   ERDDAP always writes the text of all out-going email messages 
   in the current day's emailLogYEAR-MM-DD.txt file in [bigParentDirectory]/logs 
-  (as specified in <a href="#setup.xml">setup.xml</a>).
+  (as specified in <a rel="help" href="#setup.xml">setup.xml</a>).
   <ul>
   <li>If the server can't send out email messages, or if you have configured ERDDAP not to send 
     out email messages, or if you are just curious, this file is a convenient way to see 
@@ -457,8 +460,8 @@ into a  temporary directory.
     they generated.
   <li>It is emailed to <tt>&lt;emailDailyReportsTo&gt;</tt> and 
     <tt>&lt;emailEverythingTo&gt;</tt> (as specified in 
-    <a href="#setup.xml">setup.xml</a>) provided you have set up the email email system (in setup.xml).
-  <li>It is also written to the <a href="#log">log file</a>.
+    <a rel="help" href="#setup.xml">setup.xml</a>) provided you have set up the email email system (in setup.xml).
+  <li>It is also written to the <a rel="help" href="#log">log file</a>.
   <li>It is generated when you start up ERDDAP, just after ERDDAP's first attempt to load all of 
     the datasets.
   <li>It is also generated soon after 7 am local time every morning.
@@ -467,7 +470,7 @@ into a  temporary directory.
 
 <li><b><a name="addingDatasets">Adding/Changing</a> Datasets</b> - 
   ERDDAP usually rereads datasets.xml every <tt>&lt;<i>loadDatasetsMinMinutes</i>&gt;</tt> 
-  (specified in <a href="#setup.xml">setup.xml</a>). 
+  (specified in <a rel="help" href="#setup.xml">setup.xml</a>). 
     So you can make changes to datasets.xml any time, even while ERDDAP is running.
   <br>A new dataset will be detected soon, usually within 
     <tt>&lt;<i>loadDatasetsMinMinutes</i>&gt;</tt>.
@@ -482,17 +485,17 @@ into a  temporary directory.
   <li>If a dataset is active in ERDDAP and you want to force ERDDAP to reload it as soon as possible
     (before the dataset's <tt>&lt;reloadEveryNMinutes&gt;</tt> would cause it to be reloaded),
     put a file in [bigParentDirectory]/flag 
-      (as specified in <a href="#setup.xml">setup.xml</a>) that has the
+      (as specified in <a rel="help" href="#setup.xml">setup.xml</a>) that has the
     same name as the datasetID (as specified in datasets.xml). 
   <li>The contents of the flag file are irrelevant.
   <li>ERDDAP continuously looks for flag files. 
   <li>When ERDDAP finds a flag file, it deletes the file and tries to reload the dataset very soon
     (usually within seconds).
   <li>Note that when a dataset is reloaded, all files in the 
-    <i>bigParentDirectory</i>/<a href="#cachedResponses">cache</a>/<i>datasetID</i> 
+    <i>bigParentDirectory</i>/<a rel="help" href="#cachedResponses">cache</a>/<i>datasetID</i> 
     directory are deleted.
   <li>Note that if the dataset's xml includes     
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#active"><tt>active="false"</tt></a>,
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#active"><tt>active="false"</tt></a>,
     a flag will cause the dataset to be made inactive 
     (if it is active), and in any case, not reloaded.
   </ul>
@@ -504,11 +507,11 @@ into a  temporary directory.
     <br>(that's a fake flagKey) will set a flag for the rPmelTao dataset.  
   <li>There is a different flagKey for each datasetID. 
   <li>Administrators can see a list of flag URLs for all datasets by looking at the bottom of 
-    their <a href="#dailyReport">Daily Report</a> email.
+    their <a rel="help" href="#dailyReport">Daily Report</a> email.
   <li>Administrators should treat these URLs as confidential, since they give someone the right to
     reset a dataset at will.
   <li>If you think the flagKeys have fallen into the hands of someone who is abusing them,
-    you can change <tt>&lt;flagKeyKey&gt;</tt> in <a href="#setup.xml">setup.xml</a> and 
+    you can change <tt>&lt;flagKeyKey&gt;</tt> in <a rel="help" href="#setup.xml">setup.xml</a> and 
     restart ERDDAP
     to force ERDDAP to generate and use a different set of flagKeys.
   <li>If you change <tt>&lt;flagKeyKey&gt;</tt>, delete all of the old subscriptions (see
@@ -528,8 +531,8 @@ into a  temporary directory.
 
 <li><b>Force Dataset <a name="removingDatasets">Removal</a></b> - 
   If a dataset is active in ERDDAP, and you want to deactivate it as soon as 
-  possible, add <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><tt>active="false"</tt></a>
-    to the dataset tag and set a <a href="#flag">flag</a>.
+  possible, add <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><tt>active="false"</tt></a>
+    to the dataset tag and set a <a rel="help" href="#flag">flag</a>.
   Flags are usually seen quickly.  But if the LoadDatasets thread is already
   busy, it may be a while before it is available to act on the flag.
   Once the dataset is not active (i.e., not visible in ERDDAP's list of datasets), 
@@ -550,7 +553,7 @@ into a  temporary directory.
     <li>LoadDatasets reads through the copy of datasets.xml and, for each dataset,
        sees if the dataset needs to be (re)loaded or removed.
        <ul>
-       <li>If a <a href="#flag">flag</a> file exists for this dataset, 
+       <li>If a <a rel="help" href="#flag">flag</a> file exists for this dataset, 
          the file is deleted and 
          the dataset is removed if <tt>active="false"</tt> 
          or (re)loaded if <tt>active="true"</tt> (regardless of the dataset's age).
@@ -574,7 +577,7 @@ into a  temporary directory.
 
   <li>While the time since the start of the last majorLoad is less than
     <tt>loadDatasetsMinMinutes</tt> (as specified in setup.xml, e.g., 15 minutes),
-    RunLoadDatasets repeatedly looks for <a href="#flag">flag</a> files
+    RunLoadDatasets repeatedly looks for <a rel="help" href="#flag">flag</a> files
     in the [bigParentDirectory]/flag directory.  If one or more flag files are 
     found, they are deleted, and RunLoadDatasets starts a LoadDatasets thread to do a 
     "minorLoad" (majorLoad=false).  You can't see minorLoad information on 
@@ -662,7 +665,7 @@ into a  temporary directory.
   <ul>
   <li> All files in this cache are deleted when ERDDAP is restarted.
   <li> Periodically, any file more than <tt>&lt;cacheMinutes&gt;</tt> old (as specified in 
-    <a href="#setup.xml">setup.xml</a>) will be deleted.  
+    <a rel="help" href="#setup.xml">setup.xml</a>) will be deleted.  
     Removing files in the cache based on age (not Least-Recently-Used) ensures that files won't stay 
     in the cache very long.
     Although it might seem like a given request should always return the same response, that isn't true.
@@ -692,10 +695,10 @@ into a  temporary directory.
   <li>It shouldn't ever be necessary for you to delete these files because ERDDAP verifies and updates 
     the stored information when the dataset is reloaded.
   <li>But if you ever do need to delete these files (why?), you can do it when ERDDAP is running. 
-    Then set a <a href="#flag">flag</a>.
+    Then set a <a rel="help" href="#flag">flag</a>.
   <li>If you want to encourage ERDDAP to update the stored dataset information (for example,
     if you just added, removed, or changed some files to the dataset's data directory), 
-    use the <a href="#flag">flag</a> system.
+    use the <a rel="help" href="#flag">flag</a> system.
     <br>&nbsp;
   </ul>
 
@@ -709,17 +712,17 @@ into a  temporary directory.
   <p>Unfortunately, some web crawlers (e.g., GoogleBot) are now filling out and submitting
   forms in order to find additional content.  For web commerce sites, this is great. 
   But this is terrible for ERDDAP because it just leads to an <b>infinite</b> number of
-  undesireable and pointless attempts to crawl the actual data. 
+  undesirable and pointless attempts to crawl the actual data. 
   This can lead to more requests for data than from all other users combined.
   And it fills the search engine with goofy, pointless subsets of the actual data.
 
   <p>To tell the web crawlers to stop filling out forms, you need to create a text file called 
-  <a href="http://en.wikipedia.org/wiki/Robots_exclusion_standard">robots.txt</a> 
+  <a rel="help" href="http://en.wikipedia.org/wiki/Robots_exclusion_standard">robots.txt</a> 
   in the root directory of your web site's document hierarchy so that it can be viewed by 
-  anyone as, e.g., www.example.com/robots.txt .
+  anyone as, e.g., http://www.example.com/robots.txt .
   <br>If you are creating a new robots.txt file, put these two lines in it:
     <pre>
-    User-Agent: *
+    User-agent: *
     Disallow: /*?</pre>
   If you already have a robots.txt file, add this line to the Disallow section:
     <pre>
@@ -730,7 +733,7 @@ into a  temporary directory.
   <br>&nbsp;
 
 <li><b><a name="sitemap">sitemap.xml</a></b> - As the
-  <a href="http://www.sitemaps.org/">www.sitemaps.org</a> web site says:
+  <a rel="help" href="http://www.sitemaps.org/">www.sitemaps.org</a> web site says:
   <blockquote>Sitemaps are an easy way for webmasters to inform search engines about pages on their 
   sites that are available for crawling. In its simplest form, a Sitemap is an XML file that lists
   URLs for a site along with additional metadata about each URL (when it was last updated, how
@@ -751,7 +754,7 @@ into a  temporary directory.
   <li>So ERDDAP generates a sitemap.xml file for your ERDDAP which tells search engines 
     that your ERDDAP only needs to be crawled every month.
   <li>You should add a refernce to ERDDAP's sitemap.xml to your 
-     <a href="http://en.wikipedia.org/wiki/Robots_exclusion_standard">robots.txt</a> file:
+     <a rel="help" href="http://en.wikipedia.org/wiki/Robots_exclusion_standard">robots.txt</a> file:
      <br>&nbsp;&nbsp;<tt>Sitemap: http://<b>www.yoursite.org</b>/erddap/sitemap.xml</tt>
   <li>If that doesn't seem to be getting the message to the crawlers, you can tell the various search 
     engines about the sitemap.xml file by visiting these URLs (but change <b>YourInstitution</b> 
@@ -775,20 +778,20 @@ is available, send an email to <tt>bob dot simons at noaa dot gov</tt> requestin
   <ul>
   <li>Normally, ERDDAP acts as an intermediary: it takes a request from a user; 
     gets data from a remote data source; reformats the data; and sends it to the user.
-  <li><a href="http://en.wikipedia.org/wiki/Pull_technology">Pull Technology</a>: 
+  <li><a rel="help" href="http://en.wikipedia.org/wiki/Pull_technology">Pull Technology</a>: 
     ERDDAP also has the ability to actively get all of the available data  
     from a remote data source and 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">store 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">store 
     a local copy of the data</a>.
-  <li><a href="http://en.wikipedia.org/wiki/Push_technology">Push Technology</a>: 
+  <li><a rel="help" href="http://en.wikipedia.org/wiki/Push_technology">Push Technology</a>: 
     By using ERDDAP's 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/information.html#subscriptions">subscription services</a>, 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/information.html#subscriptions">subscription services</a>, 
     other data servers can be notified as soon 
     as new data is available so that they can request the data (by pulling the data).
   <li>ERDDAP's 
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGridFromErddap</a> and
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> use ERDDAP's subscription services and 
-    <a href="#flag">flag system</a> so that it will be notified immediately when new data is available. 
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGridFromErddap</a> and
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> use ERDDAP's subscription services and 
+    <a rel="help" href="#flag">flag system</a> so that it will be notified immediately when new data is available. 
   <li>You can combine these to great effect: if you wrap an EDDGridCopy around an EDDGridFromErddap 
     dataset (or wrap an EDDTableCopy around an EDDTableFromErddap dataset),
     ERDDAP will automatically create and maintain a local copy of another ERDDAP's dataset.
@@ -807,7 +810,7 @@ is available, send an email to <tt>bob dot simons at noaa dot gov</tt> requestin
   <li>A given ERDDAP can be both a source of data for some datasets and a re-distribution site for other
     datasets.
   <li>The resulting network is roughly similar to data distribution networks set up with programs like 
-    <a href="http://www.unidata.ucar.edu/software/idd/">Unidata's IDD/IDM</a>, but less rigidly structured.
+    <a rel="help" href="http://www.unidata.ucar.edu/software/idd/">Unidata's IDD/IDM</a>, but less rigidly structured.
     <br>&nbsp;
   </ul>
 
@@ -815,21 +818,21 @@ is available, send an email to <tt>bob dot simons at noaa dot gov</tt> requestin
 <li><b><a name="security">Security/Authentication/Authorization</a></b> - By default, ERDDAP 
 runs as an entirely public server (using http)  
 with no login system 
-(<a href="http://en.wikipedia.org/wiki/Authentication">authentication</a>) 
+(<a rel="help" href="http://en.wikipedia.org/wiki/Authentication">authentication</a>) 
 and no restrictions to data access 
-(<a href="http://en.wikipedia.org/wiki/Authorization">authorization</a>). 
+(<a rel="help" href="http://en.wikipedia.org/wiki/Authorization">authorization</a>). 
 If you want to restrict access to some or all datasets to some users, you can use ERDDAP's
 built-in security system. When the security system is in use:
 <ul>
 <li>ERDDAP uses 
-    <a href="http://en.wikipedia.org/wiki/Role-based_access_control">role-based access control</a>.
+    <a rel="help" href="http://en.wikipedia.org/wiki/Role-based_access_control">role-based access control</a>.
   <ul>
   <li>The ERDDAP administrator defines users with the
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a>
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a>
     tag in datasets.xml.
     Each user has a username, a password, and one or more roles. 
   <li>The ERDDAP administrator defines which roles have access to a given dataset via the
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#accessibleTo"><tt>&lt;accessibleTo&gt;</tt></a>
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#accessibleTo"><tt>&lt;accessibleTo&gt;</tt></a>
     tag in datasets.xml for any dataset that shouldn't have public access.
   </ul>
 <li>The user's log in status (and a link to log in/out) will be shown at the top of every web page.
@@ -839,7 +842,7 @@ built-in security system. When the security system is in use:
 <li>Users who are not logged in use ERDDAP's <b>http</b> URLs.
   Users who are logged in use ERDDAP's <b>https</b> URLs. 
   This helps prevent 
-    <a href="http://en.wikipedia.org/wiki/Session_hijacking">session hijacking and sidejacking</a>.    
+    <a rel="help" href="http://en.wikipedia.org/wiki/Session_hijacking">session hijacking and sidejacking</a>.    
 <li>Anyone who isn't logged in can access and use the public datasets.
   By default, private datasets don't appear in lists of datasets if a user isn't logged in.
   If the administrator has set setup.xml's <tt>&lt;listPrivateDatasets&gt;</tt> to true, 
@@ -863,8 +866,8 @@ built-in security system. When the security system is in use:
 
 <p>To set up the security/authentication/authorization system:
 <ul>
-<li>Do the standard ERDDAP <a href="#initialSetup">initial setup</a>.
-<li>In <a href="#setup.xml">setup.xml</a>, 
+<li>Do the standard ERDDAP <a rel="help" href="#initialSetup">initial setup</a>.
+<li>In <a rel="help" href="#setup.xml">setup.xml</a>, 
   <ul>
   <li>Add/change the <tt>&lt;authenticate&gt;</tt> value from nothing to 
     <tt>custom</tt> or <tt>openid</tt>.
@@ -874,18 +877,18 @@ built-in security system. When the security system is in use:
     the user's log in/out info 
     at the top of each web page.
   </ul>
-<li><a href="http://tomcat.apache.org/tomcat-7.0-doc/ssl-howto.html">Configure tomcat to support SSL</a>
+<li><a rel="help" href="http://tomcat.apache.org/tomcat-7.0-doc/ssl-howto.html">Configure tomcat to support SSL</a>
      (the basis for https connections) by creating a keystore with a 
-  <a href="http://en.wikipedia.org/wiki/Public_key_certificate">digital certificate</a>
+  <a rel="help" href="http://en.wikipedia.org/wiki/Public_key_certificate">digital certificate</a>
      and by modifying [tomcat]/conf/server.xml to uncomment the connector for port 8443.
   It is better to get a digital certificate from a 
-     <a href="http://en.wikipedia.org/wiki/Certificate_authority">certificate authority</a>
+     <a rel="help" href="http://en.wikipedia.org/wiki/Certificate_authority">certificate authority</a>
      than to make a 
-     <a href="http://en.wikipedia.org/wiki/Self-signed_certificate">self-signed certificate</a>
-  (<a href="http://www.exampledepot.com/egs/java.security.cert/CreateCert.html">instructions</a>), 
+     <a rel="help" href="http://en.wikipedia.org/wiki/Self-signed_certificate">self-signed certificate</a>
+  (<a rel="help" href="http://www.exampledepot.com/egs/java.security.cert/CreateCert.html">instructions</a>), 
      because it gives your clients more assurance that they are indeed connecting to your
   ERDDAP, not an imposter's website.
-  Many vendors sell digitial certificates. (Search for web.) They are not expensive. 
+  Many vendors sell digital certificates. (Search for web.) They are not expensive. 
   On Windows, you may have to move .keystore from "c:\Documents and Settings\<i>you</i>\.keystore" to 
   "c:\Documents and Settings\Default User\.keystore"  or "c:\.keystore" 
   (see [tomcat]/logs/catalina.(today).log if the application doesn't load or users can't see the log in
@@ -901,11 +904,11 @@ built-in security system. When the security system is in use:
   <br>&nbsp;&nbsp; ProxyPassReverse /erddap &lt;<i>YourServer'sHttpsURL</i>&gt;/erddap</tt>
   <br>(This is untested. If you do this and it works or doesn't work, let us know.)
 <li>In datasets.xml, create a 
-  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a>
+  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a>
   tag for each user with username, password, and roles information.
   This is the <a name="authorization">authorization</a> part of ERDDAP's security system.
 <li>In datasets.xml, add an
-  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#accessibleTo"><tt>&lt;accessibleTo&gt;</tt></a>
+  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#accessibleTo"><tt>&lt;accessibleTo&gt;</tt></a>
   tag to each dataset that shouldn't have public access.
   <tt>&lt;accessibleTo&gt;</tt> lets you specify which roles have access to that dataset.
 <li>Restart Tomcat.
@@ -917,7 +920,7 @@ built-in security system. When the security system is in use:
   port 8443 on your server.
 <li>You can change the <tt>&lt;user&gt;</tt> and <tt>&lt;accessibleTo&gt;</tt> tags at any time.
   The changes will be applied at the next regular reload of any dataset,
-  or immediately if you use a <a href="#flag">flag</a>. 
+  or immediately if you use a <a rel="help" href="#flag">flag</a>. 
 <li>It worked for a few months, now users can't get to the log in page?
   Check the Tomcat logs. Your .keystore certificate may have expired and you may need to make a new one.
   You can see when the .keystore certificate will expire by examining the certificate when you log in.
@@ -925,7 +928,7 @@ built-in security system. When the security system is in use:
 
 <p>Authentication (logging in) - Currently, ERDDAP supports 
   <tt>custom</tt> and 
-  <a href="http://openid.net/"><tt>openid</tt></a> (recommended) authentication.
+  <a rel="help" href="http://openid.net/"><tt>openid</tt></a> (recommended) authentication.
 We strongly recommend OpenID because it frees you from storing and handling user's passwords.
 Remember that users often use the same password at different sites.
 So they may be using the same password for your ERDDAP as they do at their bank.
@@ -941,22 +944,22 @@ So you are freed from that responsibility.
   but OpenID is better because it frees you from having to handle passwords.
   The <tt>custom</tt> approach requires you to collect User Names and Passwords (use your phone! 
   email isn't secure!) and store them in datasets.xml in  
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a> tags.
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a> tags.
 
-  <p>The <tt>custom</tt> approach uses a <a href="http://en.wikipedia.org/wiki/HTTP_cookie">cookie</a> on the user's computer,
+  <p>The <tt>custom</tt> approach uses a <a rel="help" href="http://en.wikipedia.org/wiki/HTTP_cookie">cookie</a> on the user's computer,
     so the user's browser must be 
   set to allow cookies.  If a user is making ERDDAP requests from a computer program 
   (not a browser), cookies are hard to work with. Sorry.
 
-<li><a href="http://openid.net/"><tt>openid</tt></a> is an open standard that lets users log 
+<li><a rel="help" href="http://openid.net/"><tt>openid</tt></a> is an open standard that lets users log 
   in with your password at one web site
   and then log in without your password at many other web sites, including ERDDAP.
   OpenID is very convenient for ERDDAP administrators -- you don't ever have to deal with passwords.
   All you need is a user's OpenID URL (which is public information) 
   so that you can define the users and their roles in datasets.xml with 
-     <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a> tags.
+     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a> tags.
 
-  <p>OpenID uses a <a href="http://en.wikipedia.org/wiki/HTTP_cookie">cookie</a> on the user's computer,
+  <p>OpenID uses a <a rel="help" href="http://en.wikipedia.org/wiki/HTTP_cookie">cookie</a> on the user's computer,
     so the user's browser must be set to allow cookies.
   If a user is making ERDDAP requests from a computer program (not a browser), 
   cookies are hard to work with. Sorry.
@@ -975,14 +978,14 @@ So how can ERDDAP get the data for restricted access datasets? Some options are:
 <li>ERDDAP can serve data from local files (for example, via EDDTableFromFiles or EDDGridFromFiles).  
   <br>&nbsp;
 <li>ERDDAP can be in a 
-     <a href="http://en.wikipedia.org/wiki/Demilitarized_zone_(computing)">DMZ</a>
+     <a rel="help" href="http://en.wikipedia.org/wiki/Demilitarized_zone_(computing)">DMZ</a>
      and the data source (e.g., an OPeNDAP server or a database) can be 
-   behind a <a href="http://en.wikipedia.org/wiki/Firewall">firewall</a>,
+   behind a <a rel="help" href="http://en.wikipedia.org/wiki/Firewall">firewall</a>,
      where it is accessible to ERDDAP but not to the public.
   <br>&nbsp;
 <li>The data source can be on a public web site, but require a login to get the data.
   The one type of dataset that ERDDAP can log on to access is 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase"
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromDatabase"
       >EDDTableFromDatabase</a>.
 
   These datasets support (and should always use) user names, passwords, SSL connections, 
@@ -991,7 +994,7 @@ So how can ERDDAP get the data for restricted access datasets? Some options are:
   <p>But in general, currently, ERDDAP can't deal these data sources because it has no
   provisions for logging on to the data source.
   This is the reason why access to 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap"
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap"
       >EDDGridFromErddap and EDDTableFromErddap</a> datasets
   can't be restricted.
   Currently, the local ERDDAP has no way to login and access the metadata information 
@@ -1020,15 +1023,15 @@ These are details that you don't need to know until a need arises.
     <ul>
     <li>Do the installation one step at a time. Get Tomcat up and running first.
     <li>When Tomcat is running, the Tomcat Manager should be at http://127.0.0.1:8080/manager/html/
-    <li>In ERDDAP's <a href="#setup.xml">setup.xml</a>, set <tt>baseUrl</tt> to <tt>http://127.0.0.1:8080</tt> 
+    <li>In ERDDAP's <a rel="help" href="#setup.xml">setup.xml</a>, set <tt>baseUrl</tt> to <tt>http://127.0.0.1:8080</tt> 
     <li>ERDDAP will be at http://127.0.0.1:8080/erddap 
     </ul>
   <li> <a name="secondTomcat">(Second Best)</a> Install another Tomcat on the same computer as your public ERDDAP.
     <ol>
     <li> Change all of the port numbers associated with the second Tomcat (e.g., change 8080 to 8081)
-      (see these <a href="http://viralpatel.net/blogs/2009/08/running-multiple-instance-apache-tomcat-single-server.html">directions</a>).    
+      (see these <a rel="help" href="http://viralpatel.net/blogs/2009/08/running-multiple-instance-apache-tomcat-single-server.html">directions</a>).    
     <li> Install ERDDAP in the new Tomcat.
-      In the new ERDDAP's <a href="#setup.xml">setup.xml</a>, set <tt>baseUrl</tt> to <tt>http://www.your.site.name:8081</tt> 
+      In the new ERDDAP's <a rel="help" href="#setup.xml">setup.xml</a>, set <tt>baseUrl</tt> to <tt>http://www.your.site.name:8081</tt> 
       You can then access the new ERDDAP via http://www.your.site.name:8081/erddap .
       <br>&nbsp;
     </ol>
@@ -1037,7 +1040,7 @@ These are details that you don't need to know until a need arises.
 <li><b><a name="heavyLoads">Heavy Loads / Constraints</a></b> - 
   With heavy use, a standalone ERDDAP may be constrained by various problems. 
   For more information, see the 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/grids.html#heavyLoads">list of 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/grids.html#heavyLoads">list of 
     constraints and solutions</a>.
   <br>&nbsp;
   
@@ -1047,18 +1050,18 @@ These are details that you don't need to know until a need arises.
   For such situations, ERDDAP has features that make it easy to construct scalable grids 
   (also called clusters or federations) of ERDDAPs  which allow the system to handle very heavy use
   (e.g., for a large data center). For more information, see  
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/grids.html">grids, clusters, 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/grids.html">grids, clusters, 
       and federations of ERDDAPs</a>.
   <br>&nbsp;
 
 <li><a name="cloudComputing"><b>Cloud Computing</b></a> - 
   Several companies are starting to offer cloud computing services 
-  (e.g., <a href="http://aws.amazon.com/">Amazon Web Services</a>).
-  <a href="http://en.wikipedia.org/wiki/Web_hosting_service">Web hosting companies</a> 
+  (e.g., <a rel="help" href="http://aws.amazon.com/">Amazon Web Services</a>).
+  <a rel="help" href="http://en.wikipedia.org/wiki/Web_hosting_service">Web hosting companies</a> 
      have offered a range of roughly similar services since the mid-1990's.
   You can use these services to set up a grid/cluster of ERDDAPs to handle very heavy use.
   For more information, see  
-  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/grids.html#cloudComputing">cloud 
+  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/grids.html#cloudComputing">cloud 
     computing with ERDDAP</a>.
   <br>&nbsp;
 
@@ -1100,7 +1103,7 @@ These are details that you don't need to know until a need arises.
   And/or you can use the "Server Status" link in the Tomcat Manager
   to check on the status of all of the response threads.  
   Is your network / internet connection running slowly?
-  There may be other useful diagnostic information in the <a href="#log">ERDDAP log</a> or in [tomcat]/logs/catalina.out.
+  There may be other useful diagnostic information in the <a rel="help" href="#log">ERDDAP log</a> or in [tomcat]/logs/catalina.out.
   <br>&nbsp;
 
 <li><b><a name="frozen">Frozen,</a> Hung, Locked Up</b> - 
@@ -1113,7 +1116,7 @@ These are details that you don't need to know until a need arises.
   <li> Type <tt>"kill -3 &lt;processID&gt;"</tt> to tell Java (which is running Tomcat) to do a thread dump to [tomcat]/logs/catalina.out.
   <li> After you reboot, you can diagnose the problem by finding the thread dump information 
     (and any other useful information above it) in [tomcat]/logs/catalina.out and
-    also by reading relevant parts of the <a href="#log">ERDDAP log archive</a>.
+    also by reading relevant parts of the <a rel="help" href="#log">ERDDAP log archive</a>.
   <li> Please email that information to <tt>bob dot simons at noaa dot gov</tt> so we can see 
     what went wrong.
     <br>&nbsp;
@@ -1130,8 +1133,8 @@ If you repeatedly use Tomcat Manager to Reload (or Stop and Start) ERDDAP,
 <li><b><a name="palettes">Palettes</a></b> are used to convert a range of numbers into a range of colors
 when making graphs and maps. 
   ERDDAP comes with several pre-made palettes. You can add additional palettes.
-  ERDDAP's palettes are defined in <a href="http://gmt.soest.hawaii.edu/">GMT</a>-style 
-    <a href="http://gmt.soest.hawaii.edu/gmt/html/GMT_Docs.html#x1-720004.15">.cpt (Color Palette Table) files</a>.
+  ERDDAP's palettes are defined in <a rel="help" href="http://gmt.soest.hawaii.edu/">GMT</a>-style 
+    <a rel="help" href="http://gmt.soest.hawaii.edu/gmt/html/GMT_Docs.html#x1-720004.15">.cpt (Color Palette Table) files</a>.
   All ERDDAP .cpt files are valid GMT .cpt files, but the opposite may not be true.
   ERDDAP may just support a subset of what GMT supports.  
   If there is trouble, ERDDAP will probably throw an error when the .cpt file is parsed 
@@ -1153,7 +1156,7 @@ when making graphs and maps.
 
 <li><b><a name="colorbars">How does ERDDAP generate the colors in a colorbar?</a></b>
   <ol>
-  <li>The user selects one of the predefined <a href="#palettes">palettes</a> or uses the default,
+  <li>The user selects one of the predefined <a rel="help" href="#palettes">palettes</a> or uses the default,
     e.g., Rainbow.  Palettes are stored/defined in GMT-style .cpt Color Palette Table files.  
     Each of ERDDAP's predefined palettes has a simple integer range, 
     e.g., 0 to 1 (if there is just one section in the palette), 
@@ -1189,7 +1192,7 @@ when making graphs and maps.
 <li><b><a name="dataDistribution">Guidelines for Data Distribution Systems</a></b> 
   - More general opinions about the design and evaluation 
   of data distribution systems can be found  
-  <a href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/erdData.html">here</a>.
+  <a rel="help" href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/erdData.html">here</a>.
   <br>&nbsp;
 
 </ul>
@@ -1204,9 +1207,10 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
   <ul>
   <li>The source code for the current version of ERDDAP is always in the current erddap.war file.
   <li>The source code for recent public versions and in-development versions 
-    is available via <a href="https://github.com/BobSimons">GitHub</a>.
-    Please read the <a href="https://github.com/BobSimons/erddap/wiki">Wiki</a> for that project.
-  <li>ERDDAP has a very liberal, open-source <a href="#license">license</a>,
+    is available via <a rel="help" href="https://github.com/BobSimons">GitHub</a>.
+    Please read the <a rel="help" href="https://github.com/BobSimons/erddap/wiki">Wiki</a> 
+    for that project.
+  <li>ERDDAP has a very liberal, open-source <a rel="copyright" href="#license">license</a>,
     so you can use the source code for any purpose.  
     <br>&nbsp;
   </ul>
@@ -1257,7 +1261,7 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
       <ul>
       <li>Make a directory somewhere called "tomcat" (it can be something else, but this is easier to explain).
       <li>As indicated above, unzip erddapContent.zip into [tomcat], creating [tomcat]/content/erddap .
-        Follow the instructions above to modify <a href="#setup.xml">setup.xml</a> and datasets.xml.
+        Follow the instructions above to modify <a rel="help" href="#setup.xml">setup.xml</a> and datasets.xml.
         Depending on your situation, you may need to specify that directory by adding something like
         <br>&nbsp;&nbsp;<tt>-DErddapContentDirectory="<i>/someDirectory/content/erddap/</i>"</tt>  
         <br>to the Java command line for your program.
@@ -1332,13 +1336,12 @@ at the source code and try to figure out how ERDDAP works, please do.
   You won't need to know all the details of ERDDAP's internals.
   And it will be easy for us to incorporate your code in ERDDAP.
   Note that if you do submit code, the license will need compatible with the ERDDAP 
-    <a href="#license">license</a> (e.g., 
-    <a href="http://www.apache.org/licenses/">Apache</a>,
-    <a href="http://www.opensource.org/licenses/bsd-license.php">BSD</a>, or
-    <a href="http://www.opensource.org/licenses/mit-license.php">MIT-X</a>).
+    <a rel="copyright" href="#license">license</a> (e.g., 
+    <a rel="bookmark" href="http://www.apache.org/licenses/">Apache</a>,
+    <a rel="bookmark" href="http://www.opensource.org/licenses/bsd-license.php">BSD</a>, or
+    <a rel="bookmark" href="http://www.opensource.org/licenses/mit-license.php">MIT-X</a>).
   You can hold the copyright to your code. We'll list your contribution in the 
-    <a href="#credits">credits</a>.
-  Yes, we are considering using SourceForge or some similar system, but haven't set it up yet.
+    <a rel="copyright" href="#credits">credits</a>.
   <br>&nbsp;
 
 </ul>
@@ -1349,7 +1352,7 @@ at the source code and try to figure out how ERDDAP works, please do.
 <h2><a name="changes">List of Changes</a></h2>
 
 The  
-<a href="http://coastwatch.pfeg.noaa.gov/erddap/download/changes.html">List of Changes</a>
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/changes.html">List of Changes</a>
 for each ERDDAP release is now on a separate web page.
 
 
@@ -1357,78 +1360,78 @@ for each ERDDAP release is now on a separate web page.
 <h2><a name="credits">Credits</a></h2>
 
 ERDDAP is a product of the  
-<a title="National Oceanic and Atmospheric Administration" href="http://www.noaa.gov">NOAA</a>  
-<a title="National Marine Fisheries Service"               href="http://www.nmfs.noaa.gov">NMFS</a>  
-<a title="Southwest Fisheries Science Center"              href="http://swfsc.noaa.gov">SWFSC</a>  
-<a title="Environmental Research Division" href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>.
+<a title="National Oceanic and Atmospheric Administration" rel="bookmark" href="http://www.noaa.gov">NOAA</a>  
+<a title="National Marine Fisheries Service"               rel="bookmark" href="http://www.nmfs.noaa.gov">NMFS</a>  
+<a title="Environmental Research Division" rel="bookmark" href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>.
 <br>Bob Simons is the author of ERDDAP (the designer and programmer who wrote the ERDDAP-specific code).
-<br>Roy Mendelssohn instigated and oversees the project.
-<br>The ERDDAP-specific code is licensed as copyrighted open source, with <a href="http://www.noaa.gov">NOAA</a> 
-  holding the copyright. See the <a href="#license">ERDDAP license</a>.
+<br>Roy Mendelssohn instigated the project.
+<br>The ERDDAP-specific code is licensed as copyrighted open source, with 
+  <a rel="bookmark" href="http://www.noaa.gov">NOAA</a> 
+  holding the copyright. See the <a rel="copyright" href="#license">ERDDAP license</a>.
 <br>ERDDAP uses copyrighted open source, Apache, LGPL, MIT/X, Mozilla, and public domain libraries and data.
 <br>ERDDAP does not require any GPL code or commercial programs.
 <br>Some of the funding for work on ERDDAP has come from the 
-<a href="http://coastwatch.noaa.gov/">NOAA CoastWatch</a> program, 
-the <a href="http://www.ioos.gov/">NOAA IOOS</a>
-program, and the <a href="http://www.postprogram.org/">POST</a> program.  
+<a rel="bookmark" href="http://coastwatch.noaa.gov/">NOAA CoastWatch</a> program, 
+the <a rel="bookmark" href="http://www.ioos.gov/">NOAA IOOS</a>
+program, and the <a rel="bookmark" href="http://www.postprogram.org/">POST</a> program.  
 <br>Thank you all very much.
 
 <ul>
 <li>ERDDAP is a 
-    <a href="http://www.oracle.com/technetwork/java/javaee/servlet/index.html">Java Servlet</a>
+    <a rel="help" href="http://www.oracle.com/technetwork/java/javaee/servlet/index.html">Java Servlet</a>
     program. At ERD, it runs inside of a
-    <a href="http://tomcat.apache.org/">Tomcat</a> application server
-    (license: <a href="http://www.apache.org/licenses/">Apache</a>), 
+    <a rel="help" href="http://tomcat.apache.org/">Tomcat</a> application server
+    (license: <a rel="bookmark" href="http://www.apache.org/licenses/">Apache</a>), 
   with an 
-    <a href="http://httpd.apache.org/">Apache</a> web server
-    (license: <a href="http://www.apache.org/licenses/">Apache</a>), 
+    <a rel="help" href="http://httpd.apache.org/">Apache</a> web server
+    (license: <a rel="bookmark" href="http://www.apache.org/licenses/">Apache</a>), 
     running on a computer using the 
-    <a href="http://www.redhat.com/">Red Hat Linux</a> operating 
-  system (license: <a href="http://www.linux.org/info/gnu.html">GPL</a>).
+    <a rel="help" href="http://www.redhat.com/">Red Hat Linux</a> operating 
+  system (license: <a rel="bookmark" href="http://www.linux.org/info/gnu.html">GPL</a>).
 <li>The data sets are from various sources. See the metadata (in particular the "sourceUrl", "infoUrl", 
   and "institution") for each dataset.
 <li> The com/cohort classes are from CoHort Software 
-    (<a href="http://www.cohort.com">http://www.cohort.com</a>)
+    (<a rel="help" href="http://www.cohort.com">http://www.cohort.com</a>)
     which makes these classes available with an MIT/X-like license (see classes/com/cohort/util/LICENSE.txt).
-<li>Data from <a href="http://www.opendap.org">OPeNDAP</a> servers are read 
-    with <a href="http://www.opendap.org/download/index.html">Java DAP 1.1.7</a>
+<li>Data from <a rel="help" href="http://www.opendap.org">OPeNDAP</a> servers are read 
+    with <a rel="bookmark" href="http://www.opendap.org/download/index.html">Java DAP 1.1.7</a>
     (license: LGPL).
 <li>NetCDF files (.nc) and GMT-style NetCDF files (.grd) are read and written with code in the
-  <a href="http://www.unidata.ucar.edu/software/netcdf-java/index.htm">NetCDF Java Library</a>
-    (license: <a href="http://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like</a>)
-    from <a href="http://www.unidata.ucar.edu/">Unidata</a>.
+  <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/index.htm">NetCDF Java Library</a>
+    (license: <a rel="bookmark" href="http://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like</a>)
+    from <a rel="bookmark" href="http://www.unidata.ucar.edu/">Unidata</a>.
 <li>The NetCDF Java Library reads GRIB files via the Unidata
-    <a href="http://www.unidata.ucar.edu/software/decoders/">GRIB decoder (grib-6.0.jar)</a>
-  (license: <a href="http://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like</a>).
+    <a rel="help" href="http://www.unidata.ucar.edu/software/decoders/">GRIB decoder (grib-6.0.jar)</a>
+  (license: <a rel="bookmark" href="http://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like</a>).
 <li>The NetCDF Java Library reads BUFR files via the Unidata
-    <a href="http://www.unidata.ucar.edu/software/decoders/">BUFR decoder (bufrTables-1.5.jar)</a>
-  (license: <a href="http://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like</a>).
+    <a rel="help" href="http://www.unidata.ucar.edu/software/decoders/">BUFR decoder (bufrTables-1.5.jar)</a>
+  (license: <a rel="bookmark" href="http://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like</a>).
 <li>The NetCDF Java Library requires a logger facade (we chose slf4j-jdk14.jar) from the
-  <a href="http://www.slf4j.org/">Simple Logging Facade for Java</a> project
-    (license: <a href="http://www.slf4j.org/license.html">MIT/X</a>).
+  <a rel="help" href="http://www.slf4j.org/">Simple Logging Facade for Java</a> project
+    (license: <a rel="bookmark" href="http://www.slf4j.org/license.html">MIT/X</a>).
 <li>The NetCDF Java Library uses code from several .jar files from 
-  <a href="http://www.apache.org/">Apache projects</a>:
-  <a href="http://commons.apache.org/codec/">commons-codec</a>, 
-  <a href="http://hc.apache.org/httpcomponents-client-ga/">commons-httpclient</a>, and
-  <a href="http://commons.apache.org/logging/">commons-logging</a>
-  (license: <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache</a>).
+  <a rel="help" href="http://www.apache.org/">Apache projects</a>:
+  <a rel="help" href="http://commons.apache.org/codec/">commons-codec</a>, 
+  <a rel="help" href="http://hc.apache.org/httpcomponents-client-ga/">commons-httpclient</a>, and
+  <a rel="help" href="http://commons.apache.org/logging/">commons-logging</a>
+  (license: <a rel="bookmark" href="http://www.apache.org/licenses/LICENSE-2.0">Apache</a>).
 <li>Other parts of ERDDAP use code from other 
-  <a href="http://www.apache.org/">Apache projects</a>:
-  <a href="http://commons.apache.org/compress/">commons-compress</a> and
-  <a href="http://commons.apache.org/discovery/">commons-discovery</a>
-  (license: <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache</a>).
+  <a rel="help" href="http://www.apache.org/">Apache projects</a>:
+  <a rel="help" href="http://commons.apache.org/compress/">commons-compress</a> and
+  <a rel="help" href="http://commons.apache.org/discovery/">commons-discovery</a>
+  (license: <a rel="bookmark" href="http://www.apache.org/licenses/LICENSE-2.0">Apache</a>).
 <li>The NetCDF Java Library uses XML processing code from 
-    <a href="http://www.jdom.org/">JDOM</a>
-    (license: <a href="http://www.jdom.org/docs/faq.html#a0030">Apache</a>).
+    <a rel="help" href="http://www.jdom.org/">JDOM</a>
+    (license: <a rel="bookmark" href="http://www.jdom.org/docs/faq.html#a0030">Apache</a>).
 <li>ERDDAP uses 
-    <a href="http://www.json.org/java/index.html">json.org's Java-based JSON library</a> 
-    to parse <a href="http://www.json.org/">JSON</a> data
-  (license: <a href="http://www.json.org/license.html">copyrighted open source</a>).
+    <a rel="help" href="http://www.json.org/java/index.html">json.org's Java-based JSON library</a> 
+    to parse <a rel="help" href="http://www.json.org/">JSON</a> data
+  (license: <a rel="bookmark" href="http://www.json.org/license.html">copyrighted open source</a>).
 <li>The graphs and maps are created on-the-fly with a modified version of NOAA's 
-    <a href="http://www.epic.noaa.gov/java/sgt/">SGT</a> version 3
+    <a rel="help" href="http://www.epic.noaa.gov/java/sgt/">SGT</a> version 3
   (a Java-based Scientific Graphics Toolkit written by Donald Denbo at
-    <a href="http://www.pmel.noaa.gov/">NOAA PMEL</a>)
-  (license: <a href="http://www.epic.noaa.gov/java/license.html">copyrighted open source</a>).
+    <a rel="help" href="http://www.pmel.noaa.gov/">NOAA PMEL</a>)
+  (license: <a rel="bookmark" href="http://www.epic.noaa.gov/java/license.html">copyrighted open source</a>).
 <li>Big, HTML tooltips on ERDDAP's HTML pages are created with Walter Zorn's wz_tooltip.js
     <!-- was http://wztip.info/index.php/Main_Page -->
   (license: LGPL).
@@ -1436,74 +1439,80 @@ program, and the <a href="http://www.postprogram.org/">POST</a> program.
   wz_dragdrop.js <!-- was http://www.walterzorn.com/dragdrop/dragdrop_e.htm -->
     (license: LGPL).
 <li>The .pdf files are created with
-    <a href="http://itextpdf.com/">iText</a> (version 1.3.1, which used the 
+    <a rel="help" href="http://itextpdf.com/">iText</a> (version 1.3.1, which used the 
     <!-- was http://www.lowagie.com/iText/download.html --> Mozilla license),
     a free Java-PDF library by Bruno Lowagie and Paulo Soares.
 <li>The shoreline and lake data are from
-    <a href="http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html">GSHHS</a>
+    <a rel="help" href="http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html">GSHHS</a>
     - A Global Self-consistent, Hierarchical, 
     High-resolution Shoreline Database
-    (license: <a href="http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT">GPL</a>)
+    (license: <a rel="bookmark" href="http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT">GPL</a>)
     and created by Paul Wessel and Walter Smith.
 <li>The political boundary and river data are from the 
-    <a href="http://gmt.soest.hawaii.edu/gmt/doc/gmt/html/man/pscoast.html">pscoast</a>
+    <a rel="help" href="http://gmt.soest.hawaii.edu/gmt/doc/gmt/html/man/pscoast.html">pscoast</a>
     program in 
-    <a href="http://gmt.soest.hawaii.edu">GMT</a>,
+    <a rel="help" href="http://gmt.soest.hawaii.edu">GMT</a>,
     which uses data from the 
-  <a href="http://www.evl.uic.edu/pape/data/WDB/">CIA World Data Bank II</a>
+  <a rel="help" href="http://www.evl.uic.edu/pape/data/WDB/">CIA World Data Bank II</a>
     (license: public domain).
 <li>The bathymetry/topography data used in the background of some maps is the  
-  <a href="http://www.ngdc.noaa.gov/mgg/global/global.html">ETOPO1 Global 1-Minute Gridded Elevation Data Set</a> (Ice Surface, grid registered, binary, 
+  <a rel="help" href="http://www.ngdc.noaa.gov/mgg/global/global.html">ETOPO1 Global 1-Minute Gridded Elevation Data Set</a> (Ice Surface, grid registered, binary, 
   2 byte int: etopo1_ice_g_i2.zip)
     (license:  
-    <a href="http://www.ngdc.noaa.gov/ngdcinfo/privacy.html#copyright">public domain</a>), 
+    <a rel="bookmark" href="http://www.ngdc.noaa.gov/ngdcinfo/privacy.html#copyright">public domain</a>), 
   which is distributed for free by 
-    <a href="http://www.ngdc.noaa.gov">NOAA NGDC</a>.
+    <a rel="bookmark" href="http://www.ngdc.noaa.gov">NOAA NGDC</a>.
 <li> Emails are sent using code in mail.jar from Oracle's   
-    <a href="http://www.oracle.com/technetwork/java/javamail/index.html">JavaMail API</a>
+    <a rel="help" href="http://www.oracle.com/technetwork/java/javamail/index.html">JavaMail API</a>
     (license: 
-    <a href="http://download.oracle.com/otn-pub/java/licenses/OTN_JavaEE_Legacy_Binary-Code-License_30Jan2012.txt">Oracle 
+    <a rel="bookmark" href="http://download.oracle.com/otn-pub/java/licenses/OTN_JavaEE_Legacy_Binary-Code-License_30Jan2012.txt">Oracle 
     Binary Code License Agreement for Java EE Technologies</a>).
 <li> JavaMail uses activation.jar from the 
-    <a href="http://www.oracle.com/technetwork/java/jaf11-139815.html">JavaBeans Activation Framework</a>
+    <a rel="help" href="http://www.oracle.com/technetwork/java/jaf11-139815.html">JavaBeans Activation Framework</a>
     (license: 
-    <a href="http://download.oracle.com/otn-pub/java/licenses/OTN_JavaEE_Legacy_Binary-Code-License_30Jan2012.txt">Oracle 
+    <a rel="bookmark" href="http://download.oracle.com/otn-pub/java/licenses/OTN_JavaEE_Legacy_Binary-Code-License_30Jan2012.txt">Oracle 
     Binary Code License Agreement for Java EE Technologies</a>.
-<li> For <a href="http://openid.net/">OpenID</a> authentication, ERDDAP uses the
+<li> For <a rel="help" href="http://openid.net/">OpenID</a> authentication, ERDDAP uses the
      joid.jar and tsik.jar libraries from the 
-     <a href="http://code.google.com/p/joid/">joid project</a>
-  from <a href="http://www.verisign.com">Verisign</a>
-     (license: <a href="http://code.google.com/p/joid/">Apache 2.0</a>).
-<li> ERDDAP uses <a href="http://joda-time.sourceforge.net/">Joda</a> for some calendar calculations.
-     (license: <a href="http://joda-time.sourceforge.net/license.html">Apache</a>).
-<li> ERDDAP includes the <a href="http://jdbc.postgresql.org/">PostGres JDBC4</a> driver
-     (license: <a href="http://jdbc.postgresql.org/license.html">BSD</a>).
+     <a rel="help" href="http://code.google.com/p/joid/">joid project</a>
+  from <a rel="bookmark" href="http://www.verisign.com">Verisign</a>
+     (license: <a rel="bookmark" href="http://code.google.com/p/joid/">Apache 2.0</a>).
+<li> ERDDAP uses <a rel="help" href="http://joda-time.sourceforge.net/">Joda</a> 
+     for some calendar calculations.
+     (license: <a rel="bookmark" href="http://joda-time.sourceforge.net/license.html">Apache</a>).
+<li> ERDDAP includes the 
+     <a rel="help" href="http://jdbc.postgresql.org/">PostGres JDBC4</a> driver
+     (license: <a rel="bookmark" href="http://jdbc.postgresql.org/license.html">BSD</a>).
     The driver is Copyright (c) 1997-2010, PostgreSQL Global Development Group. All rights reserved.
 <li> For SOAP services, ERDDAP uses: 
   <ul>
-  <li><a href="http://ws.apache.org/axis/index.html">axis.jar</a> 
-      (license: <a href="http://www.apache.org/licenses/">Apache</a>)
-  <li><a href="http://java.net/projects/jax-rpc/">jaxrpc.jar</a> 
-      (license: <a href="http://www.opensource.org/licenses/cddl1.php">CDDL v1.0</a>)
-  <li><a href="http://java.net/projects/saaj/">saaj.jar</a> 
-      (license: <a href="http://www.opensource.org/licenses/cddl1.php">CDDL v1.0</a>)
-  <li><a href="http://sourceforge.net/projects/wsdl4j/">wsdl4j.jar</a> 
-      (license: <a href="http://sourceforge.net/projects/wsdl4j/">Common Public License 1.0</a>)
+  <li><a rel="help" href="http://ws.apache.org/axis/index.html">axis.jar</a> 
+      (license: 
+      <a rel="bookmark" href="http://www.apache.org/licenses/">Apache</a>)
+  <li><a rel="help" href="http://java.net/projects/jax-rpc/">jaxrpc.jar</a> 
+      (license: 
+      <a rel="bookmark" href="http://www.opensource.org/licenses/cddl1.php">CDDL v1.0</a>)
+  <li><a rel="help" href="http://java.net/projects/saaj/">saaj.jar</a> 
+      (license: 
+      <a rel="bookmark" href="http://www.opensource.org/licenses/cddl1.php">CDDL v1.0</a>)
+  <li><a rel="help" href="http://sourceforge.net/projects/wsdl4j/">wsdl4j.jar</a> 
+      (license: 
+      <a rel="bookmark" href="http://sourceforge.net/projects/wsdl4j/">Common Public License 1.0</a>)
   </ul>
 
 <li> ERDDAP uses code from the 
-    <a href="http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser</a> 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser</a> 
     project from the
-    <a href="http://coastwatch.noaa.gov">NOAA CoastWatch</a>
-    <a href="http://coastwatch.pfeg.noaa.gov/">West Coast Regional Node</a>
+    <a rel="bookmark" href="http://coastwatch.noaa.gov">NOAA CoastWatch</a>
+    <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/">West Coast Regional Node</a>
     (license:  
-    <a href="http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowserInfo.html#Credits">copyrighted open source</a>).
+    <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowserInfo.html#Credits">copyrighted open source</a>).
   That project was initiated and managed by Dave Foley, the Coordinator of the NOAA CoastWatch 
   West Coast Regional Node.  
   The CoastWatch Browser code was written by Bob Simons.
 <li>The ERDDAP distribution includes code from the J2SSH project which is distributed by  
-    <a href="http://sourceforge.net/projects/sshtools/">SSHTools</a> 
-  (version 0.2.2, license: <a href="http://www.apache.org/licenses/">Apache</a>).
+    <a rel="help" href="http://sourceforge.net/projects/sshtools/">SSHTools</a> 
+  (version 0.2.2, license: <a rel="bookmark" href="http://www.apache.org/licenses/">Apache</a>).
     It is based on j2ssh/examples/SftpConnect.java (License: LGPL) which is 
   Copyright (C) 2002 Lee David Painter (lee@sshtools.com).
 </ul>
@@ -1512,7 +1521,7 @@ program, and the <a href="http://www.postprogram.org/">POST</a> program.
 <!-- ******* -->
 <h2><a name="license">License</a></h2>
 The ERDDAP-specific code is licensed as copyrighted open source, 
-  with <a href="http://www.noaa.gov">NOAA</a> holding the copyright.  
+  with <a rel="bookmark" href="http://www.noaa.gov">NOAA</a> holding the copyright.  
 The license is:
 <blockquote>
 ERDDAP, Copyright 2012, NOAA.
@@ -1537,8 +1546,8 @@ and include the ERDDAP URL directly related to your question or comment.
 <br>&nbsp;
 <hr>
 <p>ERDDAP, Version 1.38
-<br><a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
+<br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
+    <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 
 </td>
 </tr>

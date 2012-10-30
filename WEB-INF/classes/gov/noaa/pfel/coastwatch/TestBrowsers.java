@@ -955,10 +955,10 @@ public class TestBrowsers  {
         Test.ensureTrue(response.indexOf(" :keywords = \"Oceans > Ocean Winds > Surface Winds\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :keywords_vocabulary = \"GCMD Science Keywords\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";") > 0, error);
+        //2012-07-27 "Unidata Observation Dataset v1.0" should disappear soon
         Test.ensureTrue(response.indexOf(" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Observation Dataset v1.0\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :naming_authority = \"gov.noaa.pfel.coastwatch\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :Northernmost_Northing = 46.75; // double") > 0, error);
-        Test.ensureTrue(response.indexOf(" :observationDimension = \"row\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :origin = \"NASA JPL (Cal. Inst. of Technology)\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :projection = \"geographic\";") > 0, error);
@@ -1324,11 +1324,11 @@ Test.ensureEqual(response.substring(0, reference.length()), reference, "");
         Test.ensureTrue(String2.indexOf(responseArray, " :institution = \"NOAA CoastWatch, West Coast Node\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :keywords = \"Oceans\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";") > 0, error);
+        //2012-07-27 "Unidata Observation Dataset v1.0" should disappear soon
         Test.ensureTrue(String2.indexOf(responseArray, " :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Observation Dataset v1.0\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :naming_authority = \"gov.noaa.pfel.coastwatch\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :Northernmost_Northing = 48.86; // double") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :observationDimension = \"row\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :quality = \"Automated QC checks with periodic manual QC\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :source = \"station observation\";") > 0, error);
@@ -1487,11 +1487,11 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(response.indexOf(" :institution = \"NOAA CoastWatch, West Coast Node\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :keywords = \"Oceans\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";") > 0, error);
+        //2012-07-27 "Unidata Observation Dataset v1.0" should disappear soon
         Test.ensureTrue(response.indexOf(" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Observation Dataset v1.0\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :naming_authority = \"gov.noaa.pfel.coastwatch\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :Northernmost_Northing = 42.58; // double") > 0, error);
-        Test.ensureTrue(response.indexOf(" :observationDimension = \"row\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :quality = \"Automated QC checks with periodic manual QC\";") > 0, error);
         Test.ensureTrue(response.indexOf(" :source = \"station observation\";") > 0, error);
@@ -1629,11 +1629,11 @@ String2.ERROR + " getting .asc");
 //lame...
         Test.ensureTrue(String2.indexOf(responseArray, " :keywords = \"Oceans\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";") > 0, error);
+        //2012-07-27 "Unidata Observation Dataset v1.0" should disappear soon
         Test.ensureTrue(String2.indexOf(responseArray, " :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Observation Dataset v1.0\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :naming_authority = \"gov.noaa.pfel.coastwatch\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :Northernmost_Northing = 48.86; // double") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :observationDimension = \"row\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :quality = \"Automated QC checks with periodic manual QC\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :source = \"station observation\";") > 0, error);
@@ -1789,11 +1789,11 @@ String2.ERROR + " getting .asc");
         Test.ensureTrue(String2.indexOf(responseArray, " :institution = \"NOAA CoastWatch, West Coast Node\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :keywords = \"Oceans\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :license = \"The data may be used and redistributed for free but is not intended for legal use, since it may contain inaccuracies. Neither the data Contributor, CoastWatch, NOAA, nor the United States Government, nor any of their employees or contractors, makes any warranty, express or implied, including warranties of merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy, completeness, or usefulness, of this information.\";") > 0, error);
+        //2012-07-27 "Unidata Observation Dataset v1.0" should disappear soon
         Test.ensureTrue(String2.indexOf(responseArray, " :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Observation Dataset v1.0\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :naming_authority = \"gov.noaa.pfel.coastwatch\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :Northernmost_Northing = 42.58; // double") > 0, error);
-        Test.ensureTrue(String2.indexOf(responseArray, " :observationDimension = \"row\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :quality = \"Automated QC checks with periodic manual QC\";") > 0, error);
         Test.ensureTrue(String2.indexOf(responseArray, " :source = \"station observation\";") > 0, error);

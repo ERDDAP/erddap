@@ -31,6 +31,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.Subscriptions;
 import gov.noaa.pfel.erddap.variable.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -187,27 +188,46 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         sourceCanConstrainNumericData = CONSTRAIN_YES;
         sourceCanConstrainStringData  = CONSTRAIN_YES;
         sourceCanConstrainStringRegex = PrimitiveArray.REGEX_OP;
-      
-        //open the connection to the opendap source
+
         //Design decision: this doesn't use e.g., ucar.nc2.dt.StationDataSet 
         //  because it determines axes via _CoordinateAxisType (or similar) metadata
         //  which most datasets we use don't have yet.
         //  One could certainly write another class that did use ucar.nc2.dt.StationDataSet.
-        DConnect dConnect = new DConnect(localSourceUrl, acceptDeflate, 1, 1);
-        DAS das;
-        try {
-            das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
-        } catch (Throwable t) {
-            throw new SimpleException("Error while getting DAS from " + localSourceUrl + ".das .\n" +
-                t.getMessage());
+
+        //quickRestart
+        Attributes quickRestartAttributes = null;       
+        if (EDStatic.quickRestart && 
+            EDStatic.initialLoadDatasets() && 
+            File2.isFile(quickRestartFullFileName())) {
+            //try to do quick initialLoadDatasets()
+            //If this fails anytime during construction, the dataset will be loaded 
+            //  during the next major loadDatasets,
+            //  which is good because it allows quick loading of other datasets to continue.
+            //This will fail (good) if dataset has changed significantly and
+            //  quickRestart file has outdated information.
+            quickRestartAttributes = NcHelper.readAttributesFromNc(quickRestartFullFileName());
+
+            if (verbose)
+                String2.log("  using info from quickRestartFile");
+
+            //set creationTimeMillis to time of previous creation, so next time
+            //to be reloaded will be same as if ERDDAP hadn't been restarted.
+            creationTimeMillis = quickRestartAttributes.getLong("creationTimeMillis");
         }
-        DDS dds;
-        try {
-            dds = dConnect.getDDS(OpendapHelper.DEFAULT_TIMEOUT);
-        } catch (Throwable t) {
-            throw new SimpleException("Error while getting DDS from " + localSourceUrl + ".dds .\n" +
-                t.getMessage());
-        }
+     
+        //DAS
+        byte dasBytes[] = quickRestartAttributes == null?
+            SSR.getUrlResponseBytes(localSourceUrl + ".das") : //has timeout and descriptive error 
+            ((ByteArray)quickRestartAttributes.get("dasBytes")).toArray();
+        DAS das = new DAS();
+        das.parse(new ByteArrayInputStream(dasBytes));
+
+        //DDS
+        byte ddsBytes[] = quickRestartAttributes == null?
+            SSR.getUrlResponseBytes(localSourceUrl + ".dds") : //has timeout and descriptive error 
+            ((ByteArray)quickRestartAttributes.get("ddsBytes")).toArray();
+        DDS dds = new DDS();
+        dds.parse(new ByteArrayInputStream(ddsBytes));
 
         //get global attributes
         sourceGlobalAttributes = new Attributes();
@@ -294,9 +314,14 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         ensureValid(); //this ensures many things are set, e.g., sourceUrl
 
         //try to get sourceErddapVersion
+        byte versionBytes[] = new byte[]{(byte)32};
         try {
-            int po = localSourceUrl.indexOf("/erddap/");
-            String response[] = SSR.getUrlResponse(localSourceUrl.substring(0, po + 8) + "version");
+            int po = localSourceUrl.indexOf("/erddap/");            
+            String vUrl = localSourceUrl.substring(0, po + 8) + "version";
+            versionBytes = quickRestartAttributes == null?
+                SSR.getUrlResponseBytes(vUrl) : //has timeout and descriptive error 
+                ((ByteArray)quickRestartAttributes.get("versionBytes")).toArray();
+            String response[] = String2.split(new String(versionBytes, "UTF-8"), '\n');
             if (response[0].startsWith("ERDDAP_version=")) {
                 sourceErddapVersion = String2.parseDouble(response[0].substring(15));
                 if (Double.isNaN(sourceErddapVersion))
@@ -333,6 +358,22 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
                 "use a small reloadEveryNMinutes, or have the remote ERDDAP admin add onChange.\n\n" 
                 //+ MustBe.throwableToString(st) //don't normally display; flags are ~confidential
                 );
+        }
+
+        //save quickRestart info
+        if (quickRestartAttributes == null) { //i.e., there is new info
+            try {
+                quickRestartAttributes = new Attributes();
+                quickRestartAttributes.set("creationTimeMillis", "" + creationTimeMillis);
+                quickRestartAttributes.set("dasBytes",     new ByteArray(dasBytes));
+                quickRestartAttributes.set("ddsBytes",     new ByteArray(ddsBytes));
+                quickRestartAttributes.set("versionBytes", new ByteArray(versionBytes));
+                File2.makeDirectory(File2.getDirectory(quickRestartFullFileName()));
+                NcHelper.writeAttributesToNc(quickRestartFullFileName(), 
+                    quickRestartAttributes);
+            } catch (Throwable t) {
+                String2.log(MustBe.throwableToString(t));
+            }
         }
 
         //finally
@@ -610,56 +651,62 @@ try {
 "    String long_name \"Ship\";\n" +
 "  }\n" +
 "  cast {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    Int16 actual_range 1, 127;\n" +
 "    Float64 colorBarMaximum 140.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Cast Number\";\n" +
+"    Int16 missing_value 32767;\n" +
 "  }\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 _FillValue NaN;\n" +
 "    Float32 actual_range -126.2, -124.1;\n" +
 "    String axis \"X\";\n" +
-"    Float64 colorBarMaximum -115.0;\n" +
-"    Float64 colorBarMinimum -135.0;\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
+"    Float32 missing_value NaN;\n" +
 "    String standard_name \"longitude\";\n" +
 "    String units \"degrees_east\";\n" +
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
+"    Float32 _FillValue NaN;\n" +
 "    Float32 actual_range 41.9, 44.65;\n" +
 "    String axis \"Y\";\n" +
-"    Float64 colorBarMaximum 55.0;\n" +
-"    Float64 colorBarMinimum 30.0;\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
+"    Float32 missing_value NaN;\n" +
 "    String standard_name \"latitude\";\n" +
 "    String units \"degrees_north\";\n" +
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 _FillValue NaN;\n" +
 "    Float64 actual_range 1.02272886e+9, 1.02978828e+9;\n" +
 "    String axis \"T\";\n" +
 "    String cf_role \"profile_id\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
+"    Float64 missing_value NaN;\n" +
 "    String standard_name \"time\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "  }\n" +
 "  bottle_posn {\n" +
 "    String _CoordinateAxisType \"Height\";\n" +
-"    Int16 actual_range 0, 12;\n" +
+"    Byte _FillValue 127;\n" +
+"    Byte actual_range 0, 12;\n" +
 "    String axis \"Z\";\n" +
 "    Float64 colorBarMaximum 12.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Bottle Number\";\n" +
-"    Int16 missing_value -128;\n" +
+"    Byte missing_value -128;\n" +
 "  }\n" +
 "  chl_a_total {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range -2.602, 40.17;\n" +
 "    Float64 colorBarMaximum 30.0;\n" +
 "    Float64 colorBarMinimum 0.03;\n" +
@@ -671,7 +718,8 @@ try {
 "    String units \"ug L-1\";\n" +
 "  }\n" +
 "  chl_a_10um {\n" +
-"    Float32 actual_range 0.239, 1.875;\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float32 actual_range 0.21, 11.495;\n" +
 "    Float64 colorBarMaximum 30.0;\n" +
 "    Float64 colorBarMinimum 0.03;\n" +
 "    String colorBarScale \"Log\";\n" +
@@ -682,7 +730,8 @@ try {
 "    String units \"ug L-1\";\n" +
 "  }\n" +
 "  phaeo_total {\n" +
-"    Float32 actual_range -1.705, 16.047;\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float32 actual_range -3.111, 33.821;\n" +
 "    Float64 colorBarMaximum 30.0;\n" +
 "    Float64 colorBarMinimum 0.03;\n" +
 "    String colorBarScale \"Log\";\n" +
@@ -692,7 +741,8 @@ try {
 "    String units \"ug L-1\";\n" +
 "  }\n" +
 "  phaeo_10um {\n" +
-"    Float32 actual_range 0.224, 0.933;\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float32 actual_range 0.071, 5.003;\n" +
 "    Float64 colorBarMaximum 30.0;\n" +
 "    Float64 colorBarMinimum 0.03;\n" +
 "    String colorBarScale \"Log\";\n" +
@@ -702,7 +752,8 @@ try {
 "    String units \"ug L-1\";\n" +
 "  }\n" +
 "  sal00 {\n" +
-"    Float32 actual_range 31.0308, 34.2026;\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float32 actual_range 28.3683, 34.406;\n" +
 "    Float64 colorBarMaximum 37.0;\n" +
 "    Float64 colorBarMinimum 32.0;\n" +
 "    String ioos_category \"Salinity\";\n" +
@@ -712,7 +763,8 @@ try {
 "    String units \"PSU\";\n" +
 "  }\n" +
 "  sal11 {\n" +
-"    Float32 actual_range 31.0242, 34.214;\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float32 actual_range 0.0, 34.4076;\n" +
 "    Float64 colorBarMaximum 37.0;\n" +
 "    Float64 colorBarMinimum 32.0;\n" +
 "    String ioos_category \"Salinity\";\n" +
@@ -722,7 +774,8 @@ try {
 "    String units \"PSU\";\n" +
 "  }\n" +
 "  temperature0 {\n" +
-"    Float32 actual_range 4.981, 16.871;\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float32 actual_range 3.6186, 16.871;\n" +
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Temperature\";\n" +
@@ -732,7 +785,8 @@ try {
 "    String units \"degree_C\";\n" +
 "  }\n" +
 "  temperature1 {\n" +
-"    Float32 actual_range 4.982, 16.863;\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float32 actual_range 3.6179, 16.863;\n" +
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Temperature\";\n" +
@@ -742,6 +796,7 @@ try {
 "    String units \"degree_C\";\n" +
 "  }\n" +
 "  fluor_v {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range 0.046, 5.0;\n" +
 "    Float64 colorBarMaximum 5.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -751,6 +806,7 @@ try {
 "    String units \"volts\";\n" +
 "  }\n" +
 "  xmiss_v {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range 0.493, 4.638;\n" +
 "    Float64 colorBarMaximum 5.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -760,18 +816,19 @@ try {
 "    String units \"volts\";\n" +
 "  }\n" +
 "  PO4 {\n" +
-"    Float32 actual_range 0.0, 3.237;\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float32 actual_range 0.07, 3.237;\n" +
 "    Float64 colorBarMaximum 4.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Dissolved Nutrients\";\n" +
-"    String long_name \"Phosphate\";\n" +
+"    String long_name \"Phosphate\";\n" +  
 "    Float32 missing_value -9999.0;\n" +
 "    String standard_name \"mole_concentration_of_phosphate_in_sea_water\";\n" +
 "    String units \"micromoles L-1\";\n" +
 "  }\n" +
 "  N_N {\n" +
 "    Float32 _FillValue -99.0;\n" +
-"    Float32 actual_range 0.0, 42.41;\n" +
+"    Float32 actual_range -0.1, 43.47;\n" +
 "    Float64 colorBarMaximum 50.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Dissolved Nutrients\";\n" +
@@ -792,7 +849,8 @@ try {
 "    String units \"micromoles L-1\";\n" +
 "  }\n" +
 "  Si {\n" +
-"    Float32 actual_range 0.07, 88.19;\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float32 actual_range -0.08, 117.12;\n" +
 "    Float64 colorBarMaximum 50.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Dissolved Nutrients\";\n" +
@@ -802,7 +860,8 @@ try {
 "    String units \"micromoles L-1\";\n" +
 "  }\n" +
 "  NO2 {\n" +
-"    Float32 actual_range -0.0090, 0.757;\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float32 actual_range -0.03, 0.757;\n" +
 "    Float64 colorBarMaximum 1.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Dissolved Nutrients\";\n" +
@@ -812,7 +871,8 @@ try {
 "    String units \"micromoles L-1\";\n" +
 "  }\n" +
 "  NH4 {\n" +
-"    Float32 actual_range -0.014, 4.914;\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float32 actual_range -0.14, 4.93;\n" +
 "    Float64 colorBarMaximum 5.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Dissolved Nutrients\";\n" +
@@ -822,6 +882,8 @@ try {
 "    String units \"micromoles L-1\";\n" +
 "  }\n" +
 "  oxygen {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float32 actual_range 0.07495, 9.93136;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Dissolved O2\";\n" +
@@ -831,6 +893,7 @@ try {
 "    String units \"mL L-1\";\n" +
 "  }\n" +
 "  par {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range 0.1515, 3.261;\n" +
 "    Float64 colorBarMaximum 3.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -864,7 +927,7 @@ try {
 //today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
 //today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" +
 expected2 = 
-"    String infoUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";\n" +
+"    String infoUrl \"http://www.globec.org/\";\n" +
 "    String institution \"GLOBEC\";\n" +
 "    String keywords \"10um,\n" +
 "Biosphere > Vegetation > Photosynthetically Active Radiation,\n" +
@@ -891,7 +954,7 @@ expected2 =
 "completeness, or usefulness, of this information.\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 44.65;\n" +
-"    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\";\n" +
+"    String sourceUrl \"(local files; contact erd.data@noaa.gov)\";\n" +
 "    Float64 Southernmost_Northing 41.9;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String subsetVariables \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
@@ -931,21 +994,25 @@ expected2 =
 "}\n";
             int tpo = results.indexOf(expected2.substring(0, 17));
             if (tpo < 0) String2.log("results=\n" + results);
-            Test.ensureEqual(results.substring(tpo, tpo + expected2.length()), expected2, 
-                "results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, 
+                Math.min(results.length(), tpo + expected2.length())), 
+                expected2, "results=\n" + results);
 
             if (testLocalErddapToo) {
                 results = SSR.getUrlResponseString(localUrl + ".das");
-                Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+                Test.ensureEqual(results.substring(0, expected.length()), 
+                    expected, "\nresults=\n" + results);
 
                 tpo = results.indexOf(expected2.substring(0, 17));
                 if (tpo < 0) String2.log("results=\n" + results);
-                Test.ensureEqual(results.substring(tpo, tpo + expected2.length()), expected2, 
-                    "results=\n" + results);
+                Test.ensureEqual(results.substring(tpo, 
+                    Math.min(results.length(), tpo + expected2.length())), 
+                    expected2, "results=\n" + results);
             }
             
             //*** test getting dds for entire dataset
-            tName = globecBottle.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tName = globecBottle.makeNewFileForDapQuery(null, null, "", 
+                EDStatic.fullTestCacheDirectory, 
                 globecBottle.className() + "_Entire", ".dds"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
@@ -958,7 +1025,7 @@ expected2 =
 "    Float32 longitude;\n" +
 "    Float32 latitude;\n" +
 "    Float64 time;\n" +
-"    Int16 bottle_posn;\n" +
+"    Byte bottle_posn;\n" +
 "    Float32 chl_a_total;\n" +
 "    Float32 chl_a_10um;\n" +
 "    Float32 phaeo_total;\n" +
@@ -1082,27 +1149,31 @@ expected2 =
 "    String long_name \"Ship\";\n" +
 "  }\n" +
 "  cast {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    Int16 actual_range 1, 127;\n" +
 "    Float64 colorBarMaximum 140.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Cast Number\";\n" +
+"    Int16 missing_value 32767;\n" +
 "  }\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 _FillValue NaN;\n" +
 "    Float32 actual_range -126.2, -124.1;\n" +
 "    String axis \"X\";\n" +
-"    Float64 colorBarMaximum -115.0;\n" +
-"    Float64 colorBarMinimum -135.0;\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
+"    Float32 missing_value NaN;\n" +
 "    String standard_name \"longitude\";\n" +
 "    String units \"degrees_east\";\n" +
 "  }\n" +
 "  latitude {\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+            Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
+                expected, "\nresults=\n" + results);
             expected = 
 "  par {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range 0.1515, 3.261;\n" +
 "    Float64 colorBarMaximum 3.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -1128,9 +1199,11 @@ expected2 =
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"" + today;
         tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) String2.log("results=\n" + results);
-        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
-            "results=\n" + results);
+        if (tpo < 0) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
             
 //+ " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
 //today + " http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das\n" +
@@ -1138,7 +1211,8 @@ expected2 =
 //today + " http://127.0.0.1:8080/cwexperimental/
 expected =
 "tabledap/rGlobecBottle.das\";\n" +
-"    String infoUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";\n" +
+"    String id \"Globec_bottle_data_2002\";\n" +
+"    String infoUrl \"http://www.globec.org/\";\n" +
 "    String institution \"GLOBEC\";\n" +
 "    String keywords \"10um,\n" +
 "Biosphere > Vegetation > Photosynthetically Active Radiation,\n" +
@@ -1165,7 +1239,7 @@ expected =
 "completeness, or usefulness, of this information.\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 44.65;\n" +
-"    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\";\n" +
+"    String sourceUrl \"(local files; contact erd.data@noaa.gov)\";\n" +
 "    Float64 Southernmost_Northing 41.9;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String subsetVariables \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
@@ -1204,9 +1278,11 @@ expected =
 "  }\n" +
 "}\n";
             tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) String2.log("results=\n" + results);
-            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
-                "results=\n" + results);
+            if (tpo < 0 || results.length() < tpo + expected.length()) 
+                String2.log("results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, 
+                Math.min(results.length(), tpo + expected.length())),
+                expected, "results=\n" + results);
 
             //.dds 
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
@@ -1277,12 +1353,12 @@ expected =
 " variables:\n" +
 "   float longitude(row=100);\n" +
 "     :_CoordinateAxisType = \"Lon\";\n" +
+"     :_FillValue = NaNf; // float\n" +
 "     :actual_range = -125.67f, -124.8f; // float\n" +
 "     :axis = \"X\";\n" +
-"     :colorBarMaximum = -115.0; // double\n" +
-"     :colorBarMinimum = -135.0; // double\n" +
 "     :ioos_category = \"Location\";\n" +
 "     :long_name = \"Longitude\";\n" +
+"     :missing_value = NaNf; // float\n" +
 "     :standard_name = \"longitude\";\n" +
 "     :units = \"degrees_east\";\n" +
 "   float NO3(row=100);\n" +
@@ -1297,11 +1373,13 @@ expected =
 "     :units = \"micromoles L-1\";\n" +
 "   double time(row=100);\n" +
 "     :_CoordinateAxisType = \"Time\";\n" +
+"     :_FillValue = NaN; // double\n" +
 "     :actual_range = 1.02928674E9, 1.02936804E9; // double\n" +
 "     :axis = \"T\";\n" +
 "     :cf_role = \"profile_id\";\n" +
 "     :ioos_category = \"Time\";\n" +
 "     :long_name = \"Time\";\n" +
+"     :missing_value = NaN; // double\n" +
 "     :standard_name = \"time\";\n" +
 "     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
 "     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
@@ -1332,8 +1410,8 @@ expected =
 //today + " http://127.0.0.1:8080/cwexperimental/
 String tHeader2 =
 "tabledap/rGlobecBottle.nc?longitude,NO3,time,ship&latitude>0&time>=2002-08-14&time<=2002-08-15\";\n" +
-" :id = \"EDDTableFromErddap_Data\";\n" +
-" :infoUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";\n" +
+" :id = \"Globec_bottle_data_2002\";\n" +
+" :infoUrl = \"http://www.globec.org/\";\n" +
 " :institution = \"GLOBEC\";\n" +
 " :keywords = \"10um,\n" +
 "Biosphere > Vegetation > Photosynthetically Active Radiation,\n" +
@@ -1359,8 +1437,7 @@ String tHeader2 =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 " :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-" :observationDimension = \"row\";\n" +
-" :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\";\n" +
+" :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
 " :standard_name_vocabulary = \"CF-12\";\n" +
 " :subsetVariables = \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
 " :summary = \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
@@ -1422,9 +1499,11 @@ String tHeader2 =
 
             expected = tHeader2 + "}\n";
             tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) String2.log("results=\n" + results);
-            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
-                "results=\n" + results);
+            if (tpo < 0) 
+                String2.log("results=\n" + results);
+            Test.ensureEqual(
+                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                expected, "results=\n" + results);
 
             //test .png
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 

@@ -190,7 +190,7 @@ public class StringArray extends PrimitiveArray {
      * This writes the strings to a file.
      *
      * @param fileName is the (usually canonical) path (dir+name) for the file
-     * @param charset e.g., UTF-8; or null or "" for the default (ISO-8859-1 ?)
+     * @param charset e.g., UTF-8; or null or "" for the default (ISO-8859-1)
      * @param lineSeparator is the desired lineSeparator for the outgoing file.
      *     e.g., "\n".
      *     null or "" uses String2.lineSeparator (the standard separator for this OS).
@@ -210,9 +210,9 @@ public class StringArray extends PrimitiveArray {
         BufferedWriter bufferedWriter = null;
         try {
             //open the file
-            Writer w = charset == null || charset.length() == 0?
-                new FileWriter(fileName, append) :
-                new OutputStreamWriter(new FileOutputStream(fileName, append), charset);
+            if (charset == null || charset.length() == 0)
+                charset = "ISO-8859-1";
+            Writer w = new OutputStreamWriter(new FileOutputStream(fileName, append), charset);
             bufferedWriter = new BufferedWriter(w);
                          
             //write the text to the file
@@ -466,6 +466,16 @@ public class StringArray extends PrimitiveArray {
      */
     public void addInt(int value) {
         add(value == Integer.MAX_VALUE? "" : String.valueOf(value));
+    }
+
+    /**
+     * This adds n ints to the array.
+     *
+     * @param n the number of times 'value' should be added
+     * @param value the value, as an int.
+     */
+    public void addNInts(int n, int value) {
+        addN(n, value == Integer.MAX_VALUE? "" : String.valueOf(value));
     }
 
     /**

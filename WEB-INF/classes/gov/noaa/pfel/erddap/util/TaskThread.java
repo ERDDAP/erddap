@@ -45,13 +45,20 @@ public class TaskThread extends Thread {
      */
     public final static Integer TASK_DAP_TO_NC = new Integer(2);
 
+    /** If taskOA[0].equals(TASK_ALL_DAP_TO_NC), then make
+     * taskOA[1]=dapUrl, taskOA[2]=fullFileName,
+     * taskOA[3]=lastModified (Long)
+     */
+    public final static Integer TASK_ALL_DAP_TO_NC = new Integer(3);
+
     /**
      * TASK_NAMES parallels the TASK Integers.
      */
     public final static String[] TASK_NAMES = new String[]{
         "MAKE_A_DATAFILE",
         "SET_FLAG",
-        "DAP_TO_NC"};
+        "DAP_TO_NC",
+        "ALL_DAP_TO_NC"};
 
     /**
      * Set this to true (by calling verbose=true in your program, 
@@ -160,6 +167,23 @@ public class TaskThread extends Thread {
 
                     OpendapHelper.dapToNc(dapUrl, vars.toArray(),
                         projection, fullFileName, jplMode.booleanValue());
+                    File2.setLastModified(fullFileName, lastModified.longValue());
+
+                //TASK_ALL_DAP_TO_NC
+                } else if (taskType.equals(TASK_ALL_DAP_TO_NC)) {
+
+                    String      dapUrl       = (String)taskOA[1];
+                    String      fullFileName = (String)taskOA[2];
+                    Long        lastModified = (Long)taskOA[3];
+                    taskSummary = 
+                        "  TASK_ALL_DAP_TO_NC \n" + 
+                        "    dapUrl=" + dapUrl +
+                        "    file=" + fullFileName + 
+                            " lastMod=" + Calendar2.safeEpochSecondsToIsoStringT(
+                                lastModified.longValue() / 1000.0, "NaN");
+                    String2.log(taskSummary);
+
+                    OpendapHelper.allDapToNc(dapUrl, fullFileName);
                     File2.setLastModified(fullFileName, lastModified.longValue());
 
                 //UNKNOWN taskType

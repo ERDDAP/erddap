@@ -100,7 +100,7 @@ public class TestAll  {
 //    String2.log("tl=" + tl + " td=" + td); 
 //    
 //
-//    DasDds.main(new String[]{"jplL4AvhrrOIv1fv2", "-verbose"});
+//    DasDds.main(new String[]{"jplMURSST", "-verbose"});
 //    String2.log(DigirHelper.getObisInventoryString(
 //        "http://iobis.marine.rutgers.edu/digir2/DiGIR.php", 
 //        "OBIS-SEAMAP", 
@@ -179,17 +179,10 @@ public class TestAll  {
 //      "month.*flk\\.nc\\.gz"));
 //    EDDGridAggregateExistingDimension.testRtofs();
 //    EDDGridCopy.testBasic(true); //  defaultCheckSourceData 
+
 //    String2.log("\n" + EDDGridFromDap.generateDatasetsXml(false, //directions
-//        "http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MUR/ssta/1day",
-//        "http://oceanwatch.pifsc.noaa.gov/thredds/dodsC/altim/monthly",
-//        "http://data1.gfdl.noaa.gov:8380/thredds3/dodsC/ipcc_ar4_CM2.0_R1_20C3M-0_3hr_atmos_19910101-20001231",
-//        "http://www.ncdc.noaa.gov/thredds/dodsC/gpcp/daily/gpcp_1dd_v1.1_p1d.199610.gz",
-//        "http://ferret.pmel.noaa.gov/geoide/dodsC/ncom_relo/sendai",
-//        "http://geoport.whoi.edu/thredds/dodsC/ncom_relo/sendai",
-//        "http://ecowatch.ncddc.noaa.gov/thredds/dodsC/dwh/ctd/Brooks_McCall/Cruise5/Brooks_McCall_Cruise_5.nc",
-//        "http://tds.hycom.org/thredds/dodsC/glb_analysis",
-//        "http://thredds.jpl.nasa.gov/thredds/dodsC/sea_surface_temperature/ALL_NCDC-L4LRblend-GLOB-AVHRR_OI_v01-fv02.nc",
-//        null, null, null, 180, null));
+//        "http://tashtego.marine.rutgers.edu:8080/thredds/dodsC/roms/espresso/in/romsfit_NaomiTS_mean_old.nc",
+//        null, null, null, 10080, null));
 //    EDDGridFromDap.generateErdThreddsDatasetXml("Satellite/aggregsat", "satellite"));
 //    EDDGridFromDap.generateErdThreddsDatasetXml("Hfradar/aggreghfradar", "satellite"));
 //    EDDGridFromDap.testAccessibleTo();
@@ -203,24 +196,26 @@ public class TestAll  {
 //    EDDGridFromDap.testGenerateDatasetsXmlFromThreddsCatalog();
 
 //    EDDGridFromDap.generateDatasetsXmlFromThreddsCatalog(
-//        "c:/temp/fromThreddsCatalog.xml",
+//        "f:/temp/fromThreddsCatalog.xml",
 //        "http://ferret.pmel.noaa.gov/geoide/catalog/ncep.reanalysis.dailyavgs.xml", 
-//        "http://data.nodc.noaa.gov/thredds/catalog/woa/WOA09/NetCDFdata/catalog.xml",
+//        "http://osmc.noaa.gov/thredds/catalog/catalog.xml",
 //        ".*", 10080);
 //    String2.toNewlineString(EDDGridFromDap.getUrlsFromThreddsCatalog(
-//        "http://sdf.ndbc.noaa.gov:8080/thredds/catalog.xml", 
-//        ".*500m.*", true));
+//        "http://osmc.noaa.gov/thredds/catalog/catalog.xml", 
+//        ".*", true));
         
 //    crawl UAF clean catalog      Results put in datasets.xml in EditPlus. 
 //      Log file is in [bigParent]/cache/_test/. Sort it. Look at problems. Make improvements.
 //      Look for "error", "no colorBarMin/Max", "ioos_category=Unknown for"
 //    EDDGridFromDap.testUAFSubThreddsCatalog(2); //newer clean catalog, last done 2012-06-13, ~3h
+//    EDDGridFromDap.testUAFSubThreddsCatalog(51);  //2012-10-17  55=pfeg (crashes us?)  57,63 ecowatch down
 //    EDDGridFromDap.testUAFSubThreddsCatalog(50);  //official catalog, ~2h
 //    EDDGridFromDap.testGetUrlsFromHyraxCatalog();
 //    EDDGridFromDap.testGetUrlsFromThreddsCatalog();
 //    EDDGridFromDap.testGraphics();
 //    EDDGridFromDap.testKml();
 //    EDDGridFromDap.testMetersPersourceUnit();
+//    EDDGridFromDap.testNetcdfJava();
 //    EDDGridFromDap.testNoAxisVariable();
 //    EDDGridFromDap.testPmelOscar();
 //    EDDGridFromDap.testQuickRestart();
@@ -230,15 +225,17 @@ public class TestAll  {
 //    EDDGridFromErddap.testDataVarOrder(); 
 //    String2.log(EDDGridFromErddap.generateDatasetsXml("http://coastwatch.pfeg.noaa.gov/erddap")); 
 //    String2.log(EDDGridFromErddap.generateDatasetsXml("http://upwell.pfeg.noaa.gov/erddap")); 
+//    String2.log(EDDGridFromErddap.generateDatasetsXml("http://oos.soest.hawaii.edu/erddap")); 
 //    EDDGridFromNcFiles.testCwHdf(true);
 //    EDDGridFromNcFiles.testGrib2(true);
 //    EDDGridFromNcFiles.testNc(false);
 //    String2.log(EDDGridFromNcFiles.generateDatasetsXml(
-//        "f:/data/ncep/", //"f:/data/lynn/", 
-//        "akw.*\\.grb//", //".*\\.nc", 
-//        "f:/data/ncep/akw.dp.199908.grb",  //"f:/data/lynn/20110919T180000.nc", 
+//        //"f:/u00/cwatch/testData/grib/", ".*\\.grb", 
+//        //"f:/u00/cwatch/testData/grib/HADCM3_A2_wind_1981-1990.grb", 
+//        "F:/data/ncepGfs/", ".*\\.grib2", 
+//        "F:/data/ncepGfs/wafsgfs_P_t12z_intdsk36.grib2",
 //        10080, null));
-
+//    String2.log(NcHelper.testLowNcDump("f:/u00/cwatch/testData/grib/HADCM3_A2_wind_1981-1990.grb"));
 //    EDDGridFromNcFiles.testSpeed(-1);  //-1 for all
 //    EDDGridSideBySide.testTransparentPng();
 
@@ -447,6 +444,7 @@ public class TestAll  {
 //    EDDTableFromDatabase.testTime();
 
 //    String2.log(EDDTableFromErddap.generateDatasetsXml("http://coastwatch.pfeg.noaa.gov/erddap", true)); 
+//    String2.log(EDDTableFromErddap.generateDatasetsXml("http://coastwatch.pfeg.noaa.gov/erddap", false)); 
 //    EDDTableFromErddap.testBasic(true);
 //    EDDTableFromErddap.testFromErddapFromErddap();
 //    EDDTableFromErddap.testDegreesSignAttribute();
@@ -472,7 +470,16 @@ public class TestAll  {
 //    NOT FINISHED  EDDTableFromNcFiles.bobConsolidateWOD("APB", "1960-01-01"); 
 //      EDDTableFromNcFiles.getAllSourceVariableNames(
 //          "f:/data/wod/monthly/APB/", ".*\\.nc"); //201103-201103/
-
+//    Table.verbose = false;
+//    Table.reallyVerbose = false;
+//    EDDTableFromNcFiles.displayAttributeFromFiles(
+//        "F:/u00/cwatch/erddap2/copy/fsuResearchShipVLHJ/", 
+//        ".*\\.nc", 
+//        new String[]{   
+//            "PL_WDIR",  "SPD",  "PL_WSPD",  "DIR",  "P",  "T",  "TS",  "RH",  "PRECIP",  "RRATE", 
+//            "PL_WDIR2", "SPD2", "PL_WSPD2", "DIR2", "P2", "T2", "TS2", "RH2", "PRECIP2", "RRATE2",
+//            "PL_WDIR3", "SPD3", "PL_WSPD3", "DIR3", "P3", "T3", "TS3", "RH3", "PRECIP3", "RRATE3"},
+//        "long_name");
 //    String2.log(EDDTableFromNcFiles.generateDatasetsXml(
 //        "c:/u00/data/points/erdGroundfish/", ".*\\.nc", 
 //        "c:/u00/data/points/erdGroundfish/groundfish.nc", "", 1000000, 
@@ -500,8 +507,8 @@ public class TestAll  {
 //    EDDTableFromNcFiles.testId();
 //    EDDTableFromNcFiles.testManyYears();
 //    EDDTableFromNcFiles.testMV();
-//    EDDTableFromNcFiles.testNcCFPoint();
-//    EDDTableFromNcFiles.testNcCFStation();
+//    EDDTableFromNcFiles.testNcCFMA1b();
+//    EDDTableFromNcFiles.testNcCFMA2b();
 //    EDDTableFromNcFiles.testNcCFTrajectoryProfile();
 //    EDDTableFromNcFiles.testOrderBy();
 //    EDDTableFromNcFiles.testOrderByMax();
@@ -514,8 +521,10 @@ public class TestAll  {
 //    EDDTableFromNcFiles.testTransparentPng();
 
 //    *** To update GTSPP (~10th of every month):
-//*** NEXT TIME: reprocess all and add source_id (e.g., =IOS) metadata as data?
-//*** NEXT TIME reprocess all, consider larger lat lon tiles (so fewer files). Time testErdGtsppBest() before and after.
+//*** ?NEXT TIME switch to .ncCF profile file format
+//*** ?The NEXT TIME you reprocess all, add source_id (e.g., =IOS) metadata as data?
+//*** ?The NEXT TIME you reprocess all, go back to 30 degree lat lon tiles (so fewer files). Time testErdGtsppBest() before and after.
+//*** ?SOME DAY: switch to NCCF contiguous files.  Faster reading and handling constraints.
 //Melanie may provide a list or URL of source_id's.
 //    1) (Thursday night?) Use FileZilla to download newly changed files 
 //      from ftp.nodc.noaa.gov (name=anonymous  pwd=bob.simons@noaa.gov)
@@ -526,9 +535,10 @@ public class TestAll  {
 //*** Consider temporarily switching off parts of McAfee : Virus Scan Console  (2X speedup!)
 //      On Access Scanner : All Processes
 //        Scan Items: check: specified file types only (instead of usual All Files) 
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2011, 11, 2012,  5, false);  //first/last year(1990..)/month(1..), testMode
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2011, 7, 2012, 9, false);  //first/last year(1990..)/month(1..), testMode
 //       log file is F:/data/gtspp/log.txt 
-//      2b) Email the "good" but "impossible" stations to Charles Sun, Melanie Hamilton and Meilin.Chen@noaa.gov.
+//      2b) Email the "good" but "impossible" stations to Charles Sun, Melanie Hamilton 
+//       [start in 2011? but not longer valid 2012-10-19 Meilin.Chen@noaa.gov]
 //      2c) Undo changes to McAfee scanner
 //    3) In datasetsUAF.xml, for erdGtsppBest and datasets2.xml for testErdGtsppBest, 
 //       update the summary
@@ -607,7 +617,7 @@ public class TestAll  {
 //      EDDTableFromTaoFiles.updateAllTaoDatasets("c:/u00/data/points/tao/");
 
 //** To update pmelTAO data ~3th day of every month:
-//1) Overnight, use FileZilla (FTP) 
+//1) Overnight or at lunch time, use FileZilla (FTP) 
 //  a) Rename/retire F:\data\tao\sites\  and make a new sites\
 //  b) connect to pmelTao: ftp://taopmelftp@ftp.pmel.noaa.gov  password protected
 //     Copy cdf/sites/daily|5day|monthly|quarterly 
@@ -726,7 +736,7 @@ public class TestAll  {
 //        "\nImageIO Writers: " + String2.toCSSVString(ImageIO.getWriterFormatNames()));
 //    LRUCache.test();
 //    MakeErdJavaZip.makeCwhdfToNcZip();
-//    NdbcMetStation.main(null); //used for monthly updates  !!!check pxoc1. make historic file if needed.
+//    NdbcMetStation.main(null); //NEXT TIME: be stricter and remove 99.9 and 98.7 data values. Run OVERNIGHT! Used for monthly updates  !!!check pxoc1. make historic file if needed.
 //    NcHelper.dump("TestAll",
 //        "f:/data/ndbcMet/46088.nc", true);
 //    NcHelper.testSequence();
@@ -767,8 +777,10 @@ public class TestAll  {
 //    Projects.nodcPJJU(
 //        "f:/data/nodcPJJU/",  //files curl'd from source
 //        "c:/u00/data/points/nodcPJJU/");  //destination
-//    DasDds.main(new String[]{"nodcPJJU", "-verbose"});
+//    DasDds.main(new String[]{"erdFedRockfish", "-verbose"});
 //    DasDds.main(new String[]{"nodcWOD", "-verbose"});
+//    Projects.splitRockfish();
+//    Projects.convertGlobecCsvToNc();
 //    Projects.convertNewportCTD();
 //    Projects.convertPrbo201001();
 //    Projects.dapToNc("http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAsstamday", 
@@ -847,7 +859,6 @@ public class TestAll  {
     //SSR.touchUrl(
     //    "http://75.101.155.155/erddap/setDatasetFlag.txt?datasetID=jplG1SST&flagKey=3057856376",
     //    60000);
-    
 
 //    Projects.erddapTunnelTest();
 //    Projects.fixKeywords("c:/programs/tomcat/content/erddap/datasetsUAF.xml");
@@ -866,6 +877,7 @@ public class TestAll  {
 //        "http://coastwatch.pfeg.noaa.gov/erddap/");
 //        "http://upwell.pfeg.noaa.gov/erddap/");
 //        "http://75.101.155.155/erddap/");
+//    Projects.processCalcofi2012();
 //    Projects.ssc();
 //    Projects.soda("1.4.2", "F:/SODA_1.4.2/", "F:/SODA_1.4.2/");
 //    Projects.soda("1.4.3", "F:/SODA_1.4.3/", "F:/SODA_1.4.3/");
@@ -951,10 +963,12 @@ public class TestAll  {
 //    String2.log(SSR.getUrlResponseString("https://coastwatch.pfeg.noaa.gov:8443/erddap2/griddap/etopo180.htmlTable?altitude[(-90.0):1000:(90.0)][(-180.0):1000:(180.0)]"));
 //      String2.log(SSR.minimalPercentEncode("sst[(1870-01-01):1:(2011-07-01T00:00:00Z)][(29.5):1:(29.5)][(-179.5):1:(179.5)]"));
 //    SSR.testPost();
-//    SSR.touchUrl("http://127.0.0.1:8080/cwexperimental/subscriptions/list.html?email=bob.simons@noaa.gov", 60000);
-//    SSR.touchUrl("http://127.0.0.1:8080/cwexperimental/subscriptions/add.html?datasetID=erdMHchla8day" +
-//      "&email=bob.simons@noaa.gov&emailIfAlreadyValid=false" +
-//      "&action=\"http://127.0.0.1:8080/cwexperimental/setDatasetFlag.txt?datasetID=testID&flagKey=940513130\"", 60000);
+//
+//    String touchThese[] = {
+//    };
+//    for (int i = 0; i < touchThese.length; i++)
+//        SSR.touchUrl(touchThese[i], 60000);
+//
 //    SSR.zipEach("c:/temp/codarsf/");
 //    String.matches dddd_ddd_dddd_add
 //        String regex="[0-9]{4}_[0-9]{3}_[0-9]{4}_[a-zA-Z][0-9]{2}";
@@ -974,7 +988,7 @@ public class TestAll  {
 //(new Table()).readASCII("F:/data/ndbc/ndbcMetHistoricalTxt/4f887h2009.txt"); //really small
 //(new Table()).readASCII("F:/data/ndbc/ndbcMetHistoricalTxt/41009h1988.txt"); //small
 //(new Table()).readASCII("F:/data/ndbc/ndbcMetHistoricalTxt/41009h1989.txt");
-//(new Table()).readASCII("F:/data/ndbc/ndbcMetHistoricalTxt/41009h1990.txt"); //large
+//(new Table()).readASCII("F:/data/ndbc/ndbcMetHistoricalTxt/41009h1990.txt"); //large      
 //    Table.test4DNc(); 
 //    Table.testHtml(); 
 //    Table.testIobis();
@@ -984,6 +998,16 @@ public class TestAll  {
 //        taoTable.readJson("tao", SSR.getUrlResponseString(
 //            EDStatic.erddapUrl + "/tabledap/pmel_dapper/tao.json?longitude,latitude,altitude,time,station_id,sea_surface_temperature,sea_surface_temperature_quality,air_temperature,air_temperature_quality,relative_humidity,relative_humidity_quality,relative_humidity_source,wind_to_direction,wind_direction_quality,wind_direction_source,wind_speed,wind_speed_quality,wind_speed_source,eastward_wind,northward_wind&time>=2007-08-01&time<=2007-10-01"));
 //        Math2.gc(500); String2.log(" done " + Math2.memoryString());
+//    Table.testLastRowWithData();
+//    Table.testMdb();
+//    boolean pauseAfterEach = false;
+//    Table.testReadNcCF1(pauseAfterEach);
+//    Table.testReadNcCF2(pauseAfterEach);
+//    Table.testReadNcCFASAProfile(pauseAfterEach);
+//    Table.testReadNcCFASATimeSeries(pauseAfterEach);
+//    Table.testReadNcCFASATrajectory(pauseAfterEach);
+//    Table.testReadNcCFASATimeSeriesProfile(pauseAfterEach);
+//    Table.testReadNcCFASATrajectoryProfile(pauseAfterEach);
 //    Table.testReadNDNc();
 //    Table.testReadNDNc2();
 //    Table.testReadNDNcSpeed();
@@ -992,6 +1016,7 @@ public class TestAll  {
 //    Table.testReadNDNcSpeed();
 //    Table.testReadOpendapSequenceSpeed();
 //    Table.testReadStandardTabbedASCII();  
+//    Table.testReorderColumns();
 //    Table.testSaveAsSpeed();
 //    Table.testSortColumnsByName(); 
 //    Table.testUpdate();
@@ -1418,17 +1443,17 @@ WaitThenTryAgainException wttae;
         EDDGridCopy.test();
         EDDGridSideBySide.test(true); //doGraphicsTests);  //the best grid graphics tests are here
 
-        EDDTableFromDapSequence.test(true); //doGraphicsTests); //the best table graphics tests are always done
+        EDDTableFromFiles.test(); 
+        EDDTableFromNcFiles.test(true); //doGraphicsTests); //the best table graphics tests are always done
+        EDDTableFromNcCFFiles.test();  
+        EDDTableFromHyraxFiles.test(); 
+        EDDTableFromTaoFiles.test();
+        EDDTableFromDapSequence.test(); 
         //EDDTableFromDapSequence.testMemory(); //don't usually run...very slow
 //        EDDTableFromDatabase.test();     //very slow!
         //EDDTableFromPostDatabase.test(); //very slow?
         EDDTableFromAsciiServiceNOS.test(); 
         EDDTableFromErddap.test(); 
-        EDDTableFromFiles.test();
-        EDDTableFromHyraxFiles.test(); 
-        //EDDTableFromNcCFFiles.test();  //not working yet
-        EDDTableFromNcFiles.test(); 
-        EDDTableFromTaoFiles.test();
         EDDTableFromAsciiFiles.test(false); //rarely: true=delete cached info
         EDDTableFromThreddsFiles.test(false); //rarely: true=delete cached info
         //EDDTableFromMWFS.test(false); //doLongTest); //as of 2009-01-14 no longer active

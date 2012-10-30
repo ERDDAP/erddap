@@ -269,7 +269,9 @@ public class EDDTableCopy extends EDDTable{
                         for (int col = 0; col < nCols; col++) {
                             String s = table.getStringData(col, row);
                             tQuery.append("&" + table.getColumnName(col) + "=" + 
-                                (isString[col]? String2.toJson(s) : s));
+                                (isString[col]? String2.toJson(s) : 
+                                 "".equals(s)? "NaN" :
+                                 s));
                         }
 
                         //does the file already exist
@@ -354,7 +356,7 @@ public class EDDTableCopy extends EDDTable{
             for (int dv = 0; dv < nDataVariables; dv++) {
                 EDV edv = sourceEdd.dataVariables[dv];
                 tDataVariables[dv] = new Object[]{edv.destinationName(), edv.destinationName(), 
-                    new Attributes(), edv.sourceDataType()};
+                    new Attributes(), edv.destinationDataType()};  //2012-07-26 e.g., var with scale_factor will be destType in the copied files
             }
         }
         //if the first orderExtractBy column is numeric, it can be used as 
@@ -511,66 +513,72 @@ public class EDDTableCopy extends EDDTable{
             expected = //see OpendapHelper.EOL for comments
 "Attributes {\n" +
 " s {\n" +
-"  longitude {\n" +
-"    String _CoordinateAxisType \"Lon\";\n" +
-"    Float32 actual_range -126.2, -124.1;\n" +
-"    String axis \"X\";\n" +
-"    Float64 colorBarMaximum -115.0;\n" +
-"    Float64 colorBarMinimum -135.0;\n" +
-"    String ioos_category \"Location\";\n" +
-"    String long_name \"Longitude\";\n" +
-"    String standard_name \"longitude\";\n" +
-"    String units \"degrees_east\";\n" +
-"  }\n" +
-"  latitude {\n" +
-"    String _CoordinateAxisType \"Lat\";\n" +
-"    Float32 actual_range 41.9, 44.65;\n" +
-"    String axis \"Y\";\n" +
-"    Float64 colorBarMaximum 55.0;\n" +
-"    Float64 colorBarMinimum 30.0;\n" +
-"    String ioos_category \"Location\";\n" +
-"    String long_name \"Latitude\";\n" +
-"    String standard_name \"latitude\";\n" +
-"    String units \"degrees_north\";\n" +
-"  }\n" +
-"  time {\n" +
-"    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.02272886e+9, 1.02978828e+9;\n" +
-"    String axis \"T\";\n" +
-"    String cf_role \"profile_id\";\n" +
-"    String ioos_category \"Time\";\n" +
-"    String long_name \"Time\";\n" +
-"    String standard_name \"time\";\n" +  
-"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
-"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"  }\n" +
-"  ship {\n" +
-"    String ioos_category \"Identifier\";\n" +
-"    String long_name \"Ship\";\n" +
-"  }\n" +
 "  cruise_id {\n" +
 "    String cf_role \"trajectory_id\";\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Cruise ID\";\n" +
 "  }\n" +
+"  ship {\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"Ship\";\n" +
+"  }\n" +
 "  cast {\n" +
+"    Int16 _FillValue 32767;\n" +
 "    Int16 actual_range 1, 127;\n" +
 "    Float64 colorBarMaximum 140.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Cast Number\";\n" +
+"    Int16 missing_value 32767;\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range -126.2, -124.1;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float32 _FillValue NaN;\n" +
+"    Float32 actual_range 41.9, 44.65;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 _FillValue NaN;\n" +
+"    Float64 actual_range 1.02272886e+9, 1.02978828e+9;\n" +
+"    String axis \"T\";\n" +
+"    String cf_role \"profile_id\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time\";\n" +
+"    Float64 missing_value NaN;\n" +
+"    String standard_name \"time\";\n" +  
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "  }\n" +
 "  bottle_posn {\n" +
 "    String _CoordinateAxisType \"Height\";\n" +
-"    Int16 actual_range 0, 12;\n" +
+"    Byte _FillValue 127;\n" +
+"    Byte actual_range 0, 12;\n" +
 "    String axis \"Z\";\n" +
 "    Float64 colorBarMaximum 12.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    String ioos_category \"Identifier\";\n" +
+"    String ioos_category \"Location\";\n" +
 "    String long_name \"Bottle Number\";\n" +
-"    Int16 missing_value -128;\n" +
+"    Byte missing_value -128;\n" +
 "  }\n" +
 "  chl_a_total {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range -2.602, 40.17;\n" +
 "    Float64 colorBarMaximum 30.0;\n" +
 "    Float64 colorBarMinimum 0.03;\n" +
@@ -582,6 +590,7 @@ public class EDDTableCopy extends EDDTable{
 "    String units \"ug L-1\";\n" +
 "  }\n" +
 "  chl_a_10um {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range 0.21, 11.495;\n" +
 "    Float64 colorBarMaximum 30.0;\n" +
 "    Float64 colorBarMinimum 0.03;\n" +
@@ -593,6 +602,7 @@ public class EDDTableCopy extends EDDTable{
 "    String units \"ug L-1\";\n" +
 "  }\n" +
 "  phaeo_total {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range -3.111, 33.821;\n" +
 "    Float64 colorBarMaximum 30.0;\n" +
 "    Float64 colorBarMinimum 0.03;\n" +
@@ -603,6 +613,7 @@ public class EDDTableCopy extends EDDTable{
 "    String units \"ug L-1\";\n" +
 "  }\n" +
 "  phaeo_10um {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range 0.071, 5.003;\n" +
 "    Float64 colorBarMaximum 30.0;\n" +
 "    Float64 colorBarMinimum 0.03;\n" +
@@ -613,6 +624,7 @@ public class EDDTableCopy extends EDDTable{
 "    String units \"ug L-1\";\n" +
 "  }\n" +
 "  sal00 {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range 28.3683, 34.406;\n" +
 "    Float64 colorBarMaximum 37.0;\n" +
 "    Float64 colorBarMinimum 32.0;\n" +
@@ -623,6 +635,7 @@ public class EDDTableCopy extends EDDTable{
 "    String units \"PSU\";\n" +
 "  }\n" +
 "  sal11 {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range 0.0, 34.4076;\n" +
 "    Float64 colorBarMaximum 37.0;\n" +
 "    Float64 colorBarMinimum 32.0;\n" +
@@ -633,6 +646,7 @@ public class EDDTableCopy extends EDDTable{
 "    String units \"PSU\";\n" +
 "  }\n" +
 "  temperature0 {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range 3.6186, 16.871;\n" +
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -643,6 +657,7 @@ public class EDDTableCopy extends EDDTable{
 "    String units \"degree_C\";\n" +
 "  }\n" +
 "  temperature1 {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range 3.6179, 16.863;\n" +
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -653,6 +668,7 @@ public class EDDTableCopy extends EDDTable{
 "    String units \"degree_C\";\n" +
 "  }\n" +
 "  fluor_v {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range 0.046, 5.0;\n" +
 "    Float64 colorBarMaximum 5.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -662,6 +678,7 @@ public class EDDTableCopy extends EDDTable{
 "    String units \"volts\";\n" +
 "  }\n" +
 "  xmiss_v {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range 0.493, 4.638;\n" +
 "    Float64 colorBarMaximum 5.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -671,13 +688,14 @@ public class EDDTableCopy extends EDDTable{
 "    String units \"volts\";\n" +
 "  }\n" +
 "  PO4 {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range 0.07, 3.237;\n" +
 "    Float64 colorBarMaximum 4.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Dissolved Nutrients\";\n" +
 "    String long_name \"Phosphate\";\n" +
 "    Float32 missing_value -9999.0;\n" +
-"    String standard_name \"moles_of_phosphate_per_unit_mass_in_sea_water\";\n" +
+"    String standard_name \"mole_concentration_of_phosphate_in_sea_water\";\n" +
 "    String units \"micromoles L-1\";\n" +
 "  }\n" +
 "  N_N {\n" +
@@ -699,30 +717,33 @@ public class EDDTableCopy extends EDDTable{
 "    String ioos_category \"Dissolved Nutrients\";\n" +
 "    String long_name \"Nitrate\";\n" +
 "    Float32 missing_value -9999.0;\n" +
-"    String standard_name \"moles_of_nitrate_per_unit_mass_in_sea_water\";\n" +
+"    String standard_name \"mole_concentration_of_nitrate_in_sea_water\";\n" +
 "    String units \"micromoles L-1\";\n" +
 "  }\n" +
 "  Si {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range -0.08, 117.12;\n" +
 "    Float64 colorBarMaximum 50.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Dissolved Nutrients\";\n" +
 "    String long_name \"Silicate\";\n" +
 "    Float32 missing_value -9999.0;\n" +
-"    String standard_name \"moles_of_silicate_per_unit_mass_in_sea_water\";\n" +
+"    String standard_name \"mole_concentration_of_silicate_in_sea_water\";\n" +
 "    String units \"micromoles L-1\";\n" +
 "  }\n" +
 "  NO2 {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range -0.03, 0.757;\n" +
 "    Float64 colorBarMaximum 1.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
 "    String ioos_category \"Dissolved Nutrients\";\n" +
 "    String long_name \"Nitrite\";\n" +
 "    Float32 missing_value -9999.0;\n" +
-"    String standard_name \"moles_of_nitrite_per_unit_mass_in_sea_water\";\n" +
+"    String standard_name \"mole_concentration_of_nitrite_in_sea_water\";\n" +
 "    String units \"micromoles L-1\";\n" +
 "  }\n" +
 "  NH4 {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range -0.14, 4.93;\n" +
 "    Float64 colorBarMaximum 5.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -733,6 +754,7 @@ public class EDDTableCopy extends EDDTable{
 "    String units \"micromoles L-1\";\n" +
 "  }\n" +
 "  oxygen {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range 0.07495, 9.93136;\n" +
 "    Float64 colorBarMaximum 10.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -743,6 +765,7 @@ public class EDDTableCopy extends EDDTable{
 "    String units \"mL L-1\";\n" +
 "  }\n" +
 "  par {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
 "    Float32 actual_range 0.1515, 3.261;\n" +
 "    Float64 colorBarMaximum 3.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -755,7 +778,7 @@ public class EDDTableCopy extends EDDTable{
 "  NC_GLOBAL {\n" +
 "    String cdm_altitude_proxy \"bottle_posn\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
-"    String cdm_profile_variables \"time, cast, longitude, latitude\";\n" +
+"    String cdm_profile_variables \"cast, longitude, latitude, time\";\n" +
 "    String cdm_trajectory_variables \"cruise_id, ship\";\n" +
 "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting -124.1;\n" +
@@ -766,14 +789,28 @@ public class EDDTableCopy extends EDDTable{
 "    Float64 geospatial_lon_max -124.1;\n" +
 "    Float64 geospatial_lon_min -126.2;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n";
-//"    String history \"" + today + " http://192.168.31.18/opendap/GLOBEC/GLOBEC_bottle\n";  //date is from last created file, so varies sometimes
+//"    String history \"" + today + " 2012-07-29T19:11:09Z (local files; contact erd.data@noaa.gov)\n";  //date is from last created file, so varies sometimes
 //today + " http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das"; //\n" +
 //today + " http://192.168.31.18/opendap/GLOBEC/GLOBEC_bottle\n" +
 //today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" +
     expected2 = 
-"    String infoUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?dataset=GLOBEC_Bottle_data\";\n" +
+"    String infoUrl \"http://www.globec.org/\";\n" +
 "    String institution \"GLOBEC\";\n" +
-"    String keywords \"Oceans > Salinity/Density > Salinity\";\n" +
+"    String keywords \"10um,\n" +
+"Biosphere > Vegetation > Photosynthetically Active Radiation,\n" +
+"Oceans > Ocean Chemistry > Ammonia,\n" +
+"Oceans > Ocean Chemistry > Chlorophyll,\n" +
+"Oceans > Ocean Chemistry > Nitrate,\n" +
+"Oceans > Ocean Chemistry > Nitrite,\n" +
+"Oceans > Ocean Chemistry > Nitrogen,\n" +
+"Oceans > Ocean Chemistry > Oxygen,\n" +
+"Oceans > Ocean Chemistry > Phosphate,\n" +
+"Oceans > Ocean Chemistry > Pigments,\n" +
+"Oceans > Ocean Chemistry > Silicate,\n" +
+"Oceans > Ocean Optics > Attenuation/Transmission,\n" +
+"Oceans > Ocean Temperature > Water Temperature,\n" +
+"Oceans > Salinity/Density > Salinity,\n" +
+"active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -784,11 +821,10 @@ public class EDDTableCopy extends EDDTable{
 "completeness, or usefulness, of this information.\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 44.65;\n" +
-"    String observationDimension \"row\";\n" +
-"    String sourceUrl \"http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle\";\n" +
+"    String sourceUrl \"(local files; contact erd.data@noaa.gov)\";\n" +
 "    Float64 Southernmost_Northing 41.9;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
-"    String subsetVariables \"cruise_id, ship, cast, time, longitude, latitude\";\n" +
+"    String subsetVariables \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
 "    String summary \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
 "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
 "Notes:\n" +
@@ -796,7 +832,7 @@ public class EDDTableCopy extends EDDTable{
 "Chlorophyll readings done by Leah Feinberg (OSU).\n" +
 "Nutrient analysis done by Burke Hales (OSU).\n" +
 "Sal00 - salinity calculated from primary sensors (C0,T0).\n" +
-"Sal11 - salinity calc. from secondary sensors (C1,T1).\n" +
+"Sal11 - salinity calculated from secondary sensors (C1,T1).\n" +
 "secondary sensor pair was used in final processing of CTD data for\n" +
 "most stations because the primary had more noise and spikes. The\n" +
 "primary pair were used for cast #9, 24, 48, 111 and 150 due to\n" +
@@ -834,35 +870,35 @@ public class EDDTableCopy extends EDDTable{
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
             expected = 
-    "Dataset {\n" +
-    "  Sequence {\n" +
-    "    Float32 longitude;\n" +
-    "    Float32 latitude;\n" +
-    "    Float64 time;\n" +
-    "    String ship;\n" +
-    "    String cruise_id;\n" +
-    "    Int16 cast;\n" +
-    "    Int16 bottle_posn;\n" +
-    "    Float32 chl_a_total;\n" +
-    "    Float32 chl_a_10um;\n" +
-    "    Float32 phaeo_total;\n" +
-    "    Float32 phaeo_10um;\n" +
-    "    Float32 sal00;\n" +
-    "    Float32 sal11;\n" +
-    "    Float32 temperature0;\n" +
-    "    Float32 temperature1;\n" +
-    "    Float32 fluor_v;\n" +
-    "    Float32 xmiss_v;\n" +
-    "    Float32 PO4;\n" +
-    "    Float32 N_N;\n" +
-    "    Float32 NO3;\n" +
-    "    Float32 Si;\n" +
-    "    Float32 NO2;\n" +
-    "    Float32 NH4;\n" +
-    "    Float32 oxygen;\n" +
-    "    Float32 par;\n" +
-    "  } s;\n" +
-    "} s;\n";
+"Dataset {\n" +
+"  Sequence {\n" +
+"    String cruise_id;\n" +
+"    String ship;\n" +
+"    Int16 cast;\n" +
+"    Float32 longitude;\n" +
+"    Float32 latitude;\n" +
+"    Float64 time;\n" +
+"    Byte bottle_posn;\n" +
+"    Float32 chl_a_total;\n" +
+"    Float32 chl_a_10um;\n" +
+"    Float32 phaeo_total;\n" +
+"    Float32 phaeo_10um;\n" +
+"    Float32 sal00;\n" +
+"    Float32 sal11;\n" +
+"    Float32 temperature0;\n" +
+"    Float32 temperature1;\n" +
+"    Float32 fluor_v;\n" +
+"    Float32 xmiss_v;\n" +
+"    Float32 PO4;\n" +
+"    Float32 N_N;\n" +
+"    Float32 NO3;\n" +
+"    Float32 Si;\n" +
+"    Float32 NO2;\n" +
+"    Float32 NH4;\n" +
+"    Float32 oxygen;\n" +
+"    Float32 par;\n" +
+"  } s;\n" +
+"} s;\n";
             Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 

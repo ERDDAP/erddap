@@ -676,7 +676,8 @@ public class Erddap extends HttpServlet {
 
             //display /info link with list of all datasets
             writer.write(
-                "\n<li><h3><a href=\"" + tErddapUrl + "/info/index.html?" +
+                //here, just use rel=contents for the list of all datasets
+                "\n<li><h3><a rel=\"contents\" href=\"" + tErddapUrl + "/info/index.html?" +
                     EDStatic.encodedDefaultPIppQuery + "\">" +
                 MessageFormat.format(EDStatic.indexViewAll,  
                     gridDatasetHashMap.size() + tableDatasetHashMap.size()) +
@@ -707,64 +708,69 @@ public class Erddap extends HttpServlet {
                 "  <tr><th>" + EDStatic.indexProtocol    + "</th>" + 
                       "<th>" + EDStatic.indexDescription + "</th></tr>\n" +
                 "  <tr>\n" +
-                "    <td><a href=\"" + tErddapUrl + "/griddap/index.html?" + 
+                "    <td><a rel=\"bookmark\" " + 
+                    "href=\"" + tErddapUrl + "/griddap/index.html?" + 
                     EDStatic.encodedDefaultPIppQuery + "\"" + 
                     " title=\"" + 
                     MessageFormat.format(EDStatic.protocolClick, "griddap") + "\">" +
                     MessageFormat.format(EDStatic.indexDatasets, "griddap") + "</a> </td>\n" +
                 "    <td>" + EDStatic.EDDGridDapDescription + "\n" +
-                "      <a href=\"" + tErddapUrl + "/griddap/documentation.html\">" +
+                "      <a rel=\"help\" href=\"" + tErddapUrl + "/griddap/documentation.html\">" +
                     MessageFormat.format(EDStatic.indexDocumentation, "griddap") + 
                     "</a>\n" +
                 "    </td>\n" +
                 "  </tr>\n" +
                 "  <tr>\n" +
-                "    <td><a href=\"" + tErddapUrl + "/tabledap/index.html?" + 
+                "    <td><a rel=\"bookmark\" " + 
+                    "href=\"" + tErddapUrl + "/tabledap/index.html?" + 
                     EDStatic.encodedDefaultPIppQuery + "\"" + 
                     " title=\"" + 
                     MessageFormat.format(EDStatic.protocolClick, "tabledap") + "\">" +
                     MessageFormat.format(EDStatic.indexDatasets, "tabledap") + "</a></td>\n" +
                 "    <td>" + EDStatic.EDDTableDapDescription + "\n" +
-                "      <a href=\"" + tErddapUrl + "/tabledap/documentation.html\">" +
+                "      <a rel=\"help\" href=\"" + tErddapUrl + "/tabledap/documentation.html\">" +
                     MessageFormat.format(EDStatic.indexDocumentation, "tabledap") + 
                     "</a>\n" +
                 "    </td>\n" +
                 "  </tr>\n");
             if (EDStatic.sosActive) writer.write(
                 "  <tr>\n" +
-                "    <td><a href=\"" + tErddapUrl + "/sos/index.html?" + 
+                "    <td><a rel=\"bookmark\" " +  
+                    "href=\"" + tErddapUrl + "/sos/index.html?" + 
                     EDStatic.encodedDefaultPIppQuery + "\"" + 
                     " title=\"" +
                     MessageFormat.format(EDStatic.protocolClick, "SOS") + "\">" +
                     MessageFormat.format(EDStatic.indexDatasets, "SOS") + "</a></td>\n" +
                 "    <td>" + EDStatic.sosDescriptionHtml + "\n" +
-                "      <a href=\"" + tErddapUrl + "/sos/documentation.html\">" +
+                "      <a rel=\"help\" href=\"" + tErddapUrl + "/sos/documentation.html\">" +
                     MessageFormat.format(EDStatic.indexDocumentation, "SOS") + 
                     "</a>\n" +
                 "    </td>\n" +
                 "  </tr>\n");
             if (EDStatic.wcsActive) writer.write(
                 "  <tr>\n" +
-                "    <td><a href=\"" + tErddapUrl + "/wcs/index.html?" + 
+                "    <td><a rel=\"bookmark\" " + 
+                    "href=\"" + tErddapUrl + "/wcs/index.html?" + 
                     EDStatic.encodedDefaultPIppQuery + "\"" + 
                     " title=\"" + 
                     MessageFormat.format(EDStatic.protocolClick, "WCS") + "\">" +
                     MessageFormat.format(EDStatic.indexDatasets, "WCS") + "</a></td>\n" +
                 "    <td>" + EDStatic.wcsDescriptionHtml + "\n" +
-                "      <a href=\"" + tErddapUrl + "/wcs/documentation.html\">" +
+                "      <a rel=\"help\" href=\"" + tErddapUrl + "/wcs/documentation.html\">" +
                     MessageFormat.format(EDStatic.indexDocumentation, "WCS") + 
                     "</a>\n" +
                 "    </td>\n" +
                 "  </tr>\n");
             writer.write(
                 "  <tr>\n" +
-                "    <td><a href=\"" + tErddapUrl + "/wms/index.html?" +
+                "    <td><a rel=\"bookmark\" " +
+                    "href=\"" + tErddapUrl + "/wms/index.html?" +
                     EDStatic.encodedDefaultPIppQuery + "\"" + 
                     " title=\"" + 
                     MessageFormat.format(EDStatic.protocolClick, "WMS") + "\">" +
                     MessageFormat.format(EDStatic.indexDatasets, "WMS") + "</a></td>\n" +
                 "    <td>" + EDStatic.wmsDescriptionHtml + "\n" +
-                "      <a href=\"" + tErddapUrl + "/wms/documentation.html\">" +
+                "      <a rel=\"help\" href=\"" + tErddapUrl + "/wms/documentation.html\">" +
                     MessageFormat.format(EDStatic.indexDocumentation, "WMS") + 
                     "</a>\n" +
                 "    </td>\n" +
@@ -777,9 +783,10 @@ public class Erddap extends HttpServlet {
             writer.write(
                 "<li><h3>" + EDStatic.indexDevelopersSearch + "</h3>\n" +
                 "  <ul>\n" +
-                "  <li><a href=\"" + tErddapUrl + "/rest.html\">" + 
+                "  <li><a rel=\"help\" href=\"" + tErddapUrl + "/rest.html\">" + 
                     EDStatic.indexRESTfulSearch + "</a>\n" +
-                "  <li><a href=\"" + tErddapUrl + "/opensearch1.1/index.html\">OpenSearch 1.1</a>\n" +
+                "  <li><a rel=\"bookmark\" href=\"" + 
+                    tErddapUrl + "/opensearch1.1/index.html\">OpenSearch 1.1</a>\n" +
                 "  </ul>\n" +
                 "\n");
 
@@ -791,13 +798,14 @@ public class Erddap extends HttpServlet {
             //converters
             writer.write(
                 //"<p>&nbsp;<hr>\n" +
-                "<p><b><a name=\"converters\">" + EDStatic.indexConverters + "</a></b>\n" +
+                "<p><b><a rel=\"bookmark\" " + 
+                    "name=\"converters\">" + EDStatic.indexConverters + "</a></b>\n" +
                 "<br>" + EDStatic.indexDescribeConverters + "\n" +
                 "  <ul>\n" +
-                "  <li><a href=\"" + tErddapUrl + "/convert/fipscounty.html\">" + EDStatic.convertFipsCounty + "</a>\n" +
-                "  <li><a href=\"" + tErddapUrl + "/convert/keywords.html\">" + EDStatic.convertKeywords + "</a>\n" +
-                "  <li><a href=\"" + tErddapUrl + "/convert/time.html\">" + EDStatic.convertTime + "</a>\n" +
-                "  <li><a href=\"" + tErddapUrl + "/convert/units.html\">" + EDStatic.convertUnits + "</a>\n" +
+                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/fipscounty.html\">" + EDStatic.convertFipsCounty + "</a>\n" +
+                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/keywords.html\">" + EDStatic.convertKeywords + "</a>\n" +
+                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">" + EDStatic.convertTime + "</a>\n" +
+                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html\">" + EDStatic.convertUnits + "</a>\n" +
                 "  </ul>\n" +
                 "\n");
 
@@ -807,13 +815,15 @@ public class Erddap extends HttpServlet {
                     "<p><b><a name=\"metadata\">" + EDStatic.indexMetadata + "</a></b>\n" +
                     "<br>");
                 String fgdcLink = 
-                    "<a href=\"" + tErddapUrl + "/" + EDStatic.fgdcXmlDirectory + 
+                    "<a rel=\"bookmark\" " + 
+                    "href=\"" + tErddapUrl + "/" + EDStatic.fgdcXmlDirectory + 
                     "\">FGDC</a> " +
-                    "(<a href=\"http://www.fgdc.gov/\">?</a>)";
+                    "(<a rel=\"help\" href=\"http://www.fgdc.gov/\">?</a>)";
                 String isoLink  =
-                    "<a href=\"" + tErddapUrl + "/" + EDStatic.iso19115XmlDirectory +
+                    "<a rel=\"bookmark\" " + 
+                    "href=\"" + tErddapUrl + "/" + EDStatic.iso19115XmlDirectory +
                     "\">ISO&nbsp;19115-2/19139</a> " +
-                    "(<a href=\"http://en.wikipedia.org/wiki/Geospatial_metadata\">?</a>)";
+                    "(<a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Geospatial_metadata\">?</a>)";
                 if (EDStatic.fgdcActive && EDStatic.iso19115Active)
                     writer.write(MessageFormat.format(EDStatic.indexWAF2, 
                         fgdcLink, isoLink));
@@ -824,7 +834,7 @@ public class Erddap extends HttpServlet {
 
             //REST services
             writer.write(
-                "<p><b><a name=\"services\">" + EDStatic.indexServices + "</a></b>\n" +
+                "<p><b><a rel=\"bookmark\" name=\"services\">" + EDStatic.indexServices + "</a></b>\n" +
                 "<br>" + MessageFormat.format(EDStatic.indexDescribeServices, tErddapUrl) + 
                 "\n\n");
 
@@ -873,10 +883,10 @@ public class Erddap extends HttpServlet {
         try {
             writer.write(
                 EDStatic.youAreHere(loggedInAs, "Legal Notices") +
-                "<a href=\"#disclaimers\">Disclaimers</a> | " +
-                "<a href=\"#privacyPolicy\">Privacy Policy</a> | " +
-                "<a href=\"#dataLicenses\">Data Licenses</a> | " +
-                "<a href=\"#contact\">Contact</a>\n" +
+                "<a rel=\"bookmark\" href=\"#disclaimers\">Disclaimers</a> | " +
+                "<a rel=\"bookmark\" href=\"#privacyPolicy\">Privacy Policy</a> | " +
+                "<a rel=\"bookmark\" href=\"#dataLicenses\">Data Licenses</a> | " +
+                "<a rel=\"bookmark\" href=\"#contact\">Contact</a>\n" +
                 "\n" +
                 "<h2><a name=\"disclaimers\">Disclaimers</a></h2>\n" +
                 "\n" +
@@ -1232,9 +1242,9 @@ public class Erddap extends HttpServlet {
                     "<img align=\"middle\" src=\"http://l.yimg.com/us.yimg.com/i/ydn/openid-signin-yellow.png\" \n" +
                         "alt=\"Sign in with Yahoo\" onclick=\"submitForm('http://www.yahoo.com');\"/>\n" +
                     "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + EDStatic.loginOpenIDCreate + "\n" + 
-                    "<a href=\"http://www.myopenid.com/\" target=\"_blank\">MyOpenID</a> (recommended), \n" +
-                    "<a href=\"https://pip.verisignlabs.com/\" target=\"_blank\">Verisign</a>, or\n" +
-                    "<a href=\"https://myvidoop.com/\" target=\"_blank\">Vidoop</a>. (" +
+                    "<a rel=\"help\" href=\"http://www.myopenid.com/\" target=\"_blank\">MyOpenID</a> (recommended), \n" +
+                    "<a rel=\"help\" href=\"https://pip.verisignlabs.com/\" target=\"_blank\">Verisign</a>, or\n" +
+                    "<a rel=\"help\" href=\"https://myvidoop.com/\" target=\"_blank\">Vidoop</a>. (" +
                         EDStatic.loginOpenIDFree + ")\n" +
                     "\n" +
                     String2.replaceAll(EDStatic.loginProblems, "&info;", "OpenID URL"));
@@ -1459,11 +1469,11 @@ public class Erddap extends HttpServlet {
                 "<h2 align=\"center\"><a name=\"WebService\">Accessing</a> ERDDAP's RESTful Web Services</h2>\n" +
                 "ERDDAP is both:\n" +
                 "<ul>\n" +
-                "<li><a href=\"http://en.wikipedia.org/wiki/Web_application\">A web application</a> \n" +
+                "<li><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Web_application\">A web application</a> \n" +
                 "  &ndash; a web site that humans with browsers can use\n" +
                 "  (in this case, to get data, graphs, and information about datasets).\n" +
                 "  <br>&nbsp;\n" +
-                "<li><a href=\"http://en.wikipedia.org/wiki/Web_service\">A RESTful web service</a> \n" +
+                "<li><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Web_service\">A RESTful web service</a> \n" +
                 "  &ndash; a web site that computer programs can use\n" +
                 "  (in this case, to get data, graphs, and information about datasets).\n" +
                 "</ul>\n" +
@@ -1475,7 +1485,7 @@ public class Erddap extends HttpServlet {
                 "<br><a href=\"" + jsonQueryUrl + "\">" + jsonQueryUrl + "</a>\n" +
                 "<br>we get a URL that a computer program or JavaScript script can use to get the same\n" +
                 "information in a more computer-program-friendly format like\n" +
-                "<a href=\"http://www.json.org/\">JSON</a>.\n" +
+                "<a rel=\"help\" href=\"http://www.json.org/\">JSON</a>.\n" +
                 "\n" +
                 "<p><b>Build Things on Top of ERDDAP</b>\n" +
                 "<br>There are many features in ERDDAP that can be used by computer programs or scripts\n" +
@@ -1487,7 +1497,7 @@ public class Erddap extends HttpServlet {
                 "Your system can get data, graphs, and other information from ERD's ERDDAP or from\n" +
                 "other ERDDAP installations, or you can \n" +
                 //setup always from coastwatch's erddap 
-                "  <a href=\"http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html\">set up your own ERDDAP server</a>,\n" + 
+                "  <a rel=\"help\" href=\"http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html\">set up your own ERDDAP server</a>,\n" + 
                 "  which can be\n" +
                 "publicly accessible or just privately accessible.\n" +
                 "\n" +
@@ -1495,7 +1505,7 @@ public class Erddap extends HttpServlet {
                 "<p><a name=\"requests\"><b>RESTful URL Requests</b></a>\n" +
                 "<br>Requests for user-interface information from ERDDAP (for example, search results)\n" +
                 "use the web's universal standard for requests:\n" +
-                "<a href=\"http://en.wikipedia.org/wiki/Uniform_Resource_Locator\">URLs</a>\n" +
+                "<a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Uniform_Resource_Locator\">URLs</a>\n" +
                 "sent via\n" +
                 "<a href=\"http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3\">HTTP GET</a>.\n" +
                 "This is the same mechanism that your browser uses when you fill out a form\n" +
@@ -1512,13 +1522,13 @@ public class Erddap extends HttpServlet {
                 "<li> They are universally supported (in browsers, computer languages, operating system\n" +
                 "  tools, etc).\n" +
                 "<li> They are a foundation of\n" +
-                "  <a href=\"http://en.wikipedia.org/wiki/Representational_State_Transfer\">Representational State Transfer (REST)</a> and\n" +
-                "  <a href=\"http://www.crummy.com/writing/RESTful-Web-Services/\">Resource Oriented Architecture (ROA)</a>.\n" +
+                "  <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Representational_State_Transfer\">Representational State Transfer (REST)</a> and\n" +
+                "  <a rel=\"help\" href=\"http://www.crummy.com/writing/RESTful-Web-Services/\">Resource Oriented Architecture (ROA)</a>.\n" +
                 "<li> They facilitate using the World Wide Web as a big distributed application,\n" +
                 "  for example via\n" +
-                "  <a href=\"http://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29\">mashups</a> and\n" +
-                "  <a href=\"http://en.wikipedia.org/wiki/Ajax_%28programming%29\">AJAX applications</a>.\n" +
-                "<li> They are <a href=\"http://en.wikipedia.org/wiki/Stateless_protocol\">stateless</a>,\n" +
+                "  <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Mashup_%28web_application_hybrid%29\">mashups</a> and\n" +
+                "  <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Ajax_%28programming%29\">AJAX applications</a>.\n" +
+                "<li> They are <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Stateless_protocol\">stateless</a>,\n" +
                 "  as is ERDDAP, which makes the system simpler.\n" +
                 "<li> A URL completely define a given request, so you can bookmark it in your browser,\n" +
                 "  write it in your notes, email it to a friend, etc.\n" +
@@ -1528,13 +1538,13 @@ public class Erddap extends HttpServlet {
                 "<br>In URLs, some characters are not allowed (for example, spaces) and other characters\n" +
                 "have special meanings (for example, '&amp;' separates key=value pairs in a query).\n" +
                 "When you fill out a form on a web page and click on Submit, your browser automatically\n" +
-                "<a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encodes</a>\n" +
+                "<a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encodes</a>\n" +
                 "  the special characters in the URL (for example, by replacing ' ' in a query\n" +
                 "value with \"%20\", for example,\n" +
                 "<br><a href=\"" + htmlQueryUrlWithSpaces + "\">" + htmlQueryUrlWithSpaces + "</a>\n" +
                 "<br>But if your computer program or script generates the URLs, it may need to do the percent\n" +
                 "encoding itself.  Programming languages have tools to do this (for example, see Java's\n" +
-                "<a href=\"http://download.oracle.com/javase/1.4.2/docs/api/java/net/URLEncoder.html\">java.net.URLEncoder</a>).\n" +
+                "<a rel=\"help\" href=\"http://download.oracle.com/javase/1.4.2/docs/api/java/net/URLEncoder.html\">java.net.URLEncoder</a>).\n" +
                 "\n" +  
                 
                 //compression
@@ -1548,19 +1558,19 @@ public class Erddap extends HttpServlet {
                 "results as a table of data in these common, computer-program friendly, file types:\n" +
                 "<ul>\n" + //list of plainFileTypes
                 "<li>.csv - a comma-separated ASCII text table.\n" +
-                    "(<a href=\"http://en.wikipedia.org/wiki/Comma-separated_values\">more&nbsp;info</a>)\n" +
+                    "(<a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Comma-separated_values\">more&nbsp;info</a>)\n" +
                 "<li>.htmlTable - an .html web page with the data in a table.\n" +
-                    "(<a href=\"http://www.w3schools.com/html/html_tables.asp\">more&nbsp;info</a>)\n" +
+                    "(<a rel=\"help\" href=\"http://www.w3schools.com/html/html_tables.asp\">more&nbsp;info</a>)\n" +
                 "<li>.json - a table-like JSON file.\n" +
-                    "(<a href=\"http://www.json.org/\">more&nbsp;info</a>)\n" +
+                    "(<a rel=\"help\" href=\"http://www.json.org/\">more&nbsp;info</a>)\n" +
                 "<li>.mat - a MATLAB binary file.\n" +
-                    "(<a href=\"http://www.mathworks.com/\">more&nbsp;info</a>)\n" +
+                    "(<a rel=\"help\" href=\"http://www.mathworks.com/\">more&nbsp;info</a>)\n" +
                 "<li>.nc - a flat, table-like, NetCDF-3 binary file.\n" +
-                    "(<a href=\"http://www.unidata.ucar.edu/software/netcdf/\">more&nbsp;info</a>)\n" +
+                    "(<a rel=\"help\" href=\"http://www.unidata.ucar.edu/software/netcdf/\">more&nbsp;info</a>)\n" +
                 "<li>.tsv - a tab-separated ASCII text table.\n" +
-                    "(<a href=\"http://www.cs.tut.fi/~jkorpela/TSV.html\">more&nbsp;info</a>)\n" +
+                    "(<a rel=\"help\" href=\"http://www.cs.tut.fi/~jkorpela/TSV.html\">more&nbsp;info</a>)\n" +
                 "<li>.xhtml - an XHTML (XML) file with the data in a table.\n" +
-                    "(<a href=\"http://www.w3schools.com/html/html_tables.asp\">more&nbsp;info</a>)\n" +
+                    "(<a rel=\"help\" href=\"http://www.w3schools.com/html/html_tables.asp\">more&nbsp;info</a>)\n" +
                 "</ul>\n" +
                 "In every results table:\n" +
                 "<ul>\n" +
@@ -1602,8 +1612,8 @@ public class Erddap extends HttpServlet {
                 "user-interface types of requests (for example, search requests). ERDDAP supports\n" +
                 "a different set of file types for scientific data (for example, satellite and buoy\n" +
                 "data) requests (see the \n" +
-                "  <a href=\"" + tErddapUrl + "/griddap/documentation.html#fileType\">griddap</a> and\n" +
-                "  <a href=\"" + tErddapUrl + "/tabledap/documentation.html#fileType\">tabledap</a>\n" +
+                "  <a rel=\"help\" href=\"" + tErddapUrl + "/griddap/documentation.html#fileType\">griddap</a> and\n" +
+                "  <a rel=\"help\" href=\"" + tErddapUrl + "/tabledap/documentation.html#fileType\">tabledap</a>\n" +
                 "  documentation.\n" +
                 "\n" +
                 //accessUrls
@@ -1625,29 +1635,29 @@ public class Erddap extends HttpServlet {
                     "/info/" + EDStatic.EDDGridIdExample + "/index", "") + 
                 "  <br>&nbsp;\n" +
                 "<li>To get the results of <b>full text searches</b> for datasets\n" +
-                "  (using \"searchFor=temperature%20wind%20speed\" as the example), use\n" +
+                "  (using \"searchFor=wind%20speed\" as the example), use\n" +
                 "  <br>" + plainLinkExamples(tErddapUrl, "/search/index", 
                     EDStatic.encodedDefaultPIppQuery + 
-                    "&amp;searchFor=temperature%20wind%20speed") +
+                    "&amp;searchFor=wind%20speed") +
                 "  <br>(Your program or script may need to \n" +
-                "    <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent-encode</a>\n" +
+                "    <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent-encode</a>\n" +
                 "    the value in the query.)\n" +
                 "  <br>&nbsp;\n" +
                 "  <br>Or, use the\n" +
-                "    <a href=\"" + tErddapUrl + "/opensearch1.1/index.html\">OpenSearch 1.1</a>\n" +
+                "    <a rel=\"bookmark\" href=\"" + tErddapUrl + "/opensearch1.1/index.html\">OpenSearch 1.1</a>\n" +
                 "    standard to do a full text search for datasets.\n" +
                 "  <br>&nbsp;\n" +
                 "<li>To get the results of <b>advanced searches</b> for datasets\n" +
-                "  (using \"searchFor=temperature%20wind%20speed\" as the example), use\n" +
+                "  (using \"searchFor=wind%20speed\" as the example), use\n" +
                 "  <br>" + plainLinkExamples(tErddapUrl, "/search/advanced", 
                     EDStatic.encodedDefaultPIppQuery + 
-                    "&amp;searchFor=temperature%20wind%20speed") +
+                    "&amp;searchFor=wind%20speed") +
                 "  <br>But experiment with\n" +
                 "    <a href=\"" + tErddapUrl + "/search/advanced.html?" + 
                     EDStatic.encodedDefaultPIppQuery + "\">" + EDStatic.advancedSearch + "</a>\n" +
                 "    in a browser to figure out all of the optional parameters.\n" +
                 "  (Your program or script may need to \n" +
-                "    <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent-encode</a>\n" +
+                "    <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent-encode</a>\n" +
                 "    the value in the query.)\n" +
                 "  <br>&nbsp;\n" +
                 "<li>To get the list of <b>categoryAttributes</b>\n" +
@@ -1696,25 +1706,25 @@ public class Erddap extends HttpServlet {
                 "    request <b>data</b> (e.g., satellite and buoy data).  The data can be in any of\n" +
                 "    several common file formats. Your program can generate these URLs directly.\n" +
                 "    For more information, see the\n" +
-                "      <a href=\"" + tErddapUrl + "/griddap/documentation.html\">griddap documentation</a> and\n" +
-                "    <a href=\"" + tErddapUrl + "/tabledap/documentation.html\">tabledap documentation</a>.\n" +
+                "    <a rel=\"help\" href=\"" + tErddapUrl + "/griddap/documentation.html\">griddap documentation</a> and\n" +
+                "    <a rel=\"help\" href=\"" + tErddapUrl + "/tabledap/documentation.html\">tabledap documentation</a>.\n" +
                 "    <br>&nbsp;\n" +
                 "  <li>The Make A Graph pages are just simple web pages to generate URLs which\n" +
                 "    request <b>graphs</b> of a subset of the data.  The graphs can be in any of several\n" +
                 "    common file formats.  Your program can generate these URLs directly. For\n" +
                 "    more information, see the\n" +
-                "      <a href=\"" + tErddapUrl + "/griddap/documentation.html\">griddap documentation</a> and\n" +
-                "      <a href=\"" + tErddapUrl + "/tabledap/documentation.html\">tabledap documentation</a>.\n" +
+                "      <a rel=\"help\" href=\"" + tErddapUrl + "/griddap/documentation.html\">griddap documentation</a> and\n" +
+                "      <a rel=\"help\" href=\"" + tErddapUrl + "/tabledap/documentation.html\">tabledap documentation</a>.\n" +
                 "    <br>&nbsp;\n" +
                 "  <li>To get a <b>dataset's structure</b>, including variable names and data types,\n" +
                 "    use a standard OPeNDAP\n" +
-                "      <a href=\"" + XML.encodeAsHTML(EDDTable.dataFileTypeInfo[tDdsIndex]) + "\">.dds</a>\n" +
+                "      <a rel=\"help\" href=\"" + XML.encodeAsHTML(EDDTable.dataFileTypeInfo[tDdsIndex]) + "\">.dds</a>\n" +
                 "      resquest. For example,\n" + 
                 "    <br><a href=\"" + griddapExample  + ".dds\">" + griddapExample  + ".dds</a> (gridded data) or\n" +
                 "    <br><a href=\"" + tabledapExample + ".dds\">" + tabledapExample + ".dds</a> (tabular data).\n" +
                 "    <br>&nbsp;\n" +
                 "  <li>To get a <b>dataset's metadata</b>, use a standard OPeNDAP\n" +
-                "      <a href=\"" + XML.encodeAsHTML(EDDTable.dataFileTypeInfo[tDdsIndex]) + "\">.das</a>\n" +
+                "      <a rel=\"help\" href=\"" + XML.encodeAsHTML(EDDTable.dataFileTypeInfo[tDdsIndex]) + "\">.das</a>\n" +
                 "      resquest.\n" +
                 "    For example,\n" + 
                 "    <br><a href=\"" + griddapExample  + ".das\">" + griddapExample  + ".das</a> (gridded data) or\n" +
@@ -1724,30 +1734,30 @@ public class Erddap extends HttpServlet {
                 "<li>ERDDAP's other protocols also have web services that you can use.\n" +
                 "  <br>See ERDDAP's\n");
             if (EDStatic.sosActive) writer.write(
-                "    <a href=\"" + tErddapUrl + "/sos/documentation.html\">SOS</a>,\n");
+                "    <a rel=\"help\" href=\"" + tErddapUrl + "/sos/documentation.html\">SOS</a>,\n");
             if (EDStatic.wcsActive) writer.write(
-                 "    <a href=\"" + tErddapUrl + "/wcs/documentation.html\">WCS</a>,\n");
+                 "    <a rel=\"help\" href=\"" + tErddapUrl + "/wcs/documentation.html\">WCS</a>,\n");
             if (EDStatic.sosActive || EDStatic.wcsActive) writer.write(
                 "    and\n");
             writer.write(
-                "    <a href=\"" + tErddapUrl + "/wms/documentation.html\">WMS</a> documentation.\n" +
+                "    <a rel=\"help\" href=\"" + tErddapUrl + "/wms/documentation.html\">WMS</a> documentation.\n" +
                 "    <br>&nbsp;\n" +
                 "<li>ERDDAP offers \n" +
-                "    <a href=\"" + tErddapUrl + "/information.html#subscriptions\">RSS subscriptions</a>,\n" +
+                "    <a rel=\"help\" href=\"" + tErddapUrl + "/information.html#subscriptions\">RSS subscriptions</a>,\n" +
                 "    so that your computer program find out if a\n" +
                 "  dataset has changed.\n" +
                 "  <br>&nbsp;\n" +
                 "<li>ERDDAP offers \n" +
-                "    <a href=\"" + tErddapUrl + "/information.html#subscriptions\">email/URL subscriptions</a>,\n" +
+                "    <a rel=\"help\" href=\"" + tErddapUrl + "/information.html#subscriptions\">email/URL subscriptions</a>,\n" +
                 "    which notify your computer program\n" +
                 "  whenever a dataset changes.\n" +
                 "  <br>&nbsp;\n" +
                 "<li>ERDDAP offers several converters as web pages and as web services:\n" +
                 "  <ul>\n" +
-                "  <li><a href=\"" + tErddapUrl + "/convert/fipscounty.html#computerProgram\">" + EDStatic.convertFipsCounty + "</a>\n" +
-                "  <li><a href=\"" + tErddapUrl + "/convert/keywords.html#computerProgram\">" + EDStatic.convertKeywords + "</a>\n" +
-                "  <li><a href=\"" + tErddapUrl + "/convert/time.html#computerProgram\">" + EDStatic.convertTime + "</a>\n" +
-                "  <li><a href=\"" + tErddapUrl + "/convert/units.html#computerProgram\">" + EDStatic.convertUnits + "</a>\n" +
+                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/fipscounty.html#computerProgram\">" + EDStatic.convertFipsCounty + "</a>\n" +
+                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/keywords.html#computerProgram\">" + EDStatic.convertKeywords + "</a>\n" +
+                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html#computerProgram\">" + EDStatic.convertTime + "</a>\n" +
+                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html#computerProgram\">" + EDStatic.convertUnits + "</a>\n" +
                 "  </ul>\n" +
                 "  <br>&nbsp;\n" +
                 "</ul>\n" +
@@ -1763,7 +1773,7 @@ public class Erddap extends HttpServlet {
                 "ERDDAP on your own server (publicly accessible or not) to serve your own data. Your Java\n" +
                 "programs can get data from that copy of ERDDAP. See\n" +
                 //setup.html always from coastwatch's erddap
-                "  <a href=\"http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html\">Set Up Your Own ERDDAP</a>.\n");
+                "  <a rel=\"help\" href=\"http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html\">Set Up Your Own ERDDAP</a>.\n");
 
             //erddap version
             writer.write(
@@ -1850,7 +1860,7 @@ public class Erddap extends HttpServlet {
         writer.write(pre); writer.write("griddap/index.html?" +
             EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh);
         writer.write(pre); writer.write("images/embed.html");                 writer.write(postHigh);
-        writer.write(pre); writer.write("images/gadgets/GoogleGadgets.html"); writer.write(postHigh);
+        //writer.write(pre); writer.write("images/gadgets/GoogleGadgets.html"); writer.write(postHigh);
         writer.write(pre); writer.write("index.html");                        writer.write(postHigh);
         writer.write(pre); writer.write("info/index.html?" + 
             EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh); 
@@ -2550,7 +2560,7 @@ public class Erddap extends HttpServlet {
                     "\n" +
                     "<p>" + EDStatic.restfulInformationFormats + " \n(" +
                     plainFileTypesString + //not links, which would be indexed by search engines
-                    ") <a href=\"" + tErddapUrl + "/rest.html\">" + 
+                    ") <a rel=\"help\" href=\"" + tErddapUrl + "/rest.html\">" + 
                         EDStatic.restfulViaService + "</a>.\n" +
                     "\n");
             } else {
@@ -2895,16 +2905,16 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "\n" +
                 "<h2>Overview</h2>\n" +
                 "In addition to making data available via \n" +
-                  "<a href=\"" + tErddapUrl + "/griddap/index.html?" + 
+                  "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/griddap/index.html?" + 
                       EDStatic.encodedDefaultPIppQuery + "\">gridddap</a> and \n" +
-                  "<a href=\"" + tErddapUrl + "/tabledap/index.html?" + 
+                  "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/tabledap/index.html?" + 
                       EDStatic.encodedDefaultPIppQuery + "\">tabledap</a>, \n" + 
                   "ERDDAP makes some datasets\n" +
                 "<br>available via ERDDAP's Sensor Observation Service (SOS) web service.\n" +
                 "\n" +
                 "<p>" + EDStatic.sosLongDescriptionHtml + 
                 "<p>See the\n" +
-                "<a href=\"" + tErddapUrl + "/sos/index.html?" + 
+                "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/sos/index.html?" + 
                     EDStatic.encodedDefaultPIppQuery + "\">list of datasets available via SOS</a>\n" +
                 "at this ERDDAP installation.\n" +
                 "<br>The SOS web pages listed there for each dataset have further documentation and sample requests.\n" +
@@ -3150,14 +3160,14 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "\n" +
                 "<h2>Overview</h2>\n" +
                 "In addition to making data available via \n" +
-                "<a href=\"" + tErddapUrl + "/griddap/index.html?" + 
+                "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/griddap/index.html?" + 
                     EDStatic.encodedDefaultPIppQuery + "\">gridddap</a> and \n" +
-                "<a href=\"" + tErddapUrl + "/tabledap/index.html?" + 
+                "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/tabledap/index.html?" + 
                     EDStatic.encodedDefaultPIppQuery + "\">tabledap</a>,\n" + 
                 "ERDDAP makes some datasets available via ERDDAP's Web Coverage Service (WCS) web service.\n" +
                 "\n" +
                 "<p>See the\n" +
-                "<a href=\"" + tErddapUrl + "/wcs/index.html?" + 
+                "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/wcs/index.html?" + 
                     EDStatic.encodedDefaultPIppQuery + "\">list of datasets available via WCS</a>\n" +
                 "at this ERDDAP installation.\n" +
                 "\n" +
@@ -3166,12 +3176,12 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "<p>WCS clients send HTTP POST or GET requests (specially formed URLs) to the WCS service and get XML responses.\n" +
                 "Some WCS client programs are:\n" +
                 "<ul>\n" +
-                "<li><a href=\"http://pypi.python.org/pypi/OWSLib/\">OWSLib</a> (free) - a Python command line library\n" +
-                "<li><a href=\"http://zeus.pin.unifi.it/cgi-bin/twiki/view/GIgo/WebHome\">GI-go</a> (free)\n" +
-                "<li><a href=\"http://www.cadcorp.com/\">CADCorp</a> (commercial) - has a \"no cost\" product called\n" +
-                "    <a href=\"http://www.cadcorp.com/products_geographical_information_systems/map_browser.htm\">Map Browser</a>\n" +
-                "<li><a href=\"http://www.ittvis.com/ProductServices/IDL.aspx\">IDL</a> (commercial)\n" +
-                "<li><a href=\"http://www.gvsig.gva.es/index.php?id=gvsig&amp;L=2\">gvSIG</a> (free)\n" +
+                "<li><a rel=\"bookmark\" href=\"http://pypi.python.org/pypi/OWSLib/\">OWSLib</a> (free) - a Python command line library\n" +
+                "<li><a rel=\"bookmark\" href=\"http://zeus.pin.unifi.it/cgi-bin/twiki/view/GIgo/WebHome\">GI-go</a> (free)\n" +
+                "<li><a rel=\"bookmark\" href=\"http://www.cadcorp.com/\">CADCorp</a> (commercial) - has a \"no cost\" product called\n" +
+                "    <a rel=\"bookmark\" href=\"http://www.cadcorp.com/products_geographical_information_systems/map_browser.htm\">Map Browser</a>\n" +
+                "<li><a rel=\"bookmark\" href=\"http://www.ittvis.com/ProductServices/IDL.aspx\">IDL</a> (commercial)\n" +
+                "<li><a rel=\"bookmark\" href=\"http://www.gvsig.gva.es/index.php?id=gvsig&amp;L=2\">gvSIG</a> (free)\n" +
                 "</ul>\n");
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
@@ -3413,14 +3423,14 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
         try {
             String likeThis = "<a href=\"" + tErddapUrl + "/wms/" + EDStatic.wmsSampleDatasetID + 
                      "/index.html\">like this</a>";
-            String makeAGraphRef = "<a href=\"http://coastwatch.pfeg.noaa.gov/erddap/images/embed.html\">" +
+            String makeAGraphRef = "<a rel=\"help\" href=\"http://coastwatch.pfeg.noaa.gov/erddap/images/embed.html\">" +
                 EDStatic.mag + "</a>\n";
             String datasetListRef = 
-                "<p>See the <a href=\"" + tErddapUrl + 
+                "<p>See the <a rel=\"bookmark\" href=\"" + tErddapUrl + 
                 "/wms/index.html?" + EDStatic.encodedDefaultPIppQuery + 
                 "\">list of datasets available via WMS</a> at this ERDDAP installation.\n";
             String makeAGraphListRef =
-                "  <br>See the <a href=\"" + tErddapUrl + 
+                "  <br>See the <a rel=\"contents\" href=\"" + tErddapUrl + 
                 "/info/index.html?" + EDStatic.encodedDefaultPIppQuery + 
                 "\">list of datasets with Make A Graph</a> at this ERDDAP installation.\n";
 
@@ -3434,9 +3444,9 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "<ol>\n" +
                 "<li> <b>In theory, anyone can download, install, and use WMS client software.</b>\n" +
                 "  <br>Some clients are: \n" +
-                "    <a href=\"http://www.esri.com/software/arcgis/\">ArcGIS</a>,\n" +
-                "    <a href=\"http://mapserver.refractions.net/phpwms/phpwms-cvs/\">Refractions PHP WMS Client</a>, and\n" +
-                "    <a href=\"http://udig.refractions.net//\">uDig</a>. \n" +
+                "    <a rel=\"bookmark\" href=\"http://www.esri.com/software/arcgis/\">ArcGIS</a>,\n" +
+                "    <a rel=\"bookmark\" href=\"http://mapserver.refractions.net/phpwms/phpwms-cvs/\">Refractions PHP WMS Client</a>, and\n" +
+                "    <a rel=\"bookmark\" href=\"http://udig.refractions.net//\">uDig</a>. \n" +
                 "  <br>To make these work, you would install the software on your computer.\n" +
                 "  <br>Then, you would enter the URL of the WMS service into the client.\n" +
                 //arcGis required WMS 1.1.1 (1.1.0 and 1.3.0 didn't work)
@@ -3452,13 +3462,13 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "  <br>specification and which is utilized by most datasets in ERDDAP's WMS servers.\n" +
                 "  <br>You may find that using a dataset's " + makeAGraphRef + 
                 "     form and selecting the .kml file type\n" +
-                "  <br>(an OGC standard) to load images into <a href=\"http://earth.google.com/\">Google Earth</a> provides\n" +            
+                "  <br>(an OGC standard) to load images into <a rel=\"bookmark\" href=\"http://earth.google.com/\">Google Earth</a> provides\n" +            
                 "    a good (non-WMS) map client.\n" +
                 makeAGraphListRef +
                 "  <br>&nbsp;\n" +
                 "<li> <b>Web page authors can embed a WMS client in a web page.</b>\n" +
                 "  <br>For example, ERDDAP uses \n" +
-                "    <a href=\"http://openlayers.org\">OpenLayers</a>, \n" +  
+                "    <a rel=\"bookmark\" href=\"http://openlayers.org\">OpenLayers</a>, \n" +  
                 "    which is a very versatile WMS client, for the WMS\n" +
                 "  <br>page for each ERDDAP dataset \n" +
                 "    (" + likeThis + ").\n" +  
@@ -3516,7 +3526,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "  </table>\n" +
                 "  <sup>*</sup> Parameter names are case-insensitive.\n" +
                 "  <br>Parameter values are case sensitive and must be\n" +
-                "    <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
+                "    <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
                 "    which your browser normally handles for you.\n" +
                 "  <br>The parameters may be in any order in the URL.\n" +
                 "  <br>&nbsp;\n" +
@@ -3671,7 +3681,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 //WMS 1.3.0 spec section 6.8.1
                 "  <sup>*</sup> Parameter names are case-insensitive.\n" +
                 "  <br>Parameter values are case sensitive and must be\n" +
-                "    <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
+                "    <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
                 "    which your browser normally handles for you.\n" +
                 "  <br>The parameters may be in any order in the URL.\n" +
                 "<p>(Revised from Table 8 of the WMS 1.3.0 specification)\n" +
@@ -3730,7 +3740,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                                        tWmsTransparentExample130 + "</a></td>\n" +
                 "  </tr>\n" +
                 "  <tr>\n" +
-                "    <td nowrap><b> In <a href=\"http://openlayers.org\">OpenLayers</a> </b></td> \n" +
+                "    <td nowrap><b> In <a rel=\"bookmark\" href=\"http://openlayers.org\">OpenLayers</a> </b></td> \n" +
                 "    <td><a href=\"" + tErddapUrl + "/wms/openlayers130.html\">OpenLayers Example (WMS 1.3.0)</a></td>\n" +  
                 "  </tr>\n" +
                 "</table>\n" +
@@ -3757,7 +3767,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                                        tWmsTransparentExample111 + "</a></td>\n" +
                 "  </tr>\n" +
                 "  <tr>\n" +
-                "    <td nowrap><b> In <a href=\"http://openlayers.org\">OpenLayers</a> </b></td> \n" +
+                "    <td nowrap><b> In <a rel=\"bookmark\" href=\"http://openlayers.org\">OpenLayers</a> </b></td> \n" +
                 "    <td><a href=\"" + tErddapUrl + "/wms/openlayers111.html\">OpenLayers Example (WMS 1.1.1)</a></td>\n" +  
                 "  </tr>\n" +
                 "</table>\n" +
@@ -3784,7 +3794,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                                        tWmsTransparentExample110 + "</a></td>\n" +
                 "  </tr>\n" +
                 "  <tr>\n" +
-                "    <td nowrap><b> In <a href=\"http://openlayers.org\">OpenLayers</a> </b></td> \n" +
+                "    <td nowrap><b> In <a rel=\"bookmark\" href=\"http://openlayers.org\">OpenLayers</a> </b></td> \n" +
                 "    <td><a href=\"" + tErddapUrl + "/wms/openlayers110.html\">OpenLayers Example (WMS 1.1.0)</a></td>\n" +  
                 "  </tr>\n" +
                 "</table>\n" +
@@ -5230,7 +5240,7 @@ writer.write(
                 "    of datasets available via WMS</a> at this ERDDAP installation.\n";
             String makeAGraphListRef =
                 "  <br>See the\n" +
-                "    <a href=\"" + tErddapUrl + "/info/index.html?" +
+                "    <a rel=\"contents\" href=\"" + tErddapUrl + "/info/index.html?" +
                     EDStatic.encodedDefaultPIppQuery + "\">list \n" +
                 "      of datasets with Make A Graph</a> at this ERDDAP installation.\n";
 
@@ -5270,7 +5280,7 @@ writer.write(
                 "  <br>&nbsp;\n" +
                 "<li> <b>Web page authors can embed a WMS client in a web page.</b>\n" +
                 "  <br>For the map above, ERDDAP is using \n" +
-                "    <a href=\"http://openlayers.org\">OpenLayers</a>, which is a very versatile WMS client.\n" +
+                "    <a rel=\"bookmark\" href=\"http://openlayers.org\">OpenLayers</a>, which is a very versatile WMS client.\n" +
                 "  <br>OpenLayers doesn't automatically deal with dimensions other than longitude and latitude\n" +            
                 "  <br>(e.g., time), so you will have to write JavaScript (or other scripting code) to do that.\n" +
                 "  <br>(Adventurous JavaScript programmers can look at the Souce Code for this web page.)\n" + 
@@ -5289,7 +5299,7 @@ writer.write(
                 "  </ul>\n" +
                 datasetListRef +
                 "  <br><b>For more information about generating WMS URLs, see ERDDAP's \n" +
-                "    <a href=\"" +tErddapUrl + "/wms/documentation.html\">WMS Documentation</a> .</b>\n" +
+                "    <a rel=\"help\" href=\"" +tErddapUrl + "/wms/documentation.html\">WMS Documentation</a> .</b>\n" +
                 "  <p><b>In practice, it is probably easier and more versatile to use this dataset's\n" +
                 "    " + makeAGraphRef + " web page</b>\n" +
                 "  <br>than to use WMS for this purpose.\n" +
@@ -5297,7 +5307,7 @@ writer.write(
                 "</ol>\n" +
                 "\n");
             
-            //"<p>\"<a href=\"http://openlayers.org\">OpenLayers</a> makes it easy to put a dynamic map in any web page.\n" +
+            //"<p>\"<a rel=\"bookmark\" href=\"http://openlayers.org\">OpenLayers</a> makes it easy to put a dynamic map in any web page.\n" +
             //    "It can display map tiles and markers loaded from any source.\n" +
             //    "OpenLayers is completely free, Open Source JavaScript, released under a BSD-style License. ...\n" +
             //    "OpenLayers is a pure JavaScript library for displaying map data in most modern web browsers,\n" +
@@ -5550,6 +5560,14 @@ writer.write(
         String protocol, int datasetIDStartsAt) throws Throwable {
 
         String requestUrl = request.getRequestURI();  // e.g., /erddap/images/QuestionMark.jpg
+        //be extra certain to avoid the security problem Local File Inclusion
+        //see http://www.mavitunasecurity.com/local-file-inclusion/
+        if (requestUrl.indexOf("/../") >= 0 || 
+            !String2.isPrintable(requestUrl) ||
+            requestUrl.indexOf("%0") >= 0) {  //percent-encoded ASCII char <16, e.g., %00
+            sendResourceNotFoundError(request, response, "Some characters are never allowed.");
+            return;
+        }
         String dir = EDStatic.contextDirectory + protocol + "/";
         String fileNameAndExt = requestUrl.length() <= datasetIDStartsAt? "" : 
             requestUrl.substring(datasetIDStartsAt);
@@ -6124,11 +6142,11 @@ writer.write(
                 "<h2><a name=\"alternatives\">Alternatives to Slide Sorter</a></h2>\n" +
                 "<ul>\n" +
                 "<li>Web page authors can \n" +
-                "  <a href=\"http://coastwatch.pfeg.noaa.gov/erddap/images/embed.html\">embed a graph with the latest data in a web page</a> \n" +
+                "  <a rel=\"help\" href=\"http://coastwatch.pfeg.noaa.gov/erddap/images/embed.html\">embed a graph with the latest data in a web page</a> \n" +
                 "  using HTML &lt;img&gt; tags.\n" +
-                "<li>Anyone can use or make \n" +
-                "  <a href=\"http://coastwatch.pfeg.noaa.gov/erddap/images/gadgets/GoogleGadgets.html\">Google " +
-                  "Gadgets</a> to display graphs of the latest data on their iGoogle home page.\n" +
+                //"<li>Anyone can use or make \n" +
+                //"  <a rel=\"help\" href=\"http://coastwatch.pfeg.noaa.gov/erddap/images/gadgets/GoogleGadgets.html\">Google " +
+                //  "Gadgets</a> to display graphs of the latest data.\n" +
                 "</ul>\n" +
                 "\n");
         } catch (Throwable t) {
@@ -6315,7 +6333,7 @@ writer.write(
                             "\n" +
                             "<p>" + EDStatic.restfulInformationFormats + " \n(" +
                             plainFileTypesString + //not links, which would be indexed by search engines
-                            ") <a href=\"" + tErddapUrl + "/rest.html\">" + 
+                            ") <a rel=\"help\" href=\"" + tErddapUrl + "/rest.html\">" + 
                                 EDStatic.restfulViaService + "</a>.\n" +
                             "\n");
                     } else {
@@ -6437,7 +6455,7 @@ writer.write(
             Writer writer = getHtmlWriter(loggedInAs, niceProtocol, out); 
             writer.write(
                 EDStatic.youAreHere(loggedInAs, niceProtocol) +
-                "<p><a href=\"http://www.opensearch.org/Home\">" + niceProtocol + "</a> " +
+                "<p><a rel=\"bookmark\" href=\"http://www.opensearch.org/Home\">" + niceProtocol + "</a> " +
                 "  is a standard way for search engines at other web sites to search this\n" +
                 "<br>ERDDAP for interesting datasets.\n" +
                 "<ul>\n" +
@@ -6463,10 +6481,10 @@ writer.write(
                 "\n" +
                 "<p>If you aren't setting up a web site that uses " + niceProtocol + ", please use ERDDAP's regular\n" +
                 "<br>search options on the right hand side of\n" +
-                "  <a href=\"" + tErddapUrl + "/index.html\">ERDDAP's home page</a>.\n" +
+                "  <a rel=\"start\" href=\"" + tErddapUrl + "/index.html\">ERDDAP's home page</a>.\n" +
                 "<br>Developers of computer programs and JavaScripted web pages can access ERDDAP's regular\n" +
                 "<br>search options as\n" +
-                "  <a href=\"" + tErddapUrl + "/rest.html\">RESTful services</a>.\n");
+                "  <a rel=\"help\" href=\"" + tErddapUrl + "/rest.html\">RESTful services</a>.\n");
             endHtmlWriter(out, writer, tErddapUrl, false);
             return;
         }      
@@ -6843,11 +6861,20 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         EDStatic.tally.add("Advanced Search with Lat Lon Constraints (since startup)", "" + llc);
         EDStatic.tally.add("Advanced Search with Lat Lon Constraints (since last daily report)", "" + llc);
 
-
-        double minTimeD = Calendar2.safeIsoStringToEpochSeconds(request.getParameter("minTime"));
-        double maxTimeD = Calendar2.safeIsoStringToEpochSeconds(request.getParameter("maxTime"));
+        String minTimeParam = request.getParameter("minTime");
+        String maxTimeParam = request.getParameter("maxTime");
+        if (minTimeParam == null) minTimeParam = "";
+        if (maxTimeParam == null) maxTimeParam = "";
+        double minTimeD = String2.isNumber(minTimeParam)?
+            String2.parseDouble(minTimeParam) : 
+            Calendar2.safeIsoStringToEpochSeconds(minTimeParam);
+        double maxTimeD = String2.isNumber(maxTimeParam)?
+            String2.parseDouble(maxTimeParam) :
+            Calendar2.safeIsoStringToEpochSeconds(maxTimeParam);
         if (!Double.isNaN(minTimeD) && !Double.isNaN(maxTimeD) && minTimeD > maxTimeD) {
-            double td = minTimeD; minTimeD = maxTimeD; maxTimeD = td; }
+            String ts = minTimeParam; minTimeParam = maxTimeParam; maxTimeParam = ts;
+            double td = minTimeD;     minTimeD = maxTimeD;         maxTimeD = td; 
+        }
         String minTime  = Calendar2.safeEpochSecondsToIsoStringTZ(minTimeD, "");
         String maxTime  = Calendar2.safeEpochSecondsToIsoStringTZ(maxTimeD, "");
         boolean tc = Math2.isFinite(minTimeD) || Math2.isFinite(maxTimeD);
@@ -7051,13 +7078,13 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                     "<tr>\n" +
                     "  <td>" + EDStatic.advancedSearchMinTime + ":&nbsp;</td>\n" +
                     "  <td>" + widgets.textField("minTime", 
-                        EDStatic.advancedSearchMinTime + "<p>" + timeTooltip, 27, 27, minTime, "") + 
+                        EDStatic.advancedSearchMinTime + "<p>" + timeTooltip, 27, 27, minTimeParam, "") + 
                         "</td>\n" +
                     "</tr>\n" +
                     "<tr>\n" +
                     "  <td>" + EDStatic.advancedSearchMaxTime + ":&nbsp;</td>\n" +
                     "  <td>" + widgets.textField("maxTime", 
-                        EDStatic.advancedSearchMaxTime + "<p>" + timeTooltip, 27, 27, maxTime, "") + 
+                        EDStatic.advancedSearchMaxTime + "<p>" + timeTooltip, 27, 27, maxTimeParam, "") + 
                         "</td>\n" +
                     "</tr>\n" +
 
@@ -7330,7 +7357,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                             "\n" +
                             "<p>" + EDStatic.restfulInformationFormats + " \n(" +
                             plainFileTypesString + //not links, which would be indexed by search engines
-                            ") <a href=\"" + tErddapUrl + "/rest.html\">" + 
+                            ") <a rel=\"help\" href=\"" + tErddapUrl + "/rest.html\">" + 
                                 EDStatic.restfulViaService + "</a>.\n" +
                             "\n");
 
@@ -8031,7 +8058,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                     "\n" +
                     "<p>" + EDStatic.restfulInformationFormats + " \n(" +
                     plainFileTypesString + //not links, which would be indexed by search engines
-                    ") <a href=\"" + tErddapUrl + "/rest.html\">" + 
+                    ") <a rel=\"help\" href=\"" + tErddapUrl + "/rest.html\">" + 
                         EDStatic.restfulViaService + "</a>.\n" +
                     "\n");
 
@@ -8194,7 +8221,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                             "\n" +
                             "<p>" + EDStatic.restfulInformationFormats + " \n(" +
                             plainFileTypesString + //not links, which would be indexed by search engines
-                            ") <a href=\"" + tErddapUrl + "/rest.html\">" + 
+                            ") <a rel=\"help\" href=\"" + tErddapUrl + "/rest.html\">" + 
                                 EDStatic.restfulViaService + "</a>.\n" +
                             "\n");
                     }
@@ -8369,7 +8396,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                         s = XML.encodeAsHTML(s);
                         valueSA.set(i, "<a href=\"mailto:" + s + "\">" + s + "</a>");
                     } else {
-                        valueSA.set(i, XML.encodeAsPreHTML(s, 100000));  //???
+                        valueSA.set(i, XML.encodeAsPreHTML(s, 10000));  //???
                     }
                 }
 
@@ -8411,7 +8438,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                     "\n" +
                     "<p>" + EDStatic.restfulInformationFormats + " \n(" +
                     plainFileTypesString + //not links, which would be indexed by search engines
-                    ") <a href=\"" + tErddapUrl + "/rest.html\">" + 
+                    ") <a rel=\"help\" href=\"" + tErddapUrl + "/rest.html\">" + 
                         EDStatic.restfulViaService + "</a>.\n" +
                     "\n");
 
@@ -8493,10 +8520,10 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 writer.write(
                 "<p><b>" + EDStatic.subscriptionOptions + ":</b>\n" +
                 "<ul>\n" +
-                "<li> <a href=\"" + tErddapUrl + "/" + Subscriptions.ADD_HTML      + "\">" + EDStatic.subscriptionAdd      + "</a>\n" +
-                "<li> <a href=\"" + tErddapUrl + "/" + Subscriptions.VALIDATE_HTML + "\">" + EDStatic.subscriptionValidate + "</a>\n" +
-                "<li> <a href=\"" + tErddapUrl + "/" + Subscriptions.LIST_HTML     + "\">" + EDStatic.subscriptionList     + "</a>\n" +
-                "<li> <a href=\"" + tErddapUrl + "/" + Subscriptions.REMOVE_HTML   + "\">" + EDStatic.subscriptionRemove   + "</a>\n" +
+                "<li> <a rel=\"bookmark\" href=\"" + tErddapUrl + "/" + Subscriptions.ADD_HTML      + "\">" + EDStatic.subscriptionAdd      + "</a>\n" +
+                "<li> <a rel=\"bookmark\" href=\"" + tErddapUrl + "/" + Subscriptions.VALIDATE_HTML + "\">" + EDStatic.subscriptionValidate + "</a>\n" +
+                "<li> <a rel=\"bookmark\" href=\"" + tErddapUrl + "/" + Subscriptions.LIST_HTML     + "\">" + EDStatic.subscriptionList     + "</a>\n" +
+                "<li> <a rel=\"bookmark\" href=\"" + tErddapUrl + "/" + Subscriptions.REMOVE_HTML   + "\">" + EDStatic.subscriptionRemove   + "</a>\n" +
                 "</ul>\n");
             else writer.write(
                 MessageFormat.format(EDStatic.subscriptionsNotAvailable, tErddapUrl) + "\n");
@@ -8520,7 +8547,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         return 
             "<br>&nbsp;\n" +
             "<p><b>Or, you can request an email with a\n" +
-            "<a href=\"" + tErddapUrl + "/" + Subscriptions.LIST_HTML + 
+            "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/" + Subscriptions.LIST_HTML + 
             (tEmail.length() > 0? "?email=" + tEmail : "") +
             "\">list of your valid and pending subscriptions</a>.</b>\n";
     }
@@ -8585,7 +8612,8 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         if      (tAction.length() > Subscriptions.ACTION_LENGTH)          
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionUrlTooLong + "</font>\n";
         else if (!tAction.equals("") && 
-            !(tAction.length() > 10 && tAction.startsWith("http://")))    
+            (tAction.length() <= 10 || !tAction.startsWith("http://") || 
+             tAction.startsWith("http://127.0.0.1")))    
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionUrlInvalid + "</font>\n";
 
         //display start of web page
@@ -9104,13 +9132,13 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 EDStatic.convertHtml + "\n" +
                 //"<p>Options:\n" +
                 "<ul>\n" +
-                "<li><a href=\"" + tErddapUrl + "/convert/fipscounty.html\"><b>FIPS County Codes</b></a> - " + 
+                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/fipscounty.html\"><b>FIPS County Codes</b></a> - " + 
                     EDStatic.convertFipsCounty + "\n" +
-                "<li><a href=\"" + tErddapUrl + "/convert/keywords.html\"><b>Keywords</b></a> - " + 
+                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/keywords.html\"><b>Keywords</b></a> - " + 
                     EDStatic.convertKeywords + "\n" +
-                "<li><a href=\"" + tErddapUrl + "/convert/time.html\"><b>Time</b></a> - " + 
+                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\"><b>Time</b></a> - " + 
                     EDStatic.convertTime + "\n" +
-                "<li><a href=\"" + tErddapUrl + "/convert/units.html\"><b>Units</b></a> - " + 
+                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html\"><b>Units</b></a> - " + 
                     EDStatic.convertUnits + "\n" +
                 "</ul>\n");
         } catch (Throwable t) {
@@ -9290,9 +9318,9 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
 
             //reset the form
             writer.write(
-                "<p><a href=\"" + tErddapUrl + 
+                "<p><a rel=\"bookmark\" href=\"" + tErddapUrl + 
                     "/convert/fipscounty.html\">" + EDStatic.resetTheForm + "</a>\n" +
-                "<p>Or, <a href=\"#computerProgram\">bypass this web page</a>\n" +
+                "<p>Or, <a rel=\"help\" href=\"#computerProgram\">bypass this web page</a>\n" +
                 "  and do FIPS county conversions from within a computer program.\n");
 
             //get the entire list
@@ -9473,11 +9501,11 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             writer.write(
                 "<p><b>Other Options</b>\n" +
                 "<ul>\n" +
-                "<li><a href=\"" + tErddapUrl + 
+                "<li><a rel=\"bookmark\" href=\"" + tErddapUrl + 
                     "/convert/keywords.html\">" + EDStatic.resetTheForm + "</a>\n" +
                 "  <br>&nbsp;\n" +
 
-                "<li><a href=\"#computerProgram\">Bypass this web page</a>\n" +
+                "<li><a rel=\"help\" href=\"#computerProgram\">Bypass this web page</a>\n" +
                 "  and do keyword conversions from within a computer program.\n" +
                 "  <br>&nbsp;\n" +
 
@@ -9489,12 +9517,12 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
 
                 "<li>View/download the entire CF Standard Names list in these file types: " +
                 plainLinkExamples(tErddapUrl, "/convert/keywordsCf", "") +
-                "  <br>Source: <a href=\"http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/current/cf-standard-name-table.html\">Version 18, dated 22 July 2011</a>.\n" +
+                "  <br>Source: <a rel=\"bookmark\" href=\"http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/current/cf-standard-name-table.html\">Version 18, dated 22 July 2011</a>.\n" +
                 "  <br>&nbsp;\n" +
 
                 "<li>View/download the entire GCMD Science Keywords list in these file types: " +
                 plainLinkExamples(tErddapUrl, "/convert/keywordsGcmd", "") +
-                "  <br>Source: <a href=\"http://gcmd.nasa.gov/Resources/valids/archives/keyword_list.html\">the version dated 2008-02-05</a>.\n" +
+                "  <br>Source: <a rel=\"bookmark\" href=\"http://gcmd.nasa.gov/Resources/valids/archives/keyword_list.html\">the version dated 2008-02-05</a>.\n" +
                 "    The requested citation is<tt>\n" +
                 "  <br>Olsen, L.M., G. Major, K. Shein, J. Scialdone, R. Vogel, S. Leicester,\n" +
                 "  <br>H. Weir, S. Ritz, T. Stevens, M. Meaux, C.Solomon, R. Bilodeau,\n" +
@@ -9723,9 +9751,9 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
 
             //reset the form
             writer.write(
-                "<p><a href=\"" + tErddapUrl + 
+                "<p><a rel=\"bookmark\" href=\"" + tErddapUrl + 
                     "/convert/time.html\">" + EDStatic.resetTheForm + "</a>\n" +
-                "<p>Or, <a href=\"#computerProgram\">bypass this web page</a>\n" +
+                "<p>Or, <a rel=\"help\" href=\"#computerProgram\">bypass this web page</a>\n" +
                 "  and do time conversions from within a computer program.\n");
 
             //notes  (always non-https urls)
@@ -10232,7 +10260,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 "data and view maps\n" +
                 "<br>and tables of the selected data.</b>\n" +
                 "By accessing the POST data, you are agreeing to the terms of the\n" +
-                "<a href=\"" + tErddapUrl + "/post/license.html\">POST License</a>.\n" +
+                "<a rel=\"copyright\" href=\"" + tErddapUrl + "/post/license.html\">POST License</a>.\n" +
                 "\n" +
                 "<br>&nbsp;\n"); //necessary for the blank line before start of form (not <p>) 
             
@@ -11461,7 +11489,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             table.addColumn("Acces-<br>sible<br>" + EDStatic.htmlTooltipImage(loggedInAs, accessTip),
                 accessCol);
         String loginHref = EDStatic.authentication.length() == 0? "no" :
-            "<a href=\"" + EDStatic.erddapHttpsUrl + "/login.html\" " +
+            "<a rel=\"bookmark\" href=\"" + EDStatic.erddapHttpsUrl + "/login.html\" " +
             "title=\"" + EDStatic.dtLogIn + "\">log in</a>";
         table.addColumn("Title", titleCol);
         int sortOn = table.addColumn("Plain Title", plainTitleCol); 
@@ -11487,35 +11515,40 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             if (!EDStatic.listPrivateDatasets && !isAccessible)
                 continue;
 
-            String daps = "&nbsp;<a href=\"" + tErddapUrl + "/" + edd.dapProtocol() + 
-                "/" + tId + ".html\" " +
+            String daps = "&nbsp;<a rel=\"chapter\" rev=\"contents\" " +
+                "href=\"" + tErddapUrl + "/" + edd.dapProtocol() + "/" + tId + ".html\" " +
                 "title=\"" + EDStatic.dtDAF1 + " " + edd.dapProtocol() + " " + EDStatic.dtDAF2 + "\" " +
                 ">data</a>&nbsp;"; 
             gdCol.add(edd instanceof EDDGrid?  daps : "&nbsp;"); 
             subCol.add(edd.accessibleViaSubset().length() == 0? 
-                " &nbsp;<a href=\"" + tErddapUrl + "/tabledap/" + tId + ".subset\" " +
+                " &nbsp;<a rel=\"chapter\" rev=\"contents\" " +
+                    "href=\"" + tErddapUrl + "/tabledap/" + tId + ".subset\" " +
                     "title=\"" + EDStatic.dtSubset + "\" " +
                     ">set</a>" : 
                 "&nbsp;");
             tdCol.add(edd instanceof EDDTable? daps : "&nbsp;");
             magCol.add(edd.accessibleViaMAG().length() == 0? 
-                " &nbsp;<a href=\"" + tErddapUrl + "/" + edd.dapProtocol() + 
+                " &nbsp;<a rel=\"chapter\" rev=\"contents\" " +
+                    "href=\"" + tErddapUrl + "/" + edd.dapProtocol() + 
                     "/" + tId + ".graph\" " +
                     "title=\"" + EDStatic.dtMAG + "\" " +
                     ">graph</a>" : 
                 "&nbsp;");
             sosCol.add(edd.accessibleViaSOS().length() == 0? 
-                "&nbsp;<a href=\"" + tErddapUrl + "/sos/" + tId + "/index.html\" " +
+                "&nbsp;<a rel=\"chapter\" rev=\"contents\" " +
+                    "href=\"" + tErddapUrl + "/sos/" + tId + "/index.html\" " +
                     "title=\"" + EDStatic.dtSOS + "\" >" +
                     "S</a>&nbsp;" : 
                 "&nbsp;");
             wcsCol.add(edd.accessibleViaWCS().length() == 0? 
-                "&nbsp;<a href=\"" + tErddapUrl + "/wcs/" + tId + "/index.html\" " +
+                "&nbsp;<a rel=\"chapter\" rev=\"contents\" " +
+                    "href=\"" + tErddapUrl + "/wcs/" + tId + "/index.html\" " +
                     "title=\"" + EDStatic.dtWCS + "\" >" +
                     "C</a>&nbsp;" : 
                 "&nbsp;");
             wmsCol.add(edd.accessibleViaWMS().length() == 0? 
-                "&nbsp;<a href=\"" + tErddapUrl + "/wms/" + tId + "/index.html\" " +
+                "&nbsp;<a rel=\"chapter\" rev=\"contents\" " +
+                    "href=\"" + tErddapUrl + "/wms/" + tId + "/index.html\" " +
                     "title=\"" + EDStatic.dtWMS + "\" >" +
                     "M</a>&nbsp;" : 
                 "&nbsp;");
@@ -11546,7 +11579,8 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 //fgdc
                 (edd.accessibleViaFGDC().length() > 0?  
                     (EDStatic.fgdcActive? "&nbsp;&nbsp;&nbsp;" : "") :
-                    "&nbsp;<a href=\"" + tErddapUrl + "/" + EDStatic.fgdcXmlDirectory + 
+                    "&nbsp;<a rel=\"chapter\" rev=\"contents\" " +
+                        "href=\"" + tErddapUrl + "/" + EDStatic.fgdcXmlDirectory + 
                         edd.datasetID() + EDD.fgdcSuffix     + ".xml\" " + 
                         "title=\"" + 
                         XML.encodeAsHTML(MessageFormat.format(EDStatic.metadataDownload, "FGDC")) + 
@@ -11555,18 +11589,21 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 //iso
                 (edd.accessibleViaISO19115().length() > 0? 
                     (EDStatic.iso19115Active? "&nbsp;&nbsp;&nbsp;&nbsp;" : "") :
-                    "&nbsp;<a href=\"" + tErddapUrl + "/" + EDStatic.iso19115XmlDirectory +
+                    "&nbsp;<a rel=\"chapter\" rev=\"contents\" " +
+                        "href=\"" + tErddapUrl + "/" + EDStatic.iso19115XmlDirectory +
                         edd.datasetID() + EDD.iso19115Suffix + ".xml\" " + 
                     "title=\"" + 
                         XML.encodeAsHTML(MessageFormat.format(EDStatic.metadataDownload, "ISO 19115-2/19139")) + 
                         "\" >&nbsp;I&nbsp;</a>") +
                 //dataset metadata
                 "\n&nbsp;" +
-                "<a href=\"" + tErddapUrl + "/info/" + edd.datasetID() + 
-                "/index.html\" " + //here, always .html
+                "<a rel=\"chapter\" rev=\"contents\" " +
+                "href=\"" + tErddapUrl + "/info/" + edd.datasetID() + 
+                    "/index.html\" " + //here, always .html
                 "title=\"" + EDStatic.clickInfo + "\" >M</a>" +
                 "\n&nbsp;");
-            backgroundCol.add("<a href=\"" + XML.encodeAsHTML(edd.infoUrl()) + "\" " +
+            backgroundCol.add("<a rel=\"bookmark\" " +
+                "href=\"" + XML.encodeAsHTML(edd.infoUrl()) + "\" " +
                 "title=\"" + EDStatic.clickBackgroundInfo + "\" >background</a>");
             rssCol.add(edd.rssHref(loggedInAs));
             emailCol.add("&nbsp;" + edd.emailHref(loggedInAs) + "&nbsp;");
@@ -11981,16 +12018,12 @@ jsonp + "(" +
             Test.ensureTrue(results.indexOf(">ioos_category\n") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(">noaa_coastwatch_west_coast_node\n") >= 0, 
                 "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">noaa_pmel\n") >= 0, "results=\n" + results);
             
             results = String2.annotatedString(SSR.getUrlResponseString(EDStatic.erddapUrl + 
                 "/categorize/institution/index.tsv"));
             Test.ensureTrue(results.indexOf("Category[9]URL[10]") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf(
                 "noaa_coastwatch_west_coast_node[9]http://127.0.0.1:8080/cwexperimental/categorize/institution/noaa_coastwatch_west_coast_node/index.tsv?page=1&itemsPerPage=1000[10]") >= 0, 
-                "results=\n" + results);
-            Test.ensureTrue(results.indexOf(
-                "noaa_pmel[9]http://127.0.0.1:8080/cwexperimental/categorize/institution/noaa_pmel/index.tsv?page=1&itemsPerPage=1000[10]") >= 0, 
                 "results=\n" + results);
             
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + 
@@ -12058,11 +12091,10 @@ jsonp + "(" +
                 "\"http://127.0.0.1:8080/cwexperimental/metadata/fgdc/xml/erdGlobecBottle_fgdc.xml\", " + 
                 "\"http://127.0.0.1:8080/cwexperimental/metadata/iso19115/xml/erdGlobecBottle_iso19115.xml\", " +
                 "\"http://127.0.0.1:8080/cwexperimental/info/erdGlobecBottle/index.json\", " +
-                "\"http://oceanwatch.pfeg.noaa.gov/thredds/PaCOOS/GLOBEC/catalog.html?" +
-                "dataset=GLOBEC_Bottle_data\", \"http://127.0.0.1:8080/cwexperimental/rss/" +
-                "erdGlobecBottle.rss\", \"http://127.0.0.1:8080/cwexperimental/subscriptions/" +
-                "add.html?datasetID=erdGlobecBottle&showErrors=false&email=\", \"GLOBEC\", " +
-                "\"erdGlobecBottle\"],";
+                "\"http://www.globec.org/\", " +
+                "\"http://127.0.0.1:8080/cwexperimental/rss/erdGlobecBottle.rss\", " +
+                "\"http://127.0.0.1:8080/cwexperimental/subscriptions/add.html?datasetID=erdGlobecBottle&showErrors=false&email=\", " +
+                "\"GLOBEC\", \"erdGlobecBottle\"],";
             po = results.indexOf("http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle");
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
 
@@ -12308,15 +12340,15 @@ jsonp + "(" +
 
 
             //google Gadgets (always at coastwatch)
-            results = SSR.getUrlResponseString(
-                "http://coastwatch.pfeg.noaa.gov/erddap/images/gadgets/GoogleGadgets.html");
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(
-                "Google Gadgets with Graphs or Maps for Your iGoogle Home Page") >= 0, 
-                "results=\n" + results);
-            Test.ensureTrue(results.indexOf(
-                "are self-contained chunks of web content") >= 0, 
-                "results=\n" + results);
+            //results = SSR.getUrlResponseString(
+            //    "http://coastwatch.pfeg.noaa.gov/erddap/images/gadgets/GoogleGadgets.html");
+            //Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+            //Test.ensureTrue(results.indexOf(
+            //    "Google Gadgets with Graphs or Maps") >= 0, 
+            //    "results=\n" + results);
+            //Test.ensureTrue(results.indexOf(
+            //    "are self-contained chunks of web content") >= 0, 
+            //    "results=\n" + results);
 
 
             //embed a graph  (always at coastwatch)
@@ -12368,37 +12400,37 @@ EDStatic.startBodyHtml(null) + "\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>info\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/info/index.htmlTable?page=1&amp;itemsPerPage=1000\n" +
+"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/info/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/info/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>search\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/search/index.htmlTable?page=1&amp;itemsPerPage=1000&amp;searchFor=\n" +
+"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/search/index.htmlTable?page=1&amp;itemsPerPage=1000&amp;searchFor=\">http://127.0.0.1:8080/cwexperimental/search/index.htmlTable?page=1&amp;itemsPerPage=1000&amp;searchFor=</a>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>categorize\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/categorize/index.htmlTable?page=1&amp;itemsPerPage=1000\n" +
+"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/categorize/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/categorize/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>griddap\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/griddap/index.htmlTable?page=1&amp;itemsPerPage=1000\n" +
+"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/griddap/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/griddap/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>tabledap\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/tabledap/index.htmlTable?page=1&amp;itemsPerPage=1000\n" +
+"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/tabledap/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/tabledap/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
 "</tr>\n" +
 (EDStatic.sosActive?              
 "<tr>\n" +
 "<td nowrap>sos\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/sos/index.htmlTable?page=1&amp;itemsPerPage=1000\n" +
+"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/sos/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/sos/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
 "</tr>\n" : "") +
 (EDStatic.wcsActive?
 "<tr>\n" +
 "<td nowrap>wcs\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/wcs/index.htmlTable?page=1&amp;itemsPerPage=1000\n" +
+"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/wcs/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/wcs/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
 "</tr>\n" : "") +
 "<tr>\n" +
 "<td nowrap>wms\n" +
-"<td nowrap>http://127.0.0.1:8080/cwexperimental/wms/index.htmlTable?page=1&amp;itemsPerPage=1000\n" +
+"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/wms/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/wms/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
 "</tr>\n" +
 "</table>\n" +
 EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +

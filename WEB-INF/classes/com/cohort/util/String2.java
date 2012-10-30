@@ -835,6 +835,92 @@ public class String2 {
     }
 
     /**
+     * This tries to quickly determine if the string is a correctly
+     * formatted number (including decimal, hexadecimal, octal, and "NaN" (any case)).
+     *
+     * <p>This may not be perfect.  In the future, this may be changed to be perfect.
+     * That shouldn't affect its use.
+     *
+     * @param s  usually already trimmed, since any space in s will return false.
+     * @return true if s is *probably* a number.
+     *     This returns false if s is *definitely* not a number.
+     *     "NaN" (case insensitive) returns true.  (It is a numeric value of sorts.)
+     *     null and "" return false.
+     */
+    public static final boolean isNumber(String s) {
+        if (s == null)
+            return false;
+        int sLength = s.length();
+        if (sLength == 0)
+            return false;
+        char ch0 = s.charAt(0);
+
+        //hexadecimal? e.g., 0x2AFF            //octal not supported
+        if (ch0 == '0' && sLength >= 3 && Character.toUpperCase(s.charAt(1)) == 'X') {
+            //ensure all remaining chars are hexadecimal
+            for (int po = 2; po < sLength; po++) {
+                if ("0123456789abcdefABCDEF".indexOf(s.charAt(po)) < 0) 
+                    return false;
+            }
+            return true;
+        }
+
+        //NaN?
+        if (ch0 == 'n' || ch0 == 'N') 
+            return s.toUpperCase().equals("NAN");
+
+        //*** rest of method: test if floating point
+        //is 1st char .+-?
+        int po = 0;
+        char ch = s.charAt(po);
+        boolean hasPeriod = ch == '.';
+        if (hasPeriod || ch == '-') {
+            if (sLength == 1)  //must be another char
+                return false;
+            ch = s.charAt(++po);
+
+            //is 2nd char .?
+            if (ch == '.') {
+                if (hasPeriod || sLength == 2)  // 2nd period or . after e are not allowed
+                    return false;
+                hasPeriod = true;
+                ch = s.charAt(++po);
+            }
+        }
+        
+        //initial digit
+        if (ch < '0' || ch > '9')  //there must be a digit 
+            return false;  
+
+        //subsequent chars
+        boolean hasE = false;
+        while (++po < sLength) {
+            ch = s.charAt(po);
+            if (ch == '.') {
+                if (hasPeriod || hasE || po == sLength - 1)  // 2nd period or . after e are not allowed
+                    return false;
+                hasPeriod = true;
+            } else if (ch == 'e' || ch == 'E') {
+                if (hasE || po == sLength - 1) //e as last char is not allowed
+                    return false;
+                hasE = true;
+                ch = s.charAt(++po);
+                if (ch == '-' || ch == '+') {
+                    if (po == sLength-1)
+                        return false;
+                    ch = s.charAt(++po);
+                }
+                if (ch < '0' || ch > '9') //there must be a digit after e     
+                    return false;  
+            } else if (ch < '0' || ch > '9') { 
+                return false;  
+            }
+        }
+        return true;  //probably a number
+    }
+
+
+    /**
      * Whitespace characters are u0001 .. ' '.
      * Java just considers a few of these (sp HT FF) as white space,
      *  see the Java Lang Specification.
@@ -990,21 +1076,26 @@ public class String2 {
      * This indicates if 'url' is probably a valid url.
      *
      * @param url a possible url
-     * @return true if 'url' is a probably a valid url.
+     * @return true if 'url' is probably a valid url.
+     *    false if 'url' is not a valid url.
      */
     public static boolean isUrl(String url) {
-        if (!isPrintable(url) ||
-            url.length() == 0 ||
+        if (url == null)
+            return false;
+        int po = url.indexOf("://");
+        if (po == -1 ||
+            !isPrintable(url) ||
             url.indexOf(' ') >= 0)
             return false;
-        url = url.toLowerCase();
+
+        String protocol = url.substring(0, po).toLowerCase();
         return 
-            url.startsWith("file://") ||
-            url.startsWith("ftp://") ||
-            url.startsWith("http://") ||
-            url.startsWith("https://") ||
-            url.startsWith("sftp://") ||
-            url.startsWith("smb://");
+            protocol.equals("file") ||
+            protocol.equals("ftp") ||
+            protocol.equals("http") ||
+            protocol.equals("https") ||
+            protocol.equals("sftp") ||
+            protocol.equals("smb");
     }
 
 
@@ -2641,6 +2732,7 @@ public class String2 {
      * 
      * @param s a string with 0 or more separator chatacters
      * @param separator
+     * @param trim  trim the substrings, or don't
      * @return an ArrayList of strings.
      *   s=null returns null.
      *   s="" returns ArrayList with one value: "".
@@ -2673,7 +2765,7 @@ public class String2 {
 
     /**
      * This splits the string at the specified character.
-     * Leading and trailing spaces are removed.
+     * The substrings are trim'd.
      * A missing final string is treated as "" (not discarded as with String.split).
      * 
      * @param s a string with 0 or more separator chatacters
@@ -3373,7 +3465,7 @@ public class String2 {
 
 
     /**
-     * This is like noLongLines, but will only break at spaces.
+     * This is like noLongLines, but will only break (add newlines) at spaces.
      * If there is no reasonable break before maxLength, it will break after maxLength.
      *
      * @param sb a StringBuilder with multiple lines, separated by \n's

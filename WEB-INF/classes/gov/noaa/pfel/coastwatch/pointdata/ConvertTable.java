@@ -25,7 +25,7 @@ public class ConvertTable {
      *
      * <p>A test which reads data from a 1-level opendap sequence and writes it to an .nc file: 
      * ConvertTable.main(new String[]{
-         "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle?t0,oxygen&month=\"5\"", "2",
+         "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle?longitude,latitude,time,sal00,temperature0&amp;time=2002-08-19T08:58:00", "2",
          "result.nc", "1", "row"});
      *
      * @param args must have 5 values: &lt;in&gt; &lt;inType&gt; &lt;out&gt; &lt;outType&gt; &lt;dimensionName&gt;
@@ -37,7 +37,7 @@ public class ConvertTable {
      *      2 (4D .nc; the first 4 columns must be the 4 dimensions, 
      *         usually 0=lon, 1=lat, 2=depth, 3=time), or
      *      3 (.mat).
-     *  <br>&lt;dimensionName&gt; may be 0 (tabbed ASCII), or 1 (.nc).
+     *  <br>&lt;dimensionName&gt; e.g., "row", "observation", or "time".
      * 
      */
     public static void main(String args[]) throws Exception {
@@ -77,7 +77,7 @@ public class ConvertTable {
                 "     2 (4D .nc; the first 4 columns must be the 4 dimensions,\n" +
                 "       usually 0=lon, 1=lat, 2=depth, 3=time), or\n" +
                 "     3 (.mat).\n" +
-                "  <dimensionName> For example, 'time', 'station', 'observation', 'row'." +
+                "  <dimensionName> For example, 'time', 'station', 'observation', or 'row'." +
                 "The command line arguments were: " + String2.toCSSVString(args));
             return;
         }

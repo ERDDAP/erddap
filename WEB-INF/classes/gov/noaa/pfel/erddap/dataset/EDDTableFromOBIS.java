@@ -783,9 +783,11 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"creator_email\">dhyrenbach@duke.edu</att>\n" +
+"        <att name=\"creator_name\">DUKE</att>\n" +
+"        <att name=\"creator_url\">http://iobis.marine.rutgers.edu/digir2/DiGIR.php</att>\n" +
 "        <att name=\"infoUrl\">http://iobis.marine.rutgers.edu/digir2/DiGIR.php</att>\n" +
-"        <att name=\"institution\">RUTGERS</att>\n" +
-"        <att name=\"keywords\">data, from, obis, obis-seamap, rutgers, seamap, server</att>\n" +
+"        <att name=\"institution\">DUKE</att>\n" +
+"        <att name=\"keywords\">data, duke, from, obis, obis-seamap, rutgers, seamap, server</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
@@ -876,7 +878,7 @@ directionsForGenerateDatasetsXml() +
 "    String units \"degrees_east\";[10]\n" +
 "  }[10]\n" +
 "  latitude {[10]\n";
-        tResults = results.substring(0, expected.length());
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\ntResults=\n" + tResults);
         expected = 
 "  YearIdentified {[10]\n" +
@@ -1145,7 +1147,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 ", NaN, 1981, Lessoniaceae, , , Macrocystis, , NaN, BIO, NaN, Plantae, , \"head of rennell sound,queen charlotte islands\", NaN, NaN, NaN, NaN," +
 " NaN, , NaN, NaN, Laminariales, Phaeophyta, , , , , , , Macrocystis integrifolia, Bory, , , integrifolia, NaN, NaN, 53.292, -132.4223, NaN, " +
 "NaN, 1981, NaN, , , , NaN, NaN, , , 1981, NaN\n";
-        tResults = results.substring(0, expected.length());
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\ntResults=\n" + tResults);
 
         //.csv           String =

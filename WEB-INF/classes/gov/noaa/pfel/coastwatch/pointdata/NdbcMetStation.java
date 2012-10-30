@@ -210,7 +210,7 @@ public class NdbcMetStation  {
      * and near real time data (less quality controlled).
      * This changes every month when I get the latest historical data.
      */
-    public static String firstNearRealTimeData = "2012-06-01T00:00:00";
+    public static String firstNearRealTimeData = "2012-09-01T00:00:00";
     /** Change current year ~Feb 28 when Jan historical files become available. */
     public static String HISTORICAL_FILES_CURRENT_YEAR = "2012";  
 
@@ -574,7 +574,7 @@ public class NdbcMetStation  {
         }
 
         //if (verbose) String2.log("time firstRow=" + timeArray.get(0) + " lastRow=" + timeArray.get(nRows-1));
-        table.addColumn(0, metColumnNames[timeIndex], timeArray); //the Unidata Observation Dataset Conventions require 'time'
+        table.addColumn(0, metColumnNames[timeIndex], timeArray); //the Unidata Observation Dataset Conventions (OBSOLETE) requires 'time'
         if (hasMinuteColumn) {
             //String2.log("hasMinuteColumn\n" + String2.toCSSVString(table.getColumnNames()));
             table.removeColumn(5); //order of removal is important
@@ -783,7 +783,7 @@ public class NdbcMetStation  {
         //add metadata from conventions
         //see gov/noaa/pfel/coastwatch/data/MetaMetadata.txt
         Attributes tableGlobalAttributes = table.globalAttributes();
-        String tConventions = "COARDS, CF-1.6, Unidata Dataset Discovery v1.0, Unidata Observation Dataset v1.0";
+        String tConventions = "COARDS, CF-1.6, Unidata Dataset Discovery v1.0";
         tableGlobalAttributes.set("Conventions", tConventions);      
         tableGlobalAttributes.set("Metadata_Conventions", tConventions);
         String title = "NOAA NDBC Standard Meteorological";
@@ -1572,6 +1572,7 @@ public class NdbcMetStation  {
 
             //if time goes backwards (or stays same), merge this row with previous row
             long seconds = Math2.roundToLong(cumulative.getDoubleData(timeIndex, oldRow));
+            Test.ensureTrue(seconds != Long.MAX_VALUE, "seconds=" + cumulative.getStringData(timeIndex, oldRow));
             Test.ensureTrue(seconds >= lastSeconds, "seconds < lastSeconds");
             if (seconds == lastSeconds) {
                 //replace mv's in previous row with real data
@@ -1814,7 +1815,9 @@ public class NdbcMetStation  {
      * that aren't already on this computer to the ndbcHistoricalTxtDir.
      * Yearly files are from: http://www.ndbc.noaa.gov/data/historical/stdmet/
      * Monthly files are from: http://www.ndbc.noaa.gov/data/stdmet/<month3Letter>/  e.g., Jan
-     * !!!!**** Windows My Computer doesn't show all the files in the directory! use DOS window "dir"
+     *
+     * <p>!!!!**** Windows GUI My Computer doesn't show all the files in the directory! 
+     * Use DOS window "dir" or Linux ls instead of the GUI.
      *
      * @param ndbcHistoricalTxtDir the directory for the historical .txt files
      * @throws Exception if trouble
@@ -2403,24 +2406,24 @@ public class NdbcMetStation  {
         //  http://www.ndbc.noaa.gov/data/realtime2/46088.txt    //45 day   //top line has precedence
         //#YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE
         //#yr  mo dy hr mn degT m/s  m/s     m   sec   sec degT   hPa  degC  degC  degC   mi  hPa    ft
-        //2012 06 01 01 20 310  2.0  3.0   0.1    MM   3.7  MM 1018.7  10.3   9.7    MM   MM   MM    MM
-        //2012 06 01 00 50  30  1.0  1.0   0.1    MM   3.5  MM 1018.9  10.3   9.6    MM   MM   MM    MM
-        seconds = Calendar2.isoStringToEpochSeconds("2012-06-01T01"); //50 min rounds to next hour
+        //2012 09 01 01 20 250  6.0  6.0   0.1    MM   2.8  MM 1013.9  12.0  10.8    MM   MM   MM    MM
+        //2012 09 01 00 50 250  6.0  6.0   0.1    MM   3.4  MM 1014.0  11.8  10.9    MM   MM   MM    MM
+        seconds = Calendar2.isoStringToEpochSeconds("2012-09-01T01"); //50 min rounds to next hour
         row = table.getColumn(timeIndex).indexOf("" + seconds, 0);
         Test.ensureEqual(table.getStringData(idIndex, row), "46088", "");
         Test.ensureEqual(table.getFloatData(latIndex, row), 48.333f, "");
         Test.ensureEqual(table.getFloatData(lonIndex, row), -123.167f, "");
         Test.ensureEqual(table.getDoubleData(depthIndex, row), 0, "");
-        Test.ensureEqual(table.getDoubleData(wdIndex, row), 310, "");
-        Test.ensureEqual(table.getFloatData(wspdIndex, row), 2f, "");
-        Test.ensureEqual(table.getFloatData(gstIndex, row), 3f, "");    
+        Test.ensureEqual(table.getDoubleData(wdIndex, row), 250, "");
+        Test.ensureEqual(table.getFloatData(wspdIndex, row), 6f, "");
+        Test.ensureEqual(table.getFloatData(gstIndex, row), 6f, "");    
         Test.ensureEqual(table.getFloatData(wvhtIndex, row), .1f, ""); 
         Test.ensureEqual(table.getFloatData(dpdIndex, row), Float.NaN, ""); 
-        Test.ensureEqual(table.getFloatData(apdIndex, row), 3.7f, "");
+        Test.ensureEqual(table.getFloatData(apdIndex, row), 2.8f, "");
         Test.ensureEqual(table.getFloatData(mwdIndex, row), Float.NaN, "");  //or getIntData
-        Test.ensureEqual(table.getFloatData(aprsIndex, row), 1018.7f, "");
-        Test.ensureEqual(table.getFloatData(atmpIndex, row), 10.3f, "");
-        Test.ensureEqual(table.getFloatData(wtmpIndex, row), 9.7f, "");
+        Test.ensureEqual(table.getFloatData(aprsIndex, row), 1013.9f, "");
+        Test.ensureEqual(table.getFloatData(atmpIndex, row), 12.0f, "");
+        Test.ensureEqual(table.getFloatData(wtmpIndex, row), 10.8f, "");
         Test.ensureEqual(table.getFloatData(dewpIndex, row), Float.NaN, "");
         Test.ensureEqual(table.getFloatData(visIndex, row), Float.NaN, ""); //(float)Math2.roundTo(18.5 * Math2.kmPerMile, decimalDigits[visIndex]), "");
         Test.ensureEqual(table.getFloatData(ptdyIndex, row), Float.NaN, "");
@@ -2459,28 +2462,28 @@ public class NdbcMetStation  {
         //top row has precedence
         //#YY  MM DD hh mm WDIR WSPD GST  WVHT   DPD   APD MWD   PRES  ATMP  WTMP  DEWP  VIS PTDY  TIDE
         //#yr  mo dy hr mn degT m/s  m/s     m   sec   sec degT   hPa  degC  degC  degC   mi  hPa    ft
-        //2012 06 25 14 20 280  2.0  2.0   0.1    MM   3.8  MM 1015.6   9.6   9.5    MM   MM   MM    MM
-        //2012 06 25 13 50 290  2.0  2.0   0.2    MM   3.6  MM 1015.7   9.8   9.5    MM   MM   MM    MM
-        double seconds = Calendar2.isoStringToEpochSeconds("2012-06-25T14"); //rounded
+        //2012 10 02 20 20 220  1.0  2.0    MM    MM    MM  MM 1022.4  10.8  11.0    MM   MM   MM    MM
+        //2012 10 02 19 50 310  2.0  2.0   0.3     8   4.8 278 1023.0   9.8  10.5    MM   MM +0.5    MM
+        double seconds = Calendar2.isoStringToEpochSeconds("2012-10-02T20"); //rounded
         int row = table.getColumn(timeIndex).indexOf("" + seconds, 0);
         Test.ensureTrue(row >= 0, "row=" + row);
         Test.ensureEqual(table.getStringData(idIndex, row), "46088", "");
         Test.ensureEqual(table.getFloatData(latIndex, row), 48.333f, "");
         Test.ensureEqual(table.getFloatData(lonIndex, row), -123.167f, "");
         Test.ensureEqual(table.getDoubleData(depthIndex, row), 0, "");
-        Test.ensureEqual(table.getFloatData(wdIndex, row), 280, "");
-        Test.ensureEqual(table.getFloatData(wspdIndex, row), 2f, "");
+        Test.ensureEqual(table.getFloatData(wdIndex, row), 220, "");
+        Test.ensureEqual(table.getFloatData(wspdIndex, row), 1f, "");
         Test.ensureEqual(table.getFloatData(gstIndex, row), 2f, "");
-        Test.ensureEqual(table.getFloatData(wvhtIndex, row), 0.1f, "");
-        Test.ensureEqual(table.getFloatData(dpdIndex, row), Float.NaN, "");
-        Test.ensureEqual(table.getFloatData(apdIndex, row), 3.8f, "");
-        Test.ensureEqual(table.getFloatData(mwdIndex, row), Float.NaN, "");
-        Test.ensureEqual(table.getFloatData(aprsIndex, row), 1015.6f, "");
-        Test.ensureEqual(table.getFloatData(atmpIndex, row), 9.6f, "");
-        Test.ensureEqual(table.getFloatData(wtmpIndex, row), 9.5f, "");
+        Test.ensureEqual(table.getFloatData(wvhtIndex, row), 0.3f, "");
+        Test.ensureEqual(table.getFloatData(dpdIndex, row), 8f, "");
+        Test.ensureEqual(table.getFloatData(apdIndex, row), 4.8f, "");
+        Test.ensureEqual(table.getFloatData(mwdIndex, row), 278, "");
+        Test.ensureEqual(table.getFloatData(aprsIndex, row), 1022.4f, "");
+        Test.ensureEqual(table.getFloatData(atmpIndex, row), 10.8f, "");
+        Test.ensureEqual(table.getFloatData(wtmpIndex, row), 11f, "");
         Test.ensureEqual(table.getFloatData(dewpIndex, row), Float.NaN, "");
         Test.ensureEqual(table.getFloatData(visIndex, row), Float.NaN, ""); //(float)Math2.roundTo(18.5 * Math2.kmPerMile, decimalDigits[visIndex]), "");
-        Test.ensureEqual(table.getFloatData(ptdyIndex, row), Float.NaN, "");
+        Test.ensureEqual(table.getFloatData(ptdyIndex, row), 0.5f, "");
         Test.ensureEqual(table.getFloatData(tideIndex, row), Float.NaN, "");//(float)Math2.roundTo(3.0 * Math2.meterPerFoot, decimalDigits[tideIndex]), "");
 
         String2.log("test46088AddLastNDays was successful");
@@ -2725,6 +2728,7 @@ public class NdbcMetStation  {
             false, true, 100000000);
         long time = System.currentTimeMillis();
 
+        //MONTHLY UPDATE PROCEDURE (done on/after 25th of month).
         // 1) *** CHANGE firstNearRealTimeData STRING AT TOP OF FILE!
 
         // 2) *** get new historical files
@@ -2739,12 +2743,13 @@ public class NdbcMetStation  {
         //   I also re-downloaded ALL of the station html files (by renaming previous 
         //     ndbcMetStationHtml dir to Retired and making a new dir).
         //historical monthly files are from: http://www.ndbc.noaa.gov/data/stdmet/<month3Letter>/  e.g., Jan
-        //Windows My Computer doesn't show all the files in the directory! use DOS window "dir"
-        //downloadNewHistoricalTxtFiles(ndbcHistoricalTxtDir);    //last done 2012-06-24
+        //!!!!**** Windows GUI My Computer doesn't show all the files in the directory! 
+        //  Use DOS window "dir" or Linux ls instead of the GUI.
+        //downloadNewHistoricalTxtFiles(ndbcHistoricalTxtDir);    //last done 2012-10-01
 
         // 3) *** get latest 45 day files
         //DON'T download45DayTextFiles after 45 days after last historicalTxt date.
-        //download45DayTxtFiles(ndbc45DayTxtDir);  //~30 minutes    //last done 2012-06-24
+        //download45DayTxtFiles(ndbc45DayTxtDir);  //~30 minutes    //last done 2012-10-01
 
         // 4) *** Make the nc files
         //!!!!**** EACH MONTH, SOME TESTS NEED UPDATING: SEE "UPDATE_EACH_MONTH"
@@ -2752,7 +2757,7 @@ public class NdbcMetStation  {
         boolean testMode = false;  //always run 'true' then run 'false'    
         String ignoreStationsBefore = " "; //use " " to process all stations   or lowercase characters to start in middle
         //makeSeparateNcFiles(ndbcStationHtmlDir, ndbcHistoricalTxtDir, ndbc45DayTxtDir, 
-        //    ndbcNcDir, ignoreStationsBefore, testMode);   //~3 hrs     //last done 2012-06-24
+        //    ndbcNcDir, ignoreStationsBefore, testMode);   //~3 hrs     //last done 2012-10-01
         test31201Nc(ndbcNcDir);
         test41009Nc(ndbcNcDir);
         test41015Nc(ndbcNcDir);
@@ -2771,7 +2776,7 @@ public class NdbcMetStation  {
         //but 45 is more likely to get more information (if needed and if available)
         //(45 days takes 25 minutes)
         testMode = false; //always run 'true' then run 'false'    
-        //addLastNDaysInfo(ndbcNcDir, 5, testMode);  
+        addLastNDaysInfo(ndbcNcDir, 5, testMode);  
         //!!!!**** EACH MONTH, THIS TEST NEED UPDATING
         test46088AddLastNDaysNc(ndbcNcDir); 
 

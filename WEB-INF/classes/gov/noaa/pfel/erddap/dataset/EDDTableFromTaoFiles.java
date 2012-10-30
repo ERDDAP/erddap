@@ -141,56 +141,68 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
     public String[] getFileNames(String fileDir, String fileNameRegex,
         boolean recursive) throws Throwable {
 
-        try {
-            //just update the datafiles once per day, 
-            //  ASAP after 09am local (usually updated 7:30-8:30am)
-            //  (sometimes files are dated e.g., 7:37am but actually appear about 8:30am)
-            //So find last 9:00 local that has occurred (today or yesterday)
-            GregorianCalendar last9L = Calendar2.newGCalendarLocal();
-            int hr = last9L.get(Calendar2.HOUR_OF_DAY);
-            //String2.log("current hr=" + hr);
-            if (hr < 9)  //0..23
-                last9L.add(Calendar2.DATE, -1); 
-            Calendar2.clearSmallerFields(last9L, Calendar2.DATE);
-            last9L.set(Calendar2.HOUR_OF_DAY, 9);           
-            hr = last9L.get(Calendar2.HOUR_OF_DAY); //encourage 'set' to take effect
-            long last9LMillis = last9L.getTimeInMillis(); //not Zulu
+        //unusual, super-simple approach to quickRestart:
+        //If quickRestart, just don't even check if it is time (after 9am) to get new files.
+        //It will be checked next time dataset is updated.
+        //(There was already a quickRestart-like file: updated.txt.)
+        //No need to set creationTimeMillis specially.
+        if (EDStatic.quickRestart && 
+            EDStatic.initialLoadDatasets()) {
+            if (verbose) 
+                String2.log("  quickRestart datasetID=" + datasetID);
 
-            //when was dataset last updated with data requested from PMEL TAO website?
-            long lastUpdatedMillis = 
-                File2.getLastModified(fileDir + "updated.txt"); //returns 0 if fileNotFound
+        } else {
+            try {
+                //just update the datafiles once per day, 
+                //  ASAP after 09am local (usually updated 7:30-8:30am)
+                //  (sometimes files are dated e.g., 7:37am but actually appear about 8:30am)
+                //So find last 9:00 local that has occurred (today or yesterday)
+                GregorianCalendar last9L = Calendar2.newGCalendarLocal();
+                int hr = last9L.get(Calendar2.HOUR_OF_DAY);
+                //String2.log("current hr=" + hr);
+                if (hr < 9)  //0..23
+                    last9L.add(Calendar2.DATE, -1); 
+                Calendar2.clearSmallerFields(last9L, Calendar2.DATE);
+                last9L.set(Calendar2.HOUR_OF_DAY, 9);           
+                hr = last9L.get(Calendar2.HOUR_OF_DAY); //encourage 'set' to take effect
+                long last9LMillis = last9L.getTimeInMillis(); //not Zulu
 
-            //is lastUpdated < last9L   (i.e., is it out-of-date?)
-            if (verbose) String2.log(
-                "lastUpdated=" + Calendar2.formatAsISODateTimeT(
-                                 Calendar2.newGCalendarLocal(lastUpdatedMillis)) + " local" +
-                "  last9L="    + Calendar2.formatAsISODateTimeT(last9L) + " local" +
-                "  needsUpdate=" + (lastUpdatedMillis < last9LMillis));
-            if (lastUpdatedMillis < last9LMillis) {
-                
-                //get taoType from <preExtractRegex>adcp
-                String taoType = preExtractRegex;
-                if (taoType.equals("r")) 
-                    taoType = "rain";
-                Test.ensureTrue(String2.indexOf(taoTypes, taoType) >= 0, 
-                    "Unsupported taoType=" + taoType + " (from preExtractRegex).");
+                //when was dataset last updated with data requested from PMEL TAO website?
+                long lastUpdatedMillis = 
+                    File2.getLastModified(fileDir + "updated.txt"); //returns 0 if fileNotFound
 
-                //get fileTimePeriod from <postExtractRegex>_dy\.cdf
-                String fileTimePeriod = postExtractRegex.substring(1);
-                int slashPo = fileTimePeriod.indexOf('\\');
-                if (slashPo <= 0)
-                    throw new RuntimeException("Missing \\ in postExtractRegex=" + postExtractRegex +
-                        " needed to find fileTimePeriod, e.g., dy.");
-                fileTimePeriod = fileTimePeriod.substring(0, slashPo);
-                Test.ensureTrue(String2.indexOf(taoFileTimePeriods, fileTimePeriod) >= 0, 
-                    "Unsupported fileTimePeriod=" + fileTimePeriod + " (from postExtractRegex).");
+                //is lastUpdated < last9L   (i.e., is it out-of-date?)
+                if (verbose) String2.log(
+                    "lastUpdated=" + Calendar2.formatAsISODateTimeT(
+                                     Calendar2.newGCalendarLocal(lastUpdatedMillis)) + " local" +
+                    "  last9L="    + Calendar2.formatAsISODateTimeT(last9L) + " local" +
+                    "  needsUpdate=" + (lastUpdatedMillis < last9LMillis));
+                if (lastUpdatedMillis < last9LMillis) {
+                    
+                    //get taoType from <preExtractRegex>adcp
+                    String taoType = preExtractRegex;
+                    if (taoType.equals("r")) 
+                        taoType = "rain";
+                    Test.ensureTrue(String2.indexOf(taoTypes, taoType) >= 0, 
+                        "Unsupported taoType=" + taoType + " (from preExtractRegex).");
 
-                //update the datafiles for this subset of TAO
-                updateOneTaoDataset(fileDir, fileTimePeriod, taoType);
+                    //get fileTimePeriod from <postExtractRegex>_dy\.cdf
+                    String fileTimePeriod = postExtractRegex.substring(1);
+                    int slashPo = fileTimePeriod.indexOf('\\');
+                    if (slashPo <= 0)
+                        throw new RuntimeException("Missing \\ in postExtractRegex=" + postExtractRegex +
+                            " needed to find fileTimePeriod, e.g., dy.");
+                    fileTimePeriod = fileTimePeriod.substring(0, slashPo);
+                    Test.ensureTrue(String2.indexOf(taoFileTimePeriods, fileTimePeriod) >= 0, 
+                        "Unsupported fileTimePeriod=" + fileTimePeriod + " (from postExtractRegex).");
+
+                    //update the datafiles for this subset of TAO
+                    updateOneTaoDataset(fileDir, fileTimePeriod, taoType);
+                }
+            } catch (Throwable t) {
+                String2.log("ERROR in getFileNames for datasetID=" + datasetID + "\n" +
+                    MustBe.throwableToString(t)); 
             }
-        } catch (Throwable t) {
-            String2.log("ERROR in getFileNames for datasetID=" + datasetID + "\n" +
-                MustBe.throwableToString(t)); 
         }
 
 
@@ -806,7 +818,7 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float32 actual_range -19.0, 21.0;\n" +  //before 2012-03-20 was 38
+"    Float32 actual_range -25.0, 21.0;\n" +  //before 2012-09-06 was -19, before 2012-03-20 was 38
 "    String axis \"Y\";\n" +
 "    Int32 epic_code 500;\n" +
 "    String ioos_category \"Location\";\n" +
@@ -818,7 +830,7 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +            
-"    Float64 actual_range 2.476656e+8, 1.3412304e+9;\n" + //range changes daily   
+"    Float64 actual_range 2.476656e+8, 1.3509936e+9;\n" + //range changes daily   
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Centered Time\";\n" +
@@ -842,7 +854,7 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
 "    String units \"m\";\n" +
 "  }\n" +
 "  AT_21 {\n" +
-"    Float32 actual_range 0.03, 34.14;\n" + //before 2012-03-20 was 2.59, 41.84;\n" +
+"    Float32 actual_range 17.05, 34.14;\n" + //before 2012-09-06 was 0.03, before 2012-03-20 was 2.59, 41.84;\n" +
 "    Float64 colorBarMaximum 40.0;\n" +
 "    Float64 colorBarMinimum -10.0;\n" +
 "    Int32 epic_code 21;\n" +
@@ -893,7 +905,7 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station, longitude, latitude\";\n" +
 "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    String CREATION_DATE \"07:08  3-JUL-2012\";\n" +  //changes monthly
+"    String CREATION_DATE \"07:08  3-OCT-2012\";\n" +  //changes monthly
 "    String creator_email \"Dai.C.McClurg@noaa.gov\";\n" +
 "    String creator_name \"Dai. C. McClurg\";\n" +
 "    String creator_url \"http://www.pmel.noaa.gov/tao/proj_over/proj_over.html\";\n" +
@@ -903,15 +915,15 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
 "    String featureType \"TimeSeries\";\n" +
 "    String File_info \"Contact: Dai.C.McClurg@noaa.gov\";\n" +
 "    Float64 geospatial_lat_max 21.0;\n" +
-"    Float64 geospatial_lat_min -19.0;\n" +
+"    Float64 geospatial_lat_min -25.0;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max 350.0;\n" +
 "    Float64 geospatial_lon_min 0.0;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +  //date on line below changes monthly
-"    String history \"2012-07-03 Most recent downloading and reformatting of all cdf/sites/... files from PMEL TAO's FTP site by bob.simons at noaa.gov.\n" +
+"    String history \"2012-10-04 Most recent downloading and reformatting of all cdf/sites/... files from PMEL TAO's FTP site by bob.simons at noaa.gov.\n" +
 "Since then, recent data has been updated every day.\n" +
 today;
-        tResults = results.substring(0, expected.length());
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
 //+ " (local files)\n" +
@@ -933,10 +945,9 @@ expected =
 "completeness, or usefulness, of this information.\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 21.0;\n" +
-"    String observationDimension \"row\";\n" +
 "    String project \"TAO/TRITON, RAMA, PIRATA\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
-"    Float64 Southernmost_Northing -19.0;\n" +
+"    Float64 Southernmost_Northing -25.0;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String subsetVariables \"station, longitude, latitude\";\n" +
 "    String summary \"This dataset has daily Air Temperature data from the\n" +
@@ -945,16 +956,18 @@ expected =
 "PIRATA (Atlantic Ocean, http://www.pmel.noaa.gov/pirata/)\n" +
 "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\n" +
 "http://www.pmel.noaa.gov/tao/proj_over/proj_over.html .\";\n" +
-"    String time_coverage_end \"2012-07-02T12:00:00Z\";\n" +  //changes daily
+"    String time_coverage_end \"2012-10-23T12:00:00Z\";\n" +  //changes daily
 "    String time_coverage_start \"1977-11-06T12:00:00Z\";\n" + //before 2012-03-20 was 1980-03-07T12:00:00
 "    String title \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Air Temperature\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
 "  }\n" +
 "}\n";
         int tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) String2.log("results=\n" + results);
-        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
-            "results=\n" + results);
+        if (tpo < 0) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
         
 
         //*** .dds
@@ -1210,6 +1223,7 @@ before 2012-03-20 was ...
 "20n117e\n" +
 "20n38w\n" +
 "21n23w\n" +
+"25s100e\n" + //added 2012-09-06
 "2n10w\n" +
 "2n110w\n" +
 "2n125w\n" +

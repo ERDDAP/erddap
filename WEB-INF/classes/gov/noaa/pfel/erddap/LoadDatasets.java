@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -161,6 +162,8 @@ public class LoadDatasets extends Thread {
             int oldNTable = erddap.tableDatasetHashMap.size();
             HashMap tUserHashMap = new HashMap(); //no need for thread-safe, all puts are here (1 thread); future gets are thread safe
             StringBuilder datasetsThatFailedToLoadSB = new StringBuilder();
+            HashSet datasetIDSet = new HashSet(); //to detect duplicates, just local use, no need for thread-safe
+            StringArray duplicateDatasetIDs = new StringArray(); //list of duplicates
 
             //decision: how to process xml dataset description
             //  XPath - a standard, but sometimes slow and takes tons of memory
@@ -200,20 +203,35 @@ public class LoadDatasets extends Thread {
 
                 xmlReader.nextTag();
                 String tags = xmlReader.allTags();
-                if      (tags.equals("</erddapDatasets>")) {
+                if (tags.equals("</erddapDatasets>")) {
                     break;
                 } else if (tags.equals("<erddapDatasets><dataset>")) {
                     //just load minimal datasets?
                     nDatasets++;
                     String tId = xmlReader.attributeValue("datasetID"); 
 
-                    //skip dataset based on datasetsRegex?
-                    boolean skip = !tId.matches(datasetsRegex); //we're looking for reasons to skip it
-                    if (skip) {
-                        if (reallyVerbose) String2.log("*** skipping datasetID=" + tId + 
-                            " because of datasetsRegex.");
-                    } else {
-                        //look for flag
+                    //Looking for reasons to skip loading this dataset.
+                    //Test first: skip dataset because it is a duplicate datasetID?  
+                    //  If isDuplicate, act as if this doesn't even occur in datasets.xml.
+                    //  This is imperfect. It just tests top-level datasets, 
+                    //  not lower level, e.g., within EDDGridCopy.
+                    boolean skip = false;
+                    boolean isDuplicate = !datasetIDSet.add(tId); 
+                    if (isDuplicate) { 
+                        skip = true;
+                        duplicateDatasetIDs.add(tId);
+                    }
+                    
+                    //Test second: skip dataset because of datasetsRegex?
+                    if (!skip && !tId.matches(datasetsRegex)) {
+                        skip = true;
+                        if (reallyVerbose) 
+                            String2.log("*** skipping datasetID=" + tId + 
+                                " because of datasetsRegex.");
+                    }
+
+                    //Test third: look at flag/age  or active=false
+                    if (!skip) {
                         boolean isFlagged = File2.delete(EDStatic.fullResetFlagDirectory + tId);
                         if (isFlagged) {
                             String2.log("*** reloading datasetID=" + tId + 
@@ -576,7 +594,8 @@ public class LoadDatasets extends Thread {
             //atomic swap into place
             EDStatic.setUserHashMap(tUserHashMap); 
             //datasetsThatFailedToLoad only swapped into place if majorLoad (see below)
-            datasetsThatFailedToLoadSB = String2.noLongLinesAtSpace(datasetsThatFailedToLoadSB, 100, "    ");
+            datasetsThatFailedToLoadSB = String2.noLongLinesAtSpace(
+                datasetsThatFailedToLoadSB, 100, "    ");
             String dtftl = datasetsThatFailedToLoadSB.toString();
             int ndf = String2.countAll(dtftl, ","); //all have ',' at end (even if just 1)
             String datasetsThatFailedToLoad =
@@ -584,6 +603,11 @@ public class LoadDatasets extends Thread {
                 (majorLoad? "major" : "minor") + " LoadDatasets) = " + ndf + "\n" +
                 (datasetsThatFailedToLoadSB.length() == 0? "" :
                     "    " + dtftl + "(end)\n");
+            String duplicateDatasetIDsMsg = majorLoad && duplicateDatasetIDs.size() > 0?         
+                String2.ERROR + ": Duplicate datasetIDs in datasets.xml:\n    " +
+                    String2.noLongLinesAtSpace(duplicateDatasetIDs.toString(), 100, "    ") + "\n" :
+                "";
+
             EDStatic.nGridDatasets = erddap.gridDatasetHashMap.size();
             EDStatic.nTableDatasets = erddap.tableDatasetHashMap.size();
 
@@ -604,6 +628,8 @@ public class LoadDatasets extends Thread {
                 String2.distribute(loadDatasetsTime, EDStatic.minorLoadDatasetsDistribution24);
                 String2.distribute(loadDatasetsTime, EDStatic.minorLoadDatasetsDistributionTotal);
                 String2.log(datasetsThatFailedToLoad);
+                if (duplicateDatasetIDsMsg.length() > 0)
+                    String2.log(duplicateDatasetIDsMsg);
             }
 
             //majorLoad?
@@ -620,6 +646,7 @@ public class LoadDatasets extends Thread {
                     "\n  change for this run of major Load Datasets (MB) = " + ((Math2.getMemoryInUse() - memoryInUse) / Math2.BytesPerMB) + "\n");
 
                 EDStatic.datasetsThatFailedToLoad = datasetsThatFailedToLoad; //swap into place
+                EDStatic.duplicateDatasetIDsMsg   = duplicateDatasetIDsMsg;   //swap into place
                 EDStatic.memoryUseLoadDatasetsSB.append("  " + cDateTimeLocal + "  " + memoryString + "\n");
                 EDStatic.failureTimesLoadDatasetsSB.append("  " + cDateTimeLocal + "  " + 
                     String2.getBriefDistributionStatistics(EDStatic.failureTimesDistributionLoadDatasets) + "\n");

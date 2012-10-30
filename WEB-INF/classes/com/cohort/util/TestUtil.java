@@ -1098,6 +1098,54 @@ public class TestUtil {
         Test.ensureEqual(String2.md5Hex(""),                       "d41d8cd98f00b204e9800998ecf8427e", "");
         Test.ensureEqual(String2.md5Hex(null),                     null, "");
 
+        //isNumber
+        s = "0";        Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "91234567898765439"; 
+                        Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "-12";      Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "0xA";      Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "0x1234567890ABCDEFabcdef";  
+                        Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "NAN";      Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "nan";      Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "-1.0e+3";  Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "-1.0e-33"; Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "-1.0E1";   Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "-1.e3";    Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "1e3";      Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "0.5";      Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "-0.5";     Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = ".5";       Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "-.5";      Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "9e0";      Test.ensureEqual(String2.isNumber(s), true,  "s=" + s);
+        s = "9e05";     Test.ensureEqual(String2.isNumber(s), true,  "s=" + s); //valid? 
+
+        s = null;       Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "";         Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "..9";      Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "-";        Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "-.";       Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "-12 ";     Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "-1z";      Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "-12.";     Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "0x";       Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "0x12x";    Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "NaN4";     Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "-1.0f+5";  Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "99+8";     Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "1999-12";  Test.ensureEqual(String2.isNumber(s), false, "s=" + s); //date-like
+        s = ".9.";      Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "9e1.9";    Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "9e1e2";    Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "9e12a";    Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "-1.0e";    Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "-1.0e+";   Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "-1.0e-";   Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "-1.0ez";   Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "-1.0e1+5"; Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "-1.0ee+5"; Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+        s = "e2";       Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
+
         //noLongLines
         s = "asdf asdf asfd asdf (b)asdflakjf(a) abc flkjf aflkjj(b) sl;kj abcdefghijklmnopqrstuvwxyzabcdef(b) a asdlkj(b) f aflkja(b) fasl faslfkj(b) flkajf sflkj(b) adfsl;kj";
         s = String2.noLongLines(s, 25, "  "); 
