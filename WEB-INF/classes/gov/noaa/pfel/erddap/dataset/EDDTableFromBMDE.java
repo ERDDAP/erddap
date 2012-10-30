@@ -609,7 +609,7 @@ public class EDDTableFromBMDE extends EDDTable{
 "    String comment \"A descriptive term indicating whether the record represents an object or observation. Examples: \\\"preserved specimen\\\", \\\"observation\\\", \\\"living organism\\\".\";\n" +
 "    String ioos_category \"Identifier\";\n" +
 "  }\n";
-        tResults = results.substring(0, expected.length());
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         expected = 
 "  TimeObservationsStarted {\n" +
@@ -675,8 +675,11 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "  }\n" +
 "}\n";
         int tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) String2.log("results=\n" + results);
-        Test.ensureEqual(results.substring(tpo), expected, "results=\n" + results);
+        if (tpo < 0) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
 
         //.csv        
         //from DigirHelper.testBmde()

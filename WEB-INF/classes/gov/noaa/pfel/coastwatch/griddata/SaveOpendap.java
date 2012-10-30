@@ -372,6 +372,7 @@ public class SaveOpendap  {
 " :station = \"31201\";\n" +
 " :comment = \"Floripa, Brazil (109)\";\n" +
 " :location = \"27.70 S 48.13 W \";\n" +
+//" :_CoordSysBuilder = \"ucar.nc2.dataset.conv.COARDSConvention\";\n" + //2012-07-30 disappeared
 " data:\n" +
 "}\n";
             Test.ensureEqual(info, shouldBe, "info=" + info);
@@ -416,7 +417,6 @@ public class SaveOpendap  {
         } catch (Exception e) {
 
             String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-                "\n2012-03-14 This failed. Entire TDS is down. But generally..." +
                 "\nUnexpected error. Press Enter to Continue or ^C to quit? ");
         }
        

@@ -134,7 +134,7 @@ public abstract class EDDTable extends EDD {
     public static int REGEX_OP_INDEX = String2.indexOf(OPERATORS, PrimitiveArray.REGEX_OP);
 
     /** This is used in many file types as the row identifier. */
-    public final static String ROW_NAME = "row";
+    public final static String ROW_NAME = "row";  //see also Table.ROW_NAME
 
     /** These are needed for EDD-required methods of the same name. */
     public final static String[] dataFileTypeNames = {  
@@ -1112,6 +1112,7 @@ public abstract class EDDTable extends EDD {
             Table table) throws Throwable {
         if (reallyVerbose) String2.log("\nstandardizeResultsTable incoming cols=" + table.getColumnNamesCSSVString());
         //String2.log("table=\n" + table.toString());
+        //String2.log("DEBUG " + MustBe.getStackTrace());
         if (table.nRows() == 0) 
             throw new SimpleException(MustBe.THERE_IS_NO_DATA);
 
@@ -3879,8 +3880,6 @@ public abstract class EDDTable extends EDD {
             if (globalAttributes.get("id") == null)
                 globalAttributes.set("id", File2.getNameNoExtension(fullName));
 
-            globalAttributes.set("observationDimension", ROW_NAME);
-
             //set the attributes
             NcHelper.setAttributes(nc, "NC_GLOBAL", globalAttributes);
             for (int col = 0; col < nColumns; col++) 
@@ -4215,12 +4214,9 @@ public abstract class EDDTable extends EDD {
             //currently, only the .nc saveAs file types use attributes!
             Attributes cdmGlobalAttributes = twawm.globalAttributes();
             String featureType = cdmType;
+            cdmGlobalAttributes.remove("observationDimension"); //obsDim is for a flat file and OBSOLETE
             cdmGlobalAttributes.set("featureType", featureType);
             cdmGlobalAttributes.set("id", File2.getNameNoExtension(ncCFName)); //id attribute = file name
-            //observationDimension from
-            //from http://www.unidata.ucar.edu/software/netcdf-java/formats/UnidataObsConvention.html
-            //but inappropriate here since not a simple obs dimension
-            //cdmGlobalAttributes.set("observationDimension", "obs");  
             cdmGlobalAttributes.set(                            "Conventions", 
                 ensureAtLeastCF16(cdmGlobalAttributes.getString("Conventions")));
             cdmGlobalAttributes.set(                            "Metadata_Conventions", 
@@ -4621,12 +4617,9 @@ public abstract class EDDTable extends EDD {
             //currently, only the .nc saveAs types use attributes!
             Attributes cdmGlobalAttributes = twawm.globalAttributes();            
             String featureType = cdmType;
+            cdmGlobalAttributes.remove("observationDimension"); //obsDim is for a flat file and OBSOLETE
             cdmGlobalAttributes.set("featureType", featureType);
             cdmGlobalAttributes.set("id", File2.getNameNoExtension(ncCFName)); //id attribute = file name
-            //observationDimension from
-            //from http://www.unidata.ucar.edu/software/netcdf-java/formats/UnidataObsConvention.html
-            //but inappropriate here since not a simple obs dimension
-            //cdmGlobalAttributes.set("observationDimension", "obs");  
             cdmGlobalAttributes.set(                            "Conventions", 
                 ensureAtLeastCF16(cdmGlobalAttributes.getString("Conventions")));
             cdmGlobalAttributes.set(                            "Metadata_Conventions", 
@@ -5525,7 +5518,7 @@ public abstract class EDDTable extends EDD {
         writer.write("<p><b>" + EDStatic.EDDFileType + "</b>\n");
         writer.write(widgets.select("fileType", EDStatic.EDDSelectFileType, 1,
             allFileTypeOptions, defaultFileTypeOption, ""));
-        writer.write(" <a href=\"" + tErddapUrl + "/tabledap/documentation.html#fileType\">more&nbsp;info</a>\n");
+        writer.write(" <a rel=\"help\" href=\"" + tErddapUrl + "/tabledap/documentation.html#fileType\">more&nbsp;info</a>\n");
 
 
         //generate the javaScript
@@ -5566,7 +5559,7 @@ public abstract class EDDTable extends EDD {
         writer.write(widgets.textField("tUrl", 
             EDStatic.justGenerateAndViewUrl,
             70, 1000, "", ""));
-        writer.write("<a href=\"" + tErddapUrl + "/tabledap/documentation.html\" " +
+        writer.write("<a rel=\"help\" href=\"" + tErddapUrl + "/tabledap/documentation.html\" " +
             "title=\"tabledap documentation\">Documentation&nbsp;/&nbsp;Bypass&nbsp;this&nbsp;form</a>\n" +
             EDStatic.htmlTooltipImage(loggedInAs, genViewHtml));
 
@@ -5749,21 +5742,21 @@ public abstract class EDDTable extends EDD {
             longDapDescription(tErddapUrl) +
             "<p><b>Tabledap request URLs must be in the form</b>\n" +
             "<br>&nbsp;&nbsp;&nbsp;<tt>" + dapBase + 
-                "<i><a href=\"" + dapBase + "documentation.html#datasetID\">datasetID</a></i>." + 
-                "<i><a href=\"" + dapBase + "documentation.html#fileType\">fileType</a></i>{?" + 
-                "<i><a href=\"" + dapBase + "documentation.html#query\">query</a></i>}</tt>\n" +
+                "<i><a rel=\"help\" href=\"" + dapBase + "documentation.html#datasetID\">datasetID</a></i>." + 
+                "<i><a rel=\"help\" href=\"" + dapBase + "documentation.html#fileType\">fileType</a></i>{?" + 
+                "<i><a rel=\"help\" href=\"" + dapBase + "documentation.html#query\">query</a></i>}</tt>\n" +
             "<br>For example,\n" +
             "<br>&nbsp;&nbsp;&nbsp;<a href=\"" + 
                 EDStatic.phEncode(fullTimeExample) + "\"><tt>" + 
                  XML.encodeAsHTML(fullTimeExample) + "</tt></a>\n" +
             "<br>Thus, the query is often a comma-separated list of desired variable names, followed by a collection of\n" +
-            "<br>constraints (e.g., <tt><i>variable</i>&lt;<i>value</i></tt>)\n" +
-            "  each separated by '&amp;' (which is interpreted as \"AND\").\n" +
+            "<br>constraints (e.g., <tt><i>variable</i>&lt;<i>value</i></tt>),\n" +
+            "  each preceded by '&amp;' (which is interpreted as \"AND\").\n" +
             "\n");
 
         if (!complete) {
             writer.write(
-            "<p>For details, see the <a href=\"" + dapBase + 
+            "<p>For details, see the <a rel=\"help\" href=\"" + dapBase + 
                 "documentation.html\">" + dapProtocol + " Documentation</a>.\n");
             return;
         }
@@ -5782,7 +5775,7 @@ public abstract class EDDTable extends EDD {
             "  assigned to the source web site and dataset\n" +
             "  <br>(for example, <tt>" + 
                 XML.encodeAsHTML(EDStatic.EDDTableIdExample) + "</tt>). You can see a list of\n" +
-            "    <a href=\"" + 
+            "    <a rel=\"bookmark\" href=\"" + 
                 EDStatic.phEncode(tErddapUrl + "/" + dapProtocol) + 
                 "/index.html\">datasetID options available via tabledap</a>.\n" +
             "  <br>&nbsp;\n" +
@@ -5803,7 +5796,7 @@ public abstract class EDDTable extends EDD {
                 "      <td>" + dataFileTypeDescriptions[i] + "</td>\n" +
                 "      <td>" + 
                       (dataFileTypeInfo[i].equals("")? 
-                          "&nbsp;" : "<a href=\"" + XML.encodeAsHTML(dataFileTypeInfo[i]) + "\">info</a>") + 
+                          "&nbsp;" : "<a rel=\"help\" href=\"" + XML.encodeAsHTML(dataFileTypeInfo[i]) + "\">info</a>") + 
                       "</td>\n" +
                 "      <td><a href=\"" +  datasetBase + dataFileTypeNames[i] + "?" + 
                     EDStatic.phEncode(EDStatic.EDDTableDataTimeExample) + "\">example</a></td>\n" +
@@ -5816,8 +5809,8 @@ public abstract class EDDTable extends EDD {
             "\n" +
 
             //ArcGIS
-            "<p><b><a href=\"http://www.esri.com/software/arcgis/index.html\">ArcGIS</a>\n" +
-            "  <a href=\"http://resources.arcgis.com/content/kbase?fa=articleShow&amp;d=27589\">.esriCsv</a></b>\n" +
+            "<p><b><a rel=\"bookmark\" href=\"http://www.esri.com/software/arcgis/index.html\">ArcGIS</a>\n" +
+            "  <a rel=\"help\" href=\"http://resources.arcgis.com/content/kbase?fa=articleShow&amp;d=27589\">.esriCsv</a></b>\n" +
             "  - <a name=\"ArcGIS\">ArcGIS</a> is a family of Geographical Information Systems (GIS) products from ESRI:\n" +
             "  <br>ArcView, ArcEditor, and ArcInfo.  To get data from ERDDAP into your ArcGIS program (version 9.x and below):\n" +
             "  <ol>\n" +
@@ -5844,10 +5837,10 @@ public abstract class EDDTable extends EDD {
             "  </ol>\n" +
             "  <br>The points will be drawn as an Event theme in ArcMap.\n" +
             "  <br>(These instructions are a modified version of\n" +
-            "    <a href=\"http://resources.arcgis.com/content/kbase?fa=articleShow&amp;d=27589\">ESRI's instructions</a>.)\n" +
+            "    <a rel=\"help\" href=\"http://resources.arcgis.com/content/kbase?fa=articleShow&amp;d=27589\">ESRI's instructions</a>.)\n" +
             "\n" +
             //Ferret
-            "  <p><b><a href=\"http://www.ferret.noaa.gov/Ferret/\">Ferret</a></b> \n" +
+            "  <p><b><a rel=\"bookmark\" href=\"http://www.ferret.noaa.gov/Ferret/\">Ferret</a></b> \n" +
             "    <a name=\"Ferret\">is</a> a free program for visualizing and analyzing large and complex\n" +
             "  <br><b>gridded</b> datasets.  Because tabledap's <b>tabular</b> datasets are very different\n" +
             "  <br>from gridded datasets, it is necessary to use Ferret in a very specific way to\n" +
@@ -5862,22 +5855,22 @@ public abstract class EDDTable extends EDD {
             "  <br>to make them all unique! So treat these time values accordingly.\n" +
             "\n" +
             //IDL
-            "  <p><b><a href=\"http://www.ittvis.com/language/en-us/productsservices/idl.aspx/\">IDL</a></b> - \n" +
+            "  <p><b><a rel=\"bookmark\" href=\"http://www.ittvis.com/language/en-us/productsservices/idl.aspx/\">IDL</a></b> - \n" +
             "    <a name=\"IDL\">IDL</a> is a commercial scientific data visualization program. To get data from\n" +
             "  <br>ERDDAP into IDL, first use ERDDAP to select a subset of data and download a .nc file.\n" +
             "  <br>Then, use these\n" +
-            "    <a href=\"http://www.atmos.umd.edu/~gcm/usefuldocs/hdf_netcdf/IDL_hdf-netcdf.html\">instructions</a>\n" +
+            "    <a rel=\"help\" href=\"http://www.atmos.umd.edu/~gcm/usefuldocs/hdf_netcdf/IDL_hdf-netcdf.html\">instructions</a>\n" +
             "    to import the data from the .nc file into IDL.\n" +
             "\n" +
             //json
-            "  <p><b><a href=\"http://www.json.org/\">JSON .json</a></b>\n" +
+            "  <p><b><a rel=\"help\" href=\"http://www.json.org/\">JSON .json</a></b>\n" +
             "    <a name=\"json\">files</a> are widely used to transfer data to JavaScript scripts running on web pages.\n" +
             "  <br>Tabledap will format the data in a table-like structure in the .json file.\n" +
             "\n" +
             //jsonp
-            "  <p><b><a href=\"http://niryariv.wordpress.com/2009/05/05/jsonp-quickly/\">JSONP</a>\n" +
+            "  <p><b><a rel=\"help\" href=\"http://niryariv.wordpress.com/2009/05/05/jsonp-quickly/\">JSONP</a>\n" +
             "    <a href=\"http://www.json.org/\">.json</a> and\n" +
-            "    <a href=\"http://wiki.geojson.org/Main_Page\">.geoJson</a></b>\n" +
+            "    <a rel=\"help\" href=\"http://wiki.geojson.org/Main_Page\">.geoJson</a></b>\n" +
             "      - <a name=\"jsonp\">Requests</a> for .json and .geoJson files may include an\n" +
             "  <br>optional jsonp request by adding <tt>&amp;.jsonp=<i>functionName</i></tt> to the end of the query.\n" +
             "  <br>Basically, this just tells ERDDAP to add <tt><i>functionName</i>(</tt> to the beginning of the response \n" +
@@ -5885,8 +5878,8 @@ public abstract class EDDTable extends EDD {
             "  <br>If originally there was no query, leave off the \"&amp;\" in your query.\n" +
             "\n" +
             //matlab
-            "  <p><b><a href=\"http://www.mathworks.com/products/matlab/\">MATLAB</a>\n" +
-            "     <a href=\"http://www.serc.iisc.ernet.in/ComputingFacilities/software/matfile_format.pdf\">.mat</a></b>\n" +
+            "  <p><b><a rel=\"bookmark\" href=\"http://www.mathworks.com/products/matlab/\">MATLAB</a>\n" +
+            "     <a rel=\"help\" href=\"http://www.serc.iisc.ernet.in/ComputingFacilities/software/matfile_format.pdf\">.mat</a></b>\n" +
             "   - <a name=\"matlab\">Matlab</a> users can use griddap's .mat file type to download data from within\n" +
             "  <br>MATLAB.  Here is a one line example:<pre>\n" +
                  "load(urlwrite('" + XML.encodeAsHTML(fullTimeMatExample) + "', 'test.mat'));</pre>\n" +
@@ -5905,65 +5898,86 @@ public abstract class EDDTable extends EDD {
             "  <br>ERDDAP's base time of \"1970-01-01T00:00:00Z\" to Matlab's \"0000-01-00T00:00:00Z\".\n" +
             "\n" +
             //nc
-            "  <p><b><a href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF</a>\n" +
-            "    <a href=\"http://www.unidata.ucar.edu/software/netcdf/docs/netcdf/File-Format-Specification.html\">.nc</a></b>\n" +
-            "     - <a name=\"nc\">Requests</a> for .nc files will always return the data in a table-like, version 3, 32-bit, .nc file:\n" +
+            "  <p><b><a rel=\"bookmark\" href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF</a>\n" +
+            "    <a rel=\"help\" href=\"http://www.unidata.ucar.edu/software/netcdf/docs/netcdf/File-Format-Specification.html\">.nc</a></b>\n" +
+            "     - <a name=\"nc\">Requests</a> for .nc files will always return the data in a table-like, version 3,\n" +
+            "  <br>32-bit, .nc file:\n" +
             "  <ul>\n" +
             "  <li>All variables will use the file's \"row\" dimension.\n" +
             "  <li>All String variables will also have a dimension indicating the maximum number of\n" +
             "    <br>characters for that variable.\n" +
             "  </ul>\n" +
+            "  <p>Don't use NetCDF-Java, NetCDF-C, NetCDF-Fortran, NetCDF-Perl, or Ferret to try to\n" +
+            "  <br>access a remote ERDDAP .nc file.  It won't work.  Instead, use\n" +
+            "  <a href=\"#netcdfjava\">this approach</a>.\n" +
             "\n" +
             //ncHeader
             "  <p><b>.ncHeader</b>\n" +
             "    - <a name=\"ncHeader\">Requests</a> for .ncHeader files will return the header information (text) that\n" +
             "  <br>would be generated if you used\n" +
-            "    <a href=\"http://www.unidata.ucar.edu/software/netcdf/docs/ncdump-man-1.html\">ncdump -h <i>fileName</i></a>\n" +
+            "    <a rel=\"help\" href=\"http://www.unidata.ucar.edu/software/netcdf/docs/ncdump-man-1.html\">ncdump -h <i>fileName</i></a>\n" +
             "    on the corresponding .nc file.\n" +
             "\n" +
             //ncCF
             "  <p><a name=\"ncCF\"><b>.ncCF</b></a>\n" +
-            "     - Requests for a .ncCF file will return a verion 3, 32-bit,\n" +
-            "    <a href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF .nc</a> file\n" +
-            "    with the\n" +
-            "   <br>Contiguous Ragged Array Representation associated with the dataset's cdm_data_type,\n" +
-            "   <br>as defined in the newly ratified\n" +
-            "     <a href=\"http://cf-pcmdi.llnl.gov/documents/cf-conventions\">CF</a>\n" +
-            "     <a href=\"http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries\">Discrete Geometries</a> conventions\n" +
-            "   <br>(which were previously named \"CF Point Observation Conventions\").\n" +
-            "   <ul>\n" +
-            "   <li>Point - Appendix H.1 Point Data\n" +
-            "   <li>TimeSeries - Appendix H.2.4 Contiguous ragged array representation of timeSeries\n" +
-            "   <li>Profile - Appendix H.3.4 Contiguous ragged array representation of profiles\n" +
-            "   <li>Trajectory - Appendix H.4.3 Contiguous ragged array representation of trajectories\n" +
-            "   <li>TimeSeriesProfile - Appendix H.5.3 Ragged array representation of timeSeriesProfiles\n" +
-            "   <li>TrajectoryProfile - Appendix H.6.3 Ragged array representation of trajectoryProfiles\n" +
-            "   </ul>\n" +
-            "   <br>A request will succeed only if the dataset has a cdm_data_type other than \"Other\"\n" +
-            "   <br>and if the request includes at least one data variable (not just the outer, descriptive variables).\n" +
-            "   <br>The file will include longitude, latitude, time, and other required descriptive variables, even if\n" +
-            "   <br>you don't request them.\n" +
-            "   <br>Since these are the newly ratified file formats, one can hope that they won't change again.\n" +
+            "     - Requests for a .ncCF file will return a version 3, 32-bit,\n" +
+            "  <a rel=\"bookmark\" href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF .nc</a>\n" +
+            "  file with the\n" +
+            "  <br>Contiguous Ragged Array Representation associated with the dataset's cdm_data_type,\n" +
+            "  <br>as defined in the newly ratified\n" +
+            "    <a rel=\"help\" href=\"http://cf-pcmdi.llnl.gov/documents/cf-conventions\">CF</a>\n" +
+            "    <a rel=\"help\" href=\"http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries\">Discrete Geometries</a> conventions\n" +
+            "  <br>(which were previously named \"CF Point Observation Conventions\").\n" +
+            "  <ul>\n" +
+            "  <li>Point - Appendix H.1 Point Data\n" +
+            "  <li>TimeSeries - Appendix H.2.4 Contiguous ragged array representation of timeSeries\n" +
+            "  <li>Profile - Appendix H.3.4 Contiguous ragged array representation of profiles\n" +
+            "  <li>Trajectory - Appendix H.4.3 Contiguous ragged array representation of trajectories\n" +
+            "  <li>TimeSeriesProfile - Appendix H.5.3 Ragged array representation of timeSeriesProfiles\n" +
+            "  <li>TrajectoryProfile - Appendix H.6.3 Ragged array representation of trajectoryProfiles\n" +
+            "  </ul>\n" +
+            "  <br>A request will succeed only if the dataset has a cdm_data_type other than \"Other\"\n" +
+            "  <br>and if the request includes at least one data variable (not just the outer, descriptive variables).\n" +
+            "  <br>The file will include longitude, latitude, time, and other required descriptive variables, even if\n" +
+            "  <br>you don't request them.\n" +
+            "  <br>Since these are the newly ratified file formats, one can hope that they won't change again.\n" +
             "\n" +  
             //ncCFMA
             "  <p><a name=\"ncCFMA\"><b>.ncCFMA</b></a>\n" +
             "     - Requests for a .ncCFMA file will return a verion 3, 32-bit,\n" +
-            "    <a href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF .nc</a> file\n" +
-            "   <br>(Complete or Incomplete (depending on the data) Multidimensional Array Representation associated\n" +
-            "   <br>with the dataset's cdm_data_type, as defined in the\n" +
-            "     <a href=\"http://cf-pcmdi.llnl.gov/documents/cf-conventions\">CF</a>\n" +
-            "     <a href=\"http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries\">Discrete Sampling Geometries</a> conventions\n" +
-            "   <br>(which were previously named \"CF Point Observation Conventions\").\n" +
-            "   <br>This is the file type used by the <a href=\"http://www.nodc.noaa.gov/data/formats/netcdf/\">NODC Templates</a>.\n" +
+            "    <a rel=\"bookmark\" href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF .nc</a> file\n" +
+            "   <br>with the Complete or Incomplete, depending on the data, Multidimensional Array Representation\n" +
+            "   <br>associated with the dataset's cdm_data_type, as defined in the\n" +
+            "     <a rel=\"help\" href=\"http://cf-pcmdi.llnl.gov/documents/cf-conventions\">CF</a>\n" +
+            "     <a rel=\"help\" href=\"http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries\">Discrete Sampling Geometries</a>\n" +
+            "   <br>conventions, which were previously named \"CF Point Observation Conventions\".\n" +
+            "   <br>This is the file type used by the <a rel=\"help\" href=\"http://www.nodc.noaa.gov/data/formats/netcdf/\">NODC Templates</a>.\n" +
             "   <br>A request will succeed only if the dataset has a cdm_data_type other than \"Other\"\n" +
             "   <br>and if the request includes at least one data variable (not just the outer, descriptive variables).\n" +
             "   <br>The file will include longitude, latitude, time, and other required descriptive variables, even if\n" +
             "   <br>you don't request them.\n" +
             "\n" +  
+            //netcdfjava
+            "  <p><b><a rel=\"bookmark\" href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF-Java, NetCDF-C, NetCDF-Fortran, and NetCDF-Perl</a></b>\n" +
+            "  <a name=\"netcdfjava\">-</a>\n" +
+            "  <br>Don't try to access an ERDDAP tabledap dataset directly with a NetCDF library.\n" +
+            "  <br>It won't work, because these libraries just work with gridded data, not sequence data.\n" +
+            "  <br>Instead, by hand in a browser or with a program like\n" +
+            "  <a rel=\"help\" href=\"#curl\">curl</a>, download a .nc file with a\n" +
+            "  <br>subset of the dataset.  Then, open that local file with one of these libraries.\n" +
+            "  <br>With NetCDF-Java for example, use:\n" +
+            "  <br><tt>NetcdfFile nc = NetcdfFile.open(\"c:\\downloads\\theDownloadedFile.nc\");</tt>\n" +
+            "  <br>or\n" +
+            "  <br><tt>NetcdfDataset nc = NetcdfDataset.openDataset(\"c:\\downloads\\theDownloadedFile.nc\");</tt>\n" +
+            "  <br>(NetcdfFiles are a lower level approach than NetcdfDatasets.  It is your choice.)\n" +
+            "  <br>In both cases, you can then do what you want with the <tt>nc</tt> object, for example,\n" +
+            "  <br>request metadata or request a subset of a variable's data as you would with any other\n" +
+            "  <br>.nc file.\n" +
+            "\n" +
             //odv
-            "  <p><b><a href=\"http://odv.awi.de/\">Ocean Data View</a> .odvTxt</b>\n" +
+            "  <p><b><a rel=\"bookmark\" href=\"http://odv.awi.de/\">Ocean Data View</a> .odvTxt</b>\n" +
             "   - <a name=\"ODV\">ODV</a> users can download data in a\n" +
-            "    <a href=\"http://odv.awi.de/en/documentation/\">ODV Generic Spreadsheet Format .txt file</a>\n" +
+            "    <a rel=\"help\" href=\"http://odv.awi.de/en/documentation/\">ODV Generic Spreadsheet Format .txt file</a>\n" +
             "  <br>by requesting tabledap's .odvTxt fileType.\n" +
             "  <br>The selected data MUST include longitude, latitude, and time variables.\n" +
             "  <br>Any longitude values (0 to 360, or -180 to 180) are fine.\n" +
@@ -5979,12 +5993,37 @@ public abstract class EDDTable extends EDD {
             "  <li>See ODV's <tt>Help</tt> menu for more help using ODV.\n" +
             "  </ol>\n" +
             "\n" +
+            //opendapLibraries
+            "  <p><b><a name=\"opendapLibraries\">OPeNDAP Libraries</a></b> - Although ERDDAP is an\n" +
+            "    <a rel=\"bookmark\" href=\"http://www.opendap.org/\">OPeNDAP</a>-compatible data server,\n" +
+            "    you can't use\n" +
+            "  <br>most OPeNDAP client libraries, including\n" +
+            "  <a rel=\"bookmark\" href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF-Java, NetCDF-C, NetCDF-Fortran, NetCDF-Perl</a>,\n" +
+            "  <br>or\n" +
+            "  <a rel=\"bookmark\" href=\"http://www.ferret.noaa.gov/Ferret/\">Ferret</a>,\n" +
+            "  to get data directly from an ERDDAP tabledap dataset because those libraries don't\n" +
+            "  <br>support the OPeNDAP Selection constraints that tabledap datasets use for requesting\n" +
+            "  <br>subsets of the dataset.  (But see this\n" +
+            "  <a href=\"#netcdfjava\">other approach</a>.)\n" + 
+            "  <br>But you can use the <a href=\"#PydapClient\">Pydap Client</a> or\n" +
+            "  <a rel=\"bookmark\" href=\"http://www.opendap.org/java-DAP\">Java-DAP2</a>,\n" +
+            "  because they both support Selection\n" +
+            "  <br>constraints.  With both the Pydap Client and Java-DAP2, when creating the initial\n" +
+            "  <br>connection to an ERDDAP table dataset, use the tabledap dataset's base URL, e.g.,\n" +
+            "  <br><tt>" + datasetBase + "</tt>\n" +
+            "  <ul>\n" +
+            "  <li>Don't include a file extension (e.g., .nc) at the end of the dataset's name.\n" +
+            "  <li>Don't specify a variable or a Selection-constraint.\n" +
+            "  </ul>\n" +
+            "  <br>Once you have made the connection to the dataset, you can request metadata or a\n" +
+            "  <br>subset of a variable's data via a Selection-constraint.\n" +
+            "\n" +
             //Pydap Client
-            "  <p><b><a href=\"http://pydap.org/client.html\">Pydap Client</a></b>\n" +
+            "  <p><b><a rel=\"bookmark\" href=\"http://pydap.org/client.html\">Pydap Client</a></b>\n" +
             "    <a name=\"PydapClient\">users</a>\n" +
             "    can access tabledap datasets via ERDDAP's standard OPeNDAP services.\n" +
             "  <br>See the\n" + 
-            "    <a href=\"http://pydap.org/client.html#accessing-sequential-data/\">Pydap Client instructions for accessing sequential data</a>.\n" +
+            "    <a rel=\"help\" href=\"http://pydap.org/client.html#accessing-sequential-data/\">Pydap Client instructions for accessing sequential data</a>.\n" +
             "  <br>Note that the name of a dataset in tabledap will always be a single word, e.g., " + EDStatic.EDDTableIdExample + "\n" +
             "  <br>in the OPeNDAP dataset URL\n" +
             "  <br>" + datasetBase + "\n" +
@@ -5993,7 +6032,7 @@ public abstract class EDDTable extends EDD {
             "  <br>(unlike \"location\" for the sample dataset in the Pydap instructions).\n" +
             "\n" +
             //R
-            "  <p><b><a href=\"http://www.r-project.org/\">R Statistical Package</a></b> -\n" +
+            "  <p><b><a rel=\"bookmark\" href=\"http://www.r-project.org/\">R Statistical Package</a></b> -\n" +
             "    <a name=\"R\">R</a> is an open source statistical package for many operating systems.\n" +
             "  <br>In R, you can download a .csv file from ERDDAP\n" +
             "    and then import data from that .csv file\n" +
@@ -6007,7 +6046,7 @@ public abstract class EDDTable extends EDD {
             "  <p><a name=\"imageFileTypes\"><b>Making an Image File with a Graph or Map of Tabular Data</b></a>\n" +
             "    <br>If a tabledap request URL specifies a subset of data which is suitable for making a graph or\n" +
             "    <br>a map, and the fileType is an image fileType, tabledap will return an image with a graph or map. \n" +
-            "    <br>tabledap request URLs can include optional <a href=\"#GraphicsCommands\">graphics commands</a> which let you\n" +
+            "    <br>tabledap request URLs can include optional <a rel=\"help\" href=\"#GraphicsCommands\">graphics commands</a> which let you\n" +
             "    <br>customize the graph or map.\n" +
             "    <br>As with other tabledap request URLs, you can create these URLs by hand or have a computer\n" +
             "    <br>program do it. \n" +
@@ -6025,7 +6064,7 @@ public abstract class EDDTable extends EDD {
                 "      <td>" + imageFileTypeDescriptions[i] + "</td>\n" +
                 "      <td>" + 
                       (imageFileTypeInfo[i] == null || imageFileTypeInfo[i].equals("")? 
-                          "&nbsp;" : "<a href=\"" +  imageFileTypeInfo[i] + "\">info</a>") + 
+                          "&nbsp;" : "<a rel=\"help\" href=\"" +  imageFileTypeInfo[i] + "\">info</a>") + 
                       "</td>\n" + //must be mapExample below because kml doesn't work with graphExample
                 "      <td><a href=\"" +  datasetBase + imageFileTypeNames[i] + "?" + 
                     EDStatic.phEncode(EDStatic.EDDTableMapExample) + "\">example</a></td>\n" +
@@ -6037,7 +6076,7 @@ public abstract class EDDTable extends EDD {
             "  <p>Image Size - \".small\" and \".large\" were ERDDAP's original system for making\n" +
             "  <br>different-sized images. Now, for .png and .transparentPng images (not other\n" +
             "  <br>image file types), you can also use the\n" +
-            "    <a href=\"#GraphicsCommands\">&amp;.size=<i>width</i>|<i>height</i></a>\n" +
+            "    <a rel=\"help\" href=\"#GraphicsCommands\">&amp;.size=<i>width</i>|<i>height</i></a>\n" +
             "    parameter to request\n" +
             "  <br>an image of any size.\n" +
             "\n" +
@@ -6046,7 +6085,7 @@ public abstract class EDDTable extends EDD {
             "  <br>the graph axes, landmask, or legend, and with a transparent (not opaque white)\n" +
             "  <br>background.  This file type can be used for any type of graph or map.\n" +
             "  <br>For graphs and maps, the default size is 360x360 pixels.\n" +
-            "  <br>Or, you can use the <a href=\"#GraphicsCommands\">&amp;.size=<i>width</i>|<i>height</i></a>\n" +
+            "  <br>Or, you can use the <a rel=\"help\" href=\"#GraphicsCommands\">&amp;.size=<i>width</i>|<i>height</i></a>\n" +
             "    parameter to request an image of any size.\n" + 
             "\n");
 
@@ -6070,12 +6109,12 @@ public abstract class EDDTable extends EDD {
             "<br>ERDDAP+curl is amazingly powerful and allows you to use ERDDAP in many new ways.\n" +
             "<br>On Linux or Mac OS X, curl is probably already installed as /usr/bin/curl.\n" +
             "<br>On Windows, or if your computer doesn't have curl already, you need to \n" +
-            "  <a href=\"http://curl.haxx.se/download.html\">download curl</a>\n" +
+            "  <a rel=\"bookmark\" href=\"http://curl.haxx.se/download.html\">download curl</a>\n" +
             "<br>and install it.  To get to a command line in Windows, use \"Start : Run\" and type in \"cmd\".\n" +
             "<br>(\"Win32 - Generic, Win32, binary (without SSL)\" worked for me on Windows XP and Windows 7.)\n" +
             "<br>Instructions for using curl are on the \n" +
-                "<a href=\"http://curl.haxx.se/download.html\">curl man page</a> and in this\n" +
-                "<a href=\"http://curl.haxx.se/docs/httpscripting.html\">curl tutorial</a>.\n" +
+                "<a rel=\"help\" href=\"http://curl.haxx.se/download.html\">curl man page</a> and in this\n" +
+                "<a rel=\"help\" href=\"http://curl.haxx.se/docs/httpscripting.html\">curl tutorial</a>.\n" +
             "<br>But here is a quick tutorial related to using curl with ERDDAP:\n" +
             "<ul>\n" +
             "<li>To download and save one file, use \n" +
@@ -6085,7 +6124,7 @@ public abstract class EDDTable extends EDD {
             "  <br>&nbsp;&nbsp;<tt>-o <i>fileDir/fileName.ext</i></tt> specifies the name for the file that will be created.\n" +
             "  <br>For example,\n" +
             "<pre>curl -g \"http://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet.png?time,atmp&amp;time%3E=2010-09-03T00:00:00Z&amp;time%3C=2010-09-06T00:00:00Z&amp;station=%22TAML1%22&amp;.draw=linesAndMarkers&amp;.marker=5|5&amp;.color=0x000000&amp;.colorBar=|||||\" -o NDBCatmpTAML1.png</pre>\n" +
-            "  The erddapUrl must be <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>.\n" +
+            "  The erddapUrl must be <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>.\n" +
             "  <br>If you get the URL from your browser's address textfield, this may be already done.\n" +
             "  <br>If not, in practice, this can be very minimal percent encoding: all you usually\n" +
             "  <br>have to do is convert % into %25, &amp; into %26, \" into %22, + into %2B,\n" +
@@ -6097,7 +6136,7 @@ public abstract class EDDTable extends EDD {
             "<li>To download and save many files in one step, use curl with the globbing feature enabled:\n" +
             "  <br><tt>curl \"<i>erddapUrl</i>\" -o <i>fileDir/fileName#1.ext</i></tt>\n" +
             "  <br>Since the globbing feature treats the characters [, ], {, and } as special, you must also\n" +
-            "  <br><a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encode</a> \n" +
+            "  <br><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encode</a> \n" +
               "them in the erddapURL as &#037;5B, &#037;5D, &#037;7B, &#037;7D, respectively.\n" +
             "  <br>Fortunately, these are rare in tabledap URLs.\n" +
             "  <br>Then, in the erddapUrl, replace a zero-padded number (for example <tt>01</tt>) with a range\n" +
@@ -6117,9 +6156,9 @@ public abstract class EDDTable extends EDD {
             "<li><a name=\"query\"><b>query</b></a> is the part of the request after the \"?\".\n" +
             "  It specifies the subset of data that you want to receive.\n" +
             "  <br>In tabledap, it is an \n" +
-            "  <a href=\"http://www.opendap.org/\">OPeNDAP</a> " +
-            "  <a href=\"http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf\">DAP</a>\n" +
-            "  <a href=\"http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Constraint_Expressions\">selection constraint</a> query" +
+            "  <a rel=\"bookmark\" href=\"http://www.opendap.org/\">OPeNDAP</a> " +
+            "  <a rel=\"help\" href=\"http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf\">DAP</a>\n" +
+            "  <a rel=\"help\" href=\"http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Constraint_Expressions\">selection constraint</a> query" +
             "  in the form: <tt>{<i>resultsVariables</i>}{<i>constraints</i>}</tt> .\n " +
             "  <br>For example,\n" +
             "  <br><tt>" + 
@@ -6153,14 +6192,14 @@ public abstract class EDDTable extends EDD {
             "      <br>For the fileTypes that do return data, not specifying any constraints\n" +
             "      <br>may result in a very large results table.\n" + 
             "    <li>tabledap constraints are consistent with \n" +
-            "      <a href=\"http://www.opendap.org/\">OPeNDAP</a> " +
-            "      <a href=\"http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf\">DAP</a>\n" +
-            "      <a href=\"http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Constraint_Expressions\">selection constraints</a>,\n" +
+            "      <a rel=\"bookmark\" href=\"http://www.opendap.org/\">OPeNDAP</a> " +
+            "      <a rel=\"help\" href=\"http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf\">DAP</a>\n" +
+            "      <a rel=\"help\" href=\"http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Constraint_Expressions\">selection constraints</a>,\n" +
             "      <br>but with a few additional features.\n" +
             "    <li>Each constraint is in the form <tt><i>variable</i><i>operator</i><i>value</i></tt>\n" +
             "      <br>(for example, <tt>latitude&gt;45</tt>).\n" +
             "    <li>The valid operators are =, != (not equals),\n" +
-            "       =~ (a <a href=\"#regularExpression\">regular expression test</a>),\n" +
+            "       =~ (a <a rel=\"help\" href=\"#regularExpression\">regular expression test</a>),\n" +
             "       &lt;, &lt;=, &gt;, and &gt;= .\n" +
             "    <li>tabledap extends the OPeNDAP standard to allow any operator to be used with any data type.\n" +
             "      <br>(Standard OPeNDAP selections don't allow &lt;, &lt;=, &gt;, or &gt;= \n" +
@@ -6175,7 +6214,7 @@ public abstract class EDDTable extends EDD {
             "        <br>and any internal special characters must be backslash encoded: \\ into \\\\, \" into \\\",\n" +
             "        <br>newline into \\n, and tab into \\t.\n" +
             "    <li><a name=\"PercentEncode\">For</a> all constraints, the <tt><i>variable</i><i>operator</i><i>value</i></tt>\n" +
-            "        MUST be <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>.\n" +
+            "        MUST be <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>.\n" +
             "        <br>If you submit the request via a browser, the browser will do the percent encoding\n" +
             "        <br>for you. If you submit the request via a computer program, then the program\n" +
             "        <br>needs to do the percent encoding.\n" +
@@ -6189,11 +6228,11 @@ public abstract class EDDTable extends EDD {
             "          <br>floating point numbers. For example, a search for <tt>longitude=220.2</tt> may\n" +
             "          <br>fail if the value is stored as 220.20000000000001. This problem arises because\n" +
             "          <br>floating point numbers are " +
-            "            <a href=\"http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm\">not represented exactly within computers</a>.\n" +
+            "            <a rel=\"help\" href=\"http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm\">not represented exactly within computers</a>.\n" +
             "          <br>When ERDDAP performs these tests, it allows for minor variations and tries\n" +
             "          <br>to avoid the problem. But it is possible that some datasets will still\n" +
             "          <br>have problems with these queries and return unexpected and incorrect results.\n" +
-            "      <li><a href=\"http://en.wikipedia.org/wiki/NaN\">NaN (Not-a-Number)</a> -\n" +
+            "      <li><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/NaN\">NaN (Not-a-Number)</a> -\n" +
             "            <a name=\"NaN\">Many</a> numeric variables have an attribute which identifies a\n" +
             "          <br>number (e.g., -99) as a missing_value or a _FillValue. When ERDDAP tests\n" +
             "          <br>constraints, it always treats these values as NaN's. So:\n" +
@@ -6214,12 +6253,12 @@ public abstract class EDDTable extends EDD {
             "        </ul>\n" +
             "      <li><a name=\"regularExpression\"><i>variable</i>=~\"<i>regularExpression</i>\"</a>" +
             "          tests if the value from the variable on the left matches the \n" +
-            "         <br><a href=\"http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html\">regular expression</a>\n" +
+            "         <br><a rel=\"help\" href=\"http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html\">regular expression</a>\n" +
             "         on the right.\n" +
             "        <ul>\n" +
             "        <li>tabledap uses the same \n" +
-            "             <a href=\"http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html\">regular expression syntax</a>\n" +
-            "             (<a href=\"http://www.vogella.de/articles/JavaRegularExpressions/article.html\">tutorial</a>) as is used by Java.\n" +
+            "             <a rel=\"help\" href=\"http://download.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html\">regular expression syntax</a>\n" +
+            "             (<a rel=\"help\" href=\"http://www.vogella.de/articles/JavaRegularExpressions/article.html\">tutorial</a>) as is used by Java.\n" +
             "        <li><b>WARNING</b> - For numeric variables, the =~ test is performed on the String representation\n" +
             "          <br>of the variable's source values.  So if the variable's source uses scale_factor\n" +
             "          <br>and/or add_offset metadata (which ERDDAP uses to unpack the data) or if the variable\n" +
@@ -6251,13 +6290,13 @@ public abstract class EDDTable extends EDD {
                                      XML.encodeAsHTML( fullValueExample) + "</tt></a>\n" +
             "      <br>Some fileTypes (notably, .csv, .tsv, .htmlTable, .odvTxt, and .xhtml) display\n" +
             "      <br>date/time values as \n" +
-            "        <a href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" date/time strings</a>\n" +
+            "        <a rel=\"help\" href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" date/time strings</a>\n" +
             "      <br>(e.g., <tt>2002-08-03T12:30:00Z</tt>).\n" +
             "      <br>ERDDAP has a utility to\n" +
-            "        <a href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
+            "        <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
             "        a Numeric Time to/from a String Time</a>.\n" +
             "      <br>See also:\n" +
-            "        <a href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
+            "        <a rel=\"help\" href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
             "        ERDDAP Deals with Time</a>.\n" +
             "    <li>tabledap extends the OPeNDAP standard to allow you to specify time values in the ISO 8601\n" +
             "      <br>date/time format (<tt><i>YYYY-MM-DD</i>T<i>hh:mm:ssZ</i></tt>, where Z is 'Z' or a &plusmn;hh:mm offset from UTC). \n" +
@@ -6266,7 +6305,7 @@ public abstract class EDDTable extends EDD {
             "      <br>Here is an example of a query which includes ISO date/time values:\n" +
             "      <br><a href=\"" + EDStatic.phEncode(fullTimeExample) + "\"><tt>" + 
                                      XML.encodeAsHTML( fullTimeExample) + "</tt></a> .\n" +
-/*            "    <li><a name=\"now\">tabledap</a> extends the OPeNDAP standard to allow you to specify constraints for\n" +
+            "    <li><a name=\"now\">tabledap</a> extends the OPeNDAP standard to allow you to specify constraints for\n" +
             "      <br>time and timestamp variables relative to <tt>now</tt>. The constraint can be simply,\n" +
             "      <br>for example, <tt>time&lt;now</tt>, but usually the constraint is in the form\n" +
             "      <br><tt>&nbsp;&nbsp;now(+| |-)<i>positiveInteger</i>(second|seconds|minute|minutes|\n" +
@@ -6280,7 +6319,7 @@ public abstract class EDDTable extends EDD {
             "      <br>Note that a '+' in the URL is percent-decoded as ' ', so you should\n" +
             "      <br>percent-encode '+' as %2B.  However, ERDDAP interprets <tt>\"now \"</tt> as <tt>\"now+\"</tt>,\n" +
             "      <br>so in practice you don't have to percent-encode it.\n" +
-*/            "    </ul>\n" +
+            "    </ul>\n" +
             "  <li><a name=\"functions\"><b>Server-side Functions</b></a> - The OPeNDAP standard supports the idea of\n" +
             "    <br>server-side functions, but doesn't define any.\n" +
             "    <br>TableDAP supports some server-side functions that modify the results table before\n" +
@@ -6336,12 +6375,12 @@ public abstract class EDDTable extends EDD {
             "    <li><a name=\"units\"><tt>&amp;units(\"<i>value</i>\")</tt></a>\n" +
             "      <br>If you add <tt>&amp;units(\"UDUNITS\")</tt> to the end of a query, the units will be described\n" +
             "      <br>via the\n" +
-            "        <a href=\"http://www.unidata.ucar.edu/software/udunits/\">UDUNITS</a> standard (for example, <tt>degrees_C</tt>).\n" +
+            "        <a rel=\"help\" href=\"http://www.unidata.ucar.edu/software/udunits/\">UDUNITS</a> standard (for example, <tt>degrees_C</tt>).\n" +
             "      <br>If you add <tt>&amp;units(\"UCUM\")</tt> to the end of a query, the units will be described\n" +
             "      <br>via the\n" +
-            "        <a href=\"http://aurora.regenstrief.org/~ucum/ucum.html\">UCUM</a> standard (for example, <tt>Cel</tt>).\n" +
+            "        <a rel=\"help\" href=\"http://aurora.regenstrief.org/~ucum/ucum.html\">UCUM</a> standard (for example, <tt>Cel</tt>).\n" +
             "      <br>On this ERDDAP, the default for most/all datasets is " + EDStatic.units_standard + ".\n" +
-            "      <br>See also ERDDAP's <a href=\"" + tErddapUrl + "/convert/units.html\">units converter</a>.\n" +
+            "      <br>See also ERDDAP's <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html\">units converter</a>.\n" +
             "    </ul>\n" +
                
             //Graphics Commands
@@ -6354,7 +6393,7 @@ public abstract class EDDTable extends EDD {
             "    <br>needed, using the information here to modify the URLs for special purposes.\n" +
             "    <br>These commands are optional.\n" +
             "    <br>If present, they must occur after the data request part of the query. \n" +
-            "    <br>These commands are used by tabledap if you request an <a href=\"#imageFileTypes\">image fileType</a> (.png or .pdf)\n" +
+            "    <br>These commands are used by tabledap if you request an <a rel=\"bookmark\" href=\"#imageFileTypes\">image fileType</a> (.png or .pdf)\n" +
             "    <br>and are ignored if you request a data file (e.g., .asc). \n" +
             "    <br>If relevant commands are not included in your request, tabledap uses the defaults and\n" +
             "    <br>tries its best to generate a reasonable graph or map. \n" +
@@ -7964,10 +8003,10 @@ public abstract class EDDTable extends EDD {
                 tErddapUrl + "/tabledap/" + datasetID + 
                     dataFileTypeNames[defaultFileTypeOption] + "?" + graphQuery.toString(), 
                 ""));
-            writer.write("<br>(<a href=\"" + tErddapUrl + "/tabledap/documentation.html\" " +
+            writer.write("<br>(<a rel=\"help\" href=\"" + tErddapUrl + "/tabledap/documentation.html\" " +
                 "title=\"tabledap documentation\">" + EDStatic.magDocumentation + "</a>\n" +
                 EDStatic.htmlTooltipImage(loggedInAs, genViewHtml) + ")\n");
-            writer.write(" (<a href=\"" + tErddapUrl + "/tabledap/documentation.html#fileType\">" +
+            writer.write(" (<a rel=\"help\" href=\"" + tErddapUrl + "/tabledap/documentation.html#fileType\">" +
                 EDStatic.EDDFileTypeInformation + "</a>)\n");
 
             if (debugMode) String2.log("respondToGraphQuery 8");
@@ -10047,23 +10086,37 @@ public abstract class EDDTable extends EDD {
             }
             if (tSubsetVariables.length == 0)
                 tAccessibleViaSubset = EDStatic.subsetNotSetUp;
-  
-            if (File2.isDirectory(datasetDir())) {
 
-                //DELETE the cached distinct combinations file.
-                //the subsetVariables may have changed (and the dataset probably just reloaded)
-                //  so delete the file (or files for POST datasets) with all of the distinct combinations
-                //see subsetVariablesFileName());
-                RegexFilenameFilter.regexDelete(datasetDir(), 
-                    ".*" + //.* handles POST files which have loggedInAs in here
-                        String2.replaceAll(DISTINCT_SUBSET_FILENAME, ".", "\\."),
-                    false);
+            if ((className.equals("EDDTableFromDapSequence") ||
+                 className.equals("EDDTableFromErddap")) && 
+                EDStatic.quickRestart && 
+                EDStatic.initialLoadDatasets() && 
+                File2.isFile(quickRestartFullFileName())) {
 
-                //DELETE the new-style cached .nc subset table files in the subdir of /datasetInfo/
-                RegexFilenameFilter.regexDelete(datasetDir(), 
-                    ".*" + //.* handles POST files which have loggedInAs in here
-                        String2.replaceAll(SUBSET_FILENAME, ".", "\\."),
-                    false);
+                //don't delete subset and distinct files  (to reuse them)
+                if (verbose) 
+                    String2.log("  quickRestart: reusing subset and distinct files");
+
+            } else {
+
+                //delete the subset and distict files if they exist (to force recreation)
+                if (File2.isDirectory(datasetDir())) {
+
+                    //DELETE the cached distinct combinations file.
+                    //the subsetVariables may have changed (and the dataset probably just reloaded)
+                    //  so delete the file (or files for POST datasets) with all of the distinct combinations
+                    //see subsetVariablesFileName());
+                    RegexFilenameFilter.regexDelete(datasetDir(), 
+                        ".*" + //.* handles POST files which have loggedInAs in here
+                            String2.replaceAll(DISTINCT_SUBSET_FILENAME, ".", "\\."),
+                        false);
+
+                    //DELETE the new-style cached .nc subset table files in the subdir of /datasetInfo/
+                    RegexFilenameFilter.regexDelete(datasetDir(), 
+                        ".*" + //.* handles POST files which have loggedInAs in here
+                            String2.replaceAll(SUBSET_FILENAME, ".", "\\."),
+                        false);
+                }
             }
 
             //LAST: set in an instant  [Now this is always done by constructor -- 1 thread]
@@ -13051,20 +13104,20 @@ public abstract class EDDTable extends EDD {
             "  <br>or script to format the requests and to parse and process the XML output from a given server.\n" +
             "  <br>Some of the information you need to write such software is below.\n" +
             "<li>For additional information, please see the\n" +
-            "  <a href=\"http://www.opengeospatial.org/standards/sos\">OGC's SOS Specification</a>.\n" +
+            "  <a rel=\"help\" href=\"http://www.opengeospatial.org/standards/sos\">OGC's SOS Specification</a>.\n" +
             "</ul>\n" +
             "\n");
 
         //*** sample SOS requests
         writer.write(
             "<h2>Sample SOS Requests for this Dataset and Details from the \n" +
-            "<a href=\"http://www.opengeospatial.org/standards/sos\">SOS Specification</a></h2>\n" +
+            "<a rel=\"help\" href=\"http://www.opengeospatial.org/standards/sos\">SOS Specification</a></h2>\n" +
             "SOS requests are specially formed URLs with queries.\n" +
             "<br>You can create these URLs yourself or write software to do it for you.\n" +
             "<br>There are three types of SOS requests:\n" +
-            "  <a href=\"#GetCapabilities\">GetCapabilities</a>,\n" +
-            "  <a href=\"#DescribeSensor\">DescribeSensor</a>,\n" +
-            "  <a href=\"#GetObservation\">GetObservation</a>.\n" + 
+            "  <a rel=\"help\" href=\"#GetCapabilities\">GetCapabilities</a>,\n" +
+            "  <a rel=\"help\" href=\"#DescribeSensor\">DescribeSensor</a>,\n" +
+            "  <a rel=\"help\" href=\"#GetObservation\">GetObservation</a>.\n" + 
             "\n");
 
 
@@ -13105,7 +13158,7 @@ public abstract class EDDTable extends EDD {
             "</table>\n" +
             "<sup>*</sup> Parameter names are case-insensitive.\n" +
             "<br>Parameter values are case sensitive and must be\n" +
-            "  <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
+            "  <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
             "    which your browser normally handles for you.\n" +
             "<br>The parameters may be in any order in the URL.\n" +
             "\n");
@@ -13154,7 +13207,7 @@ public abstract class EDDTable extends EDD {
             "      <br>&nbsp;&nbsp;" + 
                 SSR.minimalPercentEncode(sosDSOutputFormat) + "</td>\n" +
             "    <td>The only valid value (in\n" +
-            "      <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>\n" +
+            "      <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>\n" +
             "      form) is \"" + 
                 SSR.minimalPercentEncode(sosDSOutputFormat) + "\".\n" +
             "      Required.\n" +
@@ -13162,7 +13215,7 @@ public abstract class EDDTable extends EDD {
             "</table>\n" +
             "<sup>*</sup> Parameter names are case-insensitive.\n" +
             "<br>Parameter values are case sensitive and must be\n" +
-            "  <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
+            "  <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
             "    which your browser normally handles for you.\n" +
             "<br>The parameters may be in any order in the URL.\n" +
             "\n");
@@ -13437,7 +13490,7 @@ public abstract class EDDTable extends EDD {
             "    <td nowrap>eventTime=<i>beginTime</i>\n" +
             "    <br>eventTime=<i>beginTime/endTime</i></td>\n" +
             "    <td>The beginTime and endTime must be in\n" +
-            "      <a href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" format</a>,\n" +
+            "      <a rel=\"help\" href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" format</a>,\n" +
             "      for example, <span style=\"white-space: nowrap;\">\"1985-01-02T00:00:00Z\").</span>\n" +
             "      <br>This parameter is optional for the SOS standard and ERDDAP.\n" +
             "      <br>For IOOS SOS, the default is the last value.\n" +
@@ -13473,7 +13526,7 @@ public abstract class EDDTable extends EDD {
             "  <tr>\n" +
             "    <td nowrap>responseFormat=<i>mimeType</i></td>\n" +
             "    <td>In ERDDAP, this can be any one of several response formats (in\n" +
-            "      <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>\n" +
+            "      <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>\n" +
             "      form,\n" +
                 "  <br>which your browser normally handles for you).\n" +
             "      <br>The data responseFormats are:<br>");
@@ -13516,7 +13569,7 @@ public abstract class EDDTable extends EDD {
             "</table>\n" +
             "<sup>*</sup> Parameter names are case-insensitive.\n" +
             "<br>Parameter values are case sensitive and must be\n" +
-            "  <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
+            "  <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
             "  which your browser normally handles for you.\n" +
             "<br>The parameters may be in any order in the URL.\n" +
             "\n");

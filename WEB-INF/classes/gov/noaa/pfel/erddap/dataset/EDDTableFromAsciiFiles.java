@@ -85,6 +85,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
+        StringArray conVars, StringArray conOps, StringArray conValues,
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
 
@@ -305,6 +306,8 @@ directionsForGenerateDatasetsXml() +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"creator_name\">NOAA NDBC</att>\n" +
+"        <att name=\"creator_url\">http://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"infoUrl\">http://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"institution\">NOAA NDBC</att>\n" +
 "        <att name=\"keywords\">\n" +
@@ -613,7 +616,7 @@ directionsForGenerateDatasetsXml() +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
-        tResults = results.substring(0, expected.length());
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
 //+ " The source URL.\n" +
@@ -645,9 +648,11 @@ expected =
 "  }\n" +
 "}\n";
         int tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) String2.log("results=\n" + results);
-        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
-            "results=\n" + results);
+        if (tpo < 0) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
         tName = eddTable.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 

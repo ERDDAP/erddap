@@ -6,5 +6,9 @@
 # Use "./NetCheck -testMode" to just send emails to the NetCheck administrator.
 
 set commandLine=$0
-set thisDir=`echo commandLine | dirname $0`
-java -cp $thisDir/classes:$thisDir/lib/lucene-core.jar:$thisDir/lib/mail.jar:$thisDir/lib/netcdfAll-latest.jar:$thisDir/lib/slf4j-jdk14.jar:$thisDir/lib/activation.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.netcheck.NetCheck NetCheck.xml $1 $2
+set tDir=`echo commandLine | dirname $0`
+set cp1="$tDir/classes:$tDir/lib/lucene-core.jar:$tDir/lib/mail.jar:"
+set cp2="$tDir/lib/netcdfAll-latest.jar:$tDir/lib/slf4j-jdk14.jar:$tDir/lib/activation.jar"
+set cp0="$cp1$cp2"
+
+java -cp $cp0 -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.netcheck.NetCheck NetCheck.xml $1 $2

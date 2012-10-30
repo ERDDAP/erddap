@@ -2532,10 +2532,11 @@ public abstract class EDDGrid extends EDD {
                 }
             }
            
-            //zoom?
+            //zoomLatLon is for maps (click to recenter and buttons to zoom in/out)
             boolean zoomLatLon = (drawSurface || drawVectors) && 
                 varName[0].equals("longitude") &&
                 varName[1].equals("latitude");
+            //zoomTime is for timeseries graphs
             boolean zoomTime = varName[0].equals("time") && timeAscending == 1;
 
             //If user clicked on map, change some of the avXxx[], lonXxx, latXxx values.
@@ -2617,10 +2618,10 @@ public abstract class EDDGrid extends EDD {
                 }
             }
 
-
+            //zoomTime (for timeseries graphs)
             int idealTimeN = -1; //1..100
             int idealTimeUnits = -1;
-            if (zoomTime) {
+            if (zoomTime) { 
 
                 //set idealTimeN (1..100), idealTimeUnits;
                 partValue = String2.stringStartsWith(queryParts, ".timeRange=");
@@ -2898,7 +2899,7 @@ public abstract class EDDGrid extends EDD {
                 }
             }
 
-            //set hidden time range widgets
+            //set hidden time range widgets;    zoomTime (for timeseries graphs)
             if (zoomTime) {
                 writer.write(
                     widgets.hidden("timeN", "" + idealTimeN) +
@@ -3257,10 +3258,10 @@ public abstract class EDDGrid extends EDD {
                 tErddapUrl + "/griddap/" + datasetID + 
                     dataFileTypeNames[defaultFileTypeOption] + "?" + graphQuery.toString(), 
                 ""));
-            writer.write("<br>(<a href=\"" + tErddapUrl + "/griddap/documentation.html\" " +
+            writer.write("<br>(<a rel=\"help\" href=\"" + tErddapUrl + "/griddap/documentation.html\" " +
             "title=\"griddap documentation\">" + EDStatic.magDocumentation + "</a>\n" +
                 EDStatic.htmlTooltipImage(loggedInAs, genViewHtml) + ")\n");
-            writer.write("(<a href=\"" + tErddapUrl + "/griddap/documentation.html#fileType\">" +
+            writer.write("(<a rel=\"help\" href=\"" + tErddapUrl + "/griddap/documentation.html#fileType\">" +
                 EDStatic.EDDFileTypeInformation + "</a>)\n");
             writer.write(
                 "</td></tr>\n" +
@@ -3399,7 +3400,7 @@ public abstract class EDDGrid extends EDD {
                 writer.write("<br>");
             }
 
-            //*** zoomTime stuff
+            //*** zoomTime stuff  (for timeseries graphs)
             if (zoomTime) {
                 if (reallyVerbose)
                     String2.log("zoomTime range=" + Calendar2.elapsedTimeString(timeRange * 1000) +
@@ -7264,7 +7265,7 @@ Attributes {
         writer.write("<p><b>" + EDStatic.EDDFileType + "</b>\n");
         writer.write(widgets.select("fileType", EDStatic.EDDSelectFileType, 1,
             allFileTypeOptions, defaultFileTypeOption, ""));
-        writer.write(" <a href=\"" + tErddapUrl + "/griddap/documentation.html#fileType\">more&nbsp;info</a>\n");
+        writer.write(" <a rel=\"help\" href=\"" + tErddapUrl + "/griddap/documentation.html#fileType\">more&nbsp;info</a>\n");
 
         //generate the javaScript
         String javaScript = 
@@ -7320,7 +7321,7 @@ Attributes {
         writer.write(widgets.textField("tUrl", 
             EDStatic.justGenerateAndViewUrl,
             70, 1000, "", ""));
-        writer.write("<a href=\"" + tErddapUrl + "/griddap/documentation.html\" " +
+        writer.write("<a rel=\"help\" href=\"" + tErddapUrl + "/griddap/documentation.html\" " +
             "title=\"griddap documentation\">Documentation&nbsp;/&nbsp;Bypass&nbsp;this&nbsp;form</a>\n" +
             EDStatic.htmlTooltipImage(loggedInAs, genViewHtml));
 
@@ -7386,9 +7387,9 @@ Attributes {
             longDapDescription(tErddapUrl) +
             "<p><b>griddap request URLs must be in the form</b>\n" +
             "<br>&nbsp;&nbsp;&nbsp;<tt>" + dapBase +  
-                "<i><a href=\"" + dapBase + "documentation.html#datasetID\">datasetID</a></i>." + 
-                "<i><a href=\"" + dapBase + "documentation.html#fileType\">fileType</a></i>{?" + 
-                "<i><a href=\"" + dapBase + "documentation.html#query\">query</a></i>}</tt>\n" +
+                "<i><a rel=\"help\" href=\"" + dapBase + "documentation.html#datasetID\">datasetID</a></i>." + 
+                "<i><a rel=\"help\" href=\"" + dapBase + "documentation.html#fileType\">fileType</a></i>{?" + 
+                "<i><a rel=\"help\" href=\"" + dapBase + "documentation.html#query\">query</a></i>}</tt>\n" +
             "<br>For example,\n" +
             "<br>&nbsp;&nbsp;&nbsp;<a href=\"" + fullTimeExample + "\"><tt>" + 
                                                  fullTimeExample + "</tt></a>\n" +
@@ -7400,7 +7401,7 @@ Attributes {
 
         if (!complete) {
             writer.write(
-            "<p>For details, see the <a href=\"" + dapBase + 
+            "<p>For details, see the <a rel=\"help\" href=\"" + dapBase + 
                 "documentation.html\">" + dapProtocol + " Documentation</a>.\n");
             return;
         }
@@ -7417,7 +7418,7 @@ Attributes {
             "<li><a name=\"datasetID\"><b>datasetID</b></a> identifies the name that ERDDAP\n" +
             "  assigned to the dataset (for example, <tt>" + EDStatic.EDDGridIdExample + "</tt>). \n" +
             "  <br>You can see a list of " +
-              "<a href=\"" + tErddapUrl + "/" + dapProtocol + 
+              "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/" + dapProtocol + 
                   "/index.html\">datasetID options available via griddap</a>.\n" +
             "  <br>&nbsp;\n" +
 
@@ -7437,7 +7438,7 @@ Attributes {
                 "      <td>" + dataFileTypeDescriptions[i] + "</td>\n" +
                 "      <td>" + 
                       (dataFileTypeInfo[i].equals("")? 
-                          "&nbsp;" : "<a href=\"" +  XML.encodeAsHTML(dataFileTypeInfo[i]) + "\">info</a>") + 
+                          "&nbsp;" : "<a rel=\"help\" href=\"" +  XML.encodeAsHTML(dataFileTypeInfo[i]) + "\">info</a>") + 
                       "</td>\n" +
                 "      <td><a href=\"" +  datasetBase + dataFileTypeNames[i] + "?" + 
                     XML.encodeAsHTML(EDStatic.EDDGridDataTimeExample) + "\">example</a></td>\n" +
@@ -7450,8 +7451,8 @@ Attributes {
             "\n" +
 
             //ArcGIS
-            "<p><b><a href=\"http://www.esri.com/software/arcgis/index.html\">ArcGIS</a>\n" +
-            "     <a href=\"http://en.wikipedia.org/wiki/Esri_grid\">.esriAsc</a></b>\n" +
+            "<p><b><a rel=\"bookmark\" href=\"http://www.esri.com/software/arcgis/index.html\">ArcGIS</a>\n" +
+            "     <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Esri_grid\">.esriAsc</a></b>\n" +
             "     - <a name=\"ArcGIS\">ArcGIS</a> is a family of Geographical Information Systems (GIS) products from ESRI:\n" +
             "   <br>ArcView, ArcEditor, and ArcInfo.\n" +
             "   <br>If you have <b>ArcGIS 10 or higher</b>, you can download a subset of a dataset in a .nc file and open it in ArcGIS.\n" +
@@ -7509,30 +7510,30 @@ Attributes {
             "  <p>Shapefiles - Sorry, ERDDAP currently does not distribute grid data as shapefiles.\n" +
             "\n" +                
             //Ferret
-            "  <p><b><a href=\"http://www.ferret.noaa.gov/Ferret/\">Ferret</a></b>\n" +
+            "  <p><b><a rel=\"bookmark\" href=\"http://www.ferret.noaa.gov/Ferret/\">Ferret</a></b>\n" +
             "    <a name=\"Ferret\">is</a> a free program for visualizing and analyzing large and complex gridded\n" +
             "  <br>datasets. Ferret should work well with all datasets in griddap since griddap is\n" +
             "  <br>fully compatible with OPeNDAP. See the\n" +
-            "    <a href=\"http://ferret.pmel.noaa.gov/Ferret/documentation\">Ferret documentation</a>.\n" +
+            "    <a rel=\"help\" href=\"http://ferret.pmel.noaa.gov/Ferret/documentation\">Ferret documentation</a>.\n" +
             "  <br>Note that the griddap dataset's OPeNDAP base URL that you use with Ferret's\n" +
             "  <br><tt>set data</tt>, for example, " + datasetBase + " ,\n" +           
             "  <br>won't ever have a file extension at the end.\n" +
             "\n" +
             //IDL
-            "  <p><b><a href=\"http://www.ittvis.com/language/en-us/productsservices/idl.aspx/\">IDL</a></b> - \n" +
+            "  <p><b><a rel=\"bookmark\" href=\"http://www.ittvis.com/language/en-us/productsservices/idl.aspx/\">IDL</a></b> - \n" +
             "    <a name=\"IDL\">IDL</a> is a commercial scientific data visualization program. To get data from ERDDAP\n" +
             "  <br>into IDL, first use ERDDAP to select a subset of data and download a .nc file.\n" +
             "  <br>Then, use these\n" +
-            "    <a href=\"http://www.atmos.umd.edu/~gcm/usefuldocs/hdf_netcdf/IDL_hdf-netcdf.html\">instructions</a>\n" +
+            "    <a rel=\"help\" href=\"http://www.atmos.umd.edu/~gcm/usefuldocs/hdf_netcdf/IDL_hdf-netcdf.html\">instructions</a>\n" +
             "    to import the data from the .nc file into IDL.\n" +
             "\n" +
             //json
-            "  <p><b><a href=\"http://www.json.org/\">JSON .json</a></b>\n" +
+            "  <p><b><a rel=\"help\" href=\"http://www.json.org/\">JSON .json</a></b>\n" +
             "    <a name=\"json\">files</a> are widely used to transfer data to JavaScript scripts running on web pages.\n" +
             "  <br>Griddap will format the data in a flat, table-like structure in the .json file.\n" +
             "\n" +
             //jsonp
-            "  <p><b><a href=\"http://niryariv.wordpress.com/2009/05/05/jsonp-quickly/\">JSONP</a>\n" +
+            "  <p><b><a rel=\"help\" href=\"http://niryariv.wordpress.com/2009/05/05/jsonp-quickly/\">JSONP</a>\n" +
             "    <a href=\"http://www.json.org/\">.json</a></b>\n" +
             "    - <a name=\"jsonp\">Requests</a> for .json files may now include an optional jsonp request\n" +
             "  <br>by adding <tt>&amp;.jsonp=<i>functionName</i></tt> to the end of the query.\n" +
@@ -7541,8 +7542,8 @@ Attributes {
             "  <br>If originally there was no query, leave off the \"&amp;\" in your query.\n" +
             "\n" + 
             //matlab
-            "  <p><b><a href=\"http://www.mathworks.com/products/matlab/\">MATLAB</a>\n" +
-            "    <a href=\"http://www.serc.iisc.ernet.in/ComputingFacilities/software/matfile_format.pdf\">.mat</a></b>\n" +
+            "  <p><b><a rel=\"bookmark\" href=\"http://www.mathworks.com/products/matlab/\">MATLAB</a>\n" +
+            "    <a rel=\"help\" href=\"http://www.serc.iisc.ernet.in/ComputingFacilities/software/matfile_format.pdf\">.mat</a></b>\n" +
             "    <a name=\"matlab\">users</a> can use griddap's .mat file type to download data from within MATLAB.\n" +
             "  <br>Here is a one line example:\n" +
                  "<pre>load(urlwrite('" + fullMatExample + "', 'test.mat'));</pre>\n" +
@@ -7555,10 +7556,11 @@ Attributes {
                  "<pre>" + EDStatic.EDDGridMatlabPlotExample + "</pre>\n" +
             "  The numbers at the end of the first line specify the range for the color mapping. \n" +
             "  <br>The 'set' command flips the map to make it upright.\n" +
-            "  <p>There are also Matlab <a href=\"http://coastwatch.pfeg.noaa.gov/xtracto/\">Xtractomatic</a> scripts for ERDDAP,\n" +
+            "  <p>There are also Matlab\n" +
+            "    <a rel=\"bookmark\" href=\"http://coastwatch.pfeg.noaa.gov/xtracto/\">Xtractomatic</a> scripts for ERDDAP,\n" +
             "    which are particularly useful for\n" +
             "  <br>getting environmental data related to points along an animal's track (e.g.,\n" +
-            "    <a href=\"http://gtopp.org/\">GTOPP</a> data).\n" +
+            "    <a rel=\"bookmark\" href=\"http://gtopp.org/\">GTOPP</a> data).\n" +
             "  <p>ERDDAP stores datetime values in .mat files as \"seconds since 1970-01-01T00:00:00Z\".\n" +
             "  <br>To display one of these values as a String in Matlab, you can use, e.g.,\n" +
             "  <br><tt>datastr(cwwcNDBCMet.time(1)/86400 + 719529)</tt>\n" +
@@ -7566,21 +7568,49 @@ Attributes {
             "  <br>ERDDAP's base time of \"1970-01-01T00:00:00Z\" to Matlab's \"0000-01-00T00:00:00Z\".\n" +
             "\n" +
             //nc
-            "  <p><b><a href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF</a>\n" +
-            "    <a href=\"http://www.unidata.ucar.edu/software/netcdf/docs/netcdf/File-Format-Specification.html\">.nc</a></b>\n" +
-            "    - <a name=\"nc\">Requests</a> for .nc files return the data in a standard, version 3, 32-bit, .nc file.\n" +
+            "  <p><b><a rel=\"bookmark\" href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF</a>\n" +
+            "    <a rel=\"help\" href=\"http://www.unidata.ucar.edu/software/netcdf/docs/netcdf/File-Format-Specification.html\">.nc</a></b>\n" +
+            "    - <a name=\"nc\">Requests</a> for .nc files return the requested subset of the dataset in a\n" +
+            "  <br>standard, version 3, 32-bit, .nc file.\n" +
+            "\n" +
+            "  <p><a name=\"netcdfjava\">If</a> you are using\n" +
+            "  <a rel=\"bookmark\" href=\"http://www.unidata.ucar.edu/software/netcdf-java/\">NetCDF-Java</a>,\n" +
+            "  don't try to directly access an ERDDAP dataset or subset\n" +
+            "  <br>as a .nc file. (It won't work, mostly because that .nc file isn't a static, persistent file. It is a\n" +
+            "  <br>virtual file.)  Instead, use one of these two options:\n" +
+            "  <ul>\n" +
+            "  <li>Most situations: Open the ERDDAP dataset as an OPeNDAP dataset.  For example:\n" +
+            "    <br><tt>NetcdfFile nc = NetcdfDataset.openFile(\"" + datasetBase + "\", null);</tt>\n" +
+            "    <br>(don't use <tt>NetcdfFile.open</tt>; it is for local files only) or\n" +
+            "    <br><tt>NetcdfDataset nc = NetcdfDataset.openDataset(\"" + datasetBase + "\");</tt>\n" +
+            "    <br>(NetcdfFiles are a lower level approach than NetcdfDatasets.  It is your choice.)\n" +
+            "    <br>Don't use a file extension (e.g., .nc) at the end of the dataset's name.\n" +
+            "    <br>And don't specify a variable or a subset of the dataset at this stage.\n" +
+            "  <li>Few situations: By hand in a browser or with a program like\n" +
+            "    <a rel=\"help\" href=\"#curl\">curl</a>, download a .nc file\n" +
+            "    <br>with a subset of the dataset.  Then, use NetCDF-Java to open and access the data in\n" +
+            "    <br>that local file, e.g.,\n" +
+            "    <br><tt>NetcdfFile nc = NetcdfFile.open(\"c:\\downloads\\theDownloadedFile.nc\");</tt>\n" +
+            "    <br>or\n" +
+            "    <br><tt>NetcdfDataset nc = NetcdfDataset.openDataset(\"c:\\downloads\\theDownloadedFile.nc\");</tt>\n" +
+            "    <br>(NetcdfFiles are a lower level approach than NetcdfDatasets.  It is your choice.)\n" +
+            "    <br>This approach makes more sense if you want a local copy of the data subset, so\n" +
+            "    <br>that you can access it repeatedly (today, tomorrow, next week, ...) and quickly.\n" +
+            "  </ul>\n" +
+            "  <p>In both cases, you can then do what you want with the <tt>nc</tt> object, for example,\n" +
+            "   <br>request metadata or request a subset of a variable's data.\n" +
             "\n" +
             //ncHeader
             "  <p><b>.ncHeader</b>\n" +
             "    - <a name=\"ncHeader\">Requests</a> for .ncHeader files will return the header information (text) that\n" +
             "  <br>would be generated if you used\n" +
-            "    <a href=\"http://www.unidata.ucar.edu/software/netcdf/docs/ncdump-man-1.html\">ncdump -h <i>fileName</i></a>\n" +
+            "    <a rel=\"help\" href=\"http://www.unidata.ucar.edu/software/netcdf/docs/ncdump-man-1.html\">ncdump -h <i>fileName</i></a>\n" +
             "    on the corresponding .nc file.\n" +
             "\n" +
             //odv
-            "  <p><b><a href=\"http://odv.awi.de/\">Ocean Data View</a> .odvTxt</b>\n" +
+            "  <p><b><a rel=\"bookmark\" href=\"http://odv.awi.de/\">Ocean Data View</a> .odvTxt</b>\n" +
             "    - <a name=\"ODV\">ODV</a> users can download data in a\n" +
-            "  <br><a href=\"http://odv.awi.de/en/documentation/\">ODV Generic Spreadsheet Format .txt file</a>\n" +
+            "  <br><a rel=\"help\" href=\"http://odv.awi.de/en/documentation/\">ODV Generic Spreadsheet Format .txt file</a>\n" +
             "    by requesting griddap's .odvTxt fileType.\n" +
             "  <br>The dataset MUST include longitude, latitude, and time dimensions.\n" +
             "  <br>Any longitude values (0 to 360, or -180 to 180) are fine.\n" +
@@ -7608,12 +7638,38 @@ Attributes {
             "  <li>See ODV's <tt>Help</tt> menu for more help using ODV.\n" +
             "  </ol>\n" +
             "\n" +
+            //opendapLibraries
+            "  <p><b><a name=\"opendapLibraries\">OPeNDAP Libraries</a></b> - Since ERDDAP is an\n" +
+            "    <a rel=\"bookmark\" href=\"http://www.opendap.org/\">OPeNDAP</a>-compatible data server,\n" +
+            "    you can use\n" +
+            "  <br>any OPeNDAP client library, such as\n" +
+            "    <a rel=\"bookmark\" href=\"http://www.unidata.ucar.edu/software/netcdf/\">NetCDF-Java, NetCDF-C, NetCDF-Fortran, NetCDF-Perl</a>,\n" +
+            "  <br><a rel=\"bookmark\" href=\"http://www.opendap.org/java-DAP\">Java-DAP2</a>,\n" +
+            "  <a rel=\"bookmark\" href=\"http://www.ferret.noaa.gov/Ferret/\">Ferret</a>, or the\n" +
+            "     <a rel=\"bookmark\" href=\"http://pydap.org/client.html\">Pydap Client</a>,\n" +
+            "  to get data from an ERDDAP griddap dataset.\n" +
+            "  <br>When creating the initial connection to an ERDDAP griddap dataset from any OPeNDAP library:\n" +
+            "  <ul>\n" +
+            "  <li>Don't include a file extension (e.g., .nc) at the end of the dataset's name.\n" +
+            "  <li>Don't specify a variable or a subset of the dataset.\n" +
+            "  </ul>\n" +
+            "  <br>Once you have made the connection to the dataset, you can request metadata or a subset\n" +
+            "  <br>of a variable's data.\n" +
+            "\n" +
+            "  <p>For example, with the NetCDF-Java library, you can use:\n" +
+            "  <br><tt>NetcdfFile nc = NetcdfDataset.openFile(\"" + datasetBase + "\", null);</tt>\n" +
+            "  <br>(don't use <tt>NetcdfFile.open</tt>; it is for local files only) or\n" +
+            "  <br><tt>NetcdfDataset nc = NetcdfDataset.openDataset(\"" + datasetBase + "\");</tt>\n" +
+            "  <br>(NetcdfFiles are a lower level approach than NetcdfDatasets.  It is your choice.)\n" +
+            "  <br>Once you have the <tt>nc</tt> object, you can request metadata or a subset of a\n" +
+            "  <br>variable's data.\n" +
+            "\n" +
             //Pydap Client
-            "  <p><b><a href=\"http://pydap.org/client.html\">Pydap Client</a></b>\n" +
+            "  <p><b><a rel=\"bookmark\" href=\"http://pydap.org/client.html\">Pydap Client</a></b>\n" +
             "    <a name=\"PydapClient\">users</a>\n" +
             "    can access griddap datasets via ERDDAP's standard OPeNDAP services.\n" +
             "  <br>See the\n" +
-            "    <a href=\"http://pydap.org/client.html#accessing-gridded-data/\">Pydap Client instructions for accessing gridded data</a>.\n" +
+            "    <a rel=\"help\" href=\"http://pydap.org/client.html#accessing-gridded-data/\">Pydap Client instructions for accessing gridded data</a>.\n" +
             "  <br>Note that the name of a dataset in ERDDAP will always be a single word,\n" +
             "  <br>e.g., " + EDStatic.EDDGridIdExample + " in the OPeNDAP dataset URL\n" +
             "  <br>" + datasetBase + "\n" +
@@ -7621,20 +7677,20 @@ Attributes {
             "  <br>sample dataset in the Pydap instructions).\n" +
             "\n" +
             //R
-            "  <p><b><a href=\"http://www.r-project.org/\">R Statistical Package</a></b> -\n" +
+            "  <p><b><a rel=\"bookmark\" href=\"http://www.r-project.org/\">R Statistical Package</a></b> -\n" +
             "    <a name=\"R\">R</a> is an open source statistical package for many operating systems.\n" +
             "  <br>In R, you can download a NetCDF version 3 .nc file from ERDDAP. For example:\n" +
             "<pre>  download.file(url=\"" + fullTimeNcExample + "\", destfile=\"/home/bsimons/test.nc\")</pre>\n" +
             "  Then import data from that .nc file into R with the RNetCDF, ncdf, or ncdf4 packages available\n" +
-            "  <br>from <a href=\"http://cran.r-project.org/\">CRAN</a>.\n" +
+            "  <br>from <a rel=\"bookmark\" href=\"http://cran.r-project.org/\">CRAN</a>.\n" +
             "    Or, if you want the data in tabular form, download and import the data in a .csv file.\n" +
             "  <br>For example,\n" +
             "<pre>  download.file(url=\"" + fullTimeCsvExample + "\", destfile=\"/home/bsimons/test.csv\")\n" +
                  "  test&lt;-read.csv(file=\"/home/bsimons/test.csv\")</pre>\n" +
-            "  There are also R <a href=\"http://coastwatch.pfeg.noaa.gov/xtracto/\">Xtractomatic</a> scripts for ERDDAP,\n" +
+            "  There are also R <a rel=\"bookmark\" href=\"http://coastwatch.pfeg.noaa.gov/xtracto/\">Xtractomatic</a> scripts for ERDDAP,\n" +
             "    which are particularly useful for getting\n" +
             "  <br>environmental data related to points along an animal's track (e.g.,\n" +
-            "    <a href=\"http://gtopp.org/\">GTOPP</a> data).\n" +
+            "    <a rel=\"bookmark\" href=\"http://gtopp.org/\">GTOPP</a> data).\n" +
             "\n");
             
         //imageFile Types, graphs and maps
@@ -7643,12 +7699,12 @@ Attributes {
             "  <br>If a griddap request URL specifies a subset of data which is suitable for making\n" +
             "  <br>a graph or a map, and the fileType is an image fileType, griddap will return an image\n" +
             "  <br>with a graph or map. \n" +
-            "  <br>griddap request URLs can include optional <a href=\"#GraphicsCommands\">graphics commands</a> which let you\n" +
+            "  <br>griddap request URLs can include optional <a rel=\"help\" href=\"#GraphicsCommands\">graphics commands</a> which let you\n" +
             "  <br>customize the graph or map.\n" +
             "  <br>As with other griddap request URLs, you can create these URLs by hand or have a\n" +
             "  <br>computer program do it.  Or, you can use the Make A Graph web pages, which simplify\n" +
             "  <br>creating these URLs (see the \"graph\" links in the table of\n" +
-               "<a href=\"" + dapBase + "index.html\">griddap datasets</a>). \n" +
+               "<a rel=\"bookmark\" href=\"" + dapBase + "index.html\">griddap datasets</a>). \n" +
             "\n" +
             "   <p>The fileType options for downloading images of graphs and maps of grid data are:\n" +
             "  <table class=\"erd\" cellspacing=\"0\">\n" + 
@@ -7660,7 +7716,7 @@ Attributes {
                 "      <td>" + imageFileTypeDescriptions[i] + "</td>\n" +
                 "      <td>" + 
                       (imageFileTypeInfo[i] == null || imageFileTypeInfo[i].equals("")? 
-                          "&nbsp;" : "<a href=\"" +  imageFileTypeInfo[i] + "\">info</a>") + 
+                          "&nbsp;" : "<a rel=\"help\" href=\"" +  imageFileTypeInfo[i] + "\">info</a>") + 
                       "</td>\n" +   //must be mapExample below because kml doesn't work with graphExample
                 "      <td><a href=\"" +  datasetBase + imageFileTypeNames[i] + "?" + 
                     XML.encodeAsHTML(EDStatic.EDDGridMapExample) + "\">example</a></td>\n" +
@@ -7672,7 +7728,7 @@ Attributes {
             "  <p>Image Size - \".small\" and \".large\" were ERDDAP's original system for making\n" +
             "  <br>different-sized images. Now, for .png and .transparentPng images (not other\n" +
             "  <br>image file types), you can also use the\n" +
-            "    <a href=\"#GraphicsCommands\">&amp;.size=<i>width</i>|<i>height</i></a>\n" +
+            "    <a rel=\"help\" href=\"#GraphicsCommands\">&amp;.size=<i>width</i>|<i>height</i></a>\n" +
             "    parameter to request\n" +
             "  <br>an image of any size.\n" +
             "\n" +
@@ -7681,14 +7737,14 @@ Attributes {
             "  <br>the graph axes, landmask, or legend, and with a transparent (not opaque white)\n" +
             "  <br>background.  This option can be used for any type of graph or map.\n" +
             "  <br>When <tt>&amp;.draw=</tt> is set to anything other than <tt>surface</tt>, the default image size\n" +
-            "  <br>is 360x360 pixels. Use the <a href=\"#GraphicsCommands\">&amp;.size=<i>width</i>|<i>height</i></a> parameter\n" +
+            "  <br>is 360x360 pixels. Use the <a rel=\"help\" href=\"#GraphicsCommands\">&amp;.size=<i>width</i>|<i>height</i></a> parameter\n" +
             "     to specify a different size.\n" +
             "  <br>When <tt>&amp;.draw=</tt> is set to <tt>surface</tt>, ERDDAP makes an image where each\n" +
             "  <br>data point becomes one pixel, which may result in a huge image. If the request\n" +
             "  <br>takes too long or fails (perhaps for an odd apparent reason, like a Proxy Error)\n" +
             "  <br>either use a stride (see below) value greater than 1 (e.g., 5) for the x and y axis\n" +
             "  <br>variables, or use the\n" +
-            "    <a href=\"#GraphicsCommands\">&amp;.size=<i>width</i>|<i>height</i></a> parameter\n" +
+            "    <a rel=\"help\" href=\"#GraphicsCommands\">&amp;.size=<i>width</i>|<i>height</i></a> parameter\n" +
             "    to restrict the image size,\n" +
             "  <br>so that the image isn't huge.\n" +
             "\n");
@@ -7713,12 +7769,12 @@ Attributes {
             "<br>ERDDAP+curl is amazingly powerful and allows you to use ERDDAP in many new ways.\n" +
             "<br>On Linux or Mac OS X, curl is probably already installed as /usr/bin/curl.\n" +
             "<br>On Windows, or if your computer doesn't have curl already, you need to \n" +
-            "  <a href=\"http://curl.haxx.se/download.html\">download curl</a>\n" +
+            "  <a rel=\"bookmark\" href=\"http://curl.haxx.se/download.html\">download curl</a>\n" +
             "<br>and install it.  To get to a command line in Windows, use \"Start : Run\" and type in \"cmd\".\n" +
             "<br>(\"Win32 - Generic, Win32, binary (without SSL)\" worked for me on Windows XP and Windows 7.)\n" +
             "<br>Instructions for using curl are on the \n" +
-                "<a href=\"http://curl.haxx.se/download.html\">curl man page</a> and in this\n" +
-                "<a href=\"http://curl.haxx.se/docs/httpscripting.html\">curl tutorial</a>.\n" +
+                "<a rel=\"help\" href=\"http://curl.haxx.se/download.html\">curl man page</a> and in this\n" +
+                "<a rel=\"help\" href=\"http://curl.haxx.se/docs/httpscripting.html\">curl tutorial</a>.\n" +
             "<br>But here is a quick tutorial related to using curl with ERDDAP:\n" +
             "<ul>\n" +
             "<li>To download and save one file, use \n" +
@@ -7728,7 +7784,7 @@ Attributes {
             "  <br>&nbsp;&nbsp;<tt>-o <i>fileDir/fileName.ext</i></tt> specifies the name for the file that will be created.\n" +
             "  <br>For example,\n" +
             "<pre>curl -g \"http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.png?sst[%282010-09-01T12:00:00Z%29][][][]&amp;.draw=surface&amp;.vars=longitude|latitude|sst&amp;.colorBar=|||||\" -o BAssta5day20100901.png</pre>\n" +
-            "  The erddapUrl must be <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>.\n" +
+            "  The erddapUrl must be <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>.\n" +
             "  <br>If you get the URL from your browser's address textfield, this may be already done.\n" +
             "  <br>If not, in practice, this can be very minimal percent encoding: all you usually\n" +
             "  <br>have to do is convert % into %25, &amp; into %26, \" into %22, + into %2B,\n" +
@@ -7740,7 +7796,7 @@ Attributes {
             "<li>To download and save many files in one step, use curl with the globbing feature enabled:\n" +
             "  <br><tt>curl \"<i>erddapUrl</i>\" -o <i>fileDir/fileName#1.ext</i></tt>\n" +
             "  <br>Since the globbing feature treats the characters [, ], {, and } as special, you must also\n" +
-            "  <br><a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encode</a> \n" +
+            "  <br><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encode</a> \n" +
               "them in the erddapURL as &#037;5B, &#037;5D, &#037;7B, &#037;7D, respectively.\n" +
             "  <br>Then, in the erddapUrl, replace a zero-padded number (for example <tt>01</tt>) with a range\n" +
             "  <br>of values (for example, <tt>[01-05]</tt> ),\n" +
@@ -7758,9 +7814,9 @@ Attributes {
             "<li><a name=\"query\"><b>query</b></a> is the part of the request after the \"?\". \n" +
             "  <br>It specifies the subset of data that you want to receive.\n" +
             "  <br>In griddap, it is an optional\n" +
-            "    <a href=\"http://www.opendap.org\">OPeNDAP</a>\n " +
-            "    <a href=\"http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf\">DAP</a>\n" +
-            "    <a href=\"http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions\">projection constraint</a> query\n" +
+            "    <a rel=\"bookmark\" href=\"http://www.opendap.org\">OPeNDAP</a>\n " +
+            "    <a rel=\"help\" href=\"http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf\">DAP</a>\n" +
+            "    <a rel=\"help\" href=\"http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions\">projection constraint</a> query\n" +
             "  which can request:\n" +
             "   <ul>\n" +
             "   <li>One or more dimension (axis) variables, for example\n " +
@@ -7846,16 +7902,16 @@ Attributes {
             "     <br><a href=\"" + fullValueExample + "\"><tt>" + 
                                     fullValueExample + "</tt></a>\n" +
             "     <br>Some fileTypes (notably, .csv, .tsv, .htmlTable, .odvTxt, and .xhtml) display date/time values as\n" +
-            "     <br><a href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" date/time strings</a>\n" +
+            "     <br><a rel=\"help\" href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" date/time strings</a>\n" +
             "       (e.g., 2002-08-03T12:30:00Z).\n" +
             "     <br>ERDDAP has a utility to\n" +
-            "       <a href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
+            "       <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
             "       a Numeric Time to/from a String Time</a>.\n" +
             "     <br>See also:\n" +
-            "       <a href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
+            "       <a rel=\"help\" href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
             "       ERDDAP Deals with Time</a>.\n" +
             "   <li>For the time dimension, griddap extends the OPeNDAP standard by allowing you to specify an\n" +
-            "     <br><a href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" date/time string</a>\n" +
+            "     <br><a rel=\"help\" href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" date/time string</a>\n" +
             "       in parentheses, which griddap then converts to the\n" +
             "     <br>internal number (in seconds since 1970-01-01T00:00:00Z) and then to the appropriate\n" +
             "     <br>array index.  The ISO date/time value should be in the form: <i>YYYY-MM-DD</i>T<i>hh:mm:ssZ</i>,\n" +
@@ -8188,12 +8244,12 @@ Attributes {
             "\n" +
             "<h2>Overview</h2>\n" +
             "In addition to making data available via \n" +
-            "<a href=\"" + tErddapUrl + "/griddap/index.html\">gridddap</a> and \n" +
-            "<a href=\"" + tErddapUrl + "/tabledap/index.html\">tabledap</a>,\n" + 
+            "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/griddap/index.html\">gridddap</a> and \n" +
+            "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/tabledap/index.html\">tabledap</a>,\n" + 
             "ERDDAP makes some datasets available via ERDDAP's Web Coverage Service (WCS) web service.\n" +
             "\n" +
             "<p>See the\n" +
-            "<a href=\"" + tErddapUrl + "/wcs/index.html\">list of datasets available via WCS</a>\n" +
+            "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/wcs/index.html\">list of datasets available via WCS</a>\n" +
             "at this ERDDAP installation.\n" +
             "\n" +
             "<p>" + EDStatic.wcsLongDescriptionHtml + "\n" +
@@ -8201,12 +8257,12 @@ Attributes {
             "<p>WCS clients send HTTP POST or GET requests (specially formed URLs) to the WCS service and get XML responses.\n" +
             "Some WCS client programs are:\n" +
             "<ul>\n" +
-            "<li><a href=\"http://pypi.python.org/pypi/OWSLib/\">OWSLib</a> (free) - a Python command line library\n" +
-            "<li><a href=\"http://zeus.pin.unifi.it/cgi-bin/twiki/view/GIgo/WebHome\">GI-go</a> (free)\n" +
-            "<li><a href=\"http://www.cadcorp.com/\">CADCorp</a> (commercial) - has a \"no cost\" product called\n" +
-            "    <a href=\"http://www.cadcorp.com/products_geographical_information_systems/map_browser.htm\">Map Browser</a>\n" +
-            "<li><a href=\"http://www.ittvis.com/ProductServices/IDL.aspx\">IDL</a> (commercial)\n" +
-            "<li><a href=\"http://www.gvsig.gva.es/index.php?id=gvsig&amp;L=2\">gvSIG</a> (free)\n" +
+            "<li><a rel=\"bookmark\" href=\"http://pypi.python.org/pypi/OWSLib/\">OWSLib</a> (free) - a Python command line library\n" +
+            "<li><a rel=\"bookmark\" href=\"http://zeus.pin.unifi.it/cgi-bin/twiki/view/GIgo/WebHome\">GI-go</a> (free)\n" +
+            "<li><a rel=\"bookmark\" href=\"http://www.cadcorp.com/\">CADCorp</a> (commercial) - has a \"no cost\" product called\n" +
+            "    <a rel=\"bookmark\" href=\"http://www.cadcorp.com/products_geographical_information_systems/map_browser.htm\">Map Browser</a>\n" +
+            "<li><a rel=\"bookmark\" href=\"http://www.ittvis.com/ProductServices/IDL.aspx\">IDL</a> (commercial)\n" +
+            "<li><a rel=\"bookmark\" href=\"http://www.gvsig.gva.es/index.php?id=gvsig&amp;L=2\">gvSIG</a> (free)\n" +
             "</ul>\n" +
             "<h2>Sample WCS Requests</h2>\n" +
             "<ul>\n" +
@@ -9177,11 +9233,11 @@ Attributes {
             EDStatic.mag + "</a>";
         String datasetListRef = 
             "<br>See the\n" +
-            "  <a href=\"" + tErddapUrl + "/wcs/index.html\">list \n" +
+            "  <a rel=\"bookmark\" href=\"" + tErddapUrl + "/wcs/index.html\">list \n" +
             "    of datasets available via WCS</a> at this ERDDAP installation.\n";
         String makeAGraphListRef =
             "  <br>See the\n" +
-            "    <a href=\"" + tErddapUrl + "/info/index.html" +
+            "    <a rel=\"bookmark\" href=\"" + tErddapUrl + "/info/index.html" +
                 "?page=1&itemsPerPage=" + EDStatic.defaultItemsPerPage + "\">list \n" +
             "      of datasets with Make A Graph</a> at this ERDDAP installation.\n";
 
@@ -9227,7 +9283,7 @@ Attributes {
         //    "WCS can be used directly by humans using a browser.\n" +
         //    "<br>Some of the information you need to write such software is below.\n" +
         //    "<br>For additional information, please see the\n" +
-        //    "  <a href=\"http://www.opengeospatial.org/standards/wcs\">WCS standard documentation</a>.\n" +
+        //    "  <a rel=\"help\" href=\"http://www.opengeospatial.org/standards/wcs\">WCS standard documentation</a>.\n" +
         //    "\n");
 
         wcsRequestDocumentation(tErddapUrl, writer, getCap, desCov, getCov);
@@ -9235,8 +9291,8 @@ Attributes {
 
             /*
             http://www.esri.com/software/arcgis/\">ArcGIS</a>,\n" +
-            "    <a href=\"http://mapserver.refractions.net/phpwms/phpwms-cvs/\">Refractions PHP WMS Client</a>, and\n" +
-            "    <a href=\"http://udig.refractions.net//\">uDig</a>. \n" +
+            "    <a rel=\"bookmark\" href=\"http://mapserver.refractions.net/phpwms/phpwms-cvs/\">Refractions PHP WMS Client</a>, and\n" +
+            "    <a rel=\"bookmark\" href=\"http://udig.refractions.net//\">uDig</a>. \n" +
             "  <br>To make a client work, you would install the software on your computer.\n" +
             "  <br>Then, you would enter the URL of the WMS service into the client.\n" +
             "  <br>For example, in ArcGIS (not yet fully working because it doesn't handle time!), use\n" +
@@ -9252,13 +9308,13 @@ Attributes {
             "  <br>You may find that using\n" +
             makeAGraphRef + "\n" +
             "    and selecting the .kml file type (an OGC standard)\n" +
-            "  <br>to load images into <a href=\"http://earth.google.com/\">Google Earth</a> provides\n" +            
+            "  <br>to load images into <a rel=\"bookmark\" href=\"http://earth.google.com/\">Google Earth</a> provides\n" +            
             "     a good (non-WMS) map client.\n" +
             makeAGraphListRef +
             "  <br>&nbsp;\n" +
             "<li> <b>Web page authors can embed a WMS client in a web page.</b>\n" +
             "  <br>For the map above, ERDDAP is using \n" +
-            "    <a href=\"http://openlayers.org\">OpenLayers</a>, \n" +  
+            "    <a rel=\"bookmark\" href=\"http://openlayers.org\">OpenLayers</a>, \n" +  
             "    which is a very versatile WMS client.\n" +
             "  <br>OpenLayers doesn't automatically deal with dimensions\n" +
             "    other than longitude and latitude (e.g., time),\n" +            
@@ -9273,7 +9329,7 @@ Attributes {
                                                              tWmsTransparentExample + "</a>\n" +
             datasetListRef +
             "  <br><b>For more information, see ERDDAP's \n" +
-            "    <a href=\"" +tErddapUrl + "/wms/documentation.html\">WMS Documentation</a> .</b>\n" +
+            "    <a rel=\"help\" href=\"" +tErddapUrl + "/wms/documentation.html\">WMS Documentation</a> .</b>\n" +
             "  <p><b>In practice, it is probably easier and more versatile to use this dataset's\n" +
             "    " + makeAGraphRef + " form</b>\n" +
             "  <br>than to use WMS for this purpose.\n" +
@@ -9308,7 +9364,7 @@ Attributes {
             "<br>Or, if you use WCS client software, the software will create the URLs and process the results for you.\n" + 
             "<br>There are three types of WCS requests: GetCapabilities, DescribeCoverage, GetCoverage.\n" +
             "<br>For detailed information, please see the\n" +
-            "  <a href=\"http://www.opengeospatial.org/standards/wcs\">WCS standard documentation</a>.\n" +
+            "  <a rel=\"help\" href=\"http://www.opengeospatial.org/standards/wcs\">WCS standard documentation</a>.\n" +
             "\n" +
 
             "<p><b>GetCapabilities</b> - A GetCapabilities request returns an XML document which provides\n" +
@@ -9338,7 +9394,7 @@ Attributes {
             "  </table>\n" +
             "  <sup>*</sup> Parameter names are case-insensitive.\n" +
             "  <br>Parameter values are case sensitive and must be\n" +
-            "    <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
+            "    <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
             "    which your browser normally handles for you.\n" +
             "  <br>The parameters may be in any order in the URL.\n" +
             "  <br>&nbsp;\n" +
@@ -9380,7 +9436,7 @@ Attributes {
             "  </table>\n" +
             "  <sup>*</sup> Parameter names are case-insensitive.\n" +
             "  <br>Parameter values are case sensitive and must be\n" +
-            "    <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
+            "    <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
             "    which your browser normally handles for you.\n" +
             "  <br>The parameters may be in any order in the URL.\n" +
             "  <br>&nbsp;\n" +
@@ -9433,7 +9489,7 @@ Attributes {
             "    <td nowrap>time=<i>time</i>\n" +
             "    <br>time=<i>beginTime/endTime</i></td>\n" +
             "    <td>The time values must be in\n" +
-            "      <a href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" format</a>,\n" +
+            "      <a rel=\"help\" href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" format</a>,\n" +
             "      for example, <span style=\"white-space: nowrap;\">\"1985-01-02T00:00:00Z\").</span>\n" +
             "      <br>In ERDDAP, any time value specified rounds to the nearest available time.\n" +
             "      <br>Or, in the WCS standard and ERDDAP, you can use \"now\" to get the last available time.\n" +
@@ -9442,10 +9498,10 @@ Attributes {
             "      <br>The WCS standard allows <i>time=beginTime,endTime,timeRes</i>.  ERDDAP doesn't allow this.\n" +
             "      <br>The WCS standard allows <i>time=time1,time2,...</i>  ERDDAP doesn't allow this.</td>\n" +
             "      <br>ERDDAP has a utility to\n" +
-            "        <a href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
+            "        <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
             "        a Numeric Time to/from a String Time</a>.\n" +
             "      <br>See also:\n" +
-            "        <a href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
+            "        <a rel=\"help\" href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
             "        ERDDAP Deals with Time</a>.\n" +
             "  </tr>\n" +
             "  <tr>\n" +
@@ -9506,7 +9562,7 @@ Attributes {
             "  </table>\n" +
             "  <sup>*</sup> Parameter names are case-insensitive.\n" +
             "  <br>Parameter values are case sensitive and must be\n" +
-            "    <a href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
+            "    <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encoded</a>,\n" +
             "    which your browser normally handles for you.\n" +
             "  <br>The parameters may be in any order in the URL.\n" +
             "  <br>&nbsp;\n" +

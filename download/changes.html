@@ -21,10 +21,10 @@
       </td> 
     <td align="right"><font size="-1"> 
       <br>Brought to you by 
-      <a title="National Oceanic and Atmospheric Administration" href="http://www.noaa.gov">NOAA</a>  
-      <a title="National Marine Fisheries Service"               href="http://www.nmfs.noaa.gov">NMFS</a>  
-      <a title="Southwest Fisheries Science Center"              href="http://swfsc.noaa.gov">SWFSC</a>  
-      <a title="Environmental Research Division" href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
+      <a title="National Oceanic and Atmospheric Administration" rel="bookmark" href="http://www.noaa.gov">NOAA</a>  
+      <a title="National Marine Fisheries Service" rel="bookmark" href="http://www.nmfs.noaa.gov">NMFS</a>  
+      <a title="Southwest Fisheries Science Center" rel="bookmark" href="http://swfsc.noaa.gov">SWFSC</a>  
+      <a title="Environmental Research Division" rel="bookmark"  href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>  
       &nbsp; &nbsp;
       </font></td> 
   </tr> 
@@ -41,11 +41,93 @@
 
 <table style="width:600px; border-style:outset; border-width:0px; padding:0px; " 
   cellspacing="0"> 
-<tr>
-<td>
-
 
 <!-- ****************************************************************************** -->
+<tr>
+<td>
+<h2><a name="changes1.40">Changes</a> in version 1.40 (released 2012-10-??)</h2>
+<ul>
+<li><b>New Features:</b>
+  <ul>
+  <li>There is a new output file format for tabledap datasets: .ncCFMA, which saves the
+    requested data in a .nc file which conforms to the CF 
+    <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries">Discrete Sampling Geometries</a> Multidimensional Array options,
+    and which therefore conforms to the 
+    <a href="http://www.nodc.noaa.gov/data/formats/netcdf/">NODC templates</a> 
+    for storing this type of data.
+    Thanks to NODC.
+  <li>tabledap requests can now include time constraints such as <tt>&amp;time&gt;now-5days</tt>.
+    See the <a href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#now">documentation</a>.
+    Thanks to James Gosling.
+  </ul>
+
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <ul>
+  <li>If you are upgrading from ERDDAP 1.38, there were no changes that require 
+    you to make changes to your configuration files.
+  <li>ERDDAP public releases and internal milestones are available via
+    <a href="https://github.com/BobSimons">ERDDAP on GitHub</a>.
+    For more information, see the 
+    <a href="https://github.com/BobSimons/erddap/wiki">Wiki</a> for the ERDDAP project
+    as well as the more general
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#programmersGuide">ERDDAP Programmer's Guide</a>.
+    (This was announced separately a few weeks after the ERDDAP 1.38 release.)
+  <li>GenerateDatasetsXml has been improved.
+    <ul>
+    <li>The script was revised so it should work correctly all all Linux computers (not just a few).
+    <li>It now adds <tt>creator_name, creator_email,</tt> and <tt>creator_url</tt> whenever possible.
+    <li>Many other small improvements.
+    </ul>
+  <li>Refined how ERDDAP deals with time.  
+    <ul>
+    <li>Internally, ERDDAP now handles times at millisecond precision (not seconds).
+    <li>You can now optionally specify the time precision for a given dataset, see
+      <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#time_precision">time_precision</a>.  For example, you might set a dataset to display time values
+      with date precision (e.g., 1970-01-01).
+    <li>Your current datasets will use the default settings, so they are unaffected
+      by these changes and will continue to display time with seconds precision.
+    </ul>
+    Thanks to Servet Cizmeli and Philip Goldstein.
+  <li><a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a>
+    is a new dataset <tt>type</tt> which you can use in your datasets.xml file.
+    It can read data from any of the numerous file formats defined by the     
+    <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries</a> conventions.    
+    Thanks to NODC and
+    special thanks to Kyle Wilcox for making sample files for the huge number of valid DSG file formats
+    and for making them publicly available. 
+  </ul>
+
+
+<li><b>Small changes/Bug Fixes:</b>
+  <ul>
+  <li>Expanded the <a href="#quickRestart">quickRestart</a> system to all relevant 
+     EDDGrid and EDDTable subclasses.
+  <li>Improved documentation, especially related to how to use 
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/griddap/documentation.html#fileType">griddap</a> and
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#fileType">tabledap</a> 
+    from various client software.
+  <li>Changed advanced search to support minTime and/or maxTime expressed as epochSeconds.
+    Thanks to Lynn Dewitt.
+  <li>Changed .htmlTable output to display urls and email addresses as links.
+  <li>Added "rel=" and "rev=" to relevant &lt;a href&gt; tags.
+    Thanks to Pat Cappelaere from the OGC REST project.
+  <li>Improved protection against unrealistically large data requests,
+    notably within tabledap, where it is a harder problem.
+  <li>Moved more messages to messages.xml.
+  <li>Made speed improvements.
+  <li>Fixed EDDGridFromFiles to allow descending sorted axes.
+    Thanks to Maricel Etchegaray.
+  <li>Removed references to iGoogle since it will be discontinued.
+  <li>Made several small changes and bug fixes.
+  </ul>
+</ul>
+
+</td>
+</tr>
+
+<!-- ****************************************************************************** -->
+<tr>
+<td>
 <h2><a name="changes1.38">Changes</a> in version 1.38 (released 2012-04-21)</h2>
 <ul>
 <li><b>New Features:</b>
@@ -54,8 +136,8 @@
     ISO 19115 and FGDC XML metadata files for each dataset. 
     Links to the files are visible on every list of datasets
     (e.g., from Full Text Search) and also in Web Accessible Folders (WAF)
-    (see the <a href="http://coastwatch.pfeg.noaa.gov/erddap/metadata/fgdc/xml/">FGDC WAF</a> and
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/metadata/iso19115/xml/">ISO 19115 WAF</a>).
+    (see the <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/metadata/fgdc/xml/">FGDC WAF</a> and
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/metadata/iso19115/xml/">ISO 19115 WAF</a>).
     Thanks to Ted Habermann, Dave Neufeld, and many others.
 
   <li>Full Text Searches for Datasets now support <tt>-<i>excludedWord</i></tt>
@@ -68,7 +150,7 @@
     Thanks to Steve Hankin and the UAF project.
 
   <li>OpenSearch - ERDDAP now supports the
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/opensearch1.1/index.html">OpenSearch 1.1</a>
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/opensearch1.1/index.html">OpenSearch 1.1</a>
     standard for searching for datasets. Among other things, this allows
     catalog aggregation websites to do distributed searches
     (passing a search request to each catalog that it knows about).
@@ -87,7 +169,7 @@
 <li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
   <ul>
 
-  <li>A quick restart system allows ERDDAP to restart much faster.
+  <li><a name="quickRestart">A</a> quick restart system allows ERDDAP to restart much faster.
     <br><b>Please add this to your setup.xml file</b> 
     right after <tt>&lt;/datasetsRegex&gt;</tt>:<pre>
       &lt;!-- If true, when you start up ERDDAP, some types of datasets (e.g., 
@@ -141,7 +223,7 @@
     <br>So, <b>good dataset metadata leads to good ERDDAP-generated 
     ISO 19115 and FGDC metadata.</b>
     <br><b>See the new documentation for the many new RECOMMENDED
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#globalAttributes">Global Attributes</a>.</b>  
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#globalAttributes">Global Attributes</a>.</b>  
 
   <li>In datasets.xml, if you want to tell ERDDAP to use a pre-made 
     FGDC and/or ISO 19115 file

@@ -20,6 +20,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.GregorianCalendar;
@@ -27,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.commons.codec.digest.DigestUtils;  //in netcdf-all.jar
 //import org.codehaus.janino.ExpressionEvaluator;
@@ -7107,5 +7109,759 @@ project)
         }
     }
 */
+
+    /**
+     * 2012-07-20 Convert .csv globec files to .nc.  
+     * Files are from lynn from oceanwatch database
+     * /Volumes/PFEL_Shared_Space/PFEL_Share/Lynn2Bob/oceanwatch_databases/PRD_ctd.csv 
+     * stored locally as e.g., local:F:\data\globec\PRD_ctd.csv )
+     */
+    public static void convertGlobecCsvToNc() throws Exception {
+        String2.log("\n*** convertGlobecCsvToNc");
+        String inDir = "f:/data/globec/";
+        String outDir = "c:/u00/data/points/globec/";
+        String fileNames[] = {
+            //"Globec_birds",     
+            "Globec_bottle_data_2002" /*, 
+            "Globec_cetaceans", 
+            "Globec_moc1", 
+            "Globec_vpt",       
+            "PRD_ctd",
+            "rockfish0",
+            "rockfish1",
+            "rockfish2",
+            "rockfish3",
+            "rockfish4",
+            "rockfish5",
+            "rockfish6",
+            "rockfish7",
+            "rockfish8",
+            "rockfish9"  
+            /* */};
+        for (int i = 0; i < fileNames.length; i++) {
+            Table table = new Table();
+            table.readASCII(inDir + fileNames[i] + ".csv");
+            boolean isGlobec = fileNames[i].equals("Globec_bottle_data_2002");
+            //String2.log("isGlobec=" + isGlobec + "\ncolNames=" + table.getColumnNamesCSSVString());
+            for (int col = 0; col < table.nColumns(); col++) { 
+                String colName = table.getColumnName(col);
+                boolean isCastNo = colName.equals("cast_no");
+                //String2.log("colName=" + colName + " " + isCastNo);
+
+                //save science data columns (not date values) as floats, not doubles
+                if (table.getColumnName(col).toLowerCase().indexOf("date") < 0) {
+                    PrimitiveArray pa = table.getColumn(col);
+                    if (pa instanceof DoubleArray) {
+                        table.setColumn(col, new FloatArray(pa));
+
+                    //globecBottle cast_no has valid data values = 127 
+                    } else if (isGlobec && isCastNo) {
+                        String2.log("converting cast_no to ShortArray");
+                        pa = new ShortArray(pa);
+                        pa.switchFromTo("NaN", "127");
+                        double[] stats = pa.calculateStats();
+                        String2.log("cast_no stats=" + String2.toCSSVString(stats));
+                        table.setColumn(col, pa);
+                    }
+                }
+            }
+                    
+            String2.log(table.getNCHeader("row"));
+            table.saveAsFlatNc(outDir + fileNames[i] + ".nc", "row");
+        }
+    }
+
+    /** This splits rockfish_view into 9 chunks of more manageable size. */
+    public static void splitRockfish() throws Exception {
+        String2.log("\n*** splitRockfish");
+        String fileDir = "f:/data/globec/";
+        StringArray sa = StringArray.fromFile(fileDir + "rockfish_view.csv");
+        int size = sa.size();
+
+        //this file has \N for missing values.  change to ""
+        for (int i = 1; i < size; i++)
+            sa.set(i, String2.replaceAll(sa.get(i), "\\N", ""));
+
+        String colNames = sa.get(0);
+        int chunk = 0;
+        while (size > 1) { 
+            int stop = Math.min(100000, size - 1);
+            StringArray subset = (StringArray)sa.subset(0, 1, stop); //stop is inclusive
+            subset.toFile(fileDir + "rockfish" + (chunk++) + ".csv");
+            sa.removeRange(1, stop + 1); //end is exclusive
+            size = sa.size();
+        }
+    }
+
+    /** 
+     * This converts f:/data/calcofi2012/*.txt files to *.nc files with some metadata.
+     *
+     * <p>2012-08-15 The calcofi8102012.mdb file is from ???.
+     * It is actually a .accdb file (Access 2007 or 2010).  
+     * I can't read it in my Access 2003.
+     * Roy read it via Access 2010 on his computer.
+     * He used File, Export, delimited, tab to make .txt file for each table.  
+     */
+    public static void processCalcofi2012() throws Exception {
+        String dir = "f:/data/calcofi2012/";
+        String tableName;
+        Table table = new Table();
+
+        //I'm converting true to their generous typing:
+        //  int->int, smallint->short,
+        //  real->float, decimal->double, numeric->double
+/*
+table = processOneCalcofi2012(
+dir, tableName = "CC_?", new String[]{
+//colNames             types  units  long_name
+"",         "String", "", "",
+"",         "String", "", "",
+"",         "String", "", "",
+"",         "String", "", "",
+"",         "String", "", "",
+"",         "String", "", "",
+"",         "String", "", "",
+"",         "String", "", "",
+"",         "String", "", "",
+"",         "String", "", ""});
+*/
+  
+
+//***** Tables that are Look Up Tables 
+/*
+
+Table speciesCodesLUT = processOneCalcofi2012(
+dir, tableName = "CC_SPECIES_CODES", new String[]{
+//colNames             types  units  long_name
+"speciesCode",        "int",    "", "CalCOFI Species Code",
+"ITISTsn",            "int",    "", "Taxonomic Serial # from Integrated Taxonomic Information System",
+"CCHSpeciesCode",     "String", "", "CalCOFI Hierarchical Species Code",
+"scientificName",     "String", "", "Scientific Name",
+"scientificNameItalic","String","", "Scientific Name Ready to Italicize",
+"order",              "double", "", "Numbered Phylogenetic Order",
+"CFGCode",            "double", "", "California Fish & Game Internal Code",
+"RaceBaseCode",       "double", "", "RaceBase (AFSC) Code",
+"NODCCode",           "double", "", "NODC Taxonomic Code",
+"CFGSeaSurveyCode",   "double", "", "California Fish & Game Sea Survey Code",
+"commonName",         "String", "", "Common Name"},
+"");
+speciesCodesLUT.reorderColumns(StringArray.fromCSV(
+    "speciesCode, scientificName, commonName"), 
+    true);  //discard others
+
+
+table = processOneCalcofi2012(
+dir, tableName = "CC_TOWTYPES", new String[]{
+//colNames             types  units  long_name
+"towTypeCode",        "String", "", "Short Tow Type Code",
+"longTowType",        "String", "", "Long Tow Type",
+"traditional",        "String", "", "Traditional Description",
+"longDescription",    "String", "", "Long Description"},
+"");
+
+String towTypesDescription =   //hand picked and alphabetized; added to towTypeCode vars below
+"BT=BOTTOM TRAWL\n" +
+"C1=CalCOFI One Meter Oblique Tow\n" +
+"C2=CalCOFI Two Meter Oblique Tow\n" +
+"CB=CalCOFI Oblique Bongo Tow\n" +
+"CV=CalCOFI Vertical Egg Tow\n" +
+"DC=DEEP BONGO\n" +
+"HR=HEAD ROPE\n" +
+"M1=MOCNESS 1M (10)\n" +
+"M2=MOCNESS 10M (6)\n" +
+"MB=MARBOBL\n" +  //?
+"MT=Twin Winged Continuous-Flow Surface Tow\n" +
+"NE=NEUSTON\n" +
+"PV=Paired Tows of CalCOFI Vertical Egg Net";
+
+Table shipCodesLUT = processOneCalcofi2012(
+dir, tableName = "CC_SHIPCODES", new String[]{
+//colNames             types  units  long_name
+"shipCode",           "String", "", "Ship Code",
+"shipName",           "String", "", "Ship Name",
+"NODCShipCode",       "String", "", "NODC Ship Code"},
+towTypesDescription);
+shipCodesLUT.reorderColumns(StringArray.fromCSV(
+    "shipCode, shipName"), 
+    true);  //discard others
+*/
+Table stationsLUT = processOneCalcofi2012(
+dir, tableName = "CC_STATIONS", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code",
+"order",              "int",    "", "Order Each Station Was Occupied",
+"line",               "double", "", "Line",
+"station",            "double", "", "Station",
+"arriveDate",         "String", "yyMMdd", "Arrive Date",
+"arriveTime",         "int",    "HHmm",   "Arrive Time",   //should have been 0-padded string!
+"departDate",         "String", "yyMMdd", "Depart Date",
+"departTime",         "int",    "HHmm",   "Depart Time",   //should have been 0-padded string!
+"latitude",           "int",    "degrees_north", "Latitude",
+"latitudeMinutes",    "double", "", "MM.M Latitude Minutes",  //MM.M
+"latitudeLocation",   "String", "", "Latitude Location",  //???!!! .pdf incorrectly has "W or E"
+"longitude",          "int",    "degrees_east", "Longitude",
+"longitudeMinutes",   "double", "", "MM.M Longitude Minutes",
+"longitudeLocation",  "String", "", "Longitude Location",  //???!!! .pdf incorrectly has "N or S"
+"bottomDepth",        "String", "", "Bottom Depth (meters/fathoms)",  //???
+"region",             "int",    "", "Region (1 - 23)",
+"navigator",          "String", "", "Navigator's Initials",
+"remarks",            "String", "", "Remarks",
+"hydrocastDate",      "String", "yyMMdd", "Hydrocast Date",
+"timeZone",           "int",    "", "Time Zone (0 - 10)",  //e.g., 8 (is it ever not 7 or 8?)
+"observer",           "String", "", "Station Observer's Initials"},
+"");
+
+
+/*
+
+//****** The other tables (usually joined with the Look Up Tables from above)
+table = processOneCalcofi2012(
+dir, tableName = "CC_ACTIVITIES", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code",
+"order",              "int",    "", "Order Each Station Was Occupied",
+"activity",           "String", "", "Activity",
+"activityStatusCode", "String", "", "Activity Status Code"},
+towTypesDescription);
+  
+table = processOneCalcofi2012(
+dir, tableName = "CC_ANGLES", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code",
+"order",              "int",    "", "Order Each Station Was Occupied",
+"towTypeCode",        "String", "", "Short Tow Type Code",
+"towNumber",          "short",  "", "Sequential Tow Number",
+"PortStarboard",      "String", "", "'P'ort or 'S'tarboard Net Location",
+"wireOut",            "int",    "m","Wire Out",
+"angle",              "short",  "degrees", "Angle"},
+towTypesDescription);
+
+table = processOneCalcofi2012(
+dir, tableName = "CC_CRUISES", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code"},
+towTypesDescription);
+
+table = processOneCalcofi2012(
+dir, tableName = "CC_CRUISETYPES", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code",
+"towTypeCode",        "String", "", "Short Tow Type Code",
+"beginDate",          "String", "yyMMdd", "Begin Date",   //? no documentation for if yyMMdd
+"endDate",            "String", "yyMMdd", "End Date",     //? no documentation for if yyMMdd
+"cruiseID",           "String", "", "Cruise Identifier",
+"remarks",            "String", "", "Remarks"},
+towTypesDescription);
+
+table = processOneCalcofi2012(
+dir, tableName = "CC_CRUISETYPE_CODES", new String[]{
+//colNames             types  units  long_name
+"numberingCode",      "int",    "", "Sequential Numbering Code",
+"typeCode",           "String", "", "Cruise Type Code",
+"traditional",        "String", "", "Traditional Description"},
+towTypesDescription);
+
+table = processOneCalcofi2012(
+dir, tableName = "CC_EGG_COUNTS", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code",
+"order",              "int",    "", "Order Each Station Was Occupied",
+"towTypeCode",        "String", "", "Short Tow Type Code",
+"towNumber",          "short",  "", "Sequential Tow Number",
+"PortStarboard",      "String", "", "'P'ort or 'S'tarboard Net Location",
+"speciesCode",        "int",    "", "CalCOFI Species Code",
+"eggCount",           "double", "", "Egg Count (Raw)",
+"strata",             "float",  "", "Strata",
+"weightFactor",       "double", "", "Weight Factor"},
+towTypesDescription);
+
+table = processOneCalcofi2012(
+dir, tableName = "CC_EGG_STAGES", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code",
+"order",              "int",    "", "Order Each Station Was Occupied",
+"towTypeCode",        "String", "", "Short Tow Type Code",
+"towNumber",          "short",  "", "Sequential Tow Number",
+"PortStarboard",      "String", "", "'P'ort or 'S'tarboard Net Location",
+"speciesCode",        "int",    "", "CalCOFI Species Code",
+"eggStage",           "double", "", "Egg Stage",
+"eggDay",             "String", "", "Egg Day",
+"eggStageCount",      "double", "", "Egg Stage Count (Raw)"},
+towTypesDescription);
+
+
+table = processOneCalcofi2012(
+dir, tableName = "CC_FISH_COUNTS", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code",
+"order",              "int",    "", "Order Each Station Was Occupied",
+"towTypeCode",        "String", "", "Short Tow Type Code",
+"towNumber",          "short",  "", "Sequential Tow Number",
+"PortStarboard",      "String", "", "'P'ort or 'S'tarboard Net Location",
+"speciesCode",        "int",    "", "CalCOFI Species Code",
+"fishCount",          "double", "", "Fish Count (Raw)"},
+towTypesDescription);
+
+table = processOneCalcofi2012(
+dir, tableName = "CC_FISH_SIZES", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code",
+"order",              "int",    "", "Order Each Station Was Occupied",
+"towTypeCode",        "String", "", "Short Tow Type Code",
+"towNumber",          "short",  "", "Sequential Tow Number",
+"PortStarboard",      "String", "", "'P'ort or 'S'tarboard Net Location",
+"speciesCode",        "int",    "", "CalCOFI Species Code",
+"fishSize",           "double", "mm","Fish Size",
+"fishTally",          "double", "",  "Fish Tally"},
+towTypesDescription);
+
+table = processOneCalcofi2012(
+dir, tableName = "CC_FLOWMETERS", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code",
+"flowMeterNumber",    "String", "", "Flow Meter Number",
+"calibDateBefore",    "String", "yyMMdd", "Calibration Before Date",
+"calibDateAfter",     "String", "yyMMdd", "Calibration After Date",
+"slope",              "double", "", "Slope",
+"intercept",          "double", "", "Intercept",
+"lineCode",           "String", "", "Line Code ('C'ommon/'S'ingle)"},
+towTypesDescription);
+
+table = processOneCalcofi2012(
+dir, tableName = "CC_HYDROS", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code",
+"order",              "int",    "", "Order Each Station Was Occupied",
+"castType",           "String", "", "Cast Type ('B'ucket, 'C'TD, 'H'ydrocast, 10'M'eterBottle)",
+"standardDepth",      "double", "m",                    "Standard Depth",
+"temperature",        "double", "degree_C",             "Temperature",
+"salinity",           "double", "parts per thousand",   "Salinity",
+"waterDensity",       "double", "1000 * (g/liter - 1)", "Water Density",
+"oxygen",             "double", "ml/liter",             "Oxygen Content",
+"dynHeightAnom",      "double", "dynamic meters",       "Dynamic Height Anomaly",
+"oxygenSaturation",   "double", "percent",              "Oxygen Saturation"},
+towTypesDescription);
+
+table = processOneCalcofi2012(
+dir, tableName = "CC_LARVAE_COUNTS", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code",
+"order",              "int",    "", "Order Each Station Was Occupied",
+"towTypeCode",        "String", "", "Short Tow Type Code",
+"towNumber",          "short",  "", "Sequential Tow Number",
+"PortStarboard",      "String", "", "'P'ort or 'S'tarboard Net Location",
+"speciesCode",        "int",    "", "CalCOFI Species Code",
+"larvaeCount",        "double", "", "Larvae Count (Raw)",
+"measureDate",        "String", "yyMMdd", "Measure Date",
+"initials",           "String", "", "Measurer's Initials",
+"disintegrated",      "double", "", "Number of Disintegrated Larvae in Sample"},
+towTypesDescription);
+
+table = processOneCalcofi2012(
+dir, tableName = "CC_LARVAE_SIZES", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code",
+"order",              "int",    "", "Order Each Station Was Occupied",
+"towTypeCode",        "String", "", "Short Tow Type Code",
+"towNumber",          "short",  "", "Sequential Tow Number",
+"PortStarboard",      "String", "", "'P'ort or 'S'tarboard Net Location",
+"speciesCode",        "int",    "", "CalCOFI Species Code",
+"larvaeSize",         "double", "mm", "Larvae Size",
+"larvaeTally",        "double", "",   "Larvae Tally"},
+towTypesDescription);
+
+table = processOneCalcofi2012(
+dir, tableName = "CC_LARVAE_STAGES", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code",
+"order",              "int",    "", "Order Each Station Was Occupied",
+"towTypeCode",        "String", "", "Short Tow Type Code",
+"towNumber",          "short",  "", "Sequential Tow Number",
+"PortStarboard",      "String", "", "'P'ort or 'S'tarboard Net Location",
+"speciesCode",        "int",    "", "CalCOFI Species Code",
+"larvaeStage",        "String", "", "Larvae Stage",
+"larvaeTally",        "double", "", "Larvae Tally"},
+towTypesDescription);
+
+//2012-08-15 Roy(?) reversed the names of CC_MOCNESSES and CC_NETS. Bob unreversed them.
+table = processOneCalcofi2012(
+dir, tableName = "CC_MOCNESSES", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code",
+"order",              "int",    "", "Order Each Station Was Occupied",
+"towTypeCode",        "String", "", "Short Tow Type Code",
+"towNumber",          "short",  "", "Sequential Tow Number",
+"PortStarboard",      "String", "", "'P'ort or 'S'tarboard Net Location",
+"oxygenMean",         "double", "?",         "Oxygen Mean",
+"temperatureMean",    "double", "degree_C",  "Temperature Mean",
+"salinityMean",       "double", "?",         "Salinity Mean",
+"temperatureMin",     "double", "degree_C",  "Temperature Miniumum",
+"temperatureMax",     "double", "degree_C",  "Temperature Maxiumum",
+"salinityMin",        "double", "?",         "Salinity Minimum",
+"salinityMax",        "double", "?",         "Salinity Maximum",
+"oxygenMin",          "double", "?",         "Oxygen Minimum",
+"oxygenMax",          "double", "?",         "Oxygen Maximum"},
+towTypesDescription);
+
+table = processOneCalcofi2012(
+dir, tableName = "CC_NETS", new String[]{
+//colNames             types  units  long_name
+"netNumber",          "String", "", "Net Number",
+"mesh",               "double", "microns", "Mesh"},
+towTypesDescription);
+
+table = processOneCalcofi2012(
+dir, tableName = "CC_TOWS", new String[]{
+//colNames             types  units  long_name
+"cruiseYYYYMM",       "String", "yyMM", "CruiseYYYYMM (predominant month)",
+"shipCode",           "String", "", "Ship Code",
+"order",              "int",    "", "Order Each Station Was Occupied",
+"towTypeCode",        "String", "", "Short Tow Type Code",
+"towNumber",          "short",  "", "Sequential Tow Number",
+"PortStarboard",      "String", "", "'P'ort or 'S'tarboard Net Location",
+"towDate",            "String", "yyMMdd", "Begin Tow Date",  //was towDate
+"towTime",            "String", "HHmm",   "Time Begin Tow",  //was timeBeginTow
+"stdHaulFactor",      "double", "", "Standard Haul Factor",
+"volumeStrained",     "double", "m^3", "Volume of Water Strained",
+"fractionSorted",     "double", "fraction", "Fraction Sorted (0 - 1)",  //they said percent, .5=50%
+"flowMeterNumber",    "String", "", "Flow Meter Number",
+"netNumber",          "String", "", "Net Number",
+"beginDepth",         "double", "m","Begin Depth of Tow",
+"collector",          "String", "", "Collector's Initials",
+"dateEndSort",        "String", "yyMMdd", "Date End Sort",
+"dateStartSort",      "String", "yyMMdd", "Date Start Sort",
+"errorCode",          "double", "", "Error Code (null, 0, 5, 6, 9, 10, or 19)",
+"identifier",         "String", "", "Identifier's Initials",
+"observer",           "String", "", "Observer's Initials",
+"preservative",       "double", "", "Preservative (null, 0 - 4)",
+"totalEggs",          "double", "", "Total Eggs (Raw Count)",
+"sortedPlanktonVolume", "double", "ml/1000 cubic meters of water strained", "Sorted Plankton Volume",
+"sampleQuality",      "double", "", "Sample Quality (0 - 5)",
+"smallPlanktonVolume","double", "ml/1000 cubic meters of water strained", "Small Plankton Volume",
+"sorter",             "String", "", "Sorter's Initials",
+"volumner",           "String", "", "Volumer's Initials",
+"wireOut",            "double", "", "Total Wire Out (0 - 365)",
+"revolutions",        "double", "", "Total Revolutions",
+"totalPlanktonVolume","double", "ml/1000 cubic meters of water strained", "Total Plankton Volumes",
+"timeNetTowing",      "double", "minutes", "Time Net Towing",
+"timeNetSinking",     "double", "minutes", "Time Net Sinking",
+"totalLarvae",        "double", "", "Total Larvae (Raw Count)",
+"timeEndTow",         "int",    "", "HHMM Time End Tow",  //!!! I need to connect this to towDate above
+"sortingHours",       "double", "hours", "Sorting Hours",
+"netCondition",       "String", "", "Net Condition",
+"juvenileAdult",      "double", "", "Juvenile/Adults (Raw Count)",
+"endDepth",           "double", "m", "End Depth of Tow",
+"dateVolumed",        "String", "yyMMdd", "Date Volumed",
+"dateID",             "String", "yyMMdd", "Date Identification Completed"},
+towTypesDescription);
+
+// * Plankton volume in cubic centimeters (excluding specimens larger than 5 cc)
+//[NOTE: When counts are standardized: sum/10 meters squared of sea surface
+//area not per volume]
+
+
+*/
+    }
+
+    /**
+     * Processes one CalCOFI2012 tsv file into a .nc file.
+     * 
+     * <p>The var sequence of latitude, latitudeMinutes, latitudeLocation
+     * will be converted to 1 latitude column (decimal degrees).
+     * Similar with longitude.
+     *
+     * <p>If units are yyMM, var will be converted to yyyyMM and units="".
+     *
+     * <p>If units are yyMMdd, var will be converted to yyyyMMdd, then
+     * to "seconds since 1970-01-01T00:00:00Z" (assuming Pacific time zone) 
+     * and sets attribute: time_precision=1970-01-01.
+     *
+     * <p>If units of variable after yyMMdd are HHmm, the date and time will
+     * be combined into one "seconds since 1970-01-01T00:00:00Z" variable.
+     *
+     * <p>If variableName="timeZone", this checks to see if arriveDate value 
+     * timeZone offset is as expected.
+     *
+     * @param dir
+     * @param tableName  e.g., CC_TOWS
+     * @param info  with 4 strings (name, type, units, long_name) for each variable 
+     * @param towTypesDescription will be added as description=[towTypesDescrption]
+     *   when variableName=towTypeCode.
+     * @return the table, as saved in the .nc file.
+     */
+    public static Table processOneCalcofi2012(String dir, String tableName, 
+        String info[], String towTypesDescription) throws Exception {
+
+        String rowName = "row";
+        int cutoffYear = 20;  // fourDigitYear += twoDigitYear < cutoffYear? 2000 : 1900;
+
+/*  make tsv into ERDDAP-style .json table
+//{
+//  "table": {
+//    "columnNames": ["longitude", "latitude", "time", "sea_surface_temperature"],
+//    "columnTypes": ["float", "float", "String", "float"],
+//    "columnUnits": ["degrees_east", "degrees_north", "UTC", "degree_C"],
+//    "rows": [
+//      [180.099, 0.032, "2007-10-04T12:00:00Z", 27.66],
+//      [180.099, 0.032, null, null],
+//      [189.971, -7.98, "2007-10-04T12:00:00Z", 29.08]
+//    ]
+//}
+*/
+        String inFile = dir + tableName + ".txt";
+        String2.log("\n* processOneCalcofi2012 " + inFile);
+        StringArray names  = new StringArray();
+        StringArray types  = new StringArray();
+        StringArray units  = new StringArray();
+        StringArray lNames = new StringArray();
+        Test.ensureEqual(info.length % 4, 0, "info.length=" + info.length);
+        int nVars = info.length / 4;
+        int n = 0;
+        for (int v = 0; v < nVars; v++) {
+            names.add( info[n++]);
+            types.add( info[n++]);
+            units.add( info[n++]);
+            lNames.add(info[n++]);
+        }
+
+        String fromFile[] = String2.readFromFile(inFile);
+        if (fromFile[0].length() > 0)
+            throw new RuntimeException(fromFile[0]);
+        String lines = String2.replaceAll(fromFile[1], "\t", ",");
+        lines = String2.replaceAll(lines, "\n", "],\n[");
+        lines = 
+            "{\n" +
+            "  \"table\": {\n" +
+            "    \"columnNames\": [" + names.toJsonCsvString() + "],\n" +
+            "    \"columnTypes\": [" + types.toJsonCsvString() + "],\n" +
+            "    \"columnUnits\": [" + units.toJsonCsvString() + "],\n" +
+            "    \"rows\": [\n" +
+            "[" + lines.substring(0, lines.length() - 3) + "\n" +
+            "]\n" +
+            "}\n";
+        String2.log(lines.substring(0, Math.min(lines.length(), 1500)));
+        Table table = new Table();
+        table.readJson(inFile, lines);
+        String2.log("Before adjustments:\n" + String2.annotatedString(table.dataToCSVString(5)));  
+        int nRows = table.nRows();
+        int nErrors = 0;
+
+        //things where nColumns won't change
+        for (int v = 0; v < table.nColumns(); v++) {  
+            PrimitiveArray pa = table.getColumn(v);
+            String vName = table.getColumnName(v);
+            Attributes atts = table.columnAttributes(v);
+
+            //longNames
+            atts.add("long_name", lNames.get(v));  //relies on original var lists
+
+            //timeZone
+            nErrors = 0;
+            if ("timeZone".equals(vName)) {
+                PrimitiveArray arrivePA = table.getColumn("arriveDate"); //still yyMMdd
+                GregorianCalendar gc = new GregorianCalendar(
+                    TimeZone.getTimeZone("America/Los_Angeles"));
+                Calendar2.clearSmallerFields(gc, Calendar2.DATE);
+                for (int row = 0; row < nRows; row++) {
+                    String val = arrivePA.getString(row);
+                    if (val.matches("[0-9]{6}")) {
+                        int year = String2.parseInt(val.substring(0, 2));
+                        gc.set(Calendar2.YEAR, year < cutoffYear? 2000 : 1900);
+                        gc.set(Calendar2.MONTH, String2.parseInt(val.substring(2, 4)) - 1); //0..
+                        gc.set(Calendar2.DATE,  String2.parseInt(val.substring(4, 6)));
+                        int fileHas = pa.getInt(row);
+                        int calculated =  
+                            -gc.get(Calendar.ZONE_OFFSET)/(60*60*1000) + //in hours
+                            -gc.get(Calendar.DST_OFFSET) /(60*60*1000);  //in hours
+                        if (fileHas != calculated) {
+                            nErrors++;
+                            if (nErrors <= 5) String2.log("ERROR: col=" + vName + 
+                                " row=" + row + " timeZone=" + fileHas + 
+                                " != calculated(" + val + ")=" + calculated);
+                        }
+                    }
+                }
+                if (nErrors > 0)
+                    String2.getStringFromSystemIn(
+                        "Bob: check US daylight savings time rules. On/near these dates?\n" +
+                        "http://en.wikipedia.org/wiki/History_of_time_in_the_United_States\n" +
+                        "nErrors=" + nErrors + " Press Enter to continue ->");
+            }
+
+        }
+
+        //things where nColumns may change
+        for (int v = 0; v < table.nColumns(); v++) {  
+            PrimitiveArray pa = table.getColumn(v);
+            String vName = table.getColumnName(v);
+            Attributes atts = table.columnAttributes(v);
+            String vUnits = atts.getString("units");
+            Attributes nextAtts = v < table.nColumns() - 1? 
+                table.columnAttributes(v+1) : new Attributes();
+
+            //towTypeCode
+            if ("towTypeCode".equals(vName))
+                atts.add("description", towTypesDescription);
+
+            //latitude
+            nErrors = 0;
+            if ("latitude".equals(vName) &&
+                "latitudeMinutes".equals(table.getColumnName(v + 1)) &&
+                "latitudeLocation".equals(table.getColumnName(v + 2))) {
+                FloatArray fa = new FloatArray(nRows, false); //float avoids, e.g., xx.33333333333333
+                PrimitiveArray pa1 = table.getColumn(v + 1);
+                PrimitiveArray pa2 = table.getColumn(v + 2);
+                for (int row = 0; row < nRows; row++) {
+                    String loc = pa2.getString(row);
+                    String combo = pa.getString(row) + " " + pa1.getString(row) + 
+                        " " + loc;
+                    float f = //will be NaN if trouble
+                        (pa.getFloat(row) + (pa1.getFloat(row) / 60)) *
+                        (loc.equals("N")? 1 : loc.equals("S")? -1 : Float.NaN);
+                    fa.add(row, f);
+                    if (combo.length() > 2 && //2 spaces
+                        (f < -90 || f > 90 || Float.isNaN(f))) {
+                        nErrors++;
+                        if (nErrors <= 5) String2.log("ERROR: col=" + vName + 
+                            " row=" + row + " lat=" + combo + " -> " + f);
+                    }
+                }
+                table.setColumn(v, fa);
+                table.removeColumn(v + 2);
+                table.removeColumn(v + 1);
+            }
+            if (nErrors > 0) 
+                String2.getStringFromSystemIn("nErrors=" + nErrors + " Press Enter to continue ->");
+
+            //longitude
+            nErrors = 0;
+            if ("longitude".equals(vName) &&
+                "longitudeMinutes".equals(table.getColumnName(v + 1)) &&
+                "longitudeLocation".equals(table.getColumnName(v + 2))) {
+                FloatArray fa = new FloatArray(nRows, false); //float avoids, e.g., xx.33333333333333
+                PrimitiveArray pa1 = table.getColumn(v + 1);
+                PrimitiveArray pa2 = table.getColumn(v + 2);
+                for (int row = 0; row < nRows; row++) {
+                    String loc = pa2.getString(row);
+                    String combo = pa.getString(row) + " " + pa1.getString(row) + 
+                        " " + loc;
+                    float f = //will be NaN if trouble
+                        (pa.getFloat(row) + (pa1.getFloat(row) / 60)) *
+                        (loc.equals("E")? 1 : loc.equals("W")? -1 : Float.NaN);
+                    fa.add(row, f);
+                    if (combo.length() > 2 && //2 spaces
+                        (f < -180 || f > 180 || Float.isNaN(f))) {
+                        nErrors++;
+                        if (nErrors <= 5) String2.log("ERROR: col=" + vName + 
+                            " row=" + row + " lat=" + combo + " -> " + f);
+                    }
+                }
+                table.setColumn(v, fa);
+                table.removeColumn(v + 2);
+                table.removeColumn(v + 1);
+            }
+            if (nErrors > 0) 
+                String2.getStringFromSystemIn("nErrors=" + nErrors + " Press Enter to continue ->");
+
+            //yyMM  add century to cruiseYYMM
+            nErrors = 0;
+            if ("yyMM".equals(vUnits)) {
+                for (int row = 0; row < nRows; row++) {
+                    String val = pa.getString(row);
+                    if (val.matches("[0-9]{4}")) {
+                        int year = String2.parseInt(val.substring(0, 2));
+                        pa.setString(row, (year < cutoffYear? "20" : "19") + val);
+                    } else {
+                        if (val.length() != 0) {
+                            nErrors++;
+                            if (nErrors <= 5) String2.log("ERROR: col=" + vName + 
+                                " row=" + row + " yyMM=" + val);
+                        }
+                        pa.setString(row, "");  //set to MV
+                    }
+                }
+                atts.set("units", "");  //leave it as a String identifier
+            }
+            if (nErrors > 0) 
+                String2.getStringFromSystemIn("nErrors=" + nErrors + " Press Enter to continue ->");
+
+            //yyMMdd
+            nErrors = 0;
+            if ("yyMMdd".equals(vUnits)) {
+                String nextUnits = nextAtts.getString("units");
+                boolean nextHasMinutes = "HHmm".equals(nextUnits);
+                if (nextHasMinutes)
+                    String2.log("combining yyMMdd and next column (HHmm)");
+                String nextVName = nextHasMinutes? table.getColumnName(v + 1) : "";
+                DoubleArray datePA = new DoubleArray(nRows, false);
+                PrimitiveArray minutesPA = nextHasMinutes? 
+                    table.getColumn(v + 1) : (PrimitiveArray)null;
+                //??!! Use Zulu or local, or time_zone data (in one table only)?
+                GregorianCalendar gc = new GregorianCalendar(
+                    TimeZone.getTimeZone("America/Los_Angeles"));
+                Calendar2.clearSmallerFields(gc, Calendar2.DATE);
+                for (int row = 0; row < nRows; row++) {
+                    String val = pa.getString(row);
+                    if (val.matches("[0-9]{6}")) {
+                        int year = String2.parseInt(val.substring(0, 2));
+                        gc.set(Calendar2.YEAR, year < cutoffYear? 2000 : 1900);
+                        gc.set(Calendar2.MONTH, String2.parseInt(val.substring(2, 4)) - 1); //0..
+                        gc.set(Calendar2.DATE,  String2.parseInt(val.substring(4, 6)));
+                        if (nextHasMinutes) {
+                            Calendar2.clearSmallerFields(gc, Calendar2.DATE);
+                            int HHmm = minutesPA.getInt(row);
+                            if (HHmm < 0 || HHmm > 2359) {
+                                nErrors++;
+                                if (nErrors <= 5) String2.log("ERROR: col=" + nextVName + 
+                                    " row=" + row + " HHmm=" + minutesPA.getString(row));
+                            } else {
+                                gc.set(Calendar2.HOUR_OF_DAY, HHmm / 100); 
+                                gc.set(Calendar2.MINUTE,      HHmm % 100);
+                            }
+                        }
+                        datePA.add(Calendar2.gcToEpochSeconds(gc));
+                    } else {
+                        if (val.length() != 0) {
+                            nErrors++;
+                            if (nErrors <= 5) String2.log("ERROR: col=" + vName + 
+                                " row=" + row + " yyMMdd=" + val);
+                        }
+                        datePA.add(Double.NaN);
+                    }
+                }
+                table.setColumn(v, datePA);
+                atts.set("units", Calendar2.SECONDS_SINCE_1970);
+                atts.set("time_precision", 
+                    nextHasMinutes? "1970-01-01T00:00" : "1970-01-01");
+                if (nextHasMinutes) 
+                    table.removeColumn(v + 1);
+            }
+            if (nErrors > 0) 
+                String2.getStringFromSystemIn("nErrors=" + nErrors + " Press Enter to continue ->");
+
+        }
+        
+        //save as .nc
+        String2.log("After adjustments:\n" + String2.annotatedString(table.dataToCSVString(5)));  
+        table.saveAsFlatNc(dir + tableName + ".nc", rowName, false);
+        return table;
+    }
+
+
 }
 

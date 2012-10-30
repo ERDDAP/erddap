@@ -636,6 +636,14 @@ public abstract class PrimitiveArray {
     abstract public void addInt(int value);
 
     /**
+     * This adds n ints to the array.
+     *
+     * @param n the number of times 'value' should be added
+     * @param value the value, as an int.
+     */
+    abstract public void addNInts(int n, int value);
+
+    /**
      * This adds an element to the array.
      *
      * @param value the value, as a long.
@@ -754,7 +762,7 @@ public abstract class PrimitiveArray {
      * 
      * @param index the index number 0 ... size-1
      * @return the value as a long. String values are parsed
-     *   with String2.parseInt and so may return Long.MAX_VALUE.
+     *   with String2.parseLong and so may return Long.MAX_VALUE.
      * @throws Exception if trouble.
      */
     abstract public long getLong(int index);

@@ -330,6 +330,7 @@ public abstract class EDD {
             if (type.equals("EDDTableFromAsciiFiles"))  return EDDTableFromAsciiFiles.fromXml(xmlReader);
             if (type.equals("EDDTableFromHyraxFiles"))  return EDDTableFromHyraxFiles.fromXml(xmlReader);
             if (type.equals("EDDTableFromNcFiles"))     return EDDTableFromNcFiles.fromXml(xmlReader);
+            if (type.equals("EDDTableFromNcCFFiles"))   return EDDTableFromNcCFFiles.fromXml(xmlReader);
             //if (type.equals("EDDTableFromNOS"))         return EDDTableFromNOS.fromXml(xmlReader); //inactive 2010-09-08
             if (type.equals("EDDTableFromNWISDV"))      return EDDTableFromNWISDV.fromXml(xmlReader);
             if (type.equals("EDDTableFromOBIS"))        return EDDTableFromOBIS.fromXml(xmlReader);
@@ -814,7 +815,7 @@ public abstract class EDD {
      */
     public String rssHref(String loggedInAs) {
         return 
-            "<a type=\"application/rss+xml\" " +
+            "<a rel=\"alternate\" type=\"application/rss+xml\" " +
             "  href=\"" + EDStatic.erddapUrl + //RSS always uses a non-https link
             "/rss/" + datasetID+ ".rss\" \n" +
             "  title=\"\"><img alt=\"RSS\" align=\"bottom\" \n" +
@@ -832,7 +833,8 @@ public abstract class EDD {
     public String emailHref(String loggedInAs) {
         if (EDStatic.subscriptionSystemActive) 
             return 
-            "<a href=\"" + EDStatic.erddapUrl(loggedInAs) + "/" + Subscriptions.ADD_HTML + 
+            "<a rel=\"alternate\" \n" +
+            "  href=\"" + EDStatic.erddapUrl(loggedInAs) + "/" + Subscriptions.ADD_HTML + 
                 "?datasetID=" + datasetID+ "&amp;showErrors=false&amp;email=\" \n" +
             "  title=\"\"><img alt=\"Subscribe\" align=\"bottom\" \n" +
             "    title=\"" + XML.encodeAsHTML(EDStatic.subscriptionEmail) + "\" \n" +
@@ -2412,19 +2414,22 @@ public abstract class EDD {
         String dapLink = "", subsetLink = "", graphLink = "";
         if (showDafLink) 
             dapLink = 
-                "     | <a title=\"" + EDStatic.clickAccess + "\" \n" +
+                "     | <a rel=\"alternate\" rev=\"alternate\" " +  
+                    "title=\"" + EDStatic.clickAccess + "\" \n" +
                 "         href=\"" + dapUrl + ".html" + 
                     tQuery + "\">" + EDStatic.daf + "</a>\n";
         if (showSubsetLink && accessibleViaSubset().length() == 0) 
             subsetLink = 
-                "     | <a title=\"" + EDStatic.dtSubset + "\" \n" +
+                "     | <a rel=\"alternate\" rev=\"alternate\" " +
+                    "title=\"" + EDStatic.dtSubset + "\" \n" +
                 "         href=\"" + dapUrl + ".subset" + 
                     tQuery + 
                     (tQuery.length() == 0? "" : XML.encodeAsHTML(EDDTable.DEFAULT_SUBSET_VIEWS)) + 
                     "\">" + EDStatic.subset + "</a>\n";
         if (showGraphLink && accessibleViaMAG().length() == 0) 
             graphLink = 
-                "     | <a title=\"" + EDStatic.dtMAG + "\" \n" +
+                "     | <a rel=\"alternate\" rev=\"alternate\" " +
+                    "title=\"" + EDStatic.dtMAG + "\" \n" +
                 "         href=\"" + dapUrl + ".graph" + 
                     tQuery + "\">" + EDStatic.EDDMakeAGraph + "</a>\n";
         String tSummary = extendedSummary(); 
@@ -2435,6 +2440,7 @@ public abstract class EDD {
             (nonStandardLicense? "<font class=\"warningColor\">" : "") + 
             EDStatic.license + " " + 
             (nonStandardLicense? "</font>" : "") +
+            //link below should have rel=\"copyright\"
             EDStatic.htmlTooltipImage(loggedInAs, XML.encodeAsPreHTML(tLicense, 100)) +  "\n";
         writer.write(
             //"<p><b>" + type + " Dataset:</b>\n" +
@@ -2458,16 +2464,20 @@ public abstract class EDD {
                 EDStatic.htmlTooltipImage(loggedInAs, XML.encodeAsPreHTML(tSummary, 100)) +  "\n" +
             tLicense +
             (accessibleViaFGDC.length() > 0? "" : 
-                "     | <a title=\"" + EDStatic.EDDFgdcMetadata + "\" \n" +
+                "     | <a rel=\"alternate\" rev=\"alternate\" \n" +
+                "          title=\"" + EDStatic.EDDFgdcMetadata + "\" \n" +
                 "          href=\"" + dapUrl + ".fgdc\">" + EDStatic.EDDFgdc + "</a>\n") +
             (accessibleViaISO19115().length() > 0? "" : 
-                "     | <a title=\"" + EDStatic.EDDIso19115Metadata + "\" \n" +
+                "     | <a rel=\"alternate\" rev=\"alternate\" \n" +
+                "          title=\"" + EDStatic.EDDIso19115Metadata + "\" \n" +
                 "          href=\"" + dapUrl + ".iso19115\">" + EDStatic.EDDIso19115 + "</a>\n") +
-            "     | <a title=\"" + EDStatic.clickInfo + "\" \n" +
+            "     | <a rel=\"alternate\" rev=\"alternate\" \n" +
+            "          title=\"" + EDStatic.clickInfo + "\" \n" +
             "          href=\"" + tErddapUrl + "/info/" + datasetID + "/index.html\">" + 
                 EDStatic.EDDMetadata + "</a>\n" +
-            "     | <a title=\"" + EDStatic.clickBackgroundInfo + "\" \n" +
-            "         href=\"" + XML.encodeAsHTML(infoUrl()) + "\">" + 
+            "     | <a rel=\"bookmark\" \n" +
+            "          title=\"" + EDStatic.clickBackgroundInfo + "\" \n" +
+            "          href=\"" + XML.encodeAsHTML(infoUrl()) + "\">" + 
                 EDStatic.EDDBackground + "</a>\n" +
                 subsetLink + "\n" +
                 dapLink + "\n" +
@@ -2723,6 +2733,13 @@ public abstract class EDD {
         return keywordHashSet;
     }
 
+    private static void addIfNoAddOrSourceAtt(Attributes addAtts, Attributes sourceAtts, 
+        String name, String value) {
+        if (!isSomething(   addAtts.getString(name)) &&
+            !isSomething(sourceAtts.getString(name)))
+            addAtts.add(name, value);
+    }
+
     /**
      * This is used by subclass's generateDatasetsXml methods to make
      * sure that the global attributes are present (as good as possible; no dummy values)
@@ -2746,7 +2763,9 @@ public abstract class EDD {
 
 //TO DO: look at other metadata standards (e.g., FGDC) to find similar attributes to look for
 //fgdc: http://docs.google.com/viewer?a=v&q=cache:jqwVIfleOYoJ:portal.opengeospatial.org/files/%3Fartifact_id%3D16936+%22fgdc:title%22&hl=en&gl=us&pid=bl&srcid=ADGEESjCZAzZzsRrGP0bxE3vj2qf3e7UAtL0O9C7M6Vm9JSvkuaW74nBYChLJdQagIf0X0vm-0_qgAHUanv6WqhNu59ouFV4i3-wD-nzfUBmRg4npV2wrCrc2RIJ8Q7El65RjHCZiqzU&sig=AHIEtbRqR8ld45spO4SqD7nIYV2de1FGow
-
+  
+        if (externalAtts == null)
+            externalAtts = new Attributes();
         if (reallyVerbose) 
             String2.log("makeReadyToUseAddGlobalAttributesForDatasetsXml\n" +
                 //"  sourceAtts=\n" + sourceAtts.toString() +
@@ -2759,6 +2778,7 @@ public abstract class EDD {
             tPublicSourceUrl.startsWith("http") &&
             tPublicSourceUrl.indexOf("/thredds/catalog/") > 0 &&  
             tPublicSourceUrl.endsWith(".xml");
+
 
         //Use externalAtts as initial addAtts. They have priority over sourceAtts.
         Attributes addAtts = externalAtts == null? new Attributes() : (Attributes)externalAtts.clone();
@@ -2800,6 +2820,161 @@ public abstract class EDD {
         addAtts.setIfNotAlreadySet("summary",             sourceAtts.getString("fgdc:summary"));
         //fgdc_title see below
 
+        //info for specific datasets/projects encountered by UAF ERDDAP
+        //Since these set creator_email etc, they are powerful. Only use if essentially always true.
+        {
+            String lcUrl = tPublicSourceUrl.toLowerCase();
+            String tIns = addAtts.getString("institution");
+            if (!isSomething(tIns)) tIns = sourceAtts.getString("institution");
+            if (!isSomething(tIns)) tIns = "";
+            String taTitle =    addAtts.getString("title");
+            String tsTitle = sourceAtts.getString("title");
+            if (!isSomething(taTitle)) taTitle = "";
+            if (!isSomething(tsTitle)) tsTitle = "";
+            String lcaTitle = taTitle.toLowerCase();
+            String lcsTitle = tsTitle.toLowerCase();
+            //coads
+            if (lcUrl.indexOf("/coads/") >= 0 ||
+                lcUrl.indexOf("/icoads/") >= 0) {
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_email", "Eric.Freeman@noaa.gov");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_name", "NOAA ICOADS");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_url", "http://icoads.noaa.gov/");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "institution", "NOAA ICOADS");                   
+            //crm
+            } else if (lcUrl.indexOf("/crm/") >= 0) {
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_email", "Barry.Eakins@noaa.gov");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_name", "NOAA NGDC");                                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_url", "http://www.ngdc.noaa.gov/mgg/coastal/crm.html");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "institution", "NOAA NGDC");                                   
+            //etopo
+            } else if (lcUrl.indexOf("/etopo") >= 0) {
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_email", "Barry.Eakins@noaa.gov ");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_name", "NOAA NGDC");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_url", "http://www.ngdc.noaa.gov/mgg/global/global.html");                   
+            //gfdl cm  (climate model)
+            } else if (lcUrl.indexOf(".gfdl.noaa.gov") >= 0 &&
+                       (lcUrl.indexOf("_cm") >= 0 ||
+                        lcUrl.indexOf("/cm") >= 0)) {
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_name", "NOAA GFDL");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_url", "http://data1.gfdl.noaa.gov/nomads/forms/deccen/");                   
+            //godas
+            } else if (lcUrl.indexOf("/godas/") >= 0 ||
+                       lcaTitle.indexOf("godas") >= 0 ||
+                       lcsTitle.indexOf("godas") >= 0) {
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_email", "Yan.Xue@noaa.gov");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_name", "NOAA NCEP");                                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_url", "http://www.cpc.ncep.noaa.gov/products/GODAS/");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "institution", "NOAA NCEP");                
+            //NCOM 
+            } else if (taTitle.indexOf("NCOM") >= 0 || //a project
+                       tsTitle.indexOf("NCOM") >= 0 || 
+                         lcUrl.indexOf("/ncom") >= 0) {
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_email", "frank.bub@navy.mil");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_name", "Naval Research Lab (NRL)");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_url", "www7320.nrlssc.navy.mil/global_ncom/");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "institution", "Naval Research Lab (NRL)");                   
+            //ncep reanalysis
+            } else if (lcUrl.indexOf("ncep") >= 0 &&
+                lcUrl.indexOf("reanalysis") >= 0) {
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_email", "Wesley.Ebisuzaki@noaa.gov");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_name", "NOAA NCEP, NCAR");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_url", "http://www.cpc.ncep.noaa.gov/products/wesley/reanalysis.html");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "institution", "NOAA NCEP, NCAR");                                   
+            //ncsu roms/toms  (several people run ROMS/TOMS at NCSU, but rhe is only email I found)
+            } else if (lcUrl.indexOf("meas.ncsu.edu") >= 0 ||
+                       lcaTitle.indexOf("roms/toms") >= 0 ||
+                       lcsTitle.indexOf("roms/toms") >= 0) {
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_email", "rhe@ncsu.edu");    
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_name", "Ruoying He");                 
+            //ngdc dem
+            } else if (lcUrl.indexOf("ngdc.noaa.gov") >= 0 &&
+                lcUrl.indexOf("/dem/") >= 0) {
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_email", "Barry.Eakins@noaa.gov");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_name", "NOAA NGDC");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_url", "http://www.ngdc.noaa.gov/mgg/dem/demportal.html");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "institution", "NOAA NGDC");                   
+            //osmc
+            } else if (lcUrl.indexOf("osmc.noaa.gov") >= 0) {
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_email", "OSMC.Webmaster@noaa.gov");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_name", "NOAA OSMC");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_url", "http://www.osmc.noaa.gov");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "institution", "NOAA OSMC");                   
+            //podaac ccmp flk
+            } else if (lcUrl.indexOf("podaac") >= 0 &&
+                       lcUrl.indexOf("/ccmp/") >= 0 &&
+                       lcUrl.indexOf("/flk/") >= 0) {
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_email", "podaac@podaac.jpl.nasa.gov");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_name", "NASA GSFC MEaSUREs, NOAA");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_url", "http://podaac.jpl.nasa.gov/dataset/CCMP_MEASURES_ATLAS_L4_OW_L3_0_WIND_VECTORS_FLK");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "institution", "NASA GSFC, NOAA");                   
+            //rutgers roms 
+            } else if (lcUrl.indexOf("marine.rutgers.edu") >= 0 &&
+                       lcUrl.indexOf("/roms/") >= 0) {
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_email", "jwilkin@marine.rutgers.edu");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_name", "Rutgers Marine");                                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_url", "http://marine.rutgers.edu/po/");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "institution", "Rutgers");                                   
+            //woa
+            } else if (lcUrl.indexOf("/woa01") >= 0 ||
+                       lcUrl.indexOf("/woa05") >= 0 ||
+                       lcUrl.indexOf("/woa09") >= 0) {
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_email", "OCL.help@noaa.gov");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_name", "CSIRO, NOAA NODC");                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "creator_url", "http://www.nodc.noaa.gov/OC5/WOA" +
+                        (lcUrl.indexOf("/woa01") >= 0? "01/pr_woa01.html" :
+                         lcUrl.indexOf("/woa05") >= 0? "05/pr_woa05.html" :
+                                                       "09/pr_woa09.html"));                   
+                addIfNoAddOrSourceAtt(addAtts, sourceAtts, 
+                    "institution", "CSIRO, NOAA NODC");                   
+            }
+        }
+
 
         //*** populate the attributes that ERDDAP uses
         //always check wrong case for first letter
@@ -2825,10 +3000,221 @@ public abstract class EDD {
         if (reallyVerbose) String2.log("  old Conventions=" + value);
         value = suggestConventions(value);
         addAtts.set(name, value);  //always reset Conventions
-        if (reallyVerbose) String2.log("  new Conventions=" + value);
+        if (reallyVerbose) String2.log("  new " + name + "=" + value);
 
         //always reset Metadata_Conventions (synomym for Conventions)
         addAtts.add("Metadata_Conventions", value);
+
+        //note suffixForTitle //e.g. Thredds currentLevel name: "5-day" or "sal001", sometimes long
+        String suffixForTitle = addAtts.getString("suffixForTitle");  
+        if (!isSomething(suffixForTitle))
+            suffixForTitle = "";
+        String suffixForTitle2 = suffixForTitle;
+        suffixForTitle2 = String2.replaceAll(suffixForTitle2, '/', ' ');
+        suffixForTitle2 = String2.replaceAll(suffixForTitle2, '_', ' ');
+        String suffixForTitleP = isSomething(suffixForTitle)? " (" + suffixForTitle + ")" : "";
+
+        //do early   so available for tEmailSource
+        name = "summary";
+        value = addAtts.getString(name);
+        if (!isSomething(value)) value = sourceAtts.getString(name);
+        if (!isSomething(value)) {
+            //best ones first
+            if (!isSomething(value)) value =    addAtts.getString("Summary");  //wrong case?
+            if (!isSomething(value)) value = sourceAtts.getString("Summary");
+            if ( isSomething(value))                  addAtts.add("Summary", "null"); //not just remove()
+
+            if (!isSomething(value)) value =    addAtts.getString("abstract"); 
+            if (!isSomething(value)) value = sourceAtts.getString("abstract"); 
+            if (!isSomething(value)) value =    addAtts.getString("Abstract"); 
+            if (!isSomething(value)) value = sourceAtts.getString("Abstract"); 
+            if (!isSomething(value)) value =    addAtts.getString("description");
+            if (!isSomething(value)) value = sourceAtts.getString("description");
+            if (!isSomething(value)) value =    addAtts.getString("Description");
+            if (!isSomething(value)) value = sourceAtts.getString("Description");
+            if (!isSomething(value)) value =    addAtts.getString("comment");
+            if (!isSomething(value)) value = sourceAtts.getString("comment");
+            if (!isSomething(value)) value =    addAtts.getString("Comment");
+            if (!isSomething(value)) value = sourceAtts.getString("Comment");
+            //from title metadata?    priority to source if >20 chars
+            if (!isSomething(value)) {
+                value = "";
+                String sTitle = sourceAtts.getString("title");
+                String aTitle =    addAtts.getString("title");
+                if (!isSomething(aTitle)) aTitle =     addAtts.getString("Title");          //next best aTitle
+                if (!isSomething(sTitle)) sTitle =  sourceAtts.getString("Title");          
+
+                //use both sourceTitle and addTitle (if available and not the same)
+                String pre = "", post = "";
+                if (isSomething(sTitle)) value = sTitle;
+                if (isSomething(sTitle) && isSomething(aTitle)) {
+                    if (sTitle.toLowerCase().equals(aTitle.toLowerCase())) {
+                        aTitle = "";
+                    } else {
+                        pre = "\n(";
+                        post = ")";
+                    }
+                }
+                if (isSomething(aTitle)) 
+                    value += pre + aTitle + post;
+
+                //if suffixForTitle's text isn't already included, add it
+                if (isSomething(suffixForTitle) && 
+                    value.toLowerCase().indexOf(suffixForTitle.toLowerCase()) < 0 &&
+                    value.toLowerCase().indexOf(suffixForTitle2.toLowerCase()) < 0)
+                    value += suffixForTitleP;
+            }
+            //if nothing else
+            if (!isSomething(value)) 
+                value = "???"; //but improved below
+
+            //save it
+            addAtts.add(name, value);
+        }
+        if (isSomething(value) && value.indexOf("\\012") >= 0) {
+            //change it
+            value = String2.replaceAll(value, "\\\\\\\\012", "\n"); 
+            value = String2.replaceAll(value, "\\\\\\012",   "\n"); 
+            value = String2.replaceAll(value, "\\\\012",     "\n"); 
+            value = String2.replaceAll(value, "\\012",       "\n"); 
+            addAtts.add(name, value);
+        }
+        String tSummary = value;
+
+
+        //take apart an email address (for creator_name, creator_email, institution information) 
+        String tContactEmail = null, tContactName = null, tContactInstitution = null,
+            tContactUrl = null;
+        String tEmailSource = addAtts.getString("creator_email");
+        if (!isSomething(tEmailSource)) tEmailSource = sourceAtts.getString("creator_email");
+        if (!isSomething(tEmailSource)) tEmailSource = sourceAtts.getString("email");
+        String tContact = null;
+        if (!isSomething(tContact)) tContact = addAtts.getString("contact");
+        if (!isSomething(tContact)) tContact = addAtts.getString("Contact");
+        if (!isSomething(tContact)) tContact = sourceAtts.getString("contact");
+        if (!isSomething(tContact)) tContact = sourceAtts.getString("Contact");
+        if (!isSomething(tEmailSource) && isSomething(tContact) && tContact.indexOf('@') > 0)
+            tEmailSource = tContact;
+        String tAuthor = sourceAtts.getString("author");
+        if (!isSomething(tEmailSource) && isSomething(tAuthor) && tAuthor.indexOf('@') > 0)
+            tEmailSource = tAuthor;
+        String tReference = sourceAtts.getString("reference");
+        if (!isSomething(tEmailSource) && isSomething(tReference) && tReference.indexOf('@') > 0)
+            tEmailSource = tReference;
+        tReference = sourceAtts.getString("references");
+        if (!isSomething(tEmailSource) && isSomething(tReference) && tReference.indexOf('@') > 0)
+            tEmailSource = tReference;
+        if (!isSomething(tEmailSource) && tSummary.indexOf('@') > 0) 
+            tEmailSource = tSummary;
+        if (isSomething(tEmailSource)) {
+            StringArray contactParts = StringArray.wordsAndQuotedPhrases(tEmailSource);
+            int nParts = contactParts.size();
+            for (int parti = 0; parti < nParts; parti++) {
+                if (contactParts.get(parti).indexOf('@') < 0) 
+                    continue;
+                String part = contactParts.get(parti);
+                while (part.startsWith("(") || part.startsWith("[") || part.startsWith("<"))
+                    part = part.substring(1);
+                while (part.endsWith(")") || part.endsWith("]") || part.endsWith(">"))
+                    part = part.substring(0, part.length() - 1);
+                if (String2.isEmailAddress(part)) {
+                    tContactEmail = part;
+                    int po = part.indexOf('@');  //it must exist
+
+                    //tContactName e.g., Bob Simons from bob.simons, or erd.data, rsignell
+                    tContactName = part.substring(0, po); 
+                    tContactName = String2.replaceAll(tContactName, '.', ' '); 
+                    tContactName = String2.replaceAll(tContactName, '_', ' '); 
+                    tContactName = String2.replaceAll(tContactName, '-', ' '); 
+                    tContactName = tContactName.indexOf(' ') >= 0?
+                        String2.toTitleCase(tContactName) :
+                        tContactName.toUpperCase();  //it's probably an acronym
+                    String lcContactName = tContactName.toLowerCase();
+                    if (tContactName.equals("RSIGNELL")) {
+                        tContactName = "Rich Signell";
+                    } else if (
+                        lcContactName.indexOf("desk") >= 0 ||
+                        lcContactName.indexOf("help") >= 0 ||
+                        lcContactName.indexOf("info") >= 0 ||
+                        lcContactName.indexOf("service") >= 0 ||
+                        lcContactName.indexOf("support") >= 0 ||
+                        lcContactName.indexOf("webmaster") >= 0) {
+                        tContactName = "";
+                    } else if (tContactName.equals("Esrl Psd Data")) {
+                        tContactName = "NOAA ESRL PSD";
+                    } else if (tContactName.equals("PODAAC")) {
+                        tContactName = "PODAAC NASA JPL";
+                    }
+
+                    //tContactInstitution  e.g., PODAAC JPL NASA from podaac.jpl.nasa.gov 
+                    //remove .com .gov at end
+                    tContactInstitution = part.substring(po + 1);  
+                    po = tContactInstitution.lastIndexOf('.'); //it must exist
+                    //toUpperCase since probably acronym
+                    tContactInstitution = tContactInstitution.substring(0, po).toUpperCase(); 
+                    if (tContactInstitution.equals("PODAAC JPL NASA"))
+                        tContactInstitution = "JPL NASA";
+
+                    break;
+                }
+                parti++;
+            }
+        }            
+        //sources that create most/all of what distribute.  Do last.  Better than nothing.
+        if (tContactEmail == null) {
+            String taTitle =    addAtts.getString("title");
+            String tsTitle = sourceAtts.getString("title");
+            if (!isSomething(taTitle)) taTitle = "";
+            if (!isSomething(tsTitle)) tsTitle = "";
+            String tIns = addAtts.getString("institution");
+            if (!isSomething(tIns)) tIns = sourceAtts.getString("institution");
+            if (!isSomething(tIns)) tIns = "";
+            //cwcgom.aoml
+            if (tPublicSourceUrl.startsWith("http://cwcgom.aoml.noaa.gov")) {
+                tContactEmail       = "Joaquin.Trinanes@noaa.gov";     
+                tContactName        = "Joaquin Trinanes";
+                tContactInstitution = "NOAA NESDIS CWCGOM, NOAA AOML";               
+            //hycom
+            } else if (tPublicSourceUrl.indexOf("hycom.org/") >= 0) {
+                tContactEmail       = "hycomdata@coaps.fsu.edu"; 
+                tContactName        = "HYCOM";
+                tContactInstitution = "HYCOM";               
+                tContactUrl         = "http://hycom.org/";
+            //NAVO (before NRL)
+            } else if (taTitle.indexOf("NAVO") >= 0 || //an office, AKA  NAVOCEANO
+                       tsTitle.indexOf("NAVO") >= 0 || 
+                       tPublicSourceUrl.indexOf("/navo") >= 0 ||
+                       tPublicSourceUrl.indexOf("/NAVO") >= 0) {
+                tContactEmail       = "CSO.navo.fct@navy.mil";                   
+                tContactName        = "Naval Research Lab (NRL) NAVOCEANO"; 
+                tContactInstitution = "Naval Research Lab (NRL) NAVOCEANO"; 
+                tContactUrl         = "http://www.usno.navy.mil/NAVO";
+            //NRL (after NAVO and NCOM)
+            } else if (tIns.indexOf("Naval Research Lab") >= 0 || 
+                       tIns.indexOf("NRL") >= 0 ||
+                       taTitle.indexOf("NRL") >= 0 ||
+                       tsTitle.indexOf("NRL") >= 0) {
+                //tContactEmail       = "firstname.lastname@nrlmry.navy.mil";                   
+                tContactName        = "Naval Research Lab (NRL)";
+                tContactInstitution = "Naval Research Lab (NRL)";
+                tContactUrl         = "http://www.nrl.navy.mil/";
+            //podaac
+            } else if (tPublicSourceUrl.indexOf("podaac") >= 0 &&  
+                       tPublicSourceUrl.indexOf("jpl.nasa.gov") >= 0) {
+                tContactEmail       = "podaac@podaac.jpl.nasa.gov"; 
+                tContactName        = "NASA JPL PODAAC";
+                tContactInstitution = "NASA JPL";
+                tContactUrl         = "http://podaac.jpl.nasa.gov/"; 
+            //WHOI  (Rich Signell is a good contact; unfortunately, many datasets are from other sources)
+            } else if (tPublicSourceUrl.startsWith("http://geoport.whoi.edu/thredds/")) {
+                tContactEmail       = "rsignell@usgs.gov"; 
+                tContactName        = "USGS, WHCMSC Sediment Transport Group";
+                tContactInstitution = "USGS, WHCMSC Sediment Transport Group";
+                //tContactUrl         = ""; 
+            }
+        }
+        
+        //creator_name creator_email creator_url -- see below
          
         //history
         name = "history";
@@ -2893,13 +3279,13 @@ public abstract class EDD {
                             ""); 
                     }
                 } else { 
-                    if (!isSomething(value)) value =    addAtts.getString("creator_url"); //better than "???"
+                    if (!isSomething(value)) value =    addAtts.getString("creator_url"); 
                     if (!isSomething(value)) value = sourceAtts.getString("creator_url");
                     if (!isSomething(value)) value = "???";
                 }
             }
             addAtts.add(name, value);
-            if (reallyVerbose) String2.log("  new infoUrl=" + value);
+            if (reallyVerbose) String2.log("  new " + name + "=" + value);
         }
         String infoUrl = value;
 
@@ -2914,7 +3300,7 @@ public abstract class EDD {
                 if ( isSomething(value)) addAtts.set("Institution", "null"); //not just remove()
             }
             if (!isSomething(value)) value = sourceAtts.getString("origin");
-
+            if (!isSomething(value)) value = tContactInstitution;
 
             if (isSomething(value)) {
                 //too long?
@@ -2983,9 +3369,64 @@ public abstract class EDD {
             }
 
             addAtts.add(name, value);
-            if (reallyVerbose) String2.log("  new institution=" + value);
+            if (reallyVerbose) String2.log("  new " + name + "=" + value);
         }
         String tIns = value;
+
+        //improve summary?
+        if ("???".equals(tSummary)) {
+            tSummary = tIns.equals("???")? "Data " : tIns + " data ";
+            if (sourceUrlIsThreddsCatalogXml)  //thredds catalog.xml -> .html
+                 tSummary += "from " + tPublicSourceUrl.substring(0, tPublicSourceUrl.length() - 4) + ".html";
+            else if (tPublicSourceUrl.startsWith("http"))
+                 tSummary += "from " + tPublicSourceUrl + ".das ."; 
+            else tSummary += "from a local source.";
+            tSummary += suffixForTitleP;
+            addAtts.add("summary", tSummary);
+        }
+
+        //creator_email   (not required, but useful ACDD and for ISO 19115 and FGDC)
+        name = "creator_email";
+        value = addAtts.getString(name);
+        if (!isSomething(value)) value = sourceAtts.getString(name);
+        if (!isSomething(value)) {
+            value = tContactEmail;   
+            if (isSomething(value)) {
+                addAtts.add(name, value);
+                if (reallyVerbose) String2.log("  new " + name + "=" + value);
+            }
+        }
+
+        //creator_name    (not required, but useful ACDD and for ISO 19115 and FGDC)
+        name = "creator_name";
+        value = addAtts.getString(name);
+        if (!isSomething(value)) value = sourceAtts.getString(name);
+        if (!isSomething(value)) {
+            //ACDD says institution will be used if creator_name is missing. 
+            if (!isSomething(value) && !tIns.startsWith("???")) value = tIns; //almost always
+            if (!isSomething(value)) value = tContactName;  //rarely
+            if (isSomething(value)) {
+                addAtts.add(name, value);
+                if (reallyVerbose) String2.log("  new " + name + "=" + value);
+            }
+        }
+        
+        //creator_url     (not required, but useful ACDD and for ISO 19115 and FGDC)
+        name = "creator_url";
+        value = addAtts.getString(name);
+        if (!isSomething(value)) value = sourceAtts.getString(name);
+        if (!isSomething(value)) {
+            if (!isSomething(value)) value = tContactUrl;
+            if (!isSomething(value) && !infoUrl.startsWith("???")) value = infoUrl;  
+            if (isSomething(value)) {
+                if ((value.indexOf("/dodsC/") >= 0 || value.indexOf("/opendap/") >= 0) &&
+                    value.indexOf("podaac") >= 0 &&
+                    value.indexOf("jpl.nasa.gov") >= 0)
+                    value = "http://podaac.jpl.nasa.gov/"; //better than dataset's OPeNDAP .html url
+                addAtts.add(name, value);
+                if (reallyVerbose) String2.log("  new " + name + "=" + value);
+            }
+        }
 
         //keywords below, after title
 
@@ -3013,90 +3454,8 @@ public abstract class EDD {
         if (!isSomething(value)) value = sourceAtts.getString(name);
         if (!isSomething(value)) addAtts.add(name, FileNameUtility.getStandardNameVocabulary());
 
-        //note suffixForTitle //e.g. Thredds currentLevel name: "5-day" or "sal001", sometimes long
-        String suffixForTitle = addAtts.getString("suffixForTitle");  
-        if (!isSomething(suffixForTitle))
-            suffixForTitle = "";
-        String suffixForTitle2 = suffixForTitle;
-        suffixForTitle2 = String2.replaceAll(suffixForTitle2, '/', ' ');
-        suffixForTitle2 = String2.replaceAll(suffixForTitle2, '_', ' ');
-        String suffixForTitleP = isSomething(suffixForTitle)? " (" + suffixForTitle + ")" : "";
-
+        //summary (see above)
         //summary
-        boolean tSummaryFromSourceUrl = false;
-        name = "summary";
-        value = addAtts.getString(name);
-        if (!isSomething(value)) value = sourceAtts.getString(name);
-        if (!isSomething(value)) {
-            //best ones first
-            if (!isSomething(value)) value =    addAtts.getString("Summary");  //wrong case?
-            if (!isSomething(value)) value = sourceAtts.getString("Summary");
-            if ( isSomething(value))                  addAtts.add("Summary", "null"); //not just remove()
-
-            if (!isSomething(value)) value =    addAtts.getString("abstract"); 
-            if (!isSomething(value)) value = sourceAtts.getString("abstract"); 
-            if (!isSomething(value)) value =    addAtts.getString("Abstract"); 
-            if (!isSomething(value)) value = sourceAtts.getString("Abstract"); 
-            if (!isSomething(value)) value =    addAtts.getString("description");
-            if (!isSomething(value)) value = sourceAtts.getString("description");
-            if (!isSomething(value)) value =    addAtts.getString("Description");
-            if (!isSomething(value)) value = sourceAtts.getString("Description");
-            if (!isSomething(value)) value =    addAtts.getString("comment");
-            if (!isSomething(value)) value = sourceAtts.getString("comment");
-            if (!isSomething(value)) value =    addAtts.getString("Comment");
-            if (!isSomething(value)) value = sourceAtts.getString("Comment");
-            //from title metadata?    priority to source if >20 chars
-            if (!isSomething(value)) {
-                value = "";
-                String sTitle = sourceAtts.getString("title");
-                String aTitle =    addAtts.getString("title");
-                if (!isSomething(aTitle)) aTitle =     addAtts.getString("Title");          //next best aTitle
-                if (!isSomething(sTitle)) sTitle =  sourceAtts.getString("Title");          
-
-                //use both sourceTitle and addTitle (if available and not the same)
-                String pre = "", post = "";
-                if (isSomething(sTitle)) value = sTitle;
-                if (isSomething(sTitle) && isSomething(aTitle)) {
-                    if (sTitle.toLowerCase().equals(aTitle.toLowerCase())) {
-                        aTitle = "";
-                    } else {
-                        pre = "\n(";
-                        post = ")";
-                    }
-                }
-                if (isSomething(aTitle)) 
-                    value += pre + aTitle + post;
-
-                //if suffixForTitle's text isn't already included, add it
-                if (isSomething(suffixForTitle) && 
-                    value.toLowerCase().indexOf(suffixForTitle.toLowerCase()) < 0 &&
-                    value.toLowerCase().indexOf(suffixForTitle2.toLowerCase()) < 0)
-                    value += suffixForTitleP;
-            }
-            //if nothing else
-            if (!isSomething(value)) {
-                tSummaryFromSourceUrl = true;
-                value = tIns.equals("???")? "Data " : tIns + " data ";
-                if (sourceUrlIsThreddsCatalogXml)  //thredds catalog.xml -> .html
-                     value += "from " + tPublicSourceUrl.substring(0, tPublicSourceUrl.length() - 4) + ".html";
-                else if (tPublicSourceUrl.startsWith("http"))
-                     value += "from " + tPublicSourceUrl + ".das ."; 
-                else value += "from a local source.";
-                value += suffixForTitleP;
-            }
-            addAtts.add(name, value);
-        }
-        if (isSomething(value)) {
-            if (value.indexOf("\\012") >= 0) {
-                value = String2.replaceAll(value, "\\\\\\\\012", "\n"); 
-                value = String2.replaceAll(value, "\\\\\\012",   "\n"); 
-                value = String2.replaceAll(value, "\\\\012",     "\n"); 
-                value = String2.replaceAll(value, "\\012",       "\n"); 
-            }
-            addAtts.add(name, value);
-        }
-        String tSummary = value;
-
         //title
         name = "title";
         {
@@ -3131,7 +3490,7 @@ public abstract class EDD {
             else value = externalTitle; //but most likely to have distinctive info
 
             //get from summary-like metadata? 
-            if (!isSomething(value) && !tSummaryFromSourceUrl) {
+            if (!isSomething(value) && !"???".equals(tSummary)) {
                 value = tSummary;
                 if (isSomething(value) && value.length() > 80) 
                     value = value.substring(0, 76) + " ...";
@@ -3199,7 +3558,7 @@ public abstract class EDD {
             if ( isSomething(value))                  addAtts.set("Keywords", "null"); //not just remove()
 
             addAtts.add(name, value);
-            //if (reallyVerbose) String2.log("  new keywords=" + value);
+            //if (reallyVerbose) String2.log("  new " + name + "=" + value);
         }
 
         //add suggestedKeywords and words from title to keywords  (and improve current keywords)
@@ -3517,7 +3876,7 @@ public abstract class EDD {
 
             value = sb.toString();
             addAtts.add(name, value);
-            if (reallyVerbose) String2.log("  new keywords=" + value);
+            if (reallyVerbose) String2.log("  new " + name + "=" + value);
         }
         boolean keywordsPartlyGcmd = value != null && value.indexOf(" > ") >= 0;
 
@@ -3532,9 +3891,27 @@ public abstract class EDD {
                 !isSomething(value)) {
                 value = gcmdSK;
                 addAtts.add(name, value);
-                if (reallyVerbose) String2.log("  new keywords_vocabulary=" + value);
+                if (reallyVerbose) String2.log("  new " + name + "=" + value);
             }
         }
+
+        //remove these atts from sourceAtts
+        String removeThese[] = {
+            "lat%2eaxis", "lat%2elong_name", "lat%2estandard_name", "lat%2eunits", 
+            "lon%2eaxis", "lon%2elong_name", "lon%2estandard_name", "lon%2eunits",
+            "start_date", "start_time", "stop_date", "stop_time",
+            "time%2eaxis", "time%2elong_name", "time%2estandard_name", "time%2eunits"};
+        for (int i = 0; i < removeThese.length; i++)
+            if (isSomething(sourceAtts.getString(removeThese[i]))) 
+                addAtts.add(removeThese[i], "null");
+        //remove any CF%3a...
+        String sourceNames[] = sourceAtts.getNames();
+        for (int i = 0; i < sourceNames.length; i++) {
+            if (sourceNames[i].startsWith("CF%3a") ||
+                sourceNames[i].startsWith("CF:"))
+                addAtts.add(sourceNames[i], "null");
+        }
+
 
         //remove atts which are already in sourceAtts
         addAtts.removeIfSame(sourceAtts);

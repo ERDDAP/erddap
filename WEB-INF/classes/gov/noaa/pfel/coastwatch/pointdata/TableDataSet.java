@@ -1149,7 +1149,6 @@ public abstract class TableDataSet implements Comparable {
         globalAttributes.set("date_issued", todaysDate);
         //'comment' could include other information about the station, its history 
         globalAttributes.set("source", "station observation");
-        //globalAttributes.set("observationDimension", "time"); //see Table.saveAsFlatNc
         //attributes unique in their opendap files
         //globalAttributes.set("quality", "Automated QC checks with periodic manual QC"); //an ndbc attribute?
         //globalAttributes.set("", ""}));

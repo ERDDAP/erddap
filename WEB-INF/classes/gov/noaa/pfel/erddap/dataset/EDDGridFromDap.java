@@ -468,7 +468,7 @@ public class EDDGridFromDap extends EDDGrid {
         ensureValid();
 
         //save quickRestart info
-        if (quickRestartAttributes == null) {
+        if (quickRestartAttributes == null) { //i.e., there is new info
             try {
                 quickRestartAttributes = new Attributes();
                 quickRestartAttributes.set("creationTimeMillis", "" + creationTimeMillis);
@@ -1666,8 +1666,8 @@ public class EDDGridFromDap extends EDDGrid {
 "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" +
 "        <att name=\"cwhdf_version\">3.4</att>\n" +
-"        <att name=\"date_created\">2012-04-11Z</att>\n" +  //changes
-"        <att name=\"date_issued\">2012-04-11Z</att>\n" + //changes
+"        <att name=\"date_created\">2012-09-28Z</att>\n" +  //changes
+"        <att name=\"date_issued\">2012-09-28Z</att>\n" + //changes
 "        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" +
 "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.041676313961565174 0.04167148975575877 0.0 0.0 -90.0</att>\n" +
 "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" +
@@ -1736,6 +1736,7 @@ String expected2 =
 "        <att name=\"publisher_email\">dave.foley@noaa.gov</att>\n" +
 "        <att name=\"publisher_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"publisher_url\">http://coastwatch.pfel.noaa.gov</att>\n" +
+"        <att name=\"start_time\">null</att>\n" +
 "        <att name=\"summary\">NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#039;s Aqua Spacecraft. Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft. This is Science Quality data.</att>\n" +
 "        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality (1-day)</att>\n" +
 "    </addAttributes>\n" +
@@ -1931,30 +1932,7 @@ String expected2 =
     //(v1.0.1  as of 2010-02-18 and still on 2010-03-03, 
     //2010-04-07 still v1.0.1, but #58-61 added)
     "http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalog.xml",
-/*
-    //#52 PMEL
-<catalogRef xlink:href="geoIDECleanCatalogs/6F782D2B9E0DE28D6B06A1ADCDC7A363.xml" xlink:title="PMEL" name=""/>
-    //#52 CarbonTracker
-<catalogRef xlink:href="carbontracker.xml" xlink:title="CarbonTracker CT2009" name=""/>
-    //#53 GFDL IPCC
-<catalogRef xlink:href="geoIDECleanCatalogs/6647A86EF2F13CA51E4DC35F99B75003.xml" xlink:title="GFDL IPCC" name=""/>
-    //#54 Gulf of Mexico
-<catalogRef xlink:href="geoIDECleanCatalogs/CE93007F7DA55F6B44C9D9BE68CBE2BC.xml" xlink:title="Caribbean and Gulf of Mexico Operational Data" name=""/>
-    //#55 OSMC
-<catalogRef xlink:href="geoIDECleanCatalogs/00A30DB93CB98DEDA3CA8BC79E39A4DA.xml" xlink:title="OSMC gridded count summaries" name=""/>
-    //#56 PFEG
-<catalogRef xlink:href="geoIDECleanCatalogs/BE6AA0E0E6206204D859DD539710B756.xml" xlink:title="PFEG" name=""/>
-    //#57 NGDC
-<catalogRef xlink:href="geoIDECleanCatalogs/4BE9976011C103BC2F14E2BFA2B12176.xml" xlink:title="NGDC" name=""/>
-    //#58 NavyFMR
-<catalogRef xlink:href="geoIDECleanCatalogs/ncom_best_time_series.xml" xlink:title="Navy Forecast Model Run Collections" name=""/>
-    //#59 NOAA Coastwatch
-<catalogRef xlink:href="geoIDECleanCatalogs/noaa_coastwatch_aggregations.xml" xlink:title="NOAA Coastwatch" name=""/>
-    //#60 HF
-<catalogRef xlink:href="geoIDECleanCatalogs/C61ABC65BE89E738480778BCCD136ABA.xml" xlink:title="HF radar data" name=""/>
-    //#61 IOOS
-<catalogRef xlink:href="geoIDECleanCatalogs/2CF2728013B3968CD6B635FAC7631CB7.xml" xlink:title="IOOS Data" name=""/>
-*/
+
     //51.. PMEL the  subcatalogs      //noaa_pmel  645 datasets, all loaded
     "http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalogs/6F782D2B9E0DE28D6B06A1ADCDC7A363.xml", 
     //52: noaa_gfdl  IPCC data,  GenerateDatasetsXml is slow, 3 unable to get .das
@@ -1974,26 +1952,27 @@ String expected2 =
     //  5505_1a5c_cdd8 can't load because variable ... not found, but var changes if I retry
     //     http://www.ngdc.noaa.gov/thredds/dodsC/stec-aggregation
     //     I think thredds is generating the dataset.
+    // 2012-10-17 ok
     "http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalogs/4BE9976011C103BC2F14E2BFA2B12176.xml", 
-    //57: NORTHERNGULFINSTITUTE   
-    //  e.g., http://edac-dap.northerngulfinstitute.org/thredds/dodsC/ncom/region1/ncom_glb_reg1_2010011600.nc
-    //  GenerateDatasetsXml 1 failed, couldn't get das http://www.ngdc.noaa.gov/thredds/dodsC/latest.xml.das
-    //  41+2etopo datasets, all loaded
-    // 2010-04-26 this is missing from clean catalog  (dataset urls changed a little)
-    "http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalogs/5ED0E154FE0A0DDE23FBBF11DF7E05AB.xml",
-    //58: ocean NOMADS  
+    //57: ecowatch 2012-10-17 fails
+    "http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalogs/2CF2728013B3968CD6B635FAC7631CB7.xml",
+    //58: ocean NOMADS   2012-10-17 fails
     //  2010-04-26  7 datasets
     "http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalogs/ncom_best_time_series.xml",
-    //59: 
-    "http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalogs/noaa_coastwatch_aggregations.xml",
-    //60:
-    "http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalogs/hfradar_local_config.xml",
-    //61:
-    "http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalogs/ioos_neracoos_usgs_coawst_bst.xml",
-    //62: carbontracker
+    //59: 2012-10-17 ok
+    "http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalogs/C9649B46B7DCFDA43C6F59478475A353.xml",
+    //60: 2012-10-17 ok
+    "http://ferret.pmel.noaa.gov/geoide/catalog/fukushima_best_time_series.xml",    
+    //61: 2012-10-17 ok
+    "http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalogs/nws_updated.xml",
+    //62: carbontracker 2012-10-17 ok
     "http://ferret.pmel.noaa.gov/geoide/catalog/carbontracker.xml",
-    //63: 
-    "http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalogs/ncom_best_time_series.xml"
+    //63: 2012-10-17 ok
+    "http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalogs/ncom_best_time_series.xml",
+    //64: 2012-10-17 ok
+    "http://ferret.pmel.noaa.gov/geoide/catalog/ncep.reanalysis.dailyavgs.xml",
+    //skip national coastwatch
+    //"http://ferret.pmel.noaa.gov/geoide/catalog/geoIDECleanCatalogs/noaa_coastwatch_aggregations.xml",
     };
 
         generateDatasetsXmlFromThreddsCatalog(null, 
@@ -2478,7 +2457,7 @@ String expected2 =
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0],  //last # changes frequently
-            "SimpleException: Query error: For variable=chlorophyll axis#0=time Constraint=\"[(2007-02-06)[]\": Stop=\"\" is invalid.  It must be an integer between 0 and 447.", 
+            "SimpleException: Query error: For variable=chlorophyll axis#0=time Constraint=\"[(2007-02-06)[]\": Stop=\"\" is invalid.  It must be an integer between 0 and 461.", 
             "error=" + error);
 
         error = "";
@@ -2689,15 +2668,15 @@ String expected2 =
         //String2.log(results);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 448];\n" +   //448 will change sometimes
+"  Float64 time[time = 462];\n" +   //462 will change sometimes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4320];\n" +
 "  Float64 longitude[longitude = 8640];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 chlorophyll[time = 448][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+"      Float32 chlorophyll[time = 462][altitude = 1][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 448];\n" +
+"      Float64 time[time = 462];\n" +
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
@@ -2745,10 +2724,10 @@ String expected2 =
         expected = 
 "Dataset {\n" +
 "  GRID {\n" +
-"    ARRAY:\n" +   //448 will change sometimes
-"      Float32 chlorophyll[time = 448][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+"    ARRAY:\n" +   //462 will change sometimes
+"      Float32 chlorophyll[time = 462][altitude = 1][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 448];\n" +
+"      Float64 time[time = 462];\n" +
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
@@ -3350,8 +3329,10 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "} erdMHchla8day;[10]\n" +
 "---------------------------------------------[10]\n" +
 "chlorophyll.chlorophyll[1][1][51][53][10]\n" +
+//missing values are sourceMissingValue
 //"[0][0][0], -9999999.0, -9999999.0, 0.099, 0.118, -9999999.0, 0.091, -9999999.0,"; //pre 2010-10-26
-"[0][0][0], -9999999.0, -9999999.0, 0.10655, 0.12478, -9999999.0, 0.09398, -9999999.0, 0.08919, 0.09892,"; //missing values are sourceMissingValue
+//"[0][0][0], -9999999.0, -9999999.0, 0.10655, 0.12478, -9999999.0, 0.09398, -9999999.0, 0.08919, 0.09892,"; //pre 2012-08-17
+"[0][0][0], -9999999.0, -9999999.0, 0.11093, 0.12439, -9999999.0, 0.09554, -9999999.0, 0.09044, 0.10009,";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         expected = "[0][0][42], -9999999.0,";
         Test.ensureTrue(results.indexOf(expected) > 0, "RESULTS=\n" + results);
@@ -3384,7 +3365,8 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.81780298645677, 0.099\n" +
 "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434, 0.118\n" +
 "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.65123278157193, NaN\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953, 0.091\n"; */
+"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953, 0.091\n"; 
+pre 2012-08-17 was 
 "time,altitude,latitude,longitude,chlorophyll\n" +
 "UTC,m,degrees_north,degrees_east,mg m-3\n" +
 "2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
@@ -3392,10 +3374,20 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.10655\n" +
 "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12478\n" +
 "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.65123278157193,NaN\n" +
-"2007-02-06T00:00:00Z,0.0,28.985876360268577,227.06794767912953,0.09398\n";
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,227.06794767912953,0.09398\n"; */
+"time,altitude,latitude,longitude,chlorophyll\n" +
+"UTC,m,degrees_north,degrees_east,mg m-3\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,225.40108808889917,NaN\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.11093\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12439\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,226.65123278157193,NaN\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,227.06794767912953,0.09554\n";
+
         Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
         expected = //"2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.37\n"; //pre 2010-10-26
-                     "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n";
+                   //"2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n"; //pre 2012-08-17
+                     "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.56545\n";
         Test.ensureTrue(results.indexOf(expected) > 0, "RESULTS=\n" + results);
 
         //.csv   test gridName.gridName notation
@@ -3412,7 +3404,8 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 225.81780298645677, 0.099\n" +
 "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.23451788401434, 0.118\n" +
 "2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 226.65123278157193, NaN\n" +
-"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953, 0.091\n";*/
+"2007-02-06T00:00:00Z, 0.0, 28.985876360268577, 227.06794767912953, 0.091\n";
+//pre 2012-08-17 was 
 "time,altitude,latitude,longitude,chlorophyll\n" +
 "UTC,m,degrees_north,degrees_east,mg m-3\n" +
 "2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
@@ -3420,10 +3413,19 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.10655\n" +
 "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12478\n" +
 "2007-02-06T00:00:00Z,0.0,28.985876360268577,226.65123278157193,NaN\n" +
-"2007-02-06T00:00:00Z,0.0,28.985876360268577,227.06794767912953,0.09398\n";
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,227.06794767912953,0.09398\n"; */
+"time,altitude,latitude,longitude,chlorophyll\n" +
+"UTC,m,degrees_north,degrees_east,mg m-3\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,225.40108808889917,NaN\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.11093\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12439\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,226.65123278157193,NaN\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,227.06794767912953,0.09554\n";
         Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
         expected = //"2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.37\n"; //pre 2010-10-26
-                     "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n";
+                   //"2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n"; //pre 2012-08-17
+                     "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.56545\n";
         Test.ensureTrue(results.indexOf(expected) > 0, "RESULTS=\n" + results);
 
         //.das
@@ -3520,7 +3522,8 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
         expected = //last row
 //"0.204 0.239 0.26 0.252 0.274 0.289 0.367 0.37 0.65 0.531 -9999999 -9999999 1.141\n"; //pre 2010-10-26
-"0.27878 0.31141 0.32663 0.41135 0.40628 0.65426 0.4827 -9999999 -9999999 1.16268\n";
+//"0.27878 0.31141 0.32663 0.41135 0.40628 0.65426 0.4827 -9999999 -9999999 1.16268\n"; //pre 2010-08-17
+"0.28787 0.31865 0.33447 0.43293 0.43297 0.68101 0.48409 -9999999 -9999999 1.20716\n";
         Test.ensureTrue(results.indexOf(expected) > 0, "RESULTS=\n" + results);
 
         //.json
@@ -3529,7 +3532,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Data", ".json"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = //missing values are "null"
-/*pre 2010-10-26
+
 "{\n" +
 "  \"table\": {\n" +
 "    \"columnNames\": [\"time\", \"altitude\", \"latitude\", \"longitude\", \"chlorophyll\"],\n" +
@@ -3538,26 +3541,16 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "    \"rows\": [\n" +
 "      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 224.98437319134158, null],\n" +
 "      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 225.40108808889917, null],\n" +
-"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 225.81780298645677, 0.099],\n" +
-"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 226.23451788401434, 0.118],\n"; */
-"{\n" +
-"  \"table\": {\n" +
-"    \"columnNames\": [\"time\", \"altitude\", \"latitude\", \"longitude\", \"chlorophyll\"],\n" +
-"    \"columnTypes\": [\"String\", \"double\", \"double\", \"double\", \"float\"],\n" +
-"    \"columnUnits\": [\"UTC\", \"m\", \"degrees_north\", \"degrees_east\", \"mg m-3\"],\n" +
-"    \"rows\": [\n" +
-"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 224.98437319134158, null],\n" +
-"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 225.40108808889917, null],\n" +
-"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 225.81780298645677, 0.10655],\n" +
-"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 226.23451788401434, 0.12478],\n";
+//pre 2010-10-26, was
+//"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 225.81780298645677, 0.099],\n" +
+//"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 226.23451788401434, 0.118],\n"; 
+//pre 2012-08-17 was:
+//"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 225.81780298645677, 0.10655],\n" +
+//"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 226.23451788401434, 0.12478],\n"; */
+"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 225.81780298645677, 0.11093],\n" +
+"      [\"2007-02-06T00:00:00Z\", 0.0, 28.985876360268577, 226.23451788401434, 0.12439],\n";
         Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
         expected = 
-/*pre 2010-10-26
-"      [\"2007-02-06T00:00:00Z\", 0.0, 49.82403334105115, 246.23683296677856, null],\n" +
-"      [\"2007-02-06T00:00:00Z\", 0.0, 49.82403334105115, 246.65354786433613, null]\n" +
-"    ]\n" +
-"  }\n" +
-"}\n";*/
 "      [\"2007-02-06T00:00:00Z\", 0.0, 49.82403334105115, 246.23683296677856, null],\n" +
 "      [\"2007-02-06T00:00:00Z\", 0.0, 49.82403334105115, 246.65354786433613, null]\n" +
 "    ]\n" +
@@ -3614,7 +3607,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "40 40 5e 4d a5 c9 59 ac   40 40 93 a6 24 64 c3 98   @@^M  Y @@  $d   |\n" +
 "40 40 c8 fe a3 00 2d 84   40 40 fe 57 21 9b 97 70   @@    - @@ W!  p |";
         results = results.substring(0, 71 * 4) + results.substring(71 * 7); //remove the creation dateTime
-        results = results.substring(0, expected.length()); //remove the creation dateTime
+        results = results.substring(0, Math.min(results.length(), expected.length())); //remove the creation dateTime
         Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 /* */
         //.nc
@@ -3743,8 +3736,11 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "  {\n" +
 "    {\n" +
 "      {\n" +
-//pre 2010-10-26 was "        {-9999999.0, -9999999.0, 0.099, 0.118, -9999999.0, 0.091, -9999999.0, 0.088, 0.085, 0.088, -9999999.0, 0.098, -9999999.0, 0.076, -9999999.0, 0.07, 0.071, -9999999.0, -9999999.0, -9999999.0, 0.078, -9999999.0, 0.09, 0.084, -9999999.0, -9999999.0, 0.098, -9999999.0, 0.079, 0.076, 0.085, -9999999.0, 0.086, 0.127, 0.199, 0.167, 0.191, 0.133, 0.14, 0.173, 0.204, 0.239, 0.26, 0.252, 0.274, 0.289, 0.367, 0.37, 0.65, 0.531, -9999999.0, -9999999.0, 1.141},\n";
-"        {-9999999.0, -9999999.0, 0.10655, 0.12478, -9999999.0, 0.09398, -9999999.0, 0.08919, 0.09892, 0.10007, -9999999.0, 0.09986, -9999999.0, 0.07119, -9999999.0, 0.08288, 0.08163, -9999999.0, -9999999.0, -9999999.0, 0.08319, -9999999.0, 0.09706, 0.08309, -9999999.0, -9999999.0, 0.0996, -9999999.0, 0.08962, 0.08329, 0.09101, -9999999.0, 0.08679, 0.13689, 0.21315, 0.18729, 0.21642, 0.15069, 0.15123, 0.18849, 0.22975, 0.27075, 0.29062, 0.27878, 0.31141, 0.32663, 0.41135, 0.40628, 0.65426, 0.4827, -9999999.0, -9999999.0, 1.16268},\n";
+//pre 2010-10-26 was 
+//"        {-9999999.0, -9999999.0, 0.099, 0.118, -9999999.0, 0.091, -9999999.0, 0.088, 0.085, 0.088, -9999999.0, 0.098, -9999999.0, 0.076, -9999999.0, 0.07, 0.071, -9999999.0, -9999999.0, -9999999.0, 0.078, -9999999.0, 0.09, 0.084, -9999999.0, -9999999.0, 0.098, -9999999.0, 0.079, 0.076, 0.085, -9999999.0, 0.086, 0.127, 0.199, 0.167, 0.191, 0.133, 0.14, 0.173, 0.204, 0.239, 0.26, 0.252, 0.274, 0.289, 0.367, 0.37, 0.65, 0.531, -9999999.0, -9999999.0, 1.141},\n";
+//pre 2012-08-17 was
+//"        {-9999999.0, -9999999.0, 0.10655, 0.12478, -9999999.0, 0.09398, -9999999.0, 0.08919, 0.09892, 0.10007, -9999999.0, 0.09986, -9999999.0, 0.07119, -9999999.0, 0.08288, 0.08163, -9999999.0, -9999999.0, -9999999.0, 0.08319, -9999999.0, 0.09706, 0.08309, -9999999.0, -9999999.0, 0.0996, -9999999.0, 0.08962, 0.08329, 0.09101, -9999999.0, 0.08679, 0.13689, 0.21315, 0.18729, 0.21642, 0.15069, 0.15123, 0.18849, 0.22975, 0.27075, 0.29062, 0.27878, 0.31141, 0.32663, 0.41135, 0.40628, 0.65426, 0.4827, -9999999.0, -9999999.0, 1.16268},\n";
+  "        {-9999999.0, -9999999.0, 0.11093, 0.12439, -9999999.0, 0.09554, -9999999.0, 0.09044, 0.10009, 0.10116, -9999999.0, 0.10095, -9999999.0, 0.07243, -9999999.0, 0.08363, 0.08291, -9999999.0, -9999999.0, -9999999.0, 0.08885, -9999999.0, 0.09632, 0.0909, -9999999.0, -9999999.0, 0.09725, -9999999.0, 0.09978, 0.09462, 0.09905, -9999999.0, 0.09937, 0.12816, 0.20255, 0.17595, 0.20562, 0.14333, 0.15073, 0.18803, 0.22673, 0.27252, 0.29005, 0.28787, 0.31865, 0.33447, 0.43293, 0.43297, 0.68101, 0.48409, -9999999.0, -9999999.0, 1.20716},\n";
         tPo = results.indexOf(" :infoUrl");
         Test.ensureEqual(results.substring(tPo, tPo + expected.length()), expected, "RESULTS=\n" + results);
 
@@ -3799,23 +3795,25 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-/* pre 2010-10-26 was
 "time\taltitude\tlatitude\tlongitude\tchlorophyll\n" +
 "UTC\tm\tdegrees_north\tdegrees_east\tmg m-3\n" +
 "2007-02-06T00:00:00Z\t0.0\t28.985876360268577\t224.98437319134158\tNaN\n" +
 "2007-02-06T00:00:00Z\t0.0\t28.985876360268577\t225.40108808889917\tNaN\n" +
-"2007-02-06T00:00:00Z\t0.0\t28.985876360268577\t225.81780298645677\t0.099\n" +
-"2007-02-06T00:00:00Z\t0.0\t28.985876360268577\t226.23451788401434\t0.118\n";*/
-"time\taltitude\tlatitude\tlongitude\tchlorophyll\n" +
-"UTC\tm\tdegrees_north\tdegrees_east\tmg m-3\n" +
-"2007-02-06T00:00:00Z\t0.0\t28.985876360268577\t224.98437319134158\tNaN\n" +
-"2007-02-06T00:00:00Z\t0.0\t28.985876360268577\t225.40108808889917\tNaN\n" +
-"2007-02-06T00:00:00Z\t0.0\t28.985876360268577\t225.81780298645677\t0.10655\n" +
-"2007-02-06T00:00:00Z\t0.0\t28.985876360268577\t226.23451788401434\t0.12478\n";
+// pre 2010-10-26 was
+//"2007-02-06T00:00:00Z\t0.0\t28.985876360268577\t225.81780298645677\t0.099\n" +
+//"2007-02-06T00:00:00Z\t0.0\t28.985876360268577\t226.23451788401434\t0.118\n";
+//pre 2012-08-17 was
+//"2007-02-06T00:00:00Z\t0.0\t28.985876360268577\t225.81780298645677\t0.10655\n" +
+//"2007-02-06T00:00:00Z\t0.0\t28.985876360268577\t226.23451788401434\t0.12478\n";
+  "2007-02-06T00:00:00Z\t0.0\t28.985876360268577\t225.81780298645677\t0.11093\n" +
+  "2007-02-06T00:00:00Z\t0.0\t28.985876360268577\t226.23451788401434\t0.12439\n";
         Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
         expected = 
-/* pre 2010-10-26 was  "2007-02-06T00:00:00Z\t0.0\t49.407270201435495\t232.06852644982058\t0.37\n";   */
-"2007-02-06T00:00:00Z\t0.0\t49.407270201435495\t232.06852644982058\t0.58877\n";
+//pre 2010-10-26 was  
+//"2007-02-06T00:00:00Z\t0.0\t49.407270201435495\t232.06852644982058\t0.37\n";   
+//pre 2012-08-17 was
+//"2007-02-06T00:00:00Z\t0.0\t49.407270201435495\t232.06852644982058\t0.58877\n";
+  "2007-02-06T00:00:00Z\t0.0\t49.407270201435495\t232.06852644982058\t0.56545\n";
         Test.ensureTrue(results.indexOf(expected) > 0, "RESULTS=\n" + results);
 
         //.xhtml
@@ -4184,14 +4182,14 @@ boolean testAll = true;
                 expected = 
 "netcdf " + tUrl + "/griddap/erdMHchla8day {\n" +
 " dimensions:\n" +
-"   time = 448;\n" +   // (has coord.var)\n" +  //changes sometimes
+"   time = 462;\n" +   // (has coord.var)\n" +  //changes sometimes
 "   altitude = 1;\n" +   // (has coord.var)\n" +
 "   latitude = 4320;\n" +   // (has coord.var)\n" +
 "   longitude = 8640;\n" +   // (has coord.var)\n" +
 " variables:\n" +
-"   double time(time=448);\n" +
+"   double time(time=462);\n" +
 "     :_CoordinateAxisType = \"Time\";\n" +
-"     :actual_range = 1.0260864E9, 1.3395456E9; // double\n" +  //2nd value changes sometimes
+"     :actual_range = 1.0260864E9, 1.3492224E9; // double\n" +  //2nd value changes sometimes
 "     :axis = \"T\";\n" +
 "     :fraction_digits = 0; // int\n" +
 "     :ioos_category = \"Time\";\n" +
@@ -4232,7 +4230,7 @@ boolean testAll = true;
 "     :point_spacing = \"even\";\n" +
 "     :standard_name = \"longitude\";\n" +
 "     :units = \"degrees_east\";\n" +
-"   float chlorophyll(time=448, altitude=1, latitude=4320, longitude=8640);\n" +
+"   float chlorophyll(time=462, altitude=1, latitude=4320, longitude=8640);\n" +
 "     :_CoordinateAxes = \"time altitude latitude longitude \";\n" +
 "     :_FillValue = -9999999.0f; // float\n" +
 "     :colorBarMaximum = 30.0; // double\n" +
@@ -4255,8 +4253,8 @@ boolean testAll = true;
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2012-06-28Z\";\n" + //changes
-" :date_issued = \"2012-06-28Z\";\n" + //changes
+" :date_created = \"2012-10-12Z\";\n" + //changes
+" :date_issued = \"2012-10-12Z\";\n" + //changes
 " :Easternmost_Easting = 360.0; // double\n" +
 " :geospatial_lat_max = 90.0; // double\n" +
 " :geospatial_lat_min = -90.0; // double\n" +
@@ -4282,7 +4280,7 @@ boolean testAll = true;
 " :Southernmost_Northing = -90.0; // double\n" +
 " :standard_name_vocabulary = \"CF-12\";\n" +
 " :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-" :time_coverage_end = \"2012-06-13T00:00:00Z\";\n" + //changes
+" :time_coverage_end = \"2012-10-03T00:00:00Z\";\n" + //changes
 " :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
 " :title = \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
 " :Westernmost_Easting = 0.0; // double\n" +
@@ -4330,7 +4328,9 @@ boolean testAll = true;
                 Test.ensureEqual(pa.elementClass(), float.class, "");
                 String2.log("pa=" + pa);
                 Test.ensureEqual(pa.size(), 21, "");
-                Test.ensureEqual(pa.getFloat(0), 0.12906f, ""); //pre 2010-10-26 was 0.113f
+                //pre 2010-10-26 was 0.113f
+                //pre 2012-08-17 was 0.12906f
+                Test.ensureEqual(pa.getFloat(0), 0.13295f, "");
                 Test.ensureEqual(pa.getFloat(1), -9999999.0f, "");
 
             } finally {
@@ -4451,6 +4451,9 @@ directionsForGenerateDatasetsXml() +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
 "        <att name=\"Conventions\">CF-1.6, COARDS, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"creator_email\">GFDL.Climate.Model.Info@noaa.gov</att>\n" +
+"        <att name=\"creator_name\">NOAA GFDL</att>\n" +
+"        <att name=\"creator_url\">http://data1.gfdl.noaa.gov/nomads/forms/deccen/</att>\n" +
 "        <att name=\"infoUrl\">http://data1.gfdl.noaa.gov:8380/thredds3/dodsC/ipcc_ar4_CM2.0_R1_20C3M-0_monthly_atmos_18610101-20001231.html</att>\n" +
 "        <att name=\"institution\">NOAA GFDL</att>\n" +
 "        <att name=\"keywords\">20c3m, 20th, ar4, ccsp, century, climate, cm2.0, coefficient, coordinate, experiment, gfdl, hybrid, ipcc, layer, noaa, output, run, sigma</att>\n" +
@@ -4605,7 +4608,7 @@ directionsForGenerateDatasetsXml() +
 "    String ioos_category \"Ice Distribution\";\n" +
 "    String long_name \"Sea Ice Concentration\";\n" +
 "    String standard_name \"sea_ice_area_fraction\";\n" +
-"    String units \"percentage\";\n" +
+"    String units \"fraction\";\n" +
 "    Float32 valid_max 1.0;\n" +
 "    Float32 valid_min 0.0;\n" +
 "  }"; 
@@ -4763,6 +4766,7 @@ directionsForGenerateDatasetsXml() +
     }
 
     /**
+     * THIS TEST IS NOT ACTIVE BECAUSE DAPPER IS NO LONGER ACTIVE.
      * This does important tests with pmelOscar (which has descending lat axis values AND
      * wierd rage: longitude is 20 .. 419!!!).
      *
@@ -4894,7 +4898,7 @@ directionsForGenerateDatasetsXml() +
 "    String standard_name \"eastward_sea_water_velocity\";\n" +
 "    String units \"m s-1\";\n" +
 "  }\n";
-        tResults = results.substring(0, expected.length());
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
         expected = 
@@ -4917,9 +4921,11 @@ directionsForGenerateDatasetsXml() +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
         int tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) String2.log("results=\n" + results);
-        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
-            "results=\n" + results);
+        if (tpo < 0) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
         
 //        + " http://dapper.pmel.noaa.gov/dapper/oscar/world-unfilter.nc\n" +
 //today + " " + EDStatic.erddapUrl + //in tests, always non-https url
@@ -4954,8 +4960,11 @@ expected =
 "  }\n" +
 "}\n";
         tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) String2.log("results=\n" + results);
-        Test.ensureEqual(results.substring(tpo), expected, "results=\n" + results);
+        if (tpo < 0) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
 
 
         //.dds     dds isn't affected by userDapQuery
@@ -5035,7 +5044,7 @@ expected =
 " :contact = \"Fabrice Bonjean (bonjean@esr.org) or John T. Gunn (gunn@esr.org)\";\n" +
 " :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n";
 
-        tResults = results.substring(0, expected.length());
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
         expected = //note geospatial_lat_min max;  note that internal " are not slashed, but that is ncDump's problem
 " :DATASUBTYPE = \"unfiltered\";\n" +
@@ -5047,9 +5056,11 @@ expected =
 " :geospatial_lat_units = \"degrees_north\";\n" +
 " :history = \"";
         tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) String2.log("results=\n" + results);
-        tResults = results.substring(tpo, tpo +  expected.length());
-        Test.ensureEqual(tResults, expected, "results=\n" + results);
+        if (tpo < 0) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
 
 //note geospatial_lat_min max;  note that internal " are not slashed, but that is ncDump's problem
 //today + " http://dapper.pmel.noaa.gov/dapper/oscar/world-unfilter.nc\n" +
@@ -5085,8 +5096,11 @@ expected =
 "  {69.5, 59.5, 49.5, 39.5, 29.5, 19.5, 9.5, -0.5, -10.5, -20.5, -30.5, -40.5, -50.5, -60.5}\n" +
 "}\n";
         tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) String2.log("results=\n" + results);
-        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, "results=\n" + results);
+        if (tpo < 0) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
 
         //.csv data 
         userDapQuery = "u[0][0][(69.5):10:(-69.5)][0]"; 
@@ -5297,7 +5311,7 @@ expected =
 "    String units \"cm/s\";\n" +
 "    Float64 valid_range -1000.0, 1000.0;\n" +
 "  }\n";
-        tResults = results.substring(0, expected.length());
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         expected = 
 "  PGd_1203 {\n" +
@@ -5394,8 +5408,11 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 "  }\n" +
 "}\n";
         int tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) String2.log("results=\n" + results);
-        Test.ensureEqual(results.substring(tpo), expected, "results=\n" + results);
+        if (tpo < 0) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
 
 
         //.dds     dds isn't affected by userDapQuery
@@ -5803,7 +5820,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         //time
         results = gridDataset.axisVariables[0].sliderCsvValues();
         //end dates and sliderNCsvValues changes frequently
-        expected = "\"2002-07-06T12:00:00Z\", \"2002-07-20T12:00:00Z\", \"2002-08-03T12:00:00Z\", \"2002-08-17T12:00:00Z\",";
+        expected = "\"2002-07-06T12:00:00Z\", \"2002-07-21T12:00:00Z\", \"2002-08-05T12:00:00Z\", \"2002-08-20T12:00:00Z\",";
         Test.ensureEqual(results.substring(0, expected.length()), expected, 
             "results=\n" + results);
 
@@ -6136,7 +6153,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "  NC_GLOBAL {\n" +
 "    String avg_base \"nep4_avg\";\n" +
 "    String bry_file \"/wrkdir/kate/NEP4_djd/NEP4_bry_CCSM_2000-2004.nc\";\n";
-        tResults = results.substring(0, expected.length());
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
         expected = 
@@ -6490,6 +6507,197 @@ EDStatic.startBodyHtml(null) + "\n" +
 
     }
 
+    public static void testNetcdfJava() throws Throwable {
+        //open as a NetcdfDataset, not a NetcdfFile as above
+        String url = "http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla8day";
+        //String url = EDStatic.erddapUrl + "/griddap/erdMHchla8day"; //in tests, always non-https url
+
+        NetcdfDataset nc = NetcdfDataset.openDataset(url);
+        String results, expected;
+        Attributes attributes = new Attributes();
+        try {
+            results = nc.toString();
+            results = NcHelper.decodeNcDump(results); //added with switch to netcdf-java 4.0
+            String tUrl = String2.replaceAll(EDStatic.erddapUrl, "http:", "dods:"); //in tests, always non-https url
+            expected = 
+"netcdf dods" + url.substring(4) + " {\n" +
+" dimensions:\n" +
+"   time = 462;\n" +
+"   altitude = 1;\n" +
+"   latitude = 4320;\n" +
+"   longitude = 8640;\n" +
+" variables:\n" +
+"   float chlorophyll(time=462, altitude=1, latitude=4320, longitude=8640);\n" +
+"     :_CoordinateAxes = \"time altitude latitude longitude \";\n" +
+"     :_FillValue = -9999999.0f; // float\n" +
+"     :colorBarMaximum = 30.0; // double\n" +
+"     :colorBarMinimum = 0.03; // double\n" +
+"     :colorBarScale = \"Log\";\n" +
+"     :coordsys = \"geographic\";\n" +
+"     :fraction_digits = 2; // int\n" +
+"     :ioos_category = \"Ocean Color\";\n" +
+"     :long_name = \"Concentration Of Chlorophyll In Sea Water\";\n" +
+"     :missing_value = -9999999.0f; // float\n" +
+"     :standard_name = \"concentration_of_chlorophyll_in_sea_water\";\n" +
+"     :units = \"mg m-3\";\n" +
+"   double time(time=462);\n" +
+"     :_CoordinateAxisType = \"Time\";\n" +
+"     :actual_range = 1.0260864E9, 1.3492224E9; // double\n" +  //2nd number changes
+"     :axis = \"T\";\n" +
+"     :fraction_digits = 0; // int\n" +
+"     :ioos_category = \"Time\";\n" +
+"     :long_name = \"Centered Time\";\n" +
+"     :standard_name = \"time\";\n" +
+"     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"   double altitude(altitude=1);\n" +
+"     :_CoordinateAxisType = \"Height\";\n" +
+"     :_CoordinateZisPositive = \"up\";\n" +
+"     :actual_range = 0.0, 0.0; // double\n" +
+"     :axis = \"Z\";\n" +
+"     :fraction_digits = 0; // int\n" +
+"     :ioos_category = \"Location\";\n" +
+"     :long_name = \"Altitude\";\n" +
+"     :positive = \"up\";\n" +
+"     :standard_name = \"altitude\";\n" +
+"     :units = \"m\";\n" +
+"   double latitude(latitude=4320);\n" +
+"     :_CoordinateAxisType = \"Lat\";\n" +
+"     :actual_range = -90.0, 90.0; // double\n" +
+"     :axis = \"Y\";\n" +
+"     :coordsys = \"geographic\";\n" +
+"     :fraction_digits = 4; // int\n" +
+"     :ioos_category = \"Location\";\n" +
+"     :long_name = \"Latitude\";\n" +
+"     :point_spacing = \"even\";\n" +
+"     :standard_name = \"latitude\";\n" +
+"     :units = \"degrees_north\";\n" +
+"   double longitude(longitude=8640);\n" +
+"     :_CoordinateAxisType = \"Lon\";\n" +
+"     :actual_range = 0.0, 360.0; // double\n" +
+"     :axis = \"X\";\n" +
+"     :coordsys = \"geographic\";\n" +
+"     :fraction_digits = 4; // int\n" +
+"     :ioos_category = \"Location\";\n" +
+"     :long_name = \"Longitude\";\n" +
+"     :point_spacing = \"even\";\n" +
+"     :standard_name = \"longitude\";\n" +
+"     :units = \"degrees_east\";\n" +
+"\n" +
+" :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
+" :cdm_data_type = \"Grid\";\n" +
+" :composite = \"true\";\n" +
+" :contributor_name = \"NASA GSFC (OBPG)\";\n" +
+" :contributor_role = \"Source of level 2 data.\";\n" +
+" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+" :creator_email = \"dave.foley@noaa.gov\";\n" +
+" :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
+" :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
+" :date_created = \"2012-10-12Z\";\n" +  //changes
+" :date_issued = \"2012-10-12Z\";\n" +   //changes
+" :Easternmost_Easting = 360.0; // double\n" +
+" :geospatial_lat_max = 90.0; // double\n" +
+" :geospatial_lat_min = -90.0; // double\n" +
+" :geospatial_lat_resolution = 0.041676313961565174; // double\n" +
+" :geospatial_lat_units = \"degrees_north\";\n" +
+" :geospatial_lon_max = 360.0; // double\n" +
+" :geospatial_lon_min = 0.0; // double\n" +
+" :geospatial_lon_resolution = 0.04167148975575877; // double\n" +
+" :geospatial_lon_units = \"degrees_east\";\n" +
+" :geospatial_vertical_max = 0.0; // double\n" +
+" :geospatial_vertical_min = 0.0; // double\n" +
+" :geospatial_vertical_positive = \"up\";\n" +
+" :geospatial_vertical_units = \"m\";\n" +
+" :history = \"NASA GSFC (OBPG)";
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
+
+            expected = 
+" :satellite = \"Aqua\";\n" +
+" :sensor = \"MODIS\";\n" +
+" :source = \"satellite observation: Aqua, MODIS\";\n" +
+" :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
+" :Southernmost_Northing = -90.0; // double\n" +
+" :standard_name_vocabulary = \"CF-12\";\n" +
+" :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
+" :time_coverage_end = \"2012-10-03T00:00:00Z\";\n" + //changes
+" :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
+" :title = \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
+" :Westernmost_Easting = 0.0; // double\n" +
+"}\n";
+            Test.ensureEqual(results.substring(results.indexOf(" :satellite =")), expected, "RESULTS=\n" + results);
+
+            attributes.clear();
+            NcHelper.getGlobalAttributes(nc, attributes);
+            Test.ensureEqual(attributes.getString("contributor_name"), "NASA GSFC (OBPG)", "");
+            Test.ensureEqual(attributes.getString("keywords"), "8-day,\n" +
+"Oceans > Ocean Chemistry > Chlorophyll,\n" +
+"aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn", 
+                "found=" + attributes.getString("keywords"));
+
+            //get attributes for a dimension 
+            Variable ncLat = nc.findVariable("latitude");
+            attributes.clear();
+            NcHelper.getVariableAttributes(ncLat, attributes);
+            Test.ensureEqual(attributes.getString("coordsys"), "geographic", "");
+            Test.ensureEqual(attributes.get("fraction_digits"), new IntArray(new int[]{4}), ""); //test if stored in correct form
+
+            //get attributes for grid variable
+            Variable ncChl = nc.findVariable("chlorophyll");
+            attributes.clear();
+            NcHelper.getVariableAttributes(ncChl, attributes);
+            Test.ensureEqual(attributes.getString("standard_name"), "concentration_of_chlorophyll_in_sea_water", "");
+            Test.ensureEqual(attributes.getString("units"), "mg m-3", "");
+
+            //test get dimension data - all
+            PrimitiveArray pa = NcHelper.getPrimitiveArray(ncLat);
+            Test.ensureEqual(pa.elementClass(), double.class, "");
+            Test.ensureEqual(pa.size(), 4320, "");
+            Test.ensureEqual(pa.getDouble(0), -90, "");
+            Test.ensureEqual(pa.getDouble(4319), 90, ""); 
+
+            //test get dimension data - part
+            pa = NcHelper.getPrimitiveArray(ncLat, 10, 20);
+            Test.ensureEqual(pa.elementClass(), double.class, "");
+            Test.ensureEqual(pa.size(), 11, "");
+            Test.ensureEqual(pa.getDouble(0), -89.58323686038435, "");
+            Test.ensureEqual(pa.getDouble(10), -89.16647372076869, ""); 
+
+            //get grid data
+            pa = NcHelper.get4DValues(ncChl, 4500, 2080, 0, 170, 190); //x,y,z,t1,t2
+            Test.ensureEqual(pa.elementClass(), float.class, "");
+            String2.log("pa=" + pa);
+            Test.ensureEqual(pa.size(), 21, "");
+            //pre 2010-10-26 was 0.113f
+            //pre 2012-08-17 was 0.12906f
+            Test.ensureEqual(pa.getFloat(0), 0.13295f, "");
+            Test.ensureEqual(pa.getFloat(1), Float.NaN, ""); //!!! NetcdfFile returns -9999999.0f
+
+        } finally {
+            nc.close();
+        }
+
+    /*
+        //open as a NetcdfDataset, not a NetcdfFile as above
+        nc = NetcdfDataset.openDataset("http://beach.mbari.org:8180/erddap/griddap/erdRyanSST"); //in tests, always non-https url
+        String results, expected;
+        Attributes attributes = new Attributes();
+        try {
+            results = nc.toString();
+            results = NcHelper.decodeNcDump(results); //added with switch to netcdf-java 4.0
+            String tUrl = String2.replaceAll(EDStatic.erddapUrl, "http:", "dods:"); //in tests, always non-https url
+            expected = 
+"zztop\n";
+            Test.ensureEqual(results.substring(results.indexOf(" :satellite =")), expected, "RESULTS=\n" + results);
+
+
+        } finally {
+            nc.close();
+        }
+
+        */
+    }
+
+
     /**
      * This tests the methods in this class.
      *
@@ -6508,7 +6716,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         if (doGraphicsTests) testGraphics();
         testOpendap();
         testScaleAddOffset();
-        testPmelOscar(doGraphicsTests);
+        //testPmelOscar(doGraphicsTests); DAPPER IS NO LONGER ACTIVE!
         testGenerateDatasetsXml();
         testGenerateDatasetsXmlFromThreddsCatalog();
         testGetUrlsFromThreddsCatalog();
@@ -6525,6 +6733,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         testSpeedDAF();
         testSpeedMAG();
         testQuickRestart();
+        testNetcdfJava();
         //testDescendingAxisGeotif(); //not working yet
         /* */
 

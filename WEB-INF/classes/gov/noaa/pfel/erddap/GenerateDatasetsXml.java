@@ -112,6 +112,7 @@ public class GenerateDatasetsXml {
                 "  EDDTableFromErddap\n" +
                 "  EDDTableFromIoosSOS\n" +
                 "  EDDTableFromNcFiles\n" +
+                "  EDDTableFromNcCFFiles\n" +
                 "  EDDTableFromOBIS\n" +
                 "  EDDTableFromSOS\n" +           
                 "  EDDTableFromThreddsFiles\n" +
@@ -245,6 +246,25 @@ public class GenerateDatasetsXml {
                     println(EDDTableFromNcFiles.generateDatasetsXml(
                         s1, s2, s3, s4, String2.parseInt(s5, 10080), s6, s7, s8,
                         s9, s10, s11, s12, s13, s14, s15, null));
+
+                } else if (eddType.equals("EDDTableFromNcCFFiles")) {
+                    s1  = get(args,  1,  s1, "Starting directory");
+                    s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
+                    s3  = get(args,  3,  s3, "A sample full file name");                       
+                    s4  = get(args,  4,  s4, "ReloadEveryNMinutes (e.g., 10080)");
+                    s5  = get(args,  5,  s5, "PreExtractRegex");
+                    s6  = get(args,  6,  s6, "PostExtractRegex");
+                    s7  = get(args,  7,  s7, "ExtractRegex");
+                    s8  = get(args,  8,  s8, "Column name for extract");
+                    s9  = get(args,  9,  s9, "Sort files by sourceName");
+                    s10 = get(args, 10, s10, "infoUrl");
+                    s11 = get(args, 11, s11, "institution");
+                    s12 = get(args, 12, s12, "summary");
+                    s13 = get(args, 13, s13, "title");
+                    System.out.println("working...");
+                    println(EDDTableFromNcCFFiles.generateDatasetsXml(
+                        s1, s2, s3, String2.parseInt(s4, 10080), s5, s6, s7, s8,
+                        s9, s10, s11, s12, s13, null));
 
                 } else if (eddType.equals("EDDTableFromOBIS")) {
                     s1  = get(args,  1,  s1, "URL");

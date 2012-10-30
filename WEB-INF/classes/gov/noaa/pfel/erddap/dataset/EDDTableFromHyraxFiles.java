@@ -112,11 +112,10 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
      * This won't throw an exception.
      */
     public static void makeDownloadFileTasks(String tDatasetID, 
-        String catalogUrl, 
-        String fileNameRegex, boolean recursive, StringArray vars) {
+        String catalogUrl, String fileNameRegex, boolean recursive) {
 
         if (verbose) String2.log("* " + tDatasetID + " makeDownloadTasks from " + catalogUrl +
-            "\nfileNameRegex=" + fileNameRegex + " vars=" + vars.toString());
+            "\nfileNameRegex=" + fileNameRegex);
         long startTime = System.currentTimeMillis();
 
         try {
@@ -251,23 +250,18 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                 }
 
                 //make a task to download sourceFile to localFile
-                // taskOA[1]=dapUrl, taskOA[2]=StringArray(vars), taskOA[3]=projection, 
-                // taskOA[4]=fullFileName, taskOA[5]=jplMode (Boolean.TRUE|FALSE),
-                // taskOA[6]=lastModified (Long)
+                // taskOA[1]=dapUrl, taskOA[2]=fullFileName, taskOA[3]=lastModified (Long)
                 Object taskOA[] = new Object[7];
-                taskOA[0] = TaskThread.TASK_DAP_TO_NC;
+                taskOA[0] = TaskThread.TASK_ALL_DAP_TO_NC;
                 taskOA[1] = sourceName;
-                taskOA[2] = vars;
-                taskOA[3] = ""; //projection
-                taskOA[4] = localFile;
-                taskOA[5] = false; //jplMode
-                taskOA[6] = new Long(Math2.roundToLong(sourceFileLastMod.get(f) * 1000));
+                taskOA[2] = localFile;
+                taskOA[3] = new Long(Math2.roundToLong(sourceFileLastMod.get(f) * 1000));
                 int tTaskNumber = EDStatic.addTask(taskOA);
                 if (tTaskNumber >= 0) {
                     nTasksCreated++;
                     taskNumber = tTaskNumber;
                     if (reallyVerbose)
-                        String2.log("  task#" + taskNumber + " TASK_DAP_TO_NC reason=" + reason +
+                        String2.log("  task#" + taskNumber + " TASK_ALL_DAP_TO_NC reason=" + reason +
                             "\n    from=" + sourceName +
                             "\n    to=" + localFile);
                 }
@@ -307,6 +301,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
+        StringArray conVars, StringArray conOps, StringArray conValues,
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
 
@@ -512,12 +507,15 @@ directionsForGenerateDatasetsXml() +
 "    <addAttributes>\n" +
 "        <att name=\"cdm_data_type\">Point</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"creator_email\">podaac@podaac.jpl.nasa.gov</att>\n" +
+"        <att name=\"creator_name\">NASA GSFC MEaSUREs, NOAA</att>\n" +
+"        <att name=\"creator_url\">http://podaac.jpl.nasa.gov/dataset/CCMP_MEASURES_ATLAS_L4_OW_L3_0_WIND_VECTORS_FLK</att>\n" +
 "        <att name=\"infoUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/1987/07/.html</att>\n" +
-"        <att name=\"institution\">NASA JPL</att>\n" +
+"        <att name=\"institution\">NASA GSFC, NOAA</att>\n" +
 "        <att name=\"keywords\">\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Wind Stress,\n" +
-"atlas, atmosphere, atmospheric, component, derived, downward, eastward, eastward_wind, flk, jpl, level, meters, nasa, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, v-component, v-wind, v1.1, wind, wind_speed, winds</att>\n" +
+"atlas, atmosphere, atmospheric, component, derived, downward, eastward, eastward_wind, flk, gsfc, level, meters, nasa, noaa, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, time, u-component, u-wind, v-component, v-wind, v1.1, wind, wind_speed, winds</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
@@ -929,7 +927,7 @@ directionsForGenerateDatasetsXml() +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"Created by NASA Goddard Space Flight Center under the NASA REASoN CAN: A Cross-Calibrated, Multi-Platform Ocean Surface Wind Velocity Product for Meteorological and Oceanographic Applications\n" +
 today;
-        tResults = results.substring(0, expected.length());
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
         
@@ -963,9 +961,11 @@ expected =
 "  }\n" +
 "}\n";
             int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) String2.log("results=\n" + results);
-            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
-                "results=\n" + results);
+            if (tpo < 0) 
+                String2.log("results=\n" + results);
+            Test.ensureEqual(
+                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                expected, "results=\n" + results);
 
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 

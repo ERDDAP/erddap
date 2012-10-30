@@ -297,6 +297,16 @@ public class CharArray extends PrimitiveArray {
     }
 
     /**
+     * This adds n ints to the array.
+     *
+     * @param n the number of times 'value' should be added
+     * @param value the value, as an int.
+     */
+    public void addNInts(int n, int value) {
+        addN(n, Math2.narrowToChar(value));
+    }
+
+    /**
      * This adds an element to the array.
      *
      * @param value the value, as a long.

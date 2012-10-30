@@ -1278,7 +1278,8 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
                         String dimName = dimBaseType.getName();
                         if (debug) String2.log("  dimName=" + dimName + 
                             " has typeName=" + dimBaseType.getTypeName());
-                        int dimSize = ((DVector)dimBaseType).getLength();
+                        DArrayDimension dim = ((DArray)dimBaseType).getFirstDimension();
+                        int dimSize = dim.getSize();
                         int which = dimNames.indexOf(dimName);
                         if (which < 0) {
                             //create it and store it
