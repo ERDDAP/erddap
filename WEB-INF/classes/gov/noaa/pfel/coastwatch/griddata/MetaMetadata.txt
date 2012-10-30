@@ -19,6 +19,7 @@ References:
      1.1 is at http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.1/cf-conventions.html
      1.2 is at http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.2/cf-conventions.html
      1.4 is at http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4/cf-conventions.html
+     1.6 is at http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html
    [UDD] refers to 
      http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html
      which is used by the THREDDS data server.
@@ -445,6 +446,10 @@ Bob's example (Dave okayed): source = satellite observation: POES AVHRR HRPT
 Bob's example:               source = observation from High Frequency Radar
 Grid.saveAsNetCDF: generate as: source = satellite observation: <satellite> <sensor>
    or, if no satellite:         source = observation from <sensor>
+
+"observationDimension" is from  
+http://www.unidata.ucar.edu/software/netcdf-java/formats/UnidataObsConvention.html
+which is now DEPRECATED in favor or CF 1.6 Discrete Sampling Geometry
 
 "flag_values" and "flag_meanings" are defined in [CF].
 These apply to enumerated values.

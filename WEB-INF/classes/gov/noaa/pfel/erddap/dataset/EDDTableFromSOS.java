@@ -127,7 +127,8 @@ public class EDDTableFromSOS extends EDDTable{
      * longitude, latitude, stationID, altitude, time. */
     protected final static int nFixedVariables = 5; 
 
-    public static boolean reallyReallyVerbose = false;
+    public static boolean reallyReallyVerbose = false;    
+    private static boolean testQuickRestart = false;  //to test, set this to true in test method, not here.
     protected static boolean timeParts = false; //some test methods set this to true for timing test purposes only
 
 
@@ -487,20 +488,42 @@ public class EDDTableFromSOS extends EDDTable{
         String tUrl = localSourceUrl + "?service=SOS&request=GetCapabilities"; 
         if (tSosVersion != null && tSosVersion.length() > 0)
             tUrl += "&version=" + tSosVersion;
-        if (reallyVerbose) 
-            String2.log("getCapabilities Url=" + tUrl); 
-        if (reallyReallyVerbose)
-            String2.log(SSR.getUrlResponseString(tUrl));
+        //if (reallyReallyVerbose)
+        //    String2.log(SSR.getUrlResponseString(tUrl));
         //String2.writeToFile("f:/programs/sos/ndbcSosWind_capabilities_90721.xml", SSR.getUrlResponseString(tUrl));
-        SimpleXMLReader xmlReader;
-//when testing nos sos (since GetCapabilities is very slow).
-//if (sourceUrl.equals("http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS")) {
-//String2.log("\n!!! Using file version of NOS SOS until actual is faster!!!"); 
-//Math2.sleep(3000);
-//xmlReader = new SimpleXMLReader(new FileInputStream("f:/programs/sos/nosSosGetCapabilitiesCleanedByHand.xml"));
-//} else 
-        xmlReader = new SimpleXMLReader(SSR.getUrlInputStream(tUrl));
 
+        //get getCapabilities   (perhaps reuse quickRestartFile)
+        String quickRestartFileName = File2.forceExtension(quickRestartFullFileName(), ".xml");
+        boolean quickRestartFileExists = File2.isFile(quickRestartFileName);
+        if (verbose) 
+            String2.log("  quickRestartFile exists=" + quickRestartFileExists);
+        if (quickRestartFileExists &&
+            (testQuickRestart || (EDStatic.quickRestart && EDStatic.initialLoadDatasets()))) {
+            //use the quickRestartFile
+            //Note that if this fails (any reason, e.g., damaged quickRestartFile)
+            //  the dataset will reload at next majorLoadDatasets,
+            //  since EDStatic.initialLoadDatasets() will be false.
+
+            //set creationTimeMillis as if dataset was created when getCapabilities xml was downloaded
+            creationTimeMillis = File2.getLastModified(quickRestartFileName); //0 if trouble
+            if (verbose)
+                String2.log("  using getCapabilities from quickRestartFile " +
+                    Calendar2.millisToIsoZuluString(creationTimeMillis) + "Z");
+
+        } else {
+            //re-download the file
+            if (quickRestartFileExists)
+                File2.delete(quickRestartFileName);
+            if (verbose) 
+                String2.log("  downloading getCapabilities from " + tUrl); 
+            long downloadTime = System.currentTimeMillis();
+            SSR.downloadFile(tUrl, quickRestartFileName, true); //use compression
+            if (verbose)
+                String2.log("  download time=" + (System.currentTimeMillis() - downloadTime) + "ms"); 
+        }
+
+        SimpleXMLReader xmlReader = new SimpleXMLReader(
+            new FileInputStream(quickRestartFileName));
         xmlReader.nextTag();
         String tags = xmlReader.allTags();
         String sosPrefix = "";
@@ -2228,7 +2251,7 @@ expected =
             expected = 
 "longitude,latitude,station_id\n" +
 "degrees_east,degrees_north,\n" +
-"122.6003,37.7501,urn:ioos:station:NOAA.NOS.CO-OPS:1600012\n" +
+//"122.6003,37.7501,urn:ioos:station:NOAA.NOS.CO-OPS:1600012\n" + //disappeared 2012-08-17
 "-159.3561,21.9544,urn:ioos:station:NOAA.NOS.CO-OPS:1611400\n" +
 "-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340\n" +
 "-157.79,21.4331,urn:ioos:station:NOAA.NOS.CO-OPS:1612480\n" +
@@ -3653,7 +3676,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
-        String tResults = results.substring(0, expected.length());
+        String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
 
@@ -3692,10 +3715,12 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "    Float64 Westernmost_Easting -172.17;\n" +
 "  }\n" +
 "}\n";
-        int tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) String2.log("results=\n" + results);
-        Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
-            "results=\n" + results);
+            int tpo = results.indexOf(expected.substring(0, 17));
+            if (tpo < 0) 
+                String2.log("results=\n" + results);
+            Test.ensureEqual(
+                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                expected, "results=\n" + results);
 
             //test lon lat (numeric) = > <, and time > <
             String2.log("\n*** EDDTableFromSOS currents test get one station .CSV data\n");
@@ -3890,7 +3915,7 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 " s {\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -151.719, -65.927;\n" +
+"    Float64 actual_range -148.28, -65.927;\n" +  //2012-10-10 was -151.719
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -3899,7 +3924,7 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range 17.93, 60.8;\n" +
+"    Float64 actual_range 24.843, 60.8;\n" +  //2010-10-10 was 17.93
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -3953,15 +3978,15 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "    Float64 Easternmost_Easting -65.927;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 60.8;\n" +
-"    Float64 geospatial_lat_min 17.93;\n" +
+"    Float64 geospatial_lat_min 24.843;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max -65.927;\n" +
-"    Float64 geospatial_lon_min -151.719;\n" +
+"    Float64 geospatial_lon_min -148.28;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
-        String tResults = results.substring(0, expected.length());
+        String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
 //+ " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
@@ -3985,7 +4010,7 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 60.8;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
-"    Float64 Southernmost_Northing 17.93;\n" +
+"    Float64 Southernmost_Northing 24.843;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_water_salinity data.\n" +
@@ -3993,13 +4018,15 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 "Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.\";\n" +
 "    String time_coverage_start \"2007-11-02T00:00:00Z\";\n" +  //changes
 "    String title \"NOAA NDBC SOS - sea_water_salinity\";\n" +
-"    Float64 Westernmost_Easting -151.719;\n" +
+"    Float64 Westernmost_Easting -148.28;\n" +
 "  }\n" +
 "}\n";
             int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) String2.log("results=\n" + results);
-            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
-                "results=\n" + results);
+            if (tpo < 0) 
+                String2.log("results=\n" + results);
+            Test.ensureEqual(
+                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                expected, "results=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS Salinity test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
@@ -4019,7 +4046,7 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
                 "&time>=2010-05-27T00:00:00Z&time<=2010-05-27T01:00:00Z", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_ndbcSosSalinityAll", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
-            expected = //46081 appeared 2010-07-20
+            expected = //46081 appeared 2010-07-20, anrn6 and apqf1 disappeared 2010-10-10
 "longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
 "degrees_east,degrees_north,,m,UTC,,PSU\n" +
 "-80.55,30.04,urn:ioos:station:wmo:41012,-1.0,2010-05-27T00:50:00Z,urn:ioos:sensor:wmo:41012::ct1,35.58\n" +
@@ -4030,11 +4057,11 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 "-69.0,44.06,urn:ioos:station:wmo:44033,-1.0,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:44033::ct1,30.8\n" +
 "-68.11,44.11,urn:ioos:station:wmo:44034,-1.0,2010-05-27T00:00:00Z,urn:ioos:sensor:wmo:44034::ct1,31.6\n" +
 "-68.11,44.11,urn:ioos:station:wmo:44034,-1.0,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:44034::ct1,31.6\n" +
-"-148.28,60.8,urn:ioos:station:wmo:46081,-2.5,2010-05-27T00:50:00Z,urn:ioos:sensor:wmo:46081::ct1,25.24\n" +
-"-73.926,42.027,urn:ioos:station:wmo:anrn6,NaN,2010-05-27T00:45:00Z,urn:ioos:sensor:wmo:anrn6::ct1,0.1\n" +
-"-73.926,42.027,urn:ioos:station:wmo:anrn6,NaN,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:anrn6::ct1,0.1\n" +
-"-84.875,29.786,urn:ioos:station:wmo:apqf1,NaN,2010-05-27T00:15:00Z,urn:ioos:sensor:wmo:apqf1::ct1,2.2\n";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
+"-148.28,60.8,urn:ioos:station:wmo:46081,-2.5,2010-05-27T00:50:00Z,urn:ioos:sensor:wmo:46081::ct1,25.24\n";
+//"-73.926,42.027,urn:ioos:station:wmo:anrn6,NaN,2010-05-27T00:45:00Z,urn:ioos:sensor:wmo:anrn6::ct1,0.1\n" +
+//"-73.926,42.027,urn:ioos:station:wmo:anrn6,NaN,2010-05-27T01:00:00Z,urn:ioos:sensor:wmo:anrn6::ct1,0.1\n" +
+//"-84.875,29.786,urn:ioos:station:wmo:apqf1,NaN,2010-05-27T00:15:00Z,urn:ioos:sensor:wmo:apqf1::ct1,2.2\n";
+            Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
                 "\nUnexpected error. NDBC SOS Server is in flux." +
@@ -4203,7 +4230,7 @@ java.lang.RuntimeException: Source Exception="InvalidParameterValue: eventTime: 
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
-        String tResults = results.substring(0, expected.length());
+        String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
 //+ " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
@@ -4238,9 +4265,11 @@ datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
 "  }\n" +
 "}\n";
             int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) String2.log("results=\n" + results);
-            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
-                "results=\n" + results);
+            if (tpo < 0) 
+                String2.log("results=\n" + results);
+            Test.ensureEqual(
+                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                expected, "results=\n" + results);
 
             
             String2.log("\n*** EDDTableFromSOS nos WLevel test get one station .CSV data\n");
@@ -4359,7 +4388,7 @@ datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
-        String tResults = results.substring(0, expected.length());
+        String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
 //+ " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
@@ -4395,9 +4424,11 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "  }\n" +
 "}\n";
             int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) String2.log("results=\n" + results);
-            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
-                "results=\n" + results);
+            if (tpo < 0) 
+                String2.log("results=\n" + results);
+            Test.ensureEqual(
+                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                expected, "results=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS ndbc WTemp test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
@@ -4494,7 +4525,7 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range -19.713, 60.8;\n" +
+"    Float64 actual_range -19.713, 70.872;\n" +  //2010-10-10 was 60.8
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -4592,7 +4623,7 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "    String long_name \"Sea Water Temperature\";\n" +
 "    String observedProperty \"http://mmisw.org/ont/cf/parameter/waves\";\n" +
 "    String standard_name \"sea_water_temperature\";\n" +
-"    String units \"degrees_C\";\n" +
+"    String units \"degree_C\";\n" +
 "  }\n" +
 "  sea_surface_wave_to_direction {\n" +
 "    Float64 colorBarMaximum 360.0;\n" +
@@ -4692,7 +4723,7 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting 179.0;\n" +
 "    String featureType \"TimeSeries\";\n" +
-"    Float64 geospatial_lat_max 60.8;\n" +
+"    Float64 geospatial_lat_max 70.872;\n" +
 "    Float64 geospatial_lat_min -19.713;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max 179.0;\n" +
@@ -4701,7 +4732,7 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
-        String tResults = results.substring(0, expected.length());
+        String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
 //+ " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
@@ -4729,7 +4760,7 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    Float64 Northernmost_Northing 60.8;\n" +
+"    Float64 Northernmost_Northing 70.872;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
 "    Float64 Southernmost_Northing -19.713;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
@@ -4743,9 +4774,11 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 "  }\n" +
 "}\n";
             int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) String2.log("results=\n" + results);
-            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
-                "results=\n" + results);
+            if (tpo < 0) 
+                String2.log("results=\n" + results);
+            Test.ensureEqual(
+                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                expected, "results=\n" + results);
 
             //test  station=    and superfluous string data > < constraints
             String2.log("\n*** EDDTableFromSOS Waves test get one station .CSV data\n");
@@ -4775,7 +4808,7 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 //Their bug: (see constraint above) Starting with switch to text/csv 2010-06-07, calculation_method became UNKNOWN!
 //Fixed 2010-06-22
 "longitude,latitude,station_id,altitude,time,sensor_id,sea_surface_wave_significant_height,sea_surface_wave_peak_period,sea_surface_wave_mean_period,sea_surface_swell_wave_significant_height,sea_surface_swell_wave_period,sea_surface_wind_wave_significant_height,sea_surface_wind_wave_period,sea_water_temperature,sea_surface_wave_to_direction,sea_surface_swell_wave_to_direction,sea_surface_wind_wave_to_direction,number_of_frequencies,center_frequencies,bandwidths,spectral_energy,mean_wave_direction,principal_wave_direction,polar_coordinate_r1,polar_coordinate_r2,calculation_method,sampling_rate\n" +
-"degrees_east,degrees_north,,m,UTC,,m,s,s,m,s,m,s,degrees_C,degrees_true,degrees_true,degrees_true,count,Hz,Hz,m^2/Hz,degrees_true,degrees_true,1,1,,Hz\n" +
+"degrees_east,degrees_north,,m,UTC,,m,s,s,m,s,m,s,degree_C,degrees_true,degrees_true,degrees_true,count,Hz,Hz,m^2/Hz,degrees_true,degrees_true,1,1,,Hz\n" +
 "-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T14:50:00Z,urn:ioos:sensor:wmo:46013::wpm1,1.62,14.81,5.21,1.12,14.8,1.17,4.3,NaN,176.0,176.0,312.0,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.779157;0.372876;2.02274;0.714328;0.675131;0.296029;0.138154;0.605274;1.96737;1.16217;0.884235;0.462599;0.57436;0.504724;0.218129;0.38115;0.504237;0.45285;0.708456;0.626689;0.747685;0.883292;0.632856;0.448383;0.331531;0.123811;0.265022;0.214203;0.208534;0.21145;0.223251;0.114582;0.10544;0.130131;0.118191;0.0652535;0.0604571;0.0167055;0.0158453;0.00866108;0.00483522,158.0;336.0;188.0;11.0;78.0;263.0;189.0;176.0;196.0;212.0;249.0;182.0;267.0;292.0;299.0;306.0;290.0;299.0;304.0;294.0;301.0;304.0;320.0;314.0;311.0;303.0;312.0;317.0;315.0;307.0;316.0;314.0;305.0;317.0;306.0;311.0;310.0;303.0;294.0;308.0;298.0;302.0;303.0;113.0;127.0;113.0,183.0;8.0;181.0;7.0;3.0;301.0;275.0;134.0;123.0;262.0;279.0;92.0;281.0;293.0;299.0;308.0;292.0;306.0;310.0;300.0;304.0;306.0;326.0;317.0;310.0;303.0;312.0;318.0;316.0;309.0;319.0;318.0;306.0;319.0;307.0;313.0;309.0;305.0;286.0;309.0;271.0;296.0;254.0;111.0;99.0;92.0,0.212213;0.112507;0.304966;0.35902;0.254397;0.488626;0.263791;0.515939;0.462758;0.430386;0.497566;0.12097;0.497566;0.653071;0.826652;0.841777;0.702193;0.768824;0.797214;0.741445;0.797214;0.797214;0.826652;0.841777;0.857178;0.841777;0.938514;0.921652;0.905092;0.8118;0.826652;0.826652;0.78289;0.872861;0.905092;0.857178;0.88883;0.841777;0.768824;0.857178;0.677187;0.826652;0.629814;0.797214;0.677187;0.715041,0.768824;0.78289;0.826652;0.497566;0.220049;0.263791;0.488626;0.372277;0.125437;0.386024;0.304966;0.278536;0.310546;0.365588;0.653071;0.66502;0.607386;0.488626;0.525379;0.430386;0.462758;0.446279;0.585756;0.544779;0.564896;0.534991;0.78289;0.768824;0.66502;0.43826;0.525379;0.462758;0.379088;0.715041;0.689577;0.585756;0.641337;0.544779;0.333904;0.554746;0.137339;0.564896;0.134872;0.372277;0.108501;0.340013,Longuet-Higgins (1964),NaN\n" +
 "-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T15:50:00Z,urn:ioos:sensor:wmo:46013::wpm1,1.52,9.09,4.98,1.0,9.1,1.15,5.6,NaN,291.0,291.0,297.0,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.244172;0.874391;0.950049;0.992051;0.292122;0.416385;0.116264;0.32567;1.0886;1.49577;0.707195;0.412901;0.383;0.336784;0.162325;0.507266;0.721374;0.521185;0.317616;0.580232;0.620904;0.720338;0.544952;0.400361;0.457406;0.340211;0.190368;0.295531;0.258054;0.13138;0.178793;0.207494;0.162191;0.0901461;0.101774;0.0468724;0.036226;0.0442694;0.0218615;0.0143249;0.00447678,245.0;180.0;16.0;1.0;157.0;253.0;192.0;221.0;234.0;193.0;171.0;182.0;331.0;297.0;291.0;287.0;304.0;296.0;295.0;307.0;306.0;297.0;309.0;309.0;310.0;301.0;321.0;300.0;296.0;315.0;295.0;305.0;311.0;311.0;312.0;312.0;311.0;309.0;305.0;310.0;317.0;304.0;303.0;125.0;132.0;122.0,179.0;190.0;1.0;1.0;176.0;292.0;110.0;311.0;321.0;118.0;143.0;131.0;335.0;305.0;296.0;290.0;313.0;310.0;298.0;321.0;306.0;298.0;308.0;308.0;310.0;301.0;323.0;300.0;294.0;320.0;295.0;308.0;312.0;313.0;315.0;311.0;311.0;310.0;305.0;311.0;316.0;309.0;298.0;121.0;132.0;109.0,0.153123;0.340013;0.288822;0.254397;0.372277;0.379088;0.400278;0.430386;0.299487;0.14767;0.228175;0.393087;0.534991;0.741445;0.78289;0.857178;0.702193;0.741445;0.797214;0.689577;0.857178;0.921652;0.905092;0.768824;0.905092;0.88883;0.921652;0.88883;0.872861;0.872861;0.872861;0.872861;0.921652;0.88883;0.857178;0.857178;0.88883;0.857178;0.78289;0.797214;0.728123;0.741445;0.826652;0.8118;0.872861;0.728123,0.768824;0.575231;0.564896;0.689577;0.575231;0.497566;0.150371;0.259051;0.259051;0.728123;0.400278;0.393087;0.728123;0.689577;0.66502;0.677187;0.607386;0.400278;0.575231;0.534991;0.677187;0.8118;0.75501;0.365588;0.741445;0.741445;0.8118;0.689577;0.653071;0.653071;0.629814;0.618498;0.768824;0.689577;0.585756;0.596473;0.66502;0.629814;0.454444;0.415059;0.283632;0.216095;0.488626;0.488626;0.618498;0.236601,Longuet-Higgins (1964),NaN\n" +
 "-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T16:50:00Z,urn:ioos:sensor:wmo:46013::wpm1,1.49,14.81,5.11,1.01,14.8,1.1,4.8,NaN,175.0,175.0,309.0,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.724702;0.909481;2.34661;0.698133;0.516662;0.499779;0.284884;0.407779;0.94326;1.08406;0.29313;0.464502;0.346171;0.393304;0.327266;0.531525;0.423195;0.328752;0.332852;0.702979;0.627516;0.379029;0.603016;0.337529;0.385623;0.308393;0.266641;0.207837;0.0681764;0.212742;0.18737;0.138199;0.122643;0.130927;0.0889706;0.0656523;0.0608267;0.0359928;0.0115031;0.0100742;0.00469153,287.0;208.0;76.0;353.0;123.0;193.0;205.0;175.0;198.0;155.0;196.0;246.0;285.0;304.0;297.0;324.0;298.0;296.0;299.0;303.0;299.0;298.0;304.0;306.0;309.0;304.0;311.0;299.0;317.0;301.0;308.0;314.0;314.0;325.0;315.0;301.0;312.0;322.0;306.0;305.0;324.0;302.0;326.0;119.0;139.0;137.0,350.0;193.0;12.0;13.0;171.0;135.0;151.0;161.0;162.0;158.0;143.0;301.0;313.0;303.0;304.0;321.0;320.0;303.0;302.0;306.0;299.0;300.0;307.0;305.0;311.0;302.0;316.0;299.0;317.0;299.0;308.0;317.0;320.0;346.0;313.0;304.0;312.0;327.0;305.0;306.0;331.0;299.0;333.0;115.0;139.0;143.0,0.177024;0.224075;0.333904;0.393087;0.273532;0.310546;0.299487;0.534991;0.506669;0.43826;0.249826;0.327905;0.340013;0.8118;0.78289;0.585756;0.653071;0.741445;0.826652;0.826652;0.857178;0.797214;0.841777;0.857178;0.905092;0.88883;0.872861;0.921652;0.905092;0.88883;0.872861;0.872861;0.8118;0.728123;0.872861;0.905092;0.857178;0.8118;0.872861;0.826652;0.841777;0.826652;0.857178;0.78289;0.797214;0.8118,0.596473;0.544779;0.488626;0.228175;0.316228;0.506669;0.479847;0.415059;0.372277;0.236601;0.228175;0.346234;0.479847;0.66502;0.534991;0.534991;0.288822;0.554746;0.728123;0.641337;0.728123;0.525379;0.653071;0.575231;0.768824;0.702193;0.618498;0.741445;0.741445;0.689577;0.629814;0.618498;0.430386;0.400278;0.629814;0.75501;0.629814;0.446279;0.641337;0.488626;0.585756;0.454444;0.618498;0.340013;0.454444;0.422653,Longuet-Higgins (1964),NaN\n";
@@ -4920,7 +4953,7 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
-        String tResults = results.substring(0, expected.length());
+        String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
 //+ " http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\n" +
@@ -4957,9 +4990,11 @@ datasetIdPrefix + "ndbcSosWind.das\";\n" +
 "  }\n" +
 "}\n";
             int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) String2.log("results=\n" + results);
-            Test.ensureEqual(results.substring(tpo, tpo + expected.length()), expected, 
-                "results=\n" + results);
+            if (tpo < 0) 
+                String2.log("results=\n" + results);
+            Test.ensureEqual(
+                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                expected, "results=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS Wind test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
@@ -7171,7 +7206,16 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         testNdbcSosWLevel("");  
         testNdbcSosWTemp("");  
         testNdbcSosWaves("");
+
+        //test NDBC Wind and quickRestart
+        String qrName = File2.forceExtension(quickRestartFullFileName("ndbcSosWind"), ".xml");
+        String2.log("\n\n*** deleting quickRestartFile exists=" + File2.isFile(qrName) +
+            " qrName=" + qrName);
+        File2.delete(qrName);
         testNdbcSosWind("");
+        testQuickRestart = true;
+        testNdbcSosWind("");
+        testQuickRestart = false;
 
         testNosSosATemp("");
         testNosSosATempAllStations(""); //long test; important because it tests NO DATA from a station

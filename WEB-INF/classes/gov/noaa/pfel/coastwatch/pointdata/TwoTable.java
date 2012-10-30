@@ -125,8 +125,7 @@ public class TwoTable  {
 
 
             //define the dimensions
-            //changing "row"? see "observationDimension" in NdbcMet
-            Dimension observationDimension  = nc.addDimension("observation", nRows);
+            Dimension obsDimension  = nc.addDimension("obs", nRows);
 //javadoc says: if there is an unlimited dimension, all variables that use it are in a structure
 //Dimension rowDimension  = nc.addDimension("row", nRows, true, true, false); //isShared, isUnlimited, isUnknown
 //String2.log("unlimitied dimension exists: " + (nc.getUnlimitedDimension() != null));
@@ -141,9 +140,9 @@ public class TwoTable  {
                     Dimension lengthDimension = nc.addDimension(
                         tcolName + NcHelper.StringLengthSuffix, max);
                     nc.addVariable(tColName, char.class, 
-                        new Dimension[]{observationDimension, lengthDimension}); 
+                        new Dimension[]{obsDimension, lengthDimension}); 
                 } else {
-                    nc.addVariable(tColName, type, new Dimension[]{observationDimension}); 
+                    nc.addVariable(tColName, type, new Dimension[]{obsDimension}); 
                 }
 //nc.addMemberVariable(recordStructure, nc.findVariable(tColName));
             }

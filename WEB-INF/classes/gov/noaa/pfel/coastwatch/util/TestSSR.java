@@ -40,7 +40,7 @@ public class TestSSR {
         String sar[];
 
         String2.log("\n*** TestSSR"); 
-        String2.log("This must be run in a DOS window so passwords can be entered!");
+        String2.log("This must be run in a command line window so passwords can be entered!");
 
         /*
         //sendSoap
@@ -368,8 +368,8 @@ public class TestSSR {
         if (emailUser.length() == 0) emailUser = "bob.simons@noaa.gov"; 
 
         emailPassword = String2.getPasswordFromSystemIn(
-            "application specific gmail email password\n" +
-            "(e.g., password for \"Dell at work\", or \"\" to skip this test)? ");
+            "gmail email password\n" +
+            "(e.g., password (or \"\" to skip this test)? ");
         
         if (emailPassword.length() > 0) {
             emailReplyToAddress = String2.getStringFromSystemIn( //was "bob.simons.noaa@gmail.com"

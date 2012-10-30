@@ -335,6 +335,9 @@ public class NcHelper  {
      *    or primitive[] (from numeric ArrayXxx.D1)
      */
     public static Object getArray(Array nc2Array) {
+/*  commented out 2012-08-17
+    This incorrectly read var as string with lots of char#0 at the end.
+    This affected reading a char var[strlen] in Table.testReadNcCFASATimeSeriesProfile(false);
         //String[] from ArrayChar.D1
         if (nc2Array instanceof ArrayChar.D1) {
             String s = new String((char[])((ArrayChar.D1)nc2Array).copyTo1DJavaArray());
@@ -343,6 +346,7 @@ public class NcHelper  {
                 sa[i] = String2.canonical(sa[i]);
             return sa;
         }
+*/
 
         /*
         //String[] from ArrayChar.D2
@@ -650,6 +654,8 @@ public class NcHelper  {
         }
 
         //is there an "observationDimension" global attribute?
+        //observationDimension is from deprecated "Unidata Observation Dataset v1.0" conventions,
+        //but if it exists, use it.
         Dimension mainDimension = null;
         ucar.nc2.Attribute gAtt = netcdfFile.findGlobalAttribute("observationDimension"); //there is also a dods.dap.Attribute
         if (gAtt != null) {
@@ -766,6 +772,26 @@ public class NcHelper  {
                 if (ok) 
                     loadVariables.add(variable);
             }
+        }
+        return variableListToArray(loadVariables);
+    }
+
+    /** 
+     * This finds all variables with dimensions in the rootGroup.
+     *
+     * @return all variables with dimensions in the rootGroup.
+     */
+    public static Variable[] findAllVariablesWithDims(NetcdfFile netcdfFile) {
+
+        Group rootGroup = netcdfFile.getRootGroup();
+        List rootGroupVariables = rootGroup.getVariables(); 
+        List loadVariables = new ArrayList(); 
+        for (int v = 0; v < rootGroupVariables.size(); v++) {
+            Variable variable = (Variable)rootGroupVariables.get(v);
+            boolean isChar = variable.getDataType() == DataType.CHAR;
+            int tnDim = variable.getRank() - (isChar? 1 : 0);
+            if (tnDim > 0) 
+                loadVariables.add(variable);
         }
         return variableListToArray(loadVariables);
     }
@@ -1871,6 +1897,39 @@ String2.log(pas13.toString());
         String2.log("diffString=\n" + pas14.diffString(pas13));
     }
 
+    public static String testLowNcDump(String fullFileName) throws Exception {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        //NCdump.printHeader(fullFileName, baos);
+        NCdump.print(fullFileName, baos, 
+            false /*printData*/, false /*print only coord variables*/, false /*ncml*/, false,
+            "", null /*cancel*/);
+        return baos.toString();
+    }
+
+    /** 
+     * Test findAllVariablesWithDims.
+     * @throws Exception if trouble
+     */
+    public static void testFindAllVariablesWithDims() throws Exception {
+        NetcdfFile ncFile = openFile("f:/data/nodcTemplates/ncCFMA2a.nc");
+
+        StringArray sa = new StringArray();
+        try {
+            Variable vars[] = findAllVariablesWithDims(ncFile);
+            for (int v = 0; v < vars.length; v++)
+                sa.add(vars[v].getShortName());
+            sa.sort();
+            ncFile.close();
+        } catch (Exception e) {
+            ncFile.close();
+            throw e;
+        }
+        String results = sa.toString();
+        String expected = 
+            "bottle_posn, cast, cruise_id, latitude, longitude, ship, temperature0, time";
+        Test.ensureEqual(results, expected, "results=" + results);
+
+    }    
 
 
     /**
@@ -2162,6 +2221,8 @@ String2.log(pas13.toString());
             throw t;
         }
         
+        //other tests
+        testFindAllVariablesWithDims();
         
  
         //done

@@ -677,11 +677,15 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     dirList.get(tDirI), tFileS, sourceAxisNames);
                 readFileCumTime += System.currentTimeMillis() - rfcTime;
 
-                //test if ascending
-                String error = tSourceAxisValues[0].isAscending(); 
-                if (error.length() > 0)
-                    throw new RuntimeException("AxisVariable=" + sourceAxisNames.get(0) + 
-                        " isn't ascending sorted.  " + error);
+                //test if ascending or descending
+                String ascError = tSourceAxisValues[0].isAscending(); 
+                if (ascError.length() > 0) {
+                    String desError = tSourceAxisValues[0].isDescending(); 
+                    if (desError.length() > 0)
+                        throw new RuntimeException("AxisVariable=" + sourceAxisNames.get(0) + 
+                            "\nisn't ascending sorted (" + ascError + ")\n" +
+                            "or descending sorted ("     + desError + ").");
+                }
 
                 //test for ties
                 int firstTie = tSourceAxisValues[0].firstTie();
@@ -840,6 +844,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         //So save all first, then rename all.
         int random = Math2.random(Integer.MAX_VALUE);
         String badFilesFileName = badFileMapFileName();
+        if (fileTable.nRows() == 0)
+            throw new RuntimeException("No valid data files were found.");
 
         dirTable.saveAsFlatNc(  dirTableFileName + random, "row"); //exception stops constructor
         fileTable.saveAsFlatNc(fileTableFileName + random, "row");

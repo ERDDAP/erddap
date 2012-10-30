@@ -122,7 +122,10 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
             for (int dvi = 0; dvi < sourceDataNames.size(); dvi++) {
                 getWhat = "dataAttributes for dvi=" + dvi + " name=" + sourceDataNames.get(dvi);
                 Variable var = ncFile.findVariable(sourceDataNames.get(dvi));  //null if not found
-                NcHelper.getVariableAttributes(var, sourceDataAttributes[dvi]);
+                if (var == null)
+                    String2.log("  var not in file: " + getWhat);
+                else 
+                    NcHelper.getVariableAttributes(var, sourceDataAttributes[dvi]);
             }
 
             //I care about this exception
@@ -815,7 +818,7 @@ directionsForGenerateDatasetsXml() +
 "    String history \"Remote Sensing Systems, Inc\n" +
 "2008-08-29T00:31:43Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" + 
 today;
-        tResults = results.substring(0, expected.length());
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
 
 //            + " http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n" +
@@ -850,9 +853,11 @@ expected = " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das
 "  }\n" +
 "}\n";
         int tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) String2.log("results=\n" + results);
-        tResults = results.substring(tpo, tpo +  expected.length());
-        Test.ensureEqual(tResults, expected, "results=\n" + results);
+        if (tpo < 0) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
@@ -946,12 +951,12 @@ expected = " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das
     
 
     /**
-     * This tests reading GRIB .grb files with this class.
+     * For netcdfAll version 4.2 and below, this tests reading GRIB .grb files with this class.
      *
      * @throws Throwable if trouble
      */
-    public static void testGrib(boolean deleteCachedDatasetInfo) throws Throwable {
-        String2.log("\n****************** EDDGridFromNcFiles.testGrib() *****************\n");
+    public static void testGrib_42(boolean deleteCachedDatasetInfo) throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testGrib_42() *****************\n");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
@@ -962,7 +967,7 @@ expected = " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das
         //generateDatasetsXml
         
         //  /*
-        String id = "testGribFiles";
+        String id = "testGribFiles_42";
         if (deleteCachedDatasetInfo) {
             File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
             File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
@@ -973,7 +978,7 @@ expected = " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das
         //*** test getting das for entire dataset
         String2.log("\n*** .grb test das dds for entire dataset\n");
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
-            eddGrid.className() + "_GribEntire", ".das"); 
+            eddGrid.className() + "_GribEntire_42", ".das"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
@@ -1056,14 +1061,14 @@ expected = " http://127.0.0.1:8080/cwexperimental/griddap/testGriddedNcFiles.das
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"Direct read of GRIB-1 into NetCDF-Java 4 API\n" +
 today;
-        tResults = results.substring(0, expected.length());
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
 
 //+ " (local files)\n" +
 //today + 
 
 expected = 
-" http://127.0.0.1:8080/cwexperimental/griddap/testGribFiles.das\";\n" +
+" http://127.0.0.1:8080/cwexperimental/griddap/testGribFiles_42.das\";\n" +
 "    String infoUrl \"http://www.nceas.ucsb.edu/scicomp/GISSeminar/UseCases/ExtractGRIBClimateWithR/ExtractGRIBClimateWithR.html\";\n" +
 "    String institution \"UK Met RSMC\";\n" +
 "    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds\";\n" +
@@ -1078,7 +1083,7 @@ expected =
 "    String location \"f:/u00/cwatch/testData/grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 88.75;\n" +
-"    String Originating_center \"UK Meteorological Office Bracknell (RSMC) subcenter = 0\";\n" +
+"    String Originating_center \"U.K. Met Office - Exeter (RSMC) (74)\";\n" +
 "    String Product_Type \"Initialized analysis product\";\n" +
 "    String source \"Initialized analysis product\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
@@ -1093,12 +1098,12 @@ expected =
 "}\n";
         int tpo = results.indexOf(expected.substring(0, 17));
         if (tpo < 0) String2.log("results=\n" + results);
-        tResults = results.substring(tpo, tpo +  expected.length());
+        tResults = results.substring(tpo, Math.min(results.length(), tpo +  expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
-            eddGrid.className() + "_GribEntire", ".dds"); 
+            eddGrid.className() + "_GribEntire_42", ".dds"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
@@ -1116,7 +1121,7 @@ expected =
 "      Float64 latitude[latitude = 72];\n" +
 "      Float64 longitude[longitude = 96];\n" +
 "  } wind_speed;\n" +
-"} testGribFiles;\n";
+"} testGribFiles_42;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -1152,21 +1157,23 @@ expected =
     }
 
     /**
-     * This tests reading GRIB2 .grb2 files with this class.
+     * For netcdfAll version 4.2 and below, this tests reading GRIB2 .grb2 files with this class.
      *
      * @throws Throwable if trouble
      */
-    public static void testGrib2(boolean deleteCachedDatasetInfo) throws Throwable {
-        String2.log("\n****************** EDDGridFromNcFiles.testGrib2() *****************\n");
+    public static void testGrib2_42(boolean deleteCachedDatasetInfo) throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testGrib2_42() *****************\n");
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
 
+        String2.log(NcHelper.dumpString("/u00/data/geosgrib/multi_1.glo_30m.all.grb2", false));
+
         //generateDatasetsXml
         try {   
-        String id = "testGrib2";
+        String id = "testGrib2_42";
         if (deleteCachedDatasetInfo) {
             File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
             File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
@@ -1177,7 +1184,7 @@ expected =
         //*** test getting das for entire dataset
         String2.log("\n*** .grb2 test das dds for entire dataset\n");
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
-            eddGrid.className() + "_GribEntire", ".das"); 
+            eddGrid.className() + "_GribEntire_42", ".das"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
@@ -1464,7 +1471,7 @@ expected =
 "  NC_GLOBAL {\n" +
 "    String _CoordinateModelRunDate \"2009-06-01T06:00:00Z\";\n" +
 "    String cdm_data_type \"Grid\";\n" +
-"    String CF:feature_type \"GRID\";\n" +
+"    String CF:feature_type \"GRID\";\n" +  //Eeeek!
 "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting 359.5;\n" +
 "    String file_format \"GRIB-2\";\n" +
@@ -1479,13 +1486,13 @@ expected =
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"Direct read of GRIB-2 into NetCDF-Java 4 API\n" +
 today;
-        tResults = results.substring(0, expected.length());
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
 
 //+ " (local files)\n" +
 //today + 
 expected= 
-" http://127.0.0.1:8080/cwexperimental/griddap/testGrib2.das\";\n" +
+" http://127.0.0.1:8080/cwexperimental/griddap/testGrib2_42.das\";\n" +
 "    String infoUrl \"???\";\n" +
 "    String institution \"???\";\n" +
 "    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
@@ -1518,12 +1525,12 @@ expected=
 "}\n";
         int tpo = results.indexOf(expected.substring(0, 17));
         if (tpo < 0) String2.log("results=\n" + results);
-        tResults = results.substring(tpo, tpo +  expected.length());
+        tResults = results.substring(tpo, Math.min(results.length(), tpo +  expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
         //*** test getting dds for entire dataset
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
-            eddGrid.className() + "_GribEntire", ".dds"); 
+            eddGrid.className() + "_GribEntire_42", ".dds"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
@@ -1635,7 +1642,7 @@ expected=
 "      Float64 latitude[latitude = 336];\n" +
 "      Float64 longitude[longitude = 720];\n" +
 "  } Wind_speed;\n" +
-"} testGrib2;\n";
+"} testGrib2_42;\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
 
@@ -1643,7 +1650,7 @@ expected=
         String2.log("\n*** .grb test read from one file\n");       
         userDapQuery = "Wind_speed[0][(30)][(200):5:(238)]";
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
-            eddGrid.className() + "_GribData1", ".csv"); 
+            eddGrid.className() + "_GribData1_42", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
@@ -1673,6 +1680,691 @@ expected=
                 "\nPress ^C to stop or Enter to continue..."); 
         }
     }
+
+    /**
+     * For netcdfAll version 4.2 and below, this tests reading GRIB .grb files with this class.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testGrib_43(boolean deleteCachedDatasetInfo) throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testGrib_43() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDV edv;
+        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+        try {
+
+        //generateDatasetsXml
+        
+        //  /*
+        String id = "testGribFiles_43";
+        if (deleteCachedDatasetInfo) {
+            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
+        }
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
+
+        //*** test getting das for entire dataset
+        String2.log("\n*** .grb test das dds for entire dataset\n");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_GribEntire_43", ".das"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Attributes {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 3.471984e+8, 6.600528e+8;\n" +
+"    String axis \"T\";\n" +
+"    String GRIB2_significanceOfRTName \"Start of forecast\";\n" +
+"    String GRIB_orgReferenceTime \"1981-01-01T12:00:00Z\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Forecast Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  height_above_ground {\n" +
+"    String _CoordinateAxisType \"Height\";\n" +
+"    Float32 actual_range 10.0, 10.0;\n" +
+"    String datum \"ground\";\n" +
+"    Int32 GRIB1_level_code 105;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Specified Height Level above Ground\";\n" +
+"    String positive \"up\";\n" +
+"    String units \"m\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float32 actual_range 88.75001, -88.74999;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 actual_range 0.0, 356.25;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  wind_speed {\n" +
+"    Float64 colorBarMaximum 15.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    Int32 Grib1_Center 74;\n" +
+"    Int32 Grib1_Level_Type 105;\n" +
+"    Int32 Grib1_Parameter 32;\n" +
+"    Int32 Grib1_Subcenter 0;\n" +
+"    Int32 Grib1_TableVersion 1;\n" +
+"    String Grib_Variable_Id \"VAR_74-0-1-32_L105\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Wind speed @ Specified height level above ground\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"wind_speed\";\n" +
+"    String units \"m s-1\";\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String _CoordinateModelRunDate \"1981-01-01T12:00:00Z\";\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+//"    String creator_name \"UK Meteorological Office Bracknell (RSMC) subcenter = 0\";\n" +
+"    Float64 Easternmost_Easting 356.25;\n" +
+"    String file_format \"GRIB1collection\";\n" +
+//"    String Generating_Process_or_Model \"Unknown\";\n" +
+"    Float64 geospatial_lat_max 88.75001;\n" +
+"    Float64 geospatial_lat_min -88.74999;\n" +
+"    Float64 geospatial_lat_resolution 2.5;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 356.25;\n" +
+"    Float64 geospatial_lon_min 0.0;\n" +
+"    Float64 geospatial_lon_resolution 3.75;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String history \"Read using CDM IOSP Grib1Collection\n" +
+today;
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+
+//+ " (local files)\n" +
+//today + 
+try {
+expected = 
+" http://127.0.0.1:8080/cwexperimental/griddap/testGribFiles_43.das\";\n" +
+"    String infoUrl \"http://www.nceas.ucsb.edu/scicomp/GISSeminar/UseCases/ExtractGRIBClimateWithR/ExtractGRIBClimateWithR.html\";\n" +
+"    String institution \"UK Met RSMC\";\n" +
+"    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +    
+"    String location \"f:/u00/cwatch/testData/grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    Float64 Northernmost_Northing 88.75001;\n" +
+//2012-07-05 see below.     Here it is (I hope) how it will be when it is corrected.
+"    String Originating_or_generating_Center \"UK Meteorological Office - Exeter (RSMC)\";\n" +
+"    String Originating_or_generating_Subcenter 0;\n" +
+"    String Product_Type \"Initialized analysis product\";\n" +
+"    String source \"Initialized analysis product\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    Float64 Southernmost_Northing -88.74999;\n" +
+"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String summary \"This is a test of EDDGridFromNcFiles with GRIB files.\";\n" +
+"    String time_coverage_end \"1990-12-01T12:00:00Z\";\n" +
+"    String time_coverage_start \"1981-01-01T12:00:00Z\";\n" +
+"    String title \"Test of EDDGridFromNcFiles with GRIB files\";\n" +
+"    Float64 Westernmost_Easting 0.0;\n" +
+"  }\n" +
+"}\n";
+            int tpo = results.indexOf(expected.substring(0, 17));
+            if (tpo < 0) 
+                String2.log("results=\n" + results);
+            Test.ensureEqual(
+                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                expected, "results=\n" + results);
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                "\n2012-07-05 \"Originating...\" currently has spaces not _. John Caron agreed to change." +
+                "\nHopefully 173 to hyphen too." +
+                "\nPress ^C to stop or Enter to continue..."); 
+        }
+        
+        //*** test getting dds for entire dataset
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_GribEntire_43", ".dds"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Dataset {\n" +
+"  Float64 time[time = 120];\n" +
+"  Float32 height_above_ground[height_above_ground = 1];\n" +
+"  Float32 latitude[latitude = 72];\n" +
+"  Float32 longitude[longitude = 96];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 wind_speed[time = 120][height_above_ground = 1][latitude = 72][longitude = 96];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 120];\n" +
+"      Float32 height_above_ground[height_above_ground = 1];\n" +
+"      Float32 latitude[latitude = 72];\n" +
+"      Float32 longitude[longitude = 96];\n" +
+"  } wind_speed;\n" +
+"} testGribFiles_43;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+        //.csv  with data from one file
+        String2.log("\n*** .grb test read from one file\n");       
+        userDapQuery = "wind_speed[(4e8):10:(5e8)][0][(36.5)][(200):5:(238)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_GribData1_43", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"time,height_above_ground,latitude,longitude,wind_speed\n" +
+"UTC,m,degrees_north,degrees_east,m s-1\n" +
+"1982-09-01T12:00:00Z,10.0,36.250008,198.75002,8.129883\n" +
+"1982-09-01T12:00:00Z,10.0,36.250008,217.50002,5.25\n" +
+"1982-09-01T12:00:00Z,10.0,36.250008,236.25002,3.1298828\n" +
+"1983-07-01T12:00:00Z,10.0,36.250008,198.75002,5.379883\n" +
+"1983-07-01T12:00:00Z,10.0,36.250008,217.50002,5.25\n" +
+"1983-07-01T12:00:00Z,10.0,36.250008,236.25002,2.6298828\n" +
+"1984-05-01T12:00:00Z,10.0,36.250008,198.75002,5.38\n" +
+"1984-05-01T12:00:00Z,10.0,36.250008,217.50002,7.7501173\n" +
+"1984-05-01T12:00:00Z,10.0,36.250008,236.25002,3.88\n" +
+"1985-03-01T12:00:00Z,10.0,36.250008,198.75002,8.629883\n" +
+"1985-03-01T12:00:00Z,10.0,36.250008,217.50002,9.0\n" +
+"1985-03-01T12:00:00Z,10.0,36.250008,236.25002,3.25\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //  */
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                "\nPress ^C to stop or Enter to continue..."); 
+        }
+    }
+
+    /**
+     * For netcdfAll version 4.2 and below, this tests reading GRIB2 .grb2 files with this class.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testGrib2_43(boolean deleteCachedDatasetInfo) throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testGrib2_43() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDV edv;
+        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+
+        //generateDatasetsXml
+        try {   
+        String id = "testGrib2_43";
+        if (deleteCachedDatasetInfo) {
+            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
+            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
+        }
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
+
+        //*** test getting das for entire dataset
+        String2.log("\n*** .grb2 test das dds for entire dataset\n");
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_GribEntire_43", ".das"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Attributes {\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.243836e+9, 1.244484e+9;\n" +
+"    String axis \"T\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Forecast Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float32 actual_range 90.0, -77.5;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float32 actual_range 0.0, 359.5;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  Direction_of_swell_waves_degree_true_ordered_sequence_of_data {\n" +
+"    String abbreviation \"SWDIR\";\n" +
+"    Float64 colorBarMaximum 360.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String Grib2_Generating_Process_Type \"Forecast\";\n" +
+"    Int32 Grib2_Level_Type 241;\n" +
+"    Int32 Grib2_Parameter 10, 0, 7;\n" +
+"    String Grib_Variable_Id \"VAR_10-0-7_L241\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" +
+"    String ioos_category \"Surface Waves\";\n" +
+"    String long_name \"Direction of swell waves (degree true) @ Ordered Sequence of Data\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"sea_surface_swell_wave_to_direction\";\n" +
+"    String units \"deg\";\n" +
+"  }\n" +
+"  Direction_of_wind_waves_degree_true_surface {\n" +
+"    String abbreviation \"WVDIR\";\n" +
+"    Float64 colorBarMaximum 360.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String Grib2_Generating_Process_Type \"Forecast\";\n" +
+"    Int32 Grib2_Level_Type 1;\n" +
+"    Int32 Grib2_Parameter 10, 0, 4;\n" +
+"    String Grib_Variable_Id \"VAR_10-0-4_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" +
+"    String ioos_category \"Surface Waves\";\n" +
+"    String long_name \"Direction of wind waves (degree true) @ Ground or water surface\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"sea_surface_wind_wave_to_direction\";\n" +
+"    String units \"deg\";\n" +
+"  }\n" +
+"  Mean_period_of_swell_waves_ordered_sequence_of_data {\n" +
+"    String abbreviation \"SWPER\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String Grib2_Generating_Process_Type \"Forecast\";\n" +
+"    Int32 Grib2_Level_Type 241;\n" +
+"    Int32 Grib2_Parameter 10, 0, 9;\n" +
+"    String Grib_Variable_Id \"VAR_10-0-9_L241\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" +
+"    String ioos_category \"Surface Waves\";\n" +
+"    String long_name \"Mean period of swell waves @ Ordered Sequence of Data\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"sea_surface_swell_wave_mean_period_from_variance_spectral_density_first_frequency_moment\";\n" +
+"    String units \"s\";\n" +
+"  }\n" +
+"  Mean_period_of_wind_waves_surface {\n" +
+"    String abbreviation \"WVPER\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String Grib2_Generating_Process_Type \"Forecast\";\n" +
+"    Int32 Grib2_Level_Type 1;\n" +
+"    Int32 Grib2_Parameter 10, 0, 6;\n" +
+"    String Grib_Variable_Id \"VAR_10-0-6_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" +
+"    String ioos_category \"Surface Waves\";\n" +
+"    String long_name \"Mean period of wind waves @ Ground or water surface\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"sea_surface_wind_wave_mean_period_from_variance_spectral_density_first_frequency_moment\";\n" +
+"    String units \"s\";\n" +
+"  }\n" +
+"  Primary_wave_direction_degree_true_surface {\n" +
+"    String abbreviation \"DIRPW\";\n" +
+"    Float64 colorBarMaximum 360.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String Grib2_Generating_Process_Type \"Forecast\";\n" +
+"    Int32 Grib2_Level_Type 1;\n" +
+"    Int32 Grib2_Parameter 10, 0, 10;\n" +
+"    String Grib_Variable_Id \"VAR_10-0-10_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" +
+"    String ioos_category \"Surface Waves\";\n" +
+"    String long_name \"Primary wave direction (degree true) @ Ground or water surface\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"sea_surface_wave_to_direction\";\n" +
+"    String units \"deg\";\n" +
+"  }\n" +
+"  Primary_wave_mean_period_surface {\n" +
+"    String abbreviation \"PERPW\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String Grib2_Generating_Process_Type \"Forecast\";\n" +
+"    Int32 Grib2_Level_Type 1;\n" +
+"    Int32 Grib2_Parameter 10, 0, 11;\n" +
+"    String Grib_Variable_Id \"VAR_10-0-11_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" +
+"    String ioos_category \"Surface Waves\";\n" +
+"    String long_name \"Primary wave mean period @ Ground or water surface\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"sea_surface_wave_mean_period_from_variance_spectral_density_first_frequency_moment\";\n" +
+"    String units \"s\";\n" +
+"  }\n" +
+"  Significant_height_of_combined_wind_waves_and_swell_surface {\n" +
+"    String abbreviation \"HTSGW\";\n" +
+"    Float64 colorBarMaximum 15.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String Grib2_Generating_Process_Type \"Forecast\";\n" +
+"    Int32 Grib2_Level_Type 1;\n" +
+"    Int32 Grib2_Parameter 10, 0, 3;\n" +
+"    String Grib_Variable_Id \"VAR_10-0-3_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" +
+"    String ioos_category \"Surface Waves\";\n" +
+"    String long_name \"Significant height of combined wind waves and swell @ Ground or water surface\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"sea_surface_wave_significant_height\";\n" +
+"    String units \"m\";\n" +
+"  }\n" +
+"  Significant_height_of_swell_waves_ordered_sequence_of_data {\n" +
+"    String abbreviation \"SWELL\";\n" +
+"    Float64 colorBarMaximum 15.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String Grib2_Generating_Process_Type \"Forecast\";\n" +
+"    Int32 Grib2_Level_Type 241;\n" +
+"    Int32 Grib2_Parameter 10, 0, 8;\n" +
+"    String Grib_Variable_Id \"VAR_10-0-8_L241\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" +
+"    String ioos_category \"Surface Waves\";\n" +
+"    String long_name \"Significant height of swell waves @ Ordered Sequence of Data\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"sea_surface_swell_wave_significant_height\";\n" +
+"    String units \"m\";\n" +
+"  }\n" +
+"  Significant_height_of_wind_waves_surface {\n" +
+"    String abbreviation \"WVHGT\";\n" +
+"    Float64 colorBarMaximum 15.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String Grib2_Generating_Process_Type \"Forecast\";\n" +
+"    Int32 Grib2_Level_Type 1;\n" +
+"    Int32 Grib2_Parameter 10, 0, 5;\n" +
+"    String Grib_Variable_Id \"VAR_10-0-5_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" +
+"    String ioos_category \"Surface Waves\";\n" +
+"    String long_name \"Significant height of wind waves @ Ground or water surface\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"sea_surface_wind_wave_significant_height\";\n" +
+"    String units \"m\";\n" +
+"  }\n" +
+"  U_component_of_wind {\n" +
+"    String abbreviation \"UGRD\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String Grib2_Generating_Process_Type \"Forecast\";\n" +
+"    Int32 Grib2_Level_Type 1;\n" +
+"    Int32 Grib2_Parameter 0, 2, 2;\n" +
+"    String Grib_Variable_Id \"VAR_0-2-2_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"u-component of wind @ Ground or water surface\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"x_wind\";\n" +
+"    String units \"m/s\";\n" +
+"  }\n" +
+"  V_component_of_wind {\n" +
+"    String abbreviation \"VGRD\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String Grib2_Generating_Process_Type \"Forecast\";\n" +
+"    Int32 Grib2_Level_Type 1;\n" +
+"    Int32 Grib2_Parameter 0, 2, 3;\n" +
+"    String Grib_Variable_Id \"VAR_0-2-3_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"v-component of wind @ Ground or water surface\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"y_wind\";\n" +
+"    String units \"m/s\";\n" +
+"  }\n" +
+"  Wind_direction_from_which_blowing_degree_true_surface {\n" +
+"    String abbreviation \"WDIR\";\n" +
+"    Float64 colorBarMaximum 360.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String Grib2_Generating_Process_Type \"Forecast\";\n" +
+"    Int32 Grib2_Level_Type 1;\n" +
+"    Int32 Grib2_Parameter 0, 2, 0;\n" +
+"    String Grib_Variable_Id \"VAR_0-2-0_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Wind direction (from which blowing) (degree true) @ Ground or water surface\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"wind_from_direction\";\n" +
+"    String units \"deg\";\n" +
+"  }\n" +
+"  Wind_speed_surface {\n" +
+"    String abbreviation \"WIND\";\n" +
+"    Float64 colorBarMaximum 20.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String Grib2_Generating_Process_Type \"Forecast\";\n" +
+"    Int32 Grib2_Level_Type 1;\n" +
+"    Int32 Grib2_Parameter 0, 2, 1;\n" +
+"    String Grib_Variable_Id \"VAR_0-2-1_L1\";\n" +
+"    String grid_mapping \"LatLon_Projection\";\n" +
+"    String ioos_category \"Wind\";\n" +
+"    String long_name \"Wind speed @ Ground or water surface\";\n" +
+"    Float32 missing_value NaN;\n" +
+"    String standard_name \"wind_speed\";\n" +
+"    String units \"m/s\";\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+            //2012-07-12 it has spaces and () in an att name!   I changed to _.
+"    String Analysis_or_forecast_generating_process_identifier_defined_by_originating_centre \"Global Multi-Grid Wave Model (Static Grids)\";\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    Float64 Easternmost_Easting 359.5;\n" +
+"    String file_format \"GRIB2collection\";\n" +
+"    Float64 geospatial_lat_max 90.0;\n" +
+"    Float64 geospatial_lat_min -77.5;\n" +
+"    Float64 geospatial_lat_resolution 0.5;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 359.5;\n" +
+"    Float64 geospatial_lon_min 0.0;\n" +
+"    Float64 geospatial_lon_resolution 0.5;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+           //2012-07-12 it has spaces and () in an att name! I changed to _.
+"    String GRIB_table_version_master/local \"2/1\";\n" +
+"    String history \"Read using CDM IOSP Grib2Collection\"\n" +
+today;
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+
+//+ " (local files)\n" +
+//today + 
+expected= 
+"http://127.0.0.1:8080/cwexperimental/griddap/testGrib2_43.das\";\n" +
+"    String infoUrl \"???\";\n" +
+"    String institution \"???\";\n" +
+"    String keywords \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
+"Oceans > Ocean Waves > Wave Height,\n" +
+"Oceans > Ocean Waves > Wave Speed/Direction\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String location \"/u00/data/geosgrib/multi_1.glo_30m.all.grb2\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    Float64 Northernmost_Northing 90.0;\n" +
+"    String Originating/generating Center \"US National Weather Service, National Centres for Environmental Prediction (NCEP)\";\n" +
+"    String Originating/generating Subcenter \"0\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    Float64 Southernmost_Northing -77.5;\n" +
+"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String summary \"???\";\n" +
+"    String time_coverage_end \"2009-06-08T18:00:00Z\";\n" +
+"    String time_coverage_start \"2009-06-01T06:00:00Z\";\n" +
+"    String title \"Test of Grib2\";\n" +
+"    String Type of generating process \"Forecast\";\n" +
+"    Float64 Westernmost_Easting 0.0;\n" +
+"  }\n" +
+"}\n";
+        int tpo = results.indexOf(expected.substring(0, 17));
+        if (tpo < 0) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
+        
+        //*** test getting dds for entire dataset
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_GribEntire_43", ".dds"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Dataset {\n" +
+"  Float64 time[time = 61];\n" +
+"  Float64 latitude[latitude = 336];\n" +
+"  Float64 longitude[longitude = 720];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 Direction_of_swell_waves[time = 61][latitude = 336][longitude = 720];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 61];\n" +
+"      Float64 latitude[latitude = 336];\n" +
+"      Float64 longitude[longitude = 720];\n" +
+"  } Direction_of_swell_waves;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 Direction_of_wind_waves[time = 61][latitude = 336][longitude = 720];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 61];\n" +
+"      Float64 latitude[latitude = 336];\n" +
+"      Float64 longitude[longitude = 720];\n" +
+"  } Direction_of_wind_waves;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 Mean_period_of_swell_waves[time = 61][latitude = 336][longitude = 720];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 61];\n" +
+"      Float64 latitude[latitude = 336];\n" +
+"      Float64 longitude[longitude = 720];\n" +
+"  } Mean_period_of_swell_waves;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 Mean_period_of_wind_waves[time = 61][latitude = 336][longitude = 720];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 61];\n" +
+"      Float64 latitude[latitude = 336];\n" +
+"      Float64 longitude[longitude = 720];\n" +
+"  } Mean_period_of_wind_waves;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 Primary_wave_direction[time = 61][latitude = 336][longitude = 720];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 61];\n" +
+"      Float64 latitude[latitude = 336];\n" +
+"      Float64 longitude[longitude = 720];\n" +
+"  } Primary_wave_direction;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 Primary_wave_mean_period[time = 61][latitude = 336][longitude = 720];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 61];\n" +
+"      Float64 latitude[latitude = 336];\n" +
+"      Float64 longitude[longitude = 720];\n" +
+"  } Primary_wave_mean_period;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 Significant_height_of_combined_wind_waves_and_swell[time = 61][latitude = 336][longitude = 720];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 61];\n" +
+"      Float64 latitude[latitude = 336];\n" +
+"      Float64 longitude[longitude = 720];\n" +
+"  } Significant_height_of_combined_wind_waves_and_swell;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 Significant_height_of_swell_waves[time = 61][latitude = 336][longitude = 720];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 61];\n" +
+"      Float64 latitude[latitude = 336];\n" +
+"      Float64 longitude[longitude = 720];\n" +
+"  } Significant_height_of_swell_waves;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 Significant_height_of_wind_waves[time = 61][latitude = 336][longitude = 720];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 61];\n" +
+"      Float64 latitude[latitude = 336];\n" +
+"      Float64 longitude[longitude = 720];\n" +
+"  } Significant_height_of_wind_waves;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 U_component_of_wind[time = 61][latitude = 336][longitude = 720];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 61];\n" +
+"      Float64 latitude[latitude = 336];\n" +
+"      Float64 longitude[longitude = 720];\n" +
+"  } U_component_of_wind;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 V_component_of_wind[time = 61][latitude = 336][longitude = 720];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 61];\n" +
+"      Float64 latitude[latitude = 336];\n" +
+"      Float64 longitude[longitude = 720];\n" +
+"  } V_component_of_wind;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 Wind_direction_from_which_blowing[time = 61][latitude = 336][longitude = 720];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 61];\n" +
+"      Float64 latitude[latitude = 336];\n" +
+"      Float64 longitude[longitude = 720];\n" +
+"  } Wind_direction_from_which_blowing;\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 Wind_speed[time = 61][latitude = 336][longitude = 720];\n" +
+"    MAPS:\n" +
+"      Float64 time[time = 61];\n" +
+"      Float64 latitude[latitude = 336];\n" +
+"      Float64 longitude[longitude = 720];\n" +
+"  } Wind_speed;\n" +
+"} testGrib2_43;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+        //.csv  with data from one file
+        String2.log("\n*** .grb test read from one file\n");       
+        userDapQuery = "Wind_speed[0][(30)][(200):5:(238)]";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_GribData1_43", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"time,latitude,longitude,Wind_speed\n" +
+"UTC,degrees_north,degrees_east,m s-1\n" +
+"2009-06-01T06:00:00Z,30.0,200.0,6.17\n" +
+"2009-06-01T06:00:00Z,30.0,202.5,6.73\n" +
+"2009-06-01T06:00:00Z,30.0,205.0,8.13\n" +
+"2009-06-01T06:00:00Z,30.0,207.5,6.7\n" +
+"2009-06-01T06:00:00Z,30.0,210.0,4.62\n" +
+"2009-06-01T06:00:00Z,30.0,212.5,1.48\n" +
+"2009-06-01T06:00:00Z,30.0,215.0,3.03\n" +
+"2009-06-01T06:00:00Z,30.0,217.5,4.63\n" +
+"2009-06-01T06:00:00Z,30.0,220.0,5.28\n" +
+"2009-06-01T06:00:00Z,30.0,222.5,5.3\n" +
+"2009-06-01T06:00:00Z,30.0,225.0,4.04\n" +
+"2009-06-01T06:00:00Z,30.0,227.5,3.64\n" +
+"2009-06-01T06:00:00Z,30.0,230.0,5.3\n" +
+"2009-06-01T06:00:00Z,30.0,232.5,2.73\n" +
+"2009-06-01T06:00:00Z,30.0,235.0,3.15\n" +
+"2009-06-01T06:00:00Z,30.0,237.5,4.23\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //  */
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+"\n2012-07-12 with change to Java 4.3.8, this doesn't pass because of" +
+"\nspaces and parens in attribute names. John Caron says he will fix." +
+                "\nPress ^C to stop or Enter to continue..."); 
+        }
+    }
+
+
 
     /**
      * This tests reading CoastWatch Mercator .hdf files with this class.
@@ -1758,7 +2450,7 @@ expected=
 "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String history \"Direct read of HDF4 file through CDM library\n" +
 today;
-        tResults = results.substring(0, expected.length());
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "results=\n" + results);
         
 //+ " (local files)\n" +
@@ -1791,8 +2483,11 @@ expected =
 "  }\n" +
 "}\n";
         int tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) String2.log("results=\n" + results);
-        tResults = results.substring(tpo, tpo +  expected.length());
+        if (tpo < 0) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
@@ -1963,11 +2658,18 @@ expected =
     public static void test(boolean deleteCachedDatasetInfo) throws Throwable {
         /* */
         testNc(deleteCachedDatasetInfo);
-        testGrib(deleteCachedDatasetInfo);
         testCwHdf(deleteCachedDatasetInfo);
-        testGrib2(deleteCachedDatasetInfo);
+        testGrib_42(deleteCachedDatasetInfo);  //42 or 43 for netcdfAll 4.2- or 4.3.8+
+        testGrib2_42(deleteCachedDatasetInfo); //42 or 43 for netcdfAll 4.2- or 4.3.8+
         testGenerateDatasetsXml();
         testSpeed(-1);
+        /* */
+
+        //one time tests
+        //String fiName = "c:/u00/data/geosgrib/multi_1.glo_30m.all.grb2";
+        //String2.log(NcHelper.dumpString(fiName, false));
+        //NetcdfDataset in = NetcdfDataset.openDataset(fiName);
+        //in.close();
 
     }
 

@@ -91,6 +91,9 @@ public class Calendar2 {
         new SimpleDateFormat("yyyyMM");
     */
 
+    //MINUTES per day    = 1440
+    //MINUTES per 7days  = 10080
+    //MINUTES per 30days = 43200
     public final static int SECONDS_PER_MINUTE = 60; 
     public final static int SECONDS_PER_HOUR   = 60 * 60; //3600
     public final static int SECONDS_PER_DAY    = 24 * 60 * 60; //86400   31Days=2678400  365days=31536000

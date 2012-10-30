@@ -283,14 +283,33 @@ public class TableWriterHtmlTable extends TableWriter {
                                 time_precision[col], d, ""));
                 } else {
                     String s = table.getStringData(col, row);
-                    if (s.length() == 0)
+                    if (s.length() == 0) {
                          writer.write("<td>" + emptyCell); 
-                    else if (isString[col])
-                        writer.write("<td" + noWrap + ">" + (encode? encode(s) : s)); 
-                    else if (s.indexOf('-') >= 0) //it's a numeric column  //nowrap because can break at minus sign
+                    } else if (isString[col]) {
+                        if (encode) {
+                            if (xhtmlMode) {
+                                s = encode(s);
+                            } else {
+                                //if html, display urls and email addresses as links
+                                if (String2.isUrl(s)) {
+                                    //display as a link
+                                    s = XML.encodeAsHTML(s);
+                                    s = "<a href=\"" + s + "\">" + s + "</a>";
+                                } else if (String2.isEmailAddress(s)) {
+                                    //display as a mailTo link
+                                    s = XML.encodeAsHTML(s);
+                                    s = "<a href=\"mailto:" + s + "\">" + s + "</a>";
+                                } else {
+                                    s = encode(s);
+                                }
+                            }
+                        }
+                        writer.write("<td" + noWrap + ">" + s); 
+                    } else if (s.indexOf('-') >= 0) { //it's a numeric column  //nowrap because can break at minus sign
                         writer.write("<td" + noWrap + " align=\"right\">" + s); 
-                    else 
+                    } else {
                         writer.write("<td align=\"right\">" + s); 
+                    }
                 }
                 writer.write(
                     (xhtmlMode? "</td>" : "") + //HTML doesn't require it, so save bandwidth

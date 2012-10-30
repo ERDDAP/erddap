@@ -121,8 +121,9 @@ public class EDStatic {
      * <br>1.34 released on 2011-06-15
      * <br>1.36 released on 2011-08-01
      * <br>1.38 released on 2012-04-21
+     * <br>1.40 released on 2012-04-25
      */   
-    public static String erddapVersion = "1.39";  
+    public static String erddapVersion = "1.40";  
 
     /** 
      * This is almost always false.  
@@ -176,6 +177,7 @@ public static boolean developmentMode = false;
     public static int taskThreadSucceededDistributionTotal[] = new int[String2.DistributionSize];
 
     public static String datasetsThatFailedToLoad = "";
+    public static String duplicateDatasetIDsMsg = "";
     public static StringBuffer memoryUseLoadDatasetsSB     = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
     public static StringBuffer failureTimesLoadDatasetsSB  = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
     public static StringBuffer responseTimesLoadDatasetsSB = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
@@ -2387,7 +2389,8 @@ wcsActive = false;
         String tErddapUrl = erddapUrl(loggedInAs);
         return 
             "\n<h1>" + erddapHref(tErddapUrl) +
-            "\n &gt; <a href=\"" + XML.encodeAsHTML(protocolUrl(tErddapUrl, protocol)) +
+            "\n &gt; <a rel=\"contents\" rev=\"chapter\" " +
+                "href=\"" + XML.encodeAsHTML(protocolUrl(tErddapUrl, protocol)) +
                 "\">" + protocol + "</a>" +
             "\n &gt; " + datasetID + 
             "\n</h1>\n";
@@ -2427,7 +2430,8 @@ wcsActive = false;
         String tErddapUrl = erddapUrl(loggedInAs);
         return 
             "\n<h1>" + erddapHref(tErddapUrl) + 
-            "\n &gt; <a href=\"" + XML.encodeAsHTML(protocolUrl(tErddapUrl, protocol)) + 
+            "\n &gt; <a rel=\"contents\" rev=\"chapter\" " +
+                "href=\"" + XML.encodeAsHTML(protocolUrl(tErddapUrl, protocol)) + 
                 "\">" + protocol + "</a>" +
             "\n &gt; " + datasetID + 
             "\n" + htmlTooltipImage(loggedInAs, htmlHelp) + 
@@ -2829,6 +2833,7 @@ wcsActive = false;
         sb.append("nTableDatasets = " + nTableDatasets + "\n");
         sb.append("nTotalDatasets = " + (nGridDatasets + nTableDatasets) + "\n");
         sb.append(datasetsThatFailedToLoad);
+        sb.append(duplicateDatasetIDsMsg);
         sb.append("Response Failed    Time (since last major LoadDatasets) ");
         sb.append(String2.getBriefDistributionStatistics(failureTimesDistributionLoadDatasets) + "\n");
         sb.append("Response Failed    Time (since last Daily Report)       ");
@@ -3204,6 +3209,7 @@ wcsActive = false;
     public static String theShortDescriptionHtml(  String tErddapUrl) {return String2.replaceAll(theShortDescriptionHtml, "&erddapUrl;", tErddapUrl); }
     public static String erddapHref(               String tErddapUrl) {
         return "<a title=\"The Environmental Research Division's Data Access Program\" \n" +
+            "rel=\"start\" " +
             "href=\"" + tErddapUrl + "/index.html\">" + ProgramName + "</a>"; 
     }
 

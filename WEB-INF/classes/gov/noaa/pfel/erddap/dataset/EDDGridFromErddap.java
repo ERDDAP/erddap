@@ -180,17 +180,44 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                 ", use type=\"EDDTableFromErddap\", not EDDGridFromErddap, in datasets.xml.");
         publicSourceErddapUrl = convertToPublicSourceUrl(tLocalSourceUrl);
 
+        //quickRestart
+        Attributes quickRestartAttributes = null;       
+        if (EDStatic.quickRestart && 
+            EDStatic.initialLoadDatasets() && 
+            File2.isFile(quickRestartFullFileName())) {
+            //try to do quick initialLoadDatasets()
+            //If this fails anytime during construction, the dataset will be loaded 
+            //  during the next major loadDatasets,
+            //  which is good because it allows quick loading of other datasets to continue.
+            //This will fail (good) if dataset has changed significantly and
+            //  quickRestart file has outdated information.
+            quickRestartAttributes = NcHelper.readAttributesFromNc(quickRestartFullFileName());
+
+            if (verbose)
+                String2.log("  using info from quickRestartFile");
+
+            //set creationTimeMillis to time of previous creation, so next time
+            //to be reloaded will be same as if ERDDAP hadn't been restarted.
+            creationTimeMillis = quickRestartAttributes.getLong("creationTimeMillis");
+        }
+
         //open the connection to the opendap source
-        DConnect dConnect = new DConnect(localSourceUrl, acceptDeflate, 1, 1);
+        DConnect dConnect = null;
+        if (quickRestartAttributes == null)
+            dConnect = new DConnect(localSourceUrl, acceptDeflate, 1, 1);
 
         //setup via info.json
         //source http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla5day
         //json   http://coastwatch.pfeg.noaa.gov/erddap/info/erdMHchla5day/index.json
         String jsonUrl = String2.replaceAll(tLocalSourceUrl, "/griddap/", "/info/") + "/index.json";
-        String sourceInfo = SSR.getUrlResponseString(jsonUrl);
-        
+
+        byte sourceInfoBytes[] = quickRestartAttributes == null?
+            SSR.getUrlResponseBytes(jsonUrl) : //has timeout and descriptive error
+            ((ByteArray)quickRestartAttributes.get("sourceInfoBytes")).toArray();          
+            
         Table table = new Table();
-        table.readJson(jsonUrl, sourceInfo);
+        table.readJson(jsonUrl, 
+            new String(sourceInfoBytes, "UTF-8"));  //.json should always be UTF-8
 
         //go through the rows of table from bottom to top
         int nRows = table.nRows();
@@ -223,7 +250,11 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                 }
 
             } else if (rowType.equals("dimension")) {
-                PrimitiveArray tSourceValues = OpendapHelper.getPrimitiveArray(dConnect, "?" + varName);
+                PrimitiveArray tSourceValues = quickRestartAttributes == null?
+                    OpendapHelper.getPrimitiveArray(dConnect, "?" + varName) :
+                    quickRestartAttributes.get(
+                        "sourceValues_" + String2.encodeVariableNameSafe(varName));
+
                 Attributes tAddAttributes = new Attributes();
                 //is this the lon axis?
                 if (EDV.LON_NAME.equals(varName)) {
@@ -301,9 +332,14 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         ensureValid();  //this ensures many things are set, e.g., sourceUrl
 
         //try to get sourceErddapVersion
+        byte versionBytes[] = new byte[]{(byte)32};
         try {
             int po = localSourceUrl.indexOf("/erddap/");
-            String response[] = SSR.getUrlResponse(localSourceUrl.substring(0, po + 8) + "version");
+            String vUrl = localSourceUrl.substring(0, po + 8) + "version";
+            versionBytes = quickRestartAttributes == null?
+                SSR.getUrlResponseBytes(vUrl) : //has timeout and descriptive error 
+                ((ByteArray)quickRestartAttributes.get("versionBytes")).toArray();
+            String response[] = String2.split(new String(versionBytes, "UTF-8"), '\n');
             if (response[0].startsWith("ERDDAP_version=")) {
                 sourceErddapVersion = String2.parseDouble(response[0].substring(15));
                 if (Double.isNaN(sourceErddapVersion))
@@ -340,6 +376,27 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                 "use a small reloadEveryNMinutes, or have the remote ERDDAP admin add onChange.\n\n" 
                 //+ MustBe.throwableToString(st) //don't normally display; flags are ~confidential
                 );
+        }
+
+        //save quickRestart info
+        if (quickRestartAttributes == null) { //i.e., there is new info
+            try {
+                quickRestartAttributes = new Attributes();
+                quickRestartAttributes.set("creationTimeMillis", "" + creationTimeMillis);
+                quickRestartAttributes.set("sourceInfoBytes", new ByteArray(sourceInfoBytes));
+                quickRestartAttributes.set("versionBytes",    new ByteArray(versionBytes));
+                for (int av = 0; av < axisVariables.length; av++) {
+                    quickRestartAttributes.set(
+                        "sourceValues_" + 
+                            String2.encodeVariableNameSafe(axisVariables[av].sourceName()),
+                        axisVariables[av].sourceValues());
+                }
+                File2.makeDirectory(File2.getDirectory(quickRestartFullFileName()));
+                NcHelper.writeAttributesToNc(quickRestartFullFileName(), 
+                    quickRestartAttributes);
+            } catch (Throwable t) {
+                String2.log(MustBe.throwableToString(t));
+            }
         }
 
         //finally
@@ -708,7 +765,7 @@ expected =
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0260864e+9, 1.3395456e+9;\n" + //last value changes periodically
+"    Float64 actual_range 1.0260864e+9, 1.3492224e+9;\n" + //last value changes periodically
 "    String axis \"T\";\n" +
 "    Int32 fraction_digits 0;\n" +
 "    String ioos_category \"Time\";\n" +
@@ -776,8 +833,8 @@ expected =
 "    String creator_email \"dave.foley@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
-"    String date_created \"2012-06-28Z\";\n" +  //changes
-"    String date_issued \"2012-06-28Z\";\n" +  //changes
+"    String date_created \"2012-10-12Z\";\n" +  //changes
+"    String date_issued \"2012-10-12Z\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
 "    Float64 geospatial_lat_max 90.0;\n" +
 "    Float64 geospatial_lat_min -90.0;\n" +
@@ -827,7 +884,7 @@ expected2 =
 "    Float64 Southernmost_Northing -90.0;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String summary \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-"    String time_coverage_end \"2012-06-13T00:00:00Z\";\n" + //changes
+"    String time_coverage_end \"2012-10-03T00:00:00Z\";\n" + //changes
 "    String time_coverage_start \"2002-07-08T00:00:00Z\";\n" +
 "    String title \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
@@ -856,15 +913,15 @@ expected2 =
             //String2.log(results);
             expected = 
     "Dataset {\n" +
-    "  Float64 time[time = 448];\n" +   //448 will change sometimes   (and a few places below)
+    "  Float64 time[time = 462];\n" +   //462 will change sometimes   (and a few places below)
     "  Float64 altitude[altitude = 1];\n" +
     "  Float64 latitude[latitude = 4320];\n" +
     "  Float64 longitude[longitude = 8640];\n" +
     "  GRID {\n" +
     "    ARRAY:\n" +
-    "      Float32 chlorophyll[time = 448][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+    "      Float32 chlorophyll[time = 462][altitude = 1][latitude = 4320][longitude = 8640];\n" +
     "    MAPS:\n" +
-    "      Float64 time[time = 448];\n" +
+    "      Float64 time[time = 462];\n" +
     "      Float64 altitude[altitude = 1];\n" +
     "      Float64 latitude[latitude = 4320];\n" +
     "      Float64 longitude[longitude = 8640];\n" +
@@ -1095,12 +1152,18 @@ expected2 =
 "UTC,m,degrees_north,degrees_east,mg m-3\n" +
 "2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
 "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.40108808889917,NaN\n" +
-"2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.10655\n" +
-"2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12478\n";
+//pre 2012-08-17 was
+//"2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.10655\n" +
+//"2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12478\n";
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.11093\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12439\n";
             Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
             expected2 = 
-//pre 2010-10-26 was  "2007-02-06T00:00:00Z, 0.0, 49.407270201435495, 232.06852644982058, 0.37\n";
-            "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n";
+//pre 2010-10-26 was  
+//"2007-02-06T00:00:00Z, 0.0, 49.407270201435495, 232.06852644982058, 0.37\n";
+//pre 2012-08-17 was
+//"2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n";
+"2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.56545\n";
             Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
 
             if (testLocalErddapToo) {
@@ -1133,12 +1196,18 @@ expected2 =
 "UTC,m,degrees_north,degrees_east,mg m-3\n" +
 "2007-02-06T00:00:00Z,0.0,28.985876360268577,224.98437319134158,NaN\n" +
 "2007-02-06T00:00:00Z,0.0,28.985876360268577,225.40108808889917,NaN\n" +
-"2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.10655\n" +
-"2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12478\n";
+//pre 2012-08-17 was
+//"2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.10655\n" +
+//"2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12478\n";
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,225.81780298645677,0.11093\n" +
+"2007-02-06T00:00:00Z,0.0,28.985876360268577,226.23451788401434,0.12439\n";
             Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
             expected2 = 
-//pre 2010-10-26 was  "2007-02-06T00:00:00Z, 0.0, 49.407270201435495, 232.06852644982058, 0.37\n";
-            "2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n";
+//pre 2010-10-26 was  
+//"2007-02-06T00:00:00Z, 0.0, 49.407270201435495, 232.06852644982058, 0.37\n";
+//pre 2012-08-17 was
+//"2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.58877\n";
+"2007-02-06T00:00:00Z,0.0,49.407270201435495,232.06852644982058,0.56545\n";
             Test.ensureTrue(results.indexOf(expected2) > 0, "RESULTS=\n" + results);
 
             if (testLocalErddapToo) {
@@ -1230,8 +1299,8 @@ expected2 =
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2012-06-28Z\";\n" + //changes periodically
-" :date_issued = \"2012-06-28Z\";\n" +  //changes periodically
+" :date_created = \"2012-10-12Z\";\n" + //changes periodically
+" :date_issued = \"2012-10-12Z\";\n" +  //changes periodically
 " :Easternmost_Easting = 246.65354786433613; // double\n" +
 " :geospatial_lat_max = 49.82403334105115; // double\n" +
 " :geospatial_lat_min = 28.985876360268577; // double\n" +
@@ -1294,8 +1363,11 @@ expected2 =
 "  {\n" +
 "    {\n" +
 "      {\n" +
-//pre 2010-10-26 was "        {-9999999.0, -9999999.0, 0.099, 0.118, -9999999.0, 0.091, -9999999.0, 0.088, 0.085, 0.088, -9999999.0, 0.098, -9999999.0, 0.076, -9999999.0, 0.07, 0.071, -9999999.0, -9999999.0, -9999999.0, 0.078, -9999999.0, 0.09, 0.084, -9999999.0, -9999999.0, 0.098, -9999999.0, 0.079, 0.076, 0.085, -9999999.0, 0.086, 0.127, 0.199, 0.167, 0.191, 0.133, 0.14, 0.173, 0.204, 0.239, 0.26, 0.252, 0.274, 0.289, 0.367, 0.37, 0.65, 0.531, -9999999.0, -9999999.0, 1.141},\n";
-"        {-9999999.0, -9999999.0, 0.10655, 0.12478, -9999999.0, 0.09398, -9999999.0, 0.08919, 0.09892, 0.10007, -9999999.0, 0.09986, -9999999.0, 0.07119, -9999999.0, 0.08288, 0.08163, -9999999.0, -9999999.0, -9999999.0, 0.08319, -9999999.0, 0.09706, 0.08309, -9999999.0, -9999999.0, 0.0996, -9999999.0, 0.08962, 0.08329, 0.09101, -9999999.0, 0.08679, 0.13689, 0.21315, 0.18729, 0.21642, 0.15069, 0.15123, 0.18849, 0.22975, 0.27075, 0.29062, 0.27878, 0.31141, 0.32663, 0.41135, 0.40628, 0.65426, 0.4827, -9999999.0, -9999999.0, 1.16268},\n";
+//pre 2010-10-26 was 
+//"        {-9999999.0, -9999999.0, 0.099, 0.118, -9999999.0, 0.091, -9999999.0, 0.088, 0.085, 0.088, -9999999.0, 0.098, -9999999.0, 0.076, -9999999.0, 0.07, 0.071, -9999999.0, -9999999.0, -9999999.0, 0.078, -9999999.0, 0.09, 0.084, -9999999.0, -9999999.0, 0.098, -9999999.0, 0.079, 0.076, 0.085, -9999999.0, 0.086, 0.127, 0.199, 0.167, 0.191, 0.133, 0.14, 0.173, 0.204, 0.239, 0.26, 0.252, 0.274, 0.289, 0.367, 0.37, 0.65, 0.531, -9999999.0, -9999999.0, 1.141},\n";
+//pre 2012-08-17 was
+//"        {-9999999.0, -9999999.0, 0.10655, 0.12478, -9999999.0, 0.09398, -9999999.0, 0.08919, 0.09892, 0.10007, -9999999.0, 0.09986, -9999999.0, 0.07119, -9999999.0, 0.08288, 0.08163, -9999999.0, -9999999.0, -9999999.0, 0.08319, -9999999.0, 0.09706, 0.08309, -9999999.0, -9999999.0, 0.0996, -9999999.0, 0.08962, 0.08329, 0.09101, -9999999.0, 0.08679, 0.13689, 0.21315, 0.18729, 0.21642, 0.15069, 0.15123, 0.18849, 0.22975, 0.27075, 0.29062, 0.27878, 0.31141, 0.32663, 0.41135, 0.40628, 0.65426, 0.4827, -9999999.0, -9999999.0, 1.16268},\n";
+  "        {-9999999.0, -9999999.0, 0.11093, 0.12439, -9999999.0, 0.09554, -9999999.0, 0.09044, 0.10009, 0.10116, -9999999.0, 0.10095, -9999999.0, 0.07243, -9999999.0, 0.08363, 0.08291, -9999999.0, -9999999.0, -9999999.0, 0.08885, -9999999.0, 0.09632, 0.0909, -9999999.0, -9999999.0, 0.09725, -9999999.0, 0.09978, 0.09462, 0.09905, -9999999.0, 0.09937, 0.12816, 0.20255, 0.17595, 0.20562, 0.14333, 0.15073, 0.18803, 0.22673, 0.27252, 0.29005, 0.28787, 0.31865, 0.33447, 0.43293, 0.43297, 0.68101, 0.48409, -9999999.0, -9999999.0, 1.20716},\n";
             tPo = results.indexOf(" :infoUrl");
             Test.ensureEqual(results.substring(tPo, tPo + expected.length()), expected, "RESULTS=\n" + results);
 
