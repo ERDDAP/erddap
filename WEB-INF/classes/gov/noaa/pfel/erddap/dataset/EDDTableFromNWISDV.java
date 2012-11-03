@@ -1115,7 +1115,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         //doesn't have <method> tags
         //http://interim.waterservices.usgs.gov/NWISQuery/GetDV1?SiteNum=01010000&ParameterCode=00060&StatisticCode=00003&AgencyCode=&USGSStartDate=2009-01-31&EndDate=2009-02-01&action=Submit
         table = getValuesTable(new FileInputStream(
-            "f:/data/waterML/nwisValues.xml"));
+            "c:/data/waterML/nwisValues.xml"));
         results = table.toCSVString();
         expected = 
 "{\n" +
@@ -1418,10 +1418,10 @@ public class EDDTableFromNWISDV extends EDDTable{
     public static void bobGenerateNWISDVDatasetsXml() throws Throwable {
         String2.log("\n*** bobGenerateNWISDVDatasetsXml()");
         String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
-        String dataStationsDir    = "F:/data/waterML/briarDatasetStations/";
-        String paramCodesFileName = "F:/data/waterML/nwisParametercodes.tsv";
-        String outputFileName     = "F:/data/waterML/NWISDVDatasets" + today + ".xml";
-        String logFileName        = "f:/data/waterML/NWISDVDatasetFailures" + today + ".txt";
+        String dataStationsDir    = "c:/data/waterML/briarDatasetStations/";
+        String paramCodesFileName = "c:/data/waterML/nwisParametercodes.tsv";
+        String outputFileName     = "c:/data/waterML/NWISDVDatasets" + today + ".xml";
+        String logFileName        = "c:/data/waterML/NWISDVDatasetFailures" + today + ".txt";
         FileWriter logFile = new FileWriter(logFileName, true);  //append
         String subsetDir          = EDStatic.contentDirectory + "subset/";
         String fileNames[] = RegexFilenameFilter.list(dataStationsDir, ".*\\.json");
@@ -1614,7 +1614,7 @@ public class EDDTableFromNWISDV extends EDDTable{
      */
     public static void testGenerateDatasetsXml() throws Throwable {
         Table starterTable = new Table();
-        starterTable.readJson("F:/data/waterML/briarDatasetStations/00010_00001_0.json");
+        starterTable.readJson("c:/data/waterML/briarDatasetStations/00010_00001_0.json");
         int nCols = starterTable.nColumns();
         int nRows = starterTable.nRows();
         //remove 'variables' at end
@@ -2025,8 +2025,8 @@ directionsForGenerateDatasetsXml() +
 
         String siteInfoService = "http://waterdata.usgs.gov/nwis/inventory/";
         String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
-        String outputFile = "F:/data/waterML/scrapeNWISStations" + today + ".json";
-        String logFile = "F:/data/waterML/logSrapeNWIS" + 
+        String outputFile = "c:/data/waterML/scrapeNWISStations" + today + ".json";
+        String logFile = "c:/data/waterML/logSrapeNWIS" + 
             String2.replaceAll(today, "-", "") + ".txt";
         if (justAgency != null)
             String2.setupLog(true, false, logFile, false, false, 1000000000);
@@ -2042,7 +2042,7 @@ directionsForGenerateDatasetsXml() +
         //agency_cd	site_no	parm_cd	stat_cd	begin_date	end_date	count_nu
         //USGS	09426620	00060	00003	1988-10-01	2010-12-15	8111
         Table briarStations = new Table();
-        briarStations.readASCII("F:/data/waterML/daily_value_series_catalog.20101216",
+        briarStations.readASCII("c:/data/waterML/daily_value_series_catalog.20101216",
             0, 1, null, null, null, null, false);  //don't simplify
         Test.ensureEqual(String2.toCSSVString(briarStations.getColumnNames()), 
             "agency_cd, site_no, parm_cd, stat_cd, begin_date, end_date, count_nu", "");
@@ -2302,7 +2302,7 @@ directionsForGenerateDatasetsXml() +
         //agency_cd	site_no	parm_cd	stat_cd	begin_date	end_date	count_nu
         //USGS	09426620	00060	00003	1988-10-01	2010-12-15	8111
         Table briarStations = new Table();
-        briarStations.readASCII("F:/data/waterML/daily_value_series_catalog.20101216",
+        briarStations.readASCII("c:/data/waterML/daily_value_series_catalog.20101216",
             0, 1, null, null, null, null, false);  //don't simplify
         Test.ensureEqual(String2.toCSSVString(briarStations.getColumnNames()), 
             "agency_cd, site_no, parm_cd, stat_cd, begin_date, end_date, count_nu", "");
@@ -2355,13 +2355,13 @@ directionsForGenerateDatasetsXml() +
      * This uses station info from bobScrapeNWISStations() in F:/data/waterML/scrapeNWISStations.json.
      */
     public static void bobMakeNWISDatasets() throws Throwable {
-        String stationsFileName = "F:/data/waterML/scrapeNWISStations20110123.json";
+        String stationsFileName = "c:/data/waterML/scrapeNWISStations20110123.json";
         String serviceUrl = "http://interim.waterservices.usgs.gov/NWISQuery/GetDV1";
         String siteInfoService = "http://waterdata.usgs.gov/nwis/inventory";
-        String paramCodesFileName = "F:/data/waterML/nwisParametercodes.tsv";
-        String dsDir   = "F:/data/waterML/briarDatasetStations/";
+        String paramCodesFileName = "c:/data/waterML/nwisParametercodes.tsv";
+        String dsDir   = "c:/data/waterML/briarDatasetStations/";
         String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
-        String logFile = "F:/data/waterML/logNWISDatasets" + 
+        String logFile = "c:/data/waterML/logNWISDatasets" + 
             String2.replaceAll(today, "-", "") + ".txt";
         String2.setupLog(true, false, logFile, false, false, 1000000000);
         String2.log("*** EDDTableFromNWISDV bobMakeNWISDatasets " + today);
@@ -2400,7 +2400,7 @@ directionsForGenerateDatasetsXml() +
         //agency_cd	site_no	parm_cd	stat_cd	begin_date	end_date	count_nu
         //USGS	09426620	00060	00003	1988-10-01	2010-12-15	8111
         Table briarStations = new Table();
-        briarStations.readASCII("F:/data/waterML/daily_value_series_catalog.20101216",
+        briarStations.readASCII("c:/data/waterML/daily_value_series_catalog.20101216",
             0, 1, null, null, null, null, false);  //don't simplify
         Test.ensureEqual(String2.toCSSVString(briarStations.getColumnNames()), 
             "agency_cd, site_no, parm_cd, stat_cd, begin_date, end_date, count_nu", "");
@@ -3131,7 +3131,7 @@ today + " http://127.0.0.1:8080/cwexperimental/tabledap/usgs_waterservices_f8b2_
     /** Bob uses this to look for odd values of county, state, country, ... in the stations table. */
     public static void bobListUnique() throws Throwable {
         String2.log("*** bobListUnique()");
-        String stationsFileName = "F:/data/waterML/scrapeNWISStations20110123.json";
+        String stationsFileName = "c:/data/waterML/scrapeNWISStations20110123.json";
         Table table = new Table();
         table.readJson(stationsFileName);
         String lookAt[] = new String[]{

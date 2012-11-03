@@ -409,23 +409,20 @@ public class RegexFilenameFilter implements FilenameFilter {
         Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.recursiveFullNameList");
 
         //gatherInfo
-        PrimitiveArray info[] = gatherInfo("C:/programs/editplus", "editplus.*");
+        PrimitiveArray info[] = gatherInfo("C:\\programs\\digir", "obis.*");
         int tn = info[1].size();
         StringArray lastMod = new StringArray();
         for (int i = 0; i < tn; i++)
             lastMod.add(Calendar2.safeEpochSecondsToIsoStringTZ(info[2].getLong(i) / 1000.0, "ERROR"));
         Test.ensureEqual(info[0].toString(), 
-            "old files", "");
+            "BiotaDiGIRProvider, DiGIR_Portal_Engine, DiGIRprov", "");
         Test.ensureEqual(info[1].toString(), 
-            "editplus.cnt, editplus.exe, editplus.hlp, editplus.ini", "");
+            "obis.xsd, obisInventory.txt", "");
         //lastMod and size verified by using DOS dir command
-        //last values of lastMod and info[3] change, so remove them
-        lastMod.remove(3);
-        info[3].remove(3);
         Test.ensureEqual(lastMod.toString(),                                 
-            "2005-11-25T22:13:08Z, 2005-12-12T17:32:12Z, 2005-11-25T22:13:08Z", "");
+            "2007-04-23T18:24:38Z, 2007-05-02T19:18:33Z", "");
         Test.ensureEqual(info[3].toString(), 
-            "1102, 1397248, 218288", "");
+            "21509, 3060", "");
     }
 
 }

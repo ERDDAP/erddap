@@ -61,7 +61,7 @@ public class Projects2  {
      */
     public static void copyKeywords() throws Throwable {
         String handXmlName = "c:/programs/tomcat/content/erddap/datasets2.xml";
-        String autoXmlName = "F:/temp/datasets20111019.xml";
+        String autoXmlName = "c:/temp/datasets20111019.xml";
         String resultName  = "c:/programs/tomcat/content/erddap/datasets2New.xml";
 
         //read handXml
@@ -349,9 +349,6 @@ public class Projects2  {
                     downloadIt = true;                             //then download it
                 if (downloadIt) {
                     try {
-                        //makeDir
-                        File2.makeDirectory(File2.getDirectory(fullFileName));
-
                         //copy the file
                         String2.log("  download it");
                         SSR.downloadFile(url, fullFileName, true);

@@ -1096,7 +1096,7 @@ public class SgtUtil  {
         Test.ensureEqual(suggestPaletteScale(.11, 890), "Log", ""); //typical Rainbow Log
         Test.ensureEqual(suggestPaletteScale(-7, 8), "Linear", ""); //typical BlueWhiteRed Linear symmetric
 
-        BufferedImage bi = ImageIO.read(new File("f:/u00/cwatch/testData/graphs/erdBAssta5day.png"));
+        BufferedImage bi = ImageIO.read(new File("c:/u00/cwatch/testData/graphs/erdBAssta5day.png"));
         long time = System.currentTimeMillis();
         Test.ensureEqual(findGraph(bi), new int[]{24, 334, 150, 21}, "");
         String2.log("findGraph time=" + (System.currentTimeMillis() - time));

@@ -929,8 +929,8 @@ cdmSuggestion() +
 
         try {
             String results = generateDatasetsXml(
-        "f:/data/ngdcJasonSwath/", ".*\\.nc", 
-        "f:/data/ngdcJasonSwath/JA2_OPN_2PcS088_239_20101201_005323_20101201_025123.nc", 
+        "c:/data/ngdcJasonSwath/", ".*\\.nc", 
+        "c:/data/ngdcJasonSwath/JA2_OPN_2PcS088_239_20101201_005323_20101201_025123.nc", 
         "time",  //not "time, meas_ind"
         10080, 
         "", "", "", 
@@ -939,7 +939,7 @@ cdmSuggestion() +
         "", "", "", "", new Attributes());
 
             EDD edd = oneFromXmlFragment(results);
-            Test.ensureEqual(edd.datasetID(), "ngdcJasonSwath_2743_941d_6d6c", "");
+            Test.ensureEqual(edd.datasetID(), "ngdcJasonSwath_c70d_5281_4d5c", "");
             Test.ensureEqual(edd.title(), "OGDR - Standard dataset", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
 "time, latitude, longitude, surface_type, alt_echo_type, rad_surf_type, " +
@@ -2813,9 +2813,9 @@ expected =
             //String tInfoUrl, String tInstitution, String tSummary, String tTitle,
             //Attributes externalAddGlobalAttributes) 
         String2.log(generateDatasetsXml(
-            "F:/u00/cwatch/erddap2/copy/tcPostDet3/",
+            "c:/u00/cwatch/erddap2/copy/tcPostDet3/",
             ".*\\.nc", 
-            "F:/u00/cwatch/erddap2/copy/tcPostDet3/Barbarax20Block/LAMNAx20DITROPIS/Nx2fA.nc",
+            "c:/u00/cwatch/erddap2/copy/tcPostDet3/Barbarax20Block/LAMNAx20DITROPIS/Nx2fA.nc",
             "",
             100000000, 
             "", "", "", "", "unique_tag_id",
@@ -2832,8 +2832,8 @@ expected =
      */
 /* don't use this. see bobConsolidateGtspp
     public static void bobUnzipGtspp(String isoStartTime) {
-        String sourceDir = "f:/data/gtspp/bestNcZip/";
-        String destDir   = "f:/data/gtspp/bestNcIndividual/";
+        String sourceDir = "c:/data/gtspp/bestNcZip/";
+        String destDir   = "c:/data/gtspp/bestNcIndividual/";
 
         //get the names of all of the .zip files
         String2.log("\n*** EDDTableFromNcFiles.bobUnzipGtspp");
@@ -2882,8 +2882,8 @@ expected =
      */
     public static void bobGenerateGtsppDatasetsXml() throws Throwable {
         String2.log(EDDTableFromNcFiles.generateDatasetsXml(
-        "f:/data/gtspp/bestNcConsolidated/", ".*\\.nc", 
-        "f:/data/gtspp/bestNcConsolidated/2010/01/2010-01_0E_-60N.nc.nc", 
+        "c:/data/gtspp/bestNcConsolidated/", ".*\\.nc", 
+        "c:/data/gtspp/bestNcConsolidated/2010/01/2010-01_0E_-60N.nc.nc", 
         "",
         10080, //reloadMinutes
         "", "\\.nc", ".*", //tPreExtractRegex, tPostExtractRegex, tExtractRegex
@@ -2943,12 +2943,12 @@ expected =
         int minLon = -180;
         int maxLon = 180;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10); //to nearest day
-        String zipDir      = "f:\\data\\gtspp\\bestNcZip\\"; //gtspp_at199001.tgz
-        String destDir     = "f:\\data\\gtspp\\bestNcConsolidated\\";
-        String tempDir     = "f:\\data\\gtspp\\temp\\"; 
-        String testTempDir = "f:\\data\\gtspp\\testTemp\\"; 
-        String testDestDir = "f:\\data\\gtspp\\testDest\\";
-        String logFile     = "f:\\data\\gtspp\\log" + 
+        String zipDir      = "c:\\data\\gtspp\\bestNcZip\\"; //gtspp_at199001.tgz
+        String destDir     = "c:\\data\\gtspp\\bestNcConsolidated\\";
+        String tempDir     = "c:\\data\\gtspp\\temp\\"; 
+        String testTempDir = "c:\\data\\gtspp\\testTemp\\"; 
+        String testDestDir = "c:\\data\\gtspp\\testDest\\";
+        String logFile     = "c:\\data\\gtspp\\log" + 
             String2.replaceAll(today, "-", "") + ".txt"; 
         File2.makeDirectory(tempDir);
         //http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm
@@ -3940,12 +3940,12 @@ expected =
         int minLat = -90;
         int minLon = -180;
         int maxLon = 180;
-        String zipDir      = "f:/data/gtspp/bestNcZip/"; //gtspp_at199001.zip
-        String destDir     = "f:/data/gtspp/bestNcConsolidated/";
-        String tempDir     = "f:/data/gtspp/temp/"; 
-        String testTempDir = "f:/data/gtspp/testTemp/"; 
-        String testDestDir = "f:/data/gtspp/testDest/";
-        String logFile     = "f:/data/gtspp/log.txt"; 
+        String zipDir      = "c:/data/gtspp/bestNcZip/"; //gtspp_at199001.zip
+        String destDir     = "c:/data/gtspp/bestNcConsolidated/";
+        String tempDir     = "c:/data/gtspp/temp/"; 
+        String testTempDir = "c:/data/gtspp/testTemp/"; 
+        String testDestDir = "c:/data/gtspp/testDest/";
+        String logFile     = "c:/data/gtspp/log.txt"; 
         File2.makeDirectory(tempDir);
         String okQF = "125";  //1=correct, 2=probably correct, 5=modified (so now correct)
         float temperatureMV = -99;
@@ -5143,7 +5143,7 @@ expected =
      */
     public static void resortGtspp() throws Throwable {
 
-        String sourceDir = "f:/data/gtspp/bestNcConsolidated/";
+        String sourceDir = "c:/data/gtspp/bestNcConsolidated/";
 
         //get the names of all of the .nc files
         String names[] = RegexFilenameFilter.recursiveFullNameList(sourceDir, ".*\\.nc", false);
@@ -5302,14 +5302,14 @@ expected =
             ".kml", ".smallPdf", ".pdf", ".largePdf", 
             ".smallPng", ".png", ".largePng"};  
         int expectedMs[] = new int[] { 
-            //now Java 1.6                 //was Java 1.5
-            //graphics tests changed a little, so not perfectly comparable
-            3125, 2625, 2687, 16, 31,      //4469, 4125, 4094, 16, 32, 
-            687, 3531, 5219, 47, 31,       //1782, 5156, 6922, 125, 100, 
-            1672, 2719, 1531, 1922, 1797,  //., 4109, 4921, 4921, 4610, 
-            4266, 32, 2562, 2531, 4266,    //8359, 31, 3969, 3921, 6531, 
-            2078, 2500, 2063, 2047,        //4500, 5800, 5812, 5610, 
-            2984, 3125, 3391};             //5421, 5204, 5343};         
+            //now Java 1.7 M4700      //was Java 1.6                   //was Java 1.5
+            //graphics tests changed a little 1.5 -> 1.6, so not perfectly comparable
+            619, 672, 515, 8, 4,      //3125, 2625, 2687, 16, 31,      //4469, 4125, 4094, 16, 32, 
+            176, 763, 1126, 60, 72,   //687, 3531, 5219, 47, 31,       //1782, 5156, 6922, 125, 100, 
+            534, 523, 469, 535, 533,  //1672, 2719, 1531, 1922, 1797,  //., 4109, 4921, 4921, 4610, 
+            896, 32, 485, 482, 729,   //4266, 32, 2562, 2531, 4266,    //8359, 31, 3969, 3921, 6531, 
+            967, 763, 686, 740,       //2078, 2500, 2063, 2047,        //4500, 5800, 5812, 5610, 
+            924, 904, 1022};          //2984, 3125, 3391               //5421, 5204, 5343};         
         int bytes[]    = new int[] {
             18989646, 13058166, 13058203, 14544, 394, 
             11703093, 16391423, 55007762, 129296, 156701, 
@@ -5388,6 +5388,7 @@ expected =
                         Test.ensureEqual(table.getFloatData(4, row), 29.3f, "");
                     }
                 }
+                //String2.getStringFromSystemIn("Okay. Press ^C to stop or Enter to continue..."); 
             } catch (Exception e) {
                 String2.getStringFromSystemIn(
                     MustBe.throwableToString(e) +
@@ -5455,9 +5456,9 @@ expected =
 
         //constants
         int chunkSize = 45;  //lon width, lat height of a tile, in degrees
-        String sourceDir   = "f:/data/wod/monthly/" + type + "/"; 
-        String destDir     = "f:/data/wod/consolidated/" + type + "/";
-        String logFile     = "f:/data/wod/bobConsolidateWOD.log"; 
+        String sourceDir   = "c:/data/wod/monthly/" + type + "/"; 
+        String destDir     = "c:/data/wod/consolidated/" + type + "/";
+        String logFile     = "c:/data/wod/bobConsolidateWOD.log"; 
 
         //derived
         double previousDownload = Calendar2.isoStringToEpochSeconds(previousDownloadDate);
@@ -8155,9 +8156,9 @@ expected =
         int n = 100;  //use 1000 so it dominates program run time if profiling
         for (int i = 0; i < n; i++)  
             tableDataset.writeDapHtmlForm(null, "", writer);
-        String2.getStringFromSystemIn("\nEDDTableFromDap.testSpeedDAF time per .html = " +
+        String2.getStringFromSystemIn("\nEDDTableFromNcFiles.testSpeedDAF time per .html = " +
             ((System.currentTimeMillis() - time) / (float)n) + 
-            "ms (java1.6 14.6ms, java1.5 40.8ms)\n" +  //slow because of info for sliders and subset variables
+            "ms (java 1.7M4700 5.31ms, 1.6 14.6ms, 1.5 40.8ms)\n" +  //slow because of info for sliders and subset variables
             "  outputFileName=" + fileName + "\n" +
             "Press Enter to continue ->");
 
@@ -8185,7 +8186,7 @@ expected =
                 EDStatic.fullTestCacheDirectory, "testSpeedMAG.txt", ".graph");
         String2.getStringFromSystemIn("\nEDDTableFromNcFiles.testSpeedMAG time per .graph = " +
             ((System.currentTimeMillis() - time2) / (float)n) + 
-            "ms (java1.6 10.7ms, java1.5 55.172ms)\n" + //slow because of info for sliders and subset variables
+            "ms (java 1.7M4700 4.38ms, 1.6 10.7ms, 1.5 55.172ms)\n" + //slow because of info for sliders and subset variables
             "  outputFileName=" + fileName + "\n" +
             "Press Enter to continue ->");
         EDD.testVerbose(true);
@@ -8211,8 +8212,9 @@ expected =
         for (int i = 0; i < n; i++) 
             tableDataset.respondToGraphQuery(null, null, "", "", oss,
                 EDStatic.fullTestCacheDirectory, "testSpeedSubset.txt", ".graph");
-        String2.getStringFromSystemIn("\nEDDTableFromDap.testSpeedSubset time per .graph = " +
-            ((System.currentTimeMillis() - time2) / (float)n) + "ms (java1.6 17.36ms)\n" +
+        String2.getStringFromSystemIn("\nEDDTableFromNcFiles.testSpeedSubset time per .graph = " +
+            ((System.currentTimeMillis() - time2) / (float)n) + 
+            "ms (java 1.7M4700 4.23ms, 1.6 17.36ms)\n" +
             "  outputFileName=" + fileName + "\n" +
             "Press Enter to continue ->");
         EDD.testVerbose(true);
@@ -9835,7 +9837,7 @@ expected =
     //T21:09:15
             expected = 
     "</CreateTime>\n" +
-    "//<Software>ERDDAP - Version 1.39</Software>\n" +
+    "//<Software>ERDDAP - Version 1.40</Software>\n" +
     "//<Source>http://127.0.0.1:8080/cwexperimental/tabledap/testGlobecBottle.html</Source>\n" +
     "//<Version>ODV Spreadsheet V4.0</Version>\n" +
     "//<DataField>GeneralField</DataField>\n" +
@@ -10530,7 +10532,7 @@ expected =
         /* needs work
         String2.log("\n* EDD.testReadPngInfo");
         Object oa[] = readPngInfo(null,
-            "F:/u00/cwatch/testData/graphs/testGlobecBottle_2603962601.json");
+            "c:/u00/cwatch/testData/graphs/testGlobecBottle_2603962601.json");
         double graphDoubleWESN[] = (double[])oa[0];
         Test.ensureEqual(graphDoubleWESN, 
             new double[]{-126.30999908447265, -123.45999755859376, 41.9, 44.75000152587891}, "");

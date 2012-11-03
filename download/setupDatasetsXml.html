@@ -267,7 +267,7 @@ And if you get stuck, please send an email with the details to <tt>bob dot simon
       <li>DasDds tries to create the dataset with that datasetID.
         <ul>
         <li>It always prints lots of diagnostic messages.
-        <li>It always deletes all /datasetInfo/ files for the dataset (for safety) before trying
+        <li>It always deletes all /dataset/ files for the dataset (for safety) before trying
           to create the dataset.  So for aggregated datasets, you might want to adjust the 
           fileNameRegex temporarily to limit the number of files the data constructor finds.
         <li>If it fails (for whatever reason), it will show you the error message.
@@ -738,7 +738,7 @@ allows fast random access to the data, and is already supported by ERDDAP.
   and creates tables in memory with information about each valid file and each invalid file
   (one file per row). 
   <ul>
-  <li>The tables are also stored on disk, as .json files in [bigParentDirectory]/datasetInfo in
+  <li>The tables are also stored on disk, as .json files in [bigParentDirectory]/dataset in
     files named:
     <br>&nbsp;&nbsp;[datasetID].dirs.json (which holds a list of unique directory names),
     <br>&nbsp;&nbsp;[datasetID].files.json (which holds the table with each valid file's information),
@@ -1427,7 +1427,7 @@ allows fast random access to the data, and is already supported by ERDDAP.
   about each valid file (one file per row, including the minimum and maximum value of each variable,
   even String variables) and each invalid file. 
   <ul>
-  <li>The tables are also stored on disk, as .json files in [bigParentDirectory]/datasetInfo
+  <li>The tables are also stored on disk, as .json files in [bigParentDirectory]/dataset
      in files named:
     <br>&nbsp;&nbsp;[datasetID].dirs.json (which holds a list of unique directory names) and
     <br>&nbsp;&nbsp;[datasetID].files.json (which holds the table with each valid file's information),

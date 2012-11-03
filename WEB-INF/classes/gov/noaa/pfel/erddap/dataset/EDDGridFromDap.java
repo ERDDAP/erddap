@@ -2457,7 +2457,7 @@ String expected2 =
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0],  //last # changes frequently
-            "SimpleException: Query error: For variable=chlorophyll axis#0=time Constraint=\"[(2007-02-06)[]\": Stop=\"\" is invalid.  It must be an integer between 0 and 461.", 
+            "SimpleException: Query error: For variable=chlorophyll axis#0=time Constraint=\"[(2007-02-06)[]\": Stop=\"\" is invalid.  It must be an integer between 0 and 462.", 
             "error=" + error);
 
         error = "";
@@ -2668,15 +2668,15 @@ String expected2 =
         //String2.log(results);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 462];\n" +   //462 will change sometimes
+"  Float64 time[time = 463];\n" +   //463 will change sometimes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4320];\n" +
 "  Float64 longitude[longitude = 8640];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 chlorophyll[time = 462][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+"      Float32 chlorophyll[time = 463][altitude = 1][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 462];\n" +
+"      Float64 time[time = 463];\n" +
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
@@ -2724,10 +2724,10 @@ String expected2 =
         expected = 
 "Dataset {\n" +
 "  GRID {\n" +
-"    ARRAY:\n" +   //462 will change sometimes
-"      Float32 chlorophyll[time = 462][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+"    ARRAY:\n" +   //463 will change sometimes
+"      Float32 chlorophyll[time = 463][altitude = 1][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 462];\n" +
+"      Float64 time[time = 463];\n" +
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
@@ -4182,14 +4182,14 @@ boolean testAll = true;
                 expected = 
 "netcdf " + tUrl + "/griddap/erdMHchla8day {\n" +
 " dimensions:\n" +
-"   time = 462;\n" +   // (has coord.var)\n" +  //changes sometimes
+"   time = 463;\n" +   // (has coord.var)\n" +  //changes sometimes
 "   altitude = 1;\n" +   // (has coord.var)\n" +
 "   latitude = 4320;\n" +   // (has coord.var)\n" +
 "   longitude = 8640;\n" +   // (has coord.var)\n" +
 " variables:\n" +
-"   double time(time=462);\n" +
+"   double time(time=463);\n" +
 "     :_CoordinateAxisType = \"Time\";\n" +
-"     :actual_range = 1.0260864E9, 1.3492224E9; // double\n" +  //2nd value changes sometimes
+"     :actual_range = 1.0260864E9, 1.3499136E9; // double\n" +  //2nd value changes sometimes
 "     :axis = \"T\";\n" +
 "     :fraction_digits = 0; // int\n" +
 "     :ioos_category = \"Time\";\n" +
@@ -4230,7 +4230,7 @@ boolean testAll = true;
 "     :point_spacing = \"even\";\n" +
 "     :standard_name = \"longitude\";\n" +
 "     :units = \"degrees_east\";\n" +
-"   float chlorophyll(time=462, altitude=1, latitude=4320, longitude=8640);\n" +
+"   float chlorophyll(time=463, altitude=1, latitude=4320, longitude=8640);\n" +
 "     :_CoordinateAxes = \"time altitude latitude longitude \";\n" +
 "     :_FillValue = -9999999.0f; // float\n" +
 "     :colorBarMaximum = 30.0; // double\n" +
@@ -4253,8 +4253,8 @@ boolean testAll = true;
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2012-10-12Z\";\n" + //changes
-" :date_issued = \"2012-10-12Z\";\n" + //changes
+" :date_created = \"2012-10-24Z\";\n" + //changes
+" :date_issued = \"2012-10-24Z\";\n" + //changes
 " :Easternmost_Easting = 360.0; // double\n" +
 " :geospatial_lat_max = 90.0; // double\n" +
 " :geospatial_lat_min = -90.0; // double\n" +
@@ -4280,7 +4280,7 @@ boolean testAll = true;
 " :Southernmost_Northing = -90.0; // double\n" +
 " :standard_name_vocabulary = \"CF-12\";\n" +
 " :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-" :time_coverage_end = \"2012-10-03T00:00:00Z\";\n" + //changes
+" :time_coverage_end = \"2012-10-11T00:00:00Z\";\n" + //changes
 " :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
 " :title = \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
 " :Westernmost_Easting = 0.0; // double\n" +
@@ -6522,12 +6522,12 @@ EDStatic.startBodyHtml(null) + "\n" +
             expected = 
 "netcdf dods" + url.substring(4) + " {\n" +
 " dimensions:\n" +
-"   time = 462;\n" +
+"   time = 463;\n" +
 "   altitude = 1;\n" +
 "   latitude = 4320;\n" +
 "   longitude = 8640;\n" +
 " variables:\n" +
-"   float chlorophyll(time=462, altitude=1, latitude=4320, longitude=8640);\n" +
+"   float chlorophyll(time=463, altitude=1, latitude=4320, longitude=8640);\n" +
 "     :_CoordinateAxes = \"time altitude latitude longitude \";\n" +
 "     :_FillValue = -9999999.0f; // float\n" +
 "     :colorBarMaximum = 30.0; // double\n" +
@@ -6540,9 +6540,9 @@ EDStatic.startBodyHtml(null) + "\n" +
 "     :missing_value = -9999999.0f; // float\n" +
 "     :standard_name = \"concentration_of_chlorophyll_in_sea_water\";\n" +
 "     :units = \"mg m-3\";\n" +
-"   double time(time=462);\n" +
+"   double time(time=463);\n" +
 "     :_CoordinateAxisType = \"Time\";\n" +
-"     :actual_range = 1.0260864E9, 1.3492224E9; // double\n" +  //2nd number changes
+"     :actual_range = 1.0260864E9, 1.3499136E9; // double\n" +  //2nd number changes
 "     :axis = \"T\";\n" +
 "     :fraction_digits = 0; // int\n" +
 "     :ioos_category = \"Time\";\n" +
@@ -6593,8 +6593,8 @@ EDStatic.startBodyHtml(null) + "\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2012-10-12Z\";\n" +  //changes
-" :date_issued = \"2012-10-12Z\";\n" +   //changes
+" :date_created = \"2012-10-24Z\";\n" +  //changes
+" :date_issued = \"2012-10-24Z\";\n" +   //changes
 " :Easternmost_Easting = 360.0; // double\n" +
 " :geospatial_lat_max = 90.0; // double\n" +
 " :geospatial_lat_min = -90.0; // double\n" +
@@ -6619,7 +6619,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 " :Southernmost_Northing = -90.0; // double\n" +
 " :standard_name_vocabulary = \"CF-12\";\n" +
 " :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-" :time_coverage_end = \"2012-10-03T00:00:00Z\";\n" + //changes
+" :time_coverage_end = \"2012-10-11T00:00:00Z\";\n" + //changes
 " :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
 " :title = \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
 " :Westernmost_Easting = 0.0; // double\n" +

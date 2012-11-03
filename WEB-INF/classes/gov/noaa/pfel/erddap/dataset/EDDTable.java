@@ -14509,7 +14509,7 @@ writer.write(
      * <br>http://oos.soest.hawaii.edu/pacioos/metadata/iso/PACN_FISH_TRANSECT.xml
      * <br>Made pretty via TestAll: XML.prettyXml(in, out) and other small changes
      * <br>and stored on Bob's computer as
-     * <br>f:/programs/iso19115/PACN_FISH_TRANSECTpretty.xml
+     * <br>c:/programs/iso19115/PACN_FISH_TRANSECTpretty.xml
      * <br>I note that:
      * <br>* PACN_FISH uses an ISO resources list, whereas ncISO uses one from NGDC.
      *

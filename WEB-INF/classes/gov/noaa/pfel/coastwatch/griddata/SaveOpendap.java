@@ -222,7 +222,7 @@ public class SaveOpendap  {
     public static void downloadMbariData() throws Exception {
         //one time transfer of MBARI data
         verbose = true;
-        String dir = "f:/data/mbari/";
+        String dir = "c:/data/mbari/";
         String2.log("\n*** One time transfer of MBARI data to " + dir);
 
         for (int i = 0; i < 3; i++)  //roughly ~4, ~57, ~37 minutes (crude remembrance)

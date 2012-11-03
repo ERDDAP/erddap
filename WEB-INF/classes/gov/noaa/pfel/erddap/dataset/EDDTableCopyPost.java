@@ -758,7 +758,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         defaultCheckSourceData = false;
         StringArray tags = findTags(loggedInAs, false);
         EDDTable eddDet = (EDDTable)oneFromDatasetXml("cPostDet3"); 
-        String dir = "f:/temp/temp/";
+        String dir = "c:/temp/temp/";
         int nFast = 0, nYoungFast = 0, 
             nTagsLookedAt = 0, 
             nLongDegreesDid = 0, nLongDegreesDidnt = 0, 
@@ -989,7 +989,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         defaultCheckSourceData = false;
         StringArray tags = findTags(loggedInAs, false);
         EDDTable eddDet = (EDDTable)oneFromDatasetXml("cPostDet3"); 
-        String dir = "f:/temp/temp/";
+        String dir = "c:/temp/temp/";
         float maxDegrees = 0;
         float maxYears = 0;
         StringBuilder results = new StringBuilder();
@@ -1056,7 +1056,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         StringArray tags = findTags(loggedInAs, false);
         EDDTable eddDet = (EDDTable)oneFromDatasetXml("cPostDet3"); 
         EDDGrid etopo180 = (EDDGrid)oneFromDatasetXml("etopo180");
-        String dir = "f:/temp/temp/";
+        String dir = "c:/temp/temp/";
         StringBuilder results = new StringBuilder();
         int nTagsChecked = 0, nOdd = 0;
         GridDataAccessor.verbose = false;
@@ -1141,7 +1141,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         defaultCheckSourceData = false;
         StringArray tags = findTags(loggedInAs, false);
         EDDTable eddDet = (EDDTable)oneFromDatasetXml("cPostDet3"); 
-        String dir = "f:/temp/temp/";
+        String dir = "c:/temp/temp/";
 
         Table resultsTable = new Table();
         StringArray resultsPiPa = new StringArray();
@@ -1240,7 +1240,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         defaultCheckSourceData = false;
         StringArray tags = findTags(loggedInAs, false);
         EDDTable eddDet = (EDDTable)oneFromDatasetXml("cPostDet3"); 
-        String dir = "f:/temp/temp/";
+        String dir = "c:/temp/temp/";
         StringBuilder results = new StringBuilder();
         int nNaN = 0, nG1 = 0;
         for (int pt = 0; pt < tags.size(); pt++) { 
@@ -1311,7 +1311,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
 
         //find activation_time is after surgery_time
         TableWriterAll twa = new TableWriterAll(
-            "F:/u00/cwatch/erddap2/cache/cPostSurg3/", "findSurgeryBeforeActivation");
+            "c:/u00/cwatch/erddap2/cache/cPostSurg3/", "findSurgeryBeforeActivation");
         tedd.getDataForDapQuery(loggedInAs, "requestUrl", 
             "unique_tag_id,activation_time,surgery_time,PI", twa);
         Table table = twa.cumulativeTable();
@@ -1379,7 +1379,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
      */
     public static StringArray findTags(String loggedInAs, boolean forceCreateNewFile) throws Throwable {
         String2.log("\n*** findTags");
-        String dir = "F:/temp/temp/";
+        String dir = "c:/temp/temp/";
         String name = "postTagsFor" + String2.encodeFileNameSafe(loggedInAs);
 
         //need to make the file?

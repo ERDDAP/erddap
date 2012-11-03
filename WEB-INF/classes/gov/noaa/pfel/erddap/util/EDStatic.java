@@ -121,7 +121,7 @@ public class EDStatic {
      * <br>1.34 released on 2011-06-15
      * <br>1.36 released on 2011-08-01
      * <br>1.38 released on 2012-04-21
-     * <br>1.40 released on 2012-04-25
+     * <br>1.40 released on 2012-10-25
      */   
     public static String erddapVersion = "1.40";  
 
