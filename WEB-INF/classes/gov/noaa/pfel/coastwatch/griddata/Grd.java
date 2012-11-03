@@ -1210,7 +1210,7 @@ public class Grd {
         int maxYPixel = 368; double maxYDegrees = 30;
         //range: minX + "/" + maxX + "/" + minY + "/" + maxY; 
         String range     = "-135/-113/30/50"; 
-        String refDir    = "f:/u00/ref/";
+        String refDir    = "c:/u00/ref/";
         String scale     = "x0.185d"; 
         String imageSize = "520x420";
         String xpos      = ".6";
@@ -1250,7 +1250,7 @@ public class Grd {
         int maxYPixel = 367; double maxYDegrees = 22; 
         //range: minX + "/" + maxX + "/" + minY + "/" + maxY; 
         String range     = "-135/-105/22/50";  
-        String refDir    = "f:/u00/ref/";
+        String refDir    = "c:/u00/ref/";
         String scale     = "x0.13d"; 
         String imageSize = "520x420";
         String xpos      = ".6";

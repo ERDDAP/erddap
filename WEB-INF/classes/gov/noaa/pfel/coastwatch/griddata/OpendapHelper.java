@@ -1457,7 +1457,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
      */
     public static void testAllDapToNc(int whichTests) throws Throwable {
         //tests from nodc template examples http://www.nodc.noaa.gov/data/formats/netcdf/
-        String dir = "f:/data/nodcTemplates/";
+        String dir = "c:/data/nodcTemplates/";
         String fileName;
         String url, results, expected;
 
@@ -1479,7 +1479,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             allDapToNc(url, dir + fileName);
             results = NcHelper.dds(dir + fileName);
             expected = 
-"netcdf f:/data/nodcTemplates/timeSeriesBodegaMarineLabBuoy.nc {\n" +
+"netcdf c:/data/nodcTemplates/timeSeriesBodegaMarineLabBuoy.nc {\n" +
 " dimensions:\n" +
 "   time = 63242;\n" +
 "   string1 = 1;\n" +
@@ -1516,7 +1516,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             results = NcHelper.dds(dir + fileName);
             String2.log(results);
             expected = 
-"netcdf f:/data/nodcTemplates/trajectoryAoml_tsg.nc {\n" +
+"netcdf c:/data/nodcTemplates/trajectoryAoml_tsg.nc {\n" +
 " dimensions:\n" +
 "   trajectory = 1;\n" +
 "   obs = 2880;\n" +
@@ -1560,7 +1560,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             results = NcHelper.dds(dir + fileName);
             String2.log(results);
             expected = 
-"netcdf f:/data/nodcTemplates/trajectoryJason2_satelliteAltimeter.nc {\n" +
+"netcdf c:/data/nodcTemplates/trajectoryJason2_satelliteAltimeter.nc {\n" +
 " dimensions:\n" +
 "   trajectory = 1;\n" +
 "   obs = 3;\n" +
@@ -1614,7 +1614,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             results = NcHelper.dds(dir + fileName);
             String2.log(results);
             expected = 
-"netcdf f:/data/nodcTemplates/timeSeriesProfileUsgs_internal_wave_timeSeries.nc {\n" +
+"netcdf c:/data/nodcTemplates/timeSeriesProfileUsgs_internal_wave_timeSeries.nc {\n" +
 " dimensions:\n" +
 "   station = 1;\n" +
 "   time = 38990;\n" +
@@ -2489,8 +2489,9 @@ expected =
 " :geospatial_vertical_units = \"m\";\n" +
 " :history = \"Remote Sensing Systems, Inc.\n" +
 "2010-04-18T02:00:49Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
-today + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
-today + " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
+today + "T";  // + time " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
+//today + " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
+String expected2 = 
 " :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
 " :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :keywords = \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
@@ -2581,7 +2582,9 @@ y_wind.y_wind[1][1][7][15]
 [0][0][5], 0.56877106, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -3.2394278, 0.45922723, -0.8394715, 0.7333555, -9999999.0, -9999999.0, -2.3936603, 3.725975, 0.09879057
 [0][0][6], -6.128998, 2.379096, 7.463917, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -11.026609
 */
-        Test.ensureEqual(results, expected, "results=" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=" + results);
+        int po = results.indexOf(" :infoUrl =");
+        Test.ensureEqual(results.substring(po), expected2, "results=" + results);
         File2.delete(fileName);
 
         //test 1D var should be ignored if others are 2+D
@@ -2692,8 +2695,9 @@ y_wind.y_wind[1][1][7][15]
 " :geospatial_vertical_units = \"m\";\n" +
 " :history = \"Remote Sensing Systems, Inc.\n" +
 "2010-04-18T02:00:49Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
-today + " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
-today + " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
+today + "T"; //time http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
+//today + time " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
+expected2 = 
 " :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
 " :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :keywords = \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
@@ -2729,7 +2733,9 @@ today + " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n"
 " :Westernmost_Easting = 0.0; // double\n" +
 " data:\n" +
 "}\n";
-        Test.ensureEqual(results, expected, "results=" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=" + results);
+        po = results.indexOf(" :infoUrl =");
+        Test.ensureEqual(results.substring(po), expected2, "results=" + results);
         File2.delete(fileName);
 
 

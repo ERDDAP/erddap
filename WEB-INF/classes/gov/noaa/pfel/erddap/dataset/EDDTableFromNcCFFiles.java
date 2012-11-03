@@ -249,8 +249,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             //    Attributes externalAddGlobalAttributes) throws Throwable {
 
             String results = generateDatasetsXml(
-                "F:/data/nccf/", "ncCF1b\\.nc",
-                "F:/data/nccf/ncCF1b.nc",
+                "c:/data/nccf/", "ncCF1b\\.nc",
+                "c:/data/nccf/ncCF1b.nc",
                 1440,
                 "", "", "", "", //just for test purposes; station is already a column in the file
                 "line_station time", 
@@ -259,8 +259,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             //GenerateDatasetsXml
             GenerateDatasetsXml.doIt(new String[]{"-verbose", 
                 "EDDTableFromNcCFFiles",
-                "F:/data/nccf/", "ncCF1b\\.nc",
-                "F:/data/nccf/ncCF1b.nc",
+                "c:/data/nccf/", "ncCF1b\\.nc",
+                "c:/data/nccf/ncCF1b.nc",
                 "1440",
                 "", "", "", "", //just for test purposes; station is already a column in the file
                 "line_station time", 
@@ -273,9 +273,9 @@ String expected =
 directionsForGenerateDatasetsXml() +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDTableFromNcCFFiles\" datasetID=\"nccf_df29_508b_7a59\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromNcCFFiles\" datasetID=\"nccf_3492_0c4f_44b3\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <fileDir>F:/data/nccf/</fileDir>\n" +
+"    <fileDir>c:/data/nccf/</fileDir>\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>ncCF1b\\.nc</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
@@ -480,7 +480,7 @@ directionsForGenerateDatasetsXml() +
             //    expected, "");
 
             EDD edd = oneFromXmlFragment(results);
-            Test.ensureEqual(edd.datasetID(), "nccf_df29_508b_7a59", "");
+            Test.ensureEqual(edd.datasetID(), "nccf_3492_0c4f_44b3", "");
             Test.ensureEqual(edd.title(), "CalCOFI Fish Larvae Count, 1984-2004", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
                 "line_station, longitude, latitude, altitude, time, obsScientific, obsValue, obsUnits", 

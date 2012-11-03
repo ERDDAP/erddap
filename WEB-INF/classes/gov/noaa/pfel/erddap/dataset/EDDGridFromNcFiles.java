@@ -441,15 +441,15 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml");
         String results = generateDatasetsXml(
-            "f:/u00/cwatch/testData/erdQSwind1day/", ".*_03\\.nc", 
-            "f:/u00/cwatch/testData/erdQSwind1day/erdQSwind1day_20080101_03.nc",
+            "c:/u00/cwatch/testData/erdQSwind1day/", ".*_03\\.nc", 
+            "c:/u00/cwatch/testData/erdQSwind1day/erdQSwind1day_20080101_03.nc",
             10080, null);
 
         //GenerateDatasetsXml
         GenerateDatasetsXml.doIt(new String[]{"-verbose", 
             "EDDGridFromNcFiles",
-            "f:/u00/cwatch/testData/erdQSwind1day/", ".*_03\\.nc", 
-            "f:/u00/cwatch/testData/erdQSwind1day/erdQSwind1day_20080101_03.nc",
+            "c:/u00/cwatch/testData/erdQSwind1day/", ".*_03\\.nc", 
+            "c:/u00/cwatch/testData/erdQSwind1day/erdQSwind1day_20080101_03.nc",
             "10080"},
             false); //doIt loop?
         String gdxResults = String2.getClipboardString();
@@ -460,9 +460,9 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
 directionsForGenerateDatasetsXml() +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"erdQSwind1day_576b_a0c9_bd3d\" active=\"true\">\n" +
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"erdQSwind1day_52db_1ed3_22ce\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
-"    <fileDir>f:/u00/cwatch/testData/erdQSwind1day/</fileDir>\n" +
+"    <fileDir>c:/u00/cwatch/testData/erdQSwind1day/</fileDir>\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*_03\\.nc</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
@@ -665,7 +665,7 @@ directionsForGenerateDatasetsXml() +
 
         //ensure it is ready-to-use by making a dataset from it
         EDD edd = oneFromXmlFragment(results);
-        Test.ensureEqual(edd.datasetID(), "erdQSwind1day_576b_a0c9_bd3d", "");
+        Test.ensureEqual(edd.datasetID(), "erdQSwind1day_52db_1ed3_22ce", "");
         Test.ensureEqual(edd.title(), "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)", "");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
             "x_wind, y_wind, mod", "");
@@ -1080,7 +1080,7 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +    
-"    String location \"f:/u00/cwatch/testData/grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
+"    String location \"c:/u00/cwatch/testData/grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 88.75;\n" +
 "    String Originating_center \"U.K. Met Office - Exeter (RSMC) (74)\";\n" +
@@ -1807,7 +1807,7 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +    
-"    String location \"f:/u00/cwatch/testData/grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
+"    String location \"c:/u00/cwatch/testData/grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 88.75001;\n" +
 //2012-07-05 see below.     Here it is (I hope) how it will be when it is corrected.
@@ -2574,16 +2574,17 @@ expected =
             ".smallPdf", ".pdf", ".largePdf", 
             ".smallPng", ".png", ".largePng", 
             ".transparentPng"};
-        int expectedMs[] = new int[]  {  //now Java 1.6 times,    was java 1.5 times
-            734, 6391, 6312, 15, 15, 156, //1250, 9750, 9562, 15, 15, 547,
-            16875,                        //18859, 
-            63, 47, 2032,                 //93, 31, ...,
-            6422, 203, 234, 250,          //9621, 625, 500, 500, 
-            9547, 6297, 6281, 8625,       //13278, 8766, 8844, 11469, 
-            656, 110,                     //687, 94, 
-            860, 2859, 3438,              //2188, 4063, 3797,   //small varies greatly
-            438, 468, 1063,               //438, 469, 1188,     //small varies greatly
-            1703};                        //2359};
+        int expectedMs[] = new int[]  {  
+            //now Java 1.7/M4700          //was Java 1.6 times            //was java 1.5 times
+            187, 905, 811, 15, 15, 109,   //734, 6391, 6312, 15, 15, 156, //1250, 9750, 9562, 15, 15, 547,
+            8112,                         //16875,                        //18859, 
+            63, 47, 561,                  //63, 47, 2032,                 //93, 31, ...,
+            921, 125, 163, 163,           //6422, 203, 234, 250,          //9621, 625, 500, 500, 
+            1248, 811, 811, 1139,         //9547, 6297, 6281, 8625,       //13278, 8766, 8844, 11469, 
+            390, 101,                     //656, 110,                     //687, 94, 
+            444, 976, 1178,               //860, 2859, 3438,              //2188, 4063, 3797,   //small varies greatly
+            212, 305, 492,                //438, 468, 1063,               //438, 469, 1188,     //small varies greatly
+            758};                         //1703                          //2359};
         int bytes[]    = new int[]   {
             5875592, 25807661, 25807667, 6006, 303, 2085486, 
             4701074, 
@@ -2656,13 +2657,13 @@ expected =
      * @throws Throwable if trouble
      */
     public static void test(boolean deleteCachedDatasetInfo) throws Throwable {
-        /* */
+        /* 
         testNc(deleteCachedDatasetInfo);
         testCwHdf(deleteCachedDatasetInfo);
         testGrib_42(deleteCachedDatasetInfo);  //42 or 43 for netcdfAll 4.2- or 4.3.8+
         testGrib2_42(deleteCachedDatasetInfo); //42 or 43 for netcdfAll 4.2- or 4.3.8+
         testGenerateDatasetsXml();
-        testSpeed(-1);
+*/        testSpeed(-1);
         /* */
 
         //one time tests

@@ -255,8 +255,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             Attributes externalAddAttributes = new Attributes();
             externalAddAttributes.add("title", "New Title!");
             String results = generateDatasetsXml(
-                "f:/u00/cwatch/testData/asciiNdbc/",  ".*\\.csv",
-                "f:/u00/cwatch/testData/asciiNdbc/31201_2009.csv", 
+                "c:/u00/cwatch/testData/asciiNdbc/",  ".*\\.csv",
+                "c:/u00/cwatch/testData/asciiNdbc/31201_2009.csv", 
                 1, 3, 1440,
                 "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
                 "time", "station time", 
@@ -266,8 +266,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             //GenerateDatasetsXml
             GenerateDatasetsXml.doIt(new String[]{"-verbose", 
                 "EDDTableFromAsciiFiles",
-                "f:/u00/cwatch/testData/asciiNdbc/",  ".*\\.csv",
-                "f:/u00/cwatch/testData/asciiNdbc/31201_2009.csv", 
+                "c:/u00/cwatch/testData/asciiNdbc/",  ".*\\.csv",
+                "c:/u00/cwatch/testData/asciiNdbc/31201_2009.csv", 
                 "1", "3", "1440",
                 "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
                 "time", "station time", 
@@ -282,9 +282,9 @@ directionsForGenerateDatasetsXml() +
 "   below, notably 'units' for each of the dataVariables.\n" +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"asciiNdbc_9e39_e486_1cc2\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"asciiNdbc_8443_4c8b_d0e1\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <fileDir>f:/u00/cwatch/testData/asciiNdbc/</fileDir>\n" +
+"    <fileDir>c:/u00/cwatch/testData/asciiNdbc/</fileDir>\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*\\.csv</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
@@ -468,7 +468,7 @@ directionsForGenerateDatasetsXml() +
             //!!! actually this will fail with a specific error which is caught below
             EDD edd = oneFromXmlFragment(results);
             //these won't actually be tested...
-            Test.ensureEqual(edd.datasetID(), "asciiNdbc_8dd9_4da9_8229", "");
+            Test.ensureEqual(edd.datasetID(), "asciiNdbc_8443_4c8b_d0e1", "");
             Test.ensureEqual(edd.title(), "The Newer Title!", "");
             //If it does get here, this will fail on purpose...
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
@@ -477,7 +477,7 @@ directionsForGenerateDatasetsXml() +
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
             if (msg.indexOf(
-                "datasets.xml/EDDTable.ensureValid error for datasetID=asciiNdbc_9e39_e486_1cc2:\n" +
+                "datasets.xml/EDDTable.ensureValid error for datasetID=asciiNdbc_8443_4c8b_d0e1:\n" +
                 " dataVariable[timeIndex=4] isn't an EDVTime.") >= 0) {
                 String2.log("EXPECTED ERROR while creating the edd: time's units haven't been set.\n");
             } else 

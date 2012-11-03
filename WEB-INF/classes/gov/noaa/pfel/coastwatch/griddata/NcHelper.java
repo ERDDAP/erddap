@@ -1876,7 +1876,7 @@ public class NcHelper  {
 
     /** Diagnose a problem */
     public static void testJplG1SST() throws Exception {
-        String dir = "f:/data/jplG1SST/";
+        String dir = "c:/data/jplG1SST/";
         String request[] = new String[]{"SST"};
         StringArray varNames = new StringArray();
         NetcdfFile fi;
@@ -1911,7 +1911,7 @@ String2.log(pas13.toString());
      * @throws Exception if trouble
      */
     public static void testFindAllVariablesWithDims() throws Exception {
-        NetcdfFile ncFile = openFile("f:/data/nodcTemplates/ncCFMA2a.nc");
+        NetcdfFile ncFile = openFile("c:/data/nodcTemplates/ncCFMA2a.nc");
 
         StringArray sa = new StringArray();
         try {

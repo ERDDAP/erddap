@@ -518,7 +518,7 @@ public class Boundaries  {
 
     /** Bob reruns this whenever there is new data to convert all of the data files. */
     public static void bobConvertAll() throws Exception {
-        String dir = "f:/programs/boundaries/";
+        String dir = "c:/programs/boundaries/";
         String types[] = {"nationalBoundaries", "stateBoundaries", "rivers"};
         String ress[] = {"c", "f", "h", "i", "l"};
         for (int type = 0; type < types.length; type++) {

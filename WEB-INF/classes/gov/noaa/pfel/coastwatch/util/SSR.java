@@ -1426,7 +1426,8 @@ public class SSR {
      *   The query MUST be already percentEncoded as needed.
      *   <br>See http://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
-     * @param fullFileName the full name for the file to be created
+     * @param fullFileName the full name for the file to be created.
+     *   If the directory doesn't already exist, it will be created.
      * @param tryToUseCompression If true, the request indicates compression
      *   is acceptable and the input stream will do the decompression.
      *   'false' is safer if the file may be already compressed (e.g., .gz or .zip)
@@ -1435,7 +1436,8 @@ public class SSR {
      */
     public static void downloadFile(String urlString,
             String fullFileName, boolean tryToUseCompression) throws Exception {
-
+        //first, ensure dir exists
+        File2.makeDirectory(File2.getDirectory(fullFileName));
         InputStream in = tryToUseCompression? 
             getUrlInputStream(urlString) :             
             getUncompressedUrlInputStream(urlString);  

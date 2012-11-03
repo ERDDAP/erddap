@@ -66,8 +66,8 @@ public class FishBase  {
      * @param tableRegex a regex to choose which tables to process
      */
     public static void convertHtmlToNc(String tableRegex) throws Throwable {
-        String htmlDir = "f:/data/FBOther/FBHtml/";
-        String ncDir   = "f:/data/FBOther/FBNc/";
+        String htmlDir = "c:/data/FBOther/FBHtml/";
+        String ncDir   = "c:/data/FBOther/FBNc/";
         String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
         String2.log("FishBase.convertHtmlToNc " + tableRegex);
         
@@ -1013,8 +1013,8 @@ EDStatic.standardLicense);
             }
 
 //    String2.log(EDDTableFromNcFiles.generateDatasetsXml(
-//        "f:/data/FBNc/", "ABNORM\\.nc", 
-//        "f:/data/FBNc/ABNORM.nc", "", 1000000, 
+//        "c:/data/FBNc/", "ABNORM\\.nc", 
+//        "c:/data/FBNc/ABNORM.nc", "", 1000000, 
 //        "", "", "", 
 //        "", "", 
 //        "", 
@@ -1025,8 +1025,8 @@ EDStatic.standardLicense);
 
             //generateDatasetsXml
             String2.log(EDDTableFromNcFiles.generateDatasetsXml(
-                "f:/data/FBNc/", fName + "\\.nc", 
-                "f:/data/FBNc/" + fName + ".nc", "", 1000000, 
+                "c:/data/FBNc/", fName + "\\.nc", 
+                "c:/data/FBNc/" + fName + ".nc", "", 1000000, 
                 "", "", "", 
                 "", "", 
                 "", 

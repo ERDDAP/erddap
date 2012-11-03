@@ -620,19 +620,22 @@ public class PersistentTable {
 
             //string speed test
             time = System.currentTimeMillis();
+            long modeTime = System.currentTimeMillis();
             for (int i = 0; i < n; i++) 
                 pt.writeString(0, i, testS + i);
             if (mode == 1) pt.flush();
             time = System.currentTimeMillis();
             String2.log("\n" + modes[mode] + " time to write " + n + " Strings=" + 
-                (System.currentTimeMillis() - time) + "   (rw=0 rws=0 rwd=0)");
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{0,0,0,0}[mode] + "ms)");  //java 1.6 0,0,0,0
 
             for (int i = 0; i < n; i++) {
                 int tRow = Math2.random(n);
                 Test.ensureEqual(pt.readString(0, tRow), testS + tRow, "");
             }
             String2.log(modes[mode] + " time to read " + n + " Strings=" + 
-                (System.currentTimeMillis() - time) + "   (rw=16 rws=47 rwd=15)");
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{15,16,47,15}[mode] + "ms)");  //java 1.6 15,16,47,15
 
             //double speed test
             time = System.currentTimeMillis();
@@ -640,7 +643,8 @@ public class PersistentTable {
                 pt.writeDouble(2, i, i);
             if (mode == 1) pt.flush();
             String2.log(modes[mode] + " time to write " + n + " doubles=" + 
-                (System.currentTimeMillis() - time) + "   (rw=15 rws=219 rwd=188)");
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{16,15,234,327}[mode] + "ms)"); //java 1.6 16,15,219,188
 
             time = System.currentTimeMillis();
             for (int i = 0; i < n; i++) {
@@ -648,7 +652,8 @@ public class PersistentTable {
                 Test.ensureEqual(pt.readDouble(2, tRow), tRow, "");
             }
             String2.log(modes[mode] + " time to read " + n + " doubles=" + 
-                (System.currentTimeMillis() - time) + "   (rw=32 rws=16 rwd=0)");
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{15,32,16,0}[mode] + "ms)");  //java 1.6 15,32,16,0
 
             //binary double speed test
             time = System.currentTimeMillis();
@@ -656,7 +661,8 @@ public class PersistentTable {
                 pt.writeBinaryDouble(1, i, i);
             if (mode == 1) pt.flush();
             String2.log(modes[mode] + " time to write " + n + " binary doubles=" + 
-                (System.currentTimeMillis() - time) + "   (rw=31 rws=1968 rwd=1687)");
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{16,31,1750,1872}[mode] + "ms)");  //java 1.6 16,31,1968,1687
 
             time = System.currentTimeMillis();
             for (int i = 0; i < n; i++) {
@@ -664,7 +670,8 @@ public class PersistentTable {
                 Test.ensureEqual(pt.readBinaryDouble(1, tRow), tRow, "");
             }
             String2.log(modes[mode] + " time to read " + n + " binary doubles=" + 
-                (System.currentTimeMillis() - time) + "   (rw=31 rws=16 rwd=16)");
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{16,16,31,31}[mode] + "ms)"); //java 1.6 16,31,16,16
 
             //int speed test
             time = System.currentTimeMillis();
@@ -672,7 +679,8 @@ public class PersistentTable {
                 pt.writeInt(4, i, i);
             if (mode == 1) pt.flush();
             String2.log(modes[mode] + " time to write " + n + " ints=" + 
-                (System.currentTimeMillis() - time) + "   (rw=0 rws=219 rwd=219)");
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{16,0,203,249}[mode] + "ms)"); //java 1.6 16,0,219,219
 
             time = System.currentTimeMillis();
             for (int i = 0; i < n; i++) {
@@ -680,7 +688,8 @@ public class PersistentTable {
                 Test.ensureEqual(pt.readInt(4, tRow), tRow, "");
             }
             String2.log(modes[mode] + " time to read " + n + " ints=" + 
-                (System.currentTimeMillis() - time) + "   (rw=16 rws=0 rwd=0)");
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{0,16,0,0}[mode] + "ms)"); //java 1.6 0,16,0,0
 
             //binary int speed test
             time = System.currentTimeMillis();
@@ -688,7 +697,8 @@ public class PersistentTable {
                 pt.writeBinaryInt(3, i, i);
             if (mode == 1) pt.flush();
             String2.log(modes[mode] + " time to write " + n + " binary int=" + 
-                (System.currentTimeMillis() - time) + "   (rw=15 rws=1531 rwd=922)");
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{15,15,1029,1108}[mode] + "ms)"); //java 1.6 15,1531,922
 
             time = System.currentTimeMillis();
             for (int i = 0; i < n; i++) {
@@ -696,10 +706,20 @@ public class PersistentTable {
                 Test.ensureEqual(pt.readBinaryInt(3, tRow), tRow, "");
             }
             String2.log(modes[mode] + " time to read " + n + " binary int=" + 
-                (System.currentTimeMillis() - time) + "   (rw=16 rws=16 rwd=0)");
+                (System.currentTimeMillis() - time) + "   (" + 
+                new int[]{0,16,16,16}[mode] + "ms)");  //java 1.6 16,16,0
+
+
+            int expected[] = {109,109,3401,3681};
+            modeTime = System.currentTimeMillis() - modeTime;
+            String2.log(modes[mode] + " TOTAL time to read " + n + " items=" + 
+                modeTime + "   (" + expected[mode] + "ms)"); 
+            Test.ensureTrue(modeTime < 1.5*expected[mode], "That is too slow!"); 
 
             pt.close();
         }
+        //String2.getStringFromSystemIn("\n(considerable variation) Okay?\n" +
+        //    "Press ^C to stop or Enter to continue..."); 
     }
 
 

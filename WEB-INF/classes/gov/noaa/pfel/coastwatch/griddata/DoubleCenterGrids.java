@@ -232,15 +232,15 @@ public class DoubleCenterGrids {
 
 
         //delete old files
-        String newDir = "f:/u00/centeredSatellite/AG";
+        String newDir = "c:/u00/centeredSatellite/AG";
         RegexFilenameFilter.recursiveDelete(newDir);
 
         //copy a dir and subdirs and files
-        main(new String[]{"f:/u00/satellite/AG", newDir});
+        main(new String[]{"c:/u00/satellite/AG", newDir});
 
         //do tests
         String ncDump = NcHelper.dumpString(
-            "f:/u00/centeredSatellite/AG/ssta/1day/AG2005040_2005040_ssta.nc", false);
+            "c:/u00/centeredSatellite/AG/ssta/1day/AG2005040_2005040_ssta.nc", false);
         //ensure time is centered correctly
         Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.1079504E9), //# from time actual_range
             "2005-02-09T12:00:00", "");
@@ -380,7 +380,7 @@ String reference3=
 
         //just ensure the other file exists
         Test.ensureTrue(File2.isFile(
-            "f:/u00/centeredSatellite/AG/ssta/1day/AG2005041_2005041_ssta.nc"),
+            "c:/u00/centeredSatellite/AG/ssta/1day/AG2005041_2005041_ssta.nc"),
             "");
 
         //delete the log file

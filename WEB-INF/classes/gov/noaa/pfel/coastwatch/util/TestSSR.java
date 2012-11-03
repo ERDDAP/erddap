@@ -92,12 +92,20 @@ public class TestSSR {
         String2.log("test dosShell");
         String tempGif = SSR.getContextDirectory() + "images/temp.gif";
         File2.delete(tempGif);
-        Test.ensureEqual(
-            String2.toNewlineString(SSR.dosShell("convert " +
-                SSR.getContextDirectory() + "images/subtitle.jpg " +
-                tempGif, 10).toArray()),
-            "", "dosShell a");
-        Test.ensureTrue(File2.isFile(tempGif), "dosShell b");
+        try {
+            Test.ensureEqual(
+                String2.toNewlineString(SSR.dosShell(
+                    "\"C:\\Program Files (x86)\\ImageMagick-6.8.0-Q16\\convert\" " +
+                    SSR.getContextDirectory() + "images/subtitle.jpg " +
+                    tempGif, 10).toArray()),
+                "", "dosShell a");
+            Test.ensureTrue(File2.isFile(tempGif), "dosShell b");
+        } catch (Exception e) {
+            String2.log(MustBe.throwableToString(e));
+            String2.getStringFromSystemIn(
+                "*** 2012-10-31 Broke with change to M4700. Not fixed yet." +
+                "\nPress 'Enter' to continue or ^C to stop...");
+        }
         File2.delete(tempGif);
 
         //cutChar
@@ -148,7 +156,7 @@ public class TestSSR {
         String[] results = String2.readFromFile(zipDir + fileName);
         Test.ensureEqual(results[0], "", "SSR.zip b");
         Test.ensureEqual(results[1], longText, "SSR.zip c");
-        String2.log("zip+unzip time=" + (time1 + time2) + "  (Java 1.6 4000-11000ms)");
+        String2.log("zip+unzip time=" + (time1 + time2) + "  (Java 1.7M4700 967ms, 1.6 4000-11000ms)");
         File2.delete(zipDir + zipName);
         File2.delete(zipDir + fileName);
 
@@ -171,7 +179,8 @@ public class TestSSR {
         results = String2.readFromFile(zipDir + fileName);
         Test.ensureEqual(results[0], "", "SSR.zip b");
         Test.ensureEqual(results[1], longText, "SSR.zip c");  
-        String2.log("zip+unzip (w directory info) time=" + (time1 + time2) + "  (Java 1.6 ~4000-11000ms)");
+        String2.log("zip+unzip (w directory info) time=" + (time1 + time2) + 
+            "  (Java 1.7M4700 937, 1.6 ~4000-11000ms)");
         File2.delete(zipDir + zipName);
         File2.delete(zipDir + fileName);
 
@@ -200,7 +209,7 @@ public class TestSSR {
             Test.ensureEqual(results[0], "", "SSR.gz b");
             Test.ensureEqual(results[1], longText, "SSR.z c");
             String2.log("gzip+ungzip time=" + (time1 + time2) + 
-                "  (Java 1.6 ~4000-11000ms)"); 
+                "  (Java 1.7M4700 780-880ms, 1.6 ~4000-11000ms)"); 
             File2.delete(gzipDir + gzipName);
             File2.delete(gzipDir + fileName);
         }

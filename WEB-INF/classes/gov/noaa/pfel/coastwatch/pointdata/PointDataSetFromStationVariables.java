@@ -118,7 +118,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
      * @param userDataSetBaseName the name common to all these datasets 
      *    that will be shown to users e.g., "MBARI" 
      * @param stationDirectory is the directory containing the station data files.
-     *    This should have a slash at the end, e.g., "f:/data/Nc4D/".
+     *    This should have a slash at the end, e.g., "c:/data/Nc4D/".
      * @param stationFileNameRegex is the regex used to identify the desired subset of 
      *    files in the stationDirectory, e.g., ".+\\.nc" for all .nc files,
      *    or "(31201.nc|46088.nc|TAML1.nc)" for just those 3 files.
@@ -1292,17 +1292,17 @@ not very polished.
      */
     public static void remakeMbariCachesAndDataSets() throws Exception {
 
-        File2.deleteAllFiles("f:/data/MBARI");
+        File2.deleteAllFiles("c:/data/MBARI");
 
         ArrayList cacheOpendapStations = new ArrayList();
         ArrayList pointDataSets = new ArrayList();
         makeMbariNrtCachesAndDataSets(
-            "f:/data/", -180, 180, -90, 90, true, //ensureUpToDate
+            "c:/data/", -180, 180, -90, 90, true, //ensureUpToDate
             true, //throwExceptionIfAnyTrouble    (this commonly true just here for testing)
             cacheOpendapStations, pointDataSets);
 
         makeMbariSqCachesAndDataSets(
-            "f:/data/", -180, 180, -90, 90, true, //ensureUpToDate
+            "c:/data/", -180, 180, -90, 90, true, //ensureUpToDate
             true, //throwExceptionIfAnyTrouble    (this commonly true just here for testing) 
             cacheOpendapStations, pointDataSets);
     }
@@ -1328,7 +1328,7 @@ not very polished.
             ArrayList cacheOpendapStations = new ArrayList();
             ArrayList pointDataSets = new ArrayList();
             makeMbariNrtCachesAndDataSets(
-                "f:/data/", -180, 180, -90, 90, true, //ensureUpToDate
+                "c:/data/", -180, 180, -90, 90, true, //ensureUpToDate
                 true, //throwExceptionIfAnyTrouble
                 cacheOpendapStations, pointDataSets);
 
@@ -1478,7 +1478,7 @@ not very polished.
         Table.verbose = true;
         Table.reallyVerbose = true;
 
-        String dir = "f:/data/"; 
+        String dir = "c:/data/"; 
         //to view, use, e.g.,:
         //\programs\nc361\ncdump -v DEPTH_HR f:\data\MBARI\MBARI_M0_SQ_adcp.nc
         //http://dods.mbari.org/cgi-bin/nph-nc/data/OASISdata/netcdf/hourlyM0.nc.ascii?TIME_HR
@@ -1649,7 +1649,7 @@ not very polished.
         GroupVariable.verbose = false;
         NdbcMetStation.verbose = true;
 
-        //String2.log(DataHelper.ncDumpString("f:/data/ndbcMet4D/TAML1.nc", false));
+        //String2.log(DataHelper.ncDumpString("c:/data/ndbcMet4D/TAML1.nc", false));
 
         ArrayList list = new ArrayList();
         PointDataSet pointDataSet = null;
@@ -1661,7 +1661,7 @@ not very polished.
         //makePointDataSets(list,
         //    "PN2", //String internalDataSetBaseName, 
         //    "NDBC Meteorological", //String userDataSetBaseName, 
-        //    "f:/data/ndbcMet/",
+        //    "c:/data/ndbcMet/",
         //    //"(31201.nc|46088.nc|TAML1.nc)",  //just 3 files
         //    ".+\\.nc",                        //all files
         //    new String[]{ //variableInfo[]
@@ -1674,7 +1674,7 @@ not very polished.
 
         //option 2) test of NdbcMetStation.addPointDataSets
         list.clear();
-        NdbcMetStation.addPointDataSets(list, "f:/data/ndbcMet/", -180, 180, -90, 90);
+        NdbcMetStation.addPointDataSets(list, "c:/data/ndbcMet/", -180, 180, -90, 90);
         for (int i = 0; i < list.size(); i++) {
             pointDataSet = (PointDataSet)list.get(i);
             if (pointDataSet.internalName.equals("PNBwtmp"))
@@ -1807,7 +1807,7 @@ not very polished.
         GroupVariable.verbose = false;
         NdbcMetStation.verbose = true;
 
-        //String2.log(DataHelper.ncDumpString("f:/data/ndbcMet4D/TAML1.nc", false));
+        //String2.log(DataHelper.ncDumpString("c:/data/ndbcMet4D/TAML1.nc", false));
 
         ArrayList list = new ArrayList();
         PointDataSet pointDataSet = null;
@@ -1817,7 +1817,7 @@ not very polished.
 
         //*** test of NdbcMetStation.addPointDataSets  WITH RANGE LIMITATION 
         list.clear();
-        NdbcMetStation.addPointDataSets(list, "f:/data/ndbcMet/", 
+        NdbcMetStation.addPointDataSets(list, "c:/data/ndbcMet/", 
             -135+360, -105+360, 22, 50);  //set range limitation to westus in 0..360
         pointDataSet = null;
         for (int i = 0; i < list.size(); i++) {
@@ -2003,7 +2003,7 @@ not very polished.
             ArrayList cacheOpendapStations = new ArrayList();
             ArrayList pointDataSets = new ArrayList();
             makeMbariNrtCachesAndDataSets(
-                "f:/data/", -180, 180, -90, 90, true, //ensureUpToDate
+                "c:/data/", -180, 180, -90, 90, true, //ensureUpToDate
                 true, //throwExceptionIfAnyTrouble  (this commonly true just here for testing)
                 cacheOpendapStations, pointDataSets);
             Test.ensureEqual(cacheOpendapStations.size(), 9, "");

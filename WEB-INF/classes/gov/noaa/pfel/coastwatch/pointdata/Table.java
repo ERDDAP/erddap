@@ -4679,7 +4679,7 @@ Dataset {
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         //test String vars 
-        fiName = "f:/u00/cwatch/erddap2/copy/cPostDet3/BARBARAx20BLOCK/LAMNAx20DITROPIS/Nx2fA/52038_A69-1303_1059305.nc";
+        fiName = "c:/u00/cwatch/erddap2/copy/cPostDet3/BARBARAx20BLOCK/LAMNAx20DITROPIS/Nx2fA/52038_A69-1303_1059305.nc";
         table.readNDNc(fiName, null,  null, 0, 0, false);
         results = table.dataToCSVString(4);
         expected = 
@@ -4721,7 +4721,7 @@ Dataset {
         verbose = true;
         reallyVerbose = true;
         String2.log("\n*** Table.testReadNDNc2");
-        String fiName = "F:/data/wod/monthly/APB/199804-199804/wod_008015632O.nc";
+        String fiName = "c:/data/wod/monthly/APB/199804-199804/wod_008015632O.nc";
         Table table = new Table();
         String results, expected;
 
@@ -6296,7 +6296,7 @@ Dataset {
         String pauseMessage = "\nOK?  Press Enter to continue, or ^C to stop -> ";
         Table table = new Table();
         String results, expected;
-        String profileFileName = "F:/data/nccf/Profile.nc";  //from 
+        String profileFileName = "c:/data/nccf/Profile.nc";  //from 
         Attributes gatts;
 
 /* */
@@ -6555,7 +6555,7 @@ Dataset {
             //ncCF1b and ncCFMA1b have same data, so tests are the same!
             String fileType = type == 0? "contiguous" : "multidimensional";
             //from EDDTableFromNcFiles.testNcCF1b() and testNcCFMA1b();
-            String fileName = "F:/data/nccf/" + (type == 0? "ncCF1b.nc" : "ncCFMA1b.nc");
+            String fileName = "c:/data/nccf/" + (type == 0? "ncCF1b.nc" : "ncCFMA1b.nc");
 
             String2.log("\n\n** Testing nLevels=1/" + fileType + "\n" +
                 "  " + fileName);
@@ -6765,7 +6765,7 @@ String2.log(table.toCSVString());
         //********* expected errors
         String2.log("\n** Expected errors");
         try {
-            table.readNcCF("F:/data/nccf/badIndexed1To6.nc", null, null, null, null);
+            table.readNcCF("c:/data/nccf/badIndexed1To6.nc", null, null, null, null);
             throw new SimpleException("Shouldn't get here.");
         } catch (Exception e) {
             if (e.toString().indexOf(
@@ -6796,7 +6796,7 @@ String2.log(table.toCSVString());
             //ncCF2b and ncCFMA2b have same data, so tests are the same!
             String fileType = type == 0? "ragged" : "multidimensional";
             //from EDDTableFromNcFiles.testNcCF2b() and testNcCFMA2b();
-            String fileName = "F:/data/nccf/" + (type == 0? "ncCF2b.nc" : "ncCFMA2b.nc");
+            String fileName = "c:/data/nccf/" + (type == 0? "ncCF2b.nc" : "ncCFMA2b.nc");
 
             String2.log("\n\n** Testing nLevels=2/" + fileType + "\n" +
                 "  " + fileName);
@@ -7204,7 +7204,7 @@ if (fileType.equals("ragged"))
 
 /* */
         //***************  profile contiguous
-        fileName = "F:/git/CFPointConventions/profile/" +
+        fileName = "c:/git/CFPointConventions/profile/" +
             "profile-Contiguous-Ragged-MultipleProfiles-H.3.4/" +
             "profile-Contiguous-Ragged-MultipleProfiles-H.3.4.nc";
         String2.log("\n\n** Testing contiguous file\n" +
@@ -7254,7 +7254,7 @@ if (fileType.equals("ragged"))
 
 
         //***************  profile incomplete multidimensional --- 
-        fileName = "F:/git/CFPointConventions/profile/" +
+        fileName = "c:/git/CFPointConventions/profile/" +
             "profile-Incomplete-MultiDimensional-MultipleProfiles-H.3.2/" +
             "profile-Incomplete-MultiDimensional-MultipleProfiles-H.3.2.nc";
         String2.log("\n\n** Testing incomplete\n" +
@@ -7324,7 +7324,7 @@ if (fileType.equals("ragged"))
 
         //***************  profile indexed        IMPORTANT - I didn't have sample of indexed
     try {
-        fileName = "F:/git/CFPointConventions/profile/" +
+        fileName = "c:/git/CFPointConventions/profile/" +
             "profile-Indexed-Ragged-MultipleProfiles-H.3.5/" +
             "profile-Indexed-Ragged-MultipleProfiles-H.3.5.nc";
         String2.log("\n\n** Testing indexed file\n" +
@@ -7410,7 +7410,7 @@ String2.log(table.dataToCSVString());
 
 
         //***************  profile orthogonal        
-        fileName = "F:/git/CFPointConventions/profile/" +
+        fileName = "c:/git/CFPointConventions/profile/" +
             "profile-Orthogonal-MultiDimensional-MultipleProfiles-H.3.1/" +
             "profile-Orthogonal-MultiDimensional-MultipleProfiles-H.3.1.nc";
         String2.log("\n\n** Testing orthogonal file\n" +
@@ -7506,7 +7506,7 @@ String2.log(table.dataToCSVString());
 
 /* */
         //***************  timeseries orthogonal 
-        fileName = "F:/git/CFPointConventions/timeseries/" +
+        fileName = "c:/git/CFPointConventions/timeseries/" +
             "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1/" +
             "timeSeries-Orthogonal-Multidimenstional-MultipleStations-H.2.1.nc";
         String2.log("\n\n** Testing orthogonal file\n" +
@@ -7543,7 +7543,7 @@ String2.log(table.dataToCSVString());
 
 
         //***************  timeseries incomplete multidimensional --- 
-        fileName = "F:/git/CFPointConventions/timeseries/" +
+        fileName = "c:/git/CFPointConventions/timeseries/" +
             "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2/" +
             "timeSeries-Incomplete-MultiDimensional-MultipleStations-H.2.2.nc";
         String2.log("\n\n** Testing incomplete file\n" +
@@ -7610,7 +7610,7 @@ String2.log(table.dataToCSVString());
 
 /* */
         //***************  trajectory contiguous 
-        fileName = "F:/git/CFPointConventions/trajectory/" +
+        fileName = "c:/git/CFPointConventions/trajectory/" +
             "trajectory-Contiguous-Ragged-MultipleTrajectories-H.4.3/" +
             "trajectory-Contiguous-Ragged-MultipleTrajectories-H.4.3.nc";
         String2.log("\n\n** Testing contiguous file\n" +
@@ -7658,7 +7658,7 @@ String2.log(table.dataToCSVString());
 
         //***************  trajectory multiple multidimensional --- 
    try {
-        fileName = "F:/git/CFPointConventions/trajectory/" +
+        fileName = "c:/git/CFPointConventions/trajectory/" +
             "trajectory-Incomplete-Multidimensional-MultipleTrajectories-H.4.1/" +
             "trajectory-Incomplete-Multidimensional-MultipleTrajectories-H.4.1.nc";
         String2.log("\n\n** Testing multiple multidimensional file\n" +
@@ -7761,7 +7761,7 @@ String2.log(table.dataToCSVString());
     }
 
         //***************  trajectory single multidimensional --- 
-        fileName = "F:/git/CFPointConventions/trajectory/" +
+        fileName = "c:/git/CFPointConventions/trajectory/" +
             "trajectory-Incomplete-Multidimensional-SingleTrajectory-H.4.2/" +
             "trajectory-Incomplete-Multidimensional-SingleTrajectory-H.4.2.nc";
         String2.log("\n\n** Testing single multidimensional file\n" +
@@ -7790,7 +7790,7 @@ String2.log(table.dataToCSVString());
             String2.getStringFromSystemIn("#8c " + pauseMessage); 
 
         //***************  trajectory indexed --- 
-        fileName = "F:/git/CFPointConventions/trajectory/" +
+        fileName = "c:/git/CFPointConventions/trajectory/" +
             "trajectory-Indexed-Ragged-MultipleTrajectories-H.4.4/" +
             "trajectory-Indexed-Ragged-MultipleTrajectories-H.4.4.nc";
         String2.log("\n\n** Testing indexed file\n" +
@@ -7835,16 +7835,16 @@ String2.log(table.dataToCSVString());
         String pauseMessage = "\nOK?  Press Enter to continue, or ^C to stop -> ";
         Table table = new Table();
         String results, expected, fileName;
-        String orthoMultiDimH51FileName = "F:/git/CFPointConventions/timeSeriesProfile/" +
+        String orthoMultiDimH51FileName = "c:/git/CFPointConventions/timeSeriesProfile/" +
             "timeSeriesProfile-Orthogonal-Multidimensional-MultipeStations-H.5.1/" +
             "timeSeriesProfile-Orthogonal-Multidimensional-MultipeStations-H.5.1.nc";
-        String raggedSingleStationFileName = "F:/git/CFPointConventions/timeSeriesProfile/" +
+        String raggedSingleStationFileName = "c:/git/CFPointConventions/timeSeriesProfile/" +
             "timeSeriesProfile-Ragged-SingleStation-H.5.3/" +
             "timeSeriesProfile-Ragged-SingleStation-H.5.3.nc";
 
   
         //***************  timeSeriesProfile multidimensional --- 
-        fileName = "F:/git/CFPointConventions/timeSeriesProfile/" +
+        fileName = "c:/git/CFPointConventions/timeSeriesProfile/" +
             "timeSeriesProfile-Multidimensional-MultipeStations-H.5.1/" +
             "timeSeriesProfile-Multidimensional-MultipeStations-H.5.1.nc";
         String2.log("\n\n** Testing incomplete file\n" +
@@ -7872,7 +7872,7 @@ String2.log(table.dataToCSVString());
 
 
         //***************  timeSeriesProfile multidimensional single station
-        fileName = "F:/git/CFPointConventions/timeSeriesProfile/" +
+        fileName = "c:/git/CFPointConventions/timeSeriesProfile/" +
             "timeSeriesProfile-Multidimensional-SingleStation-H.5.2/" +
             "timeSeriesProfile-Multidimensional-SingleStation-H.5.2.nc";
         String2.log("\n\n** Testing contiguous file\n" +
@@ -8142,7 +8142,7 @@ String2.log(table.dataToCSVString());
 
         //*******
         //***************  timeSeriesProfile ragged --- 
-        fileName = "F:/git/CFPointConventions/timeSeriesProfile/" +
+        fileName = "c:/git/CFPointConventions/timeSeriesProfile/" +
             "timeSeriesProfile-Ragged-MultipeStations-H.5.3/" +
             "timeSeriesProfile-Ragged-MultipeStations-H.5.3.nc";
         String2.log("\n\n** Testing timeSeriesProfile ragged file\n" +
@@ -8480,17 +8480,17 @@ String2.log(table.dataToCSVString());
         String pauseMessage = "\nOK?  Press Enter to continue, or ^C to stop -> ";
         Table table = new Table();
         String results, expected, fileName;
-        String orthoMultiDimH61FileName = "F:/git/CFPointConventions/trajectoryProfile/" +
+        String orthoMultiDimH61FileName = "c:/git/CFPointConventions/trajectoryProfile/" +
             "trajectoryProfile-Multidimensional-MultipleTrajectories-H.6.1/" +
             "trajectoryProfile-Multidimensional-MultipleTrajectories-H.6.1.nc";
-        String raggedMultipleStationFileName = "F:/git/CFPointConventions/trajectoryProfile/" +
+        String raggedMultipleStationFileName = "c:/git/CFPointConventions/trajectoryProfile/" +
             "trajectoryProfile-Ragged-MultipleTrajectories-H.6.3/" +
             "trajectoryProfile-Ragged-MultipleTrajectories-H.6.3.nc";
 
 /* */  
         //***************  trajectoryProfile multidimensional single station
         try {
-        fileName = "F:/git/CFPointConventions/trajectoryProfile/" +
+        fileName = "c:/git/CFPointConventions/trajectoryProfile/" +
             "trajectoryProfile-Multidimensional-SingleTrajectory-H.6.2/" +
             "trajectoryProfile-Multidimensional-SingleTrajectory-H.6.2.nc";
         String2.log("\n\n** Testing contiguous file\n" +
@@ -12162,7 +12162,7 @@ String2.log(table.dataToCSVString());
      */
     public static void testMdb() throws Exception {
         String fileName = 
-            "F:\\data\\calcofi\\calcofi8102012.accdb";
+            "c:\\data\\calcofi\\calcofi8102012.accdb";
             //"c:/fishbase/COUNTRY.mdb";
         Connection con = getConnectionToMdb(fileName, "", ""); //user, password
         //String2.log(getSqlSchemas(con).toString());
@@ -15226,7 +15226,7 @@ touble: because table is JsonObject, info may not be in expected order
         try {
             //warmup
             String2.log("\n*** Table.testReadASCIISpeed\n");
-            String fileName = "F:/data/ndbc/ndbcMetHistoricalTxt/41009h1990.txt"; 
+            String fileName = "c:/data/ndbc/ndbcMetHistoricalTxt/41009h1990.txt"; 
             Table table = new Table();
             table.readASCII(fileName);
 
@@ -15268,7 +15268,7 @@ touble: because table is JsonObject, info may not be in expected order
         try {
             //warmup
             String2.log("\n*** Table.testReadJsonSpeed\n");
-            String fileName = "F:/u00/cwatch/testData/cPostDet3.files.json"; 
+            String fileName = "c:/u00/cwatch/testData/cPostDet3.files.json"; 
             Table table=new Table();
             table.readJson(fileName, String2.readFromFile(fileName)[1]);
 
@@ -15394,7 +15394,7 @@ touble: because table is JsonObject, info may not be in expected order
         try {
             //warmup
             String2.log("\n*** Table.testSaveAsSpeed\n");
-            String sourceName = "F:/data/ndbc/ndbcMetHistoricalTxt/41009h1990.txt"; 
+            String sourceName = "c:/data/ndbc/ndbcMetHistoricalTxt/41009h1990.txt"; 
             String destName = File2.getSystemTempDirectory() + "testSaveAsSpeed";
             Table table = new Table();
             table.readASCII(sourceName);
@@ -15940,7 +15940,7 @@ expected =
         verbose = true;
         reallyVerbose = true;
 
-        /* */
+        /* 
         testLittleMethods();
         testReorderColumns();
         testSortColumnsByName();
@@ -15961,7 +15961,7 @@ expected =
         testReadStandardTabbedASCII();
         testReadNcCF1(false);  //pauseAfterEachTest
         testReadNcCF2(false);
-        testReadNcCFASAProfile(false);
+*/        testReadNcCFASAProfile(false);
         testReadNcCFASATimeSeries(false);
         testReadNcCFASATrajectory(false);
         testReadNcCFASATimeSeriesProfile(false);
