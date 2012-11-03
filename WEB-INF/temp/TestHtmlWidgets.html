@@ -1,0 +1,3074 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+  "http://www.w3.org/TR/html4/loose.dtd"> 
+<html>
+<head>
+  <title>Test Html Widgets</title>
+<style type="text/css">
+  input[type=button], button {margin:0px; padding:1px 3px; }
+  input.skinny {padding:0px 1px; }
+  input[type=checkbox], input[type=password], input[type=text], select, textarea {
+    margin:0px; padding:0px; }
+  input[type=radio] {margin:0px 2px; padding:0px; }
+</style>
+</head>
+<body style="font-family:Arial,Helvetica,sans-serif; font-size:85%; line-height:130%;">
+<!-- Big HTML tooltips are generated with wz_tooltip from 
+    http://wztip.info/index.php/Main_Page (LGPL license) -->
+<script type="text/javascript" src="file://c:/programs/tomcat/webapps/cwexperimental/images/wz_tooltip.js"></script>
+
+<!-- Drag and Drop is performed by wz_dragdrop from
+     http://www.walterzorn.com/dragdrop/dragdrop_e.htm (LGPL license) -->
+<script type="text/javascript" src="file://c:/programs/tomcat/webapps/cwexperimental/images/wz_dragdrop.js"></script>
+
+<h1>Test Html Widgets</h1>
+<noscript><p><font color="red"><b>This web page works better if JavaScript is enabled.</b> Please:
+<br>1) Enable JavaScript in your browser:
+<br>&nbsp;&nbsp; &bull; Windows
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Firefox: select "Tools : Options : Content : Enable JavaScript : OK"
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Internet Explorer: select 
+   "Tools : Internet Options : Security : Internet : Custom level :
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Sripting/ Active Scripting : Enable : OK : OK"
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Opera: select "Tools : Quick Preferences : Enable JavaScript"
+<br>&nbsp;&nbsp; &bull; Mac OS X
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Firefox: select "Firefox : Preferences : Content : Enable JavaScript : OK"
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Internet Explorer (this is an out-of-date browser -- please consider switching): 
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; select "Explorer : Preferences : Web Content : Enable Scripting : OK"
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Opera: select "Opera : Quick Preferences : Enable JavaScript"
+<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Safari: select "Safari : Preferences : Security : Enable JavaScript"
+<br>2) Reload this web page.
+<br>&nbsp;</font>
+</noscript>
+This is some text in the SANS_SERIF_STYLE.
+<img src="file://c:/programs/tomcat/webapps/cwexperimental/images/QuestionMark.jpg" alt="" onmouseover="Tip('Hi <b>bold</b> <br>there \\/\&#039;&quot;&amp;&brvbar;!<br><img src=&quot;http://www.cohort.com/wings.gif&quot; alt=&quot;wings&quot;>')" onmouseout="UnTip()"  >
+<form name="f1" method="GET"
+  action="testUrl"  >
+    <input type="checkbox" name="checkboxName1" value="checkboxValue1"
+       onmouseover="Tip('checkboxTooltip literal: &gt;!')" onmouseout="UnTip()"  
+        checked="checked"  > rightLabel1
+    <input type="hidden" name="previous_checkboxName1" value="true" >
+
+    <input type="text" name="textFieldName1" value="initialValue"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+       onmouseover="Tip('textFieldTooltip literal: &gt;!')" onmouseout="UnTip()"  
+      size="10" maxlength="255"  >
+<br>
+    <input type="checkbox" name="checkboxName2" value="checkboxValue2"
+       onmouseover="Tip('checkboxTooltip literal: &gt;!')" onmouseout="UnTip()"  
+        checked="checked"  > rightLabel2
+    <input type="hidden" name="previous_checkboxName2" value="true" >
+
+    <input type="text" name="textFieldName2" value="initialValue"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+       onmouseover="Tip('textFieldTooltip literal: &gt;!')" onmouseout="UnTip()"  
+      size="10" maxlength="255"  >
+<br>
+    <input type="checkbox" name="checkboxName3" value="checkboxValue3"
+       onmouseover="Tip('checkboxTooltip literal: &gt;!')" onmouseout="UnTip()"  
+        checked="checked"  > rightLabel3
+    <input type="hidden" name="previous_checkboxName3" value="true" >
+<br>
+    <input type="checkbox" name="checkboxName4" value="checkboxValue4"
+       onmouseover="Tip('checkboxTooltip literal: &gt;!')" onmouseout="UnTip()"  
+        checked="checked"  > rightLabel4
+    <input type="hidden" name="previous_checkboxName4" value="true" >
+    <!-- This is a comment. -->
+<br>
+    <span style="white-space: nowrap;"><input type="radio" name="radioName1" value="apple"
+       onmouseover="Tip('radioTooltip literal: &gt;!')" onmouseout="UnTip()"    >apple</span>
+    <span style="white-space: nowrap;"><input type="radio" name="radioName1" value="banana" checked
+       onmouseover="Tip('radioTooltip literal: &gt;!')" onmouseout="UnTip()"    >banana</span>
+    <span style="white-space: nowrap;"><input type="radio" name="radioName1" value="cucumber"
+       onmouseover="Tip('radioTooltip literal: &gt;!')" onmouseout="UnTip()"    >cucumber</span>
+<br>
+    <span style="white-space: nowrap;"><input type="radio" name="radioName2" value="apple"
+       onmouseover="Tip('radioTooltip literal: &gt;!')" onmouseout="UnTip()"    >apple</span>
+    <span style="white-space: nowrap;"><input type="radio" name="radioName2" value="banana"
+       onmouseover="Tip('radioTooltip literal: &gt;!')" onmouseout="UnTip()"    >banana</span>
+    <span style="white-space: nowrap;"><input type="radio" name="radioName2" value="cucumber" checked
+       onmouseover="Tip('radioTooltip literal: &gt;!')" onmouseout="UnTip()"    >cucumber</span>
+<table border="0" width="2%" cellspacing="0" cellpadding="0">
+      <tr><td>
+    <select name="dropdownName" size="1"
+       onmouseover="Tip('dropdownTooltip literal: &gt;!')" onmouseout="UnTip()"    >
+<option>option0
+<option>1 (2 is empty)
+<option>
+<option>option3
+<option>option4
+<option>option5
+<option>option6
+<option>option7
+<option>option8
+<option>option9
+<option>option10
+<option>option11
+<option>option12
+<option>option13
+<option>option14
+<option>option15
+<option>option16
+<option>option17
+<option>option18
+<option>option19
+<option>option20
+<option>option21
+<option>option22
+<option>option23
+<option>option24
+<option>option25
+<option>option26
+<option>option27
+<option>option28
+<option>option29
+<option>option30
+<option>option31
+<option>option32
+<option>option33
+<option>option34
+<option>option35
+<option>option36
+<option selected="selected">option37
+<option>option38
+<option>option39
+<option>option40
+<option>option41
+<option>option42
+<option>option43
+<option>option44
+<option>option45
+<option>option46
+<option>option47
+<option>option48
+<option>option49
+<option>option50
+<option>option51
+<option>option52
+<option>option53
+<option>option54
+<option>option55
+<option>option56
+<option>option57
+<option>option58
+<option>option59
+<option>option60
+<option>option61
+<option>option62
+<option>option63
+<option>option64
+<option>option65
+<option>option66
+<option>option67
+<option>option68
+<option>option69
+<option>option70
+<option>option71
+<option>option72
+<option>option73
+<option>option74
+<option>option75
+<option>option76
+<option>option77
+<option>option78
+<option>option79
+<option>option80
+<option>option81
+<option>option82
+<option>option83
+<option>option84
+<option>option85
+<option>option86
+<option>option87
+<option>option88
+<option>option89
+<option>option90
+<option>option91
+<option>option92
+<option>option93
+<option>option94
+<option>option95
+<option>option96
+<option>option97
+<option>option98
+<option>option99
+<option>option100
+<option>option101
+<option>option102
+<option>option103
+<option>option104
+<option>option105
+<option>option106
+<option>option107
+<option>option108
+<option>option109
+<option>option110
+<option>option111
+<option>option112
+<option>option113
+<option>option114
+<option>option115
+<option>option116
+<option>option117
+<option>option118
+<option>option119
+<option>option120
+<option>option121
+<option>option122
+<option>option123
+<option>option124
+<option>option125
+<option>option126
+<option>option127
+<option>option128
+<option>option129
+<option>option130
+<option>option131
+<option>option132
+<option>option133
+<option>option134
+<option>option135
+<option>option136
+<option>option137
+<option>option138
+<option>option139
+<option>option140
+<option>option141
+<option>option142
+<option>option143
+<option>option144
+<option>option145
+<option>option146
+<option>option147
+<option>option148
+<option>option149
+<option>option150
+<option>option151
+<option>option152
+<option>option153
+<option>option154
+<option>option155
+<option>option156
+<option>option157
+<option>option158
+<option>option159
+<option>option160
+<option>option161
+<option>option162
+<option>option163
+<option>option164
+<option>option165
+<option>option166
+<option>option167
+<option>option168
+<option>option169
+<option>option170
+<option>option171
+<option>option172
+<option>option173
+<option>option174
+<option>option175
+<option>option176
+<option>option177
+<option>option178
+<option>option179
+<option>option180
+<option>option181
+<option>option182
+<option>option183
+<option>option184
+<option>option185
+<option>option186
+<option>option187
+<option>option188
+<option>option189
+<option>option190
+<option>option191
+<option>option192
+<option>option193
+<option>option194
+<option>option195
+<option>option196
+<option>option197
+<option>option198
+<option>option199
+<option>option200
+<option>option201
+<option>option202
+<option>option203
+<option>option204
+<option>option205
+<option>option206
+<option>option207
+<option>option208
+<option>option209
+<option>option210
+<option>option211
+<option>option212
+<option>option213
+<option>option214
+<option>option215
+<option>option216
+<option>option217
+<option>option218
+<option>option219
+<option>option220
+<option>option221
+<option>option222
+<option>option223
+<option>option224
+<option>option225
+<option>option226
+<option>option227
+<option>option228
+<option>option229
+<option>option230
+<option>option231
+<option>option232
+<option>option233
+<option>option234
+<option>option235
+<option>option236
+<option>option237
+<option>option238
+<option>option239
+<option>option240
+<option>option241
+<option>option242
+<option>option243
+<option>option244
+<option>option245
+<option>option246
+<option>option247
+<option>option248
+<option>option249
+<option>option250
+<option>option251
+<option>option252
+<option>option253
+<option>option254
+<option>option255
+<option>option256
+<option>option257
+<option>option258
+<option>option259
+<option>option260
+<option>option261
+<option>option262
+<option>option263
+<option>option264
+<option>option265
+<option>option266
+<option>option267
+<option>option268
+<option>option269
+<option>option270
+<option>option271
+<option>option272
+<option>option273
+<option>option274
+<option>option275
+<option>option276
+<option>option277
+<option>option278
+<option>option279
+<option>option280
+<option>option281
+<option>option282
+<option>option283
+<option>option284
+<option>option285
+<option>option286
+<option>option287
+<option>option288
+<option>option289
+<option>option290
+<option>option291
+<option>option292
+<option>option293
+<option>option294
+<option>option295
+<option>option296
+<option>option297
+<option>option298
+<option>option299
+<option>option300
+<option>option301
+<option>option302
+<option>option303
+<option>option304
+<option>option305
+<option>option306
+<option>option307
+<option>option308
+<option>option309
+<option>option310
+<option>option311
+<option>option312
+<option>option313
+<option>option314
+<option>option315
+<option>option316
+<option>option317
+<option>option318
+<option>option319
+<option>option320
+<option>option321
+<option>option322
+<option>option323
+<option>option324
+<option>option325
+<option>option326
+<option>option327
+<option>option328
+<option>option329
+<option>option330
+<option>option331
+<option>option332
+<option>option333
+<option>option334
+<option>option335
+<option>option336
+<option>option337
+<option>option338
+<option>option339
+<option>option340
+<option>option341
+<option>option342
+<option>option343
+<option>option344
+<option>option345
+<option>option346
+<option>option347
+<option>option348
+<option>option349
+<option>option350
+<option>option351
+<option>option352
+<option>option353
+<option>option354
+<option>option355
+<option>option356
+<option>option357
+<option>option358
+<option>option359
+<option>option360
+<option>option361
+<option>option362
+<option>option363
+<option>option364
+<option>option365
+<option>option366
+<option>option367
+<option>option368
+<option>option369
+<option>option370
+<option>option371
+<option>option372
+<option>option373
+<option>option374
+<option>option375
+<option>option376
+<option>option377
+<option>option378
+<option>option379
+<option>option380
+<option>option381
+<option>option382
+<option>option383
+<option>option384
+<option>option385
+<option>option386
+<option>option387
+<option>option388
+<option>option389
+<option>option390
+<option>option391
+<option>option392
+<option>option393
+<option>option394
+<option>option395
+<option>option396
+<option>option397
+<option>option398
+<option>option399
+<option>option400
+<option>option401
+<option>option402
+<option>option403
+<option>option404
+<option>option405
+<option>option406
+<option>option407
+<option>option408
+<option>option409
+<option>option410
+<option>option411
+<option>option412
+<option>option413
+<option>option414
+<option>option415
+<option>option416
+<option>option417
+<option>option418
+<option>option419
+<option>option420
+<option>option421
+<option>option422
+<option>option423
+<option>option424
+<option>option425
+<option>option426
+<option>option427
+<option>option428
+<option>option429
+<option>option430
+<option>option431
+<option>option432
+<option>option433
+<option>option434
+<option>option435
+<option>option436
+<option>option437
+<option>option438
+<option>option439
+<option>option440
+<option>option441
+<option>option442
+<option>option443
+<option>option444
+<option>option445
+<option>option446
+<option>option447
+<option>option448
+<option>option449
+<option>option450
+<option>option451
+<option>option452
+<option>option453
+<option>option454
+<option>option455
+<option>option456
+<option>option457
+<option>option458
+<option>option459
+<option>option460
+<option>option461
+<option>option462
+<option>option463
+<option>option464
+<option>option465
+<option>option466
+<option>option467
+<option>option468
+<option>option469
+<option>option470
+<option>option471
+<option>option472
+<option>option473
+<option>option474
+<option>option475
+<option>option476
+<option>option477
+<option>option478
+<option>option479
+<option>option480
+<option>option481
+<option>option482
+<option>option483
+<option>option484
+<option>option485
+<option>option486
+<option>option487
+<option>option488
+<option>option489
+<option>option490
+<option>option491
+<option>option492
+<option>option493
+<option>option494
+<option>option495
+<option>option496
+<option>option497
+<option>option498
+<option>option499
+<option>option500
+<option>option501
+<option>option502
+<option>option503
+<option>option504
+<option>option505
+<option>option506
+<option>option507
+<option>option508
+<option>option509
+<option>option510
+<option>option511
+<option>option512
+<option>option513
+<option>option514
+<option>option515
+<option>option516
+<option>option517
+<option>option518
+<option>option519
+<option>option520
+<option>option521
+<option>option522
+<option>option523
+<option>option524
+<option>option525
+<option>option526
+<option>option527
+<option>option528
+<option>option529
+<option>option530
+<option>option531
+<option>option532
+<option>option533
+<option>option534
+<option>option535
+<option>option536
+<option>option537
+<option>option538
+<option>option539
+<option>option540
+<option>option541
+<option>option542
+<option>option543
+<option>option544
+<option>option545
+<option>option546
+<option>option547
+<option>option548
+<option>option549
+<option>option550
+<option>option551
+<option>option552
+<option>option553
+<option>option554
+<option>option555
+<option>option556
+<option>option557
+<option>option558
+<option>option559
+<option>option560
+<option>option561
+<option>option562
+<option>option563
+<option>option564
+<option>option565
+<option>option566
+<option>option567
+<option>option568
+<option>option569
+<option>option570
+<option>option571
+<option>option572
+<option>option573
+<option>option574
+<option>option575
+<option>option576
+<option>option577
+<option>option578
+<option>option579
+<option>option580
+<option>option581
+<option>option582
+<option>option583
+<option>option584
+<option>option585
+<option>option586
+<option>option587
+<option>option588
+<option>option589
+<option>option590
+<option>option591
+<option>option592
+<option>option593
+<option>option594
+<option>option595
+<option>option596
+<option>option597
+<option>option598
+<option>option599
+<option>option600
+<option>option601
+<option>option602
+<option>option603
+<option>option604
+<option>option605
+<option>option606
+<option>option607
+<option>option608
+<option>option609
+<option>option610
+<option>option611
+<option>option612
+<option>option613
+<option>option614
+<option>option615
+<option>option616
+<option>option617
+<option>option618
+<option>option619
+<option>option620
+<option>option621
+<option>option622
+<option>option623
+<option>option624
+<option>option625
+<option>option626
+<option>option627
+<option>option628
+<option>option629
+<option>option630
+<option>option631
+<option>option632
+<option>option633
+<option>option634
+<option>option635
+<option>option636
+<option>option637
+<option>option638
+<option>option639
+<option>option640
+<option>option641
+<option>option642
+<option>option643
+<option>option644
+<option>option645
+<option>option646
+<option>option647
+<option>option648
+<option>option649
+<option>option650
+<option>option651
+<option>option652
+<option>option653
+<option>option654
+<option>option655
+<option>option656
+<option>option657
+<option>option658
+<option>option659
+<option>option660
+<option>option661
+<option>option662
+<option>option663
+<option>option664
+<option>option665
+<option>option666
+<option>option667
+<option>option668
+<option>option669
+<option>option670
+<option>option671
+<option>option672
+<option>option673
+<option>option674
+<option>option675
+<option>option676
+<option>option677
+<option>option678
+<option>option679
+<option>option680
+<option>option681
+<option>option682
+<option>option683
+<option>option684
+<option>option685
+<option>option686
+<option>option687
+<option>option688
+<option>option689
+<option>option690
+<option>option691
+<option>option692
+<option>option693
+<option>option694
+<option>option695
+<option>option696
+<option>option697
+<option>option698
+<option>option699
+<option>option700
+<option>option701
+<option>option702
+<option>option703
+<option>option704
+<option>option705
+<option>option706
+<option>option707
+<option>option708
+<option>option709
+<option>option710
+<option>option711
+<option>option712
+<option>option713
+<option>option714
+<option>option715
+<option>option716
+<option>option717
+<option>option718
+<option>option719
+<option>option720
+<option>option721
+<option>option722
+<option>option723
+<option>option724
+<option>option725
+<option>option726
+<option>option727
+<option>option728
+<option>option729
+<option>option730
+<option>option731
+<option>option732
+<option>option733
+<option>option734
+<option>option735
+<option>option736
+<option>option737
+<option>option738
+<option>option739
+<option>option740
+<option>option741
+<option>option742
+<option>option743
+<option>option744
+<option>option745
+<option>option746
+<option>option747
+<option>option748
+<option>option749
+<option>option750
+<option>option751
+<option>option752
+<option>option753
+<option>option754
+<option>option755
+<option>option756
+<option>option757
+<option>option758
+<option>option759
+<option>option760
+<option>option761
+<option>option762
+<option>option763
+<option>option764
+<option>option765
+<option>option766
+<option>option767
+<option>option768
+<option>option769
+<option>option770
+<option>option771
+<option>option772
+<option>option773
+<option>option774
+<option>option775
+<option>option776
+<option>option777
+<option>option778
+<option>option779
+<option>option780
+<option>option781
+<option>option782
+<option>option783
+<option>option784
+<option>option785
+<option>option786
+<option>option787
+<option>option788
+<option>option789
+<option>option790
+<option>option791
+<option>option792
+<option>option793
+<option>option794
+<option>option795
+<option>option796
+<option>option797
+<option>option798
+<option>option799
+<option>option800
+<option>option801
+<option>option802
+<option>option803
+<option>option804
+<option>option805
+<option>option806
+<option>option807
+<option>option808
+<option>option809
+<option>option810
+<option>option811
+<option>option812
+<option>option813
+<option>option814
+<option>option815
+<option>option816
+<option>option817
+<option>option818
+<option>option819
+<option>option820
+<option>option821
+<option>option822
+<option>option823
+<option>option824
+<option>option825
+<option>option826
+<option>option827
+<option>option828
+<option>option829
+<option>option830
+<option>option831
+<option>option832
+<option>option833
+<option>option834
+<option>option835
+<option>option836
+<option>option837
+<option>option838
+<option>option839
+<option>option840
+<option>option841
+<option>option842
+<option>option843
+<option>option844
+<option>option845
+<option>option846
+<option>option847
+<option>option848
+<option>option849
+<option>option850
+<option>option851
+<option>option852
+<option>option853
+<option>option854
+<option>option855
+<option>option856
+<option>option857
+<option>option858
+<option>option859
+<option>option860
+<option>option861
+<option>option862
+<option>option863
+<option>option864
+<option>option865
+<option>option866
+<option>option867
+<option>option868
+<option>option869
+<option>option870
+<option>option871
+<option>option872
+<option>option873
+<option>option874
+<option>option875
+<option>option876
+<option>option877
+<option>option878
+<option>option879
+<option>option880
+<option>option881
+<option>option882
+<option>option883
+<option>option884
+<option>option885
+<option>option886
+<option>option887
+<option>option888
+<option>option889
+<option>option890
+<option>option891
+<option>option892
+<option>option893
+<option>option894
+<option>option895
+<option>option896
+<option>option897
+<option>option898
+<option>option899
+<option>option900
+<option>option901
+<option>option902
+<option>option903
+<option>option904
+<option>option905
+<option>option906
+<option>option907
+<option>option908
+<option>option909
+<option>option910
+<option>option911
+<option>option912
+<option>option913
+<option>option914
+<option>option915
+<option>option916
+<option>option917
+<option>option918
+<option>option919
+<option>option920
+<option>option921
+<option>option922
+<option>option923
+<option>option924
+<option>option925
+<option>option926
+<option>option927
+<option>option928
+<option>option929
+<option>option930
+<option>option931
+<option>option932
+<option>option933
+<option>option934
+<option>option935
+<option>option936
+<option>option937
+<option>option938
+<option>option939
+<option>option940
+<option>option941
+<option>option942
+<option>option943
+<option>option944
+<option>option945
+<option>option946
+<option>option947
+<option>option948
+<option>option949
+<option>option950
+<option>option951
+<option>option952
+<option>option953
+<option>option954
+<option>option955
+<option>option956
+<option>option957
+<option>option958
+<option>option959
+<option>option960
+<option>option961
+<option>option962
+<option>option963
+<option>option964
+<option>option965
+<option>option966
+<option>option967
+<option>option968
+<option>option969
+<option>option970
+<option>option971
+<option>option972
+<option>option973
+<option>option974
+<option>option975
+<option>option976
+<option>option977
+<option>option978
+<option>option979
+<option>option980
+<option>option981
+<option>option982
+<option>option983
+<option>option984
+<option>option985
+<option>option986
+<option>option987
+<option>option988
+<option>option989
+<option>option990
+<option>option991
+<option>option992
+<option>option993
+<option>option994
+<option>option995
+<option>option996
+<option>option997
+<option>option998
+<option>option999
+<option>option1000
+<option>option1001
+<option>option1002
+<option>option1003
+<option>option1004
+<option>option1005
+<option>option1006
+<option>option1007
+<option>option1008
+<option>option1009
+<option>option1010
+<option>option1011
+<option>option1012
+<option>option1013
+<option>option1014
+<option>option1015
+<option>option1016
+<option>option1017
+<option>option1018
+<option>option1019
+<option>option1020
+<option>option1021
+<option>option1022
+<option>option1023
+<option>option1024
+<option>option1025
+<option>option1026
+<option>option1027
+<option>option1028
+<option>option1029
+<option>option1030
+<option>option1031
+<option>option1032
+<option>option1033
+<option>option1034
+<option>option1035
+<option>option1036
+<option>option1037
+<option>option1038
+<option>option1039
+<option>option1040
+<option>option1041
+<option>option1042
+<option>option1043
+<option>option1044
+<option>option1045
+<option>option1046
+<option>option1047
+<option>option1048
+<option>option1049
+<option>option1050
+<option>option1051
+<option>option1052
+<option>option1053
+<option>option1054
+<option>option1055
+<option>option1056
+<option>option1057
+<option>option1058
+<option>option1059
+<option>option1060
+<option>option1061
+<option>option1062
+<option>option1063
+<option>option1064
+<option>option1065
+<option>option1066
+<option>option1067
+<option>option1068
+<option>option1069
+<option>option1070
+<option>option1071
+<option>option1072
+<option>option1073
+<option>option1074
+<option>option1075
+<option>option1076
+<option>option1077
+<option>option1078
+<option>option1079
+<option>option1080
+<option>option1081
+<option>option1082
+<option>option1083
+<option>option1084
+<option>option1085
+<option>option1086
+<option>option1087
+<option>option1088
+<option>option1089
+<option>option1090
+<option>option1091
+<option>option1092
+<option>option1093
+<option>option1094
+<option>option1095
+<option>option1096
+<option>option1097
+<option>option1098
+<option>option1099
+<option>option1100
+<option>option1101
+<option>option1102
+<option>option1103
+<option>option1104
+<option>option1105
+<option>option1106
+<option>option1107
+<option>option1108
+<option>option1109
+<option>option1110
+<option>option1111
+<option>option1112
+<option>option1113
+<option>option1114
+<option>option1115
+<option>option1116
+<option>option1117
+<option>option1118
+<option>option1119
+<option>option1120
+<option>option1121
+<option>option1122
+<option>option1123
+<option>option1124
+<option>option1125
+<option>option1126
+<option>option1127
+<option>option1128
+<option>option1129
+<option>option1130
+<option>option1131
+<option>option1132
+<option>option1133
+<option>option1134
+<option>option1135
+<option>option1136
+<option>option1137
+<option>option1138
+<option>option1139
+<option>option1140
+<option>option1141
+<option>option1142
+<option>option1143
+<option>option1144
+<option>option1145
+<option>option1146
+<option>option1147
+<option>option1148
+<option>option1149
+<option>option1150
+<option>option1151
+<option>option1152
+<option>option1153
+<option>option1154
+<option>option1155
+<option>option1156
+<option>option1157
+<option>option1158
+<option>option1159
+<option>option1160
+<option>option1161
+<option>option1162
+<option>option1163
+<option>option1164
+<option>option1165
+<option>option1166
+<option>option1167
+<option>option1168
+<option>option1169
+<option>option1170
+<option>option1171
+<option>option1172
+<option>option1173
+<option>option1174
+<option>option1175
+<option>option1176
+<option>option1177
+<option>option1178
+<option>option1179
+<option>option1180
+<option>option1181
+<option>option1182
+<option>option1183
+<option>option1184
+<option>option1185
+<option>option1186
+<option>option1187
+<option>option1188
+<option>option1189
+<option>option1190
+<option>option1191
+<option>option1192
+<option>option1193
+<option>option1194
+<option>option1195
+<option>option1196
+<option>option1197
+<option>option1198
+<option>option1199
+    </select>
+        </td>
+<td><img src="file://c:/programs/tomcat/webapps/cwexperimental/images/arrowLL.gif"
+ 
+       onmouseover="Tip('Select the first item.')" onmouseout="UnTip()"   alt="-27"
+ onMouseUp="var sel=f1.dropdownName; sel.selectedIndex=0; " >
+</td>
+<td><img src="file://c:/programs/tomcat/webapps/cwexperimental/images/minus1000.gif"
+ 
+       onmouseover="Tip('Jump back 1000 items.')" onmouseout="UnTip()"   alt="-27"
+ onMouseUp="var sel=f1.dropdownName; sel.selectedIndex=Math.max(0,sel.selectedIndex-1000); " >
+</td>
+<td><img src="file://c:/programs/tomcat/webapps/cwexperimental/images/minus100.gif"
+ 
+       onmouseover="Tip('Jump back 100 items.')" onmouseout="UnTip()"   alt="-27"
+ onMouseUp="var sel=f1.dropdownName; sel.selectedIndex=Math.max(0,sel.selectedIndex-100); " >
+</td>
+<td><img src="file://c:/programs/tomcat/webapps/cwexperimental/images/minus.gif"
+ 
+       onmouseover="Tip('Select the previous item.')" onmouseout="UnTip()"   alt="-27"
+ onMouseUp="var sel=f1.dropdownName; sel.selectedIndex=Math.max(0,sel.selectedIndex-1); " >
+</td>
+<td><img src="file://c:/programs/tomcat/webapps/cwexperimental/images/plus.gif"
+ 
+       onmouseover="Tip('Select the next item.')" onmouseout="UnTip()"   alt="-27"
+ onMouseUp="var sel=f1.dropdownName; sel.selectedIndex=Math.min(sel.length-1, sel.selectedIndex+1); " >
+</td>
+<td><img src="file://c:/programs/tomcat/webapps/cwexperimental/images/plus100.gif"
+ 
+       onmouseover="Tip('Jump forward 100 items.')" onmouseout="UnTip()"   alt="-27"
+ onMouseUp="var sel=f1.dropdownName; sel.selectedIndex=Math.min(sel.length-1, sel.selectedIndex+100); " >
+</td>
+<td><img src="file://c:/programs/tomcat/webapps/cwexperimental/images/plus1000.gif"
+ 
+       onmouseover="Tip('Jump forward 1000 items.')" onmouseout="UnTip()"   alt="-27"
+ onMouseUp="var sel=f1.dropdownName; sel.selectedIndex=Math.min(sel.length-1, sel.selectedIndex+1000); " >
+</td>
+<td><img src="file://c:/programs/tomcat/webapps/cwexperimental/images/arrowRR.gif"
+ 
+       onmouseover="Tip('Select the last item.')" onmouseout="UnTip()"   alt="-27"
+ onMouseUp="var sel=f1.dropdownName; sel.selectedIndex=sel.length-1; " >
+</td>
+
+        </tr>
+      </table>
+
+    <select name="selectName" size="6"
+       onmouseover="Tip('selectTooltip literal: &gt;!')" onmouseout="UnTip()"    >
+<option>option0
+<option>1 (2 is empty)
+<option>
+<option>option3
+<option>option4
+<option>option5
+<option>option6
+<option>option7
+<option>option8
+<option>option9
+<option>option10
+<option>option11
+<option>option12
+<option>option13
+<option>option14
+<option>option15
+<option>option16
+<option>option17
+<option>option18
+<option>option19
+<option>option20
+<option>option21
+<option>option22
+<option>option23
+<option>option24
+<option>option25
+<option>option26
+<option>option27
+<option>option28
+<option>option29
+<option>option30
+<option>option31
+<option>option32
+<option>option33
+<option>option34
+<option>option35
+<option>option36
+<option>option37
+<option>option38
+<option>option39
+<option>option40
+<option>option41
+<option>option42
+<option>option43
+<option>option44
+<option>option45
+<option>option46
+<option>option47
+<option>option48
+<option>option49
+<option>option50
+<option>option51
+<option>option52
+<option>option53
+<option>option54
+<option>option55
+<option>option56
+<option>option57
+<option>option58
+<option>option59
+<option>option60
+<option>option61
+<option>option62
+<option>option63
+<option>option64
+<option>option65
+<option>option66
+<option>option67
+<option>option68
+<option>option69
+<option>option70
+<option>option71
+<option>option72
+<option>option73
+<option>option74
+<option>option75
+<option>option76
+<option>option77
+<option>option78
+<option>option79
+<option>option80
+<option>option81
+<option>option82
+<option>option83
+<option>option84
+<option>option85
+<option>option86
+<option>option87
+<option>option88
+<option>option89
+<option>option90
+<option>option91
+<option>option92
+<option>option93
+<option>option94
+<option>option95
+<option>option96
+<option>option97
+<option>option98
+<option>option99
+<option>option100
+<option>option101
+<option>option102
+<option>option103
+<option>option104
+<option>option105
+<option>option106
+<option>option107
+<option>option108
+<option>option109
+<option>option110
+<option>option111
+<option>option112
+<option>option113
+<option>option114
+<option>option115
+<option>option116
+<option>option117
+<option>option118
+<option>option119
+<option>option120
+<option>option121
+<option>option122
+<option>option123
+<option>option124
+<option>option125
+<option>option126
+<option>option127
+<option>option128
+<option>option129
+<option>option130
+<option>option131
+<option>option132
+<option>option133
+<option>option134
+<option>option135
+<option>option136
+<option selected="selected">option137
+<option>option138
+<option>option139
+<option>option140
+<option>option141
+<option>option142
+<option>option143
+<option>option144
+<option>option145
+<option>option146
+<option>option147
+<option>option148
+<option>option149
+<option>option150
+<option>option151
+<option>option152
+<option>option153
+<option>option154
+<option>option155
+<option>option156
+<option>option157
+<option>option158
+<option>option159
+<option>option160
+<option>option161
+<option>option162
+<option>option163
+<option>option164
+<option>option165
+<option>option166
+<option>option167
+<option>option168
+<option>option169
+<option>option170
+<option>option171
+<option>option172
+<option>option173
+<option>option174
+<option>option175
+<option>option176
+<option>option177
+<option>option178
+<option>option179
+<option>option180
+<option>option181
+<option>option182
+<option>option183
+<option>option184
+<option>option185
+<option>option186
+<option>option187
+<option>option188
+<option>option189
+<option>option190
+<option>option191
+<option>option192
+<option>option193
+<option>option194
+<option>option195
+<option>option196
+<option>option197
+<option>option198
+<option>option199
+<option>option200
+<option>option201
+<option>option202
+<option>option203
+<option>option204
+<option>option205
+<option>option206
+<option>option207
+<option>option208
+<option>option209
+<option>option210
+<option>option211
+<option>option212
+<option>option213
+<option>option214
+<option>option215
+<option>option216
+<option>option217
+<option>option218
+<option>option219
+<option>option220
+<option>option221
+<option>option222
+<option>option223
+<option>option224
+<option>option225
+<option>option226
+<option>option227
+<option>option228
+<option>option229
+<option>option230
+<option>option231
+<option>option232
+<option>option233
+<option>option234
+<option>option235
+<option>option236
+<option>option237
+<option>option238
+<option>option239
+<option>option240
+<option>option241
+<option>option242
+<option>option243
+<option>option244
+<option>option245
+<option>option246
+<option>option247
+<option>option248
+<option>option249
+<option>option250
+<option>option251
+<option>option252
+<option>option253
+<option>option254
+<option>option255
+<option>option256
+<option>option257
+<option>option258
+<option>option259
+<option>option260
+<option>option261
+<option>option262
+<option>option263
+<option>option264
+<option>option265
+<option>option266
+<option>option267
+<option>option268
+<option>option269
+<option>option270
+<option>option271
+<option>option272
+<option>option273
+<option>option274
+<option>option275
+<option>option276
+<option>option277
+<option>option278
+<option>option279
+<option>option280
+<option>option281
+<option>option282
+<option>option283
+<option>option284
+<option>option285
+<option>option286
+<option>option287
+<option>option288
+<option>option289
+<option>option290
+<option>option291
+<option>option292
+<option>option293
+<option>option294
+<option>option295
+<option>option296
+<option>option297
+<option>option298
+<option>option299
+<option>option300
+<option>option301
+<option>option302
+<option>option303
+<option>option304
+<option>option305
+<option>option306
+<option>option307
+<option>option308
+<option>option309
+<option>option310
+<option>option311
+<option>option312
+<option>option313
+<option>option314
+<option>option315
+<option>option316
+<option>option317
+<option>option318
+<option>option319
+<option>option320
+<option>option321
+<option>option322
+<option>option323
+<option>option324
+<option>option325
+<option>option326
+<option>option327
+<option>option328
+<option>option329
+<option>option330
+<option>option331
+<option>option332
+<option>option333
+<option>option334
+<option>option335
+<option>option336
+<option>option337
+<option>option338
+<option>option339
+<option>option340
+<option>option341
+<option>option342
+<option>option343
+<option>option344
+<option>option345
+<option>option346
+<option>option347
+<option>option348
+<option>option349
+<option>option350
+<option>option351
+<option>option352
+<option>option353
+<option>option354
+<option>option355
+<option>option356
+<option>option357
+<option>option358
+<option>option359
+<option>option360
+<option>option361
+<option>option362
+<option>option363
+<option>option364
+<option>option365
+<option>option366
+<option>option367
+<option>option368
+<option>option369
+<option>option370
+<option>option371
+<option>option372
+<option>option373
+<option>option374
+<option>option375
+<option>option376
+<option>option377
+<option>option378
+<option>option379
+<option>option380
+<option>option381
+<option>option382
+<option>option383
+<option>option384
+<option>option385
+<option>option386
+<option>option387
+<option>option388
+<option>option389
+<option>option390
+<option>option391
+<option>option392
+<option>option393
+<option>option394
+<option>option395
+<option>option396
+<option>option397
+<option>option398
+<option>option399
+<option>option400
+<option>option401
+<option>option402
+<option>option403
+<option>option404
+<option>option405
+<option>option406
+<option>option407
+<option>option408
+<option>option409
+<option>option410
+<option>option411
+<option>option412
+<option>option413
+<option>option414
+<option>option415
+<option>option416
+<option>option417
+<option>option418
+<option>option419
+<option>option420
+<option>option421
+<option>option422
+<option>option423
+<option>option424
+<option>option425
+<option>option426
+<option>option427
+<option>option428
+<option>option429
+<option>option430
+<option>option431
+<option>option432
+<option>option433
+<option>option434
+<option>option435
+<option>option436
+<option>option437
+<option>option438
+<option>option439
+<option>option440
+<option>option441
+<option>option442
+<option>option443
+<option>option444
+<option>option445
+<option>option446
+<option>option447
+<option>option448
+<option>option449
+<option>option450
+<option>option451
+<option>option452
+<option>option453
+<option>option454
+<option>option455
+<option>option456
+<option>option457
+<option>option458
+<option>option459
+<option>option460
+<option>option461
+<option>option462
+<option>option463
+<option>option464
+<option>option465
+<option>option466
+<option>option467
+<option>option468
+<option>option469
+<option>option470
+<option>option471
+<option>option472
+<option>option473
+<option>option474
+<option>option475
+<option>option476
+<option>option477
+<option>option478
+<option>option479
+<option>option480
+<option>option481
+<option>option482
+<option>option483
+<option>option484
+<option>option485
+<option>option486
+<option>option487
+<option>option488
+<option>option489
+<option>option490
+<option>option491
+<option>option492
+<option>option493
+<option>option494
+<option>option495
+<option>option496
+<option>option497
+<option>option498
+<option>option499
+<option>option500
+<option>option501
+<option>option502
+<option>option503
+<option>option504
+<option>option505
+<option>option506
+<option>option507
+<option>option508
+<option>option509
+<option>option510
+<option>option511
+<option>option512
+<option>option513
+<option>option514
+<option>option515
+<option>option516
+<option>option517
+<option>option518
+<option>option519
+<option>option520
+<option>option521
+<option>option522
+<option>option523
+<option>option524
+<option>option525
+<option>option526
+<option>option527
+<option>option528
+<option>option529
+<option>option530
+<option>option531
+<option>option532
+<option>option533
+<option>option534
+<option>option535
+<option>option536
+<option>option537
+<option>option538
+<option>option539
+<option>option540
+<option>option541
+<option>option542
+<option>option543
+<option>option544
+<option>option545
+<option>option546
+<option>option547
+<option>option548
+<option>option549
+<option>option550
+<option>option551
+<option>option552
+<option>option553
+<option>option554
+<option>option555
+<option>option556
+<option>option557
+<option>option558
+<option>option559
+<option>option560
+<option>option561
+<option>option562
+<option>option563
+<option>option564
+<option>option565
+<option>option566
+<option>option567
+<option>option568
+<option>option569
+<option>option570
+<option>option571
+<option>option572
+<option>option573
+<option>option574
+<option>option575
+<option>option576
+<option>option577
+<option>option578
+<option>option579
+<option>option580
+<option>option581
+<option>option582
+<option>option583
+<option>option584
+<option>option585
+<option>option586
+<option>option587
+<option>option588
+<option>option589
+<option>option590
+<option>option591
+<option>option592
+<option>option593
+<option>option594
+<option>option595
+<option>option596
+<option>option597
+<option>option598
+<option>option599
+<option>option600
+<option>option601
+<option>option602
+<option>option603
+<option>option604
+<option>option605
+<option>option606
+<option>option607
+<option>option608
+<option>option609
+<option>option610
+<option>option611
+<option>option612
+<option>option613
+<option>option614
+<option>option615
+<option>option616
+<option>option617
+<option>option618
+<option>option619
+<option>option620
+<option>option621
+<option>option622
+<option>option623
+<option>option624
+<option>option625
+<option>option626
+<option>option627
+<option>option628
+<option>option629
+<option>option630
+<option>option631
+<option>option632
+<option>option633
+<option>option634
+<option>option635
+<option>option636
+<option>option637
+<option>option638
+<option>option639
+<option>option640
+<option>option641
+<option>option642
+<option>option643
+<option>option644
+<option>option645
+<option>option646
+<option>option647
+<option>option648
+<option>option649
+<option>option650
+<option>option651
+<option>option652
+<option>option653
+<option>option654
+<option>option655
+<option>option656
+<option>option657
+<option>option658
+<option>option659
+<option>option660
+<option>option661
+<option>option662
+<option>option663
+<option>option664
+<option>option665
+<option>option666
+<option>option667
+<option>option668
+<option>option669
+<option>option670
+<option>option671
+<option>option672
+<option>option673
+<option>option674
+<option>option675
+<option>option676
+<option>option677
+<option>option678
+<option>option679
+<option>option680
+<option>option681
+<option>option682
+<option>option683
+<option>option684
+<option>option685
+<option>option686
+<option>option687
+<option>option688
+<option>option689
+<option>option690
+<option>option691
+<option>option692
+<option>option693
+<option>option694
+<option>option695
+<option>option696
+<option>option697
+<option>option698
+<option>option699
+<option>option700
+<option>option701
+<option>option702
+<option>option703
+<option>option704
+<option>option705
+<option>option706
+<option>option707
+<option>option708
+<option>option709
+<option>option710
+<option>option711
+<option>option712
+<option>option713
+<option>option714
+<option>option715
+<option>option716
+<option>option717
+<option>option718
+<option>option719
+<option>option720
+<option>option721
+<option>option722
+<option>option723
+<option>option724
+<option>option725
+<option>option726
+<option>option727
+<option>option728
+<option>option729
+<option>option730
+<option>option731
+<option>option732
+<option>option733
+<option>option734
+<option>option735
+<option>option736
+<option>option737
+<option>option738
+<option>option739
+<option>option740
+<option>option741
+<option>option742
+<option>option743
+<option>option744
+<option>option745
+<option>option746
+<option>option747
+<option>option748
+<option>option749
+<option>option750
+<option>option751
+<option>option752
+<option>option753
+<option>option754
+<option>option755
+<option>option756
+<option>option757
+<option>option758
+<option>option759
+<option>option760
+<option>option761
+<option>option762
+<option>option763
+<option>option764
+<option>option765
+<option>option766
+<option>option767
+<option>option768
+<option>option769
+<option>option770
+<option>option771
+<option>option772
+<option>option773
+<option>option774
+<option>option775
+<option>option776
+<option>option777
+<option>option778
+<option>option779
+<option>option780
+<option>option781
+<option>option782
+<option>option783
+<option>option784
+<option>option785
+<option>option786
+<option>option787
+<option>option788
+<option>option789
+<option>option790
+<option>option791
+<option>option792
+<option>option793
+<option>option794
+<option>option795
+<option>option796
+<option>option797
+<option>option798
+<option>option799
+<option>option800
+<option>option801
+<option>option802
+<option>option803
+<option>option804
+<option>option805
+<option>option806
+<option>option807
+<option>option808
+<option>option809
+<option>option810
+<option>option811
+<option>option812
+<option>option813
+<option>option814
+<option>option815
+<option>option816
+<option>option817
+<option>option818
+<option>option819
+<option>option820
+<option>option821
+<option>option822
+<option>option823
+<option>option824
+<option>option825
+<option>option826
+<option>option827
+<option>option828
+<option>option829
+<option>option830
+<option>option831
+<option>option832
+<option>option833
+<option>option834
+<option>option835
+<option>option836
+<option>option837
+<option>option838
+<option>option839
+<option>option840
+<option>option841
+<option>option842
+<option>option843
+<option>option844
+<option>option845
+<option>option846
+<option>option847
+<option>option848
+<option>option849
+<option>option850
+<option>option851
+<option>option852
+<option>option853
+<option>option854
+<option>option855
+<option>option856
+<option>option857
+<option>option858
+<option>option859
+<option>option860
+<option>option861
+<option>option862
+<option>option863
+<option>option864
+<option>option865
+<option>option866
+<option>option867
+<option>option868
+<option>option869
+<option>option870
+<option>option871
+<option>option872
+<option>option873
+<option>option874
+<option>option875
+<option>option876
+<option>option877
+<option>option878
+<option>option879
+<option>option880
+<option>option881
+<option>option882
+<option>option883
+<option>option884
+<option>option885
+<option>option886
+<option>option887
+<option>option888
+<option>option889
+<option>option890
+<option>option891
+<option>option892
+<option>option893
+<option>option894
+<option>option895
+<option>option896
+<option>option897
+<option>option898
+<option>option899
+<option>option900
+<option>option901
+<option>option902
+<option>option903
+<option>option904
+<option>option905
+<option>option906
+<option>option907
+<option>option908
+<option>option909
+<option>option910
+<option>option911
+<option>option912
+<option>option913
+<option>option914
+<option>option915
+<option>option916
+<option>option917
+<option>option918
+<option>option919
+<option>option920
+<option>option921
+<option>option922
+<option>option923
+<option>option924
+<option>option925
+<option>option926
+<option>option927
+<option>option928
+<option>option929
+<option>option930
+<option>option931
+<option>option932
+<option>option933
+<option>option934
+<option>option935
+<option>option936
+<option>option937
+<option>option938
+<option>option939
+<option>option940
+<option>option941
+<option>option942
+<option>option943
+<option>option944
+<option>option945
+<option>option946
+<option>option947
+<option>option948
+<option>option949
+<option>option950
+<option>option951
+<option>option952
+<option>option953
+<option>option954
+<option>option955
+<option>option956
+<option>option957
+<option>option958
+<option>option959
+<option>option960
+<option>option961
+<option>option962
+<option>option963
+<option>option964
+<option>option965
+<option>option966
+<option>option967
+<option>option968
+<option>option969
+<option>option970
+<option>option971
+<option>option972
+<option>option973
+<option>option974
+<option>option975
+<option>option976
+<option>option977
+<option>option978
+<option>option979
+<option>option980
+<option>option981
+<option>option982
+<option>option983
+<option>option984
+<option>option985
+<option>option986
+<option>option987
+<option>option988
+<option>option989
+<option>option990
+<option>option991
+<option>option992
+<option>option993
+<option>option994
+<option>option995
+<option>option996
+<option>option997
+<option>option998
+<option>option999
+<option>option1000
+<option>option1001
+<option>option1002
+<option>option1003
+<option>option1004
+<option>option1005
+<option>option1006
+<option>option1007
+<option>option1008
+<option>option1009
+<option>option1010
+<option>option1011
+<option>option1012
+<option>option1013
+<option>option1014
+<option>option1015
+<option>option1016
+<option>option1017
+<option>option1018
+<option>option1019
+<option>option1020
+<option>option1021
+<option>option1022
+<option>option1023
+<option>option1024
+<option>option1025
+<option>option1026
+<option>option1027
+<option>option1028
+<option>option1029
+<option>option1030
+<option>option1031
+<option>option1032
+<option>option1033
+<option>option1034
+<option>option1035
+<option>option1036
+<option>option1037
+<option>option1038
+<option>option1039
+<option>option1040
+<option>option1041
+<option>option1042
+<option>option1043
+<option>option1044
+<option>option1045
+<option>option1046
+<option>option1047
+<option>option1048
+<option>option1049
+<option>option1050
+<option>option1051
+<option>option1052
+<option>option1053
+<option>option1054
+<option>option1055
+<option>option1056
+<option>option1057
+<option>option1058
+<option>option1059
+<option>option1060
+<option>option1061
+<option>option1062
+<option>option1063
+<option>option1064
+<option>option1065
+<option>option1066
+<option>option1067
+<option>option1068
+<option>option1069
+<option>option1070
+<option>option1071
+<option>option1072
+<option>option1073
+<option>option1074
+<option>option1075
+<option>option1076
+<option>option1077
+<option>option1078
+<option>option1079
+<option>option1080
+<option>option1081
+<option>option1082
+<option>option1083
+<option>option1084
+<option>option1085
+<option>option1086
+<option>option1087
+<option>option1088
+<option>option1089
+<option>option1090
+<option>option1091
+<option>option1092
+<option>option1093
+<option>option1094
+<option>option1095
+<option>option1096
+<option>option1097
+<option>option1098
+<option>option1099
+<option>option1100
+<option>option1101
+<option>option1102
+<option>option1103
+<option>option1104
+<option>option1105
+<option>option1106
+<option>option1107
+<option>option1108
+<option>option1109
+<option>option1110
+<option>option1111
+<option>option1112
+<option>option1113
+<option>option1114
+<option>option1115
+<option>option1116
+<option>option1117
+<option>option1118
+<option>option1119
+<option>option1120
+<option>option1121
+<option>option1122
+<option>option1123
+<option>option1124
+<option>option1125
+<option>option1126
+<option>option1127
+<option>option1128
+<option>option1129
+<option>option1130
+<option>option1131
+<option>option1132
+<option>option1133
+<option>option1134
+<option>option1135
+<option>option1136
+<option>option1137
+<option>option1138
+<option>option1139
+<option>option1140
+<option>option1141
+<option>option1142
+<option>option1143
+<option>option1144
+<option>option1145
+<option>option1146
+<option>option1147
+<option>option1148
+<option>option1149
+<option>option1150
+<option>option1151
+<option>option1152
+<option>option1153
+<option>option1154
+<option>option1155
+<option>option1156
+<option>option1157
+<option>option1158
+<option>option1159
+<option>option1160
+<option>option1161
+<option>option1162
+<option>option1163
+<option>option1164
+<option>option1165
+<option>option1166
+<option>option1167
+<option>option1168
+<option>option1169
+<option>option1170
+<option>option1171
+<option>option1172
+<option>option1173
+<option>option1174
+<option>option1175
+<option>option1176
+<option>option1177
+<option>option1178
+<option>option1179
+<option>option1180
+<option>option1181
+<option>option1182
+<option>option1183
+<option>option1184
+<option>option1185
+<option>option1186
+<option>option1187
+<option>option1188
+<option>option1189
+<option>option1190
+<option>option1191
+<option>option1192
+<option>option1193
+<option>option1194
+<option>option1195
+<option>option1196
+<option>option1197
+<option>option1198
+<option>option1199
+    </select>
+<br>Password: 
+<input type="password" name="mypassword">
+<br>Testfield1: 
+    <input type="text" name="textFieldName1" value="initialValue"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+       onmouseover="Tip('textFieldTooltip literal: &gt;!')" onmouseout="UnTip()"  
+      size="10" maxlength="255"  >
+<br>Textfield2: 
+    <input type="text" name="textFieldName2" value="has big tooltip"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+      size="20" maxlength="255"  onmouseover="Tip('Hi <b>bold</b>! <br>There \\/\&#039;&quot;&amp;&brvbar;!')" onmouseout="UnTip()"  >
+<br>
+<textarea name=address cols=40 rows=4 wrap="virtual">
+John Smith
+123 Main St
+Anytown, CA 94025
+</textarea>
+<br>
+    <input type="hidden" name="testHiddenName" value="hiddenValue" >
+<input type="button" name="button1" value="Skinny Button" class="skinny"
+       onmouseover="Tip('button tooltip&nbsp;&nbsp;literal: &gt;!')" onmouseout="UnTip()"   >
+<br>
+<input type="button" name="submit1Name" value="Submit" onclick="alert('alert!');"
+       onmouseover="Tip('submit tooltip&nbsp;&nbsp;literal: &gt;!')" onmouseout="UnTip()"   >
+<br>
+<button type="button" name="htmlbutton1" value="value1" 
+       onmouseover="Tip('tooltip')" onmouseout="UnTip()"   >labelHtml</button>
+<br>
+<button type="button" name="htmlbutton2" value="value2" 
+       onmouseover="Tip('tooltip')" onmouseout="UnTip()"   >labelHtml</button>
+<br>
+<table border="0" cellspacing="0" cellpadding="1">
+  <tr>
+    <td nowrap>Color1: </td>
+    <td bgcolor="#FFFFFF"><input type="radio" name="color1" value="FFFFFF" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#CCCCCC"><input type="radio" name="color1" value="CCCCCC" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#999999"><input type="radio" name="color1" value="999999" checked 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#666666"><input type="radio" name="color1" value="666666" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#000000"><input type="radio" name="color1" value="000000" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#FF0000"><input type="radio" name="color1" value="FF0000" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#FF9900"><input type="radio" name="color1" value="FF9900" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#FFFF00"><input type="radio" name="color1" value="FFFF00" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#99FF00"><input type="radio" name="color1" value="99FF00" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#00FF00"><input type="radio" name="color1" value="00FF00" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#00FF99"><input type="radio" name="color1" value="00FF99" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#00FFFF"><input type="radio" name="color1" value="00FFFF" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#0099FF"><input type="radio" name="color1" value="0099FF" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#0000FF"><input type="radio" name="color1" value="0000FF" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#9900FF"><input type="radio" name="color1" value="9900FF" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#FF00FF"><input type="radio" name="color1" value="FF00FF" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#FF99FF"><input type="radio" name="color1" value="FF99FF" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+  </tr>
+</table>
+<table border="0" cellspacing="0" cellpadding="1">
+  <tr>
+    <td nowrap>Color2: </td>
+    <td bgcolor="#FFFFFF"><input type="radio" name="color2" value="FFFFFF" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#CCCCCC"><input type="radio" name="color2" value="CCCCCC" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#999999"><input type="radio" name="color2" value="999999" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#666666"><input type="radio" name="color2" value="666666" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#000000"><input type="radio" name="color2" value="000000" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#FF0000"><input type="radio" name="color2" value="FF0000" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#FF9900"><input type="radio" name="color2" value="FF9900" checked 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#FFFF00"><input type="radio" name="color2" value="FFFF00" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#99FF00"><input type="radio" name="color2" value="99FF00" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#00FF00"><input type="radio" name="color2" value="00FF00" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#00FF99"><input type="radio" name="color2" value="00FF99" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#00FFFF"><input type="radio" name="color2" value="00FFFF" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#0099FF"><input type="radio" name="color2" value="0099FF" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#0000FF"><input type="radio" name="color2" value="0000FF" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#9900FF"><input type="radio" name="color2" value="9900FF" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#FF00FF"><input type="radio" name="color2" value="FF00FF" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+    <td bgcolor="#FF99FF"><input type="radio" name="color2" value="FF99FF" 
+       onmouseover="Tip('Pick a color.')" onmouseout="UnTip()"   ></td>
+  </tr>
+</table>
+some other text
+<table border="0" cellspacing="0" cellpadding="0">
+
+<tr><td>Raw values: 
+Min:     <input type="text" name="from0" value="sliderFrom0"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+      size="10" maxlength="10"  >
+
+Max:     <input type="text" name="to0" value="sliderTo0"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+      size="10" maxlength="10"  >
+
+</td></tr>
+<tr><td>
+      <img name="sliderLeft0" src="file://c:/programs/tomcat/webapps/cwexperimental/images/sliderLeft.gif" 
+        width="15" height="17" align="left" alt="">
+      <img name="sliderBg0" src="file://c:/programs/tomcat/webapps/cwexperimental/images/sliderBg.gif" 
+        width="500" height="17" align="left" alt="">
+      <img name="sliderRight0" src="file://c:/programs/tomcat/webapps/cwexperimental/images/sliderRight.gif" 
+        width="15" height="17" align="left" alt="">
+</td></tr>
+
+<tr><td>Raw values: 
+Min:     <input type="text" name="from1" value="sliderFrom1"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+      size="10" maxlength="10"  >
+
+</td></tr>
+
+<tr><td>
+      <img name="sliderLeft1" src="file://c:/programs/tomcat/webapps/cwexperimental/images/sliderCenter.gif" 
+        width="15" height="17" align="left" alt="">
+      <img name="sliderBg1" src="file://c:/programs/tomcat/webapps/cwexperimental/images/sliderBg.gif" 
+        width="500" height="17" align="left" alt="">
+</td></tr>
+
+<tr><td>Raw values: 
+Min:     <input type="text" name="from3" value="sliderFrom3"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+      size="10" maxlength="10"  >
+
+Max:     <input type="text" name="to3" value="sliderTo3"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+      size="10" maxlength="10"  >
+
+</td></tr>
+<tr><td>
+      <img name="sliderLeft3" src="file://c:/programs/tomcat/webapps/cwexperimental/images/sliderLeft.gif" 
+        width="15" height="17" align="left" alt="">
+      <img name="sliderBg3" src="file://c:/programs/tomcat/webapps/cwexperimental/images/sliderBg.gif" 
+        width="500" height="17" align="left" alt="">
+      <img name="sliderRight3" src="file://c:/programs/tomcat/webapps/cwexperimental/images/sliderRight.gif" 
+        width="15" height="17" align="left" alt="">
+</td></tr>
+<tr><td>Raw values: 
+Min:     <input type="text" name="from4" value="sliderFrom4"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+      size="10" maxlength="10"  >
+
+Max:     <input type="text" name="to4" value="sliderTo4"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+      size="10" maxlength="10"  >
+
+</td></tr>
+<tr><td>
+      <img name="sliderLeft4" src="file://c:/programs/tomcat/webapps/cwexperimental/images/sliderLeft.gif" 
+        width="15" height="17" align="left" alt="">
+      <img name="sliderBg4" src="file://c:/programs/tomcat/webapps/cwexperimental/images/sliderBg.gif" 
+        width="500" height="17" align="left" alt="">
+      <img name="sliderRight4" src="file://c:/programs/tomcat/webapps/cwexperimental/images/sliderRight.gif" 
+        width="15" height="17" align="left" alt="">
+</td></tr>
+<tr><td>Raw values: 
+Min:     <input type="text" name="from5" value="sliderFrom5"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+      size="10" maxlength="10"  >
+
+</td></tr>
+<tr><td>
+      <img name="sliderLeft5" src="file://c:/programs/tomcat/webapps/cwexperimental/images/sliderCenter.gif" 
+        width="15" height="17" align="left" alt="">
+      <img name="sliderBg5" src="file://c:/programs/tomcat/webapps/cwexperimental/images/sliderBg.gif" 
+        width="500" height="17" align="left" alt="">
+</td></tr>
+
+<tr><td>
+Something Else
+</td></tr>
+<tr><td>
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/arrow2U.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/arrow2D.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/arrow2L.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/arrow2R.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/arrowU.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/arrowD.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/arrowL.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/arrowR.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/arrowUU.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/arrowDD.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/arrowLL.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/arrowRR.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/minus.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/minus10.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/minus100.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/minus1000.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/minusminus.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/plus.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/plus10.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/plus100.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/plus1000.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/plusplus.gif" alt="anImage">
+<br>
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/data.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/i.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/resize.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/source.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/title.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/URL.gif" alt="anImage">
+  <img src="file://c:/programs/tomcat/webapps/cwexperimental/images/x.gif" alt="anImage">
+</td></tr>
+</table>
+<table border="0" cellspacing="0" cellpadding="0">
+<tr>
+  <td>MinLon:     <input type="text" name="minLon" value="220"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+      size="5" maxlength="5"  >
+</td>
+  <td rowSpan=7 nowrap>
+<!-- start of twoClickMap[0] -->
+<img 
+   name="worldImage" id="worldImage" src="file://c:/programs/tomcat/webapps/cwexperimental/images/world540Big.png" border="0" usemap="#worldImageMap"
+    alt="Specify a rectangle by clicking on two diagonal corners.  Do it again if needed."
+  title="Specify a rectangle by clicking on two diagonal corners.  Do it again if needed." 
+  style="cursor:crosshair;" align="middle">
+<!-- end of twoClickMap[0] -->
+text on same row!<!-- start of twoClickMap[1] -->
+<map name="worldImageMap">
+  <area nohref="nohref" shape=RECT coords="0,0,411,154" style="cursor:crosshair;"
+    alt="Specify a rectangle by clicking on two diagonal corners.  Do it again if needed."
+  title="Specify a rectangle by clicking on two diagonal corners.  Do it again if needed." 
+        onClick="return rubber(true, event)" 
+    onMouseMove="return rubber(false, event)" > 
+</map>
+<!-- end of twoClickMap[1] -->
+</td>
+</tr>
+<tr><td>MaxLon:     <input type="text" name="maxLon" value="250"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+      size="5" maxlength="5"  >
+</td></tr>
+<tr><td>MinLat:     <input type="text" name="minLat" value="20"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+      size="5" maxlength="5"  >
+</td></tr>
+<tr><td>MaxLat:     <input type="text" name="maxLat" value="50"
+      onkeypress=' var key = window.event? event.keyCode : event.which? event.which : 0;  return key != 13;' 
+
+      size="5" maxlength="5"  >
+</td></tr>
+<tr><td>Row 5</td></tr>
+<tr><td>Row 6</td></tr>
+<tr><td>Row 7</td></tr>
+</table>
+</form>
+
+<!-- start of twoClickMap[2] -->
+<div id="rubberBand" style="position:absolute; visibility:hidden; width:0px; height:0px; font-size:1px; line-height:0; border:1px solid red; cursor:crosshair;" 
+      onClick="return rubber(true, event)" 
+  onMouseMove="return rubber(false, event)" ></div>
+
+<script type="text/javascript">
+<!--
+var tcNextI = 0;
+var tcCx = new Array(0,0);
+var tcCy = new Array(0,0);
+
+//findPos from http://blog.firetree.net/2005/07/04/javascript-find-position/
+function findPosX(obj) {
+  var curleft = 0;
+  if(obj.offsetParent)
+    for (var i = 0; i < 20; i++) {
+      curleft += obj.offsetLeft;
+      if(!obj.offsetParent)
+        break;
+      obj = obj.offsetParent;
+    }
+  else if(obj.x)
+    curleft += obj.x;
+  return curleft;
+}
+
+function findPosY(obj) {
+  var curtop = 0;
+  if(obj.offsetParent)
+    for (var i = 0; i < 20; i++) {
+      curtop += obj.offsetTop;
+      if(!obj.offsetParent)
+        break;
+      obj = obj.offsetParent;
+    }
+  else if(obj.y)
+    curtop += obj.y;
+  return curtop;
+}
+
+function rubber(clicked, evt) {
+  if (!clicked && tcNextI == 0)
+    return true;
+  var cx = tcCx;
+  var cy = tcCy;
+  var IE = document.all? true: false;
+  var im = IE? document.all.worldImage : document.getElementById('worldImage');
+  var tx=-1, ty=-1;
+  if (IE) {
+    tx = document.body.scrollLeft + evt.x;
+    ty = document.body.scrollTop  + evt.y;
+  } else if (evt.pageX) {
+    tx = evt.pageX;
+    ty = evt.pageY;
+  } else return true;
+  var imx = findPosX(im);
+  var imy = findPosY(im);
+  tx = Math.max(tx, imx + 17);
+  tx = Math.min(tx, imx + 17 + 379);
+  ty = Math.max(ty, imy + 12);
+  ty = Math.min(ty, imy + 12 + 126)
+  cx[tcNextI] = tx;
+  cy[tcNextI] = ty;
+  if (clicked) {
+    tcNextI = tcNextI == 0? 1 : 0;
+    if (tcNextI == 1) {
+      cx[1] = cx[0];
+      cy[1] = cy[0];
+    }
+  }
+
+  updateRubber();
+  document.f1.minLon.value = Math.round(((Math.min(cx[0], cx[1]) - 17 - imx) / 379) * 540 + -180);
+  document.f1.maxLon.value = Math.round(((Math.max(cx[0], cx[1]) - 17 - imx) / 379) * 540 + -180);
+  document.f1.minLat.value = Math.round(((Math.max(cy[0], cy[1]) - 12 - imy) / 126) * -180 + 90);
+  document.f1.maxLat.value = Math.round(((Math.min(cy[0], cy[1]) - 12 - imy) / 126) * -180 + 90);
+  return true;
+}
+
+function updateRubber() {
+  var cx = tcCx;
+  var cy = tcCy;
+  var rb = (document.all)? document.all.rubberBand : document.getElementById('rubberBand');
+  var rbs = rb.style;
+  rbs.left = Math.min(cx[0], cx[1]) + 'px';
+  rbs.top  = Math.min(cy[0], cy[1]) + 'px';
+  rbs.width  = Math.abs(cx[1] - cx[0]) + 'px';
+  rbs.height = Math.abs(cy[1] - cy[0]) + 'px';
+  rbs.visibility = 'visible';
+}
+
+function initRubber() {
+  var initLon0 = parseFloat(document.f1.minLon.value);
+  var initLon1 = parseFloat(document.f1.maxLon.value);
+  var initLat0 = parseFloat(document.f1.minLat.value);
+  var initLat1 = parseFloat(document.f1.maxLat.value);
+  if (isFinite(initLon0) && isFinite(initLon1) &&
+      isFinite(initLat0) && isFinite(initLat1)) {
+    var im = document.all? document.all.worldImage : document.getElementById('worldImage');
+    var imx = findPosX(im);
+    var imy = findPosY(im);
+    var lon0 = Math.min(1, Math.max(0, (initLon0 - -180) / 540));
+    var lon1 = Math.min(1, Math.max(0, (initLon1 - -180) / 540));
+    var lat0 = Math.min(1, Math.max(0, (initLat0 - 90) / -180));
+    var lat1 = Math.min(1, Math.max(0, (initLat1 - 90) / -180));
+    tcCx[0] = Math.round(lon0 * 379 + 17 + imx);
+    tcCx[1] = Math.round(lon1 * 379 + 17 + imx);
+    tcCy[0] = Math.round(lat0 * 126 + 12 + imy);
+    tcCy[1] = Math.round(lat1 * 126 + 12 + imy);
+    updateRubber();
+  }
+}
+
+try {
+  initRubber(); 
+} catch (ex) {
+}
+--> 
+</script>
+<!-- end of twoClickMap[2] -->
+
+
+<!-- start of sliderScript -->
+<script type="text/javascript"> 
+<!--
+var fromTextFields = ["f1.from0", "f1.from1", "", "f1.from3", "f1.from4", "f1.from5"];
+var toTextFields = ["f1.to0", "", "", "f1.to3", "f1.to4", "f1.to5"];
+var userValues = [
+  ["a","b","c","d"],
+  ["B","o","b"],
+  [null],
+  [1,2,4,8,16,32,64,128],
+  ["only"],
+  ["only"]];
+var initFromPositions = [
+200, 100, 0, 0, 0, 100];
+var initToPositions = [
+300, 500, 0, 500, 500, 500];
+
+SET_DHTML(CURSOR_DEFAULT, NO_ALT, SCROLL, 
+  "sliderBg0"+NO_DRAG,
+  "sliderLeft0"+HORIZONTAL+MAXOFFLEFT+0,
+  "sliderRight0"+HORIZONTAL+MAXOFFRIGHT+500,
+  "sliderBg1"+NO_DRAG,
+  "sliderLeft1"+HORIZONTAL+MAXOFFLEFT+0,
+  "sliderBg3"+NO_DRAG,
+  "sliderLeft3"+HORIZONTAL+MAXOFFLEFT+0,
+  "sliderRight3"+HORIZONTAL+MAXOFFRIGHT+500,
+  "sliderBg4"+NO_DRAG,
+  "sliderLeft4"+HORIZONTAL+MAXOFFLEFT+0,
+  "sliderRight4"+HORIZONTAL+MAXOFFRIGHT+500,
+  "sliderBg5"+NO_DRAG,
+  "sliderLeft5"+HORIZONTAL+MAXOFFLEFT+0);
+
+var el = dd.elements;
+
+function log(msg) {
+  if (typeof(console) != "undefined") console.log(msg);
+}
+
+function toUserValue(which, val) {
+  var nuv = userValues[which].length;
+  var index = Math.floor((val * nuv) / 500);
+  return userValues[which][Math.min(Math.max(0, index), (nuv - 1))];
+};
+
+function updateUI(left, which) {
+  log("left=" + left + " which=" + which); 
+  var leftS  = eval("el.sliderLeft" + which);  
+  var rightS = eval("el.sliderRight" + which);
+  if (left) {
+    var val = leftS.x - leftS.defx;
+    var fromW  = eval("document." + fromTextFields[which]);
+    fromW.value = toUserValue(which, val);
+    if (typeof(rightS) != "undefined") rightS.maxoffl = -val;
+  } else {
+    var val = rightS.x - rightS.defx;
+    var toW    = eval("document." + toTextFields[which]);
+    toW.value = toUserValue(which, val);
+    if (typeof(leftS) != "undefined") leftS.maxoffr = val;
+  }
+};
+
+function my_DragFunc() {
+  try {
+    if (dd.obj.name == 'sliderLeft0') updateUI(true, 0);
+    if (dd.obj.name == 'sliderRight0') updateUI(false, 0);
+    if (dd.obj.name == 'sliderLeft1') updateUI(true, 1);
+    if (dd.obj.name == 'sliderLeft3') updateUI(true, 3);
+    if (dd.obj.name == 'sliderRight3') updateUI(false, 3);
+    if (dd.obj.name == 'sliderLeft4') updateUI(true, 4);
+    if (dd.obj.name == 'sliderRight4') updateUI(false, 4);
+    if (dd.obj.name == 'sliderLeft5') updateUI(true, 5);
+  } catch (ex) {
+    alert(ex.toString());
+  }
+}
+
+function initSlider(which) {
+  var bgS    = eval("el.sliderBg" + which);  
+  var leftS  = eval("el.sliderLeft" + which);  
+  var rightS = eval("el.sliderRight" + which);
+ 
+  var oneThumb = typeof(rightS) == "undefined";
+  leftS.setZ(bgS.z+1); 
+  bgS.addChild("sliderLeft" + which); 
+  leftS.defx = bgS.x - Math.round(15 / (oneThumb? 2 : 1));
+  leftS.moveTo(leftS.defx + initFromPositions[which], bgS.y); 
+  leftS.maxoffr = initToPositions[which];
+
+  if (!oneThumb) {
+    rightS.setZ(bgS.z+1); 
+    bgS.addChild("sliderRight" + which); 
+    rightS.defx = bgS.x;
+    rightS.moveTo(rightS.defx + initToPositions[which], bgS.y); 
+    rightS.maxoffl = -initFromPositions[which];
+  }
+}
+
+try {
+  initSlider(0);
+  initSlider(1);
+  initSlider(3);
+  initSlider(4);
+  initSlider(5);
+} catch (ex) {
+  alert(ex.toString());
+}
+
+//-->
+</script>
+<!-- end of sliderScript -->
+
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+<p>&nbsp;
+</body>
+</html>

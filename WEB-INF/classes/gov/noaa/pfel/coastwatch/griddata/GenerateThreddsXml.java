@@ -775,9 +775,9 @@ String2.log("***end catalog.xml");
     public static void test() throws Exception {
         verbose = true;
         StringArray sa = generateThreddsXml(
-            "f:/u00/", "satellite/", 
+            "c:/u00/", "satellite/", 
             "C:/programs/tomcat/webapps/cwexperimental/WEB-INF/incompleteMainCatalog.xml", 
-            "f:/u00/xml/");
+            "c:/u00/xml/");
         String2.log("first catalog.xml=" + sa.get(0));
 //        SSR.displayInBrowser("file://" + sa.get(0));
 //        SSR.displayInBrowser("file://f:/u00/xml/catalog.xml");

@@ -3781,14 +3781,14 @@ public class TestUtil {
                 Math2.gc(500);  
                 Math2.gc(500);  //aggressive
                 String2.log("canonicalSize=" + String2.canonicalSize() + 
-                    " time=" + time + " (should be Java 1.6=~1450ms, 1.5=~2000ms) " + Math2.memoryString());
+                    " time=" + time + " (should be Java 1.7M4700=~300ms, 1.6=~1450ms, 1.5=~2000ms) " + Math2.memoryString());
                 long memoryInUse = Math2.getMemoryInUse();
                 if (oMemoryInUse == -1) {
                     oMemoryInUse = memoryInUse; 
                     canSize = String2.canonicalSize();
                 } else {
                     String2.log("  bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));
-                    Test.ensureTrue(memoryInUse - oMemoryInUse < n, "Memory use is growing!");
+                    Test.ensureTrue(memoryInUse - oMemoryInUse < 3*n, "Memory use is growing!");
                 }
                 Test.ensureEqual(String2.canonicalSize(), canSize, "Unexpected String2.canonicalSize!");
             }   
@@ -3837,7 +3837,7 @@ public class TestUtil {
 
     /** Test the speed of writing to hard drive. Does it block? */
     public static void testFileWriteSpeed() throws Exception {
-        String fileName = "f:/temp/TestUtilTestFileSpeed.txt";  //my f: is faster than c:
+        String fileName = "c:/temp/TestUtilTestFileSpeed.txt";  //my f: is faster than c:
         Writer writer = new BufferedWriter(new FileWriter(fileName));
         long time = System.currentTimeMillis();
         for (int i = 0; i < 1000000; i++) {
@@ -3852,7 +3852,7 @@ public class TestUtil {
 
     /** Test the speed of writing to hard drive. Does it block? */
     public static void testWriteToFileSpeed() throws Exception {
-        String fileName = "f:/temp/TestUtilTestFileSpeed.txt";  //my f: is faster than c:
+        String fileName = "c:/temp/TestUtilTestFileSpeed.txt";  //my f: is faster than c:
         StringBuilder sb = new StringBuilder(1000000*100);
         for (int i = 0; i < 1000000; i++) 
             sb.append("This is a test of a pretty long string that changes on each line " + i + "\n");
@@ -3866,7 +3866,7 @@ public class TestUtil {
 
     /** Test the speed of reading to hard drive. */
     public static void testReadFromFileSpeed() throws Exception {
-        String fileName = "f:/temp/TestUtilTestFileSpeed.txt";
+        String fileName = "c:/temp/TestUtilTestFileSpeed.txt";
         long time = System.currentTimeMillis();
         String s[] = String2.readFromFile(fileName);
         if (s[0].length() > 0)

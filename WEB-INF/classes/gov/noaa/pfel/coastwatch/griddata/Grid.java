@@ -1477,10 +1477,10 @@ switch to finally clause
         File2.delete(testDir + "temp.grd");
 
         //********************  test of GMT 4 file
-        String dir4 = "F:\\u00\\cwatch\\testData\\gmt\\";
+        String dir4 = "c:\\u00\\cwatch\\testData\\gmt\\";
         String name4= "TestGMT4";
         grdDump = 
-"netcdf F:\\u00\\cwatch\\testData\\gmt\\TestGMT4.grd {\n" +
+"netcdf c:\\u00\\cwatch\\testData\\gmt\\TestGMT4.grd {\n" +
 " dimensions:\n" +
 "   x = 4001;\n" +   // (has coord.var)\n" +    //changed when switched to netcdf-java 4.0, 2009-02-23
 "   y = 2321;\n" +   // (has coord.var)\n" +
@@ -3413,7 +3413,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
      * SINCE IT DOESN'T NEED LINUX, SHELL SCRIPTS, OR MATLAB.
      * This saves the current grid data as a CoastWatch Utilities-compatible
      * HDF ver 4 file.
-     * Currently, this relies on several files in "f:/u00/chump/" 
+     * Currently, this relies on several files in "c:/u00/chump/" 
      * ("chump_make_grd2hdf", "lookup_data_id.m", "lookup_data_source.m")
      * which rely on Matlab.
      *

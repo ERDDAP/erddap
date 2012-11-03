@@ -158,7 +158,7 @@ the early years I was even testing them periodically in an ice bath.
         {
             //read the site location info
             Table tSite = new Table();
-            tSite.readASCII("f:/programs/kushner/Site_Locations.txt");
+            tSite.readASCII("c:/programs/kushner/Site_Locations.txt");
 
             //test that first row's data is as expected
             Test.ensureEqual(tSite.getStringData(0, 0), "Anacapa", "");
@@ -210,7 +210,7 @@ the early years I was even testing them periodically in an ice bath.
         //Anacapa\tAdmiral's Reef\t8/25/1995 14:49:00\t18.79
         Table temp = new Table();
         temp.allowRaggedRightInReadASCII = true; //it has some missing temp values
-        temp.readASCII("f:/programs/kushner/KFM_Temperature.txt");
+        temp.readASCII("c:/programs/kushner/KFM_Temperature.txt");
 
         //ensure that first row's data is as expected
         Test.ensureEqual(temp.getStringData(0, 0), "Anacapa", "");
@@ -349,14 +349,14 @@ the early years I was even testing them periodically in an ice bath.
                 station.globalAttributes().set("license", license);
 
                 //save the station table
-                station.saveAs4DNcWithStringVariable("f:/programs/kushner/" + tempID + ".nc", 
+                station.saveAs4DNcWithStringVariable("c:/programs/kushner/" + tempID + ".nc", 
                     0, 1, 2, 3, 4);  //x,y,z,t, stringVariable=ID
                 nStationsCreated++;
 
                 //see what results are like 
                 if (nStationsCreated == 1) {
                     Table tTable = new Table();
-                    tTable.read4DNc("f:/programs/kushner/" + tempID + ".nc", null, 0, stationColumnName, 4);
+                    tTable.read4DNc("c:/programs/kushner/" + tempID + ".nc", null, 0, stationColumnName, 4);
                     String2.log("\nstation0=\n" + tTable.toString("row", 3));
                     //from site ascii file
                     //Anacapa	Admiral's Reef	34	00	200	N	119	25	520	W	16
@@ -426,7 +426,7 @@ the early years I was even testing them periodically in an ice bath.
         //*** read the site location info
         //test that first row's data is as expected
         Table spp = new Table();
-        spp.readASCII("f:/programs/kfm200801/KFMSpeciesName.tab");
+        spp.readASCII("c:/programs/kfm200801/KFMSpeciesName.tab");
         Test.ensureEqual(spp.getColumnName(0), "Species", "");
         Test.ensureEqual(spp.getColumnName(1), "Species Name", "");
         spp.removeColumns(2, spp.nColumns());
@@ -437,7 +437,7 @@ the early years I was even testing them periodically in an ice bath.
         int nRows = spp.nRows();
         for (int row = 0; row < nRows; row++) 
             newNames.add(convertSpeciesName(oldNames.get(row)));
-        spp.saveAsTabbedASCII("f:/programs/kfm200801/KFMSpeciesNewName.tab");
+        spp.saveAsTabbedASCII("c:/programs/kfm200801/KFMSpeciesNewName.tab");
      }
 
     
@@ -451,14 +451,14 @@ the early years I was even testing them periodically in an ice bath.
      */ 
     public static void kfmTemperature200801() throws Exception {
         String2.log("\n*** Projects.kfmTemperature200801");
-        File2.deleteAllFiles("f:/programs/kfm200801/KFMTemperature/");
+        File2.deleteAllFiles("c:/programs/kfm200801/KFMTemperature/");
 
         //*** read the site location info
         //test that first row's data is as expected
         //Island	SiteName	Lat	Lon	Depth (meters)
         //San Miguel	Wyckoff Ledge	34.0166666666667	-120.383333333333	13
         Table site = new Table();
-        site.readASCII("f:/programs/kfm200801/KFM_Site_Info.tsv"); //copied from last year
+        site.readASCII("c:/programs/kfm200801/KFM_Site_Info.tsv"); //copied from last year
         Test.ensureEqual(site.getColumnName(0), "Island", "");
         Test.ensureEqual(site.getColumnName(1), "SiteName", "");
         Test.ensureEqual(site.getColumnName(2), "Lat", "");
@@ -478,7 +478,7 @@ the early years I was even testing them periodically in an ice bath.
         //11	Anacapa	Admiral's Reef	8/26/1993 0:00:00	12/30/1899 10:35:00	18.00
         Table temp = new Table();
         temp.allowRaggedRightInReadASCII = true; //it has some missing temp values
-        temp.readASCII("f:/programs/kfm200801/KFMHourlyTemperature.tab");
+        temp.readASCII("c:/programs/kfm200801/KFMHourlyTemperature.tab");
         temp.removeColumn(0); //now columns shifted down one
         //Test.ensureEqual(temp.getColumnName(0), "SiteNumber", "");
         Test.ensureEqual(temp.getColumnName(0), "IslandName", "");
@@ -652,14 +652,14 @@ the early years I was even testing them periodically in an ice bath.
 
                 //save the station table
                 station.ensureValid();
-                station.saveAs4DNcWithStringVariable("f:/programs/kfm200801/KFMTemperature/" + tempID + ".nc", 
+                station.saveAs4DNcWithStringVariable("c:/programs/kfm200801/KFMTemperature/" + tempID + ".nc", 
                     0, 1, 2, 3, 4);  //x,y,z,t, stringVariable=ID
                 nStationsCreated++;
 
                 //see what results are like 
                 if (nStationsCreated == 1) {
                     Table tTable = new Table();
-                    tTable.read4DNc("f:/programs/kfm200801/KFMTemperature/" + tempID + ".nc", null, 0, stationColumnName, 4);
+                    tTable.read4DNc("c:/programs/kfm200801/KFMTemperature/" + tempID + ".nc", null, 0, stationColumnName, 4);
                     String2.log("\nstation0=\n" + tTable.toString("row", 3));
                     //from site ascii file
                     //Anacapa	Admiral's Reef	34	00	200	N	119	25	520	W	16
@@ -844,7 +844,7 @@ Should the license/disclaimer still be:
 
         //'_' in tsvNames will be converted to ' ' for tempID below
         //Station .nc files will be stored in subdirectories named tsvName.
-        String tsvDir = "f:/programs/kfm/";
+        String tsvDir = "c:/programs/kfm/";
         //order not important
         String tsvNames[] = {"KFM_5m_Quadrat", "KFM_Quadrat", "KFM_Random_Point", "KFM_Transect"};
 
@@ -1164,7 +1164,7 @@ String2.log("uniqueYear = " + uniqueYear);
 
         //'_' in tabNames will be converted to ' ' for tempID below
         //Station .nc files will be stored in subdirectories named tabName.
-        String tabDir = "f:/programs/kfm200801/";
+        String tabDir = "c:/programs/kfm200801/";
         //order not important
         String tabNames[] = {"KFM5mQuadrat", "KFM1mQuadrat", "KFMRandomPointContact", "KFMBandTransect"};
         String titles[] = {"Survey, 5m Quadrat", "Survey, 1m Quadrat", "Survey, Random Point Contact", "Survey, Band Transect"};
@@ -1531,7 +1531,7 @@ String2.log("uniqueYear = " + uniqueYear);
         String2.log("\n*** Projects.kfmFishTransect200801");
 
         //Station .nc files will be stored in subdirectories named tabName.
-        String tabDir = "f:/programs/kfm200801/";
+        String tabDir = "c:/programs/kfm200801/";
         //order not important
         String tabNames[] = {"KFMFishTransect"};
         String boldTitles[] = {"Fish Survey, Transect"};
@@ -1885,7 +1885,7 @@ String2.log("uniqueSpp = " + uniqueSpp);
 
         //'_' in tsvNames will be converted to ' ' for tempID below
         //Station .nc files will be stored in subdirectories named tsvName.
-        String tsvDir = "f:/programs/kfm3/";
+        String tsvDir = "c:/programs/kfm3/";
         //order not important
         String tsvNames[] = {"KFM_SizeFrequencyGorgoniansAndStylaster", 
             "KFM_SizeFrequencyMacrocystis", "KFM_SizeFrequencyNaturalHabitat"};
@@ -1893,7 +1893,7 @@ String2.log("uniqueSpp = " + uniqueSpp);
         //read KFM_Site_Info.tsv: col 0)island e.g., "Anacapa", 1=siteID (e.g., Admiral's Reef)", 
         //  2) lat(deg. N), 3) lon(deg. E), 4) depth(m)
         Table site = new Table();
-        site.readASCII("f:/programs/kfm/KFM_Site_Info.tsv");
+        site.readASCII("c:/programs/kfm/KFM_Site_Info.tsv");
         StringArray sitePa = (StringArray)site.getColumn(1);
         Test.ensureEqual(site.getStringData(0, 0), "San Miguel", "");
         Test.ensureEqual(sitePa.get(0), "Wyckoff Ledge", "");
@@ -2168,7 +2168,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
 
         //'_' in tabNames will be converted to ' ' for tempID below
         //Station .nc files will be stored in subdirectories named tabName.
-        String tabDir = "f:/programs/kfm200801/";
+        String tabDir = "c:/programs/kfm200801/";
         //order not important
         String tabNames[] = {
             //"KFMSizeFrequencyGorgoniansAndStylaster", 
@@ -2480,7 +2480,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
             ///*20*/"m s-1"};
             String desiredColumns[] = {"TIME", "WD", "WSPD", "GST",  "WVHT", "DPD",  "APD",  "ATMP", "WTMP"};
             Table table = new Table();
-            table.read4DNc("f:/programs/kushner/NDBC_" + id[idi] + "_met.nc", null, 1, stationColumnName, 4);
+            table.read4DNc("c:/programs/kushner/NDBC_" + id[idi] + "_met.nc", null, 1, stationColumnName, 4);
             String2.log("colNames=" + String2.toCSSVString(table.getColumnNames()));
 
             //pluck out desired columns
@@ -2509,7 +2509,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
             table.setColumn(0, newTime);
 
             //write out the file
-            table.saveAsTabbedASCII("f:/programs/kushner/NDBC_" + id[idi] + "_met.asc"); 
+            table.saveAsTabbedASCII("c:/programs/kushner/NDBC_" + id[idi] + "_met.asc"); 
             String2.log(table.toString("row", 5));
 
         }
@@ -2748,7 +2748,7 @@ variables:
     public static void soda(String sodaVersion, String oldDir, String newDir) throws Exception {
 
         //get a list of files
-        String tempDir = "f:/programs/";
+        String tempDir = "c:/programs/";
         String[] fileNames = RegexFilenameFilter.list(oldDir, "(.+cdf|.+cdf.gz)");
         NetcdfFile oldFile = null;
         NetcdfFileWriteable newFile = null;
@@ -3224,7 +3224,7 @@ variables:
 
         // /* 
         //the netcdf-java way
-        String fileName = "F:/data/seawifs/L3bin/S20010012001008.L3b_8D_CHL.main";
+        String fileName = "c:/data/seawifs/L3bin/S20010012001008.L3b_8D_CHL.main";
         NetcdfFile nc = NetcdfFile.open(fileName);
         try {
             String2.log(nc.toString());
@@ -3324,8 +3324,8 @@ public static void testJanino() throws Exception {
     public static void testWobblyLonLat() throws Exception {
         //test of "wobbly" lat and lon values in AGssta 14day
         Grid grid = new Grid();
-        //grid.readGrd("f:/programs/roy/AG2006009_2006022_ssta_westus.grd",
-        grid.readNetCDF("f:/programs/roy/AG2006009_2006022_ssta.nc", null);
+        //grid.readGrd("c:/programs/roy/AG2006009_2006022_ssta_westus.grd",
+        grid.readNetCDF("c:/programs/roy/AG2006009_2006022_ssta.nc", null);
         String2.log("lon=" + String2.toCSSVString(grid.lon) + "\nlat=" + String2.toCSSVString(grid.lat));
         int nLon = grid.lon.length;
         double maxLonDif = 0;
@@ -3476,7 +3476,7 @@ public static void testJanino() throws Exception {
      */
     public static void convertNewportCTD() throws Exception {
         String2.log("\n*** EDDTableFromNcFiles.convertNewportCTD");
-        String sourceDir = "F:/data/rawSource/newportCTD2009-12/";
+        String sourceDir = "c:/data/rawSource/newportCTD2009-12/";
         String sourceCsv = "CTD_NH.csv";
         String sourceLatLon = "NH_Target_LatLong.csv";
         String destDir = "c:/u00/data/points/erdNewportCtd/";
@@ -3741,7 +3741,7 @@ public static void testJanino() throws Exception {
      */
     public static void convertFedCalLandings() throws Exception {
         String2.log("\n*** EDDTableFromNcFiles.convertFedCalLandings");
-        String sourceDir = "F:/data/rawSource/fedCalLandings2010-01-05/";
+        String sourceDir = "c:/data/rawSource/fedCalLandings2010-01-05/";
         String sourceCsv = "dbo_block_summary.csv";
         String sourceMarCat = "dbo_market_categories.csv";
         String destDir = "c:/u00/data/points/fedCalLandings/";
@@ -3975,7 +3975,7 @@ String2.log(marCatTable.toString());
      */
     public static void convertPrbo201001() throws Exception {
         String2.log("\n*** convertPrbo201001");
-        String sourceDir = "F:/data/rawSource/prbo2010-01-07/";
+        String sourceDir = "c:/data/rawSource/prbo2010-01-07/";
         String sourceNames[] = new String[]{  //.csv
            "prboSefiDiet", "prboSefiPhen", "prboSefiPop", "prboSefiProd"};
         String destDir = "C:/u00/data/points/";
@@ -4005,7 +4005,7 @@ String2.log(marCatTable.toString());
         if (true) System.exit(0);
 
         String2.log("\n*** distributeCalcofiSur");
-        String sourceDir = "F:/data/rawSource/calcofiSurface2010-01-05/";
+        String sourceDir = "c:/data/rawSource/calcofiSurface2010-01-05/";
         String destDir = "c:/u00/data/points/erdCalcofiSurface/";
         File2.makeDirectory(destDir);
         
@@ -4051,7 +4051,7 @@ String2.log(marCatTable.toString());
         if (true) System.exit(0);
 
         String2.log("\n*** distributeCalcofiSub");
-        String sourceDir = "F:/data/rawSource/calcofiSurface2010-01-05/";
+        String sourceDir = "c:/data/rawSource/calcofiSurface2010-01-05/";
         String destDir = "c:/u00/data/points/erdCalcofiSubsurface/";
         File2.makeDirectory(destDir);
         File2.deleteAllFiles(destDir);
@@ -4902,8 +4902,8 @@ String2.log("Projects.touchUrls is finished.");
      *
      */
     public static void getChristinaShowsData() throws Throwable {
-        String tsvDir = "F:/data/christina/tsv/";
-        String ncDir  = "F:/data/christina/nc/";
+        String tsvDir = "c:/data/christina/tsv/";
+        String ncDir  = "c:/data/christina/nc/";
         File2.makeDirectory(ncDir);
         File2.deleteAllFiles(ncDir);
 
@@ -5611,7 +5611,7 @@ project)
     public static void calcofiBio() throws Exception {
         String2.log("\n*** Projects.calcofiBio");
         long elapsedTime = System.currentTimeMillis();
-        String oldDir = "F:/data/calcofiBio/";
+        String oldDir = "c:/data/calcofiBio/";
         String newDir = "c:/u00/data/points/erdCalcofiBio/";
         File2.deleteAllFiles(newDir);        
         String today = Calendar2.getCurrentISODateStringLocal();
@@ -5841,7 +5841,7 @@ project)
     public static void calcofiSub() throws Exception {
         String2.log("\n*** Projects.calcofiSub");
         long elapsedTime = System.currentTimeMillis();
-        String oldDir = "F:/data/calcofiSub/";
+        String oldDir = "c:/data/calcofiSub/";
         String newDir = "c:/u00/data/points/erdCalcofiSub/";
         File2.deleteAllFiles(newDir);        
 
@@ -5953,7 +5953,7 @@ project)
     public static void calcofiSur() throws Exception {
         String2.log("\n*** Projects.calcofiSur");
         long elapsedTime = System.currentTimeMillis();
-        String oldDir = "F:/data/calcofiSur/";
+        String oldDir = "c:/data/calcofiSur/";
         String newDir = "c:/u00/data/points/erdCalcofiSur/";
         File2.deleteAllFiles(newDir);        
 
@@ -6204,9 +6204,9 @@ project)
      * Created 2011-05-01.
      */
     public static void convertCchdoBottle() throws Exception {
-        String inDir  = "F:/data/cchdo/botcsv/";
+        String inDir  = "c:/data/cchdo/botcsv/";
         String outDir = "c:/u00/data/points/cchdoBot/";
-        String logFile = "f:/data/cchdo/convertCchdoBottle.log";
+        String logFile = "c:/data/cchdo/convertCchdoBottle.log";
         Attributes colInfo = new Attributes();  //colName -> units|type
 
         String2.setupLog(true, false, logFile, false, false, 1000000000);
@@ -7118,7 +7118,7 @@ project)
      */
     public static void convertGlobecCsvToNc() throws Exception {
         String2.log("\n*** convertGlobecCsvToNc");
-        String inDir = "f:/data/globec/";
+        String inDir = "c:/data/globec/";
         String outDir = "c:/u00/data/points/globec/";
         String fileNames[] = {
             //"Globec_birds",     
@@ -7174,7 +7174,7 @@ project)
     /** This splits rockfish_view into 9 chunks of more manageable size. */
     public static void splitRockfish() throws Exception {
         String2.log("\n*** splitRockfish");
-        String fileDir = "f:/data/globec/";
+        String fileDir = "c:/data/globec/";
         StringArray sa = StringArray.fromFile(fileDir + "rockfish_view.csv");
         int size = sa.size();
 
@@ -7203,7 +7203,7 @@ project)
      * He used File, Export, delimited, tab to make .txt file for each table.  
      */
     public static void processCalcofi2012() throws Exception {
-        String dir = "f:/data/calcofi2012/";
+        String dir = "c:/data/calcofi2012/";
         String tableName;
         Table table = new Table();
 
