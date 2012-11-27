@@ -830,7 +830,7 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +            
-"    Float64 actual_range 2.476656e+8, 1.3517712e+9;\n" + //range changes daily   
+"    Float64 actual_range 2.476656e+8, 1.3538448e+9;\n" + //range changes daily   
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Centered Time\";\n" +
@@ -956,7 +956,7 @@ expected =
 "PIRATA (Atlantic Ocean, http://www.pmel.noaa.gov/pirata/)\n" +
 "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\n" +
 "http://www.pmel.noaa.gov/tao/proj_over/proj_over.html .\";\n" +
-"    String time_coverage_end \"2012-11-01T12:00:00Z\";\n" +  //changes daily
+"    String time_coverage_end \"2012-11-25T12:00:00Z\";\n" +  //changes daily
 "    String time_coverage_start \"1977-11-06T12:00:00Z\";\n" + //before 2012-03-20 was 1980-03-07T12:00:00
 "    String title \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Air Temperature\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +

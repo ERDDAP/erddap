@@ -4,6 +4,7 @@
  */
 package gov.noaa.pfel.coastwatch.util;
 
+import com.cohort.array.Attributes;
 import com.cohort.array.StringArray;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
@@ -216,6 +217,30 @@ public class SimpleXMLReader {
         return attributeValues.get(po);
     }
 
+    /**
+     * Get the attributes in an Attributes object.
+     * Call this right after getNextTag().
+     * This is a copy of the attributes information, not the native data structure.
+     *
+     * @return the attributes in an Attributes object.
+     */
+    public Attributes attributes() {
+        return attributes(new Attributes());
+    }
+     
+    /**
+     * For convenience, this re-uses atts to get the attributes in an Attributes object.
+     * Call this right after getNextTag().
+     *
+     * @return the attributes in the Attributes object.
+     */
+    public Attributes attributes(Attributes atts) {
+        atts.clear();
+        for (int i = 0; i < attributeNames.size(); i++) 
+            atts.add(attributeNames.get(i), attributeValues.get(i));
+        return atts;
+    }
+     
     /**
      * Get the attributes as a comma-separated name=value String (for diagnostic purposes).
      * Call this right after getNextTag().

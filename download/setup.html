@@ -96,17 +96,27 @@ or Mac server instead.
 <ol>
 <li><a name="java">Set up Java.</a>  
     <br>Type "java -version" from your server's command line to make sure you have 
-    <a rel="bookmark" href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java</a> (JRE or JDK) 
-    version 1.6 update 24 (or higher) installed.  (Previous versions have security bugs!)
+    <a rel="bookmark" href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java</a>
+    (JRE or JDK) version 1.7 installed.  <!-- javaVersion -->
+    For security reasons, it is almost always best to use the latest version of Java.
     ERDDAP works with 32 bit or 64 bit Java. 64 bit is preferred for 64-bit operating systems. 
     On Linux, we recommend that you download and install Java even if your computer came with Java
     installed. This lets you be in control of which Java you have and where it is (usr/local?).
     To install Java on Linux, see these
       <a rel="help" href="http://www.java.com/en/download/help/linux_install.xml">instructions</a>.
+
+    <p>This version of ERDDAP will work with Java 6; however, we recommend against using Java 6.  
+    Java 6 is past its official end of life and so is no longer supported by Oracle.  
+    As Oracle's Java SE 6 Downloads web page says: "WARNING: These older versions 
+    of the JRE and JDK are provided to help developers debug issues in older systems. 
+    They are not updated with the latest security patches and are not recommended for 
+    use in production." 
+
     <br>&nbsp;
 
 <li><a name="tomcat">Set</a> up <a rel="help" href="http://tomcat.apache.org/">Tomcat</a>.    
-    <br>Below, the Tomcat directory will be referred to as [tomcat] .
+    <br>For security reasons, it is almost always best to use the latest version of Tomcat.
+    Below, the Tomcat directory will be referred to as [tomcat] .
     Warning! If you already have a Tomcat running some other web application (especially THREDDS), 
     we recommend that you install ERDDAP in <a rel="help" href="#secondTomcat">a&nbsp;second&nbsp;Tomcat</a>,
        because ERDDAP may need different settings 
@@ -127,7 +137,7 @@ or Mac server instead.
       select <tt>Configure : Java</tt>.
       <ul>
       <li>Set the <tt>Java Virtual Machine</tt> directory, e.g.,
-        C:\Program Files\Java\jre6\bin\client\jvm.dll.      
+        C:\Program Files\Java\jre7\bin\client\jvm.dll.    <!-- javaVersion -->  
       <li>Set <tt>Initial Memory Pool</tt> and 
         <tt>Maximum Memory Pool</tt> to <tt>1200</tt> MB on 32-bit Windows computers or
         up to 1/2 of physical memory on 64-bit Windows computers. On 32-bit computers, going much higher than 1200 MB will probably fail.
@@ -137,8 +147,8 @@ or Mac server instead.
     <li>On Linux and Macs, Tomcat is often set up as belonging to 
       user "tomcat". Set up that account now.  
       From the parent of the apache-tomcat directory, type 
-      <br><tt>chown -R tomcat apache-tomcat-<i>7.0.10</i></tt> 
-      <br><tt>chgrp -R tomcat apache-tomcat-<i>7.0.10</i></tt>
+      <br><tt>chown -R tomcat apache-tomcat-<i>7.0.32</i></tt>  <!-- tomcatVersion -->
+      <br><tt>chgrp -R tomcat apache-tomcat-<i>7.0.32</i></tt>  <!-- tomcatVersion -->
       <br>(but substitute the actual name of your tomcat directory) right after unpacking Tomcat.
       Do most of the rest of the setup instructions as user "tomcat".
       Later, run the startup.sh and shutdown.sh scripts as user "tomcat" so that Tomcat has 
@@ -147,14 +157,14 @@ or Mac server instead.
 
     <li>On <a name="LinuxMemory">Linux</a> and <a name="MacMemory">Macs</a>, 
       create a file [tomcat]/bin/setenv.sh 
-      (or in Red Hat Enterprise Linux (RHEL), edit ~tomcat/conf/tomcat6.conf) 
+      (or in Red Hat Enterprise Linux (RHEL), edit ~tomcat/conf/tomcat7.conf) <!-- tomcatVersion -->
       to set environmental variables.
       This file will be used by [tomcat]/bin/startup.sh and shutdown.sh.
       The file should contain<tt>
-      <br>export JAVA_HOME=/usr/local/jre1.6.0_24
+      <br>export JAVA_HOME=/usr/local/jre1.7.0_09  <!-- javaVersion -->
       <br>export JAVA_OPTS='-server -Djava.awt.headless=true -Xmx1500M -Xms1500M'
-      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>7.0.10</i>
-      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>7.0.10</i></tt>
+      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>7.0.32</i>         <!-- tomcatVersion -->
+      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>7.0.32</i></tt>  <!-- tomcatVersion -->
       <br>(but substitute the directory names from your computer).        
       <br>(If you previously set JRE_HOME, you can remove that.)
       <br>On Macs, you probably don't need to set JAVA_HOME.
@@ -251,13 +261,16 @@ or Mac server instead.
 
 <li><a name="erddapContent">Set up the [tomcat]/content/erddap configuration files.</a> 
   <br>On Linux, Mac, and Windows, download
-    <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a> 
-<!-- (70,836 bytes, MD5=D927E8132F1F19A342274F37375619E6, Dated 2012-05-02) -->
-     (72,108 bytes, MD5=2D110CC2472F39FF1FC4B27C8C1C720F)
+    <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>    
+<!-- this line is duplicated below
+     (version 1.38, size=70,836 bytes, MD5=D927E8132F1F19A342274F37375619E6, Dated 2012-05-02) 
+     (version 1.40, size=72,108 bytes, MD5=2D110CC2472F39FF1FC4B27C8C1C720F, Dated 2012-10-25) -->
+     (version 1.42, size=72,146 bytes, MD5=4EC605978B939835947A9D551C947E97) <!-- Dated 2012-22-26) -->
     and unzip it into [tomcat], creating [tomcat]/content/erddap .
   <p>For Red Hat Enterprise Linux (RHEL), unzip it into ~tomcat
-    and set the system property erddapContentDirectory=~tomcat/content/erddap
-    in ~tomcat/conf/tomcat6.conf so ERDDAP can find the directory.
+    and set the system property 
+    <tt>erddapContentDirectory=~tomcat/content/erddap</tt>
+    in ~tomcat/conf/tomcat7.conf <!-- tomcatVersion --> so ERDDAP can find the directory.
     
   <p>Then,
   <ul>
@@ -290,8 +303,9 @@ or Mac server instead.
   <br>On Linux, Mac, and Windows, download 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
     <!-- ver, size, md5 duplicated below 
-    (version 1.38, size=478,799,083 bytes, MD5=7270FB700CAEF85A1F1A3B3326FAFE98) -->
-    (version 1.40, size=477,338,971 bytes, MD5=138F354918668AB8414A8174365BD036)
+    (version 1.38, size=478,799,083 bytes, MD5=7270FB700CAEF85A1F1A3B3326FAFE98) 
+    (version 1.40, size=477,338,971 bytes, MD5=138F354918668AB8414A8174365BD036) -->
+    (version 1.42, size=477,356,261 bytes, MD5=EC29F6D9E6185BC71557CF47063E3276)
     into [tomcat]/webapps .  
   The .war file is big because it contains high resolution coastline, boundary, 
   and elevation data needed to create maps.
@@ -336,7 +350,13 @@ or Mac server instead.
 <!-- ******* -->
 <h2><a name="update">How</a> To Do an Update of an Existing ERDDAP on Your Server</h2>
 <ol>
-<li>Download <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a> 
+<li>Download 
+  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a> 
+<!-- this line is duplicated below
+     (version 1.38, size=70,836 bytes, MD5=D927E8132F1F19A342274F37375619E6, Dated 2012-05-02) 
+     (version 1.40, size=72,108 bytes, MD5=2D110CC2472F39FF1FC4B27C8C1C720F, Dated 2012-10-25) -->
+     (version 1.42, size=72,146 bytes, MD5=4EC605978B939835947A9D551C947E97) <!-- Dated 2012-22-26) -->
+
     and unzip it into a temporary directory.
   <ul>
   <li>If you made changes to your previous copy of messages.xml, 
@@ -354,16 +374,29 @@ or Mac server instead.
   <br>&nbsp;
 
 <li>Download <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    <!-- ver, size, md5 duplicated above -->
+    <!-- ver, size, md5 duplicated above 
     (version 1.38, size=478,799,083 bytes, MD5=7270FB700CAEF85A1F1A3B3326FAFE98) 
-into a  temporary directory.
+    (version 1.40, size=477,338,971 bytes, MD5=138F354918668AB8414A8174365BD036) -->
+    (version 1.42, size=477,356,261 bytes, MD5=EC29F6D9E6185BC71557CF47063E3276)
+
+    into a  temporary directory.
   <br>&nbsp;
 
-<li>In Tomcat Manager, "Undeploy" ERDDAP.
-  <br>&nbsp;
-
-<li>In Tomcat Manager, "Deploy" the erddap.war file.
-  <br>&nbsp;
+<li>In Tomcat Manager:
+  <ol>
+  <li>"Undeploy" ERDDAP.
+  <li>"Deploy" the erddap.war file.
+  </ol>
+  <br>Or from a Linux or Mac command line:
+  <ol>
+  <li>In <tt>[tomcat]/bin</tt>, use <tt>./shutdown.sh</tt>
+  <li>Use <tt>ps -u <i>tomcatUser</i></tt> to ensure that the java/tomcat thread has stopped.
+  <li>In <tt>[tomcat]/webapps</tt>, use <tt>rm -r erddap</tt>
+  <li>In <tt>[tomcat]/webapps</tt>, use <tt>rm erddap.war</tt>
+  <li>Copy the new erddap.war file from the temporary directory to <tt>[tomcat]/webapps</tt> .
+  <li>In <tt>[tomcat]/bin</tt>, use <tt>./startup.sh</tt>
+     <br>&nbsp;
+  </ol>
 
 <li>Troubles updating ERDDAP?
   <br>Email me at <tt>bob dot simons at noaa dot gov</tt> .  I will help you.
@@ -424,7 +457,7 @@ into a  temporary directory.
   So, you should always use 
   <br>&nbsp;&nbsp;<tt>ps -u <i>tomcatUser</i></tt> 
   <br>(or with other switches)
-  to ensure that the tomcat thread has stopped running before using 
+  to ensure that the java/tomcat thread has stopped running before using 
   <br>&nbsp;&nbsp;<tt>[tomcat]/bin/startup.sh</tt> 
   <br>to restart tomcat (and ERDDAP).
   If you don't want to wait for Tomcat (and ERDDAP) to stop by itself, 
@@ -1275,9 +1308,10 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
     (No, we don't use Eclipse, Ant, Maven, or ...; nor do we offer ERDDAP-related support for them.
     If we required you to use Ant and you preferred Maven (or vice versa), you wouldn't be very happy about it.)
   <li>We use a batch file which deletes all of the .class files in the source tree.
-  <li>We currently use javac 1.6_0_24 to compile gov.noaa.pfel.coastwatch.TestAll  
-     (it has links to a few classes that wouldn't be compiled otherwise) and java 1.6_0_24 to 
-     run the tests.  Don't use older versions of Java (there are security problems).
+  <li>We currently use javac 1.6.0_35 <!-- javaVersion --> to compile gov.noaa.pfel.coastwatch.TestAll  
+     (it has links to a few classes that wouldn't be compiled otherwise) 
+     and java 1.6.0_35 and 1.7.0_09 <!-- javaVersion --> to run the tests.  
+     For security reasons, it is almost always best to use the latest versions of Java and Tomcat.
      <ul>
      <li>When we run javac or java, the current directory is [tomcat]/webapps/erddap/WEB-INF .
      <li>Our javac and java classpath (including some unnecessary items) is currently
@@ -1297,7 +1331,7 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
        (There are some unfinished/unused classes.)
      </ul>
   <li>We use some 3rd party source code instead of .jar files (notably for SSHTools and Dods)
-     and have modified them slightly to avoid problems compiling with Java 1.6.
+     and have modified them slightly to avoid problems compiling with Java 1.7. <!-- javaVersion -->
      We have often made other slight modifications (notably to Dods) for other reasons.
   <li>Most classes have test methods. We run lots of tests via TestAll. 
      Unfortunately, many of the tests are specific to our set up.  (Sorry.)
@@ -1545,7 +1579,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.38
+<p>ERDDAP, Version 1.42
 <br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

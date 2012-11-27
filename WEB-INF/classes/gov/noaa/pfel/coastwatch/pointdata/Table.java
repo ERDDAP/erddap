@@ -14,6 +14,7 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.util.DataStream;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
+import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.coastwatch.util.Tally;
 
@@ -3122,6 +3123,341 @@ String stationsXml =
  
     }
 
+    /**
+     * This ensure the column exists and has the right name, then adds the value 
+     * to the column, on currentRow.
+     * If there are two or more tags for the same value, this won't throw an error and 
+     * will keep the last value.
+     *
+     * @param colName   (e.g., aws:ob-date)
+     * @param currentRow  0..
+     * @param value
+     * @param atts  If the column already exists, oldAtts.equals(atts) must be true
+     *    or it throws a runtimeException.
+     */
+    private void addAwsColumnValue(String colName, int currentRow, 
+        String value, Attributes atts) {
+
+        if (colName.startsWith("aws:"))
+            colName = colName.substring(4);
+        int col = findColumnNumber(colName);
+        PrimitiveArray pa = null;
+        if (col < 0) {
+            //add the column
+            col = nColumns();
+            pa = new StringArray();
+            addColumn(col, colName, pa, atts);
+        } else {
+            pa = getColumn(col);
+            //ensure atts are same as oldAtts
+            Attributes oAtts = columnAttributes(col);
+            String errorMsg = oAtts.testEquals(atts);
+            if (errorMsg.length() > 0)
+                throw new SimpleException("The attributes for column=" + colName + " aren't consistent:\n" +
+                    errorMsg);
+        }
+
+        int panRows = pa.size();
+        int nToAdd = currentRow - panRows + 1;
+        if (nToAdd > 0)
+            pa.addNStrings(nToAdd, "");
+        pa.setString(currentRow, value);
+    }
+
+    /**
+     * This reads all data from one Aws file.
+     * All columns will be String columns.
+     * !!! Note, some units in the file have HTML character entities.  
+     *   ERDDAP converts them to ASCII / UDUnits.
+     *
+     * @param fullFileName
+     * @throws an exception if trouble (file not found, too much data, etc.).
+     *  This won't throw an exception if no data.
+     */
+    public void readAwsXmlFile(String fullFileName) 
+        throws Exception {
+
+        long time = System.currentTimeMillis();
+        clear(); // clear the table
+        FileInputStream fis = new FileInputStream(fullFileName);
+        SimpleXMLReader xmlReader = new SimpleXMLReader(fis, "aws:weather");
+        GregorianCalendar gc = null;
+        int currentRow = -1;
+        Attributes atts = null;
+
+        while (true) {
+            xmlReader.nextTag();
+            int nTags = xmlReader.stackSize();
+            String tags = xmlReader.allTags();
+            String content = xmlReader.content();
+
+            if (tags.startsWith("<aws:weather><aws:ob>")) {
+                String endTags = tags.substring(21);
+
+                //  nTags == 2
+                if (nTags == 2) {
+                    //This is the start of a new row of data.
+                    currentRow++;
+                    continue;
+                }
+
+                //  nTags == 3
+                if (nTags == 3) {
+                    String tag2 = xmlReader.tag(2);
+                    boolean isStartTag = !tag2.startsWith("/");
+
+                    if (isStartTag) {
+                        gc = null;
+                        atts = xmlReader.attributes(); //must make a *new* Attributes object!
+
+                        //attributes other than "units" become their own columns
+                        //e.g., <aws:city-state zip="94123">  becomes city-state-zip
+                        String[] attNames = xmlReader.attributeNames();                        
+                        for (int ani = 0; ani < attNames.length; ani++) {
+                            if (attNames[ani].equals("units")) {
+                                //fix common units problems in AWS xml files
+                                String tUnits = atts.getString("units");
+                                tUnits = String2.replaceAll(tUnits, "&deg;",  "degree_");
+                                if (tUnits.indexOf('\"') >= 0) {
+                                    if (tag2.indexOf("pressure") >= 0) 
+                                         tUnits = String2.replaceAll(tUnits, "\"", "inch_Hg");
+                                    else tUnits = String2.replaceAll(tUnits, "\"", "inches");
+                                }
+                                atts.set("units", tUnits);
+                                continue;
+                            }
+                            String s = atts.getString(attNames[ani]);
+                            atts.remove(attNames[ani]);
+                            if (attNames[ani].equals("xmlns:aws")) {
+                                //date start tags have this.  Just remove it.
+                            } else {
+                                addAwsColumnValue(tag2 + "-" + attNames[ani], 
+                                    currentRow, s, new Attributes());
+                            }
+                        }
+
+                    } else { //is endTag
+                        String value = xmlReader.content();
+                        if (gc != null) {
+                            value = "" + Calendar2.gcToEpochSeconds(gc);  
+                            atts.add("units", "seconds since 1970-01-01T00:00:00Z");
+                        }
+                        addAwsColumnValue(tag2.substring(1), //remove leading /
+                            currentRow, value, atts);
+                    }
+                    continue;
+                }
+
+                //  nTags == 4
+                if (nTags == 4) {
+                    //dates 
+                    //<aws:ob-date>
+                    //  <aws:year number="2012" />
+                    String tag3 = xmlReader.tag(3);
+                    if (tag3.startsWith("/"))
+                        continue;
+                    if (tag3.equals("aws:year")) {
+                        if (gc == null)
+                            gc = Calendar2.newGCalendarZulu(0);
+                        int ti = String2.parseInt(xmlReader.attributeValue("number"));
+                        if (ti != Integer.MAX_VALUE)
+                            gc.set(Calendar2.YEAR, ti);
+                    } else if (tag3.equals("aws:month")) {
+                        if (gc == null)
+                            gc = Calendar2.newGCalendarZulu(0);
+                        int ti = String2.parseInt(xmlReader.attributeValue("number"));
+                        if (ti != Integer.MAX_VALUE)
+                            gc.set(Calendar2.MONTH, ti - 1);  //0..
+                    } else if (tag3.equals("aws:day")) {
+                        if (gc == null)
+                            gc = Calendar2.newGCalendarZulu(0);
+                        int ti = String2.parseInt(xmlReader.attributeValue("number"));
+                        if (ti != Integer.MAX_VALUE)
+                            gc.set(Calendar2.DATE, ti); //of month
+                    } else if (tag3.equals("aws:hour")) {
+                        if (gc == null)
+                            gc = Calendar2.newGCalendarZulu(0);
+                        int ti = String2.parseInt(xmlReader.attributeValue("hour-24"));
+                        if (ti != Integer.MAX_VALUE)
+                            gc.set(Calendar2.HOUR, ti);
+                    } else if (tag3.equals("aws:minute")) {
+                        if (gc == null)
+                            gc = Calendar2.newGCalendarZulu(0);
+                        int ti = String2.parseInt(xmlReader.attributeValue("number"));
+                        if (ti != Integer.MAX_VALUE)
+                            gc.set(Calendar2.MINUTE, ti);
+                    } else if (tag3.equals("aws:second")) {
+                        if (gc == null)
+                            gc = Calendar2.newGCalendarZulu(0);
+                        int ti = String2.parseInt(xmlReader.attributeValue("number"));
+                        if (ti != Integer.MAX_VALUE)
+                            gc.set(Calendar2.SECOND, ti);
+                    } else if (tag3.equals("aws:time-zone")) {
+                        if (gc == null)
+                            gc = Calendar2.newGCalendarZulu(0);
+                        int ti = String2.parseInt(xmlReader.attributeValue("offset"));
+                        if (ti != Integer.MAX_VALUE)
+                            gc.add(Calendar2.HOUR, -ti);  
+                    }
+                    continue;
+                }
+
+
+            } else if (nTags == 0 || tags.equals("</aws:weather>")) {
+                xmlReader.close();
+                break;
+            }
+        }
+        makeColumnsSameSize();
+        if (reallyVerbose) String2.log("readAwsXmlFile finished, nRows=" + nRows() +
+            " time=" + (System.currentTimeMillis() - time));
+    }
+
+    /** Test readAwsXmlFile.
+     *
+     * @throws Exception if trouble
+     */
+    public static void testReadAwsXmlFile() throws Exception {
+        String2.log("\nTable.testReadAwsXmlFile");
+        Table table = new Table();
+        table.readAwsXmlFile("c:/data/aws/xml/SNFLS-2012-11-03T20_30_01Z.xml");
+        String results = table.toCSVString();
+        String expected = 
+"{\n" +
+"dimensions:\n" +
+"\trow = 1 ;\n" +
+"\tob-date_strlen = 11 ;\n" +
+"\tstation-id_strlen = 5 ;\n" +
+"\tstation_strlen = 13 ;\n" +
+"\tcity-state-zip_strlen = 5 ;\n" +
+"\tcity-state_strlen = 17 ;\n" +
+"\tsite-url_strlen = 0 ;\n" +
+"\taux-temp_strlen = 2 ;\n" +
+"\taux-temp-rate_strlen = 1 ;\n" +
+"\tdew-point_strlen = 2 ;\n" +
+"\televation_strlen = 1 ;\n" +
+"\tfeels-like_strlen = 2 ;\n" +
+"\tgust-time_strlen = 11 ;\n" +
+"\tgust-direction_strlen = 1 ;\n" +
+"\tgust-speed_strlen = 1 ;\n" +
+"\thumidity_strlen = 2 ;\n" +
+"\thumidity-high_strlen = 3 ;\n" +
+"\thumidity-low_strlen = 2 ;\n" +
+"\thumidity-rate_strlen = 2 ;\n" +
+"\tindoor-temp_strlen = 2 ;\n" +
+"\tindoor-temp-rate_strlen = 4 ;\n" +
+"\tlight_strlen = 4 ;\n" +
+"\tlight-rate_strlen = 4 ;\n" +
+"\tmoon-phase-moon-phase-img_strlen = 12 ;\n" +
+"\tmoon-phase_strlen = 2 ;\n" +
+"\tpressure_strlen = 4 ;\n" +
+"\tpressure-high_strlen = 5 ;\n" +
+"\tpressure-low_strlen = 5 ;\n" +
+"\tpressure-rate_strlen = 5 ;\n" +
+"\train-month_strlen = 4 ;\n" +
+"\train-rate_strlen = 1 ;\n" +
+"\train-rate-max_strlen = 1 ;\n" +
+"\train-today_strlen = 1 ;\n" +
+"\train-year_strlen = 4 ;\n" +
+"\ttemp_strlen = 4 ;\n" +
+"\ttemp-high_strlen = 2 ;\n" +
+"\ttemp-low_strlen = 2 ;\n" +
+"\ttemp-rate_strlen = 3 ;\n" +
+"\tsunrise_strlen = 13 ;\n" +
+"\tsunset_strlen = 13 ;\n" +
+"\twet-bulb_strlen = 6 ;\n" +
+"\twind-speed_strlen = 1 ;\n" +
+"\twind-speed-avg_strlen = 1 ;\n" +
+"\twind-direction_strlen = 3 ;\n" +
+"\twind-direction-avg_strlen = 1 ;\n" +
+"variables:\n" +
+"\tchar ob-date(row, ob-date_strlen) ;\n" +
+"\t\tob-date:units = \"seconds since 1970-01-01T00:00:00Z\" ;\n" +
+"\tchar station-id(row, station-id_strlen) ;\n" +
+"\tchar station(row, station_strlen) ;\n" +
+"\tchar city-state-zip(row, city-state-zip_strlen) ;\n" +
+"\tchar city-state(row, city-state_strlen) ;\n" +
+"\tchar site-url(row, site-url_strlen) ;\n" +
+"\tchar aux-temp(row, aux-temp_strlen) ;\n" +
+"\t\taux-temp:units = \"degree_F\" ;\n" +
+"\tchar aux-temp-rate(row, aux-temp-rate_strlen) ;\n" +
+"\t\taux-temp-rate:units = \"degree_F\" ;\n" +
+"\tchar dew-point(row, dew-point_strlen) ;\n" +
+"\t\tdew-point:units = \"degree_F\" ;\n" +
+"\tchar elevation(row, elevation_strlen) ;\n" +
+"\t\televation:units = \"ft\" ;\n" +
+"\tchar feels-like(row, feels-like_strlen) ;\n" +
+"\t\tfeels-like:units = \"degree_F\" ;\n" +
+"\tchar gust-time(row, gust-time_strlen) ;\n" +
+"\t\tgust-time:units = \"seconds since 1970-01-01T00:00:00Z\" ;\n" +
+"\tchar gust-direction(row, gust-direction_strlen) ;\n" +
+"\tchar gust-speed(row, gust-speed_strlen) ;\n" +
+"\t\tgust-speed:units = \"mph\" ;\n" +
+"\tchar humidity(row, humidity_strlen) ;\n" +
+"\t\thumidity:units = \"%\" ;\n" +
+"\tchar humidity-high(row, humidity-high_strlen) ;\n" +
+"\t\thumidity-high:units = \"%\" ;\n" +
+"\tchar humidity-low(row, humidity-low_strlen) ;\n" +
+"\t\thumidity-low:units = \"%\" ;\n" +
+"\tchar humidity-rate(row, humidity-rate_strlen) ;\n" +
+"\tchar indoor-temp(row, indoor-temp_strlen) ;\n" +
+"\t\tindoor-temp:units = \"degree_F\" ;\n" +
+"\tchar indoor-temp-rate(row, indoor-temp-rate_strlen) ;\n" +
+"\t\tindoor-temp-rate:units = \"degree_F\" ;\n" +
+"\tchar light(row, light_strlen) ;\n" +
+"\tchar light-rate(row, light-rate_strlen) ;\n" +
+"\tchar moon-phase-moon-phase-img(row, moon-phase-moon-phase-img_strlen) ;\n" +
+"\tchar moon-phase(row, moon-phase_strlen) ;\n" +
+"\tchar pressure(row, pressure_strlen) ;\n" +
+"\t\tpressure:units = \"inch_Hg\" ;\n" +
+"\tchar pressure-high(row, pressure-high_strlen) ;\n" +
+"\t\tpressure-high:units = \"inch_Hg\" ;\n" +
+"\tchar pressure-low(row, pressure-low_strlen) ;\n" +
+"\t\tpressure-low:units = \"inch_Hg\" ;\n" +
+"\tchar pressure-rate(row, pressure-rate_strlen) ;\n" +
+"\t\tpressure-rate:units = \"inch_Hg/h\" ;\n" +
+"\tchar rain-month(row, rain-month_strlen) ;\n" +
+"\t\train-month:units = \"inches\" ;\n" +
+"\tchar rain-rate(row, rain-rate_strlen) ;\n" +
+"\t\train-rate:units = \"inches/h\" ;\n" +
+"\tchar rain-rate-max(row, rain-rate-max_strlen) ;\n" +
+"\t\train-rate-max:units = \"inches/h\" ;\n" +
+"\tchar rain-today(row, rain-today_strlen) ;\n" +
+"\t\train-today:units = \"inches\" ;\n" +
+"\tchar rain-year(row, rain-year_strlen) ;\n" +
+"\t\train-year:units = \"inches\" ;\n" +
+"\tchar temp(row, temp_strlen) ;\n" +
+"\t\ttemp:units = \"degree_F\" ;\n" +
+"\tchar temp-high(row, temp-high_strlen) ;\n" +
+"\t\ttemp-high:units = \"degree_F\" ;\n" +
+"\tchar temp-low(row, temp-low_strlen) ;\n" +
+"\t\ttemp-low:units = \"degree_F\" ;\n" +
+"\tchar temp-rate(row, temp-rate_strlen) ;\n" +
+"\t\ttemp-rate:units = \"degree_F\" ;\n" +
+"\tchar sunrise(row, sunrise_strlen) ;\n" +
+"\t\tsunrise:units = \"seconds since 1970-01-01T00:00:00Z\" ;\n" +
+"\tchar sunset(row, sunset_strlen) ;\n" +
+"\t\tsunset:units = \"seconds since 1970-01-01T00:00:00Z\" ;\n" +
+"\tchar wet-bulb(row, wet-bulb_strlen) ;\n" +
+"\t\twet-bulb:units = \"degree_F\" ;\n" +
+"\tchar wind-speed(row, wind-speed_strlen) ;\n" +
+"\t\twind-speed:units = \"mph\" ;\n" +
+"\tchar wind-speed-avg(row, wind-speed-avg_strlen) ;\n" +
+"\t\twind-speed-avg:units = \"mph\" ;\n" +
+"\tchar wind-direction(row, wind-direction_strlen) ;\n" +
+"\tchar wind-direction-avg(row, wind-direction-avg_strlen) ;\n" +
+"\n" +
+"// global attributes:\n" +
+"}\n" +
+"row,ob-date,station-id,station,city-state-zip,city-state,site-url,aux-temp,aux-temp-rate,dew-point,elevation,feels-like,gust-time,gust-direction,gust-speed,humidity,humidity-high,humidity-low,humidity-rate,indoor-temp,indoor-temp-rate,light,light-rate,moon-phase-moon-phase-img,moon-phase,pressure,pressure-high,pressure-low,pressure-rate,rain-month,rain-rate,rain-rate-max,rain-today,rain-year,temp,temp-high,temp-low,temp-rate,sunrise,sunset,wet-bulb,wind-speed,wind-speed-avg,wind-direction,wind-direction-avg\n" +
+"0,1.3519746E9,SNFLS,Exploratorium,94123,\"San Francisco, CA\",,32,0,54,0,67,1.3519746E9,E,8,63,100,63,-6,90,+4.6,67.9,-0.3,mphase16.gif,82,30.1,30.14,30.06,-0.01,0.21,0,0,0,1.76,66.9,67,52,3.8,1.351953497E9,1.351991286E9,59.162,0,2,ENE,E\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.3519746E9),   "2012-11-03T20:30:00", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.3519746E9),   "2012-11-03T20:30:00", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.351953497E9), "2012-11-03T14:38:17", "");
+        Test.ensureEqual(Calendar2.epochSecondsToIsoStringT(1.351991286E9), "2012-11-04T01:08:06", "");
+    }
 
     /**
      * This writes the table's data attributes (as if it were a DODS Sequence) 
@@ -13770,7 +14106,7 @@ touble: because table is JsonObject, info may not be in expected order
                 ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").size(), 2,  ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").getString(0), 
-                "2012-10-04 Most recent downloading and reformatting of all " + //changes monthly
+                "2012-11-02 Most recent downloading and reformatting of all " + //changes monthly
                 "cdf/sites/... files from PMEL TAO's FTP site by bob.simons at noaa.gov.", 
                 ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").getString(1), 
@@ -15249,8 +15585,8 @@ touble: because table is JsonObject, info may not be in expected order
             Test.ensureEqual(table.nRows(), 17117, "nRows=" + table.nRows()); 
 
             String2.log("********** Done. cells/ms=" + 
-                (table.nColumns() * table.nRows()/time) + " (usual=648)" +
-                " time=" + time + " ms (usual=422,  java 1.5 was 719)"); 
+                (table.nColumns() * table.nRows()/time) + " (usual=2711 Java 1.7M4700, was 648)" +
+                " time=" + time + " ms (usual=101 Java 1.7M4700, was 422, java 1.5 was 719)"); 
             if (time > 700)
                 throw new SimpleException("readASCII took too long.");
             Math2.sleep(5000);
@@ -15293,8 +15629,8 @@ touble: because table is JsonObject, info may not be in expected order
 
             time = System.currentTimeMillis() - time;
             String2.log("********* Done. cells/ms=" + 
-                (table.nColumns() * table.nRows()/time) + " (usual=747)" +
-                " time=" + time + " ms (usual=844;   java 1.5 was 1687)"); 
+                (table.nColumns() * table.nRows()/time) + " (usual=2881 Java 1.7M4700, was 747)" +
+                " time=" + time + " ms (usual=219 Java 1.7M4700, was 844, java 1.5 was 1687)"); 
             if (time > 1200)
                 throw new SimpleException("readJson took too long.");
             Math2.sleep(5000);
@@ -15336,8 +15672,8 @@ touble: because table is JsonObject, info may not be in expected order
 
             time = System.currentTimeMillis() - time;
             String2.log("********** Done. cells/ms=" + 
-                (table.nColumns() * table.nRows()/time) + " (usual=9679)" +
-                " time=" + time + " ms (usual=640,  java 1.5 was 828, but varies a lot)"); 
+                (table.nColumns() * table.nRows()/time) + " (usual=31414 Java 1.7M4700, was 9679)" +
+                " time=" + time + " ms (usual=226 Java 1.7M4700, was 640, java 1.5 was 828, but varies a lot)"); 
             if (time > 1000)
                 throw new SimpleException("readNDNc took too long.");
             Math2.sleep(5000);
@@ -15375,8 +15711,8 @@ touble: because table is JsonObject, info may not be in expected order
             Test.ensureTrue(table.nRows() > 2100, "nRows=" + table.nRows());
             time = System.currentTimeMillis() - time;
             String2.log("********** Done. cells/ms=" + 
-                (table.nColumns() * table.nRows()/time) + " (usual=106)" +
-                " time=" + time + " ms (usual=406,  java 1.5 was 562)");  
+                (table.nColumns() * table.nRows()/time) + " (usual=337 Java 1.7M4700, was 106)" +
+                " time=" + time + " ms (usual=128 Java 1.7M4700, was 406, java 1.5 was 562)");  
             if (time > 700)
                 throw new SimpleException("readOpendapSequence took too long.");
             Math2.sleep(5000);
@@ -15954,6 +16290,7 @@ expected =
         test4DNc();
         testSaveAsMatlab();
         testOpendapSequence(); 
+        testReadAwsXmlFile();
         //testOpendap(); //not done yet, see opendapSequence
         testReadNDNc();
         testReadNDNc2();
@@ -15961,13 +16298,13 @@ expected =
         testReadStandardTabbedASCII();
         testReadNcCF1(false);  //pauseAfterEachTest
         testReadNcCF2(false);
-*/        testReadNcCFASAProfile(false);
+        testReadNcCFASAProfile(false);
         testReadNcCFASATimeSeries(false);
         testReadNcCFASATrajectory(false);
         testReadNcCFASATimeSeriesProfile(false);
         testReadNcCFASATrajectoryProfile(false);
 
-        testReadASCIISpeed();
+*/        testReadASCIISpeed();
         testReadJsonSpeed();
         testReadNDNcSpeed();
         testReadOpendapSequenceSpeed();

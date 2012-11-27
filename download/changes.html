@@ -45,6 +45,42 @@
 <!-- ****************************************************************************** -->
 <tr>
 <td>
+<h2><a name="changes1.42">Changes</a> in version 1.42 (released 2012-11-26)</h2>
+<ul>
+<li><b>New Features:</b>
+  <ul>
+  <li>(No major new features.)
+  </ul>
+
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <ul>
+  <li>If you are upgrading from ERDDAP 1.38 or 1.40, there were no changes that require 
+    you to make changes to your configuration files (but you must use the new messages.xml file).
+  <li>ERDDAP once again can run with Java 1.6.  (ERDDAP v1.40 required Java 1.7.)
+    We still strongly recommend using the latest version of Java 1.7.
+  <li>A new dataset type, 
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromAwsXmlFiles">EDDTableFromAwsXmlFiles</a>, 
+    can read data from a set of
+    Automatic Weather Station (AWS) XML data files.
+    Thanks to Lynn Dewitt and the Exploratorium.
+  </ul>
+
+
+<li><b>Small changes/Bug Fixes:</b>
+  <ul>
+  <li>Adjusted to changes to the NDBC SOS source data servers.
+  <li>Adjusted to changes to the NOS COOPS ASCII services.
+  <li>Made several small changes and bug fixes.
+  </ul>
+</ul>
+
+</td>
+</tr>
+
+
+<!-- ****************************************************************************** -->
+<tr>
+<td>
 <h2><a name="changes1.40">Changes</a> in version 1.40 (released 2012-10-25)</h2>
 <ul>
 <li><b>New Features:</b>
@@ -64,7 +100,7 @@
 <li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
   <ul>
   <li>If you are upgrading from ERDDAP 1.38, there were no changes that require 
-    you to make changes to your configuration files.
+    you to make changes to your configuration files (but you must use the new messages.xml file).
   <li>ERDDAP public releases and internal milestones are available via
     <a href="https://github.com/BobSimons">ERDDAP on GitHub</a>.
     For more information, see the 
@@ -1742,7 +1778,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.38
+<p>ERDDAP, Version 1.42
 <br><a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

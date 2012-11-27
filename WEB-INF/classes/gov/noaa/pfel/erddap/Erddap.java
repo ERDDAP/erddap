@@ -11829,7 +11829,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             expected = 
                 "Core Version: DAP/2.0\n" +
                 "Server Version: dods/3.7\n" +
-                "ERDDAP_version: 1.40\n";
+                "ERDDAP_version: 1.42\n";
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/griddap/version");
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/tabledap/version");

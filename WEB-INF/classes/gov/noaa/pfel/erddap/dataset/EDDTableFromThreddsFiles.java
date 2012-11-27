@@ -1315,7 +1315,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.1886048e+9, 1.35103674e+9;\n" +  //2nd number changes
+"    Float64 actual_range 1.1886048e+9, 1.35198714e+9;\n" +  //2nd number changes
 "    String axis \"T\";\n" +
 "    Int32 data_interval 60;\n" +
 "    String ioos_category \"Time\";\n" +
@@ -1413,24 +1413,13 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  conductivity {\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 4.78;\n" +
-"    String average_center \"unknown\";\n" +
-"    Int16 average_length 60;\n" +
-"    String average_method \"average\";\n" +
-"    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 4.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    Float32 data_precision -9999.0;\n" +
-"    Float32 distance_from_bow -9999.0;\n" +
-"    Float32 height -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"Conductivity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
-"    String original_units \"siemens meter-1\";\n" +
 "    Int32 qcindex 16;\n" +
-"    Float32 sampling_rate -9999.0;\n" +
-"    Float32 special_value -8888.0;\n" +
 "    String standard_name \"sea_water_electrical_conductivity\";\n" +
 "    String units \"siemens meter-1\";\n" +
 "  }\n" +
@@ -1461,49 +1450,27 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  salinity {\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 9672.92;\n" +
-"    String average_center \"unknown\";\n" +
-"    Int16 average_length -9999;\n" +
-"    String average_method \"average\";\n" +
-"    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 37.0;\n" +
 "    Float64 colorBarMinimum 32.0;\n" +
-"    Int32 data_interval 60;\n" +
-"    Float32 data_precision -9999.0;\n" +
-"    Float32 distance_from_bow -9999.0;\n" +
-"    Float32 height -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"Salinity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"calculated\";\n" +
-"    String original_units \"PSU\";\n" +
 "    Int32 qcindex 15;\n" +
-"    Float32 sampling_rate -9999.0;\n" +
-"    Float32 special_value -8888.0;\n" +
 "    String standard_name \"sea_water_salinity\";\n" +
 "    String units \"PSU\";\n" +
 "  }\n" +
 "  seaTemperature {\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range -1.1, 7777777.0;\n" +
-"    String average_center \"time at end of period\";\n" +
-"    Int16 average_length 60;\n" +
-"    String average_method \"average\";\n" +
-"    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 40.0;\n" +
 "    Float64 colorBarMinimum -10.0;\n" +
-"    Float32 data_precision -9999.0;\n" +
-"    Float32 distance_from_bow -9999.0;\n" +
-"    Float32 height -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"Sea Water Temperature\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
 "    String original_units \"celsius\";\n" +
 "    Int32 qcindex 14;\n" +
-"    Float32 sampling_rate 1.0;\n" +
-"    Float32 special_value -8888.0;\n" +
 "    String standard_name \"sea_water_temperature\";\n" +
 "    Int16 ts_sensor_category 12;\n" +
 "    String units \"degree_C\";\n" +
@@ -1675,7 +1642,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String C \"Non-sequential time\";\n" +
 "    String D \"Failed T>=Tw>=Td\";\n" +
 "    String DODS_dimName \"f_string\";\n" +
-"    Int32 DODS_strlen 16;\n" +
+"    Int32 DODS_strlen 13;\n" +
 "    String E \"True wind error\";\n" +
 "    String F \"Velocity unrealistic\";\n" +
 "    String G \"Value > 4 s. d. from climatology\";\n" +
@@ -1709,7 +1676,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String creator_email \"samos@coaps.fsu.edu\";\n" +
 "    String creator_name \"Shipboard Automated Meteorological and Oceanographic System (SAMOS)\";\n" +
 "    String creator_url \"http://samos.coaps.fsu.edu/html/\";\n" +
-"    String Data_modification_date \"11/02/2012 11:45:26 EDT\";\n" + //changes
+"    String Data_modification_date \"11/13/2012 13:58:06 EST\";\n" + //changes
 "    String data_provider \"Timothy Salisbury\";\n" +
 "    Float64 Easternmost_Easting 351.15;\n" +
 "    Int16 elev 0;\n" +
@@ -1750,7 +1717,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    String Metadata_modification_date \"11/02/2012 11:45:26 EDT\";\n" + //changes
+"    String Metadata_modification_date \"11/13/2012 13:58:06 EST\";\n" + //changes
 "    Float64 Northernmost_Northing 70.05856;\n" +
 "    String receipt_order \"01\";\n" +
 "    String sourceUrl \"http://coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\";\n" +
@@ -1769,7 +1736,7 @@ expected =
 "(Don't include backslashes in your query.)\n" +
 "See the tutorial for regular expressions at\n" +
 "http://www.vogella.de/articles/JavaRegularExpressions/article.html\";\n" +
-"    String time_coverage_end \"2012-10-23T23:59:00Z\";\n" +  //changes
+"    String time_coverage_end \"2012-11-03T23:59:00Z\";\n" +  //changes
 "    String time_coverage_start \"2007-09-01T00:00:00Z\";\n" +
 "    String title \"NOAA Ship Oscar Dyson Underway Meteorological Data, Quality Controlled\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +

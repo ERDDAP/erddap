@@ -202,6 +202,17 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, tSourceNeedsExpandedFP_EQ);
 
+        } else if (tType.equals("EDDTableFromAwsXmlFiles")) {
+            return new EDDTableFromAwsXmlFiles(tDatasetID, tAccessibleTo,
+                tOnChange, tFgdcFile, tIso19115File,  
+                tGlobalAttributes,
+                tAltitudeMetersPerSourceUnit,
+                ttDataVariables,
+                tReloadEveryNMinutes, 
+                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, tColumnNamesRow, tFirstDataRow,
+                tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
+                tSortedColumnSourceName, tSortFilesBySourceNames, tSourceNeedsExpandedFP_EQ);
+
         } else if (tType.equals("EDDTableFromNcFiles")) { 
             return new EDDTableFromNcFiles(tDatasetID, tAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File,  
@@ -426,7 +437,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * @param tMetadataFrom this indicates the file to be used
      *    to extract source metadata (first/last based on sorted file lastModifiedTime).
      *    Valid values are "first", "penultimate", "last".
-     * @param tColumnNamesRow the number of the row with column names (1..; usually 1); relevant for ASCII files only.
+     * @param tColumnNamesRow the number of the row with column names (1..; usually 1, may be 0 (none)); relevant for ASCII files only.
      * @param tDataRow the number of the row with column names (1..; usually 2); relevant for ASCII files only.
      * @param tPreExtractRegex may be "" or null if not needed.
      *    If present, this usually begins with "^" to match the beginning of the file name.
@@ -529,9 +540,9 @@ public abstract class EDDTableFromFiles extends EDDTable{
             throw new IllegalArgumentException("datasets.xml error: " +
                 "metadataFrom=" + metadataFrom + " must be " + 
                 MF_FIRST + " or " + MF_LAST + ".");
-        if (columnNamesRow < 1 || columnNamesRow > 10000)
+        if (columnNamesRow < 0 || columnNamesRow > 10000)
             throw new IllegalArgumentException("datasets.xml error: " +
-                "columnNamesRow=" + columnNamesRow + " must be between 1 and 10000.");
+                "columnNamesRow=" + columnNamesRow + " must be between 0 and 10000.");
         if (firstDataRow <= columnNamesRow || firstDataRow > 10000)
             throw new IllegalArgumentException("datasets.xml error: " +
                 "firstDataRow=" + firstDataRow + " must be between " + (columnNamesRow+1) + " and 10000.");

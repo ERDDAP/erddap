@@ -235,7 +235,7 @@ public class TestAll  {
 //        "c:/data/ncepGfs/", ".*\\.grib2", 
 //        "c:/data/ncepGfs/wafsgfs_P_t12z_intdsk36.grib2",
 //        10080, null));
-//    String2.log(NcHelper.testLowNcDump("c:/u00/cwatch/testData/grib/HADCM3_A2_wind_1981-1990.grb"));
+//    String2.log(NcHelper.testLowNcDump("filename"));
 //    EDDGridFromNcFiles.testSpeed(-1);  //-1 for all
 //    EDDGridSideBySide.testTransparentPng();
 
@@ -461,12 +461,12 @@ public class TestAll  {
 
 //    EDDTableFromNcCFFiles.bobMakeTestReadDataFiles();
 //    EDDTableFromNcCFFiles.testReadData(0); 
-
+//
 //Table tTable = new Table();
-//tTable.readFlat0Nc("c:/data/wod/monthly/APB/201103-201103/wod_013459339O.nc",
-//    null, 0, 1);
-//String2.log(tTable.toCSSVString());
-
+//tTable.readNDNc("C:/data/argo/argo_test_files/argo-profiles-7900043.nc", 
+//    null, "", Double.NaN, Double.NaN, true);
+//String2.log(tTable.toCSVString());
+//
 //    NOT FINISHED  EDDTableFromNcFiles.bobConsolidateWOD("APB", "1960-01-01"); 
 //      EDDTableFromNcFiles.getAllSourceVariableNames(
 //          "c:/data/wod/monthly/APB/", ".*\\.nc"); //201103-201103/
@@ -481,8 +481,8 @@ public class TestAll  {
 //            "PL_WDIR3", "SPD3", "PL_WSPD3", "DIR3", "P3", "T3", "TS3", "RH3", "PRECIP3", "RRATE3"},
 //        "long_name");
 //    String2.log(EDDTableFromNcFiles.generateDatasetsXml(
-//        "c:/u00/data/points/erdGroundfish/", ".*\\.nc", 
-//        "c:/u00/data/points/erdGroundfish/groundfish.nc", "", 1000000, 
+//        "c:/data/socat/", ".*\\.nc", 
+//        "c:/data/socat/06AQ20110715.nc", "tax", 1440, 
 //        "", "", "", 
 //        "", "", 
 //        "", 
@@ -535,7 +535,7 @@ public class TestAll  {
 //*** Consider temporarily switching off parts of McAfee : Virus Scan Console  (2X speedup!)
 //      On Access Scanner : All Processes
 //        Scan Items: check: specified file types only (instead of usual All Files) 
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2011, 7, 2012, 9, false);  //first/last year(1990..)/month(1..), testMode
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2012, 4, 2012, 10, false);  //first/last year(1990..)/month(1..), testMode
 //       log file is c:/data/gtspp/log.txt 
 //      2b) Email the "good" but "impossible" stations to Charles Sun, Melanie Hamilton 
 //       [start in 2011? but not longer valid 2012-10-19 Meilin.Chen@noaa.gov]
@@ -603,6 +603,7 @@ public class TestAll  {
 //    EDDTableFromSOS.testNdbcTestServer("");
 //    EDDTableFromSOS.testNdbcSosBig("");
 //    EDDTableFromSOS.testNosSosATempStationList("");
+//    EDDTableFromSOS.testNosSosCurrents("");
 //    EDDTableFromSOS.testNosSosSalinity("");
 //    EDDTableFromSOS.testNosSosWind("");
 //    EDDTableFromSOS.testNosSosWTemp("");
@@ -735,9 +736,9 @@ public class TestAll  {
 //        "\nImageIO Writers: " + String2.toCSSVString(ImageIO.getWriterFormatNames()));
 //    LRUCache.test();
 //    MakeErdJavaZip.makeCwhdfToNcZip();
-//    NdbcMetStation.main(null); //NEXT TIME: be stricter and remove 99.9 and 98.7 data values. Run OVERNIGHT! Used for monthly updates  !!!check pxoc1. make historic file if needed.
-//    NcHelper.dump("TestAll",
-//        "c:/data/ndbcMet/46088.nc", true);
+//    NdbcMetStation.main(null); //NEXT TIME: be stricter and remove 99.9 and 98.7 data values. Used for monthly updates  !!!check pxoc1. make historic file if needed.
+//    String2.log(NcHelper.dumpString("C:/data/socat/06AQ20110715.nc", 
+//        false)); //print data
 //    NcHelper.testSequence();
 //    String2.log(NcHelper.dumpString("c:/downloads/MLMLseawater.nc", false)); //false=don't print data
 //    String2.log(NcHelper.dumpString("c:/downloads/MLMLseawater.nc", "lon,lat,altitude")); 
@@ -999,6 +1000,7 @@ public class TestAll  {
 //        Math2.gc(500); String2.log(" done " + Math2.memoryString());
 //    Table.testLastRowWithData();
 //    Table.testMdb();
+//    Table.testReadAwsXmlFile();
 //    boolean pauseAfterEach = false;
 //    Table.testReadNcCF1(pauseAfterEach);
 //    Table.testReadNcCF2(pauseAfterEach);
@@ -1039,8 +1041,8 @@ public class TestAll  {
 //    TestUtil.timeString2Log();
 //    TestUtil.testString2LogOutputStream();
 //    Touch.getPiscoUrls();
-//    XML.prettyXml("c:/programs/iso19115/ns01agg.xml", 
-//                  "c:/programs/iso19115/ns01aggPretty.xml");
+//    XML.prettyXml("c:/data/aws/xml/notPrettySNFLS-2012-11-03T20_30_01Z.xml", 
+//                  "c:/data/aws/xml/SNFLS-2012-11-03T20_30_01Z.xml");
 //    XML.prettyXml(
 //        "c:/programs/iso19115/sst-aerosol-aggregation20110520.xml", 
 //        "c:/programs/iso19115/bobSST.xml");
@@ -1451,9 +1453,10 @@ WaitThenTryAgainException wttae;
         //EDDTableFromDapSequence.testMemory(); //don't usually run...very slow
 //        EDDTableFromDatabase.test();     //very slow!
         //EDDTableFromPostDatabase.test(); //very slow?
-        EDDTableFromAsciiServiceNOS.test(); 
+        EDDTableFromAsciiServiceNOS.test(false); 
         EDDTableFromErddap.test(); 
         EDDTableFromAsciiFiles.test(false); //rarely: true=delete cached info
+        EDDTableFromAwsXmlFiles.test();
         EDDTableFromThreddsFiles.test(false); //rarely: true=delete cached info
         //EDDTableFromMWFS.test(false); //doLongTest); //as of 2009-01-14 no longer active
         //EDDTableFromNOS.test(false); //doLongTest); //as of 2010-09-08 no longer active

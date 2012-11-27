@@ -122,8 +122,9 @@ public class EDStatic {
      * <br>1.36 released on 2011-08-01
      * <br>1.38 released on 2012-04-21
      * <br>1.40 released on 2012-10-25
+     * <br>1.42 released on 2012-11-26
      */   
-    public static String erddapVersion = "1.40";  
+    public static String erddapVersion = "1.42";  
 
     /** 
      * This is almost always false.  
