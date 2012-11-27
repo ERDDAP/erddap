@@ -519,13 +519,14 @@ Datasets fall into two categories.  (<a rel="help" href="#dataStructures">Why?</
   <li>The EDDTable dataset types are:
       <ul>
       <li><a rel="help" href="#EDDTableFromAsciiFiles">EDDTableFromAsciiFiles</a> aggregates data from 
-      comma- or tab-separated tabular ASCII 
-        data files.
+      comma-, tab-, or space-separated tabular ASCII data files.
       <li><a rel="help" href="#EDDTableFromAsciiService">EDDTableFromAsciiService</a> is the superclass
         of all EDDTableFromAsciiService... classes. 
       <li><a rel="help" href="#EDDTableFromAsciiServiceNOS">EDDTableFromAsciiServiceNOS</a> handles data from
         some of the NOAA NOS web services.
       <!-- li><a rel="help" href="#EDDTableFromBMDE">EDDTableFromBMDE</a> handles tabular data from BMDE servers. -->
+      <li><a rel="help" href="#EDDTableFromAwsXmlFiles">EDDTableFromAwsXmlFiles</a> aggregates data from 
+       a set of Automatic Weather Station (AWS) XML files.
       <li><a rel="help" href="#EDDTableFromDapSequence">EDDTableFromDapSequence</a> handles tabular data 
         from DAP sequence servers.
       <li><a rel="help" href="#EDDTableFromDatabase">EDDTableFromDatabase</a> handles tabular data from one database table.
@@ -1375,9 +1376,10 @@ EDDTableFrom...Files classes.
 You can't use EDDTableFromFiles directly. 
 Instead, you can use subclasses of EDDTableFromFiles to handle specific file types:
   <ul>
-  <li><a rel="help" href="#EDDTableFromAsciiFiles">EDDTableFromAsciiFiles</a> aggregates data from comma-
-       and tab-separated 
-    tabular ASCII data files.
+  <li><a rel="help" href="#EDDTableFromAsciiFiles">EDDTableFromAsciiFiles</a> aggregates data from 
+       comma-, tab-, or space-separated tabular ASCII data files.
+  <li><a rel="help" href="#EDDTableFromAwsXmlFiles">EDDTableFromAwsXmlFiles</a> aggregates data from 
+       a set of Automatic Weather Station (AWS) XML files.
   <li><a rel="help" href="#EDDTableFromHyraxFiles">EDDTableFromHyraxFiles</a> aggregates data with several variables, 
       each with shared dimensions
     (e.g., time, altitude, latitude, longitude), and served by a 
@@ -1610,10 +1612,11 @@ allows fast random access to the data, and is already supported by ERDDAP.
   &lt;metadataFrom&gt;...&lt;/metadataFrom&gt; &lt;-- The file to get metadata
     from ("first" or "last" (the default) based on file's 
     lastModifiedTime). --&gt;
-  &lt;columnNamesRow&gt;...&lt;/columnNamesRow&gt; &lt;-- (For 
+  <a name="columnNamesRow">&lt;columnNamesRow&gt;...&lt;/columnNamesRow&gt;</a> &lt;-- (For 
     EDDTableFromAsciiFiles only) This specifies the number of the row
     with the column names in the files. (The first row is "1". 
-    Default = 1.) --&gt;
+    Default = 1.)  If you specify 0, ERDDAP will not look for column names
+    and will assign names: Column#1, Column#2, ... --&gt;
   &lt;firstDataRow&gt;...&lt;/firstDataRow&gt; &lt;-- (For 
     EDDTableFromAsciiFiles only) This specifies the number of the first
     row with data in the files. (The first row is "1". default = 2.) --&gt;
@@ -1686,7 +1689,7 @@ allows fast random access to the data, and is already supported by ERDDAP.
 </ul -->
 
 <p><a name="EDDTableFromAsciiFiles"><b>EDDTableFromAsciiFiles</b></a> aggregates data from
-  comma- and tab-separated tabular ASCII data files.
+  comma-, tab-, or space-separated tabular ASCII data files.
 <ul>
 <li>Normally, the files will have column names on the first row and data starting on the second row.
   But you can use <tt>&lt;columnNamesRow&gt;</tt> and <tt>&lt;firstDataRow&gt;</tt> 
@@ -1695,6 +1698,20 @@ allows fast random access to the data, and is already supported by ERDDAP.
 <li>Note that ASCII files are not a very efficient way to store/retreive data. 
   For greater efficiency, save the files as .nc files (which one dimension, "row", shared by 
   all variables) instead.
+<li>See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, for information
+on how to use this class and how this class works.
+</ul>
+
+<p><a name="EDDTableFromAwsXmlFiles"><b>EDDTableFromAwsXmlFiles</b></a> aggregates data from
+  a set of Automatic Weather Station (AWS) XML data files. Some background information is at
+  <a rel="help" href="http://developer.weatherbug.com/docs/read/WeatherBug_Rest_XML_API">WeatherBug_Rest_XML_API</a>.
+<ul>
+<li>This type of file is a simple but inefficient way to store the data, 
+  because each file usually seems to contain the observation from just one time point.  
+  So there may be a large number of files.  If you want to improve performance,
+  consider consolidating groups of observations (a week's worth?) in .nc files
+  and using <a href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a> to serve the data.
+
 <li>See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, for information
 on how to use this class and how this class works.
 </ul>
@@ -3222,10 +3239,21 @@ Here are detailed descriptions of common tags and attributes.
     <li><tt>&lt;dataVariable&gt;</tt> supports the following subtags:
       <ul>
       <li><tt>&lt;sourceName&gt;</tt> - the data source's name for the variable. 
-      This is the name that ERDDAP will use when requesting data from the data source. 
-      This is the name that ERDDAP will look for when data is returned from the data source.
-      This is case sensitive. 
-      This is REQUIRED.
+        This is the name that ERDDAP will use when requesting data from the data source. 
+        This is the name that ERDDAP will look for when data is returned from the data source.
+        This is case sensitive. 
+        This is REQUIRED.
+        <p><a name="fixedValue">If</a> you want to create a variable (with a fixed value)
+        that isn't in the source dataset, use:
+        <br><tt>&lt;sourceName&gt;=<i>fixedValue</i>&lt;/sourceName&gt;</tt>
+        <br>The initial equals sign tells ERDDAP that a fixedValue will follow.
+        <br>The other tags for the <tt>&lt;dataVariable&gt;</tt> work as if this were a regular variable.
+        <br>For example, to create a variable called <tt>altitude</tt> with a fixed value of 0.0 (float),
+        use:
+        <br><tt>&lt;sourceName&gt;=0&lt;/sourceName&gt;</tt>
+        <br><tt>&lt;destinationName&gt;altitude&lt;/destinationName&gt;</tt>
+        <br><tt>&lt;dataType&gt;float&lt;/dataType&gt;</tt>
+
       <li><tt>&lt;destinationName&gt;</tt> - the name for the variable that will be shown to 
       and used by ERDDAP users. 
         <ul>
@@ -3606,10 +3634,11 @@ Here are detailed descriptions of common tags and attributes.
           for all of the fields that are hidden.
           <ul>
           <li>For example, you can use a time_precision of <tt>1970-01-01</tt> 
-            if all of the data vaules are like
-            <tt>2005-03-04T00:00:00Z</tt> and <tt>2005-03-05T00:00:00Z</tt>. 
+            if all of the data vaules have hour=0, minute=0, and second=0 (for example
+            <tt>2005-03-04T00:00:00Z</tt> and <tt>2005-03-05T00:00:00Z</tt>). 
           <li>For example, don't use a time_precision of <tt>1970-01-01</tt> 
-            if there are data values like <tt>2005-03-05T12:00:00Z</tt>,
+            if there are non-0 hour, minute, or seconds values, 
+            (for example <tt>2005-03-05T12:00:00Z</tt>)
             because the non-default hour value wouldn't be displayed.
             <br>Otherwise, if a user asks for all data with <tt>time=2005-03-05</tt>,
             the request will fail unexpectedly.
@@ -3659,10 +3688,22 @@ Here are detailed descriptions of common tags and attributes.
             where the base time is an ISO 8601:2004(E) formatted date time string (YYYY-MM-DDThh:mm:ssZ).
           <li>For time data variables with String data: an org.joda.time.format.DateTimeFormat string
             (which is mostly compatible with java.text.SimpleDateFormat) describing how to interpret 
-            string times  (e.g., the ISO8601TZ_FORMAT <tt>yyyy-MM-dd'T'HH:mm:ss'Z'</tt>).
-            See 
+            string times (e.g., the ISO8601TZ_FORMAT <tt>yyyy-MM-dd'T'HH:mm:ssZ</tt>).
+            <br>A <tt>Z</tt> (not the literal <tt>'Z'</tt>) at the end of the format string 
+            tells Java/Joda/ERDDAP to 
+            look for the character 'Z' (indicating the Zulu time zone with offset=0) 
+            or look for a time zone offset in the form
+            <tt><i>+hh:mm, +hh, -hh:mm,</i></tt> or <tt><i>-hh</i></tt>.  
+            Examples of String dates in this format are 
+            <br>2012-11-20T10:12:59-07:00
+            <br>2012-11-20T17:12:59Z 
+            <br>2012-11-20T17:12:59
+            <br>all of which are equivalent times in ERDDAP because
+              ERDDAP's default time zone (relevant for the last example) is Zulu.
+            <br>See 
               <a rel="help" href="http://joda-time.sourceforge.net/api-release/index.html">Joda Time</a> and
               <a rel="help" href="http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html">DateTimeFormat</a> .
+            
           </ul>
           The main time data variable (for tabular datasets) and the main time axis variable
           (for gridded datasets) are recognized by the destinationName <tt>time</tt> and their
@@ -3675,6 +3716,10 @@ Here are detailed descriptions of common tags and attributes.
           metadata, which must contain " since " (for numeric dateTimes) or "yy" or "YY"
           for formatted String dateTimes.
           But please still use the destinationName "time" for the main dateTime variable.
+
+          <p><b>Always check your work to be sure that the time data that shows up
+          in ERDDAP is the correct time data.</b>
+          Working with time data is always tricky and error prone. 
 
           <p>See <a rel="help" href="#LLAT">more information about time variables</a>.
           <br>ERDDAP has a utility to 
@@ -3697,7 +3742,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.38
+<p>ERDDAP, Version 1.42
 <br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

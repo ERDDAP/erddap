@@ -7902,7 +7902,7 @@ Attributes {
             "     <br><a href=\"" + fullValueExample + "\"><tt>" + 
                                     fullValueExample + "</tt></a>\n" +
             "     <br>Some fileTypes (notably, .csv, .tsv, .htmlTable, .odvTxt, and .xhtml) display date/time values as\n" +
-            "     <br><a rel=\"help\" href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" date/time strings</a>\n" +
+            "     <br><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time strings</a>\n" +
             "       (e.g., 2002-08-03T12:30:00Z).\n" +
             "     <br>ERDDAP has a utility to\n" +
             "       <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
@@ -7911,7 +7911,7 @@ Attributes {
             "       <a rel=\"help\" href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
             "       ERDDAP Deals with Time</a>.\n" +
             "   <li>For the time dimension, griddap extends the OPeNDAP standard by allowing you to specify an\n" +
-            "     <br><a rel=\"help\" href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" date/time string</a>\n" +
+            "     <br><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time string</a>\n" +
             "       in parentheses, which griddap then converts to the\n" +
             "     <br>internal number (in seconds since 1970-01-01T00:00:00Z) and then to the appropriate\n" +
             "     <br>array index.  The ISO date/time value should be in the form: <i>YYYY-MM-DD</i>T<i>hh:mm:ssZ</i>,\n" +
@@ -9489,7 +9489,7 @@ Attributes {
             "    <td nowrap>time=<i>time</i>\n" +
             "    <br>time=<i>beginTime/endTime</i></td>\n" +
             "    <td>The time values must be in\n" +
-            "      <a rel=\"help\" href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" format</a>,\n" +
+            "      <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" format</a>,\n" +
             "      for example, <span style=\"white-space: nowrap;\">\"1985-01-02T00:00:00Z\").</span>\n" +
             "      <br>In ERDDAP, any time value specified rounds to the nearest available time.\n" +
             "      <br>Or, in the WCS standard and ERDDAP, you can use \"now\" to get the last available time.\n" +

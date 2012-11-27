@@ -48,7 +48,9 @@ import java.util.TimeZone;
  *
  * <p>A summary of ISO 8601 Date Time formats is at
  * http://www.cl.cam.ac.uk/~mgk25/iso-time.html 
- * and http://www.iso.org/iso/date_and_time_format
+ * http://en.wikipedia.org/wiki/ISO_8601
+ * and http://dotat.at/tmp/ISO_8601-2004_E.pdf 
+ * (was http://www.iso.org/iso/date_and_time_format)
  * and years B.C at http://www.tondering.dk/claus/cal/node4.html#SECTION00450000000000000000
  *
  * <p>Calendar2 does not use ERA designations. It uses negative year values for B.C years
@@ -174,7 +176,8 @@ public class Calendar2 {
      * <p>WARNING: don't use the equations above. Use unitsSinceToEpochSeconds or
      * epochSecondsToUnitsSince which correctly handle special cases.
      *
-     * @param tsUnits e.g., "minutes since 1985-01-01"
+     * @param tsUnits e.g., "minutes since 1985-01-01".
+     *   This may include hours, minutes, seconds, decimal, and Z or timezone offset (default=Zulu).  
      * @return double[]{baseSeconds, factorToGetSeconds} 
      * @throws Exception if trouble (tsUnits is null or invalid)
      */
@@ -315,8 +318,7 @@ public class Calendar2 {
      * If any of the end of the dateTime is missing, a trailing portion of 
      * "1970-01-01T00:00:00" is added.
      * The 'T' connector can be any non-digit.
-     * If there is extra info at the end (e.g., "Z") it is ignored.
-     * FUTURE: would be nice if it supported time zone info like "Z" and "+08:00".
+     * This may include hours, minutes, seconds, decimal, and Z or timezone offset (default=Zulu).  
      *
      * @param isoZuluString
      * @return seconds 
@@ -384,9 +386,9 @@ public class Calendar2 {
      * In many ways trunc would be better, but doubles are often bruised.
      * round works symmetrically with + and - numbers.
      * If any of the end of the dateTime is missing, a trailing portion of 
-     * "1970-01-01T00:00:00" is added.
+     * "1970-01-01T00:00:00Z" or "1970-01-01T00:00:00-00:00" is added.
      * The 'T' connector can be any non-digit.
-     * If there is extra info at the end (e.g., "Z") it is ignored.
+     * This may include hours, minutes, seconds, decimal, and timezone offset (default=Zulu).  
      *
      * @param isoZuluString
      * @return seconds 
@@ -1337,6 +1339,7 @@ public class Calendar2 {
      * See parseISODateTime documentation.
      *
      * @param s the dateTimeString in the ISO format ([-]YYYY-MM-DDTHH:MM:SS)
+     *   This may include hours, minutes, seconds, decimal, and Z or timezone offset (default=Zulu).  
      * @return a GregorianCalendar object
      * @throws Exception if trouble (e.g., s is null or not at least #)
      */
@@ -1682,7 +1685,8 @@ public class Calendar2 {
      /**
      * This converts an ISO Zulu DateTime string to millis since 1970-01-01T00:00:00Z.
      *
-     * @param s the ISO Zulu DateTime string
+     * @param s the ISO Zulu DateTime string.
+     *   This may include hours, minutes, seconds, decimal, and Z or timezone offset (default=Zulu).  
      * @return the millis since 1970-01-01T00:00:00Z 
      * @throws Exception if trouble (e.g., s is null or not at least #)
      */
@@ -1746,7 +1750,8 @@ public class Calendar2 {
      *   It the array has duplicates and timeValue equals one of them,
      *   it isn't specified which duplicate's index will be returned.  
      * @param timeValue the ISO timeValue to be matched
-     *    (with connector "T" or " " matching the isoDates)
+     *    (with connector "T" or " " matching the isoDates).
+     *   This may include hours, minutes, seconds, decimal, and timezone offset (default=Zulu).  
      * @return the index (in isoDates) of the best match for timeValue.
      *   If timeValue is null or "", this returns isoDates.length-1.
      */
@@ -1796,7 +1801,8 @@ public class Calendar2 {
      * @param isoDates is an ascending sorted list of ISO dates [times]  
      *   which may have duplicates
      * @param timeValue an iso formatted date value
-     *    (with connector "T" or " " matching the isoDates)
+     *    (with connector "T" or " " matching the isoDates).
+     *   This may include hours, minutes, seconds, decimal, and timezone offset (default=Zulu).  
      * @return the index of the last element which is <= timeValue in an ascending sorted array.
      *   If timeValue is invalid or timeValue < the smallest element, this returns -1  (no element is appropriate).
      *   If timeValue > the largest element, this returns isoDates.length-1.
@@ -1843,7 +1849,8 @@ public class Calendar2 {
      * @param isoDates is a sorted list of ISO dates [times]  
      *    which may have duplicates
      * @param timeValue an iso formatted date value
-     *    (with connector "T" or " " matching the isoDates)
+     *    (with connector "T" or " " matching the isoDates).
+     *   This may include hours, minutes, seconds, decimal, and timezone offset (default=Zulu).  
      * @return the index of the first element which is >= timeValue in an ascending sorted array.
      *   <br>If timeValue < the smallest element, this returns 0.
      *   <br>If timeValue is invalid or timeValue > the largest element, 
@@ -1878,7 +1885,8 @@ public class Calendar2 {
      *
      * <p>This correctly handles B.C. dates.
      *
-     * @param isoDate an iso formatted date time string in UTC time zone.
+     * @param isoDate an iso formatted date time string.
+     *   This may include hours, minutes, seconds, decimal, and Z or timezone offset (default=Zulu).  
      * @param n the number of 'units' to be added
      * @param field one of the Calendar or Calendar2 constants for a field
      *    (e.g., Calendar2.YEAR).

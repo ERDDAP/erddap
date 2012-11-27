@@ -107,6 +107,7 @@ public class GenerateDatasetsXml {
                 "  EDDGridFromNcFiles\n" +
                 "  EDDGridFromThreddsCatalog\n" +
                 "  EDDTableFromAsciiFiles\n" +                
+                "  EDDTableFromAwsXmlFiles\n" +                
                 "  EDDTableFromDapSequence\n" +
                 "  EDDTableFromDatabase\n" +
                 "  EDDTableFromErddap\n" +
@@ -186,6 +187,29 @@ public class GenerateDatasetsXml {
                     s16 = get(args, 16, s16, "title");
                     System.out.println("working...");
                     println(EDDTableFromAsciiFiles.generateDatasetsXml(
+                        s1, s2, s3, String2.parseInt(s4, 1), String2.parseInt(s5, 2), 
+                        String2.parseInt(s6, 10080), s7, s8, s9, s10,
+                        s11, s12, s13, s14, s15, s16, null));
+
+                } else if (eddType.equals("EDDTableFromAwsXmlFiles")) {
+                    s1  = get(args,  1,  s1, "Starting directory");
+                    s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.xml\")");
+                    s3  = get(args,  3,  s3, "A sample full file name");                       
+                    s4  = "1"; //get(args,  4,  s4, "Column names row (e.g., 1)");                     
+                    s5  = "2"; //get(args,  5,  s5, "First data row (e.g., 2)");                          
+                    s6  = get(args,  6,  s6, "ReloadEveryNMinutes (e.g., 10080)");
+                    s7  = get(args,  7,  s7, "PreExtractRegex");
+                    s8  = get(args,  8,  s8, "PostExtractRegex");
+                    s9  = get(args,  9,  s9, "ExtractRegex");
+                    s10 = get(args, 10, s10, "Column name for extract");
+                    s11 = get(args, 11, s11, "Sorted column source name");
+                    s12 = get(args, 12, s12, "Sort files by sourceName");
+                    s13 = get(args, 13, s13, "infoUrl");
+                    s14 = get(args, 14, s14, "institution");
+                    s15 = get(args, 15, s15, "summary");
+                    s16 = get(args, 16, s16, "title");
+                    System.out.println("working...");
+                    println(EDDTableFromAwsXmlFiles.generateDatasetsXml(
                         s1, s2, s3, String2.parseInt(s4, 1), String2.parseInt(s5, 2), 
                         String2.parseInt(s6, 10080), s7, s8, s9, s10,
                         s11, s12, s13, s14, s15, s16, null));

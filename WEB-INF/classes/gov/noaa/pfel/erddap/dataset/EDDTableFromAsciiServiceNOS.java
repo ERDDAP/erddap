@@ -739,6 +739,8 @@ These datasets were hard to work with:
         String results, query, tName, expected;
         String yesterday = Calendar2.epochSecondsToIsoStringT(
             Calendar2.backNDays(1, Double.NaN)).substring(0, 11);
+        String daysAgo5 = Calendar2.epochSecondsToIsoStringT(
+            Calendar2.backNDays(5, Double.NaN)).substring(0, 11);
         String daysAgo70 = Calendar2.epochSecondsToIsoStringT(
             Calendar2.backNDays(70, Double.NaN)).substring(0, 11);
         String daysAgo72 = Calendar2.epochSecondsToIsoStringT(
@@ -747,9 +749,13 @@ These datasets were hard to work with:
             Calendar2.backNDays(-5, Double.NaN)).substring(0, 11);
         String daysAhead7 = Calendar2.epochSecondsToIsoStringT(
             Calendar2.backNDays(-7, Double.NaN)).substring(0, 11);
+        String daysAgo90 = Calendar2.epochSecondsToIsoStringT(
+            Calendar2.backNDays(90, Double.NaN)).substring(0, 11);
+        String daysAgo92 = Calendar2.epochSecondsToIsoStringT(
+            Calendar2.backNDays(92, Double.NaN)).substring(0, 11);
 
      
-        //Raw 6 minute
+/*        //Raw 6 minute          
         if ("nosCoopsWLR6".matches(idRegex)) {
         try {
             EDDTable edd = (EDDTable)oneFromDatasetXml("nosCoopsWLR6"); 
@@ -759,20 +765,20 @@ These datasets were hard to work with:
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
-            expected = 
-"stationID, stationName, longitude, latitude, time, datum, dcp, sensor, waterLevel, sigma, O, F, R, L\n" +
-", , degrees_east, degrees_north, UTC, , , , m, m, count, , , \n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:00:00Z, MLLW, 1, NT, 0.642, 0.03, NaN, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:06:00Z, MLLW, 1, NT, 0.665, 0.03, NaN, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:12:00Z, MLLW, 1, NT, 0.675, 0.02, NaN, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:18:00Z, MLLW, 1, NT, 0.678, 0.02, NaN, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:24:00Z, MLLW, 1, NT, 0.69, 0.02, NaN, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:30:00Z, MLLW, 1, NT, 0.685, 0.02, NaN, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:36:00Z, MLLW, 1, NT, 0.698, 0.01, NaN, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:42:00Z, MLLW, 1, NT, 0.715, 0.02, NaN, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:48:00Z, MLLW, 1, NT, 0.729, 0.03, NaN, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:54:00Z, MLLW, 1, NT, 0.732, 0.03, NaN, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T22:00:00Z, MLLW, 1, NT, 0.743, 0.03, NaN, 0, 0, 0\n";
+            expected =   //this changes every day
+"stationID,stationName,longitude,latitude,time,datum,dcp,sensor,waterLevel,sigma,O,F,R,L\n" +
+",,degrees_east,degrees_north,UTC,,,,m,m,count,,,\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:00:00Z,MLLW,1,N1,1.007,0.02,NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:06:00Z,MLLW,1,N1,0.945,0.03,NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:12:00Z,MLLW,1,N1,0.883,0.02,NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:18:00Z,MLLW,1,N1,0.829,0.02,NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:24:00Z,MLLW,1,N1,0.775,0.02,NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:30:00Z,MLLW,1,N1,0.72,0.03,NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:36:00Z,MLLW,1,N1,0.66,0.02,NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:42:00Z,MLLW,1,N1,0.599,0.02,NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:48:00Z,MLLW,1,N1,0.533,0.02,NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:54:00Z,MLLW,1,N1,0.476,0.03,NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T22:00:00Z,MLLW,1,N1,0.422,0.02,NaN,0,0,0\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -794,18 +800,19 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID, stationName, longitude, latitude, time, datum, dcp, sensor, waterLevel\n" +
-", , degrees_east, degrees_north, UTC, , , , m\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:01:00Z, MLLW, 1, U1, 0.648\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:02:00Z, MLLW, 1, U1, 0.656\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:03:00Z, MLLW, 1, U1, 0.655\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:04:00Z, MLLW, 1, U1, 0.668\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:05:00Z, MLLW, 1, U1, 0.674\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:06:00Z, MLLW, 1, U1, 0.657\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:07:00Z, MLLW, 1, U1, 0.679\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:08:00Z, MLLW, 1, U1, 0.665\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:09:00Z, MLLW, 1, U1, 0.67\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-11-14T21:10:00Z, MLLW, 1, U1, 0.671\n";
+"stationID,stationName,longitude,latitude,time,datum,dcp,sensor,waterLevel\n" +
+",,degrees_east,degrees_north,UTC,,,,m\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:00:00Z,MLLW,1,U1,1.512\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:01:00Z,MLLW,1,U1,0.999\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:02:00Z,MLLW,1,U1,0.994\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:03:00Z,MLLW,1,U1,0.977\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:04:00Z,MLLW,1,U1,0.964\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:05:00Z,MLLW,1,U1,0.963\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:06:00Z,MLLW,1,U1,0.945\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:07:00Z,MLLW,1,U1,0.942\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:08:00Z,MLLW,1,U1,0.926\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:09:00Z,MLLW,1,U1,0.923\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-13T21:10:00Z,MLLW,1,U1,0.906\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -821,30 +828,30 @@ These datasets were hard to work with:
         try {
             EDDTable edd = (EDDTable)oneFromDatasetXml("nosCoopsWLV6"); 
 
-            query = "&stationID=\"9414290\"&datum=\"MLLW\"&time>=" + daysAgo70 + 
-                "21:00&time<=" + daysAgo70 + "22:00";             
+            query = "&stationID=\"9414290\"&datum=\"MLLW\"&time>=" + daysAgo5 +   //2012-11-14 was daysAgo70
+                "21:00&time<=" + daysAgo5 + "22:00";             
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
-            expected = 
-"stationID, stationName, longitude, latitude, time, datum, waterLevel, sigma, I, F, R, L\n" +
-", , degrees_east, degrees_north, UTC, , m, m, , , , \n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T21:00:00Z, MLLW, 1.034, 0.021, 0, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T21:06:00Z, MLLW, 0.994, 0.021, 0, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T21:12:00Z, MLLW, 0.954, 0.018, 0, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T21:18:00Z, MLLW, 0.905, 0.022, 0, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T21:24:00Z, MLLW, 0.869, 0.019, 0, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T21:30:00Z, MLLW, 0.838, 0.02, 0, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T21:36:00Z, MLLW, 0.796, 0.027, 0, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T21:42:00Z, MLLW, 0.769, 0.02, 0, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T21:48:00Z, MLLW, 0.74, 0.018, 0, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T21:54:00Z, MLLW, 0.712, 0.02, 0, 0, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T22:00:00Z, MLLW, 0.692, 0.023, 0, 0, 0, 0\n";
+            expected = //changes every day
+"stationID,stationName,longitude,latitude,time,datum,waterLevel,sigma,I,F,R,L\n" +
+",,degrees_east,degrees_north,UTC,,m,m,,,,\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-09T21:00:00Z,MLLW,0.456,0.039,0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-09T21:06:00Z,MLLW,0.437,0.04,0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-09T21:12:00Z,MLLW,0.418,0.042,0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-09T21:18:00Z,MLLW,0.424,0.042,0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-09T21:24:00Z,MLLW,0.398,0.043,0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-09T21:30:00Z,MLLW,0.394,0.044,0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-09T21:36:00Z,MLLW,0.41,0.039,0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-09T21:42:00Z,MLLW,0.403,0.042,0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-09T21:48:00Z,MLLW,0.411,0.042,0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-09T21:54:00Z,MLLW,0.389,0.038,0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067,2012-11-09T22:00:00Z,MLLW,0.405,0.04,0,0,0,0\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\n*** nosCoopsWLV6 results change every day (70 days ago)." +
+                "\n*** nosCoopsWLV6 results change every day (5 days ago)." +
                 "\nIs the response reasonable?" +
                 "\nPress ^C to stop or Enter to continue..."); 
         }
@@ -854,25 +861,26 @@ These datasets were hard to work with:
         if ("nosCoopsWLR60".matches(idRegex)) {
         try {
             EDDTable edd = (EDDTable)oneFromDatasetXml("nosCoopsWLV60"); 
-
-            query = "&stationID=\"9414290\"&datum=\"MLLW\"&time>=" + daysAgo70 + 
+            //no recent data. always ask for daysAgo70
+            //2012-11-14 was stationID=9044020  but that stopped working
+            query = "&stationID=\"8454000\"&datum=\"MLLW\"&time>=" + daysAgo70 + 
                 "14:00&time<=" + daysAgo70 + "23:00";             
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID, stationName, longitude, latitude, time, datum, waterLevel, sigma, I, L\n" +
-", , degrees_east, degrees_north, UTC, , m, m, , \n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T14:00:00Z, MLLW, 0.451, 0.018, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T15:00:00Z, MLLW, 0.82, 0.018, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T16:00:00Z, MLLW, 1.167, 0.017, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T17:00:00Z, MLLW, 1.452, 0.019, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T18:00:00Z, MLLW, 1.605, 0.023, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T19:00:00Z, MLLW, 1.546, 0.02, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T20:00:00Z, MLLW, 1.331, 0.016, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T21:00:00Z, MLLW, 1.034, 0.021, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T22:00:00Z, MLLW, 0.692, 0.023, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-06T23:00:00Z, MLLW, 0.558, 0.023, 0, 0\n";
+"stationID,stationName,longitude,latitude,time,datum,waterLevel,sigma,I,L\n" +
+",,degrees_east,degrees_north,UTC,,m,m,,\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-05T14:00:00Z,MLLW,1.183,0.003,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-05T15:00:00Z,MLLW,1.368,0.002,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-05T16:00:00Z,MLLW,1.551,0.004,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-05T17:00:00Z,MLLW,1.434,0.003,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-05T18:00:00Z,MLLW,1.216,0.006,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-05T19:00:00Z,MLLW,0.708,0.007,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-05T20:00:00Z,MLLW,0.378,0.004,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-05T21:00:00Z,MLLW,0.276,0.001,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-05T22:00:00Z,MLLW,0.378,0.002,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-05T23:00:00Z,MLLW,0.572,0.002,0,0\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -887,23 +895,24 @@ These datasets were hard to work with:
         if ("nosCoopsWLVHL".matches(idRegex)) {
         try {
             EDDTable edd = (EDDTable)oneFromDatasetXml("nosCoopsWLVHL"); 
-
-            query = "&stationID=\"9414290\"&datum=\"MLLW\"&time>=" + daysAgo72 + 
+            //no recent data.  always ask for daysAgo72 ... daysAgo70
+            //2012-11-14 was stationID=9044020  but that stopped working
+            query = "&stationID=\"8454000\"&datum=\"MLLW\"&time>=" + daysAgo72 + 
                 "00:00&time<=" + daysAgo70 + "00:00";             
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID, stationName, longitude, latitude, time, datum, waterLevel, type, I, L\n" +
-", , degrees_east, degrees_north, UTC, , m, , , \n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-04T02:24:00Z, MLLW, 1.775, HH, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-04T09:48:00Z, MLLW, -0.074, LL, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-04T17:06:00Z, MLLW, 1.344, H, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-04T21:30:00Z, MLLW, 0.829, L, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-05T03:36:00Z, MLLW, 1.84, HH, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-05T10:36:00Z, MLLW, -0.176, LL, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-05T17:42:00Z, MLLW, 1.447, H, 0, 0\n" +
-"9414290, San Francisco, -122.465, 37.8067, 2010-09-05T22:24:00Z, MLLW, 0.69, L, 0, 0\n";
+"stationID,stationName,longitude,latitude,time,datum,waterLevel,type,I,L\n" +
+",,degrees_east,degrees_north,UTC,,m,,,\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-03T02:00:00Z,MLLW,1.6,H,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-03T07:18:00Z,MLLW,0.068,LL,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-03T14:48:00Z,MLLW,1.632,HH,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-03T19:42:00Z,MLLW,0.176,L,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-04T03:12:00Z,MLLW,1.478,H,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-04T08:00:00Z,MLLW,-0.002,LL,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-04T15:24:00Z,MLLW,1.507,HH,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-09-04T20:30:00Z,MLLW,0.197,L,0,0\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -915,12 +924,15 @@ These datasets were hard to work with:
         }
 
 
-        //Verified Daily Mean   NEVER WORKED, the usual stations and datums don't work; what does?
+        //Verified Daily Mean   NEVER WORKED,
+        //Their example at http://opendap.co-ops.nos.noaa.gov/axis/webservices/waterlevelverifieddaily/plain/
+        // with stationID=9044020 works,
+        // but using it here returns ERDDAP error message (not NOS service error message)
+        //  "Your query produced no matching results. (There are no matching stations.)"
         if ("nosCoopsWLVDM".matches(idRegex)) {
         try {
             EDDTable edd = (EDDTable)oneFromDatasetXml("nosCoopsWLVDM"); 
-
-            query = "&stationID=\"9044020\"&datum=\"MLLW\"&time>=" + daysAgo72 + 
+            query = "&stationID=\"9044020\"&datum=\"IGLD\"&time>=" + daysAgo72 + 
                 "00:00&time<=" + daysAgo70 + "00:00";             
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
@@ -949,22 +961,22 @@ These datasets were hard to work with:
         try {
             EDDTable edd = (EDDTable)oneFromDatasetXml("nosCoopsWLTPHL"); 
 
-            query = "&stationID=\"8454000\"&datum=\"MLLW\"&time>=" + daysAhead5 + 
+            query = "&stationID=\"8454000\"&time>=" + daysAhead5 + 
                 "00:00&time<=" + daysAhead7 + "00:00";             
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID, stationName, longitude, latitude, time, datum, waterLevel, type\n" +
-", , degrees_east, degrees_north, UTC, , m, \n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-24T02:09:00Z, MLLW, 1.4, H\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-24T07:24:00Z, MLLW, -0.1, L\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-24T14:24:00Z, MLLW, 1.6, H\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-24T20:08:00Z, MLLW, 0.0, L\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-25T02:59:00Z, MLLW, 1.4, H\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-25T08:08:00Z, MLLW, -0.1, L\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-25T15:16:00Z, MLLW, 1.5, H\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-25T20:51:00Z, MLLW, 0.0, L\n";
+"stationID,stationName,longitude,latitude,time,datum,waterLevel,type\n" +
+",,degrees_east,degrees_north,UTC,,m,\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T04:52:00Z,MLLW,1.496,H\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T09:46:00Z,MLLW,0.016,L\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T17:21:00Z,MLLW,1.548,H\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T22:27:00Z,MLLW,0.076,L\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-20T05:48:00Z,MLLW,1.451,H\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-20T10:42:00Z,MLLW,0.142,L\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-20T18:16:00Z,MLLW,1.437,H\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-20T23:22:00Z,MLLW,0.149,L\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -975,7 +987,7 @@ These datasets were hard to work with:
         }
         }
 
-
+*/
         //Tide Predicted   6 minute
         //I needed a different way to specify datum (just 0=MLLW or 1=STND)
         //  so always use datum=0; don't let user specify datum
@@ -993,19 +1005,19 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID, stationName, longitude, latitude, time, datum, predictedWL\n" +
-", , degrees_east, degrees_north, UTC, , m\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T00:00:00Z, MLLW, 0.404\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T00:06:00Z, MLLW, 0.419\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T00:12:00Z, MLLW, 0.435\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T00:18:00Z, MLLW, 0.452\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T00:24:00Z, MLLW, 0.47\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T00:30:00Z, MLLW, 0.49\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T00:36:00Z, MLLW, 0.511\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T00:42:00Z, MLLW, 0.533\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T00:48:00Z, MLLW, 0.557\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T00:54:00Z, MLLW, 0.583\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T01:00:00Z, MLLW, 0.61\n";
+"stationID,stationName,longitude,latitude,time,datum,predictedWL\n" +
+",,degrees_east,degrees_north,UTC,,m\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T00:00:00Z,MLLW,0.195\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T00:06:00Z,MLLW,0.201\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T00:12:00Z,MLLW,0.207\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T00:18:00Z,MLLW,0.214\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T00:24:00Z,MLLW,0.221\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T00:30:00Z,MLLW,0.229\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T00:36:00Z,MLLW,0.239\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T00:42:00Z,MLLW,0.25\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T00:48:00Z,MLLW,0.262\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T00:54:00Z,MLLW,0.276\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T01:00:00Z,MLLW,0.292\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1015,7 +1027,7 @@ These datasets were hard to work with:
                 "\nPress ^C to stop or Enter to continue..."); 
         }
         }
-
+/*
         //Tide Predicted   60 minute
         //I needed a different way to specify datum (just 0=MLLW or 1=STND)
         //  so always use datum=0; don't let user specify datum
@@ -1027,25 +1039,25 @@ These datasets were hard to work with:
         try {
             EDDTable edd = (EDDTable)oneFromDatasetXml("nosCoopsWLTP60"); 
 
-            query = "&stationID=\"8454000\"&datum=\"MLLW\"&time>=" + daysAhead5 + 
+            query = "&stationID=\"8454000\"&time>=" + daysAhead5 + 
                 "00:00&time<=" + daysAhead5 + "10:00";             
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID, stationName, longitude, latitude, time, datum, predictedWL\n" +
-", , degrees_east, degrees_north, UTC, , m\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T00:00:00Z, MLLW, 0.404\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T01:00:00Z, MLLW, 0.61\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T02:00:00Z, MLLW, 0.939\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T03:00:00Z, MLLW, 1.251\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T04:00:00Z, MLLW, 1.354\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T05:00:00Z, MLLW, 1.165\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T06:00:00Z, MLLW, 0.77\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T07:00:00Z, MLLW, 0.351\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T08:00:00Z, MLLW, 0.044\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T09:00:00Z, MLLW, -0.059\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-26T10:00:00Z, MLLW, 0.082\n";
+"stationID,stationName,longitude,latitude,time,datum,predictedWL\n" +
+",,degrees_east,degrees_north,UTC,,m\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T00:00:00Z,MLLW,0.195\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T01:00:00Z,MLLW,0.292\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T02:00:00Z,MLLW,0.563\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T03:00:00Z,MLLW,0.99\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T04:00:00Z,MLLW,1.37\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T05:00:00Z,MLLW,1.493\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T06:00:00Z,MLLW,1.288\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T07:00:00Z,MLLW,0.87\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T08:00:00Z,MLLW,0.421\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T09:00:00Z,MLLW,0.097\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-19T10:00:00Z,MLLW,0.023\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1070,19 +1082,19 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID, stationName, longitude, latitude, time, dcp, sensor, AT, X, N, R\n" +
-", , degrees_east, degrees_north, UTC, , , degree_C, , , \n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:00:00Z, 1, D1, 9.4, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:06:00Z, 1, D1, 9.3, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:12:00Z, 1, D1, 9.1, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:18:00Z, 1, D1, 9.1, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:24:00Z, 1, D1, 9.0, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:30:00Z, 1, D1, 8.9, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:36:00Z, 1, D1, 8.8, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:42:00Z, 1, D1, 8.6, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:48:00Z, 1, D1, 8.6, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:54:00Z, 1, D1, 8.5, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T01:00:00Z, 1, D1, 8.4, 0, 0, 0\n";
+"stationID,stationName,longitude,latitude,time,dcp,sensor,AT,X,N,R\n" +
+",,degrees_east,degrees_north,UTC,,,degree_C,,,\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:00:00Z,1,D1,16.3,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:06:00Z,1,D1,16.4,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:12:00Z,1,D1,16.2,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:18:00Z,1,D1,16.0,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:24:00Z,1,D1,16.2,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:30:00Z,1,D1,16.0,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:36:00Z,1,D1,16.1,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:42:00Z,1,D1,16.0,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:48:00Z,1,D1,16.0,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:54:00Z,1,D1,16.1,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T01:00:00Z,1,D1,16.1,0,0,0\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1107,19 +1119,19 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID, stationName, longitude, latitude, time, dcp, sensor, BP, X, N, R\n" +
-", , degrees_east, degrees_north, UTC, , , mbar, , , \n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:00:00Z, 1, F1, 1019.8, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:06:00Z, 1, F1, 1019.8, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:12:00Z, 1, F1, 1020.0, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:18:00Z, 1, F1, 1020.1, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:24:00Z, 1, F1, 1020.2, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:30:00Z, 1, F1, 1020.3, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:36:00Z, 1, F1, 1020.5, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:42:00Z, 1, F1, 1020.7, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:48:00Z, 1, F1, 1020.9, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:54:00Z, 1, F1, 1021.0, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T01:00:00Z, 1, F1, 1021.0, 0, 0, 0\n";
+"stationID,stationName,longitude,latitude,time,dcp,sensor,BP,X,N,R\n" +
+",,degrees_east,degrees_north,UTC,,,mbar,,,\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:00:00Z,1,F1,1026.2,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:06:00Z,1,F1,1026.1,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:12:00Z,1,F1,1026.0,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:18:00Z,1,F1,1026.0,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:24:00Z,1,F1,1025.9,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:30:00Z,1,F1,1025.9,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:36:00Z,1,F1,1025.8,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:42:00Z,1,F1,1025.8,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:48:00Z,1,F1,1025.7,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:54:00Z,1,F1,1025.6,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T01:00:00Z,1,F1,1025.6,0,0,0\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1144,23 +1156,24 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID, stationName, longitude, latitude, time, dcp, sensor, CN, X, N, R\n" +
-", , degrees_east, degrees_north, UTC, , , mS/cm, , , \n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:00:00Z, 1, G1, 29.3, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:06:00Z, 1, G1, 29.4, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:12:00Z, 1, G1, 30.4, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:18:00Z, 1, G1, 31.3, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:24:00Z, 1, G1, 29.8, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:30:00Z, 1, G1, 29.8, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:36:00Z, 1, G1, 29.6, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:42:00Z, 1, G1, 30.5, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:48:00Z, 1, G1, 31.1, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:54:00Z, 1, G1, 31.3, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T01:00:00Z, 1, G1, 31.1, 0, 0, 0\n";
+"stationID,stationName,longitude,latitude,time,dcp,sensor,CN,X,N,R\n" +
+",,degrees_east,degrees_north,UTC,,,mS/cm,,,\n" +
+"8454000,Providence,-71.4012,41.8071,2010-11-21T00:00:00Z,1,G1,29.3,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2010-11-21T00:06:00Z,1,G1,29.4,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2010-11-21T00:12:00Z,1,G1,30.4,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2010-11-21T00:18:00Z,1,G1,31.3,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2010-11-21T00:24:00Z,1,G1,29.8,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2010-11-21T00:30:00Z,1,G1,29.8,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2010-11-21T00:36:00Z,1,G1,29.6,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2010-11-21T00:42:00Z,1,G1,30.5,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2010-11-21T00:48:00Z,1,G1,31.1,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2010-11-21T00:54:00Z,1,G1,31.3,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2010-11-21T01:00:00Z,1,G1,31.1,0,0,0\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
+                "\n*** 2012-11-14 their example with this station says "no data is available from this station"
                 "\n*** nosCoopsMC results change every day (yesterday)." +
                 "\nIs the response reasonable?" +
                 "\nPress ^C to stop or Enter to continue..."); 
@@ -1181,18 +1194,19 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID, stationName, longitude, latitude, time, dcp, sensor, RF, X, R\n" +
-", , degrees_east, degrees_north, UTC, , , mm, , \n" +
-"9752619, \"Isabel Segunda, Vieques Island\", -65.4438, 18.1525, 2010-11-21T00:06:00Z, 1, J1, 0.0, 0, 0\n" +
-"9752619, \"Isabel Segunda, Vieques Island\", -65.4438, 18.1525, 2010-11-21T00:12:00Z, 1, J1, 0.0, 0, 0\n" +
-"9752619, \"Isabel Segunda, Vieques Island\", -65.4438, 18.1525, 2010-11-21T00:18:00Z, 1, J1, 0.0, 0, 0\n" +
-"9752619, \"Isabel Segunda, Vieques Island\", -65.4438, 18.1525, 2010-11-21T00:24:00Z, 1, J1, 0.0, 0, 0\n" +
-"9752619, \"Isabel Segunda, Vieques Island\", -65.4438, 18.1525, 2010-11-21T00:30:00Z, 1, J1, 0.0, 0, 0\n" +
-"9752619, \"Isabel Segunda, Vieques Island\", -65.4438, 18.1525, 2010-11-21T00:36:00Z, 1, J1, 0.0, 0, 0\n" +
-"9752619, \"Isabel Segunda, Vieques Island\", -65.4438, 18.1525, 2010-11-21T00:42:00Z, 1, J1, 0.0, 0, 0\n" +
-"9752619, \"Isabel Segunda, Vieques Island\", -65.4438, 18.1525, 2010-11-21T00:48:00Z, 1, J1, 0.0, 0, 0\n" +
-"9752619, \"Isabel Segunda, Vieques Island\", -65.4438, 18.1525, 2010-11-21T00:54:00Z, 1, J1, 0.0, 0, 0\n" +
-"9752619, \"Isabel Segunda, Vieques Island\", -65.4438, 18.1525, 2010-11-21T01:00:00Z, 1, J1, 0.0, 0, 0\n";
+"stationID,stationName,longitude,latitude,time,dcp,sensor,RF,X,R\n" +
+",,degrees_east,degrees_north,UTC,,,mm,,\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525,2012-11-13T00:00:00Z,1,J1,0.2,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525,2012-11-13T00:06:00Z,1,J1,0.0,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525,2012-11-13T00:12:00Z,1,J1,0.0,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525,2012-11-13T00:18:00Z,1,J1,0.0,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525,2012-11-13T00:24:00Z,1,J1,0.0,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525,2012-11-13T00:30:00Z,1,J1,0.0,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525,2012-11-13T00:36:00Z,1,J1,0.0,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525,2012-11-13T00:42:00Z,1,J1,0.0,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525,2012-11-13T00:48:00Z,1,J1,0.0,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525,2012-11-13T00:54:00Z,1,J1,0.0,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525,2012-11-13T01:00:00Z,1,J1,0.0,0,0\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1217,19 +1231,19 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID, stationName, longitude, latitude, time, dcp, sensor, RH, X, N, R\n" +
-", , degrees_east, degrees_north, UTC, , , percent, , , \n" +
-"9063063, Cleveland, -81.6355, 41.5409, 2010-11-21T00:00:00Z, 1, R1, 65.0, 0, 0, 0\n" +
-"9063063, Cleveland, -81.6355, 41.5409, 2010-11-21T00:06:00Z, 1, R1, 66.0, 0, 0, 0\n" +
-"9063063, Cleveland, -81.6355, 41.5409, 2010-11-21T00:12:00Z, 1, R1, 66.0, 0, 0, 0\n" +
-"9063063, Cleveland, -81.6355, 41.5409, 2010-11-21T00:18:00Z, 1, R1, 67.0, 0, 0, 0\n" +
-"9063063, Cleveland, -81.6355, 41.5409, 2010-11-21T00:24:00Z, 1, R1, 69.0, 0, 0, 0\n" +
-"9063063, Cleveland, -81.6355, 41.5409, 2010-11-21T00:30:00Z, 1, R1, 72.0, 0, 0, 0\n" +
-"9063063, Cleveland, -81.6355, 41.5409, 2010-11-21T00:36:00Z, 1, R1, 74.0, 0, 0, 0\n" +
-"9063063, Cleveland, -81.6355, 41.5409, 2010-11-21T00:42:00Z, 1, R1, 75.0, 0, 0, 0\n" +
-"9063063, Cleveland, -81.6355, 41.5409, 2010-11-21T00:48:00Z, 1, R1, 74.0, 0, 0, 0\n" +
-"9063063, Cleveland, -81.6355, 41.5409, 2010-11-21T00:54:00Z, 1, R1, 74.0, 0, 0, 0\n" +
-"9063063, Cleveland, -81.6355, 41.5409, 2010-11-21T01:00:00Z, 1, R1, 75.0, 0, 0, 0\n";
+"stationID,stationName,longitude,latitude,time,dcp,sensor,RH,X,N,R\n" +
+",,degrees_east,degrees_north,UTC,,,percent,,,\n" +
+"9063063,Cleveland,-81.6355,41.5409,2012-11-13T00:00:00Z,1,R1,76.0,0,0,0\n" +
+"9063063,Cleveland,-81.6355,41.5409,2012-11-13T00:06:00Z,1,R1,75.0,0,0,0\n" +
+"9063063,Cleveland,-81.6355,41.5409,2012-11-13T00:12:00Z,1,R1,76.0,0,0,0\n" +
+"9063063,Cleveland,-81.6355,41.5409,2012-11-13T00:18:00Z,1,R1,76.0,0,0,0\n" +
+"9063063,Cleveland,-81.6355,41.5409,2012-11-13T00:24:00Z,1,R1,75.0,0,0,0\n" +
+"9063063,Cleveland,-81.6355,41.5409,2012-11-13T00:30:00Z,1,R1,77.0,0,0,0\n" +
+"9063063,Cleveland,-81.6355,41.5409,2012-11-13T00:36:00Z,1,R1,69.0,0,0,0\n" +
+"9063063,Cleveland,-81.6355,41.5409,2012-11-13T00:42:00Z,1,R1,73.0,0,0,0\n" +
+"9063063,Cleveland,-81.6355,41.5409,2012-11-13T00:48:00Z,1,R1,72.0,0,0,0\n" +
+"9063063,Cleveland,-81.6355,41.5409,2012-11-13T00:54:00Z,1,R1,70.0,0,0,0\n" +
+"9063063,Cleveland,-81.6355,41.5409,2012-11-13T01:00:00Z,1,R1,71.0,0,0,0\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1254,19 +1268,19 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID, stationName, longitude, latitude, time, dcp, sensor, WT, X, N, R\n" +
-", , degrees_east, degrees_north, UTC, , , degree_C, , , \n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:00:00Z, 1, E1, 10.2, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:06:00Z, 1, E1, 10.2, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:12:00Z, 1, E1, 10.2, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:18:00Z, 1, E1, 10.2, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:24:00Z, 1, E1, 10.2, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:30:00Z, 1, E1, 10.2, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:36:00Z, 1, E1, 10.2, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:42:00Z, 1, E1, 10.2, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:48:00Z, 1, E1, 10.2, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:54:00Z, 1, E1, 10.2, 0, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T01:00:00Z, 1, E1, 10.2, 0, 0, 0\n";
+"stationID,stationName,longitude,latitude,time,dcp,sensor,WT,X,N,R\n" +
+",,degrees_east,degrees_north,UTC,,,degree_C,,,\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:00:00Z,1,E1,11.5,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:06:00Z,1,E1,11.5,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:12:00Z,1,E1,11.5,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:18:00Z,1,E1,11.4,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:24:00Z,1,E1,11.4,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:30:00Z,1,E1,11.4,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:36:00Z,1,E1,11.4,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:42:00Z,1,E1,11.4,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:48:00Z,1,E1,11.4,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:54:00Z,1,E1,11.4,0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T01:00:00Z,1,E1,11.4,0,0,0\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1291,18 +1305,19 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID, stationName, longitude, latitude, time, dcp, sensor, WS, WD, WG, X, R\n" +
-", , degrees_east, degrees_north, UTC, , , m s-1, degrees_true, m s-1, , \n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:00:00Z, 1, C1, 6.9, 2.0, 10.6, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:06:00Z, 1, C1, 6.2, 354.0, 11.5, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:12:00Z, 1, C1, 6.2, 5.0, 10.3, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:18:00Z, 1, C1, 6.8, 1.0, 8.6, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:30:00Z, 1, C1, 7.0, 352.0, 9.2, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:36:00Z, 1, C1, 5.1, 4.0, 8.1, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:42:00Z, 1, C1, 4.5, 351.0, 7.3, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:48:00Z, 1, C1, 4.2, 357.0, 6.8, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T00:54:00Z, 1, C1, 5.3, 353.0, 7.8, 0, 0\n" +
-"8454000, Providence, -71.4012, 41.8071, 2010-11-21T01:00:00Z, 1, C1, 5.6, 346.0, 7.3, 0, 0\n";
+"stationID,stationName,longitude,latitude,time,dcp,sensor,WS,WD,WG,X,R\n" +
+",,degrees_east,degrees_north,UTC,,,m s-1,degrees_true,m s-1,,\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:00:00Z,1,C1,4.9,193.0,8.2,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:06:00Z,1,C1,4.5,193.0,7.2,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:12:00Z,1,C1,5.1,190.0,7.1,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:18:00Z,1,C1,4.6,183.0,7.5,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:24:00Z,1,C1,6.0,185.0,7.9,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:30:00Z,1,C1,4.4,191.0,7.2,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:36:00Z,1,C1,4.6,186.0,6.7,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:42:00Z,1,C1,5.7,190.0,7.4,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:48:00Z,1,C1,5.1,193.0,7.4,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T00:54:00Z,1,C1,5.0,184.0,7.7,0,0\n" +
+"8454000,Providence,-71.4012,41.8071,2012-11-13T01:00:00Z,1,C1,5.4,187.0,8.3,0,0\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1327,19 +1342,19 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID, stationName, longitude, latitude, time, Vis\n" +
-", , degrees_east, degrees_north, UTC, nautical_miles\n" +
-"8737005, Pinto Island, -88.0311, 30.6711, 2010-11-21T00:00:00Z, 5.4\n" +
-"8737005, Pinto Island, -88.0311, 30.6711, 2010-11-21T00:06:00Z, 5.4\n" +
-"8737005, Pinto Island, -88.0311, 30.6711, 2010-11-21T00:12:00Z, 5.4\n" +
-"8737005, Pinto Island, -88.0311, 30.6711, 2010-11-21T00:18:00Z, 5.4\n" +
-"8737005, Pinto Island, -88.0311, 30.6711, 2010-11-21T00:24:00Z, 5.4\n" +
-"8737005, Pinto Island, -88.0311, 30.6711, 2010-11-21T00:30:00Z, 5.4\n" +
-"8737005, Pinto Island, -88.0311, 30.6711, 2010-11-21T00:36:00Z, 5.4\n" +
-"8737005, Pinto Island, -88.0311, 30.6711, 2010-11-21T00:42:00Z, 5.4\n" +
-"8737005, Pinto Island, -88.0311, 30.6711, 2010-11-21T00:48:00Z, 5.4\n" +
-"8737005, Pinto Island, -88.0311, 30.6711, 2010-11-21T00:54:00Z, 5.4\n" +
-"8737005, Pinto Island, -88.0311, 30.6711, 2010-11-21T01:00:00Z, 5.4\n";
+"stationID,stationName,longitude,latitude,time,Vis\n" +
+",,degrees_east,degrees_north,UTC,nautical_miles\n" +
+"8737005,Pinto Island,-88.0311,30.6711,2012-11-13T00:00:00Z,5.4\n" +
+"8737005,Pinto Island,-88.0311,30.6711,2012-11-13T00:06:00Z,5.4\n" +
+"8737005,Pinto Island,-88.0311,30.6711,2012-11-13T00:12:00Z,5.4\n" +
+"8737005,Pinto Island,-88.0311,30.6711,2012-11-13T00:18:00Z,5.4\n" +
+"8737005,Pinto Island,-88.0311,30.6711,2012-11-13T00:24:00Z,5.4\n" +
+"8737005,Pinto Island,-88.0311,30.6711,2012-11-13T00:30:00Z,5.4\n" +
+"8737005,Pinto Island,-88.0311,30.6711,2012-11-13T00:36:00Z,5.4\n" +
+"8737005,Pinto Island,-88.0311,30.6711,2012-11-13T00:42:00Z,5.4\n" +
+"8737005,Pinto Island,-88.0311,30.6711,2012-11-13T00:48:00Z,5.4\n" +
+"8737005,Pinto Island,-88.0311,30.6711,2012-11-13T00:54:00Z,5.4\n" +
+"8737005,Pinto Island,-88.0311,30.6711,2012-11-13T01:00:00Z,5.4\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1363,18 +1378,18 @@ These datasets were hard to work with:
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID, stationName, longitude, latitude, time, CS, CD\n" +
-", , degrees_east, degrees_north, UTC, knots, degrees_true\n" +
-"db0301, Philadelphia, -75.1397, 39.9462, 2010-11-22T00:03:00Z, 1.468, 202.0\n" +
-"db0301, Philadelphia, -75.1397, 39.9462, 2010-11-22T00:09:00Z, 1.415, 200.0\n" +
-"db0301, Philadelphia, -75.1397, 39.9462, 2010-11-22T00:15:00Z, 1.405, 202.0\n" +
-"db0301, Philadelphia, -75.1397, 39.9462, 2010-11-22T00:21:00Z, 1.398, 203.0\n" +
-"db0301, Philadelphia, -75.1397, 39.9462, 2010-11-22T00:27:00Z, 1.232, 201.0\n" +
-"db0301, Philadelphia, -75.1397, 39.9462, 2010-11-22T00:33:00Z, 1.283, 200.0\n" +
-"db0301, Philadelphia, -75.1397, 39.9462, 2010-11-22T00:39:00Z, 1.326, 201.0\n" +
-"db0301, Philadelphia, -75.1397, 39.9462, 2010-11-22T00:45:00Z, 1.32, 201.0\n" +
-"db0301, Philadelphia, -75.1397, 39.9462, 2010-11-22T00:51:00Z, 1.124, 199.0\n" +
-"db0301, Philadelphia, -75.1397, 39.9462, 2010-11-22T00:57:00Z, 1.203, 200.0\n";
+"stationID,stationName,longitude,latitude,time,CS,CD\n" +
+",,degrees_east,degrees_north,UTC,knots,degrees_true\n" +
+"db0301,Philadelphia,-75.1397,39.9462,2012-11-13T00:03:00Z,1.291,188.0\n" +
+"db0301,Philadelphia,-75.1397,39.9462,2012-11-13T00:09:00Z,1.244,189.0\n" +
+"db0301,Philadelphia,-75.1397,39.9462,2012-11-13T00:15:00Z,1.139,187.0\n" +
+"db0301,Philadelphia,-75.1397,39.9462,2012-11-13T00:21:00Z,1.139,188.0\n" +
+"db0301,Philadelphia,-75.1397,39.9462,2012-11-13T00:27:00Z,0.851,188.0\n" +
+"db0301,Philadelphia,-75.1397,39.9462,2012-11-13T00:33:00Z,0.799,189.0\n" +
+"db0301,Philadelphia,-75.1397,39.9462,2012-11-13T00:39:00Z,0.657,189.0\n" +
+"db0301,Philadelphia,-75.1397,39.9462,2012-11-13T00:45:00Z,0.371,186.0\n" +
+"db0301,Philadelphia,-75.1397,39.9462,2012-11-13T00:51:00Z,0.196,169.0\n" +
+"db0301,Philadelphia,-75.1397,39.9462,2012-11-13T00:57:00Z,0.08,200.0\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1384,7 +1399,7 @@ These datasets were hard to work with:
                 "\nPress ^C to stop or Enter to continue..."); 
         }
         }
-
+*/
         // There is no plain text service for the Survey Currents Survey dataset at
         // http://opendap.co-ops.nos.noaa.gov/axis/text.html
     }

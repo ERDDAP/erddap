@@ -312,11 +312,8 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"institution\">NOAA NDBC</att>\n" +
 "        <att name=\"keywords\">\n" +
 "Atmosphere &gt; Altitude &gt; Station Height,\n" +
-"Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature,\n" +
-"Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
-"air, air_temperature, altitude, atmosphere, atmospheric, direction, from, height, identifier, ndbc, newer, noaa, ocean, oceans, sea, sea_water_temperature, seawater, speed, station, surface, temperature, time, title, water, wind, wind_from_direction, wind_speed, winds</att>\n" +
+"altitude, atmosphere, atmospheric, atmp, direction, from, height, identifier, ndbc, newer, noaa, speed, station, surface, time, title, wind, wind_from_direction, wind_speed, winds, wtmp</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
@@ -436,11 +433,8 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
-"            <att name=\"ioos_category\">Temperature</att>\n" +
-"            <att name=\"long_name\">Air Temperature</att>\n" +
-"            <att name=\"standard_name\">air_temperature</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">Atmp</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -450,11 +444,8 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
-"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
-"            <att name=\"ioos_category\">Temperature</att>\n" +
-"            <att name=\"long_name\">Sea Water Temperature</att>\n" +
-"            <att name=\"standard_name\">sea_water_temperature</att>\n" +
+"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"long_name\">WTMP</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +

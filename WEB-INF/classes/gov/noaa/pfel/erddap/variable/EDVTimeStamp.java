@@ -127,9 +127,14 @@ public class EDVTimeStamp extends EDV {
         units = EDV.TIME_UNITS; 
         combinedAttributes.set("units", units);
         longName = combinedAttributes.getString("long_name");
-        if (longName == null || longName.toLowerCase().equals("time")) //catch nothing or alternate case
-            combinedAttributes.set("long_name", TIME_LONGNAME);
-        longName = combinedAttributes.getString("long_name");
+        if (longName == null) { //catch nothing 
+            longName = suggestLongName(longName, destinationName,  
+                combinedAttributes.getString("standard_name"));
+            combinedAttributes.set("long_name", longName);
+        } else if (longName.toLowerCase().equals("time")) { //catch alternate case
+            longName = TIME_LONGNAME;
+            combinedAttributes.set("long_name", longName);
+        }
 
         if (sourceTimeFormat.indexOf(" since ") > 0) {
             sourceTimeIsNumeric = true;

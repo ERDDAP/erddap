@@ -233,50 +233,65 @@ public class Test {
      */
     public static void ensureEqual(String s1, String s2, String message)
         throws RuntimeException {
-        if (s1 == null && s2 == null)
+        String result = testEqual(s1, s2, message);
+        if (result.length() == 0)
             return;
+        error(result);
+    }  
+
+    /** 
+     * This returns "" if the Strings are equal or an error message if not. 
+     * This won't throw an exception.
+     *
+     * @param s1
+     * @param s2 
+     * @param message
+     */
+    public static String testEqual(String s1, String s2, String message) {
+        if (s1 == null && s2 == null)
+            return "";
         if (s1 == null && s2 != null)
-            error("\n" + String2.ERROR + " in Test.ensureEqual(Strings):\n" + 
+            return "\n" + String2.ERROR + " in Test.ensureEqual(Strings):\n" + 
                 message + "\nSpecifically: " +                 
                 "s1=[null]\n" +
-                "s2=" + String2.noLongerThan(s2, 70));
+                "s2=" + String2.noLongerThan(s2, 70);
         if (s1 != null && s2 == null)
-            error("\n" + String2.ERROR + " in Test.ensureEqual(Strings):\n" + 
+            return "\n" + String2.ERROR + " in Test.ensureEqual(Strings):\n" + 
                 message + "\nSpecifically:\n" +                 
                 "s1=" + String2.noLongerThan(s1, 70) +"\n" +
-                "s2=[null]");
-        if (!s1.equals(s2)) {
-            int po = 0;
-            int line = 1;
-            int lastNewlinePo = -1;
-            if (s1 != null && s2!=null)
-                while (po < s1.length() && po < s2.length() && s1.charAt(po) == s2.charAt(po)) {
-                    if (s1.charAt(po) == '\n') {line++; lastNewlinePo = po;}
-                    po++;
-                }
-            String c1 = po >= s1.length()? "" : String2.annotatedString("" + s1.charAt(po));
-            String c2 = po >= s2.length()? "" : String2.annotatedString("" + s2.charAt(po));
-            //find end of lines
-            int line1End = po;
-            int line2End = po;
-            while (line1End < s1.length() && s1.charAt(line1End) != '\n') line1End++;
-            while (line2End < s2.length() && s2.charAt(line2End) != '\n') line2End++;
-            String line1Sample = String2.annotatedString(s1.substring(lastNewlinePo+1, line1End));
-            String line2Sample = String2.annotatedString(s2.substring(lastNewlinePo+1, line2End));
-            String annS1 = String2.annotatedString(s1);
-            String annS2 = String2.annotatedString(s2);
+                "s2=[null]";
+        if (s1.equals(s2)) 
+            return "";
 
-            //throw exception
-            String lineString = "line=" + line + ": ";
-            error("\n" + String2.ERROR + " in Test.ensureEqual(Strings) line=" + 
-                line + " col=" + (po - lastNewlinePo) + " '" + c1 + "'!='" + c2+ "':\n" + 
-                message + "\nSpecifically:\n" +                 
-                "s1 " + lineString + line1Sample + "\n" +
-                "s2 " + lineString + line2Sample + "\n" +
-                String2.makeString(' ', (3 + lineString.length() + po - lastNewlinePo - 1)) + "^" + "\n" +
-                (line > 1? "\"" + annS1 + "\" != \n\"" + annS2 + "\""  : "")
-                );
-        }
+        //generate the error message
+        int po = 0;
+        int line = 1;
+        int lastNewlinePo = -1;
+        if (s1 != null && s2!=null)
+            while (po < s1.length() && po < s2.length() && s1.charAt(po) == s2.charAt(po)) {
+                if (s1.charAt(po) == '\n') {line++; lastNewlinePo = po;}
+                po++;
+            }
+        String c1 = po >= s1.length()? "" : String2.annotatedString("" + s1.charAt(po));
+        String c2 = po >= s2.length()? "" : String2.annotatedString("" + s2.charAt(po));
+        //find end of lines
+        int line1End = po;
+        int line2End = po;
+        while (line1End < s1.length() && s1.charAt(line1End) != '\n') line1End++;
+        while (line2End < s2.length() && s2.charAt(line2End) != '\n') line2End++;
+        String line1Sample = String2.annotatedString(s1.substring(lastNewlinePo+1, line1End));
+        String line2Sample = String2.annotatedString(s2.substring(lastNewlinePo+1, line2End));
+        String annS1 = String2.annotatedString(s1);
+        String annS2 = String2.annotatedString(s2);
+
+        String lineString = "line=" + line + ": ";
+        return "\n" + String2.ERROR + " in Test.ensureEqual(Strings) line=" + 
+            line + " col=" + (po - lastNewlinePo) + " '" + c1 + "'!='" + c2+ "':\n" + 
+            message + "\nSpecifically:\n" +                 
+            "s1 " + lineString + line1Sample + "\n" +
+            "s2 " + lineString + line2Sample + "\n" +
+            String2.makeString(' ', (3 + lineString.length() + po - lastNewlinePo - 1)) + "^" + "\n" +
+            (line > 1? "\"" + annS1 + "\" != \n\"" + annS2 + "\""  : "");
     }  
 
     /** 

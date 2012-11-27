@@ -1857,7 +1857,7 @@ public abstract class PrimitiveArray {
                 if (Double.isNaN(d))
                     return this; //it's already a StringArray
 
-                //if string source column with an internal '.', don't let it me an integer type;
+                //if string source column with an internal '.', don't let it be an integer type;
                 //always treat as at least a float
                 if (s.indexOf('.') >= 0)
                     type = Math.max(type, 4);
@@ -3605,14 +3605,14 @@ public abstract class PrimitiveArray {
             Test.ensureEqual(testValueOpValue("abcdefghijk", ">",  "abcdefghijk"), false,  "");
         }
         String2.log("time for " + (6 * n) + " testValueOpValue(string): " + 
-            (System.currentTimeMillis() - tTime) + " (2012-06-29: 1859 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 312ms, 2012-06-29: 1859 ms)");
 
         //regex simple
         for (int i = 0; i < n; i++) {
             Test.ensureEqual(testValueOpValue("12345", PrimitiveArray.REGEX_OP, "[0-9]+"), true,  "");
         }
         String2.log("time for " + n + " regex testValueOpValue(string, regex): " + 
-            (System.currentTimeMillis() - tTime) + " (2012-06-29: 4453 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 718ms, 2012-06-29: 4453 ms)");
 
         //long
         tTime = System.currentTimeMillis();
@@ -3627,7 +3627,7 @@ public abstract class PrimitiveArray {
             //regex tests always via testValueOpValue(string)
         }
         String2.log("time for " + (7 * n) + " testValueOpValue(long): " + 
-            (System.currentTimeMillis() - tTime) + " (2012-06-29: 328 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 78ms, 2012-06-29: 328 ms)");
 
         //float
         tTime = System.currentTimeMillis();
@@ -3642,7 +3642,7 @@ public abstract class PrimitiveArray {
             //regex tests always via testValueOpValue(string)
         }
         String2.log("time for " + (7 * n) + " testValueOpValue(float): " + 
-            (System.currentTimeMillis() - tTime) + " (2012-06-29: 328 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 109ms, 2012-06-29: 328 ms)");
 
         //double
         tTime = System.currentTimeMillis();
@@ -3657,14 +3657,14 @@ public abstract class PrimitiveArray {
             //regex tests always via testValueOpValue(string)
         }
         String2.log("time for " + (7 * n) + " testValueOpValue(double): " + 
-            (System.currentTimeMillis() - tTime) + " (2012-06-29: 329 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 78ms, 2012-06-29: 329 ms)");
 
         tTime = System.currentTimeMillis();
         for (int i = 0; i < 7*n; i++) {
             Test.ensureEqual(testValueOpValue(1, "<=",  1), true,  "");
         }
         String2.log("time for " + (7 * n) + " testValueOpValue(double <=): " + 
-            (System.currentTimeMillis() - tTime) + " (2012-06-29: 234 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 62ms, 2012-06-29: 234 ms)");
 
         //**********  test applyConstraint
         PrimitiveArray pa;
@@ -3682,7 +3682,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(pa.size(), 1, "");
         Test.ensureEqual(pa.getDouble(0), 10, "");
         String2.log("time for applyConstraint(regex) n=" + n + ": " + 
-            (System.currentTimeMillis() - tTime) + " (2012-06-29: 500 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 139ms, 2012-06-29: 500 ms)");
 
         //string
         pa = factory(String.class, n, "Apple");
@@ -3696,7 +3696,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(pa.size(), 1, "");
         Test.ensureEqual(pa.getString(0), "Nate", "");
         String2.log("time for applyConstraint(String) n=" + n + ": " + 
-            (System.currentTimeMillis() - tTime) + " (2012-06-29: 406 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 93ms, 2012-06-29: 406 ms)");
 
         //float
         pa = factory(float.class, n, "5");
@@ -3710,7 +3710,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(pa.size(), 1, "");
         Test.ensureEqual(pa.getDouble(0), 10, "");
         String2.log("time for applyConstraint(float) n=" + n + ": " + 
-            (System.currentTimeMillis() - tTime) + " (2012-06-29: 140 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 93ms, 2012-06-29: 140 ms)");
 
         //double
         pa = factory(double.class, n, "5");
@@ -3724,7 +3724,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(pa.size(), 1, "");
         Test.ensureEqual(pa.getDouble(0), 10, "");
         String2.log("time for applyConstraint(double) n=" + n + ": " + 
-            (System.currentTimeMillis() - tTime) + " (2012-06-29: 125 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 31ms, 2012-06-29: 125 ms)");
 
         //int
         pa = factory(int.class, n, "5");
@@ -3738,7 +3738,7 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(pa.size(), 1, "");
         Test.ensureEqual(pa.getDouble(0), 10, "");
         String2.log("time for applyConstraint(int) n=" + n + ": " + 
-            (System.currentTimeMillis() - tTime) + " (2012-06-29: 141 ms)");
+            (System.currentTimeMillis() - tTime) + " (Java 1.7M4700 16ms, 2012-06-29: 141 ms)");
 
     }
 
