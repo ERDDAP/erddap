@@ -2396,7 +2396,7 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu(s2)), s2, "n0000");
         s2 = "-0001-02-03T00:00:04";
         Test.ensureEqual(Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu(s2)), s2, "n-0001");
-        s2 = "1970-01-01 00:00:00.000 1:00";
+        s2 = "1970-01-01 00:00:00.000 1:00";  //a test of timeZone offset
         Test.ensureEqual(Calendar2.formatAsISODateTimeT(Calendar2.parseISODateTimeZulu(s2)), 
             "1969-12-31T23:00:00", "");
 
@@ -2407,6 +2407,7 @@ public class TestUtil {
             "1970-1-2!3:4:5.67")),        "1970-01-02T03:04:05.670", "");
         Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
             "1970-1-2 3:4:5.6")),         "1970-01-02T03:04:05.600", "");
+        //tests of timeZone offset...
         Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
             "1970-1-2 3:4:5.678 1")),     "1970-01-02T02:04:05.678", "");
         Test.ensureEqual(Calendar2.formatAsISODateTimeT3(Calendar2.parseISODateTimeZulu(
@@ -3665,23 +3666,25 @@ public class TestUtil {
         byte sBytes[] = String2.getUTF8Bytes(s);
         jump = String2.makeJumpTable(findBytes);
         Test.ensureEqual(s.indexOf(find), s.length()-9, "");
-        Test.ensureEqual(String2.indexOf(sBytes, findBytes, jump), sBytes.length-9-1, ""); //-1 because of utf encoding n~
+        Test.ensureEqual(String2.indexOf(sBytes, findBytes, jump), 
+            sBytes.length-9-1, ""); //-1 because of utf encoding n~
         int reps = 100000;
 
         long time= System.currentTimeMillis();
         int result1 = 0;
         for (int i = 0; i < reps; i++)
             result1 += s.indexOf(find);
-        String2.log("String.indexOf reps=" + reps + " time=" + (System.currentTimeMillis() - time) + "  (was 2204)");
+        String2.log("String.indexOf reps=" + reps + 
+            " time=" + (System.currentTimeMillis() - time) + "  (~115ms on Java 1.7M4700)");
 
         time = System.currentTimeMillis();
         int result2 = 0;
         for (int i = 0; i < reps; i++)
             result2 += String2.indexOf(sBytes, findBytes, jump);
-        String2.log("String2 byteIndexOf reps=" + reps + " time=" + (System.currentTimeMillis() - time) + "  (was 875)");
-        //so if 1000 datasets (or 500 and 2word search), time~=9ms and I think most dataset searchStrings are shorter
-
-
+        String2.log("String2 byteIndexOf reps=" + reps + 
+            " time=" + (System.currentTimeMillis() - time) + "  (~470ms on Java 1.7M4700)");
+        //so if 1000 datasets (or 500 and 2word search), time~=9ms 
+        //and I think most dataset searchStrings are shorter
     }
 
     /**
@@ -3781,7 +3784,7 @@ public class TestUtil {
                 Math2.gc(500);  
                 Math2.gc(500);  //aggressive
                 String2.log("canonicalSize=" + String2.canonicalSize() + 
-                    " time=" + time + " (should be Java 1.7M4700=~300ms, 1.6=~1450ms, 1.5=~2000ms) " + Math2.memoryString());
+                    " time=" + time + " (should be Java 1.7M4700=~280ms, 1.6=~1450ms, 1.5=~2000ms) " + Math2.memoryString());
                 long memoryInUse = Math2.getMemoryInUse();
                 if (oMemoryInUse == -1) {
                     oMemoryInUse = memoryInUse; 

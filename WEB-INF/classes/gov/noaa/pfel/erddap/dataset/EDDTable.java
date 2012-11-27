@@ -6290,7 +6290,7 @@ public abstract class EDDTable extends EDD {
                                      XML.encodeAsHTML( fullValueExample) + "</tt></a>\n" +
             "      <br>Some fileTypes (notably, .csv, .tsv, .htmlTable, .odvTxt, and .xhtml) display\n" +
             "      <br>date/time values as \n" +
-            "        <a rel=\"help\" href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" date/time strings</a>\n" +
+            "        <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time strings</a>\n" +
             "      <br>(e.g., <tt>2002-08-03T12:30:00Z</tt>).\n" +
             "      <br>ERDDAP has a utility to\n" +
             "        <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
@@ -13490,7 +13490,7 @@ public abstract class EDDTable extends EDD {
             "    <td nowrap>eventTime=<i>beginTime</i>\n" +
             "    <br>eventTime=<i>beginTime/endTime</i></td>\n" +
             "    <td>The beginTime and endTime must be in\n" +
-            "      <a rel=\"help\" href=\"http://www.iso.org/iso/date_and_time_format\">ISO 8601:2004 \"extended\" format</a>,\n" +
+            "      <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" format</a>,\n" +
             "      for example, <span style=\"white-space: nowrap;\">\"1985-01-02T00:00:00Z\").</span>\n" +
             "      <br>This parameter is optional for the SOS standard and ERDDAP.\n" +
             "      <br>For IOOS SOS, the default is the last value.\n" +

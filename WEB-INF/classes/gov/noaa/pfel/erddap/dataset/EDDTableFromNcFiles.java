@@ -2339,8 +2339,8 @@ expected =
 "given hour. The time values in the dataset are rounded to the nearest hour.\n" +
 "\n" +
 "This dataset has both historical data (quality controlled, before\n" +
-"2012-09-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
-"2012-09-01T00:00:00Z on).\";\n" +                                                 //changes  
+"2012-10-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
+"2012-10-01T00:00:00Z on).\";\n" +                                                 //changes  
 " :time_coverage_resolution = \"P1H\";\n" +
 " :title = \"NDBC Standard Meteorological Buoy Data\";\n" +
 " :Westernmost_Easting = -162.279f; // float\n" +
@@ -2448,8 +2448,8 @@ expected =
 "given hour. The time values in the dataset are rounded to the nearest hour.\n" +
 "\n" +
 "This dataset has both historical data (quality controlled, before\n" +
-"2012-09-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
-"2012-09-01T00:00:00Z on).\";\n" +                                                 //changes
+"2012-10-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
+"2012-10-01T00:00:00Z on).\";\n" +                                                 //changes
 " :time_coverage_resolution = \"P1H\";\n" +
 " :title = \"NDBC Standard Meteorological Buoy Data\";\n" +
 " :Westernmost_Easting = -153.913f; // float\n" +
@@ -2943,11 +2943,12 @@ expected =
         int minLon = -180;
         int maxLon = 180;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10); //to nearest day
+        String sevenZip    = "c:\\progra~1\\7-Zip\\7z";
         String zipDir      = "c:\\data\\gtspp\\bestNcZip\\"; //gtspp_at199001.tgz
         String destDir     = "c:\\data\\gtspp\\bestNcConsolidated\\";
         String tempDir     = "c:\\data\\gtspp\\temp\\"; 
-        String testTempDir = "c:\\data\\gtspp\\testTemp\\"; 
-        String testDestDir = "c:\\data\\gtspp\\testDest\\";
+        String testTempDir = "c:\\data\\gtspp\\testTemp\\"; //tempDir if testMode=true 
+        String testDestDir = "c:\\data\\gtspp\\testDest\\"; //destDir if testMode=true
         String logFile     = "c:\\data\\gtspp\\log" + 
             String2.replaceAll(today, "-", "") + ".txt"; 
         File2.makeDirectory(tempDir);
@@ -3089,7 +3090,7 @@ expected =
                         Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
 
                     //unzip file into tempDir         //gtspp_at199001.zip
-                    cmd = "c:\\programs\\7-Zip\\7z -y e " + sourceZipName + " -o" + tempDir + " -r"; 
+                    cmd = sevenZip + " -y e " + sourceZipName + " -o" + tempDir + " -r"; 
                     cmdTime = System.currentTimeMillis();
                     String2.log("\n*** " + cmd);
                     SSR.dosShell(cmd, 30*60); //10 minutes*60 seconds
@@ -3097,7 +3098,7 @@ expected =
                         Calendar2.elapsedTimeString(System.currentTimeMillis() - cmdTime));
 
                     //extract from the .tar file   //gtspp4_at199001.tar
-                    cmd = "c:\\programs\\7-Zip\\7z -y e " + tempDir + sourceBaseName + ".tar -o" + tempDir + " -r"; 
+                    cmd = sevenZip + " -y e " + tempDir + sourceBaseName + ".tar -o" + tempDir + " -r"; 
                     cmdTime = System.currentTimeMillis();
                     String2.log("\n*** " + cmd);
                     SSR.dosShell(cmd, 120*60); //120 minutes*60 seconds
@@ -4784,7 +4785,7 @@ expected =
 "    String long_name \"Data Type\";\n" +
 "  }\n" +
 "  station_id {\n" +
-"    Int32 actual_range 1, 15230881;\n" +  //changes every month
+"    Int32 actual_range 1, 15509200;\n" +  //changes every month
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -4824,7 +4825,7 @@ expected =
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 6.31152e+8, 1.3486656e+9;\n" + //2nd value changes
+"    Float64 actual_range 6.31152e+8, 1.351518e+9;\n" + //2nd value changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -4878,7 +4879,7 @@ expected =
 "  }\n" +
 " }\n" +
 "  NC_GLOBAL {\n" +   //date at end of next line changes
-"    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-10-17 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +
+"    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-11-10 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"org, type, station_id, longitude, latitude, time\";\n" +
@@ -4901,9 +4902,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.7\";\n" +  //dates on next line and 3rd line change
-"    String history \"2012-10-09T14:58:55Z csun writeGTSPPnc40.f90 Version 1.7\n" +
+"    String history \"2012-11-02T01:55:45Z  writeGTSPPnc40.f90 Version 1.7\n" +
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (http://www.nodc.noaa.gov/GTSPP/)\n" +
-"2012-10-17 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n" +
+"2012-11-10 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n" +
 today;
         String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
@@ -4921,7 +4922,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-10-17 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-11-10 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -4946,7 +4947,7 @@ expected =
 "* a small longitude and latitude bounding box (at most, several degrees square).\n" +
 "Requesting data for a specific platform, cruise, org, type, and/or station_id may be slow, but it works.\n" +
 "\n" +                                                            //month on next line changes
-"*** This ERDDAP dataset has data for the entire world for all available times (currently, up to and including the September 2012 data) but is a subset of the original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
+"*** This ERDDAP dataset has data for the entire world for all available times (currently, up to and including the October 2012 data) but is a subset of the original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\n" +
 "* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\n" +
 "* Temperature values less than -4 or greater than 40 or with a temperature_quality_flag other than 1|2|5 were set to NaN.\n" +
@@ -4957,7 +4958,7 @@ expected =
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\n" +
 "The Quality Flag definitions are also at\n" +
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
-"    String time_coverage_end \"2012-09-26T13:20:00Z\";\n" + //changes
+"    String time_coverage_end \"2012-10-29T13:40:00Z\";\n" + //changes
 "    String time_coverage_start \"1990-01-01T00:00:00Z\";\n" +
 "    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -6384,8 +6385,8 @@ expected =
 "given hour. The time values in the dataset are rounded to the nearest hour.\n" +
 "\n" +
 "This dataset has both historical data (quality controlled, before\n" +
-"2012-09-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
-"2012-09-01T00:00:00Z on).\";\n" +                                                 //changes
+"2012-10-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
+"2012-10-01T00:00:00Z on).\";\n" +                                                 //changes
 " :time_coverage_end = \"2005-05-01T03:00:00Z\";\n" +
 " :time_coverage_resolution = \"P1H\";\n" +
 " :time_coverage_start = \"2005-05-01T00:00:00Z\";\n" +
@@ -6581,8 +6582,8 @@ expected =
 "given hour. The time values in the dataset are rounded to the nearest hour.\n" +
 "\n" +  //dates below change
 "This dataset has both historical data (quality controlled, before\n" +
-"2012-09-01T00:00:00Z) and near real time data (less quality controlled, from\n" +
-"2012-09-01T00:00:00Z on).\";\n" +
+"2012-10-01T00:00:00Z) and near real time data (less quality controlled, from\n" +
+"2012-10-01T00:00:00Z on).\";\n" +
 " :time_coverage_end = \"2005-05-01T03:00:00Z\";\n" +
 " :time_coverage_resolution = \"P1H\";\n" +
 " :time_coverage_start = \"2005-05-01T00:00:00Z\";\n" +
@@ -7678,7 +7679,7 @@ expected =
 "     :standard_name = \"sea_water_salinity\";\n" +
 "     :units = \"PSU\";\n" +
 "\n" +                                                                    //dates below change
-" :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-10-17 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +
+" :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-11-10 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +
 " :cdm_altitude_proxy = \"depth\";\n" +
 " :cdm_data_type = \"TrajectoryProfile\";\n" +
 " :cdm_profile_variables = \"org, type, station_id, longitude, latitude, time\";\n" +
@@ -7701,9 +7702,9 @@ expected =
 " :gtspp_handbook_version = \"GTSPP Data User's Manual 1.0\";\n" +
 " :gtspp_program = \"writeGTSPPnc40.f90\";\n" +
 " :gtspp_programVersion = \"1.7\";\n" +  //dates below changes
-" :history = \"2012-10-09T14:58:55Z csun writeGTSPPnc40.f90 Version 1.7\n" +
+" :history = \"2012-11-02T02:29:42Z  writeGTSPPnc40.f90 Version 1.7\n" +
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (http://www.nodc.noaa.gov/GTSPP/)\n" +
-"2012-10-17 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n";
+"2012-11-10 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n";
         String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
@@ -7722,7 +7723,7 @@ expected =
 " :keywords_vocabulary = \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 " :LEXICON = \"NODC_GTSPP\";\n" +                                                 //date below changes
 " :license = \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-10-17 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-11-10 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -7740,7 +7741,7 @@ expected =
 " :Southernmost_Northing = -75.45f; // float\n" +
 " :standard_name_vocabulary = \"CF-12\";\n" +
 " :subsetVariables = \"platform, cruise, org, type\";\n" +  //month below changes
-" :summary = \"The Global Temperature-Salinity Profile Programme (GTSPP) develops and maintains a global ocean temperature and salinity resource with data that are both up-to-date and of the highest quality. It is a joint World Meteorological Organization (WMO) and Intergovernmental Oceanographic Commission (IOC) program.  It includes data from XBTs, CTDs, moored and drifting buoys, and PALACE floats. For information about organizations contributing data to GTSPP, see http://gosic.org/goos/GTSPP-data-flow.htm .  The U.S. National Oceanographic Data Center (NODC) maintains the GTSPP Continuously Managed Data Base and releases new 'best-copy' data once per month.\\\\n\\\\nWARNING: This dataset has a *lot* of data.  To avoid having your request fail because you are requesting too much data at once, you should almost always specify either:\\\\n* a small time bounding box (at most, a few days), and/or\\\\n* a small longitude and latitude bounding box (at most, several degrees square).\\\\nRequesting data for a specific platform, cruise, org, type, and/or station_id may be slow, but it works.\\\\n\\\\n*** This ERDDAP dataset has data for the entire world for all available times (currently, up to and including the September 2012 data) but is a subset of the original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\\\\n* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\\\\n* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\\\\n* Temperature values less than -4 or greater than 40 or with a temperature_quality_flag other than 1|2|5 were set to NaN.\\\\n* Salinity values less than 0 or greater than 41 or with a salinity_quality_flag other than 1|2|5 were set to NaN.\\\\n* Time values were converted from \\\\\\\"days since 1900-01-01 00:00:00\\\\\\\" to \\\\\\\"seconds since 1970-01-01T00:00:00\\\\\\\".\\\\n\\\\nSee the Quality Flag definitions on page 5 and \\\\\\\"Table 2.1: Global Impossible Parameter Values\\\\\\\" on page 61 of\\\\nhttp://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\\\\nThe Quality Flag definitions are also at\\\\nhttp://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
+" :summary = \"The Global Temperature-Salinity Profile Programme (GTSPP) develops and maintains a global ocean temperature and salinity resource with data that are both up-to-date and of the highest quality. It is a joint World Meteorological Organization (WMO) and Intergovernmental Oceanographic Commission (IOC) program.  It includes data from XBTs, CTDs, moored and drifting buoys, and PALACE floats. For information about organizations contributing data to GTSPP, see http://gosic.org/goos/GTSPP-data-flow.htm .  The U.S. National Oceanographic Data Center (NODC) maintains the GTSPP Continuously Managed Data Base and releases new 'best-copy' data once per month.\\\\n\\\\nWARNING: This dataset has a *lot* of data.  To avoid having your request fail because you are requesting too much data at once, you should almost always specify either:\\\\n* a small time bounding box (at most, a few days), and/or\\\\n* a small longitude and latitude bounding box (at most, several degrees square).\\\\nRequesting data for a specific platform, cruise, org, type, and/or station_id may be slow, but it works.\\\\n\\\\n*** This ERDDAP dataset has data for the entire world for all available times (currently, up to and including the October 2012 data) but is a subset of the original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\\\\n* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\\\\n* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\\\\n* Temperature values less than -4 or greater than 40 or with a temperature_quality_flag other than 1|2|5 were set to NaN.\\\\n* Salinity values less than 0 or greater than 41 or with a salinity_quality_flag other than 1|2|5 were set to NaN.\\\\n* Time values were converted from \\\\\\\"days since 1900-01-01 00:00:00\\\\\\\" to \\\\\\\"seconds since 1970-01-01T00:00:00\\\\\\\".\\\\n\\\\nSee the Quality Flag definitions on page 5 and \\\\\\\"Table 2.1: Global Impossible Parameter Values\\\\\\\" on page 61 of\\\\nhttp://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\\\\nThe Quality Flag definitions are also at\\\\nhttp://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 " :time_coverage_end = \"2012-04-23T21:20:00Z\";\n" +
 " :time_coverage_start = \"2012-04-23T00:37:00Z\";\n" +
 " :title = \"Global Temperature and Salinity Profile Programme (GTSPP) Data\";\n" +
@@ -7998,7 +7999,7 @@ expected =
 "     :standard_name = \"sea_water_salinity\";\n" +
 "     :units = \"PSU\";\n" +
 "\n" +                                                   //date below changes
-" :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-10-17 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +
+" :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-11-10 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +
 " :cdm_altitude_proxy = \"depth\";\n" +
 " :cdm_data_type = \"TrajectoryProfile\";\n" +
 " :cdm_profile_variables = \"org, type, station_id, longitude, latitude, time\";\n" +
@@ -8021,9 +8022,9 @@ expected =
 " :gtspp_handbook_version = \"GTSPP Data User's Manual 1.0\";\n" +
 " :gtspp_program = \"writeGTSPPnc40.f90\";\n" +
 " :gtspp_programVersion = \"1.7\";\n" +  //several dates below change
-" :history = \"2012-10-09T14:58:55Z csun writeGTSPPnc40.f90 Version 1.7\n" +
+" :history = \"2012-11-02T02:29:42Z  writeGTSPPnc40.f90 Version 1.7\n" +
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (http://www.nodc.noaa.gov/GTSPP/)\n" +
-"2012-10-17 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n";
+"2012-11-10 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n";
         String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
@@ -8042,7 +8043,7 @@ expected =
 " :keywords_vocabulary = \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 " :LEXICON = \"NODC_GTSPP\";\n" +                                                //date below changes
 " :license = \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-10-17 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2012-11-10 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -8060,7 +8061,7 @@ expected =
 " :Southernmost_Northing = -75.45f; // float\n" +
 " :standard_name_vocabulary = \"CF-12\";\n" +
 " :subsetVariables = \"platform, cruise, org, type\";\n" +                      //month below changes
-" :summary = \"The Global Temperature-Salinity Profile Programme (GTSPP) develops and maintains a global ocean temperature and salinity resource with data that are both up-to-date and of the highest quality. It is a joint World Meteorological Organization (WMO) and Intergovernmental Oceanographic Commission (IOC) program.  It includes data from XBTs, CTDs, moored and drifting buoys, and PALACE floats. For information about organizations contributing data to GTSPP, see http://gosic.org/goos/GTSPP-data-flow.htm .  The U.S. National Oceanographic Data Center (NODC) maintains the GTSPP Continuously Managed Data Base and releases new 'best-copy' data once per month.\\\\n\\\\nWARNING: This dataset has a *lot* of data.  To avoid having your request fail because you are requesting too much data at once, you should almost always specify either:\\\\n* a small time bounding box (at most, a few days), and/or\\\\n* a small longitude and latitude bounding box (at most, several degrees square).\\\\nRequesting data for a specific platform, cruise, org, type, and/or station_id may be slow, but it works.\\\\n\\\\n*** This ERDDAP dataset has data for the entire world for all available times (currently, up to and including the September 2012 data) but is a subset of the original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\\\\n* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\\\\n* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\\\\n* Temperature values less than -4 or greater than 40 or with a temperature_quality_flag other than 1|2|5 were set to NaN.\\\\n* Salinity values less than 0 or greater than 41 or with a salinity_quality_flag other than 1|2|5 were set to NaN.\\\\n* Time values were converted from \\\\\\\"days since 1900-01-01 00:00:00\\\\\\\" to \\\\\\\"seconds since 1970-01-01T00:00:00\\\\\\\".\\\\n\\\\nSee the Quality Flag definitions on page 5 and \\\\\\\"Table 2.1: Global Impossible Parameter Values\\\\\\\" on page 61 of\\\\nhttp://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\\\\nThe Quality Flag definitions are also at\\\\nhttp://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
+" :summary = \"The Global Temperature-Salinity Profile Programme (GTSPP) develops and maintains a global ocean temperature and salinity resource with data that are both up-to-date and of the highest quality. It is a joint World Meteorological Organization (WMO) and Intergovernmental Oceanographic Commission (IOC) program.  It includes data from XBTs, CTDs, moored and drifting buoys, and PALACE floats. For information about organizations contributing data to GTSPP, see http://gosic.org/goos/GTSPP-data-flow.htm .  The U.S. National Oceanographic Data Center (NODC) maintains the GTSPP Continuously Managed Data Base and releases new 'best-copy' data once per month.\\\\n\\\\nWARNING: This dataset has a *lot* of data.  To avoid having your request fail because you are requesting too much data at once, you should almost always specify either:\\\\n* a small time bounding box (at most, a few days), and/or\\\\n* a small longitude and latitude bounding box (at most, several degrees square).\\\\nRequesting data for a specific platform, cruise, org, type, and/or station_id may be slow, but it works.\\\\n\\\\n*** This ERDDAP dataset has data for the entire world for all available times (currently, up to and including the October 2012 data) but is a subset of the original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\\\\n* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\\\\n* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\\\\n* Temperature values less than -4 or greater than 40 or with a temperature_quality_flag other than 1|2|5 were set to NaN.\\\\n* Salinity values less than 0 or greater than 41 or with a salinity_quality_flag other than 1|2|5 were set to NaN.\\\\n* Time values were converted from \\\\\\\"days since 1900-01-01 00:00:00\\\\\\\" to \\\\\\\"seconds since 1970-01-01T00:00:00\\\\\\\".\\\\n\\\\nSee the Quality Flag definitions on page 5 and \\\\\\\"Table 2.1: Global Impossible Parameter Values\\\\\\\" on page 61 of\\\\nhttp://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\\\\nThe Quality Flag definitions are also at\\\\nhttp://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
 " :time_coverage_end = \"2012-04-23T21:20:00Z\";\n" +     
 " :time_coverage_start = \"2012-04-23T00:37:00Z\";\n" +
 " :title = \"Global Temperature and Salinity Profile Programme (GTSPP) Data\";\n" +
@@ -9837,7 +9838,7 @@ expected =
     //T21:09:15
             expected = 
     "</CreateTime>\n" +
-    "//<Software>ERDDAP - Version 1.40</Software>\n" +
+    "//<Software>ERDDAP - Version 1.42</Software>\n" +
     "//<Source>http://127.0.0.1:8080/cwexperimental/tabledap/testGlobecBottle.html</Source>\n" +
     "//<Version>ODV Spreadsheet V4.0</Version>\n" +
     "//<DataField>GeneralField</DataField>\n" +
@@ -10595,12 +10596,12 @@ expected =
      * @throws Throwable if trouble
      */
     public static void test(boolean doAllGraphicsTests) throws Throwable {
-/* */
+/* 
         test1D(false); //deleteCachedDatasetInfo
         test2D(true); 
         test3D(false);
         test4D(false);
-        testGlobec();
+   */     testGlobec();
         testKml();
         testGraphics(doAllGraphicsTests);
         testNetcdf();

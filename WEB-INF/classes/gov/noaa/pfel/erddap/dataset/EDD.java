@@ -328,6 +328,7 @@ public abstract class EDD {
             if (type.equals("EDDTableFromErddap"))      return EDDTableFromErddap.fromXml(xmlReader);
             //if (type.equals("EDDTableFromMWFS"))        return EDDTableFromMWFS.fromXml(xmlReader); //inactive as of 2009-01-14
             if (type.equals("EDDTableFromAsciiFiles"))  return EDDTableFromAsciiFiles.fromXml(xmlReader);
+            if (type.equals("EDDTableFromAwsXmlFiles")) return EDDTableFromAwsXmlFiles.fromXml(xmlReader);
             if (type.equals("EDDTableFromHyraxFiles"))  return EDDTableFromHyraxFiles.fromXml(xmlReader);
             if (type.equals("EDDTableFromNcFiles"))     return EDDTableFromNcFiles.fromXml(xmlReader);
             if (type.equals("EDDTableFromNcCFFiles"))   return EDDTableFromNcCFFiles.fromXml(xmlReader);
@@ -4228,6 +4229,7 @@ public abstract class EDD {
             testUnits.equals("deg|k")               ||
             testUnits.equals("degs|k")              ||
             testUnits.equals("k"); //udunits and ucum
+        boolean hasTemperatureUnits = isDegreesC || isDegreesF || isDegreesC;
 
         if (!isSomething(tStandardName)) {
             tStandardName = tSourceAtts.getString("Standard_name");  //wrong case?
@@ -4299,24 +4301,30 @@ public abstract class EDD {
                                                     tStandardName = "surface_downward_latent_heat_flux";
 
             //oceanographic and meteorological                     
-            else if ((lc.indexOf("|air") >= 0 && 
-                      lc.indexOf("|temp") >= 0) ||
-                     lc.indexOf("|atmp") >= 0)       tStandardName = lc.indexOf("anom") >= 0? //anomaly
-                                                                    "air_temperature_anomaly" :
-                                                                    "air_temperature"; 
+            else if (((lc.indexOf("|air") >= 0 && 
+                       lc.indexOf("|temp") >= 0) ||
+                      lc.indexOf("|atmp") >= 0) &&
+                     hasTemperatureUnits)           tStandardName = lc.indexOf("anom") >= 0? //anomaly
+                                                                     "air_temperature_anomaly" :
+                                                                     lc.indexOf("rate") >= 0? "" :                                                                      
+                                                                     "air_temperature"; 
             else if (((lc.indexOf("|air")   >= 0 || lc.indexOf("|atmo") >= 0 || 
                        lc.indexOf("cloud") >= 0 || lc.indexOf("surface") >= 0 ||
                        lc.indexOf("tropopause") >= 0) && 
                       lc.indexOf("|press") >= 0) ||
                      //lc.indexOf("|bar|") >= 0 ||
                      lc.indexOf("|slp|") >= 0 ||
-                     lc.indexOf("baromet") >= 0)    tStandardName = lc.indexOf("|anom") >= 0? //anomaly
+                     lc.indexOf("baromet") >= 0)    tStandardName = lc.indexOf("rate") >= 0? "" :
+                                                                    lc.indexOf("|anom") >= 0? //anomaly
                                                                     "air_pressure_anomaly" :
                                                                     (lc.indexOf("|slp|") >= 0 ||
                                                                      lc.indexOf("surface") >= 0)?
                                                                     "surface_air_pressure" :
                                                                     "air_pressure"; 
-            else if (lcu.indexOf("bathymetry") >= 0 && isMeters)
+            else if ((lcu.indexOf("|etopo2|") >= 0 ||
+                      lcu.indexOf("bathymetry") >= 0 ||
+                      lcu.indexOf("|bottom|depth|") >= 0) &&
+                     isMeters)
                                                     tStandardName = "sea_floor_depth";
             else if ((lc.indexOf("|land") >= 0 && lc.indexOf("mask|") >= 0)) 
                                                     tStandardName = "land_binary_mask";
@@ -4328,9 +4336,11 @@ public abstract class EDD {
                       lc.indexOf("|equiv") >= 0 && 
                       lc.indexOf("|snow|") >= 0 && 
                       lc.indexOf("|surface|") >= 0))  tStandardName = "liquid_water_content_of_surface_snow"; 
-            else if ((lc.indexOf("dew") >= 0 && 
-                      lc.indexOf("point") >= 0) ||
-                     lc.indexOf("|dewp") >= 0)      tStandardName = "dew_point_temperature"; 
+            else if (((lc.indexOf("dew") >= 0 && 
+                       lc.indexOf("point") >= 0) ||
+                      lc.indexOf("|dewp") >= 0) &&
+                     hasTemperatureUnits)      tStandardName = lc.indexOf("rate") >= 0? "" :
+                                                        "dew_point_temperature"; 
 
             else if ((lc.indexOf("|evapo") >= 0 && 
                       lc.indexOf("|rate|") >= 0))   tStandardName = "lwe_water_evaporation_rate";
@@ -4418,15 +4428,22 @@ public abstract class EDD {
                 } else {
                     tStandardName = "sea_water_salinity"; 
                 }}
-            else if ((lc.indexOf("water") >= 0 && 
-                      lc.indexOf("temp") >= 0) ||
-                     lc.indexOf("|wtmp|") >= 0)     tStandardName = lc.indexOf("anom") >= 0? //anomaly
+            else if (((lc.indexOf("water") >= 0 && 
+                       lc.indexOf("temp") >= 0) ||
+                     lc.indexOf("|wtmp|") >= 0) &&
+                      hasTemperatureUnits)     tStandardName = lc.indexOf("anom") >= 0? //anomaly
                                                                     "surface_temperature_anomaly" : //no sea_water_temperature_anomaly
+                                                                    lc.indexOf("rate") >= 0? "" :
                                                                     "sea_water_temperature"; //sea???
-            else if (lc.indexOf("sst") >= 0 &&
+            else if ((lc.indexOf("sst") >= 0 ||
+                      lc.indexOf("sea|surface|temp") >= 0) &&
+                     hasTemperatureUnits &&
                      lc.indexOf("time") < 0)        tStandardName = lc.indexOf("anom") >= 0? //anomaly
                                                                     "surface_temperature_anomaly" : //no sea_surface_temperature_anomaly
                                                                     "sea_surface_temperature";
+            else if (lc.indexOf("wet") >= 0 && 
+                     lc.indexOf("bulb") >= 0 &&
+                     hasTemperatureUnits)           tStandardName = "wet_bulb_temperature"; 
             else if (lc.indexOf("wind") < 0 &&
                      ((lc.indexOf("current") >= 0 && 
                        lc.indexOf("east") >= 0) ||
@@ -4451,10 +4468,14 @@ public abstract class EDD {
                       lc.indexOf("water|y") >= 0))    tStandardName = "northward_sea_water_velocity";
             else if ((lc.indexOf("surface") >= 0 && lc.indexOf("roughness") >= 0 &&
                       isMeters))                    tStandardName = "surface_roughness_length"; 
-            else if ((lc.indexOf("rel") >= 0 && 
-                      lc.indexOf("hum") >= 0) ||
-                     lc.indexOf("|rhum|") >= 0 ||
-                     lc.indexOf("|rh|") >= 0)       tStandardName = "relative_humidity"; 
+            else if (((lc.indexOf("rel") >= 0 && 
+                       lc.indexOf("hum") >= 0) ||
+                      lc.indexOf("humidity") >= 0 ||
+                      lc.indexOf("|rhum|") >= 0 ||
+                      lc.indexOf("|rh|") >= 0) &&
+                     (tUnitsLC.equals("percent") ||
+                      tUnitsLC.equals("%")))         tStandardName = lc.indexOf("rate") >= 0? "" :
+                                                        "relative_humidity"; 
             else if ((lc.indexOf("spec") >= 0 && 
                       lc.indexOf("hum") >= 0) ||
                      lc.indexOf("|shum|") >= 0)     tStandardName = "specific_humidity"; 
@@ -4517,7 +4538,11 @@ public abstract class EDD {
                       lc.indexOf("dir") >= 0) ||
                      lc.indexOf("|wd|") >= 0)       tStandardName = "wind_from_direction";
             else if (lc.indexOf("gust") >= 0 ||
-                     lc.indexOf("|gst|") >= 0)      tStandardName = "wind_speed_of_gust";
+                     lc.indexOf("|gst|") >= 0) {
+                if      (lc.indexOf("dir") >=0)      {}
+                else if (lc.indexOf("time") >=0)     {}
+                else                                 tStandardName = "wind_speed_of_gust";
+                }
             else if ((lc.indexOf("wind") >= 0 && 
                       lc.indexOf("speed") >= 0) ||   //not wspd3, which should have a stdName but doesn't
                      lc.indexOf("|wspd|") >= 0)      tStandardName = "wind_speed";
@@ -4598,7 +4623,7 @@ public abstract class EDD {
                 } else if ((testUnits.indexOf("psu") >= 0 && testUnits.indexOf("psue") < 0) || //psuedo
                     testUnits.indexOf("pss") >= 0) {
                     tMin = -1;    tMax = 1;
-                } else if (isDegreesC || isDegreesF || isDegreesK ||
+                } else if (hasTemperatureUnits ||
                     testUnits.indexOf("percent") >= 0) {
                     tMin = -5;    tMax = 5;
                 } else {
@@ -4619,7 +4644,7 @@ public abstract class EDD {
                 } else if ((testUnits.indexOf("psu") >= 0 && testUnits.indexOf("psue") < 0) || //psuedo
                     testUnits.indexOf("pss") >= 0) {
                     tMin = 0;    tMax = 1;
-                } else if (isDegreesC || isDegreesF || isDegreesK ||
+                } else if (hasTemperatureUnits ||
                     testUnits.indexOf("percent") >= 0) {
                     tMin = 0;    tMax = 5;
                 } else {
@@ -4916,10 +4941,23 @@ public abstract class EDD {
             else if (lc.indexOf("|ice|concentration|") >= 0)               {tMin = 0;    tMax = 1.5;}
 
             //general things (if specific not caught above)
-            else if (isDegreesC)                                           {tMin = -10;  tMax = 40;}
-            else if (isDegreesF)                                           {tMin = 14;   tMax = 104;} 
-            else if (isDegreesK)                                           {tMin = 263;  tMax = 313;} 
+            else if (isDegreesC)                                           {if (lcu.indexOf("rate") >= 0) {
+                                                                              tMin = -5;  tMax = 5;
+                                                                            } else {
+                                                                              tMin = -10;  tMax = 40;
+                                                                            }}
+            else if (isDegreesF)                                           {if (lcu.indexOf("rate") >= 0) {
+                                                                              tMin = -10;  tMax = 10;
+                                                                            } else {
+                                                                              tMin = 14;  tMax = 104;
+                                                                            }}
+            else if (isDegreesK)                                           {if (lcu.indexOf("rate") >= 0) {
+                                                                              tMin = -5;  tMax = 5;
+                                                                            } else {
+                                                                              tMin = 263;  tMax = 313;
+                                                                            }}
             else if (lcu.indexOf("anom") >= 0                           )  {tMin = -10;  tMax = 10;}
+            else if (lcu.indexOf("direction") >= 0                      )  {tMin = 0;    tMax = 360;}
             else if ((lcu.indexOf("|radiative|") >= 0 ||
                       lcu.indexOf("|radiation|") >= 0 ||
                       lcu.indexOf("|shortwave|") >= 0 ||
@@ -5193,6 +5231,7 @@ public abstract class EDD {
             //Currents: water or air, or things measuring them (tracer)
             } else if (lcu.indexOf("wave") < 0 &&
                        lcu.indexOf("wind") < 0 &&
+                       lcu.indexOf("ship") < 0 &&
                 ((lcu.indexOf("ocean") >= 0 && lcu.indexOf("streamfunction") >= 0) ||
                  lcu.indexOf("momentum|component") >= 0 ||
                  lcu.indexOf("momentum|stress")    >= 0 ||
@@ -5360,22 +5399,20 @@ public abstract class EDD {
                 tAddAtts.add("ioos_category", "Taxonomy");
 
             } else if (
-                lcu.indexOf("airtemp")              >= 0 ||
-                lcu.indexOf("air|temp")             >= 0 ||
-                lcu.indexOf("atemp")                >= 0 ||
-                lcu.indexOf("atmp")                 >= 0 ||  //4 letter NDBC abbreviation
-                lcu.indexOf("|degree|c|")           >= 0 ||
-                lcu.indexOf("|degrees|c|")          >= 0 ||
-                lcu.indexOf("heating")              >= 0 ||
-                lcu.indexOf("sst")                  >= 0 ||
-                lcu.indexOf("temperature")          >= 0 ||
-                lcu.indexOf("wtmp")                 >= 0 ||  //4 letter NDBC abbreviation
-                lcu.indexOf("wtemp")                >= 0 || 
+                //(lcu.indexOf("airtemp")              >= 0 ||
+                // lcu.indexOf("air|temp")             >= 0 ||
+                // lcu.indexOf("atemp")                >= 0 || 
+                // lcu.indexOf("atmp")                 >= 0 ||  //4 letter NDBC abbreviation 
+                // lcu.indexOf("|degree|c|")           >= 0 ||
+                // lcu.indexOf("|degrees|c|")          >= 0 ||
+                // lcu.indexOf("heating")              >= 0 ||
+                // lcu.indexOf("sst")                  >= 0 ||
+                // lcu.indexOf("temperature")          >= 0 ||
+                // lcu.indexOf("wtmp")                 >= 0 ||  //4 letter NDBC abbreviation
+                // lcu.indexOf("wtemp")                >= 0) && 
                 //temperature units often used with other units for other purposes
                 //but if alone, it means temperature
-                isDegreesC ||
-                isDegreesF ||
-                isDegreesK) {
+                hasTemperatureUnits) {
 
                 tAddAtts.add("ioos_category", "Temperature");
 
@@ -5386,6 +5423,7 @@ public abstract class EDD {
                 lcu.indexOf("momentum|flux")>= 0 ||
                 lcu.indexOf("|u-flux|")     >= 0 ||
                 lcu.indexOf("|v-flux|")     >= 0 ||
+                lcu.indexOf("gust")         >= 0 ||
                 lcu.indexOf("uwnd")         >= 0 ||
                 lcu.indexOf("vwnd")         >= 0 ||
                 lcu.indexOf("xwnd")         >= 0 ||
@@ -5794,11 +5832,29 @@ public abstract class EDD {
                 //addAtts.set("long_name", "Time");
                 sTime = col; //no other column will be time
 
+            } else if (sLongitude >= 0 && suggestDestName.equals("longitude")) {
+                //longitude already assigned
+                suggestDestName = suggestDestinationName(tSourceName, tUnits, 
+                    sourceAtts.getFloat("scale_factor"), false); //tryToFindLLAT
+                tDestName = suggestDestName;
+                if (tDestName.equals("longitude"))
+                    tDestName = "longitude2";
+
+            } else if (sLatitude >= 0 && suggestDestName.equals("latitude")) {
+                //latitude already assigned
+                suggestDestName = suggestDestinationName(tSourceName, tUnits, 
+                    sourceAtts.getFloat("scale_factor"), false); //tryToFindLLAT
+                tDestName = suggestDestName;
+                if (tDestName.equals("latitude"))
+                    tDestName = "latitude2";
+
             } else if (sTime >= 0 && suggestDestName.equals("time")) {
                 //time already assigned
-                tDestName = tSourceName;
+                suggestDestName = suggestDestinationName(tSourceName, tUnits, 
+                    sourceAtts.getFloat("scale_factor"), false); //tryToFindLLAT
+                tDestName = suggestDestName;
                 if (tDestName.equals("time"))
-                    tDestName = "time_";
+                    tDestName = "time2";
 
             } else { //always show destName, not just if different;  was: if (!tSourceName.equals(suggestDestName)) {
                 tDestName = suggestDestName;

@@ -646,7 +646,10 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <destinationName>MHchla</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"actual_range\" type=\"floatList\">0.001 63.87</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">0.001" + 
+            //an odd difference between Java 1.6 and Java 1.7
+            (System.getProperty("java.version").startsWith("1.6")? "0" : "") + 
+            " 63.87</att>\n" + 
 "            <att name=\"coordsys\">geographic</att>\n" +
 "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" +
 "            <att name=\"long_name\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality</att>\n" +

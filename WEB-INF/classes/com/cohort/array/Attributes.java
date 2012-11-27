@@ -606,20 +606,27 @@ public class Attributes {
 
     /** 
      * This tests if o is an Attributes and has the same data. 
+     * This doesn't throw an Exception if a difference is found.
      *
      * @param o an object, presumably an Attributes
-     * @throws Exception if a difference is found.
      */
     public boolean equals(Object o) {
-        try {
-            Attributes att2 = (Attributes)o;
-            Test.ensureEqual(toString(), att2.toString(), "");
+        return testEquals(o).length() == 0;
+    }
 
-            return true;
-        } catch (Exception e) {
-            String2.log(MustBe.throwable(String2.ERROR + " in Attributes.equals", e));
-            return false;
-        }
+    /** 
+     * This returns a string indicating the differents of this Attributes and o,
+     * or "" if no difference. 
+     * This doesn't throw an Exception if a difference is found.
+     *
+     * @param o an object, presumably an Attributes
+     */
+    public String testEquals(Object o) {
+        if (o == null)
+            return "The new Attributes object is null.";
+        if (!(o instanceof Attributes))
+            return "The new object isn't an Attributes object.";
+        return Test.testEqual(toString(), ((Attributes)o).toString(), "");
     }
 
     /**
