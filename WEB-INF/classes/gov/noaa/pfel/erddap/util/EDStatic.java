@@ -124,7 +124,7 @@ public class EDStatic {
      * <br>1.40 released on 2012-10-25
      * <br>1.42 released on 2012-11-26
      */   
-    public static String erddapVersion = "1.42";  
+    public static String erddapVersion = "1.43";  
 
     /** 
      * This is almost always false.  
@@ -404,9 +404,9 @@ public static boolean developmentMode = false;
 
     public static boolean displayDiagnosticInfo, listPrivateDatasets, 
         reallyVerbose,
-        postShortDescriptionActive, //if true, PostIndexHtml is on home page and /post/index.html redirects there
-        subscriptionSystemActive,
-        fgdcActive, iso19115Active, sosActive, wcsActive,
+        postShortDescriptionActive, //if true, PostIndexHtml is on home page and /post/index.html redirects there        
+        subscriptionSystemActive,  convertersActive, slideSorterActive,
+        fgdcActive, iso19115Active, sosActive, wcsActive, wmsActive,
         quickRestart,
         useOriginalSearchEngine, useLuceneSearchEngine,  //exactly one will be true
         variablesMustHaveIoosCategory,
@@ -499,7 +499,8 @@ public static boolean developmentMode = false;
         convertKeywordsIntro,
         convertKeywordsNotes,
         convertKeywordsService,
-        convertTime,              
+        convertTime,           
+        convertTimeReference,
         convertTimeIntro,
         convertTimeNotes,
         convertTimeService,
@@ -517,6 +518,7 @@ public static boolean developmentMode = false;
         dafTableHtml,
         dasTitle,
         dataAccessNotAllowed,
+        disabled,
         distinctValuesHtml,
         doWithGraphs,
 
@@ -678,7 +680,6 @@ public static boolean developmentMode = false;
         functionDistinctCheck,
         functionDistinctHtml,
         functionOrderByHtml,
-        functionOrderByMaxHtml,
         functionOrderBySort,
         functionOrderBySort1,
         functionOrderBySort2,
@@ -941,6 +942,7 @@ public static boolean developmentMode = false;
         seeProtocolDocumentation,
         selectNext,
         selectPrevious,
+        ssUse,
         ssBePatient, 
         ssInstructionsHtml,
         standardShortDescriptionHtml,
@@ -1050,7 +1052,8 @@ public static boolean developmentMode = false;
         wcsLongDescriptionHtml,
         wmsDescriptionHtml,
         wmsInstructions,
-        wmsLongDescriptionHtml;
+        wmsLongDescriptionHtml,
+        wmsManyDatasets;
 
     public static int[] imageWidths, imageHeights, pdfWidths, pdfHeights;
     private static String        
@@ -1430,6 +1433,7 @@ public static boolean developmentMode = false;
 wcsActive = false;         
 //        wcsActive                  = setup.getBoolean(         "wcsActive",                  false); 
 
+        wmsActive                  = setup.getBoolean(         "wmsActive",                  true); 
         wmsSampleDatasetID         = setup.getNotNothingString("wmsSampleDatasetID",         errorInMethod);
         wmsSampleVariable          = setup.getNotNothingString("wmsSampleVariable",          errorInMethod);
         wmsSampleBBox              = setup.getNotNothingString("wmsSampleBBox",              errorInMethod);
@@ -1497,6 +1501,8 @@ wcsActive = false;
         startBodyHtml              = setup.getNotNothingString("startBodyHtml",              errorInMethod);
         startHeadHtml              = setup.getNotNothingString("startHeadHtml",              errorInMethod);
         subscriptionSystemActive   = setup.getBoolean(         "subscriptionSystemActive",   true);
+        convertersActive           = setup.getBoolean(         "convertersActive",           true);
+        slideSorterActive          = setup.getBoolean(         "slideSorterActive",          true);
         theShortDescriptionHtml    = setup.getNotNothingString("theShortDescriptionHtml",    errorInMethod);
         unusualActivity            = setup.getInt(             "unusualActivity",            unusualActivity);
         variablesMustHaveIoosCategory = setup.getBoolean(      "variablesMustHaveIoosCategory", true);
@@ -1656,6 +1662,7 @@ wcsActive = false;
         convertKeywordsNotes       = messages.getNotNothingString("convertKeywordsNotes",       errorInMethod);
         convertKeywordsService     = messages.getNotNothingString("convertKeywordsService",     errorInMethod);
         convertTime                = messages.getNotNothingString("convertTime",                errorInMethod);
+        convertTimeReference       = messages.getNotNothingString("convertTimeReference",       errorInMethod);
         convertTimeIntro           = messages.getNotNothingString("convertTimeIntro",           errorInMethod);
         convertTimeNotes           = messages.getNotNothingString("convertTimeNotes",           errorInMethod);
         convertTimeService         = messages.getNotNothingString("convertTimeService",         errorInMethod);
@@ -1673,6 +1680,7 @@ wcsActive = false;
         dafTableHtml               = messages.getNotNothingString("dafTableHtml",               errorInMethod);
         dasTitle                   = messages.getNotNothingString("dasTitle",                   errorInMethod);
         dataAccessNotAllowed       = messages.getNotNothingString("dataAccessNotAllowed",       errorInMethod);
+        disabled                   = messages.getNotNothingString("disabled",                   errorInMethod);
         distinctValuesHtml         = messages.getNotNothingString("distinctValuesHtml",         errorInMethod);
         doWithGraphs               = messages.getNotNothingString("doWithGraphs",               errorInMethod);
 
@@ -1835,7 +1843,6 @@ wcsActive = false;
         functionDistinctCheck      = messages.getNotNothingString("functionDistinctCheck",      errorInMethod);
         functionDistinctHtml       = messages.getNotNothingString("functionDistinctHtml",       errorInMethod);
         functionOrderByHtml        = messages.getNotNothingString("functionOrderByHtml",        errorInMethod);
-        functionOrderByMaxHtml     = messages.getNotNothingString("functionOrderByMaxHtml",     errorInMethod);
         functionOrderBySort        = messages.getNotNothingString("functionOrderBySort",        errorInMethod);
         functionOrderBySort1       = messages.getNotNothingString("functionOrderBySort1",       errorInMethod);
         functionOrderBySort2       = messages.getNotNothingString("functionOrderBySort2",       errorInMethod);
@@ -2112,6 +2119,7 @@ wcsActive = false;
         selectNext                 = messages.getNotNothingString("selectNext",                 errorInMethod);
         selectPrevious             = messages.getNotNothingString("selectPrevious",             errorInMethod);
         seeProtocolDocumentation   = messages.getNotNothingString("seeProtocolDocumentation",   errorInMethod);
+        ssUse                      = messages.getNotNothingString("ssUse",                      errorInMethod);
         ssBePatient                = messages.getNotNothingString("ssBePatient",                errorInMethod);
         ssInstructionsHtml         = messages.getNotNothingString("ssInstructionsHtml",         errorInMethod);
         standardShortDescriptionHtml=messages.getNotNothingString("standardShortDescriptionHtml",errorInMethod);
@@ -2223,6 +2231,7 @@ wcsActive = false;
         wmsDescriptionHtml         = messages.getNotNothingString("wmsDescriptionHtml",         errorInMethod);
         wmsInstructions            = messages.getNotNothingString("wmsInstructions",            errorInMethod); 
         wmsLongDescriptionHtml     = messages.getNotNothingString("wmsLongDescriptionHtml",     errorInMethod); 
+        wmsManyDatasets            = messages.getNotNothingString("wmsManyDatasets",            errorInMethod); 
 
         Test.ensureEqual(imageWidths.length,  3, errorInMethod + "imageWidths.length must be 3.");
         Test.ensureEqual(imageHeights.length, 3, errorInMethod + "imageHeights.length must be 3.");
@@ -2272,8 +2281,14 @@ wcsActive = false;
         PostIndex3Html = String2.replaceAll(PostIndex3Html, "&PostSurgeryDatasetID;",   PostSurgeryDatasetID);
         PostIndex3Html = String2.replaceAll(PostIndex3Html, "&PostDetectionDatasetID;", PostDetectionDatasetID);
 
+        doWithGraphs = String2.replaceAll(doWithGraphs, "&ssUse;", slideSorterActive? ssUse : "");
+
+        theLongDescriptionHtml = String2.replaceAll(theLongDescriptionHtml, "&ssUse;", slideSorterActive? ssUse : "");
         theLongDescriptionHtml = String2.replaceAll(theLongDescriptionHtml, "&requestFormatExamplesHtml;", requestFormatExamplesHtml);
         theLongDescriptionHtml = String2.replaceAll(theLongDescriptionHtml, "&resultsFormatExamplesHtml;", resultsFormatExamplesHtml);
+
+        standardShortDescriptionHtml = String2.replaceAll(standardShortDescriptionHtml, "&convertTimeReference;", convertersActive? convertTimeReference : "");
+        standardShortDescriptionHtml = String2.replaceAll(standardShortDescriptionHtml, "&wmsManyDatasets;", wmsActive? wmsManyDatasets : "");
 
         theShortDescriptionHtml = String2.replaceAll(theShortDescriptionHtml, "[standardShortDescriptionHtml]", standardShortDescriptionHtml);
         theShortDescriptionHtml = String2.replaceAll(theShortDescriptionHtml, "&requestFormatExamplesHtml;",    requestFormatExamplesHtml);

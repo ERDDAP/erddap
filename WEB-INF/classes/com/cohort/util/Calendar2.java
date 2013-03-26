@@ -5,6 +5,7 @@
 package com.cohort.util;
 
 import com.cohort.array.DoubleArray;
+import com.cohort.array.StringArray;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -93,9 +94,9 @@ public class Calendar2 {
         new SimpleDateFormat("yyyyMM");
     */
 
-    //MINUTES per day    = 1440
-    //MINUTES per 7days  = 10080
-    //MINUTES per 30days = 43200
+    public final static int MINUTES_PER_DAY    = 1440;
+    public final static int MINUTES_PER_7DAYS  =  7 * MINUTES_PER_DAY; //10080
+    public final static int MINUTES_PER_30DAYS = 30 * MINUTES_PER_DAY; //43200
     public final static int SECONDS_PER_MINUTE = 60; 
     public final static int SECONDS_PER_HOUR   = 60 * 60; //3600
     public final static int SECONDS_PER_DAY    = 24 * 60 * 60; //86400   31Days=2678400  365days=31536000
@@ -208,17 +209,31 @@ public class Calendar2 {
      */
     public static double unitsSinceToEpochSeconds(double baseSeconds, 
         double factorToGetSeconds, double unitsSince)  {
-        if (factorToGetSeconds >= 30 * SECONDS_PER_DAY) {
-            if (!Math2.isFinite(unitsSince))
+        if (factorToGetSeconds >= 30 * SECONDS_PER_DAY) {  //i.e. >= a month
+            //floor yields consistent results below for decimal months
+            int intUnitsSince = Math2.roundToInt(Math.floor(unitsSince)); 
+            if (intUnitsSince == Integer.MAX_VALUE)
                 return Double.NaN;
             int field;
-            if (factorToGetSeconds == 30 * SECONDS_PER_DAY)       field = MONTH;
+            if      (factorToGetSeconds ==  30 * SECONDS_PER_DAY) field = MONTH;
             else if (factorToGetSeconds == 360 * SECONDS_PER_DAY) field = YEAR;
             else throw new RuntimeException(
                 String2.ERROR + " in Calendar2.unitsSinceToEpochSeconds: factorToGetSeconds=\"" + 
                 factorToGetSeconds + "\" not expected.");
             GregorianCalendar gc = epochSecondsToGc(baseSeconds);
-            gc.add(field, Math2.roundToInt(unitsSince)); 
+            gc.add(field, intUnitsSince); 
+            if (unitsSince != intUnitsSince) {
+                double frac = unitsSince - intUnitsSince;  //will be positive because floor was used
+                if (field == MONTH) {
+                    //Round fractional part to nearest day.  Better if based on nDays in current month?
+                    //(Note this differs from UDUNITS month = 3.15569259747e7 / 12 seconds.)
+                    gc.add(DATE, Math2.roundToInt(frac * 30)); 
+                } else if (field == YEAR) {  
+                    //Round fractional part to nearest month.
+                    //(Note this differs from UDUNITS year = 3.15569259747e7 seconds.)
+                    gc.add(MONTH, Math2.roundToInt(frac * 12)); 
+                }
+            }
             return gcToEpochSeconds(gc);
         }
         return baseSeconds + unitsSince * factorToGetSeconds;
@@ -241,12 +256,14 @@ public class Calendar2 {
             GregorianCalendar es = epochSecondsToGc(epochSeconds);
             GregorianCalendar bs = epochSecondsToGc(baseSeconds);
             if (factorToGetSeconds == 30 * SECONDS_PER_DAY) {
-                //months  
+                //months (and days)
+//expand this to support fractional months???
                 int esm = getYear(es) * 12 + es.get(MONTH);
                 int bsm = getYear(bs) * 12 + bs.get(MONTH);
                 return esm - bsm;
             } else if (factorToGetSeconds == 360 * SECONDS_PER_DAY) {
-                //years
+                //years (and months)
+//expand this to support fractional years???
                 return getYear(es) - getYear(bs);               
             } else throw new RuntimeException(
                 String2.ERROR + " in Calendar2.epochSecondsToUnitsSince: factorToGetSeconds=\"" + 
@@ -470,9 +487,9 @@ public class Calendar2 {
      * @param time_precision can be "1970", "1970-01", "1970-01-01", "1970-01-01T00Z",
      *    "1970-01-01T00:00Z", "1970-01-01T00:00:00Z" (used if time_precision not matched), 
      *    "1970-01-01T00:00:00.0Z", "1970-01-01T00:00:00.00Z", "1970-01-01T00:00:00.000Z".
-     *    Or any of those without "Z".
+     *    Or any of those without "Z".  But ERDDAP requires any format with hours(min(sec)) to have Z.
      */
-    public static String limitedEpochSecondsToIsoStringT(String time_precision,
+    public static String epochSecondsToLimitedIsoStringT(String time_precision,
         double seconds, String NaNString) {
 
         if (!Math2.isFinite(seconds)) 
@@ -1151,6 +1168,7 @@ public class Calendar2 {
      * @param s the date time string
      * @param separatorN is the separators (use "\u0000" to match any non-digit).
      *    (± matches + or - and that becomes part of the number)
+     *    (. matches . or , (the European decimal point))
      * @param resultsN should initially have the defaults and 
      *   will receive the results.  If trouble, resultsN[0] will be Integer.MAX_VALUE,
      *   so caller can throw exception with good error message.
@@ -1209,6 +1227,8 @@ public class Calendar2 {
                 //if invalid separator, stop trying to read more; return trouble
                 mMode = false;
                 char ch = s.charAt(po2);
+                if (ch == ',') 
+                    ch = '.';
                 if (separatorN[part] == '\u0000') {
 
                 } else if (separatorN[part] == '±') {
@@ -1248,6 +1268,32 @@ public class Calendar2 {
         //String2.log("  " + String2.toCSSVString(resultsN));
     }
 
+    /**
+     * This tests if s is probably an ISO 8601 Date Time (at least [-]YYYY-M).
+     * null and "" return false;
+     * This isn't strict since it doesn't test the remainder of the string.
+     */
+    public static boolean probablyISODateTime(String s) {
+        char ch;
+        if (s == null)
+            return false;
+        int sLength = s.length();
+        if (sLength < 6)
+            return false;
+        int po = 0;
+        if (s.charAt(po) == '-') {
+            po++;
+            if (sLength < 7)
+                return false;
+        }
+        if (!String2.isDigit(s.charAt(po++))) return false;
+        if (!String2.isDigit(s.charAt(po++))) return false;
+        if (!String2.isDigit(s.charAt(po++))) return false;
+        if (!String2.isDigit(s.charAt(po++))) return false;
+        if (s.charAt(po++) != '-')    return false;
+        if (!String2.isDigit(s.charAt(po++))) return false; //perhaps not 0-padded
+        return true;
+    }
 
     /**
      * This converts an ISO date time string ([-]YYYY-MM-DDTHH:MM:SS.SSS±ZZ:ZZ) into
@@ -1260,7 +1306,7 @@ public class Calendar2 {
      * <br>This tries hard to be tolerant of non-valid formats (e.g., "1971-1-2", "1971-01")
      * <br>As of 11/9/2006, NO LONGER TRUE: If year is 0..49, it is assumed to be 2000..2049.
      * <br>As of 11/9/2006, NO LONGER TRUE: If year is 50..99, it is assumed to be 1950..1999.
-     * <br>If the string is too short, the end of "1970-01-01T00:00:00.000" will be added (effectively).
+     * <br>If the string is too short, the end of "1970-01-01T00:00:00.000Z" will be added (effectively).
      * <br>If the string is too long, the excess will be ignored.
      * <br>If a required separator is incorrect, it is an error.
      * <br>If the date is improperly formatted, it returns null.
@@ -1275,8 +1321,9 @@ public class Calendar2 {
      *   For years B.C., use calendar2Year = 1 - BCYear.  
      *   Note that BCYears are 1..., so 1 BC is calendar2Year 0 (or 0000),
      *   and 2 BC is calendar2Year -1 (or -0001).
+     *   This supports SS.SSS and SS,SSS (which ISO 8601 prefers!).
      * @return the same GregorianCalendar object, but with the date info
-     * @throws Exception if trouble (e.g., gc is null or s is null or 
+     * @throws RuntimeException if trouble (e.g., gc is null or s is null or 
      *    not at least #)
      */
     public static GregorianCalendar parseISODateTime(GregorianCalendar gc, 
@@ -1297,11 +1344,14 @@ public class Calendar2 {
 
 
         //remove trailing Z or "UTC"
-        if (s.charAt(s.length() - 1) == 'Z')
-            s = s.substring(0, s.length() - 1);
-        if (s.endsWith("UTC") || s.endsWith("GMT"))
-            s = s.substring(0, s.length() - 3);
         s = s.trim();
+        if (Character.toLowerCase(s.charAt(s.length() - 1)) == 'z') 
+            s = s.substring(0, s.length() - 1).trim();
+        if (s.length() >= 3) {
+            String last3 = s.substring(s.length() - 3).toLowerCase();
+            if (last3.equals("utc") || last3.equals("gmt"))
+                s = s.substring(0, s.length() - 3).trim();
+        }
 
         //if e.g., 1970-01-01 00:00:00 0:00, change ' ' to '+' (first ' '->'+' is irrelevant)
         s = String2.replaceAll(s, ' ', '+');
@@ -1309,9 +1359,8 @@ public class Calendar2 {
         //separators (\u0000=any non-digit)
         char separator[] = {'-','-','\u0000',':',':','.','±', ':', '\u0000'}; 
         parseN(s, separator, ymdhmsmom);
-        if (ymdhmsmom[0] == Integer.MAX_VALUE) {
+        if (ymdhmsmom[0] == Integer.MAX_VALUE) 
             Test.error(String2.ERROR + " in parseISODateTime: dateTime='" + s + "' has an invalid format!");
-        }
 
         //do time zone adjustment
         //String2.log("#7=" + ymdhmsmom[7] + " #8=" + ymdhmsmom[8]);
@@ -1334,8 +1383,8 @@ public class Calendar2 {
     }
 
     /**
-     * This converts an ISO *ZULU* date time string ([-]YYYY-MM-DDTHH:MM:SS±ZZ:ZZ) into
-     * a GregorianCalendar object.
+     * This converts an ISO (default *ZULU* time zone) date time string ([-]YYYY-MM-DDTHH:MM:SS±ZZ:ZZ) into
+     * a GregorianCalendar object with the Zulu time zone.
      * See parseISODateTime documentation.
      *
      * @param s the dateTimeString in the ISO format ([-]YYYY-MM-DDTHH:MM:SS)
@@ -1648,6 +1697,15 @@ public class Calendar2 {
     }
 
     /**
+     * This returns the current local dateTime in compact ISO format (yyyyMMddhhmmss).
+     *
+     * @return the current local dateTime in compact ISO format (yyyyMMddhhmmss).
+     */
+    public static String getCompactCurrentISODateTimeStringLocal() {
+        return formatAsCompactDateTime(newGCalendarLocal());
+    }
+
+    /**
      * This returns the current Zulu dateTime in ISO T format.
      *
      * @return the current Zulu dateTime in ISO T format (without the trailing Z)
@@ -1686,7 +1744,7 @@ public class Calendar2 {
      * This converts an ISO Zulu DateTime string to millis since 1970-01-01T00:00:00Z.
      *
      * @param s the ISO Zulu DateTime string.
-     *   This may include hours, minutes, seconds, decimal, and Z or timezone offset (default=Zulu).  
+     *   This may include hours, minutes, seconds, millis and Z or timezone offset (default=Zulu).  
      * @return the millis since 1970-01-01T00:00:00Z 
      * @throws Exception if trouble (e.g., s is null or not at least #)
      */
@@ -2160,5 +2218,91 @@ public class Calendar2 {
         return gc;
     }
 
+    /**
+     * Given a text date time string, this suggests a Java/Joda date/time format.
+     *
+     * @param sample   
+     * @return an appropriate Java/Joda date/time format
+     *   or "" if not matched.
+     */
+    public static String suggestDateTimeFormat(String sample) {
+        if (sample == null || sample.length() == 0)
+            return "";
+
+        char ch = Character.toLowerCase(sample.charAt(0));
+        if (ch >= '0' && ch <= '9') {
+            //test formats that start with a digit
+            //For all 4 digit years, ensure first digit is 0|1|2 (especially all numeric formats).
+            //For all 2 digit months, ensure first digit is 0|1 (especially all numeric formats).
+            //etc for dates, hours, minutes, seconds.
+
+            //check for julian date before ISO 8601 format
+            if (sample.matches("[0-2][0-9]{3}-[0-3][0-9]{2}"))         return "yyyy-DDD";  
+            if (sample.matches("[0-2][0-9]{3}[0-3][0-9]{2}"))          return "yyyyDDD";  
+            //special EDVTimeStamp.ISO8601TZ_FORMAT accepts a wide range of variants of 1970-01-01T00:00:00Z
+            if (sample.matches("[0-2][0-9]{3}-[0-1][0-9].*"))          return "yyyy-MM-dd'T'HH:mm:ssZ"; 
+            if (sample.matches("[0-2][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9][0-5][0-9]"))         
+                                                                       return "yyyyMMddHHmmss";
+            if (sample.matches("[0-2][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9][0-5][0-9]")) 
+                                                                       return "yyyyMMddHHmm";
+            if (sample.matches("[0-2][0-9]{3}[0-1][0-9][0-3][0-9][0-2][0-9]")) 
+                                                                       return "yyyyMMddHH";
+            if (sample.matches("[0-2][0-9]{3}[0-1][0-9][0-3][0-9]"))   return "yyyyMMdd";
+            if (sample.matches("[0-2][0-9]{3}[0-1][0-9]"))             return "yyyyMM";
+            //note that yy handles conversion of 2 digit year to 4 digits (e.g., 85 -> 1985)
+            if (sample.matches("[0-9]{1,2}/[0-9]{1,2}/[0-9]{2,4}"))    return "M/d/yy";      //assume US ordering
+            if (sample.matches("[0-9]{1,2} [a-zA-Z]{3} [0-9]{2,4}"))   return "d MMM yy";    //2 Jan 85
+            if (sample.matches("[0-9]{1,2}-[a-zA-Z]{3}-[0-9]{2,4}"))   return "d-MMM-yy";    //02-JAN-1985
+
+        } else if (ch >= 'a' && ch <= 'z') {
+            //test formats that start with a letter
+            if (sample.matches("[a-zA-Z]{3} [0-9]{1,2}, [0-9]{2,4}"))  return "MMM d, yy";   //Jan 2, 1985
+            //                 "Sun, 06 Nov 1994 08:49:37 GMT"  //GMT is literal. Joda doesn't parse z
+            if (sample.matches("[a-zA-Z]{3}, [0-9]{2} [a-zA-Z]{3} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} GMT")) 
+                        return "EEE, dd MMM yyyy HH:mm:ss 'GMT'";  //RFC 822 format date time
+            //                 "Sun, 06 Nov 1994 08:49:37 -0800" or -08:00
+            if (sample.matches("[a-zA-Z]{3}, [0-9]{2} [a-zA-Z]{3} [0-9]{4} [0-9]{2}:[0-9]{2}:[0-9]{2} -[0-9]{2}:?[0-9]{2}")) 
+                        return "EEE, dd MMM yyyy HH:mm:ss Z";  //RFC 822 format date time
+        }
+
+        //fail
+        return "";
+    }
+
+    /**
+     * This looks for a date time format which is suitable for all elements of sa
+     * (other than nulls and ""'s).
+     * 
+     * @param sa a StringArray, perhaps with consistently formatted date time String values.
+     * @return a date time format which is suitable for all elements of sa
+     *   (other than nulls and ""'s), or "" if no suggestion.
+     */
+    public static String suggestDateTimeFormat(StringArray sa) {
+        boolean debugMode = false;
+        int size = sa.size();
+        String format = null;
+        for (int row = 0; row < size; row++) {
+            String s = sa.get(row);
+            if (s == null || s.length() == 0)
+                continue;
+            if (format == null) {
+                format = suggestDateTimeFormat(s);
+                if (format.length() == 0) {
+                    if (debugMode)
+                        String2.log("  suggestDateTimeFormat: no format for \"" + s + "\".");
+                    return "";
+                }
+            } else {
+                String tFormat = suggestDateTimeFormat(s);
+                if (!format.equals(tFormat)) {
+                    if (debugMode)
+                        String2.log("  suggestDateTimeFormat: [" + row + "]=\"" + s + 
+                            "\" doesn't match format=\"" + format + "\".");
+                    return "";
+                }
+            }
+        }
+        return format == null? "" : format;
+    }
 
 }

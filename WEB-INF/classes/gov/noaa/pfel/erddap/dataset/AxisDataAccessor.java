@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.ByteArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
@@ -184,7 +185,24 @@ public class AxisDataAccessor {
                     globalAttributes.set("geospatial_vertical_min", fMin); //unidata-related
                     globalAttributes.set("geospatial_vertical_max", fMax);
                 } else if (minMax instanceof IntArray ||
-                           minMax instanceof ShortArray) {
+                           minMax instanceof ShortArray ||
+                           minMax instanceof ByteArray) {
+                    globalAttributes.set("geospatial_vertical_min", iMin); //unidata-related
+                    globalAttributes.set("geospatial_vertical_max", iMax);
+                } else {
+                    globalAttributes.set("geospatial_vertical_min", dMin); //unidata-related
+                    globalAttributes.set("geospatial_vertical_max", dMax);
+                }
+            } else if (rAxisVariables[av] instanceof EDVDepthGridAxis) {
+                globalAttributes.set("geospatial_vertical_units", rAxisVariables[av].units());
+                globalAttributes.set("geospatial_vertical_positive", "down");
+                if (Double.isNaN(dMin)) {
+                } else if (minMax instanceof FloatArray) {
+                    globalAttributes.set("geospatial_vertical_min", fMin); //unidata-related
+                    globalAttributes.set("geospatial_vertical_max", fMax);
+                } else if (minMax instanceof IntArray ||
+                           minMax instanceof ShortArray ||
+                           minMax instanceof ByteArray) {
                     globalAttributes.set("geospatial_vertical_min", iMin); //unidata-related
                     globalAttributes.set("geospatial_vertical_max", iMax);
                 } else {

@@ -1,5 +1,5 @@
 /* 
- * TableWriterOrderByMax Copyright 2009, NOAA.
+ * TableWriterOrderByMin Copyright 2012, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
 package gov.noaa.pfel.erddap.dataset;
@@ -14,10 +14,10 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import java.util.BitSet;
 
 /**
- * TableWriterOrderByMax provides a way to sort the response table's rows,
+ * TableWriterOrderByMin provides a way to sort the response table's rows,
  * and just keep the row where the value of the last sort variable is highest.
  * For example, you could use orderBy(\"stationID,time\") to just get the rows
- * of data with each station's maximum time value.
+ * of data with each station's minimum time value.
  *
  * <p>This doesn't do anything to missing values and doesn't asssume they are
  * stored as NaN or fake missing values.
@@ -28,7 +28,7 @@ import java.util.BitSet;
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2009-05-13
  */
-public class TableWriterOrderByMax extends TableWriterAll {
+public class TableWriterOrderByMin extends TableWriterAll {
 
 
     //set by constructor
@@ -46,14 +46,14 @@ public class TableWriterOrderByMax extends TableWriterAll {
      *   found by this tableWriter.
      * @param tOrderByCsv the names of the columns to sort by (most to least important)
      */
-    public TableWriterOrderByMax(String tDir, String tFileNameNoExt, 
+    public TableWriterOrderByMin(String tDir, String tFileNameNoExt, 
             TableWriter tOtherTableWriter, String tOrderByCsv) {
 
         super(tDir, tFileNameNoExt); 
         otherTableWriter = tOtherTableWriter;
         if (tOrderByCsv == null || tOrderByCsv.trim().length() == 0)
             throw new SimpleException("Query error: " +
-                "No column names were specified for 'orderByMax'.");
+                "No column names were specified for 'orderByMin'.");
         orderBy = String2.split(tOrderByCsv, ',');
     }
 
@@ -74,9 +74,9 @@ public class TableWriterOrderByMax extends TableWriterAll {
             return;
 
         //to save time and disk space, this just does a partial job 
-        //  (remove non-max rows from this partial table)
+        //  (remove non-min rows from this partial table)
         //  and leaves perfect job to finish()
-        table.orderByMax(orderBy);
+        table.orderByMin(orderBy);
 
         //ensure the table's structure is the same as before
         //and write to dataOutputStreams
@@ -85,7 +85,7 @@ public class TableWriterOrderByMax extends TableWriterAll {
 
     
     /**
-     * This finishes orderByMax and writes results to otherTableWriter
+     * This finishes orderByMin and writes results to otherTableWriter
      *
      * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
      */
@@ -94,7 +94,7 @@ public class TableWriterOrderByMax extends TableWriterAll {
 
         Table cumulativeTable = cumulativeTable();
         releaseResources();
-        cumulativeTable.orderByMax(orderBy);
+        cumulativeTable.orderByMin(orderBy);
         otherTableWriter.writeAllAndFinish(cumulativeTable);
 
         //clean up
@@ -108,7 +108,7 @@ public class TableWriterOrderByMax extends TableWriterAll {
      * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
      */
     public void writeAllAndFinish(Table tCumulativeTable) throws Throwable {
-        tCumulativeTable.orderByMax(orderBy);
+        tCumulativeTable.orderByMin(orderBy);
         otherTableWriter.writeAllAndFinish(tCumulativeTable);
         otherTableWriter = null;
     }

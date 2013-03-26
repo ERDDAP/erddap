@@ -439,7 +439,7 @@ public class FloatArray extends PrimitiveArray {
             Math2.ensureMemoryAvailable(4L * newCapacity, "FloatArray");
             float[] newArray = new float[newCapacity];
             System.arraycopy(array, 0, newArray, 0, size);
-            array = newArray;
+            array = newArray; //do last to minimize concurrency problems
         }
     }
 
@@ -953,7 +953,7 @@ public class FloatArray extends PrimitiveArray {
             for (int i = 0; i < otherSize; i++)
                 array[size + i] = Math2.doubleToFloatNaN(primitiveArray.getDouble(i)); //this converts mv's
         }
-        size += otherSize;
+        size += otherSize; //do last to minimize concurrency problems
     }    
 
     /**

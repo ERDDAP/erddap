@@ -107,6 +107,6 @@ public class MonthYearAxis implements TimeAxisStyle {
     return incrementUnits__;
   }
   public String toString() {
-    return "MonthYearAxis";
+    return "MonthYearAxis inc=" + incrementValue__ + " minorLabelInterval=" + defaultMinorLabelInterval_;
   }
 }

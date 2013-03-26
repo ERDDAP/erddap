@@ -57,7 +57,6 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         if (verbose) String2.log("\n*** constructing EDDGridFromBinaryFile(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         Attributes tGlobalAttributes = null;
-        double tAltitudeMetersPerSourceUnit = 1; 
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
@@ -93,9 +92,8 @@ public class EDDGridFromBinaryFile extends EDDGrid {
                 tGlobalAttributes = getAttributesFromXml(xmlReader);
             else if (localTags.equals( "<fileName>")) {}
             else if (localTags.equals("</fileName>")) tFileName = content; 
-            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) {}
-            else if (localTags.equals("</altitudeMetersPerSourceUnit>")) 
-                tAltitudeMetersPerSourceUnit = String2.parseDouble(content); 
+            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) 
+                throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
             else if (localTags.equals( "<axesLengths>"))  {}
             else if (localTags.equals("</axesLengths>"))  tAxesLengths = new IntArray(content); 
             else if (localTags.equals( "<axisVariable>")) tAxisVariables.add(getSDAVVariableFromXml(xmlReader));           
@@ -130,7 +128,6 @@ public class EDDGridFromBinaryFile extends EDDGrid {
 */
         return new EDDGridFromBinaryFile(tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
-            tAltitudeMetersPerSourceUnit, 
             new Object[1][3], new Object[1][3], //ttAxisVariables, ttDataVariables,
             tReloadEveryNMinutes,
             tFileName);
@@ -162,7 +159,6 @@ public class EDDGridFromBinaryFile extends EDDGrid {
     public EDDGridFromBinaryFile(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File,
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object tAxisVariables[][],
         Object tDataVariables[][],
         int tReloadEveryNMinutes,
@@ -227,8 +223,15 @@ public class EDDGridFromBinaryFile extends EDDGrid {
                             EDV.ALT_NAME.equals(tSourceAxisName)) {
                 altIndex = av;
                 axisVariables[av] = new EDVAltGridAxis(tSourceAxisName, 
-                    tSourceAttributes, tAddAttributes, tSourceValues,
-                    tAltMetersPerSourceUnit);
+                    tSourceAttributes, tAddAttributes, tSourceValues);
+
+            //is this the depth axis?
+            } else if (EDV.DEPTH_NAME.equals(tDestinationAxisName) ||
+                       ((tDestinationAxisName == null || tDestinationAxisName.trim().length() == 0) && 
+                            EDV.DEPTH_NAME.equals(tSourceAxisName)) {
+                depthIndex = av;
+                axisVariables[av] = new EDVDepthGridAxis(tSourceAxisName, 
+                    tSourceAttributes, tAddAttributes, tSourceValues);
 
             //is this the time axis?
             } else if (EDV.TIME_NAME.equals(tDestinationAxisName) ||

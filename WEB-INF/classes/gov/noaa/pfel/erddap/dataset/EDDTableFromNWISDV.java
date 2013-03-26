@@ -205,7 +205,6 @@ public class EDDTableFromNWISDV extends EDDTable{
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
 
         Attributes tGlobalAttributes = null;
-        double tAltitudeMetersPerSourceUnit = 1; 
         ArrayList tDataVariables = new ArrayList();
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
@@ -232,9 +231,8 @@ public class EDDTableFromNWISDV extends EDDTable{
             //try to make the tag names as consistent, descriptive and readable as possible
             if      (localTags.equals("<addAttributes>"))
                 tGlobalAttributes = getAttributesFromXml(xmlReader);
-            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) {}
-            else if (localTags.equals("</altitudeMetersPerSourceUnit>")) 
-                tAltitudeMetersPerSourceUnit = String2.parseDouble(content); 
+            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) 
+                throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
             else if (localTags.equals( "<dataVariable>")) 
                 tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
@@ -263,7 +261,6 @@ public class EDDTableFromNWISDV extends EDDTable{
 
         return new EDDTableFromNWISDV(tDatasetID, tAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
-            tAltitudeMetersPerSourceUnit,
             ttDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl);
 
@@ -314,8 +311,6 @@ public class EDDTableFromNWISDV extends EDDTable{
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
      *   Special case: if combinedGlobalAttributes name="license", any instance of "[standard]"
      *     will be converted to the EDStatic.standardLicense.
-     * @param tAltMetersPerSourceUnit the factor needed to convert the source
-     *    alt values to/from meters above sea level.
      * @param tDataVariables is an Object[nDataVariables][3]: 
      *    <br>[0]=String sourceName (the name of the data variable in the dataset source, 
      *         without the outer or inner sequence name),
@@ -337,8 +332,8 @@ public class EDDTableFromNWISDV extends EDDTable{
      *      <li> a org.joda.time.format.DateTimeFormat string
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *        http://joda-time.sourceforge.net/api-release/index.html or 
-     *        http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html),
+     *        http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
+     *        http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
@@ -349,7 +344,6 @@ public class EDDTableFromNWISDV extends EDDTable{
         String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tLocalSourceUrl) throws Throwable {
@@ -441,8 +435,13 @@ public class EDDTableFromNWISDV extends EDDTable{
             } else if (EDV.ALT_NAME.equals(tDestName)) {
                 dataVariables[dv] = new EDVAlt(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, tMin, tMax, tAltMetersPerSourceUnit);
+                    tSourceType, tMin, tMax);
                 altIndex = dv;
+            } else if (EDV.DEPTH_NAME.equals(tDestName)) {
+                dataVariables[dv] = new EDVDepth(tSourceName,
+                    tSourceAtt, tAddAtt, 
+                    tSourceType, tMin, tMax);
+                depthIndex = dv;
             } else if (EDV.TIME_NAME.equals(tDestName)) {  //look for TIME_NAME before check hasTimeUnits (next)
                 //time won't be in the stationTable, so no getNMinMax
                 dataVariables[dv] = new EDVTime(tSourceName,
@@ -540,7 +539,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         StringArray constraintValues    = new StringArray();
         getSourceQueryFromDapQuery(userDapQuery,
             resultsVariables,
-            constraintVariables, constraintOps, constraintValues);
+            constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
 
         //load stationTable (the subsetTable)   
         Table stationTable = subsetVariablesDataTable(loggedInAs);
@@ -1284,7 +1283,9 @@ public class EDDTableFromNWISDV extends EDDTable{
            Attributes addAtts = (Attributes)dataSourceTable.columnAttributes(col).clone();
            dataSourceTable.columnAttributes(col).clear();
            String destName = suggestDestinationName(sourceName, 
-               addAtts.getString("units"), Float.NaN, true);
+               addAtts.getString("units"), 
+               addAtts.getString("positive"), 
+               Float.NaN, true);
 
            //constructor won't read source atts
            //so put all atts in add atts
@@ -1392,8 +1393,7 @@ public class EDDTableFromNWISDV extends EDDTable{
             "<dataset type=\"EDDTableFromNWISDV\" datasetID=\"" + tDatasetID + 
                 "\" active=\"true\">\n" +
             "    <sourceUrl>" + tLocalWaterMLUrl + "</sourceUrl>\n" +
-            "    <reloadEveryNMinutes>1000000000</reloadEveryNMinutes>\n" + //no point in reloading
-            "    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n");
+            "    <reloadEveryNMinutes>1000000000</reloadEveryNMinutes>\n"); //no point in reloading
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         //sb.append(cdmSuggestion());  //no, this method does a good job of setting up cdm
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));        
@@ -1644,7 +1644,6 @@ directionsForGenerateDatasetsXml() +
 "<dataset type=\"EDDTableFromNWISDV\" datasetID=\"usgs_waterservices_5411_c757_e669\" active=\"true\">\n" +
 "    <sourceUrl>http://interim.waterservices.usgs.gov/NWISQuery/GetDV1</sourceUrl>\n" +
 "    <reloadEveryNMinutes>1000000000</reloadEveryNMinutes>\n" +
-"    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <addAttributes>\n" +
@@ -2026,7 +2025,7 @@ directionsForGenerateDatasetsXml() +
         String siteInfoService = "http://waterdata.usgs.gov/nwis/inventory/";
         String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
         String outputFile = "c:/data/waterML/scrapeNWISStations" + today + ".json";
-        String logFile = "c:/data/waterML/logSrapeNWIS" + 
+        String logFile = "c:/data/waterML/logScrapeNWIS" + 
             String2.replaceAll(today, "-", "") + ".txt";
         if (justAgency != null)
             String2.setupLog(true, false, logFile, false, false, 1000000000);

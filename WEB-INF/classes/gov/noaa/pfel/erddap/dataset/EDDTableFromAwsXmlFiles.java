@@ -51,11 +51,10 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
     public EDDTableFromAwsXmlFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        int tColumnNamesRow, int tFirstDataRow,
+        String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -64,10 +63,10 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
 
         super("EDDTableFromAwsXmlFiles", true, tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File,
-            tAddGlobalAttributes, tAltMetersPerSourceUnit, 
+            tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
-            tColumnNamesRow, tFirstDataRow,
+            tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ);
@@ -85,7 +84,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
     public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
-        StringArray conVars, StringArray conOps, StringArray conValues,
+        StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
 
@@ -207,7 +206,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(   0, tColumnNameForExtract, new StringArray(), atts);
         }
 
-        //after dataVariables known, add global attributes in the axisAddTable
+        //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
@@ -241,8 +240,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             "    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
             "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
-            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
-            "    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n");
+            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -310,7 +308,6 @@ directionsForGenerateDatasetsXml() +
 "    <columnNameForExtract>fileName</columnNameForExtract>\n" +
 "    <sortedColumnSourceName>ob-date</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>station-id ob-date</sortFilesBySourceNames>\n" +
-"    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
@@ -324,14 +321,15 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_url\">http://www.exploratorium.edu</att>\n" +
 "        <att name=\"infoUrl\">http://www.exploratorium.edu</att>\n" +
 "        <att name=\"institution\">exploratorium</att>\n" +
-"        <att name=\"keywords\">\n" +
+"        <att name=\"keywords\">air, altitude, atmosphere,\n" +
+"Atmosphere &gt; Altitude &gt; Station Height,\n" +
 "Atmosphere &gt; Atmospheric Temperature &gt; Air Temperature,\n" +
 "Atmosphere &gt; Atmospheric Temperature &gt; Dew Point Temperature,\n" +
 "Atmosphere &gt; Atmospheric Temperature &gt; Surface Air Temperature,\n" +
 "Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature,\n" +
 "Atmosphere &gt; Atmospheric Water Vapor &gt; Humidity,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"air, atmosphere, atmospheric, aux, aux-temp, aux-temp-rate, bulb, city, city-state, city-state-zip, currents, dew point, dew_point_temperature, direction, elevation, exploratorium, feels, feels-like, file, from, gust, gust-direction, high, humidity, humidity-rate, identifier, img, indoor, indoor-temp, indoor-temp-rate, light, light-rate, like, low, max, meteorology, month, moon, moon-phase, moon-phase-moon-phase-img, name, newer, phase, pressure, pressure-high, pressure-low, pressure-rate, rain, rain-month, rain-rate, rain-rate-max, rain-today, rain-year, rate, relative, relative_humidity, site, site-url, speed, state, station, station-id, surface, temp-high, temp-low, temp-rate, temperature, time, title, today, url, vapor, water, wet, wet_bulb_temperature, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, year, zip</att>\n" +
+"atmospheric, aux, aux-temp, aux-temp-rate, bulb, city, city-state, city-state-zip, currents, dew point, dew_point_temperature, direction, exploratorium, feels, feels-like, file, gust, gust-direction, height, high, humidity, humidity-rate, identifier, img, indoor, indoor-temp, indoor-temp-rate, light, light-rate, like, low, max, meteorology, month, moon, moon-phase, moon-phase-moon-phase-img, name, newer, phase, pressure, pressure-high, pressure-low, pressure-rate, rain, rain-month, rain-rate, rain-rate-max, rain-today, rain-year, rate, relative, relative_humidity, site, site-url, speed, state, station, station-id, surface, temp-high, temp-low, temp-rate, temperature, time, title, today, URL, vapor, water, wet, wet_bulb_temperature, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, year, zip</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
@@ -464,14 +462,17 @@ directionsForGenerateDatasetsXml() +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>elevation</sourceName>\n" +
-"        <destinationName>elevation</destinationName>\n" +
+"        <destinationName>altitude</destinationName>\n" +
 "        <dataType>byte</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"units\">ft</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
-"            <att name=\"long_name\">Elevation</att>\n" +
+"            <att name=\"long_name\">Altitude</att>\n" +
+"            <att name=\"scale_factor\" type=\"float\">0.3048</att>\n" +
+"            <att name=\"standard_name\">altitude</att>\n" +
+"            <att name=\"units\">m</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -934,7 +935,7 @@ directionsForGenerateDatasetsXml() +
             Test.ensureEqual(edd.datasetID(), "xml_fa11_d004_6990", "");
             Test.ensureEqual(edd.title(), "The Newer Title!", "");
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-"fileName, time, station_id, station, city_state_zip, city_state, site_url, aux_temp, aux_temp_rate, dew_point, elevation, feels_like, gust_time, gust_direction, gust_speed, humidity, humidity_high, humidity_low, humidity_rate, indoor_temp, indoor_temp_rate, light, light_rate, moon_phase_moon_phase_img, moon_phase, pressure, pressure_high, pressure_low, pressure_rate, rain_month, rain_rate, rain_rate_max, rain_today, rain_year, temp, temp_high, temp_low, temp_rate, sunrise, sunset, wet_bulb, wind_speed, wind_speed_avg, wind_direction, wind_direction_avg", "");
+"fileName, time, station_id, station, city_state_zip, city_state, site_url, aux_temp, aux_temp_rate, dew_point, altitude, feels_like, gust_time, gust_direction, gust_speed, humidity, humidity_high, humidity_low, humidity_rate, indoor_temp, indoor_temp_rate, light, light_rate, moon_phase_moon_phase_img, moon_phase, pressure, pressure_high, pressure_low, pressure_rate, rain_month, rain_rate, rain_rate_max, rain_today, rain_year, temp, temp_high, temp_low, temp_rate, sunrise, sunset, wet_bulb, wind_speed, wind_speed_avg, wind_direction, wind_direction_avg", "");
 
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
@@ -959,11 +960,8 @@ directionsForGenerateDatasetsXml() +
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 10); 
 
         String id = "testAwsXml";
-        if (deleteCachedDatasetInfo) {
-            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
-        }
+        if (deleteCachedDatasetInfo)
+            deleteCachedDatasetInfo(id);
         EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
 
         //*** test getting das for entire dataset
@@ -1005,7 +1003,7 @@ directionsForGenerateDatasetsXml() +
 "    Float32 actual_range 0.0, 0.0;\n" +
 "    String axis \"Z\";\n" +
 "    String ioos_category \"Location\";\n" +
-"    String long_name \"Elevation\";\n" +
+"    String long_name \"Altitude\";\n" +
 "    String positive \"up\";\n" +
 "    String standard_name \"altitude\";\n" +
 "    String units \"m\";\n" +

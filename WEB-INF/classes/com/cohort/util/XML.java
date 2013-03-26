@@ -666,7 +666,7 @@ public class XML {
         String2.log("prettyXml\n in=" + inFileName + "\nout=" + outFileName);
         if (inFileName.equals(outFileName))
             throw new RuntimeException("Error: inFileName equals outFileName!");
-        String in[] = String2.readFromFile(inFileName);
+        String in[] = String2.readFromFile(inFileName, "UTF-8");
         if (in[0].length() > 0)
             throw new RuntimeException("Error while reading " + inFileName + "\n" + in[0]);
         String xml = in[1];
@@ -678,6 +678,8 @@ public class XML {
         boolean lastHadContent = false;
         while (nextStart >= 0 && nextStart < xmlLength) {
 /*
+<?xml version="1.0" encoding="UTF-8"?>
+
   <gmd:axisDimensionProperties>
     <gmd:MD_Dimension>
       <gmd:dimensionName>

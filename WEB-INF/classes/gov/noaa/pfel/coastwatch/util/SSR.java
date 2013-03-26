@@ -1395,7 +1395,7 @@ public class SSR {
      * @param urlString The query MUST be already percentEncoded as needed.
      *   <br>See http://en.wikipedia.org/wiki/Percent-encoding .
      *   <br>Note that reserved characters only need to be percent encoded in special circumstances (not always).
-     * @return a String with the response.
+     * @return a String with the response.   Lines will always be separated by \n only.
      * @throws Exception if error occurs
      */
     public static String getUncompressedUrlResponseString(String urlString) throws Exception {

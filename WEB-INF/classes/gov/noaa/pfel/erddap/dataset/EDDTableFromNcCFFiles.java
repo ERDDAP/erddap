@@ -63,11 +63,10 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        int tColumnNamesRow, int tFirstDataRow,
+        String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -77,10 +76,10 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         super("EDDTableFromNcCFFiles", 
             true, //tIsLocal, 
             tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
-            tAddGlobalAttributes, tAltMetersPerSourceUnit, 
+            tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
-            tColumnNamesRow, tFirstDataRow,  //irrelevant
+            tCharset, tColumnNamesRow, tFirstDataRow,  //irrelevant
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, //irrelevant
             tSortFilesBySourceNames,
@@ -100,13 +99,14 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
     public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
-        StringArray conVars, StringArray conOps, StringArray conValues,
+        StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
         
+        //get the data from the source file
         Table table = new Table();
         table.readNcCF(fileDir + fileName, sourceDataNames,
-            conVars, conOps, conValues);
+            sourceConVars, sourceConOps, sourceConValues);
         return table;
     }
 
@@ -214,8 +214,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             "    <postExtractRegex>" + tPostExtractRegex + "</postExtractRegex>\n" +
             "    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
-            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
-            "    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n");
+            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
@@ -284,7 +283,6 @@ directionsForGenerateDatasetsXml() +
 "    <extractRegex></extractRegex>\n" +
 "    <columnNameForExtract></columnNameForExtract>\n" +
 "    <sortFilesBySourceNames>line_station time</sortFilesBySourceNames>\n" +
-"    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
 "        <att name=\"cdm_timeseries_variables\">line_station</att>\n" +
@@ -338,13 +336,16 @@ directionsForGenerateDatasetsXml() +
 "    <addAttributes>\n" +
 "        <att name=\"creator_name\">CalCOFI</att>\n" +
 "        <att name=\"creator_url\">http://www.calcofi.org/newhome/publications/Atlases/atlases.htm</att>\n" +
-"        <att name=\"keywords\">1984-2004,\n" +
+"        <att name=\"keywords\">1984-2004, altitude, animals, aquatic, atmosphere,\n" +
 "Atmosphere &gt; Altitude &gt; Station Height,\n" +
+"biological,\n" +
 "Biological Classification &gt; Animals/Vertebrates &gt; Fish,\n" +
+"biology, biosphere,\n" +
 "Biosphere &gt; Aquatic Ecosystems &gt; Coastal Habitat,\n" +
 "Biosphere &gt; Aquatic Ecosystems &gt; Marine Habitat,\n" +
+"calcofi, classification, coastal, code, common, count, cruise, ecosystems, fish, fisheries, habitat, height, identifier, larvae, line, marine, name, number, observed, occupancy, oceans,\n" +
 "Oceans &gt; Aquatic Sciences &gt; Fisheries,\n" +
-"altitude, animals, aquatic, atmosphere, biological, biology, biosphere, calcofi, classification, coastal, code, common, count, cruise, ecosystems, fish, fisheries, habitat, height, identifier, larvae, line, marine, name, number, observed, occupancy, oceans, order, sciences, scientific, ship, start, station, time, tow, units, value, vertebrates</att>\n" +
+"order, sciences, scientific, ship, start, station, time, tow, units, value, vertebrates</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>line_station</sourceName>\n" +
@@ -508,11 +509,9 @@ directionsForGenerateDatasetsXml() +
         String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
 
         String id = "testNcCF1b";
-        if (deleteCachedDatasetInfo) {
-            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
-        }
+        if (deleteCachedDatasetInfo) 
+            deleteCachedDatasetInfo(id);
+
         EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
 
 
@@ -549,6 +548,61 @@ directionsForGenerateDatasetsXml() +
 
     }
 
+    /**
+     * This tests for a bug Kevin O'Brien reported.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testKevin20130109() throws Throwable {
+        String2.log("\n****************** EDDTableFromNcCFFiles.testKevin20130109() *****************\n");
+        testVerboseOn();
+        boolean oDebugMode = debugMode;  debugMode = true;
+        boolean oDebug = Table.debug;    Table.debug = true;
+
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDV edv;
+        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
+
+        String id = "testKevin20130109";
+        EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
+        
+        //test time <    first time is 2011-02-15T00:00:00Z
+        userDapQuery = "traj,obs,time,longitude,latitude,temp,ve,vn&traj<26.5&time<2011-02-15T00:05";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery,
+            EDStatic.fullTestCacheDirectory, eddTable.className() + "_test1Kevin20130109a", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"traj,obs,time,longitude,latitude,temp,ve,vn\n" +
+",,UTC,degrees_east,degrees_north,Deg C,cm/s,cm/s\n" +
+"1.0,1.0,2011-02-15T00:00:00Z,-111.344,-38.71,18.508,-14.618,17.793\n" +
+"22.0,7387.0,2011-02-15T00:00:00Z,91.875,-54.314,3.018,64.135,1.534\n" +
+"26.0,9139.0,2011-02-15T00:00:00Z,168.892,-48.516,11.381,24.49,4.884\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //test time >    last time is 2011-09-30T18
+        userDapQuery = "traj,obs,time,longitude,latitude,temp,ve,vn&traj<6&time>=2011-09-30T17:50";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery,
+            EDStatic.fullTestCacheDirectory, eddTable.className() + "_test1Kevin20130109a", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"traj,obs,time,longitude,latitude,temp,ve,vn\n" +
+",,UTC,degrees_east,degrees_north,Deg C,cm/s,cm/s\n" +
+"1.0,912.0,2011-09-30T18:00:00Z,-91.252,-33.43,15.28,NaN,NaN\n" +
+"2.0,1352.0,2011-09-30T18:00:00Z,145.838,38.44,22.725,NaN,NaN\n" +
+"3.0,1794.0,2011-09-30T18:00:00Z,156.895,39.877,21.517,NaN,NaN\n" +
+"4.0,2233.0,2011-09-30T18:00:00Z,150.312,34.38,26.658,-78.272,41.257\n" +
+"5.0,2676.0,2011-09-30T18:00:00Z,162.9,36.15,26.129,-4.85,15.724\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        debugMode = oDebugMode;
+        Table.debug = oDebug;
+
+    }
+
+    
     
     /**
      * This tests the methods in this class.
@@ -560,6 +614,7 @@ directionsForGenerateDatasetsXml() +
         testGenerateDatasetsXml();
         test1(true); //deleteCachedDatasetInfo
         test1(false); 
+        testKevin20130109();
 
         //not usually run
     }

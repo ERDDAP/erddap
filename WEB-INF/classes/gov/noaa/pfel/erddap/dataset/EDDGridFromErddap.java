@@ -269,8 +269,12 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                 //is this the alt axis?
                 } else if (EDV.ALT_NAME.equals(varName)) {
                     tAxisVariables.add(new EDVAltGridAxis(varName, 
-                        tSourceAttributes, tAddAttributes, tSourceValues,
-                        1)); //tAltMetersPerSourceUnit always 1
+                        tSourceAttributes, tAddAttributes, tSourceValues));
+
+                //is this the depth axis?
+                } else if (EDV.DEPTH_NAME.equals(varName)) {
+                    tAxisVariables.add(new EDVDepthGridAxis(varName, 
+                        tSourceAttributes, tAddAttributes, tSourceValues)); 
 
                 //is this the time axis?
                 } else if (EDV.TIME_NAME.equals(varName)) {
@@ -316,10 +320,11 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             //reverse the order, since read (above) from bottom to top
             axisVariables[av] = (EDVGridAxis)tAxisVariables.get(nav - av - 1); 
             String tName = axisVariables[av].destinationName();
-            if      (tName.equals(EDV.LON_NAME))  lonIndex  = av;
-            else if (tName.equals(EDV.LAT_NAME))  latIndex  = av;
-            else if (tName.equals(EDV.ALT_NAME))  altIndex  = av;
-            else if (tName.equals(EDV.TIME_NAME)) timeIndex = av;
+            if      (tName.equals(EDV.LON_NAME))   lonIndex   = av;
+            else if (tName.equals(EDV.LAT_NAME))   latIndex   = av;
+            else if (tName.equals(EDV.ALT_NAME))   altIndex   = av;
+            else if (tName.equals(EDV.DEPTH_NAME)) depthIndex = av;
+            else if (tName.equals(EDV.TIME_NAME))  timeIndex  = av;
         }
 
         int ndv = tDataVariables.size();
@@ -765,7 +770,7 @@ expected =
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0260864e+9, 1.3519872e+9;\n" + //last value changes periodically
+"    Float64 actual_range 1.0260864e+9, 1.3628736e+9;\n" + //last value changes periodically
 "    String axis \"T\";\n" +
 "    Int32 fraction_digits 0;\n" +
 "    String ioos_category \"Time\";\n" +
@@ -833,8 +838,8 @@ expected =
 "    String creator_email \"dave.foley@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
-"    String date_created \"2012-11-11Z\";\n" +  //changes
-"    String date_issued \"2012-11-11Z\";\n" +  //changes
+"    String date_created \"2013-03-17Z\";\n" +  //changes
+"    String date_issued \"2013-03-17Z\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
 "    Float64 geospatial_lat_max 90.0;\n" +
 "    Float64 geospatial_lat_min -90.0;\n" +
@@ -884,7 +889,7 @@ expected2 =
 "    Float64 Southernmost_Northing -90.0;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String summary \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-"    String time_coverage_end \"2012-11-04T00:00:00Z\";\n" + //changes
+"    String time_coverage_end \"2013-03-10T00:00:00Z\";\n" + //changes
 "    String time_coverage_start \"2002-07-08T00:00:00Z\";\n" +
 "    String title \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
@@ -913,15 +918,15 @@ expected2 =
             //String2.log(results);
             expected = 
     "Dataset {\n" +
-    "  Float64 time[time = 466];\n" +   //466 will change sometimes   (and a few places below)
+    "  Float64 time[time = 481];\n" +   //481 will change sometimes   (and a few places below)
     "  Float64 altitude[altitude = 1];\n" +
     "  Float64 latitude[latitude = 4320];\n" +
     "  Float64 longitude[longitude = 8640];\n" +
     "  GRID {\n" +
     "    ARRAY:\n" +
-    "      Float32 chlorophyll[time = 466][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+    "      Float32 chlorophyll[time = 481][altitude = 1][latitude = 4320][longitude = 8640];\n" +
     "    MAPS:\n" +
-    "      Float64 time[time = 466];\n" +
+    "      Float64 time[time = 481];\n" +
     "      Float64 altitude[altitude = 1];\n" +
     "      Float64 latitude[latitude = 4320];\n" +
     "      Float64 longitude[longitude = 8640];\n" +
@@ -1299,8 +1304,8 @@ expected2 =
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2012-11-11Z\";\n" + //changes periodically
-" :date_issued = \"2012-11-11Z\";\n" +  //changes periodically
+" :date_created = \"2013-03-17Z\";\n" + //changes periodically
+" :date_issued = \"2013-03-17Z\";\n" +  //changes periodically
 " :Easternmost_Easting = 246.65354786433613; // double\n" +
 " :geospatial_lat_max = 49.82403334105115; // double\n" +
 " :geospatial_lat_min = 28.985876360268577; // double\n" +

@@ -268,7 +268,7 @@ public class EDDTableFromMWFS extends EDDTable{
         dataVariables = new EDV[nFixedVariables + tDataVariables.length];
         lonIndex = 0;
         latIndex = 1;
-        altIndex = 2;
+        altIndex = 2;  depthIndex = -1;  //always altitude, never depth
         timeIndex = 3;
         dataVariables[lonIndex] = new EDVLon(EDV.LON_NAME, null, null, "double", 
             Double.isNaN(tLonMin)? -180 : tLonMin, 
@@ -276,10 +276,9 @@ public class EDDTableFromMWFS extends EDDTable{
         dataVariables[latIndex] = new EDVLat(EDV.LAT_NAME, null, null, "double", 
             Double.isNaN(tLatMin)? -90 : tLatMin, 
             Double.isNaN(tLatMax)?  90 : tLatMax);
-        dataVariables[altIndex] = new EDVAlt(EDV.ALT_NAME, null, null,
-            "double", tAltMin, tAltMax,
 //!!!altitude values are in meters, but I'm not certain that positive=up!!!
-            1); //tAltMetersPerSourceUnit);
+        dataVariables[altIndex] = new EDVAlt(EDV.ALT_NAME, null, null,
+            "double", tAltMin, tAltMax);
         dataVariables[timeIndex] = new EDVTime(EDV.TIME_NAME, null, 
             (new Attributes()).add("units", EDVTimeStamp.ISO8601TZ_FORMAT).
             add("actual_range", new StringArray(new String[]{tTimeMin, tTimeMax})), 

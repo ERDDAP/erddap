@@ -50,7 +50,6 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
     public EDDTableFromAsciiServiceNOS(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltitudeMetersPerSourceUnit, 
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tLocalSourceUrl,
@@ -59,7 +58,6 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
 
         super("EDDTableFromAsciiServiceNOS", tDatasetID, tAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, tAddGlobalAttributes,
-            tAltitudeMetersPerSourceUnit,
             tDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl,
             tBeforeData, tAfterData, tNoData);
@@ -82,17 +80,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         stationTable.removeDuplicates();
         //String2.log("\nstationTable=\n" + stationTable);
 
-        /* almost SOS-able
-        //sos data
-        //sosOfferingType = "Station";
-        sosMinLon    = stationTable.getColumn(stationLonCol);
-        sosMaxLon    = sosMinLon;
-        sosMinLat    = stationTable.getColumn(stationLatCol);
-        sosMaxLat    = sosMinLat;
-        sosMinTime   = ???;
-        sosMaxTime   = ???;
-        sosOfferings = (StringArray)stationTable.getColumn(stationIDCol); //they are already the short names
-        */
+        // Not perfectly SOS-able: each offering's min/MaxTime isn't known.
 
     }
 
@@ -116,7 +104,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         StringArray constraintValues    = new StringArray();
         getSourceQueryFromDapQuery(userDapQuery,
             resultsVariables,
-            constraintVariables, constraintOps, constraintValues);
+            constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
 
         //go through the station table to find the stations of interest
         //and find datum= beginTime>= endTime<= 

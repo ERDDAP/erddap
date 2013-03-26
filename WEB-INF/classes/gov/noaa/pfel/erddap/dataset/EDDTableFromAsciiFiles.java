@@ -51,11 +51,10 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
     public EDDTableFromAsciiFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        int tColumnNamesRow, int tFirstDataRow,
+        String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -64,10 +63,36 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
 
         super("EDDTableFromAsciiFiles", true, tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File,
-            tAddGlobalAttributes, tAltMetersPerSourceUnit, 
+            tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
-            tColumnNamesRow, tFirstDataRow,
+            tCharset, tColumnNamesRow, tFirstDataRow,
+            tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
+            tSortedColumnSourceName, tSortFilesBySourceNames,
+            tSourceNeedsExpandedFP_EQ);
+
+    }
+
+    /** The constructor for subclasses. */
+    public EDDTableFromAsciiFiles(String tClassName, String tDatasetID, String tAccessibleTo,
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        Attributes tAddGlobalAttributes,
+        Object[][] tDataVariables,
+        int tReloadEveryNMinutes,
+        String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
+        String tCharset, int tColumnNamesRow, int tFirstDataRow,
+        String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
+        String tColumnNameForExtract,
+        String tSortedColumnSourceName, String tSortFilesBySourceNames,
+        boolean tSourceNeedsExpandedFP_EQ) 
+        throws Throwable {
+
+        super(tClassName, true, tDatasetID, tAccessibleTo, 
+            tOnChange, tFgdcFile, tIso19115File,
+            tAddGlobalAttributes, 
+            tDataVariables, tReloadEveryNMinutes,
+            tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
+            tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ);
@@ -78,19 +103,20 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
      * This gets source data from one file.
      * See documentation in EDDTableFromFiles.
      *
-     *
      * @throws an exception if too much data.
      *  This won't throw an exception if no data.
      */
     public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
-        StringArray conVars, StringArray conOps, StringArray conValues,
+        StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
 
         Table table = new Table();
-        table.readASCII(fileDir + fileName, columnNamesRow - 1, firstDataRow - 1);
+        table.readASCII(fileDir + fileName, 
+            "ISO-8859-1", columnNamesRow - 1, firstDataRow - 1,
+            null, null, null, null, true); //testColumns, testMin, testMax, loadColumns, simplify);
 
         //convert to desired sourceDataTypes
         int nCols = table.nColumns();
@@ -108,7 +134,6 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         }
 
         return table;
-
     }
 
 
@@ -117,7 +142,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
      * The XML can then be edited by hand and added to the datasets.xml file.
      *
      * <p>This can't be made into a web service because it would allow any user
-     * to looks at (possibly) private ascii files on the server.
+     * to look at (possibly) private ascii files on the server.
      *
      * @param tFileDir the starting (parent) directory for searching for files
      * @param tFileNameRegex  the regex that each filename (no directory info) must match 
@@ -141,7 +166,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
      */
     public static String generateDatasetsXml(String tFileDir, String tFileNameRegex, 
         String sampleFileName, 
-        int columnNamesRow, int firstDataRow, int tReloadEveryNMinutes,
+        String charset, int columnNamesRow, int firstDataRow, int tReloadEveryNMinutes,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
         String tColumnNameForExtract, String tSortedColumnSourceName,
         String tSortFilesBySourceNames, 
@@ -156,7 +181,10 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         //and a parallel table to hold the addAttributes
         Table dataSourceTable = new Table();
         Table dataAddTable = new Table();
-        dataSourceTable.readASCII(sampleFileName, columnNamesRow-1, firstDataRow-1);
+        if (charset == null || charset.length() == 0)
+            charset = "ISO-8859-1";
+        dataSourceTable.readASCII(sampleFileName, charset, columnNamesRow-1, firstDataRow-1,
+            null, null, null, null, true);  //simplify
 
         //globalAttributes 
         if (externalAddGlobalAttributes == null)
@@ -168,19 +196,34 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", "(local files)");
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
 
+        boolean dateTimeAlreadyFound = false;
         for (int col = 0; col < dataSourceTable.nColumns(); col++) {
             String colName = dataSourceTable.getColumnName(col);
-            Attributes atts = dataSourceTable.columnAttributes(col);
-            dataAddTable.addColumn(col, colName,
-                (PrimitiveArray)dataSourceTable.getColumn(col).clone(),
-                makeReadyToUseAddVariableAttributesForDatasetsXml(
-                    atts, colName, true, true)); //addColorBarMinMax, tryToFindLLAT
+            Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+                dataSourceTable.columnAttributes(col), colName, 
+                true, true); //addColorBarMinMax, tryToFindLLAT
 
-            //if a variable has timeUnits, files are likely sorted by time
+            //dateTime?
+            PrimitiveArray pa = (PrimitiveArray)dataSourceTable.getColumn(col).clone();
+            boolean isDateTime = false;
+            if (pa instanceof StringArray) {
+                String dtFormat = Calendar2.suggestDateTimeFormat((StringArray)pa);
+                if (dtFormat.length() > 0) { 
+                    isDateTime = true;
+                    addAtts.set("units", dtFormat);
+                }
+            }
+
+            //add to dataAddTable
+            dataAddTable.addColumn(col, colName, pa, addAtts);
+
+            //files are likely sorted by first date time variable
             //and no harm if files aren't sorted that way
-            boolean hasTimeUnits = EDVTimeStamp.hasTimeUnits(atts, null);
-            if (tSortedColumnSourceName.length() == 0 && hasTimeUnits)
-                tSortedColumnSourceName = dataSourceTable.getColumnName(col);
+            if (tSortedColumnSourceName.length() == 0 && 
+                isDateTime && !dateTimeAlreadyFound) {
+                dateTimeAlreadyFound = true;
+                tSortedColumnSourceName = colName;
+            }
         }
 
         //add the columnNameForExtract variable
@@ -193,7 +236,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             dataAddTable.addColumn(   0, tColumnNameForExtract, new StringArray(), atts);
         }
 
-        //after dataVariables known, add global attributes in the axisAddTable
+        //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
@@ -220,6 +263,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             "    <recursive>true</recursive>\n" +
             "    <fileNameRegex>" + tFileNameRegex + "</fileNameRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
+            "    <charset>" + charset + "</charset>\n" +
             "    <columnNamesRow>" + columnNamesRow + "</columnNamesRow>\n" +
             "    <firstDataRow>" + firstDataRow + "</firstDataRow>\n" +
             "    <preExtractRegex>" + tPreExtractRegex + "</preExtractRegex>\n" +
@@ -227,8 +271,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             "    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
             "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
-            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
-            "    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n");
+            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -257,7 +300,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             String results = generateDatasetsXml(
                 "c:/u00/cwatch/testData/asciiNdbc/",  ".*\\.csv",
                 "c:/u00/cwatch/testData/asciiNdbc/31201_2009.csv", 
-                1, 3, 1440,
+                "ISO-8859-1", 1, 3, 1440,
                 "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
                 "time", "station time", 
                 "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
@@ -268,7 +311,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
                 "EDDTableFromAsciiFiles",
                 "c:/u00/cwatch/testData/asciiNdbc/",  ".*\\.csv",
                 "c:/u00/cwatch/testData/asciiNdbc/31201_2009.csv", 
-                "1", "3", "1440",
+                "ISO-8859-1", "1", "3", "1440",
                 "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
                 "time", "station time", 
                 "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!"},
@@ -288,6 +331,7 @@ directionsForGenerateDatasetsXml() +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*\\.csv</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <charset>ISO-8859-1</charset>\n" +
 "    <columnNamesRow>1</columnNamesRow>\n" +
 "    <firstDataRow>3</firstDataRow>\n" +
 "    <preExtractRegex></preExtractRegex>\n" +
@@ -296,7 +340,6 @@ directionsForGenerateDatasetsXml() +
 "    <columnNameForExtract>stationID</columnNameForExtract>\n" +
 "    <sortedColumnSourceName>time</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>station time</sortFilesBySourceNames>\n" +
-"    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
@@ -310,10 +353,10 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_url\">http://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"infoUrl\">http://www.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"institution\">NOAA NDBC</att>\n" +
-"        <att name=\"keywords\">\n" +
+"        <att name=\"keywords\">altitude, atmosphere,\n" +
 "Atmosphere &gt; Altitude &gt; Station Height,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"altitude, atmosphere, atmospheric, atmp, direction, from, height, identifier, ndbc, newer, noaa, speed, station, surface, time, title, wind, wind_from_direction, wind_speed, winds, wtmp</att>\n" +
+"atmospheric, atmp, direction, height, identifier, ndbc, newer, noaa, speed, station, surface, temperature, time, title, wind, wind_from_direction, wind_speed, winds, wtmp</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
@@ -385,6 +428,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
+"            <att name=\"units\">yyyy-MM-dd&#039;T&#039;HH:mm:ssZ</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -433,7 +477,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">Atmp</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -444,7 +488,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
 "            <att name=\"long_name\">WTMP</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -468,9 +512,12 @@ directionsForGenerateDatasetsXml() +
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
             if (msg.indexOf(
-                "datasets.xml/EDDTable.ensureValid error for datasetID=asciiNdbc_8443_4c8b_d0e1:\n" +
-                " dataVariable[timeIndex=4] isn't an EDVTime.") >= 0) {
-                String2.log("EXPECTED ERROR while creating the edd: time's units haven't been set.\n");
+"java.lang.RuntimeException: datasets.xml error on or before line #202: " +
+"When a variable's destinationName is \"altitude\", the sourceAttributes or addAttributes " +
+"\"units\" MUST be \"m\" (not \"null\").\n" +
+"If needed, use \"scale_factor\" to convert the source values to meters (positive=up),\n" +
+"use a different destinationName for this variable.") >= 0) {
+                String2.log("EXPECTED ERROR while creating the edd: altitude's units haven't been set.\n");
             } else 
                 String2.getStringFromSystemIn(msg + 
                     "\nUnexpected error using generateDatasetsXml." + 
@@ -493,11 +540,8 @@ directionsForGenerateDatasetsXml() +
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         String id = "testTableAscii";
-        if (deleteCachedDatasetInfo) {
-            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
-        }
+        if (deleteCachedDatasetInfo) 
+            deleteCachedDatasetInfo(id);
         EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
 
         //*** test getting das for entire dataset
@@ -747,6 +791,8 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
     }
+
+
 
     /**
      * This tests the methods in this class.

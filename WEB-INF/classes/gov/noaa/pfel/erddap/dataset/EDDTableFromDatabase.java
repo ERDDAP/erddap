@@ -14,6 +14,7 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
+import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 import com.cohort.util.XML;
@@ -100,7 +101,6 @@ public class EDDTableFromDatabase extends EDDTable{
         if (verbose) String2.log("\n*** constructing EDDTableFrom" + subclass + "Database(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         Attributes tGlobalAttributes = null;
-        double tAltitudeMetersPerSourceUnit = 1; 
         ArrayList tDataVariables = new ArrayList();
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
@@ -133,9 +133,8 @@ public class EDDTableFromDatabase extends EDDTable{
             //try to make the tag names as consistent, descriptive and readable as possible
             if      (localTags.equals("<addAttributes>"))
                 tGlobalAttributes = getAttributesFromXml(xmlReader);
-            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) {}
-            else if (localTags.equals("</altitudeMetersPerSourceUnit>")) 
-                tAltitudeMetersPerSourceUnit = String2.parseDouble(content); 
+            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) 
+                throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
             else if (localTags.equals( "<dataVariable>")) 
                 tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
@@ -185,7 +184,6 @@ public class EDDTableFromDatabase extends EDDTable{
             return new EDDTableFromPostDatabase(tDatasetID, tAccessibleTo, 
                 tOnChange, tFgdcFile, tIso19115File, 
                 tGlobalAttributes,
-                tAltitudeMetersPerSourceUnit,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
                 tDataSourceName,
@@ -196,7 +194,6 @@ public class EDDTableFromDatabase extends EDDTable{
         else return new EDDTableFromDatabase(tDatasetID, tAccessibleTo, 
                 tOnChange, tFgdcFile, tIso19115File, 
                 tGlobalAttributes,
-                tAltitudeMetersPerSourceUnit,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
                 tDataSourceName,
@@ -293,8 +290,6 @@ public class EDDTableFromDatabase extends EDDTable{
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
      *   Special case: if combinedGlobalAttributes name="license", any instance of value="[standard]"
      *     will be converted to the EDStatic.standardLicense.
-     * @param tAltMetersPerSourceUnit the factor needed to convert the source
-     *    alt values to/from meters above sea level.
      * @param tDataVariables is an Object[nDataVariables][3]: 
      *    <br>[0]=String sourceName (the name of the data variable in the dataset source),
      *    <br>[1]=String destinationName (the name to be presented to the ERDDAP user, 
@@ -321,8 +316,8 @@ public class EDDTableFromDatabase extends EDDTable{
      *      <li> a org.joda.time.format.DateTimeFormat string
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *        http://joda-time.sourceforge.net/api-release/index.html or 
-     *        http://download.oracle.com/javase/docs/api/java/text/SimpleDateFormat.html),
+     *        http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
+     *        http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
@@ -361,7 +356,6 @@ public class EDDTableFromDatabase extends EDDTable{
     public EDDTableFromDatabase(String tDatasetID, String tAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tDataSourceName, 
@@ -468,8 +462,13 @@ public class EDDTableFromDatabase extends EDDTable{
             } else if (EDV.ALT_NAME.equals(tDestName)) {
                 dataVariables[dv] = new EDVAlt(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN, tAltMetersPerSourceUnit);
+                    tSourceType, Double.NaN, Double.NaN);
                 altIndex = dv;
+            } else if (EDV.DEPTH_NAME.equals(tDestName)) {
+                dataVariables[dv] = new EDVDepth(tSourceName,
+                    tSourceAtt, tAddAtt, 
+                    tSourceType, Double.NaN, Double.NaN);
+                depthIndex = dv;
             } else if (EDV.TIME_NAME.equals(tDestName)) {  //look for TIME_NAME before check hasTimeUnits (next)
                 dataVariables[dv] = new EDVTime(tSourceName,
                     tSourceAtt, tAddAtt, tSourceType);
@@ -512,6 +511,10 @@ public class EDDTableFromDatabase extends EDDTable{
         } finally {
             connection.close();
         }
+
+        //Don't gather ERDDAP sos information.
+        //I am guessing that requesting the min/maxTime for each station is 
+        //  *very* taxing for most databases.
 
         //ensure the setup is valid
         ensureValid();
@@ -581,7 +584,7 @@ public class EDDTableFromDatabase extends EDDTable{
         StringArray constraintValues    = new StringArray();
         getSourceQueryFromDapQuery(userDapQuery,
             resultsVariables,
-            constraintVariables, constraintOps, constraintValues);
+            constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
 
         //distinct?  orderBy?  databases can handle them
         //making database do distinct seems useful (maybe it can optimize, data transfer greatly reduced
@@ -635,11 +638,14 @@ public class EDDTableFromDatabase extends EDDTable{
                     //no danger of sql injection since query has been parsed and
                     //  resultsVariables must be known sourceNames
                     //Note that I tried to use '?' for resultsVariables, but never got it to work: wierd results.
-                    query.append((rv == 0? "SELECT " + distinctString : ", ") + resultsVariables.get(rv)); 
-                query.append(" FROM " + 
+                    //Quotes around colNames avoid trouble when colName is a SQL reserved word.
+                    query.append((rv == 0? "SELECT " + distinctString : ", ") + 
+                        '"' + resultsVariables.get(rv) + '"'); 
+                //Quotes around names avoids trouble when a name is a SQL reserved word.
+                query.append(" FROM \"" + 
                     (catalogName.equals("")? "" : catalogName + catalogSeparator) + 
                     (schemaName.equals( "")? "" : schemaName  + ".") + 
-                    tableName);
+                    tableName + "\"");
 
                 //add orderBy
                 StringBuilder orderBySB = new StringBuilder();
@@ -650,7 +656,8 @@ public class EDDTableFromDatabase extends EDDTable{
                     for (int ob = 0; ob < orderBy.length; ob++) {
                         if (resultsVariables.indexOf(orderBy[ob]) >= 0) {
                             if (orderBySB.length() > 0) orderBySB.append(", ");
-                            orderBySB.append(orderBy[ob]);
+                            //Quotes around colNames avoid trouble when colName is a SQL reserved word.
+                            orderBySB.append("\"" + orderBy[ob] + "\"");
                         }
                     }
                 }
@@ -673,10 +680,11 @@ public class EDDTableFromDatabase extends EDDTable{
 
                     //again, no danger of sql injection since query has been parsed and
                     //  constraintVariables must be known sourceNames
-                    String ts = (cv == 0? " WHERE " : " AND ") +
-                        constraintVariables.get(cv) + " " + 
+                    //Quotes around colNames avoid trouble when colName is a SQL reserved word.
+                    String ts = (cv == 0? " WHERE \"" : " AND \"") +
+                        constraintVariables.get(cv) + "\" " + 
                         tOp; 
-                    query.append(ts + " ?");
+                    query.append(ts + " ?"); //? is the place holder for a value
                     humanQuery.append(ts + " '" + constraintValues.get(cv) + "'");
                 }
                 if (orderBySB.length() > 0) {
@@ -1015,8 +1023,7 @@ public class EDDTableFromDatabase extends EDDTable{
             "    <schemaName>" + schemaName + "</schemaName>\n" +
             "    <tableName>" + tableName + "</tableName>\n" +
             "    <orderBy>???</orderBy>\n" +
-            "    <reloadEveryNMinutes>???" + DEFAULT_RELOAD_EVERY_N_MINUTES + "</reloadEveryNMinutes>\n" +
-            "    <altitudeMetersPerSourceUnit>???1</altitudeMetersPerSourceUnit>\n");
+            "    <reloadEveryNMinutes>???" + DEFAULT_RELOAD_EVERY_N_MINUTES + "</reloadEveryNMinutes>\n");
         sb.append(writeAttsForDatasetsXml(true, table.globalAttributes(), "    "));
 
         //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
@@ -1054,7 +1061,7 @@ public class EDDTableFromDatabase extends EDDTable{
      *                     use null or "null" for any schema;
      * @param tableName    use a specific table name
      * @param tOrderBy     use null or "" for no orderBy
-     * @param tReloadEveryNMinutes  e.g., 10080 for weekly
+     * @param tReloadEveryNMinutes  e.g., DEFAULT_RELOAD_EVERY_N_MINUTES (10080) for weekly
      * @param tInfoUrl       or "" if in externalAddGlobalAttributes or if not available
      * @param tInstitution   or "" if in externalAddGlobalAttributes or if not available
      * @param tSummary       or "" if in externalAddGlobalAttributes or if not available
@@ -1188,7 +1195,7 @@ public class EDDTableFromDatabase extends EDDTable{
         if (tTitle       != null && tTitle.length()       > 0) externalAddGlobalAttributes.add("title",       tTitle);
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", "(local database)");
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
-        //after dataVariables known, add global attributes in the axisAddTable
+        //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
@@ -1229,8 +1236,7 @@ public class EDDTableFromDatabase extends EDDTable{
             "    <tableName>" + tableName + "</tableName>\n" +
             (tOrderBy == null || tOrderBy.length() == 0? "" : 
             "    <orderBy>" + tOrderBy + "</orderBy>\n") +
-            "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +
-            "    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n");
+            "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -1319,7 +1325,7 @@ public class EDDTableFromDatabase extends EDDTable{
                 String2.toSVString(postProperties(), "|", false), //s3
                 tCatalogName, tSchemaName, tTableName,  //s4,5,6
                 "", //s7 orderBy csv
-                "10080", //s8 reloadEveryNMinutes
+                "" + DEFAULT_RELOAD_EVERY_N_MINUTES, //s8 reloadEveryNMinutes  default is 10080
                 "", //s9  infoUrl
                 "", //s10 institution
                 "", //s11 summary
@@ -1376,7 +1382,6 @@ expected =
 "    <schemaName>erd</schemaName>\n" +
 "    <tableName>detection</tableName>\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
-"    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +

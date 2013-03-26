@@ -277,10 +277,11 @@ public class EDDGridSideBySide extends EDDGrid {
         //and clear searchString of children?
 
         //duplicate firstChild.axisVariables
-        lonIndex = firstChild.lonIndex;
-        latIndex = firstChild.latIndex;
-        altIndex = firstChild.altIndex;
-        timeIndex = firstChild.timeIndex;
+        lonIndex   = firstChild.lonIndex;
+        latIndex   = firstChild.latIndex;
+        altIndex   = firstChild.altIndex;
+        depthIndex = firstChild.depthIndex;
+        timeIndex  = firstChild.timeIndex;
         axisVariables = new EDVGridAxis[nAV];
         System.arraycopy(firstChild.axisVariables, 1, axisVariables, 1, nAV - 1);
         //but make new axisVariables[0] with newAxis0Values
@@ -293,8 +294,10 @@ public class EDDGridSideBySide extends EDDGrid {
                 fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
         else if (altIndex == 0)
             axisVariables[0] = new EDVAltGridAxis(fav.sourceName(), 
-                fav.sourceAttributes(), fav.addAttributes(), newAxis0Values, 
-                ((EDVAltGridAxis)fav).metersPerSourceUnit()); 
+                fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
+        else if (depthIndex == 0)
+            axisVariables[0] = new EDVDepthGridAxis(fav.sourceName(), 
+                fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
         else if (timeIndex == 0)
             axisVariables[0] = new EDVTimeGridAxis(fav.sourceName(), 
                 fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
@@ -520,11 +523,11 @@ public class EDDGridSideBySide extends EDDGrid {
 "1999-09-27T00:00:00Z, 0.0, -20.0, 80.0, -8.95586, 2.439596\n"; */
 "time,altitude,latitude,longitude,x_wind,y_wind\n" +
 "UTC,m,degrees_north,degrees_east,m s-1,m s-1\n" +
-"1999-07-29T00:00:00Z,0.0,-20.0,80.0,-8.757242,4.1637316\n" +
-"1999-07-30T00:00:00Z,0.0,-20.0,80.0,-9.012303,3.48984\n" +
-"1999-07-31T00:00:00Z,0.0,-20.0,80.0,-8.631654,3.0311484\n" +
-"1999-08-01T00:00:00Z,0.0,-20.0,80.0,-7.9840736,2.5528698\n" +
-"1999-08-02T00:00:00Z,0.0,-20.0,80.0,-7.423252,2.432058\n";
+"1999-07-29T00:00:00Z,10.0,-20.0,80.0,-8.757242,4.1637316\n" +
+"1999-07-30T00:00:00Z,10.0,-20.0,80.0,-9.012303,3.48984\n" +
+"1999-07-31T00:00:00Z,10.0,-20.0,80.0,-8.631654,3.0311484\n" +
+"1999-08-01T00:00:00Z,10.0,-20.0,80.0,-7.9840736,2.5528698\n" +
+"1999-08-02T00:00:00Z,10.0,-20.0,80.0,-7.423252,2.432058\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         dapQuery = "x_wind[4:8][0][(-20)][(80)]";
@@ -543,11 +546,11 @@ public class EDDGridSideBySide extends EDDGrid {
 "1999-09-27T00:00:00Z, 0.0, -20.0, 80.0, -8.95586\n"; */
 "time,altitude,latitude,longitude,x_wind\n" +
 "UTC,m,degrees_north,degrees_east,m s-1\n" +
-"1999-07-29T00:00:00Z,0.0,-20.0,80.0,-8.757242\n" +
-"1999-07-30T00:00:00Z,0.0,-20.0,80.0,-9.012303\n" +
-"1999-07-31T00:00:00Z,0.0,-20.0,80.0,-8.631654\n" +
-"1999-08-01T00:00:00Z,0.0,-20.0,80.0,-7.9840736\n" +
-"1999-08-02T00:00:00Z,0.0,-20.0,80.0,-7.423252\n";
+"1999-07-29T00:00:00Z,10.0,-20.0,80.0,-8.757242\n" +
+"1999-07-30T00:00:00Z,10.0,-20.0,80.0,-9.012303\n" +
+"1999-07-31T00:00:00Z,10.0,-20.0,80.0,-8.631654\n" +
+"1999-08-01T00:00:00Z,10.0,-20.0,80.0,-7.9840736\n" +
+"1999-08-02T00:00:00Z,10.0,-20.0,80.0,-7.423252\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         dapQuery = "y_wind[4:8][0][(-20)][(80)]";
@@ -566,11 +569,11 @@ public class EDDGridSideBySide extends EDDGrid {
 "1999-09-27T00:00:00Z, 0.0, -20.0, 80.0, 2.439596\n"; */
 "time,altitude,latitude,longitude,y_wind\n" +
 "UTC,m,degrees_north,degrees_east,m s-1\n" +
-"1999-07-29T00:00:00Z,0.0,-20.0,80.0,4.1637316\n" +
-"1999-07-30T00:00:00Z,0.0,-20.0,80.0,3.48984\n" +
-"1999-07-31T00:00:00Z,0.0,-20.0,80.0,3.0311484\n" +
-"1999-08-01T00:00:00Z,0.0,-20.0,80.0,2.5528698\n" +
-"1999-08-02T00:00:00Z,0.0,-20.0,80.0,2.432058\n";
+"1999-07-29T00:00:00Z,10.0,-20.0,80.0,4.1637316\n" +
+"1999-07-30T00:00:00Z,10.0,-20.0,80.0,3.48984\n" +
+"1999-07-31T00:00:00Z,10.0,-20.0,80.0,3.0311484\n" +
+"1999-08-01T00:00:00Z,10.0,-20.0,80.0,2.5528698\n" +
+"1999-08-02T00:00:00Z,10.0,-20.0,80.0,2.432058\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         if (doGraphicsTests) {
@@ -591,7 +594,7 @@ public class EDDGridSideBySide extends EDDGrid {
 
             //graphics requests with .specs -- lines
             tName = qsWind8.makeNewFileForDapQuery(null, null, 
-                "x_wind[(2000-06-18Z):(2000-07-01Z)][(0.0)][(22.0)][(225.0)]" +
+                "x_wind[(2000-06-18Z):(2000-07-01Z)][(10.0)][(22.0)][(225.0)]" +
                 "&.draw=lines&.vars=time|x_wind|&.color=0xFF9900",
                 EDStatic.fullTestCacheDirectory, 
                 qsWind8.className() + "_lines", ".png"); 
@@ -599,8 +602,8 @@ public class EDDGridSideBySide extends EDDGrid {
 
             //linesAndMarkers              
             tName = qsWind8.makeNewFileForDapQuery(null, null, 
-                "x_wind[(2000-06-18Z):(2000-07-01Z)][(0.0)][(22.0)][(225.0)]," +
-                "y_wind[(2000-06-18Z):(2000-07-01Z)][(0.0)][(22.0)][(225.0)]" +
+                "x_wind[(2000-06-18Z):(2000-07-01Z)][(10.0)][(22.0)][(225.0)]," +
+                "y_wind[(2000-06-18Z):(2000-07-01Z)][(10.0)][(22.0)][(225.0)]" +
                 "&.draw=linesAndMarkers&.vars=time|x_wind|y_wind&.marker=5|5&.color=0xFF9900&.colorBar=|C|Linear|||",
                 EDStatic.fullTestCacheDirectory, 
                 qsWind8.className() + "_linesAndMarkers", ".png"); 
@@ -608,15 +611,15 @@ public class EDDGridSideBySide extends EDDGrid {
 
             //graphics requests with .specs -- markers              
             tName = qsWind8.makeNewFileForDapQuery(null, null, 
-                "x_wind[(2000-06-18Z):(2000-07-01Z)][(0.0)][(22.0)][(225.0)]" +
+                "x_wind[(2000-06-18Z):(2000-07-01Z)][(10.0)][(22.0)][(225.0)]" +
                 "&.draw=markers&.vars=time|x_wind|&.marker=1|5&.color=0xFF9900&.colorBar=|C|Linear|||",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_markers", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
             //colored markers
             tName = qsWind8.makeNewFileForDapQuery(null, null, 
-                "x_wind[(2000-06-18Z):(2000-07-01Z)][(0.0)][(22.0)][(225.0)]," +
-                "y_wind[(2000-06-18Z):(2000-07-01Z)][(0.0)][(22.0)][(225.0)]" +
+                "x_wind[(2000-06-18Z):(2000-07-01Z)][(10.0)][(22.0)][(225.0)]," +
+                "y_wind[(2000-06-18Z):(2000-07-01Z)][(10.0)][(22.0)][(225.0)]" +
                 "&.draw=markers&.vars=time|x_wind|y_wind&.marker=5|5&.colorBar=|C|Linear|||",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_coloredMarkers", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
@@ -624,23 +627,23 @@ public class EDDGridSideBySide extends EDDGrid {
             //surface   
 //needs 4 line legend
             tName = qsWind8.makeNewFileForDapQuery(null, null, 
-                "x_wind[(2000-07-01Z)][(0.0)][(-75.0):(75.0)][(0.0):(360.0)]" +
+                "x_wind[(2000-07-01Z)][(10.0)][(-75.0):(75.0)][(10.0):(360.0)]" +
                 "&.draw=surface&.vars=longitude|latitude|x_wind&.colorBar=|C|Linear|||",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_surface", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
             //sticks
             tName = qsWind8.makeNewFileForDapQuery(null, null, 
-                "x_wind[(2000-06-24Z):(2000-07-01Z)][(0.0)][(75.0)][(360.0)]," +
-                "y_wind[(2000-06-24Z):(2000-07-01Z)][(0.0)][(75.0)][(360.0)]" +
+                "x_wind[(2000-06-24Z):(2000-07-01Z)][(10.0)][(75.0)][(360.0)]," +
+                "y_wind[(2000-06-24Z):(2000-07-01Z)][(10.0)][(75.0)][(360.0)]" +
                 "&.draw=sticks&.vars=time|x_wind|y_wind&.color=0xFF9900",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_sticks", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
             //vectors
             tName = qsWind8.makeNewFileForDapQuery(null, null, 
-                "x_wind[(2000-07-01Z)][(0.0)][(22.0):(50.0)][(225.0):(255.0)]," +
-                "y_wind[(2000-07-01Z)][(0.0)][(22.0):(50.0)][(225.0):(255.0)]" +
+                "x_wind[(2000-07-01Z)][(10.0)][(22.0):(50.0)][(225.0):(255.0)]," +
+                "y_wind[(2000-07-01Z)][(10.0)][(22.0):(50.0)][(225.0):(255.0)]" +
                 "&.draw=vectors&.vars=longitude|latitude|x_wind|y_wind&.color=0xFF9900",
                 EDStatic.fullTestCacheDirectory, qsWind8.className() + "_vectors", ".png"); 
             SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);

@@ -1,5 +1,5 @@
 /*
- * $Id: YearDecadeAxis.java,v 1.6 2001/03/22 20:06:59 dwd Exp $
+ * 2013-02-27 CenturyAxis.java created by Bob Simons, based on DecadeAxis
  *
  * This software is provided by NOAA for full, free and open release.  It is
  * understood by the recipient/user that NOAA assumes no liability for any
@@ -17,16 +17,11 @@ import gov.noaa.pmel.util.TimeRange;
 import gov.noaa.pmel.util.IllegalTimeValue;
 
 /**
- * Draws time axes using the year/decade style.
+ * Draws time axes using the century style.
  *
  * <pre>
- * was
- *            |..........|..........|..........|..........|
- *                 84         85         86         87
- *                               1980
- *  Bob made it
  *            |         |         |         |
- *           1980      1981      1982      1983
+ *           1600      1700      1800      1900
  * </pre>
  *
  * @author Donald Denbo
@@ -34,42 +29,42 @@ import gov.noaa.pmel.util.IllegalTimeValue;
  * @see Axis
  * @see TimeAxis
  */
-public class YearDecadeAxis implements TimeAxisStyle {
+public class CenturyAxis implements TimeAxisStyle {
   static final int DECADE_TEST__ = 1000;
-  static final String defaultMinorLabelFormat__ = "yyyy"; //was "yy"   Did bob changed all of these?
+  static final String defaultMinorLabelFormat__ = "yyyy"; //was "yy" 
   //  static final String defaultMajorLabelFormat__ = "yyyy";
   static final String defaultMajorLabelFormat__ = ""; //was "decade"
   int defaultMinorLabelInterval_ = 2;
   int defaultMajorLabelInterval_ = 1;
   static final int defaultNumSmallTics__ = 0;
-  static final double incrementValue__ = 1.0;
+  static final double incrementValue__ = 100.0;
   static final int incrementUnits__ = GeoDate.YEARS;
   /**
-   * YearDecadeAxis constructor.
+   * CenturyAxis constructor.
    *
    * @param id axis identifier
    **/
-  public YearDecadeAxis() {
+  public CenturyAxis() {
   }
   public void computeDefaults(GeoDate delta) {
-      //bob changed this 2010-10-12
-    long days = delta.getTime()/GeoDate.MSECS_IN_DAY;
-    if (days > 250000) {
+    //bob changed this 2013-02-27
+    long years = delta.getTime()/(365*GeoDate.MSECS_IN_DAY);
+    if (years > 80000) {
+      defaultMinorLabelInterval_ = 20000;
+    } else if (years > 40000) {
+      defaultMinorLabelInterval_ = 10000;
+    } else if (years > 20000) {
+      defaultMinorLabelInterval_ = 5000;
+    } else if (years > 8000) {
+      defaultMinorLabelInterval_ = 2000;
+    } else if (years > 4000) {
+      defaultMinorLabelInterval_ = 1000;
+    } else if (years > 2000) {
+      defaultMinorLabelInterval_ = 500;
+    } else if (years > 800) {
       defaultMinorLabelInterval_ = 200;
-    } else if (days > 125000) {
-      defaultMinorLabelInterval_ = 100;
-    } else if (days > 60000) {
-      defaultMinorLabelInterval_ = 50;
-    } else if (days > 25000) {
-      defaultMinorLabelInterval_ = 20;
-    } else if (days > 12500) {
-      defaultMinorLabelInterval_ = 10;
-    } else if (days > 6000) {
-      defaultMinorLabelInterval_ = 5;
-    } else if (days > 2500) {
-      defaultMinorLabelInterval_ = 2;
     } else {
-      defaultMinorLabelInterval_ = 1;
+      defaultMinorLabelInterval_ = 100;
     }
     defaultMajorLabelInterval_ = 0;  //never draw
   }
@@ -77,16 +72,16 @@ public class YearDecadeAxis implements TimeAxisStyle {
     return prev; //(prev + now)*0.5;
   }
   public int getMinorValue(GeoDate time) {
-    return time.getGMTYear() - (time.getGMTYear()/10)*10; //was + 1;
+    return time.getGMTYear();
   }
   public int getMajorValue(GeoDate time) {
-    return (time.getGMTYear()/10)*10;
+    return time.getGMTYear();
   }
   public boolean isRoomForMajorLabel(GeoDate delta) {
-    return delta.getTime()/GeoDate.MSECS_IN_DAY > DECADE_TEST__;
+    return false; //delta.getTime()/GeoDate.MSECS_IN_DAY > DECADE_TEST__;
   }
   public boolean isStartOfMinor(GeoDate time) {
-    return false;   //i.e., never draw thick tick    was (time.getGMTYear() % 10) == 0;
+    return false; //i.e., never draw thick tick    was (time.getGMTYear() % defaultMinorLabelInterval_) == 0;  
   }
   public String getDefaultMinorLabelFormat() {
     return defaultMinorLabelFormat__;
@@ -108,12 +103,12 @@ public class YearDecadeAxis implements TimeAxisStyle {
     GeoDate time = null;
     time_increasing = tRange.end.after(tRange.start);
     try {
-      if(time_increasing) {
-        time = new GeoDate(1, 1, tRange.start.getGMTYear(), 0, 0, 0, 0);
-        if(time.getTime() < tRange.start.getTime()) time.increment(1.0, GeoDate.YEARS);
+      if(time_increasing) {    //max(100,) because GMT year doesn't like year 0
+        time = new GeoDate(1, 1, Math.max(100, tRange.start.getGMTYear() / 100 * 100), 0, 0, 0, 0);
+        if(time.getTime() < tRange.start.getTime()) time.increment(100, GeoDate.YEARS);
       } else {
-        time = new GeoDate(1, 1, tRange.end.getGMTYear(), 0, 0, 0, 0);
-        if(!time.equals(tRange.end)) time.increment(1.0, GeoDate.YEARS);
+        time = new GeoDate(1, 1, Math.max(100, tRange.end.getGMTYear() / 100 * 100), 0, 0, 0, 0);
+        if(!time.equals(tRange.end)) time.increment(100, GeoDate.YEARS);
       }
     } catch (IllegalTimeValue e) {}
     return time;
@@ -125,6 +120,6 @@ public class YearDecadeAxis implements TimeAxisStyle {
     return incrementUnits__;
   }
   public String toString() {
-    return "YearDecadeAxis inc=" + incrementValue__ + " minorLabelInterval=" + defaultMinorLabelInterval_;
+    return "CenturyAxis inc=" + incrementValue__ + " minorLabelInterval=" + defaultMinorLabelInterval_;
   }
 }

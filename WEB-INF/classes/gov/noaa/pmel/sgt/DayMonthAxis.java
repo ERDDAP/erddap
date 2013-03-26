@@ -110,6 +110,6 @@ public class DayMonthAxis implements TimeAxisStyle {
     return incrementUnits__;
   }
   public String toString() {
-    return "DayMonthAxis";
+    return "DayMonthAxis inc=" + incrementValue__ + " minorLabelInterval=" + defaultMinorLabelInterval_;
   }
 }

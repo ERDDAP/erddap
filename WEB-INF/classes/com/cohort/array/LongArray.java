@@ -442,7 +442,7 @@ public class LongArray extends PrimitiveArray {
             Math2.ensureMemoryAvailable(8L * newCapacity, "LongArray");
             long[] newArray = new long[newCapacity];
             System.arraycopy(array, 0, newArray, 0, size);
-            array = newArray;
+            array = newArray; //do last to minimize concurrency problems
         }
     }
 
@@ -941,7 +941,7 @@ public class LongArray extends PrimitiveArray {
             for (int i = 0; i < otherSize; i++)
                 array[size + i] = Math2.roundToLong(primitiveArray.getDouble(i)); //this converts mv's
         }
-        size += otherSize;
+        size += otherSize; //do last to minimize concurrency problems
     }    
 
     /**

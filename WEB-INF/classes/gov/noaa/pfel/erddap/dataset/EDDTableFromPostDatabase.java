@@ -42,7 +42,7 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
     
     /** 
      * set by the constructor. static so various datasets all use same/latest info. 
-     * private since this info musn't leak out.
+     * private since this info mustn't leak out.
      * <br>The hashmap holds userName -&gt; roleHashset.
      */
     private static HashMap userHashMap; 
@@ -67,7 +67,6 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
     public EDDTableFromPostDatabase(String tDatasetID, String tAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tDataSourceName,
@@ -80,7 +79,7 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
 
         super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
             tAddGlobalAttributes,
-            tAltMetersPerSourceUnit, tDataVariables, tReloadEveryNMinutes,
+            tDataVariables, tReloadEveryNMinutes,
             tDataSourceName,
             tLocalSourceUrl, tDriverName, tConnectionProperties,
             tCatalogName, tSchemaName, tTableName, tOrderBy,

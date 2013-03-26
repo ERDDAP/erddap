@@ -458,7 +458,7 @@ public class CharArray extends PrimitiveArray {
             Math2.ensureMemoryAvailable(2L * newCapacity, "CharArray");
             char[] newArray = new char[newCapacity];
             System.arraycopy(array, 0, newArray, 0, size);
-            array = newArray;
+            array = newArray; //do last to minimize concurrency problems
         }
     }
 
@@ -963,7 +963,7 @@ public class CharArray extends PrimitiveArray {
             for (int i = 0; i < otherSize; i++)
                 array[size + i] = Math2.narrowToChar(primitiveArray.getInt(i)); //this converts mv's
         }
-        size += otherSize;
+        size += otherSize; //do last to minimize concurrency problems
     }    
 
     /**

@@ -1,5 +1,5 @@
 /* 
- * EDVAltGridAxis Copyright 2007, NOAA.
+ * EDVDepthGridAxis Copyright 2012, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
 package gov.noaa.pfel.erddap.variable;
@@ -9,11 +9,11 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Test;
 
 /** 
- * This class holds information about an altitude grid axis variable.
+ * This class holds information about a depth grid axis variable.
  * 
  * @author Bob Simons (bob.simons@noaa.gov) 2007-06-04
  */
-public class EDVAltGridAxis extends EDVGridAxis { 
+public class EDVDepthGridAxis extends EDVGridAxis { 
    
     /**
      * The constructor.
@@ -31,25 +31,26 @@ public class EDVAltGridAxis extends EDVGridAxis {
      *    There must be at least one element.
      * @throws Throwable if trouble
      */
-    public EDVAltGridAxis(String tSourceName, 
+    public EDVDepthGridAxis(String tSourceName, 
         Attributes tSourceAttributes, Attributes tAddAttributes, 
         PrimitiveArray tSourceValues) 
         throws Throwable {
 
-        super(tSourceName, ALT_NAME, tSourceAttributes, tAddAttributes, tSourceValues); 
+        super(tSourceName, DEPTH_NAME, tSourceAttributes, tAddAttributes, tSourceValues); 
 
-        longName = ALT_LONGNAME;
-        units = ALT_UNITS;
+        longName = DEPTH_LONGNAME;
+        units = DEPTH_UNITS;
         combinedAttributes.set("_CoordinateAxisType", "Height");   //unidata
-        combinedAttributes.set("_CoordinateZisPositive", "up");  //unidata
+        combinedAttributes.set("_CoordinateZisPositive", "down");  //unidata
         combinedAttributes.set("axis", "Z");
         combinedAttributes.set("ioos_category", LOCATION_CATEGORY);
         combinedAttributes.set("long_name", longName);
-        combinedAttributes.set("positive", "up"); //cf
-        combinedAttributes.set("standard_name", ALT_STANDARD_NAME);
-        EDVAlt.ensureUnitsAreM(combinedAttributes.getString("units"), "altitude" , "up");
-        combinedAttributes.set("units", units);        
+        combinedAttributes.set("positive", "down"); //cf
+        combinedAttributes.set("standard_name", DEPTH_STANDARD_NAME);
+        EDVAlt.ensureUnitsAreM(combinedAttributes.getString("units"), "depth" , "down");
+        combinedAttributes.set("units", units);
 
+        //remember that gridAxes get min max from actual axis tSourceValues
         if (destinationMin > destinationMax) {
             double d1 = destinationMin; destinationMin = destinationMax; destinationMax = d1; 
         }
@@ -65,7 +66,7 @@ public class EDVAltGridAxis extends EDVGridAxis {
      * @return a string representation of this EDV.
      */
     public String toString() {
-        return "EDVAltGridAxis/" + super.toString(); 
+        return "EDVDepthGridAxis/" + super.toString(); 
     }
 
     /**
@@ -76,8 +77,7 @@ public class EDVAltGridAxis extends EDVGridAxis {
      */
     public void ensureValid(String errorInMethod) throws Throwable {
         super.ensureValid(errorInMethod);
-        errorInMethod += "\ndatasets.xml/EDVAltGridAxis.ensureValid error for sourceName=" + sourceName + ":\n";
-
+        errorInMethod += "\ndatasets.xml/EDVDepthGridAxis.ensureValid error for sourceName=" + sourceName + ":\n";
     }
 
 }

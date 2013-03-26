@@ -467,6 +467,38 @@ public class File2 {
     }
 
     /**
+     * This returns the protocol+domain (without a trailing slash) from a URL.
+     *
+     * @param url a full or partial URL.
+     * @return the protocol+domain (without a trailing slash).
+     *    If no protocol in URL, that's okay.
+     *    null returns null.  "" returns "".
+     */
+    public static String getProtocolDomain(String url) {
+        if (url == null)
+            return url;
+
+        int urlLength = url.length();
+        int po = url.indexOf('/');
+        if (po < 0)
+            return url;
+        if (po == urlLength - 1 || po > 7) 
+            //protocol names are short e.g., http:// .  Perhaps it's coastwatch.pfeg.noaa.gov/
+            return url.substring(0, po);
+        if (url.charAt(po + 1) == '/') { 
+            if (po == urlLength - 2)
+                //e.g., http://
+                return url;
+            //e.g., http://a.com/
+            po = url.indexOf('/', po + 2);
+            return po >= 0? url.substring(0, po) : url;
+        } else {
+            //e.g., www.a.com/...
+            return url.substring(0, po);            
+        }
+    }
+
+    /**
      * This returns the directory info (with a trailing slash) from the dirName).
      *
      * @param dirName the full name of the file.

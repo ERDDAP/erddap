@@ -1,5 +1,5 @@
 /*
- * $Id: HourDayAxis.java,v 1.8 2001/01/05 18:59:27 dwd Exp $
+ * 2013-02-27 Bob Simons created SecondMinuteAxis based on MinuteHourAxis.java
  *
  * This software is provided by NOAA for full, free and open release.  It is
  * understood by the recipient/user that NOAA assumes no liability for any
@@ -17,62 +17,64 @@ import gov.noaa.pmel.util.TimeRange;
 import gov.noaa.pmel.util.IllegalTimeValue;
 
 /**
- * Draws time axes using the hour/day style.
+ * Draws time axes using the second/minute style.
  *
  * <pre>
- *                  |..........|..........|..........|..........|
- *                       3           4         5           6
- *                                    jun 7
+ *                  |..........|..........|..........|
+ *                 10         20         30         40
+ *                           1987-01-02T12:13
  * </pre>
  *
  * @author Donald Denbo
- * @version $Revision: 1.8 $, $Date: 2001/01/05 18:59:27 $
+ * @version $Revision: 1.7 $, $Date: 2001/01/05 18:59:27 $
  * @see Axis
  * @see TimeAxis
  */
-public class HourDayAxis implements TimeAxisStyle {
-  static final int HOUR_TEST__ = 4;
-  static final String defaultMinorLabelFormat__ = "HH";
-  static final String defaultMajorLabelFormat__ = "yyyy-MM-dd";
+public class SecondMinuteAxis implements TimeAxisStyle {
+  static final int SECOND_TEST__ = 31;  // >0.5 min
+  static final String defaultMinorLabelFormat__ = "ss";
+  //2011-12-15 Bob Simons changed space to 'T'
+  static final String defaultMajorLabelFormat__ = "yyyy-MM-dd'T'HH:mm"; 
   static final int defaultNumSmallTics__ = 0;
   int defaultMinorLabelInterval_ = 2;
   int defaultMajorLabelInterval_ = 1;
   static final double incrementValue__ = 1.0;
-  static final int incrementUnits__ = GeoDate.HOURS;
+  static final int incrementUnits__ = GeoDate.SECONDS;
   /**
-   * HourDayAxis constructor.
+   * SecondMinuteAxis constructor.
    *
    * @param id axis identifier
    **/
-  public HourDayAxis() {
+  public SecondMinuteAxis() {
   }
   public double computeLocation(double prev,double now) {
     return prev;
   }
   public void computeDefaults(GeoDate delta) {
-    long days = delta.getTime()/GeoDate.MSECS_IN_DAY;
     long msec = delta.getTime() % GeoDate.MSECS_IN_DAY;
-    if(days >= 6) {
-      defaultMinorLabelInterval_ = 12;
-    } else if (days >= 2) {
-      defaultMinorLabelInterval_ = 6;
-    } else if ((days > 0) || (msec > 43200000)) { //12 hrs
-      defaultMinorLabelInterval_ = 2;
+    //System.out.println(">>range msec=" + msec);
+    if(msec > 120000) {
+      defaultMinorLabelInterval_ = 15;
+      defaultMajorLabelInterval_ = 2;
+    } else if(msec > 30000) {
+      defaultMinorLabelInterval_ = 5;
+      defaultMajorLabelInterval_ = 1;
     } else {
       defaultMinorLabelInterval_ = 1;
+      defaultMajorLabelInterval_ = 1;
     }
   }
   public int getMinorValue(GeoDate time) {
-    return time.getGMTHours();
+    return time.getGMTSeconds();
   }
   public int getMajorValue(GeoDate time) {
-    return time.getGMTDay();
+    return time.getGMTMinutes();
   }
   public boolean isRoomForMajorLabel(GeoDate delta) {
-    return 24.0*(((double)delta.getTime())/((double)GeoDate.MSECS_IN_DAY)) > HOUR_TEST__;
+    return 86400.0*(((double)delta.getTime())/((double)GeoDate.MSECS_IN_DAY)) > SECOND_TEST__;
   }
   public boolean isStartOfMinor(GeoDate time) {
-    return time.getGMTHours() == 0;
+    return time.getGMTSeconds() == 0;
   }
   public String getDefaultMinorLabelFormat() {
     return defaultMinorLabelFormat__;
@@ -98,14 +100,18 @@ public class HourDayAxis implements TimeAxisStyle {
         time = new GeoDate(tRange.start.getGMTMonth(),
                            tRange.start.getGMTDay(),
                            tRange.start.getGMTYear(),
-                           tRange.start.getGMTHours(), 0, 0, 0);
-        if(!time.equals(tRange.start)) time.increment(1.0f, GeoDate.HOURS);
+                           tRange.start.getGMTHours(),
+                           tRange.start.getGMTMinutes(), 
+                           tRange.start.getGMTSeconds(), 0);
+        if(!time.equals(tRange.start)) time.increment(1.0, GeoDate.SECONDS);
       } else {
         time = new GeoDate(tRange.end.getGMTMonth(),
                            tRange.end.getGMTDay(),
                            tRange.end.getGMTYear(),
-                           tRange.end.getGMTHours(), 0, 0, 0);
-        if(!time.equals(tRange.end)) time.increment(1.0f, GeoDate.HOURS);
+                           tRange.end.getGMTHours(),
+                           tRange.end.getGMTMinutes(), 
+                           tRange.end.getGMTSeconds(), 0);
+        if(!time.equals(tRange.end)) time.increment(1.0, GeoDate.SECONDS);
       }
     } catch (IllegalTimeValue e) {}
     return time;
@@ -117,6 +123,6 @@ public class HourDayAxis implements TimeAxisStyle {
     return incrementUnits__;
   }
   public String toString() {
-    return "HourDayAxis inc=" + incrementValue__ + " minorLabelInterval=" + defaultMinorLabelInterval_;
+    return "SecondMinuteAxis  inc=" + incrementValue__ + " minorLabelInterval=" + defaultMinorLabelInterval_;
   }
 }

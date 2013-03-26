@@ -522,7 +522,7 @@ public class String2 {
      * read the file line-by-line, processing as it goes.
      *
      * @param fileName is the (usually canonical) path (dir+name) for the file
-     * @param charset e.g., ISO-8859-1, UTF-8, or "" or null for the default (ISO-8859-1 ?)
+     * @param charset e.g., ISO-8859-1, UTF-8, or "" or null for the default (ISO-8859-1)
      * @param maxAttempt e.g. 3   (the tries are 1 second apart)
      * @return a String array with two strings.
      *     Using a String array gets around Java's limitation of
@@ -557,9 +557,8 @@ public class String2 {
             for (int attempt = 1; attempt <= maxAttempt; attempt++) {
                 try {
                     fis = new FileInputStream(fileName);
-                    isr = charset == null || charset.length() == 0?
-                        new InputStreamReader(fis) :
-                        new InputStreamReader(fis, charset);
+                    isr = new InputStreamReader(fis, 
+                        charset == null || charset.length() == 0? "ISO-8859-1" : charset);
                 } catch (Exception e) {
                     if (attempt == maxAttempt) {
                         log(ERROR + ": String2.readFromFile was unable to read " + fileName);
@@ -587,7 +586,7 @@ public class String2 {
                 sb.append(s);
                 sb.append('\n');
                 s = bufferedReader.readLine();
-                }
+            }
 
             //save the contents as results[1]
             results[contentsIndex] = sb.toString();
@@ -760,7 +759,7 @@ public class String2 {
     }
 
     /**
-     * This includes hiASCII/ISO Latin 1 but not extensive unicode characters.
+     * This includes hiASCII/ISO Latin 1/ISO 8859-1, but not extensive unicode characters.
      * Letters are A..Z, a..z, and #192..#255 (except #215 and #247).
      * For unicode characters, see Java Lang Spec pg 14.
      *
@@ -1120,8 +1119,8 @@ public class String2 {
      * This returns the string with just file-name-safe characters (0-9, A-Z, a-z, _, -, .).
      * This is different from String2.encodeFileNameSafe --
      *   this emphasizes readability, not avoiding losing information.
-     * Spaces and '/' are converted to '_'.
-     * Non-safe characters are removed.
+     * Non-safe characters are converted to '_'.
+     * Adjacent '_' are collapsed into '_'.
      * See posix fully portable file names at http://en.wikipedia.org/wiki/Filename .
      * See javadocs for java.net.URLEncoder, which describes valid characters
      *  (but deals with encoding, whereas this method alters or removes).
@@ -1134,26 +1133,62 @@ public class String2 {
     public static String modifyToBeFileNameSafe(String s) {
         if (s == null)
             return "_null";
+        s = modifyToBeASCII(s);
         int n = s.length();
         if (n == 0)
             return "_";
-        s = modifyToBeASCII(s);
         StringBuilder sb = new StringBuilder(n);
         for (int i = 0; i < n; i++) {
             char ch = s.charAt(i);
-            if (ch == '_' || ch <= 32 || ch == '/') {
-                if (sb.length() > 0 && sb.charAt(sb.length() - 1) != '_')
-                    sb.append('_');
-            } else if (isFileNameSafe(ch)) {
-                sb.append(ch);
-            }
-            //others are removed
+            sb.append(isFileNameSafe(ch)? ch : '_');
         }
         while (sb.indexOf("__") >= 0)
             String2.replaceAll(sb, "__", "_");
 
         return sb.toString();
     }
+
+    /*
+     * This is like modifyToBeFileNameSafe, but restricts the name to
+     * <ul>
+     * <li>first character must be (iso8859Letter|_).
+     * <li>subsequent characters must be (iso8859Letter|_|0-9).
+     * <ul>
+     * See also the safer encodeVariableNameSafe(String s).
+     *
+     * @param s
+     * @return a safe variable name (but perhaps two s's lead to the same result)
+     */
+    public static String modifyToBeVariableNameSafe(String s) {
+        if (s == null)
+            return "_null";
+        s = replaceAll(s, "%20", "_");
+        int n = s.length();
+        if (n == 0)
+            return "_";
+
+        StringBuilder sb = new StringBuilder(n);
+
+        //first character must be (iso8859Letter|_)
+        char ch = s.charAt(0);
+        sb.append(isLetter(ch)? ch : '_');     //'_' will be converted to '_'
+
+        //subsequent characters must be (iso8859Letter|_|0-9)
+        for (int i = 1; i < n; i++) {
+            ch = s.charAt(i);
+            if (isDigitLetter(ch))
+                sb.append(ch);
+            else if (sb.charAt(sb.length() - 1) != '_')
+                sb.append('_');    
+        }
+
+        //remove trailing _
+        if (sb.length() > 1 && sb.charAt(sb.length() - 1) == '_')
+            sb.setLength(sb.length() - 1);
+
+        return sb.toString();
+    }
+
 
     /**
      * This counts all occurrences of <TT>findS</TT> in sb.
@@ -4629,7 +4664,7 @@ public class String2 {
     /** This suggests a camel-case variable name.
      * 
      * @param s the starting string for the variable name.
-     * @return a valid variable name (ASCII lowerCaseLetter+[ASCII letterDigits]), using camel case.
+     * @return a valid variable name asciiLowerCaseLetter+asciiDigitLetter*, using camel case.
      *   This is a simplistic suggestion. Different strings may return the same variable name.
      *   null returns "null".
      *   "" returns "a".
@@ -4652,10 +4687,19 @@ public class String2 {
             return "a";
         char c = sb.charAt(0);
         sb.setCharAt(0, Character.toLowerCase(c));
-        if (!isLetter(c))
+        if (c >= '0' && c <= '9')
             sb.insert(0, 'a');
         return sb.toString();
     }
 
+    /**
+     * This returns true if the string contains only ISO 8859-1 characters (i.e., 0 - 255).
+     */
+    public static boolean isIso8859(String s) {
+        int sLength = s.length();
+        for (int i = 0; i < sLength; i++) 
+            if (s.charAt(i) > 255) return false;
+        return true;
+    }
 
 } //End of String2 class.

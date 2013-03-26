@@ -43,7 +43,7 @@ public class Subscriptions {
     public static boolean reallyVerbose = false; 
 
     //these constants are reflected in constructor
-    //note that these musn't change (else trouble for existing subscriptions file)
+    //note that these mustn't change (else trouble for existing subscriptions file)
     public final static int statusColumn = 0;         //binaryByte 1
     public final static int creationMinuteColumn = 1; //int 4
     public final static int keyColumn = 2;            //int 4

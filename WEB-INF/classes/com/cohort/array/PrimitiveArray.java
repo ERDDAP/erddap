@@ -42,7 +42,7 @@ public abstract class PrimitiveArray {
     protected int size = 0;
 
     /**
-     * The constants identify the items in the array returned by getStats.
+     * The constants identify the items in the array returned by calculateStats.
      */
     public final static int STATS_N = 0, STATS_MIN = 1, STATS_MAX = 2, STATS_SUM = 3; 
 
@@ -894,15 +894,42 @@ public abstract class PrimitiveArray {
     abstract public void trimToSize();
 
     /** 
+     * This converts the elements into a Comma-Separated-Value (CSV) String.
+     * Chars acting like unsigned shorts.
+     * StringArray overwrites this to specially encode the strings.
+     *
+     * @return a Comma-Separated-Value (CSV) String representation 
+     */
+    public String toCSVString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < size; i++) {
+            if (i > 0)
+                sb.append(",");
+            sb.append(getString(i));
+        }
+        return sb.toString();
+    }
+
+    /** 
      * This converts the elements into a Comma-Space-Separated-Value (CSSV) String.
+     * Chars acting like unsigned shorts.
+     * StringArray overwrites this to specially encode the strings.
      *
      * @return a Comma-Space-Separated-Value (CSSV) String representation 
      */
-    abstract public String toString();
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < size; i++) {
+            if (i > 0)
+                sb.append(", ");
+            sb.append(getString(i));
+        }
+        return sb.toString();
+    }
 
     /**
-     * This returns a JSON-style comma-separate-value list of the elements.
-     * StringArray overwrites this so Strings are encoded via String2.toJson.
+     * This returns a JSON-style comma-separated-value list of the elements.
+     * StringArray overwrites this to make a JSON-style representation.
      *
      * @return a csv string of the elements.
      */
@@ -929,7 +956,8 @@ public abstract class PrimitiveArray {
     /**
      * This calculates min, max, and nValid for the values in this 
      * PrimitiveArray.
-     * Each data type has its own missing value (e.g., Byte.MAX_VALUE).
+     * Each data type's missing value (e.g., Byte.MAX_VALUE) will 
+     * be converted to Double.NaN.
      *
      * @return a double[] with 
      *    dar[STATS_N] containing the number of valid values.
@@ -947,7 +975,7 @@ public abstract class PrimitiveArray {
         double sum = 0;
 
         for (int i = 0; i < size; i++) {
-            double d = getDouble(i);
+            double d = getDouble(i); //converts local missingValue to Double.NaN
             if (Math2.isFinite(d)) { 
                 n++;
                 min = Math.min(min, d);
@@ -1839,7 +1867,9 @@ public abstract class PrimitiveArray {
      *   the column will not be converted to an integer type.
      *
      * @return the simpliest possible PrimitiveArray (possibly this PrimitiveArray) 
-     *     (although not CharArray).
+     *     (although not a CharArray).
+     *     A LongArray may return a LongArray, but a StringArray with longs will return a StringArray
+     *     (because long ints are often used as String-like identifiers and .nc files don't support longs).
      */
     public PrimitiveArray simplify() {
         int type = 0; //the current, simplest possible type
@@ -1886,7 +1916,7 @@ public abstract class PrimitiveArray {
                 if (d != Math.rint(d) || d < Integer.MIN_VALUE || d > Integer.MAX_VALUE) {
                     type++;
                     if (this instanceof LongArray)
-                        return this; //don't continue; it would just check that a LongArray contains long
+                        return this; //don't continue; it would just check that a LongArray contains longs
                 }
             }
             if (type == 3) { //long
@@ -1926,10 +1956,18 @@ public abstract class PrimitiveArray {
             return new IntArray(array);
         }
         if (type == 3) {
-            long[] array = new long[n];
-            for (int i = 0; i < n; i++)
-                array[i] = Math2.roundToLong(dar[i]);
-            return new LongArray(array);
+            //A LongArray may return a LongArray (above),
+            //but a StringArray with longs will return a StringArray
+            //(because long ints are often used as String-like identifiers
+            //and .nc files don't support longs).
+            if (isStringArray)
+                return this;
+            return new StringArray(this);
+            //was:
+            //long[] array = new long[n];
+            //for (int i = 0; i < n; i++)
+            //    array[i] = Math2.roundToLong(dar[i]);
+            //return new LongArray(array);
         }
         if (type == 4) {
             float[] array = new float[n];
@@ -2898,12 +2936,12 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(pa.getDouble(1), 2000000000, "");
         Test.ensureEqual(pa.getDouble(2), Double.NaN, "");
 
-        pa = new StringArray(new String[]{"-2000000000000000", "2000000000000000", "."});
+        pa = new StringArray(new String[]{"-2000000000000000", "2000000000000000", ""});
         pa = pa.simplify();
-        Test.ensureTrue(pa instanceof LongArray, "elementClass=" + pa.elementClass());
-        Test.ensureEqual(pa.getDouble(0), -2000000000000000L, "");
-        Test.ensureEqual(pa.getDouble(1), 2000000000000000L, "");
-        Test.ensureEqual(pa.getDouble(2), Double.NaN, "");
+        Test.ensureTrue(pa instanceof StringArray, "elementClass=" + pa.elementClass());
+        Test.ensureEqual(pa.getString(0), "-2000000000000000", "");
+        Test.ensureEqual(pa.getString(1), "2000000000000000", "");
+        Test.ensureEqual(pa.getString(2), "", "");
 
         pa = new StringArray(new String[]{"-1e33", "1e33", "."});
         pa = pa.simplify();

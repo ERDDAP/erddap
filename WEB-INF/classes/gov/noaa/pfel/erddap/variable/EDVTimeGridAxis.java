@@ -9,6 +9,7 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
+import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
@@ -28,19 +29,18 @@ import org.joda.time.format.*;
  */
 public class EDVTimeGridAxis extends EDVGridAxis { 
 
-    /** special case format supports suffix 'Z' or +/-HH:MM */
-    public final static String ISO8601TZ_FORMAT  = "yyyy-MM-dd'T'HH:mm:ssZ"; 
-    public final static String ISO8601T3Z_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"; 
-
+    
     /** Set by the constructor. */
     protected String sourceTimeFormat; 
 
     /** These are set automatically. */
-    protected boolean sourceTimeIsNumeric;
+    protected boolean sourceTimeIsNumeric = true;
     protected double sourceTimeBase = Double.NaN;   //set if sourceTimeIsNumeric
     protected double sourceTimeFactor = Double.NaN;
+    protected boolean parseISOWithCalendar2;
     protected DateTimeFormatter dateTimeFormatter;  //set if !sourceTimeIsNumeric
-    protected String time_precision; //see Calendar2.limitedEpochSecondsToIsoStringT
+    protected String time_precision; //see Calendar2.epochSecondsToLimitedIsoStringT
+    protected boolean superConstructorIsFinished = false;
 
     /**
      * The constructor.
@@ -52,6 +52,12 @@ public class EDVTimeGridAxis extends EDVGridAxis {
      *    (e.g., "seconds since 1970-01-01T00:00:00"),
      *    where the base time is an 
      *    ISO 8601 formatted date time string (YYYY-MM-DDThh:mm:ss).
+     * 
+     * <p> scale_factor an dadd_offset are allowed for numeric time variables.
+     * This constructor removes any scale_factor and add_offset attributes
+     * and stores the resulting information so that destination data
+     * has been converted to destinationDataType with scaleFactor and addOffset 
+     * applied.
      * 
      * @param tSourceName the name of the axis variable in the dataset source
      *    (usually with no spaces).
@@ -72,6 +78,7 @@ public class EDVTimeGridAxis extends EDVGridAxis {
         throws Throwable {
 
         super(tSourceName, TIME_NAME, tSourceAttributes, tAddAttributes, tSourceValues); 
+        superConstructorIsFinished = true;
 
         //time_precision e.g., 1970-01-01T00:00:00Z
         time_precision = combinedAttributes.getString(EDV.time_precision);
@@ -84,15 +91,11 @@ public class EDVTimeGridAxis extends EDVGridAxis {
                time_precision = null;
         }
 
-        //currently, EDVTimeGridAxis doesn't support scaleAddOffset  or String sourceValues
+        //currently, EDVTimeGridAxis doesn't support String sourceValues
         String errorInMethod = "datasets.xml/EDVTimeGridAxis constructor error for sourceName=" + tSourceName + ":\n";
-        if (scaleAddOffset)
+        if (sourceValues instanceof StringArray)
             throw new RuntimeException(errorInMethod + 
-                "Currently, EDVTimeGridAxis doesn't support scale_factor and add_offset.");
-
-if (sourceValues instanceof StringArray)
-    throw new RuntimeException(errorInMethod + 
-        "Currently, EDVTimeGridAxis doesn't support String source values for the time axis.");
+                "Currently, EDVTimeGridAxis doesn't support String source values for the time axis.");
 
         //read units before it is changed below
         sourceTimeFormat = units();
@@ -104,18 +107,42 @@ if (sourceValues instanceof StringArray)
             sourceTimeBase = td[0];
             sourceTimeFactor = td[1];
         } else {
+            sourceTimeIsNumeric = false;
             throw new RuntimeException(
                 "Currently, the source units for the time axis must include \" since \".");
-            /*
-            sourceTimeIsNumeric = false;
-            if (sourceTimeFormat.equals(ISO8601TZ_FORMAT)) {
-                String2.log("Using special ISO8601TZ_FORMAT.");
+            /*  If Strings are ever supported...
+            //ensure scale_factor=1 and add_offset=0
+            if (scaleAddOffset)
+                throw new RuntimeException(errorInMethod + 
+                    "For String source times, scale_factor and add_offset MUST NOT be used.");
+
+            if (sourceTimeFormat.equals(ISO8601T_FORMAT) ||
+                sourceTimeFormat.equals(ISO8601TZ_FORMAT)) {
+                if (verbose) String2.log("parseISOWithCalendar2=true");
                 dateTimeFormatter = ISODateTimeFormat.dateTimeNoMillis().withZone(DateTimeZone.UTC);
+                parseISOWithCalendar2 = true;
+            } else if (sourceTimeFormat.equals(ISO8601T3_FORMAT) ||
+                       sourceTimeFormat.equals(ISO8601T3Z_FORMAT)) {
+                if (verbose) String2.log("parseISOWithCalendar2=true");
+                dateTimeFormatter = ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC);
+                parseISOWithCalendar2 = true;                
             } else {
                 //future: support time zones  
                 dateTimeFormatter = DateTimeFormat.forPattern(sourceTimeFormat).withZone(DateTimeZone.UTC);
+                parseISOWithCalendar2 = false;
             }
             */
+        }
+
+        //extractScaleAddOffset     It sets destinationDataType
+        extractScaleAddOffset(); 
+        if (scaleAddOffset) {
+            setDestinationMin(destinationMin * scaleFactor + addOffset);
+            setDestinationMax(destinationMax * scaleFactor + addOffset);
+        }
+        //test for min>max after extractScaleAddOffset, since order may have changed
+        if (destinationMin > destinationMax) { 
+            double d = destinationMin; destinationMin = destinationMax; destinationMax = d;
         }
 
         units = TIME_UNITS;
@@ -185,7 +212,7 @@ if (sourceValues instanceof StringArray)
      * describing how to interpret numbers 
      * (e.g., "seconds since 1970-01-01T00:00:00")
      * or a java.text.SimpleDateFormat string describing how to interpret string times  
-     * (see http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html).
+     * (see http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
      * Examples: 
      * <br>Date and Time Pattern    Result 
      * <br>"yyyy.MM.dd G 'at' HH:mm:ss z"    2001.07.04 AD at 12:08:56 PDT 
@@ -207,16 +234,31 @@ if (sourceValues instanceof StringArray)
         return sourceTimeIsNumeric;
     }
 
+    /** 
+     * This returns true if the destinationValues equal the sourceValues 
+     *   (e.g., scaleFactor = 1 and addOffset = 0). 
+     * <br>Some subclasses overwrite this to cover other situations:
+     * <br>EDVTimeStamp only returns true if sourceTimeIsNumeric and
+     *   sourceTimeBase = 0 and sourceTimeFactor = 1.
+     *
+     * @return true if the destinationValues equal the sourceValues.
+     */
+    public boolean destValuesEqualSourceValues() {
+        return sourceTimeIsNumeric && 
+            sourceTimeBase == 0.0 && sourceTimeFactor == 1.0 && 
+            !scaleAddOffset;
+    }
+
     /**
      * This converts a destination double value to a string
      * (time variable override this to make an iso string).
      * NaN returns "".
      *
-     * @param destD
+     * @param destD  epochSeconds
      * @return destination String
      */
     public String destinationToString(double destD) {
-        return Calendar2.limitedEpochSecondsToIsoStringT(time_precision, destD, "");
+        return Calendar2.epochSecondsToLimitedIsoStringT(time_precision, destD, "");
     }
 
     /**
@@ -259,7 +301,7 @@ if (sourceValues instanceof StringArray)
     /** 
      * An indication of the precision of the time values, e.g., 
      * "1970-01-01T00:00:00Z" (default) or null (goes to default).  
-     * See Calendar2.limitedEpochSecondsToIsoStringT()
+     * See Calendar2.epochSecondsToLimitedIsoStringT()
      */
     public String time_precision() {
         return time_precision; 
@@ -273,9 +315,12 @@ if (sourceValues instanceof StringArray)
      *  If sourceTime is NaN, this returns NaN (but there shouldn't ever be missing values).
      */
     public double sourceTimeToEpochSeconds(double sourceTime) {
+        if (scaleAddOffset)
+            sourceTime = sourceTime * scaleFactor + addOffset;
         double sec = Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
         //if (reallyVerbose)
         //    String2.log("    EDVTimeGridAxis stBase=" + sourceTimeBase +
+        //        " scale=" + scaleFactor + " addOffset=" + addOffset + 
         //        " stFactor=" + sourceTimeFactor + " sourceTime=" + sourceTime +
         //        " result=" + sec + " = " + Calendar2.epochSecondsToIsoStringT(sec));
         return sec;
@@ -290,21 +335,31 @@ if (sourceValues instanceof StringArray)
      *   This returns NaN if trouble (sourceMissingValue, "", or invalid format).
      */
     public double sourceTimeToEpochSeconds(String sourceTime) {
+        //This method is called twice by the EDVGridAxis constructor (needlessly).
+        //Apparently, sourceTimeIsNumeric hasn't yet been set to true,
+        //  so this throws Exception.   So just avoid this error.
+        //String2.log(">>sttes sourceTimeIsNumeric=" + sourceTimeIsNumeric);
+        if (!superConstructorIsFinished)
+            return Double.NaN;
+
         //sourceTime is numeric
-        if (sourceTimeIsNumeric) {
+        if (sourceTimeIsNumeric) 
             return sourceTimeToEpochSeconds(String2.parseDouble(sourceTime));
-        }
 
         //time is a string
-        //parse with Joda
         try {
-            double d = dateTimeFormatter.parseMillis(sourceTime) / 1000.0; //thread safe
+            double d = parseISOWithCalendar2?
+                //parse with Calendar2.parseISODateTime
+                Calendar2.isoStringToEpochSeconds(sourceTime) :
+                //parse with Joda
+                dateTimeFormatter.parseMillis(sourceTime) / 1000.0; //thread safe
             //String2.log("  EDVTimeGridAxis sourceTime=" + sourceTime + " epSec=" + d + " Calendar2=" + Calendar2.epochSecondsToIsoStringT(d));
             return d;
         } catch (Throwable t) {
             if (verbose && sourceTime != null && sourceTime.length() > 0)
                 String2.log("  EDVTimeGridAxis.sourceTimeToEpochSeconds: Invalid sourceTime=" + 
-                    sourceTime + "\n" + t.toString());
+                    sourceTime + "\n" + 
+                    (reallyVerbose? MustBe.throwableToString(t) : t.toString()));
             return Double.NaN;
         }
     }
@@ -319,25 +374,22 @@ if (sourceValues instanceof StringArray)
      * with source values converted to destinationValues.
      */
     public PrimitiveArray toDestination(PrimitiveArray source) {
-        //this doesn't support scaleAddOffset
         int size = source.size();
-        PrimitiveArray pa;
-        if (source instanceof StringArray) {
-            pa = new DoubleArray(size, true);
+        DoubleArray destPa = source instanceof DoubleArray?
+            (DoubleArray)source :
+            new DoubleArray(size, true);
+        if (sourceTimeIsNumeric) {
             for (int i = 0; i < size; i++)
-                pa.setDouble(i, sourceTimeToEpochSeconds(source.getString(i)));
+                destPa.set(i, sourceTimeToEpochSeconds(source.getNiceDouble(i)));
         } else {
-            pa = source instanceof DoubleArray?
-                source :
-                new DoubleArray(size, true);
             for (int i = 0; i < size; i++)
-                pa.setDouble(i, sourceTimeToEpochSeconds(source.getNiceDouble(i)));
+                destPa.set(i, sourceTimeToEpochSeconds(source.getString(i)));
         }
-        return pa;
+        return destPa;
     }
 
     /**
-     * This returns a new PrimitiveArray 
+     * This returns a new StringArray 
      * with source values converted to String destinationValues.
      *
      * @return a StringArray (the original if the data type wasn't changed)
@@ -346,14 +398,17 @@ if (sourceValues instanceof StringArray)
     public PrimitiveArray toDestinationStrings(PrimitiveArray source) {
         //memory is an issue! always generate this on-the-fly
         int n = source.size();
-        StringArray sa = new StringArray(n, false);
-        if (source instanceof StringArray) {
+        StringArray sa =  source instanceof StringArray?
+            (StringArray)source :
+            new StringArray(n, true);
+        if (sourceTimeIsNumeric) {
             for (int i = 0; i < n; i++)
-                sa.add(Calendar2.limitedEpochSecondsToIsoStringT(
-                    time_precision, sourceTimeToEpochSeconds(source.getString(i)), ""));
+                sa.set(i, Calendar2.epochSecondsToLimitedIsoStringT(
+                    time_precision, sourceTimeToEpochSeconds(source.getNiceDouble(i)), "")); 
         } else {
             for (int i = 0; i < n; i++)
-                sa.add(sourceTimeToIsoStringT(source.getNiceDouble(i))); 
+                sa.set(i, Calendar2.epochSecondsToLimitedIsoStringT(
+                    time_precision, sourceTimeToEpochSeconds(source.getString(i)), ""));
         }
         return sa;
 
@@ -399,11 +454,23 @@ if (sourceValues instanceof StringArray)
         return toDestination((PrimitiveArray)sourceValues.clone()); 
     }
 
+    /**
+     * This returns one of this axis' source values as a nice String destination value. 
+     * For most EDVGridAxis, this returns destinationValues (which equal
+     * the String destination values). The Time subclass overrides this.
+     */
+    public String destinationString(int which) {
+        return destinationToString(sourceTimeIsNumeric?
+            sourceTimeToEpochSeconds(sourceValues.getNiceDouble(which)) :
+            sourceTimeToEpochSeconds(sourceValues.getString(which)));
+    }
+
     /** This returns a PrimitiveArray with the destination values for this axis. 
      * Don't change these values.
      * If destination=source, this may return the sourceValues PrimitiveArray. 
      * The alt and time subclasses override this.
      * The time subclass returns these as ISO 8601 'T' strings (to facilitate displaying options to users).
+     * !!!For time, if lots of values (e.g., 10^6), this is SLOW (e.g., 30 seconds)!!!
      */
     public PrimitiveArray destinationStringValues() {
         return toDestinationStrings(sourceValues);
@@ -419,7 +486,10 @@ if (sourceValues instanceof StringArray)
     public double epochSecondsToSourceTimeDouble(double epochSeconds) {
         if (Double.isNaN(epochSeconds))
             return sourceMissingValue;
-        return Calendar2.epochSecondsToUnitsSince(sourceTimeBase, sourceTimeFactor, epochSeconds);
+        double source = Calendar2.epochSecondsToUnitsSince(sourceTimeBase, sourceTimeFactor, epochSeconds);
+        if (scaleAddOffset) 
+            source = (source - addOffset) / scaleFactor;
+        return source;
     }
 
     /**
@@ -434,16 +504,16 @@ if (sourceValues instanceof StringArray)
     public String epochSecondsToSourceTimeString(double epochSeconds) {
         if (Double.isNaN(epochSeconds))
             return sourceTimeIsNumeric? "" + sourceMissingValue : "";
-        return sourceTimeIsNumeric?
-            "" + epochSecondsToSourceTimeDouble(epochSeconds) :
-            dateTimeFormatter.print(Math.round(epochSeconds * 1000)); //round to long
+        if (sourceTimeIsNumeric)
+            return "" + epochSecondsToSourceTimeDouble(epochSeconds);
+        return dateTimeFormatter.print(Math.round(epochSeconds * 1000)); //round to long
     }
 
     /**
-     * This converts a source time to a destination ISO TZ time.
+     * This converts a source time to a (limited) destination ISO TZ time.
      *
      * @param sourceTime 
-     * @return an ISO T Time (e.g., "1993-12-31T23:59:59Z").
+     * @return a (limited) ISO T Time (e.g., "1993-12-31T23:59:59Z").
      *   If sourceTime is invalid, this returns ""  (but there shouldn't ever be missing values).
      */
     public String sourceTimeToIsoStringT(double sourceTime) {

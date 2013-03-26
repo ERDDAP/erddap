@@ -38,6 +38,12 @@ public class EDV {
      */
     public static boolean reallyVerbose = false; 
 
+    /**
+     * Set this to true (by calling debug=true in your program, not but changing the code here)
+     * if you want lots and lots of diagnostic messages sent to String2.log.
+     */
+    public static boolean debug = false; 
+
     /** 
      * These are the standardized variable names, long names, CF standard names, 
      * and units for the lon, lat, alt, and time axes in the results. 
@@ -48,10 +54,11 @@ public class EDV {
      * xml version from http://marinemetadata.org/cf).
      */
     public final static String
-        LON_NAME  = "longitude", LON_LONGNAME  = "Longitude", LON_STANDARD_NAME = "longitude", LON_UNITS = "degrees_east",        
-        LAT_NAME  = "latitude",  LAT_LONGNAME  = "Latitude",  LAT_STANDARD_NAME = "latitude",  LAT_UNITS = "degrees_north",
-        ALT_NAME  = "altitude",  ALT_LONGNAME  = "Altitude",  ALT_STANDARD_NAME = "altitude",  ALT_UNITS = "m",
-        TIME_NAME = "time",      TIME_LONGNAME = "Time",      TIME_STANDARD_NAME = "time",     TIME_UNITS = Calendar2.SECONDS_SINCE_1970;
+        LON_NAME  = "longitude", LON_LONGNAME  = "Longitude", LON_STANDARD_NAME  = "longitude", LON_UNITS  = "degrees_east",        
+        LAT_NAME  = "latitude",  LAT_LONGNAME  = "Latitude",  LAT_STANDARD_NAME  = "latitude",  LAT_UNITS  = "degrees_north",
+        ALT_NAME  = "altitude",  ALT_LONGNAME  = "Altitude",  ALT_STANDARD_NAME  = "altitude",  ALT_UNITS  = "m",
+        DEPTH_NAME= "depth",     DEPTH_LONGNAME= "Depth",     DEPTH_STANDARD_NAME= "depth",     DEPTH_UNITS= "m",
+        TIME_NAME = "time",      TIME_LONGNAME = "Time",      TIME_STANDARD_NAME = "time",      TIME_UNITS = Calendar2.SECONDS_SINCE_1970;
 
     /** */
     public static String TIME_UCUM_UNITS = EDUnits.udunitsToUcum(TIME_UNITS);
@@ -105,7 +112,7 @@ public class EDV {
         "Other", //bob added
         "Pathogens", 
         "Physical Oceanography", //Bob added 2011-10-11
-        "Phytoplankton Species", //??the species name? better to use Taxonomy??
+        "Phytoplankton Species", //??the species name? better to use Taxonomy??  Add "Phytoplankton Abundance"?
         "Pressure", //bob added
         "Productivity", //bob added
         "Quality", //bob added 2010-11-10
@@ -142,7 +149,7 @@ public class EDV {
     public final static String VALID_SCALES0[] = {"", "Linear", "Log"};     
 
     /** The time variable attribute that has the precision specification for 
-        Calendar2.limitedEpochSecondsToIsoStringT. */
+        Calendar2.epochSecondsToLimitedIsoStringT. */
     public final static String time_precision = "time_precision"; 
 
     /** This is the standard slider size. */
@@ -195,13 +202,11 @@ public class EDV {
     protected double destinationFillValue = Double.NaN;
     protected double safeDestinationMissingValue = Double.NaN;
     protected boolean hasColorBarMinMax = false;
-    protected int sliderNCsvValues = -1;
     protected byte[] sliderCsvValues = null;
 
     protected boolean isBoolean = false;
     protected boolean scaleAddOffset = false;
     protected double scaleFactor = 1, addOffset = 0;
-
 
     /**
      * The constructor.
@@ -357,7 +362,7 @@ public class EDV {
             PrimitiveArray pa2 = PrimitiveArray.factory(destinationDataTypeClass, 1, false);
             pa2.addDouble(destinationFillValue);
             combinedAttributes.set("_FillValue", pa2);
-            //String2.log("!!!EDV " + tSourceName + " _FillValue pa2=" + pa2.toString());
+            //String2.log(">>EDV " + tSourceName + " _FillValue pa2=" + pa2.toString());
         }
         safeDestinationMissingValue = Double.isNaN(destinationFillValue)? //fill has precedence
             destinationMissingValue : destinationFillValue;
@@ -923,8 +928,8 @@ public class EDV {
      */
     public String destinationMinString() {
         return Double.isNaN(destinationMin)? "" : 
-            destinationDataTypeClass == double.class ||
-            destinationDataTypeClass == float.class?
+            destinationDataTypeClass == float.class? "" + (float)destinationMin :
+            destinationDataTypeClass == double.class?
                 "" + Math2.niceDouble(destinationMin, 15) :  //was "" + destinationMin
                 "" + Math2.roundToLong(destinationMin);  //ints are nicer without trailing ".0"
     }
@@ -936,8 +941,8 @@ public class EDV {
      */
     public String destinationMaxString() {
         return Double.isNaN(destinationMax)? "" : 
-            destinationDataTypeClass == double.class ||
-            destinationDataTypeClass == float.class?
+            destinationDataTypeClass == float.class? "" + (float)destinationMax :
+            destinationDataTypeClass == double.class?
                 "" + Math2.niceDouble(destinationMax, 15) :
                 "" + Math2.roundToLong(destinationMax);  //ints are nicer without trailing ".0"
     }
@@ -947,9 +952,22 @@ public class EDV {
      * <br>destinationValue = sourceValue * scaleFactor + addOffset;
      * <br>sourceValue = (destintationValue - addOffset) / scaleFactor;
      *
-     * @return true if scaleFactor and addOffset are active.
+     * @return true if scaleFactor and/or addOffset are active.
      */
     public boolean scaleAddOffset() {return scaleAddOffset;}
+
+    /** 
+     * This returns true if the destinationValues equal the sourceValues 
+     *   (e.g., scaleFactor = 1 and addOffset = 0). 
+     * <br>Some subclasses overwrite this to cover other situations:
+     * <br>EDVTimeStamp only returns true if sourceTimeIsNumeric and
+     *   sourceTimeBase = 0 and sourceTimeFactor = 1.
+     *
+     * @return true if the destinationValues equal the sourceValues.
+     */
+    public boolean destValuesEqualSourceValues() {
+        return !scaleAddOffset;
+    }
 
     /** 
      * This returns the scaleFactor.
@@ -1022,17 +1040,6 @@ public class EDV {
 
 
     /**
-     * This returns the number of values in the sliderCsvValues list (or 0 if sliderCsvValues
-     * can't be created).
-     * 
-     */
-    public int sliderNCsvValues() throws Throwable {
-        if (sliderNCsvValues == 0)
-            sliderCsvValues(); //force creation
-        return sliderNCsvValues;
-    }
-
-    /**
      * This returns a JSON-style csv String with a subset of destinationStringValues
      * suitable for use on a slider with SLIDER_PIXELS.
      * EDVTimeStamp and EDVGridAxis overwrite this.
@@ -1041,14 +1048,15 @@ public class EDV {
      * this returns null.
      */
     public String sliderCsvValues() throws Throwable {
-        if (sliderCsvValues != null) 
-            return String2.utf8ToString(sliderCsvValues);
+        byte scv[] = sliderCsvValues; //local copy avoids concurrency problems
+        if (scv != null) 
+            return String2.utf8ToString(scv);
 
         try {
-            boolean isTimeStamp = false; //EDVTimeStamp overwrites this
+            boolean isTimeStamp = false; //EDVTimeStamp overwrites this method
             double tMin = destinationMin;
             double tMax = destinationMax;
-            if (!Math2.isFinite(tMin)) return null;
+            if (!Math2.isFinite(tMin)) return null;  //quick rejection is important
             if (!Math2.isFinite(tMax)) return null;
             boolean isFloat = destinationDataTypeClass == float.class;
             double dVal;
@@ -1059,8 +1067,7 @@ public class EDV {
                 dVal = tMin;
                 sVal = isFloat? "" + (float)dVal : "" + dVal;
                 String csv = toSliderString(sVal, isTimeStamp);
-                sliderCsvValues = String2.getUTF8Bytes(csv);
-                sliderNCsvValues = 1; //do last
+                sliderCsvValues = String2.getUTF8Bytes(csv); //do last
                 return csv;
             }
 
@@ -1084,13 +1091,12 @@ public class EDV {
             sb.append(toSliderString(sVal, isTimeStamp)); //last value
 
             //store in compact utf8 format
-            String csv = sb.toString();
-            sliderCsvValues = String2.getUTF8Bytes(csv);
-            sliderNCsvValues = nDiv + 1; //do last
             if (reallyVerbose) String2.log("EDV.sliderCsvValues nDiv=" + nDiv + 
                 " destMin=" + destinationMin + " destMax=" + destinationMax + 
                 " tMin=" + tMin + " tMax=" + tMax + " stride=" + stride + 
-                " base=" + base + " nValues=" + sliderNCsvValues);
+                " base=" + base + " nValues=" + (nDiv + 1));
+            String csv = sb.toString();
+            sliderCsvValues = String2.getUTF8Bytes(csv); //do last
             return csv;
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
