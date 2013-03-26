@@ -133,6 +133,10 @@ public abstract class EDDTable extends EDD {
     /** The index of REGEX_OP in OPERATORS. */
     public static int REGEX_OP_INDEX = String2.indexOf(OPERATORS, PrimitiveArray.REGEX_OP);
 
+    /** The orderBy options. */
+    public static String orderByOptions[] = {
+        "orderBy", "orderByMax", "orderByMin", "orderByMinMax"};
+
     /** This is used in many file types as the row identifier. */
     public final static String ROW_NAME = "row";  //see also Table.ROW_NAME
 
@@ -346,11 +350,10 @@ public abstract class EDDTable extends EDD {
         See PrimitiveArray.REGEX_OP.*/
     protected String sourceCanConstrainStringRegex = ""; 
 
-    /** If present, these dataVariables[xxxIndex] values are set by the constructor.  
-     * idIndex is the number of the variable with the 
-     * offering/timeseries/trajectory/profile id/name (e.g., for SOS).
+    /** If present, these dataVariables[xxxIndex] values are set by the constructor. 
+     * alt and depth mustn't both be active.
      */
-    protected int lonIndex = -1, latIndex = -1, altIndex = -1, timeIndex = -1, idIndex = -1; 
+    protected int lonIndex = -1, latIndex = -1, altIndex = -1, depthIndex = -1, timeIndex = -1; 
     protected int profile_idIndex = -1, timeseries_idIndex = -1, trajectory_idIndex = -1; //see accessibleViaNcCF
     protected String requiredCfRequestVariables[]; //each data request must include all of these
     //a list of all profile|timeseries|trajectory variables
@@ -373,21 +376,82 @@ public abstract class EDDTable extends EDD {
     public static String SUBSET_FILENAME          = "subset.nc";
     public static String DISTINCT_SUBSET_FILENAME = "distinct.nc";
     
+    /** 
+     * These are parallel data structures for use by setSosOfferingTypeAndIndex(). 
+     * If cdmDataType is sosCdmDataTypes[t], 
+     *   then sosOfferingType is sosOfferingTypes[t] 
+     *   and sosOfferingIndex is var with cf_role=sosCdmCfRoles[t],
+     * !!!FOR NOW, cdm_data_type must be TimeSeries and 
+     * so sosOfferingType must be Station (?Check with Derrick)
+     */
+    public static String sosCdmDataTypes[]     = {"TimeSeries"};
+    public static String sosCdmOfferingTypes[] = {"Station"};
+    public static String sosCdmCfRoles[]       = {"timeseries_id"};
+    /** 
+     * This is usually set by setSosOfferingTypeAndIndex(). 
+     * This will be null if the dataset is not available via ERDDAP's SOS server.
+     */
+    public String sosOfferingType = null; 
+    /** 
+     * The index of the dataVariable with the sosOffering outer var (e.g. with cf_role=timeseries_id). 
+     * This is usually set by setSosOfferingTypeAndIndex(). 
+     * This will be -1 if the dataset is not available via ERDDAP's SOS server.
+     */
+    public int sosOfferingIndex = -1;
+
     /**
      * To make a dataset accessibleViaSOS, the constructor must set these parallel
-     * PrimitiveArrays with the relevant values for each (e.g., timeseries/trajectory's/profiles). 
-     * Otherwise they are null.
-     * sosOfferings has the station short names.
-     * MinTime and MaxTime are epochSeconds and can have NaNs; the others can't have NaNs.
-     * Consumers of the information shouldn't change the values.
+     * PrimitiveArrays with the relevant *destination* values for each offering
+     * (e.g., timeseries/trajectory/profile). 
+     * <br>These will be null if the dataset is not available via ERDDAP's SOS server.
+     * <br>EDDTable subclasses that have all this info available (e.g., EDDTableFromSOS)
+     *   set these right before ensureValid().  ensureValid() also tries to set these
+     *   for other datasets (without trying to get min/max time) 
+     *   if the information is available from subsetVariablesDataTable.
+     * <br>sosOfferings has the original/short offering names.  (Not sos....)
+     * <br>MinTime and MaxTime are epochSeconds and can have NaNs; the others can't have NaNs.
+     * <br>Consumers of the information shouldn't change the values.
      */
     public PrimitiveArray sosOfferings, sosMinTime, sosMaxTime, 
         sosMinLat, sosMaxLat, sosMinLon, sosMaxLon;
-    /** sosOfferingType may be Station|Trajectory|Profile (?Check with Jeff)
-???Switch Station to TimeSeries???
-     * !!!FOR NOW, ONLY 'Station' is supported (response has one lat,lon for each station).
+
+    /** 
+     * This tries to set sosOfferingType and sosOfferingIndex and 
+     * returns true if successful.
+     * Use this near end of constructor -- it needs combinedAttributes and dataVariables[].
+     *
+     * @return true if sosOfferingType and sosOfferingIndex were set.
      */
-    public String sosOfferingType = "Station"; 
+    public boolean setSosOfferingTypeAndIndex() {
+        //Is the cdm_data_type one of the compatible types?
+        String cdmType = combinedGlobalAttributes().getString("cdm_data_type");
+        int type = String2.indexOf(sosCdmDataTypes, cdmType);
+        if (type < 0) {
+            if (debugMode) String2.log("setSosOfferingTypeAndIndex=false.  cdm_data_type=" + 
+                cdmType + " is incompatible.");
+            return false;
+        }
+        sosOfferingType = sosCdmOfferingTypes[type];
+
+        //look for the var with the right cf_role
+        String sosCdmCfRole = sosCdmCfRoles[type];
+        sosOfferingIndex = -1;
+        for (int dv = 0; dv < dataVariables.length; dv++) {
+            if (sosCdmCfRole.equals(dataVariables[dv].combinedAttributes().getString("cf_role"))) {
+                sosOfferingIndex = dv;
+                break;
+            }
+        }
+        if (sosOfferingIndex >= 0) {
+            if (debugMode) String2.log("setSosOfferingTypeAndIndex=true");
+            return true;
+        } else {
+            sosOfferingType = null;
+            if (debugMode) String2.log("setSosOfferingTypeAndIndex=false.  No var has cf_role=" + 
+                sosCdmCfRole);
+            return false;
+        }
+    }
 
 
     /**
@@ -432,6 +496,11 @@ public abstract class EDDTable extends EDD {
             errorInMethod + "dataVariable[latIndex=" + latIndex + "] isn't an EDVLat.");
         Test.ensureTrue(altIndex < 0 || dataVariables[altIndex] instanceof EDVAlt, 
             errorInMethod + "dataVariable[altIndex=" + altIndex + "] isn't an EDVAlt.");
+        Test.ensureTrue(depthIndex < 0 || dataVariables[depthIndex] instanceof EDVDepth, 
+            errorInMethod + "dataVariable[depthIndex=" + depthIndex + "] isn't an EDVDepth.");
+        //some places depend on not having alt *and* depth
+        Test.ensureTrue(altIndex <= 0 || depthIndex <= 0,
+            errorInMethod + "The dataset has both an altitude and a depth variable.");
         Test.ensureTrue(timeIndex < 0 || dataVariables[timeIndex] instanceof EDVTime, 
             errorInMethod + "dataVariable[timeIndex=" + timeIndex + "] isn't an EDVTime.");
 
@@ -484,10 +553,9 @@ public abstract class EDDTable extends EDD {
         //(This should always be done, so shouldn't be in an optional method...)
         String destNames[] = dataVariableDestinationNames();
         //lon
-        int dv = String2.indexOf(destNames, EDV.LON_NAME);
-        if (dv >= 0) {
+        if (lonIndex >= 0) {
             combinedGlobalAttributes.add("geospatial_lon_units", EDV.LON_UNITS);
-            PrimitiveArray pa = dataVariables[dv].combinedAttributes().get("actual_range");
+            PrimitiveArray pa = dataVariables[lonIndex].combinedAttributes().get("actual_range");
             if (pa != null) {
                 combinedGlobalAttributes.add("geospatial_lon_min", pa.getNiceDouble(0));
                 combinedGlobalAttributes.add("geospatial_lon_max", pa.getNiceDouble(1));
@@ -495,11 +563,11 @@ public abstract class EDDTable extends EDD {
                 combinedGlobalAttributes.add("Easternmost_Easting", pa.getNiceDouble(1));
             }
         }
+
         //lat
-        dv = String2.indexOf(destNames, EDV.LAT_NAME); 
-        if (dv >= 0) {
+        if (latIndex >= 0) {
             combinedGlobalAttributes.add("geospatial_lat_units", EDV.LAT_UNITS);
-            PrimitiveArray pa = dataVariables[dv].combinedAttributes().get("actual_range");
+            PrimitiveArray pa = dataVariables[latIndex].combinedAttributes().get("actual_range");
             if (pa != null) {
                 combinedGlobalAttributes.add("geospatial_lat_min", pa.getNiceDouble(0));
                 combinedGlobalAttributes.add("geospatial_lat_max", pa.getNiceDouble(1));
@@ -507,21 +575,29 @@ public abstract class EDDTable extends EDD {
                 combinedGlobalAttributes.add("Northernmost_Northing", pa.getNiceDouble(1));
             }
         }
+
         //alt
-        dv = String2.indexOf(destNames, EDV.ALT_NAME);
-        if (dv >= 0) {
+        if (altIndex >= 0) {
             combinedGlobalAttributes.add("geospatial_vertical_positive", "up");
             combinedGlobalAttributes.add("geospatial_vertical_units", EDV.ALT_UNITS);
-            PrimitiveArray pa = dataVariables[dv].combinedAttributes().get("actual_range");
+            PrimitiveArray pa = dataVariables[altIndex].combinedAttributes().get("actual_range");
+            if (pa != null) {
+                combinedGlobalAttributes.add("geospatial_vertical_min", pa.getNiceDouble(0));
+                combinedGlobalAttributes.add("geospatial_vertical_max", pa.getNiceDouble(1));
+            }
+        } else if (depthIndex >= 0) {
+            combinedGlobalAttributes.add("geospatial_vertical_positive", "down");
+            combinedGlobalAttributes.add("geospatial_vertical_units", EDV.DEPTH_UNITS);
+            PrimitiveArray pa = dataVariables[depthIndex].combinedAttributes().get("actual_range");
             if (pa != null) {
                 combinedGlobalAttributes.add("geospatial_vertical_min", pa.getNiceDouble(0));
                 combinedGlobalAttributes.add("geospatial_vertical_max", pa.getNiceDouble(1));
             }
         }
+
         //time
-        dv = String2.indexOf(destNames, EDV.TIME_NAME);
-        if (dv >= 0) {
-            PrimitiveArray pa = dataVariables[dv].combinedAttributes().get("actual_range");
+        if (timeIndex >= 0) {
+            PrimitiveArray pa = dataVariables[timeIndex].combinedAttributes().get("actual_range");
             if (pa != null) {
                 double d = pa.getDouble(0);
                 if (!Double.isNaN(d))
@@ -544,6 +620,12 @@ public abstract class EDDTable extends EDD {
             combinedGlobalAttributes.set("featureType", 
                 cdmType.substring(0, 1).toLowerCase() + 
                 cdmType.substring(1));
+
+        //rethink accessibleViaSos.  
+        //This generic SOS setup uses entire time range (not each offerings time range).
+        //Do this *after* subsetVariablesDataTable has been created.
+        if (EDStatic.sosActive && accessibleViaSOS.length() > 0) 
+            genericSosSetup();
 
         //last: uses time_coverage metadata
         //make FGDC and ISO19115
@@ -578,16 +660,16 @@ public abstract class EDDTable extends EDD {
     public int altIndex() {return altIndex; }
 
     /** 
+     * The index of the depth variable (-1 if not present).
+     * @return the index of the depth variable (-1 if not present)
+     */
+    public int depthIndex() {return depthIndex; }
+
+    /** 
      * The index of the time variable (-1 if not present).
      * @return the index of the time variable (-1 if not present)
      */
     public int timeIndex() {return timeIndex; }
-
-    /** 
-     * The index of the id variable (-1 if not present).
-     * @return the index of the id variable (-1 if not present)
-     */
-    public int idIndex() {return idIndex; }
 
     /**
      * The string representation of this tableDataSet (for diagnostic purposes).
@@ -711,8 +793,8 @@ public abstract class EDDTable extends EDD {
      *   that the source can't handle (e.g., constraints on inner variables
      *   in an OPeNDAP sequence).
      *
-     * <p>You can do a numeric test for "=NaN" or "!=NaN", but
-     *   the NaN must always be represented by "NaN" (not just an invalid number).
+     * <p>Users can do a numeric test for "=NaN" or "!=NaN" (and it works as they expect),
+     * but the NaN must always be represented by "NaN" (not just an invalid number).
      *
      * @param userDapQuery  the query from the user after the '?', still percentEncoded (shouldn't be null)
      *  (e.g., var1,var2&var3%3C=40) 
@@ -721,18 +803,22 @@ public abstract class EDDTable extends EDD {
      *   it should request.
      *   <br>If a constraintVariable isn't in the original resultsVariables list
      *     that the user submitted, it will be added here.
-     * @param constraintVariables will receive the constraint variables
+     * @param constraintVariables will receive the constraint source variables
      *     that the source has indicated (via sourceCanConstrainNumericData and
      *     sourceCanConstrainStringData) that it would like to see.
-     * @param constraintOps will receive the operators corresponding to the 
+     * @param constraintOps will receive the source operators corresponding to the 
      *     constraint variables.
      *   <br>REGEX_OP remains REGEX_OP (it isn't converted to sourceCanConstrainRegex string).
-     * @param constraintValues will receive the values corresponding to the constraint variables.
-     *   <br>Note that EDVTimeStamp values for non-regex ops will be returned as epoch seconds, 
-     *      not in the source format.
-     *   <br>For non-regex ops, edvAlt.metersPerSourceUnit, edv.scale_factor, and 
-     *      edv.add_offset will have been applied in reverse  
-     *      so that the constraintValues are appropriate for the source.
+     *     It is only useful if destValuesEqualSourceValues(). 
+     *   <br>For non-regex ops, if edv.scale_factor is negative, then operators 
+     *      which include &lt; or &gt; will be reversed to be &gt; or &lt;.
+     * @param constraintValues will receive the source values corresponding to 
+     *     the constraint variables.
+     *   <br>Note that EDVTimeStamp values for non-regex ops will be returned as 
+     *      epoch seconds, not in the source format.
+     *   <br>For non-regex ops, edv.scale_factor and edv.add_offset will have 
+     *      been applied in reverse so that the constraintValues are appropriate 
+     *      for the source.
      * @throws Throwable if trouble (e.g., improper format or unrecognized variable)
      */
     public void getSourceQueryFromDapQuery(String userDapQuery, 
@@ -748,9 +834,11 @@ public abstract class EDDTable extends EDD {
         constraintOps.clear();
         constraintValues.clear();
         parseUserDapQuery(userDapQuery, resultsVariables,
-            constraintVariables, constraintOps, constraintValues, false);
+            constraintVariables, constraintOps, constraintValues, //non-regex EDVTimeStamp conValues will be ""+epochSeconds
+            false);
+        if (debugMode) String2.log(">>constraintValues=" + constraintValues);
 
-        //remove any fixedValue variables (source can't provide their data values)
+        //remove any fixedValue variables from resultsVariables (source can't provide their data values)
         //work backwards since I may remove some variables
         for (int rv = resultsVariables.size() - 1; rv >= 0; rv--) {
             EDV edv = findDataVariableByDestinationName(resultsVariables.get(rv)); 
@@ -772,22 +860,27 @@ public abstract class EDDTable extends EDD {
             EDV edv = dataVariables[dv];
             Class sourceClass = edv.sourceDataTypeClass();
             Class destClass = edv.destinationDataTypeClass(); 
+            boolean isTimeStamp = edv instanceof EDVTimeStamp;
 
             String constraintOp = constraintOps.get(cv);
-            String constraintValue = constraintValues.get(cv);
+            String constraintValue = constraintValues.get(cv); //non-regex EDVTimeStamp conValues will be ""+epochSeconds
             double constraintValueD = String2.parseDouble(constraintValue);
             //Only valid numeric constraintValue NaN is "NaN".
             //Test this because it helps discover other constraint syntax errors.
             if (destClass != String.class &&
                 !constraintOp.equals(PrimitiveArray.REGEX_OP) &&
-                Double.isNaN(constraintValueD) && 
-                !constraintValue.equals("NaN"))
-                throw new SimpleException(EDStatic.queryError +
-                    MessageFormat.format(EDStatic.queryErrorConstraintNaN, constraintValue));
+                Double.isNaN(constraintValueD)) {
+                if (constraintValue.equals("NaN") || (isTimeStamp && constraintValue.equals(""))) {
+                    //not an error
+                } else {
+                    throw new SimpleException(EDStatic.queryError +
+                        MessageFormat.format(EDStatic.queryErrorConstraintNaN, constraintValue));
+                }
+            }
             if (reallyVerbose) String2.log("  Looking at constraint#" + cv + ": " + constraintVariable + 
                 " " + constraintOp + " " + constraintValue);
 
-            //is constraintVariable a fixedValue? 
+            //constraintVariable is a fixedValue
             if (edv.isFixedValue()) {
                 //it's a fixedValue; do constraint now
                 //pass=that's nice    fail=NO DATA
@@ -906,7 +999,7 @@ public abstract class EDDTable extends EDD {
             constraintValDIsNaN[cv] = Double.isNaN(constraintValD[cv]);
         }
 
-        //Before convert to source values, test for conflicting (so impossible) constraints.
+        //Before convert to source names and values, test for conflicting (so impossible) constraints.
         //n^2 test, but should go quickly    (tests are quick and there are never a huge number of constraints)
         for (int cv1 = 0; cv1 < constraintVariables.size(); cv1++) { 
             if (constraintVarIsString[cv1] || constraintOpIsRegex[cv1])
@@ -1021,38 +1114,30 @@ public abstract class EDDTable extends EDD {
             if (resultsVariables.indexOf(edv.sourceName()) < 0)
                 resultsVariables.add(edv.sourceName());
 
-            if (!constraintOpIsRegex[cv]) {
-                //alt data handling is  source -> unscaled -> metersUp
-                //so do its back conversion first
+            if (!constraintOpIsRegex[cv] &&        //regex constraints are unchanged
+                !(edv instanceof EDVTimeStamp) &&  //times stay as epochSeconds
+                edv.scaleAddOffset()) {            //need to apply scale and add_offset  
 
-                //and if alt variable, convert from meters to source units
-                if (edv instanceof EDVAlt) {
-                    //reverse the constraint, e.g. altitude>-17 -> depth<17
-                    EDVAlt edva = (EDVAlt)edv;
-                    double td = constraintValD[cv] / edva.metersPerSourceUnit();
-                    constraintValues.set(cv, "" + td);
-
-                    //reverse the operator *if* metersPerSourceUnit < 0
-                    if (edva.metersPerSourceUnit() < 0) {
-                        int copi = String2.indexOf(OPERATORS, constraintOps.get(cv));
-                        constraintOps.set(cv, REVERSED_OPERATORS[copi]);
-                    }
-                }
-
-                //and then apply scale_factor and add_offset to non-regex constraintValues
+                //apply scale_factor and add_offset to non-regex constraintValues
                 // sourceValue = (destintationValue - addOffset) / scaleFactor;
-                if (edv.scaleAddOffset()) {
-                    double td = (constraintValD[cv] - edv.addOffset()) / edv.scaleFactor();
-                    Class tClass = edv.sourceDataTypeClass();
-                    if (PrimitiveArray.isIntegerType(tClass))
-                         constraintValues.set(cv, "" + Math2.roundToLong(td));
-                    else if (tClass == float.class)  constraintValues.set(cv, "" + (float)td);
-                    else                             constraintValues.set(cv, "" + td);
+                double td = (constraintValD[cv] - edv.addOffset()) / edv.scaleFactor();
+                Class tClass = edv.sourceDataTypeClass();
+                if (PrimitiveArray.isIntegerType(tClass))
+                     constraintValues.set(cv, "" + Math2.roundToLong(td));
+                else if (tClass == float.class)  constraintValues.set(cv, "" + (float)td);
+                else                             constraintValues.set(cv, "" + td);
+                //String2.log(">>after scaleAddOffset applied constraintVal=" + td);
+
+                //*if* scale_factor < 0, reverse > and < operators 
+                if (edv.scaleFactor() < 0) {
+                    int copi = String2.indexOf(OPERATORS, constraintOps.get(cv));
+                    constraintOps.set(cv, REVERSED_OPERATORS[copi]);
                 }
             }
         }
 
         if (reallyVerbose) String2.log("getSourceQueryFromDapQuery done");
+        if (debugMode) String2.log(">>constraintValues=" + constraintValues);
 
     }
 
@@ -1122,7 +1207,8 @@ public abstract class EDDTable extends EDD {
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
         parseUserDapQuery(userDapQuery, resultsVariables,
-            constraintVariables, constraintOps, constraintValues, false);
+            constraintVariables, constraintOps, constraintValues,  //non-regex EDVTimeStamp conValues will be ""+epochSeconds
+            false);
 
         //set the globalAttributes (this takes care of title, summary, ...)
         table.globalAttributes().clear(); //remove any existing atts
@@ -1578,7 +1664,7 @@ public abstract class EDDTable extends EDD {
      *      but in percent encoded form. 
      *      (see http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions).
      *    <br>If an &amp;-separated part is "distinct()", "orderBy("...")", 
-     *      "orderByMax("...")", "units("...")", 
+     *      "orderByMax("...")", "orderByMin("...")", "orderByMinMax("...")", "units("...")", 
      *      it is ignored.
      *    <br>If an &amp;-separated part starts with ".", it is ignored.
      *      It can't be a variable name.
@@ -1595,8 +1681,8 @@ public abstract class EDDTable extends EDD {
      * @param constraintOps to be appended with the constraint operators, e.g., {"=", "&gt;="}.
      *    These will not be percent encoded.
      * @param constraintValues to be appended with the constraint values, e.g., {value4,value5}.
-     *    ISO times are returned as epochSeconds.
      *    These will not be percent encoded.
+     *    Non-regex EDVTimeStamp constraintValues will be returned as epochSeconds.
      * @param repair if true, this method tries to do its best repair problems (guess at intent), 
      *     not to throw exceptions 
      * @throws Throwable if invalid query
@@ -1679,9 +1765,12 @@ public abstract class EDDTable extends EDD {
 
             //special case: server-side functions
             if (constraint.equals("distinct()") ||
-                (constraint.startsWith("orderBy(\"")    && constraint.endsWith("\")")) ||
-                (constraint.startsWith("orderByMax(\"") && constraint.endsWith("\")")) ||
-                (constraint.startsWith("units(\"")      && constraint.endsWith("\")")))
+                (constraint.endsWith("\")") &&
+                 (constraint.startsWith("orderBy(\"") ||
+                  constraint.startsWith("orderByMax(\"") ||
+                  constraint.startsWith("orderByMin(\"") ||
+                  constraint.startsWith("orderByMinMax(\"") ||
+                  constraint.startsWith("units(\""))))
                 continue;
 
             //look for == (common mistake, but not allowed)
@@ -1731,10 +1820,12 @@ public abstract class EDDTable extends EDD {
             constraintOps.add(OPERATORS[op]);
             String tValue = constraint.substring(opPo + OPERATORS[op].length());
             constraintValues.add(tValue);
+            if (debugMode) String2.log(">>constraint: " + tName + OPERATORS[op] + tValue);
 
             //convert <time><op><isoString> to <time><op><epochSeconds>   
             if (conEdv instanceof EDVTimeStamp) {
-//this isn't precise!!!   should it be required??? or forbidden???
+                //this isn't precise!!!   should it be required??? or forbidden???
+                if (debugMode) String2.log(">>isTimeStamp=true");
                 if (tValue.startsWith("\"") && tValue.endsWith("\"")) { 
                     tValue = String2.fromJson(tValue);
                     constraintValues.set(constraintValues.size() - 1, tValue);
@@ -1747,8 +1838,7 @@ public abstract class EDDTable extends EDD {
                             Calendar2.isoStringToEpochSeconds(tValue);
                         constraintValues.set(constraintValues.size() - 1,
                             "" + valueD);
-                        if (reallyVerbose) String2.log("  TIME CONSTRAINT converted in parseUserDapQuery: " +
-                            tValue + " -> " + valueD);
+                        if (debugMode) String2.log(">> TIME CONSTRAINT converted in parseUserDapQuery: " + tValue + " -> " + valueD);
                     } else if (tValue.startsWith("now")) {
                         //now is next second (ms=0)
                         GregorianCalendar gc = Calendar2.newGCalendarZulu();
@@ -1813,15 +1903,15 @@ public abstract class EDDTable extends EDD {
                             "" + Calendar2.gcToEpochSeconds(gc));
                     } else {
                         //it must be a number (epochSeconds)
-                        //test that value=NaN must use "NaN", not somthing just a badly formatted number
+                        //test that value=NaN must use NaN or "", not somthing just a badly formatted number
                         double td = String2.parseDouble(tValue);
-                        if (Double.isNaN(td) && !tValue.equals("NaN")) {
+                        if (Double.isNaN(td) && !tValue.equals("NaN") && !tValue.equals("")) {
                             if (repair) {
                                 tValue = "NaN";
                                 constraintValues.set(constraintValues.size() - 1, tValue);
                             } else {
                                 throw new SimpleException(EDStatic.queryError +
-                                    "Numeric tests of NaN must use \"NaN\", not value=\"" + tValue + "\".");
+                                    "Test for missing time values must use \"NaN\" or \"\", not value=\"" + tValue + "\".");
                             }
                         } //else constraintValues already ok
                     }
@@ -1915,10 +2005,11 @@ public abstract class EDDTable extends EDD {
      * As a service to getDataForDapQuery implementations,  
      * given the userDapQuery (the DESTINATION (not source) request),
      * this fills in the requestedMin and requestedMax arrays 
-     * [0=lon, 1=lat, 2=alt, 3=time] (in destination units, may be NaN).
+     * [0=lon, 1=lat, 2=alt|depth, 3=time] (in destination units, may be NaN).
+     * [2] will be altIndex if >=0 or depthIndex if >= 0.
      *
-     * <p>If a given variable (e.g., altIndex) isn't defined, the requestedMin/Max
-     * will be NaN.
+     * <p>If a given variable (e.g., altIndex and depthIndex) isn't defined, 
+     * the requestedMin/Max will be NaN.
      *
      * @param userDapQuery  a userDapQuery (usually including longitude,latitude,
      *    altitude,time variables), after the '?', still percentEncoded (shouldn't be null).
@@ -1943,13 +2034,15 @@ public abstract class EDDTable extends EDD {
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
         parseUserDapQuery(userDapQuery, resultsVariables,
-            constraintVariables, constraintOps, constraintValues, false);
+            constraintVariables, constraintOps, constraintValues,  //non-regex EDVTimeStamp conValues will be ""+epochSeconds
+            false);
 
         //try to get the LLAT variables
         EDV edv[] = new EDV[]{
             lonIndex  >= 0? dataVariables[lonIndex] : null,
             latIndex  >= 0? dataVariables[latIndex] : null,
-            altIndex  >= 0? dataVariables[altIndex] : null,
+            altIndex  >= 0? dataVariables[altIndex] : 
+              depthIndex >= 0? dataVariables[depthIndex] : null,
             timeIndex >= 0? dataVariables[timeIndex] : null};
 
         //go through the constraints
@@ -1967,19 +2060,20 @@ public abstract class EDDTable extends EDD {
 
             //constraint affects which of LLAT
             int index4 = -1;
-            if      (conDVI == lonIndex)  index4 = 0;
-            else if (conDVI == latIndex)  index4 = 1;
-            else if (conDVI == altIndex)  index4 = 2;
-            else if (conDVI == timeIndex) index4 = 3;
+            if      (conDVI == lonIndex)   index4 = 0;
+            else if (conDVI == latIndex)   index4 = 1;
+            else if (conDVI == altIndex)   index4 = 2;
+            else if (conDVI == depthIndex) index4 = 2;
+            else if (conDVI == timeIndex)  index4 = 3;
             //String2.log("index4:" + index4 + " " + op + " " + conValueD);
 
             if (index4 >= 0) {
                 if (op.equals("=") || op.equals(">=") || op.equals(">")) 
                     requestedMin[index4] = Double.isNaN(requestedMin[index4])? conValueD :
-                        Math.max(requestedMin[index4], conValueD); 
+                        Math.max(requestedMin[index4], conValueD); //yes, max
                 if (op.equals("=") || op.equals("<=") || op.equals("<")) 
                     requestedMax[index4] = Double.isNaN(requestedMax[index4])? conValueD :
-                        Math.min(requestedMax[index4], conValueD); 
+                        Math.min(requestedMax[index4], conValueD); //yes, min
             }
         }
         
@@ -2171,7 +2265,7 @@ public abstract class EDDTable extends EDD {
                 File2.copy(datasetDir() + datasetID + fgdcSuffix + ".xml", 
                     outputStreamSource.outputStream("UTF-8"));
             } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                throw new SimpleException(accessibleViaFGDC);
             }
             return;
         }
@@ -2252,7 +2346,7 @@ public abstract class EDDTable extends EDD {
                 File2.copy(datasetDir() + datasetID + iso19115Suffix + ".xml", 
                     outputStreamSource.outputStream("UTF-8"));
             } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                throw new SimpleException(accessibleViaFGDC);
             }
             return;
         }
@@ -2334,6 +2428,7 @@ public abstract class EDDTable extends EDD {
         //  NcHelper.dumpString(aRealFile, false). 
         String fileTypeExtension = fileTypeExtension(fileTypeName);
         String fullName = dir + fileName + fileTypeExtension;
+        File2.makeDirectory(dir);
 
         //does the file already exist?
         //if .ncHeader, make sure the .nc file exists (and it is the better file to cache)
@@ -2521,14 +2616,34 @@ public abstract class EDDTable extends EDD {
                             "'orderBy' variable=" + twob.orderBy[ob] + " isn't in the dataset.");
                 }
             } else if (p.startsWith("orderByMax(\"") && p.endsWith("\")")) {
-                TableWriterOrderByMax twobm = new TableWriterOrderByMax(dir, fileName, tableWriter, 
-                    p.substring(12, p.length() - 2));
+                TableWriterOrderByMax twobm = new TableWriterOrderByMax(dir, 
+                    fileName, tableWriter, p.substring(12, p.length() - 2));
                 tableWriter = twobm;
                 //minimal test: ensure orderBy columns are valid column names
                 for (int ob = 0; ob < twobm.orderBy.length; ob++) {
                     if (String2.indexOf(dataVariableDestinationNames(), twobm.orderBy[ob]) < 0)
                         throw new SimpleException(EDStatic.queryError +
                             "'orderByMax' variable=" + twobm.orderBy[ob] + " isn't in the dataset.");
+                }
+            } else if (p.startsWith("orderByMin(\"") && p.endsWith("\")")) {
+                TableWriterOrderByMin twobm = new TableWriterOrderByMin(dir, 
+                    fileName, tableWriter, p.substring(12, p.length() - 2));
+                tableWriter = twobm;
+                //minimal test: ensure orderBy columns are valid column names
+                for (int ob = 0; ob < twobm.orderBy.length; ob++) {
+                    if (String2.indexOf(dataVariableDestinationNames(), twobm.orderBy[ob]) < 0)
+                        throw new SimpleException(EDStatic.queryError +
+                            "'orderByMin' variable=" + twobm.orderBy[ob] + " isn't in the dataset.");
+                }
+            } else if (p.startsWith("orderByMinMax(\"") && p.endsWith("\")")) {
+                TableWriterOrderByMinMax twobm = new TableWriterOrderByMinMax(dir, 
+                    fileName, tableWriter, p.substring(15, p.length() - 2));
+                tableWriter = twobm;
+                //minimal test: ensure orderBy columns are valid column names
+                for (int ob = 0; ob < twobm.orderBy.length; ob++) {
+                    if (String2.indexOf(dataVariableDestinationNames(), twobm.orderBy[ob]) < 0)
+                        throw new SimpleException(EDStatic.queryError +
+                            "'orderByMinMax' variable=" + twobm.orderBy[ob] + " isn't in the dataset.");
                 }
             } else if (p.startsWith("units(\"") && p.endsWith("\")")) {
                 String fromUnits = EDStatic.units_standard;
@@ -2566,7 +2681,8 @@ public abstract class EDDTable extends EDD {
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
         parseUserDapQuery(userDapQuery, resultsVariables,
-            constraintVariables, constraintOps, constraintValues, false);
+            constraintVariables, constraintOps, constraintValues,  //non-regex EDVTimeStamp conValues will be ""+epochSeconds
+            false);
 
         //make the table
         //attributes are added in standardizeResultsTable
@@ -2633,7 +2749,8 @@ public abstract class EDDTable extends EDD {
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
         parseUserDapQuery(userDapQuery, resultsVariables,
-            constraintVariables, constraintOps, constraintValues, false);
+            constraintVariables, constraintOps, constraintValues,  //non-regex EDVTimeStamp conValues will be ""+epochSeconds
+            false);
         if (resultsVariables.indexOf(EDV.LON_NAME) < 0 ||
             resultsVariables.indexOf(EDV.LAT_NAME) < 0)
             throw new SimpleException(EDStatic.queryError +
@@ -2701,10 +2818,10 @@ public abstract class EDDTable extends EDD {
                 double tMinTime = Math.min(minTime, maxTime - 7 * Calendar2.SECONDS_PER_DAY);
                 moreTime =  // >  <
                     "&time%3E=" + 
-                    Calendar2.limitedEpochSecondsToIsoStringT(
+                    Calendar2.epochSecondsToLimitedIsoStringT(
                         edvTime.time_precision(), tMinTime, "NaN") +  
                     "&time%3C=" + 
-                    Calendar2.limitedEpochSecondsToIsoStringT(
+                    Calendar2.epochSecondsToLimitedIsoStringT(
                         edvTime.time_precision(), maxTime, "NaN");
             }
         } else {
@@ -2721,11 +2838,11 @@ public abstract class EDDTable extends EDD {
             }
             if (Math2.isFinite(minTime)) 
                 moreTime = "&time%3E=" +  
-                    Calendar2.limitedEpochSecondsToIsoStringT(edvTime.time_precision(),
+                    Calendar2.epochSecondsToLimitedIsoStringT(edvTime.time_precision(),
                         minTime - 7 * Calendar2.SECONDS_PER_DAY, "NaN");
             if (Math2.isFinite(maxTime)) 
                 moreTime = "&time%3C=" + 
-                    Calendar2.limitedEpochSecondsToIsoStringT(edvTime.time_precision(),
+                    Calendar2.epochSecondsToLimitedIsoStringT(edvTime.time_precision(),
                         maxTime + 7 * Calendar2.SECONDS_PER_DAY, "NaN");
         }
 
@@ -2850,7 +2967,7 @@ public abstract class EDDTable extends EDD {
                         writer.write("\n<br />" + 
                             XML.encodeAsXML(table.getColumnName(col) + " = " +
                                 (columnIsTimeStamp[col]? 
-                                     Calendar2.limitedEpochSecondsToIsoStringT(
+                                     Calendar2.epochSecondsToLimitedIsoStringT(
                                         columnTimeFormat[col], td, "") :
                                  columnIsString[col]? ts :
                                  (Double.isNaN(td)? "NaN" : ts) + columnUnits[col])));
@@ -2998,7 +3115,8 @@ public abstract class EDDTable extends EDD {
             StringArray constraintOps       = new StringArray();
             StringArray constraintValues    = new StringArray();
             parseUserDapQuery(userDapQuery, resultsVariables,
-                constraintVariables, constraintOps, constraintValues, false);
+                constraintVariables, constraintOps, constraintValues,  //non-regex EDVTimeStamp conValues will be ""+epochSeconds
+                false);
             if (debugMode) String2.log("saveAsImage 2");
 
             EDV xVar, yVar, zVar = null, tVar = null; 
@@ -4013,6 +4131,9 @@ public abstract class EDDTable extends EDD {
         if (altIndex >= 0) {
             coordinates += " altitude";
             isCoordinateVar[String2.indexOf(ncColNames, "altitude")] = true;
+        } else if (depthIndex >= 0) {
+            coordinates += " depth";
+            isCoordinateVar[String2.indexOf(ncColNames, "depth")] = true;
         } else if (proxy != null) {
             //it is in requiredCfRequestVariables
             coordinates += " " + proxy;
@@ -4239,6 +4360,9 @@ public abstract class EDDTable extends EDD {
             if (altIndex >= 0) {
                 coordinates += " altitude";
                 isCoordinateVar[String2.indexOf(ncColNames, "altitude")] = true;
+            } else if (depthIndex >= 0) {
+                coordinates += " depth";
+                isCoordinateVar[String2.indexOf(ncColNames, "depth")] = true;
             } else if (proxy != null) {
                 //it is in requiredCfRequestVariables
                 coordinates += " " + proxy;
@@ -4641,6 +4765,9 @@ public abstract class EDDTable extends EDD {
             if (altIndex >= 0) {
                 coordinates += " altitude";
                 isCoordinateVar[String2.indexOf(ncColNames, "altitude")] = true;
+            } else if (depthIndex >= 0) {
+                coordinates += " depth";
+                isCoordinateVar[String2.indexOf(ncColNames, "depth")] = true;
             } else if (proxy != null) {
                 //it is in requiredCfRequestVariables
                 coordinates += " " + proxy;
@@ -5209,7 +5336,8 @@ public abstract class EDDTable extends EDD {
             userDapQuery = "";
         try {
             parseUserDapQuery(userDapQuery, resultsVariables,
-                constraintVariables, constraintOps, constraintValues, true);
+                constraintVariables, constraintOps, constraintValues,  //non-regex EDVTimeStamp conValues will be ""+epochSeconds
+                true);
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             String2.log(MustBe.throwableToString(t));
@@ -5331,7 +5459,7 @@ public abstract class EDDTable extends EDD {
                         tValD[putIn] = String2.parseDouble(tValS[putIn]);
                         if (isTimeStamp) {
                             //time constraint will be stored as double (then as a string)
-                            tValS[putIn] = Calendar2.limitedEpochSecondsToIsoStringT(
+                            tValS[putIn] = Calendar2.epochSecondsToLimitedIsoStringT(
                                 tTime_precision, tValD[putIn], "");
                         }
                         constraintVariables.remove(tConi);
@@ -5345,11 +5473,11 @@ public abstract class EDDTable extends EDD {
                     if (Math2.isFinite(ttMax)) {
                         //only set max request if tMax is known
                         tValD[1] = ttMax;
-                        tValS[1] = Calendar2.limitedEpochSecondsToIsoStringT(
+                        tValS[1] = Calendar2.epochSecondsToLimitedIsoStringT(
                             tTime_precision, ttMax, "");
                     }
                     tValD[0] = Calendar2.backNDays(7, ttMax); //NaN -> now
-                    tValS[0] = Calendar2.limitedEpochSecondsToIsoStringT(
+                    tValS[0] = Calendar2.epochSecondsToLimitedIsoStringT(
                         tTime_precision, tValD[0], "");
                 }
             }
@@ -5473,7 +5601,7 @@ public abstract class EDDTable extends EDD {
 
 
             // *** and a slider for this dataVariable    (Data Access Form)
-            if ((dv != lonIndex && dv != latIndex && dv != altIndex && !isTime) ||
+            if ((dv != lonIndex && dv != latIndex && dv != altIndex && dv != depthIndex && !isTime) ||
                 !Math2.isFinite(edv.destinationMin()) ||
                 (!Math2.isFinite(edv.destinationMax()) && !isTime)) {
 
@@ -5613,7 +5741,7 @@ public abstract class EDDTable extends EDD {
         writer.write(EDStatic.htmlTooltipImage(loggedInAs, EDStatic.functionDistinctHtml));
         writer.write("</td></tr>\n");
 
-        //orderBy function
+        //orderBy... function
         StringArray dvNames0 = new StringArray(dataVariableDestinationNames);
         dvNames0.add(0, "");
         String dvList0[] = dvNames0.toArray();
@@ -5628,11 +5756,26 @@ public abstract class EDDTable extends EDD {
                          EDStatic.functionOrderBySort3, 
                          EDStatic.functionOrderBySort4, 
                          EDStatic.functionOrderBySortLeast};
-        String obPart = String2.stringStartsWith(queryParts, "orderBy(\"");
-        String orderBy[] = (obPart != null && obPart.endsWith("\")"))?
-            String2.split(obPart.substring(9, obPart.length() - 2), ',') : new String[0];
+        //find first part that uses orderBy...
+        String obPart = null;
+        int whichOb = -1;
+        for (int ob = 0; ob < orderByOptions.length; ob++) {
+            obPart = String2.stringStartsWith(queryParts, orderByOptions[ob] + "(\"");
+            if (obPart != null) {
+                if (obPart.endsWith("\")")) {
+                    whichOb = ob;
+                    break;
+                } else {
+                    obPart = null;
+                }
+            }
+        }        
+        String orderBy[] = obPart == null? new String[0] :
+            String2.split(obPart.substring(obPart.length() + 2, obPart.length() - 2), ',');
         writer.write("\n<tr><td>"); //was <td nowrap>, but allow wrapping if varNames are long
-        writer.write("orderBy(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\"");  //&nbsp; make it line up with orderByMax
+        writer.write(widgets.select("orderBy", "", 1, orderByOptions, whichOb, ""));
+        writer.write(EDStatic.htmlTooltipImage(loggedInAs, EDStatic.functionOrderByHtml));
+        writer.write("(\"\n");       
         for (int ob = 0; ob < nOrderBy; ob++) {
             //if (ob > 0) writer.write(",\n"); 
             writer.write(widgets.select("orderBy" + ob,                 
@@ -5642,29 +5785,9 @@ public abstract class EDDTable extends EDD {
                 ""));
         }
         writer.write("\")\n");       
-        writer.write(EDStatic.htmlTooltipImage(loggedInAs, EDStatic.functionOrderByHtml));
         writer.write("</td></tr>\n");
 
-        //orderByMax function
-        String obmPart = String2.stringStartsWith(queryParts, "orderByMax(\"");
-        String orderByMax[] = (obmPart != null && obmPart.endsWith("\")"))?
-            String2.split(obmPart.substring(12, obmPart.length() - 2), ',') : new String[0];
-        writer.write("\n<tr><td>"); //was <td nowrap>, but allow wrapping if varNames are long
-        writer.write("orderByMax(\"");
-        for (int obm = 0; obm < nOrderBy; obm++) {
-            //if (obm > 0) writer.write(",\n");
-            writer.write(widgets.select("orderByMax" + obm,                
-                MessageFormat.format(EDStatic.functionOrderBySort, important[obm]) +
-                (obm == nOrderBy - 1? "\n<br>(" + EDStatic.functionOrderBySortRowMax + ")" : ""),
-                1, dvList0, 
-                Math.max(0, dvNames0.indexOf(obm < orderByMax.length? orderByMax[obm] : "")),
-                ""));
-        }
-        writer.write("\")\n");       
-        writer.write(EDStatic.htmlTooltipImage(loggedInAs, EDStatic.functionOrderByMaxHtml));
-        writer.write("</td></tr>\n");
         writer.write(widgets.endTable());
-
     }
 
     /** This writes the JavaScript for the Function options for the Make A Graph 
@@ -5679,12 +5802,13 @@ public abstract class EDDTable extends EDD {
             "    if (d." + formName + ".distinct.checked) q2 += \"\\x26distinct()\";\n" +
             "\n" +
             "    var nActiveOb = 0;\n" +
+            "    var ObOS = d." + formName + ".orderBy;\n" +  //the OrderBy... option Select widget
+            "    var ObO = ObOS.options[ObOS.selectedIndex].text;\n" +
             "    for (var ob = 0; ob < " + nOrderBy + "; ob++) {\n" +
             "      var tOb = eval(\"d." + formName + ".orderBy\" + ob);\n" +
             "      var obVar = tOb.options[tOb.selectedIndex].text;\n" +
-//            "      if (obVar != \"\") {\n" +
             "      if (obVar != \"\") {\n" +
-            "        q2 += (nActiveOb++ == 0? \"\\x26orderBy(%22\" : \",\") + obVar;\n" +
+            "        q2 += (nActiveOb++ == 0? \"\\x26\" + ObO + \"(%22\" : \",\") + obVar;\n" +
             "        if (active[obVar] === undefined) {\n" +
             "          q1 += (q1.length==0? \"\" : \",\") + obVar;\n" +
             "          active[obVar] = 1;\n" +
@@ -5692,20 +5816,6 @@ public abstract class EDDTable extends EDD {
             "      }\n" +
             "    }\n" +
             "    if (nActiveOb > 0) q2 += \"%22)\";\n" +
-            "\n" +
-            "    var nActiveObm = 0;\n" +
-            "    for (var obm = 0; obm < " + nOrderBy + "; obm++) {\n" +
-            "      var tObm = eval(\"d." + formName + ".orderByMax\" + obm);\n" +
-            "      var obmVar = tObm.options[tObm.selectedIndex].text;\n" +
-            "      if (obmVar != \"\") {\n" +
-            "        q2 += (nActiveObm++ == 0? \"\\x26orderByMax(%22\" : \",\") + obmVar;\n" +
-            "        if (active[obmVar] === undefined) {\n" +
-            "          q1 += (q1.length==0? \"\" : \",\") + obmVar;\n" +
-            "          active[obmVar] = 1;\n" +
-            "        }\n" +
-            "      }\n" +
-            "    }\n" +
-            "    if (nActiveObm > 0) q2 += \"%22)\";\n" +
             "\n";
     }
 
@@ -5737,6 +5847,11 @@ public abstract class EDDTable extends EDD {
         String fullMapExample      = datasetBase + ".png?"       + EDStatic.EDDTableMapExample;
         String fullMapMAGExample   = datasetBase + ".graph?"     + EDStatic.EDDTableMapExample;
         String fullMapDataExample  = datasetBase + ".htmlTable?" + EDStatic.EDDTableMapExample;
+
+        GregorianCalendar daysAgo7Gc = Calendar2.newGCalendarZulu();
+        daysAgo7Gc.add(Calendar2.DATE, -7);
+        String daysAgo7 = Calendar2.formatAsISODate(daysAgo7Gc); 
+
         writer.write(  
             "<h2><a name=\"instructions\">Using</a> tabledap to Request Data and Graphs from Tabular Datasets</h2>\n" +
             longDapDescription(tErddapUrl) +
@@ -6292,12 +6407,13 @@ public abstract class EDDTable extends EDD {
             "      <br>date/time values as \n" +
             "        <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time strings</a>\n" +
             "      <br>(e.g., <tt>2002-08-03T12:30:00Z</tt>).\n" +
-            "      <br>ERDDAP has a utility to\n" +
-            "        <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
-            "        a Numeric Time to/from a String Time</a>.\n" +
-            "      <br>See also:\n" +
-            "        <a rel=\"help\" href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
-            "        ERDDAP Deals with Time</a>.\n" +
+            (EDStatic.convertersActive? 
+              "      <br>ERDDAP has a utility to\n" +
+              "        <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
+              "        a Numeric Time to/from a String Time</a>.\n" +
+              "      <br>See also:\n" +
+              "        <a rel=\"help\" href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
+              "        ERDDAP Deals with Time</a>.\n" : "") +
             "    <li>tabledap extends the OPeNDAP standard to allow you to specify time values in the ISO 8601\n" +
             "      <br>date/time format (<tt><i>YYYY-MM-DD</i>T<i>hh:mm:ssZ</i></tt>, where Z is 'Z' or a &plusmn;hh:mm offset from UTC). \n" +
             "      <br>If you omit Z (or the &plusmn;hh:mm offset), :ssZ, :mm:ssZ, or Thh:mm:ssZ from the ISO date/time\n" +
@@ -6350,10 +6466,10 @@ public abstract class EDDTable extends EDD {
             "      <br>the data source.\n" +
             "      <br>orderBy allows you to request that the results table be sorted in a specific way.\n" +
             "      <br>For example, use the query\n" +
-            "      <br><tt>stationID,time,temperature&amp;time&gt;2009-04-01&amp;orderBy(\"stationID,time\")</tt>\n" +
+            "      <br><tt>stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderBy(\"stationID,time\")</tt>\n" +
             "      <br>to get the results sorted by stationID, then time.\n" +
             "      <br>Or use the query\n" +
-            "      <br><tt>stationID,time,temperature&amp;time&gt;2009-04-01&amp;orderBy(\"time,stationID\")</tt>\n" +
+            "      <br><tt>stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderBy(\"time,stationID\")</tt>\n" +
             "      <br>to get the results sorted by time first, then stationID.\n" +
             "      <br>The orderBy variables MUST be included in the list of requested variables in the\n" +
             "      <br>query as well as in the orderBy list of variables.\n" +
@@ -6363,15 +6479,28 @@ public abstract class EDDTable extends EDD {
             "      <br>variable has a tie, ...) and then just keeps the rows where the value of the last\n" +
             "      <br>sort variable is highest (for each combination of other values).\n" +
             "      <br>For example, use the query\n" +
-            "      <br><tt>stationID,time,temperature&amp;time&gt;2009-05-21&amp;orderBy(\"stationID,time\")</tt>\n" +
+            "      <br><tt>stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderByMax(\"stationID,time\")</tt>\n" +
             "      <br>to get just the rows of data with each station's maximum time value (for stations\n" +
-            "      <br>with data from after 2009-05-21).\n" +
+            "      <br>with data from after " + daysAgo7 + ").\n" +
             "      <br>(Without the time constraint, ERDDAP would have to look through all rows of the \n" +
             "      <br>the dataset, which might be VERY slow.)\n" +
             "      <br>The orderByMax variables MUST be included in the list of requested variables in the\n" +
             "      <br>query as well as in the orderByMax list of variables.\n" +
             "      <br>This is the closest thing in tabledap to griddap's allowing requests for the <tt>[last]</tt>\n" +
             "      <br>axis value.\n" +
+            "    <li><a name=\"orderByMin\"><tt>&amp;orderByMin(\"<i>comma-separated list of variable names</i>\")</tt></a>\n" +
+            "      <br>orderByMin is exactly like <a href=\"#orderByMax\">orderByMax</a>, except that it\n" +
+            "      <br>returns the minimum value(s).\n" +
+            "    <li><a name=\"orderByMinMax\"><tt>&amp;orderByMinMax(\"<i>comma-separated list of variable names</i>\")</tt></a>\n" +
+            "      <br>orderByMinMax is like <a href=\"#orderByMax\">orderByMax</a>, except that it returns\n" +
+            "      <br>two rows for every combination of the n-1 variables: one row with the minimum value,\n" +
+            "      <br>and one row with the maximum value.\n" +
+            "      <br>For example, use the query\n" +
+            "      <br><tt>stationID,time,temperature&amp;time&gt;" + daysAgo7 + "&amp;orderByMinMax(\"stationID,time\")</tt>\n" +
+            "      <br>to get just the rows of data with each station's minimum time value and each station's\n" +
+            "      <br>maximum time value (for stations with data from after " + daysAgo7 + ").\n" +
+            "      <br>If there is only one row of data for a given combination (e.g., stationID), there will\n" +
+            "      <br>still be two rows in the output (with identical data).\n" +
             "    <li><a name=\"units\"><tt>&amp;units(\"<i>value</i>\")</tt></a>\n" +
             "      <br>If you add <tt>&amp;units(\"UDUNITS\")</tt> to the end of a query, the units will be described\n" +
             "      <br>via the\n" +
@@ -6380,7 +6509,8 @@ public abstract class EDDTable extends EDD {
             "      <br>via the\n" +
             "        <a rel=\"help\" href=\"http://aurora.regenstrief.org/~ucum/ucum.html\">UCUM</a> standard (for example, <tt>Cel</tt>).\n" +
             "      <br>On this ERDDAP, the default for most/all datasets is " + EDStatic.units_standard + ".\n" +
-            "      <br>See also ERDDAP's <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html\">units converter</a>.\n" +
+            (EDStatic.convertersActive? 
+            "      <br>See also ERDDAP's <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html\">units converter</a>.\n" : "") +
             "    </ul>\n" +
                
             //Graphics Commands
@@ -6437,14 +6567,15 @@ public abstract class EDDTable extends EDD {
             "        <br>This specifies a scale factor for the font\n" +
             "        <br>(e.g., 1.5 would make the font 1.5 times as big as normal).\n" +
             "    <li><tt>&amp;.land=<i>value</i></tt>\n" +
-            "      <br>This specifies whether the landmask should be drawn <tt>under</tt> or <tt>over</tt> the\n" +
-            "      <br>topography data.\n" +
+            "      <br>This is only relevant if the first two results variables are longitude and latitude,\n" +
+            "      <br>so that the graph is a map.\n" +
             "      <br>The default is different for different datasets (under the ERDDAP administrator's\n" +
             "      <br>control via a drawLandMask in datasets.xml, or via the fallback <tt>drawLandMask</tt>\n" +
             "      <br>setting in setup.xml).\n" +
-            "      <br>This is only relevant if the first two results variables are longitude and latitude.\n" +
-            "      <br>Terrestrial researchers usually prefer <tt>under</tt> (showing topography).\n" +
-            "      <br>Oceanographers often prefer <tt>over</tt> (showing just bathymetry). \n" +
+            "      <br><tt>over</tt> makes the land mask on a map visible (land appears as a uniform gray area).\n" +
+            "      <br><tt>over</tt> is commonly used for purely oceanographic datasets.\n" +
+            "      <br><tt>under</tt> makes the land mask invisible (topography information is displayed\n" +
+            "      <br>for ocean and land areas).  <tt>under</tt> is commonly used for all other data.\n" +
             "    <li><tt>&amp;.legend=<i>value</i></tt>\n" +
             "      <br>This specifies whether the legend on .png images (not .pdf's) should be at the\n" +
             "      <br><tt>Bottom</tt> (default), <tt>Off</tt>, or <tt>Only</tt> (which returns only the legend).\n" +
@@ -6630,13 +6761,12 @@ public abstract class EDDTable extends EDD {
         for (int dv = 0; dv < dataVariables.length; dv++) {
             if (dataVariables[dv].destinationDataTypeClass() != String.class) {
                 String dn = dataVariables[dv].destinationName();
-                if        (dv == lonIndex)  {axisSA.add(dn); 
-                } else if (dv == latIndex)  {axisSA.add(dn); 
-                } else if (dv == altIndex)  {axisSA.add(dn); 
-                } else if (dv == timeIndex) {axisSA.add(dn);  dvTime = sa.size(); 
+                if        (dv == lonIndex)   {axisSA.add(dn); 
+                } else if (dv == latIndex)   {axisSA.add(dn); 
+                } else if (dv == altIndex)   {axisSA.add(dn); 
+                } else if (dv == depthIndex) {axisSA.add(dn); 
+                } else if (dv == timeIndex)  {axisSA.add(dn);  dvTime = sa.size(); 
                     timeVar = (EDVTime)dataVariables[dv]; 
-                } else if (dn.equals("depth") && altIndex < 0) { //if no altitude, use depth
-                    axisSA.add(dn);
                 } else { 
                     nonAxisSA.add(dn);
                 }
@@ -6659,7 +6789,9 @@ public abstract class EDDTable extends EDD {
 
         //gather LLAT range
         StringBuilder llatRange = new StringBuilder();
-        int llat[] = {lonIndex, latIndex, altIndex, timeIndex};
+        int llat[] = {lonIndex, latIndex, 
+            altIndex >= 0? altIndex : depthIndex, 
+            timeIndex};
         for (int llati = 0; llati < 4; llati++) {
             int dv = llat[llati];
             if (dv < 0) 
@@ -6719,10 +6851,11 @@ public abstract class EDDTable extends EDD {
             StringArray resultsVariables    = new StringArray();
             StringArray constraintVariables = new StringArray();
             StringArray constraintOps       = new StringArray();
-            StringArray constraintValues    = new StringArray(); //times are ""+epochSeconds
+            StringArray constraintValues    = new StringArray(); 
             int conPo;
             parseUserDapQuery(userDapQuery, resultsVariables,
-                constraintVariables, constraintOps, constraintValues, true);
+                constraintVariables, constraintOps, constraintValues,  //non-regex EDVTimeStamp conValues will be ""+epochSeconds
+                true);
             //String2.log("conVars=" + constraintVariables);
             //String2.log("conOps=" + constraintOps);
             //String2.log("conVals=" + constraintValues);
@@ -7362,7 +7495,7 @@ public abstract class EDDTable extends EDD {
                         double d = Calendar2.backNDays(-1, conEdv.destinationMax()); //coming midnight
                         if (con == 0) 
                             d = Calendar2.backNDays(7, d); 
-                        conVal[cv][con] = Calendar2.limitedEpochSecondsToIsoStringT(
+                        conVal[cv][con] = Calendar2.epochSecondsToLimitedIsoStringT(
                             conEdv.combinedAttributes().getString(EDV.time_precision), d, "");
                         if (con == 0) timeMin = d;
                         else timeMax = d;
@@ -8116,8 +8249,8 @@ public abstract class EDDTable extends EDD {
                     String2.log("zoomTime timeMin=" + Calendar2.epochSecondsToIsoStringT(timeMin) +
                       "  timeMax=" + Calendar2.epochSecondsToIsoStringT(timeMax) +
                     "\n  range=" + Calendar2.elapsedTimeString(timeRange * 1000) +
-                    "\n  edvTimeMin=" + Calendar2.safeEpochSecondsToIsoStringTZ(edvTimeMin, "NaN") +
-                             "  max=" + Calendar2.safeEpochSecondsToIsoStringTZ(edvTimeMax, "NaN"));
+                    "\n  edvTimeMin=" + Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, edvTimeMin, "NaN") +
+                             "  max=" + Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, edvTimeMax, "NaN"));
 
                 //set idealTimeN (1..100), idealTimeUnits
                 int idealTimeN = -1; //1..100
@@ -8171,9 +8304,9 @@ public abstract class EDDTable extends EDD {
                     1, Calendar2.IDEAL_N_OPTIONS, idealTimeN - 1, //-1 so index=0 .. 99
                     "onChange='" + gqnt + 
                     "&amp;time%3E=" + 
-                    Calendar2.limitedEpochSecondsToIsoStringT(tTime_precision, timeMin, "") +
+                    Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, timeMin, "") +
                     "&amp;time%3C"  + 
-                    Calendar2.limitedEpochSecondsToIsoStringT(tTime_precision, timeMax, "") +
+                    Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, timeMax, "") +
                     "&amp;.timeRange=\" + this.options[this.selectedIndex].text + \"," + 
                     Calendar2.IDEAL_UNITS_OPTIONS[idealTimeUnits] + "\";'")); 
 
@@ -8184,9 +8317,9 @@ public abstract class EDDTable extends EDD {
                     1, Calendar2.IDEAL_UNITS_OPTIONS, idealTimeUnits, 
                     "onChange='" + gqnt + 
                     "&amp;time%3E=" + 
-                    Calendar2.limitedEpochSecondsToIsoStringT(tTime_precision, timeMin, "") +
+                    Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, timeMin, "") +
                     "&amp;time%3C"  + 
-                    Calendar2.limitedEpochSecondsToIsoStringT(tTime_precision, timeMax, "") +
+                    Calendar2.epochSecondsToLimitedIsoStringT(tTime_precision, timeMax, "") +
                     "&amp;.timeRange=" + idealTimeN + ",\" + " +
                     "this.options[this.selectedIndex].text;'")); 
 
@@ -8578,7 +8711,7 @@ public abstract class EDDTable extends EDD {
             for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
                 String value = edvTimeStamp == null?
                     pa.getString(row) :
-                    Calendar2.limitedEpochSecondsToIsoStringT(
+                    Calendar2.epochSecondsToLimitedIsoStringT(
                         tTime_precision, pa.getDouble(row), "NaN");
                 keep.set(row, tParam.equals(value));  //tParam isn't null; pa.getString might be
             }
@@ -8609,7 +8742,7 @@ public abstract class EDDTable extends EDD {
             for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
                 String value = edvTimeStamp == null?
                     pa.getString(row) :
-                    Calendar2.limitedEpochSecondsToIsoStringT(
+                    Calendar2.epochSecondsToLimitedIsoStringT(
                         tTime_precision, pa.getDouble(row), "NaN");
                 //if (value.startsWith(" ")) String2.log("value=\"" + value + "\"");
                 keep.set(row, tParam.equals(value));  //tParam isn't null; pa.getString might be
@@ -8845,7 +8978,7 @@ public abstract class EDDTable extends EDD {
                     int paSize = pa.size();
                     StringArray ta = new StringArray(paSize, false);
                     for (int row = 0; row < paSize; row++) 
-                        ta.add(Calendar2.limitedEpochSecondsToIsoStringT(
+                        ta.add(Calendar2.epochSecondsToLimitedIsoStringT(
                             tTime_precision, pa.getDouble(row), "NaN"));
                     pa = ta;
                 }
@@ -9944,7 +10077,7 @@ public abstract class EDDTable extends EDD {
                 distinctOptions[sv][0] = "";
                 for (int i = 0; i < n; i++) { 
                     distinctOptions[sv][i + 1] = 
-                        Calendar2.limitedEpochSecondsToIsoStringT(
+                        Calendar2.epochSecondsToLimitedIsoStringT(
                             tTime_precision, pa.getDouble(i), "NaN");
                 }
 
@@ -9999,7 +10132,8 @@ public abstract class EDDTable extends EDD {
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
         parseUserDapQuery(userDapQuery, resultsVariables,
-            constraintVariables, constraintOps, constraintValues, false); //don't repair
+            constraintVariables, constraintOps, constraintValues, //non-regex EDVTimeStamp conValues will be ""+epochSeconds
+            false); //don't repair
 
         //ensure query can be handled completely by just subsetVars
         for (int rv = 0; rv < resultsVariables.size(); rv++)
@@ -10166,6 +10300,7 @@ public abstract class EDDTable extends EDD {
                 if (dv == lonIndex ||
                     dv == latIndex ||
                     dv == altIndex ||
+                    dv == depthIndex ||
                     dv == timeIndex ||
                     dataVariables[dv].destinationDataTypeClass() == String.class) 
                     continue;
@@ -10195,22 +10330,24 @@ public abstract class EDDTable extends EDD {
     public String accessibleViaSOS() {
         if (accessibleViaSOS == null) {
 
+            String cdt = combinedGlobalAttributes().getString("cdm_data_type");
+            int type = String2.indexOf(sosCdmDataTypes, cdt);
+
             //easy tests make for a better error message
             if (!EDStatic.sosActive)
                 accessibleViaSOS = String2.canonical(
                     MessageFormat.format(EDStatic.noXxxBecause, "SOS", 
                         MessageFormat.format(EDStatic.noXxxNotActive, "SOS")));
+            else if (type < 0) 
+                accessibleViaSOS = String2.canonical(
+                    MessageFormat.format(EDStatic.noXxxBecause, "SOS", 
+                        MessageFormat.format(EDStatic.noXxxNoCdmDataType, cdt)));
             else if (lonIndex < 0 || latIndex < 0 || timeIndex < 0)
                 accessibleViaSOS = String2.canonical(
                     MessageFormat.format(EDStatic.noXxxBecause, "SOS", EDStatic.noXxxNoLLT));
-            else if (!sosOfferingType.equals("Station"))
-                accessibleViaSOS = String2.canonical(
-                    MessageFormat.format(EDStatic.noXxxBecause, "SOS",   
-                        MessageFormat.format(EDStatic.noXxxNoStation, sosOfferingType)));
-            else if (idIndex < 0)
-                accessibleViaSOS = String2.canonical(
-                    MessageFormat.format(EDStatic.noXxxBecause, "SOS", EDStatic.noXxxNoStationID));
-            else if (sosMinLon == null  || sosMaxLon == null ||
+            else if (sosOfferingType == null ||
+                     sosOfferingIndex < 0 ||
+                     sosMinLon == null  || sosMaxLon == null ||
                      sosMinLat == null  || sosMaxLat == null ||
                      sosMinTime == null || sosMaxTime == null ||
                      sosOfferings == null)
@@ -10220,6 +10357,46 @@ public abstract class EDDTable extends EDD {
         }
         return accessibleViaSOS;
     }
+
+    /**
+     * If the subclass' constructor didn't setup this dataset for the SOS server,
+     * EDDTable.ensureValid calls this to try to do a generic SOS setup. 
+     * (This must be called *after* subsetVariablesDataTable has been created.)
+     * This generic SOS setup uses entire time range (not each offerings time range).
+     * If successful, this sets accessibleViaSOS to "".
+     */
+    public void genericSosSetup() {
+/*
+        if (!EDStatic.sosActive) 
+            return;
+
+        if (lonIndex >= 0 && latIndex >= 0 && timeIndex >= 0 &&
+            setSosOfferingTypeAndIndex()) { //compatible cdm_data_type
+
+            //are sosOfferingIndex, lon, lat in subsetVariablesDataTable
+            //This will only be true if lon and lat are point per offering.
+            String sosOfferingDestName = dataVariables[sosOfferingIndex].destinationName();
+            ...
+
+            //request distinct() sosOfferingDestName, lon, lat
+            //This should succeed. So don't protect against failure. 
+            //So failure causes dataset to be not loaded.
+            Table table = new Table();
+            ...
+
+            //copy the results to the sos PAs
+            sosOfferings = table.getColumn(0);
+            sosMinLon    = table.getColumn(1);
+            sosMaxLon    = sosMinLon;
+            sosMinLat    = table.getColumn(2);
+            sosMaxLat    = sosMinLat;
+            sosMinTime   = PrimitiveArray.factory(double.class, 8, true);
+            sosMaxTime   = sosMinTime;
+
+            //success
+            accessibleViaSOS = "";         
+        } 
+*/    }
 
     /** 
      * This indicates why the dataset isn't accessible via WCS
@@ -10245,7 +10422,11 @@ public abstract class EDDTable extends EDD {
      */
     public String accessibleViaWMS() {
         if (accessibleViaWMS == null)
-            accessibleViaWMS = String2.canonical(
+            if (!EDStatic.wmsActive)
+                accessibleViaWMS = String2.canonical(
+                    MessageFormat.format(EDStatic.noXxxBecause, "WMS", 
+                        MessageFormat.format(EDStatic.noXxxNotActive, "WMS")));
+            else accessibleViaWMS = String2.canonical(
                 MessageFormat.format(EDStatic.noXxxBecause, "WMS", 
                     EDStatic.noXxxItsTabular));
         return accessibleViaWMS;
@@ -10329,7 +10510,7 @@ public abstract class EDDTable extends EDD {
             profile_idIndex    = cdmIdIndex[0];
             timeseries_idIndex    = cdmIdIndex[1];
             trajectory_idIndex = cdmIdIndex[2]; 
-            //???set old idIndex to one of these? How is that used?
+            //???set old sosOfferingIndex to one of these? How is that used?
 
             //look for cdm_xxx_variables   (or ensure they aren't present if they should be)
             String cdmVars[][] = new String[3][];  //subarray may be size=0, won't be null
@@ -10362,13 +10543,17 @@ public abstract class EDDTable extends EDD {
             }
 
 
-            //ensure profile datasets have altitude or cdm_altitude_proxy
+            //ensure profile datasets have altitude, depth or cdm_altitude_proxy
             String proxy = combinedGlobalAttributes.getString("cdm_altitude_proxy");
             int proxyDV = String2.indexOf(dataVariableDestinationNames(), proxy);
             if (altIndex >= 0) {
                 if (proxy != null && !proxy.equals("altitude"))
                     throw new SimpleException("If the dataset has an altitude variable, " +
                         "don't define the global attribute cdm_altitude_proxy.");
+            } else if (depthIndex >= 0) {
+                if (proxy != null && !proxy.equals("depth"))
+                    throw new SimpleException("If the dataset has a depth variable, " +
+                        "don't define the global attribute cdm_altitude_proxy.");  
             } else if (proxyDV >= 0) {
                 //okay
                 EDV proxyEDV = dataVariables[proxyDV];
@@ -10379,7 +10564,7 @@ public abstract class EDDTable extends EDD {
 
             } else if (cdmUses[0]) {
                 throw new SimpleException("For cdm_data_type=" + cdmType + 
-                    ", when there is no altitude variable, " +
+                    ", when there is no altitude or depth variable, " +
                     "you MUST define the global attribute cdm_altitude_proxy.");
             }
 
@@ -10489,6 +10674,9 @@ public abstract class EDDTable extends EDD {
                     if (altIndex >= 0) { 
                         if (requiredRequestVars.indexOf("altitude") < 0)
                             requiredRequestVars.add(    "altitude");
+                    } else if (depthIndex >= 0) { 
+                        if (requiredRequestVars.indexOf("depth") < 0)
+                            requiredRequestVars.add(    "depth");
                     } else if (proxy != null) {
                         if (requiredRequestVars.indexOf(proxy) < 0)
                             requiredRequestVars.add(    proxy);
@@ -10842,8 +11030,8 @@ public abstract class EDDTable extends EDD {
              writer.write(
 "        <observedProperty xlink:href=\"" + fullPhenomenaDictionaryUrl + "#" + datasetObservedProperty + "\"/>\n");
              for (int dv = 0; dv < dataVariables.length; dv++) {
-                 if (dv == lonIndex || dv == latIndex || dv == altIndex || dv == timeIndex ||
-                     dv == idIndex) 
+                 if (dv == lonIndex  || dv == latIndex || dv == altIndex || dv == depthIndex || 
+                     dv == timeIndex || dv == sosOfferingIndex) 
                      continue;
                  writer.write(
 "        <observedProperty xlink:href=\"" + fullPhenomenaDictionaryUrl + "#" + 
@@ -10926,8 +11114,8 @@ public abstract class EDDTable extends EDD {
         //the variables
         int count = 0;
         for (int dv = 0; dv < ndv; dv++) {
-            if (dv == lonIndex || dv == latIndex || dv == altIndex || dv == timeIndex ||
-                dv == idIndex)
+            if (dv == lonIndex  || dv == latIndex || dv == altIndex || dv == depthIndex ||
+                dv == timeIndex || dv == sosOfferingIndex)
                 continue;
             count++;
             String standardName = dataVariables[dv].combinedAttributes().getString("standard_name");
@@ -10952,8 +11140,8 @@ public abstract class EDDTable extends EDD {
 "      <gml:description>" + XML.encodeAsXML(title()) + "</gml:description>\n" +
 "      <gml:identifier codeSpace=\"" + codeSpace + "\">" + datasetID + "</gml:identifier>\n");
         for (int dv = 0; dv < ndv; dv++) {
-            if (dv == lonIndex || dv == latIndex || dv == altIndex || dv == timeIndex ||
-                dv == idIndex)
+            if (dv == lonIndex  || dv == latIndex || dv == altIndex || dv == depthIndex ||
+                dv == timeIndex || dv == sosOfferingIndex)
                 continue;
             writer.write(
 "      <swe:component xlink:href=\"#" + destNames[dv] + "\"/>\n");
@@ -11199,8 +11387,8 @@ public abstract class EDDTable extends EDD {
             //a component for each variable
 /*            {
                 for (int dv = 0; dv < dataVariables.length; dv++) {
-                    if (dv == lonIndex || dv == latIndex || dv == altIndex || dv == timeIndex ||
-                        dv == idIndex)
+                    if (dv == lonIndex  || dv == latIndex || dv == altIndex || dv == depthIndex ||
+                        dv == timeIndex || dv == sosOfferingIndex)
                         continue;
                     EDV edv = dataVariables[dv];
                     String destName = edv.destinationName();
@@ -11247,8 +11435,8 @@ public abstract class EDDTable extends EDD {
 "                <sml:OutputList>\n");
                 String codeSpace = getSosGmlNameStart("phenomena");
                 for (int dv = 0; dv < dataVariables.length; dv++) {
-                    if (dv == lonIndex || dv == latIndex || dv == altIndex || dv == timeIndex ||
-                        dv == idIndex)
+                    if (dv == lonIndex  || dv == latIndex || dv == altIndex || dv == depthIndex ||
+                        dv == timeIndex || dv == sosOfferingIndex)
                         continue;
                     EDV edv = dataVariables[dv];
                     String stdName = edv.combinedAttributes().getString("standard_name");
@@ -11582,8 +11770,8 @@ public abstract class EDDTable extends EDD {
             } else {
                 int dv = String2.indexOf(dataVariableDestinationNames, property);
                 if (dv < 0 ||
-                    dv == lonIndex || dv == latIndex || dv == altIndex || dv == timeIndex ||
-                    dv == idIndex)
+                    dv == lonIndex  || dv == latIndex || dv == altIndex || dv == depthIndex ||
+                    dv == timeIndex || dv == sosOfferingIndex)
                     throw new SimpleException(EDStatic.queryError + "observedProperty=" + property + " is invalid."); 
                 requestedVars.add(property);
             }
@@ -11617,7 +11805,7 @@ public abstract class EDDTable extends EDD {
             if (whichOffering < 0) 
                 //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
                 throw new SimpleException(EDStatic.queryError + "offering=" + requestOffering + " is invalid."); 
-            dapQuery.append("&" + dataVariables[idIndex].destinationName() + "=" +
+            dapQuery.append("&" + dataVariables[sosOfferingIndex].destinationName() + "=" +
                 SSR.minimalPercentEncode("\"" + requestShortOfferingName + "\""));        
         }
 
@@ -11797,8 +11985,8 @@ public abstract class EDDTable extends EDD {
             if (requestedVars.size() > 0) {            
                 //specific variables
                 String llatiVars = "longitude,latitude" +
-                    (altIndex  >= 0? ",altitude" : "") +
-                    ",time," + dataVariables[idIndex].destinationName() + ",";
+                    (altIndex >= 0? ",altitude" : depthIndex >= 0? ",depth" : "") +
+                    ",time," + dataVariables[sosOfferingIndex].destinationName() + ",";
                 dapQuery.insert(0, llatiVars + requestedVarsCsv);
             } //else "" gets all variables
         }
@@ -11999,7 +12187,7 @@ public abstract class EDDTable extends EDD {
 "                  </gml:boundedBy>\n");
 
             int nSosVars = dataVariables.length - 4; //Lon, Lat, Time, ID
-            if (altIndex >= 0) nSosVars--;
+            if (altIndex >= 0 || depthIndex >= 0) nSosVars--;
             writer.write(
 //vertical crs: http://www.oostethys.org/best-practices/verticalcrs
 //???Eeek. I don't keep this info     allow it to be specified in combinedGlobalAttributes???
@@ -12118,23 +12306,26 @@ public abstract class EDDTable extends EDD {
         table.convertToStandardMissingValues(); //so missing_values are NaNs
 
         //ensure lon, lat, time, id are present  (and alt if eddTable has alt)
-        String idName = dataVariableDestinationNames[idIndex];
-        int tLonIndex  = table.findColumnNumber(EDV.LON_NAME);
-        int tLatIndex  = table.findColumnNumber(EDV.LAT_NAME);
-        int tAltIndex  = table.findColumnNumber(EDV.ALT_NAME);
-        int tTimeIndex = table.findColumnNumber(EDV.TIME_NAME);
-        int tIdIndex   = table.findColumnNumber(idName);
+        String idName = dataVariableDestinationNames[sosOfferingIndex];
+        int tLonIndex   = table.findColumnNumber(EDV.LON_NAME);
+        int tLatIndex   = table.findColumnNumber(EDV.LAT_NAME);
+        int tAltIndex   = table.findColumnNumber(EDV.ALT_NAME);
+        int tDepthIndex = table.findColumnNumber(EDV.DEPTH_NAME);
+        int tTimeIndex  = table.findColumnNumber(EDV.TIME_NAME);
+        int tIdIndex    = table.findColumnNumber(idName);
         if (tLonIndex < 0)  throw new RuntimeException(EDStatic.errorInternal + "'longitude' isn't in the response table.");
         if (tLatIndex < 0)  throw new RuntimeException(EDStatic.errorInternal + "'latitude' isn't in the response table.");
         if (altIndex >= 0 && tAltIndex < 0) //yes, first one is alt, not tAlt
                             throw new RuntimeException(EDStatic.errorInternal + "'altitude' isn't in the response table.");
+        if (depthIndex >= 0 && tDepthIndex < 0) //yes, first one is depth, not tDepth
+                            throw new RuntimeException(EDStatic.errorInternal + "'depth' isn't in the response table.");
         if (tTimeIndex < 0) throw new RuntimeException(EDStatic.errorInternal + "'time' isn't in the response table.");
         if (tIdIndex < 0)   throw new RuntimeException(EDStatic.errorInternal + "'" + idName + "' isn't in the response table.");
 
-        //Ensure it is sorted by tIdIndex, tTimeIndex, [tAltIndex] (it usually is, but make sure; it is assumed below)
-        int sortIndices[] = tAltIndex >= 0? 
-            new int[]{tIdIndex, tTimeIndex, tAltIndex} : 
-            new int[]{tIdIndex, tTimeIndex};
+        //Ensure it is sorted by tIdIndex, tTimeIndex, [tAltIndex|tDepthIndex] (it usually is, but make sure; it is assumed below)
+        int sortIndices[] = tAltIndex   >= 0? new int[]{tIdIndex, tTimeIndex, tAltIndex} : 
+                            tDepthIndex >= 0? new int[]{tIdIndex, tTimeIndex, tDepthIndex} : 
+                                              new int[]{tIdIndex, tTimeIndex};
         boolean sortAscending[] = new boolean[sortIndices.length];
         Arrays.fill(sortAscending, true);
         table.sort(sortIndices, sortAscending);
@@ -12181,7 +12372,7 @@ public abstract class EDDTable extends EDD {
             xmlColUcumUnits[col] = u == null || u.length() == 0?
                 "" : " uom=\"" + XML.encodeAsXML(u) + "\"";
         }
-        int nSensors = nCols - 4 - (tAltIndex >= 0? 1 : 0); //4=LLTI
+        int nSensors = nCols - 4 - (tAltIndex >= 0 || tDepthIndex >= 0? 1 : 0); //4=LLTI
         boolean compositeSensor = nCols == dataVariables.length;
 
 
@@ -12263,13 +12454,16 @@ public abstract class EDDTable extends EDD {
             if (compositeSensor) {
                 //observedProperty was datasetID: platform's sensor
                 writer.write(
-                   //composite observedProperty treats each station as having one observedProperty and one "sensor"
-"                  <ioos:Count name=\"" + sosOfferingType + stationNumber + "NumberOfSensors\">1</ioos:Count>\n" +
+                   //composite observedProperty treats each station as having one observedProperty 
+                   //and one "sensor"
+"                  <ioos:Count name=\"" + sosOfferingType + stationNumber + 
+                    "NumberOfSensors\">1</ioos:Count>\n" +
 "                  <ioos:ContextArray gml:id=\"" + sosOfferingType + stationNumber + "SensorArray\">\n" +
 "                    <gml:valueComponents>\n" +
 "                      <ioos:CompositeContext gml:id=\"" + sosOfferingType + stationNumber + "Sensor1Info\">\n" +
 "                        <gml:valueComponents>\n" +
-"                          <ioos:SensorId>" + sensorGmlNameStart + prevID + ":" + datasetObservedProperty + "</ioos:SensorId>\n" +
+"                          <ioos:SensorId>" + sensorGmlNameStart + prevID + ":" + 
+                             datasetObservedProperty + "</ioos:SensorId>\n" +
                              //ioos has <ioos:SamplingRate> <ioos:ReportingInterval> <ioos:ProcessingLevel>
 "                        </gml:valueComponents>\n" +
 "                      </ioos:CompositeContext>\n" +
@@ -12278,13 +12472,14 @@ public abstract class EDDTable extends EDD {
             } else {
                 //observedProperty was csv variable list: separate sensors
                 writer.write(
-"                  <ioos:Count name=\"" + sosOfferingType + stationNumber + "NumberOfSensors\">" + nSensors + "</ioos:Count>\n" +
+"                  <ioos:Count name=\"" + sosOfferingType + stationNumber + 
+                    "NumberOfSensors\">" + nSensors + "</ioos:Count>\n" +
 "                  <ioos:ContextArray gml:id=\"" + sosOfferingType + stationNumber + "SensorArray\">\n" +
 "                    <gml:valueComponents>\n");
                 int sensori = 0;
                 for (int c = 0; c < nCols; c++) {
-                    if (c == tLonIndex || c == tLatIndex || c == tAltIndex || c == tTimeIndex ||
-                        c == tIdIndex)
+                    if (c == tLonIndex  || c == tLatIndex || c == tAltIndex || c == tDepthIndex ||
+                        c == tTimeIndex || c == tIdIndex)
                     continue;
                     sensori++;
                     writer.write(
@@ -12321,8 +12516,8 @@ public abstract class EDDTable extends EDD {
 
 //use a local phenomenaDictionary
 //"  <om:observedProperty xlink:href=\"http://www.csc.noaa.gov/ioos/schema/IOOS-DIF/IOOS/0.6.1/dictionaries/phenomenaDictionary.xml#Winds\"/>\n" +
-"  <om:observedProperty xlink:href=\"" + tErddapUrl + "/sos/" + datasetID + "/" + sosPhenomenaDictionaryUrl + 
-    "#" + datasetID + "\"/>\n" +
+"  <om:observedProperty xlink:href=\"" + tErddapUrl + "/sos/" + datasetID + "/" + 
+    sosPhenomenaDictionaryUrl + "#" + datasetID + "\"/>\n" +
 "  <om:featureOfInterest xlink:href=\"" + XML.encodeAsXML(sosFeatureOfInterest()) + "\"/>\n");
 
 
@@ -12353,7 +12548,8 @@ public abstract class EDDTable extends EDD {
                 prevTime = currTime;
             }
 
-            String currID = nextFirstStationRow == nRows? "\uFFFF" : tIdPA.getString(nextFirstStationRow);
+            String currID = nextFirstStationRow == nRows? "\uFFFF" : 
+                tIdPA.getString(nextFirstStationRow);
             if (prevID.equals(currID))
                 continue;
 
@@ -12393,7 +12589,8 @@ public abstract class EDDTable extends EDD {
                        (nTimesThisTime == 1? "Point" : "Profile") +
                        "\">\n" +
 "                      <gml:valueComponents>\n" +
-"                        <ioos:CompositeContext gml:id=\"" + stationNTN + "ObservationConditions\" " +
+"                        <ioos:CompositeContext gml:id=\"" + 
+                            stationNTN + "ObservationConditions\" " +
                            "processDef=\"#" + stationN + "Info\">\n" +
 "                          <gml:valueComponents>\n" +
 "                            <gml:TimeInstant gml:id=\"" + stationNTN + "Time\">\n" +
@@ -12421,17 +12618,22 @@ public abstract class EDDTable extends EDD {
 "                        <ioos:CompositeValue gml:id=\"" + stationNTN + "PointObservation\" " +
                            "processDef=\"#" + stationN + "Sensor1Info\">\n" +
 "                          <gml:valueComponents>\n");
-                        } else if (tAltIndex < 0) {
-                            //withinTimeIndex may not be tAltIndex, so ensure there is an tAltIndex 
+                        } else if (tAltIndex < 0 && tDepthIndex < 0) {
+                            //withinTimeIndex may not be tAltIndex or tDepthIndex, 
+                            //so ensure there is an tAltIndex or tDepthIndex
                             throw new SimpleException("This dataset is not suitable for SOS: " +
-                                "there are multiple values for one time, but there is no altitude variable.");
+                                "there are multiple values for one time, " + 
+                                "but there is no altitude or depth variable.");
                         } else {
-                            //withinTimeIndex may not be tAltIndex, so ensure tAlt value changed
-                            String val = table.getStringData(tAltIndex, timeRow);
+                            //withinTimeIndex may not be tAltIndex or tDepthIndex, 
+                            //so ensure tAlt value changed
+                            int tAltDepthIndex = tAltIndex >= 0? tAltIndex : tDepthIndex;
+                            String val = table.getStringData(tAltDepthIndex, timeRow);
                             if (val.equals(lastAltVal))
                                 throw new SimpleException(
                                     "This dataset is not suitable for SOS: " +
-                                    "there are multiple values for one time, but not because of the altitude variable.");
+                                    "there are multiple values for one time, " +
+                                    "but not because of the altitude or depth variable.");
                             lastAltVal = val;
 
                             writer.write(
@@ -12439,8 +12641,8 @@ public abstract class EDDTable extends EDD {
                                (timeRow - sTimeStartRow + 1) + "Obs\" processDef=\"#" + 
                                stationN + "Sensor1Info\">\n" +
 "                              <gml:valueComponents>\n" +
-"                                <ioos:Context name=\"" + xmlColNames[tAltIndex] + "\"" + 
-                                 xmlColUcumUnits[tAltIndex]); 
+"                                <ioos:Context name=\"" + xmlColNames[tAltDepthIndex] + "\"" + 
+                                 xmlColUcumUnits[tAltDepthIndex]); 
                             writer.write(val.length() == 0?
                             " xsi:nil=\"true\" nilReason=\"unknown\"/>\n" :
                             ">" + XML.encodeAsXML(val) + "</ioos:Context>\n");
@@ -12452,7 +12654,8 @@ public abstract class EDDTable extends EDD {
                         //e.g., <ioos:Quantity name=\"WindVerticalVelocity\" uom=\"m/s\" xsi:nil=\"true\" nilReason=\"unknown\"/>
                         for (int col = 0; col < nCols; col++) {
                             //skip the special columns
-                            if (col == tLonIndex  || col == tLatIndex || col == tAltIndex || 
+                            if (col == tLonIndex  || col == tLatIndex || 
+                                col == tAltIndex  || col == tDepthIndex || 
                                 col == tTimeIndex || col == tIdIndex)
                                 continue;
      
@@ -12475,27 +12678,34 @@ public abstract class EDDTable extends EDD {
                         int sensori = 0;
                         for (int col = 0; col < nCols; col++) {
                             //skip the special columns
-                            if (col == tLonIndex  || col == tLatIndex || col == tAltIndex || 
+                            if (col == tLonIndex  || col == tLatIndex || 
+                                col == tAltIndex  || col == tDepthIndex || 
                                 col == tTimeIndex || col == tIdIndex)
                                 continue;
 
                             sensori++;
                             if (nTimesThisTime == 1) {
                                 writer.write(
-"                        <ioos:CompositeValue gml:id=\"" + stationNTN + "Sensor" + sensori + "PointObservation\" " +
+"                        <ioos:CompositeValue gml:id=\"" + stationNTN + 
+                           "Sensor" + sensori + "PointObservation\" " +
                            "processDef=\"#" + stationN + "Sensor" + sensori + "Info\">\n" +
 "                          <gml:valueComponents>\n");
-                            } else if (tAltIndex < 0) {
-                                //withinTimeIndex may not be tAltIndex, so ensure there is an tAltIndex 
+                            } else if (tAltIndex < 0 && tDepthIndex < 0) {
+                                //withinTimeIndex may not be tAltIndex or tDepthIndex, 
+                                //so ensure there is an tAltIndex or tDepthIndex
                                 throw new SimpleException("This dataset is not suitable for SOS: " +
-                                    "there are multiple values for one time, but there is no altitude variable.");
+                                    "there are multiple values for one time, " +
+                                    "but there is no altitude variable.");
                             } else {
-                                //withinTimeIndex may not be tAltIndex, so ensure tAlt value changed
-                                String val = table.getStringData(tAltIndex, timeRow);
+                                //withinTimeIndex may not be tAltIndex or tDepthIndex, 
+                                //so ensure tAlt value changed
+                                int tAltDepthIndex = tAltIndex >= 0? tAltIndex : tDepthIndex;
+                                String val = table.getStringData(tAltDepthIndex, timeRow);
                                 if (val.equals(lastAltVal))
                                     throw new SimpleException(
                                         "This dataset is not suitable for SOS: " +
-                                        "there are multiple values for one time, but not because of the altitude variable.");
+                                        "there are multiple values for one time, " +
+                                        "but not because of the altitude or depth variable.");
                                 lastAltVal = val;
 
                                 writer.write(
@@ -12503,8 +12713,8 @@ public abstract class EDDTable extends EDD {
                                (timeRow - sTimeStartRow + 1) + "Obs\" processDef=\"#" + 
                                stationN + "Sensor1Info\">\n" +
 "                              <gml:valueComponents>\n" +
-"                                <ioos:Context name=\"" + xmlColNames[tAltIndex] + "\"" + 
-                                    xmlColUcumUnits[tAltIndex]); 
+"                                <ioos:Context name=\"" + xmlColNames[tAltDepthIndex] + "\"" + 
+                                    xmlColUcumUnits[tAltDepthIndex]); 
                                 writer.write(val.length() == 0?
                             " xsi:nil=\"true\" nilReason=\"unknown\"/>\n" :
                             ">" + XML.encodeAsXML(val) + "</ioos:Context>\n");
@@ -12612,32 +12822,36 @@ public abstract class EDDTable extends EDD {
         Table table = tw.cumulativeTable(); 
         table.convertToStandardMissingValues(); //so missing_values are NaNs
 
-        //ensure lon, lat, time, id are present  (and alt if eddTable has alt)
-        String idName = dataVariableDestinationNames[idIndex];
-        int tLonIndex  = table.findColumnNumber(EDV.LON_NAME);
-        int tLatIndex  = table.findColumnNumber(EDV.LAT_NAME);
-        int tAltIndex  = table.findColumnNumber(EDV.ALT_NAME);
-        int tTimeIndex = table.findColumnNumber(EDV.TIME_NAME);
-        int tIdIndex   = table.findColumnNumber(idName);
+        //ensure lon, lat, time, id are present in the table (and alt if eddTable has alt)
+        String idName = dataVariableDestinationNames[sosOfferingIndex];
+        int tLonIndex   = table.findColumnNumber(EDV.LON_NAME);
+        int tLatIndex   = table.findColumnNumber(EDV.LAT_NAME);
+        int tAltIndex   = table.findColumnNumber(EDV.ALT_NAME);
+        int tDepthIndex = table.findColumnNumber(EDV.DEPTH_NAME);
+        int tTimeIndex  = table.findColumnNumber(EDV.TIME_NAME);
+        int tIdIndex    = table.findColumnNumber(idName);
         if (tLonIndex < 0)  throw new RuntimeException(EDStatic.errorInternal + "'longitude' isn't in the response table.");
         if (tLatIndex < 0)  throw new RuntimeException(EDStatic.errorInternal + "'latitude' isn't in the response table.");
         if (altIndex >= 0 && tAltIndex < 0) //yes, first one is alt, not tAlt
                             throw new RuntimeException(EDStatic.errorInternal + "'altitude' isn't in the response table.");
+        if (depthIndex >= 0 && tDepthIndex < 0) //yes, first one is depth, not tDepth
+                            throw new RuntimeException(EDStatic.errorInternal + "'depth' isn't in the response table.");
         if (tTimeIndex < 0) throw new RuntimeException(EDStatic.errorInternal + "'time' isn't in the response table.");
         if (tIdIndex < 0)   throw new RuntimeException(EDStatic.errorInternal + "'" + idName + "' isn't in the response table.");
 
-        //Ensure it is sorted by tIdIndex, tTimeIndex, [tAltIndex] (it usually is, but make sure; it is assumed below)
-        int sortIndices[] = tAltIndex >= 0? 
-            new int[]{tIdIndex, tTimeIndex, tAltIndex} : 
-            new int[]{tIdIndex, tTimeIndex};
+        //Ensure it is sorted by tIdIndex, tTimeIndex, [tAltIndex|tDepthIndex] (it usually is, but make sure; it is assumed below)
+        int sortIndices[] = tAltIndex   >= 0? new int[]{tIdIndex, tTimeIndex, tAltIndex} : 
+                            tDepthIndex >= 0? new int[]{tIdIndex, tTimeIndex, tDepthIndex} : 
+                                              new int[]{tIdIndex, tTimeIndex};
         boolean sortAscending[] = new boolean[sortIndices.length];
         Arrays.fill(sortAscending, true);
         table.sort(sortIndices, sortAscending);
-        PrimitiveArray tIdPA = table.getColumn(tIdIndex);
-        PrimitiveArray tTimePA = table.getColumn(tTimeIndex);
-        PrimitiveArray tAltPA = tAltIndex >= 0? table.getColumn(tAltIndex) : null;
-        PrimitiveArray tLatPA = table.getColumn(tLatIndex);
-        PrimitiveArray tLonPA = table.getColumn(tLonIndex);
+        PrimitiveArray tIdPA    = table.getColumn(tIdIndex);
+        PrimitiveArray tTimePA  = table.getColumn(tTimeIndex);
+        PrimitiveArray tAltPA   = tAltIndex   >= 0? table.getColumn(tAltIndex)   : null;
+        PrimitiveArray tDepthPA = tDepthIndex >= 0? table.getColumn(tDepthIndex) : null;
+        PrimitiveArray tLatPA   = table.getColumn(tLatIndex);
+        PrimitiveArray tLonPA   = table.getColumn(tLonIndex);
         int nRows = tIdPA.size();
         int nCols = table.nColumns();
 
@@ -12667,7 +12881,7 @@ public abstract class EDDTable extends EDD {
                 "" : XML.encodeAsXML(u);
             isStringCol[col] = table.getColumn(col) instanceof StringArray;
         }
-        int nSensors = nCols - 4 - (tAltIndex >= 0? 1 : 0); //4=LLTI
+        int nSensors = nCols - 4 - (tAltIndex >= 0 || tDepthIndex >= 0? 1 : 0); //4=LLTI
         boolean compositeSensor = nCols == dataVariables.length;
         double minLon = tw.columnMinValue(tLonIndex);
         double maxLon = tw.columnMaxValue(tLonIndex);
@@ -12744,7 +12958,8 @@ public abstract class EDDTable extends EDD {
 "    <om:observedProperty xlink:href=\"" + fullPhenomenaDictionaryUrl + "#" + datasetID + "\"/>\n");
         } else {
             for (int col = 0; col < nCols; col++) {
-                if (col == tLonIndex || col == tLatIndex || col == tAltIndex || 
+                if (col == tLonIndex  || col == tLatIndex || 
+                    col == tAltIndex  || col == tDepthIndex ||
                     col == tTimeIndex || col == tIdIndex)
                     continue;
             writer.write(
@@ -12787,8 +13002,19 @@ public abstract class EDDTable extends EDD {
 "                    </swe:field>\n");
         }
 
+        if (tDepthIndex >= 0) {
+            writer.write(
+"                    <swe:field name=\"depth\">\n" +  //gomoos had 'depth'
+"                        <swe:Quantity definition=\"urn:ogc:phenomenon:depth\">\n" + //gomoos had 'depth'
+//???or like  <swe:uom code=\"m\" /> ?
+"                            <swe:uom xlink:href=\"urn:ogc:unit:meter\"/>\n" +
+"                        </swe:Quantity>\n" +
+"                    </swe:field>\n");
+        }
+
         for (int col = 0; col < nCols; col++) {
-            if (col == tLonIndex || col == tLatIndex || col == tAltIndex || 
+            if (col == tLonIndex  || col == tLatIndex || 
+                col == tAltIndex  || col == tDepthIndex || 
                 col == tTimeIndex || col == tIdIndex)
                 continue;
             writer.write(         
@@ -12836,7 +13062,8 @@ public abstract class EDDTable extends EDD {
             //data columns
             //2007-07-04T00:00:00Z,43.7813,-69.8891,1,29.3161296844482 2007-07-04T00:00:00Z,43.7813,-69.8891,20,31.24924659729 ...   no end space
             for (int col = 0; col < nCols; col++) {
-                if (col == tLonIndex || col == tLatIndex || col == tAltIndex || 
+                if (col == tLonIndex  || col == tLatIndex || 
+                    col == tAltIndex  || col == tDepthIndex ||
                     col == tTimeIndex || col == tIdIndex)
                     continue;
                 writer.write(',');
@@ -12912,8 +13139,9 @@ public abstract class EDDTable extends EDD {
         int fdv = String2.indexOf(dataVariableDestinationNames, "wtmp"); //cheap trick for cwwcNDBCMet demo
         if (fdv < 0) {
             for (int dv = 0; dv < dataVariables.length; dv++) {
-                if (dv == lonIndex || dv == latIndex || dv == altIndex || dv == timeIndex ||
-                    dv == idIndex || dataVariables[dv].destinationDataTypeClass() == String.class)
+                if (dv == lonIndex  || dv == latIndex || dv == altIndex || dv == depthIndex || 
+                    dv == timeIndex || dv == sosOfferingIndex || 
+                    dataVariables[dv].destinationDataTypeClass() == String.class)
                     continue;
                 fdv = dv;
                 break;
@@ -12926,10 +13154,10 @@ public abstract class EDDTable extends EDD {
         int dvv = -1;
         for (int dv1 = dataVariables.length - 2; dv1 >= 0; dv1--) {  //working backwards works well with cwwcNDBCMet
             int dv2 = dv1 + 1;
-            if (dv1 == lonIndex || dv1 == latIndex || dv1 == altIndex || dv1 == timeIndex ||
-                dv2 == lonIndex || dv2 == latIndex || dv2 == altIndex || dv2 == timeIndex ||
-                dv1 == idIndex || dataVariables[dv1].destinationDataTypeClass() == String.class ||
-                dv2 == idIndex || dataVariables[dv2].destinationDataTypeClass() == String.class ||
+            if (dv1 == lonIndex || dv1 == latIndex || dv1 == altIndex || dv1 == depthIndex || dv1 == timeIndex ||
+                dv2 == lonIndex || dv2 == latIndex || dv2 == altIndex || dv2 == depthIndex || dv2 == timeIndex ||
+                dv1 == sosOfferingIndex || dataVariables[dv1].destinationDataTypeClass() == String.class ||
+                dv2 == sosOfferingIndex || dataVariables[dv2].destinationDataTypeClass() == String.class ||
                 dataVariables[dv1].ucumUnits() == null ||
                 dataVariables[dv2].ucumUnits() == null ||
                 !dataVariables[dv1].ucumUnits().equals(dataVariables[dv2].ucumUnits()))
@@ -12946,10 +13174,10 @@ public abstract class EDDTable extends EDD {
             for (int dv2 = 0; dv2 < dataVariables.length; dv2++) {  
                 int dv1 = fdv;
                 if (dv1 == dv2 ||
-                    dv1 == lonIndex || dv1 == latIndex || dv1 == altIndex || dv1 == timeIndex ||
-                    dv2 == lonIndex || dv2 == latIndex || dv2 == altIndex || dv2 == timeIndex ||
-                    dv1 == idIndex || dataVariables[dv1].destinationDataTypeClass() == String.class ||
-                    dv2 == idIndex || dataVariables[dv2].destinationDataTypeClass() == String.class ||
+                    dv1 == lonIndex || dv1 == latIndex || dv1 == altIndex || dv1 == depthIndex || dv1 == timeIndex ||
+                    dv2 == lonIndex || dv2 == latIndex || dv2 == altIndex || dv2 == depthIndex || dv2 == timeIndex ||
+                    dv1 == sosOfferingIndex || dataVariables[dv1].destinationDataTypeClass() == String.class ||
+                    dv2 == sosOfferingIndex || dataVariables[dv2].destinationDataTypeClass() == String.class ||
                     dataVariables[dv1].ucumUnits() == null ||
                     dataVariables[dv2].ucumUnits() == null ||
                     dataVariables[dv1].ucumUnits().equals(dataVariables[dv2].ucumUnits()))
@@ -13035,7 +13263,8 @@ public abstract class EDDTable extends EDD {
             "    <br>or a comma-separated list of simple phenomena (for this dataset, any subset of\n<br><tt>");
         int charsWritten = 0;
         for (int dv = 0; dv < dataVariables.length; dv++) {
-            if (dv == lonIndex || dv == latIndex || dv == altIndex || dv == timeIndex || dv == idIndex)
+            if (dv == lonIndex  || dv == latIndex || dv == altIndex || dv == depthIndex ||
+                dv == timeIndex || dv == sosOfferingIndex)
                 continue;
             if (charsWritten > 0) 
                 opoSB.append(",");
@@ -13793,8 +14022,7 @@ public abstract class EDDTable extends EDD {
 
         //requirements
         if (lonIndex < 0 || latIndex < 0) 
-            throw new SimpleException(
-                MessageFormat.format(EDStatic.noXxxBecause2, "FGDC", EDStatic.noXxxNoLL));
+            throw new SimpleException(EDStatic.noXxxNoLL);
 
         String tErddapUrl = EDStatic.erddapUrl(getAccessibleTo() == null? null : "anyone");
         String datasetUrl = tErddapUrl + "/" + dapProtocol + "/" + datasetID();
@@ -13882,6 +14110,8 @@ public abstract class EDDTable extends EDD {
         EDVLon lonEdv = (EDVLon)dataVariables[lonIndex];
         EDVAlt altEdv = (altIndex < 0 || testMinimalMetadata)? null :  
             (EDVAlt)dataVariables[altIndex];
+        EDVDepth depthEdv = (depthIndex < 0 || testMinimalMetadata)? null :  
+            (EDVDepth)dataVariables[depthIndex];
         EDVTime timeEdv = (timeIndex < 0 || testMinimalMetadata)? null :
             (EDVTime)dataVariables[timeIndex];
 
@@ -14390,7 +14620,7 @@ writer.write(
 "    </horizsys>\n");
 
 int depthIndex = String2.indexOf(dataVariableDestinationNames, "depth");
-if (altEdv != null || depthIndex >= 0) {
+if (altEdv != null || depthEdv != null) {
     writer.write(
 "    <vertdef>\n" +
 
@@ -14402,7 +14632,7 @@ if (altEdv != null || depthIndex >= 0) {
 "        <altenc>" + unknown + "</altenc>\n" +
 "      </altsys>\n") +
 
-    (depthIndex < 0? "" : 
+    (depthEdv == null? "" : 
 "      <depthsys>\n" +
 "        <depthdn>" + unknown + "</depthdn>\n" +
 "        <depthres>" + unknown + "</depthres>\n" +
@@ -14533,9 +14763,7 @@ writer.write(
         //future: support datasets with x,y (and not longitude,latitude)
 
         if (lonIndex < 0 || latIndex < 0) 
-            throw new SimpleException(
-                MessageFormat.format(EDStatic.noXxxBecause2, "ISO 19115-2/19139", 
-                    EDStatic.noXxxNoLL));
+            throw new SimpleException(EDStatic.noXxxNoLL);
 
         String tErddapUrl = EDStatic.erddapUrl(getAccessibleTo() == null? null : "anyone");
         String datasetUrl = tErddapUrl + "/tabledap/" + datasetID;
@@ -14602,25 +14830,14 @@ writer.write(
 
         if (dateCreated == null) 
             dateCreated = eddCreationDate;
-        EDVLat latEdv = (EDVLat)dataVariables[latIndex];
-        EDVLon lonEdv = (EDVLon)dataVariables[lonIndex];
-        EDVTime timeEdv = timeIndex < 0 || testMinimalMetadata? null :  
+        EDVLat latEdv     = (EDVLat)dataVariables[latIndex];
+        EDVLon lonEdv     = (EDVLon)dataVariables[lonIndex];
+        EDVTime timeEdv   = timeIndex < 0 || testMinimalMetadata? null :  
             (EDVTime)dataVariables[timeIndex];
-        EDVAlt altEdv = altIndex < 0 || testMinimalMetadata? null :
+        EDVAlt altEdv     = altIndex < 0 || testMinimalMetadata? null :
             (EDVAlt)dataVariables[altIndex];
-        int dEdvi = String2.indexOf(dataVariableDestinationNames(), "depth");
-        EDV depthEdv = dEdvi < 0 || testMinimalMetadata? null :
-            (EDV)dataVariables[dEdvi];
-        //ensure depth has units=meters  
-        //if (depthEdv != null) {
-        //    String tUnits = depthEdv.units(); 
-        //    if ("m".equals(tUnits) ||
-        //        "meter".equals(tUnits) ||
-        //        "meters".equals(tUnits)) {
-        //    } else {
-        //        depthEdv = null;
-        //    }
-        //}
+        EDVDepth depthEdv = depthIndex < 0 || testMinimalMetadata? null :
+            (EDVDepth)dataVariables[depthIndex];
 
         String minTime = ""; //iso string with Z, may be ""
         String maxTime = "";
@@ -14629,14 +14846,14 @@ writer.write(
             maxTime = timeEdv.destinationMaxString();
         }
 
-        double minVert = Double.NaN; //in destination units (may be positive = up or down; any units
+        double minVert = Double.NaN; //in destination units (may be positive = up[I use] or down?! any units)
         double maxVert = Double.NaN;
         if (altEdv != null) {
             minVert = altEdv.destinationMin();
             maxVert = altEdv.destinationMax();
         } else if (depthEdv != null) {
-            minVert = depthEdv.destinationMin();
-            maxVert = depthEdv.destinationMin();
+            minVert = -depthEdv.destinationMax(); //make into alt
+            maxVert = -depthEdv.destinationMin();
         }
 
         StringArray standardNames = new StringArray();

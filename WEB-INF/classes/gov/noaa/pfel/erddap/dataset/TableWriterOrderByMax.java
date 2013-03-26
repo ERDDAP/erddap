@@ -73,9 +73,10 @@ public class TableWriterOrderByMax extends TableWriterAll {
         if (table.nRows() == 0) 
             return;
 
-        //to save memory, this just does a feeble job (remove non-max rows from this partial table)
+        //to save time and disk space, this just does a partial job 
+        //  (remove non-max rows from this partial table)
         //  and leaves perfect job to finish()
-        orderByMax(table);
+        table.orderByMax(orderBy);
 
         //ensure the table's structure is the same as before
         //and write to dataOutputStreams
@@ -93,7 +94,7 @@ public class TableWriterOrderByMax extends TableWriterAll {
 
         Table cumulativeTable = cumulativeTable();
         releaseResources();
-        orderByMax(cumulativeTable);
+        cumulativeTable.orderByMax(orderBy);
         otherTableWriter.writeAllAndFinish(cumulativeTable);
 
         //clean up
@@ -107,50 +108,12 @@ public class TableWriterOrderByMax extends TableWriterAll {
      * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
      */
     public void writeAllAndFinish(Table tCumulativeTable) throws Throwable {
-        orderByMax(tCumulativeTable);
+        tCumulativeTable.orderByMax(orderBy);
         otherTableWriter.writeAllAndFinish(tCumulativeTable);
         otherTableWriter = null;
     }
 
 
-    /**
-     * This does orderByMax for this table.
-     *
-     * @throws Throwable if trouble (e.g., EDStatic.THERE_IS_NO_DATA if there is no data)
-     */
-    public void orderByMax(Table table) throws Throwable {
-
-        //sort based on keys
-        int keys[] = new int[orderBy.length];
-        boolean ascending[] = new boolean[orderBy.length];
-        PrimitiveArray keysPa[] = new PrimitiveArray[orderBy.length];
-        for (int ob = 0; ob < orderBy.length; ob++) {
-            keys[ob] = table.findColumnNumber(orderBy[ob]);
-            ascending[ob] = true;
-            if (keys[ob] < 0)
-                throw new SimpleException("Query error: " +
-                    "'orderByMax' column=" + orderBy[ob] + " isn't in the results table.");
-            keysPa[ob] = table.getColumn(keys[ob]);
-        }
-        table.sort(keys, ascending);
-
-        //just save rows with unique orderBy columns (n-1 keys) with max value in last orderBy column
-        int nRows = table.nRows();
-        BitSet keep = new BitSet(nRows);
-        for (int row = 1; row < nRows; row++) {  //keep previous row if orderBy0..n-2 are 
-            boolean keepPreviousRow = false;  
-            for (int ob = 0; ob < orderBy.length-1; ob++) {  //don't check last orderBy column
-                if (keysPa[ob].compare(row-1, row) != 0) {
-                    //if any value is different, we keep the previousRow
-                    keepPreviousRow = true;
-                    break;
-                }
-            }
-            keep.set(row-1, keepPreviousRow);            
-        }
-        keep.set(nRows-1, true);
-        table.justKeep(keep);
-    }
 
 }
 

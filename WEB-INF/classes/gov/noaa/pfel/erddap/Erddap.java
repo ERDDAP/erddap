@@ -447,9 +447,9 @@ public class Erddap extends HttpServlet {
             if (protocol.equals("griddap") ||
                 protocol.equals("tabledap")) {
                 doDap(request, response, loggedInAs, protocol, protocolEnd + 1, userQuery);
-            } else if (EDStatic.sosActive && protocol.equals("sos")) {
+            } else if (protocol.equals("sos")) {
                 doSos(request, response, loggedInAs, protocolEnd + 1, userQuery); 
-            } else if (EDStatic.wcsActive && protocol.equals("wcs")) {
+            } else if (protocol.equals("wcs")) {
                 doWcs(request, response, loggedInAs, protocolEnd + 1, userQuery); 
             } else if (protocol.equals("wms")) {
                 doWms(request, response, loggedInAs, protocolEnd + 1, userQuery);
@@ -624,7 +624,7 @@ public class Erddap extends HttpServlet {
                     new String[] {"info", "search", "categorize", "griddap", "tabledap"});
                 if (EDStatic.sosActive) resources.add("sos");
                 if (EDStatic.wcsActive) resources.add("wcs");
-                resources.add("wms");
+                if (EDStatic.wmsActive) resources.add("wms");
                 for (int r = 0; r < resources.size(); r++) {
                     resourceCol.add(resources.get(r));
                     urlCol.add(tErddapUrl + "/" + resources.get(r) + "/index" + fileTypeName +
@@ -761,7 +761,7 @@ public class Erddap extends HttpServlet {
                     "</a>\n" +
                 "    </td>\n" +
                 "  </tr>\n");
-            writer.write(
+            if (EDStatic.wmsActive) writer.write(
                 "  <tr>\n" +
                 "    <td><a rel=\"bookmark\" " +
                     "href=\"" + tErddapUrl + "/wms/index.html?" +
@@ -774,7 +774,8 @@ public class Erddap extends HttpServlet {
                     MessageFormat.format(EDStatic.indexDocumentation, "WMS") + 
                     "</a>\n" +
                 "    </td>\n" +
-                "  </tr>\n" +
+                "  </tr>\n");
+            writer.write(
                 "</table>\n" +
                 "&nbsp;\n" +
                 "\n");  
@@ -796,8 +797,8 @@ public class Erddap extends HttpServlet {
                 "<p>&nbsp;<hr>\n");
 
             //converters
-            writer.write(
-                //"<p>&nbsp;<hr>\n" +
+            if (EDStatic.convertersActive)
+                writer.write(
                 "<p><b><a rel=\"bookmark\" " + 
                     "name=\"converters\">" + EDStatic.indexConverters + "</a></b>\n" +
                 "<br>" + EDStatic.indexDescribeConverters + "\n" +
@@ -1694,10 +1695,11 @@ public class Erddap extends HttpServlet {
                 "  <li>For WCS: use\n" +
                     plainLinkExamples(tErddapUrl, "/wcs/index", 
                     EDStatic.encodedAllPIppQuery)); 
-            writer.write(
+            if (EDStatic.wmsActive) writer.write(
                 "  <li>For WMS: use\n" +
                     plainLinkExamples(tErddapUrl, "/wms/index", 
-                    EDStatic.encodedAllPIppQuery) + 
+                    EDStatic.encodedAllPIppQuery));
+            writer.write(
                 "  <br>&nbsp;\n" +
                 "  </ul>\n" +
                 "<li>Griddap and tabledap have many web services that you can use.\n" +
@@ -1730,35 +1732,44 @@ public class Erddap extends HttpServlet {
                 "    <br><a href=\"" + griddapExample  + ".das\">" + griddapExample  + ".das</a> (gridded data) or\n" +
                 "    <br><a href=\"" + tabledapExample + ".das\">" + tabledapExample + ".das</a> (tabular data).\n" +
                 "    <br>&nbsp;\n" +
-                "  </ul>\n" +
+                "  </ul>\n");
+            if (EDStatic.sosActive || EDStatic.wcsActive || EDStatic.wmsActive) {
+                writer.write(
                 "<li>ERDDAP's other protocols also have web services that you can use.\n" +
-                "  <br>See ERDDAP's\n");
-            if (EDStatic.sosActive) writer.write(
-                "    <a rel=\"help\" href=\"" + tErddapUrl + "/sos/documentation.html\">SOS</a>,\n");
-            if (EDStatic.wcsActive) writer.write(
-                 "    <a rel=\"help\" href=\"" + tErddapUrl + "/wcs/documentation.html\">WCS</a>,\n");
-            if (EDStatic.sosActive || EDStatic.wcsActive) writer.write(
-                "    and\n");
+                "  <br>See ERDDAP's\n" +
+                "  <ul>\n");
+                if (EDStatic.sosActive) writer.write(
+                    "    <li><a rel=\"help\" href=\"" + tErddapUrl + "/sos/documentation.html\">SOS documentation</a>\n");
+                if (EDStatic.wcsActive) writer.write(
+                     "   <li><a rel=\"help\" href=\"" + tErddapUrl + "/wcs/documentation.html\">WCS documentation</a>\n");
+                if (EDStatic.wmsActive) writer.write(
+                    "    <li><a rel=\"help\" href=\"" + tErddapUrl + "/wms/documentation.html\">WMS documentation</a>\n");
+                writer.write(
+                    "    <br>&nbsp;\n" +
+                    "    </ul>\n");
+            }
             writer.write(
-                "    <a rel=\"help\" href=\"" + tErddapUrl + "/wms/documentation.html\">WMS</a> documentation.\n" +
-                "    <br>&nbsp;\n" +
                 "<li>ERDDAP offers \n" +
                 "    <a rel=\"help\" href=\"" + tErddapUrl + "/information.html#subscriptions\">RSS subscriptions</a>,\n" +
                 "    so that your computer program find out if a\n" +
                 "  dataset has changed.\n" +
-                "  <br>&nbsp;\n" +
+                "  <br>&nbsp;\n");
+            if (EDStatic.subscriptionSystemActive) writer.write(
                 "<li>ERDDAP offers \n" +
                 "    <a rel=\"help\" href=\"" + tErddapUrl + "/information.html#subscriptions\">email/URL subscriptions</a>,\n" +
                 "    which notify your computer program\n" +
                 "  whenever a dataset changes.\n" +
-                "  <br>&nbsp;\n" +
+                "  <br>&nbsp;\n");
+            writer.write(
                 "<li>ERDDAP offers several converters as web pages and as web services:\n" +
-                "  <ul>\n" +
-                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/fipscounty.html#computerProgram\">" + EDStatic.convertFipsCounty + "</a>\n" +
-                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/keywords.html#computerProgram\">" + EDStatic.convertKeywords + "</a>\n" +
-                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html#computerProgram\">" + EDStatic.convertTime + "</a>\n" +
-                "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html#computerProgram\">" + EDStatic.convertUnits + "</a>\n" +
-                "  </ul>\n" +
+                (EDStatic.convertersActive?
+                  "  <ul>\n" +
+                  "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/fipscounty.html#computerProgram\">" + EDStatic.convertFipsCounty + "</a>\n" +
+                  "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/keywords.html#computerProgram\">" + EDStatic.convertKeywords + "</a>\n" +
+                  "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html#computerProgram\">" + EDStatic.convertTime + "</a>\n" +
+                  "  <li><a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/units.html#computerProgram\">" + EDStatic.convertUnits + "</a>\n" +
+                  "  </ul>\n" :
+                  "<br> (" + MessageFormat.format(EDStatic.disabled, "convert") + ")\n") +
                 "  <br>&nbsp;\n" +
                 "</ul>\n" +
                 "If you have suggestions for additional links, contact <tt>bob dot simons at noaa dot gov</tt>.\n");
@@ -1851,19 +1862,21 @@ public class Erddap extends HttpServlet {
         //don't include the admin pages that all link to ERD's erddap
         //don't include setDatasetFlag.txt, setup.html, setupDatasetsXml.html, status.html, 
         writer.write(pre); writer.write("categorize/index.html");             writer.write(postMed);
-        writer.write(pre); writer.write("convert/index.html");                writer.write(postMed);
-        writer.write(pre); writer.write("convert/fipscounty.html");           writer.write(postHigh);
-        writer.write(pre); writer.write("convert/keywords.html");             writer.write(postHigh);
-        writer.write(pre); writer.write("convert/time.html");                 writer.write(postHigh);
-        writer.write(pre); writer.write("convert/units.html");                writer.write(postHigh);
+        if (EDStatic.convertersActive) {
+            writer.write(pre); writer.write("convert/index.html");            writer.write(postMed);
+            writer.write(pre); writer.write("convert/fipscounty.html");       writer.write(postHigh);
+            writer.write(pre); writer.write("convert/keywords.html");         writer.write(postHigh);
+            writer.write(pre); writer.write("convert/time.html");             writer.write(postHigh);
+            writer.write(pre); writer.write("convert/units.html");            writer.write(postHigh);
+        }
         writer.write(pre); writer.write("griddap/documentation.html");        writer.write(postHigh);
         writer.write(pre); writer.write("griddap/index.html?" +
-            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh);
+            EDStatic.encodedAllPIppQuery);                                    writer.write(postHigh);
         writer.write(pre); writer.write("images/embed.html");                 writer.write(postHigh);
         //writer.write(pre); writer.write("images/gadgets/GoogleGadgets.html"); writer.write(postHigh);
         writer.write(pre); writer.write("index.html");                        writer.write(postHigh);
         writer.write(pre); writer.write("info/index.html?" + 
-            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh); 
+            EDStatic.encodedAllPIppQuery);                                    writer.write(postHigh); 
         writer.write(pre); writer.write("information.html");                  writer.write(postHigh);
         if (EDStatic.fgdcActive) {
         writer.write(pre); writer.write(EDStatic.fgdcXmlDirectory);           writer.write(postLow);}
@@ -1872,31 +1885,37 @@ public class Erddap extends HttpServlet {
         writer.write(pre); writer.write("legal.html");                        writer.write(postHigh);
         writer.write(pre); writer.write("rest.html");                         writer.write(postHigh);
         writer.write(pre); writer.write("search/advanced.html?" +
-            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh); 
+            EDStatic.encodedAllPIppQuery);                                    writer.write(postHigh); 
         writer.write(pre); writer.write("search/index.html?" +
-            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh); 
-        writer.write(pre); writer.write("slidesorter.html");                  writer.write(postHigh);
+            EDStatic.encodedAllPIppQuery);                                    writer.write(postHigh); 
+        if (EDStatic.slideSorterActive) {
+        writer.write(pre); writer.write("slidesorter.html");                  writer.write(postHigh); 
+        }
         if (EDStatic.sosActive) {
         writer.write(pre); writer.write("sos/documentation.html");            writer.write(postHigh);
         writer.write(pre); writer.write("sos/index.html?" +
-            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh);
+            EDStatic.encodedAllPIppQuery);                                    writer.write(postHigh);
         }
+        if (EDStatic.subscriptionSystemActive) {
         writer.write(pre); writer.write("subscriptions/index.html");          writer.write(postHigh); 
         writer.write(pre); writer.write("subscriptions/add.html");            writer.write(postMed); 
         writer.write(pre); writer.write("subscriptions/validate.html");       writer.write(postMed);
         writer.write(pre); writer.write("subscriptions/list.html");           writer.write(postMed); 
         writer.write(pre); writer.write("subscriptions/remove.html");         writer.write(postMed);
+        }
         writer.write(pre); writer.write("tabledap/documentation.html");       writer.write(postHigh);
         writer.write(pre); writer.write("tabledap/index.html?" +
-            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh);
+            EDStatic.encodedAllPIppQuery);                                    writer.write(postHigh);
         if (EDStatic.wcsActive) {
         writer.write(pre); writer.write("wcs/documentation.html");            writer.write(postHigh);
         writer.write(pre); writer.write("wcs/index.html?" +
-            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh);
+            EDStatic.encodedAllPIppQuery);                                    writer.write(postHigh);
         }
+        if (EDStatic.wmsActive) {
         writer.write(pre); writer.write("wms/documentation.html");            writer.write(postHigh);
         writer.write(pre); writer.write("wms/index.html?" +
-            EDStatic.encodedDefaultPIppQuery);                                writer.write(postHigh);
+            EDStatic.encodedAllPIppQuery);                                    writer.write(postHigh);
+        }
 
         //special links only for ERD's erddap
         if (EDStatic.baseUrl.equals("http://coastwatch.pfeg.noaa.gov")) {
@@ -2163,7 +2182,7 @@ public class Erddap extends HttpServlet {
             }
             if (fileTypeName.equals(".graph") && dataset.accessibleViaMAG().length() > 0) {
                 sendResourceNotFoundError(request, response, dataset.accessibleViaMAG());
-                    return;
+                return;
             }
             if (fileTypeName.equals(".subset") && dataset.accessibleViaSubset().length() > 0) {
                 sendResourceNotFoundError(request, response, dataset.accessibleViaSubset());
@@ -2216,6 +2235,10 @@ public class Erddap extends HttpServlet {
 
             //*** tell the dataset to send the data
             try {
+                //give the dataset the opportunity to update (DAP)
+                dataset.update();
+
+                //respond to the request
                 dataset.respondToDapQuery(request, response,
                     loggedInAs, requestUrl, userDapQuery, 
                     outputStreamSource, 
@@ -2425,7 +2448,7 @@ public class Erddap extends HttpServlet {
                 }
             }
             description = EDStatic.wcsDescriptionHtml;
-        } else if (protocol.equals("wms")) {
+        } else if (EDStatic.wmsActive && protocol.equals("wms")) {
             StringArray tids = gridDatasetIDs();
             int ntids = tids.size();
             titles = new StringArray(ntids, false);
@@ -2594,6 +2617,8 @@ public class Erddap extends HttpServlet {
     public void doSos(HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, int datasetIDStartsAt, String userQuery) throws Throwable {
 
+        if (!EDStatic.sosActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "SOS"));
 /*
 This isn't finished!   Reference server (ndbcSOS) is in flux and ...
 Interesting IOOS DIF info c:/programs/sos/EncodingIOOSv0.6.0Observations.doc
@@ -2634,6 +2659,9 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 MessageFormat.format(EDStatic.unknownDatasetID, tDatasetID));
             return;
         }
+
+        //give the dataset the opportunity to update (SOS)
+        eddTable.update();
 
         //check loggedInAs
         String roles[] = EDStatic.getRoles(loggedInAs);
@@ -2772,7 +2800,7 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 //        sensor.equals(EDV.LAT_NAME) ||
                 //        sensor.equals(EDV.ALT_NAME) ||
                 //        sensor.equals(EDV.TIME_NAME) ||
-                //        sensor.equals(eddTable.dataVariableDestinationNames()[eddTable.idIndex()])) 
+                //        sensor.equals(eddTable.dataVariableDestinationNames()[eddTable.sosOfferingIndex])) 
                 //    this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
                 //    throw new SimpleException(EDStatic.queryError + "procedure=" + procedure + " isn't valid because \"" +
                 //        sensor + "\" isn't valid sensor name."); 
@@ -2896,6 +2924,9 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
     public void doSosDocumentation(HttpServletRequest request, HttpServletResponse response,
         String loggedInAs) throws Throwable {
 
+        if (!EDStatic.sosActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "SOS"));
+
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         OutputStream out = getHtmlOutputStream(request, response);
         Writer writer = getHtmlWriter(loggedInAs, "SOS Documentation", out);
@@ -2946,6 +2977,9 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
     public void doWcs(HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, int datasetIDStartsAt, String userQuery) throws Throwable {
 
+        if (!EDStatic.wcsActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "WCS"));
+
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl, pre "?"
         String endOfRequestUrl = datasetIDStartsAt >= requestUrl.length()? "" : 
@@ -2993,6 +3027,9 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             sendResourceNotFoundError(request, response, eddGrid.accessibleViaWCS());
             return;
         }
+
+        //give the dataset the opportunity to update  (WCS)
+        eddGrid.update();
 
         //write /wcs/[datasetID]/index.html
         if (part1.equals("index.html") && urlEndParts.length == 2) {
@@ -3151,6 +3188,9 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
     public void doWcsDocumentation(HttpServletRequest request, HttpServletResponse response,
         String loggedInAs) throws Throwable {
 
+        if (!EDStatic.wcsActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "WCS"));
+
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         OutputStream out = getHtmlOutputStream(request, response);
         Writer writer = getHtmlWriter(loggedInAs, "WCS Documentation", out);
@@ -3205,6 +3245,9 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
     public void doWms(HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, int datasetIDStartsAt, String userQuery) throws Throwable {
 
+        if (!EDStatic.wmsActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "WMS"));
+
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl, pre "?"
         String endOfRequestUrl = datasetIDStartsAt >= requestUrl.length()? "" : 
@@ -3229,6 +3272,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
             doWmsDocumentation(request, response, loggedInAs);
             return;
         }
+
+//these 3 are demos.  Remove them (and links to them)?  add update()?
         if (endOfRequestUrl.equals("openlayers110.html")) { 
             doWmsOpenLayers(request, response, loggedInAs, "1.1.0", EDStatic.wmsSampleDatasetID);
             return;
@@ -3262,10 +3307,14 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 return;
             }
 
+            //give the dataset the opportunity to update  (WMS)
+            eddGrid.update();
+
             if (endEnd.equals("index.html")) {
                 doWmsOpenLayers(request, response, loggedInAs, "1.3.0", tDatasetID);
                 return;
             }
+
             if (endEnd.equals(EDD.WMS_SERVER)) {
                 //if eddGrid instanceof EDDGridFromErddap, redirect the request
                 if (eddGrid instanceof EDDGridFromErddap && 
@@ -3314,6 +3363,9 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
      */
     public void doWmsRequest(HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String tDatasetID, String userQuery) throws Throwable {
+
+        if (!EDStatic.wmsActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "WMS"));
 
         try {
 
@@ -3390,6 +3442,9 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
     public void doWmsDocumentation(HttpServletRequest request, HttpServletResponse response,
         String loggedInAs) throws Throwable {
        
+        if (!EDStatic.wmsActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "WMS"));
+
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String e0 = tErddapUrl + "/wms/" + EDStatic.wmsSampleDatasetID + "/" + EDD.WMS_SERVER + "?"; 
         String ec = "service=WMS&amp;request=GetCapabilities&amp;version=";
@@ -3662,16 +3717,17 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 "    <td>elevation=<i>elevation</i></td>\n" +
                 "    <td>Elevation of layer desired.\n" +
                 "      <br>Currently in ERDDAP's WMS, you can only specify one elevation value per request.\n" +
-                "      <br>In ERDDAP's WMS, this is used for the altitude dimension (if any). (in meters, positive=up)\n" +
+                "      <br>In ERDDAP's WMS, this is used for the altitude or depth (converted to altitude) dimension (if any).\n" +
+                "      <br>(in meters, positive=up)\n" +
                 "      <br>In ERDDAP's WMS, the value nearest to the value you specify (if between min and max) will be used.\n" +
-                "      <br>Optional (in ERDDAP's WMS, the default value is the last value in the dataset's 1D altitude array).\n" +
+                "      <br>Optional (in ERDDAP's WMS, the default value is the last value in the dataset's 1D altitude or depth array).\n" +
                 "    </td>\n" +
                 "  </tr>\n" +
                 "  <tr>\n" +
                 "    <td>dim_<i>name</i>=<i>value</i></td>\n" + //see WMS 1.3.0 spec section C.3.5
                 "    <td>Value of other dimensions as appropriate.\n" +
                 "      <br>Currently in ERDDAP's WMS, you can only specify one value per dimension per request.\n" +
-                "      <br>In ERDDAP's WMS, this is used for the non-time, non-altitude dimensions.\n" +
+                "      <br>In ERDDAP's WMS, this is used for the non-time, non-altitude, non-depth dimensions.\n" +
                 "      <br>The name of a dimension will be \"dim_\" plus the dataset's name for the dimension, for example \"dim_model\".\n" +
                 "      <br>In ERDDAP's WMS, the value nearest to the value you specify (if between min and max) will be used.\n" +
                 "      <br>Optional (in ERDDAP's WMS, the default value is the last value in the dimension's 1D array).\n" +
@@ -3825,6 +3881,9 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
      */
     public void doWmsGetMap(HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, HashMap<String, String> queryMap) throws Throwable {
+
+        if (!EDStatic.wmsActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "WMS"));
 
         String userQuery = request.getQueryString(); //post "?", still encoded, may be null
         if (userQuery == null)
@@ -4193,8 +4252,9 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                     //all other axes
                     String tAvName = 
                         avi == eddGrid.altIndex()? "elevation" :
+                        avi == eddGrid.depthIndex()? "elevation" :  //convert depth to elevation
                         avi == eddGrid.timeIndex()? "time" : 
-                            "dim_" + ava[avi].destinationName().toLowerCase(); //make it case-insensitive for queryMap.get
+                        "dim_" + ava[avi].destinationName().toLowerCase(); //make it case-insensitive for queryMap.get
                     String tValueS = queryMap.get(tAvName);
                     if (tValueS == null || 
                         (avi == eddGrid.timeIndex() && tValueS.toLowerCase().equals("current")))
@@ -4202,6 +4262,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                         tQuery.append("[" + (ava[avi].sourceValues().size() - 1) + "]");
                     else {
                         double tValueD = av.destinationToDouble(tValueS); //needed in particular for iso time -> epoch seconds
+                        if (avi == eddGrid.depthIndex())
+                            tValueD = -tValueD;
                         if (Double.isNaN(tValueD) ||
                             tValueD < av.destinationCoarseMin() ||
                             tValueD > av.destinationCoarseMax()) {
@@ -4359,6 +4421,9 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
      */
     public void doWmsGetCapabilities(HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String tDatasetID, HashMap<String, String> queryMap) throws Throwable {
+
+        if (!EDStatic.wmsActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "WMS"));
 
         //make sure version is unspecified (latest), 1.1.0, 1.1.1, or 1.3.0.
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
@@ -4643,7 +4708,7 @@ writer.write(
                 if (avi == eddGrid.timeIndex()) {
                     avName = "time";      
                     avUnits = "ISO8601"; 
-                } else if (avi == eddGrid.altIndex())  {
+                } else if (avi == eddGrid.altIndex() || avi == eddGrid.depthIndex())  {
                     avName = "elevation"; 
                     //???is CRS:88 the most appropriate  (see spec 6.7.5 and B.6)
                     //"EPSG:5030" means "meters above the WGS84 ellipsoid."
@@ -4654,7 +4719,7 @@ writer.write(
                 }
 
                 writer.write(
-       "        <Dimension name=\"" + av.destinationName() + "\" " +
+       "        <Dimension name=\"" + avName + "\" " +
                     "units=\"" + avUnits + "\" />\n");
             }
         }
@@ -4670,23 +4735,26 @@ writer.write(
             String avName = av.destinationName();
             String avUnits = av.units() == null? "" : av.units(); //"" is required by spec if not known (C.2)
             String unitSymbol = "";
+            String defaultValue = av.destinationToString(av.lastDestinationValue());
             //required by spec (C.2)
             if (avi == eddGrid.timeIndex()) {
                 avName = "time";      
                 avUnits = "ISO8601"; 
-            } else if (avi == eddGrid.altIndex())  {
+            } else if (avi == eddGrid.altIndex() || avi == eddGrid.depthIndex())  {
                 avName = "elevation"; 
                 //???is CRS:88 the most appropriate  (see spec 6.7.5 and B.6)
                 //"EPSG:5030" means "meters above the WGS84 ellipsoid."
                 avUnits = tVersion.equals("1.1.0") || tVersion.equals("1.1.1")? "EPSG:5030" : "CRS:88"; 
                 unitSymbol = "unitSymbol=\"m\" "; 
+                defaultValue = av.destinationToString(
+                    (avi == eddGrid.depthIndex()? -1 : 1) * av.lastDestinationValue());
             } else if (EDStatic.units_standard.equals("UDUNITS")) {
                 //convert other udnits to ucum (this is in WMS GetCapabilites)
                 avUnits = EDUnits.safeUdunitsToUcum(avUnits);
             }
 
             if (tVersion.equals("1.1.0")) writer.write(
-   "        <Extent name=\"" + av.destinationName() + "\" ");
+   "        <Extent name=\"" + avName + "\" ");
 //???nearestValue is important --- validator doesn't like it!!! should be allowed in 1.1.0!!!
 //It is described in OGC 01-047r2, section C.3
 //  but if I look in 1.1.0 GetCapabilities DTD from http://schemas.opengis.net/wms/1.1.0/capabilities_1_1_0.dtd
@@ -4696,38 +4764,50 @@ writer.write(
 //                    "nearestValue=\"1\" ");   //do find nearest value                      
 
             else if (tVersion.equals("1.1.1")) writer.write(
-   "        <Extent name=\"" + av.destinationName() + "\" " +
+   "        <Extent name=\"" + avName + "\" " +
                 "multipleValues=\"0\" " +  //don't allow request for multiple values    
                 "nearestValue=\"1\" ");   //do find nearest value                      
 
             else writer.write( //1.3.0+
-   "        <Dimension name=\"" + av.destinationName() + "\" " +
+   "        <Dimension name=\"" + avName + "\" " +
                 "units=\"" + avUnits + "\" " +
                 unitSymbol +
                 "multipleValues=\"0\" " +  //don't allow request for multiple values    
                 "nearestValue=\"1\" ");   //do find nearest value                       
 
             writer.write(
-                "default=\"" + av.destinationToString(av.lastDestinationValue()) +  "\" " + //default is last value
+                "default=\"" + defaultValue +  "\" " + //default is last value
                 //!!!currently, no support for "current" since grid av doesn't have that info to identify if relevant
                 //???or just always use last value is "current"???
                 ">");
 
              //extent value(s)
-             if (avi != eddGrid.timeIndex() && av.destinationMin() == av.destinationMax()) {
-                 // single number  or iso time
-                 writer.write(av.destinationMinString()); 
-             } else if (avi != eddGrid.timeIndex() && av.isEvenlySpaced()) {
+             if (avi == eddGrid.depthIndex()) {
+                 //convert depth to elevation
+                 PrimitiveArray elevValues = (PrimitiveArray)av.destinationValues().clone();
+                 elevValues.scaleAddOffset(-1, 0);
+                 if (elevValues.size() > 2 && av.isEvenlySpaced()) {
+                     //min/max/spacing     
+                     writer.write(elevValues.getString(0) + "/" + 
+                       elevValues.getString(elevValues.size() - 1) + "/" + 
+                       Math.abs(av.averageSpacing()));
+                 } else { 
+                     //1 or many (not evenly spaced)
+                     writer.write(elevValues.toCSVString()); 
+                 }
+
+             } else if (avi != eddGrid.timeIndex() && 
+                        av.sourceValues().size() > 2 && av.isEvenlySpaced()) {
                  //non-time min/max/spacing     
                  writer.write(av.destinationMinString() + "/" + 
                      av.destinationMaxString() + "/" + Math.abs(av.averageSpacing()));
-             //} else if (avi == eddGrid.timeIndex() && av.isEvenlySpaced()) {
                  //time min/max/spacing (time always done via iso strings)
                  //!!??? For time, express averageSpacing as ISO time interval, e.g., P1D
                  //Forming them is a little complex, so defer doing it.
              } else {
                  //csv values   (times as iso8601)
-                 writer.write(String2.toCSSVString(av.destinationStringValues().toStringArray()));
+                 // !!!For time, if lots of values (e.g., 10^6), this is SLOW (e.g., 30 seconds)!!!
+                 writer.write(av.destinationStringValues().toCSVString());
              }
 
             if (tVersion.equals("1.1.0") || tVersion.equals("1.1.1"))
@@ -4758,6 +4838,7 @@ writer.write(
         for (int avi = 0; avi < avs.length; avi++) {
             if (avi == loni || avi == lati)
                 continue;
+            // !!!For time, if lots of values (e.g., 10^6), this is SLOW (e.g., 30 seconds)!!!
             avDsv[avi] = avs[avi].destinationStringValues();
         }
 
@@ -4784,6 +4865,7 @@ writer.write(
                 for (int avi = 0; avi < avs.length; avi++) {
                     if (avi == loni || avi == lati)
                         continue;
+                    // !!!For time, if lots of values (e.g., 10^6), this is SLOW (e.g., 30 seconds)!!!
                     dims.append(EDD.WMS_SEPARATOR +  ...currentavDsv[avi] = avs[avi].destinationStringValues();
                 }
                 writer.write
@@ -4907,6 +4989,9 @@ writer.write(
     public void doWmsOpenLayers(HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String tVersion, String tDatasetID) throws Throwable {
 
+        if (!EDStatic.wmsActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "WMS"));
+
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         if (!tVersion.equals("1.1.0") &&
             !tVersion.equals("1.1.1") &&
@@ -4934,6 +5019,7 @@ writer.write(
         int loni = eddGrid.lonIndex();
         int lati = eddGrid.latIndex();
         int alti = eddGrid.altIndex();
+        int depthi = eddGrid.depthIndex();
         int timei = eddGrid.timeIndex();
         if (loni < 0 || lati < 0) 
             throw new SimpleException("datasetID=" + tDatasetID + 
@@ -4948,9 +5034,21 @@ writer.write(
         for (int gai = 0; gai < gaa.length; gai++) {
             if (gai == loni || gai == lati)
                 continue;
-            options[gai] = gaa[gai].destinationStringValues().toStringArray();
-            tgaNames[gai] = gai == alti? "elevation" :
-                gai == timei? "time" : "dim_" + gaa[gai].destinationName();
+            if (gai == depthi) {
+                //convert depth to elevation
+                PrimitiveArray elevValues = (PrimitiveArray)gaa[gai].destinationValues().clone();
+                elevValues.scaleAddOffset(-1, 0);
+                elevValues.reverse();                 
+                options[gai] = elevValues.toStringArray();
+            } else {
+                // !!!For time, if lots of values (e.g., 10^6), this is SLOW (e.g., 30 seconds)!!!
+                options[gai] = gaa[gai].destinationStringValues().toStringArray();
+            }
+            tgaNames[gai] = 
+                gai == alti?   "elevation" :
+                gai == depthi? "elevation" : //convert to elevation
+                gai == timei? "time" : 
+                "dim_" + gaa[gai].destinationName();
         }
         String baseUrl = tErddapUrl + "/wms/" + tDatasetID;
         String requestUrl = baseUrl + "/" + EDD.WMS_SERVER;
@@ -5140,7 +5238,7 @@ writer.write(
                 int nOptionsM1 = nOptions - 1;
                 writer.write(   
                 "  <tr align=\"left\">\n" +
-                "    <td>" + gaa[gai].destinationName() + ":&nbsp;</td>\n" + 
+                "    <td>" + tgaNames[gai] + ":&nbsp;</td>\n" + //2012-12-28 was gaa[gai].destinationName()
                 "    <td width=\"95%\" align=\"left\">");
 
                 //one value: display it
@@ -5670,7 +5768,7 @@ writer.write(
         String nameAndExt = requestUrl.length() <= datasetIDStartsAt? "" : 
             requestUrl.substring(datasetIDStartsAt); //should be <datasetID>.rss
         if (!nameAndExt.endsWith(".rss")) {
-            sendResourceNotFoundError(request, response, "Invalid name");
+            sendResourceNotFoundError(request, response, "Invalid name. Extension must be .rss.");
             return;
         }
         String name = nameAndExt.substring(0, nameAndExt.length() - 4);
@@ -5768,6 +5866,10 @@ writer.write(
      */
     public void doSlideSorter(HttpServletRequest request, HttpServletResponse response,
         String loggedInAs, String userQuery) throws Throwable {
+
+        //first thing
+        if (!EDStatic.slideSorterActive) 
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "SlideSorter"));
 
         //FUTURE: when submit(), identify the slide acted upon
         //and move it to forefront (zlevel=highest).
@@ -6905,13 +7007,15 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         StringBuilder protocolTooltip = new StringBuilder(
             EDStatic.protocolSearch2Html +
             "\n<p><b>griddap</b> - "  + EDStatic.EDDGridDapDescription +
-            "\n<p><b>tabledap</b> - " + EDStatic.EDDTableDapDescription +
-            "\n<p><b>WMS</b> - "      + EDStatic.wmsDescriptionHtml);
+            "\n<p><b>tabledap</b> - " + EDStatic.EDDTableDapDescription);
         StringArray protocols = new StringArray();
         protocols.add(ANY);
         protocols.add("griddap");
         protocols.add("tabledap");
-        protocols.add("WMS");
+        if (EDStatic.wmsActive) {
+            protocols.add("WMS");
+            protocolTooltip.append("\n<p><b>WMS</b> - " + EDStatic.wmsDescriptionHtml);
+        }
         if (EDStatic.wcsActive) {
             protocols.add("WCS");
             protocolTooltip.append("\n<p><b>WCS</b> - " + EDStatic.wcsDescriptionHtml);
@@ -8472,6 +8576,9 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         String loggedInAs, String ipAddress,
         String endOfRequest, String protocol, int datasetIDStartsAt, String userQuery) throws Throwable {
 
+        if (!EDStatic.subscriptionSystemActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "subscriptions"));
+
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl, pre "?"
         String endOfRequestUrl = datasetIDStartsAt >= requestUrl.length()? "" : 
@@ -8488,9 +8595,6 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
 
         if (endOfRequest.equals(Subscriptions.INDEX_HTML)) {
             //fall through
-        } else if (!EDStatic.subscriptionSystemActive) {
-            sendResourceNotFoundError(request, response, "");
-            return;
         } else if (endOfRequest.equals(Subscriptions.ADD_HTML)) {
             doAddSubscription(request, response, loggedInAs, ipAddress, protocol, datasetIDStartsAt, userQuery);
             return;
@@ -8516,8 +8620,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             writer.write(
                 EDStatic.youAreHere(loggedInAs, protocol) +
                 MessageFormat.format(EDStatic.subscriptionHtml, tErddapUrl) + "\n");
-            if (EDStatic.subscriptionSystemActive) 
-                writer.write(
+            writer.write(
                 "<p><b>" + EDStatic.subscriptionOptions + ":</b>\n" +
                 "<ul>\n" +
                 "<li> <a rel=\"bookmark\" href=\"" + tErddapUrl + "/" + Subscriptions.ADD_HTML      + "\">" + EDStatic.subscriptionAdd      + "</a>\n" +
@@ -8525,8 +8628,6 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 "<li> <a rel=\"bookmark\" href=\"" + tErddapUrl + "/" + Subscriptions.LIST_HTML     + "\">" + EDStatic.subscriptionList     + "</a>\n" +
                 "<li> <a rel=\"bookmark\" href=\"" + tErddapUrl + "/" + Subscriptions.REMOVE_HTML   + "\">" + EDStatic.subscriptionRemove   + "</a>\n" +
                 "</ul>\n");
-            else writer.write(
-                MessageFormat.format(EDStatic.subscriptionsNotAvailable, tErddapUrl) + "\n");
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             writer.write(EDStatic.htmlForException(t));
@@ -8567,6 +8668,9 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
     public void doAddSubscription(HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String ipAddress, String protocol, int datasetIDStartsAt, 
         String userQuery) throws Throwable {
+
+        if (!EDStatic.subscriptionSystemActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "subscriptions"));
 
         String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl, pre "?"
         String endOfRequestUrl = datasetIDStartsAt >= requestUrl.length()? "" : 
@@ -8727,6 +8831,9 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         String loggedInAs, String ipAddress, String protocol, int datasetIDStartsAt, String userQuery) 
         throws Throwable {
 
+        if (!EDStatic.subscriptionSystemActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "subscriptions"));
+
         String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl, pre "?"
         String endOfRequestUrl = datasetIDStartsAt >= requestUrl.length()? "" : 
             requestUrl.substring(datasetIDStartsAt);
@@ -8829,6 +8936,9 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
      */
     public void doValidateSubscription(HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String protocol, int datasetIDStartsAt, String userQuery) throws Throwable {
+
+        if (!EDStatic.subscriptionSystemActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "subscriptions"));
 
         String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl, pre "?"
         String endOfRequestUrl = datasetIDStartsAt >= requestUrl.length()? "" : 
@@ -8946,6 +9056,9 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         String loggedInAs, String protocol, int datasetIDStartsAt, String userQuery) 
         throws Throwable {
 
+        if (!EDStatic.subscriptionSystemActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "subscriptions"));
+
         String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl, pre "?"
         String endOfRequestUrl = datasetIDStartsAt >= requestUrl.length()? "" : 
             requestUrl.substring(datasetIDStartsAt);
@@ -9061,10 +9174,14 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         String loggedInAs, 
         String endOfRequest, int datasetIDStartsAt, String userQuery) throws Throwable {
 
+        //first thing
+        if (!EDStatic.convertersActive) 
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "convert"));
+
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String requestUrl = request.getRequestURI();  //post EDStatic.baseUrl, pre "?"
         String endOfRequestUrl = datasetIDStartsAt >= requestUrl.length()? "" : 
-            requestUrl.substring(datasetIDStartsAt);
+            requestUrl.substring(datasetIDStartsAt);       
 
         if (endOfRequest.equals("convert") ||
             endOfRequest.equals("convert/")) {
@@ -9160,6 +9277,10 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
      */
     public void doConvertFipsCounty(HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String endOfRequestUrl, String userQuery) throws Throwable {
+
+        //first thing
+        if (!EDStatic.convertersActive) 
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "convert"));
 
         //parse the userQuery
         HashMap<String, String> queryMap = EDD.userQueryHashMap(userQuery, false); //true=lowercase keys
@@ -9353,6 +9474,10 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
      */
     public void doConvertKeywords(HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String endOfRequestUrl, String userQuery) throws Throwable {
+
+        //first thing
+        if (!EDStatic.convertersActive) 
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "convert"));
 
         //parse the userQuery
         HashMap<String, String> queryMap = EDD.userQueryHashMap(userQuery, false); //true=lowercase keys
@@ -9558,6 +9683,9 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
     public void doConvertTime(HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String endOfRequestUrl, String userQuery) throws Throwable {
 
+        //first thing
+        if (!EDStatic.convertersActive) 
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "convert"));
 
         //parse the userQuery
         HashMap<String, String> queryMap = EDD.userQueryHashMap(userQuery, false); //true=lowercase keys
@@ -9718,7 +9846,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 //"<br>" +
                 "<b>Convert from</b>\n" + // isoTime=\n" + 
                 widgets.textField("isoTime", 
-                    "The ISO String time.  For example, \"" + defaultIsoTime + "\".",
+                    "The ISO 8601:2004(E) String time.  For example, \"" + defaultIsoTime + "\".",
                     22, 27, 
                     answerIsoTime.length() > 0? answerIsoTime :
                     queryIsoTime.length()  > 0? queryIsoTime  : defaultIsoTime, 
@@ -9783,6 +9911,9 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
     public void doConvertUnits(HttpServletRequest request, HttpServletResponse response, 
         String loggedInAs, String endOfRequestUrl, String userQuery) throws Throwable {
 
+        //first thing
+        if (!EDStatic.convertersActive) 
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "convert"));
 
         //parse the userQuery
         HashMap<String, String> queryMap = EDD.userQueryHashMap(userQuery, false); //true=lowercase keys
@@ -11373,7 +11504,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         table.addColumn("Make A Graph", magCol);
         if (EDStatic.sosActive) table.addColumn("sos", sosCol);
         if (EDStatic.wcsActive) table.addColumn("wcs", wcsCol);
-        table.addColumn("wms", wmsCol);
+        if (EDStatic.wmsActive) table.addColumn("wms", wmsCol);
         if (EDStatic.authentication.length() > 0)
             table.addColumn("Accessible", accessCol);
         int sortOn = table.addColumn("Title", titleCol);
@@ -11383,7 +11514,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         table.addColumn("Info", infoCol);
         table.addColumn("Background Info", backgroundCol);
         table.addColumn("RSS", rssCol);
-        table.addColumn("Email", emailCol);
+        if (EDStatic.subscriptionSystemActive) table.addColumn("Email", emailCol);
         table.addColumn("Institution", institutionCol);
         table.addColumn("Dataset ID", idCol);
         for (int i = 0; i < datasetIDs.size(); i++) {
@@ -11477,7 +11608,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         table.addColumn("Make<br>A<br>Graph", magCol);
         if (EDStatic.sosActive) table.addColumn("S<br>O<br>S", sosCol);
         if (EDStatic.wcsActive) table.addColumn("W<br>C<br>S", wcsCol);
-        table.addColumn("W<br>M<br>S", wmsCol);
+        if (EDStatic.wmsActive) table.addColumn("W<br>M<br>S", wmsCol);
         String accessTip = EDStatic.dtAccessible;
         if (isLoggedIn)
             accessTip += EDStatic.dtAccessibleYes;
@@ -11501,7 +11632,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             infoCol);
         table.addColumn("Back-<br>ground<br>Info", backgroundCol);
         table.addColumn("RSS", rssCol);
-        table.addColumn("E<br>mail", emailCol);
+        if (EDStatic.subscriptionSystemActive) table.addColumn("E<br>mail", emailCol);
         table.addColumn("Institution", institutionCol);
         table.addColumn("Dataset ID", idCol);
         for (int i = 0; i < datasetIDs.size(); i++) {
@@ -11829,7 +11960,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             expected = 
                 "Core Version: DAP/2.0\n" +
                 "Server Version: dods/3.7\n" +
-                "ERDDAP_version: 1.42\n";
+                "ERDDAP_version: 1.43\n";
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/griddap/version");
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/tabledap/version");
@@ -12041,15 +12172,19 @@ jsonp + "(" +
 "    \"columnNames\": [\"griddap\", \"Subset\", \"tabledap\", \"Make A Graph\", " +
                 (EDStatic.sosActive? "\"sos\", " : "") +
                 (EDStatic.wcsActive? "\"wcs\", " : "") +
-                "\"wms\", " + 
+                (EDStatic.wmsActive? "\"wms\", " : "") + 
                 (EDStatic.authentication.length() > 0? "\"Accessible\", " : "") +
-                "\"Title\", \"Summary\", \"FGDC\", \"ISO 19115\", \"Info\", \"Background Info\", \"RSS\", \"Email\", \"Institution\", \"Dataset ID\"],\n" +
+                "\"Title\", \"Summary\", \"FGDC\", \"ISO 19115\", \"Info\", \"Background Info\", \"RSS\", " +
+                (EDStatic.subscriptionSystemActive? "\"Email\", " : "") +
+                "\"Institution\", \"Dataset ID\"],\n" +
 "    \"columnTypes\": [\"String\", \"String\", \"String\", \"String\", " +
                 (EDStatic.sosActive? "\"String\", " : "") +
                 (EDStatic.wcsActive? "\"String\", " : "") +
-                "\"String\", " +
+                (EDStatic.wmsActive? "\"String\", " : "") +
                 (EDStatic.authentication.length() > 0? "\"String\", " : "") +
-                "\"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\"],\n" +
+                "\"String\", \"String\", \"String\", \"String\", \"String\", \"String\", \"String\", " +
+                (EDStatic.subscriptionSystemActive? "\"String\", " : "") +
+                "\"String\", \"String\"],\n" +
 "    \"rows\": [\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
@@ -12059,7 +12194,7 @@ jsonp + "(" +
 "\"http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle.graph\", " + 
                 (EDStatic.sosActive? "\"\", " : "") + //currently, it isn't made available via sos
                 (EDStatic.wcsActive? "\"\", " : "") +
-                "\"\", " +
+                (EDStatic.wmsActive? "\"\", " : "") +
                 (EDStatic.authentication.length() > 0? "\"public\", " : "") +
                 "\"GLOBEC NEP Rosette Bottle Data (2002)\", \"GLOBEC (GLOBal " +
                 "Ocean ECosystems Dynamics) NEP (Northeast Pacific)\\nRosette Bottle Data from " +
@@ -12093,7 +12228,9 @@ jsonp + "(" +
                 "\"http://127.0.0.1:8080/cwexperimental/info/erdGlobecBottle/index.json\", " +
                 "\"http://www.globec.org/\", " +
                 "\"http://127.0.0.1:8080/cwexperimental/rss/erdGlobecBottle.rss\", " +
-                "\"http://127.0.0.1:8080/cwexperimental/subscriptions/add.html?datasetID=erdGlobecBottle&showErrors=false&email=\", " +
+                (EDStatic.subscriptionSystemActive? 
+                    "\"http://127.0.0.1:8080/cwexperimental/subscriptions/add.html?datasetID=erdGlobecBottle&showErrors=false&email=\", " :
+                    "") +
                 "\"GLOBEC\", \"erdGlobecBottle\"],";
             po = results.indexOf("http://127.0.0.1:8080/cwexperimental/tabledap/erdGlobecBottle");
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, "results=\n" + results);
@@ -12205,7 +12342,17 @@ jsonp + "(" +
                 Test.ensureTrue(results.indexOf("<ows:ServiceIdentification>") >= 0, "results=\n" + results);            
                 Test.ensureTrue(results.indexOf("<ows:Get xlink:href=\"" + sosUrl + "\"/>") >= 0, "results=\n" + results);
                 Test.ensureTrue(results.indexOf("</Capabilities>") >= 0, "results=\n" + results);
+            } else {
+                results = "Shouldn't get here.";
+                try {
+                    results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/sos/index.html?" + 
+                        EDStatic.defaultPIppQuery);
+                } catch (Throwable t) {
+                    results = MustBe.throwableToString(t);
+                }
+                Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0, "results=\n" + results);            
             }
+
 
             //wcs
             if (EDStatic.wcsActive) {
@@ -12239,42 +12386,62 @@ jsonp + "(" +
                 Test.ensureTrue(results.indexOf("<CoverageOfferingBrief>") >= 0, "results=\n" + results);            
                 Test.ensureTrue(results.indexOf("<lonLatEnvelope srsName") >= 0, "results=\n" + results);
                 Test.ensureTrue(results.indexOf("</WCS_Capabilities>") >= 0, "results=\n" + results);
+            } else {
+                results = "Shouldn't get here.";
+                try {
+                    results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wcs/index.html?" + 
+                        EDStatic.defaultPIppQuery);
+                } catch (Throwable t) {
+                    results = MustBe.throwableToString(t);
+                }
+                Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0, "results=\n" + results);            
             }
 
             //wms
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wms/index.html?" + 
-                EDStatic.defaultPIppQuery);
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("List of WMS Datasets") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf(">Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\n") >= 0,
-                "results=\n" + results);            
-            Test.ensureTrue(results.indexOf(">erdMHchla8day\n") >= 0, "results=\n" + results);
+            if (EDStatic.wmsActive) {
+                results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wms/index.html?" + 
+                    EDStatic.defaultPIppQuery);
+                Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+                Test.ensureTrue(results.indexOf("List of WMS Datasets") >= 0, "results=\n" + results);
+                Test.ensureTrue(results.indexOf(">Title\n") >= 0, "results=\n" + results);
+                Test.ensureTrue(results.indexOf(">RSS\n") >= 0, "results=\n" + results);
+                Test.ensureTrue(results.indexOf(">Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\n") >= 0,
+                    "results=\n" + results);            
+                Test.ensureTrue(results.indexOf(">erdMHchla8day\n") >= 0, "results=\n" + results);
 
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wms/index.json?" + 
-                EDStatic.defaultPIppQuery);
-            Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("\"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\"") >= 0,
-                "results=\n" + results);            
-            Test.ensureTrue(results.indexOf("\"erdMHchla8day\"") >= 0, "results=\n" + results);
+                results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wms/index.json?" + 
+                    EDStatic.defaultPIppQuery);
+                Test.ensureTrue(results.indexOf("\"table\"") >= 0, "results=\n" + results);
+                Test.ensureTrue(results.indexOf("\"Title\"") >= 0, "results=\n" + results);
+                Test.ensureTrue(results.indexOf("\"RSS\"") >= 0, "results=\n" + results);
+                Test.ensureTrue(results.indexOf("\"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\"") >= 0,
+                    "results=\n" + results);            
+                Test.ensureTrue(results.indexOf("\"erdMHchla8day\"") >= 0, "results=\n" + results);
 
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wms/documentation.html");            
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("display of registered and superimposed map-like views") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Three Ways to Make Maps with WMS") >= 0, "results=\n" + results);
+                results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wms/documentation.html");            
+                Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+                Test.ensureTrue(results.indexOf("display of registered and superimposed map-like views") >= 0, "results=\n" + results);
+                Test.ensureTrue(results.indexOf("Three Ways to Make Maps with WMS") >= 0, "results=\n" + results);
 
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wms/erdMHchla8day/index.html");            
-            Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)") >= 0,
-                "results=\n" + results);            
-            Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("on-the-fly by ERDDAP's") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("altitude") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Three Ways to Make Maps with WMS") >= 0, "results=\n" + results);
+                results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wms/erdMHchla8day/index.html");            
+                Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
+                Test.ensureTrue(results.indexOf("Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)") >= 0,
+                    "results=\n" + results);            
+                Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
+                Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
+                Test.ensureTrue(results.indexOf("on-the-fly by ERDDAP's") >= 0, "results=\n" + results);
+                Test.ensureTrue(results.indexOf("altitude") >= 0, "results=\n" + results);
+                Test.ensureTrue(results.indexOf("Three Ways to Make Maps with WMS") >= 0, "results=\n" + results);
+            } else {
+                results = "Shouldn't get here.";
+                try {
+                    results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/wms/index.html?" + 
+                        EDStatic.defaultPIppQuery);
+                } catch (Throwable t) {
+                    results = MustBe.throwableToString(t);
+                }
+                Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0, "results=\n" + results);            
+            }
 
 //            results = SSR.getUrlResponseString(EDStatic.erddapUrl + 
 //                "/categorize/standard_name/index.html");
@@ -12297,9 +12464,9 @@ jsonp + "(" +
                 "results=\n" + results);
 
             //subscriptions
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + 
-                "/subscriptions/index.html");
             if (EDStatic.subscriptionSystemActive) {
+                results = SSR.getUrlResponseString(EDStatic.erddapUrl + 
+                    "/subscriptions/index.html");
                 Test.ensureTrue(results.indexOf("Add a new subscription") >= 0, "results=\n" + results);
                 Test.ensureTrue(results.indexOf("Validate a subscription") >= 0, "results=\n" + results);
                 Test.ensureTrue(results.indexOf("List your subscriptions") >= 0, "results=\n" + results);
@@ -12328,15 +12495,35 @@ jsonp + "(" +
                 Test.ensureTrue(results.indexOf(
                     "To remove a (another) subscription, please fill out this form:") >= 0, 
                     "results=\n" + results);
+            } else {
+                results = "Shouldn't get here.";
+                try {
+                    results = SSR.getUrlResponseString(EDStatic.erddapUrl + 
+                        "/subscriptions/index.html");
+                } catch (Throwable t) {
+                    results = MustBe.throwableToString(t);
+                }
+                Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0, "results=\n" + results);            
             }
 
 
             //slideSorter
-            results = SSR.getUrlResponseString(EDStatic.erddapUrl + 
-                "/slidesorter.html");
-            Test.ensureTrue(results.indexOf(
-                "Your slides will be lost when you close this browser window, unless you:") >= 0, 
-                "results=\n" + results);
+            if (EDStatic.slideSorterActive) {
+                results = SSR.getUrlResponseString(EDStatic.erddapUrl + 
+                    "/slidesorter.html");
+                Test.ensureTrue(results.indexOf(
+                    "Your slides will be lost when you close this browser window, unless you:") >= 0, 
+                    "results=\n" + results);
+            } else {
+                results = "Shouldn't get here.";
+                try {
+                    results = SSR.getUrlResponseString(EDStatic.erddapUrl + 
+                        "/slidesorter.html");
+                } catch (Throwable t) {
+                    results = MustBe.throwableToString(t);
+                }
+                Test.ensureTrue(results.indexOf("Server returned HTTP response code: 500 for URL:") >= 0, "results=\n" + results);            
+            }
 
 
             //google Gadgets (always at coastwatch)
@@ -12377,8 +12564,9 @@ jsonp + "(" +
 "tabledap,http://127.0.0.1:8080/cwexperimental/tabledap/index.csv?" + EDStatic.defaultPIppQuery + "\n" +
 (EDStatic.sosActive? "sos,http://127.0.0.1:8080/cwexperimental/sos/index.csv?" + EDStatic.defaultPIppQuery + "\n" : "") +
 (EDStatic.wcsActive? "wcs,http://127.0.0.1:8080/cwexperimental/wcs/index.csv?" + EDStatic.defaultPIppQuery + "\n" : "") +
-"wms,http://127.0.0.1:8080/cwexperimental/wms/index.csv?" + EDStatic.defaultPIppQuery + "\n";
+(EDStatic.wmsActive? "wms,http://127.0.0.1:8080/cwexperimental/wms/index.csv?" + EDStatic.defaultPIppQuery + "\n" : "");
 //subscriptions?
+//converters?
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/index.htmlTable?" + 
@@ -12428,10 +12616,11 @@ EDStatic.startBodyHtml(null) + "\n" +
 "<td nowrap>wcs\n" +
 "<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/wcs/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/wcs/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
 "</tr>\n" : "") +
+(EDStatic.wmsActive?
 "<tr>\n" +
 "<td nowrap>wms\n" +
 "<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/wms/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/wms/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
-"</tr>\n" +
+"</tr>\n" : "") +
 "</table>\n" +
 EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "</html>\n";
@@ -12448,10 +12637,10 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "      [\"search\", \"http://127.0.0.1:8080/cwexperimental/search/index.json?page=1&itemsPerPage=1000&searchFor=\"],\n" +
 "      [\"categorize\", \"http://127.0.0.1:8080/cwexperimental/categorize/index.json?page=1&itemsPerPage=1000\"],\n" +
 "      [\"griddap\", \"http://127.0.0.1:8080/cwexperimental/griddap/index.json?page=1&itemsPerPage=1000\"],\n" +
-"      [\"tabledap\", \"http://127.0.0.1:8080/cwexperimental/tabledap/index.json?page=1&itemsPerPage=1000\"],\n" +
-(EDStatic.sosActive? "      [\"sos\", \"http://127.0.0.1:8080/cwexperimental/sos/index.json?page=1&itemsPerPage=1000\"],\n" : "") +
-(EDStatic.wcsActive? "      [\"wcs\", \"http://127.0.0.1:8080/cwexperimental/wcs/index.json?page=1&itemsPerPage=1000\"],\n" : "") +
-"      [\"wms\", \"http://127.0.0.1:8080/cwexperimental/wms/index.json?page=1&itemsPerPage=1000\"]\n" +
+"      [\"tabledap\", \"http://127.0.0.1:8080/cwexperimental/tabledap/index.json?page=1&itemsPerPage=1000\"]"            + (EDStatic.sosActive || EDStatic.wcsActive || EDStatic.wmsActive? "," : "") + "\n" +
+(EDStatic.sosActive? "      [\"sos\", \"http://127.0.0.1:8080/cwexperimental/sos/index.json?page=1&itemsPerPage=1000\"]" + (EDStatic.wcsActive || EDStatic.wmsActive? "," : "") + "\n" : "") +
+(EDStatic.wcsActive? "      [\"wcs\", \"http://127.0.0.1:8080/cwexperimental/wcs/index.json?page=1&itemsPerPage=1000\"]" + (EDStatic.wmsActive? "," : "") + "\n" : "") +
+(EDStatic.wmsActive? "      [\"wms\", \"http://127.0.0.1:8080/cwexperimental/wms/index.json?page=1&itemsPerPage=1000\"]\n" : "") +
 //subscriptions?
 "    ]\n" +
 "  }\n" +
@@ -12468,7 +12657,7 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "tabledap[9]http://127.0.0.1:8080/cwexperimental/tabledap/index.tsv?page=1&itemsPerPage=1000[10]\n" +
 (EDStatic.sosActive? "sos[9]http://127.0.0.1:8080/cwexperimental/sos/index.tsv?page=1&itemsPerPage=1000[10]\n" : "") +
 (EDStatic.wcsActive? "wcs[9]http://127.0.0.1:8080/cwexperimental/wcs/index.tsv?page=1&itemsPerPage=1000[10]\n" : "") +
-"wms[9]http://127.0.0.1:8080/cwexperimental/wms/index.tsv?page=1&itemsPerPage=1000[10]\n" +
+(EDStatic.wmsActive? "wms[9]http://127.0.0.1:8080/cwexperimental/wms/index.tsv?page=1&itemsPerPage=1000[10]\n" : "") +
 "[end]";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -12520,10 +12709,11 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "<td nowrap=\"nowrap\">wcs</td>\n" +
 "<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/wcs/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
 "</tr>\n" : "") +
+(EDStatic.wmsActive? 
 "<tr>\n" +
 "<td nowrap=\"nowrap\">wms</td>\n" +
 "<td nowrap=\"nowrap\">http://127.0.0.1:8080/cwexperimental/wms/index.xhtml?page=1&amp;itemsPerPage=1000</td>\n" +
-"</tr>\n" +
+"</tr>\n" : "") +
 "</table>\n" +
 "</body>\n" +
 "</html>\n";

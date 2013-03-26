@@ -87,11 +87,10 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
     public EDDTableFromThreddsFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        int tColumnNamesRow, int tFirstDataRow,
+        String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -100,11 +99,11 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         super("EDDTableFromThreddsFiles", true, //isLocal is now set to true (copied files)
             tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File,
-            tAddGlobalAttributes, tAltMetersPerSourceUnit, 
+            tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
             EDStatic.fullCopyDirectory + tDatasetID + "/", //force fileDir to be the copyDir 
             tRecursive, tFileNameRegex, tMetadataFrom,
-            tColumnNamesRow, tFirstDataRow,
+            tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ);
@@ -552,14 +551,13 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      * This gets source data from one copied .nc file.
      * See documentation in EDDTableFromFiles.
      *
-     *
      * @throws an exception if too much data.
      *  This won't throw an exception if no data.
      */
     public Table lowGetSourceDataFromFile(String fileDir, String fileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
-        StringArray conVars, StringArray conOps, StringArray conValues,
+        StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
 
@@ -571,7 +569,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             sortedSpacing >= 0 && !Double.isNaN(minSorted)? sortedColumnSourceName : null,
                 minSorted, maxSorted, 
             getMetadata);
-        //String2.log("  EDDTableFromNcFiles.getSourceDataFromFile table.nRows=" + table.nRows());
+        //String2.log("  EDDTableFromThreddsFiles.lowGetSourceDataFromFile table.nRows=" + table.nRows());
 
         return table;
     }
@@ -666,7 +664,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             externalAddGlobalAttributes = new Attributes();
         externalAddGlobalAttributes.setIfNotAlreadySet("sourceUrl", tPublicDirUrl);
         //externalAddGlobalAttributes.setIfNotAlreadySet("subsetVariables", "???");
-        //after dataVariables known, add global attributes in the axisAddTable
+        //after dataVariables known, add global attributes in the dataAddTable
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
@@ -695,8 +693,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             "    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
             "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
-            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
-            "    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n");
+            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -760,7 +757,6 @@ directionsForGenerateDatasetsXml() +
 "    <columnNameForExtract>stationID</columnNameForExtract>\n" +
 "    <sortedColumnSourceName>Time</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>stationID Time</sortFilesBySourceNames>\n" +
-"    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"Conventions\">CF-1.4</att>\n" +                                                 //dates below change
 "        <att name=\"History\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2012/31/11 20:31 CST. Original dataset URL:</att>\n" +
@@ -772,7 +768,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"cdm_data_type\">Other</att>\n" +
+"        <att name=\"cdm_data_type\">Point</att>\n" +
 "        <att name=\"Conventions\">CF-1.6, COARDS, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"creator_name\">NOAA NODC</att>\n" +
 "        <att name=\"creator_url\">http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
@@ -780,9 +776,9 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"history\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2012/31/11 20:31 CST. Original dataset URL:</att>\n" +
 "        <att name=\"infoUrl\">http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
 "        <att name=\"institution\">NOAA NODC</att>\n" +
-"        <att name=\"keywords\">\n" +
+"        <att name=\"keywords\">altitudes, catalog, data, data.nodc.noaa.gov, day, depth, expressed, flag, identifier, negative, nmsp, noaa, nodc, ocean, oceans,\n" +
 "Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
-"altitudes, catalog, data, data.nodc.noaa.gov, day, depth, expressed, flag, from, http, identifier, negative, nmsp, noaa, nodc, ocean, oceans, quality, sea, sea_water_temperature, sea_water_temperature status_flag, seawater, station, status, temperature, thredds, time, water, wcos, wes0, year, yearday</att>\n" +
+"quality, sea, sea_water_temperature, sea_water_temperature status_flag, seawater, station, status, temperature, thredds, time, water, wcos, wes0, year, yearday</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Metadata_Conventions\">CF-1.6, COARDS, Unidata Dataset Discovery v1.0</att>\n" +
@@ -819,7 +815,7 @@ directionsForGenerateDatasetsXml() +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>Depth</sourceName>\n" +
-"        <destinationName>Depth</destinationName>\n" +
+"        <destinationName>depth</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"int\">-9999</att>\n" +
@@ -971,11 +967,9 @@ directionsForGenerateDatasetsXml() +
 
 
         String id = "nmspWcosTemp";
-        if (deleteCachedInfo) {
-            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
-        }
+        if (deleteCachedInfo) 
+            deleteCachedDatasetInfo(id);
+
         EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
 
         //*** test getting das for entire dataset
@@ -1013,7 +1007,7 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 _FillValue -9999.0;\n" +
+"    Float64 _FillValue NaN;\n" +
 "    Float64 actual_range 1.0971834e+9, 1.29749592e+9;\n" +  //changes sometimes   see time_coverage_end below
 "    String axis \"T\";\n" +
 "    String cf_role \"profile_id\";\n" +
@@ -1023,17 +1017,17 @@ directionsForGenerateDatasetsXml() +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "  }\n" +
-"  altitude {\n" +
+"  depth {\n" +
 "    String _CoordinateAxisType \"Height\";\n" +
-"    String _CoordinateZisPositive \"up\";\n" +
-"    Float64 _FillValue 9999.0;\n" +
-"    Float64 actual_range -99.0, 0.0;\n" +
+"    String _CoordinateZisPositive \"down\";\n" +
+"    Float64 _FillValue -9999.0;\n" +
+"    Float64 actual_range 0.0, 99.0;\n" +
 "    String axis \"Z\";\n" +
 "    String description \"Relative to Mean Sea Level (MSL)\";\n" +
 "    String ioos_category \"Location\";\n" +
-"    String long_name \"Altitude\";\n" +
-"    String positive \"up\";\n" +
-"    String standard_name \"altitude\";\n" +
+"    String long_name \"Depth\";\n" +
+"    String positive \"down\";\n" +
+"    String standard_name \"depth\";\n" +
 "    String units \"m\";\n" +
 "  }\n" +
 "  Temperature {\n" +
@@ -1068,9 +1062,9 @@ directionsForGenerateDatasetsXml() +
 "    Float64 geospatial_lon_max -119.66934;\n" +
 "    Float64 geospatial_lon_min -124.932;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
-"    Float64 geospatial_vertical_max 0.0;\n" +
-"    Float64 geospatial_vertical_min -99.0;\n" +
-"    String geospatial_vertical_positive \"up\";\n" +
+"    Float64 geospatial_vertical_max 99.0;\n" +
+"    Float64 geospatial_vertical_min 0.0;\n" +
+"    String geospatial_vertical_positive \"down\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"Created by the NCDDC PISCO Temperature Profile to NetCDF converter.\n" +
 today;
@@ -1132,7 +1126,7 @@ expected =
 "    Float64 longitude;\n" +
 "    Float64 latitude;\n" +
 "    Float64 time;\n" +
-"    Float64 altitude;\n" +
+"    Float64 depth;\n" +
 "    Float64 Temperature;\n" +
 "    Byte Temperature_flag;\n" +
 "  } s;\n" +
@@ -1207,11 +1201,11 @@ expected =
 //Lat, 37.13015 Time=1122592440 depth=-12 Lon=-122.361253    
 // yearday 208.968,  temp_flag 0, temp 10.66, yeardayflag  0
         expected = 
-"station,longitude,latitude,time,altitude,Temperature,Temperature_flag\n" +
+"station,longitude,latitude,time,depth,Temperature,Temperature_flag\n" +
 ",degrees_east,degrees_north,UTC,m,degree_C,\n" +
-"ANO001,-122.361253,37.13015,2005-07-28T23:14:00Z,-4.0,12.04,0\n" +
-"ANO001,-122.361253,37.13015,2005-07-28T23:14:00Z,-12.0,10.66,0\n" +
-"ANO001,-122.361253,37.13015,2005-07-28T23:14:00Z,-20.0,10.51,0\n";
+"ANO001,-122.361253,37.13015,2005-07-28T23:14:00Z,4.0,12.04,0\n" +
+"ANO001,-122.361253,37.13015,2005-07-28T23:14:00Z,12.0,10.66,0\n" +
+"ANO001,-122.361253,37.13015,2005-07-28T23:14:00Z,20.0,10.51,0\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
@@ -1272,11 +1266,9 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         String id = "fsuNoaaShipWTEP";
-        if (deleteCachedInfo) {
-            File2.delete(datasetDir(id) + DIR_TABLE_FILENAME);
-            File2.delete(datasetDir(id) + FILE_TABLE_FILENAME);
-            File2.delete(datasetDir(id) + BADFILE_TABLE_FILENAME);
-        }
+        if (deleteCachedInfo)
+            deleteCachedDatasetInfo(id);
+
         EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
 
         //*** test getting das for entire dataset
@@ -1315,7 +1307,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.1886048e+9, 1.35198714e+9;\n" +  //2nd number changes
+"    Float64 actual_range 1.1886048e+9, 1.36347834e+9;\n" + //2nd number changes
 "    String axis \"T\";\n" +
 "    Int32 data_interval 60;\n" +
 "    String ioos_category \"Time\";\n" +
@@ -1369,8 +1361,8 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
 "    Float32 centerline_offset -9999.0;\n" +
-"    Float64 colorBarMaximum 1030.0;\n" +
-"    Float64 colorBarMinimum 970.0;\n" +
+"    Float64 colorBarMaximum 1050.0;\n" +
+"    Float64 colorBarMinimum 950.0;\n" +
 "    Float32 data_precision -9999.0;\n" +
 "    Float32 distance_from_bow -9999.0;\n" +
 "    Float32 height -9999.0;\n" +
@@ -1412,14 +1404,25 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  conductivity {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.0, 4.78;\n" +
+"    Float32 actual_range 0.0, 5.555556E7;\n" + //2013-03-26 new value is nonsense.  was 4.78
+"    String average_center \"unknown\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 4.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    Float32 distance_from_bow -9999.0;\n" +
+"    Float32 height -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"Conductivity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
+"    String original_units \"siemens meter-1\";\n" +
 "    Int32 qcindex 16;\n" +
+"    Float32 sampling_rate -9999.0;\n" +
+"    Float32 special_value -8888.0;\n" +
 "    String standard_name \"sea_water_electrical_conductivity\";\n" +
 "    String units \"siemens meter-1\";\n" +
 "  }\n" +
@@ -1449,28 +1452,50 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  salinity {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.0, 9672.92;\n" +
+"    Float32 actual_range 0.0, 7777777.0;\n" + //2013-03-26 nonsense!  was 9672.92
+"    String average_center \"unknown\";\n" +
+"    Int16 average_length -9999;\n" +
+"    String average_method \"average\";\n" +
+"    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 37.0;\n" +
 "    Float64 colorBarMinimum 32.0;\n" +
+"    Int32 data_interval 60;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    Float32 distance_from_bow -9999.0;\n" +
+"    Float32 height -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"Salinity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"calculated\";\n" +
+"    String original_units \"PSU\";\n" +
 "    Int32 qcindex 15;\n" +
+"    Float32 sampling_rate -9999.0;\n" +
+"    Float32 special_value -8888.0;\n" +
 "    String standard_name \"sea_water_salinity\";\n" +
 "    String units \"PSU\";\n" +
 "  }\n" +
 "  seaTemperature {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range -1.1, 7777777.0;\n" +
+"    Float32 actual_range -1.1, 7777777.0;\n" +  //nonsense!
+"    String average_center \"time at end of period\";\n" +
+"    Int16 average_length 60;\n" +
+"    String average_method \"average\";\n" +
+"    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 40.0;\n" +
 "    Float64 colorBarMinimum -10.0;\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    Float32 distance_from_bow -9999.0;\n" +
+"    Float32 height -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"Sea Water Temperature\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
 "    String original_units \"celsius\";\n" +
 "    Int32 qcindex 14;\n" +
+"    Float32 sampling_rate 1.0;\n" +
+"    Float32 special_value -8888.0;\n" +
 "    String standard_name \"sea_water_temperature\";\n" +
 "    Int16 ts_sensor_category 12;\n" +
 "    String units \"degree_C\";\n" +
@@ -1642,7 +1667,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String C \"Non-sequential time\";\n" +
 "    String D \"Failed T>=Tw>=Td\";\n" +
 "    String DODS_dimName \"f_string\";\n" +
-"    Int32 DODS_strlen 13;\n" +
+"    Int32 DODS_strlen 16;\n" +
 "    String E \"True wind error\";\n" +
 "    String F \"Velocity unrealistic\";\n" +
 "    String G \"Value > 4 s. d. from climatology\";\n" +
@@ -1676,7 +1701,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String creator_email \"samos@coaps.fsu.edu\";\n" +
 "    String creator_name \"Shipboard Automated Meteorological and Oceanographic System (SAMOS)\";\n" +
 "    String creator_url \"http://samos.coaps.fsu.edu/html/\";\n" +
-"    String Data_modification_date \"11/13/2012 13:58:06 EST\";\n" + //changes
+"    String Data_modification_date \"03/26/2013 11:25:05 EDT\";\n" + //changes
 "    String data_provider \"Timothy Salisbury\";\n" +
 "    Float64 Easternmost_Easting 351.15;\n" +
 "    Int16 elev 0;\n" +
@@ -1717,7 +1742,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    String Metadata_modification_date \"11/13/2012 13:58:06 EST\";\n" + //changes
+"    String Metadata_modification_date \"03/26/2013 11:25:05 EDT\";\n" + //changes
 "    Float64 Northernmost_Northing 70.05856;\n" +
 "    String receipt_order \"01\";\n" +
 "    String sourceUrl \"http://coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\";\n" +
@@ -1736,7 +1761,7 @@ expected =
 "(Don't include backslashes in your query.)\n" +
 "See the tutorial for regular expressions at\n" +
 "http://www.vogella.de/articles/JavaRegularExpressions/article.html\";\n" +
-"    String time_coverage_end \"2012-11-03T23:59:00Z\";\n" +  //changes
+"    String time_coverage_end \"2013-03-16T23:59:00Z\";\n" +  //changes
 "    String time_coverage_start \"2007-09-01T00:00:00Z\";\n" +
 "    String title \"NOAA Ship Oscar Dyson Underway Meteorological Data, Quality Controlled\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +

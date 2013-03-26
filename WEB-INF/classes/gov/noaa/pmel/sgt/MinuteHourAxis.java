@@ -36,7 +36,7 @@ import gov.noaa.pmel.util.IllegalTimeValue;
  * @see TimeAxis
  */
 public class MinuteHourAxis implements TimeAxisStyle {
-  static final int MINUTE_TEST__ = 31;
+  static final int MINUTE_TEST__ = 31;  // >0.5 hr
   static final String defaultMinorLabelFormat__ = "mm";
   //2011-12-15 Bob Simons changed space to 'T'
   static final String defaultMajorLabelFormat__ = "yyyy-MM-dd'T'HH"; 
@@ -72,7 +72,7 @@ public class MinuteHourAxis implements TimeAxisStyle {
     return time.getGMTMinutes();
   }
   public int getMajorValue(GeoDate time) {
-    return time.getGMTHours() + 1;
+    return time.getGMTHours();
   }
   public boolean isRoomForMajorLabel(GeoDate delta) {
     return 1440.0*(((double)delta.getTime())/((double)GeoDate.MSECS_IN_DAY)) > MINUTE_TEST__;
@@ -102,16 +102,16 @@ public class MinuteHourAxis implements TimeAxisStyle {
     try {
       if(time_increasing) {
         time = new GeoDate(tRange.start.getGMTMonth(),
-         tRange.start.getGMTDay(),
+                           tRange.start.getGMTDay(),
                            tRange.start.getGMTYear(),
-         tRange.start.getGMTHours(),
+                           tRange.start.getGMTHours(),
                            tRange.start.getGMTMinutes(), 0, 0);
         if(!time.equals(tRange.start)) time.increment(1.0, GeoDate.MINUTES);
       } else {
         time = new GeoDate(tRange.end.getGMTMonth(),
-         tRange.end.getGMTDay(),
+                           tRange.end.getGMTDay(),
                            tRange.end.getGMTYear(),
-         tRange.end.getGMTHours(),
+                           tRange.end.getGMTHours(),
                            tRange.end.getGMTMinutes(), 0, 0);
         if(!time.equals(tRange.end)) time.increment(1.0, GeoDate.MINUTES);
       }
@@ -125,6 +125,6 @@ public class MinuteHourAxis implements TimeAxisStyle {
     return incrementUnits__;
   }
   public String toString() {
-    return "MinuteHourAxis";
+    return "MinuteHourAxis inc=" + incrementValue__ + " minorLabelInterval=" + defaultMinorLabelInterval_;
   }
 }

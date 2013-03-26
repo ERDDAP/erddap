@@ -74,11 +74,10 @@ public class EDDTableFromPostNcFiles extends EDDTableFromNcFiles {
     public EDDTableFromPostNcFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        int tColumnNamesRow, int tFirstDataRow,
+        String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -86,10 +85,10 @@ public class EDDTableFromPostNcFiles extends EDDTableFromNcFiles {
         throws Throwable {
 
         super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
-            tAddGlobalAttributes, tAltMetersPerSourceUnit, 
+            tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
-            tColumnNamesRow, tFirstDataRow,
+            tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ);

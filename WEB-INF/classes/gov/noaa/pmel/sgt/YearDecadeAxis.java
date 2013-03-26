@@ -20,9 +20,13 @@ import gov.noaa.pmel.util.IllegalTimeValue;
  * Draws time axes using the year/decade style.
  *
  * <pre>
+ * was
  *            |..........|..........|..........|..........|
  *                 84         85         86         87
  *                               1980
+ *  Bob made it
+ *            |         |         |         |
+ *           1980      1981      1982      1983
  * </pre>
  *
  * @author Donald Denbo
@@ -67,6 +71,7 @@ public class YearDecadeAxis implements TimeAxisStyle {
     } else {
       defaultMinorLabelInterval_ = 1;
     }
+    defaultMajorLabelInterval_ = 0;  //never draw
   }
   public double computeLocation(double prev,double now) {
     return prev; //(prev + now)*0.5;
@@ -81,7 +86,7 @@ public class YearDecadeAxis implements TimeAxisStyle {
     return delta.getTime()/GeoDate.MSECS_IN_DAY > DECADE_TEST__;
   }
   public boolean isStartOfMinor(GeoDate time) {
-    return false; //was (time.getGMTYear() % 10) == 0;
+    return false;   //i.e., never draw thick tick    was (time.getGMTYear() % 10) == 0;
   }
   public String getDefaultMinorLabelFormat() {
     return defaultMinorLabelFormat__;
@@ -105,7 +110,7 @@ public class YearDecadeAxis implements TimeAxisStyle {
     try {
       if(time_increasing) {
         time = new GeoDate(1, 1, tRange.start.getGMTYear(), 0, 0, 0, 0);
-        if(!time.equals(tRange.start)) time.increment(1.0, GeoDate.YEARS);
+        if(time.getTime() < tRange.start.getTime()) time.increment(1.0, GeoDate.YEARS);
       } else {
         time = new GeoDate(1, 1, tRange.end.getGMTYear(), 0, 0, 0, 0);
         if(!time.equals(tRange.end)) time.increment(1.0, GeoDate.YEARS);
@@ -120,6 +125,6 @@ public class YearDecadeAxis implements TimeAxisStyle {
     return incrementUnits__;
   }
   public String toString() {
-    return "YearDecadeAxis";
+    return "YearDecadeAxis inc=" + incrementValue__ + " minorLabelInterval=" + defaultMinorLabelInterval_;
   }
 }

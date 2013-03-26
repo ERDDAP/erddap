@@ -161,7 +161,7 @@ public class TaskThread extends Thread {
                         "    dapUrl=" + dapUrl +
                         "    vars=" + vars + " projection=" + projection +
                         "    file=" + fullFileName + 
-                            " lastMod=" + Calendar2.safeEpochSecondsToIsoStringT(
+                            " lastMod=" + Calendar2.safeEpochSecondsToIsoStringT( //local time, or Z?
                                 lastModified.longValue() / 1000.0, "NaN");
                     String2.log(taskSummary);
 
@@ -179,7 +179,7 @@ public class TaskThread extends Thread {
                         "  TASK_ALL_DAP_TO_NC \n" + 
                         "    dapUrl=" + dapUrl +
                         "    file=" + fullFileName + 
-                            " lastMod=" + Calendar2.safeEpochSecondsToIsoStringT(
+                            " lastMod=" + Calendar2.safeEpochSecondsToIsoStringT( //local time, or Z?
                                 lastModified.longValue() / 1000.0, "NaN");
                     String2.log(taskSummary);
 

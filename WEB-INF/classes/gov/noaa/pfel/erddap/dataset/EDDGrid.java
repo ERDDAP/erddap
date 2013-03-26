@@ -251,8 +251,9 @@ public abstract class EDDGrid extends EDD {
     /** The constructor should set these to indicate where the 
      * lon,lat,alt,time variables are in axisVariables 
      * (or leave as -1 if not present).
+     * altIndex and depthIndex mustn't be active simultaneously.
      */
-    protected int lonIndex = -1, latIndex = -1, altIndex = -1, timeIndex = -1;
+    protected int lonIndex = -1, latIndex = -1, altIndex = -1, depthIndex = -1, timeIndex = -1;
 
     /** These are created as needed (in the constructor) from axisVariables. */
     protected String[] axisVariableSourceNames, axisVariableDestinationNames;
@@ -522,7 +523,8 @@ public abstract class EDDGrid extends EDD {
                 //    //is there an axis (with size > 0) that isn't one of LLAT?
                 //    for (int av = 0; av < axisVariables.length; av++) {
                 //        if (av == lonIndex || av == latIndex ||
-                //            av == altIndex || av == timeIndex) {
+                //            av == altIndex || av == depthIndex ||
+                //            av == timeIndex) {
                 //        } else if (axisVariables[av].sourceValues().size() > 1) {
                 //            accessibleViaWCS = String2.canonical(start + "???");
                 //        }
@@ -546,7 +548,11 @@ public abstract class EDDGrid extends EDD {
     public String accessibleViaWMS() {
         if (accessibleViaWMS == null) {
 
-            if (lonIndex < 0 || latIndex < 0)
+            if (!EDStatic.wmsActive)
+                accessibleViaWMS = String2.canonical(
+                    MessageFormat.format(EDStatic.noXxxBecause, "WMS", 
+                        MessageFormat.format(EDStatic.noXxxNotActive, "WMS")));
+            else if (lonIndex < 0 || latIndex < 0)
                 accessibleViaWMS = String2.canonical(
                     MessageFormat.format(EDStatic.noXxxBecause, "WMS", EDStatic.noXxxNoLL));
             else {
@@ -650,6 +656,11 @@ public abstract class EDDGrid extends EDD {
             errorInMethod + "axisVariable[latIndex=" + latIndex + "] isn't an EDVLatGridAxis.");
         Test.ensureTrue(altIndex < 0 || axisVariables[altIndex] instanceof EDVAltGridAxis, 
             errorInMethod + "axisVariable[altIndex=" + altIndex + "] isn't an EDVAltGridAxis.");
+        Test.ensureTrue(depthIndex < 0 || axisVariables[depthIndex] instanceof EDVDepthGridAxis, 
+            errorInMethod + "axisVariable[depthIndex=" + depthIndex + "] isn't an EDVDepthGridAxis.");
+        //some places (e.g., wms) depend on not having alt *and* depth
+        Test.ensureTrue(altIndex <= 0 || depthIndex <= 0,
+            errorInMethod + "The dataset has both an altitude and a depth axis."); 
         Test.ensureTrue(timeIndex < 0 || axisVariables[timeIndex] instanceof EDVTimeGridAxis, 
             errorInMethod + "axisVariable[timeIndex=" + timeIndex + "] isn't an EDVTimeGridAxis.");
 
@@ -811,6 +822,12 @@ public abstract class EDDGrid extends EDD {
      * @return the index of the altitude axisVariable (or -1 if none).
      */
     public int altIndex() {return altIndex;}
+
+    /**
+     * This returns the index of the depth axisVariable (or -1 if none).
+     * @return the index of the depth axisVariable (or -1 if none).
+     */
+    public int depthIndex() {return depthIndex;}
 
     /**
      * This returns the index of the time axisVariable (or -1 if none).
@@ -1912,7 +1929,7 @@ public abstract class EDDGrid extends EDD {
      * @param response Currently, not used. It may be null.
      * @param loggedInAs  the name of the logged in user (or null if not logged in).
      *   Normally, this is not used to test if this edd is accessibleTo loggedInAs, 
-     *   but it unusual cases (EDDTableFromPost?) it could be.
+     *   but in unusual cases (EDDTableFromPost?) it could be.
      *   Normally, this is just used to determine which erddapUrl to use (http vs https).
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded (shouldn't be null).
@@ -1976,7 +1993,7 @@ public abstract class EDDGrid extends EDD {
                 File2.copy(datasetDir() + datasetID + fgdcSuffix + ".xml", 
                     outputStreamSource.outputStream("UTF-8"));
             } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                throw new SimpleException(accessibleViaFGDC);
             }
             return;
         }
@@ -2043,7 +2060,7 @@ public abstract class EDDGrid extends EDD {
                 File2.copy(datasetDir() + datasetID + iso19115Suffix + ".xml", 
                     outputStreamSource.outputStream("UTF-8"));
             } else {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                throw new SimpleException(accessibleViaISO19115);
             }
             return;
         }
@@ -2100,12 +2117,17 @@ public abstract class EDDGrid extends EDD {
         }
 
         //*** make a file (then copy it to outputStream)
+        //If update system active, don't cache anything.  Make all files unique.
+        if (updateEveryNMillis > 0) 
+            fileName += "U" + System.currentTimeMillis();
+
         //nc files are handled this way because .ncHeader needs to call
         //  NcHelper.dumpString(aRealFile, false). 
         String fileTypeExtension = fileTypeExtension(fileTypeName);
         String fullName = dir + fileName + fileTypeExtension;
+        File2.makeDirectory(dir);
 
-        //does the file already exist?
+        //what is the cacheFullName?
         //if .ncHeader, make sure the .nc file exists (and it is the better file to cache)
         String cacheFullName = fileTypeName.equals(".ncHeader")?  //the only exception there will ever be
             dir + fileName + ".nc" : fullName;
@@ -2817,14 +2839,16 @@ public abstract class EDDGrid extends EDD {
                             fieldSize -= 1;                            
                         } 
                         //show arrowRR?
-                        if (tIndex < sourceSize[av] - 1 && ss == 1) {
+                        if (ss == 1 && 
+                            (tIndex < sourceSize[av] - 1 || (av == 0 && updateEveryNMillis > 0))) {
                             buttons.append(
                                 "<td nowrap>\n" +
                                 HtmlWidgets.htmlTooltipImage(
                                     EDStatic.imageDirUrl(loggedInAs) + "arrowRR.gif", 
                                     EDStatic.magItemLast, 
-                                    "onMouseUp='f1." + paramName + ".value=\"" + tLast + 
-                                        "\"; mySubmit(true);'") +
+                                    //the word "last" works for all datasets 
+                                    //and works better than tLast for updateEveryNMillis datasets
+                                    "onMouseUp='f1." + paramName + ".value=\"last\"; mySubmit(true);'") +
                                 "</td>\n");
                             fieldSize -= 2;                            
                         } 
@@ -4970,7 +4994,7 @@ Attributes {
                     else if (av == latIndex) 
                         otherInfo.append(td + " N"); //° didn't work
                     else if (axisVar instanceof EDVTimeGridAxis) 
-                        otherInfo.append(Calendar2.limitedEpochSecondsToIsoStringT(
+                        otherInfo.append(Calendar2.epochSecondsToLimitedIsoStringT(
                             axisVar.combinedAttributes().getString(EDV.time_precision), td, "NaN"));
                     else {
                         String avUnits = axisVar.units();
@@ -7150,16 +7174,6 @@ Attributes {
             writer.write("  <td nowrap>");
             //new style: textfield
             writer.write(widgets.textField("start" + av, edvgaTooltip, 19, 30,  tStart, ""));
-            //old style: select; very slow in IE 7
-            //PrimitiveArray destValues = edvga.destinationStringValues();
-            ////StringArray destValues = new StringArray(tdestValues);
-            ////int maxLength = destValues.maxStringLength();
-            ////String tStyle = ""; //"style=\"width:" + (maxLength*0.6) + "em\"";
-            //writer.write(widgets.select("start" + av, startTooltip, 
-            //    HtmlWidgets.BUTTONS_0n + HtmlWidgets.BUTTONS_1000,
-            //    destValues, 
-            //    av == timeIndex? destValues.size() - 1 : 0, tStyle));
-
             writer.write("  </td>\n");
 
             //stride
@@ -7904,12 +7918,13 @@ Attributes {
             "     <br>Some fileTypes (notably, .csv, .tsv, .htmlTable, .odvTxt, and .xhtml) display date/time values as\n" +
             "     <br><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time strings</a>\n" +
             "       (e.g., 2002-08-03T12:30:00Z).\n" +
-            "     <br>ERDDAP has a utility to\n" +
-            "       <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
-            "       a Numeric Time to/from a String Time</a>.\n" +
-            "     <br>See also:\n" +
-            "       <a rel=\"help\" href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
-            "       ERDDAP Deals with Time</a>.\n" +
+            (EDStatic.convertersActive? 
+              "     <br>ERDDAP has a utility to\n" +
+              "       <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
+              "       a Numeric Time to/from a String Time</a>.\n" +
+              "     <br>See also:\n" +
+              "       <a rel=\"help\" href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
+              "       ERDDAP Deals with Time</a>.\n" : "") +
             "   <li>For the time dimension, griddap extends the OPeNDAP standard by allowing you to specify an\n" +
             "     <br><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time string</a>\n" +
             "       in parentheses, which griddap then converts to the\n" +
@@ -8300,8 +8315,9 @@ Attributes {
         String keywordsSA[] = keywords();
         EDVGridAxis lonEdv  = axisVariables[lonIndex];
         EDVGridAxis latEdv  = axisVariables[latIndex];
-        EDVGridAxis altEdv  = altIndex  < 0? null : axisVariables[altIndex];
-        EDVGridAxis timeEdv = timeIndex < 0? null : axisVariables[timeIndex];
+        EDVGridAxis altEdv  = altIndex   < 0? null : axisVariables[altIndex];
+        EDVGridAxis depthEdv= depthIndex < 0? null : axisVariables[depthIndex];
+        EDVGridAxis timeEdv = timeIndex  < 0? null : axisVariables[timeIndex];
         String lonLatLowerCorner = lonEdv.destinationMinString() + " " +
                                    latEdv.destinationMinString();
         String lonLatUpperCorner = lonEdv.destinationMaxString() + " " +
@@ -8647,8 +8663,9 @@ Attributes {
         String keywordsSA[] = keywords();
         EDVGridAxis lonEdv  = axisVariables[lonIndex];
         EDVGridAxis latEdv  = axisVariables[latIndex];
-        EDVGridAxis altEdv  = altIndex  < 0? null : axisVariables[altIndex];
-        EDVGridAxis timeEdv = timeIndex < 0? null : axisVariables[timeIndex];
+        EDVGridAxis altEdv  = altIndex   < 0? null : axisVariables[altIndex];
+        EDVGridAxis depthEdv= depthIndex < 0? null : axisVariables[depthIndex];
+        EDVGridAxis timeEdv = timeIndex  < 0? null : axisVariables[timeIndex];
         String lonLatLowerCorner = lonEdv.destinationMinString() + " " +
                                    latEdv.destinationMinString();
         String lonLatUpperCorner = lonEdv.destinationMaxString() + " " +
@@ -8697,23 +8714,25 @@ Attributes {
 
 //thredds does it, but optional, and I encourage native coord requests (not index values)
 //              writer.write(
-//"        <gml:RectifiedGrid dimension=\"" + (altEdv == null? 2 : 3) + "\">\n" +
+//"        <gml:RectifiedGrid dimension=\"" + (altEdv == null && depthEdv == null? 2 : 3) + "\">\n" +
 //"          <gml:limits>\n" +
 //"            <gml:GridEnvelope>\n" +
-//"              <gml:low>0 0" + (altEdv == null? "" : " 0") + "</gml:low>\n" +
+//"              <gml:low>0 0" + (altEdv == null && depthEdv == null? "" : " 0") + "</gml:low>\n" +
 //"              <gml:high>" + (lonEdv.sourceValues().size()-1) + " " +
 //                             (latEdv.sourceValues().size()-1) + 
-//                    (altEdv == null? "" : " " + (altEdv.sourceValues().size()-1)) + 
+//                    (  altEdv != null? " " + (  altEdv.sourceValues().size()-1) :
+//                     depthEDV != null? " " + (depthEdv.sourceValues().size() - 1) : "" ) + 
 //               "</gml:high>\n" +
 //"            </gml:GridEnvelope>\n" +
 //"          </gml:limits>\n" +
 //"          <gml:axisName>x</gml:axisName>\n" +
 //"          <gml:axisName>y</gml:axisName>\n" +
-//(altEdv == null? "" : "          <gml:axisName>z</gml:axisName>\n") +
+//(altEdv == null && depthEdv == null? "" : "          <gml:axisName>z</gml:axisName>\n") +
 //"          <gml:origin>\n" +
 //"            <gml:pos>" + lonEdv.destinationMinString() + " " +
 //                          latEdv.destinationMinString() + 
-//                    (altEdv == null? "" : " " + altEdv.destinationMinString()) + 
+//                    (  altEdv != null? " " +   altEdv.destinationMinString() :
+//                     depthEdv != null? " " + depthEdv.destinationMinString() : "") + 
 //               "</gml:pos>\n" +
 //"          </gml:origin>\n" +
 ////???
@@ -8729,6 +8748,7 @@ Attributes {
                 if (timeIndex > 0) {
                     writer.write(
 "      <temporalDomain>\n");
+                    //!!!For time, if lots of values (e.g., 10^6), this is SLOW (e.g., 30 seconds)!!!
                     PrimitiveArray destValues = timeEdv.destinationStringValues();
                     int nDestValues = destValues.size();
                     for (int i = 0; i < nDestValues; i++) {
@@ -8947,14 +8967,18 @@ Attributes {
         String bbox = wcsQueryMap.get(bboxName); 
         EDVGridAxis lonEdv  = axisVariables[lonIndex];
         EDVGridAxis latEdv  = axisVariables[latIndex];
-        EDVGridAxis altEdv  = altIndex  < 0? null : axisVariables[altIndex];
-        EDVGridAxis timeEdv = timeIndex < 0? null : axisVariables[timeIndex];
+        EDVGridAxis altDepthEdv = altIndex   >= 0? axisVariables[altIndex] :
+                                  depthIndex >= 0? axisVariables[depthIndex] : null;
+        EDVGridAxis timeEdv = timeIndex  < 0? null : axisVariables[timeIndex];
         String minLon = lonEdv.destinationMinString();
         String maxLon = lonEdv.destinationMaxString();
         String minLat = latEdv.destinationMinString();
         String maxLat = latEdv.destinationMaxString();
-        String minAlt = altIndex < 0? null : 
-            altEdv.destinationMaxString();  //yes, default is just last
+        String minAlt = altIndex   >= 0?       altDepthEdv.destinationMaxString() : 
+                        depthIndex >= 0? "-" + altDepthEdv.destinationMinString() : 
+                        null;
+        if (minAlt != null && minAlt.startsWith("--"))
+            minAlt = minAlt.substring(2);
         String maxAlt = minAlt;
         if (bbox != null) {
             String bboxSA[] = String2.split(bbox, ',');
@@ -8965,7 +8989,7 @@ Attributes {
             maxLon = bboxSA[2];            
             minLat = bboxSA[1];
             maxLat = bboxSA[3];
-            if (version100 && altIndex >= 0 && bboxSA.length >= 6) {
+            if (version100 && (altIndex >= 0 || depthIndex >= 0) && bboxSA.length >= 6) {
                 minAlt = bboxSA[4];  
                 maxAlt = bboxSA[5];
             }
@@ -8985,7 +9009,8 @@ Attributes {
                 " must be <= maxLatitude=" + maxLatD + ".");
         double minAltD = String2.parseDouble(minAlt);
         double maxAltD = String2.parseDouble(maxAlt);
-        if (altIndex >= 0 && (Double.isNaN(minAltD) || Double.isNaN(maxAltD) || minAltD > maxAltD))
+        if ((altIndex >= 0 || depthIndex >= 0) && 
+            (Double.isNaN(minAltD) || Double.isNaN(maxAltD) || minAltD > maxAltD))
             throw new SimpleException(
                 EDStatic.queryError + bboxName + " minAltitude=" + minAltD + 
                 " must be <= maxAltitude=" + maxAltD + ".");
@@ -9036,11 +9061,11 @@ Attributes {
             }
 
             //altStride
-            if (altIndex >= 0) {
+            if (altIndex >= 0 || depthIndex >= 0) {
                 n   = wcsQueryMap.get("depth"); //test name.toLowerCase()
                 res = wcsQueryMap.get("resz");  //test name.toLowerCase()
-                start = altEdv.destinationToClosestSourceIndex(minAltD);
-                stop  = altEdv.destinationToClosestSourceIndex(maxAltD);
+                start = altDepthEdv.destinationToClosestSourceIndex(minAltD);
+                stop  = altDepthEdv.destinationToClosestSourceIndex(maxAltD);
                 if (start > stop) { //because !isAscending
                     int ti = start; start = stop; stop = ti;}
                 if (n != null) {
@@ -9076,7 +9101,13 @@ Attributes {
 
             //alt
             } else if (av == altIndex) {
-                if (altEdv.isAscending())
+                if (altDepthEdv.isAscending())
+                     dapQuery.append("[(" + minAlt + "):" + altStride + ":(" + maxAlt + ")]");
+                else dapQuery.append("[(" + maxAlt + "):" + altStride + ":(" + minAlt + ")]");
+
+            //depth
+            } else if (av == depthIndex) {
+                if (altDepthEdv.isAscending())
                      dapQuery.append("[(" + minAlt + "):" + altStride + ":(" + maxAlt + ")]");
                 else dapQuery.append("[(" + maxAlt + "):" + altStride + ":(" + minAlt + ")]");
 
@@ -9497,12 +9528,13 @@ Attributes {
             "      <br>In ERDDAP, this parameter is optional and the default is always the last time available.\n" +
             "      <br>The WCS standard allows <i>time=beginTime,endTime,timeRes</i>.  ERDDAP doesn't allow this.\n" +
             "      <br>The WCS standard allows <i>time=time1,time2,...</i>  ERDDAP doesn't allow this.</td>\n" +
-            "      <br>ERDDAP has a utility to\n" +
-            "        <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
-            "        a Numeric Time to/from a String Time</a>.\n" +
-            "      <br>See also:\n" +
-            "        <a rel=\"help\" href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
-            "        ERDDAP Deals with Time</a>.\n" +
+            (EDStatic.convertersActive? 
+              "      <br>ERDDAP has a utility to\n" +
+              "        <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
+              "        a Numeric Time to/from a String Time</a>.\n" +
+              "      <br>See also:\n" +
+              "        <a rel=\"help\" href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
+              "        ERDDAP Deals with Time</a>.\n" : "") +
             "  </tr>\n" +
             "  <tr>\n" +
             "    <td nowrap><i>parameter=value</i>\n" +
@@ -9731,8 +9763,7 @@ Attributes {
 
         //requirements
         if (lonIndex < 0 || latIndex < 0) 
-            throw new SimpleException(
-                MessageFormat.format(EDStatic.noXxxBecause2, "FGDC", EDStatic.noXxxNoLL));
+            throw new SimpleException(EDStatic.noXxxNoLL);
 
         String tErddapUrl = EDStatic.erddapUrl(getAccessibleTo() == null? null : "anyone");
         String datasetUrl = tErddapUrl + "/" + dapProtocol + "/" + datasetID();
@@ -9814,11 +9845,13 @@ Attributes {
         if (standardNameVocabulary == null || testMinimalMetadata) standardNameVocabulary = unknown;
 
         //notAvailable and ...Edv
-        EDVLatGridAxis latEdv = (EDVLatGridAxis)axisVariables[latIndex];
-        EDVLonGridAxis lonEdv = (EDVLonGridAxis)axisVariables[lonIndex];
-        EDVAltGridAxis altEdv = (altIndex < 0 || testMinimalMetadata)? null :  
+        EDVLatGridAxis latEdv     = (EDVLatGridAxis)axisVariables[latIndex];
+        EDVLonGridAxis lonEdv     = (EDVLonGridAxis)axisVariables[lonIndex];
+        EDVAltGridAxis altEdv     = (altIndex < 0 || testMinimalMetadata)? null :  
             (EDVAltGridAxis)axisVariables[altIndex];
-        EDVTimeGridAxis timeEdv = (timeIndex < 0 || testMinimalMetadata)? null :
+        EDVDepthGridAxis depthEdv = (depthIndex < 0 || testMinimalMetadata)? null :  
+            (EDVDepthGridAxis)axisVariables[depthIndex];
+        EDVTimeGridAxis timeEdv   = (timeIndex < 0 || testMinimalMetadata)? null :
             (EDVTimeGridAxis)axisVariables[timeIndex];
 
         //standardNames
@@ -10370,7 +10403,8 @@ writer.write(
 "      <rasttype>Grid Cell</rasttype>\n" +
 "      <rowcount>" + latEdv.sourceValues().size() + "</rowcount>\n" +
 "      <colcount>" + lonEdv.sourceValues().size() + "</colcount>\n" +
-"      <vrtcount>" + (altEdv == null? 1 : altEdv.sourceValues().size()) + "</vrtcount>\n" +
+"      <vrtcount>" + (altEdv   != null? altEdv.sourceValues().size() :
+                      depthEdv != null? depthEdv.sourceValues().size() : 1) + "</vrtcount>\n" +
 "    </rastinfo>\n" +
 "  </spdoinfo>\n");
 
@@ -10391,26 +10425,29 @@ writer.write(
 "      </geodetic>\n" +
 "    </horizsys>\n");
 
-int depthIndex = String2.indexOf(axisVariableDestinationNames, "depth");
-if (altEdv != null || depthIndex >= 0) {
+if (altEdv != null || depthEdv != null) {
     writer.write(
 "    <vertdef>\n" +
 
-    (altEdv == null? "" : 
+    (altEdv != null? 
 "      <altsys>\n" +
 "        <altdatum>" + unknown + "</altdatum>\n" +
-"        <altres>" + unknown + "</altres>\n" +
+"        <altres>" + 
+        (altEdv.isEvenlySpaced()? "" + altEdv.averageSpacing() : unknown) + 
+        "</altres>\n" + //min distance between 2 adjacent values
 "        <altunits>meters</altunits>\n" +
-"        <altenc>" + unknown + "</altenc>\n" +
-"      </altsys>\n") +
-
-    (depthIndex < 0? "" : 
+"        <altenc>Explicit elevation coordinate included with horizontal coordinates</altenc>\n" + //2012-12-28 was Unknown
+"      </altsys>\n" :
+     depthEdv != null?  
 "      <depthsys>\n" +
-"        <depthdn>" + unknown + "</depthdn>\n" +
-"        <depthres>" + unknown + "</depthres>\n" +
+"        <depthdn>" + unknown + "</depthdn>\n" +  //depth datum name (from a vocabulary, e.g., "Mean sea level")
+"        <depthres>" + 
+        (depthEdv.isEvenlySpaced()? "" + depthEdv.averageSpacing() : unknown) + 
+        "</depthres>\n" + //min distance between 2 adjacent values
 "        <depthdu>meters</depthdu>\n" +
-"        <depthem>" + unknown + "</depthem>\n" +
-"      </depthsys>\n") +
+"        <depthem>Explicit depth coordinate included with horizontal coordinates</depthem>\n" + //2012-12-28 was Unknown
+"      </depthsys>\n" :
+     "") +
 
 "    </vertdef>\n");
 }
@@ -10541,9 +10578,7 @@ writer.write(
 
         //requirements
         if (lonIndex < 0 || latIndex < 0) 
-            throw new SimpleException(
-                MessageFormat.format(EDStatic.noXxxBecause2, "ISO 19115-2/19139", 
-                    EDStatic.noXxxNoLL));
+            throw new SimpleException(EDStatic.noXxxNoLL);
 
         String tErddapUrl = EDStatic.erddapUrl(getAccessibleTo() == null? null : "anyone");
         String datasetUrl = tErddapUrl + "/griddap/" + datasetID;
@@ -10616,27 +10651,16 @@ writer.write(
             (EDVTimeGridAxis)axisVariables[timeIndex];
         EDVAltGridAxis altEdv = altIndex < 0 || testMinimalMetadata? null :
             (EDVAltGridAxis)axisVariables[altIndex];
-        int dEdvi = String2.indexOf(axisVariableDestinationNames(), "depth");
-        EDVGridAxis depthEdv = dEdvi < 0 || testMinimalMetadata? null :
-            (EDVGridAxis)axisVariables[dEdvi];
-        //ensure depth has units=meters  
-        //if (depthEdv != null) {
-        //    String tUnits = depthEdv.units(); 
-        //    if ("m".equals(tUnits) ||
-        //        "meter".equals(tUnits) ||
-        //        "meters".equals(tUnits)) {
-        //    } else {
-        //        depthEdv = null;
-        //    }
-        //}
-        double minVert = Double.NaN; //in destination units (may be positive = up or down; any units
+        EDVDepthGridAxis depthEdv = depthIndex < 0 || testMinimalMetadata? null :
+            (EDVDepthGridAxis)axisVariables[depthIndex];
+        double minVert = Double.NaN; //in destination units (may be positive = up[I use] or down!? any units)
         double maxVert = Double.NaN;
         if (altEdv != null) {
             minVert = altEdv.destinationMin();
             maxVert = altEdv.destinationMax();
-        } else if (depthEdv != null) {
-            minVert = depthEdv.destinationMin();
-            maxVert = depthEdv.destinationMin();
+        } else if (depthEdv != null) { 
+            minVert = -depthEdv.destinationMax(); //make into altitude
+            maxVert = -depthEdv.destinationMin();
         }
 
         StringArray standardNames = new StringArray();

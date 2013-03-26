@@ -354,7 +354,6 @@ public class EDDGridCopy extends EDDGrid {
             tAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File,
             new Attributes(), //addGlobalAttributes
-            1, //altMetersPerSourceUnit, 
             tAxisVariables,
             tDataVariables,
             tReloadEveryNMinutes,
@@ -383,6 +382,7 @@ public class EDDGridCopy extends EDDGrid {
         lonIndex      = localEdd.lonIndex;
         latIndex      = localEdd.latIndex;
         altIndex      = localEdd.altIndex;
+        depthIndex    = localEdd.depthIndex;
         timeIndex     = localEdd.timeIndex;
 
         //ensure the setup is valid

@@ -127,7 +127,6 @@ public class EDDTableFromSOS extends EDDTable{
      * longitude, latitude, stationID, altitude, time. */
     protected final static int nFixedVariables = 5; 
 
-    public static boolean reallyReallyVerbose = false;    
     private static boolean testQuickRestart = false;  //to test, set this to true in test method, not here.
     protected static boolean timeParts = false; //some test methods set this to true for timing test purposes only
 
@@ -137,13 +136,21 @@ public class EDDTableFromSOS extends EDDTable{
     protected String lonSourceName, latSourceName, altSourceName, timeSourceName, 
         stationIdSourceName;
     protected boolean requestObservedPropertiesSeparately;
+    protected String responseFormat; //"" -> default
     protected String bboxOffering;   //offering name to use with lon lat BBOX request
     protected String bboxParameter;  //parameter prefix to use with lon lat BBOX request
     protected StringArray uniqueSourceObservedProperties;
     protected Table stationTable;
     protected boolean[][] stationHasObsProp; //[station#][uniqueSourceObservedProperties index]
-    protected boolean ndbcIoosServer = false;
-    protected boolean nosIoosServer = false;
+    protected String sosServerType = "";     //may be "".   This variable will be lowercased.
+    public final static String SosServerTypeIoosNdbc  = "IOOS_NDBC";
+    public final static String SosServerTypeIoosNos   = "IOOS_NOS";
+    public final static String SosServerTypeOostethys = "OOSTethys";
+    public final static String SosServerTypeWhoi      = "WHOI";
+    protected boolean ndbcIoosServer = false;  
+    protected boolean nosIoosServer = false;   
+    protected boolean oostethysServer = false; 
+    protected boolean whoiServer = false;       //required to be specified
 
     /**
      * This constructs an EDDTableFromSOS based on the information in an .xml file.
@@ -160,10 +167,12 @@ public class EDDTableFromSOS extends EDDTable{
         if (verbose) String2.log("\n*** constructing EDDTableFromSOS(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         Attributes tGlobalAttributes = null;
+        String tSosServerType = "";
         String tStationIdSourceName = defaultStationIdSourceName;
         String tLongitudeSourceName = null;  
         String tLatitudeSourceName = null;  
-        String tAltitudeSourceName = null;  double tAltitudeMetersPerSourceUnit = 1; 
+        String tAltitudeSourceName = null;  //currently alt, not depth
+        double tAltitudeMetersPerSourceUnit = 1; 
         double tAltitudeSourceMinimum = Double.NaN;  
         double tAltitudeSourceMaximum = Double.NaN;  
         String tTimeSourceName = null; String tTimeSourceFormat = null;
@@ -175,6 +184,7 @@ public class EDDTableFromSOS extends EDDTable{
         String tIso19115File = null;
         String tLocalSourceUrl = null, tObservationOfferingIdRegex = null;
         boolean tRequestObservedPropertiesSeparately = false;
+        String tResponseFormat = null;
         String tBBoxOffering = null;
         String tBBoxParameter = null;
         String tSosVersion = null;
@@ -196,6 +206,8 @@ public class EDDTableFromSOS extends EDDTable{
             //try to make the tag names as consistent, descriptive and readable as possible
             if      (localTags.equals("<addAttributes>"))
                 tGlobalAttributes = getAttributesFromXml(xmlReader);
+            else if (localTags.equals( "<sosServerType>")) {}
+            else if (localTags.equals("</sosServerType>")) tSosServerType = content; 
             else if (localTags.equals( "<stationIdSourceName>")) {}
             else if (localTags.equals("</stationIdSourceName>")) tStationIdSourceName = content; 
             else if (localTags.equals( "<longitudeSourceName>")) {}
@@ -230,6 +242,8 @@ public class EDDTableFromSOS extends EDDTable{
             else if (localTags.equals( "<requestObservedPropertiesSeparately>")) {}
             else if (localTags.equals("</requestObservedPropertiesSeparately>")) 
                 tRequestObservedPropertiesSeparately = content.equals("true"); 
+            else if (localTags.equals( "<responseFormat>")) {}
+            else if (localTags.equals("</responseFormat>")) tResponseFormat = content; 
             else if (localTags.equals( "<bboxOffering>")) {}
             else if (localTags.equals("</bboxOffering>")) tBBoxOffering = content;
             else if (localTags.equals( "<bboxParameter>")) {}
@@ -255,7 +269,7 @@ public class EDDTableFromSOS extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromSOS(tDatasetID, tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
+            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes, tSosServerType,
             tStationIdSourceName, tLongitudeSourceName, tLatitudeSourceName,
             tAltitudeSourceName, tAltitudeSourceMinimum, tAltitudeSourceMaximum, 
             tAltitudeMetersPerSourceUnit,
@@ -263,6 +277,7 @@ public class EDDTableFromSOS extends EDDTable{
             ttDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl, tSosVersion,
             tObservationOfferingIdRegex, tRequestObservedPropertiesSeparately,
+            tResponseFormat, 
             tBBoxOffering, tBBoxParameter,
             tSourceNeedsExpandedFP_EQ);
     }
@@ -328,7 +343,7 @@ public class EDDTableFromSOS extends EDDTable{
      *      describing how to interpret numbers 
      *      (e.g., "seconds since 1970-01-01T00:00:00Z"),
      *    <li> a java.text.SimpleDateFormat string describing how to interpret string times  
-     *    (see http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html),
+     *      (see http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
      *    </ul>
      * @param tDataVariables is an Object[nDataVariables][4]: 
      *    <br>[0]=String sourceName (the field name of the data variable in the tabular results,
@@ -363,6 +378,7 @@ public class EDDTableFromSOS extends EDDTable{
      *    (".+" will catch all station names)
      * @param tRequestObservedPropertiesSeparately if true, the observedProperties
      *   will be requested separately. If false, they will be requested all at once.
+     * @param tResponseFormat  Not yet percent-encoded. Use null or "" for the default.
      * @param tBBoxOffering  the offering name to use with lon lat BBOX requests (or null or "")
      * @param tBBoxParameter the parameter prefix to use with lon lat BBOX request (or null or "")
      * @param tSourceNeedsExpandedFP_EQ
@@ -370,7 +386,7 @@ public class EDDTableFromSOS extends EDDTable{
      */
     public EDDTableFromSOS(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
-        Attributes tAddGlobalAttributes,
+        Attributes tAddGlobalAttributes, String tSosServerType,
         String tStationIdSourceName,
         String tLonSourceName,
         String tLatSourceName,
@@ -380,6 +396,7 @@ public class EDDTableFromSOS extends EDDTable{
         int tReloadEveryNMinutes,
         String tLocalSourceUrl, String tSosVersion, String tObservationOfferingIdRegex, 
         boolean tRequestObservedPropertiesSeparately,
+        String tResponseFormat,
         String tBBoxOffering, String tBBoxParameter,
         boolean tSourceNeedsExpandedFP_EQ) throws Throwable {
 
@@ -400,6 +417,13 @@ public class EDDTableFromSOS extends EDDTable{
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
         addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
+
+        sosServerType = tSosServerType == null? "" : tSosServerType.toLowerCase().trim();
+        ndbcIoosServer  = sosServerType.equals(SosServerTypeIoosNdbc.toLowerCase());
+        nosIoosServer   = sosServerType.equals(SosServerTypeIoosNos.toLowerCase());
+        oostethysServer = sosServerType.equals(SosServerTypeOostethys.toLowerCase());
+        whoiServer      = sosServerType.equals(SosServerTypeWhoi.toLowerCase()); //required
+
         localSourceUrl = tLocalSourceUrl;
         String tSummary = addGlobalAttributes.getString("summary");
         if (tSummary != null)
@@ -414,6 +438,9 @@ public class EDDTableFromSOS extends EDDTable{
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         Test.ensureNotNothing(localSourceUrl, "sourceUrl wasn't specified.");
         requestObservedPropertiesSeparately = tRequestObservedPropertiesSeparately;
+        if (tResponseFormat == null)
+            tResponseFormat = "";
+        responseFormat = tResponseFormat.trim();
 
         //bbox - set both or neither
         if (tBBoxOffering != null && tBBoxOffering.length() > 0) {
@@ -489,7 +516,7 @@ public class EDDTableFromSOS extends EDDTable{
         String tUrl = localSourceUrl + "?service=SOS&request=GetCapabilities"; 
         if (tSosVersion != null && tSosVersion.length() > 0)
             tUrl += "&version=" + tSosVersion;
-        //if (reallyReallyVerbose)
+        //if (debugMode)
         //    String2.log(SSR.getUrlResponseString(tUrl));
         //String2.writeToFile("f:/programs/sos/ndbcSosWind_capabilities_90721.xml", SSR.getUrlResponseString(tUrl));
 
@@ -530,12 +557,20 @@ public class EDDTableFromSOS extends EDDTable{
         String sosPrefix = "";
         if (xmlReader.tag(0).equals("Capabilities")) {
             sosPrefix = "";          
-            nosIoosServer = true;
+            if (sosServerType.length() == 0) //if not explicitly declared
+                nosIoosServer = true;
         } else if (xmlReader.tag(0).equals("sos:Capabilities")) {
             sosPrefix = "sos:"; 
             //oostethys or ndbcIoosServer?
         } else {
             xmlReader.close();
+            if (debugMode) {
+                try {
+                    String qrFile[] = String2.readFromFile(quickRestartFileName);
+                    String2.log(qrFile[1]);
+                } catch (Throwable t) {
+                }
+            }
             throw new IllegalArgumentException("The first SOS capabilities tag=" + 
                 tags + " should have been <Capabilities> or <sos:Capabilities>.");
         }
@@ -571,6 +606,7 @@ public class EDDTableFromSOS extends EDDTable{
                 String endOfTag = tags.substring(offeringTag.length());
                 String content = xmlReader.content();
                 String fatalError = null;
+
                 //String2.log("endOfTag=" + endOfTag + xmlReader.content());
 
 /* separate phenomena
@@ -613,9 +649,14 @@ public class EDDTableFromSOS extends EDDTable{
                 //    //e.g., 44004
                 //    if (ioosServer) tStationID = xmlReader.attributeValue("gml:id");
 
-                if (endOfTag.equals("</gml:name>")) { //ioosServer and OOSTethys have this
+                if (endOfTag.length() == 0) {
+                    if (whoiServer)
+                        tStationID = xmlReader.attributeValue("gml:id");
+
+                } else if (endOfTag.equals("</gml:name>")) { //ioosServer and OOSTethys have this
                     //e.g., 44004
-                    tStationID = content;
+                    if (!whoiServer) 
+                        tStationID = content;
 
                     //if (ioosServer) { 
                     //    //remove 
@@ -760,14 +801,17 @@ public class EDDTableFromSOS extends EDDTable{
                 else if (Double.isNaN(tLat))              invalid = "latitude";
                 else if (Double.isNaN(tBeginTime))        invalid = "beginTime";
                 //endTime may be NaN
-                else if (tStationID.length() == 0)        invalid = "station_id";
                 else if (tStationProcedure.length() == 0) invalid = "stationProcedure";
                 else if (!hasObservedProperties)          invalid = "stationHasRelevantObservedProperties";
 
-                if (tStationID.length() > 0 && 
-                    !tStationID.matches(tObservationOfferingIdRegex)) {
+                if (tStationID == null || tStationID.length() == 0) {
                     if (reallyVerbose) String2.log("  station_id=\"" + tStationID + 
-                        "\" rejected: didn't match the observationOfferingIdRegex=" + tObservationOfferingIdRegex);
+                        "\" rejected.");
+
+                } else if (!tStationID.matches(tObservationOfferingIdRegex)) {
+                    if (reallyVerbose) String2.log("  station_id=\"" + tStationID + 
+                        "\" rejected: didn't match the observationOfferingIdRegex=" + 
+                        tObservationOfferingIdRegex);
 
                 } else if (invalid != null) {
                     if (reallyVerbose) String2.log("  station_id=\"" + tStationID + 
@@ -803,7 +847,8 @@ public class EDDTableFromSOS extends EDDTable{
                 String content = xmlReader.content();
                 if (content.indexOf("\"ioos/") > 0 ||
                     content.indexOf("/ioos+") > 0) 
-                    ndbcIoosServer = true;
+                    if (sosServerType.length() == 0) //if not explicitly declared
+                        ndbcIoosServer = true;
             }
 
             //get the next tag
@@ -812,7 +857,10 @@ public class EDDTableFromSOS extends EDDTable{
         } while (!tags.startsWith("</"));
 
         xmlReader.close();      
-        if (verbose) String2.log("ndbcIoosServer=" + ndbcIoosServer + " nosIoosServer=" + nosIoosServer);
+        if (verbose) String2.log(
+            "ndbcIoosServer=" + ndbcIoosServer + 
+            " nosIoosServer=" + nosIoosServer +
+            " whoiServer=" + whoiServer);
 
         if (stationTable.nRows() == 0)
             throw new RuntimeException(datasetID + " has no valid stations.");
@@ -827,7 +875,7 @@ public class EDDTableFromSOS extends EDDTable{
             CDM_TIMESERIES, CDM_TIMESERIESPROFILE, CDM_TRAJECTORY, CDM_TRAJECTORYPROFILE};
         if (String2.indexOf(allowedCdmTypes, cdmType) < 0)
             throw new RuntimeException("Currently, EDDTableFromSOS only supports cdm_data_type=" +
-                String2.toCSSVString(allowedCdmTypes) + ", not " + cdmType + ".");
+                String2.toCSSVString(allowedCdmTypes) + ", not \"" + cdmType + "\".");
 
         //make the fixedVariables
         dataVariables = new EDV[nFixedVariables + tDataVariables.length];
@@ -842,7 +890,7 @@ public class EDDTableFromSOS extends EDDTable{
         dataVariables[latIndex] = new EDVLat(tLatSourceName, null, null,
             "double", stats[PrimitiveArray.STATS_MIN], stats[PrimitiveArray.STATS_MAX]);  
 
-        idIndex = 2; 
+        sosOfferingIndex = 2;   //aka stationID
         Attributes tAtts = (new Attributes()) 
             .add("long_name", "Station ID")
             .add("ioos_category", "Identifier");
@@ -850,14 +898,18 @@ public class EDDTableFromSOS extends EDDTable{
             tAtts.add("cf_role", "timeseries_id");
         else if (CDM_TRAJECTORY.equals(cdmType) || CDM_TRAJECTORYPROFILE.equals(cdmType)) 
             tAtts.add("cf_role", "trajectory_id");
-        dataVariables[idIndex] = new EDV(stationIdSourceName, stationIdDestinationName, 
+        dataVariables[sosOfferingIndex] = new EDV(stationIdSourceName, stationIdDestinationName, 
             null, tAtts, "String");//the constructor that reads actual_range
         //no need to call setActualRangeFromDestinationMinMax() since they are NaNs
 
         //alt axis isn't set up in datasets.xml. 
-        altIndex = 3;
-        dataVariables[altIndex] = new EDVAlt(tAltSourceName, null, null,
-            "double", tSourceMinAlt, tSourceMaxAlt, tAltMetersPerSourceUnit);
+        altIndex = 3; depthIndex = -1;  //2012-12-20 consider using depthIndex???
+        Attributes altAddAtts = new Attributes();
+        altAddAtts.set("units", "m");
+        if (tAltMetersPerSourceUnit != 1)
+            altAddAtts.set("scale_factor", tAltMetersPerSourceUnit);
+        dataVariables[altIndex] = new EDVAlt(tAltSourceName, null, altAddAtts,
+            "double", tSourceMinAlt, tSourceMaxAlt);
 
         timeIndex = 4;  //times in epochSeconds
         stats = stationTable.getColumn(stationBeginTimeCol).calculateStats();         //to get the minimum begin value
@@ -899,22 +951,27 @@ public class EDDTableFromSOS extends EDDTable{
                 "\"" + EDV.observedProperty + "\" attribute not assigned for variable sourceName=" + tSourceName);
         }
 
-        //sos data
-        //sosOfferingType = "Station";
-        sosMinLon    = stationTable.getColumn(stationLonCol);
-        sosMaxLon    = sosMinLon;
-        sosMinLat    = stationTable.getColumn(stationLatCol);
-        sosMaxLat    = sosMinLat;
-        sosMinTime   = stationTable.getColumn(stationBeginTimeCol);
-        sosMaxTime   = stationTable.getColumn(stationEndTimeCol);
-        sosOfferings = (StringArray)stationTable.getColumn(stationIDCol).clone(); //clone since it changes below
-        int nSosOfferings = sosOfferings.size();
-        //convert sosOfferings to short name
-        for (int offering = 0; offering < nSosOfferings; offering++) {
-            String so = sosOfferings.getString(offering);
-            int cpo = so.lastIndexOf(":");
-            if (cpo >= 0) 
-                sosOfferings.setString(offering, so.substring(cpo + 1));
+        //gather ERDDAP sos information
+        //SOS datasets always have actual lon,lat values and stationTable time is always epochSeconds,
+        //  so I can just use source station info directly (without conversion).
+        //Note that times are often too wide a range because they are for all observedProperties,
+        //  not just the one used by this dataset.
+        if (EDStatic.sosActive && setSosOfferingTypeAndIndex()) {  //it should succeed
+            sosMinLon    = stationTable.getColumn(stationLonCol);
+            sosMaxLon    = sosMinLon;
+            sosMinLat    = stationTable.getColumn(stationLatCol);
+            sosMaxLat    = sosMinLat;
+            sosMinTime   = stationTable.getColumn(stationBeginTimeCol);
+            sosMaxTime   = stationTable.getColumn(stationEndTimeCol);
+            sosOfferings = (StringArray)stationTable.getColumn(stationIDCol).clone(); //clone since it changes below
+            int nSosOfferings = sosOfferings.size();
+            //convert sosOfferings to short name
+            for (int offering = 0; offering < nSosOfferings; offering++) {
+                String so = sosOfferings.getString(offering);
+                int cpo = so.lastIndexOf(":");
+                if (cpo >= 0) 
+                    sosOfferings.setString(offering, so.substring(cpo + 1));
+            }
         }
 
         //ensure the setup is valid
@@ -949,7 +1006,7 @@ public class EDDTableFromSOS extends EDDTable{
         StringArray constraintValues    = new StringArray();
         getSourceQueryFromDapQuery(userDapQuery,
             resultsVariables,
-            constraintVariables, constraintOps, constraintValues);
+            constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
         int nConstraints = constraintVariables.size();
 
         //further prune constraints 
@@ -966,16 +1023,17 @@ public class EDDTableFromSOS extends EDDTable{
             double dConstraintValue   = String2.parseDouble(constraintValues.get(c));
             int dv = String2.indexOf(dataVariableSourceNames(), constraintVariable);
             conDVI[c] = dv;
-            if (dv != lonIndex && dv != latIndex && dv != idIndex)
+            EDV edv = dataVariables[dv];
+            if (dv != lonIndex && dv != latIndex && dv != sosOfferingIndex) //aka stationID
                 justStationTableInfo = false;
 
             if (dv == latIndex || dv == lonIndex) {
                 //ok
 
-            } else if (dv == idIndex) {
+            } else if (dv == sosOfferingIndex) { //aka stationID
                 hasStationConstraint = true;  //any kind: =, <, >, regex, ...
 
-            } else if (dv == timeIndex) {
+            } else if (edv instanceof EDVTimeStamp) {
                 //remove if != or regex
                 if (constraintOp.equals("!=") || constraintOp.equals(PrimitiveArray.REGEX_OP)) {
                     //remove constraint
@@ -1004,14 +1062,14 @@ public class EDDTableFromSOS extends EDDTable{
         tableDVI.add(latIndex);
         tableDVI.add(altIndex);
         tableDVI.add(timeIndex);
-        tableDVI.add(idIndex);
+        tableDVI.add(sosOfferingIndex); //ada stationID
         StringArray requestObservedProperties = new StringArray();
         for (int rv = 0; rv < resultsVariables.size(); rv++) {
             int dvi = String2.indexOf(dataVariableSourceNames(), resultsVariables.get(rv));
             //only add if not already included
             if (tableDVI.indexOf(dvi, 0) < 0) 
                 tableDVI.add(dvi);
-            if (dvi != lonIndex && dvi != latIndex && dvi != idIndex)
+            if (dvi != lonIndex && dvi != latIndex && dvi != sosOfferingIndex) //aka stationID
                 justStationTableInfo = false;
             //make list of desired observedProperties
             //remember that >1 var may refer to same obsProp (eg, insideTemp and outsideTemp refer to ...Temperature)
@@ -1034,7 +1092,7 @@ public class EDDTableFromSOS extends EDDTable{
             tableDVI.clear(); //.get(tableColumnIndex) -> dataVariableIndex
             tableDVI.add(lonIndex);
             tableDVI.add(latIndex);
-            tableDVI.add(idIndex);
+            tableDVI.add(sosOfferingIndex);  //stationID
             Table table = makeTable(tableDVI);
 
             //add all of the station info
@@ -1170,7 +1228,7 @@ public class EDDTableFromSOS extends EDDTable{
                 //test stationID constraint
                 tStationID  = stationTable.getStringData(stationIDCol, station);
                 for (int con = 0; con < nConstraints; con++) {
-                    if (conDVI[con] == idIndex) {
+                    if (conDVI[con] == sosOfferingIndex) { //aka stationID
                         String op = constraintOps.get(con);
                         boolean pass = PrimitiveArray.testValueOpValue(tStationID, op, constraintValues.get(con));
                         if (!pass) {
@@ -1255,7 +1313,9 @@ public class EDDTableFromSOS extends EDDTable{
                         "&offering=" + SSR.minimalPercentEncode(tStationID) + 
                         //"&observedProperty=" + tRequestObservedProperties.get(obsProp).substring(hashPo + 1) + 
                         "&observedProperty=" + tRequestObservedProperties.get(obsProp) + 
-                        "&responseFormat=text/csv" +  //NDBC and NOS
+                        "&responseFormat=" + 
+                            (responseFormat.length() == 0? "text/csv" :   //NDBC and NOS 
+                                SSR.minimalPercentEncode(responseFormat)) +  
                         "&eventTime=" +   //requestedDestination times are epochSeconds
                             Calendar2.epochSecondsToIsoStringT(requestedDestinationMin[3]) + "Z" + 
                         (requestedDestinationMin[3] == requestedDestinationMax[3]? "" : 
@@ -1278,7 +1338,9 @@ public class EDDTableFromSOS extends EDDTable{
                     getSB.append("?service=SOS" +
                         "&version=" + sosVersion +  
                         //"&resultFormat=application/com-xml"); //until 2010-04-20
-                        "&responseFormat=text%2Fxml%3B%20subtype%3D%22om%2F1.0.0%22" + 
+                        "&responseFormat=" +
+                            (responseFormat.length() == 0? "text%2Fxml%3B%20subtype%3D%22om%2F1.0.0%22" :   
+                                SSR.minimalPercentEncode(responseFormat)) +   
                         "&request=GetObservation" +
                         "&offering=" + SSR.minimalPercentEncode(tStationID) + 
                         "&observedProperty=" + SSR.minimalPercentEncode(
@@ -1310,20 +1372,25 @@ public class EDDTableFromSOS extends EDDTable{
                         String2.log("  requestURL=" + localSourceUrl + getSB.toString());
                         //aConstraintShown = true;
                     }
-                    if (false) { //reallyReallyVerbose) { 
+                    if (false) { //debugMode) { 
                         String2.log("*** Begin response");
                         String2.log(SSR.getUrlResponseString(localSourceUrl + getSB.toString()));
                         String2.log("*** End response");
                     }
 
                     //*** read the data
-                    readFromOostethys(getSB.toString(), table, llatHash,
-                        tStationLonString, tStationLatString, tStationAltString, tStationID);
+                    if (whoiServer) {
+                        readFromWhoiServer(getSB.toString(), table, llatHash,
+                            tStationLonString, tStationLatString, tStationAltString, tStationID);
+                    } else {
+                        readFromOostethys(getSB.toString(), table, llatHash,
+                            tStationLonString, tStationLatString, tStationAltString, tStationID);
+                    }
 
                 } //end of non-ioosServer get chunk of data
 
                 if (reallyVerbose) String2.log("\nstation=" + tStationID + " tableNRows=" + table.nRows());
-                //if (reallyReallyVerbose) String2.log("table=\n" + table);
+                //if (debugMode) String2.log("table=\n" + table);
             } //end of obsProp loop
 
             //writeToTableWriter
@@ -1540,10 +1607,11 @@ public class EDDTableFromSOS extends EDDTable{
                         //leave this test in as insurance!
                         String tsn = table.getStringData(col, tRow); 
                         if (tso.length() > 0 && !tso.equals(tsn)) {
-                            String2.log("Error for L,L,A,T,ID=" + tHash + "\n" +
-                                        "URL=" + localSourceUrl + kvp);
+                            String2.log("URL=" + localSourceUrl + kvp);
                             throw new SimpleException(
-                                "Error while merging data: old=" + tso + " != new=" + tsn);
+                                "Error: there are two rows for lon,lat,alt,time,id=" + tHash + 
+                                " and they have different data values (column=" + 
+                                table.getColumnName(col) + "=" + tso + " and " + tsn + ").");
                         }
                     }
                 } else {
@@ -1573,6 +1641,282 @@ public class EDDTableFromSOS extends EDDTable{
         }
     }
 
+
+    /**
+     * This gets the data from a whoiServer.
+     *
+     * @param kvp  the string to be added to the sourceUrl
+     * @param table the table to which rows will be added
+     * @return the same table or a new table
+     */
+    protected void readFromWhoiServer(String kvp, Table table, HashMap llatHash,
+        String tStationLonString, String tStationLatString, String tStationAltString, String tStationID) 
+        throws Throwable {
+
+if (debugMode) String2.log("* readFromWhoiServer tStationID=" + tStationID);
+
+        int tableLonCol       = table.findColumnNumber(lonSourceName);
+        int tableLatCol       = table.findColumnNumber(latSourceName);
+        int tableAltCol       = table.findColumnNumber(altSourceName);
+        int tableTimeCol      = table.findColumnNumber(timeSourceName);
+        int tableStationIdCol = table.findColumnNumber(stationIdSourceName);
+
+        //make tableDVI, tableObservedProperties, isStringCol   (lon/lat/time/alt/id will be null)
+        String tDataVariableSourceNames[] = dataVariableSourceNames();
+        int nCol = table.nColumns();
+        IntArray tableDVI = new IntArray();
+        String tableObservedProperties[] = new String[nCol];
+        boolean isStringCol[] = new boolean[nCol];
+        for (int col = 0; col < nCol; col++) {
+            int dvi = String2.indexOf(tDataVariableSourceNames, table.getColumnName(col));
+            tableDVI.add(dvi);
+            EDV edv = dataVariables[dvi];
+            tableObservedProperties[col] = edv.combinedAttributes().getString("observedProperty");
+            isStringCol[col] = edv.sourceDataTypeClass().equals(String.class);
+        }
+
+
+        //InputStream in = SSR.getPostInputStream(sourceUrl, "text/xml", "UTF-8", constraintSB.toString());
+        InputStream in = SSR.getUrlInputStream(localSourceUrl + kvp);
+
+        //values that need to be parsed from the xml and held
+        IntArray fieldToCol = new IntArray(); //converts results field# to table col#
+        String tokenSeparator = null, blockSeparator = null, decimalSeparator = null;
+
+        //request the data
+        //???Future: need to break the request up into smaller time chunks???
+        SimpleXMLReader xmlReader = new SimpleXMLReader(in);
+        xmlReader.nextTag();
+        String tags = xmlReader.allTags();
+        if (tags.equals("<ServiceExceptionReport>")) {   
+            //<?xml version="1.0" encoding="UTF-8"?>
+            //<ServiceExceptionReport version="1.0">
+            //<ServiceException>
+            //Format - text/xml; subtype="om/1.0.0" - is not available for offering ADCP_DATA
+            //</ServiceException>
+            //</ServiceExceptionReport>
+            boolean okay = false;
+            do {
+                //process the tags
+                if (debugMode)
+                    String2.log("tags=" + tags + xmlReader.content());
+                if (tags.equals("<ServiceExceptionReport></ServiceException>")) { 
+                    String content = xmlReader.content();
+                    //if no data, whoiServer returns empty swe:values csv table
+                    //if (content.startsWith("Data not available")) {
+                    //    okay = true; //no data for one station is not fatal error
+                    //    if (reallyVerbose) String2.log("Exception: " + content);
+                    //} else {
+                        throw new RuntimeException("Source Exception=\"" + content + "\".");
+                    //}
+                }
+
+                //get the next tag
+                xmlReader.nextTag();
+                tags = xmlReader.allTags();
+            } while (!tags.startsWith("</"));
+
+            xmlReader.close();  
+            if (!okay)
+                throw new RuntimeException("Source sent an ExceptionReport (no text).");
+        } else {
+
+            String ofInterest = null;
+            if (tags.equals("<om:Observation>")) 
+                ofInterest = tags;
+            else if (tags.equals("<om:ObservationCollection>")) 
+                ofInterest = "<om:ObservationCollection><om:member><om:Observation>";
+            else throw new RuntimeException("Data source error when reading source xml: First tag=" + tags + 
+                " should have been <om:Observation> or <om:ObservationCollection>.");
+
+            do {
+                //process the tags
+                //String2.log("tags=" + tags + xmlReader.content());
+/* from http://mvcodata.whoi.edu:8080/q2o/adcp?service=SOS&version=1.0.0&responseFormat=text/xml;%20subtype%3D%22om/1.0%22&request=GetObservation&offering=ADCP_DATA&observedProperty=ALL_DATA&eventTime=2008-04-09T00:00:00Z/2008-04-09T01:00:00Z
+   stored as C:/data/whoiSos/GetObervations.xml
+<om:ObservationCollection gml:id="ADCP_Observation" xmlns:gml="http://www.opengis.net/gml" xmlns:om="http://www.opengis.net/om/1.0" xmlns:swe="http://www.opengis.net/swe/1.0.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/om/1.0 http://schemas.opengis.net/om/1.0.0/observation.xsd">
+    <!-- Observation name -->
+    <gml:name>Data from ADCP profiler</gml:name>
+    <om:member>
+        <om:Observation>
+            <!-- Observation time -->
+            <om:samplingTime>
+                <gml:TimePeriod>
+                    <gml:beginPosition>2008-04-09T00:00:00Z</gml:beginPosition>
+                    <gml:endPosition>2008-04-09T01:00:00Z</gml:endPosition>
+                </gml:TimePeriod>
+            </om:samplingTime>
+            <!-- Sensor description (SensorML) -->
+            <om:procedure xlink:href="http://mvcodata.whoi.edu/downloads/sensorML/v1.0/examples/sensors/ADCP_2.2/ADCP_System.xml"/>
+            <!-- Observable is a composite containing all data for now  -->
+            <om:observedProperty>
+                <swe:CompositePhenomenon dimension="24" gml:id="ALL_OBSERVABLES">
+                    <gml:description>ALL Mesurements from ADCP_System including QC flags and bad data</gml:description>
+                    <gml:name>ADCP measurements</gml:name>
+                    <swe:component xlink:href="urn:ogc:phenomenon:time:iso8601"/>
+                    ... other components (columns in the csv table)
+*/
+
+                if (debugMode) String2.log(tags + xmlReader.content());
+
+                if (tags.startsWith(ofInterest)) { //i.e., within <om:Observation>
+                    String endOfTag = tags.substring(ofInterest.length());
+                    String content = xmlReader.content();
+                    String error = null;
+
+                    if (endOfTag.equals(
+                        "<om:observedProperty><swe:CompositePhenomenon><swe:component>")) {
+                        //e.g., xlink:href="urn:ogc:phenomenon:time:iso8601" />
+                        String fieldName = xmlReader.attributeValue("xlink:href");
+                        int col = table.findColumnNumber(fieldName);
+                        fieldToCol.add(col);
+                        if (debugMode) String2.log("  field=" + fieldName + " col=" + col);
+
+                    } else if (endOfTag.equals("<swe:encoding><swe:TextBlock>")) {
+                        //encoding indicates how the data is stored
+                        //tokenSeparator="," blockSeparator=" " decimalSeparator="."
+                        tokenSeparator   = xmlReader.attributeValue("tokenSeparator");
+                        blockSeparator   = xmlReader.attributeValue("blockSeparator");
+                        decimalSeparator = xmlReader.attributeValue("decimalSeparator");
+                        if (debugMode) String2.log("  token=" + tokenSeparator + 
+                            " block=" + blockSeparator + 
+                            " decimal=" + decimalSeparator);
+
+                    } else if (endOfTag.equals("<om:result><swe:DataArray></swe:values>")) {
+                        //the results in one big csv block
+                        //first, ensure fieldToCol doesn't have 2 references to same column
+                        int nFields = fieldToCol.size();
+                        if (reallyVerbose) String2.log("fieldToCol=" + fieldToCol);
+                        for (int field = 0; field < nFields; field++) {
+                            int col = fieldToCol.get(field);
+                            if (col >= 0) { //several may be -1
+                                if (fieldToCol.indexOf(col, 0) != field) //ensure none before it are the same
+                                    throw new RuntimeException("Two fieldToCol=" + fieldToCol + 
+                                        " have the same table column reference (col#" + 
+                                        col + "=" + table.getColumnName(col) + ").");
+                            }
+                        }
+
+                        //ensure separators are set (to defaults)
+                        if (tokenSeparator   == null) tokenSeparator = ",";
+                        if (blockSeparator   == null) blockSeparator = " ";  //rowSeparator
+                        if (decimalSeparator == null) decimalSeparator = ".";
+                        boolean changeDecimalSeparator = !decimalSeparator.equals(".");
+
+                        //process the content (the results in one big csv block)
+                        //2008-04-09T00:00:00,41.3366,-70.5564,0.0,1128.3,73.2,9,0.06,0.16,97.8,71.1,38.4,6,10,5,156.0,159.4,155.3,9.6,3.1,0,0,0,0,0 
+    //???how are Strings quoted?
+                        int po = 0;  //next po to look at
+                        int contentLength = content.length();
+                        int nCols = table.nColumns();
+                        while (po < contentLength) {
+
+                            //process a row of data
+                            int nRows1 = table.nRows() + 1;
+                            String rowValues[] = new String[nCols];
+                            for (int field = 0; field < nFields; field++) {
+                                String sep = field < nFields - 1? tokenSeparator : blockSeparator;
+                                int po2 = content.indexOf(sep, po);
+                                if (po2 < 0) 
+                                    po2 = contentLength;
+                                String value = content.substring(po, po2);
+                                int col = fieldToCol.get(field);
+                                if (col >= 0) {
+                                    //deal with decimalSeparator for numeric Columns
+                                    if (changeDecimalSeparator && !isStringCol[col])
+                                        value = String2.replaceAll(value, decimalSeparator, ".");
+                                    rowValues[col] = value;
+                                    if (debugMode) 
+                                        String2.log("field=" + field + " col=" + col + " " + 
+                                        table.getColumnName(col) + " value=" + value);
+                                }                            
+                                po = Math.min(contentLength, po2 + sep.length());
+                            }
+
+                            //add lat lon alt data
+                            //it's usually in the result fields, but not always
+                            if (tableLonCol >= 0 && rowValues[tableLonCol] == null)
+                                rowValues[tableLonCol] = tStationLonString;
+                            if (tableLatCol >= 0 && rowValues[tableLatCol] == null)
+                                rowValues[tableLatCol] = tStationLatString;
+                            if (tableAltCol >= 0 && rowValues[tableAltCol] == null)
+                                rowValues[tableAltCol] = tStationAltString;
+                            if (tableStationIdCol >= 0 && rowValues[tableStationIdCol] == null)
+                                rowValues[tableStationIdCol] = tStationID;
+
+                            //make the hash key
+                            String tHash = rowValues[tableLonCol] + "," + rowValues[tableLatCol] + 
+                                     "," + rowValues[tableAltCol] + "," + rowValues[tableTimeCol] +
+                                     "," + rowValues[tableStationIdCol];
+
+                            //ensure lon, lat, time, id where found
+                            String tError1 = "Unexpected SOS response format: ";
+                            String tError2 = " wasn't found.\n" +
+                                "(L,L,A,T,ID=" + tHash + ")\n" +
+                                "URL=" + localSourceUrl + kvp;
+                            if (rowValues[tableLonCol] == null || rowValues[tableLonCol].length() == 0)
+                                throw new SimpleException(tError1 + "longitude" + tError2);
+                            if (rowValues[tableLatCol] == null || rowValues[tableLatCol].length() == 0)
+                                throw new SimpleException(tError1 + "latitude" + tError2);
+                            if (rowValues[tableTimeCol] == null || rowValues[tableTimeCol].length() == 0)
+                                throw new SimpleException(tError1 + "time" + tError2);
+                            if (rowValues[tableStationIdCol] == null || rowValues[tableStationIdCol].length() == 0)
+                                throw new SimpleException(tError1 + stationIdSourceName + tError2);
+
+                            //does a row with identical LonLatAltTimeID exist in table?
+                            int tRow = String2.parseInt((String)llatHash.get(tHash));
+                            if (tRow < Integer.MAX_VALUE) {
+                                //merge this data into that row
+                                for (int col = 0; col < nCols; col++) {
+                                    String ts = rowValues[col];
+                                    if (ts != null) {
+                                        PrimitiveArray pa = table.getColumn(col);
+                                        if (true || verbose) { 
+                                            //if there was an old value, ensure that old value = new value
+                                            //leave this test in as insurance!
+                                            String tso = pa.getString(tRow);
+                                            pa.setString(tRow, ts);
+                                            ts = pa.getString(tRow); //setting a number changes it, e.g., 1 -> 1.0
+                                            if (tso.length() > 0 && !tso.equals(ts)) {
+                                                String2.log("URL=" + localSourceUrl + kvp);
+                                                throw new SimpleException(
+                                                    "Error: there are two rows for lon,lat,alt,time,id=" + tHash + 
+                                                    " and they have different data values (column=" + 
+                                                    table.getColumnName(col) + "=" + tso + " and " + ts + ").");
+                                            }
+                                        } else {
+                                            pa.setString(tRow, ts);
+                                        }
+                                    }
+                                }
+                            } else {
+                                //add this row
+                                for (int col = 0; col < nCols; col++) {
+                                    String ts = rowValues[col];
+                                    table.getColumn(col).addString(ts == null? "" : ts);
+                                    //String2.log(col + " " + table.getColumnName(col) + " " + ts);
+                                }
+
+                                llatHash.put(tHash, "" + (table.nRows() - 1));
+                            }
+                        }
+                    }
+
+                    //handle the error
+                    if (error != null)
+                        throw new RuntimeException(
+                            "Data source error on xml line #" + xmlReader.lineNumber() + 
+                            ": " + error);
+                }
+
+                //get the next tag
+                xmlReader.nextTag();
+                tags = xmlReader.allTags();
+            } while (!tags.startsWith("</"));
+
+            xmlReader.close();  
+        }
+    }
 
     /**
      * This gets the data from an Oostethys SOS server.
@@ -1630,7 +1974,7 @@ public class EDDTableFromSOS extends EDDTable{
             boolean okay = false;
             do {
                 //process the tags
-                if (reallyReallyVerbose)
+                if (debugMode)
                     String2.log("tags=" + tags + xmlReader.content());
                 if (tags.equals("<ServiceExceptionReport></ServiceException>") ||  //tamu
                     tags.equals("<ows:ExceptionReport><ows:Exception></ows:ExceptionText>")) { //gomoos
@@ -1778,7 +2122,7 @@ http://schemas.opengis.net/om/1.0 http://schemas.opengis.net/om/1.0.0/observatio
             </om:featureOfInterest>
             */
 
-                if (reallyReallyVerbose) String2.log(tags + xmlReader.content());
+                if (debugMode) String2.log(tags + xmlReader.content());
 
                 if (tags.startsWith(ofInterest)) { //i.e., within <om:Observation>
                     String endOfTag = tags.substring(ofInterest.length());
@@ -1805,7 +2149,7 @@ http://schemas.opengis.net/om/1.0 http://schemas.opengis.net/om/1.0.0/observatio
                         String fieldName = xmlReader.attributeValue("name");
                         int col = table.findColumnNumber(fieldName);
                         fieldToCol.add(col);
-                        if (reallyReallyVerbose) String2.log("*** field name found: col=" + col + 
+                        if (debugMode) String2.log("*** field name found: col=" + col + 
                             " fieldName=" + fieldName);
 
                     } else if (endOfTag.equals("<om:result><swe:DataArray>" +
@@ -1816,7 +2160,7 @@ http://schemas.opengis.net/om/1.0 http://schemas.opengis.net/om/1.0.0/observatio
                             String definition = xmlReader.attributeValue("definition");
                             int col = String2.indexOf(tableObservedProperties, definition);
                             fieldToCol.set(nFields - 1, col); //change from -1 to col
-                            if (reallyReallyVerbose) 
+                            if (debugMode) 
                                 String2.log("*** field definition found: col=" + col + 
                                     " definition=" + definition);
                         }
@@ -1831,7 +2175,9 @@ http://schemas.opengis.net/om/1.0 http://schemas.opengis.net/om/1.0.0/observatio
                         tokenSeparator   = xmlReader.attributeValue("tokenSeparator");
                         blockSeparator   = xmlReader.attributeValue("blockSeparator");
                         decimalSeparator = xmlReader.attributeValue("decimalSeparator");
-                        if (reallyReallyVerbose) String2.log("*** separator info found");
+                        if (debugMode) String2.log("  token=" + tokenSeparator + 
+                            " block=" + blockSeparator + 
+                            " decimal=" + decimalSeparator);
 
                     } else if (//endOfTag.equals("</om:result>")) { //old
                                endOfTag.equals("<om:result><swe:DataArray></swe:values>")) {
@@ -1844,7 +2190,8 @@ http://schemas.opengis.net/om/1.0 http://schemas.opengis.net/om/1.0.0/observatio
                             if (col >= 0) { //several may be -1
                                 if (fieldToCol.indexOf(col, 0) != field) //ensure none before it are the same
                                     throw new RuntimeException("Two fieldToCol=" + fieldToCol + 
-                                        " have the same table column reference.");
+                                        " have the same table column reference (col#" + 
+                                        col + "=" + table.getColumnName(col) + ").");
                             }
                         }
 
@@ -1877,7 +2224,7 @@ http://schemas.opengis.net/om/1.0 http://schemas.opengis.net/om/1.0.0/observatio
                                     if (changeDecimalSeparator && !isStringCol[col])
                                         value = String2.replaceAll(value, decimalSeparator, ".");
                                     rowValues[col] = value;
-                                    if (reallyReallyVerbose) 
+                                    if (debugMode) 
                                         String2.log("field=" + field + " col=" + col + " " + 
                                         table.getColumnName(col) + " value=" + value);
                                 }                            
@@ -1886,14 +2233,14 @@ http://schemas.opengis.net/om/1.0 http://schemas.opengis.net/om/1.0.0/observatio
 
                             //add lat lon alt data
                             //it's usually in the result fields, but not always
-                            if (rowValues[tableLonCol] == null)
+                            if (tableLonCol >= 0 && rowValues[tableLonCol] == null)
                                 rowValues[tableLonCol] = tStationLonString;
-                            if (rowValues[tableLatCol] == null)
+                            if (tableLatCol >= 0 && rowValues[tableLatCol] == null)
                                 rowValues[tableLatCol] = tStationLatString;
-                            if (rowValues[tableAltCol] == null)
+                            if (tableAltCol >= 0 && rowValues[tableAltCol] == null)
                                 rowValues[tableAltCol] = tStationAltString;
-                            rowValues[tableStationIdCol] = tableStationIdCol >= 0?
-                                rowValues[tableStationIdCol] : tStationID;
+                            if (tableStationIdCol >= 0 && rowValues[tableStationIdCol] == null)
+                                rowValues[tableStationIdCol] = tStationID;
 
                             //make the hash key
                             String tHash = rowValues[tableLonCol] + "," + rowValues[tableLatCol] + 
@@ -1929,10 +2276,11 @@ http://schemas.opengis.net/om/1.0 http://schemas.opengis.net/om/1.0.0/observatio
                                             pa.setString(tRow, ts);
                                             ts = pa.getString(tRow); //setting a number changes it, e.g., 1 -> 1.0
                                             if (tso.length() > 0 && !tso.equals(ts)) {
-                                                String2.log("Error for L,L,A,T,ID=" + tHash + "\n" +
-                                                            "URL=" + localSourceUrl + kvp);
+                                                String2.log("URL=" + localSourceUrl + kvp);
                                                 throw new SimpleException(
-                                                    "Error while merging data: old=" + tso + " != new=" + ts);
+                                                    "Error: there are two rows for lon,lat,alt,time,id=" + tHash + 
+                                                    " and they have different data values (column=" + 
+                                                    table.getColumnName(col) + "=" + tso + " and " + ts + ").");
                                             }
                                         } else {
                                             pa.setString(tRow, ts);
@@ -2212,7 +2560,7 @@ expected =
             //but searching January's for each year found no data until 2006
             String2.log("\n*** EDDTableFromSOS nos AirTemperature test get all stations .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
-                "&time>=2008-10-26T00&time<=2008-10-26T01", 
+                "&time>=2008-10-26T00&time<=2008-10-26T01&orderBy(\"station_id,time\")", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosATempAllStations", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
@@ -2259,7 +2607,8 @@ expected =
             //it was hard to find data. station advertises 1999+ for several composites.
             //but searching January's for each year found no data until 2006
             String2.log("\n*** EDDTableFromSOS nos AirTemperature test get all stations .CSV data\n");
-            tName = eddTable.makeNewFileForDapQuery(null, null, "longitude,latitude,station_id", 
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "longitude,latitude,station_id&orderBy(\"station_id\")", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosATempStationList", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
@@ -2395,8 +2744,8 @@ expected =
 "    String observedProperty \"http://mmisw.org/ont/cf/parameter/air_pressure\";\n" +
 "  }\n" +
 "  air_pressure {\n" +
-"    Float64 colorBarMaximum 1030.0;\n" +
-"    Float64 colorBarMinimum 970.0;\n" +
+"    Float64 colorBarMaximum 1050.0;\n" +
+"    Float64 colorBarMinimum 950.0;\n" +
 "    String ioos_category \"Pressure\";\n" +
 "    String long_name \"Barometric Pressure\";\n" +
 "    String observedProperty \"http://mmisw.org/ont/cf/parameter/air_pressure\";\n" +
@@ -2799,7 +3148,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
             String2.getStringFromSystemIn(msg + 
-                "\nUnexpected(?) error " + datasetIdPrefix + "nosSosCurrents. NOS SOS Server is in flux." +
+                "\nThis started failing (no matching station) in ~Feb 2013. I don't understand why." +
                 "\nPress ^C to stop or Enter to continue..."); 
         }
     }
@@ -3663,10 +4012,9 @@ expected =
 datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "    String infoUrl \"http://sdf.ndbc.noaa.gov/sos/\";\n" +
 "    String institution \"NOAA NDBC\";\n" +
-"    String keywords \"Atmosphere > Altitude > Station Height,\n" +
-"Oceans > Ocean Circulation > Ocean Currents,\n" +
+"    String keywords \"Oceans > Ocean Circulation > Ocean Currents,\n" +
 "Oceans > Ocean Temperature > Water Temperature,\n" +
-"altitude, angle, atmosphere, bad, beam, bin, circulation, correlation, currents, direction, direction_of_sea_water_velocity, echo, error, flags, good, height, identifier, intensity, magnitude, ndbc, noaa, ocean, oceans, orientation, percent, pitch, platform, quality, rejected, roll, sea, sea_water_speed, sea_water_temperature, seawater, sensor, sos, speed, station, temperature, time, upward, upward_sea_water_velocity, velocity, water\";\n" +
+"angle, atmosphere, bad, beam, bin, circulation, correlation, currents, depth, direction, direction_of_sea_water_velocity, echo, error, flags, good, height, identifier, intensity, magnitude, ndbc, noaa, ocean, oceans, orientation, percent, pitch, platform, quality, rejected, roll, sea, sea_water_speed, sea_water_temperature, seawater, sensor, sos, speed, station, temperature, time, upward, upward_sea_water_velocity, velocity, water\";\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
 "    String license \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -5019,10 +5367,14 @@ So I will make ERDDAP able to read
   was http://www.gomoos.org/cgi-bin/sos/V1.0/oostethys_sos.cgi 
   now http://oceandata.gmri.org/cgi-bin/sos/V1.0/oostethys_sos.cgi
 */
+        boolean oSosActive = EDStatic.sosActive;
+        EDStatic.sosActive = true;
+        boolean oDebugMode = debugMode;
+        debugMode = true;
+
         try {
         String2.log("\n*** testOostethys");
         testVerboseOn();
-reallyReallyVerbose = true;
         double tLon, tLat;
         String name, tName, results, expected, userDapQuery;
         String error = "";
@@ -5326,7 +5678,7 @@ reallyReallyVerbose = true;
         expected = //changed a little on 2008-02-28, 2008-05-19, 2008-09-24, 2008-10-09 2009-01-12   -70.5658->-70.5655 42.5226->42.5232
            //change a little on 2009-03-26, 2009-09-18
 "longitude,latitude,station_id,altitude,time,air_temperature,chlorophyll,direction_of_sea_water_velocity,dominant_wave_period,sea_level_pressure,sea_water_density,sea_water_electrical_conductivity,sea_water_salinity,sea_water_speed,sea_water_temperature,wave_height,visibility_in_air,wind_from_direction,wind_gust,wind_speed\n" +
-"degrees_east,degrees_north,,m,UTC,degree_C,mg m-3,degrees_true,s,mbar,kg m-3,S m-1,PSU,cm s-1,degree_C,m,m,degrees_true,m s-1,m s-1\n" +
+"degrees_east,degrees_north,,m,UTC,degree_C,mg m-3,degrees_true,s,hPa,kg m-3,S m-1,PSU,cm s-1,degree_C,m,m,degrees_true,m s-1,m s-1\n" +
 "-70.5652267750436,42.5227725835475,A01,4.0,2007-12-11T00:00:00Z,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,332.100006103516,3.94600009918213,3.36700010299683\n" +
 "-70.5652267750436,42.5227725835475,A01,3.0,2007-12-11T00:00:00Z,0.899999976158142,NaN,NaN,NaN,1024.82849121094,NaN,NaN,NaN,NaN,NaN,NaN,2920.6796875,NaN,NaN,NaN\n" +
 "-70.5652267750436,42.5227725835475,A01,0.0,2007-12-11T00:00:00Z,NaN,NaN,NaN,5.33333349,NaN,NaN,NaN,NaN,NaN,NaN,0.644578338,NaN,NaN,NaN,NaN\n" +
@@ -5353,6 +5705,9 @@ reallyReallyVerbose = true;
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
                 "\nPress ^C to stop or Enter to continue..."); 
         }
+        EDStatic.sosActive = oSosActive;
+        debugMode = oDebugMode;
+
     }
 
     /**
@@ -5363,7 +5718,10 @@ reallyReallyVerbose = true;
     public static void testNeracoos() throws Throwable {
         String2.log("\n*** testNeracoos");
         testVerboseOn();
-reallyReallyVerbose = true;
+        boolean oSosActive = EDStatic.sosActive;
+        EDStatic.sosActive = true;
+        boolean oDebugMode = debugMode;
+        debugMode = true;
         double tLon, tLat;
         String name, tName, results, expected, userDapQuery;
         String error = "";
@@ -5530,7 +5888,7 @@ reallyReallyVerbose = true;
         //String2.log(results);
         expected = 
 "longitude,latitude,station_id,altitude,time,air_temperature,chlorophyll,direction_of_sea_water_velocity,dominant_wave_period,sea_level_pressure,sea_water_density,sea_water_electrical_conductivity,sea_water_salinity,sea_water_speed,sea_water_temperature,wave_height,visibility_in_air,wind_from_direction,wind_gust,wind_speed\n" +
-"degrees_east,degrees_north,,m,UTC,degree_C,mg m-3,degrees_true,s,mbar,kg m-3,S m-1,PSU,cm s-1,degree_C,m,m,degrees_true,m s-1,m s-1\n" +
+"degrees_east,degrees_north,,m,UTC,degree_C,mg m-3,degrees_true,s,hPa,kg m-3,S m-1,PSU,cm s-1,degree_C,m,m,degrees_true,m s-1,m s-1\n" +
 "-70.5652267750436,42.5227725835475,A01,4.0,2007-12-11T00:00:00Z,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,332.100006103516,3.94600009918213,3.36700010299683\n" +
 "-70.5652267750436,42.5227725835475,A01,3.0,2007-12-11T00:00:00Z,0.899999976158142,NaN,NaN,NaN,1024.82849121094,NaN,NaN,NaN,NaN,NaN,NaN,2920.6796875,NaN,NaN,NaN\n" +
 "-70.5652267750436,42.5227725835475,A01,0.0,2007-12-11T00:00:00Z,NaN,NaN,NaN,5.33333349,NaN,NaN,NaN,NaN,NaN,NaN,0.644578338,NaN,NaN,NaN,NaN\n" +
@@ -5552,6 +5910,9 @@ reallyReallyVerbose = true;
 "-70.5652267750436,42.5227725835475,A01,-54.0,2007-12-11T00:00:00Z,NaN,NaN,220.0,NaN,NaN,NaN,NaN,NaN,0.72111,NaN,NaN,NaN,NaN,NaN,NaN\n" +
 "-70.5652267750436,42.5227725835475,A01,-58.0,2007-12-11T00:00:00Z,NaN,NaN,323.0,NaN,NaN,NaN,NaN,NaN,3.956008,NaN,NaN,NaN,NaN,NaN,NaN\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);  
+
+        EDStatic.sosActive = oSosActive;
+        debugMode = oDebugMode;
         
     }
 
@@ -5567,7 +5928,10 @@ reallyReallyVerbose = true;
     public static void testTamu() throws Throwable {
         String2.log("\n*** testTamu");
         testVerboseOn();
-reallyReallyVerbose = true;
+        boolean oSosActive = EDStatic.sosActive;
+        EDStatic.sosActive = true;
+        boolean oDebugMode = debugMode;
+        debugMode = true;
         String name, tName, results, expected, userDapQuery;
         String error = "";
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
@@ -5583,6 +5947,8 @@ reallyReallyVerbose = true;
 "zztop\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);  
 
+        EDStatic.sosActive = oSosActive;
+        debugMode = oDebugMode;
 
 
     }
@@ -5595,15 +5961,23 @@ reallyReallyVerbose = true;
      *
      * @param tLocalSourceUrl
      * @param version may be null or "" if not needed
+     * @param sosServerType may be "", or one of IOOS_NDBC, IOOS_NOS, OOSTethys, WHOI (case insensitive)
      * @throws Throwable if trouble
      */
-    public static String generateDatasetsXml(String tLocalSourceUrl, String sosVersion) throws Throwable {
+    public static String generateDatasetsXml(String tLocalSourceUrl, String sosVersion, 
+        String sosServerType) throws Throwable {
 
         String2.log("EDDTableFromSos.generateDatasetsXml" +
             "\n  tLocalSourceUrl=" + tLocalSourceUrl);
         StringBuilder sb = new StringBuilder();
         String tPublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
-
+        sosServerType = sosServerType == null? "" : sosServerType.trim();
+        String sstlc = sosServerType.toLowerCase();
+        boolean ndbcIoosServer  = sstlc.equals(SosServerTypeIoosNdbc.toLowerCase());
+        boolean nosIoosServer   = sstlc.equals(SosServerTypeIoosNos.toLowerCase());
+        boolean oostethysServer = sstlc.equals(SosServerTypeOostethys.toLowerCase());
+        boolean whoiServer      = sstlc.equals(SosServerTypeWhoi.toLowerCase()); //required
+ 
         String tUrl = tLocalSourceUrl + "?service=SOS&request=GetCapabilities"; 
         if (sosVersion != null && sosVersion.length() > 0)
             tUrl += "&version=" + sosVersion; 
@@ -5615,7 +5989,8 @@ reallyReallyVerbose = true;
         boolean ioosServer = false;
         if (xmlReader.tag(0).equals("Capabilities")) {
             sosPrefix = "";              //ioosServer
-            ioosServer = true;
+            if (sosServerType.length() == 0) //not explicitly declared
+                ioosServer = true;
         } else if (xmlReader.tag(0).equals("sos:Capabilities")) {
             sosPrefix = "sos:"; //oostethys
         } else {
@@ -5848,7 +6223,10 @@ reallyReallyVerbose = true;
             "<dataset type=\"EDDTableFromSOS\" datasetID=\"" + suggestDatasetID(tPublicSourceUrl) + 
                     "\" active=\"true\">\n" +
             "    <sourceUrl>" + tLocalSourceUrl + "</sourceUrl>\n" +
-            "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+            "    <sosServerType>" + sosServerType + "</sosServerType>\n" +
+            (sosVersion == null || sosVersion.length() == 0? "" : 
+            "    <sosVersion>" + sosVersion + "</sosVersion>\n") +
+            "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
             "    <observationOfferingIdRegex>.+</observationOfferingIdRegex>\n" +
             "    <requestObservedPropertiesSeparately>false</requestObservedPropertiesSeparately>\n" +
             "    <longitudeSourceName>longitude</longitudeSourceName>\n" +
@@ -5856,11 +6234,11 @@ reallyReallyVerbose = true;
             "    <altitudeSourceName>???depth???ioos:VerticalPosition</altitudeSourceName>\n" +
             "    <altitudeMetersPerSourceUnit>-1</altitudeMetersPerSourceUnit>\n" +
             "    <timeSourceName>time</timeSourceName>\n" +
-            "    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ss'Z'</timeSourceFormat>\n");
+            "    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ssZ</timeSourceFormat>\n");
         sb.append(writeAttsForDatasetsXml(true, table.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
-        sb.append(writeVariablesForDatasetsXml(null, table, "dataVariable", true, true, true));
+        sb.append(writeVariablesForDatasetsXml(null, table, "dataVariable", true, true, false));
         sb.append(
             "</dataset>\n");
 
@@ -5877,12 +6255,12 @@ reallyReallyVerbose = true;
 
         try {
             String results = generateDatasetsXml(
-                "http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0");
+                "http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", "IOOS_NDBC");
 
             //GenerateDatasetsXml
             GenerateDatasetsXml.doIt(new String[]{"-verbose", 
                 "EDDTableFromSOS",
-                "http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0"},
+                "http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", "IOOS_NDBC"},
                 false); //doIt loop?
             String gdxResults = String2.getClipboardString();
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
@@ -5960,7 +6338,7 @@ String expected2 =
 "    <timeSourceName>time</timeSourceName>\n" +
 "    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ss'Z'</timeSourceFormat>\n" +
 "    <addAttributes>\n" +
-"        <att name=\"cdm_data_type\">Station</att>\n" +
+"        <att name=\"cdm_data_type\">Point</att>\n" +
 "        <att name=\"Conventions\">???COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"infoUrl\">http://sdf.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"institution\">National Data Buoy Center</att>\n" +
@@ -6107,11 +6485,13 @@ String expected2 =
      * @param tLocalSourceUrl  with no '?', e.g., http://sdf.ndbc.noaa.gov/sos/server.php
      * @throws Throwable if trouble
      */
-    public static String generateDatasetsXmlFromIOOS(String tLocalSourceUrl) throws Throwable {
+    public static String generateDatasetsXmlFromIOOS(String tLocalSourceUrl, 
+        String sosServerType) throws Throwable {
 
         String2.log("EDDTableFromSos.generateDatasetsXmlFromIOOS" +
             "\n  tLocalSourceUrl=" + tLocalSourceUrl);
         String tPbublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
+        sosServerType = sosServerType == null? "" : sosServerType.trim();
 
         String tUrl = tLocalSourceUrl + "?service=SOS&request=GetCapabilities"; 
         //if (reallyVerbose) String2.log(SSR.getUrlResponseString(tUrl));
@@ -6122,7 +6502,8 @@ String expected2 =
         boolean ioosServer = false;
         if (xmlReader.tag(0).equals("Capabilities")) {
             sosPrefix = "";              //ioosServer
-            ioosServer = true;
+            if (sosServerType.length() == 0) //not explicitly declared
+                ioosServer = true;
         } else if (xmlReader.tag(0).equals("sos:Capabilities")) {
             sosPrefix = "sos:"; //oostethys
         } else {
@@ -6353,7 +6734,7 @@ String expected2 =
         for (int op = 0; op < uniqueObsProp.size(); op++) {
             try {
                 sb.append(generateDatasetsXmlFromOneIOOS(pre + uniqueObsProp.get(op) + post, 
-                    tInfoUrl, tInstitution));
+                    sosServerType, tInfoUrl, tInstitution));
             } catch (Throwable t) {
                 sb.append("\n<!-- ERROR for " + pre + uniqueObsProp.get(op) + post + "\n" + 
                     MustBe.throwableToString(t) + "-->\n\n");
@@ -6382,11 +6763,12 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
      * @throws Throwable if trouble
      */
     public static String generateDatasetsXmlFromOneIOOS(String tLocalSourceUrl, 
-        String tInfoUrl, String tInstitution) throws Throwable {
+        String sosServerType, String tInfoUrl, String tInstitution) throws Throwable {
 
         String2.log("EDDTableFromSos.generateDatasetsXmlFromOneIOOS" +
             "\n  tLocalSourceUrl=" + tLocalSourceUrl);
         String tPublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
+        sosServerType = sosServerType == null? "" : sosServerType.trim();
         StringBuilder sb = new StringBuilder();
         int po, po1;
 
@@ -6466,6 +6848,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
         sb.append(        
 "<dataset type=\"EDDTableFromSOS\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
 "    <sourceUrl>" + tLocalBaseUrl + "</sourceUrl>\n" +
+"    <sosServerType>" + sosServerType + "</sosServerType>\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <observationOfferingIdRegex>.+</observationOfferingIdRegex>\n" +
 "    <requestObservedPropertiesSeparately>true</requestObservedPropertiesSeparately>\n" +
@@ -6556,9 +6939,9 @@ String2.log("sosTable columnNames=" + String2.toCSSVString(sosTable.getColumnNam
      */
     public static void testGenerateDatasetsXmlFromIOOS() throws Throwable {
         String results = generateDatasetsXmlFromIOOS(
-            "http://sdf.ndbc.noaa.gov/sos/server.php");
+            "http://sdf.ndbc.noaa.gov/sos/server.php", "IOOS_NDBC");
         String expected = expectedTestGenerateDatasetsXml(
-            "http://sdf.ndbc.noaa.gov/", "NOAA NDBC");
+            "http://sdf.ndbc.noaa.gov/", "IOOS_NDBC", "NOAA NDBC");
         int po = results.indexOf(expected.substring(0, 80));
         if (po < 0) {
             String2.log("\nRESULTS=\n" + results);
@@ -6584,17 +6967,20 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
             "&observedProperty=sea_water_salinity" + 
             "&offering=urn:ioos:network:noaa.nws.ndbc:all" + 
             "&responseFormat=text/csv&eventTime=2010-05-27T00:00:00Z/2010-05-27T01:00:00Z" + 
-            "&featureofinterest=BBOX:-180,-90,180,90", "", "");
+            "&featureofinterest=BBOX:-180,-90,180,90", "IOOS_NDBC", "", "");
         String expected = expectedTestGenerateDatasetsXml(
-            "http://sdf.ndbc.noaa.gov/sos/", "NOAA NDBC");
+            "http://sdf.ndbc.noaa.gov/sos/", "IOOS_NDBC", "NOAA NDBC");
         Test.ensureEqual(results, expected, "results=\n" + results);
         
     }
 
-    private static String expectedTestGenerateDatasetsXml(String tInfoUrl, String tInstitution) { 
+    private static String expectedTestGenerateDatasetsXml(String tInfoUrl, 
+        String tSosServerType, String tInstitution) { 
+        
         return
 "<dataset type=\"EDDTableFromSOS\" datasetID=\"noaa_ndbc_ed62_eec8_862e\" active=\"true\">\n" +
 "    <sourceUrl>http://sdf.ndbc.noaa.gov/sos/server.php</sourceUrl>\n" +
+"    <sosServerType>" + (tSosServerType == null? "" : tSosServerType.trim()) + "</sosServerType>\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <observationOfferingIdRegex>.+</observationOfferingIdRegex>\n" +
 "    <requestObservedPropertiesSeparately>true</requestObservedPropertiesSeparately>\n" +
@@ -6900,7 +7286,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
             //2005 04 19 00 00 999 99.0 99.0  1.40  9.00 99.00 999 9999.0 999.0  24.4 999.0 99.0 99.00 first available
             //double seconds = Calendar2.isoStringToEpochSeconds("2005-04-19T00");
             //int row = table.getColumn(timeIndex).indexOf("" + seconds, 0);
-            //Test.ensureEqual(table.getStringData(idIndex, row), "31201", "");
+            //Test.ensureEqual(table.getStringData(sosOfferingIndex, row), "31201", "");
             //Test.ensureEqual(table.getFloatData(latIndex, row), -27.7f, "");
             //Test.ensureEqual(table.getFloatData(lonIndex, row), -48.13f, "");
 
@@ -7163,6 +7549,124 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 
     } */
 
+    /**
+     * This tests datasetID=whoiSos.
+     * See the email from Janet Fredericks to me 2013-01-28 6:36 AM
+     * (in response to my email suggesting she work with NOAA IOOS and standardize)
+     * saying this was funded by IOOS!
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testWhoiSos() throws Throwable {
+        boolean oSosActive = EDStatic.sosActive;
+        EDStatic.sosActive = true;
+        boolean oDebugMode = debugMode;
+        debugMode = true;
+        boolean oTestQuickRestart = testQuickRestart;
+testQuickRestart = true; 
+
+        try {
+        String2.log("\n*** testWhoiSos");
+        testVerboseOn();
+        double tLon, tLat;
+        String name, tName, results, expected, userDapQuery;
+        String error = "";
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+
+
+
+
+        EDDTable eddTable = (EDDTable)oneFromDatasetXml("whoiSos"); //should work
+
+        //getEmpiricalMinMax just do once
+        //useful for SOS: get alt values
+        //eddTable.getEmpiricalMinMax("2007-02-01", "2007-02-01", false, true);
+        //if (true) System.exit(1);
+
+        /*
+        //test sos-server values
+        String2.log("nOfferings=" + eddTable.sosOfferings.size());
+        String2.log(eddTable.sosOfferings.getString(0) + "  lon=" +
+            eddTable.sosMinLon.getNiceDouble(0) + ", " +
+            eddTable.sosMaxLon.getNiceDouble(0) + " lat=" +
+            eddTable.sosMinLat.getNiceDouble(0) + ", " +
+            eddTable.sosMaxLat.getNiceDouble(0) + " time=" +
+            eddTable.sosMinTime.getNiceDouble(0) + ", " +
+            eddTable.sosMaxTime.getNiceDouble(0));
+        String2.log(String2.toCSSVString(eddTable.sosObservedProperties()));       
+        */
+ 
+        userDapQuery = "&time<=2008-04-09T01:00:00";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            eddTable.datasetID() + "_Data", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected =
+"longitude,latitude,station_id,altitude,time,pressure,waveHeightFromPressure,wavePeriodFromPressure,loCutoffFrequency,hiCutoffFrequency,waveHeightAll,swell,windWaves,wavePeriodAll,swellPeriod,windPeriod,dominantWaveDirection,swellDirection,windWaveDirection,topBinHeight,bottomBinHeight,dataGapFlag,aggregatePressureFlag,echoIntensityFlag,cMFlag,aggregateVelocityFlag\n" +
+"degrees_east,degrees_north,,m,UTC,cm,cm,s,Hz,Hz,cm,cm,cm,s,s,s,degrees_true,degrees_true,degrees_true,cm,cm,,,,,\n" +
+"-70.5564,41.3366,ADCP_DATA,0.0,2008-04-09T00:00:00Z,1128.3,73.2,9.0,0.06,0.16,97.8,71.1,38.4,6.0,10.0,5.0,156.0,159.4,155.3,9.6,3.1,0,0,0,0,0\n" +
+"-70.5564,41.3366,ADCP_DATA,0.0,2008-04-09T00:20:00Z,1138.2,76.5,9.0,0.06,0.16,99.0,74.8,37.5,6.0,9.0,5.0,148.5,156.9,147.2,9.6,3.1,0,0,0,0,0\n" +
+"-70.5564,41.3366,ADCP_DATA,0.0,2008-04-09T00:40:00Z,1147.0,75.0,10.0,0.06,0.12,103.4,79.4,38.6,6.0,10.0,5.0,154.6,160.2,150.3,9.6,3.1,0,0,0,0,0\n" +
+"-70.5564,41.3366,ADCP_DATA,0.0,2008-04-09T01:00:00Z,1154.1,81.0,10.0,0.06,0.12,109.5,87.4,41.0,6.0,10.0,5.0,156.5,159.0,155.7,9.6,3.1,0,0,0,0,0\n";
+    Test.ensureEqual(results, expected, results);
+
+        //there was a problem with 2 rows have different data for same L,L,A,T,ID
+        //2013-03-05 I used this to find the problem times. See emails to Janet Fredericks.
+        userDapQuery = "&time>2009-09-01&time<2009-10";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
+            eddTable.datasetID() + "_Data2", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected =
+"longitude,latitude,station_id,altitude,time,pressure,waveHeightFromPressure,wavePeriodFromPressure,loCutoffFrequency,hiCutoffFrequency,waveHeightAll,swell,windWaves,wavePeriodAll,swellPeriod,windPeriod,dominantWaveDirection,swellDirection,windWaveDirection,topBinHeight,bottomBinHeight,dataGapFlag,aggregatePressureFlag,echoIntensityFlag,cMFlag,aggregateVelocityFlag\n" +
+"degrees_east,degrees_north,,m,UTC,cm,cm,s,Hz,Hz,cm,cm,cm,s,s,s,degrees_true,degrees_true,degrees_true,cm,cm,,,,,\n" +
+"-70.5564,41.3366,ADCP_DATA,0.0,2009-09-03T16:07:58Z,1027.3,58.1,8.0,0.06,0.17,100.0,46.4,19.6,19.0,10.0,5.0,153.1,165.1,151.0,8.6,3.1,1,0,0,0,1\n" +
+"-70.5564,41.3366,ADCP_DATA,0.0,2009-09-03T22:27:58Z,1097.8,47.7,8.0,0.06,0.2,55.0,40.3,24.9,7.0,9.0,5.0,151.3,166.1,137.6,9.6,NaN,1,0,0,0,1\n" +
+"-70.5564,41.3366,ADCP_DATA,0.0,2009-09-03T23:09:15Z,1103.0,41.9,8.0,0.06,0.2,50.6,35.2,23.8,7.0,10.0,5.0,155.6,165.0,140.9,9.6,1.1,1,0,0,0,1";
+    Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+        //data for mapExample  (no time)  just uses station table data
+        tName = eddTable.makeNewFileForDapQuery(null, null, "longitude,latitude&distinct()", 
+            EDStatic.fullTestCacheDirectory, eddTable.className() + "MapNT", ".csv");
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"longitude,latitude\n" +
+"degrees_east,degrees_north\n" +
+"-70.5564,41.3366\n"; 
+       Test.ensureEqual(results, expected, "\nresults=\n" + results);  
+
+
+        //data for mapExample (with time
+        tName = eddTable.makeNewFileForDapQuery(null, null, "longitude,latitude&time=2010-12-11", 
+            EDStatic.fullTestCacheDirectory, eddTable.className() + "MapWT", ".csv");
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"longitude,latitude\n" +
+"degrees_east,degrees_north\n" +
+"-70.5564,41.3366\n"; 
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);  
+
+        //data for all variables 
+        tName = eddTable.makeNewFileForDapQuery(null, null, "&longitude=-70.5564&time=2010-12-11", 
+            EDStatic.fullTestCacheDirectory, eddTable.className() + "MapWTAV", ".csv");
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"longitude,latitude,station_id,altitude,time,pressure,waveHeightFromPressure,wavePeriodFromPressure,loCutoffFrequency,hiCutoffFrequency,waveHeightAll,swell,windWaves,wavePeriodAll,swellPeriod,windPeriod,dominantWaveDirection,swellDirection,windWaveDirection,topBinHeight,bottomBinHeight,dataGapFlag,aggregatePressureFlag,echoIntensityFlag,cMFlag,aggregateVelocityFlag\n" +
+"degrees_east,degrees_north,,m,UTC,cm,cm,s,Hz,Hz,cm,cm,cm,s,s,s,degrees_true,degrees_true,degrees_true,cm,cm,,,,,\n" +
+"-70.5564,41.3366,ADCP_DATA,0.0,2010-12-11T00:00:00Z,1057.2,32.8,11.0,0.06,0.16,47.3,38.8,16.3,9.0,12.0,5.0,167.0,165.4,178.3,9.1,3.1,0,0,0,0,0\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);  
+
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                "\nPress ^C to stop or Enter to continue..."); 
+        }
+        EDStatic.sosActive = oSosActive;
+        debugMode = oDebugMode;
+        testQuickRestart = oTestQuickRestart;
+
+    }
+
 
     /**
      * This runs all of the tests for this class.
@@ -7203,17 +7707,16 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         //testNosSosWLevel("");  //no stations?!
         testNosSosWTemp("");  
         testNosSosWind("");
-        
-
-        //testErddapSos();  //not up-to-date
+        testWhoiSos();        
 
         testGenerateDatasetsXmlFromOneIOOS();
         testGenerateDatasetsXmlFromIOOS();
-        //testGetStationTable(); inactive
         // */
         
         
         //*** usually not run
+        //testErddapSos();  //not up-to-date
+        //testGetStationTable(); inactive
         //testNdbcTestServer();
         //testGetPhenomena();
         //String2.log(generateDatasetsXml("http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", false));

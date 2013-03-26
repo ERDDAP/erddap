@@ -61,7 +61,6 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         String tDatasetType = xmlReader.attributeValue("type"); 
 
         Attributes tGlobalAttributes = null;
-        double tAltitudeMetersPerSourceUnit = 1; 
         ArrayList tDataVariables = new ArrayList();
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
@@ -90,9 +89,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
             //try to make the tag names as consistent, descriptive and readable as possible
             if      (localTags.equals("<addAttributes>"))
                 tGlobalAttributes = getAttributesFromXml(xmlReader);
-            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) {}
-            else if (localTags.equals("</altitudeMetersPerSourceUnit>")) 
-                tAltitudeMetersPerSourceUnit = String2.parseDouble(content); 
+            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) 
+                throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
             else if (localTags.equals( "<dataVariable>")) 
                 tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
@@ -148,7 +146,6 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
 
             return new EDDTableFromAsciiServiceNOS(tDatasetID, tAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
-                tAltitudeMetersPerSourceUnit,
                 ttDataVariables,
                 tReloadEveryNMinutes, tLocalSourceUrl,
                 tBeforeData, tAfterData, tNoData);
@@ -198,8 +195,6 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
      *   Special case: if combinedGlobalAttributes name="license", any instance of "[standard]"
      *     will be converted to the EDStatic.standardLicense.
-     * @param tAltMetersPerSourceUnit the factor needed to convert the source
-     *    alt values to/from meters above sea level.
      * @param tDataVariables is an Object[nDataVariables][3]: 
      *    <br>[0]=String sourceName (the name of the data variable in the dataset source, 
      *         without the outer or inner sequence name),
@@ -221,8 +216,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
      *      <li> a org.joda.time.format.DateTimeFormat string
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *        http://joda-time.sourceforge.net/api-release/index.html or 
-     *        http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html),
+     *        http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
+     *        http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
@@ -233,7 +228,6 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tLocalSourceUrl,
@@ -343,8 +337,13 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
             } else if (EDV.ALT_NAME.equals(tDestName)) {
                 dataVariables[dv] = new EDVAlt(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN, tAltMetersPerSourceUnit);
+                    tSourceType, Double.NaN, Double.NaN);
                 altIndex = dv;
+            } else if (EDV.DEPTH_NAME.equals(tDestName)) {
+                dataVariables[dv] = new EDVDepth(tSourceName,
+                    tSourceAtt, tAddAtt, 
+                    tSourceType, Double.NaN, Double.NaN);
+                depthIndex = dv;
             } else if (EDV.TIME_NAME.equals(tDestName)) {  //look for TIME_NAME before check hasTimeUnits (next)
                 dataVariables[dv] = new EDVTime(tSourceName,
                     tSourceAtt, tAddAtt, tSourceType);

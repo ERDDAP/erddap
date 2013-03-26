@@ -86,7 +86,6 @@ public class EDDTableFromDapSequence extends EDDTable{
         if (verbose) String2.log("\n*** constructing EDDTableFromDapSequence(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         Attributes tGlobalAttributes = null;
-        double tAltitudeMetersPerSourceUnit = 1; 
         ArrayList tDataVariables = new ArrayList();
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
@@ -118,9 +117,8 @@ public class EDDTableFromDapSequence extends EDDTable{
             //try to make the tag names as consistent, descriptive and readable as possible
             if      (localTags.equals("<addAttributes>"))
                 tGlobalAttributes = getAttributesFromXml(xmlReader);
-            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) {}
-            else if (localTags.equals("</altitudeMetersPerSourceUnit>")) 
-                tAltitudeMetersPerSourceUnit = String2.parseDouble(content); 
+            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) 
+                throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
             else if (localTags.equals( "<dataVariable>")) 
                 tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
@@ -163,7 +161,6 @@ public class EDDTableFromDapSequence extends EDDTable{
 
         return new EDDTableFromDapSequence(tDatasetID, tAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
-            tAltitudeMetersPerSourceUnit,
             ttDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl, 
             tOuterSequenceName, tInnerSequenceName, 
@@ -221,8 +218,6 @@ public class EDDTableFromDapSequence extends EDDTable{
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
      *   Special case: if combinedGlobalAttributes name="license", any instance of value="[standard]"
      *     will be converted to the EDStatic.standardLicense.
-     * @param tAltMetersPerSourceUnit the factor needed to convert the source
-     *    alt values to/from meters above sea level.
      * @param tDataVariables is an Object[nDataVariables][3]: 
      *    <br>[0]=String sourceName (the name of the data variable in the dataset source, 
      *         without the outer or inner sequence name),
@@ -243,8 +238,8 @@ public class EDDTableFromDapSequence extends EDDTable{
      *      <li> a org.joda.time.format.DateTimeFormat string
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *        http://joda-time.sourceforge.net/api-release/index.html or 
-     *        http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html),
+     *        http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
+     *        http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
@@ -268,7 +263,6 @@ public class EDDTableFromDapSequence extends EDDTable{
     public EDDTableFromDapSequence(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tLocalSourceUrl,
@@ -515,8 +509,13 @@ public class EDDTableFromDapSequence extends EDDTable{
             } else if (EDV.ALT_NAME.equals(tDestName)) {
                 dataVariables[dv] = new EDVAlt(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN, tAltMetersPerSourceUnit);
+                    tSourceType, Double.NaN, Double.NaN);
                 altIndex = dv;
+            } else if (EDV.DEPTH_NAME.equals(tDestName)) {
+                dataVariables[dv] = new EDVDepth(tSourceName,
+                    tSourceAtt, tAddAtt, 
+                    tSourceType, Double.NaN, Double.NaN);
+                depthIndex = dv;
             } else if (EDV.TIME_NAME.equals(tDestName)) {  //look for TIME_NAME before check hasTimeUnits (next)
                 dataVariables[dv] = new EDVTime(tSourceName,
                     tSourceAtt, tAddAtt, tSourceType);
@@ -582,7 +581,7 @@ public class EDDTableFromDapSequence extends EDDTable{
         StringArray constraintValues    = new StringArray();
         getSourceQueryFromDapQuery(userDapQuery,
             resultsVariables,
-            constraintVariables, constraintOps, constraintValues);
+            constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
 
         //further prune constraints 
         //sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; //outer vars, yes; inner, no
@@ -799,7 +798,9 @@ public class EDDTableFromDapSequence extends EDDTable{
                                 outerSequenceName + "." + varName, sourceAtts);
                         //just outer vars get added to subsetVariables
                         tSubsetVariables.add(suggestDestinationName(
-                            varName, sourceAtts.getString("units"), 
+                            varName, 
+                            sourceAtts.getString("units"), 
+                            sourceAtts.getString("positive"), 
                             sourceAtts.getFloat("scale_factor"), true)); 
                         dataSourceTable.addColumn(nOuterVars, varName, new StringArray(), 
                             sourceAtts);
@@ -813,7 +814,7 @@ public class EDDTableFromDapSequence extends EDDTable{
         }
 
         //get global attributes and ensure required entries are present 
-        //after dataVariables known, add global attributes in the axisAddTable
+        //after dataVariables known, add global attributes in the dataAddTable
         OpendapHelper.getAttributes(das, "GLOBAL", dataSourceTable.globalAttributes());
         dataAddTable.globalAttributes().set(
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
@@ -845,10 +846,7 @@ public class EDDTableFromDapSequence extends EDDTable{
             "    <sourceCanConstrainStringEQNE>" + !isDapper + "</sourceCanConstrainStringEQNE>\n" + //DAPPER doesn't support string constraints
             "    <sourceCanConstrainStringGTLT>" + !isDapper + "</sourceCanConstrainStringGTLT>\n" + //see email from Joe Sirott 1/21/2009
             "    <sourceCanConstrainStringRegex></sourceCanConstrainStringRegex>\n" + //was ~=, now ""; see notes.txt for 2009-01-16
-            "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +
-            //altitude is only relevant if var is already called "altitude".
-            //(new GenerateDatasetsXml doesn't change depth to altitude) so units probably already meters up
-            "    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n");
+            "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -890,7 +888,6 @@ directionsForGenerateDatasetsXml() +
 "    <sourceCanConstrainStringGTLT>true</sourceCanConstrainStringGTLT>\n" +
 "    <sourceCanConstrainStringRegex></sourceCanConstrainStringRegex>\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
@@ -904,9 +901,9 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_url\">http://cimt.dyndns.org:8080/dods/drds/vCTD</att>\n" +
 "        <att name=\"infoUrl\">http://cimt.dyndns.org:8080/dods/drds/vCTD</att>\n" +
 "        <att name=\"institution\">DYNDNS CIMT</att>\n" +
-"        <att name=\"keywords\">\n" +
+"        <att name=\"keywords\">acceleration, anomaly, avg, cimt, cimt.dyndns.org, currents, data, density, depth, dods, drds, dyndns, fluorescence, geopotential, oceans,\n" +
 "Oceans &gt; Salinity/Density &gt; Salinity,\n" +
-"acceleration, anomaly, avg, cimt, cimt.dyndns.org, currents, data, density, depth, dods, drds, dyndns, fluorescence, from, geopotential, http, oceans, optical, optical properties, properties, salinity, sea, sea_water_salinity, seawater, sigma, sound, station, temperature, time, vctd.das, velocity, water</att>\n" +
+"optical, optical properties, properties, salinity, sea, sea_water_salinity, seawater, sigma, sound, station, temperature, time, vctd.das, velocity, water</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
@@ -1081,8 +1078,6 @@ directionsForGenerateDatasetsXml() +
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n";
-
-
             String results = generateDatasetsXml(tUrl, 1440, null);
             Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -1186,57 +1181,57 @@ directionsForGenerateDatasetsXml() +
         testVerboseOn();
         try {
             String results, query, tName;
-            String baseQuery = "time,longitude,latitude,altitude,station,waterTemperature,salinity" +
+            String baseQuery = "time,longitude,latitude,depth,station,waterTemperature,salinity" +
                 "&latitude=36.692"; 
             EDDTable tedd = (EDDTable)oneFromDatasetXml("cimtPsdac");
             String expected = 
-    "time,longitude,latitude,altitude,station,waterTemperature,salinity\n" +
+    "time,longitude,latitude,depth,station,waterTemperature,salinity\n" +
     "UTC,degrees_east,degrees_north,m,,degrees_Celsius,Presumed Salinity Units\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-1.0,T402,12.8887,33.8966\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-2.0,T402,12.8272,33.8937\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-3.0,T402,12.8125,33.8898\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-4.0,T402,12.7125,33.8487\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-5.0,T402,12.4326,33.8241\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-6.0,T402,12.1666,33.8349\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-7.0,T402,11.9364,33.8159\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-8.0,T402,11.7206,33.8039\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-9.0,T402,11.511,33.8271\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-10.0,T402,11.4064,33.853\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-11.0,T402,11.3552,33.8502\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-12.0,T402,11.2519,33.8607\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-13.0,T402,11.1777,33.8655\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-14.0,T402,11.1381,33.8785\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-15.0,T402,11.0643,33.8768\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-16.0,T402,10.9416,33.8537\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-17.0,T402,10.809,33.8379\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-18.0,T402,10.7034,33.8593\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-19.0,T402,10.6502,33.8476\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-20.0,T402,10.5257,33.8174\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-21.0,T402,10.2857,33.831\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-22.0,T402,10.0717,33.8511\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-23.0,T402,9.9577,33.8557\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-24.0,T402,9.8876,33.8614\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-25.0,T402,9.842,33.8757\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-26.0,T402,9.7788,33.8904\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-27.0,T402,9.7224,33.8982\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-28.0,T402,9.695,33.9038\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-29.0,T402,9.6751,33.9013\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-30.0,T402,9.6462,33.9061\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-31.0,T402,9.6088,33.9069\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-32.0,T402,9.5447,33.9145\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-33.0,T402,9.4887,33.9263\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-34.0,T402,9.4514,33.9333\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-35.0,T402,9.4253,33.9358\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-36.0,T402,9.397,33.9387\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-37.0,T402,9.3795,33.9479\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-38.0,T402,9.3437,33.9475\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-39.0,T402,9.2946,33.9494\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-40.0,T402,9.2339,33.9458\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-41.0,T402,9.1812,33.9468\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-42.0,T402,9.153,33.9548\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-43.0,T402,9.1294,33.9615\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-44.0,T402,9.1048,33.9652\n" +
-    "2002-06-25T14:55:00Z,-121.845,36.692,-45.0,T402,9.0566,33.9762\n";
+    "2002-06-25T14:55:00Z,-121.845,36.692,1.0,T402,12.8887,33.8966\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,2.0,T402,12.8272,33.8937\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,3.0,T402,12.8125,33.8898\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,4.0,T402,12.7125,33.8487\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,5.0,T402,12.4326,33.8241\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,6.0,T402,12.1666,33.8349\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,7.0,T402,11.9364,33.8159\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,8.0,T402,11.7206,33.8039\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,9.0,T402,11.511,33.8271\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,10.0,T402,11.4064,33.853\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,11.0,T402,11.3552,33.8502\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,12.0,T402,11.2519,33.8607\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,13.0,T402,11.1777,33.8655\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,14.0,T402,11.1381,33.8785\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,15.0,T402,11.0643,33.8768\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,16.0,T402,10.9416,33.8537\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,17.0,T402,10.809,33.8379\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,18.0,T402,10.7034,33.8593\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,19.0,T402,10.6502,33.8476\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,20.0,T402,10.5257,33.8174\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,21.0,T402,10.2857,33.831\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,22.0,T402,10.0717,33.8511\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,23.0,T402,9.9577,33.8557\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,24.0,T402,9.8876,33.8614\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,25.0,T402,9.842,33.8757\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,26.0,T402,9.7788,33.8904\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,27.0,T402,9.7224,33.8982\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,28.0,T402,9.695,33.9038\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,29.0,T402,9.6751,33.9013\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,30.0,T402,9.6462,33.9061\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,31.0,T402,9.6088,33.9069\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,32.0,T402,9.5447,33.9145\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,33.0,T402,9.4887,33.9263\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,34.0,T402,9.4514,33.9333\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,35.0,T402,9.4253,33.9358\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,36.0,T402,9.397,33.9387\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,37.0,T402,9.3795,33.9479\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,38.0,T402,9.3437,33.9475\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,39.0,T402,9.2946,33.9494\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,40.0,T402,9.2339,33.9458\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,41.0,T402,9.1812,33.9468\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,42.0,T402,9.153,33.9548\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,43.0,T402,9.1294,33.9615\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,44.0,T402,9.1048,33.9652\n" +
+    "2002-06-25T14:55:00Z,-121.845,36.692,45.0,T402,9.0566,33.9762\n";
 
             //the basicQuery
             try {
@@ -1636,17 +1631,17 @@ try {
 "    String standard_name \"latitude\";[10]\n" +
 "    String units \"degrees_north\";[10]\n" +
 "  }[10]\n" +
-"  altitude {[10]\n" +
+"  depth {[10]\n" +
 "    String _CoordinateAxisType \"Height\";[10]\n" +
-"    String _CoordinateZisPositive \"up\";[10]\n" +
+"    String _CoordinateZisPositive \"down\";[10]\n" +
 "    Float64 actual_range 11.0, 1543.0;[10]\n" +
 "    String axis \"Z\";[10]\n" +
-"    Float64 colorBarMaximum 0.0;[10]\n" +
-"    Float64 colorBarMinimum -1500.0;[10]\n" +
+"    Float64 colorBarMaximum 1500.0;[10]\n" +
+"    Float64 colorBarMinimum 0.0;[10]\n" +
 "    String ioos_category \"Location\";[10]\n" +
-"    String long_name \"Altitude\";[10]\n" +
-"    String positive \"up\";[10]\n" +
-"    String standard_name \"altitude\";[10]\n" +
+"    String long_name \"Depth\";[10]\n" +
+"    String positive \"down\";[10]\n" +
+"    String standard_name \"depth\";[10]\n" +
 "    String units \"m\";[10]\n" +
 "  }[10]\n" +
 "  time {[10]\n" +
@@ -1717,7 +1712,7 @@ try {
 "    String geospatial_lon_units \"degrees_east\";[10]\n" +
 "    Float64 geospatial_vertical_max 1543.0;[10]\n" +
 "    Float64 geospatial_vertical_min 11.0;[10]\n" +
-"    String geospatial_vertical_positive \"up\";[10]\n" +
+"    String geospatial_vertical_positive \"down\";[10]\n" +
 "    String geospatial_vertical_units \"m\";[10]\n" +
 "    String history \"" + today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
@@ -1732,7 +1727,7 @@ expected =
 "    String keywords \"Biosphere > Aquatic Ecosystems > Coastal Habitat,[10]\n" +
 "Biosphere > Aquatic Ecosystems > Marine Habitat,[10]\n" +
 "Biological Classification > Animals/Invertebrates > Cnidarians > Anthozoans/Hexacorals > Hard Or Stony Corals,[10]\n" +
-"1980-2005, abbreviation, altitude, atmosphere, beginning, coast, code, collected, coral, data, family, genus, height, identifier, institution, noaa, nwfsc, off, order, scientific, species, station, survey, taxa, taxonomic, taxonomy, time, west, west coast, year\";[10]\n" +
+"1980-2005, abbreviation, atmosphere, beginning, coast, code, collected, coral, data, depth, family, genus, height, identifier, institution, noaa, nwfsc, off, order, scientific, species, station, survey, taxa, taxonomic, taxonomy, time, west, west coast, year\";[10]\n" +
 "    String keywords_vocabulary \"GCMD Science Keywords\";[10]\n" +
 "    String license \"The data may be used and redistributed for free but is not intended[10]\n" +
 "for legal use, since it may contain inaccuracies. Neither the data[10]\n" +
@@ -1746,7 +1741,7 @@ expected =
 "    String sourceUrl \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005\";[10]\n" +
 "    Float64 Southernmost_Northing 32.570838928222656;[10]\n" +
 "    String standard_name_vocabulary \"CF-12\";[10]\n" +
-"    String subsetVariables \"longitude, latitude, altitude, time, institution, institution_id, species_code, taxa_scientific, taxonomic_order, order_abbreviation, taxonomic_family, family_abbreviation, taxonomic_genus\";[10]\n" +
+"    String subsetVariables \"longitude, latitude, depth, time, institution, institution_id, species_code, taxa_scientific, taxonomic_order, order_abbreviation, taxonomic_family, family_abbreviation, taxonomic_genus\";[10]\n" +
 "    String summary \"This data contains the locations of some observations of[10]\n" +
 "cold-water/deep-sea corals off the west coast of the United States.[10]\n" +
 "Records of coral catch originate from bottom trawl surveys conducted[10]\n" +
@@ -1807,7 +1802,7 @@ expected =
         String2.log("\n****************** EDDTableFromDapSequence.test() *****************\n");
         testVerboseOn();
 
-/* */ 
+/* */
         //always done        
         testGenerateDatasetsXml();
         testPsdac();

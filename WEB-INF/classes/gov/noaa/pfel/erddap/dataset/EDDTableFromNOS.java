@@ -109,7 +109,6 @@ public class EDDTableFromNOS extends EDDTable{
         if (verbose) String2.log("\n*** constructing EDDTableFromNOS(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         Attributes tGlobalAttributes = null;
-        double tAltitudeMetersPerSourceUnit = 1; 
         ArrayList tDataVariables = new ArrayList();
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
@@ -136,9 +135,8 @@ public class EDDTableFromNOS extends EDDTable{
             //try to make the tag names as consistent, descriptive and readable as possible
             if      (localTags.equals("<addAttributes>"))
                 tGlobalAttributes = getAttributesFromXml(xmlReader);
-            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) {}
-            else if (localTags.equals("</altitudeMetersPerSourceUnit>")) 
-                tAltitudeMetersPerSourceUnit = String2.parseDouble(content); 
+            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) 
+                throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
             else if (localTags.equals( "<dataVariable>")) 
                 tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
@@ -177,7 +175,6 @@ public class EDDTableFromNOS extends EDDTable{
 
         return new EDDTableFromNOS(tDatasetID, tAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
-            tAltitudeMetersPerSourceUnit,
             ttDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl,
             tXmlns, tGetWhat, tWsdlUrl, tRequestTimeFormat, tRowElementXPath);
@@ -226,8 +223,6 @@ public class EDDTableFromNOS extends EDDTable{
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
      *   Special case: if combinedGlobalAttributes name="license", any instance of "[standard]"
      *     will be converted to the EDStatic.standardLicense.
-     * @param tAltMetersPerSourceUnit the factor needed to convert the source
-     *    alt values to/from meters above sea level.
      * @param tDataVariables is an Object[nDataVariables][4]: 
      *    <br>[0]=String sourceName (the name of the data variable in the dataset source),
      *    <br>[1]=String destinationName (the name to be presented to the ERDDAP user, 
@@ -251,8 +246,8 @@ public class EDDTableFromNOS extends EDDTable{
      *      <li> a org.joda.time.format.DateTimeFormat string
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *        http://joda-time.sourceforge.net/api-release/index.html or 
-     *        http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html),
+     *        http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
+     *        http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
      *      </ul>
      *   The altitude and time variables (if any) should have actual_range metadata.
      * @param tReloadEveryNMinutes indicates how often the source should
@@ -264,14 +259,13 @@ public class EDDTableFromNOS extends EDDTable{
      *     wsdlUrl.
      * @param tRequestTimeFormat the SimpleDateFormat for formatting the time requests
      *    e.g., "yyyyMMdd HH:mm"
-     * (see http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html).
+     *    (see http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
      * @param tRowElementXPath  e.g., /soapenv:Envelope/soapenv:Body/WindMeasurements/data/item
      * @throws Throwable if trouble
      */
     public EDDTableFromNOS(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tLocalSourceUrl, String tXmlns, String tGetWhat, String tWsdlUrl,
@@ -451,7 +445,12 @@ public class EDDTableFromNOS extends EDDTable{
                 altIndex = nFixedVariables + dv;
                 dataVariables[altIndex] = new EDVAlt(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN, tAltMetersPerSourceUnit);
+                    tSourceType, Double.NaN, Double.NaN);
+            } else if (EDV.DEPTH_NAME.equals(tDestName)) {
+                depthIndex = nFixedVariables + dv;
+                dataVariables[depthIndex] = new EDVDepth(tSourceName,
+                    tSourceAtt, tAddAtt, 
+                    tSourceType, Double.NaN, Double.NaN);
             } else if (EDV.TIME_NAME.equals(tDestName)) {  //look for TIME_NAME before check hasTimeUnits (next)
                 timeIndex = nFixedVariables + dv;
                 dataVariables[timeIndex] = new EDVTime(tSourceName,
@@ -502,7 +501,7 @@ public class EDDTableFromNOS extends EDDTable{
         StringArray constraintValues    = new StringArray();
         getSourceQueryFromDapQuery(userDapQuery,
             resultsVariables,
-            constraintVariables, constraintOps, constraintValues);
+            constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
 
         //no need to further prune constraints. 
         //constraints are used as needed below.

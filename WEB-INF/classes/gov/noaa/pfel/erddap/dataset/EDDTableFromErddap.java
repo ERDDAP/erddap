@@ -287,7 +287,12 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
                 altIndex = tDataVariables.size();
                 tDataVariables.add(new EDVAlt(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType, Double.NaN, Double.NaN, 1)); //altMetersPerSource always 1
+                    tSourceType, Double.NaN, Double.NaN));
+            } else if (EDV.DEPTH_NAME.equals(tSourceName)) {
+                depthIndex = tDataVariables.size();
+                tDataVariables.add(new EDVDepth(tSourceName,
+                    tSourceAtt, tAddAtt, 
+                    tSourceType, Double.NaN, Double.NaN)); 
             } else if (EDV.TIME_NAME.equals(tSourceName)) {  //look for TIME_NAME before check hasTimeUnits (next)
                 timeIndex = tDataVariables.size();
                 tDataVariables.add(new EDVTime(tSourceName,

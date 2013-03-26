@@ -44,6 +44,7 @@ import java.util.GregorianCalendar;
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
  * and copy it to <context>/WEB-INF/lib.
+ * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
  * Put both of these .jar files in the classpath for the compiler and for Java.
  */
 import ucar.ma2.*;
@@ -927,6 +928,7 @@ switch to finally clause
      * Get slf4j-jdk14.jar from 
      * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
      * and copy it to <context>/WEB-INF/lib.
+     * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
      * Put both of these .jar files in the classpath for the compiler and for Java.
      *
      * @param fullFileName
@@ -1480,7 +1482,7 @@ switch to finally clause
         String dir4 = "c:\\u00\\cwatch\\testData\\gmt\\";
         String name4= "TestGMT4";
         grdDump = 
-"netcdf c:\\u00\\cwatch\\testData\\gmt\\TestGMT4.grd {\n" +
+"netcdf TestGMT4.grd {\n" +  //2013-03-20 changed with ncdumpW: had dir, too
 " dimensions:\n" +
 "   x = 4001;\n" +   // (has coord.var)\n" +    //changed when switched to netcdf-java 4.0, 2009-02-23
 "   y = 2321;\n" +   // (has coord.var)\n" +
@@ -1900,6 +1902,7 @@ switch to finally clause
      * Get slf4j-jdk14.jar from 
      * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
      * and copy it to <context>/WEB-INF/lib.
+     * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
      * Put both of these .jar files in the classpath for the compiler and for Java.
      *
      * <p>This sets globalAttributes, latAttributes, lonAttributes,
@@ -3050,9 +3053,21 @@ try {
             new LatLonPointImpl(lat[0], lon[0]),
             new LatLonPointImpl(lat[lat.length - 1], lon[lon.length - 1]));
         GeotiffWriter writer = new GeotiffWriter(directory + name + ".tif");
+
+        //2013-03-20 pre 4.3.16, was 
         writer.writeGrid(directory + name + ".nc", dataName, 0, 0, 
             true, //true=grayscale   color didn't work for me. and see javadocs above.
             latLonRect);
+
+        //I didn't finish changes. revert to older netcdfAll 
+        //   writeGrid(GridDataset dataset, GridDatatype grid, Array data, boolean greyScale)
+        //GridDataset gd = GridDataset.open(directory + name + ".nc");
+        //GeoGrid gg = (Geogrid)grids.get(0);
+        //writer.writeGrid(gd, directory + name + ".nc", dataName, 0, 0, 
+        //    true, //true=grayscale   color didn't work for me. and see javadocs above.
+        //    latLonRect);
+
+
         writer.close();    
 
         if (verbose) String2.log("  Grid.saveAsGeotiff done. TIME=" + 

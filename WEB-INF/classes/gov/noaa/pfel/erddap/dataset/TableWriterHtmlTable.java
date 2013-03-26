@@ -279,7 +279,7 @@ public class TableWriterHtmlTable extends TableWriter {
                          writer.write("<td>" + emptyCell);
                     else  
                         writer.write("<td" + noWrap + ">" + 
-                            Calendar2.limitedEpochSecondsToIsoStringT(
+                            Calendar2.epochSecondsToLimitedIsoStringT(
                                 time_precision[col], d, ""));
                 } else {
                     String s = table.getStringData(col, row);

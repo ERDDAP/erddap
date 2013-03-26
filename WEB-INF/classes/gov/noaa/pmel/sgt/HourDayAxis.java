@@ -96,15 +96,15 @@ public class HourDayAxis implements TimeAxisStyle {
     try {
       if(time_increasing) {
         time = new GeoDate(tRange.start.getGMTMonth(),
-         tRange.start.getGMTDay(),
+                           tRange.start.getGMTDay(),
                            tRange.start.getGMTYear(),
-         tRange.start.getGMTHours(), 0, 0, 0);
+                           tRange.start.getGMTHours(), 0, 0, 0);
         if(!time.equals(tRange.start)) time.increment(1.0f, GeoDate.HOURS);
       } else {
         time = new GeoDate(tRange.end.getGMTMonth(),
-         tRange.end.getGMTDay(),
+                           tRange.end.getGMTDay(),
                            tRange.end.getGMTYear(),
-         tRange.end.getGMTHours(), 0, 0, 0);
+                           tRange.end.getGMTHours(), 0, 0, 0);
         if(!time.equals(tRange.end)) time.increment(1.0f, GeoDate.HOURS);
       }
     } catch (IllegalTimeValue e) {}
@@ -117,6 +117,6 @@ public class HourDayAxis implements TimeAxisStyle {
     return incrementUnits__;
   }
   public String toString() {
-    return "HourDayAxis";
+    return "HourDayAxis inc=" + incrementValue__ + " minorLabelInterval=" + defaultMinorLabelInterval_;
   }
 }

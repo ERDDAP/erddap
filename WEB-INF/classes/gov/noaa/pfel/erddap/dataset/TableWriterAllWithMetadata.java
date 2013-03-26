@@ -171,10 +171,11 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
         if (columnMinValue == null)
             throw new SimpleException(MustBe.THERE_IS_NO_DATA);
 
-        int lonCol  = String2.indexOf(columnNames, EDV.LON_NAME);
-        int latCol  = String2.indexOf(columnNames, EDV.LAT_NAME);
-        int altCol  = String2.indexOf(columnNames, EDV.ALT_NAME);
-        int timeCol = String2.indexOf(columnNames, EDV.TIME_NAME);
+        int lonCol   = String2.indexOf(columnNames, EDV.LON_NAME);
+        int latCol   = String2.indexOf(columnNames, EDV.LAT_NAME);
+        int altCol   = String2.indexOf(columnNames, EDV.ALT_NAME);
+        int depthCol = String2.indexOf(columnNames, EDV.DEPTH_NAME);
+        int timeCol  = String2.indexOf(columnNames, EDV.TIME_NAME);
         for (int col = 0; col < columnNames.length; col++) {
 
             //*** FIX UP THE FILE-SPECIFIC METADATA
@@ -230,7 +231,7 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
                     globalAttributes.set("Southernmost_Northing", dMin);
                     globalAttributes.set("Northernmost_Northing", dMax);
                 } 
-            } else if (col == altCol) {
+            } else if (col == altCol || col == depthCol) {
                 if (Double.isNaN(dMin)) {
                     globalAttributes.remove("geospatial_vertical_min"); //unidata-related
                     globalAttributes.remove("geospatial_vertical_max");

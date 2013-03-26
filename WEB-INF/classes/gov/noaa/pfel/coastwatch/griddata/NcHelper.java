@@ -12,7 +12,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
-import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +26,7 @@ import java.util.List;
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
  * and copy it to <context>/WEB-INF/lib.
+ * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
  * Put both of these .jar files in the classpath for the compiler and for Java.
  */
 import ucar.nc2.*;
@@ -106,19 +107,19 @@ public class NcHelper  {
      * WARNING: if the file is big, this can be very slow.
      * WARNING: if printData is true, this may not show the data if there is lots of data. 
      *
-     * @param fullFileName
+     * @param fullFileName  
      * @param printData if true, all of the data values are printed, too.
      * @return a String with the dump text
      */
     public static String lowDumpString(String fullFileName, 
             boolean printData, String varNames) throws Exception {
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        //NCdump.printHeader(fullFileName, baos);
-        NCdump.print(fullFileName, baos, 
-            printData, false /*print only coord variables*/, false /*ncml*/, false,
+        StringWriter sw = new StringWriter();
+        //NCdumpW.printHeader(fullFileName, baos);
+        NCdumpW.print(fullFileName, sw, 
+            printData, false /*print only coord variables*/, fullFileName.endsWith(".ncml"), false,
             varNames, null /*cancel*/);
-        String s = baos.toString();
+        String s = sw.toString();
 
         //remove the directory name from the string
         //These headers are used by the HTTP GET system and so are seen
@@ -268,7 +269,7 @@ public class NcHelper  {
         if (o instanceof short[])  return Array.factory(short.class,  new int[]{((short[])o).length}, o);
         if (o instanceof int[])    return Array.factory(int.class,    new int[]{((int[])o).length}, o);
         if (o instanceof long[])   {
-            o = new StringArray(new LongArray((long[])o));
+            o = (new LongArray((long[])o)).toStringArray();
             //then falls through to String[] handling
         }
         if (o instanceof float[])  return Array.factory(float.class,  new int[]{((float[])o).length}, o);
@@ -296,7 +297,8 @@ public class NcHelper  {
             return ac;
         }
 
-        Test.error(String2.ERROR + " in NcHelper.get1DArray: unexpected object type: " + o);
+        Test.error(String2.ERROR + " in NcHelper.get1DArray: unexpected object type: " + 
+            o.getClass().getCanonicalName() + ": " + o);
         return null;
     }
 
@@ -592,13 +594,14 @@ public class NcHelper  {
      * (see ucar.nc2.NetcdfFile documentation).
      * 
      * @param fullName This may be a local file name, an "http:" address of a
-     *    .nc file, or an opendap url.
+     *    .nc file, or an opendap url.  
+     *    If this is an .ncml file, the name must end in .ncml.
      * @return a NetcdfFile
      * @throws Exception if trouble
      */
     public static NetcdfFile openFile(String fullName) throws Exception {
-
-        return NetcdfFile.open(fullName);
+        return fullName.endsWith(".ncml")? NetcdfDataset.openDataset(fullName) : 
+            NetcdfFile.open(fullName);
     }
 
     /** 
@@ -1594,7 +1597,7 @@ public class NcHelper  {
      * are specially encoded in the files and then automatically decoded when read.
      *
      * @param fullName for the file (This writes to an intermediate file then renames quickly.)
-     * @param varNames    Names musn't have internal spaces.
+     * @param varNames    Names mustn't have internal spaces.
      * @param pas   Each may have a different size! 
      *     (Which makes this method different than Table.saveAsFlatNc.)
      *     In the .nc file, each will have a dimension with the same name as the varName.
@@ -1800,7 +1803,7 @@ public class NcHelper  {
      * are specially encoded in the files and then automatically decoded when read.
      *
      * @param fullName for the file (This doesn't write to an intermediate file.)
-     * @param attributes  Names musn't have internal spaces.
+     * @param attributes  Names mustn't have internal spaces.
      * @throws Exception if trouble (if an attribute's values are in a LongArray)
      */
     public static void writeAttributesToNc(String fullName, Attributes attributes) 
@@ -1898,12 +1901,13 @@ String2.log(pas13.toString());
     }
 
     public static String testLowNcDump(String fullFileName) throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        //NCdump.printHeader(fullFileName, baos);
-        NCdump.print(fullFileName, baos, 
-            false /*printData*/, false /*print only coord variables*/, false /*ncml*/, false,
+        StringWriter sw = new StringWriter();
+        //NCdumpW.printHeader(fullFileName, sw);
+        NCdumpW.print(fullFileName, sw, 
+            false /*printData*/, false /*print only coord variables*/, 
+            fullFileName.endsWith(".ncml"), false,
             "", null /*cancel*/);
-        return baos.toString();
+        return sw.toString();
     }
 
     /** 

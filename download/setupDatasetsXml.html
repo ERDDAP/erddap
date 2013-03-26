@@ -176,7 +176,7 @@ you get all the advantages of ERDDAP, including:
   <li>RESTful access to your data
 </ul>
 Making the datasets.xml takes considerable effort for the first few datasets, but <b>it gets easier</b>.
-After the first dataset, you can use often re-use a lot of your work for the next dataset.
+After the first dataset, you can often re-use a lot of your work for the next dataset.
 Fortunately, there are two <a rel="help" href="#Tools">Tools</a> to help you create the XML for each 
 dataset in datasets.xml.
 And if you get stuck, please send an email with the details to <tt>bob dot simons at noaa dot gov</tt>.
@@ -573,7 +573,7 @@ Datasets fall into two categories.  (<a rel="help" href="#dataStructures">Why?</
 <li>EDDGridFromDap can get data from any multi-dimensional variable from a DAP data server.
   (Previously, EDDGridFromDap was limited to variables designated as "grid"'s, but that is no longer
   a requirement.)
-<li>The skeleton XML for an EDDGridFromDap dataset is:
+<li><a name="EDDGridFromDapSkeletonXML">The</a> skeleton XML for an EDDGridFromDap dataset is:
 
 <pre>
 &lt;dataset type="EDDGridFromDap" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
@@ -648,7 +648,8 @@ a remote ERDDAP server.
   See ERDDAP's 
     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">security system</a>
     for restricting access to some datasets to some users.
-<li>The skeleton XML for an EDDGridFromErddap dataset is very simple, because the intent is just to mimic
+<li><a name="EDDGridFromErddapSkeletonXML">The</a> skeleton XML for an EDDGridFromErddap dataset 
+  is very simple, because the intent is just to mimic
   the remote dataset which is already suitable for use in ERDDAP:
 <pre>
 &lt;dataset type="EDDGridFromErddap" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
@@ -659,7 +660,8 @@ a remote ERDDAP server.
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
 &lt;/dataset&gt;
 </pre>
-<li>The skeleton XML for an EDDTableFromErddap dataset is very simple, because the intent is just to mimic
+<li><a name="EDDTableFromErddapSkeletonXML">The</a> skeleton XML for an EDDTableFromErddap dataset 
+  is very simple, because the intent is just to mimic
   the remote dataset, which is already suitable for use in ERDDAP:
 <pre>
 &lt;dataset type="EDDTableFromErddap" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
@@ -693,7 +695,7 @@ a remote ERDDAP server.
 <p><a name="EDDGridFromFiles"><b>EDDGridFromFiles</b></a> is the superclass of all
 EDDGridFrom...Files classes. 
 You can't use EDDGridFromFiles directly. 
-Instead, you can use subclasses of EDDGridFromFiles to handle specific file types:
+Instead, use a subclass of EDDGridFromFiles to handle the specific file type:
    <ul>
    <li><a rel="help" href="#EDDGridFromNcFiles">EDDGridFromNcFiles</a> handles data from gridded 
       <a rel="help" href="http://en.wikipedia.org/wiki/GRIB">GRIB .grb</a> files,
@@ -791,7 +793,7 @@ allows fast random access to the data, and is already supported by ERDDAP.
   Then, the fileNameRegex test (see below) will indicate that this is not a relevant file.
   After the FTP process is complete, rename the file to the correct name.
   The renaming process will cause the file to become relevant in an instant.
-<li><b>The skeleton XML</b> for all EDDGridFromFiles subclasses is:
+<li><a name="EDDGridFromFilesSkeletonXML"><b>The skeleton XML</b></a> for all EDDGridFromFiles subclasses is:
 <pre>
 &lt;dataset type="EDDGridFrom...Files" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
@@ -855,7 +857,7 @@ aggregates two or more EDDGrid datasets (the children) side by side.
   <tt>emailEverythingTo</tt> (as specified in 
   <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>) 
   and continues with the other children.
-<li>The skeleton XML for an EDDGridSideBySide dataset is:
+<li><a name="EDDGridSideBySideSkeletonXML">The</a> skeleton XML for an EDDGridSideBySide dataset is:
 <pre>
 &lt;dataset type="EDDGridSideBySide" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   &lt;dataset&gt;...&lt;/dataset&gt; &lt;!-- 2 or more --&gt;
@@ -905,7 +907,8 @@ aggregates two or more EDDGrid datasets based on different
   delete them and uncomment the <tt>&lt;sourceUrl&gt;</tt> tag 
   (so that new files are noticed each time
   the dataset is reloaded.
-<li>The skeleton XML for an EDDGridAggregateExistingDimension dataset is:
+<li><a name="EDDGridAggregateExistingDimensionSkeletonXML">The</a> skeleton XML for an
+  EDDGridAggregateExistingDimension dataset is:
 
 <pre>
 &lt;dataset type="EDDGridAggregateExistingDimension" <a rel="help" href="#datasetID">datasetID</a>="..." 
@@ -930,7 +933,7 @@ aggregates two or more EDDGrid datasets based on different
     When these children are sorted by file name, they must be in order of
     ascending values for the aggregated dimension. --&gt;
   &lt;ensureAxisValuesAreEqual&gt;true(the default) or 
-    false&lt;ensureAxisValuesAreEqual&gt; 
+    false&lt;/ensureAxisValuesAreEqual&gt; 
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
@@ -1063,7 +1066,7 @@ serves data from the local copy.
     <br>&nbsp;
   </ol>
 
-<li>Skeleton XML - The skeleton XML for an EDDGridCopy dataset is:
+<li><a name="EDDGridCopySkeletonXML">Skeleton</a> XML - The skeleton XML for an EDDGridCopy dataset is:
 <pre>
 &lt;dataset type="EDDGridCopy" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
@@ -1091,7 +1094,7 @@ p><a name="EDDTableFromBMDE"><b>EDDTableFromBMDE</b></a> handles data from a
   ERDDAP will check that each dataVariable's sourceName is a valid BMDE name (without the "bmde:" prefix).
   ERDDAP will add some standard <a rel="help" href="#globalAttributes">sourceAttributes</a> for each dataVariable,
     so you usually will not need to define any <a rel="help" href="#globalAttributes">addAttributes</a>. 
-<li>The skeleton XML for an EDDTableFromBMDE dataset is:
+<li><a name="EDDTableFromBMDESkeletonXML">The</a> skeleton XML for an EDDTableFromBMDE dataset is:
 <pre>
 &lt;dataset type="EDDTableFromBMDE" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
@@ -1124,7 +1127,7 @@ p><a name="EDDTableFromBMDE"><b>EDDTableFromBMDE</b></a> handles data from a
   the variable is a "sequence" (case insensitive).
 <li>In some cases, you will see a sequence within a sequence, a 2-level sequence -- 
   EDDTableFromDapSequence handles these, too.
-<li>The skeleton XML for an EDDTableFromDapSequence dataset is:
+<li><a name="EDDTableFromDapSequenceSkeletonXML">The</a> skeleton XML for an EDDTableFromDapSequence dataset is:
 
 <pre>
 &lt;dataset type="EDDTableFromDapSequence" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
@@ -1323,7 +1326,7 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
       If they are logically organized (each with data for a chunk of space and time), 
       ERDDAP can extract data from them very quickly.
   </ul>
-<li>The skeleton XML for an EDDTableFromDapSequence dataset is:
+<li><a name="EDDTableFromDatabaseSkeletonXML">The</a> skeleton XML for an EDDTableFromDatabase dataset is:
 <pre>
 &lt;dataset type="EDDTableFromDatabase" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
@@ -1374,7 +1377,7 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
 <p><a name="EDDTableFromFiles"><b>EDDTableFromFiles</b></a> is the superclass of all
 EDDTableFrom...Files classes. 
 You can't use EDDTableFromFiles directly. 
-Instead, you can use subclasses of EDDTableFromFiles to handle specific file types:
+Instead, use a subclass of EDDTableFromFiles to handle the specific file type:
   <ul>
   <li><a rel="help" href="#EDDTableFromAsciiFiles">EDDTableFromAsciiFiles</a> aggregates data from 
        comma-, tab-, or space-separated tabular ASCII data files.
@@ -1592,17 +1595,29 @@ allows fast random access to the data, and is already supported by ERDDAP.
   <tt>global:</tt> (e.g., <tt>global:PI</tt>), when ERDDAP is reading the data from a file, 
   ERDDAP will look for a global attribute of that name (e.g., <tt>PI</tt>) and 
   create a column filled with the attribute's value.
-<li><b>The skeleton XML</b> for all EDDTableFromFiles subclasses is:
+<li><a name="EDDTableFromFilesSkeletonXML"><b>The skeleton XML</b></a>
+  for all EDDTableFromFiles subclasses is:
 <pre>
 &lt;dataset type="EDDTableFrom...Files" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
-  &lt;nDimensions&gt;...&lt;/nDimensions&gt;  &lt;!-- This was used prior to ERDDAP 
-    version 1.30, but is now ignored. --&gt;
+  &lt;nDimensions&gt;...&lt;/nDimensions&gt;  &lt;!-- This was used prior to ERDDAP version 1.30, 
+    but is now ignored. --&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
-  <a rel="help" href="#altitudeMetersPerSourceUnit">&lt;altitudeMetersPerSourceUnit&gt;</a>...&lt;/altitudeMetersPerSourceUnit&gt; 
+  <a rel="help" href="#altitudeMetersPerSourceUnit">&lt;altitudeMetersPerSourceUnit&gt;</a>...&lt;/altitudeMetersPerSourceUnit&gt;
+  &lt;specialMode&gt;<i>mode</i>&lt;/specialMode&gt;  &lt;-- This rarely-used, optional tag can be used 
+    with EDDTableFromThreddsFiles to specify that special, hard-coded rules 
+    should be used to determine which files should be downloaded from the server.
+    Currently, the only valid <i>mode</i> is SAMOS which is used with datasets from
+    http://coaps.fsu.edu/thredds/catalog/samos to download only the files with 
+    the last version number. --&gt;
+  &lt;sourceUrl&gt;...&lt;/sourceUrl&gt;  &lt;-- For subclasses like EDDTableFromHyraxFiles and 
+    EDDTableFromThreddsFiles, this is where you specify the base URL for the files 
+    on the remote server.  For subclasses that get data from local files, ERDDAP 
+    doesn't use this information to get the data, but does display the information 
+    to users. So I usually use "(local files)". --&gt;
   &lt;fileDir&gt;...&lt;/fileDir&gt; &lt;-- The directory (absolute) with the data files. --&gt;
   &lt;recursive&gt;true|false&lt;/recursive&gt; &lt;-- Indicates if subdirectories
     of fileDir have data files, too. --&gt;
@@ -1665,7 +1680,7 @@ allows fast random access to the data, and is already supported by ERDDAP.
 <a rel="help" href="http://csc-s-ial-p.csc.noaa.gov/DTL/DTLProjects/microwfs/microWFS.html">microWFS</a> source.
 <ul>
 <li>This won't work for other WFS servers.
-<li>The skeleton XML for an EDDTableFromMWFS dataset is:
+<li><a name="EDDTableFromMWFSSkeletonXML">The</a> skeleton XML for an EDDTableFromMWFS dataset is:
 <pre>
 &lt;dataset type="EDDTableFromMWFS" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
@@ -1680,8 +1695,8 @@ allows fast random access to the data, and is already supported by ERDDAP.
   &lt;latitudeSourceMaximum&gt;...&lt;/latitudeSourceMaximum&gt; &lt;- - OPTIONAL - -&gt;
   &lt;altitudeSourceMinimum&gt;...&lt;/altitudeSourceMinimum&gt; &lt;- - OPTIONAL - -&gt;
   &lt;altitudeSourceMaximum&gt;...&lt;/altitudeSourceMaximum&gt; &lt;- - OPTIONAL - -&gt;
-  &lt;timeSourceMinimum&gt;...&lt;/timeSourceMinimum&gt; &lt;- - OPTIONAL, in YYYY-MM-DDThh:mm:ss format - -&gt;
-  &lt;timeSourceMaximum&gt;...&lt;/timeSourceMaximum&gt; &lt;- - OPTIONAL, in YYYY-MM-DDThh:mm:ss format - -&gt;
+  &lt;timeSourceMinimum&gt;...&lt;/timeSourceMinimum&gt; &lt;- - OPTIONAL, in yyyy-MM-dd'T'HH:mm:ssZ format - -&gt;
+  &lt;timeSourceMaximum&gt;...&lt;/timeSourceMaximum&gt; &lt;- - OPTIONAL, in yyyy-MM-dd'T'HH:mm:ssZ format - -&gt;
   <a rel="help" href="#globalAttributes">&lt;addAttributes&gt;</a>...&lt;/addAttributes&gt;
   <a rel="help" href="#dataVariable">&lt;dataVariable&gt;</a>...&lt;/dataVariable&gt; &lt;!- - 1 or more - -&gt;
 &lt;/dataset&gt;
@@ -1844,6 +1859,13 @@ aggregates data from .nc files with several variables, each with one shared
   <br>use <tt>&lt;sourceUrl&gt;http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml&lt;/sourceUrl&gt;</tt> .
 <li>Since this class always downloads and makes a local copy of each remote
   data file, you should never wrap this dataset in <a rel="help" href="#EDDTableCopy">EDDTableCopy</a>.
+<li>This dataset type supports an optional, rarely-used, special tag, 
+  <tt>&lt;specialMode&gt;<i>mode</i>&lt;/specialMode&gt;</tt>
+  which can be used to specify that special, hard-coded rules should be
+  used to determine which files should be downloaded from the server.
+  Currently, the only valid <tt><i>mode</i></tt> is <tt>SAMOS</tt> which is used with datasets
+  from http://coaps.fsu.edu/thredds/catalog/samos to download only the files with 
+  the last version number.  
 <li>See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
   for information on how to use this class and how this class works.
 <li>See the 1D, 2D, 3D, and 4D examples for <a rel="help" href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a>.
@@ -1868,7 +1890,7 @@ which uses
 <li>You may or may not be able to get the global attribute 
   <a rel="help" href="#subsetVariables"><tt>&lt;subsetVariables&gt;</tt></a> to work with
   a given OBIS server. If you try, just try one variable (e.g., ScientificName or Genus).
-<li>The skeleton XML for an EDDTableFromOBIS dataset is:
+<li><a name="EDDTableFromOBISSkeletonXML">The</a> skeleton XML for an EDDTableFromOBIS dataset is:
 <pre>
 &lt;dataset type="EDDTableFromOBIS" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
@@ -1888,7 +1910,7 @@ which uses
   &lt;latitudeSourceMaximum&gt;...&lt;/latitudeSourceMaximum&gt; 
   &lt;altitudeSourceMinimum&gt;...&lt;/altitudeSourceMinimum&gt; 
   &lt;altitudeSourceMaximum&gt;...&lt;/altitudeSourceMaximum&gt; 
-  &lt;-- For timeSource... tags, use YYYY-MM-DDThh:mm:ssZ format. --&gt;
+  &lt;-- For timeSource... tags, use yyyy-MM-dd'T'HH:mm:ssZ format. --&gt;
   &lt;timeSourceMinimum&gt;...&lt;/timeSourceMinimum&gt; 
   &lt;timeSourceMaximum&gt;...&lt;/timeSourceMaximum&gt; 
   <a rel="help" href="#sourceNeedsExpandedFP_EQ">&lt;sourceNeedsExpandedFP_EQ&gt;</a>true(default)|false&lt;/sourceNeedsExpandedFP_EQ&gt;
@@ -1952,7 +1974,7 @@ Sensor Observation Service
     <a rel="help" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUNITS</a> system.
   If you need to convert between the two systems, you can use
   <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/units.html">ERDDAP's web service to convert UCUM units to/from UDUNITS</a>.
-<li>The skeleton XML for an EDDTableFromSOS dataset is:
+<li><a name="EDDTableFromSOSSkeletonXML">The</a> skeleton XML for an EDDTableFromSOS dataset is:
 <pre>
 &lt;dataset type="EDDTableFromSOS" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
@@ -1978,12 +2000,11 @@ Sensor Observation Service
       "<i>units</i> since <i>baseTime</i>") describing how to interpret
       source time values (e.g., "seconds since 1970-01-01T00:00:00Z"),
       where the base time is an ISO 8601:2004(E) formatted date time string 
-      (YYYY-MM-DDThh:mm:ssZ).
+      (yyyy-MM-dd'T'HH:mm:ssZ).
     * For String String data: an org.joda.time.format.DateTimeFormat 
       string (which is mostly compatible with java.text.SimpleDateFormat)
       describing how to interpret string times  (e.g., the 
-      ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ss'Z'").  See <a rel="help" href="http://joda-time.sourceforge.net/api-release/index.html">Joda Time</a> 
-      and <a rel="help" href="http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html">DateTimeFormat</a> --&gt;
+      ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ").  See <a rel="help" href="http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html">Joda DateTimeFormat</a> --&gt;
   &lt;observationOfferingIdRegex&gt;...&lt;/observationOfferingIdRegex&gt;
     &lt;!-- Only observationOfferings with IDs (usually the station names) 
     which match this <a rel="help" href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html">regular expression</a> (<a rel="help" href="http://www.vogella.de/articles/JavaRegularExpressions/article.html">tutorial</a>) will be included 
@@ -2154,7 +2175,7 @@ data and serves
    but works with gridded datasets.
     <br>&nbsp;
 
-<li>Skeleton XML - The skeleton XML for an EDDTableCopy dataset is:
+<li><a name="EDDTableCopySkeletonXML">Skeleton</a> XML - The skeleton XML for an EDDTableCopy dataset is:
 <pre>
 &lt;dataset type="EDDTableCopy" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
@@ -2404,8 +2425,7 @@ Here are detailed descriptions of common tags and attributes.
       <li>Example: For a URL that you might type into a browser as:
         <tt>http://www.company.com/webService?department=R%26D&amp;param2=value2</tt> 
         You should specify an <tt>&lt;onChange&gt;</tt> tag via (on one line)
-        <br><tt>&lt;onChange&gt;http://www.company.com/webService?
-        department=R%26D&amp;amp;param2=value2&lt;/onChange&gt;</tt> 
+        <br><tt>&lt;onChange&gt;http://www.company.com/webService?department=R%26D&amp;amp;param2=value2&lt;/onChange&gt;</tt> 
       </ul>
     <li>mailto: - If the action starts with "mailto:", ERDDAP will send an email to the subsequent
       email address indicating that the dataset has been updated/changed.
@@ -2890,12 +2910,18 @@ Here are detailed descriptions of common tags and attributes.
         (However, if drawLandMask is specified in a 
             <a rel="help" href="#variableAttributes">variable's attributes</a>, that value has precedence.)
         <ul>
-        <li>This specifies whether the land mask on a map is drawn "over" or "under" the grid data.
-          "over" is recommended for oceanographic data (so that grid data over land is obscured
-          by the landmask). "under" is recommended for all other data.
+        <li>For EDDGrid datasets, this specifies whether the land mask on a map is drawn <tt>over</tt> or 
+          <tt>under</tt> the grid data.
+          <tt>over</tt> is recommended for oceanographic data (so that grid data over land is obscured
+          by the landmask). <tt>under</tt> is recommended for all other data.
+        <li>For EDDTable datasets: <tt>over</tt> makes the land mask on a map visible (land appears 
+          as a uniform gray area).  <tt>over</tt> is commonly used for purely oceanographic datasets. 
+          <tt>under</tt> makes the land mask invisible 
+          (topography information is displayed for ocean and land areas).
+          <tt>under</tt> is commonly used for all other data.
         <li>If any other value (or no value) is specified, the drawLandMask value from 
             <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>
-          is used.  If none is specified there, "over" is the default.
+          is used.  If none is specified there, <tt>over</tt> is the default.
         </ul>
 
       <li><a name="history"><b>history</b></a> 
@@ -3138,15 +3164,20 @@ Here are detailed descriptions of common tags and attributes.
         <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html">ACDD</a> 
         metadata standards) 
         is a REQUIRED global attribute with a long description of the 
-        dataset (usually &lt;500 characters).
+        dataset (usually &lt;500 characters).  
         <ul>
         <li>Either the dataset's global <a rel="help" href="#globalAttributes">sourceAttributes</a> or its 
           global <tt>&lt;addAttributes&gt;</tt> MUST 
           include this attribute.
-        <li><tt>summary</tt> is important because it allows clients to read a description of the dataset 
-          that has more information than the title.
+        <li><tt>summary</tt> is very important because it allows clients to read a description of the dataset 
+          that has more information than the title and thus quickly understand what the dataset is.
+        <li>Advice: please write the summary so it would work to describe the dataset to some random
+          person you meet on the street or to a colleague.  Remember to include the 
+          <a rel="help" href="http://en.wikipedia.org/wiki/Five_Ws">Five W's and one H</a>:
+          Who created the dataset?  What information was collected? When was the data collected?
+          Where was it collected? Why was it collected?  How was it collected?
         <li>ERDDAP displays the summary on the dataset's Data Access Form, Make A Graph web page,
-          and other web pages.
+          and other web pages.  ERDDAP uses the summary when creating FGDC and ISO 19115 documents.
         </ul>
 
       <li><a name="title"><b>title</b></a> 
@@ -3403,8 +3434,9 @@ Here are detailed descriptions of common tags and attributes.
           <ul>
           <li><tt><b>colorBarMinimum</b></tt> specifies the minimum value on the colorBar.
             <ul>
-            <li>If the variable's data values are stored as packed numbers, specify the
-              colorBarMinimum as an unpacked value.
+            <li>If the data is packed with 
+              <a rel="help" href="#scale_factor"><tt>scale_factor</tt>&nbsp;and/or&nbsp;<tt>add_offset</tt></a>,
+              specify the colorBarMinimum as an unpacked value.
             <li>Data values lower than colorBarMinimum are represented by the same color as
               colorBarMinimum values.
             <li>The attribute should be of type="double", regardless of the data variable's type.
@@ -3414,8 +3446,9 @@ Here are detailed descriptions of common tags and attributes.
             </ul>
           <li><tt><b>colorBarMaximum</b></tt> specifies the maximum value on the colorBar.
             <ul>
-            <li>If the variable's data values are stored as packed numbers, specify the
-              colorBarMinimum as an unpacked value.
+            <li>If the data is packed with 
+              <a rel="help" href="#scale_factor"><tt>scale_factor</tt>&nbsp;and/or&nbsp;<tt>add_offset</tt></a>,
+              specify the colorBarMinimum as an unpacked value.
             <li>Data values higher than colorBarMaximum are represented by the same color as
               colorBarMaximum values.
             <li>The attribute should be of type="double", regardless of the data variable's type.
@@ -3460,7 +3493,7 @@ Here are detailed descriptions of common tags and attributes.
           <br> &nbsp; &lt;att name="colorBarScale"&gt;Linear&lt;/att&gt; </tt>
         </ul>
 
-      <li><a name="data_min"><tt><b>data_min</b></tt> and <tt><b>data_max</b></tt></a> - 
+      <li><a name="data_min"><b>data_min</b> and <b>data_max</b></a> - 
         These are RECOMMENDED variable attributes 
         defined in the 
         <a rel="help" href="http://woce.nodc.noaa.gov/wdiu/utils/netcdf/woce_conventions/report_nov_01_v3_mtg.htm">World Ocean Circulation</a>
@@ -3483,16 +3516,20 @@ Here are detailed descriptions of common tags and attributes.
         Make A Graph form and for the <tt>&amp;.land</tt> parameter in a URL requesting a 
         graph/map of the data.
         <ul>
-        <li>This specifies whether the land mask on a map is drawn <tt>over</tt> or 
-          <tt>under</tt> the grid data.
-        <li><tt>over</tt> is recommended for oceanographic data 
-          (so that grid data over land is obscured by the landmask).
-        <li><tt>under</tt> is recommended for all other data.
+        <li>For variables in EDDGrid datasets, this specifies whether the land mask on a map 
+          is drawn <tt>over</tt> or <tt>under</tt> the grid data.
+          <tt>over</tt> is recommended for oceanographic data (so that grid data over land is obscured
+          by the landmask). <tt>under</tt> is recommended for all other data.
+        <li>For variables in EDDTable datasets: <tt>over</tt> makes the land mask on a map visible (land appears 
+          as a uniform gray area).  <tt>over</tt> is commonly used for purely oceanographic datasets. 
+          <tt>under</tt> makes the land mask invisible 
+          (topography information is displayed for ocean and land areas).
+          <tt>under</tt> is commonly used for all other data.
         <li>If any other value (or no value) is specified, the drawLandMask value from the dataset's
           <a rel="help" href="#globalAttributes">global attributes</a> is used.
         </ul>
 
-      <li><a name="ioos_category"><tt><b>ioos_category</b></tt></a> - 
+      <li><a name="ioos_category"><b>ioos_category</b></a> - 
         This is a REQUIRED variable attribute if <tt>&lt;variablesMustHaveIoosCategory&gt;</tt>
         is set to true in
           <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>;
@@ -3574,14 +3611,16 @@ Here are detailed descriptions of common tags and attributes.
         <ul>
         <li>If present, their data type is different from the source data type and describes the
           data type of the destination values.
-        <br>For example, a data source might have stored float data values with one decimal digit
-          packed as short ints (int16), using scale_factor = 0.1 and add_offset = 0.
-        <br>In that case, ERDDAP would unpack the data and present it to the user as float data values.
+          <br>For example, a data source might have stored float data values with one decimal digit
+          packed as short ints (int16), using scale_factor = 0.1 and add_offset = 0. For example,
+          <br><tt>&lt;att name="scale_factor" type="float"&gt;0.1&lt;/att&gt;</tt>
+          <br><tt>&lt;att name="add_offset" type="float"&gt;0&lt;/att&gt;</tt>
+          <br>In this example, ERDDAP would unpack the data and present it to the user as float data values. 
         <li>If present, ERDDAP will extract the values from these attributes,
           remove the attributes, and automatically unpack the data for the user:
-        <br><tt>&nbsp;&nbsp;destinationValue = sourceValue * scale_factor + add_offset</tt>
-        <br>Or, stated another way:
-        <br><tt>&nbsp;&nbsp;unpackedValue = packedValue * scale_factor + add_offset</tt>
+          <br><tt>&nbsp;&nbsp;destinationValue = sourceValue * scale_factor + add_offset</tt>
+          <br>Or, stated another way:
+          <br><tt>&nbsp;&nbsp;unpackedValue = packedValue * scale_factor + add_offset</tt>
         </ul>
 
       <li><a name="standard_name"><b>standard_name</b></a> 
@@ -3685,7 +3724,7 @@ Here are detailed descriptions of common tags and attributes.
             <a rel="help" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUnits</a>-compatible
             string (with the format <tt><i>units</i> since <i>baseTime</i></tt>) describing how to
             interpret source time values (e.g., <tt>seconds since 1970-01-01T00:00:00Z</tt>),
-            where the base time is an ISO 8601:2004(E) formatted date time string (YYYY-MM-DDThh:mm:ssZ).
+            where the base time is an ISO 8601:2004(E) formatted date time string (yyyy-MM-dd'T'HH:mm:ssZ).
           <li>For time data variables with String data: an org.joda.time.format.DateTimeFormat string
             (which is mostly compatible with java.text.SimpleDateFormat) describing how to interpret 
             string times (e.g., the ISO8601TZ_FORMAT <tt>yyyy-MM-dd'T'HH:mm:ssZ</tt>).
@@ -3700,9 +3739,13 @@ Here are detailed descriptions of common tags and attributes.
             <br>2012-11-20T17:12:59
             <br>all of which are equivalent times in ERDDAP because
               ERDDAP's default time zone (relevant for the last example) is Zulu.
+            <br>Other examples are
+            <br>2012-11-20T10:12  (missing seconds are assumed to be 0)
+            <br>2012-11-20T17     (missing minutes are assumed to be 0)
+            <br>2012-11-20        (missing hours   are assumed to be 0)
+            <br>2012-11           (missing date    is  assumed to be 1)
             <br>See 
-              <a rel="help" href="http://joda-time.sourceforge.net/api-release/index.html">Joda Time</a> and
-              <a rel="help" href="http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html">DateTimeFormat</a> .
+              <a rel="help" href="http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html">Joda DateTimeFormat</a> .
             
           </ul>
           The main time data variable (for tabular datasets) and the main time axis variable

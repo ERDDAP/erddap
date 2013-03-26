@@ -1241,8 +1241,6 @@ public class SgtGraph  {
                     //TimeAxis
                     TimeAxis timeAxis = new TimeAxis(TimeAxis.AUTO);
                     xAxis = timeAxis;
-                    //timeAxis.setRangeU(xUserRange);
-                    //timeAxis.setLocationU(origin);
                 } else {
                     //plainAxis
                     PlainAxis2 plainAxis = new PlainAxis2(new GenEFormatter());
@@ -1269,8 +1267,8 @@ public class SgtGraph  {
                 graph.addXAxis(xAxis);
                 if (xIsTimeAxis) {
                     TimeAxis timeAxis = (TimeAxis)xAxis;
+                    if (reallyVerbose) String2.log(timeAxis.toString());
                     int minorInterval = timeAxis.getMinorLabelInterval();
-                    //String2.log("isYearDecadeAxis=" + (timeAxis.txt_ instanceof YearDecadeAxis));
 
                     if (narrowXGraph < 0.6) {
                         timeAxis.setMinorLabelInterval(minorInterval * 2);

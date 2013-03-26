@@ -16,6 +16,7 @@ import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
+import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
@@ -103,7 +104,6 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         String tFgdcFile = null;
         String tIso19115File = null;
         Attributes tGlobalAttributes = null;
-        double tAltitudeMetersPerSourceUnit = 1; 
         ArrayList tAxisVariables = new ArrayList();
         ArrayList tDataVariables = new ArrayList();
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
@@ -129,9 +129,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             //try to make the tag names as consistent, descriptive and readable as possible
             if      (localTags.equals("<addAttributes>"))
                 tGlobalAttributes = getAttributesFromXml(xmlReader);
-            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) {}
-            else if (localTags.equals("</altitudeMetersPerSourceUnit>")) 
-                tAltitudeMetersPerSourceUnit = String2.parseDouble(content); 
+            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) 
+                throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
             else if (localTags.equals( "<axisVariable>")) tAxisVariables.add(getSDAVVariableFromXml(xmlReader));           
             else if (localTags.equals( "<dataVariable>")) tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
@@ -174,7 +173,6 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         if (tType.equals("EDDGridFromNcFiles")) 
             return new EDDGridFromNcFiles(tDatasetID, tAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
-                tAltitudeMetersPerSourceUnit,
                 ttAxisVariables,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
@@ -219,8 +217,6 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
      *   Special case: if combinedGlobalAttributes name="license", any instance of "[standard]"
      *     will be converted to the EDStatic.standardLicense
-     * @param tAltMetersPerSourceUnit the factor needed to convert the source
-     *    alt values to/from meters above sea level.
      * @param tAxisVariables is an Object[nAxisVariables][3]: 
      *    <br>[0]=String sourceName (the name of the data variable in the dataset source),
      *    <br>[1]=String destinationName (the name to be presented to the ERDDAP user, 
@@ -278,7 +274,6 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     public EDDGridFromFiles(String tClassName, String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object[][] tAxisVariables,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -959,7 +954,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             if (tDestName == null || tDestName.trim().length() == 0)
                 tDestName = tSourceName;
             //PrimitiveArray taa = tAddAtt.get("_FillValue");
-            //String2.log("!!!taa " + tSourceName + " _FillValue=" + taa);
+            //String2.log(">>taa " + tSourceName + " _FillValue=" + taa);
             //if (reallyVerbose) String2.log("  av=" + av + " sourceName=" + tSourceName + " sourceType=" + tSourceType);
 
             if (EDV.LON_NAME.equals(tDestName)) {
@@ -972,8 +967,12 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 latIndex = av;
             } else if (EDV.ALT_NAME.equals(tDestName)) {
                 axisVariables[av] = new EDVAltGridAxis(tSourceName,
-                    tSourceAtt, tAddAtt, sourceAxisValues[av], tAltMetersPerSourceUnit);
+                    tSourceAtt, tAddAtt, sourceAxisValues[av]);
                 altIndex = av;
+            } else if (EDV.DEPTH_NAME.equals(tDestName)) {
+                axisVariables[av] = new EDVDepthGridAxis(tSourceName,
+                    tSourceAtt, tAddAtt, sourceAxisValues[av]);
+                depthIndex = av;
             } else if (EDV.TIME_NAME.equals(tDestName)) {
                 axisVariables[av] = new EDVTimeGridAxis(tSourceName,
                     tSourceAtt, tAddAtt, sourceAxisValues[av]);
@@ -1002,7 +1001,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             Attributes tSourceAtt = sourceDataAttributes[dv];
             Attributes tAddAtt = (Attributes)tDataVariables[dv][2];
             //PrimitiveArray taa = tAddAtt.get("_FillValue");
-            //String2.log("!!!taa " + tSourceName + " _FillValue=" + taa);
+            //String2.log(">>taa " + tSourceName + " _FillValue=" + taa);
             String tSourceType = sourceDataTypes[dv];
             //if (reallyVerbose) String2.log("  dv=" + dv + " sourceName=" + tSourceName + " sourceType=" + tSourceType);
 

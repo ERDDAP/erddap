@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
+import com.cohort.array.ByteArray;
 import com.cohort.array.FloatArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.NDimensionalIndex;
@@ -18,9 +19,7 @@ import com.cohort.util.String2;
 
 import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.EDV;
-import gov.noaa.pfel.erddap.variable.EDVAltGridAxis;
 import gov.noaa.pfel.erddap.variable.EDVGridAxis;
-import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
 
 import java.util.Arrays;
 
@@ -208,7 +207,23 @@ public class GridDataAccessor {
                     globalAttributes.set("geospatial_vertical_min", fMin); //unidata-related
                     globalAttributes.set("geospatial_vertical_max", fMax);
                 } else if (minMax instanceof IntArray ||
-                           minMax instanceof ShortArray) {
+                           minMax instanceof ShortArray ||
+                           minMax instanceof ByteArray) {
+                    globalAttributes.set("geospatial_vertical_min", iMin); //unidata-related
+                    globalAttributes.set("geospatial_vertical_max", iMax);
+                } else {
+                    globalAttributes.set("geospatial_vertical_min", dMin); //unidata-related
+                    globalAttributes.set("geospatial_vertical_max", dMax);
+                }
+            } else if (av == eddGrid.depthIndex) {
+                globalAttributes.set("geospatial_vertical_positive", "down");
+                globalAttributes.set("geospatial_vertical_units", EDV.DEPTH_UNITS);
+                if (minMax instanceof FloatArray) {
+                    globalAttributes.set("geospatial_vertical_min", fMin); //unidata-related
+                    globalAttributes.set("geospatial_vertical_max", fMax);
+                } else if (minMax instanceof IntArray ||
+                           minMax instanceof ShortArray ||
+                           minMax instanceof ByteArray) {
                     globalAttributes.set("geospatial_vertical_min", iMin); //unidata-related
                     globalAttributes.set("geospatial_vertical_max", iMax);
                 } else {

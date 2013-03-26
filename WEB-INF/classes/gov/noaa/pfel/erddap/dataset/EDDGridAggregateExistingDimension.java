@@ -11,6 +11,7 @@ import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
+import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
@@ -193,7 +194,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         iso19115File = tIso19115File;
         ensureAxisValuesAreEqual = tEnsureAxisValuesAreEqual;
 
-        //if no tLocalSourceURLs, generate from hyrax or thredds catalog?
+        //if no tLocalSourceURLs, generate from hyrax, thredds, or dodsindex catalog?
         if (tLocalSourceUrls.length == 0 && tSU != null && tSU.length() > 0) {
             if (tSURegex == null || tSURegex.length() == 0)
                 tSURegex = ".*";
@@ -205,8 +206,10 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
                 tsa.add(EDDGridFromDap.getUrlsFromHyraxCatalog(tSU, tSURegex, tSURecursive));
             else if (tSUServerType.toLowerCase().equals("thredds"))
                 tsa.add(EDDGridFromDap.getUrlsFromThreddsCatalog(tSU, tSURegex, tSURecursive));
+            else if (tSUServerType.toLowerCase().equals("dodsindex"))
+                getDodsIndexUrls(tSU, tSURegex, tSURecursive, tsa);
             else throw new RuntimeException(errorInMethod + 
-                "<sourceUrls> serverType must be \"hyrax\" or \"thredds\".");
+                "<sourceUrls> serverType=" + tSUServerType + " must be \"hyrax\", \"thredds\", or \"dodsindex\".");
             //String2.log("\nchildren=\n" + tsa.toNewlineString());
 
             //remove firstChild's sourceUrl
@@ -256,20 +259,21 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         int nAv = firstChild.axisVariables.length;
         axisVariables = new EDVGridAxis[nAv];
         System.arraycopy(firstChild.axisVariables, 0, axisVariables, 0, nAv);
-        lonIndex = firstChild.lonIndex;
-        latIndex = firstChild.latIndex;
-        altIndex = firstChild.altIndex;
-        timeIndex = firstChild.timeIndex;
+        lonIndex   = firstChild.lonIndex;
+        latIndex   = firstChild.latIndex;
+        altIndex   = firstChild.altIndex;
+        depthIndex = firstChild.depthIndex;
+        timeIndex  = firstChild.timeIndex;
         EDVGridAxis av0 = axisVariables[0];
         String sn = av0.sourceName();
         Attributes sa = av0.sourceAttributes();
         Attributes aa = av0.addAttributes();
-        if      (lonIndex  == 0) axisVariables[0] = new EDVLonGridAxis(sn, sa, aa, cumSV);
-        else if (latIndex  == 0) axisVariables[0] = new EDVLatGridAxis(sn, sa, aa, cumSV);
-        else if (altIndex  == 0) axisVariables[0] = new EDVAltGridAxis(sn, sa, aa, cumSV, 
-            ((EDVAltGridAxis)av0).metersPerSourceUnit());
-        else if (timeIndex == 0) axisVariables[0] = new EDVTimeGridAxis(sn, sa, aa, cumSV);
-        else {axisVariables[0] = new EDVGridAxis(sn, av0.destinationName(), sa, aa, cumSV);
+        if      (lonIndex    == 0) axisVariables[0] = new EDVLonGridAxis(  sn, sa, aa, cumSV);
+        else if (latIndex    == 0) axisVariables[0] = new EDVLatGridAxis(  sn, sa, aa, cumSV);
+        else if (altIndex    == 0) axisVariables[0] = new EDVAltGridAxis(  sn, sa, aa, cumSV);
+        else if (depthIndex  == 0) axisVariables[0] = new EDVDepthGridAxis(sn, sa, aa, cumSV);
+        else if (timeIndex   == 0) axisVariables[0] = new EDVTimeGridAxis( sn, sa, aa, cumSV);
+        else {axisVariables[0] = new EDVGridAxis(sn, av0.destinationName(),    sa, aa, cumSV);
               axisVariables[0].setActualRangeFromDestinationMinMax();
         }
 
@@ -298,6 +302,105 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         boolean shareInfo) throws Throwable {
         throw new SimpleException( 
             "Error: EDDGridAggregateExistingDimension doesn't support method=\"sibling\".");
+    }
+
+    /**
+     * This gets a list of URLs from the sourceUrl, perhaps recursively.
+     *
+     * @param startUrl is the first URL to look at.
+     *   E.g., http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/
+     *   It MUST end with a / or a file name (e.g., catalog.html).
+     * @param regex The regex is used to test file names, not directory names.
+     *   E.g. .*\.nc to catch all .nc files, or use .* to catch all files.
+     * @param recursive if true, this method will pursue subdirectories
+     * @param sourceUrls The results will be placed here.
+     * @throws Exception if trouble.  However, it isn't an error if a URL returns
+     *   an error message.
+     */
+    public static void getDodsIndexUrls(String startUrl, String regex, 
+        boolean recursive, StringArray sourceUrls) throws Exception {
+
+        //get the document as one string per line
+        String baseDir = File2.getDirectory(startUrl);
+        int onSourceUrls = sourceUrls.size();
+        String regexHtml = regex + "\\.html"; //link href will have .html at end
+        String lines[] = null;
+        try {
+            lines = SSR.getUrlResponse(startUrl);
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            return;
+        }
+        int nextLine = 0;
+        int nLines = lines.length;
+        if (nLines == 0) {
+            String2.log("WARNING: The document has 0 lines.");
+            return;
+        }
+
+        //look for <pre>
+        String line = lines[nextLine++];
+        String lcLine = line.toLowerCase();
+        while (lcLine.indexOf("<pre>") < 0 && nextLine < nLines) {
+            line = lines[nextLine++];
+            lcLine = line.toLowerCase();
+        }
+        if (nextLine >= nLines) {
+            String2.log("WARNING: <pre> and <PRE> not found in the document.");
+            return;
+        }
+                
+/*
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+ <head>
+  <title>DODS Index of /dods-data/bl/BRAN2.1/bodas</title>
+ </head>
+ <body>
+<h1>DODS Index of /dods-data/bl/BRAN2.1/bodas</h1>
+<pre><img src="/icons/blank.gif" alt="Icon "> <A HREF=?C=N;O=D>Name</a>                    <A HREF=?C=M;O=A>Last modified</a>      <A HREF=?C=S;O=A>Size</a>  <A HREF=?C=D;O=A>Description</a><hr><img src="/icons/back.gif" alt="[DIR]"> <A HREF=../>Parent Directory</a>                             -   
+<img src="/icons/unknown.gif" alt="[   ]"> <A HREF=19921014.bodas_eta.nc.html>19921014.bodas_eta.nc</a>   17-Apr-2007 11:43  8.8M  
+...
+<hr></pre>
+*/
+
+        //extract url from each subsequent line, until </pre> or </PRE>
+        while (nextLine < nLines) {
+            line = lines[nextLine++];
+            lcLine = line.toLowerCase();
+            if (lcLine.indexOf("</pre>") >= 0)
+                break;
+            int po = lcLine.indexOf("<a href=");  //No quotes around link!  Who wrote that server?!
+            if (po >= 0) {
+                int po2 = line.indexOf('>', po + 8);
+                if (po2 >= 0) {
+                    //if quotes around link, remove them
+                    String tName = line.substring(po + 8, po2).trim();
+                    if (tName.startsWith("\"")) 
+                        tName = tName.substring(1).trim();
+                    if (tName.endsWith("\"")) 
+                        tName = tName.substring(0, tName.length() - 1).trim();
+                    
+                    if (tName.startsWith(".")) {
+                        //skip parent dir (../) 
+
+                    } else if (tName.endsWith("/")) {
+                        //it's a directory
+                        if (recursive) {                            
+                            getDodsIndexUrls(
+                                tName.toLowerCase().startsWith("http")? tName : baseDir + tName,
+                                regex, recursive, sourceUrls);
+                        }
+                    } else if (tName.matches(regexHtml)) {
+                        //it's a matching URL
+                        tName = tName.substring(0, tName.length() - 5); //remove .html from end
+                        sourceUrls.add(tName.toLowerCase().startsWith("http")? tName : baseDir + tName);
+                    }
+                }
+            }
+        }
+        if (verbose)
+            String2.log("  getDodsIndexUrls just found " + (sourceUrls.size() - onSourceUrls) + " URLs.");
     }
 
     /** 
@@ -479,7 +582,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "   ERDDAP combines sourceAttributes and addAttributes (which have\n" +
 "   precedence) to make the combinedAttributes that are shown to the user.\n" +
 "   (And other attributes are automatically added to longitude, latitude,\n" +
-"   altitude, and time variables).\n" +
+"   altitude, depth, and time variables).\n" +
 " * If you don't like a sourceAttribute, override it by adding an\n" +
 "   addAttribute with the same name but a different value\n" +
 "   (or no value, if you want to remove it).\n" +
@@ -496,7 +599,6 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_pfeg_adfb_8ff5_678c\" active=\"true\">\n" +
 "    <sourceUrl>http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/1day</sourceUrl>\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
@@ -509,8 +611,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" +
 "        <att name=\"cwhdf_version\">3.4</att>\n" +
-"        <att name=\"date_created\">2012-03-10Z</att>\n" +
-"        <att name=\"date_issued\">2012-03-10Z</att>\n" +
+"        <att name=\"date_created\">2013-03-13Z</att>\n" + //changes
+"        <att name=\"date_issued\">2013-03-13Z</att>\n" +  //changes
 "        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" +
 "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.041676313961565174 0.04167148975575877 0.0 0.0 -90.0</att>\n" +
 "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" +
@@ -530,8 +632,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"geospatial_vertical_positive\">up</att>\n" +
 "        <att name=\"geospatial_vertical_units\">m</att>\n" +
 "        <att name=\"history\">NASA GSFC (OBPG)\n" +
-"2012-03-10T05:34:02Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</att>\n" +
-"        <att name=\"id\">LMHchlaS1day_20120227120000</att>\n" +
+"2013-03-13T00:41:38Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</att>\n" + //changes
+"        <att name=\"id\">LMHchlaS1day_20130305120000</att>\n" +  //changes
 "        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
@@ -539,7 +641,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"naming_authority\">gov.noaa.pfel.coastwatch</att>\n" +
 "        <att name=\"Northernmost_Northing\" type=\"double\">90.0</att>\n" +
 "        <att name=\"origin\">NASA GSFC (OBPG)</att>\n" +
-"        <att name=\"pass_date\" type=\"int\">15397</att>\n" +
+"        <att name=\"pass_date\" type=\"int\">15769</att>\n" +  //changes
 "        <att name=\"polygon_latitude\" type=\"doubleList\">-90.0 90.0 90.0 -90.0 -90.0</att>\n" +
 "        <att name=\"polygon_longitude\" type=\"doubleList\">0.0 0.0 360.0 360.0 0.0</att>\n" +
 "        <att name=\"processing_level\">3</att>\n" +
@@ -555,8 +657,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" +
 "        <att name=\"start_time\" type=\"double\">0.0</att>\n" +
 "        <att name=\"summary\">NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#039;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.</att>\n" +
-"        <att name=\"time_coverage_end\">2012-02-28T00:00:00Z</att>\n" +
-"        <att name=\"time_coverage_start\">2012-02-27T00:00:00Z</att>\n" +
+"        <att name=\"time_coverage_end\">2013-03-06T00:00:00Z</att>\n" +   //changes
+"        <att name=\"time_coverage_start\">2013-03-05T00:00:00Z</att>\n" + //changes
 "        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality</att>\n" +
 "        <att name=\"Westernmost_Easting\" type=\"double\">0.0</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -564,9 +666,9 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF</att>\n" +
 "        <att name=\"infoUrl\">http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/1day.html</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
-"        <att name=\"keywords\">\n" +
+"        <att name=\"keywords\">aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, degrees, global, modis, noaa, npp, ocean, ocean color, oceans,\n" +
 "Oceans &gt; Ocean Chemistry &gt; Chlorophyll,\n" +
-"aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn</att>\n" +
+"quality, science, science quality, sea, seawater, water, wcn</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF</att>\n" +
 "        <att name=\"original_institution\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
@@ -576,7 +678,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <destinationName>time</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">1.330344E9 1.330344E9</att>\n" +
+"            <att name=\"actual_range\" type=\"doubleList\">1.3624848E9 1.3624848E9</att>\n" + //both change
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" +
 "            <att name=\"long_name\">Centered Time</att>\n" +
@@ -647,15 +749,15 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
 "            <att name=\"actual_range\" type=\"floatList\">0.001" + 
-            //an odd difference between Java 1.6 and Java 1.7
+            //trailing 0, an odd difference between Java 1.6 and Java 1.7
             (System.getProperty("java.version").startsWith("1.6")? "0" : "") + 
-            " 63.87</att>\n" + 
+            " 63.845</att>\n" +  //changes was 63.624, was 63.848
 "            <att name=\"coordsys\">geographic</att>\n" +
 "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" +
 "            <att name=\"long_name\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"numberOfObservations\" type=\"int\">2059934</att>\n" +
-"            <att name=\"percentCoverage\" type=\"double\">0.05518941829561042</att>\n" +
+"            <att name=\"numberOfObservations\" type=\"int\">2176386</att>\n" + //changes
+"            <att name=\"percentCoverage\" type=\"double\">0.05830938143004115</att>\n" + //changes
 "            <att name=\"standard_name\">concentration_of_chlorophyll_in_sea_water</att>\n" +
 "            <att name=\"units\">mg m-3</att>\n" +
 "        </sourceAttributes -->\n" +
@@ -664,6 +766,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "            <att name=\"colorBarMinimum\" type=\"double\">0.03</att>\n" +
 "            <att name=\"colorBarScale\">Log</att>\n" +
 "            <att name=\"ioos_category\">Ocean Color</att>\n" +
+"            <att name=\"numberOfObservations\">null</att>\n" +
+"            <att name=\"percentCoverage\">null</att>\n" + 
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
@@ -700,7 +804,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "   ERDDAP combines sourceAttributes and addAttributes (which have\n" +
 "   precedence) to make the combinedAttributes that are shown to the user.\n" +
 "   (And other attributes are automatically added to longitude, latitude,\n" +
-"   altitude, and time variables).\n" +
+"   altitude, depth, and time variables).\n" +
 " * If you don't like a sourceAttribute, override it by adding an\n" +
 "   addAttribute with the same name but a different value\n" +
 "   (or no value, if you want to remove it).\n" +
@@ -717,7 +821,6 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "<dataset type=\"EDDGridFromDap\" datasetID=\"nasa_jpl_03ee_a693_74ed\" active=\"true\">\n" +
 "    <sourceUrl>http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880101_v11l35flk.nc.gz</sourceUrl>\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <altitudeMetersPerSourceUnit>1</altitudeMetersPerSourceUnit>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"base_date\" type=\"shortList\">1988 1 1</att>\n" +
 "        <att name=\"Conventions\">COARDS</att>\n" +
@@ -733,10 +836,10 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"creator_url\">http://podaac.jpl.nasa.gov/dataset/CCMP_MEASURES_ATLAS_L4_OW_L3_0_WIND_VECTORS_FLK</att>\n" +
 "        <att name=\"infoUrl\">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/month_19880101_v11l35flk.nc.gz.html</att>\n" +
 "        <att name=\"institution\">NASA GSFC, NOAA</att>\n" +
-"        <att name=\"keywords\">\n" +
+"        <att name=\"keywords\">atlas, atmosphere,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Wind Stress,\n" +
-"atlas, atmosphere, atmospheric, component, derived, downward, eastward, eastward_wind, flk, gsfc, level, meters, nasa, noaa, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, u-component, u-wind, v-component, v-wind, v1.1, wind, wind_speed, winds</att>\n" +
+"atmospheric, component, derived, downward, eastward, eastward_wind, flk, gsfc, level, meters, nasa, noaa, northward, northward_wind, number, observations, oceanography, physical, physical oceanography, pseudostress, speed, statistics, stress, surface, surface_downward_eastward_stress, surface_downward_northward_stress, u-component, u-wind, v-component, v-wind, v1.1, wind, wind_speed, winds</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
@@ -908,6 +1011,20 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 
         String2.log("\n*** EDDGridAggregateExistingDimension.testGenerateDatasetsXml() finished successfully.\n");
 
+    }
+
+    /** This tests getDodsIndexUrls.
+     */
+    public static void testGetDodsIndexUrls() throws Exception {
+        String2.log("\nEDDGridAggregateExistingDimension.testGetDodsIndexUrls");
+        StringArray sourceUrls = new StringArray();
+        String dir = "http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/";
+        getDodsIndexUrls(dir, "[0-9]{8}\\.bodas_ts\\.nc", true, sourceUrls);
+
+        Test.ensureEqual(sourceUrls.get(0),   dir + "19921014.bodas_ts.nc", "");
+        Test.ensureEqual(sourceUrls.size(), 741, "");
+        Test.ensureEqual(sourceUrls.get(740), dir + "20061227.bodas_ts.nc", "");
+        String2.log("EDDGridAggregateExistingDimension.testGetDodsIndexUrls finished successfully.");
     }
 
     /**

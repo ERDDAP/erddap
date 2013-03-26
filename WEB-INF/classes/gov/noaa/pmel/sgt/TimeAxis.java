@@ -130,7 +130,18 @@ public class TimeAxis extends Axis implements Cloneable{
       {
         System.out.println("setAuto: days = " + days);
     }
-    if(days > 1000.0) {
+    if(days > 260000.0) {  //~800 years
+      //System.out.println("CenturyAxis");
+      if(!(txt_ instanceof CenturyAxis)) {
+        newStyle = (TimeAxisStyle)new CenturyAxis();
+      }
+    } else if(days > 26000.0) {  //~80 years
+      //System.out.println("DecadeAxis");
+      if(!(txt_ instanceof DecadeAxis)) {
+        newStyle = (TimeAxisStyle)new DecadeAxis();
+      }
+    } else if(days > 1000.0) {  //~3 years
+      //System.out.println("YearDecadeAxis");
       if(!(txt_ instanceof YearDecadeAxis)) {
         newStyle = (TimeAxisStyle)new YearDecadeAxis();
       }
@@ -138,17 +149,25 @@ public class TimeAxis extends Axis implements Cloneable{
       if(!(txt_ instanceof MonthYearAxis)) {
         newStyle = (TimeAxisStyle)new MonthYearAxis();
       }
-    } else if(days > 5.0) {
+    } else if(days > 3.0) {
       if(!(txt_ instanceof DayMonthAxis)) {
         newStyle = (TimeAxisStyle)new DayMonthAxis();
       }
-    } else if((days > 0.1666667)) {                      // 6 hours
+    } else if(days > 0.1666666) {    // 4 hours     (5 has cramped major labels)
       if(!(txt_ instanceof HourDayAxis)) {
         newStyle = (TimeAxisStyle)new HourDayAxis();
       }
-    } else {
+    } else if(days > 2.777777e-3) {   //4 minutes   (5 has cramped major labels)
       if(!(txt_ instanceof MinuteHourAxis)) {
         newStyle = (TimeAxisStyle)new MinuteHourAxis();
+      }
+    } else if(days > 4.62961e-5) {   //4 seconds   (5 has cramped major labels)
+      if(!(txt_ instanceof SecondMinuteAxis)) {
+        newStyle = (TimeAxisStyle)new SecondMinuteAxis();
+      }
+    } else {
+      if(!(txt_ instanceof MilliSecondAxis)) {
+        newStyle = (TimeAxisStyle)new MilliSecondAxis();
       }
     }
     if(newStyle != null) {
@@ -654,6 +673,7 @@ public class TimeAxis extends Axis implements Cloneable{
     } else {
       time_end = new GeoDate(tRange_.start);
     }
+    boolean aMajorDrawn = false; //bob added
     //
     if(orientation_ == Axis.HORIZONTAL) {
       yloc = graph_.getYUtoD(tLocation_.x);
@@ -672,12 +692,15 @@ public class TimeAxis extends Axis implements Cloneable{
       xp_minor_old = xp;
       major_time_old = new GeoDate(time);
       //
+      //System.out.println("  minor draw=" + draw_minor + " interval=" + minorLabelInterval_ +
+      //                   "  major draw=" + draw_major + " interval=" + majorLabelInterval_);
       while (time.before(time_end)) {
         xp = graph_.getXUtoP(time);
         minor_val = txt_.getMinorValue(time);
+        //System.out.println("  minor_val=" + minor_val + " %=" + minor_val%minorLabelInterval_);
         if(txt_.isStartOfMinor(time)) {
           drawThickXTic(g, xp, yp, 1.3f*largeTicHeight_);
-        } if (minor_val%minorLabelInterval_ == 0) {
+        } else if (minor_val%minorLabelInterval_ == 0) {
           drawXTic(g, xp, yp, largeTicHeight_);
         } else {
           drawXTic(g, xp, yp, smallTicHeight_); 
@@ -690,6 +713,7 @@ public class TimeAxis extends Axis implements Cloneable{
           if(draw_major && major_val_old%majorLabelInterval_ == 0) {
             x = (xp_major_old + xp)*0.5;
             drawMajorLabel(g, x, major_time_old);
+            aMajorDrawn = true;
           }
           xp_major_old = xp;
           major_val_old = major_val;
@@ -699,9 +723,9 @@ public class TimeAxis extends Axis implements Cloneable{
         minor_val_old = minor_val;
         time.increment(txt_.getIncrementValue(), txt_.getIncrementUnits());
       } // end of while
-      if(draw_major && major_val_old%majorLabelInterval_ == 0) {
+      if(draw_major && (!aMajorDrawn || major_val_old%majorLabelInterval_ == 0)) {
         GeoDate delta = time_end.subtract(major_time_old);
-        if(txt_.isRoomForMajorLabel(delta)) {
+        if(!aMajorDrawn || txt_.isRoomForMajorLabel(delta)) {
           xp = graph_.getXUtoP(time_end);
           x = (xp_major_old + xp)*0.5;
           drawMajorLabel(g, x, major_time_old);
@@ -743,6 +767,7 @@ public class TimeAxis extends Axis implements Cloneable{
           if(draw_major && major_val_old%majorLabelInterval_ == 0) {
             y = (yp_major_old + yp)*0.5;
             drawMajorLabel(g, y, major_time_old);
+            aMajorDrawn = true;
           }
           yp_major_old = yp;
           major_val_old = major_val;
@@ -752,9 +777,9 @@ public class TimeAxis extends Axis implements Cloneable{
         minor_val_old = minor_val;
         time.increment(txt_.getIncrementValue(), txt_.getIncrementUnits());
       } // end of while
-      if(draw_major && major_val_old%majorLabelInterval_ == 0) {
+      if(draw_major && (!aMajorDrawn || major_val_old%majorLabelInterval_ == 0)) {
         GeoDate delta = time_end.subtract(major_time_old);
-        if(txt_.isRoomForMajorLabel(delta)) {
+        if(!aMajorDrawn || txt_.isRoomForMajorLabel(delta)) {
           yp = graph_.getYUtoP(time_end);
           y = (yp_major_old + yp)*0.5;
           drawMajorLabel(g, y, major_time_old);
@@ -766,5 +791,9 @@ public class TimeAxis extends Axis implements Cloneable{
   // Time axes don't use title_
     title_ = null;
   }
+  public String toString() {  //bob added
+    return "TimeAxis: " + txt_;  //timeAxisStyle
+  }
+
 }
 

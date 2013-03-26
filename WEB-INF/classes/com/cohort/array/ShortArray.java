@@ -471,7 +471,7 @@ public class ShortArray extends PrimitiveArray {
             Math2.ensureMemoryAvailable(2L * newCapacity, "ShortArray");
             short[] newArray = new short[newCapacity];
             System.arraycopy(array, 0, newArray, 0, size);
-            array = newArray;
+            array = newArray; //do last to minimize concurrency problems
         }
     }
 
@@ -1001,7 +1001,7 @@ public class ShortArray extends PrimitiveArray {
             for (int i = 0; i < otherSize; i++)
                 array[size + i] = Math2.narrowToShort(primitiveArray.getInt(i)); //this converts mv's
         }
-        size += otherSize;
+        size += otherSize; //do last to minimize concurrency problems
     }    
 
     /**

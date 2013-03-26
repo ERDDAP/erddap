@@ -52,8 +52,9 @@ public class EDVTimeStamp extends EDV {
     protected boolean sourceTimeIsNumeric;
     protected double sourceTimeBase = Double.NaN;  //set if sourceTimeIsNumeric
     protected double sourceTimeFactor = Double.NaN;
+    protected boolean parseISOWithCalendar2;
     protected DateTimeFormatter dateTimeFormatter; //set if !sourceTimeIsNumeric
-    protected String time_precision;  //see Calendar2.limitedEpochSecondsToIsoStringT
+    protected String time_precision;  //see Calendar2.epochSecondsToLimitedIsoStringT
  
     /**
      * This class holds information about the time variable,
@@ -71,12 +72,18 @@ public class EDVTimeStamp extends EDV {
      *    <li> a org.joda.time.format.DateTimeFormat string
      *      (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *      string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ss.SSSZ", see 
-     *      http://joda-time.sourceforge.net/api-release/index.html or 
-     *      http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html),
+     *      http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
+     *      http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
      *    </ul>
      * actual_range, data_min, or data_max metadata (if any) should have the min and max times
      * in 'units' format.
      *
+     * <p> scale_factor an dadd_offset are allowed for numeric time variables.
+     * This constructor removes any scale_factor and add_offset attributes
+     * and stores the resulting information so that destination data
+     * has been converted to destinationDataType with scaleFactor and addOffset 
+     * applied.
+     * 
      * @param tDestinationName should be "time" for *the* destination variable (type=EDVTime),
      *   otherwise some other name.
      * @throws Throwable if trouble
@@ -101,11 +108,7 @@ public class EDVTimeStamp extends EDV {
                time_precision = null;
         }
         
-        //currently, EDVTimeStamp doesn't support scaleAddOffset
         String errorInMethod = "datasets.xml/EDVTimeStamp error for sourceName=" + tSourceName + ":\n";
-        if (scaleAddOffset)
-            throw new RuntimeException(errorInMethod +
-                "Currently, EDVTimeStamp doesn't support scale_factor and add_offset.");
 
         //special processing of sourceTimeFormat  (before change units below)
         sourceTimeFormat = units();  
@@ -143,16 +146,24 @@ public class EDVTimeStamp extends EDV {
             sourceTimeFactor = td[1];
         } else {
             sourceTimeIsNumeric = false;
-            if (sourceTimeFormat.equals(ISO8601TZ_FORMAT)) {
-                String2.log("Using special ISO8601TZ_FORMAT.");
-                dateTimeFormatter = ISODateTimeFormat.dateTimeNoMillis().withZone(DateTimeZone.UTC);
-            } else if (sourceTimeFormat.equals(ISO8601T3Z_FORMAT)) {
-                String2.log("Using special ISO8601T3Z_FORMAT.");
-                dateTimeFormatter = ISODateTimeFormat.dateTime().withZone(DateTimeZone.UTC);
-            } else {
-                //future: support time zones  
-                dateTimeFormatter = DateTimeFormat.forPattern(sourceTimeFormat).withZone(DateTimeZone.UTC);
-            }
+
+            //For String source values, ensure scale_factor=1 and add_offset=0
+            if (scaleAddOffset)
+                throw new RuntimeException(errorInMethod + 
+                    "For String source times, scale_factor and add_offset MUST NOT be used.");
+
+            parseISOWithCalendar2 = 
+                sourceTimeFormat.equals(ISO8601T_FORMAT)  ||
+                sourceTimeFormat.equals(ISO8601TZ_FORMAT) ||
+                sourceTimeFormat.equals(ISO8601T3_FORMAT) ||
+                sourceTimeFormat.equals(ISO8601T3Z_FORMAT); 
+            if (verbose) String2.log("parseISOWithCalendar2=" + parseISOWithCalendar2);
+
+            //dateTimeFormatter: sometimes for reading, always for writing
+            String tSTF = parseISOWithCalendar2? //so pattern is only for writing 
+                String2.replaceAll(sourceTimeFormat, "Z", "'Z'") : //force write 'Z' not +0000
+                sourceTimeFormat;
+            dateTimeFormatter = DateTimeFormat.forPattern(tSTF).withZone(DateTimeZone.UTC);
         }
 
         //extract fixedValue (must be epochSeconds)
@@ -189,25 +200,26 @@ public class EDVTimeStamp extends EDV {
             if (Double.isNaN(destinationMin) && tMin != null && tMin.length() > 0) destinationMin = sourceTimeToEpochSeconds(tMin);
             if (Double.isNaN(destinationMax) && tMax != null && tMax.length() > 0) destinationMax = sourceTimeToEpochSeconds(tMax);
 
+            //String2.log(">>combinedAtts=\n" + combinedAttributes.toString());
             PrimitiveArray actualRange = combinedAttributes.get("actual_range");
             if (actualRange != null) {
-                //if (verbose) String2.log("  actual_range metadata for " + destinationName + ": " + actualRange);
+            //String2.log(">>destMin=" + destinationMin + " max=" + destinationMax + " sourceTimeIsNumeric=" + sourceTimeIsNumeric);
+            //String2.log(">>actual_range metadata for " + destinationName + " (size=" + actualRange.size() + "): " + actualRange);
                 if (actualRange.size() == 2) {
                     if (Double.isNaN(destinationMin)) destinationMin = sourceTimeToEpochSeconds(actualRange.getString(0));
                     if (Double.isNaN(destinationMax)) destinationMax = sourceTimeToEpochSeconds(actualRange.getString(1));
-                    if (!Double.isNaN(destinationMin) && 
-                        !Double.isNaN(destinationMax) &&
-                        destinationMin > destinationMax) {
-                        double d = destinationMin; 
-                        destinationMin = destinationMax; 
-                        destinationMax = d; 
-                    }
                 }
             }
+            if (!Double.isNaN(destinationMin) && 
+                !Double.isNaN(destinationMax) &&
+                destinationMin > destinationMax) {
+                double d = destinationMin; 
+                destinationMin = destinationMax; 
+                destinationMax = d; 
+            }
         }
-        combinedAttributes.remove("data_min");
-        combinedAttributes.remove("data_max");
-        combinedAttributes.remove("actual_range");
+        //String2.log(">>destMin=" + destinationMin + " max=" + destinationMax);
+
         setActualRangeFromDestinationMinMax();
         //if (reallyVerbose) String2.log("\nEDVTimeStamp created, sourceTimeFormat=" + sourceTimeFormat);  
     }
@@ -271,7 +283,7 @@ public class EDVTimeStamp extends EDV {
      * @return destination String
      */
     public String destinationToString(double destD) {
-        return Calendar2.limitedEpochSecondsToIsoStringT(
+        return Calendar2.epochSecondsToLimitedIsoStringT(
             time_precision, destD, "");
     }
 
@@ -298,7 +310,7 @@ public class EDVTimeStamp extends EDV {
     /**
      * An indication of the precision of the time values, e.g., 
      * "1970-01-01T00:00:00Z" (default) or null (goes to default).  
-     * See Calendar2.limitedEpochSecondsToIsoStringT()
+     * See Calendar2.epochSecondsToLimitedIsoStringT()
      */
     public String time_precision() {
         return time_precision; 
@@ -312,8 +324,8 @@ public class EDVTimeStamp extends EDV {
      *    <li> a org.joda.time.format.DateTimeFormat string
      *      (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *      string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *      http://joda-time.sourceforge.net/api-release/index.html or 
-     *      http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html),
+     *      http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
+     *      http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
      *    <li> null if this can be procured from the "units" source metadata.
      *    </ul>
      * Examples: 
@@ -338,6 +350,21 @@ public class EDVTimeStamp extends EDV {
         return sourceTimeIsNumeric;
     }
 
+    /** 
+     * This returns true if the destinationValues equal the sourceValues 
+     *   (e.g., scaleFactor = 1 and addOffset = 0). 
+     * <br>Some subclasses overwrite this to cover other situations:
+     * <br>EDVTimeStamp only returns true if sourceTimeIsNumeric and
+     *   sourceTimeBase = 0 and sourceTimeFactor = 1.
+     *
+     * @return true if the destinationValues equal the sourceValues.
+     */
+    public boolean destValuesEqualSourceValues() {
+        return sourceTimeIsNumeric && 
+            sourceTimeBase == 0.0 && sourceTimeFactor == 1.0 && 
+            !scaleAddOffset;
+    }
+
     /**
      * If sourceTimeIsNumeric, this converts a source time to a destination ISO T time.
      *
@@ -347,8 +374,13 @@ public class EDVTimeStamp extends EDV {
      *  (which is very lenient), this returns NaN.
      */
     public double sourceTimeToEpochSeconds(double sourceTime) {
-        if (!Double.isNaN(sourceMissingValue) && Math2.almostEqual(5, sourceTime, sourceMissingValue))
+        //String2.log(">>sourceTimeToEpochSeconds(" + sourceTime + ") sourceTimeBase=" + sourceTimeBase + " sourceTimeFactor=" + sourceTimeFactor);
+        if ((Double.isNaN(sourceMissingValue) && Double.isNaN(sourceTime)) ||
+            Math2.almostEqual(5, sourceTime, sourceMissingValue) ||  //5 is good for floats
+            Math2.almostEqual(5, sourceTime, sourceFillValue))
             return Double.NaN;
+        if (scaleAddOffset)
+            sourceTime = sourceTime * scaleFactor + addOffset;
         return Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
     }
 
@@ -362,14 +394,16 @@ public class EDVTimeStamp extends EDV {
      */
     public double sourceTimeToEpochSeconds(String sourceTime) {
         //sourceTime is numeric
-        if (sourceTimeIsNumeric) {
+        if (sourceTimeIsNumeric) 
             return sourceTimeToEpochSeconds(String2.parseDouble(sourceTime));
-        }
 
         //time is a string
-        //parse with Joda
         try {
-            double d = dateTimeFormatter.parseMillis(sourceTime) / 1000.0; //thread safe
+            double d = parseISOWithCalendar2?
+                //parse with Calendar2.parseISODateTime
+                Calendar2.isoStringToEpochSeconds(sourceTime) :
+                //parse with Joda
+                dateTimeFormatter.parseMillis(sourceTime) / 1000.0; //thread safe
             //String2.log("  EDVTimeStamp sourceTime=" + sourceTime + " epSec=" + d + " Calendar2=" + Calendar2.epochSecondsToIsoStringT(d));
             return d;
         } catch (Throwable t) {
@@ -378,18 +412,6 @@ public class EDVTimeStamp extends EDV {
                     sourceTime + "\n" + t.toString());
             return Double.NaN;
         }
-
-/*
-        //parse with Java -- this wasn't working right for iso format!
-        synchronized (simpleDateFormat) {
-            //if error, date will be null
-            ParsePosition pp = new ParsePosition(0);
-            Date date = simpleDateFormat.parse(sourceTime, pp); //returns null if trouble
-String2.log("sourceTime=" + sourceTime + 
-    " format=" + sourceTimeFormat + " parsedAs=" + date + " pp=" + pp.getIndex());
-            return date == null? Double.NaN : date.getTime() / 1000.0; 
-        }
-*/
     }
 
     /**
@@ -407,19 +429,17 @@ String2.log("sourceTime=" + sourceTime +
     public PrimitiveArray toDestination(PrimitiveArray source) {
         //this doesn't support scaleAddOffset
         int size = source.size();
-        PrimitiveArray pa;
-        if (source instanceof StringArray) {
-            pa = new DoubleArray(size, true);
+        DoubleArray destPa = source instanceof DoubleArray?
+            (DoubleArray)source :
+            new DoubleArray(size, true);
+        if (sourceTimeIsNumeric) {
             for (int i = 0; i < size; i++)
-                pa.setDouble(i, sourceTimeToEpochSeconds(source.getString(i)));
+                destPa.set(i, sourceTimeToEpochSeconds(source.getDouble(i)));
         } else {
-            pa = source instanceof DoubleArray?
-                source :
-                new DoubleArray(size, true);
             for (int i = 0; i < size; i++)
-                pa.setDouble(i, sourceTimeToEpochSeconds(source.getDouble(i)));
+                destPa.set(i, sourceTimeToEpochSeconds(source.getString(i)));
         }
-        return pa;
+        return destPa;
     }
 
     /**
@@ -439,30 +459,27 @@ String2.log("sourceTime=" + sourceTime +
         PrimitiveArray source = sourceDataTypeClass == destination.elementClass()?
             destination :
             PrimitiveArray.factory(sourceDataTypeClass, size, true);
-        if (source instanceof StringArray) {
-            for (int i = 0; i < size; i++)
-                source.setString(i, epochSecondsToSourceTimeString(destination.getDouble(i)));
-        } else {
+        if (sourceTimeIsNumeric) {
             for (int i = 0; i < size; i++)
                 source.setDouble(i, epochSecondsToSourceTimeDouble(destination.getDouble(i)));
+        } else {
+            for (int i = 0; i < size; i++)
+                source.setString(i, epochSecondsToSourceTimeString(destination.getDouble(i)));
         }
         return source;
     }
 
 
     /**
-     * This converts a source time to a destination ISO TZ time.
+     * This converts a source time to a (limited) destination ISO TZ time.
      *
      * @param sourceTime either a number (as a string) or a string
-     * @return an ISO T Time (e.g., 1993-12-31T23:59:59Z).
+     * @return a (limited) ISO T Time (e.g., 1993-12-31T23:59:59Z).
      *   If sourceTime is invalid or is sourceMissingValue, this returns "".
      */
     public String sourceTimeToIsoStringT(String sourceTime) {
-        double d = sourceTimeToEpochSeconds(sourceTime);
-        if (Double.isNaN(d) || Math2.almostEqual(5, sourceMissingValue, d))
-            return "";
-        return Calendar2.limitedEpochSecondsToIsoStringT(
-            time_precision, sourceTimeToEpochSeconds(d), "");
+        return Calendar2.epochSecondsToLimitedIsoStringT(time_precision, 
+            sourceTimeToEpochSeconds(sourceTime), "");
     }
 
     /**
@@ -476,7 +493,10 @@ String2.log("sourceTime=" + sourceTime +
     public double epochSecondsToSourceTimeDouble(double epochSeconds) {
         if (Double.isNaN(epochSeconds))
             return sourceMissingValue;
-        return Calendar2.epochSecondsToUnitsSince(sourceTimeBase, sourceTimeFactor, epochSeconds);
+        double source = Calendar2.epochSecondsToUnitsSince(sourceTimeBase, sourceTimeFactor, epochSeconds);
+        if (scaleAddOffset) 
+            source = (source - addOffset) / scaleFactor;
+        return source;
     }
 
     /**
@@ -491,9 +511,9 @@ String2.log("sourceTime=" + sourceTime +
     public String epochSecondsToSourceTimeString(double epochSeconds) {
         if (Double.isNaN(epochSeconds))
             return sourceTimeIsNumeric? "" + sourceMissingValue : "";
-        return sourceTimeIsNumeric?
-            "" + epochSecondsToSourceTimeDouble(epochSeconds) :
-            dateTimeFormatter.print(Math.round(epochSeconds * 1000)); //round to long
+        if (sourceTimeIsNumeric)
+            return "" + epochSecondsToSourceTimeDouble(epochSeconds);
+        return dateTimeFormatter.print(Math.round(epochSeconds * 1000)); //round to long
     }
 
 
@@ -525,21 +545,20 @@ String2.log("sourceTime=" + sourceTime +
             //get the values from Calendar2
             double values[] = Calendar2.getNEvenlySpaced(tMin, tMax, SLIDER_MAX_NVALUES);
             StringBuilder sb = new StringBuilder(toSliderString( //first value
-                Calendar2.limitedEpochSecondsToIsoStringT(time_precision, tMin, ""), 
+                Calendar2.epochSecondsToLimitedIsoStringT(time_precision, tMin, ""), 
                 isTime)); 
             int nValues = values.length;
             for (int i = 1; i < nValues; i++) { 
                 sb.append(", ");
                 sb.append(toSliderString(
-                    Calendar2.limitedEpochSecondsToIsoStringT(time_precision, values[i], ""),
+                    Calendar2.epochSecondsToLimitedIsoStringT(time_precision, values[i], ""),
                     isTime));
             }
 
             //store in compact utf8 format
             String csv = sb.toString();
-            sliderCsvValues = String2.getUTF8Bytes(csv);
-            sliderNCsvValues = nValues; //do last
             if (reallyVerbose) String2.log("EDVTimeStamp.sliderCsvValues nValues=" + nValues);
+            sliderCsvValues = String2.getUTF8Bytes(csv); //do last
             return csv;
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}

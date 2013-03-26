@@ -15,7 +15,11 @@ import gov.noaa.pfel.coastwatch.hdf.*;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.*;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +46,7 @@ import org.joda.time.format.*;
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
  * and copy it to <context>/WEB-INF/lib.
+ * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
  * Put both of these .jar files in the classpath for the compiler and for Java.
  */
 import ucar.nc2.*;
@@ -7860,6 +7865,272 @@ towTypesDescription);
         String2.log("After adjustments:\n" + String2.annotatedString(table.dataToCSVString(5)));  
         table.saveAsFlatNc(dir + tableName + ".nc", rowName, false);
         return table;
+    }
+
+    /**
+     * Given a whole or partial datasets.xml file, this extracts all of the unique sourceUrls,
+     * then tallys the total number of datasets and number of unaggregated datasets
+     * (i.e., ferret-aggregated) per domain.
+     * The ferret-aggregated dataset sourceUrls are converted to their presumed original URL,
+     * for easier comparison.
+     * This only finds sourceUrl if it is on one line by itself.
+     *
+     * @param datasetsXmlFileName
+     */
+    public static void tallyUafAggregations(String datasetsXmlFileName) throws Exception {
+
+        String fromTo[] = {
+//alternate ferret url and sourceUrl
+"http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/20thC_ReanV2/",
+"http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/20thC_ReanV2/",
+"http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/NARR",  //several variants 
+"http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/NARR",
+"http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/cpc_us_hour_precip/",
+"http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/cpc_us_hour_precip/",
+"http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/cpc_us_precip/",
+"http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/cpc_us_precip/",
+"http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/cru/",
+"http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/cru/",
+"http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/godas/",
+"http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/godas/",
+"http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/gpcc/",
+"http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/gpcc/",
+"http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/interp_OLR/",
+"http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/interp_OLR/",
+"http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/msu/",
+"http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/msu/",
+"http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/ncep.reanalysis.derived/",
+"http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.derived/",
+"http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/ncep.reanalysis2.dailyavgs/",
+"http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis2.dailyavgs/",
+"http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/ncep.reanalysis2/",
+"http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis2/",
+"http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/noaa.ersst/",
+"http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/noaa.ersst/",
+"http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/snowcover/",
+"http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/snowcover/",
+"http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/udel.airt.precip/",
+"http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/udel.airt.precip/"
+};
+
+        //extract unique sourceUrls
+        FileInputStream is = new FileInputStream(datasetsXmlFileName); 
+        BufferedReader in = new BufferedReader(new InputStreamReader(is));
+        HashSet ferretAggregations = new HashSet();  //hashsets automatically avoid duplicates
+        HashSet ferretAggregationSources = new HashSet();
+        HashSet others = new HashSet();
+        String source;
+        while ((source = in.readLine()) != null) {
+            source = source.trim();
+            if (source.startsWith("<sourceUrl>") &&
+                source.endsWith(  "</sourceUrl>")) {
+                source = source.substring(11, source.length() - 12);
+                String unferret = null;
+                if (source.startsWith("http://ferret.pmel.noaa.gov/geoide/dodsC/Datasets/")) {
+                    for (int ft = 0; ft < fromTo.length; ft +=2) {
+                        if (source.startsWith(fromTo[ft])) {
+                            unferret = fromTo[ft + 1] + source.substring(fromTo[ft].length());
+                            break;
+                        }
+                    }
+                }
+                if (unferret == null) {
+                    others.add(source);
+                } else {
+                    if (unferret.endsWith("_aggregation")) {
+                        ferretAggregations.add(source);
+                        ferretAggregationSources.add(unferret.substring(0, unferret.length() - 12));
+                    } else {
+                        others.add(unferret);
+                    }
+                }
+            }
+        }
+        in.close();
+
+        String2.log("***** ferretAggregations");
+        String sar[] = String2.toStringArray(ferretAggregations.toArray());
+        Arrays.sort(sar);
+        String2.log(String2.toNewlineString(sar));
+
+        String2.log("***** ferretAggregationSources");
+        sar = String2.toStringArray(ferretAggregationSources.toArray());
+        Arrays.sort(sar);
+        String2.log(String2.toNewlineString(sar));
+        Tally tally = new Tally();
+        for (int i = 0; i < sar.length; i++)
+            tally.add("ferretAggregationSources", File2.getProtocolDomain(sar[i]));
+
+        String2.log("\n***** others");
+        sar = String2.toStringArray(others.toArray());
+        Arrays.sort(sar);
+        String2.log(String2.toNewlineString(sar));
+        for (int i = 0; i < sar.length; i++)
+            tally.add("otherDatasets", File2.getProtocolDomain(sar[i]));
+
+        String2.log("\n***** Tally Info");
+        String2.log(tally.toString());
+
+    }
+
+    /** create lat lon file for viirs */
+    public static void viirsLatLon(boolean create) throws Exception {
+        String dir = "/u00/data/viirs/MappedDaily4km/";
+        String fileName = "LatLon.nc";  //"fakeDim01.nc";
+        String latName = "latitude";    //"fakeDim0"; 
+        int nLat = 4320;
+        double lat0 = 89.97916666666666666666666666;
+        String lonName = "longitude";   //"fakeDim1"; 
+        int nLon = 8640;
+        double lon0 = -179.97916666666666666666666666;
+        double inc = 0.041666666666666666666666666;
+
+        if (create) {
+            NetcdfFileWriteable nc = NetcdfFileWriteable.createNew(dir + fileName,
+                false); //false says: create a new file and don't fill with missing_values
+            try {
+
+                Attributes atts = new Attributes();
+
+                //lat
+                atts.add("units", "degrees_north");
+                Dimension latDim = nc.addDimension(latName, nLat);
+                nc.addVariable(latName, NcHelper.getDataType(double.class),  new Dimension[]{latDim}); 
+                NcHelper.setAttributes(nc, latName, atts);
+
+                //lon
+                atts.add("units", "degrees_east");
+                Dimension lonDim = nc.addDimension(lonName, nLon);
+                nc.addVariable(lonName, NcHelper.getDataType(double.class), new Dimension[]{lonDim}); 
+                NcHelper.setAttributes(nc, lonName, atts);
+
+                //write global attributes
+                //NcHelper.setAttributes(nc, "NC_GLOBAL", ada.globalAttributes());
+
+                //leave "define" mode
+                nc.create();
+
+                //write the lat values  (top to bottom!)
+                DoubleArray da = new DoubleArray();
+                for (int i = 0; i < nLat; i++)
+                    da.add(lat0 - i * inc);
+                nc.write(latName, NcHelper.get1DArray(da.toArray()));
+
+                //write the lon values
+                da = new DoubleArray();
+                for (int i = 0; i < nLon; i++)
+                    da.add(lon0 + i * inc);
+                nc.write(lonName, NcHelper.get1DArray(da.toArray()));
+
+                //if close throws Throwable, it is trouble
+                nc.close(); //it calls flush() and doesn't like flush called separately
+
+                //diagnostic
+                String2.log("  createViirsLatLon finished successfully\n");
+
+            } catch (Throwable t) {
+                String2.log(MustBe.throwableToString(t));
+            } finally {
+                nc.close();
+            }
+        }
+
+        //read the file
+        NetcdfFile nc = NcHelper.openFile(dir + fileName);
+        try {
+            Variable v = nc.findVariable(latName);
+            PrimitiveArray pa = NcHelper.getPrimitiveArray(v);
+            String2.log(latName + 
+                " [0]=" + pa.getString(0) +
+                " [1]=" + pa.getString(1) +
+                " [" + (pa.size()-1) + "]=" + pa.getString(pa.size()-1));
+
+            v = nc.findVariable(lonName);
+            pa = NcHelper.getPrimitiveArray(v);
+            String2.log(lonName + 
+                " [0]=" + pa.getString(0) +
+                " [1]=" + pa.getString(1) +
+                " [" + (pa.size()-1) + "]=" + pa.getString(pa.size()-1));
+
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+        } finally {
+            nc.close();
+        }
+
+    }
+
+    /** This prints time, lat, and lon values from an .ncml dataset. */
+    public static String dumpTimeLatLon(String ncmlName) throws Exception {
+
+        String latName = "latitude";   
+        String lonName = "longitude";  
+        StringBuilder sb = new StringBuilder();
+        sb.append("ncmlName=" + ncmlName + "\n"); 
+        NetcdfFile nc = NcHelper.openFile(ncmlName);
+        try {
+            Variable v = nc.findVariable(latName);
+            PrimitiveArray pa = NcHelper.getPrimitiveArray(v);
+            sb.append(latName + 
+                " [0]=" + pa.getString(0) +
+                " [1]=" + pa.getString(1) +
+                " [" + (pa.size()-1) + "]=" + pa.getString(pa.size()-1) + "\n");
+
+            v = nc.findVariable(lonName);
+            pa = NcHelper.getPrimitiveArray(v);
+            sb.append(lonName + 
+                " [0]=" + pa.getString(0) +
+                " [1]=" + pa.getString(1) +
+                " [" + (pa.size()-1) + "]=" + pa.getString(pa.size()-1) + "\n");
+
+            v = nc.findVariable("time");
+            pa = NcHelper.getPrimitiveArray(v);
+            sb.append("time" +
+                " [0]=" + pa.getString(0) +
+                " [1]=" + pa.getString(1) +
+                " [" + (pa.size()-1) + "]=" + pa.getString(pa.size()-1) + "\n");
+
+        } catch (Throwable t) {
+            String2.log(sb.toString());
+            String2.log(MustBe.throwableToString(t));
+        } finally {
+            nc.close();
+        }
+        return sb.toString();
+    }
+
+    /** 
+     * Generate ncml which assigns "days since 1970-01-01" coordValue to a file for a range of times. 
+     * E.g., &lt;netcdf location="V2013074.L3m_DAY_NPP_CHL_chlor_a_4km" coordValue="15779"/&gt;
+     * The string is displayed and put on the clipboard.
+     * 
+     * @param fileName  with '*' where YYYYDDD goes.
+     * @param startIso
+     * @param stopIso   (inclusive)
+     * @param increment e.g., 1, 7, or 3
+     * @param field  e.g. Calendar2.DAY_OF_YEAR, Calendar2.MONTH
+     * @return ncml which assigns "days since 1970-01-01" coordValue to a file for a range of times. 
+     */
+    public static String makeNcmlCoordValues(String location, String startIso, String stopIso, 
+        int increment, int field) throws Exception {
+
+        StringBuilder sb = new StringBuilder();
+        double baseFactor[] = Calendar2.getTimeBaseAndFactor("days since 1970-01-01");
+        GregorianCalendar gc     = Calendar2.parseISODateTimeZulu(startIso);
+        GregorianCalendar stopGc = Calendar2.parseISODateTimeZulu(stopIso);
+        long stopMillis = stopGc.getTimeInMillis();
+        while (gc.getTimeInMillis() <= stopMillis) {
+            int daysSince = Math2.roundToInt(Calendar2.epochSecondsToUnitsSince(
+                baseFactor[0], baseFactor[1], Calendar2.gcToEpochSeconds(gc)));
+            sb.append("<netcdf location=\"" + 
+                String2.replaceAll(location, "*", Calendar2.formatAsYYYYDDD(gc)) +
+                "\" coordValue=\"" + daysSince + "\"/>\n");
+            gc.add(field, increment);
+        }
+        String s = sb.toString();
+        String2.setClipboardString(s);
+        String2.log(s);
+        return s;
     }
 
 

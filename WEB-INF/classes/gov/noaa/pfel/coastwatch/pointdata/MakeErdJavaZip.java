@@ -70,8 +70,9 @@ public class MakeErdJavaZip  {
                 //baseDir + "lib/commons-httpclient-3.0.1.jar;" + 
                 //baseDir + "lib/commons-logging-1.1.jar;" + 
                 baseDir + "lib/mail.jar;" +  
-                baseDir + "lib/netcdfAll-latest.jar;" + 
-                baseDir + "lib/slf4j-jdk14.jar " + //space after last one
+// 2013-02-21 new netcdfAll uses Java logging, not slf4j.
+//                baseDir + "lib/slf4j-jdk14.jar;" + //space after last one
+                baseDir + "lib/netcdfAll-latest.jar " + //space after last one
             "-subpackages " +  //the packages to be doc'd   // ':' separated
                 //adding a package? add it to dirName below, too
                 //"com.sshtools:org.apache.commons.logging:" +  //this external package not very relevant
@@ -173,7 +174,8 @@ public class MakeErdJavaZip  {
         //dirNames.add(baseDir + "lib/commons-logging-1.1.jar"); 
         dirNames.add(baseDir + "lib/mail.jar");
         dirNames.add(baseDir + "lib/netcdfAll-latest.jar");
-        dirNames.add(baseDir + "lib/slf4j-jdk14.jar");
+        //2013-02-21 new netcdfAll uses Java logging, not slf4j.
+        //dirNames.add(baseDir + "lib/slf4j-jdk14.jar");
         String2.add(dirNames, RegexFilenameFilter.recursiveFullNameList(baseDir + "docs/ErdJavaDoc/",         ".+", false)); //javadocs
         String2.add(dirNames, RegexFilenameFilter.recursiveFullNameList(baseDir + "classes/dods/",            ".+", false));
         String2.add(dirNames, RegexFilenameFilter.recursiveFullNameList(baseDir + "classes/com/sshtools/",    ".+", false));

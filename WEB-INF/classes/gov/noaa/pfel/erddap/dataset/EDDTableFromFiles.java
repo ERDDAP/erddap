@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.*;
 
@@ -64,6 +65,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         columnNameForExtract;  // will be "" if not in use
     protected String sortedColumnSourceName; //may be "", won't be null
     protected boolean filesAreLocal;
+    protected String charset;  //may be null or ""
     protected int columnNamesRow = 1, firstDataRow = 2;
 
     protected final static int dv0 = 4;
@@ -75,6 +77,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
     protected Table minMaxTable; 
     protected int sortedDVI = -1;
     protected String filesChanged = ""; 
+
+    protected int extractedColNameIndex = -1;
 
     protected long cumNNotRead = 0;  //either don't have matching data or do ('distinct' and 1 value matches)
     protected long cumNReadHaveMatch = 0, cumNReadNoMatch = 0; //read the data file to look for matching data
@@ -96,7 +100,6 @@ public abstract class EDDTableFromFiles extends EDDTable{
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         String tType = xmlReader.attributeValue("type"); 
         Attributes tGlobalAttributes = null;
-        double tAltitudeMetersPerSourceUnit = 1; 
         ArrayList tDataVariables = new ArrayList();
         int tReloadEveryNMinutes = Integer.MAX_VALUE;
         String tAccessibleTo = null;
@@ -112,6 +115,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         String tSortedColumnSourceName = "";
         String tSortFilesBySourceNames = "";
         String tSpecialMode = "";
+        String tCharset = null;
         int tColumnNamesRow = 1, tFirstDataRow = 2; //relevant for ASCII files only
         boolean tSourceNeedsExpandedFP_EQ = true;
 
@@ -131,9 +135,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
             //try to make the tag names as consistent, descriptive and readable as possible
             if      (localTags.equals("<addAttributes>"))
                 tGlobalAttributes = getAttributesFromXml(xmlReader);
-            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) {}
-            else if (localTags.equals("</altitudeMetersPerSourceUnit>")) 
-                tAltitudeMetersPerSourceUnit = String2.parseDouble(content); 
+            else if (localTags.equals( "<altitudeMetersPerSourceUnit>")) 
+                throw new SimpleException(EDVAlt.stopUsingAltitudeMetersPerSourceUnit);
             else if (localTags.equals( "<dataVariable>")) tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<isLocal>")) {}
             else if (localTags.equals("</isLocal>")) tIsLocal = String2.parseBoolean(content); 
@@ -163,6 +166,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
             else if (localTags.equals("</sortedColumnSourceName>")) tSortedColumnSourceName = content; 
             else if (localTags.equals( "<sortFilesBySourceNames>")) {}
             else if (localTags.equals("</sortFilesBySourceNames>")) tSortFilesBySourceNames = content; 
+            else if (localTags.equals( "<charset>")) {}
+            else if (localTags.equals("</charset>")) tCharset = content; 
             else if (localTags.equals( "<columnNamesRow>")) {}
             else if (localTags.equals("</columnNamesRow>")) tColumnNamesRow = String2.parseInt(content); 
             else if (localTags.equals( "<firstDataRow>")) {}
@@ -195,10 +200,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
             return new EDDTableFromAsciiFiles(tDatasetID, tAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File,  
                 tGlobalAttributes,
-                tAltitudeMetersPerSourceUnit,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
-                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, tColumnNamesRow, tFirstDataRow,
+                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, 
+                tCharset, tColumnNamesRow, tFirstDataRow,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, tSourceNeedsExpandedFP_EQ);
 
@@ -206,10 +211,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
             return new EDDTableFromAwsXmlFiles(tDatasetID, tAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File,  
                 tGlobalAttributes,
-                tAltitudeMetersPerSourceUnit,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
-                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, tColumnNamesRow, tFirstDataRow,
+                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, 
+                tCharset, tColumnNamesRow, tFirstDataRow,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, tSourceNeedsExpandedFP_EQ);
 
@@ -217,10 +222,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
             return new EDDTableFromNcFiles(tDatasetID, tAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File,  
                 tGlobalAttributes,
-                tAltitudeMetersPerSourceUnit,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
-                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, tColumnNamesRow, tFirstDataRow,
+                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, 
+                tCharset, tColumnNamesRow, tFirstDataRow,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, tSourceNeedsExpandedFP_EQ);
 
@@ -228,10 +233,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
             return new EDDTableFromNcCFFiles(tDatasetID, tAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File,  
                 tGlobalAttributes,
-                tAltitudeMetersPerSourceUnit,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
-                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, tColumnNamesRow, tFirstDataRow,
+                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, 
+                tCharset, tColumnNamesRow, tFirstDataRow,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, tSourceNeedsExpandedFP_EQ); 
 
@@ -239,10 +244,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
             return new EDDTableFromNcFiles(tDatasetID, tAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File,  
                 tGlobalAttributes,
-                tAltitudeMetersPerSourceUnit,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
-                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, tColumnNamesRow, tFirstDataRow,
+                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, 
+                tCharset, tColumnNamesRow, tFirstDataRow,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, tSourceNeedsExpandedFP_EQ);
 
@@ -278,10 +283,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
             EDDTableFromFiles tEDDTable = new EDDTableFromHyraxFiles(tDatasetID, tAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File,  
                 tGlobalAttributes,
-                tAltitudeMetersPerSourceUnit,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
-                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, tColumnNamesRow, tFirstDataRow,
+                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, 
+                tCharset, tColumnNamesRow, tFirstDataRow,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, tSourceNeedsExpandedFP_EQ);
 
@@ -292,10 +297,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
             return new EDDTableFromTaoFiles(tDatasetID, tAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File,  
                 tGlobalAttributes,
-                tAltitudeMetersPerSourceUnit,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
-                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, tColumnNamesRow, tFirstDataRow,
+                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, 
+                tCharset, tColumnNamesRow, tFirstDataRow,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, tSourceNeedsExpandedFP_EQ);
 
@@ -331,24 +336,66 @@ public abstract class EDDTableFromFiles extends EDDTable{
             EDDTableFromFiles tEDDTable = new EDDTableFromThreddsFiles(tDatasetID, tAccessibleTo,
                 tOnChange, tFgdcFile, tIso19115File,  
                 tGlobalAttributes,
-                tAltitudeMetersPerSourceUnit,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
-                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, tColumnNamesRow, tFirstDataRow,
+                tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, 
+                tCharset, tColumnNamesRow, tFirstDataRow,
                 tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
                 tSortedColumnSourceName, tSortFilesBySourceNames, tSourceNeedsExpandedFP_EQ);
 
             tEDDTable.creationTimeMillis = tCreationTime;
             return tEDDTable;
 
+        } else if (tType.equals("EDDTableFromWFSFiles")) {
+
+            String fileDir = EDStatic.fullCopyDirectory + tDatasetID + "/"; 
+            String fileName = "data.tsv";
+            long tCreationTime = System.currentTimeMillis(); //used below
+            if (EDStatic.quickRestart && EDStatic.initialLoadDatasets() && 
+                File2.isFile(fileDir + fileName)) {
+
+                //quickRestart
+                //set creationTimeMillis to time of previous creation, so next time
+                //to be reloaded will be same as if ERDDAP hadn't been restarted.
+                tCreationTime = File2.getLastModified(fileDir + fileName); //0 if trouble
+                if (verbose)
+                    String2.log("  quickRestart " + tDatasetID + " previous=" + 
+                        Calendar2.millisToIsoZuluString(tCreationTime) + "Z");
+
+            } else {
+                //download the file  (its timestamp will be *now*)
+                File2.makeDirectory(fileDir);
+                String error = EDDTableFromWFSFiles.downloadData(
+                    tGlobalAttributes.getString("sourceUrl"),
+                    tGlobalAttributes.getString("rowElementXPath"),
+                    fileDir + fileName);
+                if (error.length() > 0) 
+                    String2.log(error);
+            }
+
+            return new EDDTableFromWFSFiles(tDatasetID, tAccessibleTo,
+                tOnChange, tFgdcFile, tIso19115File,  
+                tGlobalAttributes,
+                ttDataVariables,
+                tReloadEveryNMinutes, 
+                fileDir,    //force fileDir
+                false,      //force !recursive, 
+                ".*\\.tsv", //force fileNameRegex
+                tMetadataFrom, 
+                "UTF-8",    //force charset
+                1,          //force columnNamesRow, 
+                3,          //force firstDataRow,
+                "","","","",//force tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
+                tSortedColumnSourceName, tSortFilesBySourceNames, tSourceNeedsExpandedFP_EQ);
+
         //} else if (tType.equals("EDDTableFrom???Files")) {
         //    return new EDDTableFromFiles(tDatasetID, tAccessibleTo,
         //        tOnChange, tFgdcFile, tIso19115File, 
         //        tGlobalAttributes,
-        //        tAltitudeMetersPerSourceUnit,
         //        ttDataVariables,
         //        tReloadEveryNMinutes, 
-        //        tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, tColumnNamesRow, tFirstDataRow,
+        //        tFileDir, tRecursive, tFileNameRegex, tMetadataFrom, 
+        //        tCharset, tColumnNamesRow, tFirstDataRow,
         //        tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
         //        tSortedColumnSourceName, tSourceNeedsExpandedFP_EQ);
         } else {
@@ -396,8 +443,6 @@ public abstract class EDDTableFromFiles extends EDDTable{
      *   Special case: value="null" causes that item to be removed from combinedGlobalAttributes.
      *   Special case: if combinedGlobalAttributes name="license", any instance of value="[standard]"
      *     will be converted to the EDStatic.standardLicense.
-     * @param tAltMetersPerSourceUnit the factor needed to convert the source
-     *    alt values to/from meters above sea level.
      * @param tDataVariables is an Object[nDataVariables][3 or 4]: 
      *    <br>[0]=String sourceName (the name of the data variable in the dataset source, 
      *         without the outer or inner sequence name),
@@ -420,8 +465,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
      *      <li> a org.joda.time.format.DateTimeFormat string
      *        (which is compatible with java.text.SimpleDateFormat) describing how to interpret 
      *        string times  (e.g., the ISO8601TZ_FORMAT "yyyy-MM-dd'T'HH:mm:ssZ", see 
-     *        http://joda-time.sourceforge.net/api-release/index.html or 
-     *        http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html),
+     *        http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
+     *        http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
      *      </ul>
      * @param tReloadEveryNMinutes indicates how often the source should
      *    be checked for new data.
@@ -437,6 +482,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * @param tMetadataFrom this indicates the file to be used
      *    to extract source metadata (first/last based on sorted file lastModifiedTime).
      *    Valid values are "first", "penultimate", "last".
+     * @param tCharset the charset; relevant for ASCII files only
      * @param tColumnNamesRow the number of the row with column names (1..; usually 1, may be 0 (none)); relevant for ASCII files only.
      * @param tDataRow the number of the row with column names (1..; usually 2); relevant for ASCII files only.
      * @param tPreExtractRegex may be "" or null if not needed.
@@ -455,7 +501,6 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * @param tColumnNameForExtract the data column name for the extracted Strings.
      *    This column name must be in the tDataVariables list as a source column name 
      *    (with any data type).
-     *    If used, this column is marked as the idIndex.
      * @param tSortedColumnSourceName the source name of the numeric column that the
      *    data files are usually already sorted by within each file (use null or "" for none), e.g., "time".
      *    It is ok if not all files are sorted by this column.
@@ -476,11 +521,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
         String tDatasetID, String tAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        int tColumnNamesRow, int tFirstDataRow,
+        String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -516,6 +560,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
         recursive = tRecursive;
         fileNameRegex = tFileNameRegex;
         metadataFrom = tMetadataFrom;
+        charset = tCharset;
         columnNamesRow = tColumnNamesRow;
         firstDataRow = tFirstDataRow;
         preExtractRegex = tPreExtractRegex;
@@ -598,27 +643,27 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 throw new IllegalArgumentException("sortedColumnSourceName must be a time or numeric column.");
         }
 
-        idIndex = sourceDataNames.indexOf(columnNameForExtract);
-        if (columnNameForExtract.length() > 0 && idIndex < 0)
+        extractedColNameIndex = sourceDataNames.indexOf(columnNameForExtract);
+        if (columnNameForExtract.length() > 0 && extractedColNameIndex < 0)
             throw new IllegalArgumentException("columnNameForExtract=" + columnNameForExtract + 
                 " isn't among the source data variable names.");
-        if (idIndex >= 0 && extractPattern == null)
+        if (extractedColNameIndex >= 0 && extractPattern == null)
             throw new IllegalArgumentException("columnNameForExtract=" + columnNameForExtract + 
                 " but extractRegex wasn't specified.");
 
         //make the No Extract Column versions
         sourceDataNamesNEC = sourceDataNames;
         String sourceDataTypesNEC[] = sourceDataTypes;
-        if (idIndex >= 0) {
+        if (extractedColNameIndex >= 0) {
             sourceDataNamesNEC = (StringArray)sourceDataNames.clone();
-            sourceDataNamesNEC.remove(idIndex);
+            sourceDataNamesNEC.remove(extractedColNameIndex);
             StringArray tsa = new StringArray(); //don't construct from sourceDataTypes
             tsa.add(sourceDataTypes); 
-            tsa.remove(idIndex);
+            tsa.remove(extractedColNameIndex);
             sourceDataTypesNEC = tsa.toArray();
         }
         //if (reallyVerbose) String2.log(
-        //    "columnNameForExtract=" + columnNameForExtract + " idIndex=" + idIndex +
+        //    "columnNameForExtract=" + columnNameForExtract + " extractedColNameIndex=" + extractedColNameIndex +
         //    "sourceDataNamesNEC=" + sourceDataNamesNEC);
 
         //This class can handle some constraints; 
@@ -1026,7 +1071,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     fileTable.setStringData(dv0 + dv*3 + 2, fileListPo, "");
 
                     //columnNameForExtract  (isn't in sourceFile)
-                    if (dv == idIndex) {
+                    if (dv == extractedColNameIndex) {
                         String eName = tFileS;
                         Matcher m;
                         if (preExtractPattern != null) {
@@ -1370,17 +1415,17 @@ public abstract class EDDTableFromFiles extends EDDTable{
             if (tDestName == null || tDestName.trim().length() == 0)
                 tDestName = tSourceName;
             int tableDv = tTable.findColumnNumber(tSourceName); 
-            if (reallyVerbose && dv != idIndex && tableDv < 0)
+            if (reallyVerbose && dv != extractedColNameIndex && tableDv < 0)
                 String2.log("NOTE: " + tSourceName + " not found in metadataFrom=" + metadataFrom);
             Attributes tSourceAtt = tableDv < 0? new Attributes() : tTable.columnAttributes(tableDv); 
             Attributes tAddAtt = (Attributes)tDataVariables[dv][2];
             //PrimitiveArray taa = tAddAtt.get("_FillValue");
-            //String2.log("!!!taa " + tSourceName + " _FillValue=" + taa);
+            //String2.log(">>taa " + tSourceName + " _FillValue=" + taa);
             //dMin and dMax are raw source values -- scale_factor and add_offset haven't been applied
             String tSourceType = sourceDataTypes[dv];
             String sMin = tSourceType.equals("String")? "" : minMaxTable.getStringData(dv, 0);
             String sMax = tSourceType.equals("String")? "" : minMaxTable.getStringData(dv, 1);
-            //String2.log("sMin=" + sMin + " sMax=" + sMax + " paMin=" + minMaxTable.getColumn(dv).minValue() +
+            //String2.log(">>sMin=" + sMin + " sMax=" + sMax + " paMin=" + minMaxTable.getColumn(dv).minValue() +
             //    " paMax=" + minMaxTable.getColumn(dv).maxValue());
             if (sMin.length() > 0 &&
                 minMaxTable.getColumn(dv).minValue().equals(sMin) &&
@@ -1407,8 +1452,13 @@ public abstract class EDDTableFromFiles extends EDDTable{
             } else if (EDV.ALT_NAME.equals(tDestName)) {
                 dataVariables[dv] = new EDVAlt(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType,  dMin, dMax, tAltMetersPerSourceUnit);
+                    tSourceType,  dMin, dMax);
                 altIndex = dv;
+            } else if (EDV.DEPTH_NAME.equals(tDestName)) {
+                dataVariables[dv] = new EDVDepth(tSourceName,
+                    tSourceAtt, tAddAtt, 
+                    tSourceType,  dMin, dMax);
+                depthIndex = dv;
 
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
                 //EEEK!!! this is weak. It will work for ISO strings, or numeric only.
@@ -1454,49 +1504,107 @@ public abstract class EDDTableFromFiles extends EDDTable{
         //    " type=" + dataVariables[dv].sourceDataType() + " min=" + dataVariables[dv].destinationMin());
         }
 
-        //sos data
-        //deal with: fileTable has 1 row per file, but there may be several files for same id
-        //solution: consolidate
-        if (idIndex >= 0 && lonIndex >= 0 && latIndex >= 0 && timeIndex >= 0) {
-            //clone() because I'm going to sort and consolidate
-            //sosOfferingType = "Station";
-            sosMinLon    = (PrimitiveArray)fileTable.getColumn(dv0 + lonIndex*3  + 0).clone();
-            sosMaxLon    = (PrimitiveArray)fileTable.getColumn(dv0 + lonIndex*3  + 1).clone();
-            sosMinLat    = (PrimitiveArray)fileTable.getColumn(dv0 + latIndex*3  + 0).clone();
-            sosMaxLat    = (PrimitiveArray)fileTable.getColumn(dv0 + latIndex*3  + 1).clone();
-            sosMinTime   = (PrimitiveArray)fileTable.getColumn(dv0 + timeIndex*3 + 0).clone();
-            sosMaxTime   = (PrimitiveArray)fileTable.getColumn(dv0 + timeIndex*3 + 1).clone();
-            sosOfferings = (PrimitiveArray)fileTable.getColumn(dv0 + idIndex*3   + 0).clone(); 
+        //try to gather sos data
+        //This can deal with: each file has info for only one e.g., station,
+        //   but there may be several files for same station.
+        if (EDStatic.sosActive &&
+            lonIndex >= 0 && latIndex >= 0 && timeIndex >= 0 &&
+            setSosOfferingTypeAndIndex()) { //compatible cdm_data_type
 
-            Table sosTable = new Table();
-            sosTable.addColumn("minLon",  sosMinLon);
-            sosTable.addColumn("maxLon",  sosMaxLon);
-            sosTable.addColumn("minLat",  sosMinLat);
-            sosTable.addColumn("maxLat",  sosMaxLat);
-            sosTable.addColumn("minTime", sosMinTime);
-            sosTable.addColumn("maxTime", sosMaxTime);
-            sosTable.addColumn("id",      sosOfferings);
+            EDV lonVar      = dataVariables[lonIndex];
+            EDV latVar      = dataVariables[latIndex];
+            EDV timeVar     = dataVariables[timeIndex];
+            EDV offeringVar = dataVariables[sosOfferingIndex];
 
-            sosTable.sort(new int[]{6,0,1,2,3,4,5}, new boolean[]{true, true, true, true, true, true, true});
+            //Get convenient access to fileTable data min,max,hasNaN
+            //  (but converted to destination values).  
+            //clone() to ensure original fileTable values are changed.
+            PrimitiveArray fLonMin      = lonVar.toDestination(     (PrimitiveArray)fileTable.getColumn(dv0 + lonIndex*3         + 0).clone());
+            PrimitiveArray fLonMax      = lonVar.toDestination(     (PrimitiveArray)fileTable.getColumn(dv0 + lonIndex*3         + 1).clone());
+            PrimitiveArray fLonNan      =                                           fileTable.getColumn(dv0 + lonIndex*3         + 2);
+            PrimitiveArray fLatMin      = latVar.toDestination(     (PrimitiveArray)fileTable.getColumn(dv0 + latIndex*3         + 0).clone());
+            PrimitiveArray fLatMax      = latVar.toDestination(     (PrimitiveArray)fileTable.getColumn(dv0 + latIndex*3         + 1).clone());
+            PrimitiveArray fLatNan      =                                           fileTable.getColumn(dv0 + latIndex*3         + 2);
+            PrimitiveArray fTimeMin     = timeVar.toDestination(    (PrimitiveArray)fileTable.getColumn(dv0 + timeIndex*3        + 0).clone());
+            PrimitiveArray fTimeMax     = timeVar.toDestination(    (PrimitiveArray)fileTable.getColumn(dv0 + timeIndex*3        + 1).clone());
+            PrimitiveArray fTimeNan     =                                           fileTable.getColumn(dv0 + timeIndex*3        + 2);
+            PrimitiveArray fOfferingMin = offeringVar.toDestination((PrimitiveArray)fileTable.getColumn(dv0 + sosOfferingIndex*3 + 0).clone()); 
+            PrimitiveArray fOfferingMax = offeringVar.toDestination((PrimitiveArray)fileTable.getColumn(dv0 + sosOfferingIndex*3 + 1).clone()); 
+            PrimitiveArray fOfferingNan =                                           fileTable.getColumn(dv0 + sosOfferingIndex*3 + 2); 
 
-            int nRows = sosTable.nRows();
-            BitSet keep = new BitSet(nRows);
-            keep.set(0, nRows, true);
-            for (int row = 1; row < nRows; row++) {  //1.. since looking backwards
-                if (sosOfferings.getString(row).equals(sosOfferings.getString(row-1))) {
-                    //combine this row and previous
-                    sosMinLon.setDouble(row, Math2.finiteMin(sosMinLon.getDouble(row), sosMinLon.getDouble(row-1)));
-                    sosMaxLon.setDouble(row, Math2.finiteMax(sosMaxLon.getDouble(row), sosMaxLon.getDouble(row-1)));
-                    sosMinLat.setDouble(row, Math2.finiteMin(sosMinLat.getDouble(row), sosMinLat.getDouble(row-1)));
-                    sosMaxLat.setDouble(row, Math2.finiteMax(sosMaxLat.getDouble(row), sosMaxLat.getDouble(row-1)));
-                    sosMinTime.setDouble(row, Math2.finiteMin(sosMinTime.getDouble(row), sosMinTime.getDouble(row-1)));
-                    sosMaxTime.setDouble(row, Math2.finiteMax(sosMaxTime.getDouble(row), sosMaxTime.getDouble(row-1)));
-                    //mark previous row for deletion
-                    keep.clear(row-1); 
+            //make the sos PAs to hold destination values
+            sosMinLon    = PrimitiveArray.factory(lonVar.destinationDataTypeClass(),  8, false);
+            sosMaxLon    = PrimitiveArray.factory(lonVar.destinationDataTypeClass(),  8, false);
+            sosMinLat    = PrimitiveArray.factory(latVar.destinationDataTypeClass(),  8, false);
+            sosMaxLat    = PrimitiveArray.factory(latVar.destinationDataTypeClass(),  8, false);
+            sosMinTime   = PrimitiveArray.factory(timeVar.destinationDataTypeClass(), 8, false);
+            sosMaxTime   = PrimitiveArray.factory(timeVar.destinationDataTypeClass(), 8, false);
+            sosOfferings = new StringArray();
+         
+            //Collect info until a file doesn't meet requirements or all files do meet requirements.
+            //Do all files contain just one value of sosOfferingIndex (e.g., 1 station)?
+            //If so, easy to find min/max lon/lat/time for each station.
+            int tnFiles = fLonMin.size();
+            HashMap offeringIndexHM = new HashMap(); //key=offering value=new Integer(SosXxx index)
+            for (int f = 0; f < tnFiles; f++) {
+                String offMin  = fOfferingMin.getString(f);
+                String offMax  = fOfferingMin.getString(f);
+                boolean offNaN = fOfferingNan.getInt(f) == 1;
+
+                //if offerings in this file are all "" or null, ignore it
+                if (offNaN && 
+                    (offMin == null || offMin.length() == 0) && 
+                    (offMax == null || offMax.length() == 0)) {
+
+                //if just one offering in file (no mv), add data to sos arrays
+                } else if (!offNaN && offMin.equals(offMax)) {
+                    //find sos PA index
+                    Integer soI = (Integer)offeringIndexHM.get(offMin);
+                    if (soI == null) {
+                        //it's a new offering.  add it.
+                        soI = new Integer(fLonMin.size());
+                        offeringIndexHM.put(offMin, soI);
+                        sosMinLon.addFromPA(fLonMin, f);
+                        sosMaxLon.addFromPA(fLonMax, f);
+                        sosMinLat.addFromPA(fLatMin, f);
+                        sosMaxLat.addFromPA(fLatMax, f);
+                        sosMinTime.addFromPA(fTimeMin, f);
+                        sosMaxTime.addFromPA(fTimeMax, f);
+                        sosOfferings.addString(offMin);
+
+                    } else {
+                        //store the min min and the max max.
+                        int soi = soI.intValue();
+                        sosMinLon.setDouble( soi, Math2.finiteMin(sosMinLon.getDouble( soi), fLonMin.getDouble(f)));
+                        sosMaxLon.setDouble( soi, Math2.finiteMax(sosMaxLon.getDouble( soi), fLonMax.getDouble(f)));
+                        sosMinLat.setDouble( soi, Math2.finiteMin(sosMinLat.getDouble( soi), fLatMin.getDouble(f)));
+                        sosMaxLat.setDouble( soi, Math2.finiteMax(sosMaxLat.getDouble( soi), fLatMax.getDouble(f)));
+                        sosMinTime.setDouble(soi, Math2.finiteMin(sosMinTime.getDouble(soi), fTimeMin.getDouble(f)));
+                        sosMaxTime.setDouble(soi, Math2.finiteMax(sosMaxTime.getDouble(soi), fTimeMax.getDouble(f)));
+                        //sosOfferings is already correct                                            
+                    } 
+
+                } else {
+                    //else trouble: more than for offering per file or contaminated with offering=mv.  
+                    //Abandon this approach.
+                    //accessibleViaSOS = "";  //???set this?
+                    if (verbose) String2.log(
+                        "EDDTableFromFiles can't gather sosOffering min/max for datasetID=" + datasetID + 
+                        "\nfrom fileTable because file #" + f + " has >1 offering: min=" + offMin + 
+                        " max=" + offMax + " nan=" + offNaN);
+                    sosOfferingType = null;
+                    sosOfferingIndex = -1;
+                    sosMinLon    = null;
+                    sosMaxLon    = null;
+                    sosMinLat    = null;
+                    sosMaxLat    = null;
+                    sosMinTime   = null;
+                    sosMaxTime   = null;
+                    sosOfferings = null;
+                    break;
                 }
             }
-            sosTable.justKeep(keep);
-        }
+        } //end gathering sosOfferings info
 
 
         //ensure the setup is valid
@@ -1597,7 +1705,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
      *
      * <p>Constraints are specified by 2 systems:
      * <br>1) ...Sorted - the old simple system 
-     * <br>2) conVars, conOps, conValues - a comprehensive system
+     * <br>2) sourceConVars, sourceConOps, sourceConValues - a comprehensive system
      * <br>Each subclass can use either, both, or neither.
      *
      * @param fileDir
@@ -1623,9 +1731,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
      *   <br>If minSorted is non-NaN, maxSorted will be non-NaN.
      *   <br>With respect to scale_factor and add_offset, this is a source value.
      *   <br>For time, this is the source time, not epochSeconds.
-     * @param conVars the constraint variables.  May be size=0. 
-     * @param conOps the constraint operators
-     * @param conValues the constraint values
+     * @param sourceConVars the source constraint variables.  May be null or size=0. 
+     * @param sourceConOps the source constraint operators.
+     *    regex is always PrimitiveArray.REGEX_OP, not sourceCanConstrainStringRegex.
+     * @param sourceConValues the source constraint values.
+     *    timeStamp constraints are numeric source values.
+     *    If a timeStamp has String source values or timeStamp op is regex, the constraint has been removed.
      * @param getMetadata  if true, this should get global and variable metadata, too.
      * @param mustGetData if true, the caller must get the actual data;
      *   otherwise it can just return all the values of the sorted variable,
@@ -1638,14 +1749,13 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * @throws Throwable if trouble.
      *   If the file doesn't have a sourceDataName, it isn't an error -- it returns a column of mv's.
      *   If there is trouble, this doesn't call addBadFile or requestReloadASAP().
-     *
-     * @throws an exception if too much data.
-     *  This won't throw an exception if no data.
+     *   This throws an exception if too much data.
+     *   This won't throw an exception if no data.
      */
     public abstract Table lowGetSourceDataFromFile(String fileDir, String fileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
-        StringArray conVars, StringArray conOps, StringArray conValues,
+        StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
         boolean getMetadata, boolean mustGetData) throws Throwable;
 
 
@@ -1654,14 +1764,14 @@ public abstract class EDDTableFromFiles extends EDDTable{
      * handles global: sourceDataNames specially (to convert
      * a file's global metadata to be a data column).
      * See lowGetSourceDataFromFile params.
-     *
+     * 
      * @throws an exception if too much data.
      *  This won't (shouldn't) throw an exception if no data.
      */
     public Table getSourceDataFromFile(String fileDir, String fileName, 
         StringArray sourceDataNames, String sourceDataTypes[],
         double sortedSpacing, double minSorted, double maxSorted, 
-        StringArray conVars, StringArray conOps, StringArray conValues,
+        StringArray sourceConVars, StringArray sourceConOps, StringArray sourceConValues,
         boolean getMetadata, boolean mustGetData) throws Throwable {
 
         //grab any "global:..." and "variable:..." sourceDataNames
@@ -1716,7 +1826,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
             fileDir, fileName, 
             sourceNames, sourceDataTypes,
             sortedSpacing, minSorted, maxSorted, 
-            conVars, conOps, conValues,
+            sourceConVars, sourceConOps, sourceConValues,
             getMetadata || globalNames.size() > 0 || variableNames.size() > 0, 
             mustGetData);
         int nRows = table.nRows();
@@ -1806,15 +1916,16 @@ public abstract class EDDTableFromFiles extends EDDTable{
  
         //get the sourceDapQuery (a query that the source can handle)
         StringArray resultsVariablesNEC = new StringArray();
-        StringArray constraintVariables = new StringArray();
-        StringArray constraintOps       = new StringArray();
-        StringArray constraintValues    = new StringArray();
+        //constraints are sourceVars Ops Values
+        StringArray conVars   = new StringArray();
+        StringArray conOps    = new StringArray();
+        StringArray conValues = new StringArray(); 
         getSourceQueryFromDapQuery(userDapQuery,
             resultsVariablesNEC,  //sourceNames
-            constraintVariables, constraintOps, constraintValues);
-        String2.log("getDataForDapQuery sourceQuery=" + 
+            conVars, conOps, conValues); //timeStamp constraints other than regex are epochSeconds
+        if (reallyVerbose) String2.log("getDataForDapQuery sourceQuery=" + 
             formatAsDapQuery(resultsVariablesNEC.toArray(), 
-                constraintVariables.toArray(), constraintOps.toArray(), constraintValues.toArray()));
+                conVars.toArray(), conOps.toArray(), conValues.toArray()));
 
         //load the dirTable and fileTable
         Table dirTable = tryToLoadDirFileTable(datasetDir() + DIR_TABLE_FILENAME);
@@ -1846,7 +1957,8 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 resultsVariablesNEC.get(0).equals(columnNameForExtract)) {
 
                 Table table = new Table();
-                PrimitiveArray names = (StringArray)(fileTable.getColumn(dv0 + idIndex*3 + 0).clone());
+                PrimitiveArray names = (StringArray)(fileTable.getColumn(
+                    dv0 + extractedColNameIndex*3 + 0).clone());
                 PrimitiveArray unique = names.makeIndices(new IntArray()); //it returns unique values, sorted
                 table.addColumn(columnNameForExtract, unique);
 
@@ -1877,43 +1989,48 @@ public abstract class EDDTableFromFiles extends EDDTable{
             //String2.log("rv=" + rv + ": " + sourceName + " dv=" + dvi[rv] + " " + resultsTypes[rv]);
         }
 
-        //find cdvi (index in dataVariables) for each constraintVariable
-        int nCon = constraintVariables.size();
+        //find cdvi (index in dataVariables) for each conVar
+        int nCon = conVars.size();
         int cdvi[] = new int[nCon];
-        double constraintValuesD[] = new double[nCon];
+        double conValuesD[] = new double[nCon];
         for (int con = 0; con < nCon; con++) {
-            cdvi[con] = String2.indexOf(dataVariableSourceNames(), constraintVariables.get(con));
-            constraintValuesD[con] = String2.parseDouble(constraintValues.get(con));
+            cdvi[con] = String2.indexOf(dataVariableSourceNames(), conVars.get(con));
+            conValuesD[con] = String2.parseDouble(conValues.get(con));
+            //op may be PrimitiveArray.REGEX_OP  (won't be sourceCanConstrainStringRegex)
         }
-
-        //convert PrimitiveArray.REGEX_OP to sourceCanConstrainStringRegex
-        if (sourceCanConstrainStringRegex.length() > 0)
-            constraintOps.switchFromTo(PrimitiveArray.REGEX_OP, sourceCanConstrainStringRegex);
 
         //distinct?    sometimes minMaxTable indicates there is only 1 value in the file
         String[] parts = getUserQueryParts(userDapQuery); //decoded.  
         boolean distinct = String2.indexOf(parts, "distinct()") >= 0;
-        if (reallyVerbose) String2.log("  query includes \"distinct()\"");
+        if (reallyVerbose && distinct) String2.log("  query includes \"distinct()\"");
 
         //check if constraints can't be met by this dataset (by checking minMaxTable)
         //(this is just an expedient. checking each file below has same result, but slower.)
         String reasonNotOk = null;
+        //and make true sourceCon where timeStamp constraints are sourceValues (and not regex)
+        StringArray sourceConVars   = new StringArray();
+        StringArray sourceConOps    = new StringArray();
+        StringArray sourceConValues = new StringArray();
         for (int con = 0; con < nCon; con++) {
             int dv = cdvi[con];
             EDV edv = dataVariables[dv];
-            String tOp = constraintOps.get(con);
-            String tValue = constraintValues.get(con);
+            String tOp = conOps.get(con);
+            //tValue initially: usually a source val, but time is epochSeconds
+            String tValue = conValues.get(con);  
 
+            //it EDVTimeStamp, convert tValue epochSeconds into source time string
             if ((edv instanceof EDVTimeStamp) && !tOp.equals(PrimitiveArray.REGEX_OP)) {
-                double epSec = String2.parseDouble(tValue);
+                double epSec = conValuesD[con];
 
-                //when testing whole dataset, ignore any constraints for time>yesterday
+                //when testing whole dataset, ignore any constraints for today+/-2 days
                 double currentEpSec = System.currentTimeMillis() / 1000.0;
-                if (epSec > currentEpSec - Calendar2.SECONDS_PER_DAY)
+                //String2.log(">>currentEpSec=" + currentEpSec + " - constraintEpSec=" + epSec + " = diffDays=" + ((currentEpSec - epSec)/Calendar2.SECONDS_PER_DAY));
+                if (Math.abs(epSec - currentEpSec) < 2 * Calendar2.SECONDS_PER_DAY)
                     continue;
 
-                //convert any remaining time constraints to source time
+                //convert any remaining time constraints to source time (includes scaleAddOffset)
                 tValue = ((EDVTimeStamp)edv).epochSecondsToSourceTimeString(epSec);
+                if (debugMode) String2.log(">>source var=" + conVars.get(con) + " constraint=" + tValue);
             }
 
             if (edv.sourceDataTypeClass() == String.class || tOp.equals(PrimitiveArray.REGEX_OP)) {
@@ -1922,7 +2039,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 int    dsHasNaN = minMaxTable.getIntData(   dv, 2);
                 if (!isOK(dsMin, dsMax, dsHasNaN, tOp, tValue)) {
                     reasonNotOk = "No data matches " +
-                        edv.destinationName() + tOp + constraintValues.get(con) + 
+                        edv.destinationName() + tOp + conValues.get(con) + 
                         " because the variable's min=\"" + dsMin + "\", max=\"" + dsMax + 
                         "\", and hasNaN=" + (dsHasNaN != 0) + ".";
                     if (reallyVerbose) String2.log(reasonNotOk);
@@ -1930,23 +2047,48 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 }
             } else {
                 //numeric variables (and not PrimitiveArray.REGEX_OP)
-                double dsMin    = minMaxTable.getDoubleData(dv, 0);
+                double dsMin    = minMaxTable.getDoubleData(dv, 0);  //a source value
                 double dsMax    = minMaxTable.getDoubleData(dv, 1);
                 int    dsHasNaN = minMaxTable.getIntData(   dv, 2);
-                double conValD = String2.parseDouble(constraintValues.get(con));
-                if (!isOK(dsMin, dsMax, dsHasNaN, tOp, String2.parseDouble(tValue))) {
-                    reasonNotOk = "No data matches " +
+                double conValD = String2.parseDouble(conValues.get(con)); //if time, conValD is epochSeconds
+                double tValueD = String2.parseDouble(tValue);             //if time, tValueD is a numeric source time
+                if (!isOK(dsMin, dsMax, dsHasNaN, tOp, tValueD)) {
+                    reasonNotOk = 
+                        "No data matches " +
                         edv.destinationName() + tOp + 
                         (edv instanceof EDVTimeStamp? 
-                            Calendar2.safeEpochSecondsToIsoStringT(conValD, "NaN") : 
-                            constraintValues.get(con)) + 
-                        " because the variable's min=" + 
-                        edv.destinationMinString() +  //works well with numbers and EDVTimeStamp
+                            Calendar2.epochSecondsToLimitedIsoStringT(
+                                ((EDVTimeStamp)edv).time_precision(), conValD, "NaN") : 
+                            conValues.get(con)) + 
+                        " because the variable's source min=" + 
+                        edv.destinationMinString() +  //works well with numbers and numeric EDVTimeStamp
                         ", max=" + edv.destinationMaxString() + 
-                        ", and hasNaN=" + (dsHasNaN != 0) + ".";
+                        ", and hasNaN=" + (dsHasNaN != 0) + "." +
+                        (debugMode? "\nconValD=" + conValD + " tValueD=" + tValueD + 
+                                    " dsMin=" + dsMin + " " + dsMax : "");
                     if (reallyVerbose) String2.log(reasonNotOk);
                     break;
                 }
+            }
+
+            //make true sourceCon  (even time constraint values are source values)
+            boolean keepCon = false;
+            if (tOp.equals(PrimitiveArray.REGEX_OP)) {
+                keepCon = sourceCanConstrainStringRegex.length() > 0 &&
+                          edv.destValuesEqualSourceValues();
+
+            } else if (edv instanceof EDVTimeStamp) {
+                keepCon = ((EDVTimeStamp)edv).sourceTimeIsNumeric(); //just keep numeric time constraints
+                    
+            } else {
+                keepCon = true;
+            }
+
+            if (keepCon) {
+                //keep this con
+                sourceConVars.add(conVars.get(con));
+                sourceConOps.add(tOp);  //regex is always PrimitiveArray.REGEX_OP 
+                sourceConValues.add(tValue);
             }
         }
         if (reasonNotOk != null) {
@@ -1959,17 +2101,20 @@ public abstract class EDDTableFromFiles extends EDDTable{
         double minSorted = -Double.MAX_VALUE, maxSorted = Double.MAX_VALUE; //get everything
         if (sortedDVI >= 0) {
             for (int con = 0; con < nCon; con++) {
-                if (constraintVariables.get(con).equals(sortedColumnSourceName)) {
+                if (conVars.get(con).equals(sortedColumnSourceName)) {
                     int dv = cdvi[con];
                     EDV edv = dataVariables[dv];
-                    String op = constraintOps.get(con);
-                    double valD = String2.parseDouble(constraintValues.get(con));
+                    String op = conOps.get(con);
+                    double valD = String2.parseDouble(conValues.get(con));
 
                     //convert time constraints from epochSeconds to source values
                     if (edv instanceof EDVTimeStamp) {
-                        if (op.equals(PrimitiveArray.REGEX_OP))
+                        if (op.equals(PrimitiveArray.REGEX_OP) && !edv.destValuesEqualSourceValues())
                             continue;
-                        valD = ((EDVTimeStamp)dataVariables[sortedDVI]).epochSecondsToSourceTimeDouble(valD);
+                        EDVTimeStamp edvts = (EDVTimeStamp)dataVariables[sortedDVI];
+                        if (!edvts.sourceTimeIsNumeric())
+                            continue;
+                        valD = edvts.epochSecondsToSourceTimeDouble(valD);
                     }
 
                     //0"!=", 1REGEX_OP, 2"<=", 3">=", 4"=", 5"<", 6">"}; 
@@ -2000,11 +2145,11 @@ public abstract class EDDTableFromFiles extends EDDTable{
             //can file be rejected based on constraints?
             boolean ok = true;
             for (int con = 0; con < nCon; con++) {
-                String op = constraintOps.get(con);
+                String op = conOps.get(con);
                 int dv = cdvi[con];
                 EDV edv = dataVariables[dv];
                 if ((edv instanceof EDVTimeStamp) && !op.equals(PrimitiveArray.REGEX_OP)) {
-                    //constraintValue is epochSeconds (not source time units), so convert fMin,fMax to epSeconds
+                    //conValue is epochSeconds (not source time units), so convert fMin,fMax to epSeconds
                     EDVTimeStamp tdv = (EDVTimeStamp)edv;
                     double fMin = tdv.sourceTimeToEpochSeconds(fileTable.getStringData(dv0 + dv*3 + 0, f));
                     double fMax = tdv.sourceTimeToEpochSeconds(fileTable.getStringData(dv0 + dv*3 + 1, f));
@@ -2022,10 +2167,11 @@ public abstract class EDDTableFromFiles extends EDDTable{
                         fMax = secondsNowP4;
                     }
                     
-                    if (!isOK(fMin, fMax, fNaN, op, constraintValuesD[con])) {
+                    if (!isOK(fMin, fMax, fNaN, op, conValuesD[con])) {
                         if (reallyVerbose) 
                             String2.log("file " + f + " rejected because failed " +
-                                constraintVariables.get(con) + op + constraintValues.get(con) + 
+                                conVars.get(con) + op + 
+                                Calendar2.safeEpochSecondsToIsoStringTZ(conValuesD[con], "\"\"") + 
                                 " when file min=" + fMin + " max=" + fMax + 
                                 ", hasNaN=" + (fNaN != 0) + ".");
                         ok = false;
@@ -2037,10 +2183,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     String fMin = fileTable.getStringData(dv0 + dv*3 + 0, f);
                     String fMax = fileTable.getStringData(dv0 + dv*3 + 1, f);
                     int    fNaN = fileTable.getIntData(   dv0 + dv*3 + 2, f);
-                    if (!isOK(fMin, fMax, fNaN, op, constraintValues.get(con))) {
+                    if (!isOK(fMin, fMax, fNaN, op, conValues.get(con))) {
                        if (reallyVerbose) 
                            String2.log("file " + f + " rejected because failed " +
-                                constraintVariables.get(con) + op + constraintValues.get(con) + 
+                                conVars.get(con) + op + conValues.get(con) + 
                                 " when file min=\"" + fMin + "\", max=\"" + fMax + 
                                 "\", hasNaN=" + (fNaN != 0) + ".");
                         ok = false;
@@ -2052,15 +2198,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     double fMin = fileTable.getDoubleData(dv0 + dv*3 + 0, f); 
                     double fMax = fileTable.getDoubleData(dv0 + dv*3 + 1, f); 
                     int    fNaN = fileTable.getIntData(   dv0 + dv*3 + 2, f);
-                    if (isOK(fMin, fMax, fNaN, op, constraintValuesD[con])) {
-                        //if (reallyVerbose) 
-                        //    String2.log("file " + f + " rejected because failed " +
-                        //        constraintVariables.get(con) + op + constraintValues.get(con) + 
-                        //        " when fileMin=" + fMin + " fileMax=" + fMax + ".");
-                    } else {
+                    if (!isOK(fMin, fMax, fNaN, op, conValuesD[con])) {
                         if (reallyVerbose) 
                             String2.log("file " + f + " rejected because failed " +
-                                constraintVariables.get(con) + op + constraintValues.get(con) + 
+                                conVars.get(con) + op + conValues.get(con) + 
                                 " when file min=" + fMin + ", max=" + fMax + 
                                 ", hasNaN=" + (fNaN != 0) + ".");
                         ok = false;
@@ -2119,12 +2260,12 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
                     //add extractColumn
                     if (tExtractIndex >= 0) {
-                        String tVal = fileTable.getStringData(dv0 + idIndex*3 + 0, f);
+                        String tVal = fileTable.getStringData(dv0 + extractedColNameIndex*3 + 0, f);
                         if (newDistinctTable) {
                             PrimitiveArray pa = PrimitiveArray.factory( 
-                                dataVariables[idIndex].sourceDataTypeClass(), //always String(?)
+                                dataVariables[extractedColNameIndex].sourceDataTypeClass(), //always String(?)
                                 1, tVal);
-                            distinctTable.addColumn(dataVariables[idIndex].destinationName(), pa);
+                            distinctTable.addColumn(dataVariables[extractedColNameIndex].destinationName(), pa);
                         } else {
                             distinctTable.getColumn(dvi.length).addString(tVal);
                         } 
@@ -2162,7 +2303,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 table = getSourceDataFromFile(tDir, tName,
                     resultsVariablesNEC, resultsTypes, 
                     ftSortedSpacing.get(f), minSorted, maxSorted, 
-                    constraintVariables, constraintOps, constraintValues,
+                    sourceConVars, sourceConOps, sourceConValues,
                     false, true); 
 
             } catch (WaitThenTryAgainException twwae) {
@@ -2182,7 +2323,7 @@ public abstract class EDDTableFromFiles extends EDDTable{
                     table = getSourceDataFromFile(tDir, tName,
                         resultsVariablesNEC, resultsTypes, 
                         ftSortedSpacing.get(f), minSorted, maxSorted, 
-                        constraintVariables, constraintOps, constraintValues,
+                        sourceConVars, sourceConOps, sourceConValues,
                         false, true); 
 
                 } catch (WaitThenTryAgainException twwae) {
@@ -2208,10 +2349,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
                 //add extractColumn
                 if (tExtractIndex >= 0) {
                     PrimitiveArray pa = PrimitiveArray.factory(
-                        dataVariables[idIndex].sourceDataTypeClass(), //always String(?)
+                        dataVariables[extractedColNameIndex].sourceDataTypeClass(), //always String(?)
                         table.nRows(), 
-                        fileTable.getStringData(dv0 + idIndex*3 + 0, f));
-                    table.addColumn(dataVariables[idIndex].destinationName(), pa);
+                        fileTable.getStringData(dv0 + extractedColNameIndex*3 + 0, f));
+                    table.addColumn(dataVariables[extractedColNameIndex].destinationName(), pa);
                 }
 
                 //standardizeResultsTable applies all constraints
@@ -2362,7 +2503,10 @@ public abstract class EDDTableFromFiles extends EDDTable{
 
         //0"!=", 1REGEX_OP, 2"<=", 3">=", 4"=", 5"<", 6">"};         
         //this does strict comparisons (hard to use AlmostEqual, GAE, LAE)
-        int p = 5; //precision    not very precise so works with floats and doubles; for time, this is ~28 hours
+        //precision=5 significant figures
+        //not very precise so works with floats and doubles; for time, this is ~28 hours
+        //but that's okay, better to say okay here (and fail later)
+        int p = 5;
         if (conOp.equals("!=")) {
             if (min == max && min == conValue) return false;    //be strict to reject
         //PrimitiveArray.REGEX_OP is handled by String isOK
@@ -2424,18 +2568,26 @@ public abstract class EDDTableFromFiles extends EDDTable{
         Test.ensureEqual(isOK(2, 4, 0, "!=", 0), true,  ""); 
         Test.ensureEqual(isOK(2, 4, 0, "<=", 6), true,  ""); 
         Test.ensureEqual(isOK(2, 4, 0, "<=", 3), true,  ""); 
+        Test.ensureEqual(isOK(2, 4, 0, "<=", 2.0000000001), true,  ""); 
         Test.ensureEqual(isOK(2, 4, 0, "<=", 2), true,  ""); 
+        Test.ensureEqual(isOK(2, 4, 0, "<=", 1.9999999999), true,  ""); 
         Test.ensureEqual(isOK(2, 4, 0, "<=", 0), false,  ""); 
         Test.ensureEqual(isOK(2, 4, 0,  "<", 6), true,  ""); 
         Test.ensureEqual(isOK(2, 4, 0,  "<", 3), true,  ""); 
+        Test.ensureEqual(isOK(2, 4, 0,  "<", 2.0000000001), true,  ""); 
         Test.ensureEqual(isOK(2, 4, 0,  "<", 2), false,  ""); 
+        Test.ensureEqual(isOK(2, 4, 0,  "<", 1.9999999999), false,  ""); 
         Test.ensureEqual(isOK(2, 4, 0,  "<", 0), false,  ""); 
         Test.ensureEqual(isOK(2, 4, 0, ">=", 6), false,  ""); 
+        Test.ensureEqual(isOK(2, 4, 0, ">=", 4.0000000001), true,  ""); 
         Test.ensureEqual(isOK(2, 4, 0, ">=", 4), true,  ""); 
+        Test.ensureEqual(isOK(2, 4, 0, ">=", 3.9999999999), true,  ""); 
         Test.ensureEqual(isOK(2, 4, 0, ">=", 3), true,  ""); 
         Test.ensureEqual(isOK(2, 4, 0, ">=", 0), true,  ""); 
         Test.ensureEqual(isOK(2, 4, 0,  ">", 6), false,  ""); 
+        Test.ensureEqual(isOK(2, 4, 0,  ">", 4.0000000001), false,  ""); 
         Test.ensureEqual(isOK(2, 4, 0,  ">", 4), false,  ""); 
+        Test.ensureEqual(isOK(2, 4, 0,  ">", 3.9999999999), true,  ""); 
         Test.ensureEqual(isOK(2, 4, 0,  ">", 3), true,  ""); 
         Test.ensureEqual(isOK(2, 4, 0,  ">", 0), true,  ""); 
         Test.ensureEqual(isOK("2", "4", 0,  ROP, "(5)"), true,  ""); 
