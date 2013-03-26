@@ -632,7 +632,7 @@ public class StringArray extends PrimitiveArray {
             Math2.ensureMemoryAvailable(8L * newCapacity, "StringArray"); //8 is feeble minimal estimate
             String[] newArray = new String[newCapacity];
             System.arraycopy(array, 0, newArray, 0, size);
-            array = newArray;
+            array = newArray; //do last to minimize concurrency problems
         }
     }
 
@@ -974,7 +974,7 @@ public class StringArray extends PrimitiveArray {
 
 
     /** 
-     * This converts the elements into a comma-space-separated (CSSV or CSV) String.
+     * This converts the elements into a comma-separated (CSV) String.
      * If a value has an internal comma or double quotes, the value is surrounded by 
      * double quotes and the internal quotes are replaced by 2 double quotes.
      *
@@ -1284,7 +1284,7 @@ public class StringArray extends PrimitiveArray {
             for (int i = 0; i < otherSize; i++)
                 array[size + i] = String2.canonical(primitiveArray.getString(i)); //this converts mv's
         }
-        size += otherSize;
+        size += otherSize; //do last to minimize concurrency problems
     }    
 
     /**
@@ -1850,6 +1850,7 @@ public class StringArray extends PrimitiveArray {
     }
 
 
+
     /**
      * This tests the methods of this class.
      *
@@ -2280,8 +2281,7 @@ public class StringArray extends PrimitiveArray {
         //fromCSVNoBlanks
         anArray  = fromCSVNoBlanks(", b, ,d,,");
         Test.ensureEqual(anArray.toString(), "b, d", "");
-
-        
+       
     }
 
 }

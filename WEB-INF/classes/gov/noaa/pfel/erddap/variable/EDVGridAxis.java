@@ -6,6 +6,7 @@ package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.IntArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.Math2;
@@ -25,7 +26,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 public class EDVGridAxis extends EDV { 
 
     protected PrimitiveArray sourceValues;
-    protected boolean isAscending = false;
+    protected boolean isAscending = false;  //for the sourceValues (dest may be flipped)
     protected boolean isEvenlySpaced = false;
     protected double averageSpacing = Double.NaN;
     /** The destination coarse minimum and maximum values (in standardized destination units) 
@@ -219,11 +220,31 @@ public class EDVGridAxis extends EDV {
     }
 
     /**
+     * This returns one of this axis' source values as a nice String destination value. 
+     * For most EDVGridAxis, this returns destinationValues (which equal
+     * the String destination values). The Time subclass overrides this.
+     */
+    public String destinationString(int which) {
+        if (scaleAddOffset) {
+            double d = sourceValues.getNiceDouble(which) * scaleFactor + addOffset;
+            if (destinationDataTypeClass == double.class)
+                return "" + d;
+            if (destinationDataTypeClass == float.class)
+                return "" + Math2.doubleToFloatNaN(d);
+            //int type
+            return "" + Math2.roundToInt(d);
+        } else {
+            return sourceValues.getString(which);
+        }
+    }
+
+    /**
      * This returns the PrimitiveArray with the destination values for this axis
      * which will return nice Strings if you call pa.getString(i). 
      * Don't change these values.
      * For most EDVGridAxis, this returns destinationValues (which equal
      * the String destination values). The Time subclass overrides this.
+     * !!!For time, if lots of values (e.g., 10^6), this is SLOW (e.g., 30 seconds)!!!
      */
     public PrimitiveArray destinationStringValues() {return destinationValues();}
 
@@ -236,107 +257,83 @@ public class EDVGridAxis extends EDV {
      * <b>If the values range from high to low, this returns a high to low list.
      */
     public String sliderCsvValues() throws Throwable {
-        if (sliderCsvValues != null) 
-            return String2.utf8ToString(sliderCsvValues);
+        byte bar[] = sliderCsvValues;  //local pointer to avoid concurrency problems
+        if (bar != null) 
+            return String2.utf8ToString(bar);
         
-        //one time: generate the sliderCsvValues   since time and memory intensive
+        //one time: generate the sliderCsvValues  
         try {
-            PrimitiveArray destStrings = destinationStringValues();
-            int nValues = destStrings.size();
-            int start = 0;
-            int stride = 1;
+            long eTime = System.currentTimeMillis();
+            int nSourceValues = sourceValues.size();
             boolean isTime = this instanceof EDVTimeGridAxis;
+            IntArray sliderIndices = new IntArray();
+            sliderIndices.add(0);  //add first index
 
-            if (nValues <= SLIDER_MAX_NVALUES) {
-                //use start=0 and stride=1
+            if (nSourceValues <= SLIDER_MAX_NVALUES) { 
+                for (int i = 1; i < nSourceValues; i++)
+                    sliderIndices.add(i);
+
+            } else if (isTime) {
+                //make evenly spaced nice numbers (like EDV.sliderCsvValues()), 
+                //  then find closest actual values.
+                //Dealing with indices (later sorted) works regardless of isAscending.
+                double values[] = Calendar2.getNEvenlySpaced(destinationMin, 
+                    destinationMax, SLIDER_MAX_NVALUES);
+                for (int i = 0; i < values.length; i++) 
+                    sliderIndices.add(destinationToClosestSourceIndex(values[i]));
+
+                //add last index
+                sliderIndices.add(nSourceValues - 1);  
+
             } else {
-                //need to find a subset
-                //find base with nice round number
-                int base = 0;
-                //spans 0?
-                if (destinationMin <= 0 && destinationMax >= 0) {
-                    base = destinationToClosestSourceIndex(0);
-                } else if (isTime) {
-                    //time strings are all of same length
-                } else {
-                    //look for shortest string in first 50 values
-                    int shortestLength = toSliderString(destStrings.getString(0), isTime).length();
-                    for (int i = 1; i < 50; i++) { //if nValues <= 50, then it was handled above
-                        int tLength = toSliderString(destStrings.getString(i), isTime).length();
-                        if (tLength < shortestLength) { //not <=, look for improvement
-                            base = i;
-                            shortestLength = tLength;
-                        }
-                    }
-                }
+                //make evenly spaced nice numbers (like EDV.sliderCsvValues()), 
+                //  then find closest actual values.
+                //Work from destMin to destMax.  
+                //  Dealing with indices (later sorted) works regardless of isAscending.
+                double stride = Math2.suggestMaxDivisions(destinationMax - destinationMin,
+                    SLIDER_MAX_NVALUES);    
+                int nDiv = Math2.roundToInt(Math.abs((destinationMax - destinationMin) / stride));
+                double base = Math.floor(destinationMin / stride) * stride;
+                for (int i = 0; i < nDiv; i++) 
+                    sliderIndices.add(destinationToClosestSourceIndex(base + i * stride));
 
-                //figure out a good stride to give <=SLIDER_MAX_NVALUES values
-                stride = Math2.hiDiv(nValues, SLIDER_MAX_NVALUES);
-                int shortestLength = toSliderString(destStrings.getString(base + stride), isTime).length();
-                int oStride2 = 2 * stride;
-
-                //make stride bigger (up to oStride2) to catch shorter strings?
-                for (int tStride = stride; tStride < oStride2; tStride++) { 
-                    int i = base + tStride;
-                    if (i >= destStrings.size()) break;
-                    int tLength = toSliderString(destStrings.getString(i), isTime).length();
-                    if (tLength < shortestLength) {  //not <=, look for improvement
-                        stride = tStride;
-                        shortestLength = tLength;
-                    }
-                }
-
-                //next best: check 2*stride (and fall back to stride)
-                for (int tStride = stride; tStride < oStride2; tStride++) { 
-                    int i = base + 2*tStride;
-                    if (i >= destStrings.size()) break;
-                    int tLength = toSliderString(destStrings.getString(i), isTime).length();
-                    if (tLength < shortestLength) {  //not <=, look for improvement
-                        stride = tStride;
-                        shortestLength = tLength;
-                    }
-                }
-
-                //work back to start
-                start = base % stride;
+                //add last index
+                sliderIndices.add(nSourceValues - 1);  
             }
 
-            //gather the values
+            //sort and remove duplicates
+            //sorting indices means: if axis is high->low, values will be in that order
+            sliderIndices.sort();
+            sliderIndices.removeDuplicates();
+
+            //convert to csv string
+            int nValues = sliderIndices.size();
             StringBuilder sb = new StringBuilder();
-            String s;
-            int count = 0;
-            //include the first value if start!=0
-            if (start != 0) {
-                sb.append(toSliderString(destStrings.getString(0), isTime));
-                count++;
-            }
-            while (start < nValues) {
-                if (sb.length() > 0)
-                    sb.append(", ");
-                sb.append(toSliderString(destStrings.getString(start), isTime));
-                start += stride;
-                count++;
-            }
-            //include the last value (if not done already)
-            if (start - stride != nValues - 1) { 
-                if (sb.length() > 0)
-                    sb.append(", ");
-                sb.append(toSliderString(destStrings.getString(nValues - 1), isTime));
-                count++;
+            for (int i = 0; i < nValues; i++) {
+                if (i > 0) sb.append(", ");
+                sb.append(toSliderString(destinationString(sliderIndices.get(i)), isTime));
             }
 
             //store in compact utf8 format
             String csv = sb.toString();
-            sliderCsvValues = String2.getUTF8Bytes(csv);
-            if (reallyVerbose) String2.log("EDVGridAxis.sliderCsvValues nValues=" + nValues + 
-                " start=" + start + " stride=" + stride + " nValues=" + count);
-            sliderNCsvValues = count; //do last       
+            //String2.log(">>EDVGridAxis.sliderCsvValues nSourceValues=" + 
+            //    nSourceValues + " nSliderValues=" + nValues + 
+            //    " time=" + (System.currentTimeMillis() - eTime));
+            sliderCsvValues = String2.getUTF8Bytes(csv); //do last
             return csv;
         } catch (Throwable t) {
             EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
             String2.log(MustBe.throwableToString(t));
             return null;
         }
+    }
+
+    /**
+     * This sets sliderCsvValues to null so it will be recreated the next time it is needed.
+     * 
+     */
+    public void clearSliderCsvValues() {
+        sliderCsvValues = null;
     }
 
     /**
@@ -445,6 +442,16 @@ public class EDVGridAxis extends EDV {
     public boolean isEvenlySpaced() {return isEvenlySpaced;}
 
     /** 
+     * This sets isEvenlySpaced.
+     *
+     * @return If there are 2 or more values and the values are evenly spaced, 
+     * this returns true; else it returns false.
+     */
+    public void setIsEvenlySpaced(boolean tIsEvenlySpaced) {
+        isEvenlySpaced = tIsEvenlySpaced;
+    }
+
+    /** 
      * If there are 2 or more values, this returns the average spacing between values 
      * (will be negative if axis is descending!).
      * If isEvenlySpaced, then these are evenly spaced.
@@ -520,6 +527,5 @@ public class EDVGridAxis extends EDV {
             return sourceValues.binaryFindClosest(sourceD);
         return sourceValues.linearFindClosest(sourceD);
     }
-
 
 }

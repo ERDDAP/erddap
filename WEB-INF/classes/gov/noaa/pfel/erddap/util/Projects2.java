@@ -223,7 +223,7 @@ public class Projects2  {
                 //try EDDGrid
                 String s = EDDGridFromDap.generateDatasetsXml(false, 
                     servers[serv] + datasetID, 
-                    null, null, null, 10080, new Attributes());
+                    null, null, null, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES, new Attributes());
 
                 int aaPo = s.indexOf("<addAttributes>", 0);
                 if (aaPo < 0) {

@@ -446,11 +446,13 @@ public class EDDTableFromOBIS extends EDDTable{
             null, null, "double",
             Double.isNaN(tLatMin)? -90 : tLatMin, 
             Double.isNaN(tLatMax)?  90 : tLatMax);
-        altIndex = 2;
-        dataVariables[altIndex] = new EDVAlt("darwin:MinimumDepth",
-            (new Attributes())
-                .add("comment", "Created from the darwin:MinimumDepth variable."), 
-            null, "double", -tAltMin, -tAltMax, -1);
+        altIndex = 2;  depthIndex = -1;  //2012-12-20 consider using depth, not altitude!!!
+        Attributes altAtts = new Attributes();
+        altAtts.add("comment", "Created from the darwin:MinimumDepth variable.");
+        altAtts.add("scale_factor", -1.0);
+        altAtts.add("units", "m");
+        dataVariables[altIndex] = new EDVAlt("darwin:MinimumDepth", altAtts,
+            null, "double", -tAltMin, -tAltMax);
         timeIndex = 3;
         dataVariables[timeIndex] = new EDVTime("TIME",
             (new Attributes())
@@ -561,7 +563,7 @@ public class EDDTableFromOBIS extends EDDTable{
         StringArray constraintValues    = new StringArray();
         getSourceQueryFromDapQuery(userDapQuery,
             resultsVariables,
-            constraintVariables, constraintOps, constraintValues);
+            constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
 
 
         //special case: 1 variable, no constraints, &distinct()
@@ -597,7 +599,7 @@ public class EDDTableFromOBIS extends EDDTable{
             String constraintVariable = constraintVariables.get(c);
             int dv = String2.indexOf(dataVariableSourceNames(), constraintVariable);
             EDV edv = dataVariables[dv];
-            if (dv == timeIndex || dv == 4) {
+            if (edv instanceof EDVTimeStamp || dv == 4) {
                 //remove time and ID constraints
                 constraintVariables.remove(c);
                 constraintOps.remove(c);
@@ -705,7 +707,7 @@ public class EDDTableFromOBIS extends EDDTable{
         if (externalAddGlobalAttributes.getString("title") == null)
             externalAddGlobalAttributes.add(      "title", tTitle);
 
-        //add global attributes in the axisAddTable
+        //add global attributes in the dataAddTable
         Attributes addAtts = makeReadyToUseAddGlobalAttributesForDatasetsXml(
             new Attributes(), 
             //another cdm_data_type could be better; this is ok
@@ -754,14 +756,14 @@ directionsForGenerateDatasetsXml() +
         try {
             results = generateDatasetsXml(
                 "http://iobis.marine.rutgers.edu/digir2/DiGIR.php", 
-                "OBIS-SEAMAP", 10080, "dhyrenbach@duke.edu",
+                "OBIS-SEAMAP", DEFAULT_RELOAD_EVERY_N_MINUTES, "dhyrenbach@duke.edu",
                 null);
 
             //GenerateDatasetsXml
             GenerateDatasetsXml.doIt(new String[]{"-verbose", 
                 "EDDTableFromOBIS",
                 "http://iobis.marine.rutgers.edu/digir2/DiGIR.php", 
-                "OBIS-SEAMAP", "10080", "dhyrenbach@duke.edu"},
+                "OBIS-SEAMAP", "" + DEFAULT_RELOAD_EVERY_N_MINUTES, "dhyrenbach@duke.edu"},
                 false); //doIt loop?
             String gdxResults = String2.getClipboardString();
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
@@ -787,7 +789,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_url\">http://iobis.marine.rutgers.edu/digir2/DiGIR.php</att>\n" +
 "        <att name=\"infoUrl\">http://iobis.marine.rutgers.edu/digir2/DiGIR.php</att>\n" +
 "        <att name=\"institution\">DUKE</att>\n" +
-"        <att name=\"keywords\">data, duke, from, obis, obis-seamap, rutgers, seamap, server</att>\n" +
+"        <att name=\"keywords\">data, duke, obis, obis-seamap, rutgers, seamap, server</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +

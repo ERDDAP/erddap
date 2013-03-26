@@ -91,11 +91,10 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
     public EDDTableFromTaoFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        int tColumnNamesRow, int tFirstDataRow,
+        String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
@@ -104,10 +103,10 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
 
         super("EDDTableFromTaoFiles", true, tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File,
-            tAddGlobalAttributes, tAltMetersPerSourceUnit, 
+            tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
-            tColumnNamesRow, tFirstDataRow,
+            tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
             tSourceNeedsExpandedFP_EQ);
@@ -211,7 +210,7 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
     }
 
     /**
-     * This to updates all TAO datasets: it gets recent data from the TAO website
+     * This updates all TAO datasets: it gets recent data from the TAO website
      * and uses it to update existing TAO files.
      *
      * @param fileBaseDirectory (e.g., f:/data/tao/tao/) to which is added (e.g., daily/adcp/)
@@ -234,7 +233,7 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
     }
 
     /**
-     * This to updates one TAO dataset: it gets recent data from the TAO website
+     * This updates one TAO dataset: it gets recent data from the TAO website
      * and uses it to update existing TAO files.
      * This mimics form at http://www.pmel.noaa.gov/tao/data_deliv/deliv-nojava.html.
      *
@@ -796,13 +795,22 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
         results = new String((new ByteArray(
             EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
-        expected = 
+        expected =   //2013-01-04 several changes related to new array and wmo_platform_code
 "Attributes {\n" +
 " s {\n" +
+"  array {\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"Array\";\n" +
+"  }\n" +
 "  station {\n" +
 "    String cf_role \"timeseries_id\";\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Station\";\n" +
+"  }\n" +
+"  wmo_platform_code {\n" +
+"    Int32 actual_range 0, 56055;\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"WMO Platform Code\";\n" +
 "  }\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
@@ -830,7 +838,7 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +            
-"    Float64 actual_range 2.476656e+8, 1.3538448e+9;\n" + //range changes daily   
+"    Float64 actual_range 2.476656e+8, 1.3642128e+9;\n" + //range changes daily   
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Centered Time\";\n" +
@@ -903,9 +911,9 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
 " }\n" +
 "  NC_GLOBAL {\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
-"    String cdm_timeseries_variables \"station, longitude, latitude\";\n" +
+"    String cdm_timeseries_variables \"array, station, wmo_platform_code, longitude, latitude\";\n" +
 "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    String CREATION_DATE \"07:11  2-NOV-2012\";\n" +  //changes monthly
+"    String CREATION_DATE \"07:08  6-FEB-2013\";\n" +  //changes monthly
 "    String creator_email \"Dai.C.McClurg@noaa.gov\";\n" +
 "    String creator_name \"Dai. C. McClurg\";\n" +
 "    String creator_url \"http://www.pmel.noaa.gov/tao/proj_over/proj_over.html\";\n" +
@@ -919,8 +927,12 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max 350.0;\n" +
 "    Float64 geospatial_lon_min 0.0;\n" +
-"    String geospatial_lon_units \"degrees_east\";\n" +  //date on line below changes monthly
-"    String history \"2012-11-02 Most recent downloading and reformatting of all cdf/sites/... files from PMEL TAO's FTP site by bob.simons at noaa.gov.\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +  
+"    Float64 geospatial_vertical_max -3.0;\n" +
+"    Float64 geospatial_vertical_min -8.0;\n" +
+"    String geospatial_vertical_positive \"down\";\n" +
+"    String geospatial_vertical_units \"m\";\n" + //date on line below changes monthly
+"    String history \"2013-02-06 Most recent downloading and reformatting of all cdf/sites/... files from PMEL TAO's FTP site by bob.simons at noaa.gov.\n" +
 "Since then, recent data has been updated every day.\n" +
 today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
@@ -944,19 +956,20 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    Float64 Northernmost_Northing 21.0;\n" +
+"    Float64 Northernmost_Northing 21.0;\n" + 
 "    String project \"TAO/TRITON, RAMA, PIRATA\";\n" +
+"    String Request_for_acknowledgement \"If you use these data in publications or presentations, please acknowledge the TAO Project Office of NOAA/PMEL. Also, we would appreciate receiving a preprint and/or reprint of publications utilizing the data for inclusion in our bibliography. Relevant publications should be sent to: TAO Project Office, NOAA/Pacific Marine Environmental Laboratory, 7600 Sand Point Way NE, Seattle, WA 98115\";\n" +
 "    String sourceUrl \"(local files)\";\n" +
 "    Float64 Southernmost_Northing -25.0;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
-"    String subsetVariables \"station, longitude, latitude\";\n" +
+"    String subsetVariables \"array, station, wmo_platform_code, longitude, latitude\";\n" +
 "    String summary \"This dataset has daily Air Temperature data from the\n" +
 "TAO/TRITON (Pacific Ocean, http://www.pmel.noaa.gov/tao/),\n" +
 "RAMA (Indian Ocean, http://www.pmel.noaa.gov/tao/rama/), and\n" +
 "PIRATA (Atlantic Ocean, http://www.pmel.noaa.gov/pirata/)\n" +
 "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\n" +
 "http://www.pmel.noaa.gov/tao/proj_over/proj_over.html .\";\n" +
-"    String time_coverage_end \"2012-11-25T12:00:00Z\";\n" +  //changes daily
+"    String time_coverage_end \"2013-03-25T12:00:00Z\";\n" +  //changes daily
 "    String time_coverage_start \"1977-11-06T12:00:00Z\";\n" + //before 2012-03-20 was 1980-03-07T12:00:00
 "    String title \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Air Temperature\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
@@ -977,7 +990,9 @@ expected =
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
+"    String array;\n" +
 "    String station;\n" +
+"    Int32 wmo_platform_code;\n" +
 "    Float32 longitude;\n" +
 "    Float32 latitude;\n" +
 "    Float64 time;\n" +
@@ -1347,19 +1362,19 @@ before 2012-03-20 was ...
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"station,longitude,latitude,time,depth,AT_21,QAT_5021,SAT_6021\n" +
-",degrees_east,degrees_north,UTC,m,degree_C,,\n" +
-"2s180w,180.0,-2.0,2011-07-14T12:00:00Z,-3.0,28.34,2,5\n" +
-"2s180w,180.0,-2.0,2011-07-15T12:00:00Z,-3.0,28.53,2,5\n" +
-"2s180w,180.0,-2.0,2011-07-16T12:00:00Z,-3.0,27.84,2,5\n" +
-"2s180w,180.0,-2.0,2011-07-17T12:00:00Z,-3.0,28.3,2,5\n" +
-"2s180w,180.0,-2.0,2011-07-18T12:00:00Z,-3.0,28.43,2,5\n" +
-"2s180w,180.0,-2.0,2011-07-19T12:00:00Z,-3.0,28.21,2,5\n" +
-"2s180w,180.0,-2.0,2011-07-20T12:00:00Z,-3.0,28.41,2,5\n" +
-"2s180w,180.0,-2.0,2011-07-21T12:00:00Z,-3.0,28.38,2,5\n" +
-"2s180w,180.0,-2.0,2011-07-22T12:00:00Z,-3.0,28.06,2,5\n" +
-"2s180w,180.0,-2.0,2011-07-23T12:00:00Z,-3.0,28.02,2,5\n" +
-"2s180w,180.0,-2.0,2011-07-24T12:00:00Z,-3.0,28.31,2,5\n";
+"array,station,wmo_platform_code,longitude,latitude,time,depth,AT_21,QAT_5021,SAT_6021\n" +
+",,,degrees_east,degrees_north,UTC,m,degree_C,,\n" +
+"TAO/TRITON,2s180w,52312,180.0,-2.0,2011-07-14T12:00:00Z,-3.0,28.34,1,5\n" +
+"TAO/TRITON,2s180w,52312,180.0,-2.0,2011-07-15T12:00:00Z,-3.0,28.53,1,5\n" +
+"TAO/TRITON,2s180w,52312,180.0,-2.0,2011-07-16T12:00:00Z,-3.0,27.84,1,5\n" +
+"TAO/TRITON,2s180w,52312,180.0,-2.0,2011-07-17T12:00:00Z,-3.0,28.3,1,5\n" +
+"TAO/TRITON,2s180w,52312,180.0,-2.0,2011-07-18T12:00:00Z,-3.0,28.43,1,5\n" +
+"TAO/TRITON,2s180w,52312,180.0,-2.0,2011-07-19T12:00:00Z,-3.0,28.21,1,5\n" +
+"TAO/TRITON,2s180w,52312,180.0,-2.0,2011-07-20T12:00:00Z,-3.0,28.41,1,5\n" +
+"TAO/TRITON,2s180w,52312,180.0,-2.0,2011-07-21T12:00:00Z,-3.0,28.38,1,5\n" +
+"TAO/TRITON,2s180w,52312,180.0,-2.0,2011-07-22T12:00:00Z,-3.0,28.06,1,5\n" +
+"TAO/TRITON,2s180w,52312,180.0,-2.0,2011-07-23T12:00:00Z,-3.0,28.02,1,5\n" +
+"TAO/TRITON,2s180w,52312,180.0,-2.0,2011-07-24T12:00:00Z,-3.0,28.31,1,5\n";
 
         Test.ensureEqual(results.substring(0, expected.length()), expected, 
             "\nresults=\n" + results);

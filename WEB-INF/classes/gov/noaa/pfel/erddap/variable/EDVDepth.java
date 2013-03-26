@@ -1,5 +1,5 @@
 /* 
- * EDVAlt Copyright 2007, NOAA.
+ * EDVDepth Copyright 2012, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
 package gov.noaa.pfel.erddap.variable;
@@ -7,29 +7,25 @@ package gov.noaa.pfel.erddap.variable;
 import com.cohort.array.Attributes;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.util.Math2;
-import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 
 /** 
- * This class holds information about an altitude variable, 
+ * This class holds information about a depth variable, 
  * which is like EDV, but the destinationName, long_name, and units
  * are standardized, and you need to specify scale_factor to 
- * convert source altitude/depth values to meters above sea level in the results.
+ * convert source altitude/depth values to meters below sea level in the results.
  *
  * @author Bob Simons (bob.simons@noaa.gov) 2007-06-04
  */
-public class EDVAlt extends EDV { 
+public class EDVDepth extends EDV { 
 
-    public static String stopUsingAltitudeMetersPerSourceUnit =
-        "Please stop using <altitudeMetersPerSourceUnit>.  " +
-        "When the value is 1, just delete it.  " +
-        "For other values, set the altitude variable's <scale_factor> instead.";
 
     /**
      * The constructor -- like EDV, but the destinationName, long_name, and units
-     * are standardized.
+     * are standardized, and you need to specify scale_factor to 
+     * convert source altitude/depth values to meters below sea level in the results.
      *
      * @param tSourceMin  is pre-scale_factor and add_offset.
      *   This takes precedence over actual_range, data_min, or data_max metadata.
@@ -37,27 +33,27 @@ public class EDVAlt extends EDV {
      *   This takes precedence over actual_range, data_min, or data_max metadata.
      * @throws Throwable if trouble
      */
-    public EDVAlt(String tSourceName, 
+    public EDVDepth(String tSourceName, 
         Attributes tSourceAttributes, Attributes tAddAttributes, 
         String tSourceDataType, double tSourceMin, double tSourceMax) 
         throws Throwable {
 
-        super(tSourceName, EDV.ALT_NAME, tSourceAttributes, tAddAttributes,
+        super(tSourceName, EDV.DEPTH_NAME, tSourceAttributes, tAddAttributes,
             tSourceDataType, tSourceMin, tSourceMax); 
 
-        units = EDV.ALT_UNITS; 
+        units = EDV.DEPTH_UNITS; 
         combinedAttributes.set("_CoordinateAxisType", "Height");   //unidata
-        combinedAttributes.set("_CoordinateZisPositive", "up");  //unidata
+        combinedAttributes.set("_CoordinateZisPositive", "down");  //unidata
         combinedAttributes.set("axis", "Z");
         combinedAttributes.set("ioos_category", LOCATION_CATEGORY);
         longName = combinedAttributes.getString("long_name");
         if (longName == null) {
-            longName = EDV.ALT_LONGNAME;
+            longName = EDV.DEPTH_LONGNAME;
             combinedAttributes.set("long_name", longName);
         }
-        combinedAttributes.set("positive", "up"); //cf
-        combinedAttributes.set("standard_name", ALT_STANDARD_NAME);
-        ensureUnitsAreM(combinedAttributes.getString("units"), "altitude" , "up");
+        combinedAttributes.set("positive", "down"); //cf
+        combinedAttributes.set("standard_name", DEPTH_STANDARD_NAME);
+        EDVAlt.ensureUnitsAreM(combinedAttributes.getString("units"), "depth" , "down");
         combinedAttributes.set("units", units);        
 
         //set destinationMin max  if not set by tSourceMin,Max
@@ -69,8 +65,6 @@ public class EDVAlt extends EDV {
         }
         setActualRangeFromDestinationMinMax();
 
-        //destinationMissingValue and destinationFillValue have already been 
-        //adjusted for scaleAddOffset (including destinationDataType)
         PrimitiveArray pa = combinedAttributes.get("missing_value"); 
         if (pa != null) 
             pa.setDouble(0, destinationMissingValue);
@@ -80,30 +74,6 @@ public class EDVAlt extends EDV {
 
     }
 
-
-    /**
-     * This ensures that cUnits is "m" (or an alias) or throws a SimpleException.
-     * 
-     * @param cUnits units from combinedAttributes (may be null)
-     * @param altitudeDepth "altitude" or "depth" for the message
-     * @param upDown "up" or "down" for the message.
-     * @throws a SimpleException if cUnits isn't "m" or an alias.
-     */
-    public static void ensureUnitsAreM(String cUnits, String altitudeDepth, String upDown) {
-        if (cUnits != null &&
-            (cUnits.equals("m") || 
-             cUnits.equals("meter") || cUnits.equals("meters") || 
-             cUnits.equals("metre") || cUnits.equals("metres"))) 
-            return;
-
-        throw new SimpleException(
-            "When a variable's destinationName is \"" + altitudeDepth + "\", " +
-            "the sourceAttributes or addAttributes \"units\" MUST be \"m\" (not \"" + cUnits + "\").\n" +
-            "If needed, use \"scale_factor\" to convert the source values to meters (positive=" + upDown + "),\n" +
-            "use a different destinationName for this variable.");
-    }
-
-
     /**
      * This returns a string representation of this EDV.
      *
@@ -111,7 +81,7 @@ public class EDVAlt extends EDV {
      * @return a string representation of this EDV.
      */
     public String toString() {
-        return "EDVAlt/" + super.toString(); 
+        return "EDVDepth/" + super.toString(); 
     }
 
     /**
@@ -122,7 +92,9 @@ public class EDVAlt extends EDV {
      */
     public void ensureValid(String errorInMethod) throws Throwable {
         super.ensureValid(errorInMethod);
-        errorInMethod += "\ndatasets.xml/EDVAlt.ensureValid error for soureName=" + sourceName + ":\n";
+        errorInMethod += "\ndatasets.xml/EDVDepth.ensureValid error for soureName=" + sourceName + ":\n";
     }
+
+
 
 }

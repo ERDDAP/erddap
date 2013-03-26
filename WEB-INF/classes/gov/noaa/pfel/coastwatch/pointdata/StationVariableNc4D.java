@@ -32,6 +32,7 @@ import java.util.List;
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
  * and copy it to <context>/WEB-INF/lib.
+ * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
  * Put both of these .jar files in the classpath for the compiler and for Java.
  */
 import ucar.nc2.*;

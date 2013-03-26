@@ -1355,6 +1355,7 @@ public class Table  {
      * @param showFirstNRows  use Integer.MAX_VALUE for all rows.
      */
     public String dataToCSVString(int showFirstNRows, boolean showRowNumber) {
+        ensureValid();
         if (showFirstNRows < 0) 
             return "";
         StringBuilder sb = new StringBuilder();
@@ -1823,12 +1824,14 @@ public class Table  {
      */
     public void ensureValid() {
 
-        //check that all columns have the same nRows
-        int nRows = nRows();
-        for (int col = 0; col < nColumns(); col++)
+        //check that all columns have the same size
+        int nRows = nRows();  //from column[0]
+        for (int col = 1; col < nColumns(); col++)
             if (getColumn(col).size() != nRows)
-                throw new SimpleException("getColumn(" + col + ").size");
-
+                throw new SimpleException(
+                    "Invalid Table: " +
+                    "column[" + col + "=" + getColumnName(col) + "].size=" + getColumn(col).size() +
+                    " != column[0=" + getColumnName(0) + "].size=" + nRows);
     }
 
     /**
@@ -1939,7 +1942,6 @@ public class Table  {
                             Test.ensureEqual(array1.getDouble(row), array2.getDouble(row), 
                                 errorInMethod + "data(col=" + col + ", row=" + row + ").");
                     }
-
                 }
             }
 
@@ -1976,6 +1978,14 @@ public class Table  {
         leftToRightSort(1);
     }
 
+    /** This also reads from a file, but uses the ISO-8859-1 charset. */
+    public void readASCII(String fullFileName, int columnNamesLine, int dataStartLine,
+        String testColumns[], double testMin[], double testMax[], 
+        String loadColumns[], boolean simplify) {
+
+        readASCII(fullFileName, "ISO-8859-1", columnNamesLine, dataStartLine,
+            testColumns, testMin, testMax, loadColumns, simplify);
+    }
 
     /**
      * This reads data from an ASCII file.
@@ -1984,6 +1994,7 @@ public class Table  {
      * <br>This does simplify the columns.
      *
      * @param fullFileName
+     * @param charset  e.g., ISO-8859-1 (used if charset is null or "") or UTF-8.
      * @param columnNamesLine (0.., or -1 if no names)
      * @param dataStartLine (0..)
      * @param testColumns the names of the columns to be tested (null = no tests).
@@ -1998,11 +2009,11 @@ public class Table  {
      * @param simplify
      * @throws Exception if trouble
      */
-    public void readASCII(String fullFileName, int columnNamesLine, int dataStartLine,
-        String testColumns[], double testMin[], double testMax[], 
+    public void readASCII(String fullFileName, String charset, int columnNamesLine, 
+        int dataStartLine, String testColumns[], double testMin[], double testMax[], 
         String loadColumns[], boolean simplify) {
 
-        String sar[] = String2.readFromFile(fullFileName, null, 2);
+        String sar[] = String2.readFromFile(fullFileName, charset, 2);
         Test.ensureEqual(sar[0].length(), 0, sar[0]); //check that there was no error
         //String2.log(String2.annotatedString(sar[1]));
         readASCII(fullFileName, String2.splitNoTrim(sar[1], '\n'), columnNamesLine, dataStartLine,
@@ -2032,6 +2043,7 @@ public class Table  {
         readASCII(fullFileName, columnNamesLine, dataStartLine,
             null, null, null, null, true);
     }
+
 
     /** Another variant. 
      * This uses columnNamesLine=0, dataStartLine=1, simplify=true.
@@ -2939,6 +2951,32 @@ public class Table  {
             rowElementAttributes);
         xr.parse(new InputSource(xml));
 
+        //split gml:Point into gml:PointLat gml:pointLon
+        //  <gml:Point>
+        //    <gml:pos>38.796918000000062 -81.81363499999992</gml:pos>
+        //  </gml:Point>
+        //see http://en.wikipedia.org/wiki/Geography_Markup_Language#Coordinates
+        int nr = nRows();
+        String try1 = "/gml:Point/gml:pos";          //space separated
+        String try2 = "/gml:Point/gml:coordinates";  //comma separated
+        for (int col = nColumns() - 1; col >= 0; col--) {
+            String colName = getColumnName(col);
+            String match = colName.endsWith(try1)? try1 : 
+                           colName.endsWith(try2)? try2 : null;
+            if (match != null) {
+                StringArray lat = (StringArray)getColumn(col);
+                StringArray lon = new StringArray(nr, false);
+                for (int row = 0; row < nr; row++) {
+                    StringArray tsa = StringArray.wordsAndQuotedPhrases(lat.get(row));
+                    lat.set(row, tsa.size() >= 1? tsa.get(0) : "");
+                    lon.add(     tsa.size() >= 2? tsa.get(1) : "");
+                }
+                colName = colName.substring(0, colName.length() - (match.length() - 11)); //after 2nd / of match
+                addColumn(col + 1, colName + "longitude", lon, new Attributes());
+                setColumnName(col, colName + "latitude");
+            }
+        }           
+
         //simplify the columns
         if (simplify) 
             simplify();
@@ -2954,9 +2992,59 @@ public class Table  {
     public static void testXml() throws Exception {
         verbose = true;
         reallyVerbose = true;
+        Table table = null;
+        String xml, results, expected;
 
+        //*** WFS
+        table = new Table();
+        table.readXml(new BufferedReader(new FileReader(
+            "c:/programs/mapserver/WVBoreholeResponsePretty.xml")), 
+            false, //no validate since no .dtd
+            "/wfs:FeatureCollection/gml:featureMember",
+            null, false);  //row attributes,  simplify
+        results = table.dataToCSVString(3);
+        expected = 
+"row,aasg:BoreholeTemperature/aasg:OBJECTID,aasg:BoreholeTemperature/aasg:ObservationURI,aasg:BoreholeTemperature/aasg:WellName,aasg:Bo" +
+"reholeTemperature/aasg:APINo,aasg:BoreholeTemperature/aasg:HeaderURI,aasg:BoreholeTemperature/aasg:Label,aasg:BoreholeTemperature/aasg" +
+":Operator,aasg:BoreholeTemperature/aasg:SpudDate,aasg:BoreholeTemperature/aasg:EndedDrillingDate,aasg:BoreholeTemperature/aasg:WellTyp" +
+"e,aasg:BoreholeTemperature/aasg:Status,aasg:BoreholeTemperature/aasg:CommodityOfInterest,aasg:BoreholeTemperature/aasg:Function,aasg:B" +
+"oreholeTemperature/aasg:Production,aasg:BoreholeTemperature/aasg:ProducingInterval,aasg:BoreholeTemperature/aasg:Field,aasg:BoreholeTe" +
+"mperature/aasg:County,aasg:BoreholeTemperature/aasg:State,aasg:BoreholeTemperature/aasg:LatDegree,aasg:BoreholeTemperature/aasg:LongDe" +
+"gree,aasg:BoreholeTemperature/aasg:SRS,aasg:BoreholeTemperature/aasg:LocationUncertaintyStatement,aasg:BoreholeTemperature/aasg:Drille" +
+"rTotalDepth,aasg:BoreholeTemperature/aasg:DepthReferencePoint,aasg:BoreholeTemperature/aasg:LengthUnits,aasg:BoreholeTemperature/aasg:" +
+"WellBoreShape,aasg:BoreholeTemperature/aasg:TrueVerticalDepth,aasg:BoreholeTemperature/aasg:ElevationGL,aasg:BoreholeTemperature/aasg:" +
+"FormationTD,aasg:BoreholeTemperature/aasg:MeasuredTemperature,aasg:BoreholeTemperature/aasg:TemperatureUnits,aasg:BoreholeTemperature/" +
+"aasg:MeasurementProcedure,aasg:BoreholeTemperature/aasg:DepthOfMeasurement,aasg:BoreholeTemperature/aasg:MeasurementFormation,aasg:Bor" +
+"eholeTemperature/aasg:MeasurementSource,aasg:BoreholeTemperature/aasg:RelatedResource,aasg:BoreholeTemperature/aasg:Shape/gml:Point/latitude" +
+",aasg:BoreholeTemperature/aasg:Shape/gml:Point/longitude,aasg:BoreholeTemperature/aasg:TimeSinceCirculation,aasg:BoreholeTemperature/aasg:Oth" +
+"erName,aasg:BoreholeTemperature/aasg:LeaseName,aasg:BoreholeTemperature/aasg:Notes\n" +
+"0,1,http://resources.usgin.org/uri-gin/wvges/bhtemp/4703501405_121/,Kaiser Exploration and Mining Co. (KEM Gas)  K Donohew,4703501405," +
+"http://resources.usgin.org/uri-gin/wvges/well/4703501405/,4703501405,Kaiser Exploration and Mining Co. (KEM Gas),1977-06-25T00:00:00,1" +
+"977-07-09T00:00:00,Gas,Missing,Missing,Missing,Missing,Missing,Providence,Jackson,West Virginia,38.796917999999998,-81.813635000000005" +
+",NAD 83,Location recorded as received from official permit application converted to NAD83 if required,4840,G.L.,ft,vertical,4840,897,H" +
+"elderberg Group,121,F,Temperature log evaluated by WVGES staff for deepest stable log segment to extract data otherwise used given bot" +
+"tom hole temperature on log header if available,4176,Java Formation,Well Temperature Log,TL," +
+"38.796918000000062,-81.81363499999992,,,,\n" +
+"1,2,http://resources.usgin.org/uri-gin/wvges/bhtemp/4703501400_97.5/,Kaiser Exploration and Mining Co. (KEM Gas)  Roger Pinnell,470350" +
+"1400,http://resources.usgin.org/uri-gin/wvges/well/4703501400/,4703501400,Kaiser Exploration and Mining Co. (KEM Gas),1977-07-12T00:00" +
+":00,1977-07-31T00:00:00,Gas,Missing,Missing,Missing,Missing,Missing,Providence,Jackson,West Virginia,38.850490999999998,-81.8098509999" +
+"99995,NAD 83,Location recorded as received from official permit application converted to NAD83 if required,4471,G.L.,ft,vertical,4471," +
+"612,Helderberg Group,97.5,F,Temperature log evaluated by WVGES staff for deepest stable log segment to extract data otherwise used giv" +
+"en bottom hole temperature on log header if available,4060,Angola:  interbedded middle unit,Well Temperature Log,TL,38.850491000000034" +
+",-81.809850999999924,,,,\n" +
+"2,3,http://resources.usgin.org/uri-gin/wvges/bhtemp/4703501411_108/,Kaiser Exploration and Mining Co. (KEM Gas)  Emma Bibbee,470350141" +
+"1,http://resources.usgin.org/uri-gin/wvges/well/4703501411/,4703501411,Kaiser Exploration and Mining Co. (KEM Gas),1977-08-19T00:00:00" +
+",1977-08-30T00:00:00,Gas,Missing,Missing,Missing,Missing,Missing,Mt Alto (Cottageville),Jackson,West Virginia,38.894705000000002,-81.7" +
+"99130000000005,NAD 83,Location recorded as received from official permit application converted to NAD83 if required,4301,G.L.,ft,verti" +
+"cal,4301,701,Onondaga Limestone,108,F,Temperature log evaluated by WVGES staff for deepest stable log segment to extract data otherwis" +
+"e used given bottom hole temperature on log header if available,4280,Marcellus Shale,Well Temperature Log,TL | GR,38.894705000000044,-" +
+"81.799129999999934,,,,\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        
+        //*** darwin core
 //Lines are commented out to test some aspects of readXml.
-String xml = 
+xml = 
 "<?xml version='1.0' encoding='utf-8' ?>\n" +
 "<response\n" +
 "  xmlns=\"http://digir.net/schema/protocol/2003/1.0\" \n" +
@@ -3001,7 +3089,7 @@ String xml =
 "</diagnostics></response>\n";
 
 //this doesn't test heirarchical elements
-        Table table = new Table();
+        table = new Table();
         table.readXml(new BufferedReader(new StringReader(xml)), 
             false, //no validate since no .dtd
             "/response/content/record", null, true);
@@ -3897,7 +3985,7 @@ Dataset {
                     writer.write(allowWrap? "<td>" : "<td nowrap>"); //no 6 spaces to left: make document smaller
                     if (col == timeColumn) {
                         double d = getDoubleData(col, row);
-                        writer.write(Calendar2.safeEpochSecondsToIsoStringT(d, "&nbsp;"));
+                        writer.write(Calendar2.safeEpochSecondsToIsoStringTZ(d, "&nbsp;"));
                     } else {
                         String s = getStringData(col, row);
                         if (needEncodingAsXml) 
@@ -5281,6 +5369,7 @@ Dataset {
      * @param conNames  the source names for the e.g., profile_id, lon, lat, time variables that
      *     will be constrained.   (Or null or size()==0 if no constraints.)
      * @param conOps  The corresponding operators.
+     *     Remember that regex constraints will be tested on the source values!
      * @param conValues  The corresponding values.
      * @throws Exception if trouble.
      *    No matching data is not an error and returns an empty table.
@@ -5309,17 +5398,17 @@ Dataset {
                     "conOps=("    + conOps + "), " +
                     "conValues=(" + conValues + ").");
             if (debug)
-                String2.log("  " + nCon + " constraints: " + conNames + " " + conOps + " " + conValues);
+                String2.log("  Debug: " + nCon + " constraints: " + conNames + " " + conOps + " " + conValues);
         } else {
             if (debug)
-                String2.log("  0 constraints");
+                String2.log("  Debug: 0 constraints");
         }
 
 
         //clear the table
         clear();
 
-        NetcdfFile ncFile = NetcdfFile.open(fullName);
+        NetcdfFile ncFile = NcHelper.openFile(fullName); 
         String readAs = null;
         try {
             /* 
@@ -5391,6 +5480,7 @@ Dataset {
                 if (verbose) String2.log("  readNcCF finished (nLevels=0, pointType)." +
                     " nRows=" + nRows() + " nCols=" + nColumns() + 
                     " time=" + (System.currentTimeMillis() - time));
+                if (debug) ensureValid();
                 return;
             }
 
@@ -5512,7 +5602,7 @@ Dataset {
                         throw new SimpleException(errorInMethod + 
                             "Invalid file: two variables (" + 
                             varNames[indexVar] + " and " + 
-                            varNames[v] + ") have a instance_dimension attribute.");
+                            varNames[v] + ") have an instance_dimension attribute.");
                     indexVar = v;
                     if (varInLoadVariables[v]) {
                         varInLoadVariables[v] = false;
@@ -5576,6 +5666,7 @@ Dataset {
 
                 //if nLevels=1, read via readNDNc
                 if (nLevels == 1) {
+                    if (debug) String2.log("  Debug: nLevels=1, outerDim==scalarDim, read via readNDNc");
                     ncFile.close();
                     ncFile = null;
                     readNDNc(fullName, loadVariableNames.toArray(), null, 0, 0, true);
@@ -5590,10 +5681,12 @@ Dataset {
                     if (verbose) String2.log("  readNcCF finished (nLevels=1, readNDNc)." +
                         " nRows=" + nRows() + " nCols=" + nColumns() + 
                         " time=" + (System.currentTimeMillis() - time));
+                    if (debug) ensureValid();
                     return;
                 }
 
                 //if nLevels == 2
+                if (debug) String2.log("  Debug: nLevels=2, outerDim==scalarDim");
                 for (int v = 0; v < nVars; v++) {
                     //first: go through the dimensions
                     for (int d = 0; d < varNDims[v]; d++) {
@@ -5619,7 +5712,7 @@ Dataset {
                 if (innerDim < 0 || outerDim < 0) 
                     throw new SimpleException(errorInMethod + 
                         "Invalid file: nLevels=2, outerDim=scalarDim, but can't find " +
-                        "variable[innerDim][obsDim].");
+                        "variable[innerDim][obsDim].  innerDim=" + innerDim + " obsDim=" + obsDim);
                 obsDimDim     = (Dimension)dimsList.get(obsDim);
                 obsDimName    = obsDimDim.getName(); 
                 obsDimSize    = obsDimDim.getLength();
@@ -5631,9 +5724,9 @@ Dataset {
 
             if (debug) {
                 if (loadVariableNamesWasEmpty) 
-                    String2.log("  loadVars (was empty): " + loadVariableNames.toString());
+                    String2.log("  Debug: loadVars (was empty): " + loadVariableNames.toString());
                 String2.log(
-                    "  nLoadVarsInFile=" + nLoadVariablesInFile + 
+                    "  Debug: nLoadVarsInFile=" + nLoadVariablesInFile + 
                     " vars: rowSize=" + (rowSizeVar < 0? "" : varNames[rowSizeVar]) + 
                     " index="    + (indexVar   < 0? "" : varNames[indexVar]) +
                     "  dims: outer=" + outerDimName + "[" + outerDimSize + "]" +
@@ -5700,14 +5793,17 @@ Dataset {
             }
 
             //*** read outerDim variables into a table: all nLevels, all featureTypes
+            if (debug) String2.log("  Debug: read outerDim variables into a table: all nLevels, all featureTypes");
             Table outerTable = new Table(); 
             int nLoadVariablesInOuterTable = 0;
             StringArray cdmOuterVars = new StringArray();
             for (int v = 0; v < nVars; v++) {
                 //normally, get just varInLoadVariables vars
                 //but if multidimensional, get ALL outerDim vars !!!
-                //String2.log("  read outerTable v=" + varNames[v] + " inLoadVars=" + varInLoadVariables[v] +
-                //    " varNDims[v]=" + varNDims[v] + " varUsesDim[v][outerDim]=" + varUsesDim[v][outerDim]);
+                //if (debug) String2.log("  Debug: read outerTable v=" + varNames[v] + 
+                //    " inLoadVars=" + varInLoadVariables[v] +
+                //    " varNDims[v]=" + varNDims[v] + 
+                //    " varUsesDim[v][outerDim]=" + varUsesDim[v][outerDim]);
                 if ((varInLoadVariables[v] || multidimensional) && 
                     varNDims[v] == 1 && varUsesDim[v][outerDim]) { //ensure correct dim
                     if (varInLoadVariables[v]) {
@@ -5761,6 +5857,7 @@ Dataset {
                     if (verbose) String2.log("  readNcCF finished (nLevels=1, outerTable vars only)." +
                         " nRows=" + nRows() + " nCols=" + nColumns() + 
                         " time=" + (System.currentTimeMillis() - time));
+                    if (debug) ensureValid();
                     return;
                 }
             } //else if no outerTable columns, all outerTable features are considered good
@@ -5769,7 +5866,7 @@ Dataset {
 
             if (debug)
                 String2.log(
-                    "  outerTable has nCols=" + outerTableNColumns + 
+                    "  Debug: outerTable has nCols=" + outerTableNColumns + 
                     " nRows=" + outerTableNRows + " nKeepRows=" + outerNGood + 
                     (outerTableNRows == 0? "" : 
                         "\n" + outerTable.dataToCSVString(5) + (outerTableNRows <= 5? "" : "..."))); 
@@ -5777,9 +5874,11 @@ Dataset {
 
             //*** read nLevels=1 obs data
             if (nLevels == 1) {
+                if (debug) String2.log("  Debug: read nLevels=1 obs data");
 
                 //request is for obs vars only (not feature data), so read all of the data 
                 if (outerTableNColumns == 0 && !multidimensional) { //and so outerKeep=null
+                    if (debug) String2.log("  Debug: obs vars only (not feature data), so read all of the data");
                     readAs = "obs vars only";
                     for (int v = 0; v < nVars; v++) {       
                         if (varInLoadVariables[v]) {
@@ -5800,6 +5899,7 @@ Dataset {
 
                     //nLevels=1 indexed ragged array
                     if (indexVar >= 0) {
+                        if (debug) String2.log("  Debug: read nLevels=1 indexed ragged");
                         readAs = "indexed ragged";
 
                         //insert the indexVar (which is the keyColumn) at col=0
@@ -5834,7 +5934,7 @@ Dataset {
 
                         indexVarPA.justKeep(obsKeep);
                         indexVarPA.trimToSize();
-                        if (debug) String2.log("  nObsRows=" + tnRows + " nObsKeep=" + indexVarPA.size());
+                        if (debug) String2.log("  Debug: nObsRows=" + tnRows + " nObsKeep=" + indexVarPA.size());
 
                         //read all of requested variable[obs]
                         //With indexed, we have to read entire var then apply obsKeep.
@@ -5850,26 +5950,77 @@ Dataset {
 
                     //nLevels=1 contiguous ragged array     //read data for keep=true features
                     } else if (rowSizeVar >= 0) {
+                        if (debug) String2.log("  Debug: nLevels=1 contiguous ragged array"); 
                         readAs = "contiguous ragged";
 
                         //read the rowSizesPA
                         PrimitiveArray rowSizesPA = NcHelper.getPrimitiveArray(vars[rowSizeVar]);
+                        int rowSizesMV = varAtts[rowSizeVar].getInt("missing_value");
+                        int rowSizesFV = varAtts[rowSizeVar].getInt("_FillValue");
+                        boolean hasMVFV = rowSizesMV != Integer.MAX_VALUE || 
+                                          rowSizesFV != Integer.MAX_VALUE;
 
                         //make keyColumn (with row#'s in outerTable) and obsKeep
                         //obsKeep Approach: optimize for situation that takes longest 
                         //  (outerKeep all true).  This is also a very simple approach.
+                        //This table is currently empty.
                         IntArray keyColumnPA = new IntArray();
                         addColumn(0, "keyColumn", keyColumnPA, new Attributes());
                         int startRow, endRow = 0; //endRow is exclusive
                         BitSet obsKeep = new BitSet(obsDimSize);  //all are false
+                        String firstRowWithMVFV = null; //Missing Value or Fill Value
+                        boolean warningWritten = false;
                         for (int outerRow = 0; outerRow < outerTableNRows; outerRow++) {
                             startRow = endRow;
                             int getNRows = rowSizesPA.getInt(outerRow);
+                            if (hasMVFV) {
+                                if (getNRows == rowSizesMV) {
+                                    //They should be 0's. Treat as 0.
+                                    if (firstRowWithMVFV == null) 
+                                        firstRowWithMVFV = 
+                                            "The rowSizes variable (" + varNames[rowSizeVar] + 
+                                            ") has a missing_value [" + outerRow + "]=" + rowSizesMV;
+                                    continue;
+                                } else if (getNRows == rowSizesFV) {
+                                    //They should be 0's. Treat as 0.
+                                    if (firstRowWithMVFV == null) 
+                                        firstRowWithMVFV = 
+                                            "The rowSizes variable (" + varNames[rowSizeVar] + 
+                                            ") has a _FillValue [" + outerRow + "]=" + rowSizesFV;
+                                    continue;
+                                } else if (firstRowWithMVFV != null) { 
+                                    //mvfv already observed and this value isn't an mv or fv!
+                                    //So the previous mvfv wasn't at the end!                                   
+                                    if (!warningWritten) {
+                                        String2.log("WARNING for contiguous ragged .nc CF file: " +
+                                            firstRowWithMVFV +
+                                            " and then a valid value [" + outerRow + "]=" + getNRows + 
+                                            "!  ERDDAP interprets missing_values and _FillValues as 0, " +
+                                            "which is what the file should have, not missing_values or _FillValues!");
+                                        warningWritten = true;
+                                    }
+                                }
+                            }
                             endRow += getNRows;
                             if (outerKeep.get(outerRow)) { //outerKeep=null handled above
                                 keyColumnPA.addNInts(getNRows, outerRow); //so obsKeep already applied
                                 obsKeep.set(startRow, endRow);
                             }
+                        }
+                        if (endRow < obsDimSize) {
+                            String2.log( 
+                                "WARNING for contiguous ragged file: " +
+                                "The sum of the values in the rowSizes variable (" + 
+                                varNames[rowSizeVar] + " sum=" + endRow + 
+                                ") is less than the size of the observationDimension (" + 
+                                obsDimName + " size=" + obsDimSize + ").\n" +
+                                "I hope that is just unused extra space for future observations!");
+                        } else if (endRow > obsDimSize) {
+                            throw new SimpleException(errorInMethod + 
+                                "Invalid contiguous ragged file: The sum of the values in the rowSizes variable (" + 
+                                varNames[rowSizeVar] + " sum=" + endRow + 
+                                ") is greater than the size of the observationDimension (" + 
+                                obsDimName + " size=" + obsDimSize + ").");
                         }
 
                         //read the keep rows of requested variable[obs]
@@ -5882,9 +6033,15 @@ Dataset {
                                 addColumn(nColumns(), varNames[v], pa, varAtts[v]);
                             }
                         }
+                        if (debug) {
+                            String2.log("  Debug: keyColumnPA.size=" + keyColumnPA.size() + 
+                                " obsKeep.cardinality=" + obsKeep.cardinality());
+                            ensureValid();
+                        }
 
                     //nLevels=1 multidimensional          //read data for keep=true features
                     } else {
+                        if (debug) String2.log("  Debug: nLevels=1 multidimensional");
                         readAs = "multidim";
 
                         //are there variables tied to just obsDim?  (essentially an innerTable)
@@ -5909,7 +6066,7 @@ Dataset {
                         int innerTableNColumns = innerTable.nColumns();
                         int innerTableNRows    = innerTable.nRows();               
                         BitSet innerKeep = null; //if null, assume all innerKeep are true
-                        if (debug) String2.log("  innerTable nLoadVarsInInner=" + 
+                        if (debug) String2.log("  Debug: innerTable nLoadVarsInInner=" + 
                             nLoadVariablesInInnerTable + " nCols=" + innerTableNColumns);
                         if (innerTableNColumns > 0) {
 
@@ -5973,6 +6130,7 @@ Dataset {
                                     ", just outerTable+innerTable vars)." + 
                                     " nRows=" + nRows() + " nCols=" + nColumns() + 
                                     " time=" + (System.currentTimeMillis() - time));
+                                if (debug) ensureValid();
                                 return;
                                 }                               
                             }
@@ -5995,9 +6153,9 @@ Dataset {
                                 obsRow++;
                             }
                         }
-                        //String2.log("  outerKeep=" + outerKeep +
-                        //          "\n  innerKeep=" + innerKeep +
-                        //          "\n  obsKeep=" + obsKeep);
+                        if (debug) String2.log("  Debug: outerKeep=" + outerKeep +
+                            "\n    innerKeep=" + innerKeep +
+                            "\n    obsKeep=" + obsKeep);
 
                         if (obsKeep.isEmpty()) {
                             if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
@@ -6010,8 +6168,8 @@ Dataset {
                         //apply obsKeep to outerKeyColumnPA and innerKeyColumnPA
                         outerKeyColumnPA.justKeep(obsKeep);  outerKeyColumnPA.trimToSize();
                         innerKeyColumnPA.justKeep(obsKeep);  innerKeyColumnPA.trimToSize();
-                        //String2.log("  outerKeySize=" + outerKeyColumnPA.size() +
-                        //            "  innerKeySize=" + innerKeyColumnPA.size());
+                        if (debug) String2.log("  Debug: outerKeySize=" + outerKeyColumnPA.size() +
+                            "  innerKeySize=" + innerKeyColumnPA.size());
                         //read the keep rows of requested variable[outer][obs]
                         for (int v = 0; v < nVars; v++) {       
                             if (varInLoadVariables[v] && 
@@ -6032,8 +6190,8 @@ Dataset {
                         justKeep(obsKeep);
                         //String2.log("after read vars\n" + dataToCSVString());
                         if (debug) { 
+                            String2.log("  Debug: after removeRowsWithJustMVs nRows=" + nRows());
                             ensureValid();  //throws Exception if not
-                            String2.log("  after removeRowsWithJustMVs nRows=" + nRows());
                         }
                         if (nRows() == 0) {
                             if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
@@ -6104,6 +6262,7 @@ Dataset {
                 if (verbose) String2.log("  readNcCF finished (nLevels=1, " + readAs + 
                     "). nRows=" + nRows() + " nCols=" + nColumns() + 
                     " time=" + (System.currentTimeMillis() - time));
+                if (debug) ensureValid();
                 return;
             }
 
@@ -6114,6 +6273,7 @@ Dataset {
 
             //* read nLevels=2 ragged array files
             if ((indexVar >= 0 || outerDim == scalarDim) && rowSizeVar >= 0) {  
+                if (debug) String2.log("  Debug: nLevels=2 files, ragged");
                 readAs = "ragged";
 
                 //read variable[innerDim] into innerTable
@@ -6185,7 +6345,7 @@ Dataset {
                     //order of rows is important, so *don't* justKeep(innerKeep)
                 } 
                 if (debug) 
-                    String2.log("  ragged innerTable has nCols=" + innerTableNColumns + 
+                    String2.log("  Debug: ragged innerTable has nCols=" + innerTableNColumns + 
                         " nRows=" + innerTableNRows + " nKeepRows=" + keepNInner + "\n" +
                         innerTable.dataToCSVString()); 
 
@@ -6217,6 +6377,7 @@ Dataset {
                         ", just outerTable+innerTable vars)." + 
                         " nRows=" + nRows() + " nCols=" + nColumns() + 
                         " time=" + (System.currentTimeMillis() - time));
+                    if (debug) ensureValid();
                     return;
                 }
                
@@ -6248,7 +6409,7 @@ Dataset {
                     }
                 }
                 if (debug) String2.log(
-                    "outerIndexCol[obs]=" + outerIndexColumnPA.toString() + 
+                    "  Debug: outerIndexCol[obs]=" + outerIndexColumnPA.toString() + 
                     "\ninnerIndexCol[obs]=" + innerIndexColumnPA.toString());
 
                 //read the obsKeep rows of requested variable[obs]
@@ -6264,6 +6425,7 @@ Dataset {
                
             //*** read nLevels=2 multidimensional files
             } else if (multidimensional) {
+                if (debug) String2.log("  Debug: nLevels=2 files, multidimensional");
                 readAs = "multidim";
 
                 //create outerIndexPA and innerIndexPA, both [outerDim][innerDim]
@@ -6315,6 +6477,7 @@ Dataset {
 
                 //trouble?  look for truly orthogonal: just variable[innerDim] 
                 if (innerTableNColumns == 0) {
+                    if (debug) String2.log("  Debug: innerTableNColumns=0");
 
                     //read ALL variable[innerDim] into innerTable
                     nLoadVariablesInInnerTable = 0;  //should be already
@@ -6372,7 +6535,7 @@ Dataset {
                 }
                 //order of rows is important, so *don't* justKeep(innerKeep)
                 if (debug) 
-                    String2.log("  multidim innerTable has nCols=" + innerTableNColumns + 
+                    String2.log("  Debug: multidim innerTable has nCols=" + innerTableNColumns + 
                         " nRows=" + innerTableNRows + " nKeepRows=" + nInnerGood); 
 
                 //Are we done? Are those all the variables we need that are in the file?
@@ -6408,10 +6571,12 @@ Dataset {
                         ", just outerTable+innerTable vars)." +
                         " nRows=" + nRows() + " nCols=" + nColumns() + 
                         " time=" + (System.currentTimeMillis() - time));
+                    if (debug) ensureValid();
                     return;
                 }
 
                 //* Make interiorTable with variable[obs]?   some files have them
+                if (debug) String2.log("  Debug: make interiorTable with variable[obs]?");
                 Table interiorTable = new Table();
                 int nLoadVariablesInInteriorTable = 0; 
                 for (int v = 0; v < nVars; v++) {
@@ -6431,6 +6596,7 @@ Dataset {
                 BitSet interiorKeep = null; //will be null if no interiorTable columns
                 if (interiorTableNColumns > 0) {
                     //apply constraints (but keep all the rows)
+                    if (debug) String2.log("  Debug: interiorTable exists");
                     interiorKeep = interiorTable.rowsWithData();
                     int interiorNKeep = interiorTable.tryToApplyConstraints(
                         -1, conNames, conOps, conValues, interiorKeep);
@@ -6442,7 +6608,7 @@ Dataset {
                         removeAllColumns();
                         return;
                     }
-                    if (debug) String2.log("  interiorTable=\n" + interiorTable.dataToCSVString());
+                    if (debug) String2.log("  Debug: interiorTable=\n" + interiorTable.dataToCSVString());
 
                     //are we done?
                     if (nLoadVariablesInFile == nLoadVariablesInInteriorTable) {
@@ -6462,6 +6628,7 @@ Dataset {
                             ", just interiorTable vars)." +
                             " nRows=" + nRows() + " nCols=" + nColumns() + 
                             " time=" + (System.currentTimeMillis() - time));
+                        if (debug) ensureValid();
                         return;
                     }
                 }
@@ -6473,6 +6640,7 @@ Dataset {
                 //and make obsKeep
                 //obsKeep Approach: optimize for situation that takes longest 
                 //  (outerKeep and innerKeep all true).  This is also a very simple approach.
+                if (debug) String2.log("  Debug: read rowSizesPA and make many IndexColumnPAs");
                 IntArray outerIndexColumnPA    = new IntArray();
                 IntArray innerIndexColumnPA    = new IntArray();  
                 IntArray interiorIndexColumnPA = new IntArray();  
@@ -6521,8 +6689,8 @@ Dataset {
                 //String2.log("  obs before justKeep(obsKeep):\n" + dataToCSVString());
                 justKeep(obsKeep);
                 if (debug) { 
+                    String2.log("  Debug: after removeRowsWithJustMVs nRows=" + nRows());
                     ensureValid();  //throws Exception if not
-                    String2.log("  after removeRowsWithJustMVs nRows=" + nRows());
                 }
                 if (nRows() == 0) {
                     if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
@@ -6563,6 +6731,7 @@ Dataset {
               
             //*** finish up nLevels=2 files
             //first 2 cols of this table are outerTableIndex and innerTableIndex
+            if (debug) String2.log("  Debug: finish up nLevels=2 files");
 
             //apply constraints to obs variables
             //(not outer and inner variables, since they were constrained earlier)
@@ -7109,10 +7278,41 @@ String2.log(table.toCSVString());
                 throw e;
         }
 
+
+        //******* another test file, from Kevin O'Brien
+        try {
+            table.readNcCF("c:/data/kevin/interpolated_gld.20120620_045152_meta_2.nc", 
+                null, null, null, null);
+            throw new SimpleException("Shouldn't get here.");
+        } catch (Exception e) {
+            if (e.toString().indexOf(
+                "Invalid contiguous ragged file: The sum of the values in the rowSizes " +
+                "variable (rowSize sum=1024368) is greater than the size of the " +
+                "observationDimension (obs size=1022528).") < 0)
+                throw e;
+        }
+
         /* */
         debug = oDebug;        
     }
 
+    /** This tests readNcCF nLevels=1. */
+    public static void testReadNcCF1Kevin() throws Exception {
+        verbose = true;
+        reallyVerbose = true;
+        boolean oDebug = debug;
+        debug = true;
+        String2.log("\n*** Table.testReadNcCF1Kevin");
+        String pauseMessage = "\nOK?  Press Enter to continue, or ^C to stop -> ";
+        Table table = new Table();
+        String results, expected;
+        String fileName = "c:/data/kevin/interpolated_gld.20120620_045152_meta_2.nc";  //from Kevin O'Brien
+        Attributes gatts;
+    
+        String2.log(NcHelper.dumpString(fileName, false));
+        table.readNcCF(fileName, null, null, null, null);
+        String2.log(table.toCSVString());
+    }
 
     /** This tests readNcCF nLevels=2. */
     public static void testReadNcCF2(boolean pauseAfterEach) throws Exception {
@@ -9867,9 +10067,9 @@ String2.log(table.dataToCSVString());
      * @param nKeys  1 or more
      * @param keyCol the first key column in this table.
      *   If nKeys&gt;1, the others must immediately follow it.
-     * @param mvKey if the found key is "", this key is used (or "" or null if not needed).
+     * @param mvKey if the key found in this table is "", this mvKey is used (or "" or null if not needed).
      *   E.g., if key="" is found, you might want to treat it as if key="0".
-     *   If nKeys&gt;1, the parts are tab separated.
+     *   If nKeys&gt;1, mvKey has the parts stored tab separated.
      * @param lookUpTable with its keyCol(s) as column 0+, in the same order
      *   as in this table (but not necessarily with identical columnNames). 
      *   This method won't change the lookUpTable.
@@ -9878,6 +10078,13 @@ String2.log(table.dataToCSVString());
      *   or lookUpTable is null
      */
     public int join(int nKeys, int keyCol, String mvKey, Table lookUpTable) {
+        if (debug) {
+            String2.log("  Debug: join(nKeys=" + nKeys + " keyCol=" + keyCol + " mvKey=" + mvKey + "\n" +
+                        "    this table:  " + getColumnNamesCSSVString());
+            ensureValid();
+            String2.log("    lookUpTable: " + lookUpTable.getColumnNamesCSSVString());
+            lookUpTable.ensureValid();
+        }
         if (nKeys < 1) 
             throw new RuntimeException(String2.ERROR + " in Table.join: nKeys=" +
                 nKeys + " must be at least 1.");
@@ -9961,8 +10168,12 @@ String2.log(table.dataToCSVString());
                 "=" + getColumnName(keyCol) + " lutInsertCol=" + lookUpTable.getColumnName(nKeys) +
                 ") nMatched=" + nMatched + " nNotMatched=" + (nRows - nMatched) + 
                 " time=" + (System.currentTimeMillis() - time));
-        if (debug && (nRows - nMatched) > 0)        
-            String2.log("NotMathed tally:\n" + notMatchedTally.toString(50));
+        if (debug) {
+            if (nRows - nMatched > 0)        
+                String2.log("  Debug: NotMatched tally:\n" + notMatchedTally.toString(50));
+            ensureValid();
+        }
+
         return nMatched;
     }
     
@@ -10651,7 +10862,7 @@ String2.log(table.dataToCSVString());
 /*    public void readOpendap(String url, String loadColumns[]) throws Exception {
 
         //get information
-        NetcdfFile netcdfFile = NetcdfDataset.openDataset(url);
+        NetcdfFile netcdfFile = NetcdfDataset.openDataset(url); //NetcdfDataset needed for opendap.
         try {
             List loadVariables = findNcVariables(netcdfFile, loadColumns);
 
@@ -11107,8 +11318,8 @@ String2.log(table.dataToCSVString());
     }
 
     /**
-     * This sorts the table by the sortColumns. Then, it replaces
-     * rows where the values in the sortColumns are equal, by
+     * This sorts the table by the keyColumns. Then, it replaces
+     * rows where the values in the keyColumns are equal, by
      * one row with their average.
      * If the number of rows is reduced to 1/2 or less, this
      * calls trimToSize on each of the PrimitiveArrays.
@@ -11208,6 +11419,392 @@ String2.log(table.dataToCSVString());
         }
         if (verbose) String2.log("Table.averageAdjacentRows done. old nRows=" + nRows +
             " new nRows=" + nGood);
+    }
+
+    /**
+     * This sorts the table by keyColumns (all ascending) then, 
+     * for each block where the nKeyColumns-1 values are constant,
+     * this removes all rows except the one with the last/max value of the last keyColumn.
+     * For example, orderByMax([stationID, time]) would sort by stationID 
+     * and time, then for each stationID, remove all rows except the one 
+     * for the last time for that stationID.
+     *
+     * @param keyColumns  1 or more column numbers (0..).
+     * @throws Exception if trouble (e.g., invalid column number).
+     *    0 rows is not an error, but returns 0 rows.
+     */
+    public void orderByMax(int keyColumns[]) throws Exception {
+
+        int nRows = nRows();
+        if (nRows <= 1)
+            return;
+        int nKeyColumns = keyColumns.length;
+        if (nKeyColumns == 0) 
+            throw new IllegalArgumentException(
+                String2.ERROR + " in Table.orderByMax: You must specify at least one keyColumn."); 
+
+        //sort based on keys
+        ascendingSort(keyColumns);
+
+        //walk through the table, often marking previous row to be kept
+        BitSet keep = new BitSet(nRows); //all false
+        keep.set(nRows - 1); //always
+        if (nKeyColumns > 1) {
+            PrimitiveArray keyCols[] = new PrimitiveArray[nKeyColumns - 1];
+            for (int kc = 0; kc < nKeyColumns - 1; kc++)
+                keyCols[kc] = getColumn(keyColumns[kc]);
+            for (int row = 1; row < nRows; row++) { //1 because I'm looking backwards
+
+                //did keyColumns 0 ... n-2 change?
+                //work backwards since last most likely to have changed
+                //-2 since -1 is the one that is changing (e.g., time)
+                for (int kc = nKeyColumns - 2; kc >= 0; kc--) { 
+                    if (keyCols[kc].compare(row - 1, row) != 0) {
+                        keep.set(row - 1);  //something changed, so keep the *previous* row
+                        break;
+                    }
+                }
+            }
+        }
+        justKeep(keep);
+    }
+
+    /**
+     * This sorts the table by keyColumns (all ascending) then, 
+     * for each block where the nKeyColumns-1 values are constant,
+     * this removes all rows except the one with the first/min value of the last keyColumn.
+     * For example, orderByMin([stationID, time]) would sort by stationID 
+     * and time, then for each stationID, remove all rows except the one 
+     * for the first time for that stationID.
+     *
+     * @param keyColumns  1 or more column numbers (0..).
+     * @throws Exception if trouble (e.g., invalid column number)
+     *    0 rows is not an error, but returns 0 rows.
+     */
+    public void orderByMin(int keyColumns[]) throws Exception {
+
+        int nRows = nRows();
+        if (nRows <= 1)
+            return;
+        int nKeyColumns = keyColumns.length;
+        if (nKeyColumns == 0) 
+            throw new IllegalArgumentException(
+                String2.ERROR + " in Table.orderByMin: You must specify at least one keyColumn."); 
+
+        //sort based on keys
+        ascendingSort(keyColumns);
+
+        //walk through the table, often marking current row to be kept
+        BitSet keep = new BitSet(nRows); //all false
+        keep.set(0);  //always
+        if (nKeyColumns > 1) {
+            PrimitiveArray keyCols[] = new PrimitiveArray[nKeyColumns - 1];
+            for (int kc = 0; kc < nKeyColumns - 1; kc++)
+                keyCols[kc] = getColumn(keyColumns[kc]);
+            for (int row = 1; row < nRows; row++) { //1 because I'm looking backwards
+
+                //did keyColumns 0 ... n-2 change?
+                //work backwards since last most likely to have changed
+                //n-2 since n-1 is the one that is changing (e.g., time)
+                for (int kc = nKeyColumns - 2; kc >= 0; kc--) { 
+                    if (keyCols[kc].compare(row - 1, row) != 0) {
+                        keep.set(row);  //something changed, so keep *this* row
+                        break;
+                    }
+                }
+            }
+        }
+        justKeep(keep);
+    }
+
+    /**
+     * This sorts the table by keyColumns (all ascending) then, 
+     * for each block where the nKeyColumns-1 values are constant,
+     * this removes all rows except the one with the first/min value and the 
+     * one with the last/max value of the last keyColumn.
+     * For example, orderByMax([stationID, time]) would sort by stationID 
+     * and time, then for each stationID, remove all rows except the ones 
+     * for the first and last time for that stationID.
+     *
+     * <p>If an nKeyColumns-1 combo has only one row, it will be duplicated.
+     * Hence, the resulting table will always have just pairs of rows.
+     *
+     * @param keyColumns  1 or more column numbers (0..).
+     * @throws Exception if trouble (e.g., invalid column number).
+     *    0 rows is not an error, but returns 0 rows.
+     */
+    public void orderByMinMax(int keyColumns[]) throws Exception {
+
+        int nRows = nRows();
+        if (nRows == 0)
+            return;
+        int nKeyColumns = keyColumns.length;
+        if (nKeyColumns == 0) 
+            throw new IllegalArgumentException(
+                String2.ERROR + " in Table.orderByMinMax: You must specify at least one keyColumn."); 
+
+        //sort based on keys
+        ascendingSort(keyColumns);
+//minMax
+        //walk through the table, often marking previous and current row to be kept
+        BitSet keep = new BitSet(nRows); //all false
+        keep.set(0); //always
+        keep.set(nRows - 1); //always
+
+        //and note which rows need to be duplicated
+        ByteArray dupMe = (ByteArray)PrimitiveArray.factory(byte.class, nRows, "0");  //false
+        addColumn("dupMe", dupMe);
+        int nDupMe = 0;
+
+        if (nKeyColumns > 1) {
+            PrimitiveArray keyCols[] = new PrimitiveArray[nKeyColumns - 1];
+            for (int kc = 0; kc < nKeyColumns - 1; kc++)
+                keyCols[kc] = getColumn(keyColumns[kc]);
+            int lastDifferentRow = 0;
+            for (int row = 1; row < nRows; row++) { //1 because I'm looking backwards
+
+                //did keyColumns 0 ... n-2 change?
+                //work backwards since last most likely to have changed
+                //-2 since -1 is the one that is changing (e.g., time)
+                for (int kc = nKeyColumns - 2; kc >= 0; kc--) { 
+                    if (keyCols[kc].compare(row - 1, row) != 0) {
+                        keep.set(row - 1);  //something changed, so keep the *previous* row
+                        keep.set(row);      //  and the *current* row
+                        if (lastDifferentRow == row - 1) {
+                            dupMe.set(row - 1, (byte)1); //true
+                            nDupMe++;
+                        }
+                        lastDifferentRow = row;
+                        break;
+                    }
+                }
+            }
+            if (lastDifferentRow == nRows - 1) {
+                dupMe.set(nRows - 1, (byte)1); //true
+                nDupMe++;
+            }
+        } else {
+            if (nRows == 1) {
+                dupMe.set(0, (byte)1); //true
+                nDupMe++;
+            }
+        }
+        justKeep(keep);
+        nRows = nRows();
+        removeColumn(nColumns() - 1);
+
+        //now duplicate the dupMe rows
+        if (nDupMe > 0) {
+
+            //do columns one at a time to save memory
+            int nCols = nColumns(); //dupMe has been removed
+            for (int col = 0; col < nCols; col++) {
+                PrimitiveArray oldCol = getColumn(col);
+                PrimitiveArray newCol = PrimitiveArray.factory(
+                    oldCol.elementClass(), nRows + nDupMe, false); //the elements are not active
+            
+                for (int row = 0; row < nRows; row++) {
+                    newCol.addFromPA(oldCol, row);
+                    if (dupMe.get(row) == 1) 
+                        newCol.addFromPA(oldCol, row);
+                }
+
+                if (reallyVerbose && col == 0) 
+                    Test.ensureEqual(newCol.size(), nRows + nDupMe, "newSize != expectedNewSize");
+                //swap the newCol into place
+                setColumn(col, newCol);            
+            }
+        }
+    }
+
+    /**
+     * Like the other orderByMax, but based on keyColumnNames.
+     *
+     * @param keyColumnsNames  1 or more column numbers (0..).
+     * @throws Exception if trouble (e.g., a keyColumnName not found)
+     */
+    public void orderByMax(String keyColumnNames[]) throws Exception {
+
+        //find the key column numbers
+        int keys[] = new int[keyColumnNames.length];
+        for (int kc = 0; kc < keyColumnNames.length; kc++) {
+            keys[kc] = findColumnNumber(keyColumnNames[kc]);
+            if (keys[kc] < 0)
+                throw new SimpleException("Query error: " +
+                    "'orderByMax' column=" + keyColumnNames[kc] + " isn't in the results table.");
+        }
+        orderByMax(keys);
+    }
+
+    /**
+     * Like the other orderByMin, but based on keyColumnNames.
+     *
+     * @param keyColumnsNames  1 or more column numbers (0..).
+     * @throws Exception if trouble (e.g., a keyColumnName not found)
+     */
+    public void orderByMin(String keyColumnNames[]) throws Exception {
+
+        //find the key column numbers
+        int keys[] = new int[keyColumnNames.length];
+        for (int kc = 0; kc < keyColumnNames.length; kc++) {
+            keys[kc] = findColumnNumber(keyColumnNames[kc]);
+            if (keys[kc] < 0)
+                throw new SimpleException("Query error: " +
+                    "'orderByMin' column=" + keyColumnNames[kc] + " isn't in the results table.");
+        }
+        orderByMin(keys);
+    }
+
+    /**
+     * Like the other orderByMinMax, but based on keyColumnNames.
+     *
+     * @param keyColumnsNames  1 or more column numbers (0..).
+     * @throws Exception if trouble (e.g., a keyColumnName not found)
+     */
+    public void orderByMinMax(String keyColumnNames[]) throws Exception {
+
+        //find the key column numbers
+        int keys[] = new int[keyColumnNames.length];
+        for (int kc = 0; kc < keyColumnNames.length; kc++) {
+            keys[kc] = findColumnNumber(keyColumnNames[kc]);
+            if (keys[kc] < 0)
+                throw new SimpleException("Query error: " +
+                    "'orderByMinMax' column=" + keyColumnNames[kc] + " isn't in the results table.");
+        }
+        orderByMinMax(keys);
+    }
+
+    /** This tests orderByMax, orderByMin, orderByMinMax */
+    public static void testOrderByMinMax() throws Exception {
+
+        for (int proc = 0; proc < 3; proc++) {
+            String2.log("Table.testOrderBy" + 
+                (proc == 1? "" : "Max") +
+                (proc == 0? "" : "Min"));
+
+            //*** test #1
+            PrimitiveArray substation = PrimitiveArray.csvFactory(int.class,    
+                "10, 20, 20, 30, 10, 10, 10");
+            PrimitiveArray station    = PrimitiveArray.csvFactory(String.class, 
+                " a,  a,  a,  b,  c,  c,  c");
+            PrimitiveArray time       = PrimitiveArray.csvFactory(int.class,    
+                " 1,  1,  2,  1,  1,  2,  3");
+            PrimitiveArray other      = PrimitiveArray.csvFactory(int.class,    
+                "99, 95, 92, 91, 93, 98, 90");
+            Table table = new Table();
+            table.addColumn("substation", substation);
+            table.addColumn("station",    station);
+            table.addColumn("time",       time);
+            table.addColumn("other",      other);
+
+            //unsort by sorting on 'other'
+            table.ascendingSort(new int[]{3});
+
+            //orderBy...
+            String vars[] = new String[]{"station", "substation", "time"};
+            if (proc == 0) table.orderByMax(vars);
+            if (proc == 1) table.orderByMin(vars);
+            if (proc == 2) table.orderByMinMax(vars);
+            String results = table.dataToCSVString();
+            String expected[] = new String[]{
+"substation,station,time,other\n" +
+"10,a,1,99\n" +
+"20,a,2,92\n" +
+"30,b,1,91\n" +
+"10,c,3,90\n",
+"substation,station,time,other\n" +
+"10,a,1,99\n" +
+"20,a,1,95\n" +
+"30,b,1,91\n" +
+"10,c,1,93\n",
+"substation,station,time,other\n" +
+"10,a,1,99\n" +  //note duplicate of 1 row of data
+"10,a,1,99\n" +
+"20,a,1,95\n" +
+"20,a,2,92\n" +
+"30,b,1,91\n" +  //note duplicate
+"30,b,1,91\n" +
+"10,c,1,93\n" +
+"10,c,3,90\n"};
+            Test.ensureEqual(results, expected[proc], "results=\n" + results);             
+
+
+            //*** test #2
+            PrimitiveArray time2       = PrimitiveArray.csvFactory(int.class,    
+                " 1,  1,  2,  1,  1,  2,  3");
+            PrimitiveArray other2      = PrimitiveArray.csvFactory(int.class,    
+                "99, 95, 92, 91, 93, 98, 90");
+            table = new Table();
+            table.addColumn("time",       time2);
+            table.addColumn("other",      other2);
+
+            //unsort by sorting on 'other'
+            table.ascendingSort(new int[]{1});
+
+            //orderBy...
+            vars = new String[]{"time"};
+            if (proc == 0) table.orderByMax(vars);
+            if (proc == 1) table.orderByMin(vars);
+            if (proc == 2) table.orderByMinMax(vars);
+            results = table.dataToCSVString();
+            expected = new String[]{
+"time,other\n" +
+"3,90\n",
+"time,other\n" +
+"1,91\n",  //for ties, the one that is picked isn't specified.  unsort above causes 91 to be first.
+"time,other\n" +
+"1,91\n" + //for ties, the one that is picked isn't specified.  unsort above causes 91 to be first.
+"3,90\n"}; 
+
+            Test.ensureEqual(results, expected[proc], "results=\n" + results);             
+
+
+            //*** test #3
+            PrimitiveArray time3       = PrimitiveArray.csvFactory(int.class,    
+                " 1");
+            PrimitiveArray other3      = PrimitiveArray.csvFactory(int.class,    
+                "99");
+            table = new Table();
+            table.addColumn("time",       time3);
+            table.addColumn("other",      other3);
+
+            //unsort by sorting on 'other'
+            table.ascendingSort(new int[]{1});
+
+            //orderBy...
+            vars = new String[]{"time"};
+            if (proc == 0) table.orderByMax(vars);
+            if (proc == 1) table.orderByMin(vars);
+            if (proc == 2) table.orderByMinMax(vars);
+            results = table.dataToCSVString();
+            expected = new String[]{
+"time,other\n" +
+"1,99\n",
+"time,other\n" +
+"1,99\n",
+"time,other\n" +
+"1,99\n" +  
+"1,99\n"}; 
+            Test.ensureEqual(results, expected[proc], "results=\n" + results);             
+
+
+            //*** test #4
+            PrimitiveArray time4   = new IntArray();
+            PrimitiveArray other4  = new IntArray();
+            table = new Table();
+            table.addColumn("time",  time4);
+            table.addColumn("other", other4);
+
+            //orderBy...
+            vars = new String[]{"time"};
+            if (proc == 0) table.orderByMax(vars);
+            if (proc == 1) table.orderByMin(vars);
+            if (proc == 2) table.orderByMinMax(vars);
+            results = table.dataToCSVString();
+            String expected4 = "time,other\n";  
+            Test.ensureEqual(results, expected4, "results=\n" + results);             
+        }
+
     }
 
 
@@ -12908,8 +13505,8 @@ String2.log(table.dataToCSVString());
 
 
     /**
-     * This is like the other saveAsTabbedASCII, but writes to a file.
-     * The second line has units.
+     * This is like the other saveAsTabbedASCII that writes to a file,
+     * but this uses the ISO-8859-1 charset.
      *
      * @param fullFileName the complete file name (including directory and
      *    extension, usually ".asc").
@@ -12917,6 +13514,20 @@ String2.log(table.dataToCSVString());
      * @throws Exception 
      */
     public void saveAsTabbedASCII(String fullFileName) throws Exception {
+        saveAsTabbedASCII(fullFileName, "ISO-8859-1");
+    }
+
+    /**
+     * This is like the other saveAsTabbedASCII, but writes to a file.
+     * The second line has units.
+     *
+     * @param fullFileName the complete file name (including directory and
+     *    extension, usually ".asc").
+     *    An existing file with this name will be overwritten.
+     * @param charset e.g., ISO-8859-1 (default, used if charset is null or "") or UTF-8.
+     * @throws Exception 
+     */
+    public void saveAsTabbedASCII(String fullFileName, String charset) throws Exception {
         if (verbose) String2.log("Table.saveAsTabbedASCII " + fullFileName); 
         long time = System.currentTimeMillis();
 
@@ -12929,7 +13540,7 @@ String2.log(table.dataToCSVString());
         OutputStream os = new FileOutputStream(fullFileName + randomInt);
 
         try {
-            saveAsTabbedASCII(os);
+            saveAsTabbedASCII(os, charset);
             os.close();
 
             //rename the file to the specified name, instantly replacing the original file
@@ -12960,7 +13571,11 @@ String2.log(table.dataToCSVString());
      * @throws Exception 
      */
     public void saveAsTabbedASCII(OutputStream outputStream) throws Exception {
-        saveAsSeparatedAscii(outputStream, "\t", false);
+        saveAsSeparatedAscii(outputStream, null, "\t", false);
+    }
+
+    public void saveAsTabbedASCII(OutputStream outputStream, String charset) throws Exception {
+        saveAsSeparatedAscii(outputStream, charset, "\t", false);
     }
 
     /**
@@ -13027,7 +13642,11 @@ String2.log(table.dataToCSVString());
      * @throws Exception 
      */
     public void saveAsCsvASCII(OutputStream outputStream) throws Exception {
-        saveAsSeparatedAscii(outputStream, ",", true);
+        saveAsSeparatedAscii(outputStream, null, ",", true);
+    }
+
+    public void saveAsCsvASCII(OutputStream outputStream, String charset) throws Exception {
+        saveAsSeparatedAscii(outputStream, charset, ",", true);
     }
 
     /**
@@ -13040,12 +13659,13 @@ String2.log(table.dataToCSVString());
      *
      * @param outputStream There is no need for it to be buffered.
      *    Afterwards, it is flushed, not closed.
+     * @param charset e.g., ISO-8859-1 (default, used if charset is null or "") or UTF-8.
      * @param separator  usually a tab or a comma
      * @param quoted if true, strings will be quoted if needed (see String2.quote).
      * @throws Exception 
      */
-    public void saveAsSeparatedAscii(OutputStream outputStream, String separator,
-        boolean quoted) throws Exception {
+    public void saveAsSeparatedAscii(OutputStream outputStream, String charset,
+        String separator, boolean quoted) throws Exception {
 
         //ensure there is data
         if (nRows() == 0) {
@@ -13054,7 +13674,10 @@ String2.log(table.dataToCSVString());
         }
 
         long time = System.currentTimeMillis();
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
+        if (charset == null || charset.length() == 0)
+            charset = "ISO-8859-1";
+        BufferedWriter writer = new BufferedWriter(
+            new OutputStreamWriter(outputStream, charset));
 
         //write the column names   
         int nColumns = nColumns();
@@ -14106,15 +14729,15 @@ touble: because table is JsonObject, info may not be in expected order
                 ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").size(), 2,  ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").getString(0), 
-                "2012-11-02 Most recent downloading and reformatting of all " + //changes monthly
+                "2013-02-06 Most recent downloading and reformatting of all " + //changes monthly
                 "cdf/sites/... files from PMEL TAO's FTP site by bob.simons at noaa.gov.", 
                 ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").getString(1), 
                 "Since then, recent data has been updated every day.", 
                 ncHeader);
-            Test.ensureEqual(table.nColumns(), 8, ncHeader);
-            Test.ensureEqual(table.findColumnNumber("longitude"), 1, ncHeader);
-            Test.ensureEqual(table.columnAttributes(1).getString("units"), "degrees_east", ncHeader);
+            Test.ensureEqual(table.nColumns(), 10, ncHeader);
+            Test.ensureEqual(table.findColumnNumber("longitude"), 3, ncHeader);
+            Test.ensureEqual(table.columnAttributes(3).getString("units"), "degrees_east", ncHeader);
             int t25Col = table.findColumnNumber("T_25");
             Test.ensureTrue(t25Col > 0, ncHeader);
             Test.ensureEqual(table.columnAttributes(t25Col).getString("ioos_category"), "Temperature", ncHeader);
@@ -14540,8 +15163,9 @@ touble: because table is JsonObject, info may not be in expected order
         //test simplification: see if column types are the same as original table
         int n = table.nColumns();
         for (int col = 2; col < n; col++) //skip first 2 columns which are intentionally initially stored in bigger type
-            Test.ensureEqual(table.columns.get(col).getClass(),
-                table2.getColumn(col).getClass(), "test type of col#" + col);
+            if (col != 4)   //LongArray -> StringArray
+                Test.ensureEqual(table.columns.get(col).getClass(),
+                    table2.getColumn(col).getClass(), "test type of col#" + col);
         
         //*** test read subset
         String2.log("\n***** Table.testASCII  read subset");
@@ -14703,7 +15327,7 @@ touble: because table is JsonObject, info may not be in expected order
 "<th>Strings\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>1970-01-01T00:00:00\n" +
+"<td nowrap>1970-01-01T00:00:00Z\n" +
 "<td nowrap>-3\n" +
 "<td nowrap>1.0\n" +
 "<td nowrap>-1.0E300\n" +
@@ -14714,7 +15338,7 @@ touble: because table is JsonObject, info may not be in expected order
 "<td nowrap>a\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>2005-08-31T16:01:02\n" +
+"<td nowrap>2005-08-31T16:01:02Z\n" +
 "<td nowrap>-2\n" +
 "<td nowrap>1.5\n" +
 "<td nowrap>3.123\n" +
@@ -14725,7 +15349,7 @@ touble: because table is JsonObject, info may not be in expected order
 "<td nowrap>bb\n" +
 "</tr>\n" +
 "<tr>\n" +
-"<td nowrap>2005-11-02T18:04:09\n" +
+"<td nowrap>2005-11-02T18:04:09Z\n" +
 "<td nowrap>-1\n" +
 "<td nowrap>2.0\n" +
 "<td nowrap>1.0E300\n" +
@@ -14748,9 +15372,9 @@ touble: because table is JsonObject, info may not be in expected order
         Test.ensureEqual(csv, 
 "Time,Longitude,Latitude,Double Data,Long Data,Int Data,Short Data,Byte Data,String Data\n" +
 "UTC,degrees_east,degrees_north,doubles,longs,ints,shorts,bytes,Strings\n" +
-"1970-01-01T00:00:00,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,a\n" +
-"2005-08-31T16:01:02,-2,1.5,3.123,2,2,7,8,bb\n" +
-"2005-11-02T18:04:09,-1,2.0,1.0E300,2000000000000000,2000000000,32000,120,ccc\n",
+"1970-01-01T00:00:00Z,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,a\n" +
+"2005-08-31T16:01:02Z,-2,1.5,3.123,2,2,7,8,bb\n" +
+"2005-11-02T18:04:09Z,-1,2.0,1.0E300,2000000000000000,2000000000,32000,120,ccc\n",
             csv);
 
         //test readHtml - treat 2nd row as units
@@ -14759,9 +15383,9 @@ touble: because table is JsonObject, info may not be in expected order
         csv = table2.dataToCSVString();
         Test.ensureEqual(csv, 
 "Time,Longitude,Latitude,Double Data,Long Data,Int Data,Short Data,Byte Data,String Data\n" +
-"1970-01-01T00:00:00,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,a\n" +
-"2005-08-31T16:01:02,-2,1.5,3.123,2,2,7,8,bb\n" +
-"2005-11-02T18:04:09,-1,2.0,1.0E300,2000000000000000,2000000000,32000,120,ccc\n",
+"1970-01-01T00:00:00Z,-3,1.0,-1.0E300,-2000000000000000,-2000000000,-32000,-120,a\n" +
+"2005-08-31T16:01:02Z,-2,1.5,3.123,2,2,7,8,bb\n" +
+"2005-11-02T18:04:09Z,-1,2.0,1.0E300,2000000000000000,2000000000,32000,120,ccc\n",
             csv);
         Test.ensureEqual(table2.columnAttributes(0).getString("units"), "UTC", "");
         Test.ensureEqual(table2.columnAttributes(1).getString("units"), "degrees_east", "");
@@ -14995,6 +15619,7 @@ touble: because table is JsonObject, info may not be in expected order
      */
     public static void testOpendapSequence() throws Exception {
 
+        //2013-03-18 I changed from oceanwatch datasets (no longer available) to coastwatch erddap datasets
         String2.log("\n*** Table.testOpendapSequence");
         verbose = true;
         reallyVerbose = true;
@@ -15007,21 +15632,9 @@ touble: because table is JsonObject, info may not be in expected order
         try {
             //read data from opendap
             table.readOpendapSequence(
-                //via ascii test:  date is ok, but requesting 'year' always fails
-                //http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1.asc?abund_m3,lat,lon,date,time_local,min_sample_depth
-                //via ascii: "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1.asc?abund_m3,lat,lon", null);
-                //~2010-01-15, now lon, was long
-                //~2010-01-17 back to long
-                "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1?abund_m3,lat,long", false);
+                "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1?abund_m3,latitude,longitude", false);
             String results = table.toString("row", 5);
             String2.log(results);
-//               this changed 2008-10-27
-//MOC1.lat, MOC1.long, MOC1.abund_m3
-//44.6517, -124.65, 0.003961965
-//44.0, -124.4, 0.153550868
-//44.0, -124.8, 0.012982798
-//44.6517, -124.65, 0.46807087
-//44.6517, -124.4117, 0.854271346
 
             nRows = 3779;
             Test.ensureEqual(table.nColumns(), 3, "");
@@ -15032,7 +15645,71 @@ touble: because table is JsonObject, info may not be in expected order
 "dimensions:\n" +
 "\trow = 3779 ;\n" +
 "variables:\n" +
-"\tfloat lat(row) ;\n" +
+"\tfloat abund_m3(row) ;\n" +
+"\t\tabund_m3:_FillValue = -9999999.0f ;\n" +
+"\t\tabund_m3:actual_range = 0.0f, 9852.982f ;\n" +
+"\t\tabund_m3:colorBarMaximum = 1000.0 ;\n" +
+"\t\tabund_m3:colorBarMinimum = 0.0 ;\n" +
+"\t\tabund_m3:comment = \"Density [individuals per m3]\" ;\n" +
+"\t\tabund_m3:ioos_category = \"Other\" ;\n" +
+"\t\tabund_m3:long_name = \"Abundance\" ;\n" +
+"\t\tabund_m3:missing_value = -9999999.0f ;\n" +
+"\t\tabund_m3:units = \"count m-3\" ;\n" +
+"\tfloat latitude(row) ;\n" +
+"\t\tlatitude:_CoordinateAxisType = \"Lat\" ;\n" +
+"\t\tlatitude:_FillValue = NaNf ;\n" +
+"\t\tlatitude:actual_range = 42.4733f, 44.6517f ;\n" +
+"\t\tlatitude:axis = \"Y\" ;\n" +
+"\t\tlatitude:ioos_category = \"Location\" ;\n" +
+"\t\tlatitude:long_name = \"Latitude\" ;\n" +
+"\t\tlatitude:missing_value = NaNf ;\n" +
+"\t\tlatitude:standard_name = \"latitude\" ;\n" +
+"\t\tlatitude:units = \"degrees_north\" ;\n" +
+"\tfloat longitude(row) ;\n" +
+"\t\tlongitude:_CoordinateAxisType = \"Lon\" ;\n" +
+"\t\tlongitude:_FillValue = NaNf ;\n" +
+"\t\tlongitude:actual_range = -125.1167f, -124.175f ;\n" +
+"\t\tlongitude:axis = \"X\" ;\n" +
+"\t\tlongitude:ioos_category = \"Location\" ;\n" +
+"\t\tlongitude:long_name = \"Longitude\" ;\n" +
+"\t\tlongitude:missing_value = NaNf ;\n" +
+"\t\tlongitude:standard_name = \"longitude\" ;\n" +
+"\t\tlongitude:units = \"degrees_east\" ;\n" +
+"\n" +
+"// global attributes:\n" +
+"\t\t:cdm_data_type = \"Trajectory\" ;\n" +
+"\t\t:cdm_trajectory_variables = \"cruise_id\" ;\n" +
+"\t\t:Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\" ;\n" +
+"\t\t:Easternmost_Easting = -124.175 ;\n" +
+"\t\t:featureType = \"Trajectory\" ;\n" +
+"\t\t:geospatial_lat_max = 44.6517 ;\n" +
+"\t\t:geospatial_lat_min = 42.4733 ;\n" +
+"\t\t:geospatial_lat_units = \"degrees_north\" ;\n" +
+"\t\t:geospatial_lon_max = -124.175 ;\n" +
+"\t\t:geospatial_lon_min = -125.1167 ;\n" +
+"\t\t:geospatial_lon_units = \"degrees_east\" ;\n";
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+            expected =
+"\t\t:time_coverage_end = \"2002-05-30T15:22:00Z\" ;\n" +
+"\t\t:time_coverage_start = \"2000-04-12T04:00:00Z\" ;\n" +
+"\t\t:title = \"GLOBEC NEP MOCNESS Plankton (MOC1) Data\" ;\n" +
+"\t\t:Westernmost_Easting = -125.1167 ;\n" +
+"}\n" +
+"    Row        abund_m3       latitude      longitude\n" +
+"      0     3.698225E-3      44.651699    -124.650002\n" +
+"      1      7.26257E-2      44.651699    -124.650002\n" +
+"      2     1.100231E-3      42.504601    -125.011299\n" +
+"      3     7.889546E-2      42.501801    -124.705803\n" +
+"      4        3.416457        42.5033    -124.845001\n";
+            int po = results.indexOf(expected.substring(0, 19));
+            Test.ensureEqual(results.substring(Math.max(po, 0)), expected, "results=\n" + results);
+/* on oceanwatch, was          
+"{\n" +
+"dimensions:\n" +
+"\trow = 3779 ;\n" +
+"variables:\n" +
+"\tfloat latitude(row) ;\n" +
 "\t\tlat:long_name = \"Latitude\" ;\n" +
 "\tfloat long(row) ;\n" +
 "\t\tlong:long_name = \"Longitude\" ;\n" +
@@ -15047,8 +15724,8 @@ touble: because table is JsonObject, info may not be in expected order
 "      2       42.504601    -125.011002     1.10023E-3\n" +
 "      3       42.501801    -124.706001     7.88955E-2\n" +
 "      4         42.5033    -124.845001        3.41646\n";
+*/
 
-            Test.ensureEqual(results, expected, "");
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
             String2.getStringFromSystemIn(
@@ -15057,13 +15734,13 @@ touble: because table is JsonObject, info may not be in expected order
 
 
         try {    
-            url = "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt?stn_id&unique()"; 
+            url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecVpt?station_id&distinct()"; 
             table.readOpendapSequence(url, false);
             String2.log(table.toString("row", 3));
             //source has no global metadata 
             Test.ensureEqual(table.nColumns(), 1, "");
             Test.ensureEqual(table.nRows(), 77, "");
-            Test.ensureEqual(table.getColumnName(0), "stn_id", "");
+            Test.ensureEqual(table.getColumnName(0), "station_id", "");
             Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Station ID", "");
             Test.ensureEqual(table.getStringData(0, 0), "BO01", "");
             Test.ensureEqual(table.getStringData(0, 1), "BO02", "");
@@ -15075,14 +15752,14 @@ touble: because table is JsonObject, info may not be in expected order
 
 
         try {
-            url = "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt?abund_m3&stn_id=\"NH05\""; 
+            url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecVpt?abund_m3&station_id=\"NH05\""; 
             table.readOpendapSequence(url, false);
             String2.log(table.toString("row", 3));
             //source has no global metadata 
             Test.ensureEqual(table.nColumns(), 1, "");
             Test.ensureEqual(table.nRows(), 2400, "");
             Test.ensureEqual(table.getColumnName(0), "abund_m3", "");
-            Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Abundance m3", "");
+            Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Abundance", "");
             Test.ensureEqual(table.getFloatData(0, 0), 11.49f, "");
             Test.ensureEqual(table.getFloatData(0, 1), 74.720001f, "");
         } catch (Exception e) {
@@ -15093,16 +15770,16 @@ touble: because table is JsonObject, info may not be in expected order
 
 
         try {
-            url = "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle?month&unique()"; 
+            url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle?cruise_id&distinct()"; 
             table.readOpendapSequence(url, false);
-            String2.log(table.toString("row", 3));
+            String2.log(table.toString("row", 1000000));
             //source has no global metadata 
             Test.ensureEqual(table.nColumns(), 1, "");
-            Test.ensureEqual(table.nRows(), 4, "");
-            Test.ensureEqual(table.getColumnName(0), "month", "");
-            Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Month", "");
-            Test.ensureEqual(table.getDoubleData(0, 0), 5, "");
-            Test.ensureEqual(table.getDoubleData(0, 1), 6, "");
+            Test.ensureEqual(table.nRows(), 2, "");
+            Test.ensureEqual(table.getColumnName(0), "cruise_id", "");
+            Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Cruise ID", "");
+            Test.ensureEqual(table.getStringData(0, 0), "nh0207", "");
+            Test.ensureEqual(table.getStringData(0, 1), "w0205", "");
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
             String2.getStringFromSystemIn(
@@ -15111,53 +15788,23 @@ touble: because table is JsonObject, info may not be in expected order
 
 
         try {
-            url = "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle?t0,oxygen&month=\"5\"";
+            url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1?abund_m3,latitude,longitude&program=\"MESO_1\"";
             table.readOpendapSequence(url, false);
-            String2.log(table.toString("row", 3));
-            //source has no global metadata 
-            Test.ensureEqual(table.nColumns(), 2, "");
-            Test.ensureEqual(table.nRows(), 190, "");
-            Test.ensureEqual(table.getColumnName(0), "t0", "");
-            Test.ensureEqual(table.getColumnName(1), "oxygen", "");
-            Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Temperature T0", "");
-            Test.ensureEqual(table.columnAttributes(1).getString("long_name"), "Oxygen", "");
-            Test.ensureEqual(table.getFloatData(0, 0), 12.1185f, "");
-            Test.ensureEqual(table.getFloatData(0, 1), 12.1977f, "");
-            Test.ensureEqual(table.getFloatData(1, 0), 6.56105f, "");
-            Test.ensureEqual(table.getFloatData(1, 1), 6.95252f, "");
-        } catch (Exception e) {
-            String2.log(MustBe.throwableToString(e));
-            String2.getStringFromSystemIn(
-                "\nRecover from opendapSequence failure? Press 'Enter' to continue or ^C to stop...");
-        }
-
-        try {
-            url = "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1?abund_m3,lat,long&program=\"MESO_1\"";
-            table.readOpendapSequence(url, false);
-            String results = table.toString("row", 3);
+            String results = table.dataToCSVString();
             String2.log(results);
-            //source has no global metadata 
             String expected =
-"{\n" +
-"dimensions:\n" +
-"\trow = 328 ;\n" +
-"variables:\n" +
-"\tfloat lat(row) ;\n" +
-"\t\tlat:long_name = \"Latitude\" ;\n" +
-"\tfloat long(row) ;\n" +
-"\t\tlong:long_name = \"Longitude\" ;\n" +
-"\tfloat abund_m3(row) ;\n" +
-"\t\tabund_m3:long_name = \"Abundance m3\" ;\n" +
-"\n" +
-"// global attributes:\n" +
-"}\n" +
+/* oceanwatch was 
+...
 "    Row             lat           long       abund_m3\n" +
 "      0       44.651699    -124.650002        10.7463\n" +
 "      1       44.651699    -124.650002     1.40056E-2\n" +
 "      2       44.651699    -124.650002       0.252101\n";
-            Test.ensureEqual(table.nColumns(), 3, "");
-            Test.ensureEqual(table.nRows(), 328, "");
-            Test.ensureEqual(results, expected, "");
+*/
+"abund_m3,latitude,longitude\n" +
+"10.746269,44.6517,-124.65\n" +
+"0.014005602,44.6517,-124.65\n" +
+"0.25210083,44.6517,-124.65\n";
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
             String2.getStringFromSystemIn(
@@ -15168,10 +15815,10 @@ touble: because table is JsonObject, info may not be in expected order
             //test getting all data
             //modified from above so it returns lots of data 
             //nRows=16507 nColumns=28  readTime=5219 ms  processTime=94 ms
-            url = "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt";
+            url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecVpt";
             table.readOpendapSequence(url, false);
-            String2.log(table.toString("row", 5));
-            //source has no global metadata 
+            String results = table.dataToCSVString(5);
+            //on oceanwatch, was
 //    Row        datetime   datetime_utc datetime_utc_e           year        program      cruise_id        cast_no         stn_id
 //lat           long        lat1000        lon1000    water_depth      sample_id min_sample_dep max_sample_dep    month_local      day_local
 //   time_local       d_n_flag      gear_type   gear_area_m2      gear_mesh       vol_filt     counter_id       comments   perc_counted     lo
@@ -15180,22 +15827,14 @@ touble: because table is JsonObject, info may not be in expected order
 //002    -124.169998          44650        -124170             60              1              0             55              4             25
 //        -9999          -9999            VPT        0.19635          0.202          14.46            WTP          -9999            1.1    611
 //8010204#     6118010204 CALANUS_MARSHA        3;_CIII          11.49
-            Test.ensureEqual(table.nColumns(), 32, "");
-            Test.ensureEqual(table.nRows(), 16507, "");
-            Test.ensureEqual(table.getColumnName(2), "datetime_utc_epoch", "");
-            Test.ensureEqual(table.getColumnName(3), "year", "");
-            Test.ensureEqual(table.getColumnName(31),"abund_m3", "");
-            Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Date", "");
-            Test.ensureEqual(table.columnAttributes(1).getString("long_name"), "Date UTC", "");
-            Test.ensureEqual(table.columnAttributes(2).getString("long_name"), "Date UTC (sec since 1970)", "");
-            Test.ensureEqual(table.columnAttributes(31).getString("long_name"),"Abundance m3", "");
-            Test.ensureEqual(table.getStringData(1, 0), "2001-04-25 22:08:51.0", "");
-            Test.ensureEqual(table.getDoubleData(2, 0), 9.88261731E8, "");
-            Test.ensureEqual(table.getStringData(4, 0), "NH", "");
-            Test.ensureEqual(table.getStringData(5, 0), "EL010403", "");
-            Test.ensureEqual(table.getFloatData(31, 0), 11.49f, "");
-            Test.ensureEqual(table.getFloatData(31, 1), 74.72f, "");
-            Test.ensureEqual(table.getFloatData(31, 2), 57.48f, "");
+            String expected = 
+"row,cruise_id,longitude,latitude,time,cast_no,station_id,abund_m3,comments,counter_id,d_n_flag,gear_area,gear_mesh,gear_type,genus_species,life_stage,local_code,max_sample_depth,min_sample_depth,nodc_code,perc_counted,program,sample_id,vol_filt,water_depth\n" +
+"0,EL010403,-124.17,44.65,9.88261731E8,0,NH05,11.49,-9999,WTP,-9999,0.19635,0.202,VPT,CALANUS_MARSHALLAE,3;_CIII,6118010204#,55,0,6118010204,1.1,NH,0,14.46,60\n" +
+"1,EL010403,-124.17,44.65,9.88261731E8,0,NH05,74.72,-9999,WTP,-9999,0.19635,0.202,VPT,BIVALVIA,Veliger,55V,55,0,55,1.1,NH,0,14.46,60\n" +
+"2,EL010403,-124.17,44.65,9.88261731E8,0,NH05,57.48,-9999,WTP,-9999,0.19635,0.202,VPT,POLYCHAETA,Larva,5001LV,55,0,5001,1.1,NH,0,14.46,60\n" +
+"3,EL010403,-124.17,44.65,9.88261731E8,0,NH05,74.72,-9999,WTP,-9999,0.19635,0.202,VPT,GASTROPODA,Veliger,51V,55,0,51,1.1,NH,0,14.46,60\n" +
+"4,EL010403,-124.17,44.65,9.88261731E8,0,NH05,11.49,-9999,WTP,-9999,0.19635,0.202,VPT,CALANUS_MARSHALLAE,1;_CI,6118010204!,55,0,6118010204,1.1,NH,0,14.46,60\n";
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
             String2.getStringFromSystemIn(
@@ -15214,33 +15853,20 @@ touble: because table is JsonObject, info may not be in expected order
                 //resulting url (for asc) is: 
                 // http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1.asc?abund_m3,lat,long&abund_m3>=0.248962651&abund_m3<=0.248962653
                 //  Opera browser changes > to %3E and < to %3C
-                "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1",
+                "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecMoc1",
                 new String[]{"abund_m3"}, 
                 new double[]{0.24896}, //new double[]{0.248962651}, //the last 2 rows only
                 new double[]{0.24897}, //new double[]{0.248962653}, 
-                new String[]{"abund_m3","lat","long"},
+                new String[]{"abund_m3","latitude","longitude"},
                 false); 
 
-            String2.log(table.toString("row", 5));
+            String results = table.dataToCSVString();
+            String expected = 
+"abund_m3,latitude,longitude\n" +
+"0.24896266,44.6517,-124.65\n" +
+"0.24896266,44.6517,-124.65\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
 
-            nRows = 2; //from rows 3774 and 3778
-            Test.ensureEqual(table.nColumns(), 3, "");
-            Test.ensureEqual(table.nRows(), nRows, "");
-
-            Test.ensureEqual(table.getColumnName(0), "lat", "");
-            Test.ensureEqual(table.columnAttributes(0).getString("long_name"), "Latitude", "");
-            Test.ensureEqual(table.getFloatData(0, 0), 44.6517f, "");
-            Test.ensureEqual(table.getFloatData(0, nRows-1), 44.6517f, "");
-
-            Test.ensureEqual(table.getColumnName(1), "long", "");
-            Test.ensureEqual(table.columnAttributes(1).getString("long_name"), "Longitude", "");
-            Test.ensureEqual(table.getFloatData(1, 0), -124.65f, "");
-            Test.ensureEqual(table.getFloatData(1, nRows-1), -124.65f, "");
-
-            Test.ensureEqual(table.getColumnName(2), "abund_m3", "");
-            Test.ensureEqual(table.columnAttributes(2).getString("long_name"), "Abundance m3", "");
-            Test.ensureEqual(table.getFloatData(2, 0), 0.248962652f, "");
-            Test.ensureEqual(table.getFloatData(2, nRows-1), 0.248962652f, "");
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
             String2.getStringFromSystemIn(
@@ -16276,11 +16902,12 @@ expected =
         verbose = true;
         reallyVerbose = true;
 
-        /* 
+        /* */
         testLittleMethods();
         testReorderColumns();
         testSortColumnsByName();
         testLastRowWithData();
+        testOrderByMinMax();
         
         //readWrite tests
         testASCII();
@@ -16304,7 +16931,7 @@ expected =
         testReadNcCFASATimeSeriesProfile(false);
         testReadNcCFASATrajectoryProfile(false);
 
-*/        testReadASCIISpeed();
+        testReadASCIISpeed();
         testReadJsonSpeed();
         testReadNDNcSpeed();
         testReadOpendapSequenceSpeed();

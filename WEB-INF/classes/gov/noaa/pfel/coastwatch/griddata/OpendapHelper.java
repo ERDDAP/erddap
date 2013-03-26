@@ -58,7 +58,7 @@ public class OpendapHelper  {
      */
     public final static String EOL = "\n";
 
-    public static int DEFAULT_TIMEOUT = 120000;
+    public static int DEFAULT_TIMEOUT = 120000; //2 minutes in millis
 
     /**
      * This converts a das to a string.
@@ -477,7 +477,7 @@ public class OpendapHelper  {
      * @throws Exception if trouble
      */
     public static PrimitiveArray[] getPrimitiveArrays(BaseType baseType) throws Exception {
-String2.log("    baseType=" + baseType.getTypeName());
+        //String2.log("    baseType=" + baseType.getTypeName());
         if (baseType instanceof DGrid) {
             ArrayList al = String2.toArrayList( ((DGrid)baseType).getVariables() ); //enumeration -> arraylist
             PrimitiveArray paAr[] = new PrimitiveArray[al.size()];
@@ -1070,8 +1070,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
         dConnect = new DConnect(dGridUrl, true, 1, 1);
         dds = dConnect.getDDS(DEFAULT_TIMEOUT);
         results = String2.toCSSVString(findVarsWithSharedDimensions(dds));
-        expected = 
-"x_wind, y_wind, divw, mod";
+        expected = "x_wind, y_wind";
         Test.ensureEqual(results, expected, "results=" + results);
 
 
@@ -1165,7 +1164,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
         dds = dConnect.getDDS(DEFAULT_TIMEOUT);
         results = String2.toCSSVString(findAllScalarOrMultiDimVars(dds));
         expected = 
-"time, altitude, latitude, longitude, x_wind, y_wind, divw, mod";
+"time, altitude, latitude, longitude, x_wind, y_wind";
         Test.ensureEqual(results, expected, "results=" + results);
 
         //***** test of NODC template dataset
@@ -2410,7 +2409,7 @@ expected =
 "   double altitude(altitude=1);\n" +
 "     :_CoordinateAxisType = \"Height\";\n" +
 "     :_CoordinateZisPositive = \"up\";\n" +
-"     :actual_range = 0.0, 0.0; // double\n" +
+"     :actual_range = 10.0, 10.0; // double\n" +
 "     :axis = \"Z\";\n" +
 "     :fraction_digits = 0; // int\n" +
 "     :ioos_category = \"Location\";\n" +
@@ -2483,8 +2482,8 @@ expected =
 " :geospatial_lon_min = 0.0; // double\n" +
 " :geospatial_lon_resolution = 0.125; // double\n" +
 " :geospatial_lon_units = \"degrees_east\";\n" +
-" :geospatial_vertical_max = 0.0; // double\n" +
-" :geospatial_vertical_min = 0.0; // double\n" +
+" :geospatial_vertical_max = 10.0; // double\n" +
+" :geospatial_vertical_min = 10.0; // double\n" +
 " :geospatial_vertical_positive = \"up\";\n" +
 " :geospatial_vertical_units = \"m\";\n" +
 " :history = \"Remote Sensing Systems, Inc.\n" +
@@ -2529,7 +2528,7 @@ String expected2 =
 "time =\n" +
 "  {9.48024E8}\n" +
 "altitude =\n" +
-"  {0.0}\n" +
+"  {10.0}\n" +
 "latitude =\n" +
 "  {-75.0, -50.0, -25.0, 0.0, 25.0, 50.0, 75.0}\n" +
 "longitude =\n" +
@@ -2616,7 +2615,7 @@ y_wind.y_wind[1][1][7][15]
 "   double altitude(altitude=1);\n" +
 "     :_CoordinateAxisType = \"Height\";\n" +
 "     :_CoordinateZisPositive = \"up\";\n" +
-"     :actual_range = 0.0, 0.0; // double\n" +
+"     :actual_range = 10.0, 10.0; // double\n" +
 "     :axis = \"Z\";\n" +
 "     :fraction_digits = 0; // int\n" +
 "     :ioos_category = \"Location\";\n" +
@@ -2689,8 +2688,8 @@ y_wind.y_wind[1][1][7][15]
 " :geospatial_lon_min = 0.0; // double\n" +
 " :geospatial_lon_resolution = 0.125; // double\n" +
 " :geospatial_lon_units = \"degrees_east\";\n" +
-" :geospatial_vertical_max = 0.0; // double\n" +
-" :geospatial_vertical_min = 0.0; // double\n" +
+" :geospatial_vertical_max = 10.0; // double\n" +
+" :geospatial_vertical_min = 10.0; // double\n" +
 " :geospatial_vertical_positive = \"up\";\n" +
 " :geospatial_vertical_units = \"m\";\n" +
 " :history = \"Remote Sensing Systems, Inc.\n" +

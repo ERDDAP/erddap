@@ -483,7 +483,7 @@ public class ByteArray extends PrimitiveArray {
             Math2.ensureMemoryAvailable(newCapacity, "ByteArray");
             byte[] newArray = new byte[newCapacity];
             System.arraycopy(array, 0, newArray, 0, size);
-            array = newArray;
+            array = newArray;  //do last to minimize concurrency problems
         }
     }
 
@@ -1029,7 +1029,7 @@ public class ByteArray extends PrimitiveArray {
                 array[size + i] = Math2.narrowToByte(primitiveArray.getInt(i)); //this converts mv's
             }
         }
-        size += otherSize;
+        size += otherSize; //do last to minimize concurrency problems
     }    
 
     /**

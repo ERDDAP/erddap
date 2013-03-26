@@ -441,7 +441,7 @@ public class DoubleArray extends PrimitiveArray {
             Math2.ensureMemoryAvailable(8L * newCapacity, "DoubleArray");
             double[] newArray = new double[newCapacity];
             System.arraycopy(array, 0, newArray, 0, size);
-            array = newArray;
+            array = newArray; //do last to minimize concurrency problems
         }
     }
 
@@ -939,7 +939,7 @@ public class DoubleArray extends PrimitiveArray {
             for (int i = 0; i < otherSize; i++)
                 array[size + i] = primitiveArray.getDouble(i); //this converts mv's
         }
-        size += otherSize;
+        size += otherSize; //do last to minimize concurrency problems
     }    
 
     /**

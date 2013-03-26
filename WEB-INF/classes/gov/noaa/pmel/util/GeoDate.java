@@ -663,11 +663,18 @@ public class GeoDate extends java.util.Date implements java.io.Serializable {
     return second_;
   }
   /**
-   * Get seconds and fraction of seconds.
+   * Get int seconds.    //doc said +fraction, that's wasn't true
    */
-  public double getGMTSeconds() {
+  public int getGMTSeconds() {   //was double; bob made int
     splitTimeFormat();
     return second_;
+  }
+  /**
+   * Get millis (0 - 999).  Bob added this.       
+   */
+  public int getGMTMillis() {
+    splitTimeFormat();
+    return msec_;
   }
   /**
    * get EPIC Julian Day

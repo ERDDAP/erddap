@@ -160,7 +160,10 @@ public class TableWriterSeparatedValue extends TableWriter {
             for (int col = 0; col < nColumns; col++) {
                 if (isTimeStamp[col]) {
                     double d = table.getDoubleData(col, row);
-                    String s = Calendar2.safeEpochSecondsToIsoStringTZ(d, "");
+                    //Always using standard ISO 8601 string (seconds) ensures easy to parse.
+                    //It would be nice to use decimal seconds if variables time_precision specifies it, 
+                    //but time_precision isn't known here
+                    String s = Calendar2.safeEpochSecondsToIsoStringTZ(d, "");  
                     writer.write(s);
                 } else if (isString[col]) {
                     writer.write(String2.quoteIfNeeded(quoted, table.getStringData(col, row)));

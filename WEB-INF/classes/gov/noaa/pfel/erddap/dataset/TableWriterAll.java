@@ -76,6 +76,7 @@ public class TableWriterAll extends TableWriter {
     public TableWriterAll(String tDir, String tFileNameNoExt) {
         super(null);
         dir = File2.addSlash(tDir);
+        File2.makeDirectory(dir);
         fileNameNoExt = tFileNameNoExt;
     }
 

@@ -382,12 +382,11 @@ public class EDDTableCopy extends EDDTable{
             tAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, 
             new Attributes(), //addGlobalAttributes
-            1, //altMetersPerSourceUnit, 
             tDataVariables,
             tReloadEveryNMinutes,
             copyDatasetDir, true, ".*\\.nc", //true=recursive            
             EDDTableFromFiles.MF_LAST,
-            1, 2, //columnNamesRow and firstDataRow are irrelevant for .nc files, but must be valid values
+            "", 1, 2, //columnNamesRow and firstDataRow are irrelevant for .nc files, but must be valid values
             null, null, null, null,  //extract from fileNames
             sortedColumn, 
             tExtractDestinationNames,
@@ -403,22 +402,24 @@ public class EDDTableCopy extends EDDTable{
         addGlobalAttributes      = new Attributes();
         combinedGlobalAttributes = localEdd.combinedGlobalAttributes; //new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
 
-        //data variables
+        //copy data variables
         dataVariables   = localEdd.dataVariables;
         lonIndex        = localEdd.lonIndex;
         latIndex        = localEdd.latIndex;
         altIndex        = localEdd.altIndex;
+        depthIndex      = localEdd.depthIndex;
         timeIndex       = localEdd.timeIndex;
 
-        //sos info
-        //sosOfferingType = "Station";  //see sosOfferingType in several files
-        sosOfferings = localEdd.sosOfferings;
-        sosMinTime   = localEdd.sosMinTime; 
-        sosMaxTime   = localEdd.sosMaxTime; 
-        sosMinLat    = localEdd.sosMinLat; 
-        sosMaxLat    = localEdd.sosMaxLat; 
-        sosMinLon    = localEdd.sosMinLon; 
-        sosMaxLon    = localEdd.sosMaxLon;
+        //copy sos info
+        sosOfferingType  = localEdd.sosOfferingType;
+        sosOfferingIndex = localEdd.sosOfferingIndex;
+        sosOfferings     = localEdd.sosOfferings;
+        sosMinTime       = localEdd.sosMinTime; 
+        sosMaxTime       = localEdd.sosMaxTime; 
+        sosMinLat        = localEdd.sosMinLat; 
+        sosMaxLat        = localEdd.sosMaxLat; 
+        sosMinLon        = localEdd.sosMinLon; 
+        sosMaxLon        = localEdd.sosMaxLon;
 
         //ensure the setup is valid
         ensureValid(); //this ensures many things are set, e.g., sourceUrl
@@ -442,11 +443,10 @@ public class EDDTableCopy extends EDDTable{
     EDDTableFromFiles makeLocalEdd(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         Attributes tAddGlobalAttributes,
-        double tAltMetersPerSourceUnit, 
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        int tColumnNamesRow, int tFirstDataRow,
+        String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames, 
@@ -455,10 +455,10 @@ public class EDDTableCopy extends EDDTable{
 
         return new EDDTableFromNcFiles(tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File,
-            tAddGlobalAttributes, tAltMetersPerSourceUnit,
+            tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, 
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
-            tColumnNamesRow, tFirstDataRow,
+            tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, 
             tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,

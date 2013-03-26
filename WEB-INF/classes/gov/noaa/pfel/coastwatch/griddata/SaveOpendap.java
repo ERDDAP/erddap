@@ -23,6 +23,7 @@ import java.util.List;
  * Get slf4j-jdk14.jar from 
  * ftp://ftp.unidata.ucar.edu/pub/netcdf-java/slf4j-jdk14.jar
  * and copy it to <context>/WEB-INF/lib.
+ * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
  * Put both of these .jar files in the classpath for the compiler and for Java.
  */
 import ucar.nc2.*;
@@ -372,7 +373,7 @@ public class SaveOpendap  {
 " :station = \"31201\";\n" +
 " :comment = \"Floripa, Brazil (109)\";\n" +
 " :location = \"27.70 S 48.13 W \";\n" +
-//" :_CoordSysBuilder = \"ucar.nc2.dataset.conv.COARDSConvention\";\n" + //2012-07-30 disappeared
+" :_CoordSysBuilder = \"ucar.nc2.dataset.conv.COARDSConvention\";\n" + //2013-02-21 reappeared. 2012-07-30 disappeared
 " data:\n" +
 "}\n";
             Test.ensureEqual(info, shouldBe, "info=" + info);

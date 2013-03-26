@@ -10,6 +10,7 @@ import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
+import com.cohort.array.StringComparatorIgnoreCase;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
@@ -46,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -66,7 +68,7 @@ import org.json.JSONTokener;
 /** 
 This class represents an ERDDAP Dataset (EDD) -- 
 a gridded or tabular dataset 
-(usually Longitude, Latitude, Altitude, and Time-referenced)
+(usually Longitude, Latitude, Altitude/Depth, and Time-referenced)
 usable by ERDDAP (ERD's Distributed Access Program).
 
 <p>Currently, ERDDAP serves these datasets via the OPeNDAP protocol
@@ -117,11 +119,12 @@ Some features are:
   Many data sources have little or no metadata describing the data.
   ERDDAP lets (and encourages) the administrator to describe metadata which 
   will be added to datasets and their variables on-the-fly.
-<li> Standardized variable names and units for longitude, latitude, altitude, and time:
+<li> Standardized variable names and units for longitude, latitude, altitude/depth, and time:
   To facilitate comparisons of data from different datasets,
   the requests and results in ERDDAP use standardized space/time axis units:
   longitude is always in degrees_east; latitude is always in degrees_north;
   altitude is always in meters with positive=up; 
+  depth is always in meters with positive=down; 
   time is always in seconds since 1970-01-01T00:00:00Z
   and, when formatted as a string, is formatted according to the ISO 8601 standard.
   This makes it easy to specify constraints in requests
@@ -242,6 +245,21 @@ public abstract class EDD {
     public final static byte[] NOT_ORIGINAL_SEARCH_ENGINE_BYTES = String2.getUTF8Bytes(
         "In setup.xml, <searchEngine> is not 'original'.");
 
+    /** 
+     * suggestReloadEveryNMinutes multiplies the original suggestion by this factor.
+     * So, e.g., using 0.5 will cause suggestReloadEveryNMinutes to return
+     * smaller numbers (hence more aggressive reloading).
+     * Don't change this value here.  Change it in calling code as needed. 
+     */
+    public static double suggestReloadEveryNMinutesFactor = 1.0;
+    /** 
+     * This sets the minimum and maximum values that will be returned by 
+     * suggestReloadEveryNMinutes.
+     * Don't change this value here.  Change it in calling code as needed. 
+     */
+    public static int suggestReloadEveryNMinutesMin = 1;
+    public static int suggestReloadEveryNMinutesMax = 2000000000;
+
     //*********** END OF STATIC DECLARATIONS ***************************
 
     protected long creationTimeMillis = System.currentTimeMillis();
@@ -287,10 +305,13 @@ public abstract class EDD {
     protected String fgdcFile, iso19115File;  //the names of pre-made, external files; or null
     protected byte[] searchBytes;
     /** These are created as needed (in the constructor) from dataVariables[]. */
-    protected String[] dataVariableSourceNames, dataVariableDestinationNames;
-    
+    protected String[] dataVariableSourceNames, dataVariableDestinationNames;   
 
-
+    /** Things related to incremental update */
+    protected long lastUpdate = 0; //System.currentTimeMillis at start of last update
+    protected int updateEveryNMillis = 0; // <=0 means incremental update not active
+    protected ReentrantLock updateLock = new ReentrantLock();
+    protected long cumulativeUpdateTime = 0, updateCount = 0; 
 
     /**
      * This constructs an EDDXxx based on the information in an .xml file.
@@ -325,6 +346,7 @@ public abstract class EDD {
             //if (type.equals("EDDTableFromBMDE"))        return EDDTableFromBMDE.fromXml(xmlReader); //inactive
             if (type.equals("EDDTableFromDapSequence")) return EDDTableFromDapSequence.fromXml(xmlReader);
             if (type.equals("EDDTableFromDatabase"))    return EDDTableFromDatabase.fromXml(xmlReader);
+            if (type.equals("EDDTableFromEDDGrid"))     return EDDTableFromEDDGrid.fromXml(xmlReader);
             if (type.equals("EDDTableFromErddap"))      return EDDTableFromErddap.fromXml(xmlReader);
             //if (type.equals("EDDTableFromMWFS"))        return EDDTableFromMWFS.fromXml(xmlReader); //inactive as of 2009-01-14
             if (type.equals("EDDTableFromAsciiFiles"))  return EDDTableFromAsciiFiles.fromXml(xmlReader);
@@ -333,13 +355,14 @@ public abstract class EDD {
             if (type.equals("EDDTableFromNcFiles"))     return EDDTableFromNcFiles.fromXml(xmlReader);
             if (type.equals("EDDTableFromNcCFFiles"))   return EDDTableFromNcCFFiles.fromXml(xmlReader);
             //if (type.equals("EDDTableFromNOS"))         return EDDTableFromNOS.fromXml(xmlReader); //inactive 2010-09-08
-            if (type.equals("EDDTableFromNWISDV"))      return EDDTableFromNWISDV.fromXml(xmlReader);
+            //if (type.equals("EDDTableFromNWISDV"))      return EDDTableFromNWISDV.fromXml(xmlReader); //inactive 2011-12-16
             if (type.equals("EDDTableFromOBIS"))        return EDDTableFromOBIS.fromXml(xmlReader);
             if (type.equals("EDDTableFromPostDatabase"))return EDDTableFromPostDatabase.fromXml(xmlReader);
             if (type.equals("EDDTableFromPostNcFiles")) return EDDTableFromPostNcFiles.fromXml(xmlReader);
             if (type.equals("EDDTableFromSOS"))         return EDDTableFromSOS.fromXml(xmlReader);
             if (type.equals("EDDTableFromTaoFiles"))    return EDDTableFromTaoFiles.fromXml(xmlReader);
             if (type.equals("EDDTableFromThreddsFiles"))return EDDTableFromThreddsFiles.fromXml(xmlReader);
+            if (type.equals("EDDTableFromWFSFiles"))    return EDDTableFromWFSFiles.fromXml(xmlReader);
         } catch (Throwable t) {
             throw new RuntimeException(startError + xmlReader.lineNumber() + 
                 ": " + MustBe.getShortErrorMessage(t), t);
@@ -505,7 +528,7 @@ public abstract class EDD {
         if (datasetID.indexOf('.') >= 0)
             throw new SimpleException(errorInMethod + "periods are not allowed in datasetID's.");
         datasetID = String2.canonical(datasetID); //for Lucene, useful if canonical
-        File2.makeDirectory(cacheDirectory());
+        File2.makeDirectory(cacheDirectory()); //but not sufficient in long run, since cache cleaning may remove it
         //Don't test Test.ensureSomethingUtf8(sourceGlobalAttributes, errorInMethod + "sourceGlobalAttributes");
         //Admin can't control source and addAttributes may override offending characters.
         Test.ensureSomethingUtf8(addGlobalAttributes,     errorInMethod + "addGlobalAttributes");
@@ -585,6 +608,7 @@ public abstract class EDD {
             "\npublicSourceUrl=" + publicSourceUrl() +
             "\ncdm_data_type=" + cdmDataType() +
             "\nreloadEveryNMinutes=" + reloadEveryNMinutes +
+            " updateEveryNMillis=" + updateEveryNMillis +
             "\nonChange=" + onChange +
             "\nsourceGlobalAttributes=\n" + sourceGlobalAttributes + 
               "addGlobalAttributes=\n" + addGlobalAttributes);
@@ -747,6 +771,7 @@ public abstract class EDD {
         return diff.toString();    
     }
 
+    
     /**
      * The directory in which information for this dataset (e.g., fileTable.nc) is stored.
      *
@@ -765,6 +790,27 @@ public abstract class EDD {
             "/" +
             tDatasetID + "/";
     }
+
+    /** 
+     * This deletes the specified dataset's cached dataset info.
+     * No error if it doesn't exist.
+     */
+    public static void deleteCachedDatasetInfo(String tDatasetID) {
+        String dir = datasetDir(tDatasetID);
+        File2.delete(dir + DIR_TABLE_FILENAME);
+        File2.delete(dir + FILE_TABLE_FILENAME);
+        File2.delete(dir + BADFILE_TABLE_FILENAME);
+        File2.delete(dir + QUICK_RESTART_FILENAME);
+    }
+
+    /** 
+     * This deletes this dataset's cached dataset info.
+     * No error if it doesn't exist.
+     */
+    public void deleteCachedDatasetInfo() {
+        deleteCachedDatasetInfo(datasetID);
+    }
+
 
     /**
      * The full name of the quick restart .nc file for this dataset.
@@ -918,10 +964,10 @@ public abstract class EDD {
                         content); 
                 }
                 //if (tName.equals("_FillValue")) 
-                //    String2.log("!!!!EDD attribute name=\"" + tName + "\" content=" + content + 
+                //    String2.log(">>EDD attribute name=\"" + tName + "\" content=" + content + 
                 //    "\n  type=" + pa.elementClassString() + " pa=" + pa.toString());
                 tAttributes.add(tName, pa);
-                //String2.log("????EDD _FillValue=" + tAttributes.get("_FillValue"));
+                //String2.log(">>????EDD _FillValue=" + tAttributes.get("_FillValue"));
 
             } else {
                 xmlReader.unexpectedTagException();
@@ -1779,6 +1825,38 @@ public abstract class EDD {
             DEFAULT_RELOAD_EVERY_N_MINUTES : tReloadEveryNMinutes;
     }
 
+    /** 
+     * updateEveryNMillis indicates how often this program should check
+     * for new data for this dataset and do an incremental update, e.g., 1000. 
+     * 
+     * @return the number of milliseconds until dataset needs an incremental update
+     */
+    public int getUpdateEveryNMillis() {return updateEveryNMillis; }
+
+    /** 
+     * This sets updateEveryNMillis.
+     * 
+     * @param tUpdateEveryNMillis Use -0 to never update.  (&lt;=0 and Integer.MAX_VALUE are treated as 0.)
+     */
+    public void setUpdateEveryNMillis(int tUpdateEveryNMillis) {
+        updateEveryNMillis = 
+            tUpdateEveryNMillis < 1 || tUpdateEveryNMillis == Integer.MAX_VALUE? 0 : 
+                tUpdateEveryNMillis;
+    }
+
+    /**
+     * Subclasses (like EDDGridFromDap) overwrite this to do a quick, 
+     * incremental update of this dataset (i.e., for real time deal datasets).
+     * 
+     * <p>For simple failures, this writes into to log.txt but doesn't throw an exception.
+     *
+     * <p>If the dataset has changed in a serious / incompatible way and needs a full
+     * reload, this calls requestReloadASAP() and throws WaitThenTryAgainException.
+     */
+    public void update() {
+        return;
+    }
+
     /**
      * This marks this dataset so that it will be reloaded soon 
      * (but not as fast as possible -- via requestReloadASAP) 
@@ -2193,6 +2271,48 @@ public abstract class EDD {
     }
 
     /**
+     * Given the last time value, this suggests a reloadEveryNMinutes value.
+     *
+     * <br>This is just a suggestion. It makes big assumptions. But for e.g., UAF,
+     * any guess is probably better than none.
+     * It also depends on how aggressive you want to be. 
+     * This is not very aggressive.
+     *
+     * @param epochSecondsLastTime the last time value (of the time data, not 
+     *    the time it was updated).
+     *    I know this may be startTime or centeredTime of a composite.
+     *    I know this may catch a recent update promptly, by chance. 
+     *    This method does the best it can.
+     * @return a reloadEveryNMinutes value for the dataset.
+     *    Currently, 60 min is the shortest suggestion returned. 
+     *    EDD.DEFAULT_RELOAD_EVERY_N_MINUTES (10080) is only returned as the default
+     *    (e.g., for epochSecondsLastTime=Integer.MAX_VALUE) and is unaffected by 
+     *    suggestReloadEveryNMinutesFactor.
+     */
+    public static int suggestReloadEveryNMinutes(double epochSecondsLastTime) {
+        if (!Math2.isFinite(epochSecondsLastTime) || Math.abs(epochSecondsLastTime) > 1e18)
+            return DEFAULT_RELOAD_EVERY_N_MINUTES;  //DEFAULT is only returned as the default
+        double daysAgo = (System.currentTimeMillis()/1000 - epochSecondsLastTime) / 
+            Calendar2.SECONDS_PER_DAY;
+        int snm = 
+            daysAgo < -370?  Calendar2.MINUTES_PER_30DAYS :   //1+ yr  forecast,       update monthly (might be updated)
+            daysAgo < -32?   8 * Calendar2.MINUTES_PER_DAY :  //1-12 month forecast,   update every 8 days 
+            daysAgo < -11?    Calendar2.MINUTES_PER_DAY :     //11-32 day forecast,    update daily
+            daysAgo < -1.2?  180 :                            //1-11 day forecast,     update every 3 hours
+            daysAgo < 0.5?   60 :                             //1day forcst/12hr delay,update hourly
+            daysAgo < 2.5?   180 :                            //1-2.5 days delay,      update every 3 hours
+            daysAgo < 8?     Calendar2.MINUTES_PER_DAY :      //2.5-8 days delay,      update daily
+            daysAgo < 33?    2 * Calendar2.MINUTES_PER_DAY :  //week-month delay,      update every 2 days
+            daysAgo < 63?    4 * Calendar2.MINUTES_PER_DAY :  //1-2 month delay,       update every 4 days
+            daysAgo < 370?   8 * Calendar2.MINUTES_PER_DAY :  //2-12 month delay,      update every 8 days
+                             Calendar2.MINUTES_PER_30DAYS;    //1+year delay,          update monthly
+        snm = Math2.roundToInt(suggestReloadEveryNMinutesFactor * snm);
+        snm = Math.min(suggestReloadEveryNMinutesMax, snm);
+        snm = Math.max(suggestReloadEveryNMinutesMin, snm);
+        return snm;
+    }
+
+    /**
      * This responds to an OPeNDAP-style query.
      *
      * @param request may be null. If null, no attempt will be made to include 
@@ -2591,17 +2711,17 @@ public abstract class EDD {
     public static boolean probablyHasLonLatTime(Table table) {
         boolean hasLon = false, hasLat = false, hasTime = false; 
         for (int col = 0; col < table.nColumns(); col++) {
-            String colName = table.getColumnName(col);
+            String colNameLC = table.getColumnName(col).toLowerCase();
             Attributes atts = table.columnAttributes(col);
             boolean hasTimeUnits = EDVTimeStamp.hasTimeUnits(atts, null);
             String units = atts.getString("units");
-            if (colName.equals("lon") || colName.equals("longitude") || 
+            if (colNameLC.equals("lon") || colNameLC.indexOf("longitude") >= 0 || 
                 "degrees_east".equals(units)) 
                 hasLon = true;
-            if (colName.equals("lat") || colName.equals("latitude") || 
+            if (colNameLC.equals("lat") || colNameLC.indexOf("latitude") >= 0 || 
                 "degrees_north".equals(units)) 
                 hasLat = true;
-            if (colName.equals("time") || hasTimeUnits)
+            if (colNameLC.equals("time") || hasTimeUnits)
                 hasTime = true;
         }
         return hasLon && hasLat && hasTime;
@@ -3301,6 +3421,7 @@ public abstract class EDD {
                 if ( isSomething(value)) addAtts.set("Institution", "null"); //not just remove()
             }
             if (!isSomething(value)) value = sourceAtts.getString("origin");
+            if (!isSomething(value)) value = sourceAtts.getString("Originating_or_generating_Center"); //grib
             if (!isSomething(value)) value = tContactInstitution;
 
             if (isSomething(value)) {
@@ -3311,6 +3432,8 @@ public abstract class EDD {
                     //special cases
                     if (value.equals("NOAA CoastWatch, West Coast Node"))
                         value = "NOAA CoastWatch WCN";
+                    else if (value.equals("Fleet Numerical Meteorology and Oceanography Center, Monterey, CA, USA"))
+                        value = "FNMOC";
                     else if (value.equals("NOAA Earth System Research Laboratory"))
                         value = "NOAA ESRL";
                     else if (value.equals("NOAA National Climatic Data Center"))
@@ -3418,6 +3541,7 @@ public abstract class EDD {
         if (!isSomething(value)) value = sourceAtts.getString(name);
         if (!isSomething(value)) {
             if (!isSomething(value)) value = tContactUrl;
+            if (!isSomething(value) && tIns.equals("FNMOC")) value = "http://www.usno.navy.mil/FNMOC/";
             if (!isSomething(value) && !infoUrl.startsWith("???")) value = infoUrl;  
             if (isSomething(value)) {
                 if ((value.indexOf("/dodsC/") >= 0 || value.indexOf("/opendap/") >= 0) &&
@@ -3781,6 +3905,10 @@ public abstract class EDD {
                 suggestedKeywords.add(   "temperature");
             if (suggestedKeywords.remove("u-veloc.")) 
                 suggestedKeywords.add(   "u-velocity");
+            if (suggestedKeywords.remove("uri")) 
+                suggestedKeywords.add(   "URI");
+            if (suggestedKeywords.remove("url")) 
+                suggestedKeywords.add(   "URL");
             if (suggestedKeywords.remove("v-veloc.")) 
                 suggestedKeywords.add(   "v-velocity");
             if (suggestedKeywords.remove("veloc.")) 
@@ -3797,10 +3925,13 @@ public abstract class EDD {
             suggestedKeywords.remove("august");
             suggestedKeywords.remove("dec");
             suggestedKeywords.remove("december");
+            suggestedKeywords.remove("dodsc");
             suggestedKeywords.remove("feb");
             suggestedKeywords.remove("february");
             suggestedKeywords.remove("for");
+            suggestedKeywords.remove("from");
             suggestedKeywords.remove("gmt");
+            suggestedKeywords.remove("http");
             suggestedKeywords.remove("jan");
             suggestedKeywords.remove("january");
             suggestedKeywords.remove("jul");
@@ -3839,7 +3970,7 @@ public abstract class EDD {
             String keywordSar[] = (String[])suggestedKeywords.toArray(new String[0]); 
             //they are consistently capitalized, so will sort very nicely:
             //  single words then gcmd
-            Arrays.sort(keywordSar); 
+            Arrays.sort(keywordSar, new StringComparatorIgnoreCase()); 
             for (int w = 0; w < keywordSar.length; w++) {
 
                 //don't save numbers
@@ -3905,14 +4036,25 @@ public abstract class EDD {
         for (int i = 0; i < removeThese.length; i++)
             if (isSomething(sourceAtts.getString(removeThese[i]))) 
                 addAtts.add(removeThese[i], "null");
-        //remove any CF%3a...
+
+        //Fix any bad characters in sourceAtt names.
+        //http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#idp4775248
+        //  says "Variable, dimension and attribute names should begin with a letter
+        //  and be composed of letters, digits, and underscores."
+        //Technically, starting with _ is not allowed, but it is widely done: 
+        //  e.g., _CoordinateAxes, _CoordSysBuilder
         String sourceNames[] = sourceAtts.getNames();
         for (int i = 0; i < sourceNames.length; i++) {
-            if (sourceNames[i].startsWith("CF%3a") ||
-                sourceNames[i].startsWith("CF:"))
-                addAtts.add(sourceNames[i], "null");
+            String sn = sourceNames[i];
+            String safeSN = String2.modifyToBeVariableNameSafe(sn);
+            if (!sn.equals(safeSN)) {                        //if sn isn't safe
+                addAtts.set(sn, "null");                     //  neutralize bad att name
+                if (reallyVerbose)
+                    String2.log("  badSourceAttName=\"" + sn + "\" converted to \"" + safeSN + "\".");
+                if (addAtts.get(safeSN) == null)             //  if safeSN doesn't already exist in addAtts
+                    addAtts.set(safeSN, sourceAtts.get(sn)); //    add safeSN=value to addAtts
+            }
         }
-
 
         //remove atts which are already in sourceAtts
         addAtts.removeIfSame(sourceAtts);
@@ -4016,57 +4158,126 @@ public abstract class EDD {
      * @param tSourceAtts
      * @param tSourceName   
      * @param tryToAddColorBarMinMax
-     * @param tryToFindLLAT  is true of grid dataset axis variables, and 
-     *         true for table dataset all variables
+     * @param tryToFindLLAT   This tries to identify longitude, latitude, altitude/depth, 
+     *    and time variables.  It is usually true for grid dataset axis variables, and 
+     *    true for table dataset all variables
      * @return tAddAdds for the variable
      */
     public static Attributes makeReadyToUseAddVariableAttributesForDatasetsXml(
         Attributes tSourceAtts, String tSourceName, boolean tryToAddColorBarMinMax,
         boolean tryToFindLLAT) {
 
+        //if from readXml, be brave and just use last part of the source name
+        int slashPo = tSourceName.lastIndexOf('/');
+        if (slashPo >= 0 && slashPo < tSourceName.length() - 1) { //not the last char
+            tSourceName = tSourceName.substring(slashPo + 1);
+            
+            //and it probably has unnecessary prefix:
+            int colonPo = tSourceName.lastIndexOf(':');
+            if (colonPo >= 0 && colonPo < tSourceName.length() - 1) { //not the last char
+                tSourceName = tSourceName.substring(colonPo + 1);
+            }
+        }
+
         String lcSourceName = tSourceName.toLowerCase();
+
         Attributes tAddAtts = new Attributes();
         //oXxx are values from sourceAtts
         String oLongName     = tSourceAtts.getString("long_name");
         String oStandardName = tSourceAtts.getString("standard_name");
         String oUnits        = tSourceAtts.getString("units");
+        String oPositive     = tSourceAtts.getString("positive");
         if (oLongName       == null) oLongName     = "";
         if (oStandardName   == null) oStandardName = "";
         if (oUnits          == null) oUnits        = "";
+        if (oPositive       == null) oPositive     = "";
         //tXxx are current best value
         String tLongName     = oLongName;
         String tStandardName = oStandardName;
         String tUnits        = oUnits;
         String tUnitsLC      = tUnits.toLowerCase();
+        
+        //scale_factor or add_offset are strings?!
+        //e.g., see fromThreddsCatalog test #56
+        PrimitiveArray pa = tSourceAtts.get("add_offset");
+        if (pa != null && pa.size() > 0 && pa instanceof StringArray)
+            tAddAtts.add("add_offset", pa.getFloat(0));
+        pa = tSourceAtts.get("scale_factor");
+        if (pa != null && pa.size() > 0 && pa instanceof StringArray) 
+            tAddAtts.add("scale_factor", pa.getFloat(0));
+        double tScaleFactor = tSourceAtts.getDouble("scale_factor");
+        double tAddOffset   = tSourceAtts.getDouble("add_offset");
 
-        //longitude, latitude, altitude, time are special cases
-        String tDestName = suggestDestinationName(tSourceName, tUnits, 
-            tSourceAtts.getFloat("scale_factor"), tryToFindLLAT);
+        //isMeters
+        String testUnits = tUnits.toLowerCase(); 
+        testUnits = String2.replaceAll(testUnits, ' ', '|');
+        testUnits = String2.replaceAll(testUnits, '_', '|');
+        testUnits = String2.replaceAll(testUnits, '=', '|');
+        testUnits = String2.replaceAll(testUnits, ',', '|');
+        testUnits = String2.replaceAll(testUnits, '/', '|');
+        boolean isMeters = 
+            tUnits.equals("m")       ||
+            tUnits.equals("meter")   ||
+            tUnits.equals("meters"); 
+
+        //convert feet to meters
+        boolean isFeet = 
+            testUnits.equals("foot")               ||
+            testUnits.equals("feet")               ||
+            testUnits.equals("ft")                 ||
+            testUnits.equals("international_foot") ||
+            testUnits.equals("international_feet");
+        if (isFeet && 
+            (Double.isNaN(tScaleFactor) || tScaleFactor == 1) &&
+            (Double.isNaN(tAddOffset)   || tAddOffset == 0)) {
+            tScaleFactor = 0.3048;
+            tAddAtts.set("scale_factor", (float)tScaleFactor); //feet usually int, so convert to float
+            tUnits = "m";
+            tUnitsLC = "m";
+            testUnits = "m";
+            isMeters = true;
+            isFeet = false;
+        }
+
+        //remove some attributes
+        //Usually these are from 1 file in an aggregation.
+        if (tSourceAtts.get("numberOfObservations") != null)
+            tAddAtts.add(   "numberOfObservations", "null");
+        if (tSourceAtts.get("percentCoverage") != null)
+            tAddAtts.add(   "percentCoverage", "null");
+
+        //do LLAT vars already exist? 
+        String tDestName = suggestDestinationName(tSourceName, tUnits, oPositive,
+            Math2.doubleToFloatNaN(tScaleFactor), tryToFindLLAT);
         if (tDestName.equals("longitude")) {
             tLongName = isSomething(tLongName) && 
                !tLongName.toLowerCase().equals("longitude")? tLongName : "Longitude";
             tStandardName = "longitude";
             tUnits = "degrees_east";
-        }
-        if (tDestName.equals("latitude")) {
+        } else if (tDestName.equals("latitude")) {
             tLongName = isSomething(tLongName) && 
                !tLongName.toLowerCase().equals("latitude")? tLongName : "Latitude";
             tStandardName = "latitude";
             tUnits = "degrees_north";
-        }
-        if (tDestName.equals("altitude")) {
+        } else if (tDestName.equals("altitude")) {
             //let tLongName be set below
             tStandardName = "altitude";
-        }
-        if (tDestName.equals("time")) {
+        } else if (tDestName.equals("depth")) {
+            //let tLongName be set below
+            tStandardName = "depth";
+        } else if (tDestName.equals("time")) {
             //let tLongName be set below
             tStandardName = "time";
         }
 
         //common mistakes in UAF
-        if (tUnitsLC.equals("°k")) 
+        if (tUnitsLC.equals("celsius/degree")) 
+            tUnits = "degree_C";
+        else if (tUnitsLC.equals("kelvins")) 
             tUnits = "deg_K";
-        if (tUnits.equals("u M") || tUnits.equals("uM")) 
+        else if (tUnitsLC.equals("°k")) 
+            tUnits = "deg_K";
+        else if (tUnits.equals("u M") || tUnits.equals("uM")) 
             tUnits = "umoles L-1";
         int umpo = tUnits.indexOf("(uM)");
         if (umpo >= 0) 
@@ -4074,6 +4285,10 @@ public abstract class EDD {
         if (tUnitsLC.startsWith("degrees celsius")) 
             tUnits = "degree_C" + tUnits.substring(15);
 
+        //since ERDDAP grids share axisVariables, bounds (bnds) variables are usually removed
+        //so remove the related attribute
+        if (isSomething(tSourceAtts.getString("bounds")))
+            tAddAtts.add("bounds", "null");
 
         //moles (more distinctive than looking for g for grams)
         boolean moleUnits = tUnits.indexOf("mol") >= 0 || 
@@ -4112,8 +4327,8 @@ public abstract class EDD {
                      tStandardName      = moleUnits?
                                           "mole_concentration_of_silicate_in_sea_water" :
                                           "mass_concentration_of_silicate_in_sea_water";    
-            else if (tStandardName.equals("temperature"))       
-                     tStandardName      = "sea_water_temperature";
+            else if (tStandardName.equals("temperature"))  //dealt with specially below
+                     tStandardName      = "";  //perhaps sea_water_temperature, perhaps air or land
 
             //and other common incorrect names
             else if (tStandardName.equals("eastward_sea_water_velocit")) //missing y
@@ -4167,20 +4382,8 @@ public abstract class EDD {
         lcu = String2.replaceAll(lcu, ',', '|');
         lcu = String2.replaceAll(lcu, '/', '|');
         if (reallyVerbose && 
-            "|longitude|latitude|altitude|time|".indexOf("|" + tStandardName + "|") < 0)
+            "|longitude|latitude|altitude|depth|time|".indexOf("|" + tStandardName + "|") < 0)
             String2.log("  sourceName=" + tSourceName + " lcu=" + lcu);
-
-        //isMeters
-        String testUnits = tUnits.toLowerCase(); 
-        testUnits = String2.replaceAll(testUnits, ' ', '|');
-        testUnits = String2.replaceAll(testUnits, '_', '|');
-        testUnits = String2.replaceAll(testUnits, '=', '|');
-        testUnits = String2.replaceAll(testUnits, ',', '|');
-        testUnits = String2.replaceAll(testUnits, '/', '|');
-        boolean isMeters = 
-            tUnits.equals("m")       ||
-            tUnits.equals("meter")   ||
-            tUnits.equals("meters"); 
 
         //isDegreesC
         boolean isDegreesC = 
@@ -4197,6 +4400,7 @@ public abstract class EDD {
             testUnits.equals("deg|c")               ||
             testUnits.equals("degs|c")              ||
             testUnits.equals("cel")                 || //ucum
+            testUnits.equals("celsius|degree")      || //special for UAF
             testUnits.endsWith("(degc)")            || //special for UAF
             testUnits.endsWith("(degc");               //special for UAF
 
@@ -4228,8 +4432,8 @@ public abstract class EDD {
             testUnits.equals("degrees|k")           ||
             testUnits.equals("deg|k")               ||
             testUnits.equals("degs|k")              ||
-            testUnits.equals("k"); //udunits and ucum
-        boolean hasTemperatureUnits = isDegreesC || isDegreesF || isDegreesC;
+            testUnits.equals("k");                     //udunits and ucum
+        boolean hasTemperatureUnits = isDegreesC || isDegreesF || isDegreesK;
 
         if (!isSomething(tStandardName)) {
             tStandardName = tSourceAtts.getString("Standard_name");  //wrong case?
@@ -4304,23 +4508,35 @@ public abstract class EDD {
             else if (((lc.indexOf("|air") >= 0 && 
                        lc.indexOf("|temp") >= 0) ||
                       lc.indexOf("|atmp") >= 0) &&
+                     lc.indexOf("diff") < 0 &&
                      hasTemperatureUnits)           tStandardName = lc.indexOf("anom") >= 0? //anomaly
                                                                      "air_temperature_anomaly" :
-                                                                     lc.indexOf("rate") >= 0? "" :                                                                      
+                                                                     lc.indexOf("rate") >= 0? "" :
+                                                                     lc.indexOf("potential") >= 0? 
+                                                                     "air_potential_temperature" :
                                                                      "air_temperature"; 
-            else if (((lc.indexOf("|air")   >= 0 || lc.indexOf("|atmo") >= 0 || 
+            else if (((lc.indexOf("|air")  >= 0 || lc.indexOf("|atmo") >= 0 || 
                        lc.indexOf("cloud") >= 0 || lc.indexOf("surface") >= 0 ||
                        lc.indexOf("tropopause") >= 0) && 
                       lc.indexOf("|press") >= 0) ||
                      //lc.indexOf("|bar|") >= 0 ||
                      lc.indexOf("|slp|") >= 0 ||
                      lc.indexOf("baromet") >= 0)    tStandardName = lc.indexOf("rate") >= 0? "" :
+                                                                    lc.indexOf("|diff") >= 0? "" :
                                                                     lc.indexOf("|anom") >= 0? //anomaly
                                                                     "air_pressure_anomaly" :
                                                                     (lc.indexOf("|slp|") >= 0 ||
                                                                      lc.indexOf("surface") >= 0)?
                                                                     "surface_air_pressure" :
                                                                     "air_pressure"; 
+            else if (lc.indexOf("albedo") >= 0 &&
+                     (lcu.equals("percent") || lcu.equals("%") || lcu.equals("1")))  
+                                                    tStandardName = 
+                                                        lc.indexOf("cloud")     >= 0? "cloud_albedo" :
+                                                        lc.indexOf("planetary") >= 0? "planetary_albedo" :
+                                                        lc.indexOf("ice")       >= 0? "sea_ice_albedo" :
+                                                        lc.indexOf("soil")      >= 0? "soil_albedo" :
+                                                        "surface_albedo";
             else if ((lcu.indexOf("|etopo2|") >= 0 ||
                       lcu.indexOf("bathymetry") >= 0 ||
                       lcu.indexOf("|bottom|depth|") >= 0) &&
@@ -4331,7 +4547,7 @@ public abstract class EDD {
             else if ((lc.indexOf("cloud") >= 0 && lc.indexOf("fraction") >= 0) ||
                      (lc.indexOf("cloud") >= 0 && lc.indexOf("cover") >= 0) ||
                      lc.indexOf("|cldc|") >= 0)     tStandardName = "cloud_area_fraction"; 
-            else if (tSourceName.equals("depth"))   tStandardName = "depth"; 
+            else if (lcSourceName.equals("depth"))   tStandardName = "depth"; 
             else if ((lc.indexOf("|water|") >= 0 && 
                       lc.indexOf("|equiv") >= 0 && 
                       lc.indexOf("|snow|") >= 0 && 
@@ -4379,21 +4595,20 @@ public abstract class EDD {
                                                     tStandardName = lc.indexOf("upward") >= 0?
                                                         "surface_net_upward_shortwave_flux" :
                                                         "surface_net_downward_shortwave_flux";
-            else if ((lc.indexOf("wave") >= 0 &&
-                      lc.indexOf("height") >= 0) ||
+            else if ((lc.indexOf("wave") >= 0 && lc.indexOf("height") >= 0 &&
+                      lc.indexOf("ucmp") < 0  && lc.indexOf("vcmp") < 0 && lc.indexOf("spectral") < 0) ||
                      lc.indexOf("|wvht|") >= 0)     tStandardName = lc.indexOf("swell") >= 0?
                                                                     "sea_surface_swell_wave_significant_height" :
                                                                     lc.indexOf("wind") >= 0?
                                                                     "sea_surface_wind_wave_significant_height" :
                                                                     "sea_surface_wave_significant_height";
-            else if ((lc.indexOf("wave") >= 0 && 
-                      lc.indexOf("period") >= 0) ||
+            else if ((lc.indexOf("wave") >= 0 && lc.indexOf("period") >= 0) ||
                      lc.indexOf("|dpd|") >= 0 ||
                      lc.indexOf("|apd|") >= 0)      tStandardName = lc.indexOf("wind") >= 0?
                                                                     "sea_surface_wind_wave_period" :
                                                                     "sea_surface_swell_wave_period";                                                  
-            else if ((lc.indexOf("wave") >= 0 && 
-                      lc.indexOf("dir") >= 0) ||
+            else if ((lc.indexOf("wave") >= 0 && lc.indexOf("dir") >= 0 &&
+                      lc.indexOf("ucmp") < 0  && lc.indexOf("vcmp") < 0 && lc.indexOf("spectral") < 0) ||
                      lc.indexOf("|mwd|") >= 0)      tStandardName = lc.indexOf("swell") >= 0?
                                                                     "sea_surface_swell_wave_to_direction" :
                                                                     lc.indexOf("wind") >= 0?
@@ -4404,7 +4619,10 @@ public abstract class EDD {
             else if ((lc.indexOf("water") >= 0 && 
                       lc.indexOf("density") >= 0))  tStandardName = "sea_water_density"; 
             else if (lc.indexOf("conduct") >= 0)    tStandardName = "sea_water_electrical_conductivity"; 
-            else if ((lc.indexOf("salinity") >= 0 || lc.indexOf("salt") >= 0) &&
+            else if ((lc.indexOf("salinity") >= 0 || 
+                      lc.indexOf("sss") >= 0 || //OSMC sea surface salinity
+                      lc.indexOf("zsal") >= 0 || //OSMC salinity (at depths?)
+                      lc.indexOf("salt") >= 0) &&
                      lc.indexOf("diffusion") < 0) {
                 if (lc.indexOf("fl|") >= 0 ||
                     lc.indexOf("flx") >= 0 ||
@@ -4430,16 +4648,24 @@ public abstract class EDD {
                 }}
             else if (((lc.indexOf("water") >= 0 && 
                        lc.indexOf("temp") >= 0) ||
-                     lc.indexOf("|wtmp|") >= 0) &&
-                      hasTemperatureUnits)     tStandardName = lc.indexOf("anom") >= 0? //anomaly
+                     lc.indexOf("|wtmp|") >= 0 ||
+                     lc.indexOf("|ztmp|") >= 0) && //OSMC temperature (at depths?)
+                     lc.indexOf("diff") < 0 &&
+                     hasTemperatureUnits)     tStandardName = lc.indexOf("anom") >= 0? //anomaly
                                                                     "surface_temperature_anomaly" : //no sea_water_temperature_anomaly
                                                                     lc.indexOf("rate") >= 0? "" :
-                                                                    "sea_water_temperature"; //sea???
+                                                                    lc.indexOf("potential") >= 0? 
+                                                                    "sea_water_potential_temperature" :
+                                                                    "sea_water_temperature"; //sea vs river???
             else if ((lc.indexOf("sst") >= 0 ||
                       lc.indexOf("sea|surface|temp") >= 0) &&
                      hasTemperatureUnits &&
-                     lc.indexOf("time") < 0)        tStandardName = lc.indexOf("anom") >= 0? //anomaly
+                     lc.indexOf("diff") < 0 &&
+                     lc.indexOf("time") < 0)        tStandardName = lc.indexOf("gradient") >= 0? "":
+                                                                    lc.indexOf("anom") >= 0? //anomaly
                                                                     "surface_temperature_anomaly" : //no sea_surface_temperature_anomaly
+                                                                    lc.indexOf("land") >= 0?
+                                                                    "surface_temperature" :
                                                                     "sea_surface_temperature";
             else if (lc.indexOf("wet") >= 0 && 
                      lc.indexOf("bulb") >= 0 &&
@@ -4557,8 +4783,8 @@ public abstract class EDD {
                      lc.indexOf("chlor|a|")    >= 0 ||
                      lc.indexOf("|chlora|")    >= 0 ||
                      lc.indexOf("|chlormean|") >= 0 ||              //avoids mol vs. g 
-                     lc.indexOf("|chla|") >= 0)     tStandardName = lc.indexOf("anom") >= 0? //anomaly
-                                                                    "":
+                     lc.indexOf("|chla|") >= 0)     tStandardName = lc.indexOf("anom") >= 0? "": //anomaly
+                                                                    lc.indexOf("index") >= 0? "": 
                                                                     "concentration_of_chlorophyll_in_sea_water";
             //else if ((lc.indexOf("no2") >= 0 && 
             //          lc.indexOf("no3") >= 0) ||                     //catch NO2 NO3 together before separately
@@ -4587,6 +4813,11 @@ public abstract class EDD {
                                                          "mole_concentration_of_silicate_in_sea_water" :
                                                          "mass_concentration_of_silicate_in_sea_water";
 
+            //special fixup
+            if ("temperature".equals(oStandardName) &&
+                "".equals(tStandardName)) //couldn't determine if sea, air, or land
+                tStandardName = "null";
+
             //update lcu
             lcu = lc + 
                 tStandardName.toLowerCase() + "|" +
@@ -4599,7 +4830,7 @@ public abstract class EDD {
 
         }
         if (reallyVerbose && 
-            "|longitude|latitude|altitude|time|".indexOf("|" + tStandardName + "|") < 0)
+            "|longitude|latitude|altitude|depth|time|".indexOf("|" + tStandardName + "|") < 0)
             String2.log("    tStandardName=" + tStandardName);
 
         //colorBar  (if these are specified, WMS works and graphs in general work better)
@@ -4690,7 +4921,7 @@ public abstract class EDD {
                      tUnits.equals("degrees_true"                       )) {tMin = 0;    tMax = 360;}
 
             //catch z in Coastal Relief Model
-            else if (tSourceName.equals("z") && 
+            else if (lcSourceName.equals("z") && 
                     isMeters && 
                     "up".equals(tSourceAtts.getString("positive"))) {
                 tMin = -8000; tMax = 8000;
@@ -4709,10 +4940,10 @@ public abstract class EDD {
                     } else if (lc.indexOf("cloud") >= 0) {
                         tMin = 30000;  tMax = 90000;
                     } else {
-                        tMin = 97000;  tMax = 103000;
+                        tMin = 95000;  tMax = 105000;
                     }
                 } else {
-                    tMin = 970;  tMax = 1030;
+                    tMin = 950;  tMax = 1050;
                 }}
             else if (tStandardName.equals("air_pressure_anomaly"        )) {
                 if (tUnitsLC.equals("pa")) {
@@ -4956,7 +5187,8 @@ public abstract class EDD {
                                                                             } else {
                                                                               tMin = 263;  tMax = 313;
                                                                             }}
-            else if (lcu.indexOf("anom") >= 0                           )  {tMin = -10;  tMax = 10;}
+            else if (lcu.indexOf("anom") >= 0 ||
+                     lcu.indexOf("diff") >= 0                           )  {tMin = -10;  tMax = 10;}
             else if (lcu.indexOf("direction") >= 0                      )  {tMin = 0;    tMax = 360;}
             else if ((lcu.indexOf("|radiative|") >= 0 ||
                       lcu.indexOf("|radiation|") >= 0 ||
@@ -4978,14 +5210,14 @@ public abstract class EDD {
                 else                        {tMin = 0;  tMax = 200; }}    
              
             if (reallyVerbose && 
-                "|longitude|latitude|altitude|time|".indexOf("|" + tStandardName + "|") < 0)
+                "|longitude|latitude|altitude|depth|time|".indexOf("|" + tStandardName + "|") < 0)
                 String2.log("    assigned tMin=" + tMin + " tMax=" + tMax);
 
             //next best: assign based on metadata
             if (Double.isNaN(tMin) || Double.isNaN(tMax)) {
                 tMin = Double.NaN;
                 tMax = Double.NaN;
-                PrimitiveArray pa = tSourceAtts.get("actual_range");
+                pa = tSourceAtts.get("actual_range");
                 if (pa == null || pa.size() != 2)
                     pa = tSourceAtts.get("valid_range");  //often too wide
                 if (pa != null && pa.size() == 2) {
@@ -4998,10 +5230,8 @@ public abstract class EDD {
                 if (Double.isNaN(tMax)) tMax = tSourceAtts.getNiceDouble("fgdc_valid_max");
                 if (!Double.isNaN(tMin) && !Double.isNaN(tMax)) {
                     //all of theses need scale_factor and add_offset applied
-                    double tScaleFactor = tSourceAtts.getDouble("scale_factor");
                     if (Double.isNaN(tScaleFactor))
                         tScaleFactor = 1;
-                    double tAddOffset = tSourceAtts.getDouble("add_offset");
                     if (Double.isNaN(tAddOffset))
                         tAddOffset = 0;
                     tMin = tMin * tScaleFactor + tAddOffset;
@@ -5013,7 +5243,7 @@ public abstract class EDD {
             }
 
             if (Double.isNaN(tMin) || Double.isNaN(tMax)) {
-                PrimitiveArray pa = tSourceAtts.get("unpacked_valid_range"); //often too wide
+                pa = tSourceAtts.get("unpacked_valid_range"); //often too wide
                 if (pa != null && pa.size() == 2) {
                     double d2[] = Math2.suggestLowHigh(pa.getNiceDouble(0), pa.getNiceDouble(1));
                     tMin = d2[0];
@@ -5039,8 +5269,23 @@ public abstract class EDD {
             if (!Double.isNaN(tMax)) tAddAtts.add("colorBarMaximum", tMax);
             if (colorBarScale != null)
                 tAddAtts.add("colorBarScale", colorBarScale);
-
         }
+
+        //if colorBarMin/Max exist, ensure min < max
+        double tMin = tAddAtts.getDouble("colorBarMinimum");
+        double tMax = tAddAtts.getDouble("colorBarMaximum");
+        if (Double.isNaN(tMin)) tMin = tSourceAtts.getDouble("colorBarMinimum");
+        if (Double.isNaN(tMax)) tMax = tSourceAtts.getDouble("colorBarMaximum");
+        if (!Double.isNaN(tMin) &&
+            !Double.isNaN(tMax)) {
+            if (tMin == tMax) {
+                tAddAtts.add("colorBarMinimum", Math2.smaller(tMin));
+            } else if (tMin > tMax) {
+                tAddAtts.add("colorBarMinimum", tMax);
+                tAddAtts.add("colorBarMaximum", tMin);
+            }
+        }
+
 
         //long_name   (uses standardName)
         //note that this doesn't suggest
@@ -5064,18 +5309,8 @@ public abstract class EDD {
         }
         tUnitsLC = tUnits.toLowerCase();
 
-        //scale_factor or add_offset are strings?!
-        //e.g., see fromThreddsCatalog test #56
-        PrimitiveArray pa = tSourceAtts.get("add_offset");
-        if (pa != null && pa.size() > 0 && pa instanceof StringArray)
-            tAddAtts.add("add_offset", pa.getFloat(0));
-        pa = tSourceAtts.get("scale_factor");
-        if (pa != null && pa.size() > 0 && pa instanceof StringArray) 
-            tAddAtts.add("scale_factor", pa.getFloat(0));
-
-        //deal with scale_factor in tUnits  (e.g., "* 10")
-        float tScaleFactor = tSourceAtts.getFloat("scale_factor");  
-        if (isSomething(tUnits) && !Float.isNaN(tScaleFactor) && tScaleFactor != 0) {
+        //deal with scale_factor (e.g., 0.1) and in tUnits  (e.g., "* 10")
+        if (isSomething(tUnits) && !Double.isNaN(tScaleFactor) && tScaleFactor != 0) {
             int inverse = Math2.roundToInt(1 / tScaleFactor);
             tUnits = String2.replaceAll(tUnits, "*"  + inverse, "");  //e.g., *10  
             tUnits = String2.replaceAll(tUnits, "* " + inverse, "");  //e.g., * 10  
@@ -5183,10 +5418,13 @@ public abstract class EDD {
                 lcu.indexOf("myomere")      >= 0 ||
                 lcu.indexOf("|sex|")        >= 0 ||
                 lcu.indexOf("stage")        >= 0 ||                
+                lcu.indexOf("transpir")     >= 0 ||                
+                lcu.indexOf("|veg")         >= 0 ||                
                 lcu.indexOf("yolk")         >= 0) {
                 tAddAtts.add("ioos_category", "Biology");
 
             } else if (
+                (lcu.indexOf("carbon") >= 0 && lcu.indexOf("flux") >= 0) ||
                 lcu.indexOf("co2")          >= 0 || 
                 lcu.indexOf("carbonate")    >= 0 ||
                 lcu.indexOf("co3")          >= 0 ||
@@ -5217,15 +5455,16 @@ public abstract class EDD {
                 tAddAtts.add("ioos_category", "Dissolved Nutrients");
 
             //Sea Level before Location and Currents so tide is caught correctly
-            } else if (
-                (lcu.indexOf("geopotential") >= 0 && lcu.indexOf("height") >= 0) ||
+            } else if (lcu.indexOf("wind") < 0 && 
+                       lcu.indexOf("wave") < 0 && //don't catch e.g., sea surface swell wave height
+               ((lcu.indexOf("geopotential") >= 0 && lcu.indexOf("height") >= 0) ||
                 lcu.indexOf("ssh")                   >= 0 ||
                 lcu.indexOf("surf|el")               >= 0 ||
                 lcu.indexOf("|sea|height|")          >= 0 ||
                 lcu.indexOf("|tide|")                >= 0 ||
+                (lcu.indexOf("water") >= 0 && lcu.indexOf("level") >= 0) || 
                 (lcu.indexOf("|sea|") >= 0 && lcu.indexOf("surface") >= 0 &&
-                    lcu.indexOf("wave") < 0 && //don't catch e.g., sea surface swell wave height
-                    (lcu.indexOf("elevation") >= 0 || lcu.indexOf("height") >= 0))) { 
+                    (lcu.indexOf("elevation") >= 0 || lcu.indexOf("height") >= 0)))) { 
                 tAddAtts.add("ioos_category", "Sea Level");
 
             //Currents: water or air, or things measuring them (tracer)
@@ -5260,13 +5499,16 @@ public abstract class EDD {
 
             } else if (
                ((lcu.indexOf("heat") >= 0 || lcu.indexOf("radiative") >= 0 ||
-                 lcu.indexOf("radiation") >= 0 || lcu.indexOf("solar") >= 0) && 
-                (lcu.indexOf("flux") >= 0 || lcu.indexOf("flx") >= 0)) ||
+                 lcu.indexOf("radiation") >= 0 || lcu.indexOf("solar") >= 0 ||
+                 lcu.indexOf("temperature") >= 0) && 
+                (lcu.indexOf("transport") >= 0 || lcu.indexOf("flux") >= 0 || lcu.indexOf("flx") >= 0)) ||
                 lcu.indexOf("shortwave")      >= 0 ||  //"heat flux" not ideal; "radiant energy"?
                 lcu.indexOf("longwave")       >= 0 ||  //"heat flux" not ideal; "radiant energy"?
                 lcu.indexOf("hflx")           >= 0 ||
                 lcu.indexOf("lflx")           >= 0 ||
-                lcu.indexOf("sflx")           >= 0) {
+                lcu.indexOf("sflx")           >= 0 ||
+                lcu.indexOf("|cape|")         >= 0 || //convective available potential energy
+                lcu.indexOf("|cin|")          >= 0) { //convective inhibition
                 tAddAtts.add("ioos_category", "Heat Flux");
 
             //see Hydrology below
@@ -5297,11 +5539,14 @@ public abstract class EDD {
                 lcu.indexOf("evapora")      >= 0 ||
                (lcu.indexOf("front") >= 0 && lcu.indexOf("probability") >= 0) ||
                 lcu.indexOf("humidity")     >= 0 ||
-                lcu.indexOf("precipita")    >= 0 ||  //precipitable precipitation
+                lcu.indexOf("precip")       >= 0 ||  //precipitable precipitation
                 lcu.indexOf("|rain")        >= 0 ||  //not "grain"
                 lcu.indexOf("rhum")         >= 0 ||
                 lcu.indexOf("|shum|")       >= 0 ||
+                lcu.indexOf("|storm|")      >= 0 ||
                 lcu.indexOf("total electron content") >= 0 ||
+                lcu.indexOf("|water|condensate|") >= 0 ||
+                lcu.indexOf("|water|vapor|") >= 0 ||
                 lcu.indexOf("visi")         >= 0) {
                 tAddAtts.add("ioos_category", "Meteorology");
 
@@ -5316,6 +5561,7 @@ public abstract class EDD {
 
             } else if (
                 lcu.indexOf("optical")      >= 0 ||
+                lcu.indexOf("albedo")       >= 0 ||
                 lcu.indexOf("|rrs")         >= 0 ||
                 lcu.indexOf("667")          >= 0 ||
                 lcu.indexOf("fluor")        >= 0 ||
@@ -5334,8 +5580,9 @@ public abstract class EDD {
             //Physical Oceanography, see below
 
             } else if (
+                //??? add/distinguish Phytoplankton Abundance ???
                 lcu.indexOf("phytoplankton") >= 0) {  //not a great test
-                tAddAtts.add("ioos_category", "Phytoplankton Abundance");
+                tAddAtts.add("ioos_category", "Phytoplankton Species"); 
 
             } else if (
                 lcu.indexOf("aprs")         >= 0 || //4 letter NDBC abbreviations
@@ -5379,7 +5626,8 @@ public abstract class EDD {
                 lcu.indexOf("dwpd")         >= 0 ||
                 lcu.indexOf("mwvd")         >= 0 ||
                 lcu.indexOf("wvht")         >= 0 ||
-                (lcu.indexOf("wave") >= 0 && lcu.indexOf("short") < 0 && lcu.indexOf("long") < 0)) { 
+                (lcu.indexOf("wave") >= 0 && lcu.indexOf("spectral") < 0 &&
+                    lcu.indexOf("short") < 0 && lcu.indexOf("long") < 0)) { 
                 tAddAtts.add("ioos_category", "Surface Waves");
             
             } else if (
@@ -5399,17 +5647,19 @@ public abstract class EDD {
                 tAddAtts.add("ioos_category", "Taxonomy");
 
             } else if (
-                //(lcu.indexOf("airtemp")              >= 0 ||
-                // lcu.indexOf("air|temp")             >= 0 ||
-                // lcu.indexOf("atemp")                >= 0 || 
-                // lcu.indexOf("atmp")                 >= 0 ||  //4 letter NDBC abbreviation 
-                // lcu.indexOf("|degree|c|")           >= 0 ||
-                // lcu.indexOf("|degrees|c|")          >= 0 ||
-                // lcu.indexOf("heating")              >= 0 ||
-                // lcu.indexOf("sst")                  >= 0 ||
-                // lcu.indexOf("temperature")          >= 0 ||
-                // lcu.indexOf("wtmp")                 >= 0 ||  //4 letter NDBC abbreviation
-                // lcu.indexOf("wtemp")                >= 0) && 
+                lcu.indexOf("airtemp")              >= 0 ||
+                lcu.indexOf("air|temp")             >= 0 ||
+                lcu.indexOf("atemp")                >= 0 || 
+                lcu.indexOf("atmp")                 >= 0 ||  //4 letter NDBC abbreviation 
+                lcu.indexOf("ztmp")                 >= 0 ||  
+                lcu.indexOf("|degree|c|")           >= 0 ||
+                lcu.indexOf("|degrees|c|")          >= 0 ||
+                lcu.indexOf("heating")              >= 0 ||
+                lcu.indexOf("sst")                  >= 0 ||
+                lcu.indexOf("temperature")          >= 0 ||
+                lcu.indexOf("wtmp")                 >= 0 ||  //4 letter NDBC abbreviation
+                lcu.indexOf("wtemp")                >= 0 ||  
+                lcu.indexOf("temp.")                >= 0 ||  
                 //temperature units often used with other units for other purposes
                 //but if alone, it means temperature
                 hasTemperatureUnits) {
@@ -5489,9 +5739,14 @@ public abstract class EDD {
             } else if (
                 lcu.indexOf("altitude")     >= 0 ||
                 lcu.indexOf("elevation")    >= 0 ||
-                (lcu.indexOf("depth")       >= 0 && lcu.indexOf("mixed|layer") < 0) ||
+                (lcu.indexOf("depth")       >= 0 && 
+                 lcu.indexOf("integral")    <  0) ||
                 lcu.indexOf("geox")         >= 0 || 
                 lcu.indexOf("geoy")         >= 0 || 
+                (lcu.indexOf("|level|") >= 0 && 
+                   (lcu.indexOf("|m|") >= 0       || lcu.indexOf("|meter|") >= 0 || 
+                    lcu.indexOf("|meters|") >= 0  || lcu.indexOf("|cm|") >= 0)) ||
+                (lcu.indexOf("|plev|") >= 0 && lcu.indexOf("|atm|") >= 0) ||
                 lcu.indexOf("|lon|")        >= 0 ||
                 lcu.indexOf("|tlon|")       >= 0 ||
                 lcu.indexOf("|vlon|")       >= 0 ||
@@ -5551,7 +5806,8 @@ public abstract class EDD {
                 tAddAtts.add("ioos_category", "Statistics");
 
             } else {
-                if (reallyVerbose) String2.log("    ioos_category=Unknown for " + lcu);
+                if (reallyVerbose || !lcu.equals("|nbnds|||nbnds|")) 
+                    String2.log("    ioos_category=Unknown for " + lcu);
                 tAddAtts.add("ioos_category", "Unknown");
             }        
         }
@@ -5560,6 +5816,25 @@ public abstract class EDD {
         if (isSomething(tUnits)       && !tUnits.equals(oUnits))               tAddAtts.add("units",         tUnits);
         if (isSomething(tLongName)    && !tLongName.equals(oLongName))         tAddAtts.add("long_name",     tLongName);
         if (isSomething(tStandardName)&& !tStandardName.equals(oStandardName)) tAddAtts.add("standard_name", tStandardName);
+
+        //Fix any bad characters in sourceAtt names.
+        //http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#idp4775248
+        //  says "Variable, dimension and attribute names should begin with a letter
+        //  and be composed of letters, digits, and underscores."
+        //Technically, starting with _ is not allowed, but it is widely done: 
+        //  e.g., _CoordinateAxes, _CoordSysBuilder
+        String sourceNames[] = tSourceAtts.getNames();
+        for (int i = 0; i < sourceNames.length; i++) {
+            String sn = sourceNames[i];
+            String safeSN = String2.modifyToBeVariableNameSafe(sn);
+            if (!sn.equals(safeSN)) {                          //if sn isn't safe
+                tAddAtts.set(sn, "null");                      //  neutralize bad att name
+                if (reallyVerbose)
+                    String2.log("  badSourceAttName=\"" + sn + "\" converted to \"" + safeSN + "\".");
+                if (tAddAtts.get(safeSN) == null)              //  if safeSN doesn't already exist in addAtts
+                    tAddAtts.set(safeSN, tSourceAtts.get(sn)); //    add safeSN=value to addAtts
+            }
+        }
 
         return tAddAtts;
     }
@@ -5724,7 +5999,7 @@ public abstract class EDD {
 "   ERDDAP combines sourceAttributes and addAttributes (which have\n" +
 "   precedence) to make the combinedAttributes that are shown to the user.\n" +
 "   (And other attributes are automatically added to longitude, latitude,\n" +
-"   altitude, and time variables).\n" +
+"   altitude, depth, and time variables).\n" +
 " * If you don't like a sourceAttribute, override it by adding an\n" +
 "   addAttribute with the same name but a different value\n" +
 "   (or no value, if you want to remove it).\n" +
@@ -5755,7 +6030,7 @@ public abstract class EDD {
      *    (it is for oldGenerateDatasetsXml methods, since the table has the source attributes), 
      *    or any element may be null.
      * @param tryToFindLLAT if true, this tries to catch and rename variables
-     *    to longitude, latitude, altitude, and time.
+     *    to longitude, latitude, altitude, depth, and time.
      *    <br>This should be true for tabular dataVariables and grid axis variables.
      *    <br>This should be false for grid data variables.
      * @param questionDestinationName if true, the destinationName is preceded by "???"
@@ -5774,6 +6049,8 @@ public abstract class EDD {
         //e.g., don't change "lon" to "longitude" if there is already a "longitude" variable
         int sLongitude  = addTable.findColumnNumber("longitude"), 
             sLatitude   = addTable.findColumnNumber("latitude"), 
+            sAltitude   = addTable.findColumnNumber("altitude"), //but just one of altitude or depth
+            sDepth      = addTable.findColumnNumber("depth"),    //but just one of altitude or depth
             sTime       = addTable.findColumnNumber("time");
 
         //ensure time has proper units
@@ -5782,7 +6059,8 @@ public abstract class EDD {
             String tUnits = addAtts.getString("units");  
             if (tUnits == null && sourceTable != null) 
                 tUnits = sourceTable.columnAttributes(sTime).getString("units");
-            String suggestDestName = suggestDestinationName("time", tUnits, Float.NaN, tryToFindLLAT);
+            String suggestDestName = suggestDestinationName("time", tUnits, null, 
+                Float.NaN, tryToFindLLAT);
             if (!suggestDestName.equals("time")) {
                 addTable.setColumnName(sTime, "time_");
                 sTime = -1;
@@ -5804,8 +6082,12 @@ public abstract class EDD {
             String tUnits = addAtts.getString("units");  
             if (tUnits == null) 
                 tUnits = sourceAtts.getString("units");
+            String tPositive = addAtts.getString("positive");  
+            if (tPositive == null) 
+                tPositive = sourceAtts.getString("positive");
+            float tScaleFactor = sourceAtts.getFloat("scale_factor");
             String suggestDestName = suggestDestinationName(tSourceName, tUnits, 
-                sourceAtts.getFloat("scale_factor"), tryToFindLLAT);
+                tPositive, tScaleFactor, tryToFindLLAT);
             String tDestName = null;
             //String2.log("col=" + col + " sourceName=" + tSourceName + " units=" + tUnits + " suggestDestName=" + suggestDestName);
 
@@ -5823,6 +6105,16 @@ public abstract class EDD {
                 //addAtts.set("long_name", "Latitude");
                 sLatitude = col; //no other column will be latitude
 
+            } else if (col == sAltitude ||
+                (sAltitude < 0 && sDepth < 0 && suggestDestName.equals("altitude"))) {
+                tDestName = "altitude"; 
+                sAltitude = col; //no other column will be altitude
+
+            } else if (col == sDepth ||
+                (sAltitude < 0 && sDepth < 0 && suggestDestName.equals("depth"))) {
+                tDestName = "depth"; 
+                sDepth = col; //no other column will be depth
+
             } else if ((col == sTime || sTime < 0) && suggestDestName.equals("time")) {
                 //above test deals ensures that "time" var is either
                 //  already called "time"  and has proper units
@@ -5832,26 +6124,43 @@ public abstract class EDD {
                 //addAtts.set("long_name", "Time");
                 sTime = col; //no other column will be time
 
+        //*** deal with duplicate names
             } else if (sLongitude >= 0 && suggestDestName.equals("longitude")) {
                 //longitude already assigned
-                suggestDestName = suggestDestinationName(tSourceName, tUnits, 
-                    sourceAtts.getFloat("scale_factor"), false); //tryToFindLLAT
+                suggestDestName = suggestDestinationName(tSourceName, tUnits, tPositive,
+                    tScaleFactor, false); //tryToFindLLAT
                 tDestName = suggestDestName;
                 if (tDestName.equals("longitude"))
                     tDestName = "longitude2";
 
             } else if (sLatitude >= 0 && suggestDestName.equals("latitude")) {
                 //latitude already assigned
-                suggestDestName = suggestDestinationName(tSourceName, tUnits, 
-                    sourceAtts.getFloat("scale_factor"), false); //tryToFindLLAT
+                suggestDestName = suggestDestinationName(tSourceName, tUnits, tPositive,
+                    tScaleFactor, false); //tryToFindLLAT
                 tDestName = suggestDestName;
                 if (tDestName.equals("latitude"))
                     tDestName = "latitude2";
 
+            } else if ((sAltitude >= 0 || sDepth >= 0) && suggestDestName.equals("altitude")) {
+                //altitude already assigned
+                suggestDestName = suggestDestinationName(tSourceName, tUnits, tPositive,
+                    tScaleFactor, false); //tryToFindLLAT
+                tDestName = suggestDestName;
+                if (tDestName.equals("altitude"))
+                    tDestName = "altitude2";
+
+            } else if ((sAltitude >= 0 || sDepth >= 0) && suggestDestName.equals("depth")) {
+                //depth already assigned
+                suggestDestName = suggestDestinationName(tSourceName, tUnits, tPositive,
+                    tScaleFactor, false); //tryToFindLLAT
+                tDestName = suggestDestName;
+                if (tDestName.equals("depth"))
+                    tDestName = "depth2";
+
             } else if (sTime >= 0 && suggestDestName.equals("time")) {
                 //time already assigned
-                suggestDestName = suggestDestinationName(tSourceName, tUnits, 
-                    sourceAtts.getFloat("scale_factor"), false); //tryToFindLLAT
+                suggestDestName = suggestDestinationName(tSourceName, tUnits, tPositive,
+                    tScaleFactor, false); //tryToFindLLAT
                 tDestName = suggestDestName;
                 if (tDestName.equals("time"))
                     tDestName = "time2";
@@ -5891,22 +6200,35 @@ public abstract class EDD {
      * 
      * @param tSourceName the sourceName.
      * @param tUnits the addUnits or sourceUnits (may be null)
+     * @param tPositive the value of the "positive" attribute (e.g., up or down, may be null)
      * @param tScaleFactor from the "scale_factor" attribute, or NaN.
      *    This is used to look for the inverse of the scale_factor in the 
      *    variable name, e.g, "* 1000", and remove it.
      * @param tryToFindLLAT if true, this tries to catch and rename variables
-     *    to longitude, latitude, altitude, and time.
+     *    to longitude, latitude, altitude, depth, and time.
      *    <br>This should be true for tabular dataVariables and grid axis variables.
      *    <br>This should be false for grid data variables.
      * @return the suggested destinationName (which may be the same).
      */
-    public static String suggestDestinationName(String tSourceName, String tUnits,
-        float tScaleFactor, boolean tryToFindLLAT) {
+    public static String suggestDestinationName(String tSourceName, String tUnits, 
+        String tPositive, float tScaleFactor, boolean tryToFindLLAT) {
 
         //remove (units) from SOS sourceNames, e.g., "name (units)"
         int po = tSourceName.indexOf(" (");
         if (po > 0)
             tSourceName = tSourceName.substring(0, po);
+
+        //if from readXml (e.g., .../aaas:time), be brave and just use last part of the name
+        int slashPo = tSourceName.lastIndexOf('/');
+        if (slashPo >= 0 && slashPo < tSourceName.length() - 1) { //not the last char
+            tSourceName = tSourceName.substring(slashPo + 1);
+ 
+            //and it probably has unnecessary prefix:
+            int colonPo = tSourceName.lastIndexOf(':');
+            if (colonPo >= 0 && colonPo < tSourceName.length() - 1) { //not the last char
+                tSourceName = tSourceName.substring(colonPo + 1);
+            }
+        }
 
         String lcSourceName = tSourceName.toLowerCase();
 
@@ -5915,35 +6237,52 @@ public abstract class EDD {
         po = tUnits.indexOf("???");
         if (po >= 0)
             tUnits = tUnits.substring(po + 3);  
+        String tUnitsLC = tUnits.toLowerCase();
+        boolean unitsAreMeters = 
+            "|m|meter|meters|metre|metres|".indexOf("|" + tUnitsLC + "|") >= 0;
+
+        if (tPositive == null) 
+            tPositive = "";
+        tPositive = tPositive.toLowerCase();
 
         if (tryToFindLLAT) {
-            if (tSourceName.equals("longitude") ||            
+            if (lcSourceName.indexOf("longitude") >= 0 ||            
                 ((lcSourceName.indexOf("lon") >= 0 ||
                   lcSourceName.equals("x") ||
                   lcSourceName.equals("xax")) &&  //must check, since uCurrent and uWind use degrees_east, too
-                 (tUnits.equals("degrees_east") ||
-                  tUnits.equals("degree_east") ||
-                  tUnits.equals("degree_E") ||     //incorrect, but exists
-                  tUnits.equals("degrees_west") || //bizarre, but sometimes used for negative degrees_east values
-                  tUnits.equals("degree_west") ||
-                  tUnits.equals("degrees") ||
-                  tUnits.equals("degree")))) 
+                 (tUnitsLC.equals("degrees_east") ||
+                  tUnitsLC.equals("degree_east") ||
+                  tUnitsLC.equals("degree_e") ||     //incorrect, but exists
+                  tUnitsLC.equals("degrees_west") || //bizarre, but sometimes used for negative degrees_east values
+                  tUnitsLC.equals("degree_west") ||
+                  tUnitsLC.equals("degrees") ||
+                  tUnitsLC.equals("degree")))) 
 
                 return "longitude"; 
                  
-            if (tSourceName.equals("latitude") ||            
+            if (lcSourceName.indexOf("latitude") >= 0 ||            
                 ((lcSourceName.indexOf("lat") >= 0 ||
                   lcSourceName.equals("y") ||
                   lcSourceName.equals("yax")) &&  
-                 (tUnits.equals("degrees_north") ||
-                  tUnits.equals("degree_north") ||
-                  tUnits.equals("degree_N") ||     //incorrect, but exists
-                  tUnits.equals("degrees") ||
-                  tUnits.equals("degree")))) 
+                 (tUnitsLC.equals("degrees_north") ||
+                  tUnitsLC.equals("degree_north") ||
+                  tUnitsLC.equals("degree_n") ||     //incorrect, but exists
+                  tUnitsLC.equals("degrees") ||
+                  tUnitsLC.equals("degree")))) 
      
                 return "latitude"; 
 
-            if (tUnits.indexOf(" since ") > 0) {
+            if (lcSourceName.equals("altitude") ||  //stricter than lat and lon
+                (lcSourceName.equals("elevation") && unitsAreMeters) ||
+                (tPositive.equals("up") && lcSourceName.indexOf("_above_ground") < 0 && unitsAreMeters))      
+                return "altitude"; 
+
+            if (lcSourceName.equals("depth") ||     //stricter than lat and lon
+                (tPositive.equals("down") && unitsAreMeters)) 
+     
+                return "depth"; 
+
+            if (tUnitsLC.indexOf(" since ") > 0) {
                 try {
                     Calendar2.getTimeBaseAndFactor(tUnits); //just to throw exception if trouble
                     return "time"; 
@@ -5953,6 +6292,10 @@ public abstract class EDD {
                         MustBe.throwableToString(e));
                 }
             }
+
+            //see Calendar2.suggestDateTimeFormat for common Joda date time formats
+            if (tUnitsLC.indexOf("yy") >= 0) 
+                return "time"; 
 
             if (tSourceName.equals("time") && !tUnits.equals("")) 
                 //name is time but units aren't "... since ..." or "???" or ""! 

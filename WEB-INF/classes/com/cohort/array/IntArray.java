@@ -455,7 +455,7 @@ public class IntArray extends PrimitiveArray {
             Math2.ensureMemoryAvailable(4L * newCapacity, "IntArray");
             int[] newArray = new int[newCapacity];
             System.arraycopy(array, 0, newArray, 0, size);
-            array = newArray;
+            array = newArray; //do last to minimize concurrency problems
         }
     }
 
@@ -997,7 +997,7 @@ public class IntArray extends PrimitiveArray {
             for (int i = 0; i < otherSize; i++)
                 array[size + i] = primitiveArray.getInt(i);  //this converts mv's
         }
-        size += otherSize;
+        size += otherSize; //do last to minimize concurrency problems
     }    
 
     /**
