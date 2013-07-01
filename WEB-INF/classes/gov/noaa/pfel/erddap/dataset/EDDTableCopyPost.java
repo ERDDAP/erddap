@@ -65,6 +65,9 @@ public class EDDTableCopyPost extends EDDTableCopy {
         String tOrderExtractBy = "";
         boolean checkSourceData = defaultCheckSourceData;
         boolean tSourceNeedsExpandedFP_EQ = true;
+        boolean tFileTableInMemory = false;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -98,6 +101,12 @@ public class EDDTableCopyPost extends EDDTableCopy {
             else if (localTags.equals("</checkSourceData>")) checkSourceData = String2.parseBoolean(content); 
             else if (localTags.equals( "<sourceNeedsExpandedFP_EQ>")) {}
             else if (localTags.equals("</sourceNeedsExpandedFP_EQ>")) tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content); 
+            else if (localTags.equals( "<fileTableInMemory>")) {}
+            else if (localTags.equals("</fileTableInMemory>")) tFileTableInMemory = String2.parseBoolean(content); 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
             else if (localTags.equals("<dataset>")) {
                 try {
                     if (checkSourceData) {
@@ -120,9 +129,10 @@ public class EDDTableCopyPost extends EDDTableCopy {
         }
 
         return new EDDTableCopyPost(tDatasetID, 
-            tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, tReloadEveryNMinutes, 
+            tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, 
             tExtractDestinationNames, tOrderExtractBy, tSourceNeedsExpandedFP_EQ,
-            tSourceEdd);
+            tSourceEdd, tFileTableInMemory);
     }
 
     /**
@@ -134,15 +144,17 @@ public class EDDTableCopyPost extends EDDTableCopy {
     public EDDTableCopyPost(String tDatasetID, 
         String tAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         int tReloadEveryNMinutes,
         String tExtractDestinationNames, String tOrderExtractBy, 
         Boolean tSourceNeedsExpandedFP_EQ,
-        EDDTable tSourceEdd) throws Throwable {
+        EDDTable tSourceEdd, boolean tFileTableInMemory) throws Throwable {
 
-        super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
+        super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, 
+            tDefaultDataQuery, tDefaultGraphQuery,
             tReloadEveryNMinutes,
             tExtractDestinationNames, tOrderExtractBy, tSourceNeedsExpandedFP_EQ, 
-            tSourceEdd);
+            tSourceEdd, tFileTableInMemory);
 
     }
 
@@ -163,18 +175,19 @@ public class EDDTableCopyPost extends EDDTableCopy {
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ) 
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
         throws Throwable {
 
         return new EDDTableFromPostNcFiles(tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, "", "", //tDefaultDataQuery, tDefaultGraphQuery
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, 
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, 
             tColumnNameForExtract,
-            tSortedColumnSourceName, tSortFilesBySourceNames, tSourceNeedsExpandedFP_EQ); 
+            tSortedColumnSourceName, tSortFilesBySourceNames, tSourceNeedsExpandedFP_EQ,
+            tFileTableInMemory); 
     }
 
     /**

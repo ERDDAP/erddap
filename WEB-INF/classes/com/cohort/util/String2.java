@@ -1148,12 +1148,84 @@ public class String2 {
         return sb.toString();
     }
 
-    /*
-     * This is like modifyToBeFileNameSafe, but restricts the name to
+    /**
+     * This tests if s is a valid variableName:
+     * <ul>
+     * <li>first character must be (iso8859Letter|_).
+     * <li>optional subsequent characters must be (iso8859Letter|_|0-9).
+     * <ul>
+     * Note that Java allows Unicode characters, but this does not.
+     *
+     * @param s a possible variable name
+     * @return true if s is a valid variableName.
+     */
+    public static boolean isVariableNameSafe(String s) {
+        if (s == null)
+            return false;
+        int n = s.length();
+        if (n == 0)
+            return false;
+
+        //first character must be (iso8859Letter|_)
+        char ch = s.charAt(0);
+        if (isLetter(ch) || ch == '_') ;
+        else return false;
+
+        //subsequent characters must be (iso8859Letter|_|0-9)
+        for (int i = 1; i < n; i++) {
+            ch = s.charAt(i);
+            if (isDigitLetter(ch) || ch == '_') ;
+            else return false;    
+        }
+        return true;
+    }
+
+    /**
+     * This tests if s is a valid jsonp function name
+     * <ul>
+     * <li>The first character must be (iso8859Letter|_).
+     * <li>The optional subsequent characters must be (iso8859Letter|_|0-9|.|).
+     * <li>s must not be longer than 255 characters.
+     * <ul>
+     * Note that JavaScript allows Unicode characters, but this does not.
+     *
+     * @param s a possible jsonp function name
+     * @return true if s is a valid jsonp function name.
+     */
+    public static boolean isJsonpNameSafe(String s) {
+        if (s == null)
+            return false;
+        int n = s.length();
+        if (n == 0 || n > 255)
+            return false;
+
+        //first character must be (iso8859Letter|_)
+        char ch = s.charAt(0);
+        if (isLetter(ch) || ch == '_') ;
+        else return false;
+
+        //subsequent characters must be (iso8859Letter|_|0-9|.)
+        for (int i = 1; i < n; i++) {
+            ch = s.charAt(i);
+            if (isDigitLetter(ch) || ch == '_' || ch == '.') ;
+            else return false;    
+        }
+
+        //last character can't be .
+        if (s.charAt(n - 1) == '.')
+            return false;
+
+        return true;
+    }
+
+
+    /**
+     * This is like modifyToBeFileNameSafe, but restricts the name to:
      * <ul>
      * <li>first character must be (iso8859Letter|_).
      * <li>subsequent characters must be (iso8859Letter|_|0-9).
      * <ul>
+     * Note that Java allows Unicode characters, but this does not.
      * See also the safer encodeVariableNameSafe(String s).
      *
      * @param s
@@ -1163,6 +1235,11 @@ public class String2 {
         if (s == null)
             return "_null";
         s = replaceAll(s, "%20", "_");
+        if (s.indexOf("%3a") >= 0) {
+            s = replaceAll(s, "CF%3afeature_type", "featureType"); //CF:feature_type
+            s = replaceAll(s, "CF%3a", ""); //CF:
+            s = replaceAll(s, "%3a", "_");
+        }
         int n = s.length();
         if (n == 0)
             return "_";

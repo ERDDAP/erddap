@@ -88,6 +88,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         String tFgdcFile = null;
         String tIso19115File = null;
         String tLocalSourceUrl = null;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -116,22 +118,23 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
             else if (localTags.equals( "<sourceUrl>")) {}
             else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content; 
-
-            //onChange
             else if (localTags.equals( "<onChange>")) {}
-            else if (localTags.equals("</onChange>")) 
-                tOnChange.add(content); 
-
+            else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
 
             else xmlReader.unexpectedTagException();
         }
 
         return new EDDTableFromErddap(tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File, tReloadEveryNMinutes, tLocalSourceUrl);
+            tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, tLocalSourceUrl);
     }
 
     /**
@@ -158,6 +161,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      */
     public EDDTableFromErddap(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         int tReloadEveryNMinutes, 
         String tLocalSourceUrl) throws Throwable {
 
@@ -174,6 +178,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         addGlobalAttributes = new Attributes();
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         localSourceUrl = tLocalSourceUrl;

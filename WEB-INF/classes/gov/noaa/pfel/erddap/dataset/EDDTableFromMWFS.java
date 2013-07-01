@@ -84,6 +84,8 @@ public class EDDTableFromMWFS extends EDDTable{
         String tFgdcFile = null;
         String tIso19115File = null;
         String tLocalSourceUrl = null;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -125,16 +127,16 @@ public class EDDTableFromMWFS extends EDDTable{
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<sourceUrl>")) {}
             else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content; 
-
-            //onChange
             else if (localTags.equals( "<onChange>")) {}
-            else if (localTags.equals("</onChange>")) 
-                tOnChange.add(content); 
-
+            else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -144,7 +146,8 @@ public class EDDTableFromMWFS extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromMWFS(tDatasetID, tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
+            tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             tLongitudeSourceMinimum, tLongitudeSourceMaximum,
             tLatitudeSourceMinimum,  tLatitudeSourceMaximum,
             tAltitudeSourceMinimum,  tAltitudeSourceMaximum, 
@@ -220,7 +223,8 @@ public class EDDTableFromMWFS extends EDDTable{
      * @throws Throwable if trouble
      */
     public EDDTableFromMWFS(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, String tFgdcFile, String tIso19115File,
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery,
         Attributes tAddGlobalAttributes,
         double tLonMin, double tLonMax,
         double tLatMin, double tLatMax,
@@ -243,6 +247,8 @@ public class EDDTableFromMWFS extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
@@ -372,7 +378,7 @@ public class EDDTableFromMWFS extends EDDTable{
             String2.log("  constraint=" + constraint);
 
         //set up the table
-        Table table = makeTable();
+        Table table = makeEmptySourceTable((new IntArray(0, dataVariables.length - 1)).toArray(), 128);
 
         //request the data
 //???break the request up into smaller time chunks???
@@ -442,7 +448,8 @@ public class EDDTableFromMWFS extends EDDTable{
 
                         //write to tableWriter?
                         if (writeChunkToTableWriter(requestUrl, userDapQuery, table, tableWriter, false)) {
-                            table = makeTable();
+                            table = makeEmptySourceTable(
+                                (new IntArray(0, dataVariables.length - 1)).toArray(), 128);
                             if (tableWriter.noMoreDataPlease) {
                                 tableWriter.logCaughtNoMoreDataPlease(datasetID);
                                 break TAG_LOOP;
@@ -486,15 +493,6 @@ public class EDDTableFromMWFS extends EDDTable{
         writeChunkToTableWriter(requestUrl, userDapQuery, table, tableWriter, true);
         if (verbose) String2.log("  getDataForDapQuery done. TIME=" +
             (System.currentTimeMillis() - getTime)); 
-    }
-
-    //makes a table with a column for each variable (with sourceNames) to hold source values
-    private Table makeTable() throws Throwable {
-        Table table = new Table();
-        for (int col = 0; col < dataVariables.length; col++)
-            table.addColumn(col, dataVariables[col].sourceName(), 
-                PrimitiveArray.factory(dataVariables[col].sourceDataTypeClass(), 128, false)); 
-        return table;
     }
 
     /** 

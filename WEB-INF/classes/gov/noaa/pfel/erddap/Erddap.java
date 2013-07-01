@@ -680,7 +680,9 @@ public class Erddap extends HttpServlet {
                 "\n<li><h3><a rel=\"contents\" href=\"" + tErddapUrl + "/info/index.html?" +
                     EDStatic.encodedDefaultPIppQuery + "\">" +
                 MessageFormat.format(EDStatic.indexViewAll,  
-                    gridDatasetHashMap.size() + tableDatasetHashMap.size()) +
+                    //below is one of few places where number isn't converted to string 
+                    //(so 1000's separator is used to format the number):
+                    gridDatasetHashMap.size() + tableDatasetHashMap.size()) + //no: "" + 
                 "</a></h3>\n");
 
             //display a search form
@@ -1454,9 +1456,9 @@ public class Erddap extends HttpServlet {
         Writer writer = getHtmlWriter(loggedInAs, "RESTful Web Services", out);
         try {
             String htmlQueryUrl = tErddapUrl + "/search/index.html?" +
-                EDStatic.encodedDefaultPIppQuery + "&amp;searchFor=temperature";
+                EDStatic.encodedDefaultPIppQuery + "&#x26;searchFor=temperature";
             String jsonQueryUrl = tErddapUrl + "/search/index.json?" +
-                EDStatic.encodedDefaultPIppQuery + "&amp;searchFor=temperature";
+                EDStatic.encodedDefaultPIppQuery + "&#x26;searchFor=temperature";
             String htmlQueryUrlWithSpaces = htmlQueryUrl + "%20wind%20speed";
             String griddapExample  = tErddapUrl + "/griddap/" + EDStatic.EDDGridIdExample;
             String tabledapExample = tErddapUrl + "/tabledap/" + EDStatic.EDDTableIdExample;
@@ -1545,7 +1547,7 @@ public class Erddap extends HttpServlet {
                 "<br><a href=\"" + htmlQueryUrlWithSpaces + "\">" + htmlQueryUrlWithSpaces + "</a>\n" +
                 "<br>But if your computer program or script generates the URLs, it may need to do the percent\n" +
                 "encoding itself.  Programming languages have tools to do this (for example, see Java's\n" +
-                "<a rel=\"help\" href=\"http://download.oracle.com/javase/1.4.2/docs/api/java/net/URLEncoder.html\">java.net.URLEncoder</a>).\n" +
+                "<a rel=\"help\" href=\"http://docs.oracle.com/javase/7/docs/api/java/net/URLEncoder.html\">java.net.URLEncoder</a>).\n" +
                 "\n" +  
                 
                 //compression
@@ -1605,7 +1607,9 @@ public class Erddap extends HttpServlet {
                 "  <a href=\"http://niryariv.wordpress.com/2009/05/05/jsonp-quickly/\">jsonp</a> request by\n" +
                 "adding \"&amp;.jsonp=<i>functionName</i>\" to the end of the query.  Basically, this tells\n" +
                 "ERDDAP to add \"<i>functionName</i>(\" to the beginning of the response and \")\" to the\n" +
-                "end of the response. If originally there was no query, leave off the \"&amp;\" in your query.\n" +
+                "end of the response. The first character of <i>functionName</i> must be an ISO 8859 letter or \"_\".\n" +
+                "Each optional subsequent character must be an ISO 8859 letter, \"_\", a digit, or \".\".\n" +
+                "If originally there was no query, leave off the \"&amp;\" in your query.\n" +
                 "\n" + 
 
                 "<p>griddap and tabledap Offer Different File Types\n" +
@@ -1720,13 +1724,13 @@ public class Erddap extends HttpServlet {
                 "    <br>&nbsp;\n" +
                 "  <li>To get a <b>dataset's structure</b>, including variable names and data types,\n" +
                 "    use a standard OPeNDAP\n" +
-                "      <a rel=\"help\" href=\"" + XML.encodeAsHTML(EDDTable.dataFileTypeInfo[tDdsIndex]) + "\">.dds</a>\n" +
+                "      <a rel=\"help\" href=\"" + XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo[tDdsIndex]) + "\">.dds</a>\n" +
                 "      resquest. For example,\n" + 
                 "    <br><a href=\"" + griddapExample  + ".dds\">" + griddapExample  + ".dds</a> (gridded data) or\n" +
                 "    <br><a href=\"" + tabledapExample + ".dds\">" + tabledapExample + ".dds</a> (tabular data).\n" +
                 "    <br>&nbsp;\n" +
                 "  <li>To get a <b>dataset's metadata</b>, use a standard OPeNDAP\n" +
-                "      <a rel=\"help\" href=\"" + XML.encodeAsHTML(EDDTable.dataFileTypeInfo[tDdsIndex]) + "\">.das</a>\n" +
+                "      <a rel=\"help\" href=\"" + XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo[tDdsIndex]) + "\">.das</a>\n" +
                 "      resquest.\n" +
                 "    For example,\n" + 
                 "    <br><a href=\"" + griddapExample  + ".das\">" + griddapExample  + ".das</a> (gridded data) or\n" +
@@ -2009,8 +2013,8 @@ public class Erddap extends HttpServlet {
         int n = plainFileTypes.length;
         for (int pft = 0; pft < n; pft++) {
             sb.append(
-                "    <a href=\"" + tErddapUrl + relativeUrl + plainFileTypes[pft] + 
-                EDStatic.questionQuery(query) + "\">" + 
+                "    <a href=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + relativeUrl + 
+                    plainFileTypes[pft] + EDStatic.questionQuery(query)) + "\">" + 
                 plainFileTypes[pft] + "</a>");
             if (pft <= n - 3) sb.append(",\n");
             if (pft == n - 2) sb.append(", or\n");
@@ -2026,7 +2030,7 @@ public class Erddap extends HttpServlet {
      * @param loggedInAs  the name of the logged in user (or null if not logged in)
      * @param datasetIDStartsAt is the position right after the / at the end of the protocol
      *    ("griddap" or "tabledap") in the requestUrl
-     * @param userDapQuery  post "?".  Still percentEncoded.
+     * @param userDapQuery  post "?".  Still percentEncoded.  May be "".  May not be null.
      */
     public void doDap(HttpServletRequest request, HttpServletResponse response,
         String loggedInAs,
@@ -2193,8 +2197,10 @@ public class Erddap extends HttpServlet {
             EDStatic.tally.add(protocol + " DatasetID (since last daily report)", id);
             EDStatic.tally.add(protocol + " File Type (since startup)", fileTypeName);
             EDStatic.tally.add(protocol + " File Type (since last daily report)", fileTypeName);
-            String fileName = dataset.suggestFileName(loggedInAs, userDapQuery, fileTypeName);
-            String extension = dataset.fileTypeExtension(fileTypeName);
+            String fileName = dataset.suggestFileName(loggedInAs, userDapQuery, 
+                //e.g., .ncHeader -> .nc, so same .nc file can be used for both responses
+                fileTypeName.endsWith("Header")? fileTypeName.substring(0, fileTypeName.length() - 6) : fileTypeName);
+            String extension = dataset.fileTypeExtension(fileTypeName); //e.g., .ncCF returns .nc
             if (reallyVerbose) String2.log("  fileName=" + fileName + "\n  extension=" + extension);
             if (fileTypeName.equals(".subset")) {
                 String tValue = (userDapQuery == null || userDapQuery.length() == 0)? 
@@ -2213,7 +2219,6 @@ public class Erddap extends HttpServlet {
             //if EDDGridFromErddap or EDDTableFromErddap, forward request
             //Note that .html and .graph are handled locally so links on web pages 
             //  are for this server and the reponses can be handled quickly.
-            String tqs = EDStatic.questionQuery(request.getQueryString());  //still encoded
             if (dataset instanceof FromErddap) {
                 FromErddap fromErddap = (FromErddap)dataset;
                 double sourceVersion = fromErddap.sourceErddapVersion();
@@ -2227,6 +2232,7 @@ public class Erddap extends HttpServlet {
                     !fileTypeName.equals(".subset")) { 
                     //redirect the request
                     String tUrl = fromErddap.getPublicSourceErddapUrl() + fileTypeName;
+                    String tqs = EDStatic.questionQuery(request.getQueryString());  //still encoded
                     if (verbose) String2.log("redirected to " + tUrl + tqs);
                     response.sendRedirect(tUrl + tqs);  
                     return;
@@ -3447,20 +3453,20 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
 
         String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
         String e0 = tErddapUrl + "/wms/" + EDStatic.wmsSampleDatasetID + "/" + EDD.WMS_SERVER + "?"; 
-        String ec = "service=WMS&amp;request=GetCapabilities&amp;version=";
-        String e1 = "service=WMS&amp;version="; 
-        String e2 = "&amp;request=GetMap&amp;bbox=" + EDStatic.wmsSampleBBox +
-                    "&amp;"; //needs c or s
+        String ec = "service=WMS&#x26;request=GetCapabilities&#x26;version=";
+        String e1 = "service=WMS&#x26;version="; 
+        String e2 = "&#x26;request=GetMap&#x26;bbox=" + EDStatic.wmsSampleBBox +
+                    "&#x26;"; //needs c or s
         //this section of code is in 2 places
         int bbox[] = String2.toIntArray(String2.split(EDStatic.wmsSampleBBox, ',')); 
         int tHeight = Math2.roundToInt(((bbox[3] - bbox[1]) * 360) / Math.max(1, bbox[2] - bbox[0]));
         tHeight = Math2.minMaxDef(10, 600, 180, tHeight);
-        String e2b = "rs=EPSG:4326&amp;width=360&amp;height=" + tHeight + 
-            "&amp;bgcolor=0x808080&amp;layers=";
+        String e2b = "rs=EPSG:4326&#x26;width=360&#x26;height=" + tHeight + 
+            "&#x26;bgcolor=0x808080&#x26;layers=";
         //Land,erdBAssta5day:sst,Coastlines,LakesAndRivers,Nations,States
         String e3 = EDStatic.wmsSampleDatasetID + EDD.WMS_SEPARATOR + EDStatic.wmsSampleVariable;
-        String e4 = "&amp;styles=&amp;format=image/png";
-        String et = "&amp;transparent=TRUE";
+        String e4 = "&#x26;styles=&#x26;format=image/png";
+        String et = "&#x26;transparent=TRUE";
 
         String tWmsGetCapabilities110    = e0 + ec + "1.1.0";
         String tWmsGetCapabilities111    = e0 + ec + "1.1.1";
@@ -4820,9 +4826,9 @@ writer.write(
 
         writer.write(
    "        <Attribution>\n" +
-   "          <Title>" + XML.encodeAsXML(eddGrid.institution()) + "</Title> \n" +
-   "          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" \n" +
-   "            xlink:type=\"simple\" \n" +
+   "          <Title>" + XML.encodeAsXML(eddGrid.institution()) + "</Title>\n" +
+   "          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+   "            xlink:type=\"simple\"\n" +
    "            xlink:href=\"" + XML.encodeAsXML(eddGrid.infoUrl()) + "\" />\n" +
             //LogoURL
    "        </Attribution>\n");
@@ -4957,15 +4963,13 @@ writer.write(
 //?optional MetadataURL   needs to be in standard format (e.g., fgdc)
 
 "        <Attribution>\n" +
-"          <Title>" + XML.encodeAsXML(
-    layeri < 2? "NOAA NOS GSHHS" : "pscoast in GMT"
-    ) + "</Title> \n" +
+"          <Title>" + XML.encodeAsXML(layeri < 2? "NOAA NOS GSHHS" : "pscoast in GMT") + "</Title> \n" +
 "          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" \n" +
 "            xlink:type=\"simple\" \n" +
-"            xlink:href=\"" + XML.encodeAsXML(
-    layeri < 2? "http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html" : 
-                "http://gmt.soest.hawaii.edu/"
-    ) + "\" />\n" +
+"            xlink:href=\"" + 
+    (layeri < 2? "http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html" : 
+                "http://gmt.soest.hawaii.edu/") + 
+    "\" />\n" +
          //LogoURL
 "        </Attribution>\n" +
 
@@ -5216,6 +5220,7 @@ writer.write(
             if (queryString == null)
                 queryString = "";
             eddGrid.writeHtmlDatasetInfo(loggedInAs, writer, true, true, true, queryString, "");
+            writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
             writer.write(
                 "&nbsp;\n" + //necessary for the blank line before start of form (not <p>)
                 "<form name=\"f1\" action=\"\">\n" +
@@ -5303,9 +5308,9 @@ writer.write(
             for (int dv = 0; dv < nVars; dv++) {
                 if (!dva[dv].hasColorBarMinMax())
                     continue;
-                writer.write("<p><img src=\"" + tErddapUrl + "/griddap/" + tDatasetID + ".png?" + 
-                    dva[dv].destinationName() + 
-                    XML.encodeAsHTML(tAxisConstraints.toString() + "&.legend=Only") +
+                writer.write("<p><img src=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + 
+                        "/griddap/" + tDatasetID + ".png?" + dva[dv].destinationName() + 
+                        tAxisConstraints.toString() + "&.legend=Only") +
                     "\" alt=\"The legend.\" title=\"The legend. This colorbar is always relevant for " +
                     dva[dv].destinationName() + ", even if the other settings don't match.\"/>\n");
             }
@@ -5315,19 +5320,19 @@ writer.write(
 
             //*** What is WMS? 
             String e0 = tErddapUrl + "/wms/" + EDStatic.wmsSampleDatasetID + "/" + EDD.WMS_SERVER + "?";
-            String ec = "service=WMS&amp;request=GetCapabilities&amp;version=";
-            String e1 = "service=WMS&amp;version="; 
+            String ec = "service=WMS&#x26;request=GetCapabilities&#x26;version=";
+            String e1 = "service=WMS&#x26;version="; 
             //this section of code is in 2 places
             int bbox[] = String2.toIntArray(String2.split(EDStatic.wmsSampleBBox, ',')); 
             int tHeight = Math2.roundToInt(((bbox[3] - bbox[1]) * 360) / Math.max(1, bbox[2] - bbox[0]));
             tHeight = Math2.minMaxDef(10, 600, 180, tHeight);
-            String e2 = "&amp;request=GetMap&amp;bbox=" + EDStatic.wmsSampleBBox +
-                        "&amp;" + csrs + "=EPSG:4326&amp;width=360&amp;height=" + tHeight + 
-                        "&amp;bgcolor=0x808080&amp;layers=";
+            String e2 = "&#x26;request=GetMap&#x26;bbox=" + EDStatic.wmsSampleBBox +
+                        "&#x26;" + csrs + "=EPSG:4326&#x26;width=360&#x26;height=" + tHeight + 
+                        "&#x26;bgcolor=0x808080&#x26;layers=";
             //Land,erdBAssta5day:sst,Coastlines,LakesAndRivers,Nations,States
             String e3 = EDStatic.wmsSampleDatasetID + EDD.WMS_SEPARATOR + EDStatic.wmsSampleVariable;
-            String e4 = "&amp;styles=&amp;format=image/png";
-            String et = "&amp;transparent=TRUE";
+            String e4 = "&#x26;styles=&#x26;format=image/png";
+            String et = "&#x26;transparent=TRUE";
 
             String tWmsOpaqueExample      = e0 + e1 + tVersion + e2 + "Land," + e3 + ",Coastlines,Nations" + e4;
             String tWmsTransparentExample = e0 + e1 + tVersion + e2 +           e3 + e4 + et;
@@ -5345,7 +5350,7 @@ writer.write(
             //What is WMS?   (for tDatasetID) 
             //!!!see the almost identical documentation above
             String wmsUrl = tErddapUrl + "/wms/" + tDatasetID + "/" + EDD.WMS_SERVER + "?";
-            String capUrl = wmsUrl + "service=WMS&amp;request=GetCapabilities&amp;version=" + tVersion;
+            String capUrl = wmsUrl + "service=WMS&#x26;request=GetCapabilities&#x26;version=" + tVersion;
             writer.write(
                 "<h2><a name=\"description\">What</a> is WMS?</h2>\n" +
                 EDStatic.wmsLongDescriptionHtml + "\n" +
@@ -5903,6 +5908,7 @@ writer.write(
             writer.write(HtmlWidgets.dragDropScript(EDStatic.imageDirUrl(loggedInAs)));
             writer.write(EDStatic.youAreHereWithHelp(loggedInAs, "Slide Sorter", 
                 EDStatic.ssInstructionsHtml)); 
+            writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
 
             //begin form
             HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
@@ -5995,7 +6001,7 @@ writer.write(
 
                     contentWidth  = EDStatic.imageWidths[tSize];
                     contentHeight = EDStatic.imageHeights[tSize];
-                    content = "<img src=\"" + XML.encodeAsHTML(tUrl) +  
+                    content = "<img src=\"" + XML.encodeAsHTMLAttribute(tUrl) +  
                         "\" width=\"" + contentWidth + "\" height=\"" + contentHeight + 
                         "\" " + ssBePatientAlt + ">";
                     dataUrl = preExt + ".graph" + qAndPost;
@@ -6021,7 +6027,7 @@ writer.write(
                         contentWidth = EDStatic.imageWidths[tSize == 0? 1 : 2];
                         contentHeight = EDStatic.imageWidths[tSize == 2? 2 : tSize] * 3 / 4; //yes, widths; make wide
                     }
-                    content = "<iframe src=\"" + XML.encodeAsHTML(tUrl) + "\" " +
+                    content = "<iframe src=\"" + XML.encodeAsHTMLAttribute(tUrl) + "\" " +
                         "width=\"" + contentWidth + "\" height=\"" + contentHeight + "\" " + 
                         "style=\"background:#FFFFFF\" " +
                         ">Your browser does not support inline frames.</iframe>";
@@ -6059,7 +6065,7 @@ writer.write(
                         "   <td><img src=\"" + EDStatic.imageDirUrl(loggedInAs) + "data.gif\" alt=\"data\" \n" +
                         "      title=\"Edit the image or download the data in a new browser window.\" \n" +
                         "      style=\"cursor:default;\" \n" +  //cursor:hand doesn't work in Firefox
-                        "      onClick=\"window.open('" + dataUrl + "');\" ></td>\n\n"); //open a new window 
+                        "      onClick=\"window.open('" + XML.encodeAsHTMLAttribute(dataUrl) + "');\" ></td>\n\n"); //open a new window 
 
                     //resize button
                     writer.write(
@@ -6216,7 +6222,6 @@ writer.write(
                 "Click to submit the information on this page to the server.",
                 "Submit",  //button label
                 "style=\"cursor:default;\" onClick=\"setHidden(); " + dFormName + ".submit();\""));
-            writer.write(HtmlWidgets.ifJavaScriptDisabled);
             writer.write("<a name=\"instructions\">&nbsp;</a><p>");
             writer.write(EDStatic.ssInstructionsHtml);
 
@@ -6530,7 +6535,7 @@ writer.write(
 
         String endOfRequestUrl = pageNameStartsAt >= requestUrl.length()? "" : 
             requestUrl.substring(pageNameStartsAt);
-        String xmlThisRequest = XML.encodeAsXML(serviceUrl + EDStatic.questionQuery(userQuery));
+        String xmlThisRequest = XML.encodeAsHTMLAttribute(serviceUrl + EDStatic.questionQuery(userQuery));
 
         //search standard_names for a good exampleSearchTerm
         String exampleSearchTerm = "datasetID";   //default    latitude?
@@ -6548,7 +6553,7 @@ writer.write(
             }
         }
         String sampleUrl = serviceUrl + "?" +
-            EDStatic.encodedDefaultPIppQuery + "&amp;searchTerms=" + exampleSearchTerm;
+            EDStatic.encodedDefaultPIppQuery + "&#x26;searchTerms=" + exampleSearchTerm;
 
         //*** respond to /index.html
         if (endOfRequestUrl.equals("index.html")) {
@@ -6573,12 +6578,12 @@ writer.write(
                 //                     serviceUrl + "</a>\n" +
                 //"  <br>&nbsp;\n" +
                 "<li>A sample " + niceProtocol + " request for an Atom response is\n" +
-                "  <br><a href=\"" + sampleUrl + "&amp;format=atom\">" + 
-                                     sampleUrl + "&amp;format=atom</a>\n" +
+                "  <br><a href=\"" + sampleUrl + "&#x26;format=atom\">" + 
+                                     sampleUrl + "&#x26;format=atom</a>\n" +
                 "  <br>&nbsp;\n" +
                 "<li>A sample " + niceProtocol + " request for an RSS response is\n" +
-                "  <br><a href=\"" + sampleUrl + "&amp;format=rss\">" + 
-                                     sampleUrl + "&amp;format=rss</a>\n" +
+                "  <br><a href=\"" + sampleUrl + "&#x26;format=rss\">" + 
+                                     sampleUrl + "&#x26;format=rss</a>\n" +
                 "</ul>\n" +
                 "\n" +
                 "<p>If you aren't setting up a web site that uses " + niceProtocol + ", please use ERDDAP's regular\n" +
@@ -6609,8 +6614,8 @@ writer.write(
                     "custom:application/opensearchdescription+xml", ".xml")).
                 outputStream("UTF-8");
             Writer writer = new OutputStreamWriter(out, "UTF-8");
-            String template = "?searchTerms={searchTerms}&amp;page={startPage?}" +
-                              "&amp;itemsPerPage={count?}";
+            String template = "?searchTerms={searchTerms}&#x26;page={startPage?}" +
+                              "&#x26;itemsPerPage={count?}";
             writer.write(  
 //items are in the order they are described in OpenSearch specification
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -6620,9 +6625,9 @@ writer.write(
 " is a data server that gives you a simple, consistent way to download subsets of " +
 "scientific datasets in common file formats and make graphs and maps.</Description>\n" + 
 "  <Url type=\"application/atom+xml\"\n" +
-"       template=\"" + serviceUrl + template + "&amp;format=atom\"/>\n" +
+"       template=\"" + serviceUrl + template + "&#x26;format=atom\"/>\n" +
 "  <Url type=\"application/rss+xml\"\n" +
-"       template=\"" + serviceUrl + template + "&amp;format=rss\"/>\n" +
+"       template=\"" + serviceUrl + template + "&#x26;format=rss\"/>\n" +
 "  <Contact>" + XML.encodeAsXML(EDStatic.adminEmail) + "</Contact>\n" +
 "  <Tags>" + XML.encodeAsXML(tKeywords) + "</Tags>\n" +
 "  <LongName>ERDDAP" + //<=48 characters   
@@ -6885,8 +6890,8 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
     public String getAdvancedSearchLink(String loggedInAs, String paramString) throws Throwable {
 
         return 
-            "<a href=\"" + EDStatic.erddapUrl(loggedInAs) + "/search/advanced.html" +
-            XML.encodeAsHTML(EDStatic.questionQuery(paramString)) +
+            "<a href=\"" + XML.encodeAsHTMLAttribute(EDStatic.erddapUrl(loggedInAs) + "/search/advanced.html" +
+                EDStatic.questionQuery(paramString)) +
             "\">" + EDStatic.advancedSearch + "</a>\n" +
             EDStatic.htmlTooltipImage(loggedInAs, EDStatic.advancedSearchHtml) +
             "\n";
@@ -7062,6 +7067,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                         EDStatic.htmlTooltipImage(loggedInAs, 
                             EDStatic.advancedSearchHtml)) + "\n\n" +
                     EDStatic.advancedSearchDirections + "\n" +
+                    HtmlWidgets.ifJavaScriptDisabled + "\n" +
                     widgets.beginForm(formName, "GET",
                         tErddapUrl + "/search/advanced.html", "") + "\n");
 
@@ -7469,7 +7475,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 } else {
                     writer.write(
                         MessageFormat.format(EDStatic.advancedSearchNoCriteria,
-                            EDStatic.searchButton, tErddapUrl, pipp[1]));
+                            EDStatic.searchButton, tErddapUrl, "" + pipp[1]));
                 }
 
             } catch (Throwable t) {
@@ -7916,7 +7922,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             getYouAreHereTable(
                 EDStatic.youAreHere(loggedInAs, EDStatic.categoryTitleHtml), //protocol),
                 refine) +
-            "\n" + HtmlWidgets.ifJavaScriptDisabled;
+            "\n" + HtmlWidgets.ifJavaScriptDisabled + "\n";
 
         //*** attribute string should be e.g., ioos_category
         fileTypeName = File2.getExtension(endOfRequestUrl);
@@ -8493,11 +8499,11 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                     String s = valueSA.get(i);
                     if (String2.isUrl(s)) {
                         //display as a link
-                        s = XML.encodeAsHTML(s);
+                        s = XML.encodeAsHTMLAttribute(s);
                         valueSA.set(i, "<a href=\"" + s + "\">" + s + "</a>");
                     } else if (String2.isEmailAddress(s)) {
                         //display as a mailTo link
-                        s = XML.encodeAsHTML(s);
+                        s = XML.encodeAsHTMLAttribute(s);
                         valueSA.set(i, "<a href=\"mailto:" + s + "\">" + s + "</a>");
                     } else {
                         valueSA.set(i, XML.encodeAsPreHTML(s, 10000));  //???
@@ -8648,8 +8654,9 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         return 
             "<br>&nbsp;\n" +
             "<p><b>Or, you can request an email with a\n" +
-            "<a rel=\"bookmark\" href=\"" + tErddapUrl + "/" + Subscriptions.LIST_HTML + 
-            (tEmail.length() > 0? "?email=" + tEmail : "") +
+            "<a rel=\"bookmark\" href=\"" + 
+                XML.encodeAsHTMLAttribute(tErddapUrl + "/" + Subscriptions.LIST_HTML + 
+                (tEmail.length() > 0? "?email=" + tEmail : "")) +
             "\">list of your valid and pending subscriptions</a>.</b>\n";
     }
 
@@ -8686,39 +8693,54 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         if (tEmail     == null) tEmail     = "";
         if (tAction    == null) tAction    = "";
         boolean tEmailIfAlreadyValid = String2.parseBoolean(queryMap.get("emailifalreadyvalid")); //default=true 
-        boolean tShowErrors          = String2.parseBoolean(queryMap.get("showerrors"));          //default=true; 
+        boolean tShowErrors = userQuery == null || userQuery.length() == 0? false :
+            String2.parseBoolean(queryMap.get("showerrors")); //default=true
 
         //validate params
         String trouble = "";
-        if      (tDatasetID.length() == 0)                                
+        if (tDatasetID.length() == 0) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionIDUnspecified + "</font>\n";
-        else if (tDatasetID.length() > Subscriptions.DATASETID_LENGTH)    
+        } else if (tDatasetID.length() > Subscriptions.DATASETID_LENGTH) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionIDTooLong + "</font>\n";
-        else if (!String2.isFileNameSafe(tDatasetID))                     
+            tDatasetID = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+        } else if (!String2.isFileNameSafe(tDatasetID)) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionIDInvalid + "</font>\n";
-        else {
+            tDatasetID = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+        } else {
             EDD edd = (EDD)gridDatasetHashMap.get(tDatasetID);
             if (edd == null) 
                 edd = (EDD)tableDatasetHashMap.get(tDatasetID);
-            if (edd == null)                                              
+            if (edd == null) {
                 trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionIDInvalid + "</font>\n";
-            else if (!edd.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //listPrivateDatasets doesn't apply
+                tDatasetID = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+            } else if (!edd.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //listPrivateDatasets doesn't apply
                 EDStatic.redirectToLogin(loggedInAs, response, tDatasetID);
                 return;
             }
         }
-        if      (tEmail.length() == 0)                                    
+
+        if (tEmail.length() == 0) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionEmailUnspecified + "</font>\n";
-        else if (tEmail.length() > Subscriptions.EMAIL_LENGTH)            
+        } else if (tEmail.length() > Subscriptions.EMAIL_LENGTH) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionEmailTooLong + "</font>\n";
-        else if (!String2.isEmailAddress(tEmail))                         
+            tEmail = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+        } else if (!String2.isEmailAddress(tEmail)) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionEmailInvalid + "</font>\n";
-        if      (tAction.length() > Subscriptions.ACTION_LENGTH)          
+            tEmail = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+        }
+
+        if (tAction.length() > Subscriptions.ACTION_LENGTH) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionUrlTooLong + "</font>\n";
-        else if (!tAction.equals("") && 
+            tAction = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+        } else if (!tAction.equals("") && 
             (tAction.length() <= 10 || !tAction.startsWith("http://") || 
-             tAction.startsWith("http://127.0.0.1")))    
+             tAction.startsWith("http://127.0.0.1"))) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionUrlInvalid + "</font>\n";
+            tAction = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+        } else if (tAction.indexOf('<') >= 0 || tAction.indexOf('>') >= 0) {  //prevent e.g., <script>
+            trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionUrlInvalid + "</font>\n";
+            tAction = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+        }
 
         //display start of web page
         HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
@@ -8731,41 +8753,39 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 MessageFormat.format(EDStatic.subscriptionHtml,  tErddapUrl) + "\n" +
                 MessageFormat.format(EDStatic.subscription2Html, tErddapUrl) + "\n");
 
-            if (tDatasetID.length() > 0 || tEmail.length() > 0 || tAction.length() > 0) {
-                if (trouble.length() > 0) {
-                    if (tShowErrors) 
-                        writer.write("<p><font class=\"warningColor\">" +
-                        EDStatic.subscriptionAddError + "</font>\n" +
-                        "<ul>\n" +
-                        trouble + "\n" +
-                        "</ul>\n");
-                } else {
-                    //try to add 
-                    try {
-                        int row = EDStatic.subscriptions.add(tDatasetID, tEmail, tAction);
-                        if (tEmailIfAlreadyValid || 
-                            EDStatic.subscriptions.readStatus(row) == Subscriptions.STATUS_PENDING) {
-                            String invitation = EDStatic.subscriptions.getInvitation(ipAddress, row);
-                            String tError = EDStatic.email(tEmail, "Subscription Invitation", invitation);
-                            if (tError.length() > 0)
-                                throw new SimpleException(tError);
-
-                            //tally
-                            EDStatic.tally.add("Subscriptions (since startup)", "Add successful");
-                            EDStatic.tally.add("Subscriptions (since last daily report)", "Add successful");
-                        }
-                        writer.write(EDStatic.subscriptionAddSuccess + "\n");
-                    } catch (Throwable t) {
-                        EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
-                        writer.write("<p><font class=\"warningColor\">" +
-                            EDStatic.subscriptionAddError + "\n<br>" + 
-                            XML.encodeAsHTML(MustBe.getShortErrorMessage(t)) + "</font>\n");
-                        String2.log("Subscription Add Exception:\n" + MustBe.throwableToString(t)); //log stack trace, too
+            if (trouble.length() > 0) {
+                if (tShowErrors) 
+                    writer.write("<p><font class=\"warningColor\">" +
+                    EDStatic.subscriptionAddError + "</font>\n" +
+                    "<ul>\n" +
+                    trouble + "\n" +
+                    "</ul>\n");
+            } else {
+                //try to add 
+                try {
+                    int row = EDStatic.subscriptions.add(tDatasetID, tEmail, tAction);
+                    if (tEmailIfAlreadyValid || 
+                        EDStatic.subscriptions.readStatus(row) == Subscriptions.STATUS_PENDING) {
+                        String invitation = EDStatic.subscriptions.getInvitation(ipAddress, row);
+                        String tError = EDStatic.email(tEmail, "Subscription Invitation", invitation);
+                        if (tError.length() > 0)
+                            throw new SimpleException(tError);
 
                         //tally
-                        EDStatic.tally.add("Subscriptions (since startup)", "Add unsuccessful");
-                        EDStatic.tally.add("Subscriptions (since last daily report)", "Add unsuccessful");
+                        EDStatic.tally.add("Subscriptions (since startup)", "Add successful");
+                        EDStatic.tally.add("Subscriptions (since last daily report)", "Add successful");
                     }
+                    writer.write(EDStatic.subscriptionAddSuccess + "\n");
+                } catch (Throwable t) {
+                    EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+                    writer.write("<p><font class=\"warningColor\">" +
+                        EDStatic.subscriptionAddError + "\n<br>" + 
+                        XML.encodeAsHTML(MustBe.getShortErrorMessage(t)) + "</font>\n");
+                    String2.log("Subscription Add Exception:\n" + MustBe.throwableToString(t)); //log stack trace, too
+
+                    //tally
+                    EDStatic.tally.add("Subscriptions (since startup)", "Add unsuccessful");
+                    EDStatic.tally.add("Subscriptions (since last daily report)", "Add unsuccessful");
                 }
             }
 
@@ -8780,20 +8800,20 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 "  <td>" + widgets.textField("datasetID", 
                     "For example, " + EDStatic.EDDGridIdExample,
                     40, Subscriptions.DATASETID_LENGTH, tDatasetID, 
-                    "") + "</td>\n" +
+                    "") + " (required)</td>\n" +
                 "</tr>\n" +
                 "<tr>\n" +
                 "  <td>Your email address:&nbsp;</td>\n" +
                 "  <td>" + widgets.textField("email", "", 
                     60, Subscriptions.EMAIL_LENGTH, tEmail, 
-                    "") + "</td>\n" +
+                    "") + " (required)</td>\n" +
                 "</tr>\n" +
                 "<tr>\n" +
                 "  <td>The URL/action:&nbsp;</td>\n" +
                 "  <td>" + widgets.textField("action", urlTT,
-                    80, Subscriptions.ACTION_LENGTH, tAction, "") + "\n" +
+                    60, Subscriptions.ACTION_LENGTH, tAction, "") + "\n" +
                 "    " + EDStatic.htmlTooltipImage(loggedInAs, urlTT) +
-                "  </td>\n" +
+                "  (optional)</td>\n" +
                 "</tr>\n" +
                 "<tr>\n" +
                 "  <td colspan=\"2\">" + widgets.button("submit", null, 
@@ -8844,12 +8864,15 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         String tEmail = queryMap.get("email");
         if (tEmail == null) tEmail = "";
         String trouble = "";
-        if      (tEmail.length() == 0)                                  
+        if (tEmail.length() == 0) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionEmailUnspecified + "</font>\n";
-        else if (tEmail.length() > Subscriptions.EMAIL_LENGTH)          
+        } else if (tEmail.length() > Subscriptions.EMAIL_LENGTH) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionEmailTooLong + "</font>\n";
-        else if (!String2.isEmailAddress(tEmail))                       
+            tEmail = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+        } else if (!String2.isEmailAddress(tEmail)) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionEmailInvalid + "</font>\n";
+            tEmail = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+        }
 
         //display start of web page
         HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
@@ -8861,7 +8884,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 EDStatic.youAreHere(loggedInAs, protocol, "list") +
                 MessageFormat.format(EDStatic.subscriptionHtml, tErddapUrl) + "\n");
 
-            if (tEmail.length() > 0) {
+            if (userQuery != null && userQuery.length() > 0) {
                 if (trouble.length() > 0) {
                     writer.write("<p><font class=\"warningColor\">" +
                         EDStatic.subscriptionListError + "</font>\n" + 
@@ -8952,14 +8975,19 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         if (tSubscriptionID == null) tSubscriptionID = "";
         if (tKey            == null) tKey            = "";
         String trouble = "";
-        if      (tSubscriptionID.length() == 0)            
+        if (tSubscriptionID.length() == 0) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionIDUnspecified + "</font>\n";
-        else if (!tSubscriptionID.matches("[0-9]{1,10}"))  
+        } else if (!tSubscriptionID.matches("[0-9]{1,10}")) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionIDInvalid + "</font>\n";
-        if      (tKey.length() == 0)                       
+            tSubscriptionID = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+        }
+
+        if (tKey.length() == 0) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionKeyUnspecified + "</font>\n";
-        else if (!tKey.matches("[0-9]{1,10}"))             
+        } else if (!tKey.matches("[0-9]{1,10}")) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionKeyInvalid + "</font>\n";
+            tKey = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+        }
 
         //display start of web page
         HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
@@ -8971,7 +8999,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 EDStatic.youAreHere(loggedInAs, protocol, "validate") +
                 MessageFormat.format(EDStatic.subscriptionHtml, tErddapUrl) + "\n");
 
-            if (tSubscriptionID.length() > 0 || tKey.length() > 0) {
+            if (userQuery != null && userQuery.length() > 0) {
                 if (trouble.length() > 0) {
                     writer.write("<p><font class=\"warningColor\">" +
                         EDStatic.subscriptionValidateError + "</font>\n" +
@@ -8988,7 +9016,8 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                                 EDStatic.subscriptionValidateError + "\n" +
                                 "<br>" + message + "</font>\n");
 
-                        } else {writer.write(EDStatic.subscriptionValidateSuccess + "\n");
+                        } else {
+                            writer.write(EDStatic.subscriptionValidateSuccess + "\n");
 
                             //tally
                             EDStatic.tally.add("Subscriptions (since startup)", "Validate successful");
@@ -9071,14 +9100,19 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         if (tSubscriptionID == null) tSubscriptionID = "";
         if (tKey            == null) tKey            = "";
         String trouble = "";
-        if      (tSubscriptionID.length() == 0)            
+        if (tSubscriptionID.length() == 0) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionIDUnspecified + "</font>\n";
-        else if (!tSubscriptionID.matches("[0-9]{1,10}"))  
+        } else if (!tSubscriptionID.matches("[0-9]{1,10}")) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionIDInvalid + "</font>\n";
-        if      (tKey.length() == 0)                       
+            tSubscriptionID = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+        }
+
+        if (tKey.length() == 0) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionKeyUnspecified + "</font>\n";
-        else if (!tKey.matches("[0-9]{1,10}"))             
+        } else if (!tKey.matches("[0-9]{1,10}")) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionKeyInvalid + "</font>\n";
+            tKey = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
+        }
 
         //display start of web page
         HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs)); //true=htmlTooltips
@@ -9090,7 +9124,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 EDStatic.youAreHere(loggedInAs, protocol, "remove") +
                 MessageFormat.format(EDStatic.subscriptionHtml, tErddapUrl) + "\n");
 
-            if (tSubscriptionID.length() > 0 || tKey.length() > 0) {
+            if (userQuery != null && userQuery.length() > 0) {
                 if (trouble.length() > 0) {
                     writer.write("<p><font class=\"warningColor\">" +
                         EDStatic.subscriptionRemoveError + "</font>\n" +
@@ -9382,6 +9416,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
      
             //Convert from Code to County
             writer.write(
+                HtmlWidgets.ifJavaScriptDisabled + "\n" +
                 widgets.beginForm("getCounty", "GET", tErddapUrl + "/convert/fipscounty.html", "") +
                 "<b>Convert from</b>\n" + 
                 widgets.textField("code", codeTooltip, 6, 6, 
@@ -9446,7 +9481,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
 
             //get the entire list
             writer.write(
-                "<p>Or, view the entire FIPS county list in these file types: " +
+                "<p>Or, view/download the entire FIPS county list in these file types: " +
                 plainLinkExamples(tErddapUrl, "/convert/fipscounty", ""));
 
             //notes  (always non-https urls)
@@ -9568,6 +9603,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             //Convert from CF to GCMD
             String selectedCF = queryCF.length() > 0? queryCF : defaultCF;
             writer.write(
+                HtmlWidgets.ifJavaScriptDisabled + "\n" +
                 widgets.beginForm("getGCMD", "GET", tErddapUrl + "/convert/keywords.html", "") +
                 "<b>Convert the CF Standard Name</b>\n" + 
                 "<br>" +
@@ -9988,7 +10024,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             else 
                 writer.write(
                     "<br><font class=\"successColor\">UDUNITS \"" + XML.encodeAsHTML(tUdunits) + 
-                        "\" &rarr; UCUM \"" + rUcum + "\"</font>\n");
+                        "\" &rarr; UCUM \"" + XML.encodeAsHTML(rUcum) + "\"</font>\n");
 
             writer.write(
                 widgets.endForm() +
@@ -10018,7 +10054,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             else 
                 writer.write(
                     "<br><font class=\"successColor\">UCUM \"" + XML.encodeAsHTML(tUcum) + 
-                        "\" &rarr; UDUNITS \"" + rUdunits + "\"</font>\n");            
+                        "\" &rarr; UDUNITS \"" + XML.encodeAsHTML(rUdunits) + "\"</font>\n");            
 
             writer.write(widgets.endForm());
             writer.write('\n');
@@ -10394,6 +10430,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 "<a rel=\"copyright\" href=\"" + tErddapUrl + "/post/license.html\">POST License</a>.\n" +
                 "\n" +
                 "<br>&nbsp;\n"); //necessary for the blank line before start of form (not <p>) 
+            writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
             
             //if noData/invalid request tell user and reset all
             if (bigTable == null) {
@@ -10668,7 +10705,6 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 "  } \n" +
                 "} \n" +
                 "</script> \n");  
-            writer.write(HtmlWidgets.ifJavaScriptDisabled);
 
             //endForm
             writer.write(widgets.endForm() + "\n");
@@ -10686,24 +10722,26 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 "  <td width=\"50%\" valign=\"top\">\n"); 
 
             //0 = map = Surgery Map
-            String graphDapQuery = XML.encodeAsHTML(
+            String graphDapQuery = 
                 "longitude,latitude,time" + //yes, release "time" (not surgery_time) appropriate for release location
                 newDapQuery.toString() + 
-                "&.draw=markers&.colorBar=|D||||");
+                "&.draw=markers&.colorBar=|D||||";
             writer.write(
                 "<b>Surgery/Release Map</b>\n" +
                 EDStatic.htmlTooltipImage(loggedInAs, viewTooltip[0]) +
-                "<br>(<a href=\"" + tErddapUrl + "/tabledap/" + EDStatic.PostSurgeryDatasetID + ".graph?" +
-                    graphDapQuery + "\">" +
-                    "Refine the map and/or download the image</a>)\n");
+                "<br>(<a href=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + "/tabledap/" + 
+                    EDStatic.PostSurgeryDatasetID + ".graph?" +
+                    graphDapQuery) + 
+                "\">Refine the map and/or download the image</a>)\n");
             if (viewChecked[0]) {  
                 writer.write(
                     "<br><img width=\"" + EDStatic.imageWidths[1] + 
                         "\" height=\"" + EDStatic.imageHeights[1] + "\" " +
                         "alt=\"Post-surgery release locations and times.\" " +
                         "title=\"Post-surgery release locations and times.\" " +
-                        "src=\"" + tErddapUrl + "/tabledap/" + EDStatic.PostSurgeryDatasetID + ".png?" +
-                        graphDapQuery + "\">&nbsp;&nbsp;&nbsp;&nbsp;\n");  //space between images if side-by-side
+                        "src=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + "/tabledap/" + 
+                            EDStatic.PostSurgeryDatasetID + ".png?" + graphDapQuery) + 
+                        "\">&nbsp;&nbsp;&nbsp;&nbsp;\n");  //space between images if side-by-side
             } else {
                 writer.write("<p><font class=\"subduedColor\">To view the map, check <tt>View : " + 
                     viewTitle[0] + "</tt> above.</font>\n");
@@ -10727,19 +10765,21 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                         "<p><font class=\"subduedColor\">To view a Detection Map, you must select (above)\n" +
                         "<br>at least one non-\"" + ANY + "\" option.</font>\n");
                 } else {
-                    graphDapQuery = XML.encodeAsHTML(
+                    graphDapQuery = 
                         "longitude,latitude,time" + newDapQuery.toString() + 
-                        "&.draw=markers&.colorBar=|D||||");
+                        "&.draw=markers&.colorBar=|D||||";
                     writer.write(
-                        "<br>(<a href=\"" + tErddapUrl + "/tabledap/" + EDStatic.PostDetectionDatasetID + ".graph?" +
-                            graphDapQuery + "\">" +
-                            "Refine the map and/or download the image</a>)\n" +
+                        "<br>(<a href=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + 
+                            "/tabledap/" + EDStatic.PostDetectionDatasetID + ".graph?" +
+                            graphDapQuery) + 
+                        "\">Refine the map and/or download the image</a>)\n" +
                         "<br><img width=\"" + EDStatic.imageWidths[1] + 
                             "\" height=\"" + EDStatic.imageHeights[1] + "\" " +
                             "alt=\"Detection locations and times.\" " +
                             "title=\"Detection locations and times.\" " +
-                            "src=\"" + tErddapUrl + "/tabledap/" + EDStatic.PostDetectionDatasetID + ".png?" +
-                            graphDapQuery + "\">\n");
+                            "src=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + "/tabledap/" + 
+                                EDStatic.PostDetectionDatasetID + ".png?" + graphDapQuery) + 
+                            "\">\n");
                 }
             } else {
                 writer.write("<p><font class=\"subduedColor\">To view the map, check <tt>View : " + 
@@ -10763,9 +10803,9 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 String fullCountsQuery = lastPName + countsQuery.toString();
                 writer.write(
                     "&nbsp;&nbsp;\n" +
-                    "(<a href=\"" + tErddapUrl + "/tabledap/" + EDStatic.PostSurgeryDatasetID + ".html?" +
-                        XML.encodeAsHTML(fullCountsQuery + "&distinct()") + 
-                        "\">Refine the data subset and/or download the data</a>)\n");
+                    "(<a href=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + "/tabledap/" +
+                        EDStatic.PostSurgeryDatasetID + ".html?" + fullCountsQuery + "&distinct()") + 
+                    "\">Refine the data subset and/or download the data</a>)\n");
 
                 try {                    
                     //get the raw data
@@ -10842,9 +10882,9 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 "&nbsp;&nbsp;(<a href=\"" + tErddapUrl + "/tabledap/" + 
                     EDStatic.PostSurgeryDatasetID + ".das\">Metadata</a>)\n" +
                 "&nbsp;&nbsp;\n" +
-                "(<a href=\"" + tErddapUrl + "/tabledap/" + EDStatic.PostSurgeryDatasetID + ".html?" +
-                    XML.encodeAsHTML(newDapQueryString) + 
-                    "\">Refine the data subset and/or download the data</a>)\n" +
+                "(<a href=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + "/tabledap/" + 
+                    EDStatic.PostSurgeryDatasetID + ".html?" + newDapQueryString) + 
+                "\">Refine the data subset and/or download the data</a>)\n" +
                 "<br>Note that the longitude, latitude, and time variables " +
                     "have data for the animal's release, not its surgery.\n");
             if (viewChecked[3]) {  
@@ -10873,9 +10913,9 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 "&nbsp;&nbsp;(<a href=\"" + tErddapUrl + "/tabledap/" + 
                     EDStatic.PostDetectionDatasetID + ".das\">Metadata</a>)\n" +
                 "&nbsp;&nbsp;" +
-                "(<a href=\"" + tErddapUrl + "/tabledap/" + EDStatic.PostDetectionDatasetID + ".html?" +
-                    XML.encodeAsHTML(newDapQueryString) + 
-                    "\">Refine the data subset and/or download the data</a>)\n" +
+                "(<a href=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + "/tabledap/" + 
+                    EDStatic.PostDetectionDatasetID + ".html?" + newDapQueryString) + 
+                "\">Refine the data subset and/or download the data</a>)\n" +
                 "<br>Note that the first detection for each animal is from its release.\n");
             if (viewChecked[4]) {  
                 if (loggedInAs == null && smallTable.nRows() > 1) {
@@ -10894,8 +10934,8 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                         false, "", false, // tWriteHeadAndBodyTags, tFileNameNoExt, tXhtmlMode,         
                         "", "", true, true, -1); //tPreTableHtml, tPostTableHtml, tEncodeAsXML, tWriteUnits) 
                     String detectionNcUrl = "/tabledap/" + EDStatic.PostDetectionDatasetID + ".nc";
-                    if (detectionEdd.handleViaSubsetVariables(loggedInAs, newDapQueryString, tw)) {}
-                    else detectionEdd.getDataForDapQuery(loggedInAs, detectionNcUrl, newDapQueryString, tw);  
+                    if (detectionEdd.handleViaFixedOrSubsetVariables(loggedInAs, detectionNcUrl, newDapQueryString, tw)) {}
+                    else             detectionEdd.getDataForDapQuery(loggedInAs, detectionNcUrl, newDapQueryString, tw);  
                 }
             } else {
                 writer.write("<p><font class=\"subduedColor\">To view the data, check <tt>View : " + 
@@ -11712,9 +11752,9 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                     (EDStatic.fgdcActive? "&nbsp;&nbsp;&nbsp;" : "") :
                     "&nbsp;<a rel=\"chapter\" rev=\"contents\" " +
                         "href=\"" + tErddapUrl + "/" + EDStatic.fgdcXmlDirectory + 
-                        edd.datasetID() + EDD.fgdcSuffix     + ".xml\" " + 
+                        edd.datasetID() + EDD.fgdcSuffix + ".xml\" " + 
                         "title=\"" + 
-                        XML.encodeAsHTML(MessageFormat.format(EDStatic.metadataDownload, "FGDC")) + 
+                        XML.encodeAsHTMLAttribute(MessageFormat.format(EDStatic.metadataDownload, "FGDC")) + 
                         "\" >F</a>") +
                 "\n" +
                 //iso
@@ -11724,7 +11764,8 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                         "href=\"" + tErddapUrl + "/" + EDStatic.iso19115XmlDirectory +
                         edd.datasetID() + EDD.iso19115Suffix + ".xml\" " + 
                     "title=\"" + 
-                        XML.encodeAsHTML(MessageFormat.format(EDStatic.metadataDownload, "ISO 19115-2/19139")) + 
+                        XML.encodeAsHTMLAttribute(
+                            MessageFormat.format(EDStatic.metadataDownload, "ISO 19115-2/19139")) + 
                         "\" >&nbsp;I&nbsp;</a>") +
                 //dataset metadata
                 "\n&nbsp;" +
@@ -11787,9 +11828,11 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             //did query include &.jsonp= ?
             String parts[] = EDD.getUserQueryParts(request.getQueryString()); //decoded
             String jsonp = String2.stringStartsWith(parts, ".jsonp="); //may be null
-            if (jsonp != null) 
+            if (jsonp != null) {
                 jsonp = jsonp.substring(7);
-
+                if (!String2.isJsonpNameSafe(jsonp))
+                    throw new SimpleException(EDStatic.errorJsonpFunctionName);
+            }
             TableWriterJson.writeAllAndFinish(table, outSource, jsonp, false); //writeUnits
 
         } else if (fileTypeName.equals(".csv")) {
@@ -12110,7 +12153,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
                 "results=\n" + results);
 
             //json with jsonp 
-            String jsonp = "Some encoded {}\n() ! text";
+            String jsonp = "myFunctionName";
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + 
                 "/categorize/index.json?.jsonp=" + SSR.percentEncode(jsonp));
             Test.ensureEqual(results, 
@@ -12263,7 +12306,7 @@ jsonp + "(" +
             Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("(Centered Time, UTC)") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("chlorophyll") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Just generate the URL:") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("Just&#x20;generate&#x20;the&#x20;URL&#x3a;") >= 0, "results=\n" + results);
 
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/griddap/erdMHchla8day.graph");            
             Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
@@ -12271,7 +12314,7 @@ jsonp + "(" +
             Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("(UTC)") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("chlorophyll") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Download the Data or an Image") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("Download&#x20;the&#x20;Data&#x20;or&#x20;an&#x20;Image") >= 0, "results=\n" + results);
 
 
             //tabledap
@@ -12300,7 +12343,7 @@ jsonp + "(" +
             Test.ensureTrue(results.indexOf("Make A Graph") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("(UTC)") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("NO3") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Just generate the URL:") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("Just&#x20;generate&#x20;the&#x20;URL&#x3a;") >= 0, "results=\n" + results);
 
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/tabledap/erdGlobecBottle.graph");            
             Test.ensureTrue(results.indexOf("</html>") >= 0, "results=\n" + results);
@@ -12308,7 +12351,7 @@ jsonp + "(" +
             Test.ensureTrue(results.indexOf("Data Access Form") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("NO3") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("Filled Square") >= 0, "results=\n" + results);
-            Test.ensureTrue(results.indexOf("Download the Data or an Image") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("Download&#x20;the&#x20;Data&#x20;or&#x20;an&#x20;Image") >= 0, "results=\n" + results);
 
             //sos
             if (EDStatic.sosActive) {
@@ -12588,38 +12631,28 @@ EDStatic.startBodyHtml(null) + "\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>info\n" +
-"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/info/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/info/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
+"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;info&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;info&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>search\n" +
-"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/search/index.htmlTable?page=1&amp;itemsPerPage=1000&amp;searchFor=\">http://127.0.0.1:8080/cwexperimental/search/index.htmlTable?page=1&amp;itemsPerPage=1000&amp;searchFor=</a>\n" +
+"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;search&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000&#x26;searchFor&#x3d;\">http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;search&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000&#x26;searchFor&#x3d;</a>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>categorize\n" +
-"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/categorize/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/categorize/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
+"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;categorize&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;categorize&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>griddap\n" +
-"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/griddap/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/griddap/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
+"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;griddap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;griddap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>tabledap\n" +
-"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/tabledap/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/tabledap/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
+"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
 "</tr>\n" +
-(EDStatic.sosActive?              
-"<tr>\n" +
-"<td nowrap>sos\n" +
-"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/sos/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/sos/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
-"</tr>\n" : "") +
-(EDStatic.wcsActive?
-"<tr>\n" +
-"<td nowrap>wcs\n" +
-"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/wcs/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/wcs/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
-"</tr>\n" : "") +
 (EDStatic.wmsActive?
 "<tr>\n" +
 "<td nowrap>wms\n" +
-"<td nowrap><a href=\"http://127.0.0.1:8080/cwexperimental/wms/index.htmlTable?page=1&amp;itemsPerPage=1000\">http://127.0.0.1:8080/cwexperimental/wms/index.htmlTable?page=1&amp;itemsPerPage=1000</a>\n" +
+"<td nowrap><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;wms&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000\">http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;wms&#x2f;index&#x2e;htmlTable&#x3f;page&#x3d;1&#x26;itemsPerPage&#x3d;1000</a>\n" +
 "</tr>\n" : "") +
 "</table>\n" +
 EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +

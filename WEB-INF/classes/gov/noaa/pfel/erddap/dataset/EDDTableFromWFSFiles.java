@@ -60,6 +60,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
      */
     public EDDTableFromWFSFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -68,18 +69,19 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ) 
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
         throws Throwable {
 
         super("EDDTableFromWFSFiles", tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, 
+            tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
     }
 
     /**
@@ -245,7 +247,8 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             //"    <recursive>false</recursive>\n" +
             //"    <fileDir>" + EDStatic.fullCopyDirectory + tDatasetID + "/</fileDir>\n" +
             //"    <fileNameRegex>.*\\.tsv</fileNameRegex>\n" +
-            "    <metadataFrom>last</metadataFrom>\n");
+            "    <metadataFrom>last</metadataFrom>\n" +
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
             //"    <charset>UTF-8</charset>\n" +
             //"    <columnNamesRow>1</columnNamesRow>\n" +
             //"    <firstDataRow>3</firstDataRow>\n" +
@@ -315,6 +318,7 @@ directionsForGenerateDatasetsXml() +
 "<dataset type=\"EDDTableFromWFSFiles\" datasetID=\"uky_2ed7_6297_9e6e\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
@@ -332,7 +336,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"rowElementXPath\">/wfs:FeatureCollection/gml:featureMember</att>\n" +
-"        <att name=\"sourceUrl\">http://kgs.uky.edu/arcgis/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&amp;service=WFS&amp;typename=aasg:BoreholeTemperature&amp;format=&quot;text/xml;%20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0&quot;</att>\n" +
+"        <att name=\"sourceUrl\">http://kgs.uky.edu/arcgis/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&amp;service=WFS&amp;typename=aasg:BoreholeTemperature&amp;format=&quot;text/xml;&#37;20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0&quot;</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
 "        <att name=\"summary\">The summary.</att>\n" +
 "        <att name=\"title\">The Title</att>\n" +

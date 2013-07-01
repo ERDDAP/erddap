@@ -116,6 +116,8 @@ public class EDDTableFromDatabase extends EDDTable{
         String tOrderBy[] = new String[0];
         StringArray tConnectionProperties = new StringArray();
         boolean tSourceNeedsExpandedFP_EQ = true;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -162,16 +164,16 @@ public class EDDTableFromDatabase extends EDDTable{
             }
             else if (localTags.equals( "<sourceNeedsExpandedFP_EQ>")) {}
             else if (localTags.equals("</sourceNeedsExpandedFP_EQ>")) tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content); 
-
-            //onChange
             else if (localTags.equals( "<onChange>")) {}
-            else if (localTags.equals("</onChange>")) 
-                tOnChange.add(content); 
-
+            else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -182,7 +184,8 @@ public class EDDTableFromDatabase extends EDDTable{
 
         if (subclass.equals("Post"))
             return new EDDTableFromPostDatabase(tDatasetID, tAccessibleTo, 
-                tOnChange, tFgdcFile, tIso19115File, 
+                tOnChange, tFgdcFile, tIso19115File,
+                tDefaultDataQuery, tDefaultGraphQuery, 
                 tGlobalAttributes,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
@@ -192,7 +195,8 @@ public class EDDTableFromDatabase extends EDDTable{
                 tCatalogName, tSchemaName, tTableName, tOrderBy,
                 tSourceNeedsExpandedFP_EQ);
         else return new EDDTableFromDatabase(tDatasetID, tAccessibleTo, 
-                tOnChange, tFgdcFile, tIso19115File, 
+                tOnChange, tFgdcFile, tIso19115File,
+                tDefaultDataQuery, tDefaultGraphQuery, 
                 tGlobalAttributes,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
@@ -355,6 +359,7 @@ public class EDDTableFromDatabase extends EDDTable{
      */
     public EDDTableFromDatabase(String tDatasetID, String tAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -379,6 +384,8 @@ public class EDDTableFromDatabase extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
@@ -575,7 +582,7 @@ public class EDDTableFromDatabase extends EDDTable{
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
         //good summary of using statements, queries, resultSets, ...
-        //  http://download.oracle.com/javase/1.5.0/docs/guide/jdbc/getstart/resultset.html
+        //  http://download.oracle.com/javase/7/docs/guide/jdbc/getstart/resultset.html
 
         //get the sourceDapQuery (a query that the source can handle)
         StringArray resultsVariables    = new StringArray();
@@ -739,7 +746,7 @@ public class EDDTableFromDatabase extends EDDTable{
                     tableColToRsCol[rv] = rs.findColumn(tName); //stored as 1..    throws Throwable if not found
                 }
                 int triggerNRows = EDStatic.partialRequestMaxCells / resultsEDVs.length;
-                Table table = makeTable(resultsEDVs, triggerNRows);
+                Table table = makeEmptySourceTable(resultsEDVs, triggerNRows);
                 PrimitiveArray paArray[] = new PrimitiveArray[nRv];
                 for (int rv = 0; rv < nRv; rv++) 
                     paArray[rv] = table.getColumn(rv);
@@ -783,7 +790,7 @@ public class EDDTableFromDatabase extends EDDTable{
                             tableWriter.writeSome(table);
                         }
 
-                        table = makeTable(resultsEDVs, triggerNRows);
+                        table = makeEmptySourceTable(resultsEDVs, triggerNRows);
                         for (int rv = 0; rv < nRv; rv++) 
                             paArray[rv] = table.getColumn(rv);
                         if (tableWriter.noMoreDataPlease) {
@@ -819,19 +826,6 @@ public class EDDTableFromDatabase extends EDDTable{
                 "\n(" + EDStatic.errorFromDataSource + t.toString() + ")", 
                 t); 
         }
-    }
-
-    /** This returns an empty table suitable for catching source results. */
-    Table makeTable(EDV resultsEDVs[], int triggerNRows) {
-        int nRv = resultsEDVs.length;
-        PrimitiveArray paArray[] = new PrimitiveArray[nRv];
-        Table table = new Table();
-        for (int rv = 0; rv < nRv; rv++) {
-            EDV edv = resultsEDVs[rv];
-            table.addColumn(edv.sourceName(), 
-                PrimitiveArray.factory(edv.sourceDataTypeClass(), triggerNRows, false));
-        }
-        return table;
     }
 
     /**

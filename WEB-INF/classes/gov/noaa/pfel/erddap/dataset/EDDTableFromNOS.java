@@ -118,6 +118,8 @@ public class EDDTableFromNOS extends EDDTable{
         String tLocalSourceUrl = null;
         String tXmlns = null, tGetWhat = null, tWsdlUrl = null, tRequestTimeFormat = null,
             tRowElementXPath = null;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -155,16 +157,16 @@ public class EDDTableFromNOS extends EDDTable{
             else if (localTags.equals("</requestTimeFormat>")) tRequestTimeFormat = content; 
             else if (localTags.equals( "<rowElementXPath>")) {}
             else if (localTags.equals("</rowElementXPath>")) tRowElementXPath = content; 
-
-            //onChange
             else if (localTags.equals( "<onChange>")) {}
-            else if (localTags.equals("</onChange>")) 
-                tOnChange.add(content); 
-
+            else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -174,7 +176,8 @@ public class EDDTableFromNOS extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromNOS(tDatasetID, tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
+            tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl,
             tXmlns, tGetWhat, tWsdlUrl, tRequestTimeFormat, tRowElementXPath);
@@ -265,6 +268,7 @@ public class EDDTableFromNOS extends EDDTable{
      */
     public EDDTableFromNOS(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -285,6 +289,8 @@ public class EDDTableFromNOS extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;

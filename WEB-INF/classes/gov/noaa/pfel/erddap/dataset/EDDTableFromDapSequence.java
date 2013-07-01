@@ -100,6 +100,8 @@ public class EDDTableFromDapSequence extends EDDTable{
         boolean tSourceCanConstrainStringGTLT = true;
         String tSourceCanConstrainStringRegex = null;
         boolean tSkipDapperSpacerRows = false;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -141,16 +143,16 @@ public class EDDTableFromDapSequence extends EDDTable{
             else if (localTags.equals("</sourceCanConstrainStringRegex>")) tSourceCanConstrainStringRegex = content; 
             else if (localTags.equals( "<skipDapperSpacerRows>")) {}
             else if (localTags.equals("</skipDapperSpacerRows>")) tSkipDapperSpacerRows = String2.parseBoolean(content); 
-
-            //onChange
             else if (localTags.equals( "<onChange>")) {}
-            else if (localTags.equals("</onChange>")) 
-                tOnChange.add(content); 
-
+            else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -160,7 +162,8 @@ public class EDDTableFromDapSequence extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromDapSequence(tDatasetID, tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
+            tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl, 
             tOuterSequenceName, tInnerSequenceName, 
@@ -262,6 +265,7 @@ public class EDDTableFromDapSequence extends EDDTable{
      */
     public EDDTableFromDapSequence(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -286,6 +290,8 @@ public class EDDTableFromDapSequence extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
@@ -1497,25 +1503,25 @@ try {
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_FP_EQ", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
-            expected = 
+            expected = //pre 2013-05-28 wasn't sorted
 "longitude,latitude,time,common_name\n" +
 "degrees_east,degrees_north,UTC,\n" +
 "-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,Dover sole\n" +
-"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,petrale sole\n" +
-"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,arrowtooth flounder\n" +
-"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,sablefish\n" +
 "-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,English sole\n" +
-"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,yellowtail rockfish\n" +
 "-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,Pacific ocean perch\n" +
-"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,longspine thornyhead\n" +
-"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,widow rockfish\n" +
-"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,shortspine thornyhead\n" +
-"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,darkblotched rockfish\n" +
-"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,yelloweye rockfish\n" +
-"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,cowcod\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,arrowtooth flounder\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,bocaccio\n" +
 "-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,canary rockfish\n" +
 "-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,chilipepper\n" +
-"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,bocaccio\n";
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,cowcod\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,darkblotched rockfish\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,longspine thornyhead\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,petrale sole\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,sablefish\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,shortspine thornyhead\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,widow rockfish\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,yelloweye rockfish\n" +
+"-124.34809875488281,44.69025421142578,2005-01-01T00:00:00Z,yellowtail rockfish\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1600,6 +1606,7 @@ try {
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         //before I fixed this, time had destinationMin/Max = NaN
+        try {
         EDDTable edd = (EDDTable)oneFromDatasetXml("nwioosCoral"); 
         EDV edvTime = edd.dataVariables()[edd.timeIndex];
         Test.ensureEqual(edvTime.destinationMin(), 3.155328E8,  "");
@@ -1722,7 +1729,7 @@ try {
 //today + " http://127.0.0.1:8080/cwexperimental/
 expected = 
 "tabledap/nwioosCoral.das\";[10]\n" +
-"    String infoUrl \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005.das.info\";[10]\n" +
+"    String infoUrl \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005.info\";[10]\n" +
 "    String institution \"NOAA NWFSC\";[10]\n" +
 "    String keywords \"Biosphere > Aquatic Ecosystems > Coastal Habitat,[10]\n" +
 "Biosphere > Aquatic Ecosystems > Marine Habitat,[10]\n" +
@@ -1790,6 +1797,10 @@ expected =
             results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
             expected, "results=\n" + results);
 
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn("\nUnexpected error:\n" + MustBe.throwableToString(t) + 
+                "\nPress ^C to stop or Enter to continue..."); 
+        }
     }
 
      

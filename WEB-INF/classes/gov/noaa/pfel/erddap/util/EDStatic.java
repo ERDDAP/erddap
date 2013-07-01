@@ -13,6 +13,7 @@ import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.ResourceBundle2;
+import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.String2LogOutputStream;
 import com.cohort.util.Test;
@@ -123,15 +124,16 @@ public class EDStatic {
      * <br>1.38 released on 2012-04-21
      * <br>1.40 released on 2012-10-25
      * <br>1.42 released on 2012-11-26
+     * <br>1.44 released on 2013-05-30
      */   
-    public static String erddapVersion = "1.43";  
+    public static String erddapVersion = "1.44";  
 
     /** 
      * This is almost always false.  
      * During development, Bob sets this to true. No one else needs to. 
      * If true, ERDDAP uses setup2.xml, messages2.xml, and datasets2.xml. 
      */
-public static boolean developmentMode = false;
+public static boolean developmentMode = true;
 
     /** This identifies the dods server/version that this mimics. */
     public static String dapVersion = "DAP/2.0";   //???
@@ -302,8 +304,8 @@ public static boolean developmentMode = false;
     public final static String defaultPIppQuery        = "page=1&itemsPerPage=" + defaultItemsPerPage;
     public final static String allPIppQuery            = "page=1&itemsPerPage=1000000000";
     /** The HTML/XML encoded form */
-    public final static String encodedDefaultPIppQuery = "page=1&amp;itemsPerPage=" + defaultItemsPerPage;
-    public final static String encodedAllPIppQuery     = "page=1&amp;itemsPerPage=1000000000";
+    public final static String encodedDefaultPIppQuery = "page=1&#x26;itemsPerPage=" + defaultItemsPerPage;
+    public final static String encodedAllPIppQuery     = "page=1&#x26;itemsPerPage=1000000000";
 
     /** 
      * These values are loaded from the [contentDirectory]setup.xml file. 
@@ -631,6 +633,7 @@ public static boolean developmentMode = false;
         errorFileNotFound,
         errorFileNotFoundImage,
         errorInternal,
+        errorJsonpFunctionName,
         errorMoreThan2GB,
         errorNotFound,
         errorNotFoundIn,
@@ -658,7 +661,9 @@ public static boolean developmentMode = false;
         fileHelpTable_nc,
         fileHelp_ncHeader,
         fileHelp_ncCF,
+        fileHelp_ncCFHeader,
         fileHelp_ncCFMA,
+        fileHelp_ncCFMAHeader,
         fileHelpGrid_odvTxt,
         fileHelpTable_odvTxt,
         fileHelp_subset,
@@ -1794,6 +1799,7 @@ wcsActive = false;
         errorFileNotFoundImage     = messages.getNotNothingString("errorFileNotFoundImage",     errorInMethod);
         errorInternal              = messages.getNotNothingString("errorInternal",              errorInMethod) +
             " ";
+        errorJsonpFunctionName     = messages.getNotNothingString("errorJsonpFunctionName",     errorInMethod);
         errorMoreThan2GB           = messages.getNotNothingString("errorMoreThan2GB",           errorInMethod);
         errorNotFound              = messages.getNotNothingString("errorNotFound",              errorInMethod);
         errorNotFoundIn            = messages.getNotNothingString("errorNotFoundIn",            errorInMethod);
@@ -1821,7 +1827,9 @@ wcsActive = false;
         fileHelpTable_nc           = messages.getNotNothingString("fileHelpTable_nc",           errorInMethod);
         fileHelp_ncHeader          = messages.getNotNothingString("fileHelp_ncHeader",          errorInMethod);
         fileHelp_ncCF              = messages.getNotNothingString("fileHelp_ncCF",              errorInMethod);
+        fileHelp_ncCFHeader        = messages.getNotNothingString("fileHelp_ncCFHeader",        errorInMethod);
         fileHelp_ncCFMA            = messages.getNotNothingString("fileHelp_ncCFMA",            errorInMethod);
+        fileHelp_ncCFMAHeader      = messages.getNotNothingString("fileHelp_ncCFMAHeader",      errorInMethod);
         fileHelpGrid_odvTxt        = messages.getNotNothingString("fileHelpGrid_odvTxt",        errorInMethod);
         fileHelpTable_odvTxt       = messages.getNotNothingString("fileHelpTable_odvTxt",       errorInMethod);
         fileHelp_subset            = messages.getNotNothingString("fileHelp_subset",            errorInMethod);
@@ -2406,7 +2414,7 @@ wcsActive = false;
         return 
             "\n<h1>" + erddapHref(tErddapUrl) +
             "\n &gt; <a rel=\"contents\" rev=\"chapter\" " +
-                "href=\"" + XML.encodeAsHTML(protocolUrl(tErddapUrl, protocol)) +
+                "href=\"" + XML.encodeAsHTMLAttribute(protocolUrl(tErddapUrl, protocol)) +
                 "\">" + protocol + "</a>" +
             "\n &gt; " + datasetID + 
             "\n</h1>\n";
@@ -2447,7 +2455,7 @@ wcsActive = false;
         return 
             "\n<h1>" + erddapHref(tErddapUrl) + 
             "\n &gt; <a rel=\"contents\" rev=\"chapter\" " +
-                "href=\"" + XML.encodeAsHTML(protocolUrl(tErddapUrl, protocol)) + 
+                "href=\"" + XML.encodeAsHTMLAttribute(protocolUrl(tErddapUrl, protocol)) + 
                 "\">" + protocol + "</a>" +
             "\n &gt; " + datasetID + 
             "\n" + htmlTooltipImage(loggedInAs, htmlHelp) + 
@@ -2472,9 +2480,9 @@ wcsActive = false;
         String attributeUrl = tErddapUrl + "/" + protocol + "/" + attribute + "/index.html"; //+?defaultPIppQuery
         return 
             "\n<h1>" + erddapHref(tErddapUrl) + 
-            "\n &gt; <a href=\"" + XML.encodeAsHTML(protocolUrl(tErddapUrl, protocol)) + 
+            "\n &gt; <a href=\"" + XML.encodeAsHTMLAttribute(protocolUrl(tErddapUrl, protocol)) + 
                 "\">" + protocol + "</a>" +
-            "\n &gt; <a href=\"" + attributeUrl + "\">" + attribute + "</a>" +
+            "\n &gt; <a href=\"" + XML.encodeAsHTMLAttribute(attributeUrl) + "\">" + attribute + "</a>" +
             "\n &gt; " + category + 
             "\n</h1>\n";
     }*/
@@ -2489,7 +2497,7 @@ wcsActive = false;
      */
     public static String htmlTooltipImage(String loggedInAs, String html) {
         return HtmlWidgets.htmlTooltipImage(
-            imageDirUrl(loggedInAs) + questionMarkImageFile, html, ""); 
+            imageDirUrl(loggedInAs) + questionMarkImageFile, "?", html, ""); 
     }
 
     /**
@@ -3486,7 +3494,7 @@ wcsActive = false;
         synchronized(taskList) { //all task-related things synch on taskList
 
             //Note that all task creators check that
-            //   EDStatic.lastFinishedTask >= lastAssignedTask.  I.E., tasks are all done,
+            //   EDStatic.lastFinishedTask >= lastAssignedTask(datasetID).  I.E., tasks are all done,
             //before again creating new tasks.
             //So no need to see if this new task duplicates an existing unfinished task.  
             
@@ -3758,21 +3766,26 @@ wcsActive = false;
     }
 
     /**
-     * This returns the .jsonp=... part of the request (percent encoded) or "".
+     * This returns the .jsonp=[functionName] part of the request (percent encoded) or "".
      * If not "", it will have "&" at the end.
      *
      * @param request
-     * @return the .jsonp=... part of the request (percent encoded) or "".
+     * @return the .jsonp=[functionName] part of the request (percent encoded) or "".
      *   If not "", it will have "&" at the end.
      *   If the query has a syntax error, this returns "".
+     *   If the !String2.isVariableNameSafe(functionName), this throws a SimpleException.
      */
     public static String passThroughJsonpQuery(HttpServletRequest request) {
         String jsonp = "";
         try {
             String parts[] = EDD.getUserQueryParts(request.getQueryString()); //decoded.  Does some validity checking.
             jsonp = String2.stringStartsWith(parts, ".jsonp="); //may be null
-            return jsonp == null? "" : 
-                ".jsonp=" + SSR.minimalPercentEncode(jsonp.substring(7)) + "&";
+            if (jsonp == null)
+                return "";
+            String functionName = jsonp.substring(7); //it will be because it starts with .jsonp=
+            if (!String2.isJsonpNameSafe(functionName))
+                throw new SimpleException(errorJsonpFunctionName); 
+            return ".jsonp=" + SSR.minimalPercentEncode(functionName) + "&";
         } catch (Throwable t) {
             String2.log(MustBe.throwableToString(t));
             return "";
@@ -3917,8 +3930,8 @@ wcsActive = false;
                 ampPo = urlWithQuery.length();
 
             String url1 = "&nbsp;<a href=\"" + 
-                          XML.encodeAsHTML(urlWithQuery.substring(0, pageNumberPo));  // + p
-            String url2 = XML.encodeAsHTML(urlWithQuery.substring(ampPo)) + "\">";    // + p   
+                          XML.encodeAsHTMLAttribute(urlWithQuery.substring(0, pageNumberPo));  // + p
+            String url2 = XML.encodeAsHTMLAttribute(urlWithQuery.substring(ampPo)) + "\">";    // + p   
             String url3 = "</a>&nbsp;\n";        
 
             //links, e.g. if page=5 and lastPage=12: _1 ... _4  5 _6 ... _12 

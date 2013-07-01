@@ -636,7 +636,7 @@ public class Math2 {
     }
 
     /**
-     * A div that rounds up if mod&gt;0.
+     * A div that rounds up if den&gt;0.
      * e.g., 1/4 goes to 1;  4/4 goes to 1;
      * den = 0 throws an exception.
      *
@@ -649,7 +649,7 @@ public class Math2 {
     }
 
     /**
-     * A div that rounds up if mod&gt;0.
+     * A div that rounds up if den&gt;0.
      * e.g., 1/4 goes to 1;  4/4 goes to 1;
      * den = 0 throws an exception.
      *

@@ -47,16 +47,20 @@ public class TableWriterJson extends TableWriter {
      * @param tOutputStreamSource  the source of an outputStream that receives the 
      *     results, usually already buffered.
      *     The ouputStream is not procured until there is data to be written.
-     * @param tJsonp the not-percent-encoded text to be prepended to the results (or null if none).
+     * @param tJsonp the not-percent-encoded jsonp functionName to be prepended to the results 
+     *     (or null if none).
      *     See http://niryariv.wordpress.com/2009/05/05/jsonp-quickly/
      *     and http://bob.pythonmac.org/archives/2005/12/05/remote-json-jsonp/
      *     and http://www.insideria.com/2009/03/what-in-the-heck-is-jsonp-and.html .
+     *     A SimpleException will be thrown if tJsonp is not null but isn't String2.isVariableNameSafe.
      * @param tWriteUnits if true, the units information will be written to the file
      */
     public TableWriterJson(OutputStreamSource tOutputStreamSource, String tJsonp, 
             boolean tWriteUnits) {
         super(tOutputStreamSource);
         jsonp = tJsonp;
+        if (jsonp != null && !String2.isJsonpNameSafe(jsonp))
+            throw new SimpleException(EDStatic.errorJsonpFunctionName);
         writeUnits = tWriteUnits;
     }
 

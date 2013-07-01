@@ -158,7 +158,7 @@ public abstract class EDDGrid extends EDD {
         "http://www.json.org/", //json
         "http://www.mathworks.com/", //mat
         "http://www.unidata.ucar.edu/software/netcdf/", //nc
-        "http://www.unidata.ucar.edu/software/netcdf/docs/ncdump-man-1.html", //ncHeader
+        "http://www.unidata.ucar.edu/software/netcdf/docs/guide_ncdump.html", //ncHeader
         "http://odv.awi.de/en/documentation/", //odv
         "http://www.cs.tut.fi/~jkorpela/TSV.html",  //tsv
         "http://www.cs.tut.fi/~jkorpela/TSV.html",  //tsv
@@ -1052,7 +1052,7 @@ public abstract class EDDGrid extends EDD {
                 if (query.charAt(po) != ',') {
                     if (repair) return; //this can only be trouble for second variable
                     else throw new SimpleException(EDStatic.queryError + 
-                        MessageFormat.format(EDStatic.queryErrorExpectedAt, ",", po));
+                        MessageFormat.format(EDStatic.queryErrorExpectedAt, ",", "" + po));
                 }
                 po++;
             }
@@ -1063,7 +1063,7 @@ public abstract class EDDGrid extends EDD {
             if (leftPo < 0) {
                 if (repair) return; //this can only be trouble for second variable
                 else throw new SimpleException(EDStatic.queryError + 
-                    MessageFormat.format(EDStatic.queryErrorExpectedAt, "[", po));
+                    MessageFormat.format(EDStatic.queryErrorExpectedAt, "[", "" + po));
             }
             String destinationName = query.substring(po, leftPo);
 
@@ -1353,7 +1353,7 @@ public abstract class EDDGrid extends EDD {
                         else throw new SimpleException(EDStatic.queryError +
                             diagnostic + ": " +
                             MessageFormat.format(EDStatic.queryErrorExpectedAt, 
-                                ":", colon2));                    
+                                ":", "" + colon2));                    
                     }
                 }
             } else {
@@ -2026,6 +2026,8 @@ public abstract class EDDGrid extends EDD {
                     "</ol>\n" +
                     EDStatic.dafGridBypass));
                 writeHtmlDatasetInfo(loggedInAs, writer, true, false, true, userDapQuery, "");
+                if (userDapQuery.length() == 0) 
+                    userDapQuery = defaultDataQuery(); //after writeHtmlDatasetInfo and before writeDapHtmlForm
                 writeDapHtmlForm(loggedInAs, userDapQuery, writer);
                 writer.write(
                     "<hr>\n" +
@@ -2125,6 +2127,8 @@ public abstract class EDDGrid extends EDD {
         //  NcHelper.dumpString(aRealFile, false). 
         String fileTypeExtension = fileTypeExtension(fileTypeName);
         String fullName = dir + fileName + fileTypeExtension;
+        //Normally, this is cacheDirectory and it already exists,
+        //  but my testing environment (2+ things running) may have removed it.
         File2.makeDirectory(dir);
 
         //what is the cacheFullName?
@@ -2262,6 +2266,9 @@ public abstract class EDDGrid extends EDD {
                 EDStatic.mag, 
                 EDStatic.magGridHtml));
             writeHtmlDatasetInfo(loggedInAs, writer, true, true, false, userDapQuery, "");
+            if (userDapQuery.length() == 0) 
+                userDapQuery = defaultGraphQuery(); //after writeHtmlDatasetInfo and before getUserQueryParts
+            writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
 
             //make the big table
             writer.write("&nbsp;\n"); //necessary for the blank line before the table (not <p>)
@@ -2798,7 +2805,7 @@ public abstract class EDDGrid extends EDD {
                             buttons.append(
                                 "<td nowrap>\n" +
                                 HtmlWidgets.htmlTooltipImage( 
-                                    EDStatic.imageDirUrl(loggedInAs) + "arrowLL.gif", 
+                                    EDStatic.imageDirUrl(loggedInAs) + "arrowLL.gif", "<<",
                                     EDStatic.magItemFirst, 
                                     "onMouseUp='f1." + paramName + ".value=\"" + tFirst + 
                                         "\"; mySubmit(true);'") +
@@ -2815,7 +2822,7 @@ public abstract class EDDGrid extends EDD {
                             buttons.append(
                                 "<td nowrap>\n" +
                                 HtmlWidgets.htmlTooltipImage( 
-                                    EDStatic.imageDirUrl(loggedInAs) + "minus.gif", 
+                                    EDStatic.imageDirUrl(loggedInAs) + "minus.gif", "-", 
                                     EDStatic.magItemPrevious, 
                                     "onMouseUp='f1." + paramName + ".value=\"" + ts + 
                                         "\"; mySubmit(true);'") +
@@ -2831,7 +2838,7 @@ public abstract class EDDGrid extends EDD {
                             buttons.append(
                                 "<td nowrap>\n" +
                                 HtmlWidgets.htmlTooltipImage(
-                                    EDStatic.imageDirUrl(loggedInAs) + "plus.gif", 
+                                    EDStatic.imageDirUrl(loggedInAs) + "plus.gif", "+", 
                                     EDStatic.magItemNext, 
                                     "onMouseUp='f1." + paramName + ".value=\"" + ts + 
                                         "\"; mySubmit(true);'") +
@@ -2844,7 +2851,7 @@ public abstract class EDDGrid extends EDD {
                             buttons.append(
                                 "<td nowrap>\n" +
                                 HtmlWidgets.htmlTooltipImage(
-                                    EDStatic.imageDirUrl(loggedInAs) + "arrowRR.gif", 
+                                    EDStatic.imageDirUrl(loggedInAs) + "arrowRR.gif", ">>",
                                     EDStatic.magItemLast, 
                                     //the word "last" works for all datasets 
                                     //and works better than tLast for updateEveryNMillis datasets
@@ -3293,7 +3300,6 @@ public abstract class EDDGrid extends EDD {
 
             //end form
             writer.write(widgets.endForm());
-            writer.write(HtmlWidgets.ifJavaScriptDisabled);
 
             //*** end of left half of big table
             writer.write("</td>\n" +
@@ -3486,7 +3492,7 @@ public abstract class EDDGrid extends EDD {
                         writer.write(
                         "&nbsp;&nbsp;\n" +
                         HtmlWidgets.htmlTooltipImage( 
-                            EDStatic.imageDirUrl(loggedInAs) + "arrowLL.gif", 
+                            EDStatic.imageDirUrl(loggedInAs) + "arrowLL.gif", "<<",
                             MessageFormat.format(EDStatic.magTimeRangeFirst, timeRangeString) +
                                 timesVary,  
                             "align=\"top\" " +
@@ -3505,7 +3511,7 @@ public abstract class EDDGrid extends EDD {
                         writer.write(
                         "&nbsp;&nbsp;\n" +
                         HtmlWidgets.htmlTooltipImage( 
-                            EDStatic.imageDirUrl(loggedInAs) + "minus.gif", 
+                            EDStatic.imageDirUrl(loggedInAs) + "minus.gif", "-",
                             MessageFormat.format(EDStatic.magTimeRangeBack, timeRangeString) +
                                 timesVary,  
                             "align=\"top\" " +
@@ -3531,7 +3537,7 @@ public abstract class EDDGrid extends EDD {
                         writer.write(
                         "&nbsp;&nbsp;\n" +
                         HtmlWidgets.htmlTooltipImage( 
-                            EDStatic.imageDirUrl(loggedInAs) + "plus.gif", 
+                            EDStatic.imageDirUrl(loggedInAs) + "plus.gif", "+", 
                             MessageFormat.format(EDStatic.magTimeRangeForward, timeRangeString) +
                                 timesVary,  
                             "align=\"top\" " +
@@ -3560,7 +3566,7 @@ public abstract class EDDGrid extends EDD {
                         writer.write(
                         "&nbsp;&nbsp;\n" +
                         HtmlWidgets.htmlTooltipImage( 
-                            EDStatic.imageDirUrl(loggedInAs) + "arrowRR.gif", 
+                            EDStatic.imageDirUrl(loggedInAs) + "arrowRR.gif", ">>",
                             MessageFormat.format(EDStatic.magTimeRangeLast, timeRangeString) +
                                 timesVary,  
                             "align=\"top\" " +
@@ -3578,19 +3584,21 @@ public abstract class EDDGrid extends EDD {
             }
 
             //show the graph
-            String aQuery = XML.encodeAsHTML(graphQuery.toString()); 
+            String aQuery = graphQuery.toString(); 
             if (verbose) 
                 String2.log("graphQuery=" + graphQuery);
             //don't use \n for the following lines
             if (zoomLatLon) writer.write(
-                "<a href=\"" + tErddapUrl + "/griddap/" + datasetID+ ".graph?" + aQuery + 
+                "<a href=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + "/griddap/" + 
+                    datasetID+ ".graph?" + aQuery) + 
                 "&amp;.click=\">"); //if user clicks on image, browser adds "?x,y" to url
             writer.write(
                 "<img " + (zoomLatLon? "ismap " : "") + 
                     "width=\"" + EDStatic.imageWidths[1] + 
                     "\" height=\"" + EDStatic.imageHeights[1] + "\" " +
                     "alt=\"" + EDStatic.patientYourGraph + "\" " +
-                    "src=\"" +  tErddapUrl + "/griddap/" + datasetID+ ".png?" + aQuery + "\">");
+                    "src=\"" + XML.encodeAsHTMLAttribute(tErddapUrl + "/griddap/" + 
+                        datasetID+ ".png?" + aQuery) + "\">");
             if (zoomLatLon) 
                 writer.write("</a>");
 
@@ -3599,7 +3607,8 @@ public abstract class EDDGrid extends EDD {
 
 
             //*** Things you can do with graphs
-            writer.write(MessageFormat.format(EDStatic.doWithGraphs, tErddapUrl));
+            writer.write(String2.replaceAll(MessageFormat.format(
+                EDStatic.doWithGraphs, tErddapUrl), "&erddapUrl;", tErddapUrl));
             writer.write("\n\n");
 
             //end of document
@@ -5601,8 +5610,11 @@ Attributes {
         //did query include &.jsonp= ?
         String parts[] = getUserQueryParts(userDapQuery); //decoded
         String jsonp = String2.stringStartsWith(parts, ".jsonp="); //may be null
-        if (jsonp != null) 
+        if (jsonp != null) {
             jsonp = jsonp.substring(7);
+            if (!String2.isJsonpNameSafe(jsonp))
+                throw new SimpleException(EDStatic.errorJsonpFunctionName);
+        }
 
         //get dataAccessor first, in case of error when parsing query
         boolean isAxisDapQuery = isAxisDapQuery(userDapQuery);
@@ -7069,6 +7081,7 @@ Attributes {
 
 
         //beginning of form   ("form1" is used in javascript below")
+        writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
         HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs));
         String formName = "form1";
         EDVTimeGridAxis timeVar = timeIndex >= 0? (EDVTimeGridAxis)axisVariables[timeIndex] : null;
@@ -7352,7 +7365,6 @@ Attributes {
 
         //end of form
         writer.write(widgets.endForm());
-        writer.write(HtmlWidgets.ifJavaScriptDisabled);
         writer.write("<br>&nbsp;\n");
 
         //the javascript for the sliders
@@ -7382,19 +7394,19 @@ Attributes {
         String ddsExample           = datasetBase + ".dds";
         String dds1VarExample       = datasetBase + ".dds?" + EDStatic.EDDGridNoHyperExample;
         //all of the fullXxx examples are pre-encoded
-        String fullDimensionExample = XML.encodeAsHTML(datasetBase + ".htmlTable?" + EDStatic.EDDGridDimensionExample);
-        String fullIndexExample     = XML.encodeAsHTML(datasetBase + ".htmlTable?" + EDStatic.EDDGridDataIndexExample);
-        String fullValueExample     = XML.encodeAsHTML(datasetBase + ".htmlTable?" + EDStatic.EDDGridDataValueExample);
-        String fullTimeExample      = XML.encodeAsHTML(datasetBase + ".htmlTable?" + EDStatic.EDDGridDataTimeExample);
-        String fullTimeCsvExample   = XML.encodeAsHTML(datasetBase + ".csv?"       + EDStatic.EDDGridMapExample);
-        String fullTimeNcExample    = XML.encodeAsHTML(datasetBase + ".nc?"        + EDStatic.EDDGridMapExample);
-        String fullGraphExample     = XML.encodeAsHTML(datasetBase + ".png?"       + EDStatic.EDDGridGraphExample);
-        String fullGraphMAGExample  = XML.encodeAsHTML(datasetBase + ".graph?"     + EDStatic.EDDGridGraphExample);
-        String fullGraphDataExample = XML.encodeAsHTML(datasetBase + ".htmlTable?" + EDStatic.EDDGridGraphExample);
-        String fullMapExample       = XML.encodeAsHTML(datasetBase + ".png?"       + EDStatic.EDDGridMapExample);
-        String fullMapMAGExample    = XML.encodeAsHTML(datasetBase + ".graph?"     + EDStatic.EDDGridMapExample);
-        String fullMapDataExample   = XML.encodeAsHTML(datasetBase + ".htmlTable?" + EDStatic.EDDGridMapExample);
-        String fullMatExample       = XML.encodeAsHTML(datasetBase + ".mat?"       + EDStatic.EDDGridMapExample);
+        String fullDimensionExample = XML.encodeAsHTMLAttribute(datasetBase + ".htmlTable?" + EDStatic.EDDGridDimensionExample);
+        String fullIndexExample     = XML.encodeAsHTMLAttribute(datasetBase + ".htmlTable?" + EDStatic.EDDGridDataIndexExample);
+        String fullValueExample     = XML.encodeAsHTMLAttribute(datasetBase + ".htmlTable?" + EDStatic.EDDGridDataValueExample);
+        String fullTimeExample      = XML.encodeAsHTMLAttribute(datasetBase + ".htmlTable?" + EDStatic.EDDGridDataTimeExample);
+        String fullTimeCsvExample   = XML.encodeAsHTMLAttribute(datasetBase + ".csv?"       + EDStatic.EDDGridDataTimeExample);
+        String fullTimeNcExample    = XML.encodeAsHTMLAttribute(datasetBase + ".nc?"        + EDStatic.EDDGridDataTimeExample);
+        String fullMatExample       = XML.encodeAsHTMLAttribute(datasetBase + ".mat?"       + EDStatic.EDDGridDataTimeExample);
+        String fullGraphExample     = XML.encodeAsHTMLAttribute(datasetBase + ".png?"       + EDStatic.EDDGridGraphExample);
+        String fullGraphMAGExample  = XML.encodeAsHTMLAttribute(datasetBase + ".graph?"     + EDStatic.EDDGridGraphExample);
+        String fullGraphDataExample = XML.encodeAsHTMLAttribute(datasetBase + ".htmlTable?" + EDStatic.EDDGridGraphExample);
+        String fullMapExample       = XML.encodeAsHTMLAttribute(datasetBase + ".png?"       + EDStatic.EDDGridMapExample);
+        String fullMapMAGExample    = XML.encodeAsHTMLAttribute(datasetBase + ".graph?"     + EDStatic.EDDGridMapExample);
+        String fullMapDataExample   = XML.encodeAsHTMLAttribute(datasetBase + ".htmlTable?" + EDStatic.EDDGridMapExample);
 
         writer.write(
             "<h2><a name=\"instructions\">Using</a> griddap to Request Data and Graphs from Gridded Datasets</h2>\n" +
@@ -7451,11 +7463,12 @@ Attributes {
                 "      <td>" + dataFileTypeNames[i] + "</td>\n" +
                 "      <td>" + dataFileTypeDescriptions[i] + "</td>\n" +
                 "      <td>" + 
-                      (dataFileTypeInfo[i].equals("")? 
-                          "&nbsp;" : "<a rel=\"help\" href=\"" +  XML.encodeAsHTML(dataFileTypeInfo[i]) + "\">info</a>") + 
-                      "</td>\n" +
+                    (dataFileTypeInfo[i].equals("")? 
+                        "&nbsp;" : 
+                        "<a rel=\"help\" href=\"" +  XML.encodeAsHTMLAttribute(dataFileTypeInfo[i]) + "\">info</a>") + 
+                    "</td>\n" +
                 "      <td><a href=\"" +  datasetBase + dataFileTypeNames[i] + "?" + 
-                    XML.encodeAsHTML(EDStatic.EDDGridDataTimeExample) + "\">example</a></td>\n" +
+                    XML.encodeAsHTMLAttribute(EDStatic.EDDGridDataTimeExample) + "\">example</a></td>\n" +
                 "    </tr>\n");
         writer.write(
             "   </table>\n" +
@@ -7548,12 +7561,17 @@ Attributes {
             "\n" +
             //jsonp
             "  <p><b><a rel=\"help\" href=\"http://niryariv.wordpress.com/2009/05/05/jsonp-quickly/\">JSONP</a>\n" +
-            "    <a href=\"http://www.json.org/\">.json</a></b>\n" +
-            "    - <a name=\"jsonp\">Requests</a> for .json files may now include an optional jsonp request\n" +
-            "  <br>by adding <tt>&amp;.jsonp=<i>functionName</i></tt> to the end of the query.\n" +
+            "    (from <a href=\"http://www.json.org/\">.json</a>)</b> -\n" +
+            "  <a name=\"jsonp\">Jsonp</a> is an easy way for a JavaScript script on a web page to\n" +
+            "  <br>import and access data from ERDDAP.  Requests for .json files may include an optional\n" +
+            "  <br>jsonp request by adding <tt>&amp;.jsonp=<i>functionName</i></tt> to the end of the query.\n" +
             "  <br>Basically, this just tells ERDDAP to add <tt><i>functionName</i>(</tt> to the beginning of the\n" +
             "  <br>response and \")\" to the end of the response.\n" +
+            "  <br>The first character of <i>functionName</i> must be an ISO 8859 letter or \"_\".\n" +
+            "  <br>Each optional subsequent character must be an ISO 8859 letter, \"_\", a digit, or \".\".\n" +
             "  <br>If originally there was no query, leave off the \"&amp;\" in your query.\n" +
+            "  <br>After the data download to the web page has finished, the data is accessible to the\n" +
+            "  <br>JavaScript script via that JavaScript function.\n" +
             "\n" + 
             //matlab
             "  <p><b><a rel=\"bookmark\" href=\"http://www.mathworks.com/products/matlab/\">MATLAB</a>\n" +
@@ -7618,7 +7636,7 @@ Attributes {
             "  <p><b>.ncHeader</b>\n" +
             "    - <a name=\"ncHeader\">Requests</a> for .ncHeader files will return the header information (text) that\n" +
             "  <br>would be generated if you used\n" +
-            "    <a rel=\"help\" href=\"http://www.unidata.ucar.edu/software/netcdf/docs/ncdump-man-1.html\">ncdump -h <i>fileName</i></a>\n" +
+            "    <a rel=\"help\" href=\"http://www.unidata.ucar.edu/software/netcdf/docs/guide_ncdump.html\">ncdump -h <i>fileName</i></a>\n" +
             "    on the corresponding .nc file.\n" +
             "\n" +
             //odv
@@ -7685,8 +7703,8 @@ Attributes {
             "  <br>See the\n" +
             "    <a rel=\"help\" href=\"http://pydap.org/client.html#accessing-gridded-data/\">Pydap Client instructions for accessing gridded data</a>.\n" +
             "  <br>Note that the name of a dataset in ERDDAP will always be a single word,\n" +
-            "  <br>e.g., " + EDStatic.EDDGridIdExample + " in the OPeNDAP dataset URL\n" +
-            "  <br>" + datasetBase + "\n" +
+            "  <br>(e.g., " + EDStatic.EDDGridIdExample + " in the OPeNDAP dataset URL\n" +
+            "  <br>" + datasetBase + " )\n" +
             "  <br>and won't ever have a file extension (unlike, for example, .nc for the\n" +
             "  <br>sample dataset in the Pydap instructions).\n" +
             "\n" +
@@ -7729,11 +7747,13 @@ Attributes {
                 "      <td>" + imageFileTypeNames[i] + "</td>\n" +
                 "      <td>" + imageFileTypeDescriptions[i] + "</td>\n" +
                 "      <td>" + 
-                      (imageFileTypeInfo[i] == null || imageFileTypeInfo[i].equals("")? 
-                          "&nbsp;" : "<a rel=\"help\" href=\"" +  imageFileTypeInfo[i] + "\">info</a>") + 
+                    (imageFileTypeInfo[i] == null || imageFileTypeInfo[i].equals("")? 
+                        "&nbsp;" : 
+                        "<a rel=\"help\" href=\"" + 
+                            XML.encodeAsHTMLAttribute(imageFileTypeInfo[i]) + "\">info</a>") + 
                       "</td>\n" +   //must be mapExample below because kml doesn't work with graphExample
-                "      <td><a href=\"" +  datasetBase + imageFileTypeNames[i] + "?" + 
-                    XML.encodeAsHTML(EDStatic.EDDGridMapExample) + "\">example</a></td>\n" +
+                "      <td><a href=\"" + datasetBase + imageFileTypeNames[i] + "?" + 
+                    XML.encodeAsHTMLAttribute(EDStatic.EDDGridMapExample) + "\">example</a></td>\n" +
                 "    </tr>\n");
         writer.write(
             "  </table>\n" +
@@ -7847,8 +7867,8 @@ Attributes {
             "     <br>for all of the variables. Because of the large size of most datasets, this is usually\n" +
             "     <br>only appropriate for fileTypes that return information about the dataset (for example,\n" +
             "     <br>.das, .dds, and .html), but don't return all of the actual data values. For example,\n" +
-            "     <br><a href=\"" + XML.encodeAsHTML(ddsExample) + "\"><tt>" + 
-                                    XML.encodeAsHTML(ddsExample) + "</tt></a>\n" +
+            "     <br><a href=\"" + XML.encodeAsHTMLAttribute(ddsExample) + "\"><tt>" + 
+                                    XML.encodeAsHTMLAttribute(ddsExample) + "</tt></a>\n" +
             "     <br>griddap is designed to handle requests of any size but trying to download all of the\n" +
             "     <br>data with one request will usually fail (for example, downloads that last days usually\n" +
             "     <br>fail at some point).  If you need all of the data, consider breaking your big request\n" +
@@ -7877,8 +7897,8 @@ Attributes {
             "     <br>For dimension variables (for example, longitude, latitude, and time) and for fileTypes\n" +
             "     <br>that don't download actual data (notably, .das, .dds, .html, and all of the graph and\n" +
             "     <br>map fileTypes) this is fine. For example,\n" +
-            "     <br><a href=\"" + XML.encodeAsHTML(dds1VarExample) + "\"><tt>" + 
-                                    XML.encodeAsHTML(dds1VarExample) + "</tt></a>\n" +
+            "     <br><a href=\"" + XML.encodeAsHTMLAttribute(dds1VarExample) + "\"><tt>" + 
+                                    XML.encodeAsHTMLAttribute(dds1VarExample) + "</tt></a>\n" +
             "     <br>For data variables, the resulting data may be very large.\n" +
             "     <br>griddap is designed to handle requests of any size. But if you try to download all of\n" +
             "     <br>the data with one request, the request will often fail for other reasons (for example,\n" +
@@ -9218,8 +9238,8 @@ Attributes {
         String destName0 = dataVariables[0].destinationName();
         EDVGridAxis lonEdv = axisVariables[lonIndex];
         EDVGridAxis latEdv = axisVariables[latIndex];
-        String getCap = wcsUrl + "?service=WCS&version=1.0.0&request=GetCapabilities";
-        String desCov = wcsUrl + "?service=WCS&version=1.0.0&request=DescribeCoverage&coverage=" + destName0;       
+        String getCap = XML.encodeAsHTMLAttribute(wcsUrl + "?service=WCS&version=1.0.0&request=GetCapabilities");
+        String desCov = XML.encodeAsHTMLAttribute(wcsUrl + "?service=WCS&version=1.0.0&request=DescribeCoverage&coverage=" + destName0);       
         StringBuilder getCovSB = new StringBuilder(wcsUrl);
         getCovSB.append("?service=WCS&version=1.0.0&request=GetCoverage&coverage=" + destName0 +
             "&bbox=" + 
@@ -9245,7 +9265,7 @@ Attributes {
             ((lonEdv.destinationMax() - lonEdv.destinationMin()) * 200) /
              (latEdv.destinationMax() - latEdv.destinationMin()) ));
         getCovSB.append("&height=200&width=" + width + "&format=PNG");
-        String getCov = getCovSB.toString();
+        String getCov = XML.encodeAsHTMLAttribute(getCovSB.toString());
 
 
         //*** html head
@@ -9268,8 +9288,9 @@ Attributes {
             "    of datasets available via WCS</a> at this ERDDAP installation.\n";
         String makeAGraphListRef =
             "  <br>See the\n" +
-            "    <a rel=\"bookmark\" href=\"" + tErddapUrl + "/info/index.html" +
-                "?page=1&itemsPerPage=" + EDStatic.defaultItemsPerPage + "\">list \n" +
+            "    <a rel=\"bookmark\" href=\"" + 
+                XML.encodeAsHTMLAttribute(tErddapUrl + "/info/index.html" +
+                    "?page=1&itemsPerPage=" + EDStatic.defaultItemsPerPage) + "\">list \n" +
             "      of datasets with Make A Graph</a> at this ERDDAP installation.\n";
 
         //What is WCS?   (for tDatasetID) 
@@ -9287,8 +9308,7 @@ Attributes {
             "<li><b>GetCapabilities</b> - A GetCapabilities request returns an XML document which provides\n" +
             "  <br>background information about the service and specific information about all of the data\n" +
             "  <br>available from this service. For this dataset, use\n" + 
-            "  <br><a href=\"" + getCap + "\">\n" + 
-                getCap + "</a>\n" +
+            "  <br><a href=\"" + getCap + "\">\n" + getCap + "</a>\n" +
             "  <br>&nbsp;\n" +
             "<li><b>DescribeCoverage</b> - A DescribeCoverage request returns an XML document which provides\n" +
             "  <br>more detailed information about a specific coverage. For example,\n" + 
@@ -9303,8 +9323,7 @@ Attributes {
             "    <li>The file format (e.g., " + String2.toCSSVString(wcsRequestFormats100) + ").\n" +
             "    </ul>\n" +
             "  <br>The WCS service responds with a file with the requested data. A PNG example is\n" +
-            "  <br><a href=\"" + getCov + "\">\n" + 
-                getCov + "</a>\n" +
+            "  <br><a href=\"" + getCov + "\">\n" + getCov + "</a>\n" +
             "  <br>&nbsp;\n" +
             "</ul>\n");
 
@@ -9401,8 +9420,8 @@ Attributes {
             "<p><b>GetCapabilities</b> - A GetCapabilities request returns an XML document which provides\n" +
             "  <br>background information about the service and basic information about all of the data\n" +
             "  <br>available from this service.  For this dataset, use\n" + 
-            "  <br><a href=\"" + getCapabilities + "\">\n" + 
-                getCapabilities + "</a>\n" +
+            "  <br><a href=\"" + XML.encodeAsHTMLAttribute(getCapabilities) + "\">\n" + 
+                                 XML.encodeAsHTMLAttribute(getCapabilities) + "</a>\n" +
             "  <p>The parameters for a GetCapabilities request are:\n" +
             "<table class=\"erd commonBGColor\" cellspacing=\"4\">\n" +
             "  <tr>\n" +
@@ -9436,8 +9455,8 @@ Attributes {
         writer.write(
             "<p><b>DescribeSensor</b> - A DescribeSensor request returns an XML document which provides\n" +
             "  <br>more detailed information about a specific coverage. For example,\n" + 
-            "  <br><a href=\"" + describeCoverage + "\">\n" + 
-                describeCoverage + "</a>\n" +
+            "  <br><a href=\"" + XML.encodeAsHTMLAttribute(describeCoverage) + "\">\n" + 
+                                 XML.encodeAsHTMLAttribute(describeCoverage) + "</a>\n" +
             "\n" +
             "  <p>The parameters for a DescribeCoverage request are:\n" +
             "<table class=\"erd commonBGColor\" cellspacing=\"4\">\n" +
@@ -9477,8 +9496,8 @@ Attributes {
         writer.write(
             "<p><b>GetCoverage</b> - A GetCoverage request specifies the subset of data that you want.\n" +
             "  The WCS service responds with a file with the requested data. A PNG example is" +
-            "  <br><a href=\"" + getCoverage + "\">\n" + 
-                 getCoverage + "</a>\n" +
+            "  <br><a href=\"" + XML.encodeAsHTMLAttribute(getCoverage) + "\">\n" + 
+                                 XML.encodeAsHTMLAttribute(getCoverage) + "</a>\n" +
             "  <p>The parameters for a GetCoverage request are:\n" +
             "<table class=\"erd commonBGColor\" cellspacing=\"4\">\n" +
             "  <tr>\n" +
@@ -10432,8 +10451,8 @@ if (altEdv != null || depthEdv != null) {
     (altEdv != null? 
 "      <altsys>\n" +
 "        <altdatum>" + unknown + "</altdatum>\n" +
-"        <altres>" + 
-        (altEdv.isEvenlySpaced()? "" + altEdv.averageSpacing() : unknown) + 
+"        <altres>" + (Math2.isFinite(altEdv.averageSpacing())? "" + altEdv.averageSpacing() : unknown) + 
+//was          (altEdv.isEvenlySpaced()? "" + altEdv.averageSpacing() : unknown) + 
         "</altres>\n" + //min distance between 2 adjacent values
 "        <altunits>meters</altunits>\n" +
 "        <altenc>Explicit elevation coordinate included with horizontal coordinates</altenc>\n" + //2012-12-28 was Unknown
@@ -11597,8 +11616,9 @@ for (int v = 0; v < dataVariables.length; v++) {
     //http://grepcode.com/file/repo1.maven.org/maven2/org.jvnet.ogc/gml-v_3_2_1-schema/1.0.3/iso/19139/20060504/resources/uom/gmxUom.xml
     //which is really complex for derivedUnits.
     (tUnits == null? "" : 
-"          <gmd:units xlink:href=\"http://aurora.regenstrief.org/~ucum/ucum.html#" +
-             XML.encodeAsXML(edv.ucumUnits()) + "\"/>\n") +
+"          <gmd:units xlink:href=\"" + 
+    XML.encodeAsXML("http://unitsofmeasure.org/ucum.html#" + edv.ucumUnits()) + 
+    "\"/>\n") +
 
 "        </gmd:MD_Band>\n" +
 "      </gmd:dimension>\n");
@@ -11628,8 +11648,9 @@ for (int v = 0; v < axisVariables.length; v++) {
 "          <gmd:descriptor>\n" +
 "            <gco:CharacterString>" + XML.encodeAsXML(edvga.longName()) + "</gco:CharacterString>\n" +
 "          </gmd:descriptor>\n" +  //ncIso has units xlink:href="http://someUnitsDictionary.xml#m"
-"          <gmd:units xlink:href=\"http://aurora.regenstrief.org/~ucum/ucum.html#" +
-             XML.encodeAsXML(edvga.ucumUnits()) + "\"/>\n" +
+"          <gmd:units xlink:href=\"" + 
+    XML.encodeAsHTMLAttribute(http://unitsofmeasure.org/ucum.html#" + edvga.ucumUnits()) + 
+    "\"/>\n" +
 "        </gmd:MD_Band>\n" +
 "      </gmd:dimension>\n");
 } */

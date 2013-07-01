@@ -39,9 +39,15 @@ public class OpendapHelper  {
 
     /**
      * Set this to true (by calling verbose=true in your program, not but changing the code here)
-     * if you want lots of diagnostic messages sent to String2.log.
+     * if you want diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
+
+    /**
+     * Set this to true (by calling debug=true in your program, not but changing the code here)
+     * if you want lots of diagnostic messages sent to String2.log.
+     */
+    public static boolean debug = false;
 
     /**
      * This defines the end-of-line characters to use when writing dap responses.
@@ -1206,8 +1212,6 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
      */
     public static void allDapToNc(String dapUrl, String fullFileName) throws Throwable {
 
-        //debug=true logs more information
-        boolean debug = true;
 
         String beginError = "OpendapHelper.allDapToNc" +
             "\n  url=" + dapUrl + 

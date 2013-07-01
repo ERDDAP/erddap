@@ -23,6 +23,30 @@
     <display-name>ERDDAP</display-name>
     <description>ERDDAP lets humans and computer programs download gridded data and tabular data in common file formats.</description>
 
+<!-- 2013-04-20 Bob Simons added this to [tomcat]/webapps/erddap/WEB-INF/web.xml and [tomcat]/conf/web.xml. 
+See https://www.owasp.org/index.php/Testing_for_HTTP_Methods_and_XST_%28OWASP-CM-008%29
+http://www.j2eeprogrammer.com/2011/11/disabling-certain-http-methods-in.html
+Use netcat to test if this works:  
+  nc 127.0.0.1 8080[Enter]  //or some other domain
+  OPTIONS / HTTP/1.1[Enter] 
+  Host: 127.0.0.1[Enter]    //or some other domain
+  [Enter]  
+  //If you get HTTP/1.1 403 Forbidden, the constraint is in effect. Yea!
+  //If you get the html for the Tomcat welcome page, the constraint is not in effect. Boo!
+  ^C   //exits netcat
+-->
+<security-constraint>
+<web-resource-collection>
+<web-resource-name>restricted methods</web-resource-name>
+<url-pattern>/*</url-pattern>
+<http-method>TRACE</http-method>
+<http-method>PUT</http-method>
+<http-method>OPTIONS</http-method>
+<http-method>DELETE</http-method>
+</web-resource-collection>
+<auth-constraint />
+</security-constraint>
+
 <!-- This filter (for Consumer side) automatically parses OpenID responses and sets the user's identity in the session. -->
 	<filter>
         <filter-name>OpenIdFilter</filter-name>

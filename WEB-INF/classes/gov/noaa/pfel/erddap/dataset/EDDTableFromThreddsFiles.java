@@ -86,6 +86,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      */
     public EDDTableFromThreddsFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -94,11 +95,12 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ) throws Throwable {
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) throws Throwable {
 
         super("EDDTableFromThreddsFiles", true, //isLocal is now set to true (copied files)
             tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, 
+            tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
             EDStatic.fullCopyDirectory + tDatasetID + "/", //force fileDir to be the copyDir 
@@ -106,7 +108,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
 
     }
 
@@ -124,21 +126,23 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         String catalogUrl, 
         String fileNameRegex, boolean recursive, String specialMode) {
 
-        if (verbose) String2.log("* " + tDatasetID + " makeDownloadTasks from " + catalogUrl +
+        if (verbose) String2.log("* " + tDatasetID + " makeDownloadFileTasks from " + catalogUrl +
             "\nfileNameRegex=" + fileNameRegex);
         long startTime = System.currentTimeMillis();
+        int taskNumber = -1; //unused
 
         try {
             //if previous tasks are still running, return
             EDStatic.ensureTaskThreadIsRunningIfNeeded();  //ensure info is up-to-date
             Integer lastAssignedTask = (Integer)EDStatic.lastAssignedTask.get(tDatasetID);
-            if (lastAssignedTask != null &&  //previous tasks
-                EDStatic.lastFinishedTask < lastAssignedTask.intValue()) { //tasks are all done
-                if (verbose) 
-                    String2.log(tDatasetID + ": previously assigned tasks haven't been completed: " +
-                        EDStatic.lastFinishedTask + " < " + lastAssignedTask.intValue());
+            boolean pendingTasks = lastAssignedTask != null &&  
+                EDStatic.lastFinishedTask < lastAssignedTask.intValue();
+            if (verbose) 
+                String2.log("  lastFinishedTask=" + EDStatic.lastFinishedTask + 
+                    " < lastAssignedTask(" + tDatasetID + ")=" + lastAssignedTask + 
+                    "? pendingTasks=" + pendingTasks);
+            if (pendingTasks) 
                 return;
-            }
 
             //mimic the remote directory structure (there may be 10^6 files in many dirs)
             //catalogUrl = http://data.nodc.noaa.gov/thredds/catalog /nmsp/wcos/ catalog.xml
@@ -277,7 +281,6 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             }
 
             //make tasks to download files
-            int taskNumber = -1; //i.e. unused
             int nTasksCreated = 0;
             boolean remoteErrorLogged = false;  //just display 1st offender
             boolean fileErrorLogged   = false;  //just display 1st offender
@@ -346,14 +349,18 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                     String2.log("  task#" + taskNumber + " TASK_SET_FLAG " + tDatasetID);
             }
 
-            if (verbose) String2.log("* " + tDatasetID + " makeDownloadTasks finished." +
+            if (verbose) String2.log("* " + tDatasetID + " makeDownloadFileTasks finished." +
                 " nTasksCreated=" + nTasksCreated + 
                 " time=" + (System.currentTimeMillis() - startTime));
 
         } catch (Throwable t) {
             if (verbose)
-                String2.log("ERROR in makeDownloadTasks for datasetID=" + tDatasetID + "\n" +
+                String2.log("ERROR in makeDownloadFileTasks for datasetID=" + tDatasetID + "\n" +
                     MustBe.throwableToString(t));
+        }
+        if (taskNumber > -1) {
+            EDStatic.lastAssignedTask.put(tDatasetID, new Integer(taskNumber));
+            EDStatic.ensureTaskThreadIsRunningIfNeeded();  //ensure info is up-to-date
         }
     }
 
@@ -361,7 +368,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
     /**
      * This gathers file information from a THREDDS file-directory-like catalog that shows 
      * directories with lists of files, each of which MUST have a lastModified date 
-     * (or it is ignored).
+     * (or it is ignored ).
      * This calls itself recursively, adding info to fileDir, fileName and fileLastMod
      * as files are found.
      *
@@ -693,7 +700,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             "    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
             "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
-            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n");
+            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -757,6 +765,7 @@ directionsForGenerateDatasetsXml() +
 "    <columnNameForExtract>stationID</columnNameForExtract>\n" +
 "    <sortedColumnSourceName>Time</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>stationID Time</sortFilesBySourceNames>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"Conventions\">CF-1.4</att>\n" +                                                 //dates below change
 "        <att name=\"History\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2012/31/11 20:31 CST. Original dataset URL:</att>\n" +
@@ -1307,7 +1316,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.1886048e+9, 1.36347834e+9;\n" + //2nd number changes
+"    Float64 actual_range 1.1886048e+9, 1.36823034e+9;\n" + //2nd number changes
 "    String axis \"T\";\n" +
 "    Int32 data_interval 60;\n" +
 "    String ioos_category \"Time\";\n" +
@@ -1428,7 +1437,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  }\n" +
 "  relativeHumidity {\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 24.7, 101.0;\n" +
+"    Float32 actual_range 24.0, 101.0;\n" +
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1701,7 +1710,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String creator_email \"samos@coaps.fsu.edu\";\n" +
 "    String creator_name \"Shipboard Automated Meteorological and Oceanographic System (SAMOS)\";\n" +
 "    String creator_url \"http://samos.coaps.fsu.edu/html/\";\n" +
-"    String Data_modification_date \"03/26/2013 11:25:05 EDT\";\n" + //changes
+"    String Data_modification_date \"05/21/2013 12:01:51 EDT\";\n" + //changes
 "    String data_provider \"Timothy Salisbury\";\n" +
 "    Float64 Easternmost_Easting 351.15;\n" +
 "    Int16 elev 0;\n" +
@@ -1742,7 +1751,7 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    String Metadata_modification_date \"03/26/2013 11:25:05 EDT\";\n" + //changes
+"    String Metadata_modification_date \"05/21/2013 12:01:51 EDT\";\n" + //changes
 "    Float64 Northernmost_Northing 70.05856;\n" +
 "    String receipt_order \"01\";\n" +
 "    String sourceUrl \"http://coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\";\n" +
@@ -1761,7 +1770,7 @@ expected =
 "(Don't include backslashes in your query.)\n" +
 "See the tutorial for regular expressions at\n" +
 "http://www.vogella.de/articles/JavaRegularExpressions/article.html\";\n" +
-"    String time_coverage_end \"2013-03-16T23:59:00Z\";\n" +  //changes
+"    String time_coverage_end \"2013-05-10T23:59:00Z\";\n" +  //changes
 "    String time_coverage_start \"2007-09-01T00:00:00Z\";\n" +
 "    String title \"NOAA Ship Oscar Dyson Underway Meteorological Data, Quality Controlled\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +

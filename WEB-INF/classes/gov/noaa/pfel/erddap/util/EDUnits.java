@@ -80,7 +80,7 @@ public class EDUnits {
      * <br>UDUnits: http://www.unidata.ucar.edu/software/udunits/udunits-1/etc/udunits.dat
      *              http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html
      *   I worked with v 2.1.9
-     * <br>UCUM: http://aurora.regenstrief.org/~ucum/ucum.html
+     * <br>UCUM: http://unitsofmeasure.org/ucum.html
      *   I worked with Version: 1.8, $Revision: 28894 $
      *
      * <p>UDUnits supports lots of aliases (short and long)
@@ -1047,7 +1047,7 @@ public class EDUnits {
      * This converts UCUM to UDUnits.
      * <br>UDUnits: http://www.unidata.ucar.edu/software/udunits/udunits-1/etc/udunits.dat
      *              http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html
-     * <br>UCUM: http://aurora.regenstrief.org/~ucum/ucum.html
+     * <br>UCUM: http://unitsofmeasure.org/ucum.html
      *
      * <p>UCUM tends to be short, canonical-only, and strict.
      *    Many UCUM units are the same in UDUnits.

@@ -90,6 +90,8 @@ public class EDDTableFromBMDE extends EDDTable{
         Attributes tGlobalAttributes = null;
         String tLocalSourceUrl = null, tSourceCode = null;
         ArrayList tDataVariables = new ArrayList();
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -119,16 +121,16 @@ public class EDDTableFromBMDE extends EDDTable{
             else if (localTags.equals("</sourceCode>")) tSourceCode = content; 
             else if (localTags.equals( "<dataVariable>")) 
                 tDataVariables.add(getSDADVariableFromXml(xmlReader));           
-
-            //onChange
             else if (localTags.equals( "<onChange>")) {}
-            else if (localTags.equals("</onChange>")) 
-                tOnChange.add(content); 
-
+            else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -138,7 +140,8 @@ public class EDDTableFromBMDE extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromBMDE(tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
+            tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttDataVariables, tReloadEveryNMinutes, tLocalSourceUrl, tSourceCode);
     }
 
@@ -218,6 +221,7 @@ public class EDDTableFromBMDE extends EDDTable{
      */
     public EDDTableFromBMDE(String tDatasetID, String tAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object tDataVariables[][],
         int tReloadEveryNMinutes,
@@ -236,6 +240,8 @@ public class EDDTableFromBMDE extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();

@@ -242,7 +242,8 @@ public class JPane extends javax.swing.JLayeredPane
   private int horizUnitIncrement = 1;
   private int vertUnitIncrement = 1;
 
-  public static boolean debug = true; //bob simons sets this to true for debugging purposes;
+  /** Don't set debug=true here.  Only do it from within a test method. */
+  public static boolean debug = false; 
 
     /** 
      * Bob Simons added this to avoid memory leak problems.

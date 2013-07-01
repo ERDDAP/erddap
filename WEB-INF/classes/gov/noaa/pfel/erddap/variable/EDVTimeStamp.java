@@ -301,7 +301,7 @@ public class EDVTimeStamp extends EDV {
      * This is the destinationMax time value in the dataset (an ISO date/time string, 
      * e.g., "2005-12-31T23:59:59Z").  
      *
-     * @return the destinationMax time (or "" if unknown)
+     * @return the destinationMax time (or "" if unknown or time=~now)
      */
     public String destinationMaxString() {
         return destinationToString(destinationMax); 

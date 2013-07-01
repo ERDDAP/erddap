@@ -16,6 +16,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
@@ -214,6 +215,8 @@ public class EDDTableFromNWISDV extends EDDTable{
         String tLocalSourceUrl = null;
         String tParameterCode = null;
         String tStatisticCode = null;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -241,16 +244,16 @@ public class EDDTableFromNWISDV extends EDDTable{
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<sourceUrl>")) {}
             else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content; 
-
-            //onChange
             else if (localTags.equals( "<onChange>")) {}
-            else if (localTags.equals("</onChange>")) 
-                tOnChange.add(content); 
-
+            else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -260,7 +263,8 @@ public class EDDTableFromNWISDV extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromNWISDV(tDatasetID, tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
+            tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl);
 
@@ -343,6 +347,7 @@ public class EDDTableFromNWISDV extends EDDTable{
     public EDDTableFromNWISDV(
         String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -361,6 +366,8 @@ public class EDDTableFromNWISDV extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
@@ -884,11 +891,11 @@ public class EDDTableFromNWISDV extends EDDTable{
                     if (sourceNotes.length() > 0)
                         sourceNotes.append('\n');
                     String s = xmlReader.attributeValue("href");  //optional identifiers
-                    if (s != null) sourceNotes.append( "href=\"" + s + "\" ");
+                    if (s != null) sourceNotes.append( "href=\"" + XML.encodeAsHTMLAttribute(s) + "\" ");
                     s = xmlReader.attributeValue("title"); 
-                    if (s != null) sourceNotes.append( "title=\"" + s + "\" ");
+                    if (s != null) sourceNotes.append( "title=\"" + XML.encodeAsHTMLAttribute(s) + "\" ");
                     s = xmlReader.attributeValue("show");  
-                    if (s != null) sourceNotes.append( "show=\"" + s + "\" ");
+                    if (s != null) sourceNotes.append( "show=\"" + XML.encodeAsHTMLAttribute(s) + "\" ");
                 } else if ("</note>".equals(tag4)) { 
                     sourceNotes.append(xmlReader.content());
                 }
@@ -953,11 +960,11 @@ public class EDDTableFromNWISDV extends EDDTable{
                     if (variableNotes.length() > 0)
                         variableNotes.append('\n');
                     String s = xmlReader.attributeValue("href");  //optional identifiers
-                    if (s != null) variableNotes.append( "href=\"" + s + "\" ");
+                    if (s != null) variableNotes.append( "href=\"" + XML.encodeAsHTMLAttribute(s) + "\" ");
                     s = xmlReader.attributeValue("title"); 
-                    if (s != null) variableNotes.append( "title=\"" + s + "\" ");
+                    if (s != null) variableNotes.append( "title=\"" + XML.encodeAsHTMLAttribute(s) + "\" ");
                     s = xmlReader.attributeValue("show");  
-                    if (s != null) variableNotes.append( "show=\"" + s + "\" ");
+                    if (s != null) variableNotes.append( "show=\"" + XML.encodeAsHTMLAttribute(s) + "\" ");
                 } else if ("</note>".equals(tag3)) { 
                     variableNotes.append(xmlReader.content());
                 } else if ("<related>".equals(tag3)) {
