@@ -760,7 +760,7 @@ public class Subscriptions {
 
         //ensure hashset will work correctly
         //hashset.add is based on equals test, 
-        //see http://download.oracle.com/javase/1.5.0/docs/api/java/util/Collection.html
+        //see http://download.oracle.com/javase/7/docs/api/java/util/Collection.html
         Test.ensureTrue((new Integer(17)).equals(new Integer(17)), "");
 
         //test empty system

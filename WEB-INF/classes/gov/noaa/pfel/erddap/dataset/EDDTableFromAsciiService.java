@@ -72,6 +72,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         String tBeforeData[] = new String[10];   //[0..9] correspond to beforeData1..10
         String tAfterData = null;
         String tNoData = null;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -124,16 +126,16 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
             else if (localTags.equals("</afterData>")) tAfterData = content; 
             else if (localTags.equals( "<noData>")) {}
             else if (localTags.equals("</noData>")) tNoData = content; 
-
-            //onChange
             else if (localTags.equals( "<onChange>")) {}
-            else if (localTags.equals("</onChange>")) 
-                tOnChange.add(content); 
-
+            else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -145,7 +147,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         if (tDatasetType.equals("EDDTableFromAsciiServiceNOS")) { 
 
             return new EDDTableFromAsciiServiceNOS(tDatasetID, tAccessibleTo,
-                tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
+                tOnChange, tFgdcFile, tIso19115File,
+                tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
                 ttDataVariables,
                 tReloadEveryNMinutes, tLocalSourceUrl,
                 tBeforeData, tAfterData, tNoData);
@@ -227,6 +230,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
     public EDDTableFromAsciiService(String tDatasetType, 
         String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -246,6 +250,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
@@ -494,7 +500,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
             throw new SimpleException(MustBe.THERE_IS_NO_DATA);
 
         //make the empty table with all of the columns (even fixedValue)
-        Table table = makeEmptySourceTable();
+        Table table = makeEmptySourceTable(dataVariables, 32);
         int ndv = table.nColumns();
         PrimitiveArray pa[] = new PrimitiveArray[ndv];
         for (int dv = 0; dv < ndv; dv++) 
@@ -542,32 +548,6 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         //String2.log(table.dataToCSVString());
         return table;
     }
-
-    /**
-     * This makes an empty source table with all source columns (even fixedValue), 
-     * but without attributes or rows of data.
-     *
-     * @return an empty table (with columns, but without attributes or rows) 
-     * @throws Throwable if trouble
-     */
-    protected Table makeEmptySourceTable() throws Throwable {
-
-        //make the table
-        //attributes are added in standardizeResultsTable
-        Table table = new Table();        
-
-        //add the columns
-        for (int dv = 0; dv < dataVariables.length; dv++) {
-            EDV edv = dataVariables[dv]; 
-            table.addColumn(dv, edv.sourceName(), 
-                PrimitiveArray.factory(edv.sourceDataTypeClass(), 32, false),
-                new Attributes()); 
-        }
-
-        //if (reallyVerbose) String2.log("  makeEmptySourceTable done.");
-        return table;
-    }
-
 
 
 }

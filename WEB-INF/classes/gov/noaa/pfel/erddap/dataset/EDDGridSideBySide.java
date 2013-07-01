@@ -74,6 +74,8 @@ public class EDDGridSideBySide extends EDDGrid {
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -116,18 +118,18 @@ public class EDDGridSideBySide extends EDDGrid {
                     }
                 }
 
-
-            //onChange
             } else if (localTags.equals( "<onChange>")) {}
-            else if (localTags.equals("</onChange>")) 
-                tOnChange.add(content); 
+            else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-
             else if (localTags.equals( "<fgdcFile>")) {}
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -143,7 +145,8 @@ public class EDDGridSideBySide extends EDDGrid {
 
         //make the main dataset based on the information gathered
         return new EDDGridSideBySide(tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File, tcds);
+            tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery, tcds);
 
     }
 
@@ -169,6 +172,7 @@ public class EDDGridSideBySide extends EDDGrid {
      */
     public EDDGridSideBySide(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         EDDGrid tChildDatasets[]) throws Throwable {
 
         if (verbose) String2.log("\n*** constructing EDDGridSideBySide " + tDatasetID); 
@@ -183,6 +187,8 @@ public class EDDGridSideBySide extends EDDGrid {
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         childDatasets = tChildDatasets;
         int nChildren = tChildDatasets.length;
         childStopsAt = new int[nChildren];
@@ -326,6 +332,26 @@ public class EDDGridSideBySide extends EDDGrid {
 
     }
 
+    /**
+     * Subclasses (like EDDGridFromDap) overwrite this to do a quick, 
+     * incremental update of this dataset (i.e., for real time deal datasets).
+     * 
+     * <p>For simple failures, this writes into to log.txt but doesn't throw an exception.
+     *
+     * <p>If the dataset has changed in a serious / incompatible way and needs a full
+     * reload, this calls requestReloadASAP() and throws WaitThenTryAgainException.
+     */
+    public void update() {
+        //NOT FINISHED. NOT SIMPLE.
+        //for (int i = 0; i < childDatasets.length; i++)
+        //    childDatasets[i].update();
+        //
+        //rebuild indexOfAxis0Value 
+        //protected IntArray indexOfAxis0Value[]; //an IntArray for each child; a row for each axis0 value
+    }
+
+
+    
     /** 
      * creationTimeMillis indicates when this dataset was created.
      * This overrides the EDD version in order to check if children need to be

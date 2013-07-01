@@ -132,15 +132,26 @@ or Mac server instead.
       <br>On Windows, select the "32-bit/64-bit Windows Service Installer".
         It will be installed in c:/Program Files.
       <br>&nbsp;
+     
+    <li>Security recommendation: you can remove some possible avenues for attackers by following 
+      <a rel="help" href="http://www.j2eeprogrammer.com/2011/11/disabling-certain-http-methods-in.html"
+      >these&nbsp;instructions</a> (especially the article's second recommendation) 
+      to disable certain HTTP methods 
+      (TRACE, PUT, OPTIONS, DELETE) in Tomcat.
+      (<a rel="help" href="https://www.owasp.org/index.php/Testing_for_HTTP_Methods_and_XST_%28OWASP-CM-008%29"
+      >background&nbsp;information</a>)
+      <br>&nbsp;
 
-    <li><a name="WindowsMemory">On Windows,</a> run Tomcat Manager and right click on the Tomcat Manager icon in the system tray; 
+    <li><a name="WindowsMemory">On Windows,</a> run Tomcat Manager and right click on the 
+      Tomcat Manager icon in the system tray; 
       select <tt>Configure : Java</tt>.
       <ul>
       <li>Set the <tt>Java Virtual Machine</tt> directory, e.g.,
         C:\Program Files\Java\jre7\bin\client\jvm.dll.    <!-- javaVersion -->  
       <li>Set <tt>Initial Memory Pool</tt> and 
         <tt>Maximum Memory Pool</tt> to <tt>1200</tt> MB on 32-bit Windows computers or
-        up to 1/2 of physical memory on 64-bit Windows computers. On 32-bit computers, going much higher than 1200 MB will probably fail.
+        up to 1/2 of physical memory on 64-bit Windows computers. 
+        On 32-bit computers, going much higher than 1200 MB will probably fail.
         <br>&nbsp;
       </ul>
 

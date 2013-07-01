@@ -189,6 +189,8 @@ public class EDDTableFromSOS extends EDDTable{
         String tBBoxParameter = null;
         String tSosVersion = null;
         boolean tSourceNeedsExpandedFP_EQ = true;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -250,16 +252,16 @@ public class EDDTableFromSOS extends EDDTable{
             else if (localTags.equals("</bboxParameter>")) tBBoxParameter = content;
             else if (localTags.equals( "<sourceNeedsExpandedFP_EQ>")) {}
             else if (localTags.equals("</sourceNeedsExpandedFP_EQ>")) tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content); 
-
-            //onChange
             else if (localTags.equals( "<onChange>")) {}
-            else if (localTags.equals("</onChange>")) 
-                tOnChange.add(content); 
-
+            else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -269,7 +271,8 @@ public class EDDTableFromSOS extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromSOS(tDatasetID, tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes, tSosServerType,
+            tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes, tSosServerType,
             tStationIdSourceName, tLongitudeSourceName, tLatitudeSourceName,
             tAltitudeSourceName, tAltitudeSourceMinimum, tAltitudeSourceMaximum, 
             tAltitudeMetersPerSourceUnit,
@@ -386,6 +389,7 @@ public class EDDTableFromSOS extends EDDTable{
      */
     public EDDTableFromSOS(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes, String tSosServerType,
         String tStationIdSourceName,
         String tLonSourceName,
@@ -413,6 +417,8 @@ public class EDDTableFromSOS extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
@@ -441,6 +447,7 @@ public class EDDTableFromSOS extends EDDTable{
         if (tResponseFormat == null)
             tResponseFormat = "";
         responseFormat = tResponseFormat.trim();
+        sosVersion = tSosVersion;
 
         //bbox - set both or neither
         if (tBBoxOffering != null && tBBoxOffering.length() > 0) {
@@ -514,8 +521,8 @@ public class EDDTableFromSOS extends EDDTable{
         //use KVP (KeyValuePair) HTTP GET request to getCapabilities
         //see section 7.2.3 of OGC 06-121r3 (OGC Web Services Common Specification) ver 1.1.0
         String tUrl = localSourceUrl + "?service=SOS&request=GetCapabilities"; 
-        if (tSosVersion != null && tSosVersion.length() > 0)
-            tUrl += "&version=" + tSosVersion;
+        if (sosVersion != null && sosVersion.length() > 0)
+            tUrl += "&version=" + sosVersion;
         //if (debugMode)
         //    String2.log(SSR.getUrlResponseString(tUrl));
         //String2.writeToFile("f:/programs/sos/ndbcSosWind_capabilities_90721.xml", SSR.getUrlResponseString(tUrl));
@@ -575,12 +582,6 @@ public class EDDTableFromSOS extends EDDTable{
                 tags + " should have been <Capabilities> or <sos:Capabilities>.");
         }
         //String2.log("attributesCSV=" + xmlReader.attributesCSV());
-        sosVersion = xmlReader.attributeValue("version"); //e.g., "0.0.31" or "1.0.0"
-        if (sosVersion == null || sosVersion.length() == 0) {
-            sosVersion = tSosVersion;
-            if (sosVersion == null || sosVersion.length() == 0)
-                sosVersion = "1.0.0"; //default
-        }
         if (verbose) String2.log("  sosPrefix=" + sosPrefix + " sosVersion=" + sosVersion);
         String offeringTag = "<" + 
             sosPrefix + "Capabilities><" + 
@@ -602,7 +603,14 @@ public class EDDTableFromSOS extends EDDTable{
             //process the tags
             //String2.log("tags=" + tags + xmlReader.content());
 
-            if (tags.startsWith(offeringTag)) {
+            if (tags.endsWith("<ows:ServiceIdentification></ows:ServiceTypeVersion>")) {
+                if (debugMode) String2.log(">>ServiceTypeVersion=" + xmlReader.content());
+                if (sosVersion == null || sosVersion.length() == 0) {
+                    sosVersion = xmlReader.content(); //e.g., "0.0.31" or "1.0.0"
+                    if (debugMode) String2.log(">>Setting sosVersion=" + xmlReader.content());
+                }
+
+            } else if (tags.startsWith(offeringTag)) {
                 String endOfTag = tags.substring(offeringTag.length());
                 String content = xmlReader.content();
                 String fatalError = null;
@@ -856,11 +864,15 @@ public class EDDTableFromSOS extends EDDTable{
             tags = xmlReader.allTags();
         } while (!tags.startsWith("</"));
 
+
         xmlReader.close();      
+        if (sosVersion == null || sosVersion.length() == 0)
+            sosVersion = "1.0.0"; //default
         if (verbose) String2.log(
             "ndbcIoosServer=" + ndbcIoosServer + 
             " nosIoosServer=" + nosIoosServer +
-            " whoiServer=" + whoiServer);
+            " whoiServer=" + whoiServer +
+            " sosVersion=" + sosVersion);
 
         if (stationTable.nRows() == 0)
             throw new RuntimeException(datasetID + " has no valid stations.");
@@ -1093,7 +1105,7 @@ public class EDDTableFromSOS extends EDDTable{
             tableDVI.add(lonIndex);
             tableDVI.add(latIndex);
             tableDVI.add(sosOfferingIndex);  //stationID
-            Table table = makeTable(tableDVI);
+            Table table = makeEmptySourceTable(tableDVI.toArray(), 128);
 
             //add all of the station info
             table.getColumn(0).append(stationTable.getColumn(stationLonCol)); 
@@ -1168,7 +1180,7 @@ public class EDDTableFromSOS extends EDDTable{
 
 
         //makeTable
-        Table table = makeTable(tableDVI);
+        Table table = makeEmptySourceTable(tableDVI.toArray(), 128);
         HashMap llatHash = new HashMap(); //llat info -> table row number (as a String)
         //IntArray fixedColumnsInTable = new IntArray();
         //for (int col = 0; col < tableDVI.size(); col++)
@@ -1396,7 +1408,7 @@ public class EDDTableFromSOS extends EDDTable{
             //writeToTableWriter
             //this can't be in obsProp loop (obsProps are merged)
             if (writeChunkToTableWriter(requestUrl, userDapQuery, table, tableWriter, false)) {
-                table = makeTable(tableDVI);
+                table = makeEmptySourceTable(tableDVI.toArray(), 128);
                 llatHash.clear(); //llat info -> table row number (as a String)
                 if (tableWriter.noMoreDataPlease) {
                     tableWriter.logCaughtNoMoreDataPlease(datasetID);
@@ -2316,18 +2328,6 @@ http://schemas.opengis.net/om/1.0 http://schemas.opengis.net/om/1.0.0/observatio
         }
     }
 
-    /** Make a table with a column for each resultsVariable (with sourceNames) to hold source values.
-     * @param tableDVI has the dvIndices for the columns of the table
-     */
-    private Table makeTable(IntArray tableDVI) throws Throwable {
-        Table table = new Table();
-        for (int col = 0; col < tableDVI.size(); col++) {
-            int dvi = tableDVI.get(col);
-            table.addColumn(dataVariables[dvi].sourceName(), 
-                PrimitiveArray.factory(dataVariables[dvi].sourceDataTypeClass(), 128, false)); 
-        }
-        return table;
-    }
 
 private static String standardSummary = //from http://www.oostethys.org/ogc-oceans-interoperability-experiment 
 "The OCEANS IE -- formally approved as an OGC Interoperability\n" +
@@ -2834,7 +2834,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range 29.48, 41.7043;\n" +
+"    Float64 actual_range 29.6817, 41.7043;\n" + //2013-05-22 was 29.48
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -2886,7 +2886,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    Float64 Easternmost_Easting -71.1641;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 41.7043;\n" +
-"    Float64 geospatial_lat_min 29.48;\n" +
+"    Float64 geospatial_lat_min 29.6817;\n" + //2013-05-11 was 29.48
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max -71.1641;\n" +
 "    Float64 geospatial_lon_min -94.985;\n" +
@@ -3184,7 +3184,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range 29.48, 41.7043;\n" + //pre 2012-03-16 was 43.32
+"    Float64 actual_range 29.6817, 41.7043;\n" + //pre 2013-05-22 was 29.48 ;pre 2012-03-16 was 43.32
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -3913,7 +3913,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "  echo_intensity_beam2 {\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
-"    String long_name \"Echo Intensity Beam 2\";\n" +
+"    String long_name \"Echo Intensity Beam #2\";\n" +
 "    String observedProperty \"http://mmisw.org/ont/cf/parameter/currents\";\n" +
 "    String units \"count\";\n" +
 "  }\n" +
@@ -3941,7 +3941,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "  correlation_magnitude_beam2 {\n" +
 "    String comment \"Always check the quality_flags before using this data.\";\n" +
 "    String ioos_category \"Currents\";\n" +
-"    String long_name \"Correlation Magnitude Beam 2\";\n" +
+"    String long_name \"Correlation Magnitude Beam #2\";\n" +
 "    String observedProperty \"http://mmisw.org/ont/cf/parameter/currents\";\n" +
 "    String units \"count\";\n" +
 "  }\n" +
@@ -5999,9 +5999,6 @@ So I will make ERDDAP able to read
             throw new RuntimeException("The first SOS capabilities tag=\"" + 
                 tags + "\" should have been <Capabilities> or <sos:Capabilities>.");
         }
-        sosVersion = xmlReader.attributeValue("version"); //e.g., "0.0.31"
-        if (verbose) String2.log("  sosPrefix=" + sosPrefix + 
-            "\n  getCapabilities version=" + sosVersion); 
         String offeringTag = "<" + 
             sosPrefix + "Capabilities><" + 
             sosPrefix + "Contents><" + 
@@ -6029,7 +6026,13 @@ So I will make ERDDAP able to read
             //process the tags
             //String2.log("tags=" + tags + xmlReader.content());
 
-            if (tags.endsWith("<ows:ServiceIdentification></ows:Title>")) {
+            if (tags.endsWith("<ows:ServiceIdentification></ows:ServiceTypeVersion>")) {
+                if (verbose) String2.log(">>ServiceTypeVersion=" + xmlReader.content());
+                if (sosVersion == null || sosVersion.length() == 0) {
+                    sosVersion = xmlReader.content(); //e.g., "0.0.31" or "1.0.0"
+                    if (verbose) String2.log(">>Setting sosVersion=" + sosVersion);
+                }
+            } else if (tags.endsWith("<ows:ServiceIdentification></ows:Title>")) {
                 title = xmlReader.content();
 
             } else if (tags.endsWith("<ows:ServiceIdentification></ows:Abstract>")) {
@@ -6159,6 +6162,8 @@ So I will make ERDDAP able to read
         } while (!tags.startsWith("</"));
 
         xmlReader.close();      
+        if (sosVersion == null || sosVersion.length() == 0) 
+            sosVersion = "1.0.0"; //default
 
         //write the station/obsProp info
         sb.append("You have to choose which observedProperties will be used for this dataset.\n\n");
@@ -6224,8 +6229,7 @@ So I will make ERDDAP able to read
                     "\" active=\"true\">\n" +
             "    <sourceUrl>" + tLocalSourceUrl + "</sourceUrl>\n" +
             "    <sosServerType>" + sosServerType + "</sosServerType>\n" +
-            (sosVersion == null || sosVersion.length() == 0? "" : 
-            "    <sosVersion>" + sosVersion + "</sosVersion>\n") +
+            "    <sosVersion>" + sosVersion + "</sosVersion>\n" +
             "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
             "    <observationOfferingIdRegex>.+</observationOfferingIdRegex>\n" +
             "    <requestObservedPropertiesSeparately>false</requestObservedPropertiesSeparately>\n" +
@@ -6512,9 +6516,8 @@ String expected2 =
             throw new RuntimeException("The first SOS capabilities tag=\"" + 
                 tags + "\" should have been <Capabilities> or <sos:Capabilities>.");
         }
-        String tSosVersion = xmlReader.attributeValue("version"); //e.g., "1.0.0"
-        if (verbose) String2.log("  sosPrefix=" + sosPrefix + 
-            "\n  getCapabilities version=" + tSosVersion); 
+        String tSosVersion = null; //e.g., "1.0.0"
+        if (verbose) String2.log("  sosPrefix=" + sosPrefix); 
         String offeringTag = "<" + 
             sosPrefix + "Capabilities><" + 
             sosPrefix + "Contents><" + 
@@ -6543,7 +6546,14 @@ String expected2 =
             //process the tags
             //String2.log("tags=" + tags + xmlReader.content());
 
-            if (tags.endsWith("<ows:ServiceIdentification></ows:Title>")) {
+            if (tags.endsWith("<ows:ServiceIdentification></ows:ServiceTypeVersion>")) {
+                if (verbose) String2.log(">>ServiceTypeVersion=" + xmlReader.content());
+                if (tSosVersion == null || tSosVersion.length() == 0) {
+                    tSosVersion = xmlReader.content(); //e.g., "0.0.31" or "1.0.0"
+                    if (verbose) String2.log(">>Setting sosVersion=" + tSosVersion);
+                }
+
+            } else if (tags.endsWith("<ows:ServiceIdentification></ows:Title>")) {
                 tTitle = xmlReader.content();
 
             } else if (tags.endsWith("<ows:ServiceIdentification></ows:Abstract>")) {
@@ -6683,6 +6693,8 @@ String expected2 =
         } while (!tags.startsWith("</"));
 
         xmlReader.close();      
+        if (tSosVersion == null || tSosVersion.length() == 0) 
+            tSosVersion = "1.0.0"; //default
 
         //write the station/obsProp info
         StringBuilder sb = new StringBuilder();
@@ -7601,7 +7613,7 @@ testQuickRestart = true;
             eddTable.datasetID() + "_Data", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected =
-"longitude,latitude,station_id,altitude,time,pressure,waveHeightFromPressure,wavePeriodFromPressure,loCutoffFrequency,hiCutoffFrequency,waveHeightAll,swell,windWaves,wavePeriodAll,swellPeriod,windPeriod,dominantWaveDirection,swellDirection,windWaveDirection,topBinHeight,bottomBinHeight,dataGapFlag,aggregatePressureFlag,echoIntensityFlag,cMFlag,aggregateVelocityFlag\n" +
+"longitude,latitude,station_id,altitude,time,pressure,waveHeightFromPressure,wavePeriodFromPressure,loCutoffFrequency,hiCutoffFrequency,waveHeightAll,swell,windWaves,wavePeriodAll,swellPeriod,windWavePeriod,dominantWaveDirection,swellDirection,windWaveDirection,topBinHeight,bottomBinHeight,dataGapFlag,aggregatePressureFlag,echoIntensityFlag,cMFlag,aggregateVelocityFlag\n" +
 "degrees_east,degrees_north,,m,UTC,cm,cm,s,Hz,Hz,cm,cm,cm,s,s,s,degrees_true,degrees_true,degrees_true,cm,cm,,,,,\n" +
 "-70.5564,41.3366,ADCP_DATA,0.0,2008-04-09T00:00:00Z,1128.3,73.2,9.0,0.06,0.16,97.8,71.1,38.4,6.0,10.0,5.0,156.0,159.4,155.3,9.6,3.1,0,0,0,0,0\n" +
 "-70.5564,41.3366,ADCP_DATA,0.0,2008-04-09T00:20:00Z,1138.2,76.5,9.0,0.06,0.16,99.0,74.8,37.5,6.0,9.0,5.0,148.5,156.9,147.2,9.6,3.1,0,0,0,0,0\n" +
@@ -7616,7 +7628,7 @@ testQuickRestart = true;
             eddTable.datasetID() + "_Data2", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected =
-"longitude,latitude,station_id,altitude,time,pressure,waveHeightFromPressure,wavePeriodFromPressure,loCutoffFrequency,hiCutoffFrequency,waveHeightAll,swell,windWaves,wavePeriodAll,swellPeriod,windPeriod,dominantWaveDirection,swellDirection,windWaveDirection,topBinHeight,bottomBinHeight,dataGapFlag,aggregatePressureFlag,echoIntensityFlag,cMFlag,aggregateVelocityFlag\n" +
+"longitude,latitude,station_id,altitude,time,pressure,waveHeightFromPressure,wavePeriodFromPressure,loCutoffFrequency,hiCutoffFrequency,waveHeightAll,swell,windWaves,wavePeriodAll,swellPeriod,windWavePeriod,dominantWaveDirection,swellDirection,windWaveDirection,topBinHeight,bottomBinHeight,dataGapFlag,aggregatePressureFlag,echoIntensityFlag,cMFlag,aggregateVelocityFlag\n" +
 "degrees_east,degrees_north,,m,UTC,cm,cm,s,Hz,Hz,cm,cm,cm,s,s,s,degrees_true,degrees_true,degrees_true,cm,cm,,,,,\n" +
 "-70.5564,41.3366,ADCP_DATA,0.0,2009-09-03T16:07:58Z,1027.3,58.1,8.0,0.06,0.17,100.0,46.4,19.6,19.0,10.0,5.0,153.1,165.1,151.0,8.6,3.1,1,0,0,0,1\n" +
 "-70.5564,41.3366,ADCP_DATA,0.0,2009-09-03T22:27:58Z,1097.8,47.7,8.0,0.06,0.2,55.0,40.3,24.9,7.0,9.0,5.0,151.3,166.1,137.6,9.6,NaN,1,0,0,0,1\n" +
@@ -7652,7 +7664,7 @@ testQuickRestart = true;
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"longitude,latitude,station_id,altitude,time,pressure,waveHeightFromPressure,wavePeriodFromPressure,loCutoffFrequency,hiCutoffFrequency,waveHeightAll,swell,windWaves,wavePeriodAll,swellPeriod,windPeriod,dominantWaveDirection,swellDirection,windWaveDirection,topBinHeight,bottomBinHeight,dataGapFlag,aggregatePressureFlag,echoIntensityFlag,cMFlag,aggregateVelocityFlag\n" +
+"longitude,latitude,station_id,altitude,time,pressure,waveHeightFromPressure,wavePeriodFromPressure,loCutoffFrequency,hiCutoffFrequency,waveHeightAll,swell,windWaves,wavePeriodAll,swellPeriod,windWavePeriod,dominantWaveDirection,swellDirection,windWaveDirection,topBinHeight,bottomBinHeight,dataGapFlag,aggregatePressureFlag,echoIntensityFlag,cMFlag,aggregateVelocityFlag\n" +
 "degrees_east,degrees_north,,m,UTC,cm,cm,s,Hz,Hz,cm,cm,cm,s,s,s,degrees_true,degrees_true,degrees_true,cm,cm,,,,,\n" +
 "-70.5564,41.3366,ADCP_DATA,0.0,2010-12-11T00:00:00Z,1057.2,32.8,11.0,0.06,0.16,47.3,38.8,16.3,9.0,12.0,5.0,167.0,165.4,178.3,9.1,3.1,0,0,0,0,0\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);  

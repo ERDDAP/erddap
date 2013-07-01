@@ -82,6 +82,9 @@ public class EDDGridCopy extends EDDGrid {
         String tFgdcFile = null;
         String tIso19115File = null;
         boolean checkSourceData = defaultCheckSourceData;
+        boolean tFileTableInMemory = false;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -109,6 +112,12 @@ public class EDDGridCopy extends EDDGrid {
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<checkSourceData>")) {}
             else if (localTags.equals("</checkSourceData>")) checkSourceData = String2.parseBoolean(content); 
+            else if (localTags.equals( "<fileTableInMemory>")) {}
+            else if (localTags.equals("</fileTableInMemory>")) tFileTableInMemory = String2.parseBoolean(content); 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
             else if (localTags.equals("<dataset>")) {
 
                 try {
@@ -138,8 +147,9 @@ public class EDDGridCopy extends EDDGrid {
         }
 
         return new EDDGridCopy(tDatasetID, 
-            tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, tReloadEveryNMinutes, 
-            tSourceEdd);
+            tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, 
+            tSourceEdd, tFileTableInMemory);
     }
 
     /**
@@ -169,7 +179,9 @@ public class EDDGridCopy extends EDDGrid {
     public EDDGridCopy(String tDatasetID, 
         String tAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
-        int tReloadEveryNMinutes, EDDGrid tSourceEdd) throws Throwable {
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
+        int tReloadEveryNMinutes, EDDGrid tSourceEdd, 
+        boolean tFileTableInMemory) throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDGridCopy " + tDatasetID); 
@@ -185,6 +197,8 @@ public class EDDGridCopy extends EDDGrid {
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
 
         //ensure copyDatasetDir exists
@@ -199,8 +213,13 @@ public class EDDGridCopy extends EDDGrid {
                 //check if taskThread has finished previously assigned tasks for this dataset
                 EDStatic.ensureTaskThreadIsRunningIfNeeded();  //ensure info is up-to-date
                 Integer lastAssignedTask = (Integer)EDStatic.lastAssignedTask.get(datasetID);
-                if (lastAssignedTask == null ||  //no previous tasks
-                    EDStatic.lastFinishedTask >= lastAssignedTask.intValue()) { //tasks are all done
+                boolean pendingTasks = lastAssignedTask != null &&  
+                    EDStatic.lastFinishedTask < lastAssignedTask.intValue();
+                if (verbose) 
+                    String2.log("  lastFinishedTask=" + EDStatic.lastFinishedTask + 
+                        " < lastAssignedTask(" + tDatasetID + ")=" + lastAssignedTask + 
+                        "? pendingTasks=" + pendingTasks);
+                if (!pendingTasks) {
 
                     //make a task for each axis0 value (if the file doesn't already exist)
                     PrimitiveArray tDestValues = sourceEdd.axisVariables[0].destinationValues();
@@ -262,9 +281,10 @@ public class EDDGridCopy extends EDDGrid {
                 String2.log("Error while assigning " + datasetID + " copy tasks to taskThread:\n" +
                     MustBe.throwableToString(t));
             }
-            if (taskNumber >= 0) 
+            if (taskNumber >= 0) {
                 EDStatic.lastAssignedTask.put(datasetID, new Integer(taskNumber));
-            EDStatic.ensureTaskThreadIsRunningIfNeeded();  //clients (like this class) are responsible for checking on it
+                EDStatic.ensureTaskThreadIsRunningIfNeeded();  //clients (like this class) are responsible for checking on it
+            }
         }
 
         //gather info about dataVariables to create localEdd
@@ -352,14 +372,16 @@ public class EDDGridCopy extends EDDGrid {
         //  and constructor will try again in 15 min.
         localEdd = new EDDGridFromNcFiles(datasetID, 
             tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, 
+            tDefaultDataQuery, tDefaultGraphQuery,
             new Attributes(), //addGlobalAttributes
             tAxisVariables,
             tDataVariables,
             tReloadEveryNMinutes,
             copyDatasetDir, false, ".*\\.nc", //false=notRecursive   since always just 1 directory
             EDDGridFromFiles.MF_LAST,
-            true); //tEnsureAxisValuesAreExactlyEqual,  sourceEdd should have made them consistent
+            true, //tEnsureAxisValuesAreExactlyEqual,  sourceEdd should have made them consistent
+            tFileTableInMemory);
 
         //copy things from localEdd 
         //remove last 2 lines from history (will be redundant)

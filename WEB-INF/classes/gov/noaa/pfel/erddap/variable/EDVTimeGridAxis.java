@@ -24,6 +24,12 @@ import org.joda.time.format.*;
 
 /** 
  * This class holds information about the time grid axis variable.
+ *
+ * [STRING TIMES NOT FINISHED: 
+ * The handling of String times in incomplete and probably not a good approach. 
+ * Probably better is: really encapsulate the strings, so that any users of
+ * this class just see/deal with numeric values (epochSoconds).  
+ * There are just too many places where it is assumed that all axes are numeric.]
  * 
  * @author Bob Simons (bob.simons@noaa.gov) 2007-06-04
  */

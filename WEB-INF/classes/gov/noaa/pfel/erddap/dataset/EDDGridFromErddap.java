@@ -36,6 +36,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.util.Subscriptions;
 import gov.noaa.pfel.erddap.variable.*;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -85,11 +86,14 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         if (verbose) String2.log("\n*** constructing EDDGridFromErddap(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
+        int tUpdateEveryNMillis = 0;
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
         String tLocalSourceUrl = null;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -108,6 +112,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             //try to make the tag names as consistent, descriptive and readable as possible
             if      (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
+            else if (localTags.equals( "<updateEveryNMillis>")) {}
+            else if (localTags.equals("</updateEveryNMillis>")) tUpdateEveryNMillis = String2.parseInt(content); 
 
             //Since this erddap can never be logged in to the remote ERDDAP, 
             //it can never get dataset info from the remote erddap dataset (which should have restricted access).
@@ -119,21 +125,23 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
             else if (localTags.equals( "<sourceUrl>")) {}
             else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content; 
-
-            //onChange
             else if (localTags.equals( "<onChange>")) {}
-            else if (localTags.equals("</onChange>")) 
-                tOnChange.add(content); 
-
+            else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
 
             else xmlReader.unexpectedTagException();
         }
         return new EDDGridFromErddap(tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File, tReloadEveryNMinutes, tLocalSourceUrl);
+            tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, tUpdateEveryNMillis,
+            tLocalSourceUrl);
     }
 
     /**
@@ -157,7 +165,9 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      */
     public EDDGridFromErddap(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
-        int tReloadEveryNMinutes, String tLocalSourceUrl) throws Throwable {
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
+        int tReloadEveryNMinutes, int tUpdateEveryNMillis,
+        String tLocalSourceUrl) throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDGridFromErddap " + tDatasetID); 
@@ -172,8 +182,11 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         localSourceUrl = tLocalSourceUrl;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
+        setUpdateEveryNMillis(tUpdateEveryNMillis);
         if (tLocalSourceUrl.indexOf("/tabledap/") > 0)
             throw new RuntimeException(
                 "For datasetID=" + tDatasetID + 
@@ -411,6 +424,223 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
     }
 
+    /**
+     * This does a quick, incremental update of this dataset (i.e., deal with 
+     * leftmost axis growing). This is COPIED UNCHANGED from EDDGridFromDap.
+     *
+     * <p>Concurrency issue #1: This avoids 2+ simultaneous updates.
+     *
+     * <p>Concurrency issue #2: The changes are first prepared and 
+     * then applied quickly (but not atomically!).
+     * There is a chance that another thread will get inconsistent information
+     * (from some things updated and some things not yet updated).
+     * But I don't want to synchronize all activities of this class.
+     *
+     * <p>See &lt;updateEveryNMillis&gt; in constructor. 
+     * Note: It is pointless and counter-productive to set updateEveryNMillis 
+     * to be less than a fairly reliable update time (e.g., 1000 ms).
+     *
+     * <p>For simple failures, this writes to log.txt but doesn't throw an exception.
+     *
+     * <p>If the dataset has changed in a serious / incompatible way and needs a full
+     * reload, this calls requestReloadASAP() and throws WaitThenTryAgainException.
+     */
+    public void update() {
+        //return quickly if update system isn't active for this dataset
+        if (updateEveryNMillis <= 0)
+            return;
+
+        //return quickly if dataset doesn't need to be updated
+        long now = System.currentTimeMillis();
+        if (now - lastUpdate < updateEveryNMillis) {
+            //String2.log("update(" + datasetID + "): no need to update:  now-last=" + (now - lastUpdate) + " < updateEvery=" + updateEveryNMillis);
+            return;
+        }
+
+        //return quickly if another thread is currently updating this dataset
+        String msg = "update(" + datasetID + "): ";
+        if (!updateLock.tryLock()) {
+            if (verbose) String2.log(msg + "couldn't get lock.");
+            return; 
+        }
+
+        //updateLock is locked by this thread.   Do the update!
+        try {
+            lastUpdate = now; //set at top to discourage other threads from also updating
+                
+            //read dds
+            DConnect dConnect = new DConnect(localSourceUrl, acceptDeflate, 1, 1);
+            byte ddsBytes[] = SSR.getUrlResponseBytes(localSourceUrl + ".dds");
+            DDS dds = new DDS();
+            dds.parse(new ByteArrayInputStream(ddsBytes));
+
+            //has edvga[0] changed size?
+            EDVGridAxis edvga = axisVariables[0];
+            EDVTimeGridAxis edvtga = edvga instanceof EDVTimeGridAxis? (EDVTimeGridAxis)edvga : null;
+            PrimitiveArray oldValues = edvga.sourceValues();
+            int oldSize = oldValues.size();
+
+            //get mainDArray
+            BaseType bt = dds.getVariable(dataVariables[0].sourceName()); //throws NoSuchVariableException
+            DArray mainDArray = null;
+            if (bt instanceof DGrid) {
+                mainDArray = (DArray)((DGrid)bt).getVar(0); //first element is always main array
+            } else if (bt instanceof DArray) {
+                mainDArray = (DArray)bt;
+            } else { 
+                String2.log(msg + String2.ERROR + ": Unexpected " + dataVariables[0].destinationName() + 
+                    " source type=" + bt.getTypeName() + ".");
+                return;
+                //requestReloadASAP()+WaitThenTryAgain might lead to endless cycle of full reloads
+            }
+
+            //get the leftmost dimension
+            DArrayDimension dad = mainDArray.getDimension(0);
+            int newSize = dad.getSize();  
+            if (newSize < oldSize) {
+                requestReloadASAP(); 
+                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                    "\n(" + msg + "[" + edvga.destinationName() + "] newSize=" + newSize + 
+                    " < oldSize=" + oldSize + ")"); 
+            } 
+            if (newSize == oldSize) {
+                if (reallyVerbose) String2.log(msg + "no change to leftmost dimension");
+                return;
+            }
+
+            //newSize > oldSize, get last old value (for testing below) and new values
+            PrimitiveArray newValues = null;
+            if (edvga.sourceDataTypeClass() == int.class &&                  //not a perfect test
+                "count".equals(edvga.sourceAttributes().getString("units"))) 
+                newValues = new IntArray(oldSize - 1, newSize - 1);  //0 based
+            else {
+                try {
+                    newValues = OpendapHelper.getPrimitiveArray(dConnect, 
+                        "?" + edvga.sourceName() + "[" + (oldSize - 1) + ":" + (newSize - 1) + "]");
+                } catch (NoSuchVariableException nsve) {
+                    //hopefully avoided by testing for units=count and int datatype above
+                    String2.log(msg + "caught NoSuchVariableException for sourceName=" + edvga.sourceName() + 
+                        ". Using index numbers.");
+                    newValues = new IntArray(oldSize - 1, newSize - 1);  //0 based
+                } //but other exceptions aren't caught
+            }
+
+            //ensure newValues is valid
+            if (newValues == null || newValues.size() < (newSize - oldSize + 1)) {
+                String2.log(msg + String2.ERROR + ": Too few " + edvga.destinationName() + 
+                    " values were received (got=" + (newValues == null? "null" : "" + (newValues.size() - 1)) +
+                    "expected=" + (newSize - oldSize) + ").");
+                return;
+            }
+            if (oldValues.elementClass() != newValues.elementClass()) { //they're canonical, so != works
+                requestReloadASAP(); 
+                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                    "\n(" + msg + edvga.destinationName() + " dataType changed: " +
+                       " new=" + newValues.elementClassString() +
+                    " != old=" + oldValues.elementClassString() + ")"); 
+            }
+
+            //ensure last old value is unchanged 
+            if (oldValues.getDouble(oldSize - 1) != newValues.getDouble(0)) { //they should be exactly equal
+                requestReloadASAP(); 
+                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                    "\n(" + msg + edvga.destinationName() + "[" + (oldSize - 1) + 
+                      "] changed!  old=" + oldValues.getDouble(oldSize - 1) + 
+                              " != new=" + newValues.getDouble(0)); 
+            } 
+
+            //prepare changes to update the dataset
+            double newMin = oldValues.getDouble(0);
+            double newMax = newValues.getDouble(newValues.size() - 1);
+            if (edvtga != null) {
+                newMin = edvtga.sourceTimeToEpochSeconds(newMin);
+                newMax = edvtga.sourceTimeToEpochSeconds(newMax);
+            } else if (edvga.scaleAddOffset()) {
+                newMin = newMin * edvga.scaleFactor() + edvga.addOffset();
+                newMax = newMax * edvga.scaleFactor() + edvga.addOffset();
+            }
+
+            //first, calculate newAverageSpacing (destination units, will be negative if isDescending)
+            double newAverageSpacing = (newMax - newMin) / (newSize - 1);
+
+            //second, test for min>max after extractScaleAddOffset, since order may have changed
+            if (newMin > newMax) { 
+                double d = newMin; newMin = newMax; newMax = d;
+            }
+
+            //test isAscending  (having last old value is essential)
+            String error = edvga.isAscending()? newValues.isAscending() : newValues.isDescending();
+            if (error.length() > 0) {
+                requestReloadASAP(); 
+                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                    "\n(" + edvga.destinationName() + " was " + 
+                    (edvga.isAscending()? "a" : "de") +
+                    "scending, but the newest values aren't (" + error + ").)"); 
+            }
+
+            //if was isEvenlySpaced, test that new values are and have same averageSpacing
+            //(having last old value is essential)
+            boolean newIsEvenlySpaced = edvga.isEvenlySpaced();  //here, this is actually oldIsEvenlySpaced
+            if (newIsEvenlySpaced) {  
+                error = newValues.isEvenlySpaced();
+                if (error.length() > 0) {
+                    String2.log(msg + "changing " + edvga.destinationName() + 
+                        ".isEvenlySpaced from true to false: " + error);
+                    newIsEvenlySpaced = false;
+
+                //new spacing != old spacing ?  (precision=5, but times will be exact) 
+                } else if (!Math2.almostEqual(5, newAverageSpacing, edvga.averageSpacing())) {  
+                    String2.log(msg + "changing " + edvga.destinationName() + 
+                        ".isEvenlySpaced from true to false: newSpacing=" + newAverageSpacing +
+                        " oldSpacing=" + edvga.averageSpacing());
+                    newIsEvenlySpaced = false;
+                }
+            }
+
+            //remove the last old value from newValues
+            newValues.remove(0); 
+
+            //ensureCapacity of oldValues (may take time)
+            oldValues.ensureCapacity(newSize); //so oldValues.append below is as fast as possible
+
+            //right before making changes, make doubly sure another thread hasn't already (IMPERFECT TEST)
+            if (oldValues.size() != oldSize) {
+                String2.log(msg + "changes abandoned.  " + 
+                    edvga.destinationName() + ".size changed (new=" + oldValues.size() +
+                    " != old=" + oldSize + ").  (By update() in another thread?)");
+                return;
+            }
+
+            //Swap changes into place quickly to minimize problems.  Better if changes were atomic.
+            //Order of changes is important.
+            //Other threads may be affected by some values being updated before others.
+            //This is an imperfect alternative to synchronizing all uses of this dataset (which is far worse).
+            oldValues.append(newValues);  //should be fast, and new size set at end to minimize concurrency problems
+            edvga.setDestinationMin(newMin);
+            edvga.setDestinationMax(newMax);
+            edvga.setIsEvenlySpaced(newIsEvenlySpaced);
+            edvga.initializeAverageSpacingAndCoarseMinMax();  
+            edvga.setActualRangeFromDestinationMinMax();
+            if (edvtga != null) 
+                combinedGlobalAttributes.set("time_coverage_end",   
+                    Calendar2.epochSecondsToIsoStringT(newMax) + "Z");
+            edvga.clearSliderCsvValues();  //do last, to force recreation next time needed
+
+            updateCount++;
+            long thisTime = System.currentTimeMillis() - now;
+            cumulativeUpdateTime += thisTime;
+            if (reallyVerbose)
+                String2.log(msg + "succeeded.  nValuesAdded=" + newValues.size() + 
+                    " time=" + thisTime + " updateCount=" + updateCount +
+                    " avgTime=" + (cumulativeUpdateTime / updateCount));
+        } catch (Throwable t) {
+            String2.log(msg + "failed.  Unexpected " + String2.ERROR + ":\n" +
+                MustBe.throwableToString(t));
+        } finally {  //ensure updateLock is always unlocked
+            updateLock.unlock();  
+        }
+    }
+
     /** This returns the source ERDDAP's version number, e.g., 1.22 */
     public double sourceErddapVersion() {return sourceErddapVersion;}
 
@@ -467,8 +697,9 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         EDDGridFromErddap newEDDGrid = new EDDGridFromErddap(
             tDatasetID, 
             String2.toSSVString(accessibleTo),
-            shareInfo? onChange : (StringArray)onChange.clone(), "", "", 
-            getReloadEveryNMinutes(), tLocalSourceUrl);
+            shareInfo? onChange : (StringArray)onChange.clone(), 
+            "", "", "", "", //fgdc, iso19115, defaultDataQuery, defaultGraphQuery,
+            getReloadEveryNMinutes(), getUpdateEveryNMillis(), tLocalSourceUrl);
 
         //if shareInfo, point to same internal data
         if (shareInfo) {
@@ -770,7 +1001,7 @@ expected =
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0260864e+9, 1.3628736e+9;\n" + //last value changes periodically
+"    Float64 actual_range 1.0260864e+9, 1.3670208e+9;\n" + //last value changes periodically
 "    String axis \"T\";\n" +
 "    Int32 fraction_digits 0;\n" +
 "    String ioos_category \"Time\";\n" +
@@ -838,8 +1069,8 @@ expected =
 "    String creator_email \"dave.foley@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
-"    String date_created \"2013-03-17Z\";\n" +  //changes
-"    String date_issued \"2013-03-17Z\";\n" +  //changes
+"    String date_created \"2013-05-08Z\";\n" +  //changes
+"    String date_issued \"2013-05-08Z\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
 "    Float64 geospatial_lat_max 90.0;\n" +
 "    Float64 geospatial_lat_min -90.0;\n" +
@@ -889,7 +1120,7 @@ expected2 =
 "    Float64 Southernmost_Northing -90.0;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String summary \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-"    String time_coverage_end \"2013-03-10T00:00:00Z\";\n" + //changes
+"    String time_coverage_end \"2013-04-27T00:00:00Z\";\n" + //changes
 "    String time_coverage_start \"2002-07-08T00:00:00Z\";\n" +
 "    String title \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
@@ -918,15 +1149,15 @@ expected2 =
             //String2.log(results);
             expected = 
     "Dataset {\n" +
-    "  Float64 time[time = 481];\n" +   //481 will change sometimes   (and a few places below)
+    "  Float64 time[time = 487];\n" +   //487 will change sometimes   (and a few places below)
     "  Float64 altitude[altitude = 1];\n" +
     "  Float64 latitude[latitude = 4320];\n" +
     "  Float64 longitude[longitude = 8640];\n" +
     "  GRID {\n" +
     "    ARRAY:\n" +
-    "      Float32 chlorophyll[time = 481][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+    "      Float32 chlorophyll[time = 487][altitude = 1][latitude = 4320][longitude = 8640];\n" +
     "    MAPS:\n" +
-    "      Float64 time[time = 481];\n" +
+    "      Float64 time[time = 487];\n" +
     "      Float64 altitude[altitude = 1];\n" +
     "      Float64 latitude[latitude = 4320];\n" +
     "      Float64 longitude[longitude = 8640];\n" +
@@ -1304,8 +1535,8 @@ expected2 =
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2013-03-17Z\";\n" + //changes periodically
-" :date_issued = \"2013-03-17Z\";\n" +  //changes periodically
+" :date_created = \"2013-05-08Z\";\n" + //changes periodically
+" :date_issued = \"2013-05-08Z\";\n" +  //changes periodically
 " :Easternmost_Easting = 246.65354786433613; // double\n" +
 " :geospatial_lat_max = 49.82403334105115; // double\n" +
 " :geospatial_lat_min = 28.985876360268577; // double\n" +

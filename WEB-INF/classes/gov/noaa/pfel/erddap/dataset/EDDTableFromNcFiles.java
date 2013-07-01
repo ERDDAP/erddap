@@ -96,6 +96,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
      */
     public EDDTableFromNcFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -104,18 +105,19 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ) 
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
         throws Throwable {
 
         super("EDDTableFromNcFiles", true, tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, 
+            tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
 
     }
 
@@ -125,6 +127,7 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
     public EDDTableFromNcFiles(String tClassName, boolean tFilesAreLocal,
         String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -133,18 +136,19 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ) 
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
         throws Throwable {
 
         super(tClassName, tFilesAreLocal, tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, 
+            tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
 
     }
 
@@ -338,7 +342,8 @@ public class EDDTableFromNcFiles extends EDDTableFromFiles {
             "    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
             "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
-            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n");
+            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -402,6 +407,7 @@ directionsForGenerateDatasetsXml() +
 "    <columnNameForExtract>stationID</columnNameForExtract>\n" +
 "    <sortedColumnSourceName>TIME</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>stationID TIME</sortFilesBySourceNames>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgement\">NOAA NDBC and NOAA CoastWatch (West Coast Node)</att>\n" +
 "        <att name=\"cdm_data_type\">Station</att>\n" +
@@ -2270,8 +2276,8 @@ today;
 //today + " http://127.0.0.1:8080/...
 
 expected = 
-"?station,longitude,latitude&distinct()\";\n" +
-" :id = \"subset\";\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/cwwcNDBCMet.nc?longitude,latitude,station&station=~\\\"5.*\\\"&distinct()\";\n" +
+" :id = \"EDDTableFromNcFiles_distincts2\";\n" +
 " :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
 " :institution = \"NOAA NDBC, CoastWatch WCN\";\n" +
 " :keywords = \"Atmosphere > Air Quality > Visibility,\n" +
@@ -2323,9 +2329,11 @@ expected =
 "given hour. The time values in the dataset are rounded to the nearest hour.\n" +
 "\n" +
 "This dataset has both historical data (quality controlled, before\n" +
-"2013-02-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
-"2013-02-01T00:00:00Z on).\";\n" +                                                 //changes  
+"2013-04-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
+"2013-04-01T00:00:00Z on).\";\n" +  //changes   
+" :time_coverage_end = \"2012-06-25T15:00:00Z\";\n" +
 " :time_coverage_resolution = \"P1H\";\n" +
+" :time_coverage_start = \"1970-02-26T20:00:00Z\";\n" +
 " :title = \"NDBC Standard Meteorological Buoy Data\";\n" +
 " :Westernmost_Easting = -162.279f; // float\n" +
 " data:\n" +
@@ -2375,13 +2383,22 @@ expected =
 " :creator_url = \"http://coastwatch.pfeg.noaa.gov\";\n" +
 " :Easternmost_Easting = -153.348f; // float\n" +
 " :featureType = \"TimeSeries\";\n" +
+" :geospatial_lat_max = 70.4; // double\n" +
+" :geospatial_lat_min = -27.705; // double\n" +
 " :geospatial_lat_units = \"degrees_north\";\n" +
 " :geospatial_lon_max = -153.348f; // float\n" +
 " :geospatial_lon_min = -153.913f; // float\n" +
 " :geospatial_lon_units = \"degrees_east\";\n" +
 " :geospatial_vertical_positive = \"down\";\n" +
 " :geospatial_vertical_units = \"m\";\n" +
-" :history = \"NOAA NDBC\";\n" +
+" :history = \"NOAA NDBC\n" +
+today; //"2013-05-28T18:14:07Z http://www.ndbc.noaa.gov/
+//2013-05-28T18:14:07Z 
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+
+
+expected = 
+"http://127.0.0.1:8080/cwexperimental/tabledap/cwwcNDBCMet.nc?longitude&longitude>-154&longitude<-153&distinct()\";\n" +
 " :id = \"EDDTableFromNcFiles_distincts3\";\n" +
 " :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
 " :institution = \"NOAA NDBC, CoastWatch WCN\";\n" +
@@ -2411,10 +2428,12 @@ expected =
 " :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 " :naming_authority = \"gov.noaa.pfeg.coastwatch\";\n" +
 " :NDBCMeasurementDescriptionUrl = \"http://www.ndbc.noaa.gov/measdes.shtml\";\n" +
+" :Northernmost_Northing = 70.4; // double\n" +
 " :project = \"NOAA NDBC and NOAA CoastWatch (West Coast Node)\";\n" +
 " :quality = \"Automated QC checks with periodic manual QC\";\n" +
 " :source = \"station observation\";\n" +
 " :sourceUrl = \"http://www.ndbc.noaa.gov/\";\n" +
+" :Southernmost_Northing = -27.705; // double\n" +
 " :standard_name_vocabulary = \"CF-12\";\n" +
 " :subsetVariables = \"station, longitude, latitude\";\n" +
 " :summary = \"The National Data Buoy Center (NDBC) distributes meteorological data from\n" +
@@ -2432,16 +2451,23 @@ expected =
 "given hour. The time values in the dataset are rounded to the nearest hour.\n" +
 "\n" +
 "This dataset has both historical data (quality controlled, before\n" +
-"2013-02-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
-"2013-02-01T00:00:00Z on).\";\n" +                                                 //changes
+"2013-04-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
+"2013-04-01T00:00:00Z on).\";\n" +    //changes
+" :time_coverage_end = \"2012-06-25T15:00:00Z\";\n" +
 " :time_coverage_resolution = \"P1H\";\n" +
+" :time_coverage_start = \"1970-02-26T20:00:00Z\";\n" +
 " :title = \"NDBC Standard Meteorological Buoy Data\";\n" +
 " :Westernmost_Easting = -153.913f; // float\n" +
 " data:\n" +
 "longitude =\n" +
 "  {-153.913, -153.9, -153.348}\n" +
 "}\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        tpo = results.indexOf(expected.substring(0, 17));
+        if (tpo < 0) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            expected, "results=\n" + results);
 
     }
 
@@ -4921,7 +4947,7 @@ expected =
 "    String long_name \"Data Type\";\n" +
 "  }\n" +
 "  station_id {\n" +
-"    Int32 actual_range 1, 16222376;\n" +  //changes every month
+"    Int32 actual_range 1, 16885719;\n" +  //changes every month
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -4961,7 +4987,7 @@ expected =
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 6.31152e+8, 1.359549e+9;\n" + //2nd value changes
+"    Float64 actual_range 6.31152e+8, 1.36736628e+9;\n" + //2nd value changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -5017,7 +5043,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center (NODC) on 2013-02-08 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center (NODC) on 2013-05-13 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"org, type, station_id, longitude, latitude, time\";\n" +
@@ -5044,9 +5070,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.7\";\n" +  
-"    String history \"2013-02-01T18:59:05Z  writeGTSPPnc40.f90 Version 1.7\n" +  //date changes
+"    String history \"2013-05-01T17:33:09Z  writeGTSPPnc40.f90 Version 1.7\n" +  //date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (http://www.nodc.noaa.gov/GTSPP/)\n" +
-"2013-02-08 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n" + //date changes
+"2013-05-13 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n" + //date changes
 today;
         String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
@@ -5064,7 +5090,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2013-02-08 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2013-05-13 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -5090,7 +5116,7 @@ expected =
 "Requesting data for a specific platform, cruise, org, type, and/or station_id may be slow, but it works.\n" +
 "\n" +                       
 "*** This ERDDAP dataset has data for the entire world for all available times (currently, " +
-    "up to and including the January 2013 data) but is a subset of the " + //month changes
+    "up to and including the April 2013 data) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\n" +
 "* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\n" +
@@ -5102,7 +5128,7 @@ expected =
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\n" +
 "The Quality Flag definitions are also at\n" +
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
-"    String time_coverage_end \"2013-01-30T12:30:00Z\";\n" + //changes
+"    String time_coverage_end \"2013-04-30T23:58:00Z\";\n" + //changes
 "    String time_coverage_start \"1990-01-01T00:00:00Z\";\n" +
 "    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -5536,15 +5562,15 @@ expected =
             619, 672, 515, 8, 4,      //3125, 2625, 2687, 16, 31,      //4469, 4125, 4094, 16, 32, 
             176, 763, 1126, 60, 72,   //687, 3531, 5219, 47, 31,       //1782, 5156, 6922, 125, 100, 
             534, 523, 469, 535, 533,  //1672, 2719, 1531, 1922, 1797,  //., 4109, 4921, 4921, 4610, 
-            896, 32, 485, 482, 729,   //4266, 32, 2562, 2531, 4266,    //8359, 31, 3969, 3921, 6531, 
+            896, 65, 485, 482, 729,   //4266, 32, 2562, 2531, 4266,    //8359, 31, 3969, 3921, 6531, 
             967, 763, 686, 740,       //2078, 2500, 2063, 2047,        //4500, 5800, 5812, 5610, 
             924, 904, 1022};          //2984, 3125, 3391               //5421, 5204, 5343};         
         int bytes[]    = new int[] {
             18989646, 13058166, 13058203, 14544, 394, 
-            11703093, 16391423, 55007762, 129296, 156701, 
+            11703093, 16391423, 55007762, 129296, 173041, 
             13606792, 17827554, 10485696, 9887104, 14886, 
-            10698295, 21466, 13058166, 13058203, 59642150, 
-            4211, 82780, 135305, 161613, 
+            10698295, 24007, 13058166, 13058203, 59642150, 
+            4790, 82780, 135305, 161613, 
             7482, 11367, 23684};
 
         //warm up
@@ -6270,6 +6296,7 @@ landings.landings[12][1][1]
         String tName, error, results, expected;
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String2.log("\nafter constructor, combinedGlobal=\n" + tedd.combinedGlobalAttributes());
 
         //lon lat time range 
         tName = tedd.makeNewFileForDapQuery(null, null, 
@@ -6359,11 +6386,12 @@ landings.landings[12][1][1]
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
 //  + " http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005\n" +
-//today + " http://127.0.0.1:8080/cwexperimental/
+//today + 
+
 expected = 
-"tabledap/nwioosCoral.ncCF?longitude,latitude,depth,time,taxa_scientific,institution,species_code&taxa_scientific=\\\"Alyconaria unident.\\\"\";\n" +
+"http://127.0.0.1:8080/cwexperimental/tabledap/nwioosCoral.ncCF?longitude,latitude,depth,time,taxa_scientific,institution,species_code&taxa_scientific=\\\"Alyconaria unident.\\\"\";\n" +
 " :id = \"ncCF\";\n" +
-" :infoUrl = \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005.das.info\";\n" +
+" :infoUrl = \"http://nwioos.coas.oregonstate.edu:8080/dods/drds/Coral%201980-2005.info\";\n" +
 " :institution = \"NOAA NWFSC\";\n" +
 " :keywords = \"Biosphere > Aquatic Ecosystems > Coastal Habitat,\n" +
 "Biosphere > Aquatic Ecosystems > Marine Habitat,\n" +
@@ -6423,13 +6451,13 @@ expected =
 " :Westernmost_Easting = -125.00184631347656; // double\n" +
 " data:\n" +
 "longitude =\n" +
-"  {-121.42329406738281, -121.3140640258789, -124.56075286865234, -125.00184631347656}\n" +
+"  {-125.00184631347656, -124.56075286865234, -121.42329406738281, -121.3140640258789}\n" +
 "latitude =\n" +
-"  {34.911720275878906, 34.911373138427734, 47.082645416259766, 47.237003326416016}\n" +
+"  {47.237003326416016, 47.082645416259766, 34.911720275878906, 34.911373138427734}\n" +
 "depth =\n" +
-"  {462.0, 474.0, 77.0, 450.0}\n" +
+"  {450.0, 77.0, 462.0, 474.0}\n" +
 "time =\n" +
-"  {8.836128E8, 8.836128E8, 9.783072E8, 9.783072E8}\n" +
+"  {9.783072E8, 9.783072E8, 8.836128E8, 8.836128E8}\n" +
 "taxa_scientific =\"Alyconaria unident.\", \"Alyconaria unident.\", \"Alyconaria unident.\", \"Alyconaria unident.\"\n" +
 "institution =\"RACE\", \"RACE\", \"RACE\", \"RACE\"\n" +
 "species_code =\n" +
@@ -6455,13 +6483,13 @@ expected =
         EDDTable tedd = (EDDTable)oneFromDatasetXml("cwwcNDBCMet"); //should work
         String tName, error, results, expected;
         int po;
+        String query = "longitude,latitude,station,time,atmp,wtmp" +
+            "&longitude>-123&longitude<-122&latitude>37&latitude<38" +
+            "&time>=2005-05-01T00&time<=2005-05-01T03";
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
 
         //lon lat time range 
-        tName = tedd.makeNewFileForDapQuery(null, null, 
-            "longitude,latitude,station,time,atmp,wtmp" +
-            "&longitude>-123&longitude<-122&latitude>37&latitude<38" +
-            "&time>=2005-05-01T00&time<=2005-05-01T03", 
+        tName = tedd.makeNewFileForDapQuery(null, null, query,
             EDStatic.fullTestCacheDirectory, "ncCF1a", ".ncCF"); 
         results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
         //String2.log(results);
@@ -6559,7 +6587,7 @@ today;
        
 //+ " http://www.ndbc.noaa.gov/\n" +
 //today + " http://127.0.0.1:8080/cwexperimental/
-expected = 
+String expected2 = 
 "tabledap/cwwcNDBCMet.ncCF?longitude,latitude,station,time,atmp,wtmp&longitude>-123&longitude<-122&latitude>37&latitude<38&time>=2005-05-01T00&time<=2005-05-01T03\";\n" +
 " :id = \"ncCF1a\";\n" +
 " :infoUrl = \"http://www.ndbc.noaa.gov/\";\n" +
@@ -6613,14 +6641,16 @@ expected =
 "given hour. The time values in the dataset are rounded to the nearest hour.\n" +
 "\n" +
 "This dataset has both historical data (quality controlled, before\n" +
-"2013-02-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
-"2013-02-01T00:00:00Z on).\";\n" +                                                 //changes
+"2013-04-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
+"2013-04-01T00:00:00Z on).\";\n" +                                                 //changes
 " :time_coverage_end = \"2005-05-01T03:00:00Z\";\n" +
 " :time_coverage_resolution = \"P1H\";\n" +
 " :time_coverage_start = \"2005-05-01T00:00:00Z\";\n" +
 " :title = \"NDBC Standard Meteorological Buoy Data\";\n" +
 " :Westernmost_Easting = -122.975f; // float\n" +
-" data:\n" +
+" data:\n";
+
+String expected3 = expected2 + 
 "longitude =\n" +
 "  {-122.881, -122.833, -122.298, -122.465, -122.975, -122.4, -122.21}\n" +
 "latitude =\n" +
@@ -6635,12 +6665,28 @@ expected =
 "wtmp =\n" +
 "  {13.3, 13.3, 13.4, 13.3, -9999999.0, 13.4, 13.3, 13.2, 17.1, 16.6, 15.6, 15.2, -9999999.0, -9999999.0, -9999999.0, -9999999.0, 9.5, 9.3, -9999999.0, 9.6, 14.7, 14.7, 14.5, 14.4, 16.6, 16.6, 16.6, 16.5}\n" +
 "}\n";
-        int tpo = results.indexOf(expected.substring(0, 17));
+        int tpo = results.indexOf(expected3.substring(0, 17));
         if (tpo < 0) 
             String2.log("results=\n" + results);
         Test.ensureEqual(
-            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
-            expected, "results=\n" + results);
+            results.substring(tpo, Math.min(results.length(), tpo + expected3.length())),
+            expected3, "results=\n" + results);
+
+        // .ncCFHeader
+        tName = tedd.makeNewFileForDapQuery(null, null, query,
+            EDStatic.fullTestCacheDirectory, "ncCF1a", ".ncCFHeader"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+        
+        expected3 = expected2 + "}\n";
+        tpo = results.indexOf(expected3.substring(0, 17));
+        if (tpo < 0) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected3.length())),
+            expected3, "results=\n" + results);
 
         String2.log("\n*** EDDTableFromNcFiles.testNcCF1a finished.");
 
@@ -6810,8 +6856,8 @@ expected =
 "given hour. The time values in the dataset are rounded to the nearest hour.\n" +
 "\n" +  //dates below change
 "This dataset has both historical data (quality controlled, before\n" +
-"2013-02-01T00:00:00Z) and near real time data (less quality controlled, from\n" +
-"2013-02-01T00:00:00Z on).\";\n" +
+"2013-04-01T00:00:00Z) and near real time data (less quality controlled, from\n" +
+"2013-04-01T00:00:00Z on).\";\n" +
 " :time_coverage_end = \"2005-05-01T03:00:00Z\";\n" +
 " :time_coverage_resolution = \"P1H\";\n" +
 " :time_coverage_start = \"2005-05-01T00:00:00Z\";\n" +
@@ -7909,7 +7955,7 @@ expected =
 "     :units = \"PSU\";\n" +
 "\n" +                                                                   
 " :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic Data " +
-    "Center (NODC) on 2013-02-08 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +  //date changes
+    "Center (NODC) on 2013-05-13 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +  //date changes
 " :cdm_altitude_proxy = \"depth\";\n" +  //this will go away with next release (1.44)    
 " :cdm_data_type = \"TrajectoryProfile\";\n" +
 " :cdm_profile_variables = \"org, type, station_id, longitude, latitude, time\";\n" +
@@ -7936,9 +7982,9 @@ expected =
 " :gtspp_handbook_version = \"GTSPP Data User's Manual 1.0\";\n" +
 " :gtspp_program = \"writeGTSPPnc40.f90\";\n" +
 " :gtspp_programVersion = \"1.7\";\n" +  
-" :history = \"2013-02-01T18:59:05Z  writeGTSPPnc40.f90 Version 1.7\n" + //date changes
+" :history = \"2013-05-01T17:33:16Z  writeGTSPPnc40.f90 Version 1.7\n" + //date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (http://www.nodc.noaa.gov/GTSPP/)\n" +
-"2013-02-08 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n"; //date changes
+"2013-05-13 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n"; //date changes
         String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
@@ -7957,7 +8003,7 @@ expected =
 " :keywords_vocabulary = \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 " :LEXICON = \"NODC_GTSPP\";\n" +                                                 //date below changes
 " :license = \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2013-02-08 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2013-05-13 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -7989,7 +8035,7 @@ expected =
     "bounding box (at most, several degrees square).\\\\nRequesting data for a specific " +
     "platform, cruise, org, type, and/or station_id may be slow, but it works.\\\\n\\\\n*** " +
     "This ERDDAP dataset has data for the entire world for all available times (currently, " +
-    "up to and including the January 2013 data) but is a subset of the original NODC " + //changes
+    "up to and including the April 2013 data) but is a subset of the original NODC " + //changes
     "'best-copy' data.  It only includes data where the quality flags indicate the data " +
     "is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, " +
     "any of the history data, or any of the quality flag data of the original dataset. You " +
@@ -8057,12 +8103,13 @@ expected =
         String tName, error, results, expected;
         int po;
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
-
-        //lon lat time range 
-        tName = tedd.makeNewFileForDapQuery(null, null, 
+        String query = 
             "platform,cruise,org,type,station_id,longitude,latitude,time,depth," +
             "temperature,salinity&cruise=~%22%28SHIP%20%20%20%2012|Q990046312%29%22" +
-            "&longitude%3E=170&time%3E=2012-04-23T00:00:00Z&time%3C=2012-04-24T00:00:00Z",
+            "&longitude%3E=170&time%3E=2012-04-23T00:00:00Z&time%3C=2012-04-24T00:00:00Z";
+
+        //lon lat time range 
+        tName = tedd.makeNewFileForDapQuery(null, null, query,
             EDStatic.fullTestCacheDirectory, "ncCFMA2b", ".ncCFMA"); 
         results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
         //String2.log(results);
@@ -8265,7 +8312,7 @@ expected =
 "     :units = \"PSU\";\n" +
 "\n" +                                                 
 " :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic Data Center " +
-    "(NODC) on 2013-02-08 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +  //date changes
+    "(NODC) on 2013-05-13 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +  //date changes
 " :cdm_altitude_proxy = \"depth\";\n" +  //this will go away with next release (1.44)
 " :cdm_data_type = \"TrajectoryProfile\";\n" +
 " :cdm_profile_variables = \"org, type, station_id, longitude, latitude, time\";\n" +
@@ -8292,9 +8339,9 @@ expected =
 " :gtspp_handbook_version = \"GTSPP Data User's Manual 1.0\";\n" +
 " :gtspp_program = \"writeGTSPPnc40.f90\";\n" +
 " :gtspp_programVersion = \"1.7\";\n" +  
-" :history = \"2013-02-01T18:59:05Z  writeGTSPPnc40.f90 Version 1.7\n" +   //date changes
+" :history = \"2013-05-01T17:33:16Z  writeGTSPPnc40.f90 Version 1.7\n" +   //date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (http://www.nodc.noaa.gov/GTSPP/)\n" +
-"2013-02-08 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n";  //date changes
+"2013-05-13 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n";  //date changes
         String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
@@ -8302,7 +8349,7 @@ expected =
 //today + " http://upwell.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest.das\n" +
 //today + " (local files)\n" +
 //today + " http://127.0.0.1:8080/cwexperimental/tabledap/
-expected = 
+String expected2 = 
 "erdGtsppBest.ncCFMA?platform,cruise,org,type,station_id,longitude,latitude,time,depth,temperature,salinity&cruise=~%22%28SHIP%20%20%20%2012|Q990046312%29%22&longitude%3E=170&time%3E=2012-04-23T00:00:00Z&time%3C=2012-04-24T00:00:00Z\";\n" +
 " :id = \"ncCFMA2b\";\n" +
 " :infoUrl = \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
@@ -8313,7 +8360,7 @@ expected =
 " :keywords_vocabulary = \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 " :LEXICON = \"NODC_GTSPP\";\n" +                                                //date below changes
 " :license = \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2013-02-08 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2013-05-13 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -8344,7 +8391,7 @@ expected =
     "\\\\n* a small longitude and latitude bounding box (at most, several degrees square)." +
     "\\\\nRequesting data for a specific platform, cruise, org, type, and/or station_id may " +
     "be slow, but it works.\\\\n\\\\n*** This ERDDAP dataset has data for the entire world for " +
-    "all available times (currently, up to and including the January 2013 data) but is a " + //date changes
+    "all available times (currently, up to and including the April 2013 data) but is a " + //date changes
     "subset of the original NODC 'best-copy' data.  It only includes data where the quality " +
     "flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include " +
     "some of the metadata, any of the history data, or any of the quality flag data of the " +
@@ -8366,7 +8413,9 @@ expected =
 " :time_coverage_start = \"2012-04-23T00:37:00Z\";\n" +
 " :title = \"Global Temperature and Salinity Profile Programme (GTSPP) Data\";\n" +
 " :Westernmost_Easting = 173.54f; // float\n" +
-" data:\n" +
+" data:\n";
+
+String expected3 = expected2 + 
 "platform =\"33P2\", \"9999\"\n" +
 "cruise =\"Q990046312\", \"SHIP    12\"\n" +
 "org =\n" +
@@ -8429,12 +8478,28 @@ expected =
 "    }\n" +
 "  }\n" +
 "}\n";
-        int tpo = results.indexOf(expected.substring(0, 17));
+        int tpo = results.indexOf(expected3.substring(0, 17));
         if (tpo < 0) 
             String2.log("results=\n" + results);
         Test.ensureEqual(
-            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
-            expected, "results=\n" + results);
+            results.substring(tpo, Math.min(results.length(), tpo + expected3.length())),
+            expected3, "results=\n" + results);
+
+        //.ncCFMAHeader
+        tName = tedd.makeNewFileForDapQuery(null, null, query,
+            EDStatic.fullTestCacheDirectory, "ncCFMA2b", ".ncCFMAHeader"); 
+        results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+        //String2.log(results);
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+
+        expected3 = expected2 + "}\n";
+        tpo = results.indexOf(expected3.substring(0, 17));
+        if (tpo < 0) 
+            String2.log("results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tpo, Math.min(results.length(), tpo + expected3.length())),
+            expected3, "results=\n" + results);
 
         String2.log("\n*** EDDTableFromNcFiles.testNcCFMA2b finished.");
     }
@@ -8665,11 +8730,18 @@ expected =
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             //String2.log(results);
             expected = 
+//pre 2013-05-24 was
+//"line_station,line,station,longitude,latitude,depth,time,cruise,shipName,shipCode,occupy,obsCommon,obsScientific,obsValue,obsUnits\n" +
+//",,,degrees_east,degrees_north,m,UTC,,,,,,,,\n" +
+//"110_032.4,110.0,32.4,-115.82667,29.873333,42.7,1984-11-04T04:37:00Z,8410,NEW HORIZON,NH,77,Bigmouth sole,Hippoglossina stomata,1,number of larvae\n" +
+//"110_032.5,110.0,32.5,-115.82,29.87,48.9,1984-03-20T09:17:00Z,8403,DAVID STARR JORDAN,JD,777,Broadfin lampfish,Nannobrachium ritteri,1,number of larvae\n" +
+//"110_035,110.0,35.0,-115.995,29.785,211.1,1984-03-20T12:06:00Z,8403,DAVID STARR JORDAN,JD,780,California flashlightfish,Protomyctophum crockeri,1,number of larvae\n";
+
 "line_station,line,station,longitude,latitude,depth,time,cruise,shipName,shipCode,occupy,obsCommon,obsScientific,obsValue,obsUnits\n" +
 ",,,degrees_east,degrees_north,m,UTC,,,,,,,,\n" +
 "110_032.4,110.0,32.4,-115.82667,29.873333,42.7,1984-11-04T04:37:00Z,8410,NEW HORIZON,NH,77,Bigmouth sole,Hippoglossina stomata,1,number of larvae\n" +
-"110_032.5,110.0,32.5,-115.82,29.87,48.9,1984-03-20T09:17:00Z,8403,DAVID STARR JORDAN,JD,777,Broadfin lampfish,Nannobrachium ritteri,1,number of larvae\n" +
-"110_035,110.0,35.0,-115.995,29.785,211.1,1984-03-20T12:06:00Z,8403,DAVID STARR JORDAN,JD,780,California flashlightfish,Protomyctophum crockeri,1,number of larvae\n";
+"110_032.4,110.0,32.4,-115.82667,29.873333,42.7,1984-11-04T04:37:00Z,8410,NEW HORIZON,NH,77,Gobies,Gobiidae,3,number of larvae\n" +
+"110_032.4,110.0,32.4,-115.82667,29.873333,42.7,1984-11-04T04:37:00Z,8410,NEW HORIZON,NH,77,Northern_anchovy_EggCount,Engraulis mordax Egg Count,1,number of eggs\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
             String2.log("\n\n*** GETTING DATA FROM CACHED subsetVariables data.  SHOULD BE FAST.");
@@ -9056,7 +9128,7 @@ expected =
             }
             Test.ensureEqual(String2.split(error, '\n')[0], 
                 "SimpleException: Query error: Timestamp constraints with \"now\" must be in " +
-                "the form \"now(+|-)[integer](seconds|minutes|hours|days|months|years)\"" +
+                "the form \"now(+|-)[positiveInteger](seconds|minutes|hours|days|months|years)\"" +
                 ".  \"" + nowQ[i] + "\" is invalid.", "error=" + error);
         }
 
@@ -9764,7 +9836,7 @@ expected =
         Test.ensureEqual(tResults, expected, "\ntResults=\n" + tResults);
 
         //.geoJson   with jsonp
-        String jsonp = "Some encoded {}\n() ! text";
+        String jsonp = "myFunctionName";
         tName = globecBottle.makeNewFileForDapQuery(null, null, 
             "longitude,latitude&latitude>0&altitude>-5&time>=2002-08-03" + "&.jsonp=" + SSR.percentEncode(jsonp),
             EDStatic.fullTestCacheDirectory, globecBottle.className() + "_DataGJLL", ".geoJson"); 
@@ -10284,92 +10356,14 @@ expected =
 "longitude,latitude\n" +
 "degrees_east,degrees_north\n" +
 "-124.4,44.0\n" +
-"-124.4,44.0\n" +
-"-124.4,44.0\n" +
-"-124.4,44.0\n" +
-"-124.4,44.0\n" +
-"-124.4,44.0\n" +
-"-124.4,44.0\n" +
-"-124.4,44.0\n" +
-"-124.6,44.0\n" +
-"-124.6,44.0\n" +
-"-124.6,44.0\n" +
-"-124.6,44.0\n" +
-"-124.6,44.0\n" +
-"-124.6,44.0\n" +
-"-124.6,44.0\n" +
-"-124.6,44.0\n" +
 "-124.6,44.0\n" +
 "-124.8,44.0\n" +
-"-124.8,44.0\n" +
-"-124.8,44.0\n" +
-"-124.8,44.0\n" +
-"-124.8,44.0\n" +
-"-124.8,44.0\n" +
-"-124.8,44.0\n" +
-"-124.8,44.0\n" +
-"-125.0,44.0\n" +
-"-125.0,44.0\n" +
-"-125.0,44.0\n" +
-"-125.0,44.0\n" +
-"-125.0,44.0\n" +
-"-125.0,44.0\n" +
-"-125.0,44.0\n" +
 "-125.0,44.0\n" +
 "-125.2,44.0\n" +
-"-125.2,44.0\n" +
-"-125.2,44.0\n" +
-"-125.2,44.0\n" +
-"-125.2,44.0\n" +
-"-125.2,44.0\n" +
-"-125.2,44.0\n" +
-"-125.2,44.0\n" +
-"-125.2,44.0\n" +
-"-125.4,44.0\n" +
-"-125.4,44.0\n" +
-"-125.4,44.0\n" +
-"-125.4,44.0\n" +
-"-125.4,44.0\n" +
-"-125.4,44.0\n" +
-"-125.4,44.0\n" +
 "-125.4,44.0\n" +
 "-125.6,43.8\n" +
-"-125.6,43.8\n" +
-"-125.6,43.8\n" +
-"-125.6,43.8\n" +
-"-125.6,43.8\n" +
-"-125.6,43.8\n" +
-"-125.6,43.8\n" +
-"-125.6,43.8\n" +
-"-125.86,43.5\n" +
-"-125.86,43.5\n" +
-"-125.86,43.5\n" +
-"-125.86,43.5\n" +
-"-125.86,43.5\n" +
-"-125.86,43.5\n" +
-"-125.86,43.5\n" +
-"-125.86,43.5\n" +
-"-125.86,43.5\n" +
 "-125.86,43.5\n" +
 "-125.63,43.5\n" +
-"-125.63,43.5\n" +
-"-125.63,43.5\n" +
-"-125.63,43.5\n" +
-"-125.63,43.5\n" +
-"-125.63,43.5\n" +
-"-125.63,43.5\n" +
-"-125.63,43.5\n" +
-"-125.63,43.5\n" +
-"-125.63,43.5\n" +
-"-125.33,43.5\n" +
-"-125.33,43.5\n" +
-"-125.33,43.5\n" +
-"-125.33,43.5\n" +
-"-125.33,43.5\n" +
-"-125.33,43.5\n" +
-"-125.33,43.5\n" +
-"-125.33,43.5\n" +
-"-125.33,43.5\n" +
 "-125.33,43.5\n";
         Test.ensureEqual(results, expected, "\nresults=\n" + results);  
 
@@ -10379,7 +10373,7 @@ expected =
             //test treat itself as a dataset
             EDDTable eddTable2 = new EDDTableFromDapSequence(
                 "erddapGlobecBottle", //String tDatasetID, 
-                null, null, null, null, null,
+                null, null, null, null, "", "", null,
                 new Object[][]{  //dataVariables: sourceName, addAttributes
                     {"longitude", null, null},
                     {"latitude", null, null},
@@ -11087,6 +11081,10 @@ expected =
         //But it isn't like grids.  Nothing interesting since not a true axis. 
 
         //ISO 19115 should deal with depth correctly
+        String2.log("!!timeIndex=" + tableDataset.timeIndex);
+        EDVTime timeEdv = (EDVTime)tableDataset.dataVariables[tableDataset.timeIndex];
+        String2.log("!!time destinationMin=" + timeEdv.destinationMin() + "=" + timeEdv.destinationMinString() +
+                          " destinationMax=" + timeEdv.destinationMax() + "=" + timeEdv.destinationMaxString());
         tName = tableDataset.makeNewFileForDapQuery(null, null, "",
             EDStatic.fullTestCacheDirectory, tableDataset.className() + "testTableWithDepth", ".iso19115"); 
         results = new String((new ByteArray(
@@ -11122,15 +11120,9 @@ expected =
 "                <gml:TimePeriod gml:id=\"OD_gmdExtent_timePeriod_id\">\n" +
 "                  <gml:description>seconds</gml:description>\n" +
 "                  <gml:beginPosition>1977-11-06T12:00:00Z</gml:beginPosition>\n" +
-"                  <gml:endPosition>"; //2012-01-03T12:00:00Z
-        Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
-            "results=\n" + results);
-        
-        po = results.indexOf(
-"</gml:endPosition>");
-        Test.ensureTrue(po > 0, "results=\n" + results);
-        expected = 
-"</gml:endPosition>\n" + //changes
+"                  <gml:endPosition indeterminatePosition=\"now\" />\n" +  //important test
+//but ALSO VALID: sometimes it is
+//                 <gml:endPosition>[yesterday or day before]T12:00:00Z</gml:endPosition>\n" +  
 "                </gml:TimePeriod>\n" +
 "              </gmd:extent>\n" +
 "            </gmd:EX_TemporalExtent>\n" +
@@ -11143,11 +11135,56 @@ expected =
 "            </gmd:EX_VerticalExtent>\n" +
 "          </gmd:verticalElement>\n" +
 "        </gmd:EX_Extent>\n";
-        Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
-            "results=\n" + results);
-
-       
+        try {
+            Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
+                "results=\n" + results);
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                "\nERROR may be expected: ALSO VALID:\n" +
+                "     <gml:endPosition>[yesterday or day before]T12:00:00Z</gml:endPosition>\n" +  
+                "\nPress ^C to stop or Enter to continue..."); 
+        }
+      
     }
+
+    public static void testLegend() throws Throwable {
+        String time1 = "now-3days";
+        double time2 = Calendar2.nowStringToEpochSeconds(time1);
+        String time3 = Calendar2.epochSecondsToIsoStringT(time2) + "Z";
+        String queries[];
+        String dir = EDStatic.fullTestCacheDirectory;
+        String tName, start;
+        EDDTable eddTable;
+
+        //lon shouldn't appear
+        eddTable = (EDDTable)oneFromDatasetXml("fsuNoaaShipWTEPnrt");
+        start = "longitude,latitude,airPressure&airPressure>900&airPressure!=NaN" +
+            "&airPressure=~\"(.*)\"&.marker=1|5&longitude%3E=-180&time%3E=";
+        queries = new String[]{time1, "" + time2, time3};
+        for (int i = 0; i < queries.length; i++) {
+            tName = eddTable.makeNewFileForDapQuery(null, null, start + queries[i], 
+                dir, eddTable.className() + "_testLegendA" + i,  ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
+        }
+
+        //time_precision
+        eddTable = (EDDTable)oneFromDatasetXml("earthCubeKgsBoreTempWV");
+        start = "longitude,latitude,MeasuredTemperature&longitude%3E=-180&time!=NaN" +
+            "&State=\"West Virginia\"&time%3E=";
+        queries = new String[]{
+            "2010-03-01T00:00:00",
+            "2010-03",
+            "1267401600"};
+        for (int i = 0; i < queries.length; i++) {
+            tName = eddTable.makeNewFileForDapQuery(null, null, start + queries[i], 
+                dir, eddTable.className() + "_testLegendB" + i,  ".png"); 
+            SSR.displayInBrowser("file://" + dir + tName);
+        }
+
+
+        
+    }
+
 
     /**
      * This tests the methods in this class.
@@ -11163,6 +11200,7 @@ expected =
         testGlobec();
         testKml();
         testGraphics(doAllGraphicsTests);
+        testLegend();
         testTimeAxis();
         testModTime();
         testNetcdf();  //!!!!! EEEK: opendap bytes are 0 - 255, Java/ERDDAP bytes are -128 to 127 !

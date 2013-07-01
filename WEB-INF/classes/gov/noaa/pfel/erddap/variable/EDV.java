@@ -280,7 +280,7 @@ public class EDV {
             try {
                 //test most restrictive first
                 Integer.parseInt(fixedValue); 
-                sourceDataType = "int";  //no error -> it's an int
+                sourceDataType = "int";  //if no error, it's an int
             } catch (Exception e1) {
                 //2011-02-09 Bob Simons added to avoid Java hang bug.
                 //But now, latest version of Java is fixed.
@@ -289,7 +289,7 @@ public class EDV {
                 //} else {
                     try {
                         Double.parseDouble(fixedValue); 
-                        sourceDataType = "double";  //no error -> it's a double
+                        sourceDataType = "double";  //if no error, it's a double
                     } catch (Exception e2) {
                         sourceDataType = "String";
                     }
@@ -937,7 +937,7 @@ public class EDV {
     /** 
      * This is the destinationMax value (time overrides this to format as ISO string).  
      *
-     * @return the destinationMax  (or "" if unknown)
+     * @return the destinationMax  (or "" if unknown or time=~now)
      */
     public String destinationMaxString() {
         return Double.isNaN(destinationMax)? "" : 

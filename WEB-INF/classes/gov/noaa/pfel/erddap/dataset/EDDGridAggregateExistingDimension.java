@@ -62,6 +62,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         String tFgdcFile = null;
         String tIso19115File = null;
         boolean tEnsureAxisValuesAreEqual = true;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         String tSUServerType = null;
         String tSURegex = null;
@@ -112,25 +114,22 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
                 String tr     = xmlReader.attributeValue("recursive");
                 tSURecursive  = tr == null? true : String2.parseBoolean(tr);
             }
-            else if (localTags.equals("</sourceUrls>")) 
-                tSU = content; 
-
+            else if (localTags.equals("</sourceUrls>")) tSU = content; 
             else if (localTags.equals( "<ensureAxisValuesAreEqual>")) {}
             else if (localTags.equals("</ensureAxisValuesAreEqual>")) 
                 tEnsureAxisValuesAreEqual = String2.parseBoolean(content); 
-
             else if (localTags.equals( "<accessibleTo>")) {}
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
-
-            //onChange
             else if (localTags.equals( "<onChange>")) {}
-            else if (localTags.equals("</onChange>")) 
-                tOnChange.add(content); 
-
+            else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -138,6 +137,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         //make the main dataset based on the information gathered
         return new EDDGridAggregateExistingDimension(tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery,
             firstChild, tLocalSourceUrls.toArray(),
             tSUServerType, tSURegex, tSURecursive, tSU, 
             tEnsureAxisValuesAreEqual);
@@ -173,7 +173,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      * @throws Throwable if trouble
      */
     public EDDGridAggregateExistingDimension(String tDatasetID, 
-        String tAccessibleTo, StringArray tOnChange, String tFgdcFile, String tIso19115File,
+        String tAccessibleTo, StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery,
         EDDGrid firstChild, String tLocalSourceUrls[], 
         String tSUServerType, String tSURegex, boolean tSURecursive, String tSU,
         boolean tEnsureAxisValuesAreEqual) throws Throwable {
@@ -192,6 +193,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         ensureAxisValuesAreEqual = tEnsureAxisValuesAreEqual;
 
         //if no tLocalSourceURLs, generate from hyrax, thredds, or dodsindex catalog?
@@ -611,8 +614,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" +
 "        <att name=\"cwhdf_version\">3.4</att>\n" +
-"        <att name=\"date_created\">2013-03-13Z</att>\n" + //changes
-"        <att name=\"date_issued\">2013-03-13Z</att>\n" +  //changes
+"        <att name=\"date_created\">2013-04-18Z</att>\n" + //changes
+"        <att name=\"date_issued\">2013-04-18Z</att>\n" +  //changes
 "        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" +
 "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.041676313961565174 0.04167148975575877 0.0 0.0 -90.0</att>\n" +
 "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" +
@@ -632,8 +635,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"geospatial_vertical_positive\">up</att>\n" +
 "        <att name=\"geospatial_vertical_units\">m</att>\n" +
 "        <att name=\"history\">NASA GSFC (OBPG)\n" +
-"2013-03-13T00:41:38Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</att>\n" + //changes
-"        <att name=\"id\">LMHchlaS1day_20130305120000</att>\n" +  //changes
+"2013-04-18T13:37:12Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD</att>\n" + //changes
+"        <att name=\"id\">LMHchlaS1day_20130415120000</att>\n" +  //changes
 "        <att name=\"institution\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"keywords\">EARTH SCIENCE &gt; Oceans &gt; Ocean Chemistry &gt; Chlorophyll</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
@@ -641,7 +644,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"naming_authority\">gov.noaa.pfel.coastwatch</att>\n" +
 "        <att name=\"Northernmost_Northing\" type=\"double\">90.0</att>\n" +
 "        <att name=\"origin\">NASA GSFC (OBPG)</att>\n" +
-"        <att name=\"pass_date\" type=\"int\">15769</att>\n" +  //changes
+"        <att name=\"pass_date\" type=\"int\">15810</att>\n" +  //changes
 "        <att name=\"polygon_latitude\" type=\"doubleList\">-90.0 90.0 90.0 -90.0 -90.0</att>\n" +
 "        <att name=\"polygon_longitude\" type=\"doubleList\">0.0 0.0 360.0 360.0 0.0</att>\n" +
 "        <att name=\"processing_level\">3</att>\n" +
@@ -657,8 +660,8 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" +
 "        <att name=\"start_time\" type=\"double\">0.0</att>\n" +
 "        <att name=\"summary\">NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#039;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.</att>\n" +
-"        <att name=\"time_coverage_end\">2013-03-06T00:00:00Z</att>\n" +   //changes
-"        <att name=\"time_coverage_start\">2013-03-05T00:00:00Z</att>\n" + //changes
+"        <att name=\"time_coverage_end\">2013-04-16T00:00:00Z</att>\n" +   //changes
+"        <att name=\"time_coverage_start\">2013-04-15T00:00:00Z</att>\n" + //changes
 "        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality</att>\n" +
 "        <att name=\"Westernmost_Easting\" type=\"double\">0.0</att>\n" +
 "    </sourceAttributes -->\n" +
@@ -678,7 +681,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <destinationName>time</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">1.3624848E9 1.3624848E9</att>\n" + //both change
+"            <att name=\"actual_range\" type=\"doubleList\">1.3660272E9 1.3660272E9</att>\n" + //both change
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" +
 "            <att name=\"long_name\">Centered Time</att>\n" +
@@ -751,13 +754,13 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "            <att name=\"actual_range\" type=\"floatList\">0.001" + 
             //trailing 0, an odd difference between Java 1.6 and Java 1.7
             (System.getProperty("java.version").startsWith("1.6")? "0" : "") + 
-            " 63.845</att>\n" +  //changes was 63.624, was 63.848
+            " 63.914</att>\n" +  //changes was 63.845, was 63.624, was 63.848
 "            <att name=\"coordsys\">geographic</att>\n" +
 "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" +
 "            <att name=\"long_name\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"numberOfObservations\" type=\"int\">2176386</att>\n" + //changes
-"            <att name=\"percentCoverage\" type=\"double\">0.05830938143004115</att>\n" + //changes
+"            <att name=\"numberOfObservations\" type=\"int\">1952349</att>\n" + //changes
+"            <att name=\"percentCoverage\" type=\"double\">0.05230701838991769</att>\n" + //changes
 "            <att name=\"standard_name\">concentration_of_chlorophyll_in_sea_water</att>\n" +
 "            <att name=\"units\">mg m-3</att>\n" +
 "        </sourceAttributes -->\n" +

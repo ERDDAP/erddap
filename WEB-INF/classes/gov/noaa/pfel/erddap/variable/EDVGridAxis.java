@@ -220,6 +220,24 @@ public class EDVGridAxis extends EDV {
     }
 
     /**
+     * This returns one of this axis' source values as a nice double destination value. 
+     * EDVTimeGridAxis subclass overrides this.
+     */
+    public double destinationDouble(int which) {
+        if (scaleAddOffset) {
+            double d = sourceValues.getNiceDouble(which) * scaleFactor + addOffset;
+            if (destinationDataTypeClass == double.class)
+                return d;
+            if (destinationDataTypeClass == float.class)
+                return Math2.doubleToFloatNaN(d);
+            //int type
+            return Math2.roundToInt(d);
+        } else {
+            return sourceValues.getDouble(which);
+        }
+    }
+
+    /**
      * This returns one of this axis' source values as a nice String destination value. 
      * For most EDVGridAxis, this returns destinationValues (which equal
      * the String destination values). The Time subclass overrides this.
@@ -522,10 +540,24 @@ public class EDVGridAxis extends EDV {
 
         DoubleArray destDA = new DoubleArray(new double[]{destinationD});
         PrimitiveArray sourcePA = toSource(destDA);
-        double sourceD = sourcePA.getNiceDouble(0); //all grid sources are numeric
+        return sourceToClosestSourceIndex(sourcePA.getNiceDouble(0)); //all grid sources are numeric
+    }
+
+    /**
+     * NaN returns -1.
+     * This works whether isAscending or not.
+     * !!!If there are ties, this doesn't specify which of the tied values will be found
+     *   (which is part of why EDVGridAxis doesn't allow ties).
+     *
+     * @param sourceD  A number that is way out of range will catch one of the end indices.
+     * @return the closest source index
+     */
+    public int sourceToClosestSourceIndex(double sourceD) {
+        if (Double.isNaN(sourceD))
+            return -1;
+
         if (isAscending)
             return sourceValues.binaryFindClosest(sourceD);
         return sourceValues.linearFindClosest(sourceD);
     }
-
 }

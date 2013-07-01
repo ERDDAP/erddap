@@ -109,6 +109,7 @@ public class NcHelper  {
      *
      * @param fullFileName  
      * @param printData if true, all of the data values are printed, too.
+     * @param varNames csv list of variable names (or "")
      * @return a String with the dump text
      */
     public static String lowDumpString(String fullFileName, 
@@ -117,8 +118,9 @@ public class NcHelper  {
         StringWriter sw = new StringWriter();
         //NCdumpW.printHeader(fullFileName, baos);
         NCdumpW.print(fullFileName, sw, 
-            printData, false /*print only coord variables*/, fullFileName.endsWith(".ncml"), false,
-            varNames, null /*cancel*/);
+            varNames.length() > 0? false : printData, false /*print only coord variables*/, 
+            fullFileName.endsWith(".ncml"), false, //strict
+            String2.replaceAll(varNames, ',', ';'), null /*cancel*/);
         String s = sw.toString();
 
         //remove the directory name from the string
@@ -1936,11 +1938,167 @@ String2.log(pas13.toString());
     }    
 
 
+
+    /** This is a test of unlimitedDimension
+     */
+    public static void testUnlimited() throws Exception {
+        String testUnlimitedFileName = "/temp/unlimited.nc";
+        String2.log("\n* Projects.testUnlimited() " + testUnlimitedFileName);
+        NetcdfFileWriteable file = NetcdfFileWriteable.createNew(testUnlimitedFileName);
+        int strlen = 6;
+
+        try {
+
+            // define dimensions, including unlimited
+            Dimension timeDim = file.addUnlimitedDimension("time");
+            ArrayList dims = new ArrayList();
+            dims.add(timeDim);
+
+            // define Variables
+            file.addVariable("time", DataType.DOUBLE, dims);
+            file.addVariableAttribute("time", "units", "seconds since 1970-01-01");
+
+            file.addVariable("lat", DataType.DOUBLE, dims);
+            file.addVariableAttribute("lat", "units", "degrees_north");
+
+            file.addVariable("lon", DataType.DOUBLE, dims);
+            file.addVariableAttribute("lon", "units", "degrees_east");
+
+            file.addVariable("sst", DataType.DOUBLE, dims);
+            file.addVariableAttribute("sst", "units", "degree_C");
+
+            file.addStringVariable("comment", dims, strlen); 
+
+            // create the file
+            file.create();
+
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+        } finally {
+            //ensure file is closed
+            file.close();
+        }
+
+        String results, expected;
+        for (int i = 0; i < 3; i++) {
+            //write 2 rows at a time to the file
+            int row = -1; 
+            try {
+                Math2.sleep(20);
+                file = null;
+                file = NetcdfFileWriteable.openExisting(testUnlimitedFileName);
+                Dimension timeDim = file.findDimension("time");
+                row = timeDim.getLength();
+                String2.log("writing row=" + row);
+
+                int[] origin1 = new int[] {row};    
+                int[] origin2 = new int[] {row, 0};  
+                Array array;
+                ArrayChar.D2 ac = new ArrayChar.D2(2, strlen);
+
+                double cTime = System.currentTimeMillis() / 1000.0;
+                array = Array.factory(new double[] {row, row + 1});      file.write("time",    origin1, array);
+                array = Array.factory(new double[] {33.33, 33.33});      file.write("lat",     origin1, array);
+                array = Array.factory(new double[] {-123.45, -123.45});  file.write("lon",     origin1, array);
+                if (i == 2) { //current changes not yet flushed to disk.  This shows file after previous row.
+                    results = NcHelper.dumpString(testUnlimitedFileName, true);
+                    String2.log(results);
+                    expected = 
+"netcdf unlimited.nc {\n" +
+" dimensions:\n" +
+"   time = UNLIMITED;   // (4 currently)\n" +
+"   comment_strlen = 6;\n" +
+" variables:\n" +
+"   double time(time=4);\n" +
+"     :units = \"seconds since 1970-01-01\";\n" +
+"   double lat(time=4);\n" +
+"     :units = \"degrees_north\";\n" +
+"   double lon(time=4);\n" +
+"     :units = \"degrees_east\";\n" +
+"   double sst(time=4);\n" +
+"     :units = \"degree_C\";\n" +
+"   char comment(time=4, comment_strlen=6);\n" +
+" data:\n" +
+"time =\n" +
+"  {0.0, 1.0, 2.0, 3.0}\n" +
+"lat =\n" +
+"  {33.33, 33.33, 33.33, 33.33}\n" +
+"lon =\n" +
+"  {-123.45, -123.45, -123.45, -123.45}\n" +
+"sst =\n" +
+"  {10.0, 10.1, 9.969209968386869E36, 9.969209968386869E36}\n" +
+"comment =\"0 comm\", \"1 comm\", \"\", \"\"\n" +
+"}\n";
+                    Test.ensureEqual(results, expected, "");
+                }
+                
+                if (i != 1) {
+                    array = Array.factory(new double[] {10 + row / 10.0, 10 + (row+1) / 10.0}); 
+                    file.write("sst",  origin1, array);
+                    ac.setString(0, row + " comment");
+                    ac.setString(1, (row+1) + " comment");
+                    String2.log("ac=" + ac);
+                    file.write("comment", origin2, ac);
+                }
+
+                //NOTE: instead of closing the file to write changes to disk, you can use file.flush().
+            } catch (Throwable t) {
+                String2.log(MustBe.throwableToString(t));
+            } finally {
+                //ensure file is closed
+                if (file != null) 
+                    file.close(); //writes changes to file
+            }
+        }
+        results = NcHelper.dumpString(testUnlimitedFileName, true);
+        String2.log(results);
+        expected = 
+"netcdf unlimited.nc {\n" +
+" dimensions:\n" +
+"   time = UNLIMITED;   // (6 currently)\n" +
+"   comment_strlen = 6;\n" +
+" variables:\n" +
+"   double time(time=6);\n" +
+"     :units = \"seconds since 1970-01-01\";\n" +
+"   double lat(time=6);\n" +
+"     :units = \"degrees_north\";\n" +
+"   double lon(time=6);\n" +
+"     :units = \"degrees_east\";\n" +
+"   double sst(time=6);\n" +
+"     :units = \"degree_C\";\n" +
+"   char comment(time=6, comment_strlen=6);\n" +
+" data:\n" +
+"time =\n" +
+"  {0.0, 1.0, 2.0, 3.0, 4.0, 5.0}\n" +
+"lat =\n" +
+"  {33.33, 33.33, 33.33, 33.33, 33.33, 33.33}\n" +
+"lon =\n" +
+"  {-123.45, -123.45, -123.45, -123.45, -123.45, -123.45}\n" +
+"sst =\n" +
+"  {10.0, 10.1, 9.969209968386869E36, 9.969209968386869E36, 10.4, 10.5}\n" +
+"comment =\"0 comm\", \"1 comm\", \"\", \"\", \"4 comm\", \"5 comm\"\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "");
+
+    }
+
+
+    /**
+     * An experiment with NetcdfDataset accessing a DAP sequence dataset.
+     */
+    public static void testSequence() throws Throwable {
+        NetcdfDataset ncd = NetcdfDataset.openDataset(
+            "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCAMarCatSY");
+        String2.log(ncd.toString());
+        ncd.close();
+    }
+
+
     /**
      * This tests the methods in this class.
      */
-    public static void test() throws Throwable {
-        String2.log("\n*** NcHelper.test...");
+    public static void testBasic() throws Throwable {
+        String2.log("\n*** NcHelper.testBasic...");
         String fullName;
 
 
@@ -2224,25 +2382,22 @@ String2.log(pas13.toString());
 
             throw t;
         }
-        
-        //other tests
+    }
+
+    /**
+     * This tests the methods in this class.
+     */
+    public static void test() throws Throwable {
+        String2.log("\n*** NcHelper.test...");
+
+        /* */
+        testBasic();
         testFindAllVariablesWithDims();
-        
+        testUnlimited();        
  
         //done
         String2.log("\n***** NcHelper.test finished successfully");
         Math2.incgc(2000);
     } 
-
-    /**
-     * An experiment with NetcdfDataset accessing a DAP sequence dataset.
-     */
-    public static void testSequence() throws Throwable {
-        NetcdfDataset ncd = NetcdfDataset.openDataset(
-            "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdCAMarCatSY");
-        String2.log(ncd.toString());
-        ncd.close();
-    }
-
 
 }

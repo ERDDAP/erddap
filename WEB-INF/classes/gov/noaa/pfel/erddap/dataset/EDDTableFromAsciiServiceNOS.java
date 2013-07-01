@@ -49,6 +49,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
     /** The constructor. */
     public EDDTableFromAsciiServiceNOS(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -57,7 +58,8 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         throws Throwable {
 
         super("EDDTableFromAsciiServiceNOS", tDatasetID, tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File, tAddGlobalAttributes,
+            tOnChange, tFgdcFile, tIso19115File, 
+            tDefaultDataQuery, tDefaultGraphQuery, tAddGlobalAttributes,
             tDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl,
             tBeforeData, tAfterData, tNoData);
@@ -229,7 +231,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                     //   each with time=HH:mm, WaterLevel=-0.4, type=L
                     //time has 11/24/2010   
                     //waterLevel = 02:24   -0.4  L     09:24    5.2  H     15:08    0.0  L     21:59    4.4  H  
-                    Table newTable = makeEmptySourceTable();
+                    Table newTable = makeEmptySourceTable(dataVariables, 32);
                     int timeCol = table.findColumnNumber("time");
                     int wlCol   = table.findColumnNumber("waterLevel");
                     int typeCol = table.findColumnNumber("type");
@@ -304,8 +306,10 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                     //String2.log("\npost table=\n" + table.dataToCSVString());
                     standardizeResultsTable(requestUrl, userDapQuery, table);
 
-                    if (table.nRows() > 0)
+                    if (table.nRows() > 0) {
                         tableWriter.writeSome(table);
+                        //it isn't a loop, so no need to call makeEmptySourceTable again
+                    }
                 }
 
             } catch (Throwable t) {

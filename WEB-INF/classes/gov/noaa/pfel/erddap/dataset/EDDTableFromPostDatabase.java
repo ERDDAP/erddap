@@ -66,6 +66,7 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
      */
     public EDDTableFromPostDatabase(String tDatasetID, String tAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -77,7 +78,8 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
         boolean tSourceNeedsExpandedFP_EQ
         ) throws Throwable {
 
-        super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
+        super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, 
+            tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes,
             tDataVariables, tReloadEveryNMinutes,
             tDataSourceName,

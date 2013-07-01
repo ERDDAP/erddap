@@ -78,17 +78,19 @@ public class HtmlWidgets {
         "00FFFF", "0099FF", "0000FF", "9900FF", "FF00FF", "FF99FF"};
 
     /** This will display a message to the user if JavaScript is not supported
-     * or disabled. Last verified 2007-10-11. */
+     * or disabled. Last updated 2013-05-03. */
     public static String ifJavaScriptDisabled =
-        "<noscript><p><font color=\"red\"><b>This web page works better if JavaScript is enabled.</b> Please:\n" +
+        "<noscript><p><font color=\"red\"><b>To work correctly, this web page requires that JavaScript be enabled in your browser.</b> Please:\n" +
         "<br>1) Enable JavaScript in your browser:\n" +
         "<br>&nbsp;&nbsp; &bull; Windows\n" +  
-        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Firefox: select \"Tools : Options : Content : Enable JavaScript : OK\"\n" +
+        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Chrome: select \"Settings : Show advanced settings : Privacy / Content settings : JavaScript\"\n" +
+        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Firefox: select \"Options : Options : Content : Enable JavaScript : OK\"\n" +
         "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Internet Explorer: select \n" +  //true for IE 6 and 7 
         "   \"Tools : Internet Options : Security : Internet : Custom level :\n" +
         "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Sripting/ Active Scripting : Enable : OK : OK\"\n" +
-        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Opera: select \"Tools : Quick Preferences : Enable JavaScript\"\n" +
+        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Opera: select \"Settings : Quick Preferences : Enable JavaScript\"\n" +
         "<br>&nbsp;&nbsp; &bull; Mac OS X\n" +
+        "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Chrome: select \"Settings : Show advanced settings : Privacy / Content settings : JavaScript\"\n" +
         "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Firefox: select \"Firefox : Preferences : Content : Enable JavaScript : OK\"\n" +
         "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &bull; Internet Explorer (this is an out-of-date browser -- please consider switching): \n" +
         "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; select \"Explorer : Preferences : Web Content : Enable Scripting : OK\"\n" +
@@ -121,7 +123,8 @@ public class HtmlWidgets {
         return
         "<!-- Big HTML tooltips are generated with wz_tooltip from \n" +
         "    http://wztip.info/index.php/Main_Page (LGPL license) -->\n" +
-        "<script type=\"text/javascript\" src=\"" + dir + "wz_tooltip.js\"></script>\n" +
+        "<script type=\"text/javascript\" src=\"" + 
+            XML.encodeAsHTMLAttribute(dir) + "wz_tooltip.js\"></script>\n" +
         "\n";
     }
 
@@ -155,7 +158,8 @@ public class HtmlWidgets {
         return
         "<!-- Drag and Drop is performed by wz_dragdrop from\n" +
         "     http://www.walterzorn.com/dragdrop/dragdrop_e.htm (LGPL license) -->\n" +
-        "<script type=\"text/javascript\" src=\"" + dir + "wz_dragdrop.js\"></script>\n" +
+        "<script type=\"text/javascript\" src=\"" + 
+            XML.encodeAsHTMLAttribute(dir) + "wz_dragdrop.js\"></script>\n" +
         "\n";
     }
 
@@ -175,6 +179,18 @@ public class HtmlWidgets {
         "    else if (ch == \"'\") s2+=\"%27\";\n" +     //avoids trouble with ' in urls in javascript
         "    else if (ch == \"+\") s2+=\"%2B\";\n" +     //avoid trouble with +
         "    else if (ch == \" \" || ch == \"\\xA0\") s2+=\"%20\";\n" +  //safer than +   0xA0=nbsp, see select(encodeSpaces)
+        //see slide 7 of https://www.owasp.org/images/b/ba/AppsecEU09_CarettoniDiPaola_v0.8.pdf
+        //reserved=; / ? : @ & = + $ ,
+        "    else if (ch == \"=\") s2+=\"%3D\";\n" +
+        "    else if (ch == \"#\") s2+=\"%23\";\n" +  
+        "    else if (ch == \"<\") s2+=\"%3C\";\n" +
+        "    else if (ch == \">\") s2+=\"%3E\";\n" +
+        "    else if (ch == \";\") s2+=\"%3B\";\n" +
+        "    else if (ch == \"/\") s2+=\"%2F\";\n" +
+        "    else if (ch == \"?\") s2+=\"%3F\";\n" +
+        //"    else if (ch == \":\") s2+=\"%3A\";\n" +
+        "    else if (ch == \"@\") s2+=\"%40\";\n" +
+        "    else if (ch == \"$\") s2+=\"%24\";\n" +
         "    else s2+=ch;\n" +
         "  }\n" +
         "  return s2;\n" +
@@ -239,7 +255,7 @@ public class HtmlWidgets {
     public String completeStyle(String tStyle) {
         //note space at beginning and end
         return tStyle == null || tStyle.length() == 0? "" : 
-            "\n      style=\"" + XML.encodeAsHTML(tStyle) + "\" ";
+            "\n      style=\"" + XML.encodeAsHTMLAttribute(tStyle) + "\" ";
     }
 
     /**
@@ -254,7 +270,7 @@ public class HtmlWidgets {
         //note space at beginning and end
         return htmlTooltips?
             "\n      " + htmlTooltip(tooltip) + " " :
-            "\n      title=\"" + XML.encodeAsHTML(tooltip) + "\" ";
+            "\n      title=\"" + XML.encodeAsHTMLAttribute(tooltip) + "\" ";
     }
 
     /**
@@ -269,8 +285,9 @@ public class HtmlWidgets {
     public String beginForm(String name, String method, String url, String other) {
         formName = name;
         return 
-            "<form name=\"" + name + "\" method=\"" + method + "\"\n" +
-            "  action=\"" + url + "\" " + 
+            "<form name=\"" + XML.encodeAsHTMLAttribute(name) + 
+            "\" method=\"" + XML.encodeAsHTMLAttribute(method) + "\"\n" +
+            "  action=\"" + XML.encodeAsHTMLAttribute(url) + "\" " + 
             other + " >\n";
     }
 
@@ -337,8 +354,8 @@ public class HtmlWidgets {
         return 
             //note old-style "input" tag
             "<input type=\"" + type + "\"" +
-            (name != null && name.length() > 0? " name=\"" + name + "\"" : "") +                
-            " value=\"" + XML.encodeAsHTML(labelText) + "\"" +
+            (name != null && name.length() > 0? " name=\"" + XML.encodeAsHTMLAttribute(name) + "\"" : "") +                
+            " value=\"" + XML.encodeAsHTMLAttribute(labelText) + "\"" +
             " " + other + 
             completeStyle() +
             completeTooltip(tooltip)+ 
@@ -368,8 +385,8 @@ public class HtmlWidgets {
         return 
             //note new-style "button" tag
             "<button type=\"" + type + "\"" +
-            (name  != null && name.length()  > 0? " name=\""  + name + "\"" : "") +                
-            (value != null && value.length() > 0? " value=\"" + XML.encodeAsHTML(value) + "\"" : "") +
+            (name  != null && name.length()  > 0? " name=\""  + XML.encodeAsHTMLAttribute(name) + "\"" : "") +                
+            (value != null && value.length() > 0? " value=\"" + XML.encodeAsHTMLAttribute(value) + "\"" : "") +
             " " + other + 
             completeStyle() +
             completeTooltip(tooltip)+ 
@@ -396,8 +413,8 @@ public class HtmlWidgets {
         boolean checked, String value, String rightLabelHtml, String other) {
 
         return 
-            "    <input type=\"checkbox\" name=\"" + name + "\"" +                
-            " value=\"" + XML.encodeAsHTML(value) + "\"" + 
+            "    <input type=\"checkbox\" name=\"" + XML.encodeAsHTMLAttribute(name) + "\"" +                
+            " value=\"" + XML.encodeAsHTMLAttribute(value) + "\"" + 
             completeTooltip(tooltip) +
             (checked? "\n        checked=\"checked\"" : "") +
             " " + other + " > " + rightLabelHtml + "\n" +
@@ -426,8 +443,8 @@ public class HtmlWidgets {
      */
     public String hidden(String name, String value) {
         return 
-            "    <input type=\"hidden\" name=\"" + name + "\"" +                
-            " value=\"" + XML.encodeAsHTML(value) + "\" >\n";
+            "    <input type=\"hidden\" name=\"" + XML.encodeAsHTMLAttribute(name) + "\"" +                
+            " value=\"" + XML.encodeAsHTMLAttribute(value) + "\" >\n";
     }
 
 
@@ -473,10 +490,11 @@ public class HtmlWidgets {
     public String radioButton(String name, String tooltip, 
         String optionText, boolean selected, String other) {
 
-        String s = XML.encodeAsHTML(optionText);
+        String s = XML.encodeAsHTMLAttribute(optionText);
         return 
             //<span> avoids check box and value being separated by newline when lots of options
-            "<span style=\"white-space: nowrap;\"><input type=\"radio\" name=\"" + name + "\"" +                
+            "<span style=\"white-space: nowrap;\"><input type=\"radio\" name=\"" + 
+            XML.encodeAsHTMLAttribute(name) + "\"" +                
             " value=\"" + s + "\"" + 
             (selected? " checked" : "") +
             completeTooltip(tooltip) +
@@ -521,7 +539,7 @@ public class HtmlWidgets {
             String checked = i == selected? " checked" : "";
             sb.append(
                 "    <td bgcolor=\"#" + colors[i] + "\">" +
-                    "<input type=\"radio\" name=\"" + name + 
+                    "<input type=\"radio\" name=\"" + XML.encodeAsHTMLAttribute(name) + 
                     "\" value=\"" + colors[i] + "\"" + checked + " " +
                     completeTooltip(tooltip) +
                     " " + other + "></td>\n");
@@ -572,7 +590,7 @@ public class HtmlWidgets {
      * by the JavaScript code.
      * Set encodeSpaces=true for these special situations.
      * This requires the little change I made in percentEncode above:
-     *   nbsp (char A0) is no percent encoded as %20 (a space).
+     *   nbsp (char A0) is now percent encoded as %20 (a space).
      */    
     public String select(String name, String tooltip, int nRows,
         String options[], int selected, String other, boolean encodeSpaces) {
@@ -591,14 +609,17 @@ public class HtmlWidgets {
         }
 
         //the main 'select' widget
-        sb.append("\n    <select name=\"" + name + "\" size=\"" + Math.max(1, nRows) + "\"" +
+        sb.append("\n    <select name=\"" + XML.encodeAsHTMLAttribute(name) + 
+            "\" size=\"" + Math.max(1, nRows) + "\"" +
             completeTooltip(tooltip) +
             completeStyle() + 
             " " + other + " >\n");
 
         String spacer = nOptions < 20? "      " : ""; //save space if lots of options
         for (int i = 0; i < nOptions; i++) {
-            String opt = XML.encodeAsHTML(options[i]);
+            //Security issue: the options are not user-specified.  And they are not HTML attributes.
+            //I don't think encodeAsHTMLAttributes is warranted and I know it will cause problems with encodeSpaces.
+            String opt = XML.encodeAsHTML(options[i]);  
             if (encodeSpaces)
                 opt = XML.minimalEncodeSpaces(opt);
             sb.append(spacer + "<option" + 
@@ -620,8 +641,9 @@ public class HtmlWidgets {
                 //  e.g., document.form1.val0_0.value=this.options[this.selectedIndex].text
                 //  converts internal >1 space ("ab   c") into 1 space ("ab c").
                 ">" + opt +
+                ("".equals(opt)? "</option>" : "") +
                 //</option> is often not used and is not required.  
-                "\n"); //"</option>\n"); 
+                "\n"); 
         }
         sb.append("    </select>\n");
 
@@ -676,7 +698,7 @@ public class HtmlWidgets {
             else if (incr > 0)                  rhs  = "Math.min(sel.length-1, sel.selectedIndex+" + incr + ")";
             sb.append(
                 "<td>" +
-                "<img src=\"" + imageDirUrl + imageName + "\"\n" +
+                "<img src=\"" + XML.encodeAsHTMLAttribute(imageDirUrl + imageName) + "\"\n" +
                 " " + completeTooltip(tooltip) +
                 " alt=\"" + 
                     (nRows == Integer.MIN_VALUE? "|&lt;" : nRows == Integer.MAX_VALUE? "&gt;|" : "" + nRows) + "\"\n" +
@@ -735,8 +757,9 @@ public class HtmlWidgets {
         int fieldLength, int maxLength, String initialTextValue, String other) {
 
         return 
-            "    <input type=\"text\" name=\"" + name + "\"" +                
-            " value=\"" + XML.encodeAsHTML(initialTextValue) + "\"" +
+            "    <input type=\"text\" name=\"" + XML.encodeAsHTMLAttribute(name) + "\"" +
+            " alt=\"" + XML.encodeAsHTMLAttribute(name) + "\"" + //An accessibility aid. USGS requested to pass Acunetix scan.
+            " value=\"" + XML.encodeAsHTMLAttribute(initialTextValue) + "\"" +
             //"\n      onkeypress=\"return !enter(event);\"" + 
             //supress Enter->submit
             //was the keypress event's keycode 'Enter'?
@@ -760,14 +783,17 @@ public class HtmlWidgets {
      *
      * @param imageRef the reference for the question mark image 
      *   (e.g., EDStatic.imageDirUrl(loggedInAs) + EDStatic.questionMarkImageFile)
+     * @param alt the alt text to be displayed, e.g., "?"  (not yet encoded)
      * @param html  the html tooltip text, e.g., "Hi,<br>there!".
      *     It needs explicit br tags to set window width correctly.
      *     For plain text, use XML.encodeAsPreHTML(plainText, 100).
      * @param other e.g., "onclick=\"pleaseWait();\""
      * @return the html to draw an image (e.g., question mark) that has a big html tooltip.
      */
-    public static String htmlTooltipImage(String imageRef, String html, String other) {
-         return "<img src=\"" + imageRef + "\" alt=\"\"" + htmlTooltip(html) + " " + other + ">\n";
+    public static String htmlTooltipImage(String imageRef, String alt, String html, String other) {
+         return "<img src=\"" + XML.encodeAsHTMLAttribute(imageRef) + 
+             "\" alt=\"" + XML.encodeAsHTMLAttribute(alt) + "\"" + 
+             htmlTooltip(html) + " " + other + ">\n";
     }
 
 
@@ -810,9 +836,15 @@ public class HtmlWidgets {
      * @param other other html parameters, e.g., "align=\"left\""
      */
     public String spacer(int width, int height, String other) {
-        return
-            "    <img src=\"" + imageDirUrl + "spacer.gif\" " +
-                "width=\"" + width + "\" height=\"" + height + "\" " + other + " alt=\"\">\n";
+        StringBuilder sb = new StringBuilder(
+            "    <img src=\"" + XML.encodeAsHTMLAttribute(imageDirUrl + "spacer.gif") + "\" " +
+                "width=\"" + width + "\" height=\"" + height + "\" " + other + 
+                " alt=\"");
+        int n = Math.max(1, width / 8);
+        for (int i = 0; i < n; i++)
+            sb.append("&nbsp;");
+        sb.append("\">\n");
+        return sb.toString();
     }
 
     /**
@@ -832,10 +864,14 @@ public class HtmlWidgets {
      */
     public String slider(int sliderNumber, int bgWidth, String other) {
         return //order is important
-            "      <img name=\"sliderLeft" + sliderNumber + "\" src=\"" + imageDirUrl + "sliderCenter.gif\" \n" +
-            "        width=\"" + sliderThumbWidth + "\" height=\"" + sliderThumbHeight + "\" " + other + " alt=\"\">\n" +
-            "      <img name=\"sliderBg"   + sliderNumber + "\" src=\"" + imageDirUrl + "sliderBg.gif\" \n" +
-            "        width=\"" + bgWidth          + "\" height=\"" + sliderThumbHeight + "\" " + other + " alt=\"\">\n";
+            "      <img name=\"sliderLeft" + sliderNumber + 
+                   "\" src=\"" + XML.encodeAsHTMLAttribute(imageDirUrl + "sliderCenter.gif") + "\" \n" +
+            "        width=\"" + sliderThumbWidth + "\" height=\"" + sliderThumbHeight + "\" " + other + 
+                " alt=\"" + XML.encodeAsHTMLAttribute("<") + "\">\n" +
+            "      <img name=\"sliderBg"   + sliderNumber + 
+                   "\" src=\"" + XML.encodeAsHTMLAttribute(imageDirUrl + "sliderBg.gif") + "\" \n" +
+            "        width=\"" + bgWidth          + "\" height=\"" + sliderThumbHeight + "\" " + other + 
+                " alt=\"" + XML.encodeAsHTMLAttribute("<") + "\">\n";
     }
 
     /**
@@ -855,12 +891,18 @@ public class HtmlWidgets {
      */
     public String dualSlider(int sliderNumber, int bgWidth, String other) {
         return //order is important
-            "      <img name=\"sliderLeft"  + sliderNumber + "\" src=\"" + imageDirUrl + "sliderLeft.gif\" \n" +
-            "        width=\"" + sliderThumbWidth + "\" height=\"" + sliderThumbHeight + "\" " + other + " alt=\"\">\n" +
-            "      <img name=\"sliderBg"    + sliderNumber + "\" src=\"" + imageDirUrl + "sliderBg.gif\" \n" +
-            "        width=\"" + bgWidth          + "\" height=\"" + sliderThumbHeight + "\" " + other + " alt=\"\">\n" +
-            "      <img name=\"sliderRight" + sliderNumber + "\" src=\"" + imageDirUrl + "sliderRight.gif\" \n" +
-            "        width=\"" + sliderThumbWidth + "\" height=\"" + sliderThumbHeight + "\" " + other + " alt=\"\">\n";
+            "      <img name=\"sliderLeft"  + sliderNumber + 
+                   "\" src=\"" + XML.encodeAsHTMLAttribute(imageDirUrl + "sliderLeft.gif") + "\" \n" +
+            "        width=\"" + sliderThumbWidth + "\" height=\"" + sliderThumbHeight + "\" " + other + 
+                " alt=\"" + XML.encodeAsHTMLAttribute("<") + "\">\n" +
+            "      <img name=\"sliderBg"    + sliderNumber + 
+                   "\" src=\"" + XML.encodeAsHTMLAttribute(imageDirUrl + "sliderBg.gif") + "\" \n" +
+            "        width=\"" + bgWidth          + "\" height=\"" + sliderThumbHeight + "\" " + other + 
+                " alt=\"" + XML.encodeAsHTMLAttribute("slider") + "\">\n" +
+            "      <img name=\"sliderRight" + sliderNumber + 
+                  "\" src=\"" + XML.encodeAsHTMLAttribute(imageDirUrl + "sliderRight.gif") + "\" \n" +
+            "        width=\"" + sliderThumbWidth + "\" height=\"" + sliderThumbHeight + "\" " + other + 
+                " alt=\"" + XML.encodeAsHTMLAttribute(">") + "\">\n";
     }
 
 
@@ -1177,8 +1219,9 @@ sb0.append(
 "\n" +
 "<!-- start of twoClickMap[0] -->\n" +
 "<img \n" +
-"   name=\"worldImage\" id=\"worldImage\" src=\"" + imageUrl + "\" border=\"0\" usemap=\"#worldImageMap\"\n" +
-"    alt=\"" + tooltip + "\"\n" +
+"   name=\"worldImage\" id=\"worldImage\" src=\"" + XML.encodeAsHTMLAttribute(imageUrl) + 
+"\" border=\"0\" usemap=\"#worldImageMap\"\n" +
+"    alt=\"worldImage\"\n" +
 "  title=\"" + tooltip + "\" \n" +
 "  style=\"cursor:crosshair;\" align=\"middle\">\n" +
 "<!-- end of twoClickMap[0] -->\n");
@@ -1348,6 +1391,30 @@ sb2.append(
 return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
 }
 
+    /* *  NOT FINISHED
+     * This looks for cross site scripting attempts 
+     * (e.g., &lt;script&gt; &lt;object&gt; &lt;applet&gt; &lt;embed&gt; &lt;form&gt; 
+     * &lt;img&gt; &lt;iframe&gt; &lt;/a&gt; &lt;&gt; 
+     * in textField input or RESTful parameter value from a user.
+     * See http://www.technicalinfo.net/papers/CSS.html
+     *
+     * @param text the text received from a user (usually via a textField or REST parameter).
+     * @return either the original text (if no sign of trouble) or "[]" if there was any sign or trouble. 
+     *   null returns null.
+     * /
+    public static String cleanInput(String text) {
+        if (text == null)
+            return text;
+        String s = text.toLowerCase();
+        int sLength = s.length();
+        StringBuilder sb = new StringBuilder(sLength);
+        for (int i = 0; i< sLength; i++) {
+            char c = s.charAt(i);
+            if (String2.isWhite(c))
+                continue;
+*/
+
+
     /**
      * This makes a test document and displays it in the browser.
      */
@@ -1375,57 +1442,59 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
             "</style>\n" +
             "</head>\n" +
             "<body" + 
-            " style=\"" + SANS_SERIF_STYLE + "\"" +
+            " style=\"" + XML.encodeAsHTMLAttribute(SANS_SERIF_STYLE) + "\"" +
             ">\n" +
             htmlTooltipScript(imageDir) + //this test uses non-https url
             dragDropScript(imageDir) +    //this test uses non-https url
             "<h1>Test Html Widgets</h1>\n" +
             ifJavaScriptDisabled);
         writer.write("This is some text in the SANS_SERIF_STYLE.\n");
-        writer.write(htmlTooltipImage(imageDir + "QuestionMark.jpg", 
+        writer.write(htmlTooltipImage(imageDir + "QuestionMark.jpg", "?",
             "Hi <b>bold</b>\n<br>there \\/'\"&amp;&brvbar;!" +
             "<br><img src=\"http://www.cohort.com/wings.gif\" alt=\"wings\">", ""));
         String formName = "f1";
         writer.write(widgets.beginForm(formName, "GET", "testUrl", ""));
         writer.write(
-            widgets.checkbox("checkboxName1", "checkboxTooltip literal: &gt;!", true, "checkboxValue1", "rightLabel1", "") +
+            widgets.checkbox("checkboxName1", "checkboxTooltip literal: &lt;&gt;&amp;\"!", true, "checkboxValue1", "rightLabel1", "") +
             "\n" +
-            widgets.textField("textFieldName1", "textFieldTooltip literal: &gt;!", 10, 255, "initialValue", "") +
+            widgets.textField("textFieldName1", "textFieldTooltip literal: &lt;&gt;&amp;\"!", 10, 255, "initialValue", "") +
             "<br>\n" +
-            widgets.checkbox("checkboxName2", "checkboxTooltip literal: &gt;!", true, "checkboxValue2", "rightLabel2", "") +
+            widgets.checkbox("checkboxName2", "checkboxTooltip literal: &lt;&gt;&amp;\"!", true, "checkboxValue2", "rightLabel2", "") +
             "\n" +
-            widgets.textField("textFieldName2", "textFieldTooltip literal: &gt;!", 10, 255, "initialValue", "") +
+            widgets.textField("textFieldName2", "textFieldTooltip literal: &lt;&gt;&amp;\"!", 10, 255, "initialValue", "") +
             "<br>\n" +
-            widgets.checkbox("checkboxName3", "checkboxTooltip literal: &gt;!", true, "checkboxValue3", "rightLabel3", "") +
+            widgets.checkbox("checkboxName3", "checkboxTooltip literal: &lt;&gt;&amp;\"!", true, "checkboxValue3", "rightLabel3", "") +
             "<br>\n" +
-            widgets.checkbox("checkboxName4", "checkboxTooltip literal: &gt;!", true, "checkboxValue4", "rightLabel4", "") +
+            widgets.checkbox("checkboxName4", "checkboxTooltip literal: &lt;&gt;&amp;\"!", true, "checkboxValue4", "rightLabel4", "") +
             widgets.comment("This is a comment."));
         String options[] = new String[1200];
         for (int i = 0; i < 1200; i++)
             options[i] = i==1? "1 (2 is empty)" : i==2? "" : "option" + i;
         writer.write("<br>\n" +
-            widgets.radioButtons("radioName1", "radioTooltip literal: &gt;!", true, new String[]{"apple", "banana", "cucumber"}, 1, "") +
+            widgets.radioButtons("radioName1", "radioTooltip literal: &lt;&gt;&amp;\"!", true, new String[]{"apple", "banana", "cucumber"}, 1, "") +
             "<br>\n" +
-            widgets.radioButtons("radioName2", "radioTooltip literal: &gt;!", true, new String[]{"apple", "banana", "cucumber"}, 2, "") +
-            widgets.select("dropdownName", "dropdownTooltip literal: &gt;!", BUTTONS_0n + BUTTONS_1 + BUTTONS_100 + BUTTONS_1000, options, 37, "") +
-            widgets.select("selectName", "selectTooltip literal: &gt;!", 6, options, 137, "") +
+            widgets.radioButtons("radioName2", "radioTooltip literal: &lt;&gt;&amp;\"!", true, new String[]{"apple", "banana", "cucumber"}, 2, "") +
+            widgets.select("dropdownName", "dropdownTooltip literal: &lt;&gt;&amp;\"!", BUTTONS_0n + BUTTONS_1 + BUTTONS_100 + BUTTONS_1000, options, 37, "") +
+            widgets.select("selectName", "selectTooltip literal: &lt;&gt;&amp;\"!", 6, options, 137, "") +
             "<br>Password: \n" +
             "<input type=\"password\" name=\"mypassword\">\n" +
             "<br>Testfield1: \n" + 
-            widgets.textField("textFieldName1", "textFieldTooltip literal: &gt;!", 10, 255, "initialValue", "") +
+            widgets.textField("textFieldName1", "textFieldTooltip literal: &lt;&gt;&amp;\"!", 10, 255, 
+                "initialValue<script>prompt(123)</script>", "") +
             "<br>Textfield2: \n" +
-            widgets.textField("textFieldName2", "", 20, 255, "has big tooltip", 
+            widgets.textField("textFieldName2", "", 20, 255, "has big tooltip <script>prompt(123)</script>", 
                 htmlTooltip("Hi <b>bold</b>!\n<br>There \\/'\"&amp;&brvbar;!")) +
             "<br>\n" +
             "<textarea name=address cols=40 rows=4 wrap=\"virtual\">\n" +
             "John Smith\n123 Main St\nAnytown, CA 94025\n" +
+            XML.encodeAsHTMLAttribute("<>&\"<script>prompt(123)</script>\n") +
             "</textarea>\n" +
             "<br>\n" +
             widgets.hidden("testHiddenName", "hiddenValue") +
-            widgets.button("button", "button1", "button tooltip  literal: &gt;!", "Skinny Button", "class=\"skinny\"") +
+            widgets.button("button", "button1", "button tooltip  literal: &lt;&gt;&amp;\"!", "Skinny Button", "class=\"skinny\"") +
             //make a button that looks like a submit button but doesn't submit the form
             "<br>\n" +
-            widgets.button("button", "submit1Name", "submit tooltip  literal: &gt;!", "Submit", "onclick=\"alert('alert!');\"") +
+            widgets.button("button", "submit1Name", "submit tooltip  literal: &lt;&gt;&amp;\"!", "Submit", "onclick=\"alert('alert!');\"") +
             "<br>\n" +
             widgets.htmlButton("button", "htmlbutton1", "value1", "tooltip", "labelHtml", "") +
             "<br>\n" +

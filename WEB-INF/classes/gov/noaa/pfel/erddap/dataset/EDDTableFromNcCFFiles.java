@@ -62,6 +62,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
     public EDDTableFromNcCFFiles(
         String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -70,12 +71,13 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ) 
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
         throws Throwable {
 
         super("EDDTableFromNcCFFiles", 
             true, //tIsLocal, 
-            tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
+            tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, 
+            tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
@@ -83,7 +85,7 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, //irrelevant
             tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
 
     }
 
@@ -214,7 +216,8 @@ public class EDDTableFromNcCFFiles extends EDDTableFromFiles {
             "    <postExtractRegex>" + tPostExtractRegex + "</postExtractRegex>\n" +
             "    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
-            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n");
+            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
 
@@ -283,6 +286,7 @@ directionsForGenerateDatasetsXml() +
 "    <extractRegex></extractRegex>\n" +
 "    <columnNameForExtract></columnNameForExtract>\n" +
 "    <sortFilesBySourceNames>line_station time</sortFilesBySourceNames>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
 "        <att name=\"cdm_timeseries_variables\">line_station</att>\n" +
@@ -304,7 +308,7 @@ directionsForGenerateDatasetsXml() +
 "2010-12-28 At ERD, Lynn DeWitt made the files available to Bob Simons.\n" +
 "2010-12-31 Bob Simons reprocessed the files with Projects.calcofiBio().\n" +
 "2012-08-02T16:13:53Z (local files)\n" +
-"2012-08-02T16:13:53Z http://127.0.0.1:8080/cwexperimental/tabledap/erdCalcofiBio.ncCF?line_station,longitude,latitude,altitude,time,obsScientific,obsValue,obsUnits&amp;station=100.0&amp;time&gt;=2004-11-12T00:00:00Z&amp;time&lt;=2004-11-19T08:32:00Z&amp;obsUnits=%22number%20of%20larvae%22&amp;orderBy%28%22line_station,time,obsScientific%22%29</att>\n" +
+"2012-08-02T16:13:53Z http://127.0.0.1:8080/cwexperimental/tabledap/erdCalcofiBio.ncCF?line_station,longitude,latitude,altitude,time,obsScientific,obsValue,obsUnits&amp;station=100.0&amp;time&gt;=2004-11-12T00:00:00Z&amp;time&lt;=2004-11-19T08:32:00Z&amp;obsUnits=&#37;22number&#37;20of&#37;20larvae&#37;22&amp;orderBy&#37;28&#37;22line_station,time,obsScientific&#37;22&#37;29</att>\n" +
 "        <att name=\"id\">ncCF1b</att>\n" +
 "        <att name=\"infoUrl\">http://www.calcofi.org/newhome/publications/Atlases/atlases.htm</att>\n" +
 "        <att name=\"institution\">CalCOFI</att>\n" +

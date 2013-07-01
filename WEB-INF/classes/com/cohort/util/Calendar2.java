@@ -359,6 +359,94 @@ public class Calendar2 {
     }
 
     /**
+     * This converts an EDDTable "now-nUnits" string to epochSeconds.
+     * - can also be + or space.
+     * units can be singular or plural.
+     *
+     * @param nowString  
+     * @return epochSeconds  (rounded up to the next second) (or Double.NaN if trouble)
+     * @throws SimpleException if trouble
+     */
+    public static double nowStringToEpochSeconds(String nowString) {
+
+        //now is next second (ms=0)
+        GregorianCalendar gc = Calendar2.newGCalendarZulu();
+        gc.add(Calendar2.SECOND, 1);
+        gc.set(Calendar2.MILLISECOND, 0); 
+        String tError = 
+            "Query error: Timestamp constraints with \"now\" must be in the form " +
+            "\"now(+|-)[positiveInteger](seconds|minutes|hours|days|months|years)\".  " +
+            "\"" + nowString + "\" is invalid.";
+        if (nowString == null || !nowString.startsWith("now"))
+            throw new SimpleException(tError);
+        if (nowString.length() > 3) {
+            // e.g., now-5hours
+            char ch = nowString.charAt(3);
+            int start = -1;  //trouble
+            //non-%encoded '+' will be decoded as ' ', so treat ' ' as equal to '+' 
+            if (ch == '+' || ch == ' ') start = 4;  
+            else if (ch == '-') start = 3;
+            else throw new SimpleException(tError);
+
+            //keep going?  parse the number
+            int n = 0;
+            if (start > 0) {
+                int end = 4;
+                while (nowString.length() > end && String2.isDigit(nowString.charAt(end)))
+                    end++;
+                n = String2.parseInt(nowString.substring(start, end));
+                if (n == Integer.MAX_VALUE) {
+                    throw new SimpleException(tError);
+                } else { 
+                    start = end;
+                }
+            }
+
+            //keep going?  find the units, adjust gc
+            if (start > 0) {
+                //test sUnits.equals to ensure no junk at end of constraint
+                String sUnits = nowString.substring(start);  
+                if (     sUnits.equals("second") || 
+                         sUnits.equals("seconds"))
+                    gc.add(Calendar2.SECOND, n);
+                else if (sUnits.equals("minute") || 
+                         sUnits.equals("minutes"))
+                    gc.add(Calendar2.MINUTE, n);
+                else if (sUnits.equals("hour") || 
+                         sUnits.equals("hours"))
+                    gc.add(Calendar2.HOUR, n);
+                else if (sUnits.equals("day") || 
+                         sUnits.equals("days"))
+                    gc.add(Calendar2.DATE, n);
+                else if (sUnits.equals("month") || 
+                         sUnits.equals("months"))
+                    gc.add(Calendar2.MONTH, n);
+                else if (sUnits.equals("year") || 
+                         sUnits.equals("years"))
+                    gc.add(Calendar2.YEAR, n);
+                else throw new SimpleException(tError);
+            }
+        } 
+        return Calendar2.gcToEpochSeconds(gc);
+    }
+
+    /**
+     * This is like nowStringToEpochSeconds, but returns troubleValue if trouble.
+     *
+     * @param nowString  
+     * @param troubleValue
+     * @return epochSeconds   (or troubleValue if trouble)
+     */
+    public static double safeNowStringToEpochSeconds(String nowString, double troubleValue) {
+        try {
+            return nowStringToEpochSeconds(nowString);
+        } catch (Throwable t) {
+            String2.log(t.toString());
+            return troubleValue;
+        }
+    }
+
+    /**
      * This returns true if the string appears to be an ISO date/time 
      * (matching YYYY-MM...).
      *

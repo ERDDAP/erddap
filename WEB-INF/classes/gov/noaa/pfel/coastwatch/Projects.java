@@ -7127,11 +7127,11 @@ project)
         String outDir = "c:/u00/data/points/globec/";
         String fileNames[] = {
             //"Globec_birds",     
-            "Globec_bottle_data_2002" /*, 
-            "Globec_cetaceans", 
-            "Globec_moc1", 
-            "Globec_vpt",       
-            "PRD_ctd",
+            //"Globec_bottle_data_2002" /*, 
+            //"Globec_cetaceans", 
+            //"Globec_moc1", 
+            //"Globec_vpt",       
+            //"PRD_ctd",
             "rockfish0",
             "rockfish1",
             "rockfish2",
@@ -7153,14 +7153,22 @@ project)
                 boolean isCastNo = colName.equals("cast_no");
                 //String2.log("colName=" + colName + " " + isCastNo);
 
-                //save science data columns (not date values) as floats, not doubles
-                if (table.getColumnName(col).toLowerCase().indexOf("date") < 0) {
+                if (colName.toLowerCase().indexOf("date") < 0) {
                     PrimitiveArray pa = table.getColumn(col);
-                    if (pa instanceof DoubleArray) {
+                    if (colName.equals("cruise")) {
+                        //ensure cruise is saved as String, not short
+                        table.setColumn(col, new StringArray(pa));
+
+                    } else if (colName.equals("ctd_index")) {
+                        //ensure ctd_index is saved as short, not byte
+                        table.setColumn(col, new ShortArray(pa));
+
+                    } else if (pa instanceof DoubleArray) {
+                        //save science data columns (not date values) as floats, not doubles
                         table.setColumn(col, new FloatArray(pa));
 
-                    //globecBottle cast_no has valid data values = 127 
                     } else if (isGlobec && isCastNo) {
+                        //globecBottle cast_no has valid data values = 127 
                         String2.log("converting cast_no to ShortArray");
                         pa = new ShortArray(pa);
                         pa.switchFromTo("NaN", "127");
@@ -8131,6 +8139,180 @@ towTypesDescription);
         String2.setClipboardString(s);
         String2.log(s);
         return s;
+    }
+    
+    /** Convert FED Rockfish CTD .csv data files to .nc (from Lynn 2013-03-28
+     * from /Volumes/PFEL_Shared_Space/PFEL_Share/Lynn2Bob/Rockfish_CTD.tar.gz).
+     */
+    public static void convertRockfish20130328() throws Throwable {
+        String2.log("\nProjects.convertRockfish20130328()");
+        String dir = "C:/u00/data/points/rockfish20130328/"; 
+        String outerName = "ERD_CTD_HEADER_2008_to_2011";  //.csv -> .nc
+        String innerName = "ERD_CTD_CAST_2008_to_2011";    //.csv -> .nc
+
+        //read the outer .csv files
+        Table outer = new Table();
+        outer.readASCII(dir + outerName + ".csv", 0, 1, null, null, null, null, false); //simplify
+        Test.ensureEqual(outer.getColumnNamesCSVString(),
+            "CRUISE,CTD_INDEX,CTD_NO,STATION,CTD_DATE,CTD_LAT,CTD_LONG,CTD_BOTTOM_DEPTH,BUCKET_TEMP,BUCKET_SAL,TS_TEMP,TS_SAL",
+            "Unexpected outer column names");
+        String2.log("outer (5 rows) as read:\n" + outer.dataToCSVString(5));
+
+        //convert to short 
+        String colNames[] = {"CTD_INDEX","CTD_NO","STATION","CTD_BOTTOM_DEPTH"};
+        for (int coli = 0; coli < colNames.length; coli++) {
+            int col = outer.findColumnNumber(colNames[coli]);
+            outer.setColumn(col, new ShortArray(outer.getColumn(col)));
+        }
+
+        //convert to floats 
+        colNames = new String[]{"BUCKET_TEMP","BUCKET_SAL","TS_TEMP","TS_SAL"};
+        for (int coli = 0; coli < colNames.length; coli++) {
+            int col = outer.findColumnNumber(colNames[coli]);
+            outer.setColumn(col, new FloatArray(outer.getColumn(col)));
+        }
+
+        //convert date time "5/5/2008 9:10" to time   
+        DateTimeFormatter dtf = DateTimeFormat.forPattern("M/d/yyyy H:mm").withZone(
+            DateTimeZone.forID("America/Los_Angeles")); 
+        //GMT: erddap/convert/time.html says "5/5/2008 19:10" = 1.2100146E9
+        //  if 7 hours different in summer...
+        Test.ensureEqual(dtf.parseMillis("5/5/2008 12:10") / 1000.0, 1.2100146E9, //erddap/convert/time.html
+            "trouble with DateTimeFormatter");
+        int nOuter = outer.nRows();
+        {
+            int col = outer.findColumnNumber("CTD_DATE");
+            PrimitiveArray oldTimePA = outer.getColumn(col);
+            DoubleArray newTimePA = new DoubleArray();
+            for (int row = 0; row < nOuter; row++) 
+                newTimePA.add(dtf.parseMillis(oldTimePA.getString(row)) / 1000.0);
+            outer.setColumn(col, newTimePA);
+            outer.columnAttributes(col).set("units", "seconds since 1970-01-01T00:00:00Z");
+        }
+
+        //convert lat and lon from dddmm.mmmm to decimal degrees
+        colNames = new String[]{"CTD_LAT","CTD_LONG"};
+        for (int coli = 0; coli < colNames.length; coli++) {
+            int col = outer.findColumnNumber(colNames[coli]);
+            PrimitiveArray pa = outer.getColumn(col);
+            FloatArray fa = new FloatArray();
+            Test.ensureEqual(Math.floor(1234.5 / 100.0) + (1234.5 % 100.0) / 60.0, 12.575, "");
+            float scale = coli == 0? 1 : -1; //lon are originally degrees_west!
+            for (int row = 0; row < nOuter; row++) {
+                double d = pa.getDouble(row);
+                if (d < 0) throw new SimpleException("d<0 requires more testing");
+                fa.add(scale * Math2.doubleToFloatNaN(Math.floor(d / 100.0) + (d % 100.0) / 60.0));
+            }
+            outer.setColumn(col, fa);
+        }
+        
+        //save the outer as .nc
+        String2.log("outer (5 rows) before save:\n" + outer.toCSVString(5));
+        outer.saveAsFlatNc(dir + outerName + ".nc", "row", false); //convertToFakeMissingValues
+
+        //just keep the outer columns needed for inner table
+        StringArray desired = StringArray.fromCSV("CRUISE,CTD_INDEX,CTD_NO,STATION,CTD_DATE,CTD_LAT,CTD_LONG");
+        Test.ensureEqual(outer.reorderColumns(desired, true), desired.size(), 
+            "Not all desired columns were found.");
+
+        //read inner table
+        Table inner = new Table();
+        inner.readASCII(dir + innerName + ".csv", 0, 1, null, null, null, null, false); //simplify
+        Test.ensureEqual(inner.getColumnNamesCSVString(),
+            "CRUISE,CTD_INDEX,CTD_DEPTH,TEMPERATURE,SALINITY,DENSITY,DYN_HGT,IRRAD,FLUOR_VOLT,TRANSMISSIVITY,CHLOROPHYLL,OXYGEN_VOLT,OXYGEN",
+            "Unexpected inner column names");
+
+        //convert to short 
+        colNames = new String[]{"CTD_INDEX","CTD_DEPTH"};
+        for (int coli = 0; coli < colNames.length; coli++) {
+            int col = inner.findColumnNumber(colNames[coli]);
+            inner.setColumn(col, new ShortArray(inner.getColumn(col)));
+        }
+
+        //convert to floats 
+        colNames = new String[]{"TEMPERATURE","SALINITY","DENSITY","DYN_HGT","IRRAD","FLUOR_VOLT","TRANSMISSIVITY","CHLOROPHYLL","OXYGEN_VOLT","OXYGEN"};
+        for (int coli = 0; coli < colNames.length; coli++) {
+            int col = inner.findColumnNumber(colNames[coli]);
+            inner.setColumn(col, new FloatArray(inner.getColumn(col)));
+        }
+
+        //add outer info to inner table
+        inner.join(2, 0, "", outer); //nKeys, keyCol, String mvKey, Table lookUpTable
+
+        //save inner table
+        String2.log("inner (5 rows) before save:\n" + inner.toCSVString(5));
+        inner.saveAsFlatNc(dir + innerName + ".nc", "row", false); //convertToFakeMissingValues
+
+        String2.log("\n*** Projects.convertRockfish20130328() finished successfully");
+    }
+
+    /** Convert FED Rockfish CTD .csv data files to .nc (from Lynn 2013-04-09
+     * from /Volumes/PFEL_Shared_Space/PFEL_Share/Lynn2Bob/Rockfish_CTD.tar.gz).
+     */
+    public static void convertRockfish20130409(boolean headerMode) throws Throwable {
+        String2.log("\nProjects.convertRockfish20130409(headerMode=" + headerMode + ")");
+        String dir = "C:/u00/data/points/rockfish20130409/"; 
+        String regex = "rockfish_" + (headerMode? "header" : "casts") + 
+            "_[0-9]{4}\\.csv";  //.csv -> .nc
+
+        //read the outer .csv files
+        String tFileNames[] = RegexFilenameFilter.fullNameList(dir, regex);
+        for (int f = 0; f < tFileNames.length; f++) {
+
+            Table table = new Table();
+            table.readASCII(tFileNames[f], 0, 2, null, null, null, null, false); //simplify
+            Test.ensureEqual(table.getColumnNamesCSVString(),
+                headerMode?
+                    "cruise,ctd_index,ctd_no,station,time,longitude,latitude,bottom_depth," +
+                        "bucket_temperature,bucket_salinity,ts_temperature,ts_salinity" :
+                    "cruise,ctd_index,ctd_no,station,time,longitude,latitude,depth,temperature," +
+                        "salinity,density,dyn_hgt,irradiance,fluor_volt,transmissivity," +
+                        "chlorophyll,oxygen_volt,oxygen",
+                "Unexpected column names");
+            if (f == 0)
+                String2.log("table (5 rows) as read:\n" + table.dataToCSVString(5));
+
+            //convert to short 
+            String colNames[] = headerMode? 
+                new String[]{"ctd_index","ctd_no","station","bottom_depth"} :
+                new String[]{"ctd_index","ctd_no","station","depth"};
+            for (int coli = 0; coli < colNames.length; coli++) {
+                int col = table.findColumnNumber(colNames[coli]);
+                table.setColumn(col, new ShortArray(table.getColumn(col)));
+            }
+
+            //convert to floats 
+            colNames = headerMode?
+                new String[]{"longitude","latitude","bucket_temperature","bucket_salinity","ts_temperature","ts_salinity"} :
+                new String[]{"longitude","latitude","temperature","salinity","density","dyn_hgt","irradiance",
+                             "fluor_volt","transmissivity","chlorophyll","oxygen_volt","oxygen"};
+            for (int coli = 0; coli < colNames.length; coli++) {
+                int col = table.findColumnNumber(colNames[coli]);
+                table.setColumn(col, new FloatArray(table.getColumn(col)));
+            }
+
+            //convert iso date time to epochSeconds time   
+            int ntable = table.nRows();
+            {
+                int col = table.findColumnNumber("time");
+                PrimitiveArray oldTimePA = table.getColumn(col);
+                DoubleArray newTimePA = new DoubleArray();
+                for (int row = 0; row < ntable; row++) 
+                    newTimePA.add(Calendar2.isoStringToEpochSeconds(oldTimePA.getString(row)));
+                table.setColumn(col, newTimePA);
+                table.columnAttributes(col).set("units", "seconds since 1970-01-01T00:00:00Z");
+            }
+
+            //save as .nc
+            String2.log("f=" + f + " finished.");
+            if (f == 0) 
+                String2.log("table (5 rows) before save:\n" + table.toCSVString(5));
+            table.saveAsFlatNc(dir + File2.getNameNoExtension(tFileNames[f]) + ".nc", 
+                "row", false); //convertToFakeMissingValues
+        }
+
+        String2.log("\n*** Projects.convertRockfish20130409(headerMode=" + headerMode + 
+            ") finished successfully");
     }
 
 

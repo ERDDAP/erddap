@@ -75,6 +75,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
      */
     public EDDTableFromHyraxFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -83,12 +84,13 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ) 
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
         throws Throwable {
 
         super("EDDTableFromHyraxFiles", true, //isLocal is now set to true (copied files)
             tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, 
+            tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
             EDStatic.fullCopyDirectory + tDatasetID + "/", //force fileDir to be the copyDir 
@@ -96,7 +98,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
 
     }
 
@@ -113,21 +115,23 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     public static void makeDownloadFileTasks(String tDatasetID, 
         String catalogUrl, String fileNameRegex, boolean recursive) {
 
-        if (verbose) String2.log("* " + tDatasetID + " makeDownloadTasks from " + catalogUrl +
+        if (verbose) String2.log("* " + tDatasetID + " makeDownloadFileTasks from " + catalogUrl +
             "\nfileNameRegex=" + fileNameRegex);
         long startTime = System.currentTimeMillis();
+        int taskNumber = -1; //unused
 
         try {
             //if previous tasks are still running, return
             EDStatic.ensureTaskThreadIsRunningIfNeeded();  //ensure info is up-to-date
             Integer lastAssignedTask = (Integer)EDStatic.lastAssignedTask.get(tDatasetID);
-            if (lastAssignedTask != null &&  //previous tasks
-                EDStatic.lastFinishedTask < lastAssignedTask.intValue()) { //tasks are all done
-                if (verbose) 
-                    String2.log(tDatasetID + ": previously assigned tasks haven't been completed: " +
-                        EDStatic.lastFinishedTask + " < " + lastAssignedTask.intValue());
+            boolean pendingTasks = lastAssignedTask != null &&  
+                EDStatic.lastFinishedTask < lastAssignedTask.intValue();
+            if (verbose) 
+                String2.log("  lastFinishedTask=" + EDStatic.lastFinishedTask + 
+                    " < lastAssignedTask(" + tDatasetID + ")=" + lastAssignedTask + 
+                    "? pendingTasks=" + pendingTasks);
+            if (pendingTasks)  
                 return;
-            }
 
             //mimic the remote directory structure (there may be 10^6 files in many dirs)
             //catalogUrl http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/pentad/flk/contents.html
@@ -210,7 +214,6 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             }
 
             //make tasks to download files
-            int taskNumber = -1; //i.e. unused
             int nTasksCreated = 0;
             boolean remoteErrorLogged = false;  //just display 1st offender
             boolean fileErrorLogged   = false;  //just display 1st offender
@@ -277,14 +280,19 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                     String2.log("  task#" + taskNumber + " TASK_SET_FLAG " + tDatasetID);
             }
 
-            if (verbose) String2.log("* " + tDatasetID + " makeDownloadTasks finished." +
+            if (verbose) String2.log("* " + tDatasetID + " makeDownloadFileTasks finished." +
                 " nTasksCreated=" + nTasksCreated + 
                 " time=" + (System.currentTimeMillis() - startTime));
 
         } catch (Throwable t) {
             if (verbose)
-                String2.log("ERROR in makeDownloadTasks for datasetID=" + tDatasetID + "\n" +
+                String2.log("ERROR in makeDownloadFileTasks for datasetID=" + tDatasetID + "\n" +
                     MustBe.throwableToString(t));
+        }
+
+        if (taskNumber > -1) {
+            EDStatic.lastAssignedTask.put(tDatasetID, new Integer(taskNumber));
+            EDStatic.ensureTaskThreadIsRunningIfNeeded();  //ensure info is up-to-date
         }
     }
 
@@ -441,7 +449,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             "    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
             "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
-            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n");
+            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -489,6 +498,7 @@ directionsForGenerateDatasetsXml() +
 "    <columnNameForExtract></columnNameForExtract>\n" +
 "    <sortedColumnSourceName>time</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>time</sortFilesBySourceNames>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"base_date\" type=\"shortList\">1987 7 5</att>\n" +
 "        <att name=\"Conventions\">COARDS</att>\n" +

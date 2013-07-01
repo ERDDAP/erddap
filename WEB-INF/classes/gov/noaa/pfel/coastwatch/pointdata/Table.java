@@ -553,7 +553,7 @@ public class Table  {
      * If a column in desiredOrder isn't in the table, it is ignored.
      * If a column in the table isn't in desiredOrder, it will be pushed to the right.
      * 
-     * @param desiredOrder 
+     * @param desiredOrder a list of column names
      * @param discardOthers if true, columns not in desiredOrder list will be removed
      * @return the number of desiredOrder columns that were found
      */
@@ -4873,6 +4873,28 @@ Dataset {
         }
         if (verbose) String2.log("  readNDNC finished. nRows=" + nRows() + 
             " nCols=" + nColumns() + " time=" + (System.currentTimeMillis() - time));
+    }
+
+
+    /** This tests readNDNC. */
+    public static void testReadArgoProfile() throws Exception {
+        verbose = true;
+        reallyVerbose = true;
+        String2.log("\n*** Table.testReadArgoProfile");
+        Table table = new Table();
+        String results, expected;
+        String fiName = "/data/argo/latest_data/D20130117_prof.nc";
+        table.readNDNc(fiName, 
+            new String[]{"PLATFORM_NUMBER","PROJECT_NAME","PI_NAME","CYCLE_NUMBER","DIRECTION","DATA_CENTRE",
+            "DC_REFERENCE","DATA_STATE_INDICATOR","DATA_MODE","INST_REFERENCE",
+            "WMO_INST_TYPE","JULD","JULD_QC","JULD_LOCATION","LATITUDE","LONGITUDE",
+            "POSITION_QC","POSITIONING_SYSTEM","PROFILE_PRES_QC","PROFILE_TEMP_QC",
+            "PROFILE_PSAL_QC","PRES","PRES_QC","PRES_ADJUSTED","PRES_ADJUSTED_QC",
+            "PRES_ADJUSTED_ERROR","TEMP","TEMP_QC","TEMP_ADJUSTED","TEMP_ADJUSTED_QC",
+            "TEMP_ADJUSTED_ERROR","PSAL","PSAL_QC","PSAL_ADJUSTED","PSAL_ADJUSTED_QC",
+            "PSAL_ADJUSTED_ERROR"}, 
+            null, 0, 0, true);
+        String2.log(table.toCSVString(5));
     }
 
     /** This tests readNDNC. */
@@ -11429,6 +11451,12 @@ String2.log(table.dataToCSVString());
      * and time, then for each stationID, remove all rows except the one 
      * for the last time for that stationID.
      *
+     * <p>Missing values are treated as however sort() treats them.
+     * So they may sort low. 
+     * So a missing value in the last keyColumn may be the min value.
+     * To just get non-missing values, remove missing values ahead of time 
+     * (e.g., via an ERDDAP query).
+     *
      * @param keyColumns  1 or more column numbers (0..).
      * @throws Exception if trouble (e.g., invalid column number).
      *    0 rows is not an error, but returns 0 rows.
@@ -11476,6 +11504,12 @@ String2.log(table.dataToCSVString());
      * For example, orderByMin([stationID, time]) would sort by stationID 
      * and time, then for each stationID, remove all rows except the one 
      * for the first time for that stationID.
+     *
+     * <p>Missing values are treated as however sort() treats them.
+     * So they may sort low. 
+     * So a missing value in the last keyColumn may be the min value.
+     * To just get non-missing values, remove missing values ahead of time 
+     * (e.g., via an ERDDAP query).
      *
      * @param keyColumns  1 or more column numbers (0..).
      * @throws Exception if trouble (e.g., invalid column number)
@@ -11529,6 +11563,12 @@ String2.log(table.dataToCSVString());
      * <p>If an nKeyColumns-1 combo has only one row, it will be duplicated.
      * Hence, the resulting table will always have just pairs of rows.
      *
+     * <p>Missing values are treated as however sort() treats them.
+     * So they may sort low or high. 
+     * So a missing value in the last keyColumn may be the min or max value.
+     * To just get non-missing values, remove missing values ahead of time 
+     * (e.g., via an ERDDAP query).
+     *
      * @param keyColumns  1 or more column numbers (0..).
      * @throws Exception if trouble (e.g., invalid column number).
      *    0 rows is not an error, but returns 0 rows.
@@ -11545,7 +11585,8 @@ String2.log(table.dataToCSVString());
 
         //sort based on keys
         ascendingSort(keyColumns);
-//minMax
+
+        //minMax
         //walk through the table, often marking previous and current row to be kept
         BitSet keep = new BitSet(nRows); //all false
         keep.set(0); //always
@@ -12274,6 +12315,153 @@ String2.log(table.dataToCSVString());
         }
 
     }
+
+    /** THIS IS NOT FINISHED.
+     * This creates or appends the data to a flat .nc file with an unlimited dimension.
+     * If the file doesn't exist, it will be created.
+     * If the file does exist, the data will be appended.
+     *
+     * <p>If the file is being created, the attributes are used (otherwise, they aren't).
+     * String variables should have an integer "strlen" attribute which specifies the
+     * maximum number of characters for the column (otherwise, strlen will be calculated
+     * from the longest String in the current chunk of data and written as the strlen attribute).  
+     *
+     * <p>If the file exists and a colName in this table isn't in it, the column is ignored.
+     *
+     * <p>If the file exists and this table lacks a column in it, the column will be filled with
+     * the file-defined _FillValue (first choice) or missing_value 
+     * or the standard PrimitiveArray missing value (last choice).
+     *
+     * @param fileName
+     * @param dimName  e.g., "time" or 
+     * @throws Exception if trouble (but the file will be closed in all cases)
+     */
+/*    public static void saveAsUnlimitedNc(String fileName, String dimName) throws Exception {
+
+        int nCols = nColumns();
+        int nRows = nRows();
+        int strlens[] = new int[nCols];  //all 0's
+        boolean fileExists = File2.isFile(fileName);
+        NetcdfFileWriteable file = null;
+        Dimension dim;
+
+        try {
+            
+            if (fileExists) {
+                file = NetcdfFileWriteable.openExisting(fileName);
+                dim = file.findDimension(dimName);
+
+            } else {
+                //create the file
+                file = NetcdfFileWriteable.createNew(fileName);
+                NcHelper.setAttributes(file, "NC_GLOBAL", globalAttributes());
+
+                //define unlimited dimension
+                dim = file.addUnlimitedDimension(dimName);
+                ArrayList dims = new ArrayList();
+                dims.add(dim);
+
+                //define Variables
+                for (int col = 0; col < nCols; col++) {
+                    String colName = getColumnName(col);
+                    PrimitiveArray pa = column(col);
+                    Attributes atts = columnAttributes(col);
+                    if (pa.elementClass() == String.class) {
+                        //create a string variable
+                        int strlen = atts.getInt("strlen");
+                        if (strlen <= 0 || strlen == Integer.MAX_VALUE) {
+                            strlen = Math.max(1, ((StringArray)pa). maximumLength());
+                            atts.set("strlen", strlen);
+                        }
+                        strlens[col] = strlen;
+                        Dimension tDim = file.addUnlimitedDimension(colName + "_strlen");
+                        ArrayList tDims = new ArrayList();
+                        tDims.add(dim);
+                        tDims.add(tDim);
+                        file.addStringVariable(colName, dims, strlen);                        
+
+                    } else {
+                        //create a non-string variable
+                        file.addVariable(colName, NcHelper.getDataType(pa.elementClass()), dims);
+                    }
+
+                    NcHelper.setAttributes(file, colName, atts);
+                }
+
+                //switch to create mode
+                file.create();
+            }
+
+            //add the data
+            int fileNRows = dim.getLength();
+            int[] origin1 = new int[] {row};    
+            int[] origin2 = new int[] {row, 0};  
+            vars
+            while (...) {
+                
+                Variable var = vars.get  ;
+                class elementClass = NcHelper.  var.
+                ArrayList tDims = var.getDimensions ();
+                String colName = var.getName();
+                Attributes atts = new Attributes();
+                NcHelper.getAttributes(colName, atts);
+                int col = findColumnNumber(colName);
+                PrimitiveArray pa = null;
+                if (col < 0) {
+                    //the var has nothing comparable in this table, 
+                    //so make a pa filled with missing values
+                    if (ndims > 1) {
+                        //string vars always use "" as mv
+                        continue;
+                    }
+                    //make a primitive array 
+                    PrimitiveArray pa = PrimitiveArray.factory(type, 1, false);
+                    String mv = atts.getString("_FillValue");
+                    if (mv == null)
+                        mv = atts.getString("missing_value");
+                    if (mv == null)
+                        mv = pa.getMV();
+                    pa.addNStrings(nRows, mv);
+
+                } else {
+                    //get data from this table
+                    pa = getColumn(col);
+                }
+
+                //write the data
+                if (pa.elementClass() == String.class) {
+                    //write string data
+                    if (fileExists) {
+                        ..just get one att from file
+                        Attributes atts = columnAttributes(col);
+                        strlens[col] = NcHelper.getAttribute ts.getInt("strlen");
+                    }
+                    if (strlens[col] <= 0 || strlens[col] == Integer.MAX_VALUE) 
+                        throw new SimpleException("\"strlen\" attribute not found for variable=" + colName);
+
+                    ArrayChar.D2 ac = new ArrayChar.D2(2, strlens[col]);
+                    int n = pa.size();
+                    for (int i = 0; i < n; i++) 
+                        ac.setString(i, pa.getString(i));
+                    file.write(colName, origin2, ac);
+                    
+                } else {
+                    //write non-string data
+                    file.write(colName, origin1, Array.factory(pa.toArray()));
+                }
+            }
+
+        } catch (Throwable t) {
+            String2.log(String2.ERROR + " in Table.saveAsUnlimitedNc(" + fileName + "): " +
+                MustBe.throwableToString(t));
+
+        } finally {
+            //ensure file is closed
+            if (file != null) 
+                file.close(); //writes changes to file
+        }
+    }
+*/
 
     /** 
      * This is like saveAs4DNc but with no StringVariable option.
@@ -14544,8 +14732,6 @@ touble: because table is JsonObject, info may not be in expected order
             try {
                 String dirName = dirNames.get(row); 
                 String showDirName = dirName;
-                String xmlDirName = XML.encodeAsXML(dirName + 
-                    (dirName.equals("..")? "" : "/"));
                 String iconFile = "dir.gif"; //default
                 String iconAlt  = "DIR";  //always 3 characters
                 if (dirName.equals("..")) {
@@ -14555,7 +14741,9 @@ touble: because table is JsonObject, info may not be in expected order
                 sb.append(
                     "<img src=\"" + iconUrlDir + iconFile + "\" alt=\"[" + iconAlt + "]\" " +
                         "align=\"absbottom\"> " +
-                    "<a href=\"" + xmlDirName + "\">" + XML.encodeAsXML(showDirName) + "</a>" +
+                    "<a href=\"" + 
+                    XML.encodeAsHTMLAttribute(dirName + (dirName.equals("..")? "" : "/")) + 
+                    "\">" + XML.encodeAsXML(showDirName) + "</a>" +
                     String2.makeString(' ',  nameSpaces - showDirName.length()) + " " +
                     String2.left("", dateSpaces) + " " +
                     String2.right("- ", sizeSpaces) + "  \n"); 
@@ -14614,7 +14802,6 @@ touble: because table is JsonObject, info may not be in expected order
             try {
                 String fileName = namePA.getString(row);
                 String fileNameLC = fileName.toLowerCase();
-                String xmlFileName = XML.encodeAsXML(fileName);
 
                 String iconFile = "generic.gif"; //default
                 String iconAlt  = "UNK";  //always 3 characters  (unknown)
@@ -14648,10 +14835,11 @@ touble: because table is JsonObject, info may not be in expected order
                     iconFile = "xml.gif"; iconAlt = "XML";
                 }
 
+                String encodedFileName = XML.encodeAsHTMLAttribute(fileName);
                 sb.append(
                     "<img src=\"" + iconUrlDir + iconFile + "\" alt=\"[" + iconAlt + "]\" " +
                         "align=\"absbottom\"> " +
-                    "<a href=\"" + xmlFileName + "\">" + xmlFileName + "</a>" +
+                    "<a href=\"" + encodedFileName + "\">" + encodedFileName + "</a>" +
                     String2.makeString(' ',  nameSpaces - fileName.length()) + " " +
                     String2.left(modifiedPA.getString(row), dateSpaces) + " " +
                     String2.right(sizePA.getString(row), sizeSpaces) + "  " +
@@ -14729,7 +14917,7 @@ touble: because table is JsonObject, info may not be in expected order
                 ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").size(), 2,  ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").getString(0), 
-                "2013-02-06 Most recent downloading and reformatting of all " + //changes monthly
+                "2013-05-03 Most recent downloading and reformatting of all " + //changes monthly
                 "cdf/sites/... files from PMEL TAO's FTP site by bob.simons at noaa.gov.", 
                 ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").getString(1), 
@@ -15036,9 +15224,274 @@ touble: because table is JsonObject, info may not be in expected order
         Test.ensureEqual(table.getColumnName(8), "Time", "");
         Test.ensureEqual(table.columnAttributes(8).getString("units"), Calendar2.SECONDS_SINCE_1970, "");
 
+    }
 
 
+    public void readArgoProfile(String fileName) throws Exception {
 
+        NetcdfFile nc = NcHelper.openFile(fileName);
+        try {
+//   DATE_TIME = 14;
+//   N_PROF = 632;
+//   N_PARAM = 3;
+//   N_LEVELS = 71;
+//   N_CALIB = 1;
+//   N_HISTORY = UNLIMITED;   // (0 currently)
+            Variable var;
+            PrimitiveArray pa;
+            int col;
+            NcHelper.getGlobalAttributes(nc, globalAttributes);
+
+            //The plan is: make minimal changes here. Change metadata etc in ERDDAP.
+
+            var = nc.findVariable("DATA_TYPE");
+            if (var != null) {
+                col = addColumn("dataType", NcHelper.getPrimitiveArray(var));
+                NcHelper.getVariableAttributes(var, columnAttributes(col));
+            }
+
+            //skip char FORMAT_VERSION(STRING4=4);   :comment = "File format version";
+
+            var = nc.findVariable("HANDBOOK_VERSION");
+            if (var != null) {
+                col = addColumn("handbookVersion", NcHelper.getPrimitiveArray(var));
+                NcHelper.getVariableAttributes(var, columnAttributes(col));
+            }
+
+            var = nc.findVariable("REFERENCE_DATE_TIME"); //"YYYYMMDDHHMISS";
+            if (var != null) {
+                pa = NcHelper.getPrimitiveArray(var);
+                double time = Double.NaN;
+                try {
+                    time = Calendar2.gcToEpochSeconds(Calendar2.parseCompactDateTimeZulu(pa.getString(0)));
+                } catch (Exception e) {
+                    String2.log(e.getMessage()); 
+                }
+                col = addColumn("time", PrimitiveArray.factory(new double[] {time}));
+                NcHelper.getVariableAttributes(var, columnAttributes(col));
+                columnAttributes(col).set("units", Calendar2.SECONDS_SINCE_1970);
+            }
+
+            var = nc.findVariable("PLATFORM_NUMBER");
+            if (var != null) {
+                col = addColumn("platformNumber", NcHelper.getPrimitiveArray(var));
+                NcHelper.getVariableAttributes(var, columnAttributes(col));
+            }
+
+            var = nc.findVariable("PROJECTLATFORM_NUMBER");
+            if (var != null) {
+                col = addColumn("platformNumber", NcHelper.getPrimitiveArray(var));
+                NcHelper.getVariableAttributes(var, columnAttributes(col));
+            }
+   
+/*   char PROJECT_NAME(N_PROF=632, STRING64=64);
+     :comment = "Name of the project";
+     :_FillValue = " ";
+   char PI_NAME(N_PROF=632, STRING64=64);
+     :comment = "Name of the principal investigator";
+     :_FillValue = " ";
+   char STATION_PARAMETERS(N_PROF=632, N_PARAM=3, STRING16=16);
+     :long_name = "List of available parameters for the station";
+     :conventions = "Argo reference table 3";
+     :_FillValue = " ";
+   int CYCLE_NUMBER(N_PROF=632);
+     :long_name = "Float cycle number";
+     :conventions = "0..N, 0 : launch cycle (if exists), 1 : first complete cycle";
+     :_FillValue = 99999; // int
+   char DIRECTION(N_PROF=632);
+     :long_name = "Direction of the station profiles";
+     :conventions = "A: ascending profiles, D: descending profiles";
+     :_FillValue = " ";
+   char DATA_CENTRE(N_PROF=632, STRING2=2);
+     :long_name = "Data centre in charge of float data processing";
+     :conventions = "Argo reference table 4";
+     :_FillValue = " ";
+   char DATE_CREATION(DATE_TIME=14);
+     :comment = "Date of file creation";
+     :conventions = "YYYYMMDDHHMISS";
+     :_FillValue = " ";
+   char DATE_UPDATE(DATE_TIME=14);
+     :long_name = "Date of update of this file";
+     :conventions = "YYYYMMDDHHMISS";
+     :_FillValue = " ";
+   char DC_REFERENCE(N_PROF=632, STRING32=32);
+     :long_name = "Station unique identifier in data centre";
+     :conventions = "Data centre convention";
+     :_FillValue = " ";
+   char DATA_STATE_INDICATOR(N_PROF=632, STRING4=4);
+     :long_name = "Degree of processing the data have passed through";
+     :conventions = "Argo reference table 6";
+     :_FillValue = " ";
+   char DATA_MODE(N_PROF=632);
+     :long_name = "Delayed mode or real time data";
+     :conventions = "R : real time; D : delayed mode; A : real time with adjustment";
+     :_FillValue = " ";
+   char INST_REFERENCE(N_PROF=632, STRING64=64);
+     :long_name = "Instrument type";
+     :conventions = "Brand, type, serial number";
+     :_FillValue = " ";
+   char WMO_INST_TYPE(N_PROF=632, STRING4=4);
+     :long_name = "Coded instrument type";
+     :conventions = "Argo reference table 8";
+     :_FillValue = " ";
+   double JULD(N_PROF=632);
+     :long_name = "Julian day (UTC) of the station relative to REFERENCE_DATE_TIME";
+     :units = "days since 1950-01-01 00:00:00 UTC";
+     :conventions = "Relative julian days with decimal part (as parts of day)";
+     :_FillValue = 999999.0; // double
+   char JULD_QC(N_PROF=632);
+     :long_name = "Quality on Date and Time";
+     :conventions = "Argo reference table 2";
+     :_FillValue = " ";
+   double JULD_LOCATION(N_PROF=632);
+     :long_name = "Julian day (UTC) of the location relative to REFERENCE_DATE_TIME";
+     :units = "days since 1950-01-01 00:00:00 UTC";
+     :conventions = "Relative julian days with decimal part (as parts of day)";
+     :_FillValue = 999999.0; // double
+   double LATITUDE(N_PROF=632);
+     :long_name = "Latitude of the station, best estimate";
+     :units = "degree_north";
+     :_FillValue = 99999.0; // double
+     :valid_min = -90.0; // double
+     :valid_max = 90.0; // double
+   double LONGITUDE(N_PROF=632);
+     :long_name = "Longitude of the station, best estimate";
+     :units = "degree_east";
+     :_FillValue = 99999.0; // double
+     :valid_min = -180.0; // double
+     :valid_max = 180.0; // double
+   char POSITION_QC(N_PROF=632);
+     :long_name = "Quality on position (latitude and longitude)";
+     :conventions = "Argo reference table 2";
+     :_FillValue = " ";
+   char POSITIONING_SYSTEM(N_PROF=632, STRING8=8);
+     :long_name = "Positioning system";
+     :_FillValue = " ";
+   char PROFILE_PRES_QC(N_PROF=632);
+     :long_name = "Global quality flag of PRES profile";
+     :conventions = "Argo reference table 2a";
+     :_FillValue = " ";
+   char PROFILE_TEMP_QC(N_PROF=632);
+     :long_name = "Global quality flag of TEMP profile";
+     :conventions = "Argo reference table 2a";
+     :_FillValue = " ";
+   char PROFILE_PSAL_QC(N_PROF=632);
+     :long_name = "Global quality flag of PSAL profile";
+     :conventions = "Argo reference table 2a";
+     :_FillValue = " ";
+   float PRES(N_PROF=632, N_LEVELS=71);
+     :long_name = "SEA PRESSURE";
+     :_FillValue = 99999.0f; // float
+     :units = "decibar";
+     :valid_min = 0.0f; // float
+     :valid_max = 12000.0f; // float
+     :comment = "In situ measurement, sea surface = 0";
+     :C_format = "%7.1f";
+     :FORTRAN_format = "F7.1";
+     :resolution = 0.1f; // float
+   char PRES_QC(N_PROF=632, N_LEVELS=71);
+     :long_name = "quality flag";
+     :conventions = "Argo reference table 2";
+     :_FillValue = " ";
+   float PRES_ADJUSTED(N_PROF=632, N_LEVELS=71);
+     :long_name = "SEA PRESSURE";
+     :_FillValue = 99999.0f; // float
+     :units = "decibar";
+     :valid_min = 0.0f; // float
+     :valid_max = 12000.0f; // float
+     :comment = "In situ measurement, sea surface = 0";
+     :C_format = "%7.1f";
+     :FORTRAN_format = "F7.1";
+     :resolution = 0.1f; // float
+   char PRES_ADJUSTED_QC(N_PROF=632, N_LEVELS=71);
+     :long_name = "quality flag";
+     :conventions = "Argo reference table 2";
+     :_FillValue = " ";
+   float PRES_ADJUSTED_ERROR(N_PROF=632, N_LEVELS=71);
+     :long_name = "SEA PRESSURE";
+     :_FillValue = 99999.0f; // float
+     :units = "decibar";
+     :comment = "Contains the error on the adjusted values as determined by the delayed mode QC process.";
+     :C_format = "%7.1f";
+     :FORTRAN_format = "F7.1";
+     :resolution = 0.1f; // float
+   float TEMP(N_PROF=632, N_LEVELS=71);
+     :long_name = "SEA TEMPERATURE IN SITU ITS-90 SCALE";
+     :_FillValue = 99999.0f; // float
+     :units = "degree_Celsius";
+     :valid_min = -2.0f; // float
+     :valid_max = 40.0f; // float
+     :comment = "In situ measurement";
+     :C_format = "%9.3f";
+     :FORTRAN_format = "F9.3";
+     :resolution = 0.001f; // float
+   char TEMP_QC(N_PROF=632, N_LEVELS=71);
+     :long_name = "quality flag";
+     :conventions = "Argo reference table 2";
+     :_FillValue = " ";
+   float TEMP_ADJUSTED(N_PROF=632, N_LEVELS=71);
+     :long_name = "SEA TEMPERATURE IN SITU ITS-90 SCALE";
+     :_FillValue = 99999.0f; // float
+     :units = "degree_Celsius";
+     :valid_min = -2.0f; // float
+     :valid_max = 40.0f; // float
+     :comment = "In situ measurement";
+     :C_format = "%9.3f";
+     :FORTRAN_format = "F9.3";
+     :resolution = 0.001f; // float
+   char TEMP_ADJUSTED_QC(N_PROF=632, N_LEVELS=71);
+     :long_name = "quality flag";
+     :conventions = "Argo reference table 2";
+     :_FillValue = " ";
+   float TEMP_ADJUSTED_ERROR(N_PROF=632, N_LEVELS=71);
+     :long_name = "SEA TEMPERATURE IN SITU ITS-90 SCALE";
+     :_FillValue = 99999.0f; // float
+     :units = "degree_Celsius";
+     :comment = "Contains the error on the adjusted values as determined by the delayed mode QC process.";
+     :C_format = "%9.3f";
+     :FORTRAN_format = "F9.3";
+     :resolution = 0.001f; // float
+   float PSAL(N_PROF=632, N_LEVELS=71);
+     :long_name = "PRACTICAL SALINITY";
+     :_FillValue = 99999.0f; // float
+     :units = "psu";
+     :valid_min = 0.0f; // float
+     :valid_max = 42.0f; // float
+     :comment = "In situ measurement";
+     :C_format = "%9.3f";
+     :FORTRAN_format = "F9.3";
+     :resolution = 0.001f; // float
+   char PSAL_QC(N_PROF=632, N_LEVELS=71);
+     :long_name = "quality flag";
+     :conventions = "Argo reference table 2";
+     :_FillValue = " ";
+   float PSAL_ADJUSTED(N_PROF=632, N_LEVELS=71);
+     :long_name = "PRACTICAL SALINITY";
+     :_FillValue = 99999.0f; // float
+     :units = "psu";
+     :valid_min = 0.0f; // float
+     :valid_max = 42.0f; // float
+     :comment = "In situ measurement";
+     :C_format = "%9.3f";
+     :FORTRAN_format = "F9.3";
+     :resolution = 0.001f; // float
+   char PSAL_ADJUSTED_QC(N_PROF=632, N_LEVELS=71);
+     :long_name = "quality flag";
+     :conventions = "Argo reference table 2";
+     :_FillValue = " ";
+   float PSAL_ADJUSTED_ERROR(N_PROF=632, N_LEVELS=71);
+     :long_name = "PRACTICAL SALINITY";
+     :_FillValue = 99999.0f; // float
+     :units = "psu";
+     :comment = "Contains the error on the adjusted values as determined by the delayed mode QC process.";
+     :C_format = "%9.3f";
+     :FORTRAN_format = "F9.3";
+     :resolution = 0.001f; // float
+     */
+
+        } finally {
+            nc.close();
+        }
     }
 
     /**
@@ -16203,10 +16656,10 @@ touble: because table is JsonObject, info may not be in expected order
             String results = table.dataToCSVString(3);
             String expected =
 "row,YY,MM,DD,hh,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS\n" +
-"0,90,1,1,0,161,8.6,10.7,1.5,5.0,4.8,999,1017.2,22.7,22.0,999.0,99.0\n" +
-"1,90,1,1,1,163,9.3,11.3,1.5,5.0,4.9,999,1017.3,22.7,22.0,999.0,99.0\n" +
-"2,90,1,1,1,164,9.2,10.6,1.6,4.8,4.9,999,1017.3,22.7,22.0,999.0,99.0\n";
-            Test.ensureEqual(results, expected, "results=\n" + expected);
+"0,90,01,01,00,161,08.6,10.7,01.50,05.00,04.80,999,1017.2,22.7,22.0,999.0,99.0\n" +
+"1,90,01,01,01,163,09.3,11.3,01.50,05.00,04.90,999,1017.3,22.7,22.0,999.0,99.0\n" +
+"2,90,01,01,01,164,09.2,10.6,01.60,04.80,04.90,999,1017.3,22.7,22.0,999.0,99.0\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
             Test.ensureEqual(table.nColumns(), 16, "nColumns=" + table.nColumns()); 
             Test.ensureEqual(table.nRows(), 17117, "nRows=" + table.nRows()); 
 
@@ -16939,11 +17392,11 @@ expected =
         testUpdate();
 
         try {
-            testConvert();
+            //testConvert(); //2013-04-03 this test needs to be updated to test a new source DAP server
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
             String2.getStringFromSystemIn(
-                "\nRecover from cimt failure? Press 'Enter' to continue or ^C to stop...");
+                "\nRecover from failure? Press 'Enter' to continue or ^C to stop...");
         }
 
         /* not active
