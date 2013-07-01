@@ -513,7 +513,7 @@ public abstract class PrimitiveArray {
     public static PrimitiveArray sqlFactory(int sqlType) {
 
         //see recommended types in table at
-        //  http://download.oracle.com/javase/1.5.0/docs/guide/jdbc/getstart/resultset.html
+        //  http://download.oracle.com/javase/7/docs/guide/jdbc/getstart/resultset.html
         //see JDBC API Tutorial book, pg 1087
         if (sqlType == Types.BIT ||      //PrimitiveArray doesn't have a separate BooleanArray
             sqlType == Types.BOOLEAN ||  //PrimitiveArray doesn't have a separate BooleanArray
@@ -1883,7 +1883,11 @@ public abstract class PrimitiveArray {
                 String s = getString(i);
                 if (s == null || s.equals(".") || s.equals("") || s.equals("NaN"))
                     continue;
+
                 //if a String is found (not an acceptable "NaN" string above), return original array
+                //look for e.g., serial number (e.g., 0153) with leading 0 that must be kept as string
+                if (s.length() >= 2 && s.charAt(0) == '0' && s.charAt(1) >= '0' && s.charAt(1) <= '9') 
+                    return this; 
                 if (Double.isNaN(d))
                     return this; //it's already a StringArray
 

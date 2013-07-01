@@ -56,9 +56,12 @@ public class TestSSR {
         */
 
         //percentDecode(String query) 
-        Test.ensureEqual(SSR.percentEncode(       "+ :q*~?=&%"), "%2B+%3Aq*%7E%3F%3D%26%25", "percentEncode");
-        Test.ensureEqual(SSR.minimalPercentEncode("+ :q*~?=&%"), "%2B%20:q*~?%3D%26%25", "minimalPercentEncode");
-        Test.ensureEqual(SSR.percentDecode("%2B+%3aq%2a%7E%3f%3D%26%25"), "+ :q*~?=&%", "percentDecode");
+        Test.ensureEqual(SSR.percentEncode(       "+ :q*~?=&%"), "%2B+%3Aq*%7E%3F%3D%26%25", "");
+        Test.ensureEqual(SSR.minimalPercentEncode("+ :q*~?=&%"), "%2B%20:q*~%3F%3D%26%25", "");
+        Test.ensureEqual(SSR.percentDecode("%2B+%3aq%2a%7E%3f%3D%26%25"), "+ :q*~?=&%", "");
+
+        Test.ensureEqual(SSR.minimalPercentEncode("A9+ :q*~?=&%;/?@=+$,"), "A9%2B%20:q*~%3F%3D%26%25%3B%2F%3F%40%3D%2B%24,", "");
+        Test.ensureEqual(SSR.percentDecode("A9%2B%20:q*~%3F%3D%26%25%3B%2F%3F%40%3D%2B%24,"), "A9+ :q*~?=&%;/?@=+$,", "");
 
         //sftp
         String2.log("test sftp");

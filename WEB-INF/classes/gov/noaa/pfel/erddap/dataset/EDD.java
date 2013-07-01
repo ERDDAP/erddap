@@ -293,6 +293,10 @@ public abstract class EDD {
     /** The publicSourceUrl which is what appears in combinedGlobalAttributes (e.g., the url
      * which users can use outside of the DMZ). */
     protected String publicSourceUrl;
+    /** defaultDataQuery is used for .html if the user doesn't provide a query.
+        defaultGraphQuery is used for .graph if the user doesn't provide a query.
+    */
+    protected String defaultDataQuery, defaultGraphQuery;
 
 
     /** These are created as needed (in the constructor) from combinedGlobalAttributes. */
@@ -528,7 +532,9 @@ public abstract class EDD {
         if (datasetID.indexOf('.') >= 0)
             throw new SimpleException(errorInMethod + "periods are not allowed in datasetID's.");
         datasetID = String2.canonical(datasetID); //for Lucene, useful if canonical
-        File2.makeDirectory(cacheDirectory()); //but not sufficient in long run, since cache cleaning may remove it
+        //make cacheDirectory (cache cleaner in RunLoadDatasets won't remove it, 
+        //  but my testing environment (2+ things running) may remove it)
+        File2.makeDirectory(cacheDirectory()); 
         //Don't test Test.ensureSomethingUtf8(sourceGlobalAttributes, errorInMethod + "sourceGlobalAttributes");
         //Admin can't control source and addAttributes may override offending characters.
         Test.ensureSomethingUtf8(addGlobalAttributes,     errorInMethod + "addGlobalAttributes");
@@ -828,7 +834,11 @@ public abstract class EDD {
     }
 
 
-    /** The directory to be used for caching files for this dataset (with "/" at end).
+    /** 
+     * The directory to be used for caching files for this dataset (with "/" at end).
+     * ensureValid() creates this for each dataset.
+     * The cache cleaner in RunLoadDatasets won't remove it, 
+     *   but my testing environment (2+ things running) may remove it.
      */
     public String cacheDirectory() {
         return cacheDirectory(datasetID);
@@ -884,7 +894,7 @@ public abstract class EDD {
             "  href=\"" + EDStatic.erddapUrl(loggedInAs) + "/" + Subscriptions.ADD_HTML + 
                 "?datasetID=" + datasetID+ "&amp;showErrors=false&amp;email=\" \n" +
             "  title=\"\"><img alt=\"Subscribe\" align=\"bottom\" \n" +
-            "    title=\"" + XML.encodeAsHTML(EDStatic.subscriptionEmail) + "\" \n" +
+            "    title=\"" + XML.encodeAsHTMLAttribute(EDStatic.subscriptionEmail) + "\" \n" +
             "    src=\"" + EDStatic.imageDirUrl(loggedInAs) + "envelope.gif\" ></a>";
         return "&nbsp;";
     }
@@ -1599,6 +1609,24 @@ public abstract class EDD {
     }
 
     /** 
+     * The defaultDataQuery is used if the user requests .html with no query. 
+     * 
+     * @return the defaultDataQuery.  Won't be null. May be "".
+     */
+    public String defaultDataQuery() {
+        return defaultDataQuery == null? "" : defaultDataQuery;
+    }
+
+    /** 
+     * The defaultGraphQuery is used if the user requests .graph with no query. 
+     * 
+     * @return the defaultGraphQuery.  Won't be null. May be "".
+     */
+    public String defaultGraphQuery() {
+        return defaultGraphQuery == null? "" : defaultGraphQuery;
+    }
+
+    /** 
      * The cdm_data_type global attribute identifies the type of data according to the 
      * options in 
      * http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html
@@ -1854,7 +1882,6 @@ public abstract class EDD {
      * reload, this calls requestReloadASAP() and throws WaitThenTryAgainException.
      */
     public void update() {
-        return;
     }
 
     /**
@@ -2142,7 +2169,7 @@ public abstract class EDD {
 
     /**
      * This returns the file extensions corresponding to the dataFileTypes.
-     * E.g., dataFileTypeName=".GoogleEarth" returns dataFileTypeExtension=".kml".
+     * E.g., dataFileTypeName=".ncCF" returns dataFileTypeExtension=".nc".
      *
      * @return the file extensions corresponding to the dataFileTypes 
      *   (e.g., ".nc").
@@ -2530,7 +2557,7 @@ public abstract class EDD {
             //to prevent HTML insertion security vulnerability
             //(which allows hacker to insert his javascript into pages returned by server)
             //See Tomcat (Definitive Guide) pg 147...
-            "?" + XML.encodeAsHTML(userDapQuery); 
+            XML.encodeAsHTMLAttribute("?" + userDapQuery); 
         String dapUrl = tErddapUrl + "/" + dapProtocol() + "/" + datasetID;
         String dapLink = "", subsetLink = "", graphLink = "";
         if (showDafLink) 
@@ -2545,7 +2572,7 @@ public abstract class EDD {
                     "title=\"" + EDStatic.dtSubset + "\" \n" +
                 "         href=\"" + dapUrl + ".subset" + 
                     tQuery + 
-                    (tQuery.length() == 0? "" : XML.encodeAsHTML(EDDTable.DEFAULT_SUBSET_VIEWS)) + 
+                    (tQuery.length() == 0? "" : XML.encodeAsHTMLAttribute(EDDTable.DEFAULT_SUBSET_VIEWS)) + 
                     "\">" + EDStatic.subset + "</a>\n";
         if (showGraphLink && accessibleViaMAG().length() == 0) 
             graphLink = 
@@ -2598,7 +2625,7 @@ public abstract class EDD {
                 EDStatic.EDDMetadata + "</a>\n" +
             "     | <a rel=\"bookmark\" \n" +
             "          title=\"" + EDStatic.clickBackgroundInfo + "\" \n" +
-            "          href=\"" + XML.encodeAsHTML(infoUrl()) + "\">" + 
+            "          href=\"" + XML.encodeAsHTMLAttribute(infoUrl()) + "\">" + 
                 EDStatic.EDDBackground + "</a>\n" +
                 subsetLink + "\n" +
                 dapLink + "\n" +
@@ -6658,6 +6685,7 @@ public abstract class EDD {
 
     /**
      * This returns a HashMap with the variable=value entries from a userQuery.
+     * If any names are the same, the last name=value will be in the hashmap.
      *
      * @param userQuery the part after the '?', still percentEncoded, may be null.
      * @param namesLC if true, the names are made toLowerCase.

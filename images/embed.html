@@ -58,6 +58,10 @@ with HTML &lt;img&gt; tags.
    and <tt>"</tt> in the URL with <tt>%3C</tt>, <tt>%3E</tt>, and <tt>%22</tt>, respectively.
 <li>For gridded datasets, you may change the time dimension's value in the URL to <tt>(last)</tt> so that
   <br>the image will always show data for the latest date/time instead of a specific date/time.
+  <p>Or, for tabular datasets, you may change the time constraint in the URL to something like
+  <tt>time&gt;"now-2days"</tt> 
+  <br>so that the image will always show the data from 2 days ago until now.
+  <a href="http://coastwatch.pfeg.noaa.gov/erddap/tabledap/documentation.html#now">more information</a>
 <li>Make an img tag in your HTML document which refers to that modified URL, for example
 
 <pre>

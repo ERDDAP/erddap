@@ -72,6 +72,9 @@ public class EDDTableCopy extends EDDTable{
         String tOrderExtractBy = "";
         boolean checkSourceData = defaultCheckSourceData;
         boolean tSourceNeedsExpandedFP_EQ = true;
+        boolean tFileTableInMemory = false;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -105,6 +108,12 @@ public class EDDTableCopy extends EDDTable{
             else if (localTags.equals("</checkSourceData>")) checkSourceData = String2.parseBoolean(content); 
             else if (localTags.equals( "<sourceNeedsExpandedFP_EQ>")) {}
             else if (localTags.equals("</sourceNeedsExpandedFP_EQ>")) tSourceNeedsExpandedFP_EQ = String2.parseBoolean(content); 
+            else if (localTags.equals( "<fileTableInMemory>")) {}
+            else if (localTags.equals("</fileTableInMemory>")) tFileTableInMemory = String2.parseBoolean(content); 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
             else if (localTags.equals("<dataset>")) {
                 try {
 
@@ -128,9 +137,10 @@ public class EDDTableCopy extends EDDTable{
         }
 
         return new EDDTableCopy(tDatasetID, 
-            tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, tReloadEveryNMinutes, 
+            tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, 
             tExtractDestinationNames, tOrderExtractBy, tSourceNeedsExpandedFP_EQ,
-            tSourceEdd);
+            tSourceEdd, tFileTableInMemory);
     }
 
     /**
@@ -178,10 +188,11 @@ public class EDDTableCopy extends EDDTable{
     public EDDTableCopy(String tDatasetID, 
         String tAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         int tReloadEveryNMinutes,
         String tExtractDestinationNames, String tOrderExtractBy,
         Boolean tSourceNeedsExpandedFP_EQ,
-        EDDTable tSourceEdd) throws Throwable {
+        EDDTable tSourceEdd, boolean tFileTableInMemory) throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDTableCopy " + tDatasetID + " reallyVerbose=" + reallyVerbose); 
@@ -197,12 +208,18 @@ public class EDDTableCopy extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
 
         //check some things
         if (tSourceEdd instanceof EDDTableFromThreddsFiles) 
             throw new IllegalArgumentException("datasets.xml error: " +
                 "EDDTableFromThreddsFiles makes its own local copy of " +
+                "the data, so it MUST NEVER be enclosed by EDDTableCopy (" + datasetID + ").");
+        if (tSourceEdd instanceof EDDTableFromHyraxFiles) 
+            throw new IllegalArgumentException("datasets.xml error: " +
+                "EDDTableFromHyraxFiles makes its own local copy of " +
                 "the data, so it MUST NEVER be enclosed by EDDTableCopy (" + datasetID + ").");
         if (tExtractDestinationNames.indexOf(',') >= 0)
             throw new IllegalArgumentException("datasets.xml error: " +
@@ -227,8 +244,13 @@ public class EDDTableCopy extends EDDTable{
                 //check if taskThread has finished previously assigned tasks for this dataset
                 EDStatic.ensureTaskThreadIsRunningIfNeeded();  //ensure info is up-to-date
                 Integer lastAssignedTask = (Integer)EDStatic.lastAssignedTask.get(datasetID);
-                if (lastAssignedTask == null ||  //no previous tasks
-                    EDStatic.lastFinishedTask >= lastAssignedTask.intValue()) { //tasks are all done
+                boolean pendingTasks = lastAssignedTask != null &&  
+                    EDStatic.lastFinishedTask < lastAssignedTask.intValue();
+                if (verbose) 
+                    String2.log("  lastFinishedTask=" + EDStatic.lastFinishedTask + 
+                        " < lastAssignedTask(" + tDatasetID + ")=" + lastAssignedTask + 
+                        "? pendingTasks=" + pendingTasks);
+                if (!pendingTasks) {
 
                     //get the distinct() combination of values for tExtractDestinationNames
                     StringArray extractNames = StringArray.wordsAndQuotedPhrases(tExtractDestinationNames);
@@ -311,15 +333,15 @@ public class EDDTableCopy extends EDDTable{
                         if (reallyVerbose)
                             String2.log("  task#" + taskNumber + " TASK_SET_FLAG " + datasetID);
                     }
-
                 }
             } catch (Throwable t) {
                 String2.log("Error while assigning " + datasetID + " copy tasks to taskThread:\n" +
                     MustBe.throwableToString(t));
             }
-            if (taskNumber >= 0) 
+            if (taskNumber >= 0) {
                 EDStatic.lastAssignedTask.put(datasetID, new Integer(taskNumber));
-            EDStatic.ensureTaskThreadIsRunningIfNeeded();  //clients (like this class) are responsible for checking on it
+                EDStatic.ensureTaskThreadIsRunningIfNeeded();  //clients (like this class) are responsible for checking on it
+            }
         }
 
         //gather info about dataVariables to create localEdd
@@ -390,7 +412,7 @@ public class EDDTableCopy extends EDDTable{
             null, null, null, null,  //extract from fileNames
             sortedColumn, 
             tExtractDestinationNames,
-            tSourceNeedsExpandedFP_EQ);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
 
         //copy things from localEdd 
         sourceNeedsExpandedFP_EQ = tSourceNeedsExpandedFP_EQ;
@@ -450,11 +472,11 @@ public class EDDTableCopy extends EDDTable{
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames, 
-        boolean tSourceNeedsExpandedFP_EQ) 
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
         throws Throwable {
 
         return new EDDTableFromNcFiles(tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, "", "", //tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, 
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
@@ -462,7 +484,7 @@ public class EDDTableCopy extends EDDTable{
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, 
             tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ); 
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory); 
     }
 
 

@@ -60,22 +60,24 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
     /** The constructor just calls the super constructor. */
     public EDDGridFromNcFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tAxisVariables,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        boolean tEnsureAxisValuesAreExactlyEqual) 
+        boolean tEnsureAxisValuesAreExactlyEqual, boolean tFileTableInMemory) 
         throws Throwable {
 
         super("EDDGridFromNcFiles", tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, 
+            tDefaultDataQuery, tDefaultGraphQuery, 
             tAddGlobalAttributes,
             tAxisVariables,
             tDataVariables,
             tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
-            tEnsureAxisValuesAreExactlyEqual);
+            tEnsureAxisValuesAreExactlyEqual, tFileTableInMemory);
     }
 
 
@@ -401,7 +403,8 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
                 "    <fileDir>" + tFileDir + "</fileDir>\n" +
                 "    <recursive>true</recursive>\n" +
                 "    <fileNameRegex>" + tFileNameRegex + "</fileNameRegex>\n" +
-                "    <metadataFrom>last</metadataFrom>\n");
+                "    <metadataFrom>last</metadataFrom>\n" +
+                "    <fileTableInMemory>false</fileTableInMemory>\n");
 
             sb.append(writeAttsForDatasetsXml(false, axisSourceTable.globalAttributes(), "    "));
             sb.append(writeAttsForDatasetsXml(true,  axisAddTable.globalAttributes(),    "    "));
@@ -464,6 +467,7 @@ directionsForGenerateDatasetsXml() +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*_03\\.nc</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
@@ -697,6 +701,7 @@ directionsForGenerateDatasetsXml() +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"Analysis or forecast generating process identifier (defined by originating centre)\">Global Multi-Grid Wave Model (Static Grids)</att>\n" +
 "        <att name=\"Conventions\">CF-1.6</att>\n" +
@@ -1980,7 +1985,7 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +    
-"    String location \"c:/u00/cwatch/testData/grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
+"    String location \"/u00/cwatch/testData/grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 88.75001;\n" +
 //2013-02-20 - below is SHY char#173.  I wrote John Caron asking him to change to hyphen char#45.
@@ -2865,7 +2870,7 @@ expected =
         testGrib2_43(deleteCachedDatasetInfo); //42 or 43 for netcdfAll 4.2- or 4.3+
         testGenerateDatasetsXml();
         testGenerateDatasetsXml2();
-        testSpeed(-1);
+        testSpeed(-1);  //-1 = all
         /* */
 
         //one time tests

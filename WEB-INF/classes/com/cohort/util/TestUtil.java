@@ -1557,6 +1557,43 @@ public class TestUtil {
         Test.ensureEqual(String2.modifyToBeFileNameSafe(""),   "_",        "");
         Test.ensureEqual(String2.modifyToBeFileNameSafe("_"),  "_",        "");
 
+        //isVariableNameSafe  (doesn't allow >255/unicode)
+        String2.log("test isVariableNameSafe");
+        Test.ensureEqual(String2.isVariableNameSafe(null), false, "");
+        Test.ensureEqual(String2.isVariableNameSafe(""),   false, "");
+        Test.ensureEqual(String2.isVariableNameSafe("_"),  true,  "");
+        Test.ensureEqual(String2.isVariableNameSafe("a"),  true,  "");
+        Test.ensureEqual(String2.isVariableNameSafe("À"),  true,  "");
+        Test.ensureEqual(String2.isVariableNameSafe("."),  false, "");
+        Test.ensureEqual(String2.isVariableNameSafe("\u0100"),  false, ""); //A macron
+        Test.ensureEqual(String2.isVariableNameSafe("__"),  true,  "");
+        Test.ensureEqual(String2.isVariableNameSafe("aa"),  true,  "");
+        Test.ensureEqual(String2.isVariableNameSafe("ÀÀ"),  true,  "");
+        Test.ensureEqual(String2.isVariableNameSafe("_."),  false,  "");
+        Test.ensureEqual(String2.isVariableNameSafe("a."),  false,  "");
+        Test.ensureEqual(String2.isVariableNameSafe("À."),  false,  "");
+
+        //isJsonpNameSafe  (doesn't allow >255/unicode)
+        String2.log("test isJsonpNameSafe");
+        Test.ensureEqual(String2.isJsonpNameSafe(null), false, "");
+        Test.ensureEqual(String2.isJsonpNameSafe(""),   false, "");
+        Test.ensureEqual(String2.isJsonpNameSafe("_"),  true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("a"),  true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("À"),  true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("."),  false, "");
+        Test.ensureEqual(String2.isJsonpNameSafe("9"),  false, "");
+        Test.ensureEqual(String2.isJsonpNameSafe("\u0100"),  false, ""); //A macron
+        Test.ensureEqual(String2.isJsonpNameSafe("__"),  true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("aa"),  true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("a9"),  true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("ÀÀ"),  true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("_."),  false,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("a."),  false,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("À."),  false,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("_._"), true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("a.9"), true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("À.À"), true,  "");
+
         //modifyToBeVariableNameSafe
         String2.log("test modifyToBeVariableNameSafe");
         hard = "\ta\bA\n1- _._ !@#$%^&*()+={}[];:'\"<>,/?ÀÉÐÝ¡ÿ";

@@ -50,6 +50,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
      */
     public EDDTableFromAwsXmlFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -58,18 +59,19 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ) 
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
         throws Throwable {
 
         super("EDDTableFromAwsXmlFiles", true, tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, 
+            tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
 
     }
 
@@ -240,7 +242,8 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             "    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
             "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
-            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n");
+            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -308,6 +311,7 @@ directionsForGenerateDatasetsXml() +
 "    <columnNameForExtract>fileName</columnNameForExtract>\n" +
 "    <sortedColumnSourceName>ob-date</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>station-id ob-date</sortFilesBySourceNames>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
@@ -535,7 +539,7 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>humidity</destinationName>\n" +
 "        <dataType>byte</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"units\">%</att>\n" +
+"            <att name=\"units\">&#37;</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
@@ -551,7 +555,7 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>humidity_high</destinationName>\n" +
 "        <dataType>byte</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"units\">%</att>\n" +
+"            <att name=\"units\">&#37;</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +
@@ -567,7 +571,7 @@ directionsForGenerateDatasetsXml() +
 "        <destinationName>humidity_low</destinationName>\n" +
 "        <dataType>byte</dataType>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"units\">%</att>\n" +
+"            <att name=\"units\">&#37;</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
 "            <att name=\"colorBarMaximum\" type=\"double\">100.0</att>\n" +

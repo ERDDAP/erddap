@@ -7,6 +7,8 @@ package gov.noaa.pfel.erddap.dataset;
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
+import com.cohort.array.IntArray;
+import com.cohort.array.NDimensionalIndex;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -27,6 +29,7 @@ import gov.noaa.pfel.erddap.util.EDStatic;
 import gov.noaa.pfel.erddap.variable.*;
 
 import java.io.ByteArrayInputStream;
+import java.text.MessageFormat;
 import java.util.Enumeration;
 
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
@@ -42,8 +45,6 @@ import gov.noaa.pfel.coastwatch.griddata.NcHelper;
 public class EDDTableFromEDDGrid extends EDDTable{ 
 
     protected EDDGrid eddGrid;
-    protected boolean sourceCanConstrainStringEQNE, sourceCanConstrainStringGTLT;
-    protected int eddGridNAV, eddGridNDV;
 
     /**
      * This constructs an EDDTableFromEDDGrid based on the information in an .xml file.
@@ -60,7 +61,15 @@ public class EDDTableFromEDDGrid extends EDDTable{
         if (verbose) String2.log("\n*** constructing EDDTableFromEDDGrid(xmlReader)...");
         String tDatasetID = xmlReader.attributeValue("datasetID"); 
         EDDGrid tEDDGrid = null;
-        Attributes tGlobalAttributes = null;
+        Attributes tAddGlobalAttributes = null;
+        String tAccessibleTo = null;
+        StringArray tOnChange = new StringArray();
+        String tFgdcFile = null;
+        String tIso19115File = null;
+        int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
+        int tUpdateEveryNMillis = 0;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -77,35 +86,54 @@ public class EDDTableFromEDDGrid extends EDDTable{
 
             //try to make the tag names as consistent, descriptive and readable as possible
             if (localTags.equals("<dataset>")) {
-                String tType = ("type");
+                String tType = xmlReader.attributeValue("type");
                 if (tType == null || !tType.startsWith("EDDGrid"))
                     throw new SimpleException(
                         "type=\"" + tType + "\" is not allowed for the dataset within the EDDTableFromEDDGrid. " +
                         "The type MUST start with \"EDDGrid\".");
                 tEDDGrid = (EDDGrid)EDD.fromXml(tType, xmlReader);
 
-            } else if (localTags.equals("<addAttributes>")) {
-                tGlobalAttributes = getAttributesFromXml(xmlReader);
+            } else if (localTags.equals( "<accessibleTo>")) {}
+            else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
+            else if (localTags.equals( "<reloadEveryNMinutes>")) {}
+            else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
+//updateEveryNMillis isn't supported (ever?). Rely on EDDGrid's update system.
+//            else if (localTags.equals( "<updateEveryNMillis>")) {}
+//            else if (localTags.equals("</updateEveryNMillis>")) tUpdateEveryNMillis = String2.parseInt(content); 
+            else if (localTags.equals( "<onChange>")) {}
+            else if (localTags.equals("</onChange>")) tOnChange.add(content); 
+            else if (localTags.equals( "<fgdcFile>")) {}
+            else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
+            else if (localTags.equals( "<iso19115File>")) {}
+            else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals("<addAttributes>")) {
+                tAddGlobalAttributes = getAttributesFromXml(xmlReader);
             } else {
                 xmlReader.unexpectedTagException();
             }
         }
 
-        return new EDDTableFromEDDGrid(tDatasetID, tGlobalAttributes, tEDDGrid);
+        return new EDDTableFromEDDGrid(tDatasetID, tAccessibleTo,
+            tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery, tAddGlobalAttributes,
+            tReloadEveryNMinutes, //tUpdateEveryNMillis, 
+            tEDDGrid);
     }
 
     /**
      * The constructor.
      *
-     * @param tDatasetID is a very short string identifier 
-     *   (required: just safe characters: A-Z, a-z, 0-9, _, -, or .)
-     *   for this dataset. See EDD.datasetID().
-     * @param tGlobalAttributes global addAttributes. This must include
-     *   a new cdmDataType.
-     * @param tEDDGrid
      * @throws Throwable if trouble
      */
-    public EDDTableFromEDDGrid(String tDatasetID, Attributes tGlobalAttributes, 
+    public EDDTableFromEDDGrid(String tDatasetID, String tAccessibleTo, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery,
+        Attributes tAddGlobalAttributes,
+        int tReloadEveryNMinutes, //int tUpdateEveryNMillis, 
         EDDGrid tEDDGrid) throws Throwable {
 
         if (verbose) String2.log(
@@ -119,43 +147,47 @@ public class EDDTableFromEDDGrid extends EDDTable{
         datasetID = tDatasetID;
         if (datasetID == null || datasetID.length() == 0)
             throw new SimpleException(errorInMethod + "The datasetID wasn't specified.");
-        if (datasetID.equals(tEDDGrid.datasetID())) 
-            throw new SimpleException(errorInMethod + "The EDDTableFromEDDGrid's datasetID " +
-                "must be different from the contained EDDGrid's datasetID.");
         if (tEDDGrid == null)
             throw new SimpleException(errorInMethod + "The contained EDDGrid dataset is missing.");
+        if (datasetID.equals(tEDDGrid.datasetID())) 
+            throw new SimpleException(errorInMethod + "The EDDTableFromEDDGrid's datasetID " +
+                "must be different from the contained EDDGrid's datasetID.");     
         eddGrid = tEDDGrid;
+        localSourceUrl = eddGrid.localSourceUrl;
 
-        //gather info from the eddGrid
-        accessibleTo          = eddGrid.accessibleTo;
-        onChange              = eddGrid.onChange;
-        fgdcFile              = eddGrid.fgdcFile;
-        iso19115File          = eddGrid.iso19115File;
-        localSourceUrl        = eddGrid.localSourceUrl;
-        setReloadEveryNMinutes( eddGrid.getReloadEveryNMinutes());
+        setAccessibleTo(tAccessibleTo); 
+        onChange = tOnChange;
+        fgdcFile = tFgdcFile;
+        iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
+        setReloadEveryNMinutes(tReloadEveryNMinutes);
+        //setUpdateEveryNMillis(tUpdateEveryNMillis); //not supported yet (ever?). Rely on EDDGrid's update system.
 
         //global attributes
-        //cdmDataType     must be changed in this dataset's addAtts
         sourceGlobalAttributes   = eddGrid.combinedGlobalAttributes;
-        addGlobalAttributes      = tGlobalAttributes == null? new Attributes() : tGlobalAttributes;
+        addGlobalAttributes      = tAddGlobalAttributes == null? new Attributes() : tAddGlobalAttributes;
+        //cdm_data_type=TimeSeries would be nice, but there is no timeseries_id variable
+        addGlobalAttributes.add("cdm_data_type", 
+            (eddGrid.lonIndex() >= 0 && eddGrid.latIndex() >= 0)? "Point" : "Other");
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
         String tLicense = combinedGlobalAttributes.getString("license");
         if (tLicense != null)
             combinedGlobalAttributes.set("license", 
                 String2.replaceAll(tLicense, "[standard]", EDStatic.standardLicense));
         combinedGlobalAttributes.removeValue("null");
+        
 
-        //???
-        sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; //axisVars yes, dataVars no
+        //specify what sourceCanConstrain
+        sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; //axisVars yes, dataVars no; best to have it doublecheck
         sourceCanConstrainStringData  = CONSTRAIN_NO; 
         sourceCanConstrainStringRegex = ""; //no    ???
 
         //quickRestart is handled by contained eddGrid
 
-
         //dataVariables  (axisVars in reverse order, then dataVars)
-        eddGridNAV = eddGrid.axisVariables.length;
-        eddGridNDV = eddGrid.dataVariables.length;
+        int eddGridNAV = eddGrid.axisVariables.length;
+        int eddGridNDV = eddGrid.dataVariables.length;
         dataVariables = new EDV[eddGridNAV + eddGridNDV];
         for (int dv = 0; dv < dataVariables.length; dv++) {
             //variables in this class just see the destination name/type/... of the eddGrid varaible
@@ -205,7 +237,26 @@ public class EDDTableFromEDDGrid extends EDDTable{
     }
 
 
-    /** 
+     /**
+     * Subclasses (like EDDGridFromDap) overwrite this to do a quick, 
+     * incremental update of this dataset (i.e., for real time deal datasets).
+     * 
+     * <p>For simple failures, this writes into to log.txt but doesn't throw an exception.
+     *
+     * <p>If the dataset has changed in a serious / incompatible way and needs a full
+     * reload, this calls requestReloadASAP() and throws WaitThenTryAgainException.
+     */
+    public void update() {
+        try {
+            eddGrid.update();
+        } catch (WaitThenTryAgainException e) {
+            //convert call to reload underlying dataset into call to reload this dataset
+            requestReloadASAP();
+            throw e;
+        }
+    }
+
+   /** 
      * This gets the data (chunk by chunk) from this EDDTable for the 
      * OPeNDAP DAP-style query and writes it to the TableWriter. 
      * See the EDDTable method documentation.
@@ -218,58 +269,274 @@ public class EDDTableFromEDDGrid extends EDDTable{
     public void getDataForDapQuery(String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
 
-        //get the sourceDapQuery (a query that the source can handle)
+
+        //parse the userDapQuery into a DESTINATION query
         StringArray resultsVariables    = new StringArray();
         StringArray constraintVariables = new StringArray();
         StringArray constraintOps       = new StringArray();
         StringArray constraintValues    = new StringArray();
-        getSourceQueryFromDapQuery(userDapQuery,
-            resultsVariables,
-            constraintVariables, constraintOps, constraintValues); //timeStamp constraints other than regex are epochSeconds
+        //parseUserDapQuery, not getSourceQueryFromDapQuery.  Get DESTINATION resultsVars+constraints.
+        parseUserDapQuery(userDapQuery,  
+            resultsVariables,  //doesn't catch constraintVariables that aren't in users requested results
+            constraintVariables, constraintOps, constraintValues, false); //repair
+            //Non-regex EDVTimeStamp constraintValues will be returned as epochSeconds
 
-        //further prune constraints 
+        //*** generate the gridDapQuery
+
+        //find (non-regex) min and max of constraints on axis variables 
         //work backwards since deleting some
-        for (int c = constraintVariables.size() - 1; c >= 0; c--) { 
-
+        EDVGridAxis eddGridAV[] = eddGrid.axisVariables();
+        EDV         eddGridDV[] = eddGrid.dataVariables();
+        int eddGridNAV = eddGridAV.length;
+        int eddGridNDV = eddGridDV.length;
+        //min and max desired axis destination values
+        double avMin[] = new double[eddGridNAV];  
+        double avMax[] = new double[eddGridNAV];
+        for (int av = 0; av < eddGridNAV; av++) {
+            avMin[av] = eddGridAV[av].destinationMin();  //time is epochSeconds
+            avMax[av] = eddGridAV[av].destinationMax();
+        }
+        boolean hasAvConstraints = false; //only true if constraints are more than av min max
+        StringArray constraintsDvNames = new StringArray();  //unique
+        for (int c = 0; c < constraintVariables.size(); c++) { 
             String conVar = constraintVariables.get(c);
-            String conOp = constraintOps.get(c);
-            int dv = String2.indexOf(dataVariableSourceNames(), conVar);
-
-            //remove constraints for eddGrid data vars (string and numeric)
-            //and remove regex constraints
-            if (dv >= eddGridNAV || conOp.equals(PrimitiveArray.REGEX_OP)) {
-                constraintVariables.remove(c);
-                constraintOps.remove(c);
-                constraintValues.remove(c);
+            String conOp  = constraintOps.get(c);
+            String conVal = constraintValues.get(c);
+            int av = String2.indexOf(eddGrid.axisVariableDestinationNames(), conVar);
+            if (av < 0) {
+                if (constraintsDvNames.indexOf(conVar) < 0)  //if not already in the list
+                    constraintsDvNames.add(conVar);
                 continue;
             }
+            EDVGridAxis edvga = eddGridAV[av];
+            if (conOp.equals(PrimitiveArray.REGEX_OP)) {
+                //FUTURE: this could be improved to find the range of matching axis values
+            } else {
+                double oldAvMin = avMin[av];
+                double oldAvMax = avMax[av];
+                double conValD = String2.parseDouble(conVal);
+                String neverTrue = MustBe.THERE_IS_NO_DATA + " " + 
+                    MessageFormat.format(EDStatic.queryErrorNeverTrue, 
+                        conVar + conOp + conValD);
+                if (!conOp.equals("!=") && Double.isNaN(conValD))
+                    throw new SimpleException(neverTrue);                
+                if (conOp.startsWith(">")) {    //treat > and >= the same way
+                    if (conValD > edvga.destinationMax())
+                        throw new SimpleException(neverTrue);                
+                    avMin[av] = Math.max(avMin[av], conValD);
+                } else if (conOp.startsWith("<")) { //treat < and <= the same way
+                    if (conValD < edvga.destinationMin())
+                        throw new SimpleException(neverTrue);                
+                    avMax[av] = Math.min(avMax[av], conValD);
+                } else if (conOp.equals("=")) {
+                    int si = edvga.destinationToClosestSourceIndex(conValD);
+                    if (si < 0)
+                        throw new SimpleException(neverTrue);                
+                    double destVal = edvga.destinationValue(si).getDouble(0);
+                    if (!Math2.almostEqual(edvga instanceof EDVTimeGridAxis? 14 : 5, //nSignificantFigures
+                            conValD, destVal))
+                        throw new SimpleException(neverTrue);                
+                    avMin[av] = Math.max(avMin[av], conValD);
+                    avMax[av] = Math.min(avMax[av], conValD);
+                } else if (conOp.equals("!=")) {
+                    //not very useful
+                } 
+
+                if (oldAvMin != avMin[av] || oldAvMax != avMax[av])
+                    hasAvConstraints = true;
+            }               
+        }
+//??? require hasAvConstraints???
+
+        //generate the griddap avConstraints
+        String avConstraints[] = new String[eddGridNAV];
+        StringBuilder allAvConstraints = new StringBuilder();
+        for (int av = 0; av < eddGridNAV; av++) { 
+            EDVGridAxis edvga = eddGridAV[av];
+            //are the constraints impossible?
+            if (avMin[av] > avMax[av])
+                throw new SimpleException(MustBe.THERE_IS_NO_DATA + " " + 
+                    MessageFormat.format(EDStatic.queryErrorNeverTrue, 
+                        edvga.destinationName() + ">=" + avMin[av] + " and " +
+                        edvga.destinationName() + "<=" + avMax[av]));            
+            if (edvga.isAscending())
+                avConstraints[av] = "[(" + avMin[av] + "):(" + avMax[av] + ")]";
+            else
+                avConstraints[av] = "[(" + avMax[av] + "):(" + avMin[av] + ")]";
+            allAvConstraints.append(avConstraints[av]);
+        }
+        if (debugMode) String2.log(">>allAvConstraints=" + allAvConstraints);
+
+        //does resultsVariables include any axis or data variables?
+        StringArray resultsAvNames = new StringArray();
+        StringArray resultsDvNames = new StringArray();
+        for (int rv = 0; rv < resultsVariables.size(); rv++) {
+            String rvName = resultsVariables.get(rv);
+            if (String2.indexOf(eddGrid.axisVariableDestinationNames(), rvName) >= 0) 
+                resultsAvNames.add(rvName);
+            if (String2.indexOf(eddGrid.dataVariableDestinationNames(), rvName) >= 0) 
+                resultsDvNames.add(rvName);
         }
 
-        //generate the gridDapQuery
+        
+        StringBuilder gridDapQuery = new StringBuilder();
+        String gridRequestUrl = "/griddap/" + eddGrid.datasetID() + ".dods"; //after EDStatic.baseUrl, before '?'
 
-/*
-        need to:
-        see what axis indices are needed
-        make a local tableWriter
-            gather data as a table from eddGrid data access
-              post process the table
-            gather data as a table from further axis indices
-              post process the table
+        if (resultsDvNames.size() > 0 || constraintsDvNames.size() > 0) {
+            //handle a request for 1+ data variables (in results or constraint variables)
+            //e.g. lat,lon,time,sst&sst>35    or lat,lon,time&sst>35
+            for (int dvi = 0; dvi < resultsDvNames.size(); dvi++) {  //the names are unique
+                if (gridDapQuery.length() > 0)
+                    gridDapQuery.append(',');
+                gridDapQuery.append(resultsDvNames.get(dvi) + allAvConstraints);
+            }
+            for (int dvi = 0; dvi < constraintsDvNames.size(); dvi++) { //the names are unique
+                if (resultsDvNames.indexOf(constraintsDvNames.get(dvi)) < 0) {
+                    if (gridDapQuery.length() > 0)
+                        gridDapQuery.append(',');
+                    gridDapQuery.append(constraintsDvNames.get(dvi) + allAvConstraints);
+                }
+            }
+            if (debugMode) String2.log(">>nDvNames > 0, gridDapQuery=" + gridDapQuery);
+            GridDataAccessor gda = new GridDataAccessor(eddGrid, gridRequestUrl, 
+                gridDapQuery.toString(), true, //rowMajor
+                false); //convertToNaN (would be true, but TableWriterSeparatedValue will do it)
+            EDV queryDV[] = gda.dataVariables();
+            int nQueryDV = queryDV.length;
+            EDV sourceTableVars[] = new EDV[eddGridNAV + nQueryDV];
+            for (int av = 0; av < eddGridNAV; av++) 
+                sourceTableVars[av] = dataVariables[eddGridNAV - av - 1];
+            for (int dv = 0; dv < nQueryDV; dv++) 
+                sourceTableVars[eddGridNAV + dv] = findDataVariableByDestinationName(
+                    queryDV[dv].destinationName()); 
 
-        //get dataAccessor first, in case of error when parsing query
-        boolean isAxisDapQuery = isAxisDapQuery(userDapQuery);
-        String requestUrl = "/griddap/" + datasetID + ".internal"; //file extension not known here!
-        if (isAxisDapQuery) {
-            AxisDataAccessor ada = new AxisDataAccessor(eddGrid, 
-                requestUrl, gridDapQuery);
-            eddGrid.saveAsTableWriter(ada, tw);
-        } else {
-            GridDataAccessor gda = new GridDataAccessor(eddGrid, 
-                requestUrl, gridDapQuery, true,  //rowMajor
-                false);   //convertToNaN  (would be true, but TableWriterHtmlTable will do it)
-            eddGrid.saveAsTableWriter(gda, tw);
+            //make a table to hold a chunk of the results            
+            int chunkNRows = EDStatic.partialRequestMaxCells / (eddGridNAV + nQueryDV);
+            Table tTable = makeEmptySourceTable(sourceTableVars, chunkNRows); //source table, but source here is eddGrid's destination
+            PrimitiveArray paAr[] = new PrimitiveArray[tTable.nColumns()];
+            for (int col = 0; col < tTable.nColumns(); col++)
+                paAr[col] = tTable.getColumn(col);
+
+            //walk through it, periodically saving to tableWriter
+            int cumNRows = 0;
+            while (gda.increment()) {
+                for (int av = 0; av < eddGridNAV; av++) 
+                    paAr[av].addDouble(gda.getAxisValueAsDouble(av));  
+                for (int dv = 0; dv < nQueryDV; dv++) 
+                    paAr[eddGridNAV + dv].addDouble(gda.getDataValueAsDouble(dv));  
+                if (++cumNRows >= chunkNRows) {
+                    if (debugMode) String2.log(tTable.dataToCSVString(5));
+                    standardizeResultsTable(requestUrl, //applies all constraints
+                        userDapQuery, tTable); 
+                    tableWriter.writeSome(tTable);
+                    tTable = makeEmptySourceTable(sourceTableVars, chunkNRows); 
+                    for (int col = 0; col < tTable.nColumns(); col++)
+                        paAr[col] = tTable.getColumn(col);
+                    cumNRows = 0;
+                    if (tableWriter.noMoreDataPlease) {
+                        tableWriter.logCaughtNoMoreDataPlease(datasetID);
+                        break;
+                    }
+                }
+            }
+
+            //finish
+            if (tTable.nRows() > 0) {
+                standardizeResultsTable(requestUrl,  //applies all constraints
+                    userDapQuery, tTable); 
+                tableWriter.writeSome(tTable);
+            }
+            tableWriter.finish();
+
+        } else if (resultsAvNames.size() >= 1) {
+            //handle a request for multiple axis variables (no data variables anywhere)
+            //gather the active edvga 
+            int nActiveEdvga = resultsAvNames.size();
+            EDVGridAxis activeEdvga[] = new EDVGridAxis[nActiveEdvga];
+            for (int aav = 0; aav < nActiveEdvga; aav++) {
+                int av = String2.indexOf(eddGrid.axisVariableDestinationNames(), 
+                    resultsAvNames.get(aav));
+                activeEdvga[aav] = eddGridAV[av];
+                if (aav > 0)
+                    gridDapQuery.append(',');
+                gridDapQuery.append(resultsAvNames.get(aav) + avConstraints[av]);
+            }
+
+            //make modifiedUserDapQuery, resultsAvNames + just constraints on results axis vars
+            StringBuilder modifiedUserDapQuery = new StringBuilder(resultsAvNames.toCSVString()); 
+            for (int c = 0; c < constraintVariables.size(); c++) { 
+                String conVar = constraintVariables.get(c);
+                String conOp  = constraintOps.get(c);
+                String conVal = constraintValues.get(c);
+                int rv = resultsAvNames.indexOf(conVar);
+                if (rv < 0) 
+                    continue;
+                int av = String2.indexOf(eddGrid.axisVariableDestinationNames(), conVar);
+                if (av < 0) 
+                    continue;
+                modifiedUserDapQuery.append("&" + conVar + conOp + 
+                    (conOp.equals(PrimitiveArray.REGEX_OP)? String2.toJson(conVal) : conVal));
+            }            
+            if (debugMode) 
+                String2.log(">>resultsAvNames.size() > 1, gridDapQuery=" + gridDapQuery + 
+                    "\n  modifiedUserDapQuery=" + modifiedUserDapQuery);
+
+            //parse the gridDapQuery
+            StringArray tDestinationNames = new StringArray();
+            IntArray tConstraints = new IntArray(); //start,stop,stride for each tDestName
+            eddGrid.parseAxisDapQuery(gridDapQuery.toString(), tDestinationNames, 
+                tConstraints, false);
+
+            //figure out the shape and make the NDimensionalIndex
+            int ndShape[] = new int[nActiveEdvga]; //an array with the size of each active av
+            for (int aav = 0; aav < nActiveEdvga; aav++) 
+                ndShape[aav] = tConstraints.get(aav*3 + 2) - tConstraints.get(aav*3 + 0) + 1;
+            NDimensionalIndex ndIndex = new NDimensionalIndex(ndShape);
+
+            //make a table to hold a chunk of the results
+            int chunkNRows = EDStatic.partialRequestMaxCells / nActiveEdvga;
+            Table tTable = new Table(); //source table, but source here is eddGrid's destination
+            PrimitiveArray paAr[] = new PrimitiveArray[nActiveEdvga];
+            for (int aav = 0; aav < nActiveEdvga; aav++) {
+                //this class only sees eddGrid dest type and destName
+                paAr[aav] = PrimitiveArray.factory(activeEdvga[aav].destinationDataTypeClass(), 
+                    chunkNRows, false);
+                tTable.addColumn(activeEdvga[aav].destinationName(), paAr[aav]); 
+            }
+
+            //walk through it, periodically saving to tableWriter
+            int cumNRows = 0;
+            int current[] = ndIndex.getCurrent();
+            while (ndIndex.increment()) {
+                for (int aav = 0; aav < nActiveEdvga; aav++) 
+                    paAr[aav].addDouble(activeEdvga[aav].destinationDouble( 
+                        tConstraints.get(aav*3 + 0) + current[aav]));  //baseIndex + offsetIndex
+                if (++cumNRows >= chunkNRows) {
+                    standardizeResultsTable(requestUrl, //applies all constraints
+                        modifiedUserDapQuery.toString(), tTable); 
+                    tableWriter.writeSome(tTable);
+                    //??? no need for make a new table, colOrder may have changed, but PaAr hasn't
+                    tTable.removeAllRows();  
+                    cumNRows = 0;
+                    if (tableWriter.noMoreDataPlease) {
+                        tableWriter.logCaughtNoMoreDataPlease(datasetID);
+                        break;
+                    }
+                }
+            }
+
+            //finish
+            if (tTable.nRows() > 0) {
+                standardizeResultsTable(requestUrl,  //applies all constraints
+                    modifiedUserDapQuery.toString(), tTable); 
+                tableWriter.writeSome(tTable);
+            }
+            tableWriter.finish();
+            
+        } else {        
+            //if get here, no results variables?! error should have been thrown before
+            throw new SimpleException(EDStatic.queryError + " No results variables?!"); 
         }
-*/
     }
 
 
@@ -277,84 +544,146 @@ public class EDDTableFromEDDGrid extends EDDTable{
     /**
      */
     public static void testBasic() throws Throwable {
+        String2.log("\nEDDTableFromEDDGrid.testBasic()");
         testVerboseOn();
+debugMode = false; //normally false.  Set it to true if need help.
         String results, query, tName, expected, expected2;
-        String id = "testTableFromEDDGrid";
+        String id = "testEDDTableFromEDDGrid";
         EDDTable tedd = (EDDTable)oneFromDatasetXml(id);
+
 
         //das
         tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
-            tedd.className() + "_tfdg", ".das"); 
+            tedd.className() + "1", ".das"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
 "Attributes {\n" +
 " s {\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 actual_range 0.0, 360.0;\n" +
+"    String axis \"X\";\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 1;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String point_spacing \"even\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float64 actual_range -75.0, 75.0;\n" +
+"    String axis \"Y\";\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 1;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String point_spacing \"even\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  altitude {\n" +
+"    String _CoordinateAxisType \"Height\";\n" +
+"    String _CoordinateZisPositive \"up\";\n" +
+"    Float64 actual_range 0.0, 0.0;\n" +
+"    String axis \"Z\";\n" +
+"    Int32 fraction_digits 0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Altitude\";\n" +
+"    String positive \"up\";\n" +
+"    String standard_name \"altitude\";\n" +
+"    String units \"m\";\n" +
+"  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.0259568e+9, 1.3671504e+9;\n" +  //2nd number changes
 "    String axis \"T\";\n" +
+"    Int32 fraction_digits 0;\n" +
 "    String ioos_category \"Time\";\n" +
-"    String long_name \"Forecast time for ForecastModelRunCollection\";\n" +
-"    Float64 missing_value NaN;\n" +
+"    String long_name \"Centered Time\";\n" +
 "    String standard_name \"time\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "  }\n" +
-"  time_offset {\n" +
-"    String ioos_category \"Time\";\n" +
-"    String long_name \"offset hour from start of run for coordinate = time\";\n" +
-"    Float64 missing_value NaN;\n" +
-"    String standard_name \"forecast_period\";\n" +
-"    String units \"hours since 2010-01-13T00:00:00Z\";\n" +
-"  }\n" +
-"  time_run {\n" +
-"    String _CoordinateAxisType \"RunTime\";\n" +
-"    String ioos_category \"Time\";\n" +
-"    String long_name \"run times for coordinate = time\";\n" +
-"    Float64 missing_value NaN;\n" +
-"    String standard_name \"forecast_reference_time\";\n" +
-"    String units \"hours since 2010-01-13T00:00:00Z\";\n" +
+"  sst {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float64 colorBarMaximum 32.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 1;\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Sea Surface Temperature\";\n" +
+"    Float32 missing_value -9999999.0;\n" +
+"    String standard_name \"sea_surface_temperature\";\n" +
+"    String units \"degree_C\";\n" +
 "  }\n" +
 " }\n" +
 "  NC_GLOBAL {\n" +
-"    String cdm_data_type \"Grid\";\n" +
-"    String classification_authority \"not applicable\";\n" +
-"    String classification_level \"UNCLASSIFIED\";\n" +
-"    String comment \"...\";\n" +
-"    String contact \"NAVO, N33\";\n" +
-"    String Conventions \"CF-1.6, _Coordinates, COARDS, Unidata Dataset Discovery v1.0\";\n" +
-"    String creator_email \"Frank.Bub@navy.mil\";\n" +
-"    String creator_name \"USA/NAVY/NAVO\";\n" +
-"    String creator_url \"http://www.navo.navy.mil/\";\n" +
-"    String distribution_statement \"Approved for public release. Distribution unlimited.\";\n" +
-"    String downgrade_date \"not applicable\";\n" +
-"    String generating_model \"Global NCOM with OSU tides\";\n" +
-"    String history \"created on "; //20130224 ;\n" +
-//"FMRC Best Dataset\n" +
-//"2013-03-07T22:08:13Z http://ecowatch.ncddc.noaa.gov/thredds/dodsC/ncom/ncom_reg7_agg/NCOM_Region_7_Aggregation_best.ncd\n" +
-//"2013-03-07T22:08:13Z http://127.0.0.1:8080/cwexperimental/tabledap/testTableFromEDDGrid.das\";\n" +
+"    String acknowledgement \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
+"    String cdm_data_type \"Point\";\n" +
+"    String composite \"true\";\n" +
+"    String contributor_name \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\";\n" +
+"    String contributor_role \"Source of level 2 data.\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String creator_email \"dave.foley@noaa.gov\";\n" +
+"    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
+"    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
+"    String date_created \"2013-05-01Z\";\n" + //changes
+"    String date_issued \"2013-05-01Z\";\n" +  //changes
+"    Float64 Easternmost_Easting 360.0;\n" +
+"    String featureType \"Point\";\n" +
+"    Float64 geospatial_lat_max 75.0;\n" +
+"    Float64 geospatial_lat_min -75.0;\n" +
+"    Float64 geospatial_lat_resolution 0.1;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 360.0;\n" +
+"    Float64 geospatial_lon_min 0.0;\n" +
+"    Float64 geospatial_lon_resolution 0.1;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    Float64 geospatial_vertical_max 0.0;\n" +
+"    Float64 geospatial_vertical_min 0.0;\n" +
+"    String geospatial_vertical_positive \"up\";\n" +
+"    String geospatial_vertical_units \"m\";\n" +
+"    String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\n";
+//2013-03-10T15:13:48Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD
+//2013-04-04T21:43:14Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day
+//2013-04-04T21:43:14Z http://127.0.0.1:8080/cwexperimental/tabledap/testEDDTableFromEDDGrid.das
+
 expected2 = 
-    "String infoUrl \"http://edac-dap2.northerngulfinstitute.org/ocean_nomads/NCOM_index_map.html\";\n" +
-"    String input_data_source \"FNMOC NOGAPS, NAVO MODAS, NAVO NLOM\";\n" +
-"    String institution \"Naval Oceanographic Office\";\n" +
-"    String keywords \"aggregation, best, best time series, coastal, coordinate, forecast, forecast_period, forecast_reference_time, hour, model, naval, navy, navy coastal ocean model, ncom, ocean, oceanographic, office, offset, period, reference, region, run, series, start, time, time series, times\";\n" +
-"    String license \"Approved for public release. Distribution unlimited.\";\n" +
-"    String location \"Proto fmrc:NCOM Region 7 Aggregation\";\n" +
-"    String message \"UNCLASSIFIED\";\n" +
-"    String Metadata_Conventions \"CF-1.6, _Coordinates, COARDS, Unidata Dataset Discovery v1.0\";\n" +
-"    String model_type \"x-curvilinear lon, y-curvilinear lat, z-sigma_z\";\n" +
-"    String NCOM_Regional_Index_Map \"http://edac-dap2.northerngulfinstitute.org/ocean_nomads/NCOM_index_map.html\";\n" +
-"    String operational_status \"development\";\n" +
-"    String publisher_email \"Scott.Cross@noaa.gov\";\n" +
-"    String publisher_name \"USA/NOAA/NESDIS/NCDDC\";\n" +
-"    String publisher_url \"http://www.ncddc.noaa.gov/\";\n" +
-"    String reference \"https://www.navo.navy.mil/\";\n" +
-"    String sourceUrl \"http://ecowatch.ncddc.noaa.gov/thredds/dodsC/ncom/ncom_reg7_agg/NCOM_Region_7_Aggregation_best.ncd\";\n" +
+   "String infoUrl \"http://coastwatch.pfeg.noaa.gov/infog/BA_ssta_las.html\";\n" +
+"    String institution \"NOAA CoastWatch, West Coast Node\";\n" +
+"    String keywords \"5-day,\n" +
+"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
+"blended, coastwatch, day, degrees, experimental, global, noaa, ocean, oceans, sea, sea_surface_temperature, sst, surface, temperature, wcn\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
+"    Float64 Northernmost_Northing 75.0;\n" +
+"    String origin \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\";\n" +
+"    String processing_level \"3\";\n" +
+"    String project \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
+"    String projection \"geographic\";\n" +
+"    String projection_type \"mapped\";\n" +
+"    String references \"Blended SST from satellites information: This is an experimental product which blends satellite-derived SST data from multiple platforms using a weighted mean.  Weights are based on the inverse square of the nominal accuracy of each satellite. AMSR_E Processing information: http://www.ssmi.com/amsr/docs/AMSRE_V05_Updates.pdf . AMSR-E Processing reference: Wentz, F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing Systems Internal Report. AVHRR Processing Information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing Reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b. GOES Imager Processing Information: http://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager Processing Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. Estimation of sea surface temperatures using GOES-8/9 radiance measurements, Bull. Amer. Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: http://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Processing reference: Not Available.\";\n" +
+"    String satellite \"Aqua, GOES, POES\";\n" +
+"    String sensor \"AMSR-E, MODIS, Imager, AVHRR\";\n" +
+"    String source \"satellite observation: Aqua, GOES, POES, AMSR-E, MODIS, Imager, AVHRR\";\n" +
+"    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\";\n" +
+"    Float64 Southernmost_Northing -75.0;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
-"    String summary \"These forecasts are from an operational, data assimilating nowcast-forecast system run by the Naval Oceanographic Office using the Navy Coastal Ocean Model (NCOM). The output files contain temperature, salinity, east and north components of current, and surface elevation, interpolated to a 1/8 degree Cartesian grid in the horizontal and to standard depth levels in the vertical, and written at three-hour intervals out to 72 hours. The Navy global atmospheric model, NOGAPS, provides atmospheric forcing. A tidal component is not included in the model output.\";\n" +
-"    String time_coverage_end \"2013-03-09T00:00:00Z\";\n" +
-"    String time_coverage_start \"2000-01-01T10:00:00Z\";\n" +
-"    String time_origin \"2013-02-24 00:00:00\";\n" +
-"    String title \"NCOM Region 7 Aggregation, Best Time Series [time]\";\n" +
+"    String summary \"NOAA OceanWatch provides a blended sea surface temperature (SST) products derived from both microwave and infrared sensors carried on multiple platforms.  The microwave instruments can measure ocean temperatures even in the presence of clouds, though the resolution is a bit coarse when considering features typical of the coastal environment.  These are complemented by the relatively fine measurements of infrared sensors.  The blended data are provided at moderate spatial resolution (0.1 degrees) for the Global Ocean.  Measurements are gathered by Japan's Advanced Microwave Scanning Radiometer (AMSR-E) instrument, a passive radiance sensor carried aboard NASA's Aqua spacecraft, NOAA's Advanced Very High Resolution Radiometer, NOAA GOES Imager, and NASA's Moderate Resolution Imaging Spectrometer (MODIS). THIS IS AN EXPERIMENTAL PRODUCT: intended strictly for scientific evaluation by professional marine scientists.\";\n" +
+"    String time_coverage_end \"2013-04-28T12:00:00Z\";\n" +    //changes
+"    String time_coverage_start \"2002-07-06T12:00:00Z\";\n" +
+"    String title \"SST, Blended, Global, EXPERIMENTAL (5 Day Composite)\";\n" +
+"    Float64 Westernmost_Easting 0.0;\n" +
 "  }\n" +
 "}\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);      
@@ -363,28 +692,409 @@ expected2 =
 
         //das
         tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
-            tedd.className() + "_tfdg", ".dds"); 
+            tedd.className() + "2", ".dds"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
+"    Float64 longitude;\n" +
+"    Float64 latitude;\n" +
+"    Float64 altitude;\n" +
 "    Float64 time;\n" +
-"    Float64 time_offset;\n" +
-"    Float64 time_run;\n" +
+"    Float32 sst;\n" +
 "  } s;\n" +
 "} s;\n";
         Test.ensureEqual(results, expected, "results=\n" + results);      
 
-        //an old query
-        query = "time,time_run&time>=2006-08-07T00&time<2006-08-08"; 
+
+        //query 1 axis
+        query = "latitude&latitude>20&latitude<=20.5" +
+            "&longitude=0"; //longitude constraint is ignored (since it's valid)
         tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
-            tedd.className() + "_tfdg", ".csv"); 
+            tedd.className() + "1axis", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         expected = 
-"zztop\n";
+"latitude\n" +
+"degrees_north\n" +
+"20.1\n" +
+"20.2\n" +
+"20.3\n" +
+"20.4\n" +
+"20.5\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+        //query error   
+        results = "";
+        try {
+            query = "latitude&latitude>20&latitude<=20.5" +
+                "&longitude=1.04"; //invalid
+            tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+                tedd.className() + "1axisInvalid", ".csv"); 
+            results = "shouldn't get here";
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        expected = "com.cohort.util.SimpleException: Your query produced no matching results. longitude=1.04 will never be true.";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+        //query 2 axes
+        query = "longitude,latitude&latitude>20&latitude<=20.3" +
+                "&longitude>=15&longitude<15.3&time=\"2012-01-01T12\""; //time constraint is ignored (since it's valid)
+        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "2axes", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"longitude,latitude\n" +
+"degrees_east,degrees_north\n" +
+"15.0,20.1\n" +
+"15.0,20.2\n" +
+"15.0,20.3\n" +
+"15.1,20.1\n" +
+"15.1,20.2\n" +
+"15.1,20.3\n" +
+"15.2,20.1\n" +
+"15.2,20.2\n" +
+"15.2,20.3\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+
+        //query all axes  (different order)
+        query = "latitude,longitude,altitude,time&latitude>20&latitude<=20.3" +
+                "&longitude>=15&longitude<15.3&time=\"2012-01-01T12\""; 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "allaxes", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"latitude,longitude,altitude,time\n" +
+"degrees_north,degrees_east,m,UTC\n" +
+"20.1,15.0,0.0,2012-01-01T12:00:00Z\n" +
+"20.1,15.1,0.0,2012-01-01T12:00:00Z\n" +
+"20.1,15.2,0.0,2012-01-01T12:00:00Z\n" +
+"20.2,15.0,0.0,2012-01-01T12:00:00Z\n" +
+"20.2,15.1,0.0,2012-01-01T12:00:00Z\n" +
+"20.2,15.2,0.0,2012-01-01T12:00:00Z\n" +
+"20.3,15.0,0.0,2012-01-01T12:00:00Z\n" +
+"20.3,15.1,0.0,2012-01-01T12:00:00Z\n" +
+"20.3,15.2,0.0,2012-01-01T12:00:00Z\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+        //av+dv query with dv and av constraints
+        query = "latitude,longitude,altitude,time,sst&sst>35&time=\"2012-01-01T12\""; 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "_dvav1", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"latitude,longitude,altitude,time,sst\n" +
+"degrees_north,degrees_east,m,UTC,degree_C\n" +
+"-31.8,240.6,0.0,2012-01-01T12:00:00Z,35.1\n" +
+"-31.4,241.3,0.0,2012-01-01T12:00:00Z,35.1\n" +
+"-31.4,241.5,0.0,2012-01-01T12:00:00Z,35.1\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+           
+        //av query with dv and av constraints
+        query = "latitude,longitude,altitude,time&sst>35&time=\"2012-01-01T12\""; 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "_dvav2", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"latitude,longitude,altitude,time\n" +
+"degrees_north,degrees_east,m,UTC\n" +
+"-31.8,240.6,0.0,2012-01-01T12:00:00Z\n" +
+"-31.4,241.3,0.0,2012-01-01T12:00:00Z\n" +
+"-31.4,241.5,0.0,2012-01-01T12:00:00Z\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+           
+        //dv query with dv and av constraint
+        query = "sst&sst>35&time=\"2012-01-01T12\""; 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "_dvav3", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"sst\n" +
+"degree_C\n" +
+"35.1\n" +
+"35.1\n" +
+"35.1\n";
         Test.ensureEqual(results, expected, "results=\n" + results);      
            
 
+    }
+
+    /**
+     */
+    public static void testTableFromGriddap() throws Throwable {
+        String2.log("\nEDDTableFromEDDGrid.testTableFromGriddap()");
+        testVerboseOn();
+debugMode = false; //normally false.  Set it to true if need help.
+        String results, query, tName, expected, expected2;
+        String id = "testTableFromGriddap";
+        EDDTable tedd = (EDDTable)oneFromDatasetXml(id);
+
+
+        //das
+        tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "1", ".das"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"Attributes {\n" +
+" s {\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 actual_range 0.0, 360.0;\n" +
+"    String axis \"X\";\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 1;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String point_spacing \"even\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float64 actual_range -75.0, 75.0;\n" +
+"    String axis \"Y\";\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 1;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String point_spacing \"even\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  altitude {\n" +
+"    String _CoordinateAxisType \"Height\";\n" +
+"    String _CoordinateZisPositive \"up\";\n" +
+"    Float64 actual_range 0.0, 0.0;\n" +
+"    String axis \"Z\";\n" +
+"    Int32 fraction_digits 0;\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Altitude\";\n" +
+"    String positive \"up\";\n" +
+"    String standard_name \"altitude\";\n" +
+"    String units \"m\";\n" +
+"  }\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 1.0259568e+9, 1.3671504e+9;\n" +  //2nd number changes
+"    String axis \"T\";\n" +
+"    Int32 fraction_digits 0;\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Centered Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  sst {\n" +
+"    Float32 _FillValue -9999999.0;\n" +
+"    Float64 colorBarMaximum 32.0;\n" +
+"    Float64 colorBarMinimum 0.0;\n" +
+"    String coordsys \"geographic\";\n" +
+"    Int32 fraction_digits 1;\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Sea Surface Temperature\";\n" +
+"    Float32 missing_value -9999999.0;\n" +
+"    String standard_name \"sea_surface_temperature\";\n" +
+"    String units \"degree_C\";\n" +
+"  }\n" +
+" }\n" +
+"  NC_GLOBAL {\n" +
+"    String acknowledgement \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
+"    String cdm_data_type \"Point\";\n" +
+"    String composite \"true\";\n" +
+"    String contributor_name \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\";\n" +
+"    String contributor_role \"Source of level 2 data.\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String creator_email \"dave.foley@noaa.gov\";\n" +
+"    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
+"    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
+"    String date_created \"2013-05-01Z\";\n" + //changes
+"    String date_issued \"2013-05-01Z\";\n" +  //changes
+"    Float64 Easternmost_Easting 360.0;\n" +
+"    String featureType \"Point\";\n" +
+"    Float64 geospatial_lat_max 75.0;\n" +
+"    Float64 geospatial_lat_min -75.0;\n" +
+"    Float64 geospatial_lat_resolution 0.1;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 360.0;\n" +
+"    Float64 geospatial_lon_min 0.0;\n" +
+"    Float64 geospatial_lon_resolution 0.1;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    Float64 geospatial_vertical_max 0.0;\n" +
+"    Float64 geospatial_vertical_min 0.0;\n" +
+"    String geospatial_vertical_positive \"up\";\n" +
+"    String geospatial_vertical_units \"m\";\n" +
+"    String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\n";
+//2013-03-10T15:13:48Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD
+//2013-04-04T21:43:14Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day
+//2013-04-04T21:43:14Z http://127.0.0.1:8080/cwexperimental/tabledap/testEDDTableFromEDDGrid.das
+
+expected2 = 
+   "String infoUrl \"http://coastwatch.pfeg.noaa.gov/infog/BA_ssta_las.html\";\n" +
+"    String institution \"NOAA CoastWatch, West Coast Node\";\n" +
+"    String keywords \"5-day,\n" +
+"Oceans > Ocean Temperature > Sea Surface Temperature,\n" +
+"blended, coastwatch, day, degrees, experimental, global, noaa, ocean, oceans, sea, sea_surface_temperature, sst, surface, temperature, wcn\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String naming_authority \"gov.noaa.pfel.coastwatch\";\n" +
+"    Float64 Northernmost_Northing 75.0;\n" +
+"    String origin \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\";\n" +
+"    String processing_level \"3\";\n" +
+"    String project \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
+"    String projection \"geographic\";\n" +
+"    String projection_type \"mapped\";\n" +
+"    String references \"Blended SST from satellites information: This is an experimental product which blends satellite-derived SST data from multiple platforms using a weighted mean.  Weights are based on the inverse square of the nominal accuracy of each satellite. AMSR_E Processing information: http://www.ssmi.com/amsr/docs/AMSRE_V05_Updates.pdf . AMSR-E Processing reference: Wentz, F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing Systems Internal Report. AVHRR Processing Information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing Reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b. GOES Imager Processing Information: http://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager Processing Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. Estimation of sea surface temperatures using GOES-8/9 radiance measurements, Bull. Amer. Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: http://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Processing reference: Not Available.\";\n" +
+"    String satellite \"Aqua, GOES, POES\";\n" +
+"    String sensor \"AMSR-E, MODIS, Imager, AVHRR\";\n" +
+"    String source \"satellite observation: Aqua, GOES, POES, AMSR-E, MODIS, Imager, AVHRR\";\n" +
+"    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\";\n" +
+"    Float64 Southernmost_Northing -75.0;\n" +
+"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String summary \"NOAA OceanWatch provides a blended sea surface temperature (SST) products derived from both microwave and infrared sensors carried on multiple platforms.  The microwave instruments can measure ocean temperatures even in the presence of clouds, though the resolution is a bit coarse when considering features typical of the coastal environment.  These are complemented by the relatively fine measurements of infrared sensors.  The blended data are provided at moderate spatial resolution (0.1 degrees) for the Global Ocean.  Measurements are gathered by Japan's Advanced Microwave Scanning Radiometer (AMSR-E) instrument, a passive radiance sensor carried aboard NASA's Aqua spacecraft, NOAA's Advanced Very High Resolution Radiometer, NOAA GOES Imager, and NASA's Moderate Resolution Imaging Spectrometer (MODIS). THIS IS AN EXPERIMENTAL PRODUCT: intended strictly for scientific evaluation by professional marine scientists.\";\n" +
+"    String time_coverage_end \"2013-04-28T12:00:00Z\";\n" +    //changes
+"    String time_coverage_start \"2002-07-06T12:00:00Z\";\n" +
+"    String title \"SST, Blended, Global, EXPERIMENTAL (5 Day Composite)\";\n" +
+"    Float64 Westernmost_Easting 0.0;\n" +
+"  }\n" +
+"}\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);      
+        int po = results.indexOf("String infoUrl ");
+        Test.ensureEqual(results.substring(Math.max(0, po)), expected2, "results=\n" + results);      
+
+        //das
+        tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "2", ".dds"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"Dataset {\n" +
+"  Sequence {\n" +
+"    Float64 longitude;\n" +
+"    Float64 latitude;\n" +
+"    Float64 altitude;\n" +
+"    Float64 time;\n" +
+"    Float32 sst;\n" +
+"  } s;\n" +
+"} s;\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+
+        //query 1 axis
+        query = "latitude&latitude>20&latitude<=20.5" +
+            "&longitude=0"; //longitude constraint is ignored (since it's valid)
+        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "1axis", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"latitude\n" +
+"degrees_north\n" +
+"20.1\n" +
+"20.2\n" +
+"20.3\n" +
+"20.4\n" +
+"20.5\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+        //query error   
+        results = "";
+        try {
+            query = "latitude&latitude>20&latitude<=20.5" +
+                "&longitude=1.04"; //invalid
+            tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+                tedd.className() + "1axisInvalid", ".csv"); 
+            results = "shouldn't get here";
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        expected = "com.cohort.util.SimpleException: Your query produced no matching results. longitude=1.04 will never be true.";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+        //query 2 axes
+        query = "longitude,latitude&latitude>20&latitude<=20.3" +
+                "&longitude>=15&longitude<15.3&time=\"2012-01-01T12\""; //time constraint is ignored (since it's valid)
+        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "2axes", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"longitude,latitude\n" +
+"degrees_east,degrees_north\n" +
+"15.0,20.1\n" +
+"15.0,20.2\n" +
+"15.0,20.3\n" +
+"15.1,20.1\n" +
+"15.1,20.2\n" +
+"15.1,20.3\n" +
+"15.2,20.1\n" +
+"15.2,20.2\n" +
+"15.2,20.3\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+
+        //query all axes  (different order)
+        query = "latitude,longitude,altitude,time&latitude>20&latitude<=20.3" +
+                "&longitude>=15&longitude<15.3&time=\"2012-01-01T12\""; 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "allaxes", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"latitude,longitude,altitude,time\n" +
+"degrees_north,degrees_east,m,UTC\n" +
+"20.1,15.0,0.0,2012-01-01T12:00:00Z\n" +
+"20.1,15.1,0.0,2012-01-01T12:00:00Z\n" +
+"20.1,15.2,0.0,2012-01-01T12:00:00Z\n" +
+"20.2,15.0,0.0,2012-01-01T12:00:00Z\n" +
+"20.2,15.1,0.0,2012-01-01T12:00:00Z\n" +
+"20.2,15.2,0.0,2012-01-01T12:00:00Z\n" +
+"20.3,15.0,0.0,2012-01-01T12:00:00Z\n" +
+"20.3,15.1,0.0,2012-01-01T12:00:00Z\n" +
+"20.3,15.2,0.0,2012-01-01T12:00:00Z\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+        //av+dv query with dv and av constraints
+        query = "latitude,longitude,altitude,time,sst&sst>35&time=\"2012-01-01T12\""; 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "_dvav1", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"latitude,longitude,altitude,time,sst\n" +
+"degrees_north,degrees_east,m,UTC,degree_C\n" +
+"-31.8,240.6,0.0,2012-01-01T12:00:00Z,35.1\n" +
+"-31.4,241.3,0.0,2012-01-01T12:00:00Z,35.1\n" +
+"-31.4,241.5,0.0,2012-01-01T12:00:00Z,35.1\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+           
+        //av query with dv and av constraints
+        query = "latitude,longitude,altitude,time&sst>35&time=\"2012-01-01T12\""; 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "_dvav2", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"latitude,longitude,altitude,time\n" +
+"degrees_north,degrees_east,m,UTC\n" +
+"-31.8,240.6,0.0,2012-01-01T12:00:00Z\n" +
+"-31.4,241.3,0.0,2012-01-01T12:00:00Z\n" +
+"-31.4,241.5,0.0,2012-01-01T12:00:00Z\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+           
+        //dv query with dv and av constraint
+        query = "sst&sst>35&time=\"2012-01-01T12\""; 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tedd.className() + "_dvav3", ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"sst\n" +
+"degree_C\n" +
+"35.1\n" +
+"35.1\n" +
+"35.1\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
     }
 
      
@@ -400,6 +1110,7 @@ expected2 =
 /* */
         //always done        
         testBasic();
+        testTableFromGriddap();
     }
 
 }

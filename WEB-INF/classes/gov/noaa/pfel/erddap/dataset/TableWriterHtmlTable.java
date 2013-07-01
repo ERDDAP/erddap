@@ -293,11 +293,11 @@ public class TableWriterHtmlTable extends TableWriter {
                                 //if html, display urls and email addresses as links
                                 if (String2.isUrl(s)) {
                                     //display as a link
-                                    s = XML.encodeAsHTML(s);
+                                    s = XML.encodeAsHTMLAttribute(s);
                                     s = "<a href=\"" + s + "\">" + s + "</a>";
                                 } else if (String2.isEmailAddress(s)) {
                                     //display as a mailTo link
-                                    s = XML.encodeAsHTML(s);
+                                    s = XML.encodeAsHTMLAttribute(s);
                                     s = "<a href=\"mailto:" + s + "\">" + s + "</a>";
                                 } else {
                                     s = encode(s);

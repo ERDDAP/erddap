@@ -72,17 +72,14 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     protected String fileNameRegex;
     protected String metadataFrom;       
     protected boolean ensureAxisValuesAreExactlyEqual;
-
-//These were held in memory. Now re-read from file for each request.
-//    protected StringArray dirList;
-//    protected Table fileTable;  //FTxxx columns
-//    protected ShortArray ftDirIndex;  //in fileTable
-//    protected StringArray ftFileList;
-//    protected DoubleArray ftLastMod;
-//    protected IntArray ftNValues, ftStartIndex;
-
     protected StringArray sourceDataNames;
     protected String sourceDataTypes[];
+
+    //dirTable and fileTable inMemory (default=false)
+    protected boolean fileTableInMemory = false;
+    protected Table dirTable; 
+    protected Table fileTable;
+
 
     /**
      * This constructs an EDDGridFromFiles based on the information in an .xml file.
@@ -101,6 +98,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         String tType = xmlReader.attributeValue("type"); 
         String tAccessibleTo = null;
         StringArray tOnChange = new StringArray();
+        boolean tFileTableInMemory = false;
         String tFgdcFile = null;
         String tIso19115File = null;
         Attributes tGlobalAttributes = null;
@@ -112,6 +110,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         String tFileNameRegex = ".*";
         String tMetadataFrom = MF_LAST;       
         boolean tEnsureAxisValuesAreExactlyEqual = true;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -145,6 +145,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             else if (localTags.equals("</fileNameRegex>")) tFileNameRegex = content; 
             else if (localTags.equals( "<metadataFrom>")) {}
             else if (localTags.equals("</metadataFrom>")) tMetadataFrom = content; 
+            else if (localTags.equals( "<fileTableInMemory>")) {}
+            else if (localTags.equals("</fileTableInMemory>")) tFileTableInMemory = String2.parseBoolean(content); 
             //ensureAxisValuesAreExactlyEqual is currently not allowed; 
             //if false, it is hard to know which are desired values   (same as metadataFrom?)
             //else if (localTags.equals( "<ensureAxisValuesAreExactlyEqual>")) {}
@@ -156,6 +158,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
             else xmlReader.unexpectedTagException();
         }
         int nav = tAxisVariables.size();
@@ -172,12 +178,13 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             tType = "";
         if (tType.equals("EDDGridFromNcFiles")) 
             return new EDDGridFromNcFiles(tDatasetID, tAccessibleTo,
-                tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
+                tOnChange, tFgdcFile, tIso19115File,
+                tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
                 ttAxisVariables,
                 ttDataVariables,
                 tReloadEveryNMinutes, 
                 tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
-                tEnsureAxisValuesAreExactlyEqual);
+                tEnsureAxisValuesAreExactlyEqual, tFileTableInMemory);
         else throw new Exception("type=\"" + tType + 
             "\" needs to be added to EDDGridFromFiles.fromXml at end.");
 
@@ -273,12 +280,13 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      */
     public EDDGridFromFiles(String tClassName, String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tAxisVariables,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        boolean tEnsureAxisValuesAreExactlyEqual) 
+        boolean tEnsureAxisValuesAreExactlyEqual, boolean tFileTableInMemory) 
         throws Throwable {
 
         if (verbose) String2.log(
@@ -301,10 +309,13 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
+        fileTableInMemory = tFileTableInMemory;
         fileDir = tFileDir;
         recursive = tRecursive;
         fileNameRegex = tFileNameRegex;
@@ -352,7 +363,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             "\nsourceDataTypes=" + String2.toCSSVString(sourceDataTypes));
 
         //load cached dirTable->dirList
-        Table dirTable = tryToLoadDirFileTable(dirTableFileName); //may be null
+        dirTable = tryToLoadDirFileTable(dirTableFileName); //may be null
         if (dirTable != null) {
             if (verbose) String2.log(
                 dirTable.nRows() + " rows in old dirTable");
@@ -363,7 +374,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
 
         //load cached fileTable
-        Table fileTable = tryToLoadDirFileTable(fileTableFileName); //may be null
+        fileTable = tryToLoadDirFileTable(fileTableFileName); //may be null
         if (fileTable != null) {
             if (verbose) String2.log(
                 fileTable.nRows() + " rows in old fileTable");
@@ -878,6 +889,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                  " avg=" + (lastModCumTime / Math.max(1, tFileList.size())) + "ms" +
             "\n  dirTable.nRows=" + dirTable.nRows() +
             "\n  fileTable.nRows=" + fileTable.nRows() + 
+            "\n    fileTableInMemory=" + fileTableInMemory + 
             "\n    nUnchanged=" + nUnchanged + 
             "\n    nRemoved=" + nRemoved + " (nNoLastMod=" + nNoLastMod + 
                  ") removedCumTime=" + Calendar2.elapsedTimeString(lastModCumTime) +
@@ -1013,12 +1025,32 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         //ensure the setup is valid
         ensureValid();
 
+        //dirTable and fileTable InMemory?
+        if (!fileTableInMemory) {
+            dirTable = null;
+            fileTable = null;
+        }
+
         //finally
         if (verbose) String2.log(
             (reallyVerbose? "\n" + toString() : "") +
             "\n*** EDDGridFromFiles " + datasetID + " constructor finished. TIME=" + 
             (System.currentTimeMillis() - constructionStartMillis) + "\n"); 
 
+    }
+
+    /**
+     * Subclasses (like EDDGridFromDap) overwrite this to do a quick, 
+     * incremental update of this dataset (i.e., for real time deal datasets).
+     * 
+     * <p>For simple failures, this writes into to log.txt but doesn't throw an exception.
+     *
+     * <p>If the dataset has changed in a serious / incompatible way and needs a full
+     * reload, this calls requestReloadASAP() and throws WaitThenTryAgainException.
+     */
+    public void update() {
+        //Seems like a full reload is needed to do any kind of check:
+        //  it efficiently looks for changed files.
     }
 
     /** 
@@ -1120,26 +1152,31 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     public PrimitiveArray[] getSourceData(EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
 
-        //load the dirTable and fileTable
-        Table dirTable = tryToLoadDirFileTable(datasetDir() + DIR_TABLE_FILENAME);
-        Table fileTable = dirTable == null? null : 
-            tryToLoadDirFileTable(datasetDir() + FILE_TABLE_FILENAME);
-        if (dirTable == null || fileTable == null) {
+        //get a local reference to dirTable and fileTable
+        Table tDirTable = dirTable;
+        if (tDirTable == null)
+            tDirTable = tryToLoadDirFileTable(datasetDir() + DIR_TABLE_FILENAME);
+        Table tFileTable = fileTable;
+        if (verbose && tFileTable != null)
+            String2.log("  fileTableInMemory=true");
+        if (tFileTable == null && tDirTable != null) 
+            tFileTable = tryToLoadDirFileTable(datasetDir() + FILE_TABLE_FILENAME);
+        if (tDirTable == null || tFileTable == null) {
             requestReloadASAP(); 
             throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain +
                 "\n(Details: unable to read fileTable.)"); 
         }
 
-        //get the dirTable and fileTable PrimitiveArrays
-        StringArray dirList      = (StringArray)dirTable.getColumn(0);
-        ShortArray  ftDirIndex   = (ShortArray) fileTable.getColumn(FT_DIR_INDEX_COL);
-        StringArray ftFileList   = (StringArray)fileTable.getColumn(FT_FILE_LIST_COL);        
-        DoubleArray ftLastMod    = (DoubleArray)fileTable.getColumn(FT_LAST_MOD_COL);
-        IntArray    ftNValues    = (IntArray)   fileTable.getColumn(FT_N_VALUES_COL);
-        DoubleArray ftMin        = (DoubleArray)fileTable.getColumn(FT_MIN_COL);
-        DoubleArray ftMax        = (DoubleArray)fileTable.getColumn(FT_MAX_COL);
-        StringArray ftCsvValues  = (StringArray)fileTable.getColumn(FT_CSV_VALUES_COL);
-        IntArray    ftStartIndex = (IntArray)   fileTable.getColumn(FT_START_INDEX_COL);
+        //get the tDirTable and tFileTable PrimitiveArrays
+        StringArray dirList      = (StringArray)tDirTable.getColumn(0);
+        ShortArray  ftDirIndex   = (ShortArray) tFileTable.getColumn(FT_DIR_INDEX_COL);
+        StringArray ftFileList   = (StringArray)tFileTable.getColumn(FT_FILE_LIST_COL);        
+        DoubleArray ftLastMod    = (DoubleArray)tFileTable.getColumn(FT_LAST_MOD_COL);
+        IntArray    ftNValues    = (IntArray)   tFileTable.getColumn(FT_N_VALUES_COL);
+        DoubleArray ftMin        = (DoubleArray)tFileTable.getColumn(FT_MIN_COL);
+        DoubleArray ftMax        = (DoubleArray)tFileTable.getColumn(FT_MAX_COL);
+        StringArray ftCsvValues  = (StringArray)tFileTable.getColumn(FT_CSV_VALUES_COL);
+        IntArray    ftStartIndex = (IntArray)   tFileTable.getColumn(FT_START_INDEX_COL);
 
         //make results[]
         int nav = axisVariables.length;

@@ -102,6 +102,8 @@ public class EDDGridFromDap extends EDDGrid {
         int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
         int tUpdateEveryNMillis = 0;
         String tLocalSourceUrl = null;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -133,16 +135,16 @@ public class EDDGridFromDap extends EDDGrid {
             else if (localTags.equals("</updateEveryNMillis>")) tUpdateEveryNMillis = String2.parseInt(content); 
             else if (localTags.equals( "<sourceUrl>")) {}
             else if (localTags.equals("</sourceUrl>")) tLocalSourceUrl = content; 
-
-            //onChange
             else if (localTags.equals( "<onChange>")) {}
-            else if (localTags.equals("</onChange>")) 
-                tOnChange.add(content); 
-
+            else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -157,7 +159,8 @@ public class EDDGridFromDap extends EDDGrid {
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDGridFromDap(tDatasetID, tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
+            tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttAxisVariables,
             ttDataVariables,
             tReloadEveryNMinutes, tUpdateEveryNMillis, tLocalSourceUrl);
@@ -241,12 +244,14 @@ public class EDDGridFromDap extends EDDGrid {
      */
     public EDDGridFromDap(
         String tDatasetID, String tAccessibleTo, 
-        StringArray tOnChange, String tFgdcFile, String tIso19115File,
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery,
         Attributes tAddGlobalAttributes,
         Object tAxisVariables[][],
         Object tDataVariables[][],
         int tReloadEveryNMinutes, int tUpdateEveryNMillis,
-        String tLocalSourceUrl) throws Throwable {
+        String tLocalSourceUrl)
+        throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDGridFromDap " + tDatasetID); 
@@ -261,6 +266,8 @@ public class EDDGridFromDap extends EDDGrid {
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
@@ -502,7 +509,7 @@ public class EDDGridFromDap extends EDDGrid {
 
     /**
      * This does a quick, incremental update of this dataset (i.e., deal with 
-     * leftmost axis growing).
+     * leftmost axis growing). This was COPIED UNCHANGED to EDDGridFromErddap.
      *
      * <p>Concurrency issue #1: This avoids 2+ simultaneous updates.
      *
@@ -516,7 +523,7 @@ public class EDDGridFromDap extends EDDGrid {
      * Note: It is pointless and counter-productive to set updateEveryNMillis 
      * to be less than a fairly reliable update time (e.g., 1000 ms).
      *
-     * <p>For simple failures, this writes into to log.txt but doesn't throw an exception.
+     * <p>For simple failures, this writes to log.txt but doesn't throw an exception.
      *
      * <p>If the dataset has changed in a serious / incompatible way and needs a full
      * reload, this calls requestReloadASAP() and throws WaitThenTryAgainException.
@@ -635,7 +642,11 @@ public class EDDGridFromDap extends EDDGrid {
                 newMin = newMin * edvga.scaleFactor() + edvga.addOffset();
                 newMax = newMax * edvga.scaleFactor() + edvga.addOffset();
             }
-            //test for min>max after extractScaleAddOffset, since order may have changed
+
+            //first, calculate newAverageSpacing (destination units, will be negative if isDescending)
+            double newAverageSpacing = (newMax - newMin) / (newSize - 1);
+
+            //second, test for min>max after extractScaleAddOffset, since order may have changed
             if (newMin > newMax) { 
                 double d = newMin; newMin = newMax; newMax = d;
             }
@@ -650,13 +661,21 @@ public class EDDGridFromDap extends EDDGrid {
                     "scending, but the newest values aren't (" + error + ").)"); 
             }
 
-            //test isEvenlySpaced  (having last old value is essential)
-            boolean newIsEvenlySpaced = edvga.isEvenlySpaced();
-            if (newIsEvenlySpaced) {
+            //if was isEvenlySpaced, test that new values are and have same averageSpacing
+            //(having last old value is essential)
+            boolean newIsEvenlySpaced = edvga.isEvenlySpaced();  //here, this is actually oldIsEvenlySpaced
+            if (newIsEvenlySpaced) {  
                 error = newValues.isEvenlySpaced();
                 if (error.length() > 0) {
                     String2.log(msg + "changing " + edvga.destinationName() + 
                         ".isEvenlySpaced from true to false: " + error);
+                    newIsEvenlySpaced = false;
+
+                //new spacing != old spacing ?  (precision=5, but times will be exact) 
+                } else if (!Math2.almostEqual(5, newAverageSpacing, edvga.averageSpacing())) {  
+                    String2.log(msg + "changing " + edvga.destinationName() + 
+                        ".isEvenlySpaced from true to false: newSpacing=" + newAverageSpacing +
+                        " oldSpacing=" + edvga.averageSpacing());
                     newIsEvenlySpaced = false;
                 }
             }
@@ -683,7 +702,7 @@ public class EDDGridFromDap extends EDDGrid {
             edvga.setDestinationMin(newMin);
             edvga.setDestinationMax(newMax);
             edvga.setIsEvenlySpaced(newIsEvenlySpaced);
-            edvga.initializeAverageSpacingAndCoarseMinMax();
+            edvga.initializeAverageSpacingAndCoarseMinMax();  
             edvga.setActualRangeFromDestinationMinMax();
             if (edvtga != null) 
                 combinedGlobalAttributes.set("time_coverage_end",   
@@ -757,7 +776,8 @@ public class EDDGridFromDap extends EDDGrid {
         EDDGridFromDap newEDDGrid = new EDDGridFromDap(
             tDatasetID, 
             String2.toSSVString(accessibleTo),
-            shareInfo? onChange : (StringArray)onChange.clone(), "", "", 
+            shareInfo? onChange : (StringArray)onChange.clone(), 
+            "", "", "", "",  //fgdc, iso19115, defaultDataQuery, defaultGraphQuery,
             addGlobalAttributes,
             tAxisVariables,
             tDataVariables,
@@ -969,6 +989,7 @@ public class EDDGridFromDap extends EDDGrid {
         //read through the variables[]
         HashSet dimensionNameCsvsFound = new HashSet();
         Enumeration vars = dds.getVariables();
+        StringArray varNames = new StringArray();
         StringBuilder results = new StringBuilder();
         //if dimensionName!=null, this notes if a var with another dimension combo was found
         boolean otherComboFound = false; 
@@ -980,6 +1001,7 @@ public class EDDGridFromDap extends EDDGrid {
         while (vars.hasMoreElements()) {
             BaseType bt = (BaseType)vars.nextElement();
             String dName = bt.getName();
+            varNames.add(dName);
 
             //ensure it is a DGrid or DArray
             DArray mainDArray;
@@ -1160,6 +1182,10 @@ public class EDDGridFromDap extends EDDGrid {
         int nit = 3;
         for (int av = 0; av < nav; av++) {
             String tSourceName = axisSourceTable.getColumnName(av);
+            if (varNames.indexOf(tSourceName) < 0) {
+                String2.log("  skipping dimension=" + tSourceName + " because there is no corresponding variable.");
+                continue;
+            }
             axisPAs[av] = null; //explicit
             for (int it = 0; it < nit; it++) {
                 try {
@@ -2010,8 +2036,8 @@ public class EDDGridFromDap extends EDDGrid {
 "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" +
 "        <att name=\"cwhdf_version\">3.4</att>\n" +
-"        <att name=\"date_created\">2013-02-12Z</att>\n" +  //changes
-"        <att name=\"date_issued\">2013-02-12Z</att>\n" + //changes
+"        <att name=\"date_created\">2013-04-14Z</att>\n" +  //changes
+"        <att name=\"date_issued\">2013-04-14Z</att>\n" + //changes
 "        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" +
 "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.041676313961565174 0.04167148975575877 0.0 0.0 -90.0</att>\n" +
 "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" +
@@ -2089,7 +2115,7 @@ String expected2 =
 "        <destinationName>time</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">1.3624848E9 1.3624848E9</att>\n" + //changes
+"            <att name=\"actual_range\" type=\"doubleList\">1.3660272E9 1.3660272E9</att>\n" + //changes
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" +
 "            <att name=\"long_name\">Centered Time</att>\n" +
@@ -2716,7 +2742,7 @@ String expected2 =
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0],  //last # changes frequently
-            "SimpleException: Query error: For variable=chlorophyll axis#0=time Constraint=\"[(2007-02-06)[]\": Stop=\"\" is invalid.  It must be an integer between 0 and 480.", 
+            "SimpleException: Query error: For variable=chlorophyll axis#0=time Constraint=\"[(2007-02-06)[]\": Stop=\"\" is invalid.  It must be an integer between 0 and 486.", 
             "error=" + error);
 
         error = "";
@@ -2927,15 +2953,15 @@ String expected2 =
         //String2.log(results);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 481];\n" +   //481 will change sometimes
+"  Float64 time[time = 487];\n" +   //487 will change sometimes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4320];\n" +
 "  Float64 longitude[longitude = 8640];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 chlorophyll[time = 481][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+"      Float32 chlorophyll[time = 487][altitude = 1][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 481];\n" +
+"      Float64 time[time = 487];\n" +
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
@@ -2983,10 +3009,10 @@ String expected2 =
         expected = 
 "Dataset {\n" +
 "  GRID {\n" +
-"    ARRAY:\n" +   //481 will change sometimes
-"      Float32 chlorophyll[time = 481][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+"    ARRAY:\n" +   //487 will change sometimes
+"      Float32 chlorophyll[time = 487][altitude = 1][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 481];\n" +
+"      Float64 time[time = 487];\n" +
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
@@ -3163,7 +3189,7 @@ String expected2 =
 
         //.json with jsonp
         String2.log("\n*** EDDGridFromDap test get .JSON axis data (with jsonp)\n");
-        String jsonp = "Some encoded {}\n() ! text";
+        String jsonp = "myFunctionName";
         tName = gridDataset.makeNewFileForDapQuery(null, null, 
             "time[0:100:200],longitude[last]" + "&.jsonp=" + SSR.percentEncode(jsonp), 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".json"); 
@@ -4441,14 +4467,14 @@ boolean testAll = true;
                 expected = 
 "netcdf " + tUrl + "/griddap/erdMHchla8day {\n" +
 " dimensions:\n" +
-"   time = 481;\n" +   // (has coord.var)\n" +  //changes sometimes
+"   time = 487;\n" +   // (has coord.var)\n" +  //changes sometimes
 "   altitude = 1;\n" +   // (has coord.var)\n" +
 "   latitude = 4320;\n" +   // (has coord.var)\n" +
 "   longitude = 8640;\n" +   // (has coord.var)\n" +
 " variables:\n" +
-"   double time(time=481);\n" +
+"   double time(time=487);\n" +
 "     :_CoordinateAxisType = \"Time\";\n" +
-"     :actual_range = 1.0260864E9, 1.3628736E9; // double\n" +  //2nd value changes sometimes
+"     :actual_range = 1.0260864E9, 1.3670208E9; // double\n" +  //2nd value changes sometimes
 "     :axis = \"T\";\n" +
 "     :fraction_digits = 0; // int\n" +
 "     :ioos_category = \"Time\";\n" +
@@ -4489,7 +4515,7 @@ boolean testAll = true;
 "     :point_spacing = \"even\";\n" +
 "     :standard_name = \"longitude\";\n" +
 "     :units = \"degrees_east\";\n" +
-"   float chlorophyll(time=481, altitude=1, latitude=4320, longitude=8640);\n" +
+"   float chlorophyll(time=487, altitude=1, latitude=4320, longitude=8640);\n" +
 "     :_CoordinateAxes = \"time altitude latitude longitude \";\n" +
 "     :_FillValue = -9999999.0f; // float\n" +
 "     :colorBarMaximum = 30.0; // double\n" +
@@ -4512,8 +4538,8 @@ boolean testAll = true;
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2013-03-17Z\";\n" + //changes
-" :date_issued = \"2013-03-17Z\";\n" + //changes
+" :date_created = \"2013-05-08Z\";\n" + //changes
+" :date_issued = \"2013-05-08Z\";\n" + //changes
 " :Easternmost_Easting = 360.0; // double\n" +
 " :geospatial_lat_max = 90.0; // double\n" +
 " :geospatial_lat_min = -90.0; // double\n" +
@@ -4539,7 +4565,7 @@ boolean testAll = true;
 " :Southernmost_Northing = -90.0; // double\n" +
 " :standard_name_vocabulary = \"CF-12\";\n" +
 " :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-" :time_coverage_end = \"2013-03-10T00:00:00Z\";\n" + //changes
+" :time_coverage_end = \"2013-04-27T00:00:00Z\";\n" + //changes
 " :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
 " :title = \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
 " :Westernmost_Easting = 0.0; // double\n" +
@@ -4604,8 +4630,7 @@ boolean testAll = true;
             EDDGrid eddGrid2 = new EDDGridFromDap(
                 "erddapChlorophyll", //String tDatasetID, 
                 null,
-                null, null, null,
-                null,  
+                null, null, null, null, null, null,
                 null,  
                 new Object[][] {
                     { //dataVariables[dvIndex][0=sourceName, 1=destName, 2=addAttributes]
@@ -4818,7 +4843,7 @@ directionsForGenerateDatasetsXml() +
 "\n" +
 "<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_pfeg_e296_dcc3_34db\" active=\"true\">\n" +
 "    <sourceUrl>http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdGAsstahday</sourceUrl>\n" +
-"    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n" +   //important test of suggestReloadEveryNMinutes
+"    <reloadEveryNMinutes>60</reloadEveryNMinutes>\n" +   //60 or 180, important test of suggestReloadEveryNMinutes
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
@@ -5018,9 +5043,11 @@ String expected2 =
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
             if (msg.indexOf("ERROR: unsorted axis: ") >= 0) 
-                String2.log("Expected error:\n" + msg);
-            else 
-                throw new RuntimeException("\n*** The expected error wasn't found.\n" + msg);
+                String2.log("\nExpected error:\n" + msg);
+            else {
+                String2.log("\nUnexpected error (2013-05-21 source was gone):\n" + msg);
+                String2.getStringFromSystemIn("\nPress ^C to stop or Enter to continue..."); 
+            }
         }
     
     }
@@ -6308,11 +6335,12 @@ EDStatic.startBodyHtml(null) + "\n" +
 
         //time
         results = gridDataset.axisVariables[0].sliderCsvValues();
-        //end dates and sliderCsvValues changes frequently
+                 //changes frequently:
         expected = "\"2002-07-06T12:00:00Z\", \"2002-08-01T12:00:00Z\", \"2002-09-01T12:00:00Z\", \"2002-10-01T12:00:00Z\", \"2002-11-01T12:00:00Z\", \"2002-12-01T12:00:00Z\", \"2003-01-03T12:00:00Z\", \"2003-02-01T12:00:00Z\", \"2003-03-01T12:00:00Z\", \"2003-04-01T12:00:00Z\", \"2003-05-01T12:00:00Z\",";
         Test.ensureEqual(results.substring(0, expected.length()), expected, 
             "results=\n" + results);
-        expected = "\"2012-12-31T12:00:00Z\", \"2013-02-02T12:00:00Z\", \"2013-02-28T12:00:00Z\", \"2013-03-08T12:00:00Z\"";
+                 //changes frequently:
+        expected = "\"2013-02-02T12:00:00Z\", \"2013-02-28T12:00:00Z\", \"2013-04-01T12:00:00Z\", \"2013-04-28T12:00:00Z\"";
         Test.ensureEqual(results.substring(results.length() - expected.length()), expected, 
             "results=\n" + results);
 
@@ -6786,9 +6814,9 @@ EDStatic.startBodyHtml(null) + "\n" +
         expected = 
 "<Extent name=\"elevation\" default=\"-5374.0\" >-5.0,-15.0,-25.0,-35.0,-46.0,-57.0,-70.0,-82.0,-96.0,-112.0,-129.0,-148.0,-171.0,-197.0,-229.0,-268.0,-317.0,-381.0,-465.0,-579.0,-729.0,-918.0,-1139.0,-1378.0,-1625.0,-1875.0,-2125.0,-2375.0,-2624.0,-2874.0,-3124.0,-3374.0,-3624.0,-3874.0,-4124.0,-4374.0,-4624.0,-4874.0,-5124.0,-5374.0</Extent>\n" +
 "        <Attribution>\n" +
-"          <Title>TAMU/UMD</Title> \n" +
-"          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\" \n" +
-"            xlink:type=\"simple\" \n" +
+"          <Title>TAMU/UMD</Title>\n" +
+"          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
+"            xlink:type=\"simple\"\n" +
 "            xlink:href=\"http://www.atmos.umd.edu/~ocean/\" />\n" +
 "        </Attribution>\n" +
 "        <Layer opaque=\"1\" >\n" +
@@ -6894,6 +6922,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         int po;
 
         //test generateDatasetsXml -- It should catch z variable and convert to depth.
+        try {
         String url = "http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/19921014.bodas_ts.nc";
         results = generateDatasetsXml(true, url, 
             null, null, null, DEFAULT_RELOAD_EVERY_N_MINUTES, null);
@@ -7091,7 +7120,11 @@ EDStatic.startBodyHtml(null) + "\n" +
             "&BBOX=153.6,-90,307.2,63.6&WIDTH=256&HEIGHT=256",
             tName, false);
         SSR.displayInBrowser("file://" + tName);
-        
+
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn("\nUnexpected error:\n" + MustBe.throwableToString(t) +                 
+                "\nPress ^C to stop or Enter to continue..."); 
+        }
     }
 
 
@@ -7526,12 +7559,12 @@ EDStatic.startBodyHtml(null) + "\n" +
             expected = 
 "netcdf dods" + url.substring(4) + " {\n" +
 " dimensions:\n" +
-"   time = 481;\n" +
+"   time = 487;\n" +
 "   altitude = 1;\n" +
 "   latitude = 4320;\n" +
 "   longitude = 8640;\n" +
 " variables:\n" +
-"   float chlorophyll(time=481, altitude=1, latitude=4320, longitude=8640);\n" +
+"   float chlorophyll(time=487, altitude=1, latitude=4320, longitude=8640);\n" +
 "     :_CoordinateAxes = \"time altitude latitude longitude \";\n" +
 "     :_FillValue = -9999999.0f; // float\n" +
 "     :colorBarMaximum = 30.0; // double\n" +
@@ -7544,9 +7577,9 @@ EDStatic.startBodyHtml(null) + "\n" +
 "     :missing_value = -9999999.0f; // float\n" +
 "     :standard_name = \"concentration_of_chlorophyll_in_sea_water\";\n" +
 "     :units = \"mg m-3\";\n" +
-"   double time(time=481);\n" +
+"   double time(time=487);\n" +
 "     :_CoordinateAxisType = \"Time\";\n" +
-"     :actual_range = 1.0260864E9, 1.3628736E9; // double\n" +  //2nd number changes
+"     :actual_range = 1.0260864E9, 1.3670208E9; // double\n" +  //2nd number changes
 "     :axis = \"T\";\n" +
 "     :fraction_digits = 0; // int\n" +
 "     :ioos_category = \"Time\";\n" +
@@ -7597,8 +7630,8 @@ EDStatic.startBodyHtml(null) + "\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2013-03-17Z\";\n" +  //changes
-" :date_issued = \"2013-03-17Z\";\n" +   //changes
+" :date_created = \"2013-05-08Z\";\n" +  //changes
+" :date_issued = \"2013-05-08Z\";\n" +   //changes
 " :Easternmost_Easting = 360.0; // double\n" +
 " :geospatial_lat_max = 90.0; // double\n" +
 " :geospatial_lat_min = -90.0; // double\n" +
@@ -7623,7 +7656,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 " :Southernmost_Northing = -90.0; // double\n" +
 " :standard_name_vocabulary = \"CF-12\";\n" +
 " :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-" :time_coverage_end = \"2013-03-10T00:00:00Z\";\n" + //changes
+" :time_coverage_end = \"2013-04-27T00:00:00Z\";\n" + //changes
 " :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
 " :title = \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
 " :Westernmost_Easting = 0.0; // double\n" +

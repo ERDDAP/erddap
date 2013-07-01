@@ -66,6 +66,8 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         IntArray tAxisLengths;
         int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
         String tFileName = null;
+        String tDefaultDataQuery = null;
+        String tDefaultGraphQuery = null;
 /*
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -102,16 +104,16 @@ public class EDDGridFromBinaryFile extends EDDGrid {
             else if (localTags.equals("</accessibleTo>")) tAccessibleTo = content;
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
-
-            //onChange
             else if (localTags.equals( "<onChange>")) {}
-            else if (localTags.equals("</onChange>")) 
-                tOnChange.add(content); 
-
+            else if (localTags.equals("</onChange>")) tOnChange.add(content); 
             else if (localTags.equals( "<fgdcFile>")) {}
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<defaultDataQuery>")) {}
+            else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
+            else if (localTags.equals( "<defaultGraphQuery>")) {}
+            else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
 
             else xmlReader.unexpectedTagException();
         }
@@ -127,7 +129,8 @@ public class EDDGridFromBinaryFile extends EDDGrid {
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 */
         return new EDDGridFromBinaryFile(tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File, tGlobalAttributes,
+            tOnChange, tFgdcFile, tIso19115File,
+            tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             new Object[1][3], new Object[1][3], //ttAxisVariables, ttDataVariables,
             tReloadEveryNMinutes,
             tFileName);
@@ -157,7 +160,8 @@ public class EDDGridFromBinaryFile extends EDDGrid {
      * @throws Throwable if trouble
      */
     public EDDGridFromBinaryFile(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, String tFgdcFile, String tIso19115File,
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery,
         Attributes tAddGlobalAttributes,
         Object tAxisVariables[][],
         Object tDataVariables[][],
@@ -177,6 +181,8 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        defaultDataQuery = tDefaultDataQuery;
+        defaultGraphQuery = tDefaultGraphQuery;
         sourceGlobalAttributes = new Attributes();
         if (tAddGlobalAttributes == null)
             tAddGlobalAttributes = new Attributes();

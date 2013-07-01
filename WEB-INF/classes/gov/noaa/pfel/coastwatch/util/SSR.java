@@ -1274,13 +1274,21 @@ public class SSR {
             if      (ch == '%') sb.append("%25");
             else if (ch == '&') sb.append("%26");  //needed to distinguish & in value in &var=value
             else if (ch == '"') sb.append("%22");  //helps with urls in javascript code
-            else if (ch == '\'') sb.append("%27"); //helps with urls in javascript code
+            else if (ch == '\'')sb.append("%27");  //helps with urls in javascript code
             else if (ch == '=') sb.append("%3D");  //needed to distinguish = in value in &var=value
             else if (ch == '#') sb.append("%23");  //needed for SOS    added 2009-09-28
             else if (ch == '+') sb.append("%2B");  //before handling ' '
             else if (ch == ' ') sb.append("%20");  //safer than '+'
             else if (ch == '<') sb.append("%3C");
             else if (ch == '>') sb.append("%3E");
+            //see slide 7 of https://www.owasp.org/images/b/ba/AppsecEU09_CarettoniDiPaola_v0.8.pdf
+            //reserved=; / ? : @ & = + $ ,
+            else if (ch == ';') sb.append("%3B");
+            else if (ch == '/') sb.append("%2F");
+            else if (ch == '?') sb.append("%3F");
+            //else if (ch == ':') sb.append("%3A");
+            else if (ch == '@') sb.append("%40");
+            else if (ch == '$') sb.append("%24");
             else if (ch < 32 || ch >= 127) sb.append(percentEncode("" + ch)); //this handles any unicode char via utf-8
             else sb.append(ch);
         }

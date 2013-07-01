@@ -42,7 +42,7 @@ public class XML {
         "", "", "", "", "",   "", "", "", "", "&#009;", //0..  tab
         "\n", "", "", "\r", "",   "", "", "", "", "",   //10..
         "", "", "", "", "",   "", "", "", "", "",   //20..
-        "",""," ","!","&quot;", "#","$","%","&amp;","&#039;",   //30..  
+        "",""," ","!","&quot;", "#","$","&#37;","&amp;","&#039;",   //30..   //% re percent encoding
         "(", ")", "*", "+", ",",   "-", ".", "/", "0", "1",   //40..
         "2", "3", "4", "5", "6",   "7", "8", "9", ":", ";",   //50..
         "&lt;", "=", "&gt;", "?", "@",   "A", "B", "C", "D", "E",   //60..
@@ -52,9 +52,9 @@ public class XML {
         "d", "e", "f", "g", "h",   "i", "j", "k", "l", "m",   //100..
         "n", "o", "p", "q", "r",   "s", "t", "u", "v", "w",   //110..
         "x", "y", "z", "{", "|",   "}", "~", "", "", "",   //120..
-"&#130;","&#131;","&#132;","&#133;","&#134;","&#135;","&#136;","&#137;","&#138;","&#139;",   //130..
-"&#140;","",      "&#142;","",      "",      "&#145;","&#146;","&#147;","&#148;","&#149;",   //140..
-"&#150;","&#151;","&#152;","&#153;","&#154;","&#155;","&#156;","",      "&#158;","&#159;",   //150..
+"&#130;","&#131;","&#132;","&#133;","&#134;","&#135;","&#136;","&#137;","&#138;","&#139;",   //130.. "forbidden"!
+"&#140;","",      "&#142;","",      "",      "&#145;","&#146;","&#147;","&#148;","&#149;",   //140.. "forbidden"!
+"&#150;","&#151;","&#152;","&#153;","&#154;","&#155;","&#156;","",      "&#158;","&#159;",   //150.. "forbidden"!
 "&nbsp;","&iexcl;","&cent;","&pound;","&curren;", //160
 "&yen;","&brvbar;","&sect;","&uml;","&copy;", //165
 "&ordf;","&laquo;","&not;","&shy;","&reg;", //170
@@ -104,7 +104,7 @@ public class XML {
 
     /**
      * This replaces chars 0 - 255 with their corresponding HTML_ENTITY
-     * and higher chars with the numbered entity.
+     * and higher chars with the hex numbered entity.
      *
      * <p>char 0 - 127 and &gt;=256 are encoded same as encodeAsXML.
      *
@@ -118,11 +118,11 @@ public class XML {
         StringBuilder output = new StringBuilder(size * 2);
 
         for (int i = 0; i < size; i++) {
-            int ch = plainText.charAt(i); //note: int
-            if (ch <= 255)
-                output.append(HTML_ENTITIES[ch]);
+            int chi = plainText.charAt(i); //note: int
+            if (chi <= 255)
+                output.append(HTML_ENTITIES[chi]);
             else 
-                output.append("&#" + String2.zeroPad("" + ch, 3) + ";"); //is zero padding old school / not necessary?
+                output.append("&#x" + Integer.toHexString(chi) + ";"); 
         }
 
         return output.toString();
@@ -138,6 +138,31 @@ public class XML {
     public static String encodeAsHTML(String s, boolean encodeAsHTML) {
         return encodeAsHTML? encodeAsHTML(s) : s;
     }
+
+    /**
+     * For security reasons, for text that will be used as an HTML attribute, 
+     * this replaces non-alphanumeric characters with HTML Entity &amp;#xHHHH; format.
+     * See HTML Attribute Encoding at
+     * https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet#Output_Encoding_Rules_Summary
+     *
+     * @param plainText the string to be encoded.
+     *    If null, this throws exception.
+     * @return the encoded string
+     */
+    public static String encodeAsHTMLAttribute(String plainText) {
+        int size = plainText.length();
+        StringBuilder output = new StringBuilder(size * 2);
+
+        for (int i = 0; i < size; i++) {
+            int chi = plainText.charAt(i); //note: int
+            if (String2.isDigitLetter(chi)) 
+                 output.append((char)chi);
+            else output.append("&#x" + Integer.toHexString(chi) + ";"); 
+        }
+
+        return output.toString();
+    }
+
 
     /**
      * This replaces '&', '<', '>', '"', ''' in the string with 
@@ -163,13 +188,13 @@ public class XML {
         StringBuilder output = new StringBuilder(size * 2);
 
         for (int i = 0; i < size; i++) {
-            int ch = plainText.charAt(i); //note: int
-            if (ch <= 127)
+            int chi = plainText.charAt(i); //note: int
+            if (chi <= 127)
                 //converting " is important to prevent cross site scripting; 
                 //it prevents attacker from closing href="..." quotes
-                output.append(HTML_ENTITIES[ch]);
+                output.append(HTML_ENTITIES[chi]);
             else 
-                output.append("&#" + ch + ";"); //XML book indicates no zero padding
+                output.append("&#x" + Integer.toHexString(chi) + ";");
         }
 
         return output.toString();
@@ -564,7 +589,7 @@ public class XML {
 
     /**
      * This gets a nodeList for an XPath query.
-     * <br>See http://download.oracle.com/javase/1.5.0/docs/api/javax/xml/xpath/package-summary.html 
+     * <br>See http://download.oracle.com/javase/7/docs/api/javax/xml/xpath/package-summary.html 
      * <br>See javadoc for xpath
      * <br>See examples at http://javaalmanac.com/egs/org.w3c.dom/xpath_GetElemByAttr.html?l=rel
      * <br>See examples at http://javaalmanac.com/egs/org.w3c.dom/xpath_GetAbsElem.html?l=rel
@@ -785,8 +810,10 @@ public class XML {
 
         //test encodeAsXML
         String2.log("test encode");
-        Test.ensureEqual(encodeAsXML( "Hi &<>\"°"), "Hi &amp;&lt;&gt;&quot;&#176;", "XML");
-        Test.ensureEqual(encodeAsHTML("Hi &<>\"°"), "Hi &amp;&lt;&gt;&quot;&deg;", "HTML");
+        Test.ensureEqual(encodeAsXML( "Hi &<>\"°\u1234Bob"), "Hi &amp;&lt;&gt;&quot;&#xb0;&#x1234;Bob", "XML");
+        Test.ensureEqual(encodeAsHTML("Hi &<>\"°\u1234Bob"), "Hi &amp;&lt;&gt;&quot;&deg;&#x1234;Bob", "HTML");
+        Test.ensureEqual(encodeAsHTMLAttribute(
+                                      "Hi &<>\"°\u1234Bob"), "Hi&#x20;&#x26;&#x3c;&#x3e;&#x22;&#xb0;&#x1234;Bob", "HTML");
 
         //test decodeEntities
         String2.log("test decodeEntities");

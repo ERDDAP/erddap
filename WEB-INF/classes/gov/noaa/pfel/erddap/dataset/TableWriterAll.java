@@ -76,7 +76,9 @@ public class TableWriterAll extends TableWriter {
     public TableWriterAll(String tDir, String tFileNameNoExt) {
         super(null);
         dir = File2.addSlash(tDir);
-        File2.makeDirectory(dir);
+        //Normally, this is cacheDirectory and it already exists,
+        //  but my testing environment (2+ things running) may have removed it.
+        File2.makeDirectory(dir); 
         fileNameNoExt = tFileNameNoExt;
     }
 

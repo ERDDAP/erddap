@@ -50,6 +50,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
      */
     public EDDTableFromAsciiFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -58,24 +59,25 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ) 
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
         throws Throwable {
 
         super("EDDTableFromAsciiFiles", true, tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, 
+            tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ);
-
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
     }
 
     /** The constructor for subclasses. */
     public EDDTableFromAsciiFiles(String tClassName, String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -84,18 +86,19 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ) 
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
         throws Throwable {
 
         super(tClassName, true, tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, 
+            tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
 
     }
 
@@ -271,7 +274,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             "    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
             "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
-            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n");
+            "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
+            "    <fileTableInMemory>false</fileTableInMemory>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -340,6 +344,7 @@ directionsForGenerateDatasetsXml() +
 "    <columnNameForExtract>stationID</columnNameForExtract>\n" +
 "    <sortedColumnSourceName>time</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>station time</sortFilesBySourceNames>\n" +
+"    <fileTableInMemory>false</fileTableInMemory>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
@@ -512,7 +517,6 @@ directionsForGenerateDatasetsXml() +
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
             if (msg.indexOf(
-"java.lang.RuntimeException: datasets.xml error on or before line #202: " +
 "When a variable's destinationName is \"altitude\", the sourceAttributes or addAttributes " +
 "\"units\" MUST be \"m\" (not \"null\").\n" +
 "If needed, use \"scale_factor\" to convert the source values to meters (positive=up),\n" +
@@ -792,7 +796,131 @@ expected =
 
     }
 
+    /** 
+     * This tests some aspects of fixedValue variables 
+     * (with and without subsetVariables). */
+    public static void testFixedValue() throws Throwable {
 
+        String2.log("\n****************** EDDTableFromAsciiFiles.testFixedValue() *****************\n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDV edv;
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+
+        for (int test = 0; test < 2; test++) {
+            //!fixedValue variable is the only subsetVariable
+            String id = test == 0? "testWTDLwSV" : "testWTDLwoSV"; //with and without subsetVariables
+            EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
+
+            //test getting das for entire dataset
+            tName = eddTable.makeNewFileForDapQuery(null, null, "", 
+                EDStatic.fullTestCacheDirectory, eddTable.className() + "_fv" + test, ".das"); 
+            results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            expected = 
+    "Attributes {\n" +
+    " s {\n" +
+    "  ship_call_sign {\n" +
+    "    String cf_role \"trajectory_id\";\n" +
+    "    String ioos_category \"Other\";\n" +
+    "  }\n" +
+    "  time {\n" +
+    "    String _CoordinateAxisType \"Time\";\n" +
+    "    Float64 actual_range 1.365167919e+9, 1.36933224e+9;\n" +
+    "    String axis \"T\";\n" +
+    "    String ioos_category \"Time\";\n" +
+    "    String long_name \"Time\";\n" +
+    "    String standard_name \"time\";\n" +
+    "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+    "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+    "  }\n" +
+    "  latitude {\n" +
+    "    String _CoordinateAxisType \"Lat\";\n" +
+    "    Float32 actual_range 26.6255, 30.368;\n" +
+    "    String axis \"Y\";\n" +
+    "    String ioos_category \"Location\";\n" +
+    "    String long_name \"Latitude\";\n" +
+    "    String standard_name \"latitude\";\n" +
+    "    String units \"degrees_north\";\n" +
+    "  }\n" +
+    "  longitude {\n" +
+    "    String _CoordinateAxisType \"Lon\";\n" +
+    "    Float32 actual_range 263.2194, 274.2898;\n" +
+    "    String axis \"X\";\n" +
+    "    String ioos_category \"Location\";\n" +
+    "    String long_name \"Longitude\";\n" +
+    "    String standard_name \"longitude\";\n" +
+    "    String units \"degrees_east\";\n" +
+    "  }\n" +
+    "  seaTemperature {\n" +
+    "    Float32 _FillValue -8888.0;\n" +
+    "    Float32 actual_range 16.9, 25.9;\n" +
+    "    Float64 colorBarMaximum 40.0;\n" +
+    "    Float64 colorBarMinimum -10.0;\n" +
+    "    String ioos_category \"Temperature\";\n" +
+    "    String long_name \"Sea Water Temperature\";\n" +
+    "    String standard_name \"sea_water_temperature\";\n" +
+    "    String units \"degrees_C\";\n" +
+    "  }\n" +
+    " }\n" +
+    "  NC_GLOBAL {\n" +
+    "    String cdm_data_type \"Trajectory\";\n" +
+    "    String cdm_trajectory_variables \"ship_call_sign\";\n" +
+    "    String Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+    "    String creator_email \"eed.shiptracker@noaa.gov\";\n" +
+    "    String creator_name \"NOAA OMAO,Ship Tracker\";\n" +
+    "    Float64 Easternmost_Easting 274.2898;\n" +
+    "    String featureType \"Trajectory\";\n" +
+    "    Float64 geospatial_lat_max 30.368;\n" +
+    "    Float64 geospatial_lat_min 26.6255;\n" +
+    "    String geospatial_lat_units \"degrees_north\";\n" +
+    "    Float64 geospatial_lon_max 274.2898;\n" +
+    "    Float64 geospatial_lon_min 263.2194;\n" +
+    "    String geospatial_lon_units \"degrees_east\";\n" +
+    "    String history \"Data downloaded hourly from http://shiptracker.noaa.gov/shiptracker.html to ERD\n" +
+    today;
+    //        "2013-05-24T17:24:54Z (local files)\n" +
+    //"2013-05-24T17:24:54Z http://127.0.0.1:8080/cwexperimental/tabledap/testWTDL.das\";\n" +
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+
+    expected=
+        "String infoUrl \"http://shiptracker.noaa.gov/\";\n" +
+    "    String institution \"NOAA OMAO\";\n" +
+    "    String license \"The data may be used and redistributed for free but is not intended\n" +
+    "for legal use, since it may contain inaccuracies. Neither the data\n" +
+    "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+    "of their employees or contractors, makes any warranty, express or\n" +
+    "implied, including warranties of merchantability and fitness for a\n" +
+    "particular purpose, or assumes any legal liability for the accuracy,\n" +
+    "completeness, or usefulness, of this information.\";\n" +
+    "    String Metadata_Conventions \"COARDS, CF-1.4, Unidata Dataset Discovery v1.0\";\n" +
+    "    Float64 Northernmost_Northing 30.368;\n" +
+    "    String sourceUrl \"(local files)\";\n" +
+    "    Float64 Southernmost_Northing 26.6255;\n" +
+    "    String standard_name_vocabulary \"CF-12\";\n" +
+    (test == 0? "    String subsetVariables \"ship_call_sign\";\n" : "") +
+    "    String summary \"NOAA Ship Pisces Realtime Data updated every hour\";\n" +
+    "    String time_coverage_end \"2013-05-23T18:04:00Z\";\n" +
+    "    String time_coverage_start \"2013-04-05T13:18:39Z\";\n" +
+    "    String title \"NOAA Ship Pisces Underway Meteorological Data, Realtime\";\n" +
+    "    Float64 Westernmost_Easting 263.2194;\n" +
+    "  }\n" +
+    "}\n";
+            int po = results.indexOf("String infoUrl");
+            Test.ensureEqual(results.substring(po), expected, "results=\n" + results);
+
+            //test getting just the fixed value variable
+            tName = eddTable.makeNewFileForDapQuery(null, null, 
+                "ship_call_sign&ship_call_sign!=\"zztop\"", 
+                EDStatic.fullTestCacheDirectory, eddTable.className() + "_fv" + test, ".csv"); 
+            results = String2.readFromFile(EDStatic.fullTestCacheDirectory + tName)[1];
+            expected = 
+    "ship_call_sign\n" +
+    "\n" +
+    "WTDL\n";
+            Test.ensureEqual(results, expected, "results=\n" + results);
+        }
+    }
 
     /**
      * This tests the methods in this class.
@@ -802,6 +930,7 @@ expected =
     public static void test(boolean deleteCachedDatasetInfo) throws Throwable {
         testBasic(deleteCachedDatasetInfo);
         testGenerateDatasetsXml();
+        testFixedValue();
 
         //not usually run
     }
