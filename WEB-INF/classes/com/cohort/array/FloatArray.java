@@ -1169,21 +1169,22 @@ public class FloatArray extends PrimitiveArray {
     public String isEvenlySpaced() {
         if (size <= 2)
             return "";
-        float diff = array[1] - array[0];
-        for (int i = 2; i < size; i++) {
+        //average is closer to exact than first diff
+        //and usually detects not-evenly-spaced anywhere in the array on first test!
+        float average = (array[size-1] - array[0]) / (size - 1); 
+        for (int i = 1; i < size; i++) {
             //This is a difficult test to do well. See tests below.
-            //1e7 avoids fEps test in almostEqual
-            if (Math2.almostEqual( 4, (array[i] - array[i - 1]) * 1e7, diff * 1e7)) { 
+            if (Math2.almostEqual( 4, array[i] - array[i - 1], average)) { 
                 //String2.log(i + " passed first test");
             } else if (
                 //do easier test if first 6 digits are same
-                Math2.almostEqual(6, array[i - 1] + diff, array[i]) && 
-                Math2.almostEqual(2, (array[i] - array[i - 1]) * 1e7, diff * 1e7)) { 
+                Math2.almostEqual(6, array[i - 1] + average, array[i]) && 
+                Math2.almostEqual(2, array[i] - array[i - 1], average)) { 
                 //String2.log(i + " passed second test " + (array[i] - array[i - 1]) + " " + diff);
             } else {
                 return MessageFormat.format(ArrayNotEvenlySpaced, getClass().getSimpleName(),
                     "" + (i - 1), "" + array[i - 1], "" + i, "" + array[i],
-                    "" + (array[i] - array[i-1]), "" + diff);
+                    "" + (array[i] - array[i-1]), "" + average);
             }
         }
 
@@ -1500,7 +1501,10 @@ public class FloatArray extends PrimitiveArray {
         String2.log("\nevenlySpaced test #2");
         anArray.set(2, 30.1f);
         Test.ensureEqual(anArray.isEvenlySpaced(), 
-            "FloatArray isn't evenly spaced: [1]=20.0, [2]=30.1, spacing=10.1, expected spacing=10.0.", "");
+            "FloatArray isn't evenly spaced: [0]=10.0, [1]=20.0, spacing=10.0, average spacing=10.05.", "");
+        Test.ensureEqual(anArray.smallestBiggestSpacing(),
+            "  smallest spacing=10.0: [0]=10.0, [1]=20.0\n" +
+            "  biggest  spacing=10.100000381469727: [1]=20.0, [2]=30.100000381469727", "");
 
         //these are unevenly spaced, but the secondary precision test allows it
         //should fail first test, but pass second test
@@ -1511,7 +1515,7 @@ public class FloatArray extends PrimitiveArray {
         String2.log("\nevenlySpaced test #4");
         anArray.set(2, 1.23081f); 
         Test.ensureEqual(anArray.isEvenlySpaced(), 
-            "FloatArray isn't evenly spaced: [1]=1.2307, [2]=1.23081, spacing=1.10030174E-4, expected spacing=1.00016594E-4.", "");
+            "FloatArray isn't evenly spaced: [0]=1.2306, [1]=1.2307, spacing=1.00016594E-4, average spacing=1.05023384E-4.", "");
 
         //isAscending
         anArray = new FloatArray(new float[] {10,10,30});

@@ -86,12 +86,21 @@ public class AttributedString2 {
     }
 
     /**
-     * This adds a character and doesn't reset lastStart.
+     * This adds a character but doesn't reset lastStart.
      *
      * @param ch
      */
     public void addChar(char ch) {
         cumulative.append(ch);
+    }
+
+    /**
+     * This adds the characters but doesn't reset lastStart.
+     *
+     * @param s
+     */
+    public void addChars(String s) {
+        cumulative.append(s);
     }
 
     /**
@@ -299,15 +308,7 @@ public class AttributedString2 {
                 if (po2 < 0)
                     as2.addChar(ch);
                 else {
-                    String name = htmlText.substring(po, po2);
-                    if (verbose) String2.log("    special char=" + name);
-                    if (name.equals("amp"))       as2.addChar('&');
-                    else if (name.equals("gt"))   as2.addChar('>');
-                    else if (name.equals("lt"))   as2.addChar('<');
-                    else if (name.equals("quot")) as2.addChar('"');
-                    else { //treat as literal
-                        as2.addChar(ch);
-                    }
+                    as2.addChars(XML.decodeEntities(htmlText.substring(po - 1, po2 + 1)));
                     po = po2 + 1;
                 }
 

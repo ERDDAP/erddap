@@ -33,9 +33,7 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 
 import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.util.*;
-import gov.noaa.pfel.erddap.variable.EDV;
-import gov.noaa.pfel.erddap.variable.EDVGridAxis;
-import gov.noaa.pfel.erddap.variable.EDVTimeGridAxis;
+import gov.noaa.pfel.erddap.variable.*;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -43,8 +41,10 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
@@ -449,8 +449,8 @@ public class Erddap extends HttpServlet {
                 doDap(request, response, loggedInAs, protocol, protocolEnd + 1, userQuery);
             } else if (protocol.equals("sos")) {
                 doSos(request, response, loggedInAs, protocolEnd + 1, userQuery); 
-            } else if (protocol.equals("wcs")) {
-                doWcs(request, response, loggedInAs, protocolEnd + 1, userQuery); 
+            //} else if (protocol.equals("wcs")) {
+            //    doWcs(request, response, loggedInAs, protocolEnd + 1, userQuery); 
             } else if (protocol.equals("wms")) {
                 doWms(request, response, loggedInAs, protocolEnd + 1, userQuery);
             } else if (endOfRequest.equals("") || endOfRequest.equals("index.htm")) {
@@ -509,6 +509,8 @@ public class Erddap extends HttpServlet {
                 doLogout(request, response, loggedInAs);
             } else if (endOfRequest.equals("rest.html")) {
                 doRestHtml(request, response, loggedInAs);
+            } else if (protocol.equals("rest")) {  
+                doGeoServicesRest(request, response, loggedInAs, endOfRequest, userQuery);
             } else if (endOfRequest.equals("setDatasetFlag.txt")) {
                 doSetDatasetFlag(request, response, userQuery);
             } else if (endOfRequest.equals("sitemap.xml")) {
@@ -5647,6 +5649,903 @@ writer.write(
         sendResourceNotFoundError(request, response, "");
     }
 
+    /**
+     * This sends an error message for doGeoServicesRest.
+     */
+    public void sendGeoServicesRestError(HttpServletRequest request, 
+        HttpServletResponse response, boolean fParamIsJson, int httpErrorNumber, 
+        String message, String details) throws Throwable {
+
+        //json
+        if (fParamIsJson) {
+
+            Writer writer = getJsonWriter(request, response, "error", ".jsonText");
+            writer.write(
+"{\n" +
+"  \"error\" :\n" +
+"  {\n" +
+"    \"code\" : " + httpErrorNumber + ",\n" +
+"    \"message\" : " + String2.toJson(message) + ",\n" +
+"    \"details\" : [" + String2.toJson(details) + "]\n" +
+"  }\n" +
+"}\n");
+            writer.close(); //it calls writer.flush then out.close();  
+            return;
+        }
+
+        //sendResourceNotFoundError
+        if (httpErrorNumber == HttpServletResponse.SC_NOT_FOUND) {  //404
+            sendResourceNotFoundError(request, response, message + " (" + details + ")");
+            return;
+        }
+
+        //send http error
+        try {
+            String2.log("Calling response.sendError(" + httpErrorNumber + "):\n" + 
+                message + " (" + details + ")");
+            response.sendError(httpErrorNumber, message + " (" + details + ")");
+        } catch (Throwable t) {
+            EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
+            throw new SimpleException("HTTP " + httpErrorNumber + " Error:\n" + 
+                message + " (" + details + ")");
+        }
+    }
+
+    /**
+     * Deal with /rest or /rest/... via ESRI GeoServices REST Specification v1.0.
+     * http://www.esri.com/library/whitepapers/pdfs/geoservices-rest-spec.pdf 
+     * A sample server is http://sampleserver3.arcgisonline.com/ArcGIS/rest/services
+     * Only call this method if protocol="rest".
+     * 
+     * <p>When I checked on 2013-06-12, 
+     * http://www.esri.com/industries/landing-pages/geoservices/geoservices states
+     * "Use of the GeoServices REST Specification is subject to the current Open Web Foundation Agreement."
+     * http://www.openwebfoundation.org/announcements/introducingtheopenwebfoundationagreement states
+     * "The Open Web Foundation Agreement itself establishes the copyright and 
+     * patent rights for a specification, ensuring that downstream consumers 
+     * may freely implement and reuse the licensed specification without seeking 
+     * further permission."
+     *
+     * @param loggedInAs  the name of the logged in user (or null if not logged in)
+     * @param endOfRequest  starting with "rest"
+     * @param userQuery  post "?", still percentEncoded, may be null.
+     */
+    public void doGeoServicesRest(HttpServletRequest request, HttpServletResponse response,
+        String loggedInAs, String endOfRequest, String userQuery) throws Throwable {
+
+        if (!EDStatic.geoServicesRestActive)
+            throw new SimpleException(MessageFormat.format(EDStatic.disabled, "GeoServices REST"));
+
+        String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
+        String erddapRestServices = "/" + EDStatic.warName + "/rest/services";  //ESRI uses relative URLs
+        String roles[] = EDStatic.getRoles(loggedInAs);
+        String teor = String2.replaceAll(endOfRequest, "//", "/"); //bypasses a common ArcGIS problem
+        if (teor.endsWith("/"))
+            teor = teor.substring(0, teor.length() - 1); //so no empty part at end
+        String urlParts[] = String2.split(teor, '/');  
+        int nUrlParts = urlParts.length;
+        
+        HashMap<String, String> queryMap = EDD.userQueryHashMap(userQuery, true); //true=names toLowerCase
+        String fParam = queryMap.get("f");  //e.g., json or JSON
+        fParam = fParam == null? "" : fParam.toLowerCase();
+        boolean defaultFIsHtml = true;  //ESRI servers default to Html
+        boolean defaultFIsJson = false;
+        boolean fParamIsJson = (fParam.length() == 0 && defaultFIsJson) || fParam.equals("json");
+        boolean fParamIsHtml = (fParam.length() == 0 && defaultFIsHtml) || fParam.equals("html");
+        String prettyParam = queryMap.get("pretty"); //e.g., true
+        String breadCrumbs = 
+            "<h2>" + //sample server has "&nbsp;<br/><b>\n" +
+            "<a href=\"" + tErddapUrl + "\">ERDDAP</a>\n" +
+            "&gt; <a rel=\"contents\" href=\"" + erddapRestServices + "?f=html\">GeoServices REST Home</a>\n";
+        String endBreadCrumbs = "</h2>\n"; //sample server has "</b>\n" +
+
+        int esriCurrentVersion = 10; //see a sample server
+        String UnableToCompleteOperation = "Unable to complete operation."; //from ESRI
+        String UnsupportedMediaType = "Unsupported Media Type"; //HTTP 415 error
+        String InvalidURL = "Invalid URL"; //from ESRI
+        String InvalidParam = "Invalid Parameter"; //from ESRI
+        String InvalidFParam = "Invalid f Parameter: Must be html" + 
+            (defaultFIsHtml? " (the default)" : "") +
+            " or json" + 
+            (defaultFIsJson? " (the default)." : ".");
+
+        //String startTallySinceStartup     = "Rest requests (since startup)";
+        //String startTallySinceDailyReport = "Rest requests (since last daily report)";
+        //EDStatic.tally.add(startTallySinceStartup,     reason);
+        //EDStatic.tally.add(startTallySinceDailyReport, reason);
+
+        //*** urlParts[0]="rest"
+
+        //ensure urlParts[0]="rest"
+        if (nUrlParts < 1 || !"rest".equals(urlParts[0])) {
+            //this shouldn't happen because this method should only be called if protocol=rest
+            sendResourceNotFoundError(request, response, "/rest/services was expected.");
+            return;
+        }
+
+        //just "/rest"
+        if (nUrlParts == 1) {
+            if (fParamIsJson) //sampleserver is strict for json
+                sendGeoServicesRestError(request, response, 
+                    fParamIsJson, HttpServletResponse.SC_NOT_FOUND, 
+                    UnableToCompleteOperation, InvalidURL);
+            else //sampleserver redirects to /rest/services
+                response.sendRedirect(erddapRestServices +
+                    (fParam.length() == 0? "" : "?f=" + fParam));
+            return;
+        }
+
+        //*** urlParts[1]="services"
+
+        //ensure urlParts[1]="services"
+        if (!"services".equals(urlParts[1])) {
+            if (fParamIsJson) //sampleserver is strict for json
+                sendGeoServicesRestError(request, response, 
+                    fParamIsJson, HttpServletResponse.SC_NOT_FOUND, 
+                    UnableToCompleteOperation, InvalidURL);
+            else //sampleserver redirects to /rest/services
+                response.sendRedirect(erddapRestServices +
+                    (fParam.length() == 0? "" : "?f=" + fParam));
+            return;
+        }
+
+        //just "/rest/services"
+        if (nUrlParts == 2) {
+
+            // find supported datasets (accessibleViaGeoServicesRest = "");
+            StringArray ids;
+            StringArray tids = gridDatasetIDs();
+            int ntids = tids.size();
+            ids    = new StringArray(ntids, false);
+            for (int ti = 0; ti < ntids; ti++) {
+                EDD edd = (EDD)gridDatasetHashMap.get(tids.get(ti));
+                if (edd != null && //if just deleted
+                    edd.accessibleViaGeoServicesRest().length() == 0 &&
+                    (EDStatic.listPrivateDatasets || edd.isAccessibleTo(roles))) {
+                    ids.add(edd.datasetID());
+                }
+            }
+            ids.sortIgnoreCase();
+            int nids = ids.size();
+
+            if (fParamIsJson) {
+                Writer writer = getJsonWriter(request, response, 
+                    "rest_services", ".jsonText");
+                writer.write(
+"{ \"specVersion\" : 1.0,\n" +
+"  \"currentVersion\" : " + esriCurrentVersion + ",\n" +
+"  \"folders\" : [\n");
+                for (int i = 0; i < nids; i++) 
+                    writer.write(
+"    " + String2.toJson(ids.get(i)) + (i == nids - 1? "" : ",") + "\n");
+                writer.write(
+"  ],\n" + 
+"  \"services\" : [\n" +
+//"    {\"name\" : \"Geometry\", \"type\" : \"GeometryServer\"}\n" +
+"  ]\n" +
+"}\n");
+                writer.close(); //it calls writer.flush then out.close();  
+
+            } else if (fParamIsHtml) {  
+                OutputStream out = getHtmlOutputStream(request, response);
+                Writer writer = getHtmlWriter(loggedInAs, 
+                    "Folder: /", out); 
+                writer.write(
+//esri has different header
+breadCrumbs + endBreadCrumbs + 
+"\n" +
+//ESRI documentation: http://resources.arcgis.com/en/help/main/10.1/index.html#/Making_a_user_connection_to_ArcGIS_Server_in_ArcGIS_for_Desktop/01540000047m000000/\
+//which ESRI makes freely reusable under the Open Web Foundation Agreement
+"<p>" + String2.replaceAll(EDStatic.geoServicesDescription, "&erddapUrl;", tErddapUrl) +
+"\n" +
+//then mimic ESRI servers  (except for <div>)
+"<h2>Folder: /</h2>\n" +
+"<b>Current Version: </b>" + (float)esriCurrentVersion + "<br/>\n" +
+"<br/>\n" +
+//"<b>View Footprints In: </b>\n" +
+//"&nbsp;&nbsp;<a href=\"" + erddapRestServices + "?f=kmz\">Google Earth</a><br/>\n" +
+//"<br/>\n" +
+"<b>Folders:</b> <br/>\n" +
+//"<br/>\n" + //excessive
+"<ul id='folderList'>\n");
+                for (int i = 0; i < nids; i++) 
+                    writer.write(                          //no ?f=...
+"<li><a rel=\"chapter\" rev=\"contents\" href=\"" + erddapRestServices + "/" + ids.get(i) + "\">" + ids.get(i) + "</a></li>\n");
+                writer.write(
+"</ul>\n" +
+//"<b>Services:</b> <br/>\n" +
+//"<br/>\n" +
+//"<ul id='serviceList'>\n" +
+//"<li><a href=\"" + erddapRestServices + "/Geometry/GeometryServer\">Geometry</a> (GeometryServer)</li>\n" +
+//"</ul><br/>\n" +
+"<b>Supported Interfaces: </b>\n" + //their links have / before ?, but I think it causes problems
+"&nbsp;&nbsp;<a target=\"_blank\" rel=\"alternate\" href=\"" + erddapRestServices + "?f=json&amp;pretty=true\">REST</a>\n" +
+//"&nbsp;&nbsp;<a target=\"_blank\" rel=\"alternate\" href=\"http://sampleserver3.arcgisonline.com/ArcGIS/services?wsdl\">SOAP</a>\n" +
+//"&nbsp;&nbsp;<a target=\"_blank\" href=\"" + erddapRestServices + "?f=sitemap\">Sitemap</a>\n" +
+//"&nbsp;&nbsp;<a target=\"_blank\" href=\"" + erddapRestServices + "?f=geositemap\">Geo Sitemap</a>\n" +
+"<br/>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
+
+            } else {
+                sendGeoServicesRestError(request, response, 
+                    fParamIsJson, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
+                    UnsupportedMediaType, InvalidFParam);
+            }
+            return;
+        }
+
+        //*** urlParts[2]= datasetID
+
+        //ensure urlParts[2]=valid datasetID
+        String tDatasetID = urlParts[2];
+        EDDGrid tEddGrid = (EDDGrid)gridDatasetHashMap.get(tDatasetID);
+        if (tEddGrid == null) {
+            sendResourceNotFoundError(request, response, "");
+            return;
+        }
+        if (!tEddGrid.isAccessibleTo(EDStatic.getRoles(loggedInAs))) { //authorization (very important)
+            EDStatic.redirectToLogin(loggedInAs, response, tDatasetID);
+            return;
+        }
+        if (tEddGrid.accessibleViaGeoServicesRest().length() > 0) {
+            sendResourceNotFoundError(request, response, tEddGrid.accessibleViaGeoServicesRest());
+            return;
+        }
+
+        String relativeUrl = erddapRestServices + "/" + tDatasetID;
+        breadCrumbs +=
+            "&gt; <a rel=\"chapter\" href=\"" + relativeUrl + "?f=html\">" + tDatasetID + "</a>\n";
+        EDV tDataVariables[] = tEddGrid.dataVariables();
+        EDVLonGridAxis  tEdvLon  = (EDVLonGridAxis)(tEddGrid.axisVariables()[tEddGrid.lonIndex()]); //must exist
+        EDVLatGridAxis  tEdvLat  = (EDVLatGridAxis)(tEddGrid.axisVariables()[tEddGrid.latIndex()]); //must exist
+        EDVTimeGridAxis tEdvTime = (EDVTimeGridAxis)(tEddGrid.timeIndex() < 0? null : tEddGrid.axisVariables()[tEddGrid.timeIndex()]); //optional
+
+        //just "/rest/services/[datasetID]"
+        if (nUrlParts == 3) {
+
+            if (fParamIsJson) {
+                Writer writer = getJsonWriter(request, response, 
+                    "rest_services_" + tDatasetID, ".jsonText");
+                writer.write(
+"{ \"currentVersion\" : " + esriCurrentVersion + ",\n" +
+"  \"folders\" : [],\n" + //esri acts like /[destName] isn't a valid folder!
+"  \"services\" : [\n");
+                
+                for (int dv = 0; dv < tDataVariables.length; dv++) 
+                    writer.write(
+"    {\"name\" : \"" + tDatasetID + "/" + tDataVariables[dv].destinationName() + "\", \"type\" : \"ImageServer\"}" +
+                        (dv < tDataVariables.length - 1? "," : "") +
+                        "\n");
+                writer.write(
+"  ]\n" +
+"}\n");
+                writer.close(); //it calls writer.flush then out.close();  
+
+            } else if (fParamIsHtml) {  
+                OutputStream out = getHtmlOutputStream(request, response);
+                Writer writer = getHtmlWriter(loggedInAs, //"Folder: " + 
+                    tDatasetID, out); 
+                writer.write(
+//mimic ESRI servers  (except for <div>)
+breadCrumbs + endBreadCrumbs + 
+"\n" +
+"<h2>Folder: " + tDatasetID + "</h2>\n" +
+"<b>Current Version: </b>" + (float)esriCurrentVersion + "<br/>\n" +
+"<br/>\n" +
+//"<b>View Footprints In: </b>\n" +
+//"&nbsp;&nbsp;<a rel=\"alternate\" href=\"" + relativeUrl + "?f=kmz\">Google Earth</a><br/>\n" +
+//"<br/>\n" +
+"<b>Services:</b> <br/>\n" +
+//"<br/>\n" +
+"<ul id='serviceList'>\n"); 
+                for (int dv = 0; dv < tDataVariables.length; dv++) {
+                    if (tDataVariables[dv].hasColorBarMinMax()) 
+                        writer.write(
+"<li><a rel=\"contents\" href=\"" + 
+                   relativeUrl + "/" + tDataVariables[dv].destinationName() + "/ImageServer\">" + 
+                    tDatasetID + "/" + tDataVariables[dv].destinationName() + "</a> (ImageServer)</li>\n");
+                }
+                writer.write(
+"</ul>\n" +
+"<b>Supported Interfaces: </b>\n" + //sample servers have / before ?'s, but it's trouble
+"&nbsp;&nbsp;<a target=\"_blank\" rel=\"alternate\" href=\"" + relativeUrl + "?f=json&amp;pretty=true\">REST</a>\n" +
+//"&nbsp;&nbsp;<a target=\"_blank\" rel=\"alternate\" href=\"http://sampleserver3.arcgisonline.com/ArcGIS/services/Portland/?wsdl\">SOAP</a>\n" +
+//"&nbsp;&nbsp;<a target=\"_blank\" href=\"" + relativeUrl + "?f=sitemap\">Sitemap</a>\n" +
+//"&nbsp;&nbsp;<a target=\"_blank\" href=\"" + relativeUrl + "?f=geositemap\">Geo Sitemap</a>\n" +
+"<br/>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
+
+            } else {
+                sendGeoServicesRestError(request, response, 
+                    fParamIsJson, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
+                    UnsupportedMediaType, InvalidFParam);
+            }
+            return;
+        }
+
+        //*** urlParts[3]= variable tDestName
+
+        //ensure urlParts[3]=valid variable tDestName
+        String tDestName = urlParts[3];
+        int tDvi = String2.indexOf(tEddGrid.dataVariableDestinationNames(), tDestName);
+        if (tDvi < 0 ||
+            !tDataVariables[tDvi].hasColorBarMinMax()) { //must have colorBarMin/Max
+            sendResourceNotFoundError(request, response, "");
+            return;
+        }
+        EDV tEdv = tDataVariables[tDvi];
+
+        //just "/rest/services/[tDatasetID]/[tDestName]"
+        if (nUrlParts == 4) {
+            sendResourceNotFoundError(request, response, "");
+            return;
+        }
+
+
+        //*** urlParts[4]=ImageServer
+
+        //ensure urlParts[4]=ImageServer
+        if (!urlParts[4].equals("ImageServer")) {
+            sendResourceNotFoundError(request, response, "");
+            return;
+        }
+
+        relativeUrl = erddapRestServices + "/" + tDatasetID + "/" + tDestName + "/ImageServer";
+        breadCrumbs +=
+            "&gt; <a rel=\"contents\" href=\"" + relativeUrl + "?f=html\">" + tDestName + " (ImageServer)</a>\n";
+        String serviceDataType = "altitude".equals(tEdv.combinedAttributes().getString("standard_name"))? 
+            "esriImageServiceDataTypeElevation" : 
+            "esriImageServiceDataTypeProcessed";
+        String pixelType = PrimitiveArray.classToEsriPixelType(tEdv.destinationDataTypeClass());
+        String spatialReference = "GEOGCS[\"unnamed\",DATUM[\"WGS_1984\"," +  //found on sample server
+            "SPHEROID[\"WGS 84\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0]," +
+            "UNIT[\"degree\",0.0174532925199433]]";
+        String tLicense = tEddGrid.combinedGlobalAttributes().getString("license");
+        if (tLicense == null) 
+            tLicense = "";  //suitable for json and html
+
+        //just "/rest/services/[tDatasetID]/[tDestName]/ImageServer"
+        if (nUrlParts == 5) {
+
+            if (fParamIsJson) {
+                Writer writer = getJsonWriter(request, response, 
+                    "rest_services_" + tDatasetID + "_" + tDestName, ".jsonText");
+                writer.write(
+"{\n" +
+"  \"serviceDescription\" : " + String2.toJson(tEddGrid.title() + "\n" + tEddGrid.summary()) + ", \n" +
+"  \"name\" : \"" + tDatasetID + "_" + tDestName + "\", \n" +  //???sample server name is a new 1-piece name, no slashes
+"  \"description\" : " + String2.toJson(tEddGrid.title() + "\n" + tEddGrid.summary()) + ", \n" +
+"  \"extent\" : {\n" +
+//!!!??? I need to deal with lon 0 - 360
+"    \"xmin\" : " + tEdvLon.destinationMinString() + ", \n" +
+"    \"ymin\" : " + tEdvLat.destinationMinString() + ", \n" +
+"    \"xmax\" : " + tEdvLon.destinationMaxString() + ", \n" +
+"    \"ymax\" : " + tEdvLat.destinationMaxString() + ", \n" +
+"    \"spatialReference\" : {\n" + 
+//"      \"wkt\" : " + String2.toJson(spatialReference) + "\n" + //their server
+"      \"wkid\" : 4326\n" + //spec 
+"    }\n" +
+"  }, \n" +
+(tEdvTime == null? "" :
+  "  \"timeInfo\" : {\"timeExtent\" : [" + 
+  Math.round(tEdvTime.destinationMin() * 1000) + "," +
+  Math.round(tEdvTime.destinationMax() * 1000) + "]},\n") +  //"timeReference" : null
+"  \"pixelSizeX\" : " + (tEdvLon.averageSpacing()) + ", \n" +
+"  \"pixelSizeY\" : " + (tEdvLat.averageSpacing()) + ", \n" +
+"  \"bandCount\" : 1, \n" +
+"  \"pixelType\" : \"" + pixelType + "\", \n" +  
+"  \"minPixelSize\" : 0, \n" +
+"  \"maxPixelSize\" : 0, \n" +
+"  \"copyrightText\" : " + String2.toJson(tLicense) + ", \n" +
+"  \"serviceDataType\" : \"" + serviceDataType + "\", \n" +
+//"  \"minValues\" : [\n" +
+//"    0, \n" +
+//"    0, \n" +
+//"    0\n" +
+//"  ], \n" +
+//"  \"maxValues\" : [\n" +
+//"    254, \n" +
+//"    254, \n" +
+//"    254\n" +
+//"  ], \n" +
+//"  \"meanValues\" : [\n" +
+//"    136.94026147211, \n" +
+//"    139.542743660379, \n" +
+//"    131.186539925398\n" +
+//"  ], \n" +
+//"  \"stdvValues\" : [\n" +
+//"    44.975869054346, \n" +
+//"    42.4256509647694, \n" +
+//"    40.0998618910186\n" +
+//"  ], \n" +
+
+//I don't understand: ObjectID and Fields seem to be always same: x=x
+"  \"objectIdField\" : \"OBJECTID\", \n" +
+"  \"fields\" : [\n" +
+"    {\n" +
+"      \"name\" : \"OBJECTID\", \n" +
+"      \"type\" : \"esriFieldTypeOID\", \n" +
+"      \"alias\" : \"OBJECTID\"}, \n" +
+"    {\n" +
+"      \"name\" : \"Shape\", \n" +
+"      \"type\" : \"esriFieldTypeGeometry\", \n" +
+"      \"alias\" : \"Shape\"}, \n" +
+"    {\n" +
+"      \"name\" : \"Name\", \n" +
+"      \"type\" : \"esriFieldTypeString\", \n" +
+"      \"alias\" : \"Name\"}, \n" +
+"    {\n" +
+"      \"name\" : \"MinPS\", \n" +
+"      \"type\" : \"esriFieldTypeDouble\", \n" +
+"      \"alias\" : \"MinPS\"}, \n" +
+"    {\n" +
+"      \"name\" : \"MaxPS\", \n" +
+"      \"type\" : \"esriFieldTypeDouble\", \n" +
+"      \"alias\" : \"MaxPS\"}, \n" +
+"    {\n" +
+"      \"name\" : \"LowPS\", \n" +
+"      \"type\" : \"esriFieldTypeDouble\", \n" +
+"      \"alias\" : \"LowPS\"}, \n" +
+"    {\n" +
+"      \"name\" : \"HighPS\", \n" +
+"      \"type\" : \"esriFieldTypeDouble\", \n" +
+"      \"alias\" : \"HighPS\"}, \n" +
+"    {\n" +
+"      \"name\" : \"Category\", \n" +
+"      \"type\" : \"esriFieldTypeInteger\", \n" +
+"      \"alias\" : \"Category\"}, \n" +
+"    {\n" +
+"      \"name\" : \"Tag\", \n" +
+"      \"type\" : \"esriFieldTypeString\", \n" +
+"      \"alias\" : \"Tag\"}, \n" +
+"    {\n" +
+"      \"name\" : \"GroupName\", \n" +
+"      \"type\" : \"esriFieldTypeString\", \n" +
+"      \"alias\" : \"GroupName\"}, \n" +
+"    {\n" +
+"      \"name\" : \"ProductName\", \n" +
+"      \"type\" : \"esriFieldTypeString\", \n" +
+"      \"alias\" : \"ProductName\"}, \n" +
+"    {\n" +
+"      \"name\" : \"CenterX\", \n" +
+"      \"type\" : \"esriFieldTypeDouble\", \n" +
+"      \"alias\" : \"CenterX\"}, \n" +
+"    {\n" +
+"      \"name\" : \"CenterY\", \n" +
+"      \"type\" : \"esriFieldTypeDouble\", \n" +
+"      \"alias\" : \"CenterY\"}, \n" +
+"    {\n" +
+"      \"name\" : \"ZOrder\", \n" +
+"      \"type\" : \"esriFieldTypeInteger\", \n" +
+"      \"alias\" : \"ZOrder\"}, \n" +
+"    {\n" +
+"      \"name\" : \"SOrder\", \n" +
+"      \"type\" : \"esriFieldTypeInteger\", \n" +
+"      \"alias\" : \"SOrder\"}, \n" +
+"    {\n" +
+"      \"name\" : \"StereoID\", \n" +
+"      \"type\" : \"esriFieldTypeString\", \n" +
+"      \"alias\" : \"StereoID\"}, \n" +
+"    {\n" +
+"      \"name\" : \"Shape_Length\", \n" +
+"      \"type\" : \"esriFieldTypeDouble\", \n" +
+"      \"alias\" : \"Shape_Length\"}, \n" +
+"    {\n" +
+"      \"name\" : \"Shape_Area\", \n" +
+"      \"type\" : \"esriFieldTypeDouble\", \n" +
+"      \"alias\" : \"Shape_Area\"}\n" +
+"  ]\n" +
+"}\n");
+                writer.close(); //it calls writer.flush then out.close();  
+
+            } else if (fParamIsHtml) {  
+
+                OutputStream out = getHtmlOutputStream(request, response);
+                Writer writer = getHtmlWriter(loggedInAs, //"Folder: " + 
+                    tDatasetID + "/" + tDestName, out); 
+                writer.write(
+//mimic ESRI servers  (except for <div>)
+breadCrumbs + endBreadCrumbs + 
+"\n" +
+"<h2>" + tDatasetID + "/" + tDestName + " (ImageServer)</h2>\n" +
+"<b>View In: </b>\n" +
+"&nbsp;&nbsp;<a rel=\"contents\" href=\"" + relativeUrl + "?f=lyr&amp;v=" + (float)esriCurrentVersion + "\">ArcMap</a>\n" +
+//"&nbsp;&nbsp;<a rel=\"alternate\" href=\"" + relativeUrl + "/kml/image.kmz\">Google Earth</a>\n" +
+//"&nbsp;&nbsp;<a rel=\"alternate\" href=\"" + relativeUrl + "?f=jsapi\" target=\"_blank\">ArcGIS JavaScript</a>\n" +
+//"&nbsp;&nbsp;<a href=\"http://www.arcgis.com/home/webmap/viewer.html?url=http%3a%2f%2fsampleserver3.arcgisonline.com%2fArcGIS%2frest%2fservices%2fPortland%2fAerial%2fImageServer&source=sd\" target=\"_blank\">ArcGIS.com Map</a>\n" +
+"<br/><br/>\n" +
+//"<b>View Footprint In: </b>\n" +
+//"&nbsp;&nbsp;<a rel=\"alternate\" href=\"" + relativeUrl + "?f=kmz\">Google Earth</a>\n" +
+//"<br/><br/>\n" +
+"<b>Service Description:</b> " + XML.encodeAsHTML(tEddGrid.title()) + "<br/>"
+                               + XML.encodeAsHTML(tEddGrid.summary()) + "<br/>\n" +
+"<br/>\n" +
+"<b>Name:</b> " + tDatasetID + "_" + tDestName + "<br/>\n" +  //???sample server name is a new 1-piece name, no slashes
+"<br/>\n" +
+"<b>Description:</b> " + XML.encodeAsHTML(tEddGrid.title()) + "<br/>" 
+                       + XML.encodeAsHTML(tEddGrid.summary()) + "<br/>\n" +
+"<br/>\n" +
+"<b>Extent:</b> <br/>\n" +
+"<ul>\n" +  
+//!!!??? I need to deal with lon 0 - 360
+//??? sample server doesn't use any <li> !!!
+"  <li>XMin: " + tEdvLon.destinationMinString() + "<br/>\n" +    
+"  <li>YMin: " + tEdvLat.destinationMinString() + "<br/>\n" +
+"  <li>XMax: " + tEdvLon.destinationMaxString() + "<br/>\n" +
+"  <li>YMax: " + tEdvLat.destinationMaxString() + "<br/>\n" +
+"  <li>Spatial Reference: " + XML.encodeAsHTML(spatialReference) + "<br/>\n" +
+"</ul>\n" +
+"<b>Time Info:</b> <br/>\n" +
+"<ul>\n" + 
+//??? sample server doesn't use <li> !!!
+"  <li>TimeExtent: " + 
+    (tEdvTime == null? "null" : "[" + 
+    Calendar2.formatAsEsri(Calendar2.epochSecondsToGc(tEdvTime.destinationMin())) + ", " + 
+    Calendar2.formatAsEsri(Calendar2.epochSecondsToGc(tEdvTime.destinationMax())) + "]") +
+"<br/>\n" +   
+"</ul>\n" +
+"<b>Pixel Size X:</b> " + (tEdvLon.averageSpacing()) + "<br/>\n" +
+"<br/>\n" +
+"<b>Pixel Size Y:</b> " + (tEdvLat.averageSpacing()) + "<br/>\n" +
+"<br/>\n" +
+"<b>Band Count:</b> 1<br/>\n" +
+"<br/>\n" +
+"<b>Pixel Type:</b> " + pixelType + "<br/>\n" +  
+"<br/>\n" +
+"<b>Min Pixel Size:</b> 0<br/>\n" +
+"<br/>\n" +
+"<b>Maximum Pixel Size:</b> 0<br/>\n" +
+"<br/>\n" +
+"<b>Copyright Text:</b> " + XML.encodeAsHTML(tLicense) + "<br/>\n" +
+"<br/>\n" +
+"<b>Service Data Type:</b> " + serviceDataType + "<br/>\n" +  
+"<br/>\n" +
+//"<b>Min Values: </b>0<br/>\n" +
+//"<br/>\n" +
+//"<b>Max Values: </b>254<br/>\n" +
+//"<br/>\n" +
+//"<b>Mean Values: </b>136.94026147211<br/>\n" +
+//"<br/>\n" +
+//"<b>Standard Deviation Values: </b>44.975869054346<br/>\n" +
+//"<br/>\n" +
+
+//I don't understand: ObjectID and Fields seem to be always same: x=x
+"<b>Object ID Field:</b> OBJECTID<br/>\n" +
+"<br/>\n" +
+"<b>Fields:</b>\n" +
+"<ul>\n" +
+"  <li>OBJECTID <i>(Type: esriFieldTypeOID, Alias: OBJECTID)</i></li>\n" +
+"  <li>Shape <i>(Type: esriFieldTypeGeometry, Alias: Shape)</i></li>\n" +
+"  <li>Name <i>(Type: esriFieldTypeString, Alias: Name)</i></li>\n" +
+"  <li>MinPS <i>(Type: esriFieldTypeDouble, Alias: MinPS)</i></li>\n" +
+"  <li>MaxPS <i>(Type: esriFieldTypeDouble, Alias: MaxPS)</i></li>\n" +
+"  <li>LowPS <i>(Type: esriFieldTypeDouble, Alias: LowPS)</i></li>\n" +
+"  <li>HighPS <i>(Type: esriFieldTypeDouble, Alias: HighPS)</i></li>\n" +
+"  <li>Category <i>(Type: esriFieldTypeInteger, Alias: Category)</i></li>\n" +
+"  <li>Tag <i>(Type: esriFieldTypeString, Alias: Tag)</i></li>\n" +
+"  <li>GroupName <i>(Type: esriFieldTypeString, Alias: GroupName)</i></li>\n" +
+"  <li>ProductName <i>(Type: esriFieldTypeString, Alias: ProductName)</i></li>\n" +
+"  <li>CenterX <i>(Type: esriFieldTypeDouble, Alias: CenterX)</i></li>\n" +
+"  <li>CenterY <i>(Type: esriFieldTypeDouble, Alias: CenterY)</i></li>\n" +
+"  <li>ZOrder <i>(Type: esriFieldTypeInteger, Alias: ZOrder)</i></li>\n" +
+"  <li>SOrder <i>(Type: esriFieldTypeInteger, Alias: SOrder)</i></li>\n" +
+"  <li>StereoID <i>(Type: esriFieldTypeString, Alias: StereoID)</i></li>\n" +
+"  <li>Shape_Length <i>(Type: esriFieldTypeDouble, Alias: Shape_Length)</i></li>\n" +
+"  <li>Shape_Area <i>(Type: esriFieldTypeDouble, Alias: Shape_Area)</i></li>\n" +
+"</ul>\n" +
+"<b>Supported Interfaces: </b>\n" +  //sample server doesn't encode & !!!???
+"&nbsp;&nbsp;<a target=\"_blank\" rel=\"alternate\" href=\"" + relativeUrl + "?f=json&amp;pretty=true\">REST</a>\n" +
+//"&nbsp;&nbsp;<a target=\"_blank\" rel=\"alternate\" href=\"" + relativeUrl + "?wsdl\">SOAP</a>\n" +
+"<br/><br/>\n" +
+"<b>Supported Operations: </b>\n" +
+"&nbsp;&nbsp;<a rel=\"contents\" href=\"" + relativeUrl + "/exportImage?bbox=" +
+    tEdvLon.destinationMinString() + "," +
+    tEdvLat.destinationMinString() + "," +
+    tEdvLon.destinationMaxString() + "," +
+    tEdvLat.destinationMaxString() + "\">Export Image</a>\n" +
+"&nbsp;&nbsp;<a rel=\"alternate\" href=\"" + relativeUrl + "/query\">Query</a>\n" +
+"&nbsp;&nbsp;<a rel=\"alternate\" href=\"" + relativeUrl + "/identify\">Identify</a>\n" +
+"<br/>\n");
+                endHtmlWriter(out, writer, tErddapUrl, false);
+
+            } else {
+                sendGeoServicesRestError(request, response, 
+                    fParamIsJson, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
+                    UnsupportedMediaType, InvalidFParam);
+            }
+            return;
+        }
+
+
+        //*** urlParts[5]=(exportImage|query|identify)
+
+        //ensure urlParts[5]=exportImage
+        if (urlParts[5].equals("exportImage")) {
+            String actualDir = tEddGrid.cacheDirectory();
+
+            if (nUrlParts == 6) {
+
+                //bbox
+                String bboxParam = queryMap.get("bbox");  
+                double xMin = tEdvLon.destinationMin();
+                double yMin = tEdvLat.destinationMin();
+                double xMax = tEdvLon.destinationMax();
+                double yMax = tEdvLat.destinationMax();
+                if (bboxParam != null && bboxParam.length() > 0) {
+                    //use specified bbox and ensure all valid
+                    String bboxParts[] = String2.split(bboxParam, ',');
+                    if (bboxParts.length != 4) {
+                        sendGeoServicesRestError(request, response, 
+                            fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
+                            InvalidParam, "bbox must be bbox=<xmin>,<ymin>,<xmax>,<ymax>");
+                        return;
+                    }
+                    xMin = String2.parseDouble(bboxParts[0]);
+                    yMin = String2.parseDouble(bboxParts[1]);
+                    xMax = String2.parseDouble(bboxParts[2]);
+                    yMax = String2.parseDouble(bboxParts[3]);
+                    if (!Math2.isFinite(xMin) || !Math2.isFinite(yMin) || 
+                        !Math2.isFinite(xMax) || !Math2.isFinite(yMax) || 
+                        xMin >= xMax || yMin >= yMax) { //allow "=" ? 
+                        sendGeoServicesRestError(request, response, 
+                            fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
+                            InvalidParam, "Invalid bbox value(s)");
+                        return;
+                    }
+                }
+
+                //size
+                String sizeParam = queryMap.get("size");  
+                double xSize = 400;  //default in specification
+                double ySize = 400;
+                if (sizeParam != null && sizeParam.length() > 0) {
+                    //use specified size and ensure all valid
+                    String sizeParts[] = String2.split(sizeParam, ',');
+                    if (sizeParts.length != 2) {
+                        sendGeoServicesRestError(request, response, 
+                            fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
+                            InvalidParam, "size must be size=<width>,<height>");
+                        return;
+                    }
+                    xSize = String2.parseInt(sizeParts[0]);
+                    ySize = String2.parseInt(sizeParts[1]);
+                    if (!Math2.isFinite(xSize) || !Math2.isFinite(ySize) || 
+                        xSize <= 0 || ySize <= 0) { 
+                        sendGeoServicesRestError(request, response, 
+                            fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
+                            InvalidParam, "Invalid size value(s)");
+                        return;
+                    }
+                }
+
+                //imageSR
+                //bboxSR
+
+                //time
+                String centeredIsoTime = null;
+                if (tEdvTime == null) {  
+                    //no time variable, so ignore user-specified time= (if any)
+                } else {
+                    String timeParam = queryMap.get("time");  
+                    double tEpochSeconds = tEdvTime.destinationMax();  //spec doesn't say default
+                    if (timeParam != null && timeParam.length() > 0) {
+                        //use specified time and ensure all valid
+                        String timeParts[] = String2.split(timeParam, ',');
+                        if (timeParts.length == 1) {
+                            tEpochSeconds = String2.parseDouble(timeParts[0]) / 1000.0; //millis -> seconds
+                        } else if (timeParts.length == 2) {
+                            double tMinTime = String2.parseDouble(timeParts[0]);
+                            double tMaxTime = String2.parseDouble(timeParts[1]);
+                            if (!Math2.isFinite(tMinTime))
+                                tMinTime = tEdvTime.destinationMin(); //spec says "infinity"; I interpret as destMin/Max
+                            if (!Math2.isFinite(tMaxTime))
+                                tMaxTime = tEdvTime.destinationMax();
+                            tEpochSeconds = (tMinTime + tMaxTime) / 2000.0; //2 to average
+                        } else {
+                            sendGeoServicesRestError(request, response, 
+                                fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
+                                InvalidParam, "time must be time=<timeInstant> or time=<startTime>,<endTime>");
+                            return;
+                        }
+                        if (!Math2.isFinite(tEpochSeconds) || 
+                            tEpochSeconds <= tEdvTime.destinationCoarseMin() ||
+                            tEpochSeconds >= tEdvTime.destinationCoarseMax()) { 
+                            sendGeoServicesRestError(request, response, 
+                                fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
+                                InvalidParam, "Invalid time value(s)");
+                            return;
+                        }
+                    }
+
+                    //find closest index (so canonical request), then epochSeconds, then ISO (so readable)
+                    centeredIsoTime = tEdvTime.destinationToString(
+                        tEdvTime.destinationDouble(
+                        tEdvTime.destinationToClosestSourceIndex(tEpochSeconds)));
+                }
+
+                //format
+                String formatParam = queryMap.get("format");
+                String fileTypeName = ".transparentPng";
+                String fileExtension = ".png";
+                if (formatParam == null ||  //spec-defined default is jpgpng
+                    ("||jpgpng|png|png8|png24|jpg|bmp|gif|").indexOf("|" + formatParam + "|") >= 0) {
+                    //already fileExtension = ".png";   //valid but unsupported -> png  ???
+                } else if (formatParam.equals("tiff")) {
+                    fileTypeName = ".geotif";
+                    fileExtension = ".tif";
+
+                    //ERDDAP geotif requirement: lon must be all below or all above 180
+                    if (xMin < 180 && xMax > 180) {
+                        sendGeoServicesRestError(request, response, 
+                            fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
+                            InvalidParam, "For format=tiff, the bbox longitude min and max can't span longitude=180.");
+                        return;
+                    }
+                } else {
+                    sendGeoServicesRestError(request, response, 
+                        fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
+                        InvalidParam, "Format must be format=(jpgpng|png|png8|png24|jpg|bmp|gif|tiff)");
+                    return;
+                }
+
+                //pixelType
+
+                //noData
+
+                //interpolation
+
+                //compressionQuality
+
+                //bandIds   
+                String bandIdsParam = queryMap.get("bandIds");  
+                if (bandIdsParam != null && !bandIdsParam.equals("0")) {
+                    //ERDDAP is set up for 1 band per dataset/destName, so only "0" is valid request
+                    sendGeoServicesRestError(request, response, 
+                        fParamIsJson, HttpServletResponse.SC_BAD_REQUEST,
+                        InvalidParam, "BandIds must be bandIds=0");
+                    return;
+                }
+
+                //mosaicRule
+                //renderingRule
+
+                //make the image
+                String virtualFileName = null;
+                if (fParam.length() == 0 || fParamIsJson || fParam.equals("image")) {
+
+                    //generate the userDapQuery
+                    StringBuilder iQuery = new StringBuilder(tDestName);
+                    EDVGridAxis tAxisVariables[] = tEddGrid.axisVariables();
+                    int nav = tAxisVariables.length;
+                    for (int avi = 0; avi < nav; avi++) {
+                        iQuery.append('[');
+                        //EDVGridAxis ega = tAxisVariables[avi];
+                        if (avi == tEddGrid.lonIndex()) {
+                            iQuery.append("(" + xMin + "):(" + xMax + ")");
+                        } else if (avi == tEddGrid.latIndex()) {
+                            if (tAxisVariables[avi].isAscending())
+                                iQuery.append("(" + yMin + "):(" + yMax + ")");
+                            else 
+                                iQuery.append("(" + yMax + "):(" + yMin + ")");
+                        } else if (avi == tEddGrid.timeIndex()) {
+                            iQuery.append("(" + centeredIsoTime + ")");
+                        } else {
+                            iQuery.append("[0]"); //??? temporary lame cop out!
+                        }
+                        iQuery.append(']');
+                    }
+                    iQuery.append("&.draw=surface&.vars=longitude|latitude|" + tDestName); 
+                    iQuery.append("&.size=" + xSize + "|" + ySize);
+                    String imageQuery = iQuery.toString();
+                    if (verbose) String2.log("  exportImage query=" + imageQuery);
+
+                    //generate the file name (no extension)
+                    virtualFileName = tEddGrid.suggestFileName(loggedInAs, imageQuery, fileTypeName);
+
+                    //create the image file if it doesn't exist  
+                    if (File2.isFile(actualDir + virtualFileName + fileExtension)) {
+                        if (verbose) String2.log("  reusing imageFile=" + 
+                            actualDir + virtualFileName + fileExtension);
+                    } else {
+                        OutputStream out = new FileOutputStream(actualDir + virtualFileName + fileExtension);
+                        OutputStreamSource oss = new OutputStreamSourceSimple(out);
+
+                        try { //most exceptions written to image.  some throw throwable.
+                            tEddGrid.saveAsImage(loggedInAs, relativeUrl, imageQuery, 
+                                actualDir, virtualFileName, oss, fileTypeName); 
+                            out.close();
+                        } catch (Throwable t) {
+                            sendGeoServicesRestError(request, response, 
+                                fParamIsJson, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
+                                UnableToCompleteOperation, t.toString());
+                            return;
+
+                        }
+                    }
+                }
+
+                //f
+                if (fParam.length() == 0 || fParamIsJson) {  //default
+                    Writer writer = getJsonWriter(request, response, 
+                        "rest_services_" + tDatasetID + "_" + tDestName, ".jsonText");
+                    writer.write(
+                        "{\n" +
+                        "  \"href\" : \"" + tErddapUrl + 
+                          relativeUrl.substring(EDStatic.warName.length() + 1) +
+                          "/exportImage/" + virtualFileName + fileExtension + "\"\n" +
+                        "  \"width\" : \"" + xSize + "\"\n" +
+                        "  \"height\" : \"" + ySize + "\"\n" +
+                        "  \"extent\" : {\n" +
+                        "    \"xmin\" : " + xMin + ", \"ymin\" : " + yMin + ", " +
+                            "\"xmax\" : " + xMax + ", \"ymax\" : " + yMax + ",\n" +
+                        "    \"spatialReference\" : {\"wkid\" : 4326}\n" +
+                        "  }\n" +
+                        "}\n");
+                    writer.close(); //it calls writer.flush then out.close();  
+
+                } else if (fParam.equals("image")) {
+                    OutputStreamSource outSource = new OutputStreamFromHttpResponse(
+                        request, response, 
+                        virtualFileName, fileTypeName, fileExtension);
+                    OutputStream out = outSource.outputStream("");
+                    doTransfer(request, response, actualDir, relativeUrl, 
+                        virtualFileName + fileExtension, out);
+                    out.close();
+
+                //} else if (fParam.equals("kmz")) {
+                //    ...
+
+                } else {
+                    sendGeoServicesRestError(request, response, 
+                        fParamIsJson, HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
+                        UnsupportedMediaType, InvalidFParam);
+                }            
+                return;
+                //end of nUrlParts == 6;
+
+            } else if (nUrlParts == 7) {
+                //it's a request for an image file
+                String tFileName = urlParts[6];
+                if (File2.isFile(actualDir + tFileName)) {
+                    //transfer
+                    String fileExtension = File2.getExtension(tFileName);
+                    String fileTypeName = fileExtension.equals(".tif")? ".geoTif" :
+                                          fileExtension.equals(".png")? ".transparentPng" :
+                                          fileExtension;
+                    OutputStreamSource outSource = new OutputStreamFromHttpResponse(
+                        request, response, 
+                        File2.getNameNoExtension(tFileName), fileTypeName, fileExtension);
+                    OutputStream out = outSource.outputStream("");
+                    doTransfer(request, response, actualDir, relativeUrl, 
+                        tFileName, out);
+                    out.close();
+
+                } else {
+                    sendResourceNotFoundError(request, response, "");
+                }
+                return;
+
+            } else {
+                sendResourceNotFoundError(request, response, "");
+                return;
+            } 
+            //end of /exportImage[/fileName]
+
+        } else if (urlParts[5].equals("query")) {      
+            //...
+            return;
+
+        } else if (urlParts[5].equals("identify")) {
+            //...
+            return;
+
+        } else { //unsupported parts[5]
+            sendResourceNotFoundError(request, response, "");
+            return;
+        }
+
+    }
+
     /** 
      * This responds to a user's requst for a file in the (psuedo)'protocol' (e.g., images) 
      * directory.
@@ -5836,8 +6735,7 @@ writer.write(
         if (verbose) String2.log(message);
 
         //end        
-        writer.flush(); //essential
-        out.close();         
+        writer.close(); //it calls writer.flush then out.close();  
     }
 
 
@@ -5857,8 +6755,7 @@ writer.write(
         writer.write("ERDDAP_version=" +EDStatic.erddapVersion + "\n");
 
         //end        
-        writer.flush(); //essential
-        out.close();         
+        writer.close(); //it calls writer.flush then out.close();  
     }
 
 
@@ -10980,6 +11877,25 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         response.setHeader(EDStatic.programname + "-server", EDStatic.erddapVersion);  
     }
 
+    /**
+     * Get a writer for a json file.
+     *
+     * @param request
+     * @param response
+     * @param fileName  without the extension, e.g., "error"
+     * @param fileType ".json" (contentType=application/json) or ".jsonText" (contentType=text/plain)
+     * @return a BufferedWriter
+     * @throws Throwable if trouble
+     */
+    public static Writer getJsonWriter(HttpServletRequest request, HttpServletResponse response, 
+        String fileName, String fileType) throws Throwable {
+
+        OutputStreamSource outputStreamSource = 
+            new OutputStreamFromHttpResponse(request, response, 
+                fileName, fileType, ".json");
+        return new BufferedWriter(new OutputStreamWriter(
+            outputStreamSource.outputStream("UTF-8"), "UTF-8"));
+    }
     
     /**
      * Get an outputStream for an html file
@@ -11951,7 +12867,6 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         SSR.zip(destinationDir + "erddapContent.zip", 
             new String[]{
                 baseDir + "datasets.xml",
-                baseDir + "messages.xml",
                 baseDir + "setup.xml",
                 baseDir + "images/erddapStart.css",
                 baseDir + "images/erddapAlt.css"},
@@ -12003,7 +12918,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             expected = 
                 "Core Version: DAP/2.0\n" +
                 "Server Version: dods/3.7\n" +
-                "ERDDAP_version: 1.43\n";
+                "ERDDAP_version: 1.45\n";
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/griddap/version");
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/tabledap/version");

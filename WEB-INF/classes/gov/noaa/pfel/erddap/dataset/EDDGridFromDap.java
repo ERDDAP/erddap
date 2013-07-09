@@ -536,20 +536,23 @@ public class EDDGridFromDap extends EDDGrid {
         //return quickly if dataset doesn't need to be updated
         long now = System.currentTimeMillis();
         if (now - lastUpdate < updateEveryNMillis) {
-            //String2.log("update(" + datasetID + "): no need to update:  now-last=" + (now - lastUpdate) + " < updateEvery=" + updateEveryNMillis);
+            if (reallyVerbose) String2.log("update(" + datasetID + "): no need to update:  now-last=" + 
+                (now - lastUpdate) + " < updateEvery=" + updateEveryNMillis);
             return;
         }
 
-        //return quickly if another thread is currently updating this dataset
+        //if another thread is currently updating this dataset, wait for it then return
         String msg = "update(" + datasetID + "): ";
         if (!updateLock.tryLock()) {
-            if (verbose) String2.log(msg + "couldn't get lock.");
+            updateLock.lock();   //block until other thread's update finishes
+            updateLock.unlock(); //immediately unlock and return
+            if (verbose) String2.log(msg + "waited " + (System.currentTimeMillis() - now) +
+                "ms for other thread to do the update.");
             return; 
         }
 
         //updateLock is locked by this thread.   Do the update!
         try {
-            lastUpdate = now; //set at top to discourage other threads from also updating
                 
             //read dds
             DConnect dConnect = new DConnect(localSourceUrl, acceptDeflate, 1, 1);
@@ -588,7 +591,7 @@ public class EDDGridFromDap extends EDDGrid {
             } 
             if (newSize == oldSize) {
                 if (reallyVerbose) String2.log(msg + "no change to leftmost dimension");
-                return;
+                return;  //finally{} below sets lastUpdate = now
             }
 
             //newSize > oldSize, get last old value (for testing below) and new values
@@ -719,8 +722,9 @@ public class EDDGridFromDap extends EDDGrid {
         } catch (Throwable t) {
             String2.log(msg + "failed.  Unexpected " + String2.ERROR + ":\n" +
                 MustBe.throwableToString(t));
-        } finally {  //ensure updateLock is always unlocked
-            updateLock.unlock();  
+        } finally {  
+            lastUpdate = now;     //say dataset is now up-to-date (or at least tried)
+            updateLock.unlock();  //then ensure updateLock is always unlocked
         }
     }
 
@@ -2036,8 +2040,8 @@ public class EDDGridFromDap extends EDDGrid {
 "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" +
 "        <att name=\"cwhdf_version\">3.4</att>\n" +
-"        <att name=\"date_created\">2013-04-14Z</att>\n" +  //changes
-"        <att name=\"date_issued\">2013-04-14Z</att>\n" + //changes
+"        <att name=\"date_created\">2013-05-12Z</att>\n" +  //changes
+"        <att name=\"date_issued\">2013-05-12Z</att>\n" + //changes
 "        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" +
 "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.041676313961565174 0.04167148975575877 0.0 0.0 -90.0</att>\n" +
 "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" +
@@ -2082,7 +2086,7 @@ public class EDDGridFromDap extends EDDGrid {
 "        <att name=\"Southernmost_Northing\" type=\"double\">-90.0</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" +
 "        <att name=\"start_time\" type=\"doubleList\">0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0</att>\n" +
-"        <att name=\"summary\">NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#039;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.</att>\n" +
+"        <att name=\"summary\">NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.</att>\n" +
 "        <att name=\"time_coverage_end\">2010-01-01T00:00:00Z</att>\n" +  //changes
 "        <att name=\"time_coverage_start\">2009-12-01T00:00:00Z</att>\n" + 
 "        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality</att>\n" +
@@ -2107,7 +2111,7 @@ String expected2 =
 "        <att name=\"publisher_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"publisher_url\">http://coastwatch.pfel.noaa.gov</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
-"        <att name=\"summary\">NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#039;s Aqua Spacecraft. Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft. This is Science Quality data.</att>\n" +
+"        <att name=\"summary\">NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft. Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft. This is Science Quality data.</att>\n" +
 "        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality (1-day)</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
@@ -2742,7 +2746,7 @@ String expected2 =
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0],  //last # changes frequently
-            "SimpleException: Query error: For variable=chlorophyll axis#0=time Constraint=\"[(2007-02-06)[]\": Stop=\"\" is invalid.  It must be an integer between 0 and 486.", 
+            "SimpleException: Query error: For variable=chlorophyll axis#0=time Constraint=\"[(2007-02-06)[]\": Stop=\"\" is invalid.  It must be an integer between 0 and 493.", 
             "error=" + error);
 
         error = "";
@@ -2953,15 +2957,15 @@ String expected2 =
         //String2.log(results);
         expected = 
 "Dataset {\n" +
-"  Float64 time[time = 487];\n" +   //487 will change sometimes
+"  Float64 time[time = 494];\n" +   //494 will change sometimes
 "  Float64 altitude[altitude = 1];\n" +
 "  Float64 latitude[latitude = 4320];\n" +
 "  Float64 longitude[longitude = 8640];\n" +
 "  GRID {\n" +
 "    ARRAY:\n" +
-"      Float32 chlorophyll[time = 487][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+"      Float32 chlorophyll[time = 494][altitude = 1][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 487];\n" +
+"      Float64 time[time = 494];\n" +
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
@@ -3009,10 +3013,10 @@ String expected2 =
         expected = 
 "Dataset {\n" +
 "  GRID {\n" +
-"    ARRAY:\n" +   //487 will change sometimes
-"      Float32 chlorophyll[time = 487][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+"    ARRAY:\n" +   //494 will change sometimes
+"      Float32 chlorophyll[time = 494][altitude = 1][latitude = 4320][longitude = 8640];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 487];\n" +
+"      Float64 time[time = 494];\n" +
 "      Float64 altitude[altitude = 1];\n" +
 "      Float64 latitude[latitude = 4320];\n" +
 "      Float64 longitude[longitude = 8640];\n" +
@@ -4467,14 +4471,14 @@ boolean testAll = true;
                 expected = 
 "netcdf " + tUrl + "/griddap/erdMHchla8day {\n" +
 " dimensions:\n" +
-"   time = 487;\n" +   // (has coord.var)\n" +  //changes sometimes
+"   time = 494;\n" +   // (has coord.var)\n" +  //changes sometimes
 "   altitude = 1;\n" +   // (has coord.var)\n" +
 "   latitude = 4320;\n" +   // (has coord.var)\n" +
 "   longitude = 8640;\n" +   // (has coord.var)\n" +
 " variables:\n" +
-"   double time(time=487);\n" +
+"   double time(time=494);\n" +
 "     :_CoordinateAxisType = \"Time\";\n" +
-"     :actual_range = 1.0260864E9, 1.3670208E9; // double\n" +  //2nd value changes sometimes
+"     :actual_range = 1.0260864E9, 1.3718592E9; // double\n" +  //2nd value changes sometimes
 "     :axis = \"T\";\n" +
 "     :fraction_digits = 0; // int\n" +
 "     :ioos_category = \"Time\";\n" +
@@ -4515,7 +4519,7 @@ boolean testAll = true;
 "     :point_spacing = \"even\";\n" +
 "     :standard_name = \"longitude\";\n" +
 "     :units = \"degrees_east\";\n" +
-"   float chlorophyll(time=487, altitude=1, latitude=4320, longitude=8640);\n" +
+"   float chlorophyll(time=494, altitude=1, latitude=4320, longitude=8640);\n" +
 "     :_CoordinateAxes = \"time altitude latitude longitude \";\n" +
 "     :_FillValue = -9999999.0f; // float\n" +
 "     :colorBarMaximum = 30.0; // double\n" +
@@ -4538,8 +4542,8 @@ boolean testAll = true;
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2013-05-08Z\";\n" + //changes
-" :date_issued = \"2013-05-08Z\";\n" + //changes
+" :date_created = \"2013-07-07Z\";\n" + //changes
+" :date_issued = \"2013-07-07Z\";\n" + //changes
 " :Easternmost_Easting = 360.0; // double\n" +
 " :geospatial_lat_max = 90.0; // double\n" +
 " :geospatial_lat_min = -90.0; // double\n" +
@@ -4565,7 +4569,7 @@ boolean testAll = true;
 " :Southernmost_Northing = -90.0; // double\n" +
 " :standard_name_vocabulary = \"CF-12\";\n" +
 " :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-" :time_coverage_end = \"2013-04-27T00:00:00Z\";\n" + //changes
+" :time_coverage_end = \"2013-06-22T00:00:00Z\";\n" + //changes
 " :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
 " :title = \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
 " :Westernmost_Easting = 0.0; // double\n" +
@@ -4726,7 +4730,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"institution\">NOAA GFDL (US Dept of Commerce / NOAA / Geophysical Fluid Dynamics Laboratory, Princeton, NJ, USA)</att>\n" +
 "        <att name=\"project_id\">IPCC Fourth Assessment and US CCSP Projects</att>\n" +
 "        <att name=\"realization\" type=\"int\">1</att>\n" +
-"        <att name=\"references\">The GFDL Data Portal (http://nomads.gfdl.noaa.gov/) provides access to NOAA/GFDL&#039;s publicly available model input and output data sets. From this web site one can view and download data sets and documentation, including those related to the GFDL CM2.0 model experiments run for the IPCC&#039;s 4th Assessment Report and the US CCSP.</att>\n" +
+"        <att name=\"references\">The GFDL Data Portal (http://nomads.gfdl.noaa.gov/) provides access to NOAA/GFDL&#39;s publicly available model input and output data sets. From this web site one can view and download data sets and documentation, including those related to the GFDL CM2.0 model experiments run for the IPCC&#39;s 4th Assessment Report and the US CCSP.</att>\n" +
 "        <att name=\"source\">GFDL_CM2.0 (2004): atmosphere: AM2 (am2p13, N45L24); ocean: OM3 (mom4p0_om3p4, tripolar360x200L50); sea ice: SIS; land: LM2; infrastructure: FMS J release</att>\n" +
 "        <att name=\"table_id\">Table A1 (20 September 2004)</att>\n" +
 "        <att name=\"title\">GFDL CM2.0, 20C3M (run 1) climate of the 20th Century experiment (20C3M) output for IPCC AR4 and US CCSP</att>\n" +
@@ -4895,7 +4899,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"project\">CoastWatch (http://coastwatch.noaa.gov/)</att>\n" +
 "        <att name=\"projection\">geographic</att>\n" +
 "        <att name=\"projection_type\">mapped</att>\n" +
-"        <att name=\"references\">NOAA GOES satellites: http://coastwatch.noaa.gov/goes_sst_overview.html . NOAA GOES satellites: http://www.oso.noaa.gov/goes/index.htm . Processing reference: Wu, X., W. P. Menzel, and G. S. Wade (1999). Estimation of sea surface temperatures using GOES-8/9 radiance measurements. Bull. Amer. Meteor. Soc., 80, 1127-1138. Processing reference: Maturi, E., C. Merchant, A. Harris, X. Li, and B. Potash.  Geostationary Sea Surface Temperature Product Validation and Methodology.  Poster Presentation at the American Meteorological Society&#039;s 13th Conference on Satellite Meteorology and Oceanography (P5.16).  Norfolk, VA; 19-23 Sept., 2004. http://ams.confex.com/ams/pdfpapers/79202.pdf .</att>\n" +
+"        <att name=\"references\">NOAA GOES satellites: http://coastwatch.noaa.gov/goes_sst_overview.html . NOAA GOES satellites: http://www.oso.noaa.gov/goes/index.htm . Processing reference: Wu, X., W. P. Menzel, and G. S. Wade (1999). Estimation of sea surface temperatures using GOES-8/9 radiance measurements. Bull. Amer. Meteor. Soc., 80, 1127-1138. Processing reference: Maturi, E., C. Merchant, A. Harris, X. Li, and B. Potash.  Geostationary Sea Surface Temperature Product Validation and Methodology.  Poster Presentation at the American Meteorological Society&#39;s 13th Conference on Satellite Meteorology and Oceanography (P5.16).  Norfolk, VA; 19-23 Sept., 2004. http://ams.confex.com/ams/pdfpapers/79202.pdf .</att>\n" +
 "        <att name=\"satellite\">GOES</att>\n" +
 "        <att name=\"sensor\">Imager</att>\n" +
 "        <att name=\"source\">satellite observation: GOES, Imager</att>\n" +
@@ -6340,7 +6344,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         Test.ensureEqual(results.substring(0, expected.length()), expected, 
             "results=\n" + results);
                  //changes frequently:
-        expected = "\"2013-02-02T12:00:00Z\", \"2013-02-28T12:00:00Z\", \"2013-04-01T12:00:00Z\", \"2013-04-28T12:00:00Z\"";
+        expected = "\"2013-05-01T12:00:00Z\", \"2013-06-01T12:00:00Z\", \"2013-07-01T12:00:00Z\", \"2013-07-06T12:00:00Z\"";
         Test.ensureEqual(results.substring(results.length() - expected.length()), expected, 
             "results=\n" + results);
 
@@ -7559,12 +7563,12 @@ EDStatic.startBodyHtml(null) + "\n" +
             expected = 
 "netcdf dods" + url.substring(4) + " {\n" +
 " dimensions:\n" +
-"   time = 487;\n" +
+"   time = 494;\n" +
 "   altitude = 1;\n" +
 "   latitude = 4320;\n" +
 "   longitude = 8640;\n" +
 " variables:\n" +
-"   float chlorophyll(time=487, altitude=1, latitude=4320, longitude=8640);\n" +
+"   float chlorophyll(time=494, altitude=1, latitude=4320, longitude=8640);\n" +
 "     :_CoordinateAxes = \"time altitude latitude longitude \";\n" +
 "     :_FillValue = -9999999.0f; // float\n" +
 "     :colorBarMaximum = 30.0; // double\n" +
@@ -7577,9 +7581,9 @@ EDStatic.startBodyHtml(null) + "\n" +
 "     :missing_value = -9999999.0f; // float\n" +
 "     :standard_name = \"concentration_of_chlorophyll_in_sea_water\";\n" +
 "     :units = \"mg m-3\";\n" +
-"   double time(time=487);\n" +
+"   double time(time=494);\n" +
 "     :_CoordinateAxisType = \"Time\";\n" +
-"     :actual_range = 1.0260864E9, 1.3670208E9; // double\n" +  //2nd number changes
+"     :actual_range = 1.0260864E9, 1.3718592E9; // double\n" +  //2nd number changes
 "     :axis = \"T\";\n" +
 "     :fraction_digits = 0; // int\n" +
 "     :ioos_category = \"Time\";\n" +
@@ -7630,8 +7634,8 @@ EDStatic.startBodyHtml(null) + "\n" +
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2013-05-08Z\";\n" +  //changes
-" :date_issued = \"2013-05-08Z\";\n" +   //changes
+" :date_created = \"2013-07-07Z\";\n" +  //changes
+" :date_issued = \"2013-07-07Z\";\n" +   //changes
 " :Easternmost_Easting = 360.0; // double\n" +
 " :geospatial_lat_max = 90.0; // double\n" +
 " :geospatial_lat_min = -90.0; // double\n" +
@@ -7656,7 +7660,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 " :Southernmost_Northing = -90.0; // double\n" +
 " :standard_name_vocabulary = \"CF-12\";\n" +
 " :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-" :time_coverage_end = \"2013-04-27T00:00:00Z\";\n" + //changes
+" :time_coverage_end = \"2013-06-22T00:00:00Z\";\n" + //changes
 " :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
 " :title = \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
 " :Westernmost_Easting = 0.0; // double\n" +

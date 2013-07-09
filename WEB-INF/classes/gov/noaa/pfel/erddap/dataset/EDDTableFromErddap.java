@@ -1564,6 +1564,21 @@ String tHeader2 =
 
     }
 
+    /** This tests apostrophe in title appearing in graph legend. */
+    public static void testApostrophe() throws Throwable {
+        String2.log("\n*** EDDTableFromErddap.testApostrophe");
+
+        EDDTable edd = (EDDTableFromErddap)oneFromDatasetXml("testWTEY"); 
+        String2.log("title=" + edd.title());
+        String tName = edd.makeNewFileForDapQuery(null, null, 
+            "longitude,latitude,platformSpeed_kts&time%3E=2013-05-30T00:00:00Z" +
+            "&time%3C=2013-06-06T00:00:00Z&.draw=markers&.marker=5|5&.color=0x000000&.colorBar=|||||",
+            EDStatic.fullTestCacheDirectory, edd.className() + "_Apos", ".png"); 
+        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+
+    }
+
+
     
     /**
      * This tests the methods in this class.
@@ -1579,7 +1594,8 @@ String tHeader2 =
         testBasic(false);
         testBasic(true);
         testGenerateDatasetsXml();
-        
+        testApostrophe();
+
         //not usually done
 
     }

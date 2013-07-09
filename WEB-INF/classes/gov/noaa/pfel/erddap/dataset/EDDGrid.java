@@ -485,6 +485,82 @@ public abstract class EDDGrid extends EDD {
     }
      
     /** 
+     * This indicates why the dataset isn't accessible via ESRI GeoServices REST
+     * (or "" if it is).
+     */
+    public String accessibleViaGeoServicesRest() {
+        if (accessibleViaGeoServicesRest == null) {
+
+            if (!EDStatic.geoServicesRestActive) {
+                accessibleViaGeoServicesRest = String2.canonical(
+                    MessageFormat.format(EDStatic.noXxxBecause, "GeoServicesRest", 
+                        MessageFormat.format(EDStatic.noXxxNotActive, "GeoServicesRest")));
+            } else if (lonIndex < 0 || latIndex < 0) {
+                //must have lat and lon axes
+                accessibleViaGeoServicesRest = String2.canonical(
+                    MessageFormat.format(EDStatic.noXxxBecause, "GeoServicesRest", EDStatic.noXxxNoLL));
+            } else {
+                //must have more than one value for lat and lon axes
+                EDVGridAxis lonVar = axisVariables[lonIndex];
+                EDVGridAxis latVar = axisVariables[latIndex];
+                if (lonVar.destinationMin() == lonVar.destinationMax() || //only 1 value
+                    latVar.destinationMin() == latVar.destinationMax())
+                    accessibleViaGeoServicesRest = String2.canonical(
+                        MessageFormat.format(EDStatic.noXxxBecause, "GeoServicesRest", 
+                            EDStatic.noXxxNoLLGt1));
+                else if (lonVar.destinationMin() >= 360 ||  //unlikely
+                         lonVar.destinationMax() <= -180)   //unlikely
+                    accessibleViaGeoServicesRest = String2.canonical(
+                        MessageFormat.format(EDStatic.noXxxBecause, "GeoServicesRest", 
+                            EDStatic.noXxxNoLonIn180));
+
+                else if (!lonVar.isEvenlySpaced() ||  //???Future: not necessary? draw map as appropriate.
+                         !latVar.isEvenlySpaced())
+                    accessibleViaGeoServicesRest = String2.canonical(
+                        MessageFormat.format(EDStatic.noXxxBecause, "GeoServicesRest", 
+                            EDStatic.noXxxNoLLEvenlySpaced));
+
+                //else {  //NO. other axes are allowed.
+                //    //is there an axis (with size > 0) that isn't one of LLAT?
+                //    for (int av = 0; av < axisVariables.length; av++) {
+                //        if (av == lonIndex || av == latIndex ||
+                //            av == altIndex || av == depthIndex ||
+                //            av == timeIndex) {
+                //        } else if (axisVariables[av].sourceValues().size() > 1) {
+                //            accessibleViaGeoServicesRest = String2.canonical(start + "???");
+                //        }
+                //    }
+
+                //else for (int dv = 0; dv < dataVariables.length; dv++)
+                //    if (dataVariables[dv].hasColorBarMinMax())
+                //        accessibleViaGeoServicesRest = String2.canonical("???");
+
+            }
+
+            //ensure at least one var has colorBarMinimum/Maximum
+            if (accessibleViaGeoServicesRest == null) {
+                boolean ok = false;
+                for (int dvi = 0; dvi < dataVariables.length; dvi++) {
+                    if (dataVariables[dvi].hasColorBarMinMax()) {
+                        ok = true;
+                        break;
+                    }
+                }
+                if (!ok) 
+                    accessibleViaGeoServicesRest = String2.canonical(
+                        MessageFormat.format(EDStatic.noXxxBecause, "GeoServicesRest", 
+                            EDStatic.noXxxNoColorBar));
+            }
+
+            //okay!
+            if (accessibleViaGeoServicesRest == null)
+                accessibleViaGeoServicesRest = String2.canonical("");
+            
+        }
+        return accessibleViaGeoServicesRest;
+    }
+
+    /** 
      * This indicates why the dataset isn't accessible via WCS
      * (or "" if it is).
      * There used to be a lon +/-180 restriction, but no more.
@@ -515,9 +591,11 @@ public abstract class EDDGrid extends EDD {
                         MessageFormat.format(EDStatic.noXxxBecause, "WCS", 
                             EDStatic.noXxxNoLonIn180));
 
-                //else if (!lonVar.isEvenlySpaced() ||  //not necessary. map is drawn as appropriate.
-                //    !latVar.isEvenlySpaced())
-                //    accessibleViaWCS = String2.canonical(start + "???");
+                else if (!lonVar.isEvenlySpaced() ||  //???Future: not necessary? draw map as appropriate.
+                         !latVar.isEvenlySpaced())
+                    accessibleViaWCS = String2.canonical(
+                        MessageFormat.format(EDStatic.noXxxBecause, "WCS", 
+                            EDStatic.noXxxNoLLEvenlySpaced));
 
                 //else {  //NO. other axes are allowed.
                 //    //is there an axis (with size > 0) that isn't one of LLAT?
@@ -4433,8 +4511,8 @@ Attributes {
      * Two active dimensions results in a map (one active data variable
      *   results in colored graph, two results in vector plot).
      *
-     * <p>For transparentPng maps, the longitude and latitude dimensions must be evenly spaced.
-     * (Only because the primary client, GoogleEarth assumes they are.)
+     * <p>Note that for transparentPng maps, GoogleEarth assumes requested image
+     * will be isotropic (but presumably that is what it will request).
      * 
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery an OPeNDAP DAP-style query string, still percentEncoded (shouldn't be null). 
@@ -7831,7 +7909,7 @@ Attributes {
             "  <br><tt>curl \"<i>erddapUrl</i>\" -o <i>fileDir/fileName#1.ext</i></tt>\n" +
             "  <br>Since the globbing feature treats the characters [, ], {, and } as special, you must also\n" +
             "  <br><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encode</a> \n" +
-              "them in the erddapURL as &#037;5B, &#037;5D, &#037;7B, &#037;7D, respectively.\n" +
+              "them in the erddapURL as &#37;5B, &#37;5D, &#37;7B, &#37;7D, respectively.\n" +
             "  <br>Then, in the erddapUrl, replace a zero-padded number (for example <tt>01</tt>) with a range\n" +
             "  <br>of values (for example, <tt>[01-05]</tt> ),\n" +
             "  <br>or replace a substring (for example <tt>5day</tt>) with a list of values (for example,\n" +
@@ -7839,7 +7917,7 @@ Attributes {
             "  <br>The <tt>#1</tt> within the output fileName causes the current value of the range or list\n" +
             "  <br>to be put into the output fileName.\n" +
             "  <br>For example, \n" +
-            "<pre>curl \"http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.png?sst&#037;5B%282010-09-[01-05]T12:00:00Z%29&#037;5D&#037;5B&#037;5D&#037;5B&#037;5D&#037;5B&#037;5D&amp;.draw=surface&amp;.vars=longitude|latitude|sst&amp;.colorBar=|||||\" -o BAssta5day201009#1.png</pre>\n" +
+            "<pre>curl \"http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdBAssta5day.png?sst&#37;5B%282010-09-[01-05]T12:00:00Z%29&#37;5D&#37;5B&#37;5D&#37;5B&#37;5D&#37;5B&#37;5D&amp;.draw=surface&amp;.vars=longitude|latitude|sst&amp;.colorBar=|||||\" -o BAssta5day201009#1.png</pre>\n" +
             "</ul>\n" +
             "<br>&nbsp;\n");
 
@@ -8135,12 +8213,15 @@ Attributes {
             "  <li>In griddap, an altitude axis variable (if present) always has the name \"" + EDV.ALT_NAME + "\"\n" + 
             "    <br>and the units \"" + EDV.ALT_UNITS + "\" above sea level.\n" +
             "    <br>Locations below sea level have negative altitude values.\n" +
+            "  <li>In griddap, a depth axis variable (if present) always has the name \"" + EDV.DEPTH_NAME + "\"\n" + 
+            "    <br>and the units \"" + EDV.DEPTH_UNITS + "\" below sea level.\n" +
+            "    <br>Locations below sea level have positive depth values.\n" +
             "  <li>In griddap, a time axis variable (if present) always has the name \"" + EDV.TIME_NAME + "\"\n" +
             "    <br>and the units \"" + EDV.TIME_UNITS + "\".\n" +
             "    <br>If you request data and specify a start and/or stop value for the time axis,\n" +
             "    <br>you can specify the time as a number (in seconds since 1970-01-01T00:00:00Z)\n" +
             "    <br>or as a String value (e.g., \"2002-12-25T07:00:00Z\" in the GMT/Zulu time zone).\n" +
-            "  <li>Because the longitude, latitude, altitude, and time axis variables are specifically\n" +
+            "  <li>Because the longitude, latitude, altitude, depth, and time axis variables are specifically\n" +
             "    <br>recognized, ERDDAP is aware of the spatiotemporal features of each dataset.\n" +
             "    <br>This is useful when making images with maps or time-series, and when saving data\n" +
             "    <br>in geo-referenced file types (e.g., .esriAscii and .kml).\n" +

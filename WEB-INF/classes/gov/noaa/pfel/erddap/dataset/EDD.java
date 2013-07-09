@@ -303,8 +303,8 @@ public abstract class EDD {
     protected String id, title, summary, extendedSummaryPartB, institution, 
         infoUrl, cdmDataType;
     /** These are created as needed (in the constructor) by accessibleVia...(). */
-    protected String accessibleViaMAG, accessibleViaSubset, accessibleViaSOS, 
-        accessibleViaWCS, accessibleViaWMS, accessibleViaNcCF, 
+    protected String accessibleViaMAG, accessibleViaSubset, accessibleViaGeoServicesRest, 
+        accessibleViaSOS, accessibleViaWCS, accessibleViaWMS, accessibleViaNcCF, 
         accessibleViaFGDC, accessibleViaISO19115; 
     protected String fgdcFile, iso19115File;  //the names of pre-made, external files; or null
     protected byte[] searchBytes;
@@ -312,9 +312,9 @@ public abstract class EDD {
     protected String[] dataVariableSourceNames, dataVariableDestinationNames;   
 
     /** Things related to incremental update */
-    protected long lastUpdate = 0; //System.currentTimeMillis at start of last update
+    protected long lastUpdate = 0; //System.currentTimeMillis at completion of last update
     protected int updateEveryNMillis = 0; // <=0 means incremental update not active
-    protected ReentrantLock updateLock = new ReentrantLock();
+    protected ReentrantLock updateLock = null;  //setUpdateEveryNMillis creates this if needed
     protected long cumulativeUpdateTime = 0, updateCount = 0; 
 
     /**
@@ -580,6 +580,7 @@ public abstract class EDD {
         extendedSummary();  //ensures that extendedSummaryPartB is constructed
         accessibleViaMAG();
         accessibleViaSubset();
+        accessibleViaGeoServicesRest();
         accessibleViaSOS();
         accessibleViaWCS();
         accessibleViaWMS(); 
@@ -1205,6 +1206,12 @@ public abstract class EDD {
      * (or "" if it is).
      */
     public abstract String accessibleViaSOS();
+
+    /** 
+     * This indicates why the dataset isn't accessible via the ESRI GeoServices REST
+     * specification (or "" if it is).
+     */
+    public abstract String accessibleViaGeoServicesRest();
 
     /** 
      * This indicates why the dataset isn't accessible via WCS
@@ -1864,12 +1871,14 @@ public abstract class EDD {
     /** 
      * This sets updateEveryNMillis.
      * 
-     * @param tUpdateEveryNMillis Use -0 to never update.  (&lt;=0 and Integer.MAX_VALUE are treated as 0.)
+     * @param tUpdateEveryNMillis Use 0 to never update.  (&lt;=0 and Integer.MAX_VALUE are treated as 0.)
      */
     public void setUpdateEveryNMillis(int tUpdateEveryNMillis) {
         updateEveryNMillis = 
             tUpdateEveryNMillis < 1 || tUpdateEveryNMillis == Integer.MAX_VALUE? 0 : 
                 tUpdateEveryNMillis;
+        if (updateEveryNMillis > 0 && updateLock == null)
+            updateLock = new ReentrantLock();
     }
 
     /**
