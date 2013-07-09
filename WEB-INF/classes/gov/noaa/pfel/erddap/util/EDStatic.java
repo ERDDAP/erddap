@@ -125,15 +125,16 @@ public class EDStatic {
      * <br>1.40 released on 2012-10-25
      * <br>1.42 released on 2012-11-26
      * <br>1.44 released on 2013-05-30
+     * <br>1.46 released on 2013-07-09
      */   
-    public static String erddapVersion = "1.44";  
+    public static String erddapVersion = "1.46";  
 
     /** 
      * This is almost always false.  
      * During development, Bob sets this to true. No one else needs to. 
-     * If true, ERDDAP uses setup2.xml, messages2.xml, and datasets2.xml. 
+     * If true, ERDDAP uses setup2.xml and datasets2.xml (and messages2.xml if it exists). 
      */
-public static boolean developmentMode = true;
+public static boolean developmentMode = false;
 
     /** This identifies the dods server/version that this mimics. */
     public static String dapVersion = "DAP/2.0";   //???
@@ -408,7 +409,7 @@ public static boolean developmentMode = true;
         reallyVerbose,
         postShortDescriptionActive, //if true, PostIndexHtml is on home page and /post/index.html redirects there        
         subscriptionSystemActive,  convertersActive, slideSorterActive,
-        fgdcActive, iso19115Active, sosActive, wcsActive, wmsActive,
+        fgdcActive, iso19115Active, geoServicesRestActive, sosActive, wcsActive, wmsActive,
         quickRestart,
         useOriginalSearchEngine, useLuceneSearchEngine,  //exactly one will be true
         variablesMustHaveIoosCategory,
@@ -452,7 +453,8 @@ public static boolean developmentMode = true;
     public static Subscriptions subscriptions;
 
 
-    /** These values are loaded from the [contentDirectory]messages.xml file. */
+    /** These values are loaded from the [contentDirectory]messages.xml file (if present)
+        or .../classes/gov/noaapfel/erddap/util/messages.xml. */
     public static String 
         advancedSearch,
         advancedSearchResults,
@@ -692,6 +694,7 @@ public static boolean developmentMode = true;
         functionOrderBySort4,
         functionOrderBySortLeast,
         functionOrderBySortRowMax,
+        geoServicesDescription,
         getStartedHtml,
         htmlTableMaxMessage,
         imageDataCourtesyOf,
@@ -1067,7 +1070,7 @@ public static boolean developmentMode = true;
 
 
     /** This static block reads this class's static String values from
-     * contentDirectory, which must contain messages.xml, setup.xml, and datasets.xml.
+     * contentDirectory, which must contain setup.xml and datasets.xml (and may contain messages.xml).
      * It may be a defined environment variable (erddapContent)
      * or a subdir of <tomcat> (e.g., usr/local/tomcat/content/erddap/)
      *   (more specifically, a sibling of 'tomcat'/webapps).
@@ -1076,29 +1079,29 @@ public static boolean developmentMode = true;
      */
     static {
 
+    String errorInMethod = "";
+    try {
+
         //*** Set up logging systems.
         //route calls to a logger to com.cohort.util.String2Log
         String2.setupCommonsLogging(-1);
 
         //**** find contentDirectory
-        try {
-            contentDirectory = System.getProperty("erddapContentDirectory");        
-            if (contentDirectory == null) {
-                //Or, it must be sibling of webapps
-                //e.g., c:/programs/tomcat/webapps/erddap/WEB-INF/classes/[these classes]
-                //On windows, contentDirectory may have spaces as %20(!)
-                contentDirectory = String2.replaceAll(String2.getClassPath(), "%20", " "); 
-                int po = contentDirectory.indexOf("/webapps/");
-                contentDirectory = contentDirectory.substring(0, po) + "/content/erddap/"; //exception if po=-1
-            } else {
-                contentDirectory = File2.addSlash(contentDirectory);
-            }
-        } catch (Throwable t) {
-            throw new RuntimeException(
-                "Couldn't find 'content' directory (<tomcat>/content/erddap/) " +
-                "because 'erddapContent' environment variable not found " +
-                "and couldn't find '/webapps/' in classPath=" + String2.getClassPath() +
-                " (and 'content/erddap' should be a sibling of <tomcat>/webapps).\n" + t.toString());
+        errorInMethod = 
+            "Couldn't find 'content' directory (<tomcat>/content/erddap/) " +
+            "because 'erddapContent' environment variable not found " +
+            "and couldn't find '/webapps/' in classPath=" + String2.getClassPath() +
+            " (and 'content/erddap' should be a sibling of <tomcat>/webapps).";
+        contentDirectory = System.getProperty("erddapContentDirectory");        
+        if (contentDirectory == null) {
+            //Or, it must be sibling of webapps
+            //e.g., c:/programs/tomcat/webapps/erddap/WEB-INF/classes/[these classes]
+            //On windows, contentDirectory may have spaces as %20(!)
+            contentDirectory = String2.replaceAll(String2.getClassPath(), "%20", " "); 
+            int po = contentDirectory.indexOf("/webapps/");
+            contentDirectory = contentDirectory.substring(0, po) + "/content/erddap/"; //exception if po=-1
+        } else {
+            contentDirectory = File2.addSlash(contentDirectory);
         }
         Test.ensureTrue(File2.isDirectory(contentDirectory),  
             "contentDirectory (" + contentDirectory + ") doesn't exist.");
@@ -1108,13 +1111,8 @@ public static boolean developmentMode = true;
         //read static Strings from setup.xml 
         String setupFileName = contentDirectory + 
             "setup" + (developmentMode? "2" : "") + ".xml";
-        String errorInMethod = "EDStatic error while reading " + setupFileName + ": \n";
-        ResourceBundle2 setup = null;
-        try {
-            setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false));
-        } catch (Throwable t) {
-            throw new RuntimeException(errorInMethod, t);
-        }
+        errorInMethod = "EDStatic error while reading " + setupFileName;
+        ResourceBundle2 setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false));
 
         //logLevel may be: warning, info(default), all
         String logLevel = setup.getString("logLevel", "info").toLowerCase();  
@@ -1162,10 +1160,10 @@ public static boolean developmentMode = true;
         Table.reallyVerbose = reallyVerbose;
         TaskThread.reallyVerbose = reallyVerbose;
 
-        bigParentDirectory = setup.getNotNothingString("bigParentDirectory", errorInMethod); 
+        bigParentDirectory = setup.getNotNothingString("bigParentDirectory", ""); 
         File2.addSlash(bigParentDirectory);
         Test.ensureTrue(File2.isDirectory(bigParentDirectory),  
-            errorInMethod + "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
+            "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
 
 
         //email  (do early on so email can be sent if trouble later in this method)
@@ -1193,10 +1191,10 @@ public static boolean developmentMode = true;
         fullLuceneDirectory      = bigParentDirectory + "lucene/";
 
         Test.ensureTrue(File2.isDirectory(fullPaletteDirectory),  
-            errorInMethod + "fullPaletteDirectory (" + fullPaletteDirectory + ") doesn't exist.");
+            "fullPaletteDirectory (" + fullPaletteDirectory + ") doesn't exist.");
         Test.ensureTrue(File2.isDirectory(fullPublicDirectory),  
-            errorInMethod + "fullPublicDirectory (" + fullPublicDirectory + ") doesn't exist.");
-        errorInMethod = "EDStatic error while creating directories.\n";
+            "fullPublicDirectory (" + fullPublicDirectory + ") doesn't exist.");
+        errorInMethod = "EDStatic error while creating directories.";
         File2.makeDirectory(fullPublicDirectory);  //make it, because Git doesn't track empty dirs
         File2.makeDirectory(fullDatasetDirectory);
         File2.makeDirectory(fullCacheDirectory);
@@ -1206,7 +1204,7 @@ public static boolean developmentMode = true;
         File2.makeDirectory(fullLuceneDirectory);
 
         //set up log (after fullLogsDirectory is known)
-        errorInMethod = "EDStatic error while setting up log files: \n";
+        errorInMethod = "EDStatic error while setting up log files.";
         String timeStamp = String2.replaceAll(Calendar2.getCurrentISODateTimeStringLocal(), ":", ".");
         try {
             //rename log.txt to preserve it so it can be analyzed if there was trouble before restart
@@ -1236,14 +1234,10 @@ public static boolean developmentMode = true;
         } catch (Throwable t) {
             String2.log("WARNING: " + MustBe.throwableToString(t));
         }
-        try {
-            //open String2 log system
-            String2.setupLog(false, false, 
-                fullLogsDirectory + "log.txt",
-                true, true, 20000000);
-        } catch (Throwable t) {
-            throw new RuntimeException(errorInMethod, t);
-        }
+        //open String2 log system
+        String2.setupLog(false, false, 
+            fullLogsDirectory + "log.txt",
+            true, true, 20000000);
         try {
             //copy (not rename!) subscriptionsV1.txt to preserve it 
             if (File2.isFile(bigParentDirectory + "subscriptionsV1.txt"))
@@ -1315,7 +1309,7 @@ public static boolean developmentMode = true;
                 String2.log("]]datasetInfo/ was successfully converted to dataset/");
 
             } catch (Throwable t) {
-                String2.log(MustBe.throwableToString(t));
+                String2.log("WARNING: " + MustBe.throwableToString(t));
             }
         }
 
@@ -1331,7 +1325,7 @@ public static boolean developmentMode = true;
 
         //make some subdirectories of fullCacheDirectory
         //'_' distinguishes from dataset cache dirs
-        errorInMethod = "EDStatic error while creating directories: \n";
+        errorInMethod = "EDStatic error while creating directories.";
         fullCptCacheDirectory              = fullCacheDirectory + "_cpt/";   
         fullPlainFileNcCacheDirectory      = fullCacheDirectory + "_plainFileNc/";   
         fullSgtMapTopographyCacheDirectory = fullCacheDirectory + "_SgtMapTopography/";
@@ -1354,10 +1348,10 @@ public static boolean developmentMode = true;
         
 
         //get other info from setup.xml
-        errorInMethod = "EDStatic error while reading " + setupFileName + ": \n";
-        baseUrl                    = setup.getNotNothingString("baseUrl",                    errorInMethod);
+        errorInMethod = "EDStatic error while reading " + setupFileName;
+        baseUrl                    = setup.getNotNothingString("baseUrl",                    "");
         baseHttpsUrl               = setup.getString(          "baseHttpsUrl",               "(not specified)");
-        categoryAttributes         = String2.split(setup.getNotNothingString("categoryAttributes", errorInMethod), ',');
+        categoryAttributes         = String2.split(setup.getNotNothingString("categoryAttributes", ""), ',');
         int nCat = categoryAttributes.length;
         categoryAttributesInURLs = new String[nCat];
         categoryIsGlobal = new boolean[nCat]; //initially all false
@@ -1375,51 +1369,53 @@ public static boolean developmentMode = true;
         variableNameCategoryAttributeIndex =
             String2.indexOf(categoryAttributes, "variableName");
 
-        EDDGridIdExample           = setup.getNotNothingString("EDDGridIdExample",           errorInMethod);
-        EDDGridDimensionExample    = setup.getNotNothingString("EDDGridDimensionExample",    errorInMethod);
-        EDDGridNoHyperExample      = setup.getNotNothingString("EDDGridNoHyperExample",      errorInMethod);
-        EDDGridDimNamesExample     = setup.getNotNothingString("EDDGridDimNamesExample",     errorInMethod);
-        EDDGridDataIndexExample    = setup.getNotNothingString("EDDGridDataIndexExample",    errorInMethod);
-        EDDGridDataValueExample    = setup.getNotNothingString("EDDGridDataValueExample",    errorInMethod);
-        EDDGridDataTimeExample     = setup.getNotNothingString("EDDGridDataTimeExample",     errorInMethod);
-        EDDGridGraphExample        = setup.getNotNothingString("EDDGridGraphExample",        errorInMethod);
-        EDDGridMapExample          = setup.getNotNothingString("EDDGridMapExample",          errorInMethod);
-        EDDGridMatlabPlotExample   = setup.getNotNothingString("EDDGridMatlabPlotExample",   errorInMethod);
+        EDDGridIdExample           = setup.getNotNothingString("EDDGridIdExample",           "");
+        EDDGridDimensionExample    = setup.getNotNothingString("EDDGridDimensionExample",    "");
+        EDDGridNoHyperExample      = setup.getNotNothingString("EDDGridNoHyperExample",      "");
+        EDDGridDimNamesExample     = setup.getNotNothingString("EDDGridDimNamesExample",     "");
+        EDDGridDataIndexExample    = setup.getNotNothingString("EDDGridDataIndexExample",    "");
+        EDDGridDataValueExample    = setup.getNotNothingString("EDDGridDataValueExample",    "");
+        EDDGridDataTimeExample     = setup.getNotNothingString("EDDGridDataTimeExample",     "");
+        EDDGridGraphExample        = setup.getNotNothingString("EDDGridGraphExample",        "");
+        EDDGridMapExample          = setup.getNotNothingString("EDDGridMapExample",          "");
+        EDDGridMatlabPlotExample   = setup.getNotNothingString("EDDGridMatlabPlotExample",   "");
 
-        EDDTableIdExample          = setup.getNotNothingString("EDDTableIdExample",          errorInMethod);
-        EDDTableVariablesExample   = setup.getNotNothingString("EDDTableVariablesExample",   errorInMethod);
-        EDDTableConstraintsExample = setup.getNotNothingString("EDDTableConstraintsExample", errorInMethod);
-        EDDTableDataValueExample   = setup.getNotNothingString("EDDTableDataValueExample",   errorInMethod);
-        EDDTableDataTimeExample    = setup.getNotNothingString("EDDTableDataTimeExample",    errorInMethod);
-        EDDTableGraphExample       = setup.getNotNothingString("EDDTableGraphExample",       errorInMethod);
-        EDDTableMapExample         = setup.getNotNothingString("EDDTableMapExample",         errorInMethod);
-        EDDTableMatlabPlotExample  = setup.getNotNothingString("EDDTableMatlabPlotExample",  errorInMethod);
+        EDDTableIdExample          = setup.getNotNothingString("EDDTableIdExample",          "");
+        EDDTableVariablesExample   = setup.getNotNothingString("EDDTableVariablesExample",   "");
+        EDDTableConstraintsExample = setup.getNotNothingString("EDDTableConstraintsExample", "");
+        EDDTableDataValueExample   = setup.getNotNothingString("EDDTableDataValueExample",   "");
+        EDDTableDataTimeExample    = setup.getNotNothingString("EDDTableDataTimeExample",    "");
+        EDDTableGraphExample       = setup.getNotNothingString("EDDTableGraphExample",       "");
+        EDDTableMapExample         = setup.getNotNothingString("EDDTableMapExample",         "");
+        EDDTableMatlabPlotExample  = setup.getNotNothingString("EDDTableMatlabPlotExample",  "");
 
-        adminInstitution           = setup.getNotNothingString("adminInstitution",           errorInMethod);
-        adminIndividualName        = setup.getNotNothingString("adminIndividualName",        errorInMethod);
-        adminPosition              = setup.getNotNothingString("adminPosition",              errorInMethod);
-        adminPhone                 = setup.getNotNothingString("adminPhone",                 errorInMethod); 
-        adminAddress               = setup.getNotNothingString("adminAddress",               errorInMethod);
-        adminCity                  = setup.getNotNothingString("adminCity",                  errorInMethod);
-        adminStateOrProvince       = setup.getNotNothingString("adminStateOrProvince",       errorInMethod); 
-        adminPostalCode            = setup.getNotNothingString("adminPostalCode",            errorInMethod);
-        adminCountry               = setup.getNotNothingString("adminCountry",               errorInMethod);
-        adminEmail                 = setup.getNotNothingString("adminEmail",                 errorInMethod);
+        adminInstitution           = setup.getNotNothingString("adminInstitution",           "");
+        adminIndividualName        = setup.getNotNothingString("adminIndividualName",        "");
+        adminPosition              = setup.getNotNothingString("adminPosition",              "");
+        adminPhone                 = setup.getNotNothingString("adminPhone",                 ""); 
+        adminAddress               = setup.getNotNothingString("adminAddress",               "");
+        adminCity                  = setup.getNotNothingString("adminCity",                  "");
+        adminStateOrProvince       = setup.getNotNothingString("adminStateOrProvince",       ""); 
+        adminPostalCode            = setup.getNotNothingString("adminPostalCode",            "");
+        adminCountry               = setup.getNotNothingString("adminCountry",               "");
+        adminEmail                 = setup.getNotNothingString("adminEmail",                 "");
 
-        accessConstraints          = setup.getNotNothingString("accessConstraints",          errorInMethod); 
-        accessRequiresAuthorization= setup.getNotNothingString("accessRequiresAuthorization",errorInMethod); 
-        fees                       = setup.getNotNothingString("fees",                       errorInMethod);
-        keywords                   = setup.getNotNothingString("keywords",                   errorInMethod);
-        legal                      = setup.getNotNothingString("legal",                      errorInMethod);
+        accessConstraints          = setup.getNotNothingString("accessConstraints",          ""); 
+        accessRequiresAuthorization= setup.getNotNothingString("accessRequiresAuthorization",""); 
+        fees                       = setup.getNotNothingString("fees",                       "");
+        keywords                   = setup.getNotNothingString("keywords",                   "");
+        legal                      = setup.getNotNothingString("legal",                      "");
         units_standard             = setup.getString(          "units_standard",             "UDUNITS");
 
         fgdcActive                 = setup.getBoolean(         "fgdcActive",                 true); 
         iso19115Active             = setup.getBoolean(         "iso19115Active",             true); 
+//until it is finished, it is always inactive
+geoServicesRestActive      = false; //setup.getBoolean(         "geoServicesRestActive",      false); 
         sosActive                  = setup.getBoolean(         "sosActive",                  false); 
         if (sosActive) {
-            sosFeatureOfInterest   = setup.getNotNothingString("sosFeatureOfInterest",       errorInMethod);
-            sosStandardNamePrefix  = setup.getNotNothingString("sosStandardNamePrefix",      errorInMethod);
-            sosUrnBase             = setup.getNotNothingString("sosUrnBase",                 errorInMethod);
+            sosFeatureOfInterest   = setup.getNotNothingString("sosFeatureOfInterest",       "");
+            sosStandardNamePrefix  = setup.getNotNothingString("sosStandardNamePrefix",      "");
+            sosUrnBase             = setup.getNotNothingString("sosUrnBase",                 "");
 
             //make the sosGmlName, e.g., http://coastwatch.pfeg.noaa.gov:8080 -> gov.noaa.pfeg.coastwatch
             sosBaseGmlName = baseUrl; 
@@ -1435,13 +1431,12 @@ public static boolean developmentMode = true;
         }
 
 //until it is finished, it is always inactive
-wcsActive = false;         
-//        wcsActive                  = setup.getBoolean(         "wcsActive",                  false); 
+wcsActive                  = false; //setup.getBoolean(         "wcsActive",                  false); 
 
         wmsActive                  = setup.getBoolean(         "wmsActive",                  true); 
-        wmsSampleDatasetID         = setup.getNotNothingString("wmsSampleDatasetID",         errorInMethod);
-        wmsSampleVariable          = setup.getNotNothingString("wmsSampleVariable",          errorInMethod);
-        wmsSampleBBox              = setup.getNotNothingString("wmsSampleBBox",              errorInMethod);
+        wmsSampleDatasetID         = setup.getNotNothingString("wmsSampleDatasetID",         "");
+        wmsSampleVariable          = setup.getNotNothingString("wmsSampleVariable",          "");
+        wmsSampleBBox              = setup.getNotNothingString("wmsSampleBBox",              "");
 
         PostIndex1Html             = setup.getString(          "PostIndex1Html", "[PostIndex1Html in setup.xml]");
         PostIndex2Html             = setup.getString(          "PostIndex2Html", "[PostIndex2Html in setup.xml]");
@@ -1468,23 +1463,23 @@ wcsActive = false;
         if (!drawLandMask.equals("under") && 
             !drawLandMask.equals("over"))
              drawLandMask = "over"; //default
-        endBodyHtml                = setup.getNotNothingString("endBodyHtml",                errorInMethod);
+        endBodyHtml                = setup.getNotNothingString("endBodyHtml",                "");
         endBodyHtml                = String2.replaceAll(endBodyHtml, "&erddapVersion;", erddapVersion);
         flagKeyKey                 = setup.getString(          "flagKeyKey",                 "");
         if (flagKeyKey == null || flagKeyKey.length() == 0)  flagKeyKey = "flagKeyKey";
         fontFamily                 = setup.getString(          "fontFamily",                 "SansSerif");
-        googleEarthLogoFile        = setup.getNotNothingString("googleEarthLogoFile",        errorInMethod);
-        highResLogoImageFile       = setup.getNotNothingString("highResLogoImageFile",       errorInMethod);
+        googleEarthLogoFile        = setup.getNotNothingString("googleEarthLogoFile",        "");
+        highResLogoImageFile       = setup.getNotNothingString("highResLogoImageFile",       "");
         legendTitle1               = setup.getString(          "legendTitle1",               null);
         legendTitle2               = setup.getString(          "legendTitle2",               null);
         listPrivateDatasets        = setup.getBoolean(         "listPrivateDatasets",        false);
         loadDatasetsMinMillis      = Math.max(1,setup.getInt(  "loadDatasetsMinMinutes",     15)) * 60000L;
         loadDatasetsMaxMillis      = setup.getInt(             "loadDatasetsMaxMinutes",     60) * 60000L;
         loadDatasetsMaxMillis      = Math.max(loadDatasetsMinMillis * 2, loadDatasetsMaxMillis);
-        lowResLogoImageFile        = setup.getNotNothingString("lowResLogoImageFile",        errorInMethod);
+        lowResLogoImageFile        = setup.getNotNothingString("lowResLogoImageFile",        "");
         partialRequestMaxBytes     = setup.getInt(             "partialRequestMaxBytes",     partialRequestMaxBytes);
         partialRequestMaxCells     = setup.getInt(             "partialRequestMaxCells",     partialRequestMaxCells);
-        questionMarkImageFile      = setup.getNotNothingString("questionMarkImageFile",      errorInMethod);
+        questionMarkImageFile      = setup.getNotNothingString("questionMarkImageFile",      "");
         quickRestart               = setup.getBoolean(         "quickRestart",               true);
         passwordEncoding           = setup.getString(          "passwordEncoding",           "UEPMD5");
         searchEngine               = setup.getString(          "searchEngine",               "original");
@@ -1499,45 +1494,41 @@ wcsActive = false;
             //it is important that the queryParser use the same analyzer as the indexWriter
             luceneQueryParser = new QueryParser(luceneVersion, luceneDefaultField, luceneAnalyzer);
         } else {
-            Test.ensureEqual(searchEngine, "original", errorInMethod + 
+            Test.ensureEqual(searchEngine, "original", 
                 "<searchEngine> must be \"original\" (the default) or \"lucene\".");
             useOriginalSearchEngine = true;
         }
-        startBodyHtml              = setup.getNotNothingString("startBodyHtml",              errorInMethod);
-        startHeadHtml              = setup.getNotNothingString("startHeadHtml",              errorInMethod);
+        startBodyHtml              = setup.getNotNothingString("startBodyHtml",              "");
+        startHeadHtml              = setup.getNotNothingString("startHeadHtml",              "");
         subscriptionSystemActive   = setup.getBoolean(         "subscriptionSystemActive",   true);
         convertersActive           = setup.getBoolean(         "convertersActive",           true);
         slideSorterActive          = setup.getBoolean(         "slideSorterActive",          true);
-        theShortDescriptionHtml    = setup.getNotNothingString("theShortDescriptionHtml",    errorInMethod);
+        theShortDescriptionHtml    = setup.getNotNothingString("theShortDescriptionHtml",    "");
         unusualActivity            = setup.getInt(             "unusualActivity",            unusualActivity);
         variablesMustHaveIoosCategory = setup.getBoolean(      "variablesMustHaveIoosCategory", true);
-        warName                    = setup.getNotNothingString("warName",                    errorInMethod);
+        warName                    = setup.getNotNothingString("warName",                    "");
  
-        try {
-            //copy all <contentDirectory>images/ (and subdirectories) files to imageDir (and subdirectories)
-            errorInMethod = "EDStatic error while copying " + contentDirectory + "images/ : \n";
-            String imageFiles[] = RegexFilenameFilter.recursiveFullNameList(
-                contentDirectory + "images/", ".+", false);
-            for (int i = 0; i < imageFiles.length; i++) {
-                int tpo = imageFiles[i].indexOf("/images/");
-                if (tpo < 0) tpo = imageFiles[i].indexOf("\\images\\");
-                if (tpo < 0) {
-                    String2.log("'/images/' not found in images/ file: " + imageFiles[i]);
-                    continue;
-                }
-                String tName = imageFiles[i].substring(tpo + 8);
-                if (verbose) String2.log("  copying images/ file: " + tName);
-                File2.copy(contentDirectory + "images/" + tName,  imageDir + tName);
+        //copy all <contentDirectory>images/ (and subdirectories) files to imageDir (and subdirectories)
+        errorInMethod = "EDStatic error while copying " + contentDirectory + "images/ .";
+        String imageFiles[] = RegexFilenameFilter.recursiveFullNameList(
+            contentDirectory + "images/", ".+", false);
+        for (int i = 0; i < imageFiles.length; i++) {
+            int tpo = imageFiles[i].indexOf("/images/");
+            if (tpo < 0) tpo = imageFiles[i].indexOf("\\images\\");
+            if (tpo < 0) {
+                String2.log("'/images/' not found in images/ file: " + imageFiles[i]);
+                continue;
             }
-        } catch (Throwable t) {
-            throw new RuntimeException(t.getMessage(), t);
+            String tName = imageFiles[i].substring(tpo + 8);
+            if (verbose) String2.log("  copying images/ file: " + tName);
+            File2.copy(contentDirectory + "images/" + tName,  imageDir + tName);
         }
 
-        errorInMethod = "EDStatic error while initializing SgtGraph: \n";
+        errorInMethod = "EDStatic error while initializing SgtGraph.";
         sgtGraph = new SgtGraph(fontFamily);
 
         //ensure authentication setup is okay
-        errorInMethod = "EDStatic error while checking authentication setup: \n";
+        errorInMethod = "EDStatic error while checking authentication setup.";
         if (authentication == null)
             authentication = "";
         authentication = authentication.trim().toLowerCase();
@@ -1570,18 +1561,15 @@ wcsActive = false;
         //logoImgTag = "      <img src=\"" + imageDirUrl(loggedInAs) + lowResLogoImageFile + "\" " +
         //    "alt=\"logo\" title=\"logo\">\n";
         if (subscriptionSystemActive) {
-            errorInMethod = "EDStatic error while initializing Subscriptions: \n";
-            try {
-                //make subscriptions
-                subscriptions = new Subscriptions(
-                    bigParentDirectory + "subscriptionsV1.txt", 48, //maxHoursPending, 
-                    erddapUrl); //always use non-https url                
-            } catch (Throwable t) {
-                throw new RuntimeException(MustBe.throwableToString(t));
-            }
+            //make subscriptions
+            errorInMethod = "Error while initializing Subscriptions.";
+            subscriptions = new Subscriptions(
+                bigParentDirectory + "subscriptionsV1.txt", 48, //maxHoursPending, 
+                erddapUrl); //always use non-https url                
         }
 
         //ensure images exist and get their sizes
+        errorInMethod = "Error while ensuring images exist.";
         Image tImage = Image2.getImage(imageDir + lowResLogoImageFile, 10000, false);
         lowResLogoImageFileWidth   = tImage.getWidth(null);
         lowResLogoImageFileHeight  = tImage.getHeight(null);
@@ -1594,663 +1582,669 @@ wcsActive = false;
 
 
         //**** messages.xml *************************************************************
-        //read static Strings from messages.xml 
+        //read static messages from messages(2).xml in contentDirectory?
         String messagesFileName = contentDirectory + 
             "messages" + (developmentMode? "2" : "") + ".xml";
-        errorInMethod = "messages.xml error while reading " + messagesFileName + ": \n";
-        ResourceBundle2 messages = null;
-        try {
-            messages = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false));
-        } catch (Throwable t) {
-            throw new RuntimeException(errorInMethod, t);
+        if (File2.isFile(messagesFileName)) {
+            String2.log("Using custom messages.xml from " + messagesFileName);
+        } else {
+            //use default messages.xml
+            String2.log("Custom messages.xml not found at " + messagesFileName);
+            //use String2.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
+            messagesFileName = String2.getClassPath() + "gov/noaa/pfel/erddap/util/messages.xml";
+            String2.log("Using default messages.xml from  " + messagesFileName);
         }
+        errorInMethod = "Error while reading messages.xml.";
+        ResourceBundle2 messages = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false));
+
 
         //read all the static Strings from messages.xml
-        advancedSearch             = messages.getNotNothingString("advancedSearch",             errorInMethod);
-        advancedSearchResults      = messages.getNotNothingString("advancedSearchResults",      errorInMethod);
-        advancedSearchDirections   = messages.getNotNothingString("advancedSearchDirections",   errorInMethod);
-        advancedSearchHtml         = messages.getNotNothingString("advancedSearchHtml",         errorInMethod);
-        advancedSearchBounds       = messages.getNotNothingString("advancedSearchBounds",       errorInMethod);
-        advancedSearchMinLat       = messages.getNotNothingString("advancedSearchMinLat",       errorInMethod);
-        advancedSearchMaxLat       = messages.getNotNothingString("advancedSearchMaxLat",       errorInMethod);
-        advancedSearchMinLon       = messages.getNotNothingString("advancedSearchMinLon",       errorInMethod);
-        advancedSearchMaxLon       = messages.getNotNothingString("advancedSearchMaxLon",       errorInMethod);
-        advancedSearchMinMaxLon    = messages.getNotNothingString("advancedSearchMinMaxLon",    errorInMethod);
-        advancedSearchMinTime      = messages.getNotNothingString("advancedSearchMinTime",      errorInMethod);
-        advancedSearchMaxTime      = messages.getNotNothingString("advancedSearchMaxTime",      errorInMethod);
-        advancedSearchClear        = messages.getNotNothingString("advancedSearchClear",        errorInMethod);
-        advancedSearchClearHelp    = messages.getNotNothingString("advancedSearchClearHelp",    errorInMethod);
-        advancedSearchCategoryTooltip = messages.getNotNothingString("advancedSearchCategoryTooltip", errorInMethod);
-        advancedSearchRangeTooltip = messages.getNotNothingString("advancedSearchRangeTooltip", errorInMethod);
-        advancedSearchMapTooltip   = messages.getNotNothingString("advancedSearchMapTooltip",   errorInMethod);
-        advancedSearchLonTooltip   = messages.getNotNothingString("advancedSearchLonTooltip",   errorInMethod);
-        advancedSearchTimeTooltip  = messages.getNotNothingString("advancedSearchTimeTooltip",  errorInMethod);
-        advancedSearchWithCriteria = messages.getNotNothingString("advancedSearchWithCriteria", errorInMethod);
-        advancedSearchFewerCriteria = messages.getNotNothingString("advancedSearchFewerCriteria", errorInMethod);
-        advancedSearchNoCriteria   = messages.getNotNothingString("advancedSearchNoCriteria",   errorInMethod);
-        PrimitiveArray.ArrayAddN           = messages.getNotNothingString("ArrayAddN",          errorInMethod);
-        PrimitiveArray.ArrayAppendTables   = messages.getNotNothingString("ArrayAppendTables",  errorInMethod);
-        PrimitiveArray.ArrayDiff           = messages.getNotNothingString("ArrayDiff",          errorInMethod);
-        PrimitiveArray.ArrayDifferentSize  = messages.getNotNothingString("ArrayDifferentSize", errorInMethod);
-        PrimitiveArray.ArrayDifferentValue = messages.getNotNothingString("ArrayDifferentValue",errorInMethod);
-        PrimitiveArray.ArrayDiffString     = messages.getNotNothingString("ArrayDiffString",    errorInMethod);
-        PrimitiveArray.ArrayMissingValue   = messages.getNotNothingString("ArrayMissingValue",  errorInMethod);
-        PrimitiveArray.ArrayNotAscending   = messages.getNotNothingString("ArrayNotAscending",  errorInMethod);
-        PrimitiveArray.ArrayNotDescending  = messages.getNotNothingString("ArrayNotDescending", errorInMethod);
-        PrimitiveArray.ArrayNotEvenlySpaced= messages.getNotNothingString("ArrayNotEvenlySpaced",errorInMethod);
-        PrimitiveArray.ArrayRemove         = messages.getNotNothingString("ArrayRemove",        errorInMethod);
-        PrimitiveArray.ArraySubsetStart    = messages.getNotNothingString("ArraySubsetStart",   errorInMethod);
-        PrimitiveArray.ArraySubsetStride   = messages.getNotNothingString("ArraySubsetStride",  errorInMethod);
-        categoryTitleHtml          = messages.getNotNothingString("categoryTitleHtml",          errorInMethod);
-        category1Html              = messages.getNotNothingString("category1Html",              errorInMethod);
-        category2Html              = messages.getNotNothingString("category2Html",              errorInMethod);
-        category3Html              = messages.getNotNothingString("category3Html",              errorInMethod);
-        categoryPickAttribute      = messages.getNotNothingString("categoryPickAttribute",      errorInMethod);
-        categorySearchHtml         = messages.getNotNothingString("categorySearchHtml",         errorInMethod);
-        categorySearchDifferentHtml= messages.getNotNothingString("categorySearchDifferentHtml",errorInMethod);
-        categoryClickHtml          = messages.getNotNothingString("categoryClickHtml",          errorInMethod);
-        categoryNotAnOption        = messages.getNotNothingString("categoryNotAnOption",        errorInMethod);
-        clickAccessHtml            = messages.getNotNothingString("clickAccessHtml",            errorInMethod);
-        clickAccess                = messages.getNotNothingString("clickAccess",                errorInMethod);
-        clickBackgroundInfo        = messages.getNotNothingString("clickBackgroundInfo",        errorInMethod);
-        clickInfo                  = messages.getNotNothingString("clickInfo",                  errorInMethod);
-        clickToSubmit              = messages.getNotNothingString("clickToSubmit",              errorInMethod);
-        convertFipsCounty          = messages.getNotNothingString("convertFipsCounty",          errorInMethod);
-        convertFipsCountyIntro     = messages.getNotNothingString("convertFipsCountyIntro",     errorInMethod);
-        convertFipsCountyNotes     = messages.getNotNothingString("convertFipsCountyNotes",     errorInMethod);
-        convertFipsCountyService   = messages.getNotNothingString("convertFipsCountyService",   errorInMethod);
-        convertHtml                = messages.getNotNothingString("convertHtml",                errorInMethod);
-        convertKeywords            = messages.getNotNothingString("convertKeywords",            errorInMethod);
-        convertKeywordsCfTooltip   = messages.getNotNothingString("convertKeywordsCfTooltip",   errorInMethod);
-        convertKeywordsGcmdTooltip = messages.getNotNothingString("convertKeywordsGcmdTooltip", errorInMethod);
-        convertKeywordsIntro       = messages.getNotNothingString("convertKeywordsIntro",       errorInMethod);
-        convertKeywordsNotes       = messages.getNotNothingString("convertKeywordsNotes",       errorInMethod);
-        convertKeywordsService     = messages.getNotNothingString("convertKeywordsService",     errorInMethod);
-        convertTime                = messages.getNotNothingString("convertTime",                errorInMethod);
-        convertTimeReference       = messages.getNotNothingString("convertTimeReference",       errorInMethod);
-        convertTimeIntro           = messages.getNotNothingString("convertTimeIntro",           errorInMethod);
-        convertTimeNotes           = messages.getNotNothingString("convertTimeNotes",           errorInMethod);
-        convertTimeService         = messages.getNotNothingString("convertTimeService",         errorInMethod);
-        convertTimeUnitsHelp       = messages.getNotNothingString("convertTimeUnitsHelp",       errorInMethod);
-        convertUnits               = messages.getNotNothingString("convertUnits",               errorInMethod);
-        convertUnitsComparison     = messages.getNotNothingString("convertUnitsComparison",     errorInMethod);
-        convertUnitsFilter         = messages.getNotNothingString("convertUnitsFilter",         errorInMethod);
-        convertUnitsIntro          = messages.getNotNothingString("convertUnitsIntro",          errorInMethod);
-        convertUnitsNotes          = messages.getNotNothingString("convertUnitsNotes",          errorInMethod);
-        convertUnitsService        = messages.getNotNothingString("convertUnitsService",        errorInMethod);
-        daf                        = messages.getNotNothingString("daf",                        errorInMethod);
-        dafGridBypass              = messages.getNotNothingString("dafGridBypass",              errorInMethod);
-        dafGridHtml                = messages.getNotNothingString("dafGridHtml",                errorInMethod);
-        dafTableBypass             = messages.getNotNothingString("dafTableBypass",             errorInMethod);
-        dafTableHtml               = messages.getNotNothingString("dafTableHtml",               errorInMethod);
-        dasTitle                   = messages.getNotNothingString("dasTitle",                   errorInMethod);
-        dataAccessNotAllowed       = messages.getNotNothingString("dataAccessNotAllowed",       errorInMethod);
-        disabled                   = messages.getNotNothingString("disabled",                   errorInMethod);
-        distinctValuesHtml         = messages.getNotNothingString("distinctValuesHtml",         errorInMethod);
-        doWithGraphs               = messages.getNotNothingString("doWithGraphs",               errorInMethod);
+        advancedSearch             = messages.getNotNothingString("advancedSearch",             "");
+        advancedSearchResults      = messages.getNotNothingString("advancedSearchResults",      "");
+        advancedSearchDirections   = messages.getNotNothingString("advancedSearchDirections",   "");
+        advancedSearchHtml         = messages.getNotNothingString("advancedSearchHtml",         "");
+        advancedSearchBounds       = messages.getNotNothingString("advancedSearchBounds",       "");
+        advancedSearchMinLat       = messages.getNotNothingString("advancedSearchMinLat",       "");
+        advancedSearchMaxLat       = messages.getNotNothingString("advancedSearchMaxLat",       "");
+        advancedSearchMinLon       = messages.getNotNothingString("advancedSearchMinLon",       "");
+        advancedSearchMaxLon       = messages.getNotNothingString("advancedSearchMaxLon",       "");
+        advancedSearchMinMaxLon    = messages.getNotNothingString("advancedSearchMinMaxLon",    "");
+        advancedSearchMinTime      = messages.getNotNothingString("advancedSearchMinTime",      "");
+        advancedSearchMaxTime      = messages.getNotNothingString("advancedSearchMaxTime",      "");
+        advancedSearchClear        = messages.getNotNothingString("advancedSearchClear",        "");
+        advancedSearchClearHelp    = messages.getNotNothingString("advancedSearchClearHelp",    "");
+        advancedSearchCategoryTooltip = messages.getNotNothingString("advancedSearchCategoryTooltip", "");
+        advancedSearchRangeTooltip = messages.getNotNothingString("advancedSearchRangeTooltip", "");
+        advancedSearchMapTooltip   = messages.getNotNothingString("advancedSearchMapTooltip",   "");
+        advancedSearchLonTooltip   = messages.getNotNothingString("advancedSearchLonTooltip",   "");
+        advancedSearchTimeTooltip  = messages.getNotNothingString("advancedSearchTimeTooltip",  "");
+        advancedSearchWithCriteria = messages.getNotNothingString("advancedSearchWithCriteria", "");
+        advancedSearchFewerCriteria = messages.getNotNothingString("advancedSearchFewerCriteria", "");
+        advancedSearchNoCriteria   = messages.getNotNothingString("advancedSearchNoCriteria",   "");
+        PrimitiveArray.ArrayAddN           = messages.getNotNothingString("ArrayAddN",          "");
+        PrimitiveArray.ArrayAppendTables   = messages.getNotNothingString("ArrayAppendTables",  "");
+        PrimitiveArray.ArrayDiff           = messages.getNotNothingString("ArrayDiff",          "");
+        PrimitiveArray.ArrayDifferentSize  = messages.getNotNothingString("ArrayDifferentSize", "");
+        PrimitiveArray.ArrayDifferentValue = messages.getNotNothingString("ArrayDifferentValue","");
+        PrimitiveArray.ArrayDiffString     = messages.getNotNothingString("ArrayDiffString",    "");
+        PrimitiveArray.ArrayMissingValue   = messages.getNotNothingString("ArrayMissingValue",  "");
+        PrimitiveArray.ArrayNotAscending   = messages.getNotNothingString("ArrayNotAscending",  "");
+        PrimitiveArray.ArrayNotDescending  = messages.getNotNothingString("ArrayNotDescending", "");
+        PrimitiveArray.ArrayNotEvenlySpaced= messages.getNotNothingString("ArrayNotEvenlySpaced","");
+        PrimitiveArray.ArrayRemove         = messages.getNotNothingString("ArrayRemove",        "");
+        PrimitiveArray.ArraySubsetStart    = messages.getNotNothingString("ArraySubsetStart",   "");
+        PrimitiveArray.ArraySubsetStride   = messages.getNotNothingString("ArraySubsetStride",  "");
+        categoryTitleHtml          = messages.getNotNothingString("categoryTitleHtml",          "");
+        category1Html              = messages.getNotNothingString("category1Html",              "");
+        category2Html              = messages.getNotNothingString("category2Html",              "");
+        category3Html              = messages.getNotNothingString("category3Html",              "");
+        categoryPickAttribute      = messages.getNotNothingString("categoryPickAttribute",      "");
+        categorySearchHtml         = messages.getNotNothingString("categorySearchHtml",         "");
+        categorySearchDifferentHtml= messages.getNotNothingString("categorySearchDifferentHtml","");
+        categoryClickHtml          = messages.getNotNothingString("categoryClickHtml",          "");
+        categoryNotAnOption        = messages.getNotNothingString("categoryNotAnOption",        "");
+        clickAccessHtml            = messages.getNotNothingString("clickAccessHtml",            "");
+        clickAccess                = messages.getNotNothingString("clickAccess",                "");
+        clickBackgroundInfo        = messages.getNotNothingString("clickBackgroundInfo",        "");
+        clickInfo                  = messages.getNotNothingString("clickInfo",                  "");
+        clickToSubmit              = messages.getNotNothingString("clickToSubmit",              "");
+        convertFipsCounty          = messages.getNotNothingString("convertFipsCounty",          "");
+        convertFipsCountyIntro     = messages.getNotNothingString("convertFipsCountyIntro",     "");
+        convertFipsCountyNotes     = messages.getNotNothingString("convertFipsCountyNotes",     "");
+        convertFipsCountyService   = messages.getNotNothingString("convertFipsCountyService",   "");
+        convertHtml                = messages.getNotNothingString("convertHtml",                "");
+        convertKeywords            = messages.getNotNothingString("convertKeywords",            "");
+        convertKeywordsCfTooltip   = messages.getNotNothingString("convertKeywordsCfTooltip",   "");
+        convertKeywordsGcmdTooltip = messages.getNotNothingString("convertKeywordsGcmdTooltip", "");
+        convertKeywordsIntro       = messages.getNotNothingString("convertKeywordsIntro",       "");
+        convertKeywordsNotes       = messages.getNotNothingString("convertKeywordsNotes",       "");
+        convertKeywordsService     = messages.getNotNothingString("convertKeywordsService",     "");
+        convertTime                = messages.getNotNothingString("convertTime",                "");
+        convertTimeReference       = messages.getNotNothingString("convertTimeReference",       "");
+        convertTimeIntro           = messages.getNotNothingString("convertTimeIntro",           "");
+        convertTimeNotes           = messages.getNotNothingString("convertTimeNotes",           "");
+        convertTimeService         = messages.getNotNothingString("convertTimeService",         "");
+        convertTimeUnitsHelp       = messages.getNotNothingString("convertTimeUnitsHelp",       "");
+        convertUnits               = messages.getNotNothingString("convertUnits",               "");
+        convertUnitsComparison     = messages.getNotNothingString("convertUnitsComparison",     "");
+        convertUnitsFilter         = messages.getNotNothingString("convertUnitsFilter",         "");
+        convertUnitsIntro          = messages.getNotNothingString("convertUnitsIntro",          "");
+        convertUnitsNotes          = messages.getNotNothingString("convertUnitsNotes",          "");
+        convertUnitsService        = messages.getNotNothingString("convertUnitsService",        "");
+        daf                        = messages.getNotNothingString("daf",                        "");
+        dafGridBypass              = messages.getNotNothingString("dafGridBypass",              "");
+        dafGridHtml                = messages.getNotNothingString("dafGridHtml",                "");
+        dafTableBypass             = messages.getNotNothingString("dafTableBypass",             "");
+        dafTableHtml               = messages.getNotNothingString("dafTableHtml",               "");
+        dasTitle                   = messages.getNotNothingString("dasTitle",                   "");
+        dataAccessNotAllowed       = messages.getNotNothingString("dataAccessNotAllowed",       "");
+        disabled                   = messages.getNotNothingString("disabled",                   "");
+        distinctValuesHtml         = messages.getNotNothingString("distinctValuesHtml",         "");
+        doWithGraphs               = messages.getNotNothingString("doWithGraphs",               "");
 
-        dtAccessible               = messages.getNotNothingString("dtAccessible",               errorInMethod);
-        dtAccessibleYes            = messages.getNotNothingString("dtAccessibleYes",            errorInMethod);
-        dtAccessibleNo             = messages.getNotNothingString("dtAccessibleNo",             errorInMethod);
-        dtAccessibleLogIn          = messages.getNotNothingString("dtAccessibleLogIn",          errorInMethod);
-        dtLogIn                    = messages.getNotNothingString("dtLogIn",                    errorInMethod);
-        dtDAF1                     = messages.getNotNothingString("dtDAF1",                     errorInMethod);
-        dtDAF2                     = messages.getNotNothingString("dtDAF2",                     errorInMethod);
-        dtMAG                      = messages.getNotNothingString("dtMAG",                      errorInMethod);
-        dtSOS                      = messages.getNotNothingString("dtSOS",                      errorInMethod);
-        dtSubset                   = messages.getNotNothingString("dtSubset",                   errorInMethod);
-        dtWCS                      = messages.getNotNothingString("dtWCS",                      errorInMethod);
-        dtWMS                      = messages.getNotNothingString("dtWMS",                      errorInMethod);
+        dtAccessible               = messages.getNotNothingString("dtAccessible",               "");
+        dtAccessibleYes            = messages.getNotNothingString("dtAccessibleYes",            "");
+        dtAccessibleNo             = messages.getNotNothingString("dtAccessibleNo",             "");
+        dtAccessibleLogIn          = messages.getNotNothingString("dtAccessibleLogIn",          "");
+        dtLogIn                    = messages.getNotNothingString("dtLogIn",                    "");
+        dtDAF1                     = messages.getNotNothingString("dtDAF1",                     "");
+        dtDAF2                     = messages.getNotNothingString("dtDAF2",                     "");
+        dtMAG                      = messages.getNotNothingString("dtMAG",                      "");
+        dtSOS                      = messages.getNotNothingString("dtSOS",                      "");
+        dtSubset                   = messages.getNotNothingString("dtSubset",                   "");
+        dtWCS                      = messages.getNotNothingString("dtWCS",                      "");
+        dtWMS                      = messages.getNotNothingString("dtWMS",                      "");
         
-        EDDDatasetID               = messages.getNotNothingString("EDDDatasetID",               errorInMethod);
-        EDDFgdc                    = messages.getNotNothingString("EDDFgdc",                    errorInMethod);
-        EDDFgdcMetadata            = messages.getNotNothingString("EDDFgdcMetadata",            errorInMethod);
-        EDDIso19115                = messages.getNotNothingString("EDDIso19115",                errorInMethod);
-        EDDIso19115Metadata        = messages.getNotNothingString("EDDIso19115Metadata",        errorInMethod);
-        EDDMetadata                = messages.getNotNothingString("EDDMetadata",                errorInMethod);
-        EDDBackground              = messages.getNotNothingString("EDDBackground",              errorInMethod);
-        EDDClickOnSubmitHtml       = messages.getNotNothingString("EDDClickOnSubmitHtml",       errorInMethod);
-        EDDInformation             = messages.getNotNothingString("EDDInformation",             errorInMethod);
-        EDDInstitution             = messages.getNotNothingString("EDDInstitution",             errorInMethod);
-        EDDSummary                 = messages.getNotNothingString("EDDSummary",                 errorInMethod);
-        EDDDatasetTitle            = messages.getNotNothingString("EDDDatasetTitle",            errorInMethod);
-        EDDDownloadData            = messages.getNotNothingString("EDDDownloadData",            errorInMethod);
-        EDDMakeAGraph              = messages.getNotNothingString("EDDMakeAGraph",              errorInMethod);
-        EDDMakeAMap                = messages.getNotNothingString("EDDMakeAMap",                errorInMethod);
-        EDDFileType                = messages.getNotNothingString("EDDFileType",                errorInMethod);
-        EDDFileTypeInformation     = messages.getNotNothingString("EDDFileTypeInformation",     errorInMethod);
-        EDDSelectFileType          = messages.getNotNothingString("EDDSelectFileType",          errorInMethod);
-        EDDMinimum                 = messages.getNotNothingString("EDDMinimum",                 errorInMethod);
-        EDDMaximum                 = messages.getNotNothingString("EDDMaximum",                 errorInMethod);
-        EDDConstraint              = messages.getNotNothingString("EDDConstraint",              errorInMethod);
+        EDDDatasetID               = messages.getNotNothingString("EDDDatasetID",               "");
+        EDDFgdc                    = messages.getNotNothingString("EDDFgdc",                    "");
+        EDDFgdcMetadata            = messages.getNotNothingString("EDDFgdcMetadata",            "");
+        EDDIso19115                = messages.getNotNothingString("EDDIso19115",                "");
+        EDDIso19115Metadata        = messages.getNotNothingString("EDDIso19115Metadata",        "");
+        EDDMetadata                = messages.getNotNothingString("EDDMetadata",                "");
+        EDDBackground              = messages.getNotNothingString("EDDBackground",              "");
+        EDDClickOnSubmitHtml       = messages.getNotNothingString("EDDClickOnSubmitHtml",       "");
+        EDDInformation             = messages.getNotNothingString("EDDInformation",             "");
+        EDDInstitution             = messages.getNotNothingString("EDDInstitution",             "");
+        EDDSummary                 = messages.getNotNothingString("EDDSummary",                 "");
+        EDDDatasetTitle            = messages.getNotNothingString("EDDDatasetTitle",            "");
+        EDDDownloadData            = messages.getNotNothingString("EDDDownloadData",            "");
+        EDDMakeAGraph              = messages.getNotNothingString("EDDMakeAGraph",              "");
+        EDDMakeAMap                = messages.getNotNothingString("EDDMakeAMap",                "");
+        EDDFileType                = messages.getNotNothingString("EDDFileType",                "");
+        EDDFileTypeInformation     = messages.getNotNothingString("EDDFileTypeInformation",     "");
+        EDDSelectFileType          = messages.getNotNothingString("EDDSelectFileType",          "");
+        EDDMinimum                 = messages.getNotNothingString("EDDMinimum",                 "");
+        EDDMaximum                 = messages.getNotNothingString("EDDMaximum",                 "");
+        EDDConstraint              = messages.getNotNothingString("EDDConstraint",              "");
 
-        EDDChangedWasnt            = messages.getNotNothingString("EDDChangedWasnt",            errorInMethod);
-        EDDChangedDifferentNVar    = messages.getNotNothingString("EDDChangedDifferentNVar",    errorInMethod);
-        EDDChanged2Different       = messages.getNotNothingString("EDDChanged2Different",       errorInMethod);
-        EDDChanged1Different       = messages.getNotNothingString("EDDChanged1Different",       errorInMethod);
-        EDDChangedCGADifferent     = messages.getNotNothingString("EDDChangedCGADifferent",     errorInMethod);
-        EDDChangedAxesDifferentNVar= messages.getNotNothingString("EDDChangedAxesDifferentNVar",errorInMethod);
-        EDDChangedAxes2Different   = messages.getNotNothingString("EDDChangedAxes2Different",   errorInMethod);
-        EDDChangedAxes1Different   = messages.getNotNothingString("EDDChangedAxes1Different",   errorInMethod);
-        EDDChangedNoValue          = messages.getNotNothingString("EDDChangedNoValue",          errorInMethod);
-        EDDChangedTableToGrid      = messages.getNotNothingString("EDDChangedTableToGrid",      errorInMethod);
+        EDDChangedWasnt            = messages.getNotNothingString("EDDChangedWasnt",            "");
+        EDDChangedDifferentNVar    = messages.getNotNothingString("EDDChangedDifferentNVar",    "");
+        EDDChanged2Different       = messages.getNotNothingString("EDDChanged2Different",       "");
+        EDDChanged1Different       = messages.getNotNothingString("EDDChanged1Different",       "");
+        EDDChangedCGADifferent     = messages.getNotNothingString("EDDChangedCGADifferent",     "");
+        EDDChangedAxesDifferentNVar= messages.getNotNothingString("EDDChangedAxesDifferentNVar","");
+        EDDChangedAxes2Different   = messages.getNotNothingString("EDDChangedAxes2Different",   "");
+        EDDChangedAxes1Different   = messages.getNotNothingString("EDDChangedAxes1Different",   "");
+        EDDChangedNoValue          = messages.getNotNothingString("EDDChangedNoValue",          "");
+        EDDChangedTableToGrid      = messages.getNotNothingString("EDDChangedTableToGrid",      "");
 
-        EDDSimilarDifferentNVar    = messages.getNotNothingString("EDDSimilarDifferentNVar",    errorInMethod);
-        EDDSimilarDifferent        = messages.getNotNothingString("EDDSimilarDifferent",        errorInMethod);
+        EDDSimilarDifferentNVar    = messages.getNotNothingString("EDDSimilarDifferentNVar",    "");
+        EDDSimilarDifferent        = messages.getNotNothingString("EDDSimilarDifferent",        "");
 
-        EDDGridDownloadTooltipHtml = messages.getNotNothingString("EDDGridDownloadTooltipHtml", errorInMethod);
-        EDDGridDapDescription      = messages.getNotNothingString("EDDGridDapDescription",      errorInMethod);
-        EDDGridDapLongDescription  = messages.getNotNothingString("EDDGridDapLongDescription",  errorInMethod);
-        EDDGridDownloadDataHtml    = messages.getNotNothingString("EDDGridDownloadDataHtml",    errorInMethod);
-        EDDGridDimension           = messages.getNotNothingString("EDDGridDimension",           errorInMethod);
-        EDDGridDimensionRanges     = messages.getNotNothingString("EDDGridDimensionRanges",     errorInMethod);
-        EDDGridFirst               = messages.getNotNothingString("EDDGridFirst",               errorInMethod);
-        EDDGridLast                = messages.getNotNothingString("EDDGridLast",                errorInMethod);
-        EDDGridStart               = messages.getNotNothingString("EDDGridStart",               errorInMethod);
-        EDDGridStop                = messages.getNotNothingString("EDDGridStop",                errorInMethod);
-        EDDGridStartStopHelp       = messages.getNotNothingString("EDDGridStartStopHelp",       errorInMethod);
-        EDDGridStride              = messages.getNotNothingString("EDDGridStride",              errorInMethod);
-        EDDGridNValues             = messages.getNotNothingString("EDDGridNValues",             errorInMethod);
-        EDDGridNValuesHtml         = messages.getNotNothingString("EDDGridNValuesHtml",         errorInMethod);
-        EDDGridSpacing             = messages.getNotNothingString("EDDGridSpacing",             errorInMethod);
-        EDDGridJustOneValue        = messages.getNotNothingString("EDDGridJustOneValue",        errorInMethod);
-        EDDGridEven                = messages.getNotNothingString("EDDGridEven",                errorInMethod);
-        EDDGridUneven              = messages.getNotNothingString("EDDGridUneven",              errorInMethod);
-        EDDGridDimensionHtml       = messages.getNotNothingString("EDDGridDimensionHtml",       errorInMethod);
-        EDDGridDimensionFirstHtml  = messages.getNotNothingString("EDDGridDimensionFirstHtml",  errorInMethod);
-        EDDGridDimensionLastHtml   = messages.getNotNothingString("EDDGridDimensionLastHtml",   errorInMethod);
-        EDDGridVarHasDimHtml       = messages.getNotNothingString("EDDGridVarHasDimHtml",       errorInMethod);
-        EDDGridSSSHtml             = messages.getNotNothingString("EDDGridSSSHtml",             errorInMethod);
-        EDDGridStartHtml           = messages.getNotNothingString("EDDGridStartHtml",           errorInMethod);
-        EDDGridStopHtml            = messages.getNotNothingString("EDDGridStopHtml",            errorInMethod);
-        EDDGridStrideHtml          = messages.getNotNothingString("EDDGridStrideHtml",          errorInMethod);
-        EDDGridSpacingHtml         = messages.getNotNothingString("EDDGridSpacingHtml",         errorInMethod);
-        EDDGridGridVariableHtml    = messages.getNotNothingString("EDDGridGridVariableHtml",    errorInMethod);
+        EDDGridDownloadTooltipHtml = messages.getNotNothingString("EDDGridDownloadTooltipHtml", "");
+        EDDGridDapDescription      = messages.getNotNothingString("EDDGridDapDescription",      "");
+        EDDGridDapLongDescription  = messages.getNotNothingString("EDDGridDapLongDescription",  "");
+        EDDGridDownloadDataHtml    = messages.getNotNothingString("EDDGridDownloadDataHtml",    "");
+        EDDGridDimension           = messages.getNotNothingString("EDDGridDimension",           "");
+        EDDGridDimensionRanges     = messages.getNotNothingString("EDDGridDimensionRanges",     "");
+        EDDGridFirst               = messages.getNotNothingString("EDDGridFirst",               "");
+        EDDGridLast                = messages.getNotNothingString("EDDGridLast",                "");
+        EDDGridStart               = messages.getNotNothingString("EDDGridStart",               "");
+        EDDGridStop                = messages.getNotNothingString("EDDGridStop",                "");
+        EDDGridStartStopHelp       = messages.getNotNothingString("EDDGridStartStopHelp",       "");
+        EDDGridStride              = messages.getNotNothingString("EDDGridStride",              "");
+        EDDGridNValues             = messages.getNotNothingString("EDDGridNValues",             "");
+        EDDGridNValuesHtml         = messages.getNotNothingString("EDDGridNValuesHtml",         "");
+        EDDGridSpacing             = messages.getNotNothingString("EDDGridSpacing",             "");
+        EDDGridJustOneValue        = messages.getNotNothingString("EDDGridJustOneValue",        "");
+        EDDGridEven                = messages.getNotNothingString("EDDGridEven",                "");
+        EDDGridUneven              = messages.getNotNothingString("EDDGridUneven",              "");
+        EDDGridDimensionHtml       = messages.getNotNothingString("EDDGridDimensionHtml",       "");
+        EDDGridDimensionFirstHtml  = messages.getNotNothingString("EDDGridDimensionFirstHtml",  "");
+        EDDGridDimensionLastHtml   = messages.getNotNothingString("EDDGridDimensionLastHtml",   "");
+        EDDGridVarHasDimHtml       = messages.getNotNothingString("EDDGridVarHasDimHtml",       "");
+        EDDGridSSSHtml             = messages.getNotNothingString("EDDGridSSSHtml",             "");
+        EDDGridStartHtml           = messages.getNotNothingString("EDDGridStartHtml",           "");
+        EDDGridStopHtml            = messages.getNotNothingString("EDDGridStopHtml",            "");
+        EDDGridStrideHtml          = messages.getNotNothingString("EDDGridStrideHtml",          "");
+        EDDGridSpacingHtml         = messages.getNotNothingString("EDDGridSpacingHtml",         "");
+        EDDGridGridVariableHtml    = messages.getNotNothingString("EDDGridGridVariableHtml",    "");
 
-        EDDTableConstraints        = messages.getNotNothingString("EDDTableConstraints",        errorInMethod);
-        EDDTableDapDescription     = messages.getNotNothingString("EDDTableDapDescription",     errorInMethod);
-        EDDTableDapLongDescription = messages.getNotNothingString("EDDTableDapLongDescription", errorInMethod);
-        EDDTableDownloadDataHtml   = messages.getNotNothingString("EDDTableDownloadDataHtml",   errorInMethod);
-        EDDTableTabularDatasetHtml = messages.getNotNothingString("EDDTableTabularDatasetHtml", errorInMethod);
-        EDDTableVariable           = messages.getNotNothingString("EDDTableVariable",           errorInMethod);
-        EDDTableCheckAll           = messages.getNotNothingString("EDDTableCheckAll",           errorInMethod);
-        EDDTableCheckAllTooltip    = messages.getNotNothingString("EDDTableCheckAllTooltip",    errorInMethod);
-        EDDTableUncheckAll         = messages.getNotNothingString("EDDTableUncheckAll",         errorInMethod);
-        EDDTableUncheckAllTooltip  = messages.getNotNothingString("EDDTableUncheckAllTooltip",  errorInMethod);
-        EDDTableMinimumTooltip     = messages.getNotNothingString("EDDTableMinimumTooltip",     errorInMethod);
-        EDDTableMaximumTooltip     = messages.getNotNothingString("EDDTableMaximumTooltip",     errorInMethod);
-        EDDTableCheckTheVariables  = messages.getNotNothingString("EDDTableCheckTheVariables",  errorInMethod);
-        EDDTableSelectAnOperator   = messages.getNotNothingString("EDDTableSelectAnOperator",   errorInMethod);
-        EDDTableOptConstraint1Html = messages.getNotNothingString("EDDTableOptConstraint1Html", errorInMethod);
-        EDDTableOptConstraint2Html = messages.getNotNothingString("EDDTableOptConstraint2Html", errorInMethod);
-        EDDTableOptConstraintVar   = messages.getNotNothingString("EDDTableOptConstraintVar",   errorInMethod);
-        EDDTableNumericConstraintHtml=messages.getNotNothingString("EDDTableNumericConstraintHtml",errorInMethod);
-        EDDTableStringConstraintHtml=messages.getNotNothingString("EDDTableStringConstraintHtml",errorInMethod);
-        EDDTableTimeConstraintHtml = messages.getNotNothingString("EDDTableTimeConstraintHtml", errorInMethod);
-        EDDTableConstraintHtml     = messages.getNotNothingString("EDDTableConstraintHtml",     errorInMethod);
-        EDDTableSelectConstraint   = messages.getNotNothingString("EDDTableSelectConstraint",   errorInMethod);
+        EDDTableConstraints        = messages.getNotNothingString("EDDTableConstraints",        "");
+        EDDTableDapDescription     = messages.getNotNothingString("EDDTableDapDescription",     "");
+        EDDTableDapLongDescription = messages.getNotNothingString("EDDTableDapLongDescription", "");
+        EDDTableDownloadDataHtml   = messages.getNotNothingString("EDDTableDownloadDataHtml",   "");
+        EDDTableTabularDatasetHtml = messages.getNotNothingString("EDDTableTabularDatasetHtml", "");
+        EDDTableVariable           = messages.getNotNothingString("EDDTableVariable",           "");
+        EDDTableCheckAll           = messages.getNotNothingString("EDDTableCheckAll",           "");
+        EDDTableCheckAllTooltip    = messages.getNotNothingString("EDDTableCheckAllTooltip",    "");
+        EDDTableUncheckAll         = messages.getNotNothingString("EDDTableUncheckAll",         "");
+        EDDTableUncheckAllTooltip  = messages.getNotNothingString("EDDTableUncheckAllTooltip",  "");
+        EDDTableMinimumTooltip     = messages.getNotNothingString("EDDTableMinimumTooltip",     "");
+        EDDTableMaximumTooltip     = messages.getNotNothingString("EDDTableMaximumTooltip",     "");
+        EDDTableCheckTheVariables  = messages.getNotNothingString("EDDTableCheckTheVariables",  "");
+        EDDTableSelectAnOperator   = messages.getNotNothingString("EDDTableSelectAnOperator",   "");
+        EDDTableOptConstraint1Html = messages.getNotNothingString("EDDTableOptConstraint1Html", "");
+        EDDTableOptConstraint2Html = messages.getNotNothingString("EDDTableOptConstraint2Html", "");
+        EDDTableOptConstraintVar   = messages.getNotNothingString("EDDTableOptConstraintVar",   "");
+        EDDTableNumericConstraintHtml=messages.getNotNothingString("EDDTableNumericConstraintHtml","");
+        EDDTableStringConstraintHtml=messages.getNotNothingString("EDDTableStringConstraintHtml","");
+        EDDTableTimeConstraintHtml = messages.getNotNothingString("EDDTableTimeConstraintHtml", "");
+        EDDTableConstraintHtml     = messages.getNotNothingString("EDDTableConstraintHtml",     "");
+        EDDTableSelectConstraint   = messages.getNotNothingString("EDDTableSelectConstraint",   "");
 
-        errorTitle                 = messages.getNotNothingString("errorTitle",                 errorInMethod);
-        errorRequestUrl            = messages.getNotNothingString("errorRequestUrl",            errorInMethod);
-        errorRequestQuery          = messages.getNotNothingString("errorRequestQuery",          errorInMethod);
-        errorTheError              = messages.getNotNothingString("errorTheError",              errorInMethod);
-        errorCopyFrom              = messages.getNotNothingString("errorCopyFrom",              errorInMethod);
-        errorFileNotFound          = messages.getNotNothingString("errorFileNotFound",          errorInMethod);
-        errorFileNotFoundImage     = messages.getNotNothingString("errorFileNotFoundImage",     errorInMethod);
-        errorInternal              = messages.getNotNothingString("errorInternal",              errorInMethod) +
+        errorTitle                 = messages.getNotNothingString("errorTitle",                 "");
+        errorRequestUrl            = messages.getNotNothingString("errorRequestUrl",            "");
+        errorRequestQuery          = messages.getNotNothingString("errorRequestQuery",          "");
+        errorTheError              = messages.getNotNothingString("errorTheError",              "");
+        errorCopyFrom              = messages.getNotNothingString("errorCopyFrom",              "");
+        errorFileNotFound          = messages.getNotNothingString("errorFileNotFound",          "");
+        errorFileNotFoundImage     = messages.getNotNothingString("errorFileNotFoundImage",     "");
+        errorInternal              = messages.getNotNothingString("errorInternal",              "") +
             " ";
-        errorJsonpFunctionName     = messages.getNotNothingString("errorJsonpFunctionName",     errorInMethod);
-        errorMoreThan2GB           = messages.getNotNothingString("errorMoreThan2GB",           errorInMethod);
-        errorNotFound              = messages.getNotNothingString("errorNotFound",              errorInMethod);
-        errorNotFoundIn            = messages.getNotNothingString("errorNotFoundIn",            errorInMethod);
-        errorOdvLLTGrid            = messages.getNotNothingString("errorOdvLLTGrid",            errorInMethod);
-        errorOdvLLTTable           = messages.getNotNothingString("errorOdvLLTTable",           errorInMethod);
-        fileHelp_asc               = messages.getNotNothingString("fileHelp_asc",               errorInMethod);
-        fileHelp_csv               = messages.getNotNothingString("fileHelp_csv",               errorInMethod);
-        fileHelp_csvp              = messages.getNotNothingString("fileHelp_csvp",              errorInMethod);
-        fileHelp_das               = messages.getNotNothingString("fileHelp_das",               errorInMethod);
-        fileHelp_dds               = messages.getNotNothingString("fileHelp_dds",               errorInMethod);
-        fileHelp_dods              = messages.getNotNothingString("fileHelp_dods",              errorInMethod);
-        fileHelpGrid_esriAscii     = messages.getNotNothingString("fileHelpGrid_esriAscii",     errorInMethod);
-        fileHelpTable_esriAscii    = messages.getNotNothingString("fileHelpTable_esriAscii",    errorInMethod);
-        fileHelp_fgdc              = messages.getNotNothingString("fileHelp_fgdc",              errorInMethod);
-        fileHelp_geoJson           = messages.getNotNothingString("fileHelp_geoJson",           errorInMethod);
-        fileHelp_graph             = messages.getNotNothingString("fileHelp_graph",             errorInMethod);
-        fileHelpGrid_help          = messages.getNotNothingString("fileHelpGrid_help",          errorInMethod);
-        fileHelpTable_help         = messages.getNotNothingString("fileHelpTable_help",         errorInMethod);
-        fileHelp_html              = messages.getNotNothingString("fileHelp_html",              errorInMethod);
-        fileHelp_htmlTable         = messages.getNotNothingString("fileHelp_htmlTable",         errorInMethod);
-        fileHelp_iso19115          = messages.getNotNothingString("fileHelp_iso19115",          errorInMethod);
-        fileHelp_json              = messages.getNotNothingString("fileHelp_json",              errorInMethod);
-        fileHelp_mat               = messages.getNotNothingString("fileHelp_mat",               errorInMethod);
-        fileHelpGrid_nc            = messages.getNotNothingString("fileHelpGrid_nc",            errorInMethod);
-        fileHelpTable_nc           = messages.getNotNothingString("fileHelpTable_nc",           errorInMethod);
-        fileHelp_ncHeader          = messages.getNotNothingString("fileHelp_ncHeader",          errorInMethod);
-        fileHelp_ncCF              = messages.getNotNothingString("fileHelp_ncCF",              errorInMethod);
-        fileHelp_ncCFHeader        = messages.getNotNothingString("fileHelp_ncCFHeader",        errorInMethod);
-        fileHelp_ncCFMA            = messages.getNotNothingString("fileHelp_ncCFMA",            errorInMethod);
-        fileHelp_ncCFMAHeader      = messages.getNotNothingString("fileHelp_ncCFMAHeader",      errorInMethod);
-        fileHelpGrid_odvTxt        = messages.getNotNothingString("fileHelpGrid_odvTxt",        errorInMethod);
-        fileHelpTable_odvTxt       = messages.getNotNothingString("fileHelpTable_odvTxt",       errorInMethod);
-        fileHelp_subset            = messages.getNotNothingString("fileHelp_subset",            errorInMethod);
-        fileHelp_tsv               = messages.getNotNothingString("fileHelp_tsv",               errorInMethod);
-        fileHelp_tsvp              = messages.getNotNothingString("fileHelp_tsvp",              errorInMethod);
-        fileHelp_xhtml             = messages.getNotNothingString("fileHelp_xhtml",             errorInMethod);
-        fileHelp_geotif            = messages.getNotNothingString("fileHelp_geotif",            errorInMethod);
-        fileHelpGrid_kml           = messages.getNotNothingString("fileHelpGrid_kml",           errorInMethod);
-        fileHelpTable_kml          = messages.getNotNothingString("fileHelpTable_kml",          errorInMethod);
-        fileHelp_smallPdf          = messages.getNotNothingString("fileHelp_smallPdf",          errorInMethod);
-        fileHelp_pdf               = messages.getNotNothingString("fileHelp_pdf",               errorInMethod);
-        fileHelp_largePdf          = messages.getNotNothingString("fileHelp_largePdf",          errorInMethod);
-        fileHelp_smallPng          = messages.getNotNothingString("fileHelp_smallPng",          errorInMethod);
-        fileHelp_png               = messages.getNotNothingString("fileHelp_png",               errorInMethod);
-        fileHelp_largePng          = messages.getNotNothingString("fileHelp_largePng",          errorInMethod);
-        fileHelp_transparentPng    = messages.getNotNothingString("fileHelp_transparentPng",    errorInMethod);
-        functions                  = messages.getNotNothingString("functions",                  errorInMethod);
-        functionHtml               = messages.getNotNothingString("functionHtml",               errorInMethod);
-        functionDistinctCheck      = messages.getNotNothingString("functionDistinctCheck",      errorInMethod);
-        functionDistinctHtml       = messages.getNotNothingString("functionDistinctHtml",       errorInMethod);
-        functionOrderByHtml        = messages.getNotNothingString("functionOrderByHtml",        errorInMethod);
-        functionOrderBySort        = messages.getNotNothingString("functionOrderBySort",        errorInMethod);
-        functionOrderBySort1       = messages.getNotNothingString("functionOrderBySort1",       errorInMethod);
-        functionOrderBySort2       = messages.getNotNothingString("functionOrderBySort2",       errorInMethod);
-        functionOrderBySort3       = messages.getNotNothingString("functionOrderBySort3",       errorInMethod);
-        functionOrderBySort4       = messages.getNotNothingString("functionOrderBySort4",       errorInMethod);
-        functionOrderBySortLeast   = messages.getNotNothingString("functionOrderBySortLeast",   errorInMethod);
-        functionOrderBySortRowMax  = messages.getNotNothingString("functionOrderBySortRowMax",  errorInMethod);
-        getStartedHtml             = messages.getNotNothingString("getStartedHtml",             errorInMethod);
+        errorJsonpFunctionName     = messages.getNotNothingString("errorJsonpFunctionName",     "");
+        errorMoreThan2GB           = messages.getNotNothingString("errorMoreThan2GB",           "");
+        errorNotFound              = messages.getNotNothingString("errorNotFound",              "");
+        errorNotFoundIn            = messages.getNotNothingString("errorNotFoundIn",            "");
+        errorOdvLLTGrid            = messages.getNotNothingString("errorOdvLLTGrid",            "");
+        errorOdvLLTTable           = messages.getNotNothingString("errorOdvLLTTable",           "");
+        fileHelp_asc               = messages.getNotNothingString("fileHelp_asc",               "");
+        fileHelp_csv               = messages.getNotNothingString("fileHelp_csv",               "");
+        fileHelp_csvp              = messages.getNotNothingString("fileHelp_csvp",              "");
+        fileHelp_das               = messages.getNotNothingString("fileHelp_das",               "");
+        fileHelp_dds               = messages.getNotNothingString("fileHelp_dds",               "");
+        fileHelp_dods              = messages.getNotNothingString("fileHelp_dods",              "");
+        fileHelpGrid_esriAscii     = messages.getNotNothingString("fileHelpGrid_esriAscii",     "");
+        fileHelpTable_esriAscii    = messages.getNotNothingString("fileHelpTable_esriAscii",    "");
+        fileHelp_fgdc              = messages.getNotNothingString("fileHelp_fgdc",              "");
+        fileHelp_geoJson           = messages.getNotNothingString("fileHelp_geoJson",           "");
+        fileHelp_graph             = messages.getNotNothingString("fileHelp_graph",             "");
+        fileHelpGrid_help          = messages.getNotNothingString("fileHelpGrid_help",          "");
+        fileHelpTable_help         = messages.getNotNothingString("fileHelpTable_help",         "");
+        fileHelp_html              = messages.getNotNothingString("fileHelp_html",              "");
+        fileHelp_htmlTable         = messages.getNotNothingString("fileHelp_htmlTable",         "");
+        fileHelp_iso19115          = messages.getNotNothingString("fileHelp_iso19115",          "");
+        fileHelp_json              = messages.getNotNothingString("fileHelp_json",              "");
+        fileHelp_mat               = messages.getNotNothingString("fileHelp_mat",               "");
+        fileHelpGrid_nc            = messages.getNotNothingString("fileHelpGrid_nc",            "");
+        fileHelpTable_nc           = messages.getNotNothingString("fileHelpTable_nc",           "");
+        fileHelp_ncHeader          = messages.getNotNothingString("fileHelp_ncHeader",          "");
+        fileHelp_ncCF              = messages.getNotNothingString("fileHelp_ncCF",              "");
+        fileHelp_ncCFHeader        = messages.getNotNothingString("fileHelp_ncCFHeader",        "");
+        fileHelp_ncCFMA            = messages.getNotNothingString("fileHelp_ncCFMA",            "");
+        fileHelp_ncCFMAHeader      = messages.getNotNothingString("fileHelp_ncCFMAHeader",      "");
+        fileHelpGrid_odvTxt        = messages.getNotNothingString("fileHelpGrid_odvTxt",        "");
+        fileHelpTable_odvTxt       = messages.getNotNothingString("fileHelpTable_odvTxt",       "");
+        fileHelp_subset            = messages.getNotNothingString("fileHelp_subset",            "");
+        fileHelp_tsv               = messages.getNotNothingString("fileHelp_tsv",               "");
+        fileHelp_tsvp              = messages.getNotNothingString("fileHelp_tsvp",              "");
+        fileHelp_xhtml             = messages.getNotNothingString("fileHelp_xhtml",             "");
+        fileHelp_geotif            = messages.getNotNothingString("fileHelp_geotif",            "");
+        fileHelpGrid_kml           = messages.getNotNothingString("fileHelpGrid_kml",           "");
+        fileHelpTable_kml          = messages.getNotNothingString("fileHelpTable_kml",          "");
+        fileHelp_smallPdf          = messages.getNotNothingString("fileHelp_smallPdf",          "");
+        fileHelp_pdf               = messages.getNotNothingString("fileHelp_pdf",               "");
+        fileHelp_largePdf          = messages.getNotNothingString("fileHelp_largePdf",          "");
+        fileHelp_smallPng          = messages.getNotNothingString("fileHelp_smallPng",          "");
+        fileHelp_png               = messages.getNotNothingString("fileHelp_png",               "");
+        fileHelp_largePng          = messages.getNotNothingString("fileHelp_largePng",          "");
+        fileHelp_transparentPng    = messages.getNotNothingString("fileHelp_transparentPng",    "");
+        functions                  = messages.getNotNothingString("functions",                  "");
+        functionHtml               = messages.getNotNothingString("functionHtml",               "");
+        functionDistinctCheck      = messages.getNotNothingString("functionDistinctCheck",      "");
+        functionDistinctHtml       = messages.getNotNothingString("functionDistinctHtml",       "");
+        functionOrderByHtml        = messages.getNotNothingString("functionOrderByHtml",        "");
+        functionOrderBySort        = messages.getNotNothingString("functionOrderBySort",        "");
+        functionOrderBySort1       = messages.getNotNothingString("functionOrderBySort1",       "");
+        functionOrderBySort2       = messages.getNotNothingString("functionOrderBySort2",       "");
+        functionOrderBySort3       = messages.getNotNothingString("functionOrderBySort3",       "");
+        functionOrderBySort4       = messages.getNotNothingString("functionOrderBySort4",       "");
+        functionOrderBySortLeast   = messages.getNotNothingString("functionOrderBySortLeast",   "");
+        functionOrderBySortRowMax  = messages.getNotNothingString("functionOrderBySortRowMax",  "");
+        geoServicesDescription     = messages.getNotNothingString("geoServicesDescription",     "");
+        getStartedHtml             = messages.getNotNothingString("getStartedHtml",             "");
         TableWriterHtmlTable.htmlTableMaxMB     = messages.getInt("htmlTableMaxMB", TableWriterHtmlTable.htmlTableMaxMB);                                   
-        htmlTableMaxMessage        = messages.getNotNothingString("htmlTableMaxMessage",        errorInMethod);
-        imageDataCourtesyOf        = messages.getNotNothingString("imageDataCourtesyOf",        errorInMethod);
-        imageWidths                = String2.toIntArray(String2.split(messages.getNotNothingString("imageWidths",  errorInMethod), ','));
-        imageHeights               = String2.toIntArray(String2.split(messages.getNotNothingString("imageHeights", errorInMethod), ','));
-        indexViewAll               = messages.getNotNothingString("indexViewAll",               errorInMethod);
-        indexSearchWith            = messages.getNotNothingString("indexSearchWith",            errorInMethod);
-        indexDevelopersSearch      = messages.getNotNothingString("indexDevelopersSearch",      errorInMethod);
-        indexProtocol              = messages.getNotNothingString("indexProtocol",              errorInMethod);
-        indexDescription           = messages.getNotNothingString("indexDescription",           errorInMethod);
-        indexDatasets              = messages.getNotNothingString("indexDatasets",              errorInMethod);
-        indexDocumentation         = messages.getNotNothingString("indexDocumentation",         errorInMethod);
-        indexRESTfulSearch         = messages.getNotNothingString("indexRESTfulSearch",         errorInMethod);
-        indexServices              = messages.getNotNothingString("indexServices",              errorInMethod);
-        indexDescribeServices      = messages.getNotNothingString("indexDescribeServices",      errorInMethod);
-        indexMetadata              = messages.getNotNothingString("indexMetadata",              errorInMethod);
-        indexWAF1                  = messages.getNotNothingString("indexWAF1",                  errorInMethod);
-        indexWAF2                  = messages.getNotNothingString("indexWAF2",                  errorInMethod);
-        indexConverters            = messages.getNotNothingString("indexConverters",            errorInMethod);
-        indexDescribeConverters    = messages.getNotNothingString("indexDescribeConverters",    errorInMethod);
-        infoAboutFrom              = messages.getNotNothingString("infoAboutFrom",              errorInMethod);
-        infoTableTitleHtml         = messages.getNotNothingString("infoTableTitleHtml",         errorInMethod);
-        infoRequestForm            = messages.getNotNothingString("infoRequestForm",            errorInMethod);
-        justGenerateAndView        = messages.getNotNothingString("justGenerateAndView",        errorInMethod);
-        justGenerateAndViewHtml    = messages.getNotNothingString("justGenerateAndViewHtml",    errorInMethod);
-        justGenerateAndViewUrl     = messages.getNotNothingString("justGenerateAndViewUrl",     errorInMethod);
-        justGenerateAndViewGraphUrlHtml = messages.getNotNothingString("justGenerateAndViewGraphUrlHtml", errorInMethod);
-        license                    = messages.getNotNothingString("license",                    errorInMethod);
-        listAll                    = messages.getNotNothingString("listAll",                    errorInMethod);
-        listOfDatasets             = messages.getNotNothingString("listOfDatasets",             errorInMethod);
-        LogIn                      = messages.getNotNothingString("LogIn",                      errorInMethod);
-        login                      = messages.getNotNothingString("login",                      errorInMethod);
-        loginAttemptBlocked        = messages.getNotNothingString("loginAttemptBlocked",        errorInMethod);
-        loginDescribeCustom        = messages.getNotNothingString("loginDescribeCustom",        errorInMethod);
-        loginDescribeOpenID        = messages.getNotNothingString("loginDescribeOpenID",        errorInMethod);
-        loginCanNot                = messages.getNotNothingString("loginCanNot",                errorInMethod);
-        loginWereNot               = messages.getNotNothingString("loginWereNot",               errorInMethod);
-        loginPleaseLogIn           = messages.getNotNothingString("loginPleaseLogIn",           errorInMethod);
-        loginUserName              = messages.getNotNothingString("loginUserName",              errorInMethod);
-        loginPassword              = messages.getNotNothingString("loginPassword",              errorInMethod);
-        loginUserNameAndPassword   = messages.getNotNothingString("loginUserNameAndPassword",   errorInMethod);
-        loginOpenID                = messages.getNotNothingString("loginOpenID",                errorInMethod);
-        loginOpenIDOr              = messages.getNotNothingString("loginOpenIDOr",              errorInMethod);
-        loginOpenIDCreate          = messages.getNotNothingString("loginOpenIDCreate",          errorInMethod);
-        loginOpenIDFree            = messages.getNotNothingString("loginOpenIDFree",            errorInMethod);
-        loginOpenIDSame            = messages.getNotNothingString("loginOpenIDSame",            errorInMethod);
-        loginAs                    = messages.getNotNothingString("loginAs",                    errorInMethod);
-        loginFailed                = messages.getNotNothingString("loginFailed",                errorInMethod);
-        loginInvalid               = messages.getNotNothingString("loginInvalid",               errorInMethod);
-        loginNot                   = messages.getNotNothingString("loginNot",                   errorInMethod);
-        loginBack                  = messages.getNotNothingString("loginBack",                  errorInMethod);
-        loginProblems              = messages.getNotNothingString("loginProblems",              errorInMethod);
-        loginProblemsAfter         = messages.getNotNothingString("loginProblemsAfter",         errorInMethod);
-        loginPublicAccess          = messages.getNotNothingString("loginPublicAccess",          errorInMethod);
-        LogOut                     = messages.getNotNothingString("LogOut",                     errorInMethod);
-        logout                     = messages.getNotNothingString("logout",                     errorInMethod);
-        logoutOpenID               = messages.getNotNothingString("logoutOpenID",               errorInMethod);
-        logoutSuccess              = messages.getNotNothingString("logoutSuccess",              errorInMethod);
-        mag                        = messages.getNotNothingString("mag",                        errorInMethod);
-        magAxisX                   = messages.getNotNothingString("magAxisX",                   errorInMethod);
-        magAxisY                   = messages.getNotNothingString("magAxisY",                   errorInMethod);
-        magAxisColor               = messages.getNotNothingString("magAxisColor",               errorInMethod);
-        magAxisStickX              = messages.getNotNothingString("magAxisStickX",              errorInMethod);
-        magAxisStickY              = messages.getNotNothingString("magAxisStickY",              errorInMethod);
-        magAxisVectorX             = messages.getNotNothingString("magAxisVectorX",             errorInMethod);
-        magAxisVectorY             = messages.getNotNothingString("magAxisVectorY",             errorInMethod);
-        magAxisHelpGraphX          = messages.getNotNothingString("magAxisHelpGraphX",          errorInMethod);
-        magAxisHelpGraphY          = messages.getNotNothingString("magAxisHelpGraphY",          errorInMethod);
-        magAxisHelpMarkerColor     = messages.getNotNothingString("magAxisHelpMarkerColor",     errorInMethod);
-        magAxisHelpSurfaceColor    = messages.getNotNothingString("magAxisHelpSurfaceColor",    errorInMethod);
-        magAxisHelpStickX          = messages.getNotNothingString("magAxisHelpStickX",          errorInMethod);
-        magAxisHelpStickY          = messages.getNotNothingString("magAxisHelpStickY",          errorInMethod);
-        magAxisHelpMapX            = messages.getNotNothingString("magAxisHelpMapX",            errorInMethod);
-        magAxisHelpMapY            = messages.getNotNothingString("magAxisHelpMapY",            errorInMethod);
-        magAxisHelpVectorX         = messages.getNotNothingString("magAxisHelpVectorX",         errorInMethod);
-        magAxisHelpVectorY         = messages.getNotNothingString("magAxisHelpVectorY",         errorInMethod);
-        magAxisVarHelp             = messages.getNotNothingString("magAxisVarHelp",             errorInMethod);
-        magAxisVarHelpGrid         = messages.getNotNothingString("magAxisVarHelpGrid",         errorInMethod);
-        magConstraintHelp          = messages.getNotNothingString("magConstraintHelp",          errorInMethod);
-        magDocumentation           = messages.getNotNothingString("magDocumentation",           errorInMethod);
-        magDownload                = messages.getNotNothingString("magDownload",                errorInMethod);
-        magDownloadTooltip         = messages.getNotNothingString("magDownloadTooltip",         errorInMethod);
-        magFileType                = messages.getNotNothingString("magFileType",                errorInMethod);
-        magGraphType               = messages.getNotNothingString("magGraphType",               errorInMethod);
-        magGraphTypeTooltipGrid    = messages.getNotNothingString("magGraphTypeTooltipGrid",    errorInMethod);
-        magGraphTypeTooltipTable   = messages.getNotNothingString("magGraphTypeTooltipTable",   errorInMethod);
-        magGS                      = messages.getNotNothingString("magGS",                      errorInMethod);
-        magGSMarkerType            = messages.getNotNothingString("magGSMarkerType",            errorInMethod);
-        magGSSize                  = messages.getNotNothingString("magGSSize",                  errorInMethod);
-        magGSColor                 = messages.getNotNothingString("magGSColor",                 errorInMethod);
-        magGSColorBar              = messages.getNotNothingString("magGSColorBar",              errorInMethod);
-        magGSColorBarTooltip       = messages.getNotNothingString("magGSColorBarTooltip",       errorInMethod);
-        magGSContinuity            = messages.getNotNothingString("magGSContinuity",            errorInMethod);
-        magGSContinuityTooltip     = messages.getNotNothingString("magGSContinuityTooltip",     errorInMethod);
-        magGSScale                 = messages.getNotNothingString("magGSScale",                 errorInMethod);
-        magGSScaleTooltip          = messages.getNotNothingString("magGSScaleTooltip",          errorInMethod);
-        magGSMin                   = messages.getNotNothingString("magGSMin",                   errorInMethod);
-        magGSMinTooltip            = messages.getNotNothingString("magGSMinTooltip",            errorInMethod);
-        magGSMax                   = messages.getNotNothingString("magGSMax",                   errorInMethod);
-        magGSMaxTooltip            = messages.getNotNothingString("magGSMaxTooltip",            errorInMethod);
-        magGSNSections             = messages.getNotNothingString("magGSNSections",             errorInMethod);
-        magGSNSectionsTooltip      = messages.getNotNothingString("magGSNSectionsTooltip",      errorInMethod);
-        magGSLandMask              = messages.getNotNothingString("magGSLandMask",              errorInMethod);
-        magGSLandMaskTooltipGrid   = messages.getNotNothingString("magGSLandMaskTooltipGrid",   errorInMethod);
-        magGSLandMaskTooltipTable  = messages.getNotNothingString("magGSLandMaskTooltipTable",  errorInMethod);
-        magGSVectorStandard        = messages.getNotNothingString("magGSVectorStandard",        errorInMethod);
-        magGSVectorStandardTooltip = messages.getNotNothingString("magGSVectorStandardTooltip", errorInMethod);
-        magGSYAxisMin              = messages.getNotNothingString("magGSYAxisMin",              errorInMethod);
-        magGSYAxisMax              = messages.getNotNothingString("magGSYAxisMax",              errorInMethod);
-        magGSYRangeMinTooltip      = messages.getNotNothingString("magGSYRangeMinTooltip",      errorInMethod); 
-        magGSYRangeMaxTooltip      = messages.getNotNothingString("magGSYRangeMaxTooltip",      errorInMethod);
-        magGSYRangeTooltip         = messages.getNotNothingString("magGSYRangeTooltip",         errorInMethod);        
-        magItemFirst               = messages.getNotNothingString("magItemFirst",               errorInMethod);
-        magItemPrevious            = messages.getNotNothingString("magItemPrevious",            errorInMethod);
-        magItemNext                = messages.getNotNothingString("magItemNext",                errorInMethod);
-        magItemLast                = messages.getNotNothingString("magItemLast",                errorInMethod);
-        magJust1Value              = messages.getNotNothingString("magJust1Value",              errorInMethod);
-        magRange                   = messages.getNotNothingString("magRange",                   errorInMethod);
-        magRangeTo                 = messages.getNotNothingString("magRangeTo",                 errorInMethod);
-        magRedraw                  = messages.getNotNothingString("magRedraw",                  errorInMethod);
-        magRedrawTooltip           = messages.getNotNothingString("magRedrawTooltip",           errorInMethod);
-        magTimeRange               = messages.getNotNothingString("magTimeRange",               errorInMethod);
-        magTimeRangeFirst          = messages.getNotNothingString("magTimeRangeFirst",          errorInMethod);
-        magTimeRangeBack           = messages.getNotNothingString("magTimeRangeBack",           errorInMethod);
-        magTimeRangeForward        = messages.getNotNothingString("magTimeRangeForward",        errorInMethod);
-        magTimeRangeLast           = messages.getNotNothingString("magTimeRangeLast",           errorInMethod);
-        magTimeRangeTooltip        = messages.getNotNothingString("magTimeRangeTooltip",        errorInMethod);
-        magTimeRangeTooltip2       = messages.getNotNothingString("magTimeRangeTooltip2",       errorInMethod);
-        magTimesVary               = messages.getNotNothingString("magTimesVary",               errorInMethod);
-        magViewUrl                 = messages.getNotNothingString("magViewUrl",                 errorInMethod);
-        magZoom                    = messages.getNotNothingString("magZoom",                    errorInMethod);
-        magZoomCenter              = messages.getNotNothingString("magZoomCenter",              errorInMethod);
-        magZoomCenterTooltip       = messages.getNotNothingString("magZoomCenterTooltip",       errorInMethod);
-        magZoomIn                  = messages.getNotNothingString("magZoomIn",                  errorInMethod);
-        magZoomInTooltip           = messages.getNotNothingString("magZoomInTooltip",           errorInMethod);
-        magZoomOut                 = messages.getNotNothingString("magZoomOut",                 errorInMethod);
-        magZoomOutTooltip          = messages.getNotNothingString("magZoomOutTooltip",          errorInMethod);
-        magZoomALittle             = messages.getNotNothingString("magZoomALittle",             errorInMethod);
-        magZoomData                = messages.getNotNothingString("magZoomData",                errorInMethod);
-        magZoomOutData             = messages.getNotNothingString("magZoomOutData",             errorInMethod);
-        magGridHtml                = messages.getNotNothingString("magGridHtml",                errorInMethod);
-        magTableHtml               = messages.getNotNothingString("magTableHtml",               errorInMethod);
-        Math2.memoryTooMuchData    = messages.getNotNothingString("memoryTooMuchData",          errorInMethod);
-        Math2.memoryArraySize      = messages.getNotNothingString("memoryArraySize",            errorInMethod);
-      Math2.memoryThanCurrentlySafe= messages.getNotNothingString("memoryThanCurrentlySafe",    errorInMethod);
-        Math2.memoryThanSafe       = messages.getNotNothingString("memoryThanSafe",             errorInMethod);
-        metadataDownload           = messages.getNotNothingString("metadataDownload",           errorInMethod);
-        moreInformation            = messages.getNotNothingString("moreInformation",            errorInMethod);
-        MustBe.THERE_IS_NO_DATA    = messages.getNotNothingString("MustBeThereIsNoData",        errorInMethod);
-        MustBe.NotNull             = messages.getNotNothingString("MustBeNotNull",              errorInMethod);
-        MustBe.NotEmpty            = messages.getNotNothingString("MustBeNotEmpty",             errorInMethod);
-        MustBe.InternalError       = messages.getNotNothingString("MustBeInternalError",        errorInMethod);
-        MustBe.OutOfMemoryError    = messages.getNotNothingString("MustBeOutOfMemoryError",     errorInMethod);
-        nMatching1                 = messages.getNotNothingString("nMatching1",                 errorInMethod);
-        nMatchingAlphabetical      = messages.getNotNothingString("nMatchingAlphabetical",      errorInMethod);
-        nMatchingMostRelevant      = messages.getNotNothingString("nMatchingMostRelevant",      errorInMethod);
-        nMatchingPage              = messages.getNotNothingString("nMatchingPage",              errorInMethod);
-        nMatchingCurrent           = messages.getNotNothingString("nMatchingCurrent",           errorInMethod);
-        noDataFixedValue           = messages.getNotNothingString("noDataFixedValue",           errorInMethod);
-        noDataNoLL                 = messages.getNotNothingString("noDataNoLL",                 errorInMethod);
-        noDatasetWith              = messages.getNotNothingString("noDatasetWith",              errorInMethod);
-        noPage1                    = messages.getNotNothingString("noPage1",                    errorInMethod);
-        noPage2                    = messages.getNotNothingString("noPage2",                    errorInMethod);
-        notAuthorized              = messages.getNotNothingString("notAuthorized",              errorInMethod);
-        notAvailable               = messages.getNotNothingString("notAvailable",               errorInMethod);
-        noXxxBecause               = messages.getNotNothingString("noXxxBecause",               errorInMethod);
-        noXxxBecause2              = messages.getNotNothingString("noXxxBecause2",              errorInMethod);
-        noXxxNotActive             = messages.getNotNothingString("noXxxNotActive",             errorInMethod);
-        noXxxNoAxis1               = messages.getNotNothingString("noXxxNoAxis1",               errorInMethod);
-        noXxxNoCdmDataType         = messages.getNotNothingString("noXxxNoCdmDataType",         errorInMethod);
-        noXxxNoColorBar            = messages.getNotNothingString("noXxxNoColorBar",            errorInMethod);
-        noXxxNoLL                  = messages.getNotNothingString("noXxxNoLL",                  errorInMethod);
-        noXxxNoLLEvenlySpaced      = messages.getNotNothingString("noXxxNoLLEvenlySpaced",      errorInMethod);
-        noXxxNoLLGt1               = messages.getNotNothingString("noXxxNoLLGt1",               errorInMethod);
-        noXxxNoLLT                 = messages.getNotNothingString("noXxxNoLLT",                 errorInMethod);
-        noXxxNoLonIn180            = messages.getNotNothingString("noXxxNoLonIn180",            errorInMethod);
-        noXxxNoNonString           = messages.getNotNothingString("noXxxNoNonString",           errorInMethod);
-        noXxxNo2NonString          = messages.getNotNothingString("noXxxNo2NonString",          errorInMethod);
-        noXxxNoStation             = messages.getNotNothingString("noXxxNoStation",             errorInMethod);
-        noXxxNoStationID           = messages.getNotNothingString("noXxxNoStationID",           errorInMethod);
-        noXxxNoMinMax              = messages.getNotNothingString("noXxxNoMinMax",              errorInMethod);
-        noXxxItsGridded            = messages.getNotNothingString("noXxxItsGridded",            errorInMethod);
-        noXxxItsTabular            = messages.getNotNothingString("noXxxItsTabular",            errorInMethod);
-        optional                   = messages.getNotNothingString("optional",                   errorInMethod);
-        orRefineSearchWith         = messages.getNotNothingString("orRefineSearchWith",         errorInMethod);
+        htmlTableMaxMessage        = messages.getNotNothingString("htmlTableMaxMessage",        "");
+        imageDataCourtesyOf        = messages.getNotNothingString("imageDataCourtesyOf",        "");
+        imageWidths                = String2.toIntArray(String2.split(messages.getNotNothingString("imageWidths",  ""), ','));
+        imageHeights               = String2.toIntArray(String2.split(messages.getNotNothingString("imageHeights", ""), ','));
+        indexViewAll               = messages.getNotNothingString("indexViewAll",               "");
+        indexSearchWith            = messages.getNotNothingString("indexSearchWith",            "");
+        indexDevelopersSearch      = messages.getNotNothingString("indexDevelopersSearch",      "");
+        indexProtocol              = messages.getNotNothingString("indexProtocol",              "");
+        indexDescription           = messages.getNotNothingString("indexDescription",           "");
+        indexDatasets              = messages.getNotNothingString("indexDatasets",              "");
+        indexDocumentation         = messages.getNotNothingString("indexDocumentation",         "");
+        indexRESTfulSearch         = messages.getNotNothingString("indexRESTfulSearch",         "");
+        indexServices              = messages.getNotNothingString("indexServices",              "");
+        indexDescribeServices      = messages.getNotNothingString("indexDescribeServices",      "");
+        indexMetadata              = messages.getNotNothingString("indexMetadata",              "");
+        indexWAF1                  = messages.getNotNothingString("indexWAF1",                  "");
+        indexWAF2                  = messages.getNotNothingString("indexWAF2",                  "");
+        indexConverters            = messages.getNotNothingString("indexConverters",            "");
+        indexDescribeConverters    = messages.getNotNothingString("indexDescribeConverters",    "");
+        infoAboutFrom              = messages.getNotNothingString("infoAboutFrom",              "");
+        infoTableTitleHtml         = messages.getNotNothingString("infoTableTitleHtml",         "");
+        infoRequestForm            = messages.getNotNothingString("infoRequestForm",            "");
+        justGenerateAndView        = messages.getNotNothingString("justGenerateAndView",        "");
+        justGenerateAndViewHtml    = messages.getNotNothingString("justGenerateAndViewHtml",    "");
+        justGenerateAndViewUrl     = messages.getNotNothingString("justGenerateAndViewUrl",     "");
+        justGenerateAndViewGraphUrlHtml = messages.getNotNothingString("justGenerateAndViewGraphUrlHtml", "");
+        license                    = messages.getNotNothingString("license",                    "");
+        listAll                    = messages.getNotNothingString("listAll",                    "");
+        listOfDatasets             = messages.getNotNothingString("listOfDatasets",             "");
+        LogIn                      = messages.getNotNothingString("LogIn",                      "");
+        login                      = messages.getNotNothingString("login",                      "");
+        loginAttemptBlocked        = messages.getNotNothingString("loginAttemptBlocked",        "");
+        loginDescribeCustom        = messages.getNotNothingString("loginDescribeCustom",        "");
+        loginDescribeOpenID        = messages.getNotNothingString("loginDescribeOpenID",        "");
+        loginCanNot                = messages.getNotNothingString("loginCanNot",                "");
+        loginWereNot               = messages.getNotNothingString("loginWereNot",               "");
+        loginPleaseLogIn           = messages.getNotNothingString("loginPleaseLogIn",           "");
+        loginUserName              = messages.getNotNothingString("loginUserName",              "");
+        loginPassword              = messages.getNotNothingString("loginPassword",              "");
+        loginUserNameAndPassword   = messages.getNotNothingString("loginUserNameAndPassword",   "");
+        loginOpenID                = messages.getNotNothingString("loginOpenID",                "");
+        loginOpenIDOr              = messages.getNotNothingString("loginOpenIDOr",              "");
+        loginOpenIDCreate          = messages.getNotNothingString("loginOpenIDCreate",          "");
+        loginOpenIDFree            = messages.getNotNothingString("loginOpenIDFree",            "");
+        loginOpenIDSame            = messages.getNotNothingString("loginOpenIDSame",            "");
+        loginAs                    = messages.getNotNothingString("loginAs",                    "");
+        loginFailed                = messages.getNotNothingString("loginFailed",                "");
+        loginInvalid               = messages.getNotNothingString("loginInvalid",               "");
+        loginNot                   = messages.getNotNothingString("loginNot",                   "");
+        loginBack                  = messages.getNotNothingString("loginBack",                  "");
+        loginProblems              = messages.getNotNothingString("loginProblems",              "");
+        loginProblemsAfter         = messages.getNotNothingString("loginProblemsAfter",         "");
+        loginPublicAccess          = messages.getNotNothingString("loginPublicAccess",          "");
+        LogOut                     = messages.getNotNothingString("LogOut",                     "");
+        logout                     = messages.getNotNothingString("logout",                     "");
+        logoutOpenID               = messages.getNotNothingString("logoutOpenID",               "");
+        logoutSuccess              = messages.getNotNothingString("logoutSuccess",              "");
+        mag                        = messages.getNotNothingString("mag",                        "");
+        magAxisX                   = messages.getNotNothingString("magAxisX",                   "");
+        magAxisY                   = messages.getNotNothingString("magAxisY",                   "");
+        magAxisColor               = messages.getNotNothingString("magAxisColor",               "");
+        magAxisStickX              = messages.getNotNothingString("magAxisStickX",              "");
+        magAxisStickY              = messages.getNotNothingString("magAxisStickY",              "");
+        magAxisVectorX             = messages.getNotNothingString("magAxisVectorX",             "");
+        magAxisVectorY             = messages.getNotNothingString("magAxisVectorY",             "");
+        magAxisHelpGraphX          = messages.getNotNothingString("magAxisHelpGraphX",          "");
+        magAxisHelpGraphY          = messages.getNotNothingString("magAxisHelpGraphY",          "");
+        magAxisHelpMarkerColor     = messages.getNotNothingString("magAxisHelpMarkerColor",     "");
+        magAxisHelpSurfaceColor    = messages.getNotNothingString("magAxisHelpSurfaceColor",    "");
+        magAxisHelpStickX          = messages.getNotNothingString("magAxisHelpStickX",          "");
+        magAxisHelpStickY          = messages.getNotNothingString("magAxisHelpStickY",          "");
+        magAxisHelpMapX            = messages.getNotNothingString("magAxisHelpMapX",            "");
+        magAxisHelpMapY            = messages.getNotNothingString("magAxisHelpMapY",            "");
+        magAxisHelpVectorX         = messages.getNotNothingString("magAxisHelpVectorX",         "");
+        magAxisHelpVectorY         = messages.getNotNothingString("magAxisHelpVectorY",         "");
+        magAxisVarHelp             = messages.getNotNothingString("magAxisVarHelp",             "");
+        magAxisVarHelpGrid         = messages.getNotNothingString("magAxisVarHelpGrid",         "");
+        magConstraintHelp          = messages.getNotNothingString("magConstraintHelp",          "");
+        magDocumentation           = messages.getNotNothingString("magDocumentation",           "");
+        magDownload                = messages.getNotNothingString("magDownload",                "");
+        magDownloadTooltip         = messages.getNotNothingString("magDownloadTooltip",         "");
+        magFileType                = messages.getNotNothingString("magFileType",                "");
+        magGraphType               = messages.getNotNothingString("magGraphType",               "");
+        magGraphTypeTooltipGrid    = messages.getNotNothingString("magGraphTypeTooltipGrid",    "");
+        magGraphTypeTooltipTable   = messages.getNotNothingString("magGraphTypeTooltipTable",   "");
+        magGS                      = messages.getNotNothingString("magGS",                      "");
+        magGSMarkerType            = messages.getNotNothingString("magGSMarkerType",            "");
+        magGSSize                  = messages.getNotNothingString("magGSSize",                  "");
+        magGSColor                 = messages.getNotNothingString("magGSColor",                 "");
+        magGSColorBar              = messages.getNotNothingString("magGSColorBar",              "");
+        magGSColorBarTooltip       = messages.getNotNothingString("magGSColorBarTooltip",       "");
+        magGSContinuity            = messages.getNotNothingString("magGSContinuity",            "");
+        magGSContinuityTooltip     = messages.getNotNothingString("magGSContinuityTooltip",     "");
+        magGSScale                 = messages.getNotNothingString("magGSScale",                 "");
+        magGSScaleTooltip          = messages.getNotNothingString("magGSScaleTooltip",          "");
+        magGSMin                   = messages.getNotNothingString("magGSMin",                   "");
+        magGSMinTooltip            = messages.getNotNothingString("magGSMinTooltip",            "");
+        magGSMax                   = messages.getNotNothingString("magGSMax",                   "");
+        magGSMaxTooltip            = messages.getNotNothingString("magGSMaxTooltip",            "");
+        magGSNSections             = messages.getNotNothingString("magGSNSections",             "");
+        magGSNSectionsTooltip      = messages.getNotNothingString("magGSNSectionsTooltip",      "");
+        magGSLandMask              = messages.getNotNothingString("magGSLandMask",              "");
+        magGSLandMaskTooltipGrid   = messages.getNotNothingString("magGSLandMaskTooltipGrid",   "");
+        magGSLandMaskTooltipTable  = messages.getNotNothingString("magGSLandMaskTooltipTable",  "");
+        magGSVectorStandard        = messages.getNotNothingString("magGSVectorStandard",        "");
+        magGSVectorStandardTooltip = messages.getNotNothingString("magGSVectorStandardTooltip", "");
+        magGSYAxisMin              = messages.getNotNothingString("magGSYAxisMin",              "");
+        magGSYAxisMax              = messages.getNotNothingString("magGSYAxisMax",              "");
+        magGSYRangeMinTooltip      = messages.getNotNothingString("magGSYRangeMinTooltip",      ""); 
+        magGSYRangeMaxTooltip      = messages.getNotNothingString("magGSYRangeMaxTooltip",      "");
+        magGSYRangeTooltip         = messages.getNotNothingString("magGSYRangeTooltip",         "");        
+        magItemFirst               = messages.getNotNothingString("magItemFirst",               "");
+        magItemPrevious            = messages.getNotNothingString("magItemPrevious",            "");
+        magItemNext                = messages.getNotNothingString("magItemNext",                "");
+        magItemLast                = messages.getNotNothingString("magItemLast",                "");
+        magJust1Value              = messages.getNotNothingString("magJust1Value",              "");
+        magRange                   = messages.getNotNothingString("magRange",                   "");
+        magRangeTo                 = messages.getNotNothingString("magRangeTo",                 "");
+        magRedraw                  = messages.getNotNothingString("magRedraw",                  "");
+        magRedrawTooltip           = messages.getNotNothingString("magRedrawTooltip",           "");
+        magTimeRange               = messages.getNotNothingString("magTimeRange",               "");
+        magTimeRangeFirst          = messages.getNotNothingString("magTimeRangeFirst",          "");
+        magTimeRangeBack           = messages.getNotNothingString("magTimeRangeBack",           "");
+        magTimeRangeForward        = messages.getNotNothingString("magTimeRangeForward",        "");
+        magTimeRangeLast           = messages.getNotNothingString("magTimeRangeLast",           "");
+        magTimeRangeTooltip        = messages.getNotNothingString("magTimeRangeTooltip",        "");
+        magTimeRangeTooltip2       = messages.getNotNothingString("magTimeRangeTooltip2",       "");
+        magTimesVary               = messages.getNotNothingString("magTimesVary",               "");
+        magViewUrl                 = messages.getNotNothingString("magViewUrl",                 "");
+        magZoom                    = messages.getNotNothingString("magZoom",                    "");
+        magZoomCenter              = messages.getNotNothingString("magZoomCenter",              "");
+        magZoomCenterTooltip       = messages.getNotNothingString("magZoomCenterTooltip",       "");
+        magZoomIn                  = messages.getNotNothingString("magZoomIn",                  "");
+        magZoomInTooltip           = messages.getNotNothingString("magZoomInTooltip",           "");
+        magZoomOut                 = messages.getNotNothingString("magZoomOut",                 "");
+        magZoomOutTooltip          = messages.getNotNothingString("magZoomOutTooltip",          "");
+        magZoomALittle             = messages.getNotNothingString("magZoomALittle",             "");
+        magZoomData                = messages.getNotNothingString("magZoomData",                "");
+        magZoomOutData             = messages.getNotNothingString("magZoomOutData",             "");
+        magGridHtml                = messages.getNotNothingString("magGridHtml",                "");
+        magTableHtml               = messages.getNotNothingString("magTableHtml",               "");
+        Math2.memoryTooMuchData    = messages.getNotNothingString("memoryTooMuchData",          "");
+        Math2.memoryArraySize      = messages.getNotNothingString("memoryArraySize",            "");
+      Math2.memoryThanCurrentlySafe= messages.getNotNothingString("memoryThanCurrentlySafe",    "");
+        Math2.memoryThanSafe       = messages.getNotNothingString("memoryThanSafe",             "");
+        metadataDownload           = messages.getNotNothingString("metadataDownload",           "");
+        moreInformation            = messages.getNotNothingString("moreInformation",            "");
+        MustBe.THERE_IS_NO_DATA    = messages.getNotNothingString("MustBeThereIsNoData",        "");
+        MustBe.NotNull             = messages.getNotNothingString("MustBeNotNull",              "");
+        MustBe.NotEmpty            = messages.getNotNothingString("MustBeNotEmpty",             "");
+        MustBe.InternalError       = messages.getNotNothingString("MustBeInternalError",        "");
+        MustBe.OutOfMemoryError    = messages.getNotNothingString("MustBeOutOfMemoryError",     "");
+        nMatching1                 = messages.getNotNothingString("nMatching1",                 "");
+        nMatchingAlphabetical      = messages.getNotNothingString("nMatchingAlphabetical",      "");
+        nMatchingMostRelevant      = messages.getNotNothingString("nMatchingMostRelevant",      "");
+        nMatchingPage              = messages.getNotNothingString("nMatchingPage",              "");
+        nMatchingCurrent           = messages.getNotNothingString("nMatchingCurrent",           "");
+        noDataFixedValue           = messages.getNotNothingString("noDataFixedValue",           "");
+        noDataNoLL                 = messages.getNotNothingString("noDataNoLL",                 "");
+        noDatasetWith              = messages.getNotNothingString("noDatasetWith",              "");
+        noPage1                    = messages.getNotNothingString("noPage1",                    "");
+        noPage2                    = messages.getNotNothingString("noPage2",                    "");
+        notAuthorized              = messages.getNotNothingString("notAuthorized",              "");
+        notAvailable               = messages.getNotNothingString("notAvailable",               "");
+        noXxxBecause               = messages.getNotNothingString("noXxxBecause",               "");
+        noXxxBecause2              = messages.getNotNothingString("noXxxBecause2",              "");
+        noXxxNotActive             = messages.getNotNothingString("noXxxNotActive",             "");
+        noXxxNoAxis1               = messages.getNotNothingString("noXxxNoAxis1",               "");
+        noXxxNoCdmDataType         = messages.getNotNothingString("noXxxNoCdmDataType",         "");
+        noXxxNoColorBar            = messages.getNotNothingString("noXxxNoColorBar",            "");
+        noXxxNoLL                  = messages.getNotNothingString("noXxxNoLL",                  "");
+        noXxxNoLLEvenlySpaced      = messages.getNotNothingString("noXxxNoLLEvenlySpaced",      "");
+        noXxxNoLLGt1               = messages.getNotNothingString("noXxxNoLLGt1",               "");
+        noXxxNoLLT                 = messages.getNotNothingString("noXxxNoLLT",                 "");
+        noXxxNoLonIn180            = messages.getNotNothingString("noXxxNoLonIn180",            "");
+        noXxxNoNonString           = messages.getNotNothingString("noXxxNoNonString",           "");
+        noXxxNo2NonString          = messages.getNotNothingString("noXxxNo2NonString",          "");
+        noXxxNoStation             = messages.getNotNothingString("noXxxNoStation",             "");
+        noXxxNoStationID           = messages.getNotNothingString("noXxxNoStationID",           "");
+        noXxxNoMinMax              = messages.getNotNothingString("noXxxNoMinMax",              "");
+        noXxxItsGridded            = messages.getNotNothingString("noXxxItsGridded",            "");
+        noXxxItsTabular            = messages.getNotNothingString("noXxxItsTabular",            "");
+        optional                   = messages.getNotNothingString("optional",                   "");
+        orRefineSearchWith         = messages.getNotNothingString("orRefineSearchWith",         "");
         orRefineSearchWith += " ";
-        orSearchWith               = messages.getNotNothingString("orSearchWith",               errorInMethod);
+        orSearchWith               = messages.getNotNothingString("orSearchWith",               "");
         orSearchWith += " ";
-        orComma                    = messages.getNotNothingString("orComma",                    errorInMethod);
+        orComma                    = messages.getNotNothingString("orComma",                    "");
         orComma += " ";
-        palettes                   = String2.split(messages.getNotNothingString("palettes",     errorInMethod), ',');
+        palettes                   = String2.split(messages.getNotNothingString("palettes",     ""), ',');
         palettes0 = new String[palettes.length + 1];
         palettes0[0] = "";
         System.arraycopy(palettes, 0, palettes0, 1, palettes.length);
-        patientData                = messages.getNotNothingString("patientData",                errorInMethod);
-        patientYourGraph           = messages.getNotNothingString("patientYourGraph",           errorInMethod);
-        pdfWidths                  = String2.toIntArray(String2.split(messages.getNotNothingString("pdfWidths",    errorInMethod), ','));
-        pdfHeights                 = String2.toIntArray(String2.split(messages.getNotNothingString("pdfHeights",   errorInMethod), ','));
-        pickADataset               = messages.getNotNothingString("pickADataset",               errorInMethod);
-        protocolSearchHtml         = messages.getNotNothingString("protocolSearchHtml",         errorInMethod);
-        protocolSearch2Html        = messages.getNotNothingString("protocolSearch2Html",        errorInMethod);
-        protocolClick              = messages.getNotNothingString("protocolClick",              errorInMethod);
-        queryError                 = messages.getNotNothingString("queryError",                 errorInMethod) + 
+        patientData                = messages.getNotNothingString("patientData",                "");
+        patientYourGraph           = messages.getNotNothingString("patientYourGraph",           "");
+        pdfWidths                  = String2.toIntArray(String2.split(messages.getNotNothingString("pdfWidths",    ""), ','));
+        pdfHeights                 = String2.toIntArray(String2.split(messages.getNotNothingString("pdfHeights",   ""), ','));
+        pickADataset               = messages.getNotNothingString("pickADataset",               "");
+        protocolSearchHtml         = messages.getNotNothingString("protocolSearchHtml",         "");
+        protocolSearch2Html        = messages.getNotNothingString("protocolSearch2Html",        "");
+        protocolClick              = messages.getNotNothingString("protocolClick",              "");
+        queryError                 = messages.getNotNothingString("queryError",                 "") + 
                                      " ";
-        queryError180              = messages.getNotNothingString("queryError180",              errorInMethod);
-        queryError1Value           = messages.getNotNothingString("queryError1Value",           errorInMethod);
-        queryError1Var             = messages.getNotNothingString("queryError1Var",             errorInMethod);
-        queryError2Var             = messages.getNotNothingString("queryError2Var",             errorInMethod);
-        queryErrorAdjusted         = messages.getNotNothingString("queryErrorAdjusted",         errorInMethod);
-        queryErrorAscending        = messages.getNotNothingString("queryErrorAscending",        errorInMethod);
-        queryErrorConstraintNaN    = messages.getNotNothingString("queryErrorConstraintNaN",    errorInMethod);
-        queryErrorEqualSpacing     = messages.getNotNothingString("queryErrorEqualSpacing",     errorInMethod);
-        queryErrorExpectedAt       = messages.getNotNothingString("queryErrorExpectedAt",       errorInMethod);
-        queryErrorFileType         = messages.getNotNothingString("queryErrorFileType",         errorInMethod);
-        queryErrorInvalid          = messages.getNotNothingString("queryErrorInvalid",          errorInMethod);
-        queryErrorLL               = messages.getNotNothingString("queryErrorLL",               errorInMethod);
-        queryErrorLLGt1            = messages.getNotNothingString("queryErrorLLGt1",            errorInMethod);
-        queryErrorLLT              = messages.getNotNothingString("queryErrorLLT",              errorInMethod);
-        queryErrorNeverTrue        = messages.getNotNothingString("queryErrorNeverTrue",        errorInMethod);
-        queryErrorNeverBothTrue    = messages.getNotNothingString("queryErrorNeverBothTrue",    errorInMethod);
-        queryErrorNotAxis          = messages.getNotNothingString("queryErrorNotAxis",          errorInMethod);
-        queryErrorNotExpectedAt    = messages.getNotNothingString("queryErrorNotExpectedAt",    errorInMethod);
-        queryErrorNotFoundAfter    = messages.getNotNothingString("queryErrorNotFoundAfter",    errorInMethod);
-        queryErrorOccursTwice      = messages.getNotNothingString("queryErrorOccursTwice",      errorInMethod);
-        queryErrorUnknownVariable  = messages.getNotNothingString("queryErrorUnknownVariable",  errorInMethod);
+        queryError180              = messages.getNotNothingString("queryError180",              "");
+        queryError1Value           = messages.getNotNothingString("queryError1Value",           "");
+        queryError1Var             = messages.getNotNothingString("queryError1Var",             "");
+        queryError2Var             = messages.getNotNothingString("queryError2Var",             "");
+        queryErrorAdjusted         = messages.getNotNothingString("queryErrorAdjusted",         "");
+        queryErrorAscending        = messages.getNotNothingString("queryErrorAscending",        "");
+        queryErrorConstraintNaN    = messages.getNotNothingString("queryErrorConstraintNaN",    "");
+        queryErrorEqualSpacing     = messages.getNotNothingString("queryErrorEqualSpacing",     "");
+        queryErrorExpectedAt       = messages.getNotNothingString("queryErrorExpectedAt",       "");
+        queryErrorFileType         = messages.getNotNothingString("queryErrorFileType",         "");
+        queryErrorInvalid          = messages.getNotNothingString("queryErrorInvalid",          "");
+        queryErrorLL               = messages.getNotNothingString("queryErrorLL",               "");
+        queryErrorLLGt1            = messages.getNotNothingString("queryErrorLLGt1",            "");
+        queryErrorLLT              = messages.getNotNothingString("queryErrorLLT",              "");
+        queryErrorNeverTrue        = messages.getNotNothingString("queryErrorNeverTrue",        "");
+        queryErrorNeverBothTrue    = messages.getNotNothingString("queryErrorNeverBothTrue",    "");
+        queryErrorNotAxis          = messages.getNotNothingString("queryErrorNotAxis",          "");
+        queryErrorNotExpectedAt    = messages.getNotNothingString("queryErrorNotExpectedAt",    "");
+        queryErrorNotFoundAfter    = messages.getNotNothingString("queryErrorNotFoundAfter",    "");
+        queryErrorOccursTwice      = messages.getNotNothingString("queryErrorOccursTwice",      "");
+        queryErrorUnknownVariable  = messages.getNotNothingString("queryErrorUnknownVariable",  "");
 
-        queryErrorGrid1Axis        = messages.getNotNothingString("queryErrorGrid1Axis",        errorInMethod);
-        queryErrorGridAmp          = messages.getNotNothingString("queryErrorGridAmp",          errorInMethod);
-        queryErrorGridDiagnostic   = messages.getNotNothingString("queryErrorGridDiagnostic",   errorInMethod);
-        queryErrorGridBetween      = messages.getNotNothingString("queryErrorGridBetween",      errorInMethod);
-        queryErrorGridLessMin      = messages.getNotNothingString("queryErrorGridLessMin",      errorInMethod);
-        queryErrorGridGreaterMax   = messages.getNotNothingString("queryErrorGridGreaterMax",   errorInMethod);
-        queryErrorGridMissing      = messages.getNotNothingString("queryErrorGridMissing",      errorInMethod);
-        queryErrorGridNoAxisVar    = messages.getNotNothingString("queryErrorGridNoAxisVar",    errorInMethod);
-        queryErrorGridNoDataVar    = messages.getNotNothingString("queryErrorGridNoDataVar",    errorInMethod);
-        queryErrorGridNotIdentical = messages.getNotNothingString("queryErrorGridNotIdentical", errorInMethod);
-        queryErrorGridSLessS       = messages.getNotNothingString("queryErrorGridSLessS",       errorInMethod);
-        queryErrorLastEndP         = messages.getNotNothingString("queryErrorLastEndP",         errorInMethod);
-        queryErrorLastExpected     = messages.getNotNothingString("queryErrorLastExpected",     errorInMethod);
-        queryErrorLastUnexpected   = messages.getNotNothingString("queryErrorLastUnexpected",   errorInMethod);
-        queryErrorLastPMInvalid    = messages.getNotNothingString("queryErrorLastPMInvalid",    errorInMethod);
-        queryErrorLastPMInteger    = messages.getNotNothingString("queryErrorLastPMInteger",    errorInMethod);        
-        rangesFromTo               = messages.getNotNothingString("rangesFromTo",               errorInMethod);
-        requestFormatExamplesHtml  = messages.getNotNothingString("requestFormatExamplesHtml",  errorInMethod);
-        resetTheForm               = messages.getNotNothingString("resetTheForm",               errorInMethod);
-        resetTheFormWas            = messages.getNotNothingString("resetTheFormWas",            errorInMethod);
-        resourceNotFound           = messages.getNotNothingString("resourceNotFound",           errorInMethod);
-        resultsFormatExamplesHtml  = messages.getNotNothingString("resultsFormatExamplesHtml",  errorInMethod);
-        resultsOfSearchFor         = messages.getNotNothingString("resultsOfSearchFor",         errorInMethod);
-        restfulInformationFormats  = messages.getNotNothingString("restfulInformationFormats",  errorInMethod);
-        restfulViaService          = messages.getNotNothingString("restfulViaService",          errorInMethod);
-        rows                       = messages.getNotNothingString("rows",                       errorInMethod);
-        searchTitle                = messages.getNotNothingString("searchTitle",                errorInMethod);
-        searchDoFullTextHtml       = messages.getNotNothingString("searchDoFullTextHtml",       errorInMethod);
-        searchFullTextHtml         = messages.getNotNothingString("searchFullTextHtml",         errorInMethod);
-        searchButton               = messages.getNotNothingString("searchButton",               errorInMethod);
-        searchClickTip             = messages.getNotNothingString("searchClickTip",             errorInMethod);
-        searchHintsHtml            = messages.getNotNothingString("searchHintsHtml",            errorInMethod);
-        searchHintsLuceneHtml      = messages.getNotNothingString("searchHintsLuceneHtml",      errorInMethod);
-        searchHintsOriginalHtml    = messages.getNotNothingString("searchHintsOriginalHtml",    errorInMethod);
-        searchNotAvailable         = messages.getNotNothingString("searchNotAvailable",         errorInMethod);
-        searchTip                  = messages.getNotNothingString("searchTip",                  errorInMethod);
-        searchSpelling             = messages.getNotNothingString("searchSpelling",             errorInMethod);
-        searchFewerWords           = messages.getNotNothingString("searchFewerWords",           errorInMethod);
-        searchWithQuery            = messages.getNotNothingString("searchWithQuery",            errorInMethod);
-        selectNext                 = messages.getNotNothingString("selectNext",                 errorInMethod);
-        selectPrevious             = messages.getNotNothingString("selectPrevious",             errorInMethod);
-        seeProtocolDocumentation   = messages.getNotNothingString("seeProtocolDocumentation",   errorInMethod);
-        ssUse                      = messages.getNotNothingString("ssUse",                      errorInMethod);
-        ssBePatient                = messages.getNotNothingString("ssBePatient",                errorInMethod);
-        ssInstructionsHtml         = messages.getNotNothingString("ssInstructionsHtml",         errorInMethod);
-        standardShortDescriptionHtml=messages.getNotNothingString("standardShortDescriptionHtml",errorInMethod);
-        standardLicense            = messages.getNotNothingString("standardLicense",            errorInMethod);
-        standardContact            = messages.getNotNothingString("standardContact",            errorInMethod);
-        standardDataLicenses       = messages.getNotNothingString("standardDataLicenses",       errorInMethod);
-        standardDisclaimerOfExternalLinks=messages.getNotNothingString("standardDisclaimerOfExternalLinks", errorInMethod);
-        standardDisclaimerOfEndorsement=messages.getNotNothingString("standardDisclaimerOfEndorsement",            errorInMethod);
-        standardGeneralDisclaimer  = messages.getNotNothingString("standardGeneralDisclaimer",  errorInMethod);
-        standardPrivacyPolicy      = messages.getNotNothingString("standardPrivacyPolicy",      errorInMethod);
-        submit                     = messages.getNotNothingString("submit",                     errorInMethod);
-        submitTooltip              = messages.getNotNothingString("submitTooltip",              errorInMethod);
-        subscriptionsTitle         = messages.getNotNothingString("subscriptionsTitle",         errorInMethod);
-        subscriptionOptions        = messages.getNotNothingString("subscriptionOptions",        errorInMethod);
-        subscriptionAdd            = messages.getNotNothingString("subscriptionAdd",            errorInMethod);
-        subscriptionValidate       = messages.getNotNothingString("subscriptionValidate",       errorInMethod);
-        subscriptionList           = messages.getNotNothingString("subscriptionList",           errorInMethod);
-        subscriptionRemove         = messages.getNotNothingString("subscriptionRemove",         errorInMethod);
-        subscriptionHtml           = messages.getNotNothingString("subscriptionHtml",           errorInMethod);
-        subscription2Html          = messages.getNotNothingString("subscription2Html",          errorInMethod);
-        subscriptionAbuse          = messages.getNotNothingString("subscriptionAbuse",          errorInMethod);
-        subscriptionAddError       = messages.getNotNothingString("subscriptionAddError",       errorInMethod);
-        subscriptionAddHtml        = messages.getNotNothingString("subscriptionAddHtml",        errorInMethod);
-        subscriptionAdd2           = messages.getNotNothingString("subscriptionAdd2",           errorInMethod);
-        subscriptionAddSuccess     = messages.getNotNothingString("subscriptionAddSuccess",     errorInMethod);
-        subscriptionEmail          = messages.getNotNothingString("subscriptionEmail",          errorInMethod);
-        subscriptionEmailInvalid   = messages.getNotNothingString("subscriptionEmailInvalid",   errorInMethod);
-        subscriptionEmailTooLong   = messages.getNotNothingString("subscriptionEmailTooLong",   errorInMethod);
-        subscriptionEmailUnspecified=messages.getNotNothingString("subscriptionEmailUnspecified",errorInMethod);
-        subscriptionIDInvalid      = messages.getNotNothingString("subscriptionIDInvalid",      errorInMethod);
-        subscriptionIDTooLong      = messages.getNotNothingString("subscriptionIDTooLong",      errorInMethod);
-        subscriptionIDUnspecified  = messages.getNotNothingString("subscriptionIDUnspecified",  errorInMethod);
-        subscriptionKeyInvalid     = messages.getNotNothingString("subscriptionKeyInvalid",     errorInMethod);
-        subscriptionKeyUnspecified = messages.getNotNothingString("subscriptionKeyUnspecified", errorInMethod);
-        subscriptionListError      = messages.getNotNothingString("subscriptionListError",      errorInMethod);
-        subscriptionListHtml       = messages.getNotNothingString("subscriptionListHtml",       errorInMethod);
-        subscriptionListSuccess    = messages.getNotNothingString("subscriptionListSuccess",    errorInMethod);
-        subscriptionRemoveError    = messages.getNotNothingString("subscriptionRemoveError",    errorInMethod);
-        subscriptionRemoveHtml     = messages.getNotNothingString("subscriptionRemoveHtml",     errorInMethod);
-        subscriptionRemove2        = messages.getNotNothingString("subscriptionRemove2",        errorInMethod);
-        subscriptionRemoveSuccess  = messages.getNotNothingString("subscriptionRemoveSuccess",  errorInMethod);
-        subscriptionRSS            = messages.getNotNothingString("subscriptionRSS",            errorInMethod);
-        subscriptionsNotAvailable  = messages.getNotNothingString("subscriptionsNotAvailable",  errorInMethod);
-        subscriptionUrlHtml        = messages.getNotNothingString("subscriptionUrlHtml",        errorInMethod);
-        subscriptionUrlInvalid     = messages.getNotNothingString("subscriptionUrlInvalid",     errorInMethod);
-        subscriptionUrlTooLong     = messages.getNotNothingString("subscriptionUrlTooLong",     errorInMethod);
-        subscriptionValidateError  = messages.getNotNothingString("subscriptionValidateError",  errorInMethod);
-        subscriptionValidateHtml   = messages.getNotNothingString("subscriptionValidateHtml",   errorInMethod);
-        subscriptionValidateSuccess= messages.getNotNothingString("subscriptionValidateSuccess",errorInMethod);
-        subset                     = messages.getNotNothingString("subset",                     errorInMethod);
-        subsetSelect               = messages.getNotNothingString("subsetSelect",               errorInMethod);
-        subsetNMatching            = messages.getNotNothingString("subsetNMatching",            errorInMethod);
-        subsetInstructions         = messages.getNotNothingString("subsetInstructions",         errorInMethod);
-        subsetOption               = messages.getNotNothingString("subsetOption",               errorInMethod);
-        subsetOptions              = messages.getNotNothingString("subsetOptions",              errorInMethod);
-        subsetRefineMapDownload    = messages.getNotNothingString("subsetRefineMapDownload",    errorInMethod);
-        subsetRefineSubsetDownload = messages.getNotNothingString("subsetRefineSubsetDownload", errorInMethod);
-        subsetClickResetClosest    = messages.getNotNothingString("subsetClickResetClosest",    errorInMethod);
-        subsetClickResetLL         = messages.getNotNothingString("subsetClickResetLL",         errorInMethod);
-        subsetMetadata             = messages.getNotNothingString("subsetMetadata",             errorInMethod);
-        subsetCount                = messages.getNotNothingString("subsetCount",                errorInMethod);
-        subsetPercent              = messages.getNotNothingString("subsetPercent",              errorInMethod);
-        subsetViewSelect           = messages.getNotNothingString("subsetViewSelect",           errorInMethod);
-        subsetViewSelectDistinctCombos= messages.getNotNothingString("subsetViewSelectDistinctCombos",errorInMethod);
-        subsetViewSelectRelatedCounts = messages.getNotNothingString("subsetViewSelectRelatedCounts", errorInMethod);
-        subsetWhen                 = messages.getNotNothingString("subsetWhen",                 errorInMethod);
-        subsetWhenNoConstraints    = messages.getNotNothingString("subsetWhenNoConstraints",    errorInMethod);
-        subsetWhenCounts           = messages.getNotNothingString("subsetWhenCounts",           errorInMethod);
-        subsetComboClickSelect     = messages.getNotNothingString("subsetComboClickSelect",     errorInMethod);
-        subsetNVariableCombos      = messages.getNotNothingString("subsetNVariableCombos",      errorInMethod);
-        subsetShowingAllRows       = messages.getNotNothingString("subsetShowingAllRows",       errorInMethod);
-        subsetShowingNRows         = messages.getNotNothingString("subsetShowingNRows",         errorInMethod);
-        subsetChangeShowing        = messages.getNotNothingString("subsetChangeShowing",        errorInMethod);
-        subsetNRowsRelatedData     = messages.getNotNothingString("subsetNRowsRelatedData",     errorInMethod);
-        subsetViewRelatedChange    = messages.getNotNothingString("subsetViewRelatedChange",    errorInMethod);
-        subsetTotalCount           = messages.getNotNothingString("subsetTotalCount",           errorInMethod);
-        subsetView                 = messages.getNotNothingString("subsetView",                 errorInMethod);
-        subsetViewCheck            = messages.getNotNothingString("subsetViewCheck",            errorInMethod);
-        subsetViewCheck1           = messages.getNotNothingString("subsetViewCheck1",           errorInMethod);
-        subsetViewDistinctMap      = messages.getNotNothingString("subsetViewDistinctMap",      errorInMethod);
-        subsetViewRelatedMap       = messages.getNotNothingString("subsetViewRelatedMap",       errorInMethod);
-        subsetViewDistinctDataCounts= messages.getNotNothingString("subsetViewDistinctDataCounts",errorInMethod);
-        subsetViewDistinctData     = messages.getNotNothingString("subsetViewDistinctData",     errorInMethod);
-        subsetViewRelatedDataCounts= messages.getNotNothingString("subsetViewRelatedDataCounts",errorInMethod);
-        subsetViewRelatedData      = messages.getNotNothingString("subsetViewRelatedData",      errorInMethod);
-        subsetViewDistinctMapTooltip       = messages.getNotNothingString("subsetViewDistinctMapTooltip",       errorInMethod);
-        subsetViewRelatedMapTooltip        = messages.getNotNothingString("subsetViewRelatedMapTooltip",        errorInMethod);
-        subsetViewDistinctDataCountsTooltip= messages.getNotNothingString("subsetViewDistinctDataCountsTooltip",errorInMethod);
-        subsetViewDistinctDataTooltip      = messages.getNotNothingString("subsetViewDistinctDataTooltip",      errorInMethod);
-        subsetViewRelatedDataCountsTooltip = messages.getNotNothingString("subsetViewRelatedDataCountsTooltip", errorInMethod);
-        subsetViewRelatedDataTooltip       = messages.getNotNothingString("subsetViewRelatedDataTooltip",       errorInMethod);
-        subsetWarn                 = messages.getNotNothingString("subsetWarn",                 errorInMethod);                    
-        subsetWarn10000            = messages.getNotNothingString("subsetWarn10000",            errorInMethod);
-        subsetTooltip              = messages.getNotNothingString("subsetTooltip",              errorInMethod);
-        subsetNotSetUp             = messages.getNotNothingString("subsetNotSetUp",             errorInMethod);
-        subsetLongNotShown         = messages.getNotNothingString("subsetLongNotShown",         errorInMethod);
+        queryErrorGrid1Axis        = messages.getNotNothingString("queryErrorGrid1Axis",        "");
+        queryErrorGridAmp          = messages.getNotNothingString("queryErrorGridAmp",          "");
+        queryErrorGridDiagnostic   = messages.getNotNothingString("queryErrorGridDiagnostic",   "");
+        queryErrorGridBetween      = messages.getNotNothingString("queryErrorGridBetween",      "");
+        queryErrorGridLessMin      = messages.getNotNothingString("queryErrorGridLessMin",      "");
+        queryErrorGridGreaterMax   = messages.getNotNothingString("queryErrorGridGreaterMax",   "");
+        queryErrorGridMissing      = messages.getNotNothingString("queryErrorGridMissing",      "");
+        queryErrorGridNoAxisVar    = messages.getNotNothingString("queryErrorGridNoAxisVar",    "");
+        queryErrorGridNoDataVar    = messages.getNotNothingString("queryErrorGridNoDataVar",    "");
+        queryErrorGridNotIdentical = messages.getNotNothingString("queryErrorGridNotIdentical", "");
+        queryErrorGridSLessS       = messages.getNotNothingString("queryErrorGridSLessS",       "");
+        queryErrorLastEndP         = messages.getNotNothingString("queryErrorLastEndP",         "");
+        queryErrorLastExpected     = messages.getNotNothingString("queryErrorLastExpected",     "");
+        queryErrorLastUnexpected   = messages.getNotNothingString("queryErrorLastUnexpected",   "");
+        queryErrorLastPMInvalid    = messages.getNotNothingString("queryErrorLastPMInvalid",    "");
+        queryErrorLastPMInteger    = messages.getNotNothingString("queryErrorLastPMInteger",    "");        
+        rangesFromTo               = messages.getNotNothingString("rangesFromTo",               "");
+        requestFormatExamplesHtml  = messages.getNotNothingString("requestFormatExamplesHtml",  "");
+        resetTheForm               = messages.getNotNothingString("resetTheForm",               "");
+        resetTheFormWas            = messages.getNotNothingString("resetTheFormWas",            "");
+        resourceNotFound           = messages.getNotNothingString("resourceNotFound",           "");
+        resultsFormatExamplesHtml  = messages.getNotNothingString("resultsFormatExamplesHtml",  "");
+        resultsOfSearchFor         = messages.getNotNothingString("resultsOfSearchFor",         "");
+        restfulInformationFormats  = messages.getNotNothingString("restfulInformationFormats",  "");
+        restfulViaService          = messages.getNotNothingString("restfulViaService",          "");
+        rows                       = messages.getNotNothingString("rows",                       "");
+        searchTitle                = messages.getNotNothingString("searchTitle",                "");
+        searchDoFullTextHtml       = messages.getNotNothingString("searchDoFullTextHtml",       "");
+        searchFullTextHtml         = messages.getNotNothingString("searchFullTextHtml",         "");
+        searchButton               = messages.getNotNothingString("searchButton",               "");
+        searchClickTip             = messages.getNotNothingString("searchClickTip",             "");
+        searchHintsHtml            = messages.getNotNothingString("searchHintsHtml",            "");
+        searchHintsLuceneHtml      = messages.getNotNothingString("searchHintsLuceneHtml",      "");
+        searchHintsOriginalHtml    = messages.getNotNothingString("searchHintsOriginalHtml",    "");
+        searchNotAvailable         = messages.getNotNothingString("searchNotAvailable",         "");
+        searchTip                  = messages.getNotNothingString("searchTip",                  "");
+        searchSpelling             = messages.getNotNothingString("searchSpelling",             "");
+        searchFewerWords           = messages.getNotNothingString("searchFewerWords",           "");
+        searchWithQuery            = messages.getNotNothingString("searchWithQuery",            "");
+        selectNext                 = messages.getNotNothingString("selectNext",                 "");
+        selectPrevious             = messages.getNotNothingString("selectPrevious",             "");
+        seeProtocolDocumentation   = messages.getNotNothingString("seeProtocolDocumentation",   "");
+        ssUse                      = messages.getNotNothingString("ssUse",                      "");
+        ssBePatient                = messages.getNotNothingString("ssBePatient",                "");
+        ssInstructionsHtml         = messages.getNotNothingString("ssInstructionsHtml",         "");
+        standardShortDescriptionHtml=messages.getNotNothingString("standardShortDescriptionHtml","");
+        standardLicense            = messages.getNotNothingString("standardLicense",            "");
+        standardContact            = messages.getNotNothingString("standardContact",            "");
+        standardDataLicenses       = messages.getNotNothingString("standardDataLicenses",       "");
+        standardDisclaimerOfExternalLinks=messages.getNotNothingString("standardDisclaimerOfExternalLinks", "");
+        standardDisclaimerOfEndorsement=messages.getNotNothingString("standardDisclaimerOfEndorsement",            "");
+        standardGeneralDisclaimer  = messages.getNotNothingString("standardGeneralDisclaimer",  "");
+        standardPrivacyPolicy      = messages.getNotNothingString("standardPrivacyPolicy",      "");
+        submit                     = messages.getNotNothingString("submit",                     "");
+        submitTooltip              = messages.getNotNothingString("submitTooltip",              "");
+        subscriptionsTitle         = messages.getNotNothingString("subscriptionsTitle",         "");
+        subscriptionOptions        = messages.getNotNothingString("subscriptionOptions",        "");
+        subscriptionAdd            = messages.getNotNothingString("subscriptionAdd",            "");
+        subscriptionValidate       = messages.getNotNothingString("subscriptionValidate",       "");
+        subscriptionList           = messages.getNotNothingString("subscriptionList",           "");
+        subscriptionRemove         = messages.getNotNothingString("subscriptionRemove",         "");
+        subscriptionHtml           = messages.getNotNothingString("subscriptionHtml",           "");
+        subscription2Html          = messages.getNotNothingString("subscription2Html",          "");
+        subscriptionAbuse          = messages.getNotNothingString("subscriptionAbuse",          "");
+        subscriptionAddError       = messages.getNotNothingString("subscriptionAddError",       "");
+        subscriptionAddHtml        = messages.getNotNothingString("subscriptionAddHtml",        "");
+        subscriptionAdd2           = messages.getNotNothingString("subscriptionAdd2",           "");
+        subscriptionAddSuccess     = messages.getNotNothingString("subscriptionAddSuccess",     "");
+        subscriptionEmail          = messages.getNotNothingString("subscriptionEmail",          "");
+        subscriptionEmailInvalid   = messages.getNotNothingString("subscriptionEmailInvalid",   "");
+        subscriptionEmailTooLong   = messages.getNotNothingString("subscriptionEmailTooLong",   "");
+        subscriptionEmailUnspecified=messages.getNotNothingString("subscriptionEmailUnspecified","");
+        subscriptionIDInvalid      = messages.getNotNothingString("subscriptionIDInvalid",      "");
+        subscriptionIDTooLong      = messages.getNotNothingString("subscriptionIDTooLong",      "");
+        subscriptionIDUnspecified  = messages.getNotNothingString("subscriptionIDUnspecified",  "");
+        subscriptionKeyInvalid     = messages.getNotNothingString("subscriptionKeyInvalid",     "");
+        subscriptionKeyUnspecified = messages.getNotNothingString("subscriptionKeyUnspecified", "");
+        subscriptionListError      = messages.getNotNothingString("subscriptionListError",      "");
+        subscriptionListHtml       = messages.getNotNothingString("subscriptionListHtml",       "");
+        subscriptionListSuccess    = messages.getNotNothingString("subscriptionListSuccess",    "");
+        subscriptionRemoveError    = messages.getNotNothingString("subscriptionRemoveError",    "");
+        subscriptionRemoveHtml     = messages.getNotNothingString("subscriptionRemoveHtml",     "");
+        subscriptionRemove2        = messages.getNotNothingString("subscriptionRemove2",        "");
+        subscriptionRemoveSuccess  = messages.getNotNothingString("subscriptionRemoveSuccess",  "");
+        subscriptionRSS            = messages.getNotNothingString("subscriptionRSS",            "");
+        subscriptionsNotAvailable  = messages.getNotNothingString("subscriptionsNotAvailable",  "");
+        subscriptionUrlHtml        = messages.getNotNothingString("subscriptionUrlHtml",        "");
+        subscriptionUrlInvalid     = messages.getNotNothingString("subscriptionUrlInvalid",     "");
+        subscriptionUrlTooLong     = messages.getNotNothingString("subscriptionUrlTooLong",     "");
+        subscriptionValidateError  = messages.getNotNothingString("subscriptionValidateError",  "");
+        subscriptionValidateHtml   = messages.getNotNothingString("subscriptionValidateHtml",   "");
+        subscriptionValidateSuccess= messages.getNotNothingString("subscriptionValidateSuccess","");
+        subset                     = messages.getNotNothingString("subset",                     "");
+        subsetSelect               = messages.getNotNothingString("subsetSelect",               "");
+        subsetNMatching            = messages.getNotNothingString("subsetNMatching",            "");
+        subsetInstructions         = messages.getNotNothingString("subsetInstructions",         "");
+        subsetOption               = messages.getNotNothingString("subsetOption",               "");
+        subsetOptions              = messages.getNotNothingString("subsetOptions",              "");
+        subsetRefineMapDownload    = messages.getNotNothingString("subsetRefineMapDownload",    "");
+        subsetRefineSubsetDownload = messages.getNotNothingString("subsetRefineSubsetDownload", "");
+        subsetClickResetClosest    = messages.getNotNothingString("subsetClickResetClosest",    "");
+        subsetClickResetLL         = messages.getNotNothingString("subsetClickResetLL",         "");
+        subsetMetadata             = messages.getNotNothingString("subsetMetadata",             "");
+        subsetCount                = messages.getNotNothingString("subsetCount",                "");
+        subsetPercent              = messages.getNotNothingString("subsetPercent",              "");
+        subsetViewSelect           = messages.getNotNothingString("subsetViewSelect",           "");
+        subsetViewSelectDistinctCombos= messages.getNotNothingString("subsetViewSelectDistinctCombos","");
+        subsetViewSelectRelatedCounts = messages.getNotNothingString("subsetViewSelectRelatedCounts", "");
+        subsetWhen                 = messages.getNotNothingString("subsetWhen",                 "");
+        subsetWhenNoConstraints    = messages.getNotNothingString("subsetWhenNoConstraints",    "");
+        subsetWhenCounts           = messages.getNotNothingString("subsetWhenCounts",           "");
+        subsetComboClickSelect     = messages.getNotNothingString("subsetComboClickSelect",     "");
+        subsetNVariableCombos      = messages.getNotNothingString("subsetNVariableCombos",      "");
+        subsetShowingAllRows       = messages.getNotNothingString("subsetShowingAllRows",       "");
+        subsetShowingNRows         = messages.getNotNothingString("subsetShowingNRows",         "");
+        subsetChangeShowing        = messages.getNotNothingString("subsetChangeShowing",        "");
+        subsetNRowsRelatedData     = messages.getNotNothingString("subsetNRowsRelatedData",     "");
+        subsetViewRelatedChange    = messages.getNotNothingString("subsetViewRelatedChange",    "");
+        subsetTotalCount           = messages.getNotNothingString("subsetTotalCount",           "");
+        subsetView                 = messages.getNotNothingString("subsetView",                 "");
+        subsetViewCheck            = messages.getNotNothingString("subsetViewCheck",            "");
+        subsetViewCheck1           = messages.getNotNothingString("subsetViewCheck1",           "");
+        subsetViewDistinctMap      = messages.getNotNothingString("subsetViewDistinctMap",      "");
+        subsetViewRelatedMap       = messages.getNotNothingString("subsetViewRelatedMap",       "");
+        subsetViewDistinctDataCounts= messages.getNotNothingString("subsetViewDistinctDataCounts","");
+        subsetViewDistinctData     = messages.getNotNothingString("subsetViewDistinctData",     "");
+        subsetViewRelatedDataCounts= messages.getNotNothingString("subsetViewRelatedDataCounts","");
+        subsetViewRelatedData      = messages.getNotNothingString("subsetViewRelatedData",      "");
+        subsetViewDistinctMapTooltip       = messages.getNotNothingString("subsetViewDistinctMapTooltip",       "");
+        subsetViewRelatedMapTooltip        = messages.getNotNothingString("subsetViewRelatedMapTooltip",        "");
+        subsetViewDistinctDataCountsTooltip= messages.getNotNothingString("subsetViewDistinctDataCountsTooltip","");
+        subsetViewDistinctDataTooltip      = messages.getNotNothingString("subsetViewDistinctDataTooltip",      "");
+        subsetViewRelatedDataCountsTooltip = messages.getNotNothingString("subsetViewRelatedDataCountsTooltip", "");
+        subsetViewRelatedDataTooltip       = messages.getNotNothingString("subsetViewRelatedDataTooltip",       "");
+        subsetWarn                 = messages.getNotNothingString("subsetWarn",                 "");                    
+        subsetWarn10000            = messages.getNotNothingString("subsetWarn10000",            "");
+        subsetTooltip              = messages.getNotNothingString("subsetTooltip",              "");
+        subsetNotSetUp             = messages.getNotNothingString("subsetNotSetUp",             "");
+        subsetLongNotShown         = messages.getNotNothingString("subsetLongNotShown",         "");
 
-        theLongDescriptionHtml     = messages.getNotNothingString("theLongDescriptionHtml",     errorInMethod);
-        unknownDatasetID           = messages.getNotNothingString("unknownDatasetID",           errorInMethod);
-        unknownProtocol            = messages.getNotNothingString("unknownProtocol",            errorInMethod);
-        unsupportedFileType        = messages.getNotNothingString("unsupportedFileType",        errorInMethod);
-        viewAllDatasetsHtml        = messages.getNotNothingString("viewAllDatasetsHtml",        errorInMethod);
-        waitThenTryAgain           = messages.getNotNothingString("waitThenTryAgain",           errorInMethod);
+        theLongDescriptionHtml     = messages.getNotNothingString("theLongDescriptionHtml",     "");
+        unknownDatasetID           = messages.getNotNothingString("unknownDatasetID",           "");
+        unknownProtocol            = messages.getNotNothingString("unknownProtocol",            "");
+        unsupportedFileType        = messages.getNotNothingString("unsupportedFileType",        "");
+        viewAllDatasetsHtml        = messages.getNotNothingString("viewAllDatasetsHtml",        "");
+        waitThenTryAgain           = messages.getNotNothingString("waitThenTryAgain",           "");
         gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException.waitThenTryAgain = waitThenTryAgain;
-        sosDescriptionHtml         = messages.getNotNothingString("sosDescriptionHtml",         errorInMethod);
-        sosLongDescriptionHtml     = messages.getNotNothingString("sosLongDescriptionHtml",     errorInMethod); 
-        wcsDescriptionHtml         = messages.getNotNothingString("wcsDescriptionHtml",         errorInMethod);
-        wcsLongDescriptionHtml     = messages.getNotNothingString("wcsLongDescriptionHtml",     errorInMethod); 
-        wmsDescriptionHtml         = messages.getNotNothingString("wmsDescriptionHtml",         errorInMethod);
-        wmsInstructions            = messages.getNotNothingString("wmsInstructions",            errorInMethod); 
-        wmsLongDescriptionHtml     = messages.getNotNothingString("wmsLongDescriptionHtml",     errorInMethod); 
-        wmsManyDatasets            = messages.getNotNothingString("wmsManyDatasets",            errorInMethod); 
+        sosDescriptionHtml         = messages.getNotNothingString("sosDescriptionHtml",         "");
+        sosLongDescriptionHtml     = messages.getNotNothingString("sosLongDescriptionHtml",     ""); 
+        wcsDescriptionHtml         = messages.getNotNothingString("wcsDescriptionHtml",         "");
+        wcsLongDescriptionHtml     = messages.getNotNothingString("wcsLongDescriptionHtml",     ""); 
+        wmsDescriptionHtml         = messages.getNotNothingString("wmsDescriptionHtml",         "");
+        wmsInstructions            = messages.getNotNothingString("wmsInstructions",            ""); 
+        wmsLongDescriptionHtml     = messages.getNotNothingString("wmsLongDescriptionHtml",     ""); 
+        wmsManyDatasets            = messages.getNotNothingString("wmsManyDatasets",            ""); 
 
-        Test.ensureEqual(imageWidths.length,  3, errorInMethod + "imageWidths.length must be 3.");
-        Test.ensureEqual(imageHeights.length, 3, errorInMethod + "imageHeights.length must be 3.");
-        Test.ensureEqual(pdfWidths.length,    3, errorInMethod + "pdfWidths.length must be 3.");
-        Test.ensureEqual(pdfHeights.length,   3, errorInMethod + "pdfHeights.length must be 3.");
+        Test.ensureEqual(imageWidths.length,  3, "imageWidths.length must be 3.");
+        Test.ensureEqual(imageHeights.length, 3, "imageHeights.length must be 3.");
+        Test.ensureEqual(pdfWidths.length,    3, "pdfWidths.length must be 3.");
+        Test.ensureEqual(pdfHeights.length,   3, "pdfHeights.length must be 3.");
 
         for (int p = 0; p < palettes.length; p++) {
             String tName = fullPaletteDirectory + palettes[p] + ".cpt";
             Test.ensureTrue(File2.isFile(tName),
                 "\"" + palettes[p] + 
-                "\" is listed in <palettes> in messages.xml, but there is no file " + tName);
+                "\" is listed in <palettes>, but there is no file " + tName);
         }
 
         ampLoginInfoPo = startBodyHtml.indexOf(ampLoginInfo); 
@@ -2311,7 +2305,25 @@ wcsActive = false;
         Test.ensureTrue(testCfToGcmd.length > 0, 
             "testCfToGcmd=" + String2.toCSSVString(testCfToGcmd));
 
-        String2.log("EDStatic initialization finished successfully.\n");
+    } catch (Throwable t) {
+        //display detailed information (e.g., dir names) in log.txt, not on a web page
+        errorInMethod = "Error in EDStatic static{}:\n" + 
+            errorInMethod + "\n" + 
+            MustBe.throwableToString(t);
+        String tell = "Ask the ERDDAP administrator to look at the detailed error message in ";
+        if (String2.logFileName() == null) {
+            System.out.println(errorInMethod);
+            throw new RuntimeException(tell + "the tomcat logs (catalina.out?)."); 
+        } else {
+            String2.log(errorInMethod);
+            //ensure log is flushed
+            for (int i = 0; i < String2.logFileFlushEveryNth; i++)
+                String2.log(""); 
+            throw new RuntimeException(tell + "[bigParentDirectory]/logs/log.txt ."); 
+        }
+    }
+
+    String2.log("EDStatic initialization finished successfully.\n");
     }
   
     /** 

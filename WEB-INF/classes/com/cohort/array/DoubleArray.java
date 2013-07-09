@@ -1156,9 +1156,10 @@ public class DoubleArray extends PrimitiveArray {
     public String isEvenlySpaced() {
         if (size <= 2)
             return "";
-        double diff = array[1] - array[0];
-
-        for (int i = 2; i < size; i++) {
+        //This diff is closer to exact 
+        //and usually detects not-evenly-spaced anywhere in the array on first test!
+        double diff = (array[size-1] - array[0]) / (size - 1);
+        for (int i = 1; i < size; i++) {
             //This is a difficult test to do well. See tests below.
             //1e7 avoids dEps test in almostEqual
             if (Math2.almostEqual( 9, (array[i] - array[i - 1]) * 1e7, diff * 1e7)) { 
@@ -1482,19 +1483,22 @@ public class DoubleArray extends PrimitiveArray {
         String2.log("\nevenlySpaced test #2");
         anArray.set(2, 30.1);
         Test.ensureEqual(anArray.isEvenlySpaced(), 
-            "DoubleArray isn't evenly spaced: [1]=20.0, [2]=30.1, spacing=10.100000000000001, expected spacing=10.0.", "");
+            "DoubleArray isn't evenly spaced: [0]=10.0, [1]=20.0, spacing=10.0, average spacing=10.05.", "");
+        Test.ensureEqual(anArray.smallestBiggestSpacing(),
+            "  smallest spacing=10.0: [0]=10.0, [1]=20.0\n" +
+            "  biggest  spacing=10.100000000000001: [1]=20.0, [2]=30.1", "");
 
         //these are unevenly spaced, but the secondary precision test allows it
         //should fail first test, but pass second test
         String2.log("\nevenlySpaced test #3");
         anArray = new DoubleArray(new double[] {1.2345678906, 1.2345678907, 1.2345678908001});
         Test.ensureEqual(anArray.isEvenlySpaced(), "", "");
-        //but this should fail first and second test
+        //but this fails
         String2.log("\nevenlySpaced test #4");
-        anArray.set(2, 1.234567890801); 
-        Test.ensureEqual(anArray.isEvenlySpaced(), 
-            "DoubleArray isn't evenly spaced: [1]=1.2345678907, [2]=1.234567890801, " +
-            "spacing=1.0100009717461944E-10, expected spacing=1.000000082740371E-10.", "");
+        anArray.set(2, 1.23456789081); 
+        Test.ensureEqual(anArray.isEvenlySpaced(),
+            "DoubleArray isn't evenly spaced: [0]=1.2345678906, [1]=1.2345678907, " +
+            "spacing=1.000000082740371E-10, average spacing=1.0500000868773895E-10.", "");
 
         //isAscending
         anArray = new DoubleArray(new double[] {10,10,30});

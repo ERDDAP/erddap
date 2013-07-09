@@ -1181,10 +1181,12 @@ public class String2 {
     }
 
     /**
-     * This tests if s is a valid jsonp function name
+     * This tests if s is a valid jsonp function name.
+     * The functionName MUST be a series of 1 or more (period-separated) words.
+     * For each word:
      * <ul>
      * <li>The first character must be (iso8859Letter|_).
-     * <li>The optional subsequent characters must be (iso8859Letter|_|0-9|.|).
+     * <li>The optional subsequent characters must be (iso8859Letter|_|0-9).
      * <li>s must not be longer than 255 characters.
      * <ul>
      * Note that JavaScript allows Unicode characters, but this does not.
@@ -1199,21 +1201,32 @@ public class String2 {
         if (n == 0 || n > 255)
             return false;
 
-        //first character must be (iso8859Letter|_)
-        char ch = s.charAt(0);
-        if (isLetter(ch) || ch == '_') ;
-        else return false;
-
-        //subsequent characters must be (iso8859Letter|_|0-9|.)
-        for (int i = 1; i < n; i++) {
-            ch = s.charAt(i);
-            if (isDigitLetter(ch) || ch == '_' || ch == '.') ;
-            else return false;    
-        }
-
-        //last character can't be .
+        //last (or only) character can't be .
         if (s.charAt(n - 1) == '.')
             return false;
+
+        ArrayList al = splitToArrayList(s, '.', false); //trim=false
+        int nal = al.size();
+
+        //test each word
+        for (int part = 0; part < nal; part++) {
+            String ts = (String)al.get(part);
+            int tn = ts.length();
+            if (tn == 0)
+                return false;
+
+            //first character must be (iso8859Letter|_)
+            char ch = ts.charAt(0);
+            if (isLetter(ch) || ch == '_') ;
+            else return false;
+
+            //subsequent characters must be (iso8859Letter|_|0-9)
+            for (int i = 1; i < tn; i++) {
+                ch = ts.charAt(i);
+                if (isDigitLetter(ch) || ch == '_') ;
+                else return false;    
+            }
+        }
 
         return true;
     }
@@ -3157,6 +3170,23 @@ public class String2 {
         return !(s.equals("false") || s.equals("f") || s.equals("0"));
     }
 
+    /** This removes leading ch's.
+     * @param s
+     * @param ch
+     * @return s or a new string without leading ch's.
+     *   null returns null.
+     */
+    public static String removeLeading(String s, char ch) {
+        if (s == null)
+            return s;
+        int sLength = s.length();
+        int start = 0;
+        while (start < sLength && s.charAt(start) == ch)
+            start++;
+        return start == 0? s : s.substring(start);
+    }
+
+
     /** Like parseInt(s), but returns def if error). */
     public static int parseInt(String s, int def) {
         int i = parseInt(s);
@@ -3167,6 +3197,7 @@ public class String2 {
      * Convert a string to an int.
      * Leading or trailing spaces are automatically removed.
      * This accepts hexadecimal integers starting with "0x".
+     * Leading 0's (e.g., 0012) are ignored; number is treated as decimal (not octal as Java would).
      * Floating point numbers are rounded.
      * This won't throw an exception if the number isn't formatted right.
      * To make a string from an int, use ""+i, Integer.toHexString, or Integer.toString(i,radix).
@@ -3176,6 +3207,9 @@ public class String2 {
      *    (or Integer.MAX_VALUE if error).
      */
     public static int parseInt(String s) {
+        //*** XML.decodeEntities relies on leading 0's being ignored 
+        //    and number treated as decimal (not octal)
+
         //quickly reject most non-numbers
         //This is a huge speed improvement when parsing ASCII data files
         //  because Java is very slow at filling in the stack trace when an exception is thrown.
@@ -3188,7 +3222,7 @@ public class String2 {
         if ((ch < '0' || ch > '9') && ch != '-' && ch != '+' && ch != '.')
             return Integer.MAX_VALUE;
 
-        //try to parse as int        
+        //try to parse hex or regular int        
         try {
             if (s.startsWith("0x")) 
                 return Integer.parseInt(s.substring(2), 16);
@@ -3213,6 +3247,7 @@ public class String2 {
      * Convert a string to a double.
      * Leading or trailing spaces are automatically removed.
      * This accepts hexadecimal integers starting with "0x".
+     * Whole number starting with '0' (e.g., 012) is treated as decimal (not octal as Java would).
      * This won't throw an exception if the number isn't formatted right.
      *
      * @param s is the String representation of a number.

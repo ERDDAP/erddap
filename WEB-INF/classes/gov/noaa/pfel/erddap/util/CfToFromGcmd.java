@@ -85,6 +85,7 @@ public class CfToFromGcmd {
      */
     static {
         //this is done only once so no concurrency issues
+        //use String2.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
         String fileName = String2.getClassPath() + "gov/noaa/pfel/erddap/util/CfToGcmd.txt";
         String2.log("CfToFromGcmd static loading " + fileName);
         StringArray lines;

@@ -1740,12 +1740,14 @@ public class StringArray extends PrimitiveArray {
     public String isEvenlySpaced() {
         if (size <= 2)
             return "";
-        double expected = getDouble(1) - getDouble(0);
-        for (int i = 2; i < size; i++) {
-            if (!Math2.almostEqual(9, getDouble(i) - getDouble(i - 1), expected)) {
+        //average is closer to exact than first diff
+        //and usually detects not-evenly-spaced anywhere in the array on first test!
+        double average = (getDouble(size - 1) - getDouble(0)) / (size - 1.0); 
+        for (int i = 1; i < size; i++) {
+            if (!Math2.almostEqual(9, getDouble(i) - getDouble(i - 1), average)) {
                 return MessageFormat.format(ArrayNotEvenlySpaced, getClass().getSimpleName(),
                     "" + (i - 1), "" + getDouble(i - 1), "" + i, "" + getDouble(i),
-                    "" + (getDouble(i) - getDouble(i-1)), "" + expected);
+                    "" + (getDouble(i) - getDouble(i-1)), "" + average);
             }
         }
         return "";
@@ -2148,7 +2150,10 @@ public class StringArray extends PrimitiveArray {
         Test.ensureEqual(anArray.isEvenlySpaced(), "", "");
         anArray.set(2, "30.1");
         Test.ensureEqual(anArray.isEvenlySpaced(), 
-            "StringArray isn't evenly spaced: [1]=20.0, [2]=30.1, spacing=10.100000000000001, expected spacing=10.0.", "");
+            "StringArray isn't evenly spaced: [0]=10.0, [1]=20.0, spacing=10.0, average spacing=10.05.", "");
+        Test.ensureEqual(anArray.smallestBiggestSpacing(),
+            "  smallest spacing=10.0: [0]=10.0, [1]=20.0\n" +
+            "  biggest  spacing=10.100000000000001: [1]=20.0, [2]=30.1", "");
 
         //fromCSV
         Test.ensureEqual(fromCSV(null).toString(), "", "");

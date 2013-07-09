@@ -840,7 +840,7 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +            
-"    Float64 actual_range 2.476656e+8, 1.369656e+9;\n" + //2nd number changes daily   
+"    Float64 actual_range 2.476656e+8, 1.3732848e+9;\n" + //2nd number changes daily   
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Centered Time\";\n" +
@@ -915,7 +915,7 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"array, station, wmo_platform_code, longitude, latitude\";\n" +
 "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    String CREATION_DATE \"07:08  3-MAY-2013\";\n" +  //changes monthly
+"    String CREATION_DATE \"07:06  6-JUN-2013\";\n" +  //changes monthly
 "    String creator_email \"Dai.C.McClurg@noaa.gov\";\n" +
 "    String creator_name \"Dai. C. McClurg\";\n" +
 "    String creator_url \"http://www.pmel.noaa.gov/tao/proj_over/proj_over.html\";\n" +
@@ -934,7 +934,7 @@ public class EDDTableFromTaoFiles extends EDDTableFromNcFiles {
 "    Float64 geospatial_vertical_min -8.0;\n" +
 "    String geospatial_vertical_positive \"down\";\n" +
 "    String geospatial_vertical_units \"m\";\n" + //date on line below changes monthly
-"    String history \"2013-05-03 Most recent downloading and reformatting of all cdf/sites/... files from PMEL TAO's FTP site by bob.simons at noaa.gov.\n" +
+"    String history \"2013-06-06 Most recent downloading and reformatting of all cdf/sites/... files from PMEL TAO's FTP site by bob.simons at noaa.gov.\n" +
 "Since then, recent data has been updated every day.\n" +
 today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
@@ -971,7 +971,7 @@ expected =
 "PIRATA (Atlantic Ocean, http://www.pmel.noaa.gov/pirata/)\n" +
 "arrays of moored buoys which transmit oceanographic and meteorological data to shore in real-time via the Argos satellite system.  These buoys are major components of the CLIVAR climate analysis project and the GOOS, GCOS, and GEOSS observing systems.  Daily averages are computed starting at 00:00Z and are assigned an observation 'time' of 12:00Z.  For more information, see\n" +
 "http://www.pmel.noaa.gov/tao/proj_over/proj_over.html .\";\n" +
-"    String time_coverage_end \"2013-05-27T12:00:00Z\";\n" +  //changes daily
+"    String time_coverage_end \"2013-07-08T12:00:00Z\";\n" +  //changes daily
 "    String time_coverage_start \"1977-11-06T12:00:00Z\";\n" + //before 2012-03-20 was 1980-03-07T12:00:00
 "    String title \"TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Air Temperature\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +

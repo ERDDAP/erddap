@@ -4333,9 +4333,9 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                 if (urlValue == null || urlValue.length() == 0) {   
                     String[] urlExamples = {
                         "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle?month&amp;unique()",
-                        "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle?t0&#044;oxygen&amp;month=&quot;5&quot;", //was "5"
-                        "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1?abund_m3&#044;lat&#044;long",
-                        "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1?abund_m3&#044;lat&#044;long&amp;program=&quot;MESO_1&quot;", //was "MESO_1"
+                        "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle?t0&#44;oxygen&amp;month=&quot;5&quot;", //was "5"
+                        "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1?abund_m3&#44;lat&#44;long",
+                        "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_MOC1?abund_m3&#44;lat&#44;long&amp;program=&quot;MESO_1&quot;", //was "MESO_1"
                         "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt?stn_id&amp;unique()",
                         "http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_vpt?abund_m3&amp;stn_id=&quot;NH05&quot;" //was "NH05"
                         };
@@ -4398,7 +4398,7 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
                         //IF THIS IS MADE LIVE, USE SSR.percentEncode  INSTEAD ???
                         String tUrlValue = urlValue;
                         tUrlValue = String2.replaceAll(tUrlValue, "&amp;", "&");
-                        tUrlValue = String2.replaceAll(tUrlValue, "&#044;", ",");
+                        tUrlValue = String2.replaceAll(tUrlValue, "&#44;", ",");
                         tUrlValue = String2.replaceAll(tUrlValue, "&quot;", "\"");
                         tUrlValue = String2.replaceAll(tUrlValue, "&lt;", "<");
                         tUrlValue = String2.replaceAll(tUrlValue, "&gt;", ">");

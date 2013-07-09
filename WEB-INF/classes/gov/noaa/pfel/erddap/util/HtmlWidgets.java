@@ -819,11 +819,11 @@ public class HtmlWidgets {
              char ch = html.charAt(i);
              if      (ch == '\\') sb.append("\\\\");
              else if (ch == '\"') sb.append("&quot;");
-             else if (ch == '\'') sb.append("&#039;");
+             else if (ch == '\'') sb.append("&#39;");
              else if (ch == '\n') sb.append(' '); //causes problem: quotes not closed at end of line
              else sb.append(ch);
          }
-         String2.replaceAll(sb, "&#039;", "\\&#039;");
+         String2.replaceAll(sb, "&#39;", "\\&#39;");
          String2.replaceAll(sb, "  ", "&nbsp;&nbsp;");
          return " onmouseover=\"Tip('" + sb.toString() + "')\" onmouseout=\"UnTip()\" "; //with space at beginning and end
     }

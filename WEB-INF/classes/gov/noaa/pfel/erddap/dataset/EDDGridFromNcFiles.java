@@ -516,7 +516,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"sourceUrl\">http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day</att>\n" +
 "        <att name=\"Southernmost_Northing\" type=\"double\">-89.875</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" +
-"        <att name=\"summary\">Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA&#039;s QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.</att>\n" +
+"        <att name=\"summary\">Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA&#39;s QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meriodonal, and modulus sets. The reference height for all wind velocities is 10 meters.</att>\n" +
 "        <att name=\"time_coverage_end\">2008-01-03T12:00:00Z</att>\n" +
 "        <att name=\"time_coverage_start\">2008-01-01T12:00:00Z</att>\n" +
 "        <att name=\"title\">Wind, QuikSCAT, Global, Science Quality (1 Day Composite)</att>\n" +

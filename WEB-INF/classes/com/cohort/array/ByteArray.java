@@ -1202,26 +1202,6 @@ public class ByteArray extends PrimitiveArray {
         return -1;
     }
 
-    /**
-     * This tests if the values in the array are exactly evenly spaced (ascending or descending).
-     *
-     * @return "" if the values in the array are exactly evenly spaced;
-     *   or an error message if not.
-     *   If size is 0 or 1, this returns "".
-     */
-    public String isEvenlySpaced() {
-        if (size <= 2)
-            return "";
-        int expected = array[1] - array[0];
-        for (int i = 2; i < size; i++) {
-            if (array[i] - array[i - 1] != expected) {
-                return MessageFormat.format(ArrayNotEvenlySpaced, getClass().getSimpleName(),
-                    "" + (i - 1), "" + array[i - 1], "" + i, "" + array[i],
-                    "" + (array[i] - array[i-1]), "" + expected);
-            }
-        }
-        return "";
-    }
 
     /** This returns the minimum value that can be held by this class. */
     public String minValue() {return "" + Byte.MIN_VALUE;}
@@ -1499,7 +1479,10 @@ public class ByteArray extends PrimitiveArray {
         Test.ensureEqual(anArray.isEvenlySpaced(), "", "");
         anArray.set(2, (byte)31);
         Test.ensureEqual(anArray.isEvenlySpaced(), 
-            "ByteArray isn't evenly spaced: [1]=20, [2]=31, spacing=11, expected spacing=10.", "");
+            "ByteArray isn't evenly spaced: [0]=10.0, [1]=20.0, spacing=10.0, average spacing=10.5.", "");
+        Test.ensureEqual(anArray.smallestBiggestSpacing(),
+            "  smallest spacing=10.0: [0]=10.0, [1]=20.0\n" +
+            "  biggest  spacing=11.0: [1]=20.0, [2]=31.0", "");
 
         //isAscending
         anArray = new ByteArray(new byte[] {10,10,30});

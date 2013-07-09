@@ -453,20 +453,23 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         //return quickly if dataset doesn't need to be updated
         long now = System.currentTimeMillis();
         if (now - lastUpdate < updateEveryNMillis) {
-            //String2.log("update(" + datasetID + "): no need to update:  now-last=" + (now - lastUpdate) + " < updateEvery=" + updateEveryNMillis);
+            if (reallyVerbose) String2.log("update(" + datasetID + "): no need to update:  now-last=" + 
+                (now - lastUpdate) + " < updateEvery=" + updateEveryNMillis);
             return;
         }
 
-        //return quickly if another thread is currently updating this dataset
+        //if another thread is currently updating this dataset, wait for it then return
         String msg = "update(" + datasetID + "): ";
         if (!updateLock.tryLock()) {
-            if (verbose) String2.log(msg + "couldn't get lock.");
+            updateLock.lock();   //block until other thread's update finishes
+            updateLock.unlock(); //immediately unlock and return
+            if (verbose) String2.log(msg + "waited " + (System.currentTimeMillis() - now) +
+                "ms for other thread to do the update.");
             return; 
         }
 
         //updateLock is locked by this thread.   Do the update!
         try {
-            lastUpdate = now; //set at top to discourage other threads from also updating
                 
             //read dds
             DConnect dConnect = new DConnect(localSourceUrl, acceptDeflate, 1, 1);
@@ -505,7 +508,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             } 
             if (newSize == oldSize) {
                 if (reallyVerbose) String2.log(msg + "no change to leftmost dimension");
-                return;
+                return;  //finally{} below sets lastUpdate = now
             }
 
             //newSize > oldSize, get last old value (for testing below) and new values
@@ -636,8 +639,9 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
         } catch (Throwable t) {
             String2.log(msg + "failed.  Unexpected " + String2.ERROR + ":\n" +
                 MustBe.throwableToString(t));
-        } finally {  //ensure updateLock is always unlocked
-            updateLock.unlock();  
+        } finally {  
+            lastUpdate = now;     //say dataset is now up-to-date (or at least tried)
+            updateLock.unlock();  //then ensure updateLock is always unlocked
         }
     }
 
@@ -1001,7 +1005,7 @@ expected =
 "Attributes {\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0260864e+9, 1.3670208e+9;\n" + //last value changes periodically
+"    Float64 actual_range 1.0260864e+9, 1.3718592e+9;\n" + //last value changes periodically
 "    String axis \"T\";\n" +
 "    Int32 fraction_digits 0;\n" +
 "    String ioos_category \"Time\";\n" +
@@ -1069,8 +1073,8 @@ expected =
 "    String creator_email \"dave.foley@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
-"    String date_created \"2013-05-08Z\";\n" +  //changes
-"    String date_issued \"2013-05-08Z\";\n" +  //changes
+"    String date_created \"2013-07-07Z\";\n" +  //changes
+"    String date_issued \"2013-07-07Z\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
 "    Float64 geospatial_lat_max 90.0;\n" +
 "    Float64 geospatial_lat_min -90.0;\n" +
@@ -1120,7 +1124,7 @@ expected2 =
 "    Float64 Southernmost_Northing -90.0;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String summary \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-"    String time_coverage_end \"2013-04-27T00:00:00Z\";\n" + //changes
+"    String time_coverage_end \"2013-06-22T00:00:00Z\";\n" + //changes
 "    String time_coverage_start \"2002-07-08T00:00:00Z\";\n" +
 "    String title \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
@@ -1149,15 +1153,15 @@ expected2 =
             //String2.log(results);
             expected = 
     "Dataset {\n" +
-    "  Float64 time[time = 487];\n" +   //487 will change sometimes   (and a few places below)
+    "  Float64 time[time = 494];\n" +   //494 will change sometimes   (and a few places below)
     "  Float64 altitude[altitude = 1];\n" +
     "  Float64 latitude[latitude = 4320];\n" +
     "  Float64 longitude[longitude = 8640];\n" +
     "  GRID {\n" +
     "    ARRAY:\n" +
-    "      Float32 chlorophyll[time = 487][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+    "      Float32 chlorophyll[time = 494][altitude = 1][latitude = 4320][longitude = 8640];\n" +
     "    MAPS:\n" +
-    "      Float64 time[time = 487];\n" +
+    "      Float64 time[time = 494];\n" +
     "      Float64 altitude[altitude = 1];\n" +
     "      Float64 latitude[latitude = 4320];\n" +
     "      Float64 longitude[longitude = 8640];\n" +
@@ -1535,8 +1539,8 @@ expected2 =
 " :creator_email = \"dave.foley@noaa.gov\";\n" +
 " :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
 " :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2013-05-08Z\";\n" + //changes periodically
-" :date_issued = \"2013-05-08Z\";\n" +  //changes periodically
+" :date_created = \"2013-07-07Z\";\n" + //changes periodically
+" :date_issued = \"2013-07-07Z\";\n" +  //changes periodically
 " :Easternmost_Easting = 246.65354786433613; // double\n" +
 " :geospatial_lat_max = 49.82403334105115; // double\n" +
 " :geospatial_lat_min = 28.985876360268577; // double\n" +

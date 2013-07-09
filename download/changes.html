@@ -45,7 +45,46 @@
 <!-- ****************************************************************************** -->
 <tr>
 <td>
-<h2><a name="changes1.42">Changes</a> in version 1.44 (released 2013-05-30)</h2>
+<h2><a name="changes1.46">Changes</a> in version 1.46 (released 2013-07-09)</h2>
+<ul>
+<li><b>New Features:</b>
+  <ul>
+  <li>(None)
+  </ul>
+
+<li><b>Small changes/Bug Fixes:</b>
+  <ul>
+  <li>Bug fix: In EDDTableFromDatabase, in version 1.44 only, ERDDAP improperly
+    quoted the database's table name in SQL statements.  That is now fixed.
+    Thanks to Kevin O'Brien.
+  </ul>
+
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <ul>
+  <li><b>If you don't modify the standard messages in messages.xml, 
+    <br>delete [tomcat]/content/erddap/messages.xml .</b>
+    <br>The default messages.xml file is now in the erddap.war file, not erddapContent.zip.  
+    So, you no longer need to manually update messages.xml .    
+
+  <li>If you do modify the messages in messages.xml,
+    from now on, each time you update ERDDAP, either:
+    <ul>
+    <li>Make the same changes you made before to the new 
+      <br>[tomcat]/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml.
+      <br>And this one time: delete [tomcat]/content/erddap/messages.xml .
+    <li>Or, figure out what has changed in the new messages.xml (via diff), and modify your 
+      <br>[tomcat]/content/erddap/messages.xml file accordingly.
+    </ul>
+  </ul>
+</ul>
+
+</td>
+</tr>
+
+<!-- ****************************************************************************** -->
+<tr>
+<td>
+<h2><a name="changes1.44">Changes</a> in version 1.44 (released 2013-05-30)</h2>
 <ul>
 <li><b>New Features:</b>
   <ul>
@@ -61,17 +100,18 @@
   <ul>
   <li>Bug fix: loading the .graph and .html web pages for datasets with lots of time values was slow
     because ERDDAP was slow when generating the time slider options. Now it is always fast.
-    Thanks to Michael Barry and OOICI.
+    Thanks to Michael Barry, OOICI, and Kristian Sebastian Blalid.
   <li>Bug fix: In some EDDTable dataset types, the time constraints were not always handled correctly.
     Now they are.
     Thanks to John Maurer and Kevin O'Brien.
   <li>Bug fix: datasets wouldn't load when all of the subsetVariables were fixed value variables.
     Now they will.
     Thanks to Lynn DeWitt and John Peterson.
-  <li>Change: now, all queries for just subset variables act as if <tt>&distinct()</tt> is part of the query.
+  <li>Change: now, all queries for just subset variables act as if <tt>&amp;distinct()</tt> is part of the query.
   <li>Change: now, for queries that include <tt>&amp;.jsonp=<i>functionName</i></tt>, 
-    <tt><i>functionName</i></tt> MUST start with an ISO 8859 letter or "_" and be followed
-    by 0 or more ISO 8859 letters, digits, "_", or ".".
+    <tt><i>functionName</i></tt> MUST now be a series of 1 or more (period-separated) words.
+    Each word must start with an ISO 8859 letter or "_" and be followed
+    by 0 or more ISO 8859 letters, digits, or "_".
     Yes, this is more restrictive than JavaScript's requirements for function names.
   <li>The time axis on graphs now works well for longer time ranges (80 - 10000 years)
     and shorter time ranges (0.003 - 180 seconds).
@@ -81,11 +121,13 @@
 
 <li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
   <ul>
-  <li>ERDDAP underwent a security audit. 
-    This version includes several important security bug fixes and 
-    several changes to increase security and accessibility (e.g., for vision impaired users).  
-    You MUST update to the latest version to be secure.
-    Thanks to Brad Williams, USGS and Acunetix.
+  <li><b>You MUST update to the latest version to be secure.</b>
+    <br>ERDDAP underwent a security audit. There were some bugs and weaknesses.
+    Version 1.44 includes several important security bug fixes and 
+    several changes to increase security and accessibility (e.g., for vision impaired users).      
+    Version 1.44 has passed the follow-up security audit.
+    Thanks to all the good people at USGS and Acunetix who made this possible.
+    (Shouldn't NOAA be doing this?)
 
   <li>The new 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromWFSFiles"
@@ -101,21 +143,7 @@
     <li>This allows the dataset to be queried with OPeNDAP selection constraints 
       (which a user may have requested).
     <li>The dataset is inherently a tabular dataset.
-    <li>
     </ul>
-    [for documentation: 
-    This class's <tt>&lt;reloadEveryNMinutes&gt;</tt> is what counts.
-    The enclosed EDDGrid's <tt>&lt;reloadEveryNMinutes&gt;</tt> is ignored.  
-    This class doesn't support <tt>&lt;updateEveryNMillis&gt;</tt>. 
-    The enclosed EDDGrid's <tt>&lt;updateEveryNMillis&gt;</tt> is what matters.]
-
-    WARNING: ERDDAP does not put any limits on user requests to this dataset
-    (for example, requiring time, latitude, and/or longitude constraints).
-    As a result, this class probably shouldn't be used with very large datasets 
-    (e.g., satellite datasets)
-    or with remote datasets because queries without time, latitude, and/or longitude constraints
-    may have to sift through the entire dataset to find matching data.
-    For large and/or remote datasets, those requests may fail because they take too long to complete.
     Thanks to OOICI, Jim Potemra, Roy Mendelssohn.
 
   <li>The variable name "depth" is now a special alternative to "altitude". 
@@ -126,7 +154,8 @@
 
   <li>In your datasets.xml, please remove any uses of
     <tt>&lt;att name="cdm_altitude_proxy"&gt;depth&lt;/att&gt;</tt>
-    since <tt>depth</tt> is now a special alternative to <tt>altitude</tt>.
+    since <tt>depth</tt> is now a special alternative to <tt>altitude</tt> and
+    so doesn't need to be specially identified.
 
   <li>In your datasets.xml, please remove any uses of
     <tt>&lt;altitudeMetersPerSourceUnit&gt;</tt>, except for EDDTableFromSOS.
@@ -167,16 +196,17 @@
         and/or different default graphics settings (e.g., marker type).
         <br>For example:        
         <br><tt>&lt;defaultGraphQuery&gt;longitude,latitude,seaTemperature&amp;amp;time&gt;=now-1day&amp;amp;.marker=1|5&lt;/defaultGraphQuery&gt;</tt>
+      </ul>
     </ul>
     Remember that you need to XML-encode or percent-encode (either one, but not both) 
     the default queries since they are in an XML document.
-    For example, &amp; becomes &amp;amp;, &lt; becomes &amp;lt;, &gt; becomes &amp;gt; .
+    For example, &amp; becomes &amp;amp; , &lt; becomes &amp;lt; , and &gt; becomes &amp;gt; .
     <br>And please check your work.  It is easy to make a mistake and not get what you want.
-    <br>Thanks to Charles Carleton, Kevin O'Brien, and others.
+    <br>Thanks to Charles Carleton, Kevin O'Brien, Luke Campbell, and others.
 
   <li>EDDGridFromDap, EDDGridFromErddap, and EDDTableFromEDDGrid have a new system 
     to deal with datasets that change frequently (as often as roughly every 0.5 s). 
-    Unlike the regular, proactive system for completely reloading each dataset, 
+    Unlike ERDDAP's regular, proactive system for completely reloading each dataset, 
     this optional additional system is reactive (triggered by a user request)
     and incremental (just updating the information that needs to be updated).
     For example, if a request to an EDDGridFromDap dataset occurs more than
@@ -186,54 +216,28 @@
     This system is very good at keeping a rapidly changing dataset up-to-date 
     with minimal demands on the data source,
     but at the cost of slightly slowing down the processing of some user requests.
-    Throughout the documentation, we will try to use the word "reload" for regular, full dataset reloads,
-    and "update" for these new incremental, partial updates.
-    
-    <p>To use this system, add:
-    <br><tt>&lt;updateEveryNMillis&gt;1000&lt;/updateEveryNMillis&gt;</tt>
-    <br>right after the <tt>&lt;reloadEveryNMinutes&gt;</tt> tag for the dataset in datasets.xml.
-    You can set it to be as small as 1 millisecond to ensure that the dataset is always up-to-date.
-    A second query won't trigger an update if the previous update hasn't yet finished.
-    For testing purposes, some diagnostics are printed to 
-    log.txt if &lt;logLevel&gt; is set to "all" in setup.xml.
-    If you use incremental updates and especially if the
-    leftmost, e.g., time, axis is large, you may want to set 
-    &lt;reloadEveryNMinutes&gt; to a larger number (1440?).
-
-    Note: this new update system updates metadata (e.g., time actual_range, time_coverage_end, ...)
-    but doesn't trigger onChange (email or touch URL) or change the RSS feed (perhaps it should...).
-
+    See 
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateEveryNMillis"
+    >&lt;updateEveryNMillis&gt;</a>
     <br>Thanks to Michael Barry and OOICI.
 
   <li>EDDGridFromNcFiles, EDDTableFromNcFiles, and EDDTableFromNcCFFiles now support 
-    <a href="http://www.unidata.ucar.edu/software/netcdf/ncml/">.ncml</a>
-    source files.  (They MUST have the extension .ncml.)  
-    .ncml files let you specify on-the-fly changes to the original source .nc/.grib/.bufr files, 
-    and then have ERDDAP treat the .ncml files as the source files.
-    NcML is useful because you can do some things with it (e.g., making different changes to 
-    different files in a collection, including adding a dimension with a specific value to a file),
-    that you can't do with ERDDAP's datasets.xml.
-    <p>Note that changes to an .ncml file's lastModified time will cause the file to be 
-    reloaded whenever the dataset is reloaded, but changes to the underlying data files
-    won't be directly noticed (but will be noticed if the .ncml file wrapping it is changed).
-    <p>Hint: NcML is *very* sensitive to the order of some 
-    items in the NcML file. Think of NcML as specifying a series
-    of instructions in the specified order, with the intention of
-    changing the source files (the state at the start of the NcML file)
-    into the destination files (the state at the end of the NcML file).
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#NcML">NcML .ncml</a> 
+    source files in place of .nc files.
+    Thanks to Jose B Rodriguez Rueda.
 
   <li>For EDDGridAggregateExistingDimension, ERDDAP supports a new 
     <tt>serverType="dodsindex"</tt> option for the <tt>serverType</tt> attribute 
     of the <tt>&lt;sourceUrls&gt;</tt> tag.
     This works with web pages that have lists of files within <tt>&lt;pre&gt;&lt;/pre&gt;</tt>
     and often beneath the page title "DODS Index of /...". An example is
-    <a href="www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/"
-    >www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/</a> .
+    <a href="http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/"
+    >http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/</a> .
 
   <li>For EDDTableFromSOS now supports an optional tag
     <br><tt>&lt;sosServerType&gt;<i>serverType</i>&lt;/sosServerType&gt;</tt>
     <br>so you can specify the type of SOS server (so ERDDAP doesn't have to figure it out).
-    Valid values of <tt><i>serverType</i>&gt;</tt> are 
+    Valid values of <tt>&lt;<i>serverType</i>&gt;</tt> are 
     <tt>IOOS_NDBC, IOOS_NOS, OOSTethys,</tt> and <tt>WHOI</tt> (a newly supported serverType).
     See <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromSOS"
     >EDDTableFromSOS</a>.
@@ -242,41 +246,42 @@
   <li>All EDDGridFrom...Files, EDDTableFrom...Files, EDDGridCopy, and EDDTableCopy 
     now support an optional tag
     <br><tt>&lt;fileTableInMemory&gt;true&lt;/fileTableInMemory&gt;</tt>  (The default is <tt>false</tt>.)
-    <br>which tells ERDDAP to keep the fileTable (with information about each source data file) 
-    in memory instead of just on the disk.
+    <br>which can tell ERDDAP to keep the fileTable (with information about each source data file) 
+    in memory instead of just on the disk (the default).
     Keeping the fileTable in memory speeds up requests for data 
     (especially if there are &gt;1000 source data files), but uses more memory.
-    If you set this to true for any datasets, keep an eye on the 
-    <tt>Memory: currently using</tt> line at [yourDomain]/erddap/status.html 
+    If you set this to true for any dataset, keep an eye on the 
+    <tt>Memory: currently using</tt> line at <i>yourDomain</i>/erddap/status.html 
     to ensure that ERDDAP still has plenty of free memory.
     Thanks to Fredrik Stray.
 
-  <li>EDDTableFromASCIIFiles now supports &lt;charset&gt;.
-    The two most common charsets (case sensitive!) are ISO-8859-1 (default) and UTF-8.  
+  <li>EDDTableFromASCIIFiles now supports <tt>&lt;charset&gt;</tt>.
+    The two most common charsets (case sensitive!) are ISO-8859-1 (the default) and UTF-8.  
 
-  <li>Recommended: in setup.xml, within &lt;startHeadHtml&gt;, please change 
-    <tt>&lt;html&gt;</tt> into <tt>&lt;html lang="en-US"&gt;</tt> 
+  <li>Recommended: in setup.xml, within <tt>&lt;startHeadHtml&gt;</tt>, please change 
+    <tt>&lt;html&gt;</tt> into 
+    <br><tt>&lt;html lang="en-US"&gt;</tt> 
     (or a different 
     <a href="http://www.w3schools.com/tags/ref_language_codes.asp">language code</a>
     if you have translated messages.xml).
 
-  <li>setup.xml has new optional tags to disable parts of ERDDAP:<tt>
+  <li>setup.xml has new optional tags to disable parts of ERDDAP:
     <ul>
-    <li>&lt;convertersActive&gt;false&lt;/convertersActive&gt;   &lt;!-- the default is true --&gt;
-    <li>&lt;slideSorterActive&gt;false&lt;/slideSorterActive&gt; &lt;!-- the default is true --&gt;
-    <li>&lt;wmsActive&gt;false&lt;/wmsActive&gt;                 &lt;!-- the default is true --&gt;
+    <li><tt>&lt;convertersActive&gt;false&lt;/convertersActive&gt;   &lt;!-- the default is true --&gt;</tt>
+    <li><tt>&lt;slideSorterActive&gt;false&lt;/slideSorterActive&gt; &lt;!-- the default is true --&gt;</tt>
+    <li><tt>&lt;wmsActive&gt;false&lt;/wmsActive&gt;                 &lt;!-- the default is true --&gt;</tt>
     </ul>
     In general, we recommend against setting any of these to false.
 
-  <li>GenerateDatasetsXml now writes results to [bigParentDirectory]/logs/generateDatasetsXmlLog.txt,
+  <li>GenerateDatasetsXml now writes results to <i>bigParentDirectory</i>/logs/generateDatasetsXmlLog.txt,
     not log.txt.
     Thanks to Kristian Sebastian Blalid.
 
   <li>GenerateDatasetsXml now makes a good suggestion for the <tt>&lt;reloadEveryNMinutes&gt;</tt>.
-    Thanks to NOAA UAF project.
+    Thanks to the NOAA UAF project.
 
   <li>Many small improvements to GenerateDatasetsXml.
-    Thanks to NOAA UAF project.
+    Thanks to the NOAA UAF project.
   </ul>
 
 </ul>
@@ -2020,7 +2025,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.42
+<p>ERDDAP, Version 1.46
 <br><a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

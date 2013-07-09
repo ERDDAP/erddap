@@ -230,8 +230,8 @@ public class Format implements Cloneable {
 
     /**
      * This will set whether the XML declaration
-     * (<code>&lt;&#063;xml version="1&#046;0"
-     * encoding="UTF-8"&#063;&gt;</code>)
+     * (<code>&lt;&#63;xml version="1&#46;0"
+     * encoding="UTF-8"&#63;&gt;</code>)
      * includes the encoding of the document. It is common to omit
      * this in uses such as WML and other wireless device protocols.
      *
@@ -255,7 +255,7 @@ public class Format implements Cloneable {
 
     /**
      * This will set whether the XML declaration
-     * (<code>&lt;&#063;xml version="1&#046;0"&#063;gt;</code>)
+     * (<code>&lt;&#63;xml version="1&#46;0"&#63;gt;</code>)
      * will be omitted or not. It is common to omit this in uses such
      * as SOAP and XML-RPC calls.
      *
