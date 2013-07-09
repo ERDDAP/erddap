@@ -300,6 +300,7 @@ public class SgtUtil  {
 
 //quick fix red affecting whole string?
 //htmlText= "<color=#000000> " + htmlText;
+//String2.log("drawHtmlText=" + htmlText);
         AttributedString2.drawHtmlText(g2d, htmlText, x, y, 
             fontFamily, labelHeight, Color.black, hAlign);
         return y + labelHeight + (extraGapBelow? labelHeight : 0);    

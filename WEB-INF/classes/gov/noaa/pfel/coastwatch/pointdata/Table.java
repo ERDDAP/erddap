@@ -5147,10 +5147,10 @@ Dataset {
 //"2, -162.21, 23.43, 1.20519E9\n" +
 //"3, -162.21, 23.43, 1.2051936E9\n";
 "row,LON,LAT,TIME\n" +
-"0,-162.279,23.445,1.2051828E9\n" +
-"1,-162.279,23.445,1.2051864E9\n" +
-"2,-162.279,23.445,1.20519E9\n" +
-"3,-162.279,23.445,1.2051936E9\n";
+"0,-162.279,23.445,1.20519E9\n" +    //pre 2013-06-20 last 9 was 828
+"1,-162.279,23.445,1.2051936E9\n" +  //and 936 was 864
+"2,-162.279,23.445,1.2051972E9\n" +  //and 972 was 9
+"3,-162.279,23.445,1.2052008E9\n";   //and 2008 was 1936
         Test.ensureEqual(results, expected, "results=\n" + results);
 
         } catch (Throwable t) {
@@ -14917,7 +14917,7 @@ touble: because table is JsonObject, info may not be in expected order
                 ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").size(), 2,  ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").getString(0), 
-                "2013-05-03 Most recent downloading and reformatting of all " + //changes monthly
+                "2013-06-06 Most recent downloading and reformatting of all " + //changes monthly
                 "cdf/sites/... files from PMEL TAO's FTP site by bob.simons at noaa.gov.", 
                 ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").getString(1), 
@@ -16089,14 +16089,14 @@ touble: because table is JsonObject, info may not be in expected order
             String results = table.toString("row", 5);
             String2.log(results);
 
-            nRows = 3779;
+            nRows = 3763; //2013-0620 was 3779;
             Test.ensureEqual(table.nColumns(), 3, "");
             Test.ensureEqual(table.nRows(), nRows, "");
 
             String expected = 
 "{\n" +
 "dimensions:\n" +
-"\trow = 3779 ;\n" +
+"\trow = 3763 ;\n" +
 "variables:\n" +
 "\tfloat abund_m3(row) ;\n" +
 "\t\tabund_m3:_FillValue = -9999999.0f ;\n" +
@@ -16150,11 +16150,16 @@ touble: because table is JsonObject, info may not be in expected order
 "\t\t:Westernmost_Easting = -125.1167 ;\n" +
 "}\n" +
 "    Row        abund_m3       latitude      longitude\n" +
-"      0     3.698225E-3      44.651699    -124.650002\n" +
-"      1      7.26257E-2      44.651699    -124.650002\n" +
-"      2     1.100231E-3      42.504601    -125.011299\n" +
-"      3     7.889546E-2      42.501801    -124.705803\n" +
-"      4        3.416457        42.5033    -124.845001\n";
+//"      0     3.698225E-3      44.651699    -124.650002\n" +  2013-06-20 was
+//"      1      7.26257E-2      44.651699    -124.650002\n" +
+//"      2     1.100231E-3      42.504601    -125.011299\n" +
+//"      3     7.889546E-2      42.501801    -124.705803\n" +
+//"      4        3.416457        42.5033    -124.845001\n";
+"      0     3.688676E-3      44.651699    -124.650002\n" +
+"      1     3.688676E-3      44.651699    -124.650002\n" +
+"      2     1.106603E-2      44.651699    -124.650002\n" +
+"      3      1.47547E-2      44.651699    -124.650002\n" +
+"      4      1.47547E-2      44.651699    -124.650002\n";
             int po = results.indexOf(expected.substring(0, 19));
             Test.ensureEqual(results.substring(Math.max(po, 0)), expected, "results=\n" + results);
 /* on oceanwatch, was          
@@ -16254,9 +16259,12 @@ touble: because table is JsonObject, info may not be in expected order
 "      2       44.651699    -124.650002       0.252101\n";
 */
 "abund_m3,latitude,longitude\n" +
-"10.746269,44.6517,-124.65\n" +
-"0.014005602,44.6517,-124.65\n" +
-"0.25210083,44.6517,-124.65\n";
+//"10.746269,44.6517,-124.65\n" +  //pre 2013-06-20 was
+//"0.014005602,44.6517,-124.65\n" +
+//"0.25210083,44.6517,-124.65\n";
+"0.003688676,44.6517,-124.65\n" +
+"0.003688676,44.6517,-124.65\n" +
+"0.011066027,44.6517,-124.65\n";
             Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));

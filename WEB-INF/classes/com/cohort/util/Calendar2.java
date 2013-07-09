@@ -1105,6 +1105,25 @@ public class Calendar2 {
     }
 
     /**
+     * This converts a GregorianCalendar object into an ESRI
+     * dateTime string (YYYY/MM/DD HH:MM:SS UTC)
+     * using its current get() values (not influenced by the format's timeZone).
+     *
+     * @param gc
+     * @return the corresponding ESRI dateTime String.
+     * @throws Exception if trouble (e.g., gc is null)
+     */
+    public static String formatAsEsri(GregorianCalendar gc) {
+        return 
+            formatAsISOYear(gc) + "/" +
+            String2.zeroPad("" + (gc.get(MONTH) + 1), 2) + "/" +
+            String2.zeroPad("" + gc.get(DATE), 2) + " " +
+            String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2) + ":" +
+            String2.zeroPad("" + gc.get(MINUTE), 2) + ":" +
+            String2.zeroPad("" + gc.get(SECOND), 2) + " UTC";
+    }
+
+    /**
      * This returns a compact formatted [-]YYYYMMDDHHMMSS string e.g., "20040102030405"
      * using its current get() values (not influenced by the format's timeZone).
      *

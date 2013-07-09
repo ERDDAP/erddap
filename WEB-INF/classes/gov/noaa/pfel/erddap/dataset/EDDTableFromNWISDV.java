@@ -1883,7 +1883,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"ioos_category\">Time</att>\n" +
 "            <att name=\"long_name\">Time at Start of Day</att>\n" +
 "            <att name=\"standard_name\">time</att>\n" +
-"            <att name=\"units\">yyyy-MM-dd&#039;T&#039;HH:mm:ss</att>\n" +
+"            <att name=\"units\">yyyy-MM-dd&#39;T&#39;HH:mm:ss</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +

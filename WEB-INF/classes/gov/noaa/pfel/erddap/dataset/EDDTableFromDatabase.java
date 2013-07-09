@@ -648,11 +648,12 @@ public class EDDTableFromDatabase extends EDDTable{
                     //Quotes around colNames avoid trouble when colName is a SQL reserved word.
                     query.append((rv == 0? "SELECT " + distinctString : ", ") + 
                         '"' + resultsVariables.get(rv) + '"'); 
-                //Quotes around names avoids trouble when a name is a SQL reserved word.
-                query.append(" FROM \"" + 
+                //Lack of quotes around table names means they can't be SQL reserved words.
+                //(If do quote in future, quote individual parts.)
+                query.append(" FROM " + 
                     (catalogName.equals("")? "" : catalogName + catalogSeparator) + 
                     (schemaName.equals( "")? "" : schemaName  + ".") + 
-                    tableName + "\"");
+                    tableName);
 
                 //add orderBy
                 StringBuilder orderBySB = new StringBuilder();

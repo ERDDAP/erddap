@@ -996,6 +996,7 @@ switch to finally clause
                 String error = da.isEvenlySpaced();
                 if (error.length() > 0) {
                     //Dave says: see if it is at least crudely evenly spaced 
+                    String2.log(error + "\n" + da.smallestBiggestSpacing());
                     FloatArray fa = new FloatArray(da);
                     String error2 = fa.isEvenlySpaced();
                     if (error2.length() > 0) {
@@ -1008,7 +1009,7 @@ switch to finally clause
                                 (da.get(nda-1) - da.get(0)) / (nda-1)));
                         //String2.log("new da  0=" + da.get(0) + " last=" + da.get(nda-1) + " n=" + nda);
                         //String error3 = da.isEvenlySpaced();
-                        //if (error3.length() > 0) throw new Exception(error3);
+                        //if (error3.length() > 0) throw new Exception(error3 + "\n" + da.smallestBiggestSpacing());
                     }
                 }
                 fileLon = da.toArray();
@@ -1021,6 +1022,7 @@ switch to finally clause
                 error = da.isEvenlySpaced();
                 if (error.length() > 0) {
                     //Dave says: see if it is at least crudely evenly spaced 
+                    String2.log(error + "\n" + da.smallestBiggestSpacing());
                     FloatArray fa = new FloatArray(da);
                     String error2 = fa.isCrudelyEvenlySpaced();
                     if (error2.length() > 0) {
@@ -1033,7 +1035,7 @@ switch to finally clause
                                 (da.get(nda-1) - da.get(0)) / (nda-1)));
                         //String2.log("new y values 0=" + da.get(0) + " last=" + da.get(nda-1) + " n=" + nda);
                         //String error3 = da.isEvenlySpaced();
-                        //if (error3.length() > 0) throw new Exception(error3);
+                        //if (error3.length() > 0) throw new Exception(error3 + da.smallestBiggestSpacing());
                     }
                 }
                 fileLat = da.toArray();  

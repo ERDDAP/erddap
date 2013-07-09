@@ -597,7 +597,7 @@ debugMode = false; //normally false.  Set it to true if need help.
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0259568e+9, 1.3671504e+9;\n" +  //2nd number changes
+"    Float64 actual_range 1.0259568e+9, 1.373112e+9;\n" +  //2nd number changes
 "    String axis \"T\";\n" +
 "    Int32 fraction_digits 0;\n" +
 "    String ioos_category \"Time\";\n" +
@@ -629,8 +629,8 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String creator_email \"dave.foley@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
-"    String date_created \"2013-05-01Z\";\n" + //changes
-"    String date_issued \"2013-05-01Z\";\n" +  //changes
+"    String date_created \"2013-07-08Z\";\n" + //changes
+"    String date_issued \"2013-07-08Z\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
 "    String featureType \"Point\";\n" +
 "    Float64 geospatial_lat_max 75.0;\n" +
@@ -680,7 +680,7 @@ expected2 =
 "    Float64 Southernmost_Northing -75.0;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String summary \"NOAA OceanWatch provides a blended sea surface temperature (SST) products derived from both microwave and infrared sensors carried on multiple platforms.  The microwave instruments can measure ocean temperatures even in the presence of clouds, though the resolution is a bit coarse when considering features typical of the coastal environment.  These are complemented by the relatively fine measurements of infrared sensors.  The blended data are provided at moderate spatial resolution (0.1 degrees) for the Global Ocean.  Measurements are gathered by Japan's Advanced Microwave Scanning Radiometer (AMSR-E) instrument, a passive radiance sensor carried aboard NASA's Aqua spacecraft, NOAA's Advanced Very High Resolution Radiometer, NOAA GOES Imager, and NASA's Moderate Resolution Imaging Spectrometer (MODIS). THIS IS AN EXPERIMENTAL PRODUCT: intended strictly for scientific evaluation by professional marine scientists.\";\n" +
-"    String time_coverage_end \"2013-04-28T12:00:00Z\";\n" +    //changes
+"    String time_coverage_end \"2013-07-06T12:00:00Z\";\n" +    //changes
 "    String time_coverage_start \"2002-07-06T12:00:00Z\";\n" +
 "    String title \"SST, Blended, Global, EXPERIMENTAL (5 Day Composite)\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
@@ -876,7 +876,7 @@ debugMode = false; //normally false.  Set it to true if need help.
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0259568e+9, 1.3671504e+9;\n" +  //2nd number changes
+"    Float64 actual_range 1.0259568e+9, 1.373112e+9;\n" +  //2nd number changes
 "    String axis \"T\";\n" +
 "    Int32 fraction_digits 0;\n" +
 "    String ioos_category \"Time\";\n" +
@@ -908,8 +908,8 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String creator_email \"dave.foley@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
-"    String date_created \"2013-05-01Z\";\n" + //changes
-"    String date_issued \"2013-05-01Z\";\n" +  //changes
+"    String date_created \"2013-07-08Z\";\n" + //changes
+"    String date_issued \"2013-07-08Z\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
 "    String featureType \"Point\";\n" +
 "    Float64 geospatial_lat_max 75.0;\n" +
@@ -959,7 +959,7 @@ expected2 =
 "    Float64 Southernmost_Northing -75.0;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String summary \"NOAA OceanWatch provides a blended sea surface temperature (SST) products derived from both microwave and infrared sensors carried on multiple platforms.  The microwave instruments can measure ocean temperatures even in the presence of clouds, though the resolution is a bit coarse when considering features typical of the coastal environment.  These are complemented by the relatively fine measurements of infrared sensors.  The blended data are provided at moderate spatial resolution (0.1 degrees) for the Global Ocean.  Measurements are gathered by Japan's Advanced Microwave Scanning Radiometer (AMSR-E) instrument, a passive radiance sensor carried aboard NASA's Aqua spacecraft, NOAA's Advanced Very High Resolution Radiometer, NOAA GOES Imager, and NASA's Moderate Resolution Imaging Spectrometer (MODIS). THIS IS AN EXPERIMENTAL PRODUCT: intended strictly for scientific evaluation by professional marine scientists.\";\n" +
-"    String time_coverage_end \"2013-04-28T12:00:00Z\";\n" +    //changes
+"    String time_coverage_end \"2013-07-06T12:00:00Z\";\n" +    //changes
 "    String time_coverage_start \"2002-07-06T12:00:00Z\";\n" +
 "    String title \"SST, Blended, Global, EXPERIMENTAL (5 Day Composite)\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +

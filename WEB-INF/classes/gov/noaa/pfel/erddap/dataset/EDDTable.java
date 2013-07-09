@@ -6001,7 +6001,8 @@ public abstract class EDDTable extends EDD {
             "  <br>include an optional jsonp request by adding <tt>&amp;.jsonp=<i>functionName</i></tt> to the end of the query.\n" +
             "  <br>Basically, this just tells ERDDAP to add <tt><i>functionName</i>(</tt> to the beginning of the response\n" +
             "  <br>and <tt>\")\"</tt> to the end of the response.\n" +
-            "  <br>The first character of <i>functionName</i> must be an ISO 8859 letter or \"_\".\n" +
+            "  <br>The functionName must be a series of 1 or more (period-separated) words.\n" +
+            "  <br>For each word, the first character of <i>functionName</i> must be an ISO 8859 letter or \"_\".\n" +
             "  <br>Each optional subsequent character must be an ISO 8859 letter, \"_\", or a digit.\n" +
             "  <br>If originally there was no query, leave off the \"&amp;\" in your query.\n" +
             "  <br>After the data download to the web page has finished, the data is accessible to the JavaScript\n" +
@@ -6291,7 +6292,7 @@ public abstract class EDDTable extends EDD {
             "  <br><tt>curl \"<i>erddapUrl</i>\" -o <i>fileDir/fileName#1.ext</i></tt>\n" +
             "  <br>Since the globbing feature treats the characters [, ], {, and } as special, you must also\n" +
             "  <br><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Percent-encoding\">percent encode</a> \n" +
-              "them in the erddapURL as &#037;5B, &#037;5D, &#037;7B, &#037;7D, respectively.\n" +
+              "them in the erddapURL as &#37;5B, &#37;5D, &#37;7B, &#37;7D, respectively.\n" +
             "  <br>Fortunately, these are rare in tabledap URLs.\n" +
             "  <br>Then, in the erddapUrl, replace a zero-padded number (for example <tt>01</tt>) with a range\n" +
             "  <br>of values (for example, <tt>[01-05]</tt> ),\n" +
@@ -6713,6 +6714,9 @@ public abstract class EDDTable extends EDD {
             "  <li>In tabledap, an altitude variable (if present) always has the name \"" + EDV.ALT_NAME + "\"\n" +
             "    <br>and the units \"" + EDV.ALT_UNITS + "\" above sea level.\n" +
             "    <br>Locations below sea level have negative altitude values.\n" +
+            "  <li>In tabledap, a depth variable (if present) always has the name \"" + EDV.DEPTH_NAME + "\"\n" + 
+            "    <br>and the units \"" + EDV.DEPTH_UNITS + "\" below sea level.\n" +
+            "    <br>Locations below sea level have positive depth values.\n" +
             "  <li>In tabledap, a time variable (if present) always has the name \"" + EDV.TIME_NAME + "\" and\n" +
             "    <br>the units \"" + EDV.TIME_UNITS + "\".\n" +
             "    <br>If you request data and specify a time constraint, you can specify the time as\n" +
@@ -6720,7 +6724,7 @@ public abstract class EDDTable extends EDD {
             "    <br>String value (e.g., \"2002-12-25T07:00:00Z\" in the UTC/GMT/Zulu time zone).\n" +
             "  <li>In tabledap, other variables can be timeStamp variables, which act like the time\n" +
             "      <br>variable but have a different name.\n" +
-            "  <li>Because the longitude, latitude, altitude, and time variables are specifically\n" +
+            "  <li>Because the longitude, latitude, altitude, depth, and time variables are specifically\n" +
             "      <br>recognized, ERDDAP is aware of the spatiotemporal features of each dataset.\n" +
             "      <br>This is useful when making images with maps or time-series, and when saving\n" +
             "      <br>data in geo-referenced file types (e.g., .geoJson and .kml).\n" +
@@ -10562,6 +10566,24 @@ public abstract class EDDTable extends EDD {
         } 
 */    }
 
+    /** 
+     * This indicates why the dataset isn't accessible via ESRI GeoServices REST
+     * (or "" if it is).
+     */
+    public String accessibleViaGeoServicesRest() {
+        if (accessibleViaGeoServicesRest == null) {
+
+            if (!EDStatic.geoServicesRestActive)
+                accessibleViaGeoServicesRest = String2.canonical(
+                    MessageFormat.format(EDStatic.noXxxBecause, "GeoServicesRest", 
+                        MessageFormat.format(EDStatic.noXxxNotActive, "GeoServicesRest")));
+            else accessibleViaGeoServicesRest = String2.canonical(
+                    MessageFormat.format(EDStatic.noXxxBecause, "GeoServicesRest", 
+                        EDStatic.noXxxItsTabular));
+        }
+        return accessibleViaGeoServicesRest;
+    }
+     
     /** 
      * This indicates why the dataset isn't accessible via WCS
      * (or "" if it is).
@@ -16136,7 +16158,7 @@ writer.write(
 "moored buoys maintained by NDBC and others. Moored buoys are the weather \n" +
 "sentinels of the sea. They are deployed in the coastal and offshore waters \n" +
 "from the western Atlantic to the Pacific Ocean around Hawaii, and from the \n" +
-"Bering Sea to the South Pacific. NDBC&#039;s moored buoys measure and transmit \n" +
+"Bering Sea to the South Pacific. NDBC&#39;s moored buoys measure and transmit \n" +
 "barometric pressure; wind direction, speed, and gust; air and sea \n" +
 "temperature; and wave energy spectra from which significant wave height, \n" +
 "dominant wave period, and average wave period are derived. Even the \n" +

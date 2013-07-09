@@ -35,14 +35,14 @@ public class XML {
     /** For each character 0 - 255, these indicate how the character
      * should appear in HTML content. 
      * See HTML & XHTML book, Appendix F.
-     * &quot; and &#039; are encoded to be safe (see encodeAsXML comments)
+     * &quot; and &#39; are encoded to be safe (see encodeAsXML comments)
      * and consistent with encodeAsXML.
      */
     public static String[] HTML_ENTITIES = {
-        "", "", "", "", "",   "", "", "", "", "&#009;", //0..  tab
+        "", "", "", "", "",   "", "", "", "", "&#9;", //0..  tab
         "\n", "", "", "\r", "",   "", "", "", "", "",   //10..
         "", "", "", "", "",   "", "", "", "", "",   //20..
-        "",""," ","!","&quot;", "#","$","&#37;","&amp;","&#039;",   //30..   //% re percent encoding
+        "",""," ","!","&quot;", "#","$","&#37;","&amp;","&#39;",   //30..   //% re percent encoding
         "(", ")", "*", "+", ",",   "-", ".", "/", "0", "1",   //40..
         "2", "3", "4", "5", "6",   "7", "8", "9", ":", ";",   //50..
         "&lt;", "=", "&gt;", "?", "@",   "A", "B", "C", "D", "E",   //60..
@@ -166,7 +166,7 @@ public class XML {
 
     /**
      * This replaces '&', '<', '>', '"', ''' in the string with 
-     * "&amp;amp;", "&amp;lt;", "&amp;gt;", "&amp;quot;", "&amp;#039;" so plainText can be safely
+     * "&amp;amp;", "&amp;lt;", "&amp;gt;", "&amp;quot;", "&amp;#39;" so plainText can be safely
      * stored as a quoted string within XML.
      *
      * <p>See "XML in a Nutshell" book, pg 20 for info on these 5 character encodings
@@ -277,10 +277,11 @@ public class XML {
 
     /**
      * This replaces HTML character entities (and the XML subset)
-     * (e.g., "&amp;amp;", "&amp;lt;", "&amp;gt;", "&amp;quot;", "&amp;nbsp;", etc.) in the string
-     * with characters (e.g., '&', '<', '>', '"', regular ' ', etc.) 
+     * (e.g., "&amp;amp;", "&amp;lt;", "&amp;gt;", "&amp;quot;", etc.) in the string
+     * with characters (e.g., '&', '<', '>', '"', etc.) 
      * so the original string can be recovered.
-     * Unrecognized entities are left intact.
+     * "&amp;nbsp;" is decoded to regular ' '.
+     * Unrecognized/invalid entities are left intact so appear as e.g., &amp;#A;.
      *
      * @param s the string to be decoded
      * @return the decoded string
@@ -297,14 +298,18 @@ public class XML {
                 int po = s.indexOf(';', i);
                 if (po > 0) {
                     String entity = s.substring(i-1, po+1);
-                    if (entity.charAt(1) == '#') {
-                        int v = String2.parseInt(
-                            (entity.charAt(2) == 'x'? "0" : "") + //&#x  hex number -> 0x
-                            s.substring(i+1, po)); //just digits or x+digits
+                    if (entity.charAt(1) == '#') {  //e.g., &#37;
+                        String num = entity.substring(2, entity.length() - 1);
+                        if (num.length() == 0) {
+                            //falls through, so shown as &#;
+                        } else if (num.charAt(0) == 'x') {
+                            num = "0" + num; //xhhh  hex number -> 0xhhh
+                        }
+                        int v = String2.parseInt(num);  //this relies on leading 0's being ignored -> decimal (not octal)
                         output.append(
                             v == 160? " " :  //nbsp
                             v < Character.MAX_VALUE? "" + (char)v : 
-                            entity); //leave intact
+                            entity); //show intact original entity as plain text
                     //check for common entities first
                     } else if (entity.equals("&amp;"))  { output.append('&');
                     } else if (entity.equals("&quot;")) { output.append('"');
@@ -816,9 +821,9 @@ public class XML {
                                       "Hi &<>\"°\u1234Bob"), "Hi&#x20;&#x26;&#x3c;&#x3e;&#x22;&#xb0;&#x1234;Bob", "HTML");
 
         //test decodeEntities
-        String2.log("test decodeEntities");
-        Test.ensureEqual(decodeEntities("Hi &amp;&lt;&gt;&quot;&nbsp;&#176;&deg;"), 
-            "Hi &<>\"\u00a0°°", "decode");
+        String2.log("test decodeEntities"); //037 tests leading 0, which is valid
+        Test.ensureEqual(decodeEntities("Hi&#037;&#37;&#x025;&#x25; &amp;&lt;&gt;&quot;&nbsp;&#176;&deg;"), 
+            "Hi%%%% &<>\"\u00a0°°", "decode");
 
         for (int ch = 0; ch < 260; ch++) {
             char ch1 = (char)ch;

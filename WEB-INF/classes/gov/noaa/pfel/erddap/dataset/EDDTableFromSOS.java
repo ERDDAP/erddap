@@ -3184,7 +3184,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range 29.6817, 41.7043;\n" + //pre 2013-05-22 was 29.48 ;pre 2012-03-16 was 43.32
+"    Float64 actual_range 29.48, 41.7043;\n" + //pre 2013-06-28 was 29.6817 pre 2013-05-22 was 29.48 ;pre 2012-03-16 was 43.32
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -5405,12 +5405,14 @@ So I will make ERDDAP able to read
         Test.ensureEqual(eddTable.sosOfferings.getString(which), "A01", "");
         //2008-07-25 was .5655, pre 2008-10-09 was .5658, 2009-03-23 changed, 
         //pre 2010-07-08 was -70.5600967407227
-        Test.ensureEqual(eddTable.sosMinLon.getNiceDouble(which), -70.5655, "");  
-        Test.ensureEqual(eddTable.sosMaxLon.getNiceDouble(which), -70.5655, "");
+        //pre 2013-06-28 was -70.5655
+        Test.ensureEqual(eddTable.sosMinLon.getNiceDouble(which), -70.5645150078668, "");  
+        Test.ensureEqual(eddTable.sosMaxLon.getNiceDouble(which), -70.5645150078668, "");
         //2008-07-25 was 42.5232, pre 2008-10-09 was .5226, 2009-03-23 changed
         //pre 2010-07-08 was 42.5261497497559;
-        Test.ensureEqual(eddTable.sosMinLat.getNiceDouble(which), 42.5232, "");  
-        Test.ensureEqual(eddTable.sosMaxLat.getNiceDouble(which), 42.5232, "");
+        //pre 2013-06-28 was 42.5232
+        Test.ensureEqual(eddTable.sosMinLat.getNiceDouble(which), 42.5223609076606, "");  
+        Test.ensureEqual(eddTable.sosMaxLat.getNiceDouble(which), 42.5223609076606, "");
         Test.ensureEqual(eddTable.sosMinTime.getNiceDouble(which), 9.94734E8, "");
         Test.ensureEqual(eddTable.sosMaxTime.getNiceDouble(which), Double.NaN, "");
 //        Test.ensureEqual(String2.toCSSVString(eddTable.sosObservedProperties()), 
@@ -5621,11 +5623,11 @@ So I will make ERDDAP able to read
 "-69.9877,43.7628\n" +
 "-69.3578,43.7148\n" +
 "-69.319580078125,43.7063484191895\n" +
-"-68.9982,44.0555\n" + //pre 2012-06-18 was -68.9981,44.055
+"-68.996696472168,44.0559844970703\n" + //pre 2013-06-28 was "-68.9982,44.0555\n" + //pre 2012-06-18 was -68.9981,44.055
 "-68.8308,44.3878\n" +
-"-68.1090882815856,44.105949650925\n" + //pre 2012-11-02 was -68.1087,44.1058
+"-68.109302520752,44.1061248779297\n" + //pre 2013-06-28 was "-68.1090882815856,44.105949650925\n" + //pre 2012-11-02 was -68.1087,44.1058
 "-67.8798,43.4907\n" +
-"-65.907,42.3303\n"; 
+"-65.9069544474284,42.3313840230306\n"; //pre 2013-06-28 was "-65.907,42.3303\n"; 
        Test.ensureEqual(results, expected, "\nresults=\n" + results);  
 
 
@@ -5750,10 +5752,10 @@ So I will make ERDDAP able to read
         int which = eddTable.sosOfferings.indexOf("A01");
         String2.log("which=" + which);
         Test.ensureEqual(eddTable.sosOfferings.getString(which), "A01", "");
-        Test.ensureEqual(eddTable.sosMinLon.getNiceDouble(which), -70.5655, ""); //pre 2010-06-22 was -70.5600967407227
-        Test.ensureEqual(eddTable.sosMaxLon.getNiceDouble(which), -70.5655, "");
-        Test.ensureEqual(eddTable.sosMinLat.getNiceDouble(which), 42.5232, ""); //pre 2010-06-10 was 42.5261497497559
-        Test.ensureEqual(eddTable.sosMaxLat.getNiceDouble(which), 42.5232, "");
+        Test.ensureEqual(eddTable.sosMinLon.getNiceDouble(which), -70.5645150078668, ""); //pre 2013-06-28 -70.5655, ""); //pre 2010-06-22 was -70.5600967407227
+        Test.ensureEqual(eddTable.sosMaxLon.getNiceDouble(which), -70.5645150078668, "");
+        Test.ensureEqual(eddTable.sosMinLat.getNiceDouble(which), 42.5223609076606, ""); //pre 2013-06-28 was 42.5232, ""); //pre 2010-06-10 was 42.5261497497559
+        Test.ensureEqual(eddTable.sosMaxLat.getNiceDouble(which), 42.5223609076606, "");
         Test.ensureEqual(eddTable.sosMinTime.getNiceDouble(which), 9.94734E8, "");
         Test.ensureEqual(eddTable.sosMaxTime.getNiceDouble(which), Double.NaN, "");
 //        Test.ensureEqual(String2.toCSSVString(eddTable.sosObservedProperties()), 
@@ -5849,11 +5851,11 @@ So I will make ERDDAP able to read
 "-69.9877,43.7628,D02\n" +
 "-69.3578,43.7148,E01\n" +
 "-69.319580078125,43.7063484191895,E02\n" +
-"-68.9982,44.0555,F01\n" + //2012-04-20 was -68.9981,44.055,F01
+"-68.996696472168,44.0559844970703,F01\n" + //2013-06-28 was "-68.9982,44.0555,F01\n" + //2012-04-20 was -68.9981,44.055,F01
 "-68.8308,44.3878,F02\n" +
-"-68.1090882815856,44.105949650925,I01\n" + //2011-11-02 was -68.1087,44.1058,I01
+"-68.109302520752,44.1061248779297,I01\n" + //2013-06-28 was "-68.1090882815856,44.105949650925,I01\n" + //2011-11-02 was -68.1087,44.1058,I01
 "-67.8798,43.4907,M01\n" +
-"-65.907,42.3303,N01\n" +
+"-65.9069544474284,42.3313840230306,N01\n" + //2013-06-28 was "-65.907,42.3303,N01\n" +
 "-54.688,46.9813,SMB-MO-01\n" +
 "-54.1317,47.3255,SMB-MO-04\n" +
 "-54.0488,47.7893,SMB-MO-05\n"; 
@@ -7713,10 +7715,10 @@ testQuickRestart = true;
         testNosSosATempAllStations(""); //long test; important because it tests NO DATA from a station
         testNosSosATempStationList("");
         testNosSosBPres("");
-        testNosSosCond("");
+ //testNosSosCond(""); 2013-06-28 needs work.  "dissemination has been stopped" for that sensor of that station
         testNosSosCurrents("");
-        testNosSosSalinity("");
-        //testNosSosWLevel("");  //no stations?!
+ //testNosSosSalinity(""); 2013-06-28 needs work. no matching station
+ //testNosSosWLevel("");  //no stations?!
         testNosSosWTemp("");  
         testNosSosWind("");
         testWhoiSos();        

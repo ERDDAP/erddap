@@ -161,7 +161,9 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
             response.setContentType("application/x-javascript"); 
 
         } else if (extension.equals(".json")) { 
-            response.setContentType("application/json"); //http://dret.net/biblio/reference/rfc4627
+            response.setContentType(fileType.equals(".jsonText")? 
+                "text/plain" :       //ESRI Geoservices REST uses this
+                "application/json"); //http://dret.net/biblio/reference/rfc4627
 
         } else if (extension.equals(".kml")) {
             //see http://earth.google.com/kml/kml_tut.html
@@ -251,7 +253,7 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
         if (extension.equals(".csv")  || 
             extension.equals(".jar")  || 
             extension.equals(".js")   || 
-            extension.equals(".json") || 
+             fileType.equals(".json") || //not .jsonText
             extension.equals(".kml")  || 
             extension.equals(".mat")  || 
             extension.equals(".nc")   ||
@@ -325,11 +327,8 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
             */
         }
 
-
         return outputStream;
     }
-
-
 }
 
 

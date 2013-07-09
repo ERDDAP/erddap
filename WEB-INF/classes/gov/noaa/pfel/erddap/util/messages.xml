@@ -1,0 +1,3309 @@
+<!-- messages.xml contains text messages for ERDDAP (which are read in EDStatic).
+When you install ERDDAP on your server, all of these messages can be left as is,
+since these messages are usually the same at different ERDDAP installations.
+Or, you can customize ERDDAP by changing these messages.
+Or, you can translate these messages into other languages (e.g., Spanish).
+
+VERY IMPORTANT:
+
+One line?
+If the English message appears as one long line (with no newlines), please make the 
+translation one line line also.
+
+HTML or Not?
+If the English message has HTML tags, then it is safe to use HTML tags; otherwise, it isn't.
+If the message uses HTML tags, please use the same tags in the translation.
+
+MessageFormat Placeholders
+Many messages use Java MessageFormat-style substitition placeholders like {0} and {1}.
+In these messages, any single quote ' must be escaped as ''.
+See http://docs.oracle.com/javase/1.5.0/docs/api/java/text/MessageFormat.html
+
+BOB! For POST: remove [font class="standoutColor"] and [/font] around "GetStarted".
+-->
+<erddapMessages>
+
+<advancedSearch>Advanced Search</advancedSearch>
+<advancedSearchResults>Advanced Search Results</advancedSearchResults>
+
+<advancedSearchDirections><![CDATA[
+<b>Directions:</b> Specify as many or as few search criteria as you want, then click <tt>&searchButton;</tt>.
+<br>Only the datasets that match <b>all</b> of the search criteria will show up in the results.
+]]></advancedSearchDirections>
+
+<!-- This is a description of Advanced Search. -->
+<advancedSearchHtml><![CDATA[
+Advanced Search combines all of the search techniques
+<br>and adds searches for datasets that have data within longitude, latitude, and time ranges,
+<br>so you can search for datasets based on many different criteria simultaneously.
+]]></advancedSearchHtml>
+
+<advancedSearchBounds>Search for Datasets that have Data within Longitude, Latitude, 
+and Time Ranges</advancedSearchBounds>
+
+<advancedSearchMinLat>Minimum Latitude</advancedSearchMinLat>
+<advancedSearchMaxLat>Maximum Latitude</advancedSearchMaxLat>
+<advancedSearchMinLon>Minimum Longitude</advancedSearchMinLon>
+<advancedSearchMaxLon>Maximum Longitude</advancedSearchMaxLon>
+<advancedSearchMinMaxLon>Min and Max Longitude</advancedSearchMinMaxLon>
+<advancedSearchMinTime>Minimum Time</advancedSearchMinTime>
+<advancedSearchMaxTime>Maximum Time</advancedSearchMaxTime>
+
+<advancedSearchClear>Clear</advancedSearchClear>
+<advancedSearchClearHelp>Clear all of the Longitude and Latitude textfields
+and the rectangle on the map.</advancedSearchClearHelp>
+
+<advancedSearchCategoryTooltip><![CDATA[
+Datasets can be categorized in different ways
+<br>based on the values of various metadata attributes.
+<p>Most datasets have multiple values for some attributes,
+<br>for example, the "long_name" associated with each variable.
+<br>To search for more than one value, enter additional values in the Full Text
+<br>textfield above, e.g., <tt>"long_name=Sea Surface Temperature"</tt>.
+]]></advancedSearchCategoryTooltip>
+
+<advancedSearchRangeTooltip><![CDATA[
+Datasets will match these criteria if they have a least some matching data.
+<p>All grid datasets that have longitude, latitude and time variables
+<br>have the data-range information needed to do these tests.
+<br>Unfortunately, some tabular datasets have the variables, but don't have
+<br>the data-range information. They will be excluded from the search results.
+]]></advancedSearchRangeTooltip>
+
+<advancedSearchMapTooltip><![CDATA[
+This is optional.
+<br>You can specify longitude and latitude bounds by entering text in the textfields,
+<br>or you can specify a rectangle on the map by clicking on two diagonal corners.
+<br>(To change the rectangle, click on the new corners.)
+<br>Drawing a rectangle on the map automatically puts values in the longitude and 
+<br>latitude textfields. 
+<br>The values in the longitude and latitude textfields are what really count.
+<br>Drawing a rectangle on the map is just an easy way to specify those values.
+]]></advancedSearchMapTooltip>
+
+<advancedSearchLonTooltip><![CDATA[
+<p>Some datasets have longitude values within -180 to 180, others use 0 to 360.
+<br>If you specify Min and Max Longitude within -180 to 180 (or 0 to 360),
+<br>ERDDAP will only find datasets that match the values you specify.
+<br>Consider doing one search: longitude -180 to 360,
+<br>or two searches: longitude -180 to 180, and 0 to 360.
+]]></advancedSearchLonTooltip>
+
+<advancedSearchTimeTooltip><![CDATA[
+This is optional.
+<ul>
+<li>Enter a time string with the format yyyy-MM-dd'T'HH:mm:ssZ, 
+  <br>for example, 2009-01-21T23:00:00Z.
+  <br>If you specify something, you must include yyyy-MM-dd.
+  <br>You can omit (backwards from the end) Z, :ss, :mm, :HH, and T.
+  <br>Always use UTC (GMT/Zulu) time.
+  <br>&nbsp;
+<li>Or specify the number of seconds since 1970-01-01T00:00:00Z.
+</ul>
+]]></advancedSearchTimeTooltip>
+
+<!-- {0}=plainFileType (e.g., .json) of advanced search query. -->
+<advancedSearchWithCriteria>A {0} Advanced Search request must include one or more criteria, for example, "?page=1&amp;itemsPerPage=1000&amp;searchFor=wind+temperature".</advancedSearchWithCriteria>
+
+<advancedSearchFewerCriteria>Try using fewer and/or broader search criteria.</advancedSearchFewerCriteria>
+
+<advancedSearchNoCriteria><![CDATA[
+To see some results, you must specify at least one search criterion above,
+then click <tt>{0}</tt>.
+<br>Or, <a rel="contents" href="{1}/search/advanced.html?page=1&amp;itemsPerPage={2}&amp;searchFor=all">view all of the datasets</a>.
+]]></advancedSearchNoCriteria>
+
+<!-- These are injected into PrimitiveArray. 
+     These use MessageFormat. -->
+<ArrayAddN>ERROR in {0}.addN: n ({1}) &lt; 0.</ArrayAddN>
+<ArrayAppendTables>ERROR in PrimitiveArray.append:
+the tables have a different number of columns ({0} != {1}).</ArrayAppendTables>
+<ArrayDiff>ERROR: The PrimitiveArrays differ at [{0}] ({1} != {2}).</ArrayDiff>
+<ArrayDifferentSize>The other primitiveArray has a different size ({0} != {1}).</ArrayDifferentSize>
+<ArrayDifferentValue>The other primitiveArray has a different value for [{0}] ({1} != {2}).</ArrayDifferentValue>
+<ArrayDiffString>old [{0}]={1},
+  new [{0}]={2}.</ArrayDiffString>
+<ArrayMissingValue>missing value</ArrayMissingValue>
+<ArrayNotAscending>{0} isn''t sorted in ascending order: {1}.</ArrayNotAscending>
+<ArrayNotDescending>{0} isn''t sorted in descending order: {1}.</ArrayNotDescending>
+<ArrayNotEvenlySpaced>{0} isn''t evenly spaced: [{1}]={2}, [{3}]={4}, spacing={5}, average spacing={6}.</ArrayNotEvenlySpaced>
+<ArrayRemove>ERROR in {0}.remove: index ({1}) &gt;= size ({2}).</ArrayRemove>
+<ArraySubsetStart>ERROR in {0}.subset: startIndex={1} must be at least 0.</ArraySubsetStart>
+<ArraySubsetStride>ERROR in {0}.subset: stride={1} must greater than 0.</ArraySubsetStride>
+
+
+<!-- These messages are related to Search by Category. -->
+<categoryTitleHtml>Search for Datasets by Category</categoryTitleHtml>
+<category1Html><![CDATA[
+Datasets can be categorized in different ways by the values of various metadata attributes.
+<br>Click on an attribute ]]></category1Html>
+<category2Html><![CDATA[to see a list of categories (values) for that attribute.]]></category2Html>
+<category3Html><![CDATA[Then, you can click on a category to see a list of relevant datasets.]]></category3Html>
+<categoryPickAttribute>Pick an attribute:</categoryPickAttribute>
+<categorySearchHtml><![CDATA[Pick a(n) <font class="highlightColor">{0}</font>]]></categorySearchHtml>
+<categorySearchDifferentHtml><![CDATA[Search for Datasets with a different <font class="highlightColor">&category;</font>]]></categorySearchDifferentHtml>
+<categoryClickHtml>Click on a category (an attribute value) to see a list of relevant datasets.</categoryClickHtml>
+<categoryNotAnOption>When attribute="{0}", value="{1}" is not an option.</categoryNotAnOption>
+
+<cfStandardNamesOneWord>
+
+</cfStandardNamesOneWord>
+
+<!-- This message is used on HTML pages whenever a table of datasets is displayed
+(e.g., when you do a full text search for datasets).
+-->
+<clickAccessHtml><![CDATA[
+<font class="highlightColor">access</font> = a form for requesting data
+<br><font class="highlightColor">graph</font> = a form for making a graph or map
+<br><font class="highlightColor">info</font> = a list of a dataset's variables and attributes
+]]></clickAccessHtml>
+
+<!--
+<font class="highlightColor">access</font> links below lead to a dataset's Data Access Form so that you can request data.
+<br><font class="highlightColor">graph</font> links below lead to a dataset's Make A Graph form so that you can request a graph or map.
+<br><font class="highlightColor">info</font> links below lead to a list of a dataset's variables and attributes.
+-->
+
+<!-- This message is used as a tooltip for the "access" links on HTML pages
+whenever a table of datasets is displayed (e.g., when you do a full text search for datasets).
+-->
+<clickAccess>Click to see an OPeNDAP Data Access Form for this dataset so that you can request data.</clickAccess>
+
+<!-- This message is used as a tooltip for the "background" link on HTML pages
+whenever a table of datasets is displayed (e.g., when you do a full text search for datasets).
+-->
+<clickBackgroundInfo>Click to see background information from the source of this dataset.
+</clickBackgroundInfo>
+
+<!-- This message is used as a tooltip for the "info" link on HTML pages whenever
+a table of datasets is displayed (e.g., when you do a full text search for datasets).
+-->
+<clickInfo>Click to see a list of this dataset's variables and the complete list of metadata attributes.</clickInfo>
+
+<clickToSubmit>Click to submit the form to the server.</clickToSubmit>
+
+
+<!-- These HTML messages are used to describe the "convert" options in general and individually. -->
+<convertFipsCounty>Convert a FIPS County Code to/from a County Name</convertFipsCounty>
+
+<!-- Don't change the examples (from defaultN...). -->
+<convertFipsCountyIntro><![CDATA[
+This web page lets you convert a 5-digit, U.S.
+<a rel="bookmark" href="http://www.itl.nist.gov/fipspubs/fip6-4.htm">FIPS county code</a>
+to/from a county name.
+<br>For example, FIPS code "06053" converts to "CA, Monterey" (the state's postal
+<br>abbreviation plus the county's name).
+<br>&nbsp;
+]]></convertFipsCountyIntro>
+
+<convertFipsCountyNotes><![CDATA[
+<p><a name="notes"><b>Notes</b></a>
+<ul>
+<li><a name="disclaimer">DISCLAIMER OF LIABILITY</a> -
+  No person or organization associated with this web site
+  <br>makes any warranty, express or implied, including warranties of merchantability and
+  <br>fitness for a particular purpose, or assumes any legal liability for the accuracy,
+  <br>completeness, or usefulness, of any information at this web site.
+  <br>&nbsp;
+<li><a name="exact">Exact Match</a> -
+  This service requires exact matches. Entering a partial county code or
+  <br>county name, or using a different case (upper or lower), will result in an error
+  <br>error message.
+  <br>&nbsp;
+<li><a name="digits">5-Digit Codes</a> -
+  This service works with the 5-digit version of the FIPS county codes.
+  <br>The first two digits are the FIPS state code.  The last three digits are the FIPS
+  <br>county code within that state or possession.
+  <br>&nbsp;
+<li><a name="names">County Names</a> -
+  The format for the county names isn't standardized.
+  <br>Here, they are written as "STATE, County Name", where STATE is the 2-letter
+  <br>postal abbreviation.
+  <br>&nbsp;
+<li><a name="states">States</a> -
+  This service includes the state names in with the county names.
+  <br>The last 3 digits of the state's "county" codes are 000. For example, 06000 = CA.
+  <br>&nbsp;
+<li><a name="equivalent">County-Equivalent Entities</a> -
+  This service includes county-equivalent entities from
+  <br>U.S. protectorates and freely associated states from Appendix A and B of the
+  <br><a rel="bookmark" href="http://www.itl.nist.gov/fipspubs/co-codes/states.txt">official FIPS list</a>.
+    The state-level entities are:
+  <br>60000=AS=AMERICA SAMOA
+  <br>64000=FM=FEDERATED STATES OF MICRONESIA
+  <br>66000=GU=GUAM
+  <br>68000=MH=MARSHALL ISLANDS
+  <br>69000=MP=NORTHERN MARIANA ISLANDS
+  <br>70000=PW=PALAU
+  <br>72000=PR=PUERTO RICO
+  <br>74000=UM=U.S. MINOR OUTLYING ISLANDS
+  <br>78000=VI=VIRGIN ISLANDS OF THE UNITED STATES
+  <br>&nbsp;
+</ul>
+]]></convertFipsCountyNotes>
+
+<!-- Don't change the examples (from defaultN, ...). -->
+<convertFipsCountyService><![CDATA[
+<p>&nbsp;<hr>
+<h2><a name="computerProgram">Want</a> To Do FIPS County Conversions from within a Computer Program?</h2>
+If you change the extension of this web page''s URL from .html to .txt,
+  ERDDAP will respond with just the text result.
+<ul>
+<li>An example which converts a FIPS county code into a county name is
+  <br><a 
+  href="{0}/convert/fipscounty.txt?code=06053"
+       >{0}/convert/fipscounty.txt?code=06053</a>
+ <br>&nbsp;
+<li>An example which converts a county name into a FIPS county code is
+  <br><a
+href="{0}/convert/fipscounty.txt?county=CA%2C%20Monterey"
+     >{0}/convert/fipscounty.txt?county=CA%2C%20Monterey</a>
+  <br>&nbsp;
+</ul>
+Note that the parameter values in the URL must be properly
+ <a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded</a>,
+ which is normally taken care of by a browser.
+]]></convertFipsCountyService>
+
+
+<convertHtml>ERDDAP has some simple forms to help you do some common conversions.</convertHtml>
+
+<!-- These HTML messages are used to describe the "convert" options in general and individually. -->
+<convertKeywords>Convert a CF Standard Name to/from a GCMD Science Keyword</convertKeywords>
+
+<!-- Don't change the examples (from defaultN...). -->
+<convertKeywordsIntro><![CDATA[
+This web page lets you convert a 
+<a rel="bookmark" href="http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/current/cf-standard-name-table.html/">CF Standard Name</a>
+to/from a 
+<a rel="bookmark" href="http://gcmd.nasa.gov/Resources/valids/archives/keyword_list.html">GCMD Science Keyword</a>.
+<br>Usually, there are more than one GCMD Science Keywords associated with a given
+<br>CF Standard Name, and vice versa.  For example, converting the CF Standard Name<tt>
+<br>&nbsp;&nbsp;air_pressure</tt> 
+<br>into GCMD Science Keywords leads to<tt>
+<br>&nbsp;&nbsp;Atmosphere &gt; Atmospheric Pressure &gt; Atmospheric Pressure Measurements
+<br>&nbsp;&nbsp;Atmosphere &gt; Atmospheric Pressure &gt; Sea Level Pressure </tt>and<tt>
+<br>&nbsp;&nbsp;Atmosphere &gt; Atmospheric Pressure &gt; Static Pressure.</tt>
+<br>This is useful if, for example, you have a dataset with CF Standard Names
+<br>and want to add GCMD Science Keywords to the dataset's <tt>keywords</tt> metadata.
+<br>&nbsp;
+]]></convertKeywordsIntro>
+
+<convertKeywordsCfTooltip><![CDATA[ 
+Select a CF Standard Name.
+<p>CF Standard Names which have no corresponding
+<br>GCMD Science Keywords are not in this list.
+]]></convertKeywordsCfTooltip>
+
+<convertKeywordsGcmdTooltip><![CDATA[ 
+Select a GCMD Science Keyword.
+<p>GCMD Science Keywords which have no corresponding
+<br>CF Standard Names are not in this list.
+]]></convertKeywordsGcmdTooltip>
+
+<convertKeywordsNotes><![CDATA[
+<p><a name="notes"><b>Notes</b></a>
+<ul>
+<li><b><a name="suggestions">WARNING</a> - The results are suggestions, not exact translations.</b>
+  <br>Some suggestions are always appropriate. Others are only appropriate in certain circumstances.
+  <br>&nbsp;
+<li><b><a name="disclaimer">DISCLAIMER OF LIABILITY</a></b> -
+  No person or organization associated with this web site
+  <br>makes any warranty, express or implied, including warranties of merchantability and
+  <br>fitness for a particular purpose, or assumes any legal liability for the accuracy,
+  <br>completeness, or usefulness, of any information at this web site.
+  <br>&nbsp;
+<li><b><a name="corrections">Corrections</a></b> - 
+Please email any suggested corrections to bob.simons at noaa.gov .
+</ul>
+]]></convertKeywordsNotes>
+
+<!-- Don't change the examples (from defaultN, ...). -->
+<convertKeywordsService><![CDATA[
+<p>&nbsp;<hr>
+<h2><a name="computerProgram">Want</a> To Do Keyword Conversions from within a Computer Program?</h2>
+If you change the extension of this web page''s URL from .html to .txt,
+  ERDDAP will respond with just the text result.
+<ul>
+<li>An example which converts a CF Standard Name into related GCMD Science Keywords is
+  <br><a 
+  href="{0}/convert/keywords.txt?cf=air_pressure"
+       >{0}/convert/keywords.txt?cf=air_pressure</a>
+ <br>&nbsp;
+<li>An example which converts a GCMD Science Keyword into related CF Standard Names
+  <br><a
+href="{0}/convert/keywords.txt?gcmd=Atmosphere%20%3e%20Atmospheric%20Pressure%20%3e%20Sea%20Level%20Pressure"
+     >{0}/convert/keywords.txt?gcmd=Atmosphere%20%3e%20Atmospheric%20Pressure%20%3e%20Sea%20Level%20Pressure</a>
+</ul>
+Percent Encoding - 
+The parameter values in the URL must be properly 
+<a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">Percent Encoded</a>,
+<br>which is normally taken care of by a browser.
+
+<p><a name="exact">Exact Match</a> -
+  This service requires an exact match. Trying to translate a partial or  
+  <br>invalid CF Standard Name or GCMD Science Keyword, or using a different case 
+  <br>(upper or lower), will lead to an HTML error.
+  <br>&nbsp;
+
+]]></convertKeywordsService>
+
+
+<convertTime>Convert a Numeric Time to/from a String Time</convertTime>
+
+<convertTimeReference><![CDATA[ 
+<br>ERDDAP has
+    <a rel="bookmark" href="&erddapUrl;/convert/time.html">a service to convert a numeric time to/from a string time</a>.
+]]></convertTimeReference>
+
+
+<!-- Don't change the examples (from defaultN...). -->
+<convertTimeIntro><![CDATA[
+This web page lets you convert a time value to/from an
+<ul>
+<li><a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/">UDUNITS-compatible Number</a>
+  - for example, 473472000 "seconds since 1970-01-01T00:00:00Z", or
+<li><a rel="help" href="http://en.wikipedia.org/wiki/ISO_8601">ISO 8601:2004 "extended" format String</a>
+  in the form
+  <span style="white-space: nowrap;">YYYY-MM-DDThh:mm:ssZ</span> - for example,
+  <span style="white-space: nowrap;">1985-01-02T00:00:00Z</span> .
+</ul>
+To avoid time zone and daylight savings confusion,
+time values in ERDDAP always use the Zulu (UTC, GMT) time zone.
+<br>&nbsp;
+]]></convertTimeIntro>
+
+<convertTimeNotes><![CDATA[
+<p><a name="notes"><b>Notes about the Time Converter</b></a>
+<ul>
+<li><a name="disclaimer">DISCLAIMER OF LIABILITY</a> -
+  No person or organization associated with this web site
+  <br>makes any warranty, express or implied, including warranties of merchantability
+  <br>and fitness for a particular purpose, or assumes any legal liability for the accuracy,
+  <br>completeness, or usefulness, of any information at this web site.
+  <br>&nbsp;
+<li><a name="units">UDUNITS Time Units</a> - {1}
+
+<li><a name="invalidInput">Invalid Input</a> -
+  ERDDAP tries to deal with improperly formatted input.
+  <br>If the input can''t be dealt with, ERDDAP will generate an error message.
+  <br>&nbsp;
+</ul>
+
+<p><a name="erddap"><b>How ERDDAP Deals with Time</b></a>
+<ul>
+<li><a name="difficult">Time</a> is a difficult, complex, messy issue.
+  <br>&nbsp;
+
+<li><a name="goal">Goal</a> - An underlying goal for ERDDAP''s system for dealing with time is 
+  to have a single
+  <br>system that allows time data from any dataset to be compared directly to time data from
+  <br>any other dataset. Please keep that in mind when you read the other comments below.
+  <br>&nbsp;
+
+<li><a name="timePoints">Time Points</a> - ERDDAP only deals with time points (a combined
+  date+time in the 
+  <br>Zulu time zone, each an instant in time).
+  <br>&nbsp;
+
+<li><a name="timeZones">Time Zones</a> - ERDDAP always uses the Zulu (UTC, GMT) time zone
+    and never uses 
+  <br>daylight savings times.  Time data from a source with time zone information (which
+  <br>may incorporate daylight savings time information) is converted to Zulu time.
+  <br>Time data from a source without time zone information is assumed to be already in 
+  <br>Zulu time.
+  <br>&nbsp;
+  
+<li><a name="precision">Precision</a> - ERDDAP deals with time internally as 
+  "seconds since 1970-00-00T00:00:00Z", 
+  <br>ignoring leap seconds (see below), stored as double precision floating point numbers.  
+  <br>Thus, most time data can be stored very precisely (roughly to the nearest microsecond,
+  <br>but progressively less precisely very far in the past or future).  
+  <br>&nbsp;
+
+<li><a name="consistentUnits">Consistent Units</a> - Using the same units for time
+  ("seconds since 1970-00-00T00:00:00Z")
+  <br>for all datasets allows times from different datasets to be compared easily. 
+  <br>Seconds are the 
+    <a rel="help" href="http://en.wikipedia.org/wiki/International_System_of_Units">International 
+      System of Units (SI)</a>
+    base unit of time.
+  <br>1970-01-01T00:00:00Z is the start of the Unix epoch, which is widely used by computer 
+  <br>operating systems.  "seconds since 1970-00-00T00:00:00Z" are widely used and are 
+  <br>often called
+    <a rel="help" href="http://en.wikipedia.org/wiki/Unix_time">Unix time</a> or epoch seconds.
+    The use of the units string 
+  <br>"seconds since 1970-00-00T00:00:00Z" makes Unix time compatible with
+    <a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUNITS-2</a>
+    and 
+  <br>the <a rel="help" href="http://cf-pcmdi.llnl.gov/documents/cf-conventions">Climate and Forecast Metadata
+    Conventions (CF)</a>,
+    which uses UDUNITS-2 for units 
+  <br>definitions.
+  <br>&nbsp;
+  
+<li><a name="textRepresentation">Text Representation</a> - By default, when formatting times as
+    text, ERDDAP uses the 
+  <br><a rel="help" href="http://en.wikipedia.org/wiki/ISO_8601">ISO 8601:2004 "extended" format String</a>, 
+    truncated to the second 
+  <br>(e.g., 2011-04-26T14:07:12Z).  (Related humor: <a href="http://xkcd.com/1179/">http://xkcd.com/1179/</a>)
+  <br>ERDDAP administrators can configure a given dataset to display the time data values
+  <br>truncated to 0.001 second, 0.01 second, 0.1 second, second, minute, hour, date, or month
+  <br>to indicate the precision of the time data values.  
+  <p>When reading ISO 8601 times with decimal seconds, ERDDAP accepts a period separator
+  <br>(e.g., 2011-04-26T14:07:12.059Z) or a comma separator (e.g., 2011-04-26T14:07:12,059Z).
+  <br>Currently, when writing ISO 8601 times ERDDAP always uses a period separator.
+  <br>&nbsp;
+  
+<li><a name="gregorianCalendar">Gregorian Calendar</a> -
+  ERDDAP uses the Gregorian Calendar for times after the
+  <br>discontinuity in 1582 and the Julian calendar for times before the discontinuity.
+  <br>(The ISO 8601:2004 standard doesn''t specify how to handle times before 1582.)
+  <br>See the
+    <a rel="help" href="http://download.oracle.com/javase/6/docs/api/java/util/GregorianCalendar.html">Java GregorianCalendar class</a>
+    (which ERDDAP uses) for details.
+  <br>For example, 17611992 hours since 0001-01-01T00:00:00Z = 2010-03-01T00:00:00Z
+  <br>(<a href="{0}/convert/time.html?n=17611992&amp;units=hours%20since%200001-01-01T00:00:00Z">see for yourself</a>)
+  <br>&nbsp;
+  <br>Currently, ERDDAP does not support any other calendar (including the noleap, 365_day,
+  <br>360_day, and Julian calendars defined by the
+    <a rel="help" href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#calendar">CF metadata conventions</a>).  However, you 
+  <br>can store such data in ERDDAP by storing the numbers or Strings in a variable that is
+  <br>named something other than "time" and doesn''t include "since" in the units metadata.
+  <br>Then, ERDDAP won''t interpret the values as times and won''t convert the data to 
+  <br>"seconds since 1970-01-01T00:00:00Z". Users will be able to access the data in its 
+  <br>original form.
+  <br>&nbsp;
+
+<li><a name="BC">BC Years</a> - As specified in the ISO 8601:2004 standard, ERDDAP just uses the AD
+  <br>(not the BC) era for year numbers.  The normal Julian sequence of years near the
+  <br>era transition is 2 BC, 1 BC, 1 AD, 2 AD.  Because oceanographers and climatologists
+  <br>often use year 0000 for climatologies, and because ISO 8601:2004 specifies this, the
+  <br>years near the era transition in ERDDAP are -0001, 0000, 0001, 0002, respectively. 
+  <br>Thus, for BC years: ERDDAPYear = 1 - BCYear (see for yourself: 
+    <a href="{0}/convert/time.html?n=-1&amp;units=days%20since%200001-01-01">test1</a>, 
+    <a href="{0}/convert/time.html?n=1985&amp;units=years%20since%200000-01-01">test2</a> and
+    <a href="{0}/convert/time.html?n=-2&amp;units=years%20since%200000-01-01">test3</a>).
+  <br>With that in mind, ERDDAP should work for dates far in the past and future.
+  <br>&nbsp;
+
+<li><a name="UTC">UTC</a> - As much as is practical, ERDDAP, like Unix time and UDUNITS-2, uses the 
+  <br><a rel="help" href="http://en.wikipedia.org/wiki/Coordinated_Universal_Time">Coordinated Universal 
+    Time (UTC)</a> 
+    time system. UTC is the modern version of the GMT 
+  <br>time system.  UTC uses occasional leap seconds to stay close to the International Atomic
+  <br>Time (TAI). GPS devices use GPS time (which doesn''t use leap seconds) internally,
+  <br>but display UTC time to users. (See 
+    <a rel="help" href="http://tycho.usno.navy.mil/systime.html">http://tycho.usno.navy.mil/systime.html</a>
+    or other 
+  <br>discussions of Systems of Time.) Strictly speaking, UTC can''t be used in some
+  <br>situations for far future times (e.g., in models), since the occurrence of leap
+  <br>seconds can''t be predicted. 
+  <br>&nbsp;
+
+<li><a name="leapSeconds">Leap Seconds</a> - Like Unix time and UDUNITS-2, ERDDAP''s 
+  <br>"seconds since 1970-00-00T00:00:00Z" is a numeric encoding (which doesn''t use leap
+  <br>seconds) of UTC time (which does use leap seconds). When converting string times 
+  <br>to/from numeric times, ERDDAP, like Unix time and UDUNITS-2, ignores leap seconds. 
+  <br>Yet, ERDDAP, Unix time, and UDUNITS-2 numeric times all say they use UTC.  
+  <br>Here''s why and how:
+  <br>Since computer clocks are not good time keepers, they drift from UTC time and have
+  <br>to be reset to UTC time occasionally. Unix time treats leap seconds as part of the time
+  <br>deviation caused by the clock''s drift. This allows software to do time encoding and
+  <br>time calculations and ignore leap seconds.  With ERDDAP, Unix time, and UDUNITS-2
+  <br>numeric time values, all minutes are treated as having 60 seconds, even though UTC
+  <br>minutes with leap seconds have 61 seconds.  Note that database programs like
+    <a rel="bookmark" href="http://www.sql4oracle.com/?p=504">Oracle</a>,
+  <br>
+    <a rel="bookmark" href="http://dev.mysql.com/doc/refman/5.0/en/time-zone-leap-seconds.html">MySQL</a>
+    (and so probably MariaDB also),
+    <a rel="bookmark" href="http://postgresql-8.4.sourcearchive.com/documentation/8.4.0/pgtz_8c-source.html">PostgreSQL</a>,
+    and languages like 
+     <a rel="bookmark" href="http://bytes.com/topic/c-sharp/answers/231842-datetime-accounts-leap-seconds">C#</a>
+     also 
+  <br>basically try to ignore leap seconds.
+  <br>This won''t cause problems when converting UTC String date+time+timeZone values into
+  <br>ERDDAP numeric values if the times are then reconverted back to date+time+Zulu
+  <br>Strings in a way that also ignores leap seconds. The two errors will cancel each
+  <br>other out. One unfortunate consequence is that ERDDAP, Unix time, and UDUNITS-2
+  <br>numeric times have no mechanism to encode actual leap seconds as numbers
+  <br>unambiguously. For example, both the leap second
+    <a href="{0}/convert/time.html?isoTime=2008-12-31T23%3A59%3A60Z&amp;units=seconds+since+1970-01-01T00%3A00%3A00Z">2008-12-31T23:59:60Z</a> and the 
+  <br>next second
+    <a href="{0}/convert/time.html?isoTime=2009-01-01T00%3A00%3A00Z&amp;units=seconds+since+1970-01-01T00%3A00%3A00Z">2009-01-01T00:00:00Z</a> are encoded as 
+  <br>1230768000 seconds since 1970-01-01T00:00:00Z.  This is a flaw, but only affects
+  <br>actual leap seconds. Similarly, if you need to calculate the exact number of UTC
+  <br>seconds between two points in time, you can use ERDDAP to handle the time data,
+  <br>but subtracting one numeric time value from the other is just the first step in
+  <br>the calculation.  You need manually adjust that value by consulting a
+  <br><a rel="help" href="http://en.wikipedia.org/wiki/Leap_seconds">table of leap seconds</a>.
+  <br>&nbsp;
+
+<li><a name="lowResolutionTimes">Low Resolution Times and Time Spans (Time Ranges)</a> - 
+  If time data was recorded to
+  <br>a lower resolution (e.g., a minute, hour, day, month, or year) or represents a time
+  <br>span (e.g., a specific hour, day, 7-day period, month, year), ERDDAP requires that
+  <br>a time point (we call it the "nominal time") be used to represent that time or time
+  <br>span. Using a nominal time allows time points, low resolution time points, and time
+  <br>spans to be interoperable. (Imagine visualizing different datasets in a program like 
+  <br>Google Earth and using a time slider to control which subset of data is visible.) 
+  <br>The most commonly selected time points for the nominal time are the start time and 
+  <br>the centered time (less common, but has advantages for use with time sliders). We 
+  <br>recommend that you use the long_name metadata to identify this (e.g., "Start Time" or 
+  <br>"Centered Time"). For low resolution times, consider e.g., "Date", "Month", and "Year".
+  <br>And/or, put the details in the variable''s "comment" metadata.
+  <br>&nbsp;
+  <br>Or, to more accurately represent time spans, you can set up a dataset to have both 
+  <br>a beginTime and an endTime variable (and even a centeredTime, if you want
+  <br>to cover all possibilities).
+  <br>&nbsp;
+  
+<li><a name="imperfect">These are imperfect answers.</a> The current setup deals reasonably 
+  well with most 
+  <br>situations and matches most people''s expectations about how time works (even if they 
+  <br>haven''t thought about it in detail), but not all. But that''s the way ERDDAP works 
+  <br>currently.
+  <br>&nbsp;
+
+</ul>
+]]></convertTimeNotes>
+
+
+<!-- Don't change the examples (from defaultN, ...). -->
+<convertTimeService><![CDATA[
+<p>&nbsp;<hr>
+<h2><a name="computerProgram">Want</a> To Do Time Conversions from within a Computer Program?</h2>
+If you change the extension of this web page''s URL from .html to .txt,
+  ERDDAP will respond with just the text result.
+<ul>
+<li>An example which converts a numeric time to a string time is
+  <br><a 
+  href="{0}/convert/time.txt?n=473472000&amp;units=seconds%20since%201970-01-01T00:00:00Z"
+       >{0}/convert/time.txt?n=473472000&amp;units=seconds%20since%201970-01-01T00:00:00Z</a>
+ <br>&nbsp;
+<li>An example which converts a string time to a numeric time is
+  <br><a
+href="{0}/convert/time.txt?isoTime=1985-01-02T00:00:00Z&amp;units=seconds%20since%201970-01-01T00:00:00Z"
+>{0}/convert/time.txt?isoTime=1985-01-02T00:00:00Z&amp;units=seconds%20since%201970-01-01T00:00:00Z</a>
+  <br>&nbsp;
+</ul>
+Note that the parameter values in the URL must be properly
+ <a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded</a>,
+ which is normally taken care of by a browser.
+<br>The "&amp;units=..." parameter is optional. The default value is "seconds since 1970-01-01T00:00:00Z".
+]]></convertTimeService>
+
+<!-- The example on the first line is EDV.TIME_UNITS. -->
+<convertTimeUnitsHelp><![CDATA[
+For example, "seconds since 1970-01-01T00:00:00Z".
+<p>The first word can be (upper or lower case):
+<br>&nbsp;&nbsp;ms, msec, msecs, millis, millisecond, milliseconds,
+<br>&nbsp;&nbsp;s, sec, secs, second, seconds,
+<br>&nbsp;&nbsp;m, min, mins, minute, minutes,
+<br>&nbsp;&nbsp;h, hr, hrs, hour, hours,
+<br>&nbsp;&nbsp;d, day, days,
+<br>&nbsp;&nbsp;week, weeks,
+<br>&nbsp;&nbsp;mon, mons, month, months,
+<br>&nbsp;&nbsp;yr, yrs, year, or years.
+<p>"since" is required.
+<p>The time can be any time in the format YYYY-MM-DDThh:mm:ssZ .
+<br>The T, hh, :mm, :ss, and Z parts are optional.
+<p>So another example is "hours since 0001-01-01".
+<p>Technically, ERDDAP does NOT follow the CF standard when converting "years since"
+<br>and "months since" time values to "seconds since". The CF standard defines a
+<br>year as a fixed, single value: 3.15569259747e7 seconds. And CF defines a month
+<br>as year/12. Unfortunately, most/all datasets that we have seen that use 
+<br>"years since" or "months since" clearly intend the values to be calendar years
+<br>or calendar months. For example, "3 months since 1970-01-01" is usually intended
+<br>to mean 1970-04-01. So, ERDDAP interprets "years since" and "months since" as
+<br>calendar years and months, and does not strictly follow the CF standard.
+]]></convertTimeUnitsHelp>
+
+<convertUnits>Convert UDUNITS to/from Unified Code for Units of Measure (UCUM)</convertUnits>
+
+<convertUnitsComparison><![CDATA[
+<p>&nbsp;<hr>
+<h2><a name="syntaxComparison">Comparison</a> of UDUNITS and UCUM Syntax</h2>
+<table class="erd commonBGColor" cellspacing="2">
+<tr>
+  <th width="8%">Issue</th>
+  <th width="23%"><a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2lib.html#Syntax">UDUNITS</a></th>
+  <th width="23%"><a rel="bookmark" href="http://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM</a></th>
+  <th width="23%">UDUNITS &rarr; UCUM Converter</th>
+  <th width="23%">UCUM &rarr; UDUNITS Converter</th>
+</tr>
+<tr>
+  <td>Character Set</td>
+  <td>UDUNITS-1 uses plain ASCII. UDUNITS-2 uses ASCII, ISO 8859-1 (Latin-1), and the UTF-8 encoding of ISO 10646 (Unicode).</td>
+  <td>Plain ASCII</td>
+  <td>All UDUNITS units with just ASCII and ISO 8859-1 characters are converted.
+    The few units with other characters are not converted</td>
+  <td>Most UCUM units are converted.</td>
+</tr>
+<tr>
+  <td>case-sensitive</td>
+  <td>Yes.  When different capitalizations are allowed, the variants
+    are explicitly defined.</td>
+  <td>Yes.  The converters work with the case-sensitive ("c/s") form of UCUM units.</td>
+  <td>(No changes needed)</td>
+  <td>(No changes needed)</td>
+</tr>
+<tr>
+  <td>Plurals and Aliases</td>
+  <td>Supports plurals and aliases for the same unit.</td>
+  <td>Uses just one abbreviation/acronym for each unit.</td>
+  <td>The various plurals and aliases are converted to the corresponding UCUM unit.
+    Unrecognized UDUNITS names are left unchanged.</td>
+  <td>This methods tries to return common, short, single (not plural) UDUNITS aliases.
+    Unrecognized UCUM names are left unchanged.</td>
+</tr>
+
+<tr>
+  <td>metric prefixes<br>(e.g., "kilo" and ''k'' mean "times 1000";
+    "&micro;" and ''u'' means "times 10^-6")</td>
+  <td>Supported (see UDUNITS-2 udunits2-prefixes.xml)</td>
+  <td>Supported (see the c/s column of the
+    <a rel="bookmark" href="http://unitsofmeasure.org/ucum.html#prefixes">prefix symbol table</a>)</td>
+  <td>The prefix is converted to its acronym (e.g., ''u'')</td>
+  <td>The prefix is left as its acronym (e.g., ''u'')</td>
+</tr>
+<tr>
+  <td>multiplication operators</td>
+  <td>space (most common), ''-'' (a typo in the spec???), ''.'', ''*'', ''&middot;'' (in UDUNITS-2)</td>
+  <td>''.''</td>
+  <td>space, ''*'', and ''&middot;'', are converted to ''.''</td>
+  <td>''.'' is converted to a space</td>
+</tr>
+<tr>
+  <td>division operators</td>
+  <td>''/'', "per", "PER"</td>
+  <td>''/''</td>
+  <td>"per" and "PER" are converted to ''/''</td>
+  <td>(No changes needed)</td>
+</tr>
+<tr>
+  <td>exponent operators</td>
+  <td>"**", ''^'', nothing (e.g., m-2 = m^-2)</td>
+  <td>''*'' (really!), ''^'', nothing (e.g., m-2 = m^-2)</td>
+  <td>"**" is converted to ''^''.</td>
+  <td>''*'' is converted to ''^''.</td>
+</tr>
+<tr>
+  <td>operator precedence</td>
+  <td>Exponents are highest. Then multiplication and division are evaluated left to right.</td>
+  <td>Exponents are highest. Then multiplication and division are evaluated left to right.</td>
+  <td>(No changes needed)</td>
+  <td>(No changes needed)</td>
+</tr>
+<tr>
+  <td>numbers</td>
+  <td>integer and floating point (e.g., 1.23456e-5)</td>
+  <td>integer only</td>
+  <td>floating point numbers are converted to rational numbers
+    (e.g., 12.34 becomes 1234.10^-2 (remember that ''.'' means "times")</td>
+  <td>(No changes needed)</td>
+</tr>
+<tr>
+  <td>_ (underscore)</td>
+  <td>Used within individual unit names.</td>
+  <td>Used to indicate a subscript annotation within a unit name (e.g., "mo_g" for a Gregorian month)</td>
+  <td>(No changes needed)</td>
+  <td>(No changes needed)</td>
+</tr>
+<tr>
+  <td>'' (apostrophe)</td>
+  <td>Not used.</td>
+  <td>Used to separate words in a multi-word name (e.g., "[todd''U]" for a Todd unit)</td>
+  <td>(No changes needed)</td>
+  <td>(No changes needed)</td>
+</tr>
+<tr>
+  <td>( )</td>
+  <td>Used to group items.</td>
+  <td>Used to group items.</td>
+  <td>(No changes needed)</td>
+  <td>(No changes needed)</td>
+</tr>
+<tr>
+  <td>[ ]</td>
+  <td>Not used.</td>
+  <td>Used to enclose groups of symbols that should be treated as a group
+    (e.g., "[in_i]" for an international inch)</td>
+  <td>(No changes needed)</td>
+  <td>(No changes needed)</td>
+</tr>
+<tr>
+  <td>{ }</td>
+  <td>Not used.</td>
+  <td>Used for annotations (e.g., "%{vol}" for percent by volume).</td>
+  <td>(No changed needed)</td>
+  <td>If the comment is defined in the UCUM standard, it will be converted.
+    If it isn''t defined, it will be left intact.</td>
+</tr>
+</table>
+<p>&nbsp;<hr>
+<h2><a name="unitsComparison">Comparison</a> of UDUNITS and UCUM Units</h2>
+For most units, there is a one-to-one correspondence between units in UDUNITS and UCUM.
+<br>But there are a few difficulties and special cases:
+<br>&nbsp;
+<table class="erd commonBGColor" cellspacing="2">
+<tr>
+  <th width="8%">Units</th>
+  <th width="23%"><a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2lib.html#Syntax">UDUNITS</a></th>
+  <th width="23%"><a rel="bookmark" href="http://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM</a></th>
+  <th width="23%">UDUNITS &rarr; UCUM Converter</th>
+  <th width="23%">UCUM &rarr; UDUNITS Converter</th>
+</tr>
+<tr>
+  <td>count</td>
+  <td>"count" is a base unit.</td>
+  <td>No exact equivalent, since it is a dimensionless non-unit.</td>
+  <td>"count" is converted to "{count}" (a dimensionless annotation).</td>
+  <td>"{count}" is converted to "count".</td>
+</tr>
+<tr>
+  <td>different types of degrees</td>
+  <td>UDUNITS treats degF, degC, degK, degree_north, degree_east, degree_west,
+    degree_true, and their aliases as separate units.
+    Some standards (e.g.,
+    <a rel="help" href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a> and
+    <a rel="help" href="http://cf-pcmdi.llnl.gov/">CF</a>), use
+    degree_east and degree_north to identify the longitude and latitude variables
+    in a data file.</td>
+  <td>UCUM recognizes separate temperature degree units (e.g, [degF], Cel, K),
+    but not separate direction degree units. They are all represented by "deg".</td>
+  <td>To distinguish between the various direction degree units,
+    the converter adds a comment to direction degree units
+    (e.g., "degree_north" becomes "deg{north}").</td>
+  <td>If you append a comment( {east}, {north}, {west}, or {true}),
+    the converter will convert to a direction unit
+    (e.g., "deg{north}" becomes "degree_north");
+    otherwise, there is no way for the converter to generate direction degree units,
+    so "deg" is converted to "degree".</td>
+</tr>
+<tr>
+  <td>specific times</td>
+  <td>UDUNITS has a system to specify specific times as
+    <br>"<i>units</i> since <i>ISO8601Time</i>",
+    <br>e.g., "seconds since 1970-01-01T00:00:00Z".
+  <td>UCUM doesn''t seem to have a system to specify specific times.
+  <td>The converter converts, e.g.,
+    <br>"seconds since 1970-01-01T00:00:00Z"
+    <br>to "s{since 1970-01-01T00:00:00Z}".
+  <td>The converter converts e.g.,
+    <br>"s{since 1970-01-01T00:00:00Z}" to
+    <br>"seconds since 1970-01-01T00:00:00Z".</td>
+</tr>
+<tr>
+  <td>g</td>
+  <td>In UDUNITS-1, g means free-fall (although it is often mistakenly used to mean "gram").
+    <br>In UDUNITS-2, g means gram.</td>
+  <td>g means gram.  [g] means free-fall.</td>
+  <td>Nothing is done.  g in UDUNITS is assumed to mean gram.</td>
+  <td>g is converted to "gram".</td>
+</tr>
+<tr>
+  <td>F</td>
+  <td>F means Fahrenheit.</td>
+  <td>F means farad.</td>
+  <td>F is converted to [degF].</td>
+  <td>F is converted to "farad".</td>
+</tr>
+<tr>
+  <td>NTU (Nephelometric Turbidity Unit)</td>
+  <td>NTU is not defined.</td>
+  <td>NTU is not defined.</td>
+  <td>NTU is converted to {ntu} following the UCUM method for noting the name of
+    dimensionless (arbitrary) units.</td>
+  <td>{ntu} is converted to NTU.</td>
+</tr>
+<tr>
+  <td>PSU (Practical Salinity Units)</td>
+  <td>PSU is not defined.</td>
+  <td>PSU is not defined.</td>
+  <td>PSU and psu are converted to {psu} following the UCUM method for noting the name of
+    dimensionless (arbitrary) units.</td>
+  <td>{psu} is converted to PSU.</td>
+</tr>
+</table>
+]]></convertUnitsComparison>
+
+<convertUnitsFilter><![CDATA[
+<p>&nbsp;<hr>
+<h2><a name="unitsFilter">Requesting</a> UDUNITS or UCUM Units from Tabledap</h2>
+When you request data or a graph from a
+<a href="{0}/tabledap/index.html">tabledap dataset</a>,
+you can request that the units
+<br>be described via UDUNITS by appending <tt>&amp;units("UDUNITS")</tt> at the end of the request.
+<br>Or, you can request that the units be described via UCUM by appending <tt>&amp;units("UCUM")</tt>.
+<br>(For details, see the
+<a rel="help" href="{0}/tabledap/documentation.html#functions">tabledap documentation</a>.)
+<br>On this ERDDAP, the default for most/all datasets is {1}.
+]]></convertUnitsFilter>
+
+<convertUnitsNotes><![CDATA[
+<p><b>Notes:</b>
+<ul>
+<li>Always check the results from the converters.
+<li>The UDUNITS to UCUM converter can convert all UDUNITS-1 units Strings and most of UDUNITS-2.
+<li>The UCUM to UDUNITS converter can convert almost all case-sensitive UCUM units Strings.
+<li>If the UDUNITS (or UCUM) units string isn''t valid, the converter will do its best and won''t generate an
+  <br>error message. Unrecognized UDUNITS (or UCUM) names will be passed through unchanged.
+<li>If you think that a converter did a conversion incorrectly,
+    first make sure that the input string is valid.
+  <br>If you think the input string is valid,
+    please email the details to <tt>bob dot simons at noaa dot gov</tt> .
+<li>See the detailed comparison of UDUNITS and UCUM <a rel="help" href="#syntaxComparison">syntax</a>
+    and <a rel="help" href="#unitsComparison">units</a> below.
+<li>DISCLAIMER OF LIABILITY - No person or organization associated with this web site
+  <br>makes any warranty, express or implied, including warranties of merchantability
+  <br>and fitness for a particular purpose, or assumes any legal liability for the accuracy,
+  <br>completeness, or usefulness, of any information at this web site.
+</ul>
+]]></convertUnitsNotes>
+
+<convertUnitsIntro><![CDATA[
+Two common standards for writing units of measure are:
+<ul>
+<li><a rel="help" href="http://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>
+  - from
+  <a rel="bookmark" href="http://www.unidata.ucar.edu/">Unidata</a>,
+  which is used in
+  <a rel="help" href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a>,
+  <a rel="help" href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/">CF</a>, and
+  <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF</a> 
+  data files. For example,
+  <br>UDUNITS has many options for degrees Celsius, including "degree_C" and "degC".
+  <br>&nbsp;
+<li><a rel="help" href="http://unitsofmeasure.org/ucum.html">UCUM</a>
+  - the Unified Code for Units of Measure.
+  <a rel="bookmark" href="http://www.opengeospatial.org/">OGC</a>
+  services such as
+  <a rel="help" href="http://www.opengeospatial.org/standards/sos">SOS</a>,
+  <a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS</a>, and
+  <a rel="help" href="http://www.opengeospatial.org/standards/wms">WMS</a>
+  <br>often refer to UCUM as UOM (Units Of Measure). For example, UCUM has just one
+  <br>case-sensitive option for degrees Celsius: "Cel".
+</ul>
+]]></convertUnitsIntro>
+
+<!-- Don't change the examples. -->
+<convertUnitsService><![CDATA[
+<p>&nbsp;<hr>
+<h2><a name="computerProgram">Want</a> To Do Conversions from within a Computer Program?</h2>
+If you change the extension of this web page''s URL from .html to .txt,
+ <br>and add the query <tt>UDUNITS=<i>udunitsString</i></tt> or <tt>UCUM=<i>ucumString</i></tt>,
+ <br>ERDDAP will respond with just the text result.
+<ul>
+<li>An example which converts UDUNITS to UCUM is
+  <br><a href="{0}/convert/units.txt?UDUNITS=degree_C%20meter-1"
+  >{0}/convert/units.txt?UDUNITS=degree_C%20meter-1</a>
+  <br>&nbsp;
+<li>An example which converts UCUM to UDUNITS is
+  <br><a href="{0}/convert/units.txt?UCUM=Cel.m-1"
+  >{0}/convert/units.txt?UCUM=Cel.m-1</a>
+</ul>
+Note that the parameter value must be properly
+<a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded</a>,
+which is normally taken care of by a browser.
+]]></convertUnitsService>
+
+
+<daf>Data Access Form</daf>
+
+<dafGridBypass><![CDATA[
+This web page just simplifies the creation of griddap URLs.
+<br><b>If you want, you can create these URLs by hand or have a computer program do it.
+<br>Then you don't have to use this form to get data. See the 'Bypass this form' link below.</b>
+]]></dafGridBypass>
+
+<dafGridHtml><![CDATA[
+This Data Access Form helps you download a subset of the data from a
+<br>dataset with multi-dimensional <b>gridded data</b> via the OPeNDAP protocol.
+<br>In gridded datasets, all grid variables (the multi-dimensional variables)
+<br>share the same dimension variables.
+<br>Each dimension variable is a one dimensional array of values.
+]]></dafGridHtml>
+
+<dafTableBypass><![CDATA[
+This web page just simplifies the creation of tabledap URLs.
+<br><b>If you want, you can create these URLs by hand or have a computer program do it.
+<br>Then you don't have to use this form to get data. See the 'Bypass this form' link below.</b>
+]]></dafTableBypass>
+
+<dafTableHtml><![CDATA[
+This Data Access Form helps you download a subset of the data from a dataset with
+<br><b>tabular data</b> via the OPeNDAP protocol.
+<br>In tabular datasets, the dataset is represented as a table with columns and rows.
+<br>Each column (a variable) has one type of data (e.g., Sea Surface Temperature).
+<br>Each row represents a different sample of the data (e.g., from a different
+<br>time or location).
+]]></dafTableHtml>
+
+<dasTitle>The Dataset Attribute Structure (.das) for this Dataset</dasTitle>
+
+<!-- The message to be displayed if the data can't be downloaded (e.g., SeaWiFS <=14 days old). -->
+<dataAccessNotAllowed>[Sorry. That data can't be downloaded.]</dataAccessNotAllowed>
+
+
+<disabled>The "{0}" system has been disabled on this ERDDAP.</disabled>
+
+<!-- This is the tooltip on EDDTable Data Access Form and Make A Graph
+     for the select widget that pushes a distinct value into Constraint #1.
+     [3rd line end was: other than the first one (""), ]
+-->
+<distinctValuesHtml><![CDATA[Optional:
+<br>Some variables have a limited number of values.
+<br>If you select a value below,
+<br>that value will be used for Constraint #1.
+<p>Or, consider using the Subset web page for this dataset
+<br>(see the link above) which makes it easy to select subsets
+<br>of this dataset by selecting combinations of distinct values.
+]]></distinctValuesHtml>
+
+<!-- This uses &ssUse; and &erddpUrl; -->
+<doWithGraphs><![CDATA[
+<br>&nbsp;
+<hr>
+<h2><a name="uses">Things</a> You Can Do With Your Graphs</h2>
+Well, you can do anything you want with your graphs, of course.
+But some things you might not have considered are:
+<ul>
+<li>Web page authors can
+  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/images/embed.html">embed a graph of the latest data in a web page</a>
+  using HTML &lt;img&gt; tags.
+&ssUse;
+<br>&nbsp;
+</ul>
+]]></doWithGraphs>
+
+<!-- Dataset Table (e.g., a list of datasets) -->
+<dtAccessible><![CDATA[<b>Is this dataset accessible to you?</b>
+  <br>"public" = Yes.  It is accessible to anyone (logged in or not logged in).]]></dtAccessible>
+<dtAccessibleYes><![CDATA[<br>"yes" = Yes. You are logged in and have the appropriate role.]]></dtAccessibleYes>
+<dtAccessibleNo><![CDATA[<br>"no" = No. You are logged in but don't have the appropriate role.]]></dtAccessibleNo>
+<dtAccessibleLogIn><![CDATA[<br>"log in" = Currently, no. It may become accessible if you log in.]]></dtAccessibleLogIn>
+<dtLogIn>Click to log in and try to make this dataset accessible.</dtLogIn>
+<dtDAF1>Click to see a</dtDAF1>
+<dtDAF2>Data Access Form for this dataset so that you can request data.</dtDAF2>
+<dtMAG>Click to see Make A Graph for this dataset.</dtMAG>
+<dtSOS>Click to find out about getting data and/or maps via this dataset's Sensor Observation Service.</dtSOS>
+<dtSubset>Click to select and view subsets of this dataset via faceted search.</dtSubset>
+<dtWCS>Click to find out about getting data and/or maps via this dataset's Web Coverage Service.</dtWCS>
+<dtWMS>Click to find out about making maps of this data via this dataset's Web Map Service.</dtWMS>
+
+<!-- The EDD messages are displayed on the tabledap and griddap Data Access Forms. -->
+<EDDClickOnSubmitHtml><![CDATA[Click on <tt>Submit</tt>.]]></EDDClickOnSubmitHtml>
+<EDDDatasetID>Dataset ID</EDDDatasetID>
+<EDDFgdc>FGDC</EDDFgdc>
+<EDDFgdcMetadata>FGDC Metadata</EDDFgdcMetadata>
+<EDDIso19115>ISO 19115</EDDIso19115>
+<EDDIso19115Metadata>ISO 19115-2/19139 Metadata</EDDIso19115Metadata>
+<EDDMetadata>Metadata</EDDMetadata>
+<EDDBackground>Background</EDDBackground>
+<EDDInstitution>Institution</EDDInstitution>
+<EDDInformation>Information</EDDInformation>
+<EDDSummary>Summary</EDDSummary>
+<EDDDatasetTitle>Dataset Title</EDDDatasetTitle>
+<EDDDownloadData>Download data</EDDDownloadData>
+<EDDMakeAGraph>Make a graph</EDDMakeAGraph>
+<EDDMakeAMap>Make a map</EDDMakeAMap>
+<EDDMinimum>Minimum</EDDMinimum>
+<EDDMaximum>Maximum</EDDMaximum>
+<EDDFileType>File type:</EDDFileType>
+<EDDFileTypeInformation>File Type information</EDDFileTypeInformation>
+<EDDSelectFileType>Select the type of file you want to download.</EDDSelectFileType>
+<EDDConstraint>Constraint</EDDConstraint>
+
+<EDDChangedWasnt>Previously, this dataset was (temporarily?) not available.  Perhaps ERDDAP was just restarted.</EDDChangedWasnt>
+<EDDChangedDifferentNVar>The number of variables changed:
+  old={0},
+  new={1}.
+</EDDChangedDifferentNVar>
+<EDDChanged2Different>The {0} for dataVariable {1} changed:
+  old={2},
+  new={3}.
+</EDDChanged2Different>
+<EDDChanged1Different>The {0} for dataVariable {1} changed:
+{2}
+</EDDChanged1Different>
+
+<EDDChangedCGADifferent>A combinedGlobalAttribute changed:
+{0}
+</EDDChangedCGADifferent>
+
+<EDDChangedAxesDifferentNVar>The number of axis variables changed:
+  old={0},
+  new={1}.
+</EDDChangedAxesDifferentNVar>
+<EDDChangedAxes2Different>The {0} for axisVariable {1} changed:
+  old={2},
+  new={3}.
+</EDDChangedAxes2Different>
+<EDDChangedAxes1Different>The {0} for axisVariable {1} changed:
+{2}
+</EDDChangedAxes1Different>
+<EDDChangedNoValue>(no value)</EDDChangedNoValue>
+<EDDChangedTableToGrid>The new version is an EDDGrid.  The old version isn't!</EDDChangedTableToGrid>
+
+
+<EDDSimilarDifferentNVar>EDD.similar: The other dataset has a different number of variables</EDDSimilarDifferentNVar>
+<EDDSimilarDifferent>EDD.similar: The other dataset has a different {0} for dataVariable {1} {2}</EDDSimilarDifferent>
+
+
+<!-- The EDDGrid messages are displayed on the griddap Data Access Form. -->
+<EDDGridDapDescription>Griddap lets you use the OPeNDAP hyperslab protocol to request data subsets, graphs, and maps from gridded datasets (for example, satellite data and climate model data).</EDDGridDapDescription>
+
+<EDDGridDapLongDescription><![CDATA[
+<b>griddap</b> lets you request a data subset, graph, or map from a gridded dataset (for example, sea surface
+<br>temperature data from a satellite), via a specially formed URL. griddap uses the
+<br><a rel="bookmark" href="http://www.opendap.org">OPeNDAP</a>
+    <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)</a> and its
+    <a rel="help"  href="http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions">projection constraints</a>.
+<p><b>The URL specifies what you want:</b> the dataset, a description of the graph or the subset of the data, and the file
+<br>type for the response.
+<ul>
+<li>(easy) You can get data by using the dataset's <b>Data Access Form</b>. It makes the URL for you.
+<li>(easy) You can make a graph or map by using the dataset's <b>Make A Graph</b> form. It makes the URL for you.
+<li>(not hard) You can bypass the forms and get the data or make a graph or map by generating the URL by
+  <br>hand or with a computer program or script.
+</ul>
+]]></EDDGridDapLongDescription>
+
+
+<EDDGridDownloadDataHtml><![CDATA[
+<b>To download gridded data:</b> <ol>
+<li> Select (check) one or more grid variables that you want to download.
+  <br>(Or, to download just dimension data, select one or more dimension variables.)
+<li> Specify the subset of data that you want by specifying the dimension subsets (<tt>Start:Stride:Stop</tt>).
+<li> For <tt>File type</tt>, choose one of the non-image file types (anything but .geotif, .kml, .pdf, or .png).
+]]></EDDGridDownloadDataHtml>
+
+<EDDGridDimension>Dimensions</EDDGridDimension>
+<EDDGridDimensionRanges>Dimensions</EDDGridDimensionRanges>
+<EDDGridFirst>First</EDDGridFirst>
+<EDDGridLast>Last</EDDGridLast>
+<EDDGridStart>Start</EDDGridStart>
+<EDDGridStop>Stop</EDDGridStop>
+
+<EDDGridStartStopHelp><![CDATA[
+<tt>Start:Stop</tt> specify the subset of data that will be plotted on the graph.
+]]></EDDGridStartStopHelp>
+
+<EDDGridStride>Stride</EDDGridStride>
+<EDDGridNValues>Size</EDDGridNValues>
+<EDDGridSpacing>Spacing</EDDGridSpacing>
+<EDDGridJustOneValue>just one value</EDDGridJustOneValue>
+<EDDGridEven>even</EDDGridEven>
+<EDDGridUneven>uneven</EDDGridUneven>
+
+<EDDGridDimensionHtml><![CDATA[A dimension is a one dimensional array of values.]]></EDDGridDimensionHtml>
+<EDDGridVarHasDimHtml><![CDATA[Each grid data variable has these dimensions (axes).]]></EDDGridVarHasDimHtml>
+<EDDGridSSSHtml><![CDATA[<tt>Start:Stride:Stop</tt> lets you specify a subset of a dimension.]]></EDDGridSSSHtml>
+<EDDGridStartHtml><![CDATA[<tt>Start</tt> is the first value of the subset.]]></EDDGridStartHtml>
+<EDDGridStopHtml><![CDATA[<tt>Stop</tt> is the last value of the subset.]]></EDDGridStopHtml>
+<EDDGridStrideHtml><![CDATA[<tt>Stride</tt> values are in index units (not the units of the dimension).
+  <br><tt>Stride</tt>: 1=get every value, 2=get every other value, 3=get every third value, ...]]></EDDGridStrideHtml>
+<EDDGridNValuesHtml><![CDATA[For your information: this is the total size (number of values) of this dimension.]]></EDDGridNValuesHtml>
+<EDDGridSpacingHtml><![CDATA[For your information: this is the average spacing between values of a dimension
+  <br>(in the units of the dimension)
+  <br>and an indication of whether the values are evenly spaced or not.]]></EDDGridSpacingHtml>
+<EDDGridDimensionFirstHtml><![CDATA[For your information: this is the first value of a dimension.]]></EDDGridDimensionFirstHtml>
+<EDDGridDimensionLastHtml><![CDATA[For your information: this is the last value of a dimension.]]></EDDGridDimensionLastHtml>
+
+<EDDGridDownloadTooltipHtml><![CDATA[Select the variables that you want to download:
+  <br>* To download just dimension data: Just select one or more dimensions (axes).
+  <br>* To download grid data: Select one or more of the grid variables.]]></EDDGridDownloadTooltipHtml>
+<EDDGridGridVariableHtml><![CDATA[<b>Grid Variables</b>
+  (which always also download all of the dimension variables)]]></EDDGridGridVariableHtml>
+
+
+<!-- The EDDTable messages are displayed on the tabledap Data Access Form and Make A Graph. -->
+<EDDTableConstraints>Constraints</EDDTableConstraints>
+
+<EDDTableDapDescription>Tabledap lets you use the OPeNDAP constraint/selection protocol to request data subsets, graphs, and maps from tabular datasets (for example, buoy data).</EDDTableDapDescription>
+
+<EDDTableDapLongDescription><![CDATA[
+<b>tabledap</b> lets you request a data subset, a graph, or a map from a tabular dataset (for example, buoy data),
+<br>via a specially formed URL. tabledap uses the 
+  <a rel="bookmark" href="http://www.opendap.org">OPeNDAP</a>
+  <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)</a> and its
+  <a rel="help" href="http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Constraint_Expressions">selection constraints</a>.
+<p><b>The URL specifies what you want:</b> the dataset, a description of the graph or the subset of the data, and the file
+<br>type for the response.
+<ul>
+<li>(easy) You can get data by using the dataset's <b>Data Access Form</b> or <b>Subset</b> form.
+  <br>They make the URL for you.
+<li>(easy) You can make a graph or map by using the dataset's <b>Make A Graph</b> form.  It makes the URL for you.
+<li>(not hard) You can bypass the forms and get the data or make a graph or map by generating the URL by
+  <br>hand or with a computer program or script.
+</ul>
+]]></EDDTableDapLongDescription>
+
+<EDDTableTabularDatasetHtml><![CDATA[
+A tabular dataset can be thought of as a large table with rows and columns.
+<br>Variables are the columns in the table.
+<br>Select (check) the variables that you want included in the results table.
+<br>The constraints determine which rows of data from the
+<br>original table are included in the results table.
+]]></EDDTableTabularDatasetHtml>
+
+<EDDTableCheckAll>Check All</EDDTableCheckAll>
+<EDDTableCheckAllTooltip>Click here to select all variables.</EDDTableCheckAllTooltip>
+<EDDTableUncheckAll>Uncheck All</EDDTableUncheckAll>
+<EDDTableUncheckAllTooltip>Click here to de-select all variables.</EDDTableUncheckAllTooltip>
+
+<EDDTableVariable>Variable</EDDTableVariable>
+<EDDTableMinimumTooltip>For your information: these are the minimum values of the variables.</EDDTableMinimumTooltip>
+<EDDTableMaximumTooltip>For your information: these are the maximum values of the variables.</EDDTableMaximumTooltip>
+<EDDTableCheckTheVariables>Check the variables you want to download.</EDDTableCheckTheVariables>
+<EDDTableSelectAnOperator>Select an operator for this constraint.</EDDTableSelectAnOperator>
+
+
+<EDDTableDownloadDataHtml><![CDATA[
+<b>To download tabular data:</b> <ol>
+<li>Select (check) the variables you want to download.
+<li>Specify constraints for any of the variables (not just the selected variables)
+<br>to get the subset of data that you want.
+<br>In most cases, you will at least specify longitude and latitude, or time constraints.
+<li>For <tt>File type</tt>, choose one of the non-image file types (anything but .kml, .pdf, or .png).
+]]></EDDTableDownloadDataHtml>
+
+<EDDTableOptConstraint1Html><![CDATA[Optional<br>Constraint #1]]></EDDTableOptConstraint1Html>
+<EDDTableOptConstraint2Html><![CDATA[Optional<br>Constraint #2]]></EDDTableOptConstraint2Html>
+<EDDTableOptConstraintVar>Optional: select a variable to be constrained.</EDDTableOptConstraintVar>
+
+<EDDTableNumericConstraintHtml><![CDATA[Optional: Enter a number to make a constraint for this variable.]]></EDDTableNumericConstraintHtml>
+
+<EDDTableStringConstraintHtml><![CDATA[Optional: Enter a value to make a constraint for this variable.<p>String constraint values MUST be in double quotes, e.g., "A String Value"<br>and internal special characters must be backslash encoded:<br>encode \ as \\, " as \", newline as \n, and tab as \t.]]></EDDTableStringConstraintHtml>
+
+<EDDTableTimeConstraintHtml><![CDATA[Optional: Enter an ISO-formatted time (e.g., 2008-07-04T12:30:00Z)<br>to make a constraint for this variable.]]></EDDTableTimeConstraintHtml>
+
+<EDDTableConstraintHtml><![CDATA[
+Constraints
+<ul><li>These optional constraints let you specify a subset
+  <br>of the data.
+<li>The constraints determine which rows of data from the
+  <br>original table are included in the results table.
+<li>The constraints are applied to each row of the original
+  <br>table.
+<li>If all the constraints evaluate to <tt>true</tt> for a given row,
+  <br>that row is included in the results table.
+<li>Constraints can be applied to any variable, not just the
+  <br>variables you download.
+</ul>
+]]></EDDTableConstraintHtml>
+
+<EDDTableSelectConstraint><![CDATA[
+This constraint variable has a limited number of values. They are listed here.
+<br>If you pick a value, it will be used for Constraint #1.
+<p>WARNING: If you pick a specific value for more than one variable, it is
+<br>possible that there will be no matching data.  Consider using <tt>Subset</tt>,
+<br>which makes it easy to find valid combinations.
+]]></EDDTableSelectConstraint>
+
+<!-- These messages are displayed when an error message is shown. -->
+<errorTitle>Error</errorTitle>
+<errorRequestUrl>Your request URL:</errorRequestUrl>
+<errorRequestQuery>Your request query:</errorRequestQuery>
+<errorTheError>The error:</errorTheError>
+<errorCopyFrom>Unable to copy from {0}.</errorCopyFrom>
+<errorFileNotFound>File not found: {0}.</errorFileNotFound>
+<errorFileNotFoundImage>File not found in cache. Recreate the image and try again.</errorFileNotFoundImage>
+<errorInternal>Internal error:</errorInternal>
+<!-- Don't include the invalid (malicious?) functionName in the error message. -->
+<errorJsonpFunctionName>That jsonp functionName isn't allowed. The first character must be an ISO 8859 letter or "_".  Each optional subsequent character must be an ISO 8859 letter, "_", a digit, or ".".</errorJsonpFunctionName>
+<errorMoreThan2GB>{1} is more than the {0} 2 GB limit.</errorMoreThan2GB>
+<errorNotFound>Error: {0} wasn''t found.</errorNotFound>
+<errorNotFoundIn>Error: {0} wasn''t found in {1}.</errorNotFoundIn>
+<errorOdvLLTGrid>For an ODV .txt file, the dataset MUST include longitude, latitude, and time axes.</errorOdvLLTGrid>
+<errorOdvLLTTable>Data requests for ODV .txt files must include longtitude, latitude, and time data.</errorOdvLLTTable>
+
+<fileHelp_asc>View OPeNDAP-style comma-separated ASCII text.</fileHelp_asc>
+<fileHelp_csv>Download a comma-separated ASCII text table (line 1: names; line 2: units; ISO 8601 times).</fileHelp_csv>
+<fileHelp_csvp>Download a .csv file with line 1: name (units). Times are ISO 8601 strings.</fileHelp_csvp>
+<fileHelp_das>View the data's metadata via an OPeNDAP Dataset Attribute Structure (DAS).</fileHelp_das>
+<fileHelp_dds>View the data's structure via an OPeNDAP Dataset Descriptor Structure (DDS).</fileHelp_dds>
+<fileHelp_dods>OPeNDAP clients use this to download the data in the DODS binary format.</fileHelp_dods>
+<fileHelpGrid_esriAscii>Download an ESRI ASCII file (for lat lon data only; lon must be all below or all above 180).</fileHelpGrid_esriAscii>
+<fileHelpTable_esriAscii>Download a .csv file for ESRI's ArcGIS 9.x and below (separate date and time columns).
+</fileHelpTable_esriAscii>
+<fileHelp_fgdc>View the data's FGDC .xml metadata.</fileHelp_fgdc>
+<fileHelp_geoJson>Download longitude,latitude,otherColumns data as a GeoJSON .json file.</fileHelp_geoJson>
+<fileHelp_graph>View a Make A Graph web page.</fileHelp_graph>
+<fileHelpGrid_help>View a web page with a description of griddap.</fileHelpGrid_help>
+<fileHelpTable_help>View a web page with a description of tabledap.</fileHelpTable_help>
+<fileHelp_html>View an OPeNDAP-style HTML Data Access Form.</fileHelp_html>
+<fileHelp_htmlTable>View a .html web page with the data in a table. Times are ISO 8601 strings.</fileHelp_htmlTable>
+<fileHelp_iso19115>View the data's ISO 19115-2/19139 .xml metadata.</fileHelp_iso19115>
+<fileHelp_json>View a table-like JSON file (missing value = 'null'; times are ISO 8601 strings).</fileHelp_json>
+<fileHelp_mat>Download a MATLAB binary file.</fileHelp_mat>
+<fileHelpGrid_nc>Download a NetCDF-3 binary file with COARDS/CF/ACDD metadata.</fileHelpGrid_nc>
+<fileHelpTable_nc>Download a flat, table-like, NetCDF-3 binary file with COARDS/CF/ACDD metadata.</fileHelpTable_nc>
+<fileHelp_ncHeader>View the header (the metadata) for the .nc file.</fileHelp_ncHeader>
+<fileHelp_ncCF>Download a NetCDF-3 CF Discrete Sampling Geometries file (Contiguous Ragged Array).</fileHelp_ncCF>
+<fileHelp_ncCFHeader>View the header (the metadata) for the .ncCF file.</fileHelp_ncCFHeader>
+<fileHelp_ncCFMA>Download a NetCDF-3 CF Discrete Sampling Geometries file (Multidimensional Array).</fileHelp_ncCFMA>
+<fileHelp_ncCFMAHeader>View the header (the metadata) for the .ncCFMA file.</fileHelp_ncCFMAHeader>
+<fileHelpGrid_odvTxt>Download time,latitude,longitude,otherVariables as an ODV Generic Spreadsheet File (.txt).</fileHelpGrid_odvTxt>
+<fileHelpTable_odvTxt>Download longitude,latitude,time,otherColumns as an ODV Generic Spreadsheet File (.txt).</fileHelpTable_odvTxt>
+<fileHelp_subset>View an HTML form which uses faceted search to simplify picking subsets of the data.</fileHelp_subset>
+<fileHelp_tsv>Download a tab-separated ASCII text table (line 1: names; line 2: units; ISO 8601 times).</fileHelp_tsv>
+<fileHelp_tsvp>Download a .tsv file with line 1: name (units). Times are ISO 8601 strings.</fileHelp_tsvp>
+<fileHelp_xhtml>View an XHTML (XML) file with the data in a table. Times are ISO 8601 strings.</fileHelp_xhtml>
+
+<fileHelp_geotif>View a GeoTIFF .tif image file (for lat lon data only; lon must be all below or all above 180).</fileHelp_geotif>
+<fileHelpGrid_kml>View a Google Earth .kml file (for lat, lon data only).</fileHelpGrid_kml>
+<fileHelpTable_kml>View a .kml file, suitable for Google Earth.</fileHelpTable_kml>
+<fileHelp_smallPdf>View a small .pdf image file with a graph or map.</fileHelp_smallPdf>
+<fileHelp_pdf>View a standard, medium-sized .pdf image file with a graph or map.</fileHelp_pdf>
+<fileHelp_largePdf>View a large .pdf image file with a graph or map.</fileHelp_largePdf>
+<fileHelp_smallPng>View a small .png image file with a graph or map.</fileHelp_smallPng>
+<fileHelp_png>View a standard, medium-sized .png image file with a graph or map.</fileHelp_png>
+<fileHelp_largePng>View a large .png image file with a graph or map.</fileHelp_largePng>
+<fileHelp_transparentPng>View a .png image file (just the data, without axes, landmask, or legend).</fileHelp_transparentPng>
+
+<functions>Server-side Functions</functions>
+
+<functionHtml><![CDATA[
+TableDAP supports some server-side functions that modify the data results table.
+<br>They are <b>optional</b>.  Other than 'distinct()', they are <b>rarely needed</b>.
+<p>Currently, each of the functions takes the results table as input and
+<br>returns the table with the same columns in the same order, but the
+<br>order of the rows, the number of rows, or data on the rows, is altered.
+<br>If you use more than one function, they will be applied in the order
+<br>that they appear in the request.
+]]></functionHtml>
+
+<functionDistinctCheck>Check this if you want to use the distinct() function.</functionDistinctCheck>
+
+<functionDistinctHtml><![CDATA[
+Checking 'distinct()' tells ERDDAP to sort the results table by all of the
+<br>variables selected above (with the top/first variable selected above
+<br>being the most important and other selected variables only being used
+<br>to break ties) and to remove all duplicate rows from the response table.
+<p>WARNING: if this is used without constraints, ERDDAP may have to read
+<br>all rows from the datasource, which can be VERY SLOW for some datasets.
+<br>So you should usually include constraints (e.g., time minimum and maximum).
+]]></functionDistinctHtml>
+
+
+<functionOrderByHtml><![CDATA[
+<p>The orderBy... functions let you specify how the results table will be sorted and which rows will be kept.
+<br>To use an orderBy... function, select a function at left, then select one or more variables at right.
+<br>To not use any orderBy... function, set all of the variables at right to "".
+<br>The orderBy... functions are:
+<ul>
+<li>orderBy lets you specify how the results table will be sorted and keeps all rows.
+<li>orderByMax lets you specify how the results table will be sorted and removes some rows.
+ <br>Within each group, only the row with the maximum value for the last orderByMax variable will be kept.
+ <br>For example, orderByMax("stationID, time") will sort by stationID, but only return the row with 
+ <br>the maximum time value for each stationID.
+<li>orderByMin is like orderByMax, but only keeps the row with the minimum value for the last orderByMin
+ <br>variable.
+<li>orderByMinMax is like orderByMin plus orderByMax.
+ <br>Within each group, only the row with the minimum value and the row with the maximum value for the 
+ <br>last orderByMinMax variable will be kept.
+ <br>For example, orderByMinMax("stationID, time") will return the row with the minimum time value and
+ <br>the row with the maximum time value for each stationID.
+</ul>
+]]></functionOrderByHtml>
+
+<functionOrderBySort>This variable is the {0} important sort variable.</functionOrderBySort>
+<functionOrderBySort1>most</functionOrderBySort1>
+<functionOrderBySort2>second most</functionOrderBySort2>
+<functionOrderBySort3>third most</functionOrderBySort3>
+<functionOrderBySort4>fourth most</functionOrderBySort4>
+<functionOrderBySortLeast>least</functionOrderBySortLeast>
+<functionOrderBySortRowMax>Only the row with the maximum value will be kept.</functionOrderBySortRowMax>
+
+<geoServicesDescription><![CDATA[
+In order to make this ERDDAP's data more accessible to ArcGIS users, this part of ERDDAP mimics part of
+<br><a rel="bookmark" href="http://www.esri.com/software/arcgis/arcgisserver">ArcGIS for Server</a>
+  by following parts of the
+  <a rel="help" href="http://www.esri.com/industries/landing-pages/geoservices/geoservices" 
+    >ESRI GeoServices REST Specification</a> 
+  (<a rel="copyright" 
+  href="http://www.openwebfoundation.org/announcements/introducingtheopenwebfoundationagreement">license</a>)
+  Version 1.0.
+<p><b>To connect your ArcGIS program to this server:</b>
+<p><b><a name="InArcMap">In ArcMap:</a></b>
+  <ol>
+  <li>In the <b>Catalog</b> tree, expand the <b>GIS Servers</b> node.
+  <li>Double-click <b>Add ArcGIS Server</b>.
+  <li>Choose <b>Use GIS services</b> and click <b>Next</b>.
+  <li>For the <b>Server URL</b>, enter <b>&erddapUrl;/rest/services</b>
+  <li>Click <b>Finish</b>. Your connection appears in the <b>GIS Servers</b> node in the Catalog tree.
+  </ol>
+<p><b><a name="InArcGISExplorer">In ArcGIS Explorer:</a></b>
+  <ol>
+  <li>In the <b>Home</b> tab, click on <b>Add Content</b> and then <b>GIS Services</b>
+  <li>Select <b>Server type: ArcGIS Server</b>
+  <li>For the <b>Server</b>, enter <b>&erddapUrl;/rest/services</b>
+  <li>Click <b>Next</b>.
+  <li>Double click on a datasetID.
+  </ol>
+]]></geoServicesDescription>
+
+
+<!-- Get Started appears on the right hand side of the home page.
+"Get Started with ERDDAP".
+For POST: remove <font> and </font> tags.
+-->
+<getStartedHtml><![CDATA[<a name="GetStarted"><font class="standoutColor">Start Using ERDDAP:<br>&nbsp;&nbsp;&nbsp;&nbsp;Search for Interesting Datasets</font></a>]]></getStartedHtml>
+
+<!-- This prevents naive requests for large amounts of data in an HtmlTable
+from crashing the user's browser.      
+This is used to override TableWriterHtmlTable.htmlTableMaxMB.
+If this limit is reached, the table is truncated and <someDataNotDisplayed> is displayed.
+50 here causes Firefox 13.0.1 on Windows XP to crash.
+25 here causes Google Chrome 19.0 on Windows XP to crash.
+IE on Windows XP is painfully slow.
+-->
+<htmlTableMaxMB>15</htmlTableMaxMB>
+<htmlTableMaxMessage>
+To avoid crashing your browser, some additional data was not displayed.&lt;br /&gt;
+You can avoid this by further constraining your request, so the response has less data.&lt;br /&gt;
+Or, download a file which can be viewed in a program which can handle large files (e.g., a .csv file in a text editor).&lt;br /&gt;</htmlTableMaxMessage>
+
+<!-- The ETOPO2v2g_MSB.raw, gshhs*, nationalBoundaries*, and stateBoundaries*
+files must be in SSR.getContextDirectory() + "WEB-INF/ref/".
+I got state and national boundaries from GMT:
+In general: pscoast -Df -N1 -M -Rwest/east/south/north >! file
+I used:     pscoast -Df -N1 -M -R-180/180/-90/90 >! nationalBoundariesf.asc
+where "f"ull can be changed to "h"igh, "i"ntermediate, "l"ow, "c"rude.
+where "N1" (national) can be changed to "N2" (state)
+The resulting files use the GMT_FORMAT.
+-->
+
+<imageDataCourtesyOf>Data courtesy of {0}</imageDataCourtesyOf>
+
+<!-- For each imageSize, there is a imageWidth and imageHeight (in pixels).
+Widths are in ratio 2:3:6, which allows display of 3, 2, or 1 per row in a graphics program.
+-->
+<imageWidths>240, 360, 720</imageWidths>
+<imageHeights>320, 440, 800</imageHeights>
+
+<!-- text for the right-hand side of index.html -->
+<indexViewAll>View a List of All {0} Datasets</indexViewAll>
+<indexSearchWith>Search for Datasets with {0}</indexSearchWith>
+<indexDevelopersSearch>Developers of computer programs and JavaScripted web pages 
+can search for datasets via</indexDevelopersSearch>
+<indexProtocol>Protocol</indexProtocol>
+<indexDescription>Description</indexDescription>
+<indexDatasets><![CDATA[{0}<br>datasets]]></indexDatasets>
+<indexDocumentation><![CDATA[{0}&nbsp;documentation]]></indexDocumentation>
+<indexRESTfulSearch>ERDDAP's RESTful search services</indexRESTfulSearch>
+<indexMetadata>Metadata</indexMetadata>
+<!-- {0} is link to just one of FGDC or ISO 19115 WAF -->
+<indexWAF1>ERDDAP has a Web Accessible Folder (WAF) with {0} .xml metadata files
+for all of the geospatial datasets.</indexWAF1>
+<!-- links to both FGDC and ISO 19115 WAFs -->
+<indexWAF2>ERDDAP has Web Accessible Folders (WAF) with {0} and {1} .xml metadata files
+for all of the geospatial datasets.</indexWAF2>
+<indexConverters>Converters</indexConverters>
+<indexDescribeConverters>In addition to serving data, ERDDAP has some handy converters:</indexDescribeConverters>
+<indexServices>RESTful Web Services</indexServices>
+<indexDescribeServices><![CDATA[
+You can bypass ERDDAP''s web pages and use ERDDAP''s RESTful web services 
+(for example, for searching for datasets, for downloading data, for making maps)
+directly from any computer program (for example, Matlab, R, or a program that you write)
+and even from web pages (via HTML image tags or JavaScript).  
+<a rel="help" href="{0}/rest.html">documentation</a>
+]]></indexDescribeServices>
+
+<infoAboutFrom>Information about {0}, from {1}</infoAboutFrom>
+<infoTableTitleHtml>The Dataset's Variables and Attributes</infoTableTitleHtml>
+<infoRequestForm>{0}/info requests must be in the form {0}/info/[datasetID]/index[fileType] .</infoRequestForm>
+
+<!-- The justGenerateAndView messages are used for the justGenerateAndView button
+on the Data Access Forms.
+The justGenerateAndViewHtml message can include &protocolName; .
+-->
+<justGenerateAndView>Just generate the URL:</justGenerateAndView>
+<justGenerateAndViewHtml><![CDATA[
+<b>Optional: Bypass This Form</b>
+<br>&protocolName; lets you request data by sending a specially formed URL to the server.
+<br>The URL identifies a dataset, the desired file type for the response,
+<br>and the subset of data that you want to receive.
+<br>This Data Access Form simplifies this task: when you click on the <tt>Submit</tt> button below,
+<br>the URL is generated and sent to the server.
+<br>If you click on <tt>Just generate the URL</tt>, you can see the URL that the form generates,
+<br>without sending the URL to the server.
+<p><b>If you learn how to form the URLs, you won't have to use this form to get data.
+<br>You can write a computer program or script that automatically generates URLs,
+<br>sends them to ERDDAP, and gets the data.</b>
+<br>For more information on forming the URLs, click on the <tt>Bypass this form</tt> link
+<br>to see the &protocolName; documentation.
+]]></justGenerateAndViewHtml>
+<justGenerateAndViewUrl>The URL generated by the specifications above.</justGenerateAndViewUrl>
+
+<justGenerateAndViewGraphUrlHtml><![CDATA[
+<b>Bypass This Form</b>
+<br>&protocolName; lets you request a graph or data by sending a specially formed
+<br>URL to the server.
+<br>The URL identifies a dataset, the desired file type for the response,
+<br>the subset of data that you want to view, and other graph specifications.
+<br>This form simplifies this task: when you click on <tt>Redraw the Graph</tt>,
+<br>the URL is generated and sent to the server.
+<br>The URL that you see here is the URL that the form generated to create the
+<br>image at right.
+<p><b>If you learn how to form the URLs, you won't have to use this form to get data.
+<br>You can write a computer program or script that automatically generates URLs,
+<br>sends them to ERDDAP, and gets the data or images.</b>
+<br>For more information on forming the URLs, click on the <tt>Bypass this form</tt> link
+<br>to see the &protocolName; documentation.
+]]></justGenerateAndViewGraphUrlHtml>
+
+<license>License</license>
+
+<!-- e.g., {0}=WMS or listAll -->
+<listOfDatasets>List of {0} Datasets</listOfDatasets>
+<listAll>All</listAll>
+
+<LogIn>Log In</LogIn>
+<login>log in</login>
+
+<loginAttemptBlocked>
+ERROR: Login attempts for {0} are being temporarily blocked after 3 failed attempts.
+Wait {1} minutes, then try again.
+</loginAttemptBlocked>
+
+<loginDescribeCustom><![CDATA[
+<p>This ERDDAP is configured to let you log in by entering your User Name and Password.
+]]></loginDescribeCustom>
+
+<loginDescribeOpenID><![CDATA[
+<p><a rel="help" href="http://openid.net/">OpenID</a> is an open standard that lets you
+log in with your password at one web site
+<br>and then log in without your password at many other web sites, including ERDDAP.
+]]></loginDescribeOpenID>
+
+<loginCanNot>This ERDDAP is not configured to let users log in.</loginCanNot>
+<loginWereNot>You weren't logged in.</loginWereNot>
+<loginPleaseLogIn>Please log in</loginPleaseLogIn>
+<loginUserName>User Name</loginUserName>
+<loginPassword>Password</loginPassword>
+<loginUserNameAndPassword>User Name and Password</loginUserNameAndPassword>
+<loginOpenID>Log in with your OpenID URL</loginOpenID>
+<loginOpenIDOr>Or log in to your existing (non-OpenID) account at</loginOpenIDOr>
+<loginOpenIDCreate>Or create an OpenID URL at</loginOpenIDCreate>
+<loginOpenIDFree>They are all free!</loginOpenIDFree>
+<loginOpenIDSame>Make sure that you logged in with the exact same OpenID URL that you gave to the ERDDAP administrator.</loginOpenIDSame>
+
+<loginAs>You are logged in as</loginAs>
+<loginFailed>ERROR: Login failed</loginFailed>
+<loginInvalid>Invalid User Name and/or Password.</loginInvalid>
+
+<loginNot>You are not logged in.</loginNot>
+
+<loginBack><![CDATA[
+<b>Don't use your browser's <tt>Back</tt> button. Use the "ERDDAP" link above,</b>
+<br>then use other links to go to ERDDAP pages you are interested in.
+]]></loginBack>
+
+<loginProblems><![CDATA[
+<p>&nbsp;<hr><p><b>Problems?</b>
+<p>If you have problems logging in:
+<ul>
+<li>Make sure that you log in with the exact same &info; that you gave to the ERDDAP administrator.  <br>Uppercase and lower case letters are different.  Capital 'oh' and 'zero' are different.
+  <br>&nbsp;
+<li>Your password must be 7 or more characters long.
+  <br>&nbsp;
+<li>Make sure your browser is set to allow
+  <a rel="help" href="http://en.wikipedia.org/wiki/HTTP_cookie">cookies</a>:
+  <ul>
+  <li>In Internet Explorer, use "Tools : Internet Options : Privacy"
+  <li>In Firefox, use "Options : Options : Privacy"
+  <li>In Opera, use "Settings : Quick Preferences"
+  <li>In Safari, use "Safari : Preferences : Security"
+  </ul>
+  If you are making ERDDAP requests from a computer program (other than a browser),
+  cookies are hard to work with. Sorry.
+  <br>&nbsp;
+<li>If you fail to log in three times, you are locked out. Wait 10 minutes and try again.
+  <br>&nbsp;
+<li>Contact the administrator of this ERDDAP: &adminContact;.
+</ul>
+]]></loginProblems>
+
+<loginProblemsAfter><![CDATA[
+<p>&nbsp;<hr>
+<p><b>If you are having problems ...</b>
+<ul>
+<li>You just logged in, but private datasets in ERDDAP still aren't visible
+<li>You just logged in, but some ERDDAP web pages indicate you aren't logged in.
+  <br>And if you try to log in again, ERDDAP says you are already logged in.
+<li>You logged in a while ago and now, after a period of inactivity, ERDDAP says 
+    you aren't logged in.
+</ul>
+<p><b>Try these solutions ...</b>
+<ul>
+<li>ERDDAP URLs are slightly different for users who are logged in and users who aren't
+  <br>("https:" vs. "http:", and sometimes other differences).
+  <br>Don't use your browser's <tt>Back</tt> button. Use the "ERDDAP" link above,
+  <br>then use other links to go to ERDDAP pages you are interested in.
+  <br>&nbsp;
+<li>Click on your browser's Refresh button.
+  <br>Your browser may have cached the web page before you logged in.
+  <br>&nbsp;
+<li>If, after a period of inactivity, ERDDAP says you aren't logged in, 
+    you have to log in again.
+  <br>&nbsp;
+<li>If you have multiple accounts, make sure you are logged in with the appropriate 
+    name to see the desired datasets.
+  <br>&nbsp;
+&second;
+<li>Contact the administrator of this ERDDAP: &adminContact;.
+  <br>It is possible that some datasets are not currently available or that you don't 
+      have permission to access them.
+</ul>
+]]></loginProblemsAfter>
+
+<loginPublicAccess><![CDATA[
+(You don't have to be logged in to access ERDDAP's publicly available datasets.)
+]]></loginPublicAccess>
+
+<LogOut>Log Out</LogOut>
+<logout>log out</logout>
+
+<logoutOpenID>Log out from your OpenID provider.</logoutOpenID>
+
+<logoutSuccess>
+You have successfully logged out.
+
+Don't use your browser's Back button. Use the "ERDDAP" link above,
+then use other links to go to ERDDAP pages you are interested in.
+
+
+For increased security (especially if this is a shared computer), you can:
+ * Clear your browser's cache:
+   * In Internet Explorer, use "Safety : Delete Browsing History : Delete Files"
+   * In Firefox, use "History : Clear Recent History"
+   * In Opera, use "Settings : Preferences : Advanced : Cookies : Manage Cookies"
+     and delete any OpenID cookies.
+   * In Safari, use "Safari : Empty Cache"
+</logoutSuccess>
+
+<mag>Make A Graph</mag>
+
+<magAxisX>X Axis</magAxisX>
+<magAxisY>Y Axis</magAxisY>
+<magAxisColor>Color</magAxisColor>
+<magAxisStickX>StickX</magAxisStickX>
+<magAxisStickY>StickY</magAxisStickY>
+<magAxisVectorX>Vector X</magAxisVectorX>
+<magAxisVectorY>Vector Y</magAxisVectorY>
+
+<magAxisHelpGraphX>graph's X Axis</magAxisHelpGraphX>
+<magAxisHelpGraphY>graph's Y Axis</magAxisHelpGraphY>
+<magAxisHelpMarkerColor>marker's color (via the Color Bar) (or leave blank)</magAxisHelpMarkerColor>
+<magAxisHelpSurfaceColor>surface's color (via the Color Bar)</magAxisHelpSurfaceColor>
+<magAxisHelpStickX>stick's X-component</magAxisHelpStickX>
+<magAxisHelpStickY>stick's Y-component</magAxisHelpStickY>
+<magAxisHelpMapX>map's X Axis</magAxisHelpMapX>
+<magAxisHelpMapY>map's Y Axis</magAxisHelpMapY>
+<magAxisHelpVectorX>vector X-component</magAxisHelpVectorX>
+<magAxisHelpVectorY>vector Y=component</magAxisHelpVectorY>
+
+<magAxisVarHelp><![CDATA[
+Select the variable for the {0}.
+]]></magAxisVarHelp>
+
+<magAxisVarHelpGrid><![CDATA[
+<p><b>Changing the <tt>Graph Type</tt> or variables automatically submits this form.</b>
+<br>For the remainder of this form:
+<br>&nbsp;&nbsp;make changes, then press <tt>Redraw the Graph</tt> below.
+]]></magAxisVarHelpGrid>
+
+<magConstraintHelp><![CDATA[
+These optional constraints determine which rows of data from the
+<br>original table are plotted on the graph.
+<br>Any or all constraints can be left blank.
+]]></magConstraintHelp>
+
+<magDocumentation><![CDATA[
+Documentation&nbsp;/&nbsp;Bypass&nbsp;this&nbsp;form
+]]></magDocumentation>
+
+<magDownload>Download the Data or an Image</magDownload>
+<magDownloadTooltip><![CDATA[
+Click <tt>Redraw the Graph</tt> just before clicking here, so the latest settings are used.
+<p>Then click here to download the data in the specified File Type.
+]]></magDownloadTooltip>
+
+<magFileType>Then set the File Type</magFileType>
+
+
+<magGraphType>Graph Type</magGraphType>
+
+<!-- Don't translate the graphType names -->
+<magGraphTypeTooltipGrid><![CDATA[
+<b>Graph Type</b>
+<br>Graph Type = "lines" draws lines on a graph where X=a dimension
+<br>and Y=a data variable.
+<p>Graph Type = "linesAndMarkers" draws lines and markers on a graph
+<br>where X=a dimension and Y=a data variable.
+<br>If a Color variable is specified, the markers are colored.
+<p>Graph Type = "markers" plots markers on a graph where X=a dimension
+<br>and Y=a data variable.
+<br>If a Color variable is specified, the markers are colored.
+<p>Graph Type = "sticks" is usually used to plot time on the x axis,
+<br>with the sticks being draw from the x component and y component
+<br>of currents or wind data.
+<p>Graph Type = "surface" plots a longitude/latitude grid of data as a
+<br>colored surface on a map.
+<br>Currently, "surface" requires that X=longitude and Y=latitude.
+<p>Graph Type = "vectors" plots vectors on a map.
+<br>Currently, this requires that X=longitude and Y=latitude.
+<br>The other variables provide the vector's x component and y component.
+<br>So it is often used for currents or wind data.
+<p><b>Changing the Graph Type or variables automatically submits this form.</b>
+<br>For the remainder of this form:
+<br>&nbsp;&nbsp;make changes, then press <tt>Redraw the Graph</tt> below.
+]]></magGraphTypeTooltipGrid>
+
+<magGraphTypeTooltipTable><![CDATA[
+<b>Graph Type</b>
+<br>Graph Type = "lines" draws lines on a graph.
+<br>If X=longitude and Y=latitude, you will get a map.
+<p>If Graph Type = "linesAndMarkers", the optional Color variable can color the markers.
+<br>If X=longitude and Y=latitude, you will get a map.
+<p>If Graph Type = "markers", the optional Color variable can color the markers.
+<br>If X=longitude and Y=latitude, you will get a map.
+<p>Graph Type = "sticks" is usually used to plot time on the X axis,
+<br>and with the sticks being draw from the x component and y component
+<br>of currents or wind data.
+<p>Graph Type = "vectors" requires that X=longitude and Y=latitude.
+<br>The other variables provide the vector's x component and y component.
+<br>So it is often used for currents or wind data.
+<p><b>Changing the Graph Type automatically submits this form.</b>
+<br>For the remainder of this form:
+<br>&nbsp;&nbsp;make changes, then press <tt>Redraw the Graph</tt> below.
+]]></magGraphTypeTooltipTable>
+
+<magGS>Graph Settings</magGS>
+<magGSMarkerType>Marker Type</magGSMarkerType>
+<magGSSize>Size</magGSSize>
+<magGSColor>Color</magGSColor>
+
+<magGSColorBar>Color Bar</magGSColorBar>
+<magGSColorBarTooltip>Select a palette for the color bar (or leave blank to get the default).</magGSColorBarTooltip>
+
+<magGSContinuity>Continuity</magGSContinuity>
+<magGSContinuityTooltip><![CDATA[
+Specify whether the colors should be continuous or discrete<br>(or leave blank for the default).
+]]></magGSContinuityTooltip>
+
+<magGSScale>Scale</magGSScale>
+<magGSScaleTooltip>Select a scale for the color bar (or leave blank for the default).</magGSScaleTooltip>
+
+<magGSMin>Min</magGSMin>
+<magGSMinTooltip>Specify the minimum value for the color bar (or leave blank for the default).</magGSMinTooltip>
+
+<magGSMax>Max</magGSMax>
+<magGSMaxTooltip>Specify the maximum value for the color bar (or leave blank for the default).</magGSMaxTooltip>
+
+<magGSNSections>N Sections</magGSNSections>
+<magGSNSectionsTooltip><![CDATA[
+Specify the number of sections for the color bar
+<br>and the number of labels beneath the color bar (minus 1)
+<br>(or leave blank for the default).
+]]></magGSNSectionsTooltip>
+
+<magGSLandMask>Draw the land mask</magGSLandMask>
+<magGSLandMaskTooltipGrid><![CDATA[
+Specify whether the land mask should be drawn under or over the data.
+<br>(Some data has already had a land mask applied, making this irrelevant.)
+<br>(Or leave this blank to use the default value.)
+]]></magGSLandMaskTooltipGrid>
+<magGSLandMaskTooltipTable><![CDATA[
+Specify whether the land mask should be drawn under or
+over the topography data (or leave blank for the default).
+]]></magGSLandMaskTooltipTable>
+
+<magGSVectorStandard>Vector Standard</magGSVectorStandard>
+<magGSVectorStandardTooltip><![CDATA[
+Specify the data vector length (in data units) to be
+<br>scaled to the size of the sample vector in the legend
+<br>(or leave blank for the default).
+]]></magGSVectorStandardTooltip>
+
+<magGSYAxisMin>Y Axis Minimum</magGSYAxisMin>
+<magGSYAxisMax>Maximum</magGSYAxisMax>
+
+<magGSYRangeMinTooltip><![CDATA[
+Specify the minimum value for the graph's Y axis
+<br>(or leave blank for the default).
+]]></magGSYRangeMinTooltip>
+
+<magGSYRangeMaxTooltip><![CDATA[
+Specify the maximum value for the graph's Y axis
+<br>(or leave blank for the default).
+]]></magGSYRangeMaxTooltip>
+
+<magGSYRangeTooltip><![CDATA[
+<p>Recommended Use: Most of the time, leave this
+<br>blank so that all of the data will be visible
+<br>and the Y axis will have an appropriate range.
+<br>But if you are comparing multiple graphs,
+<br>set this to a specific value, so the graphs
+<br>all have the same range. (Make sure the range
+<br>is big enough to show all of the data!)
+]]></magGSYRangeTooltip>
+
+
+<magItemFirst>Select the first item and redraw the graph.</magItemFirst>
+<magItemPrevious>Select the previous item and redraw the graph.</magItemPrevious>
+<magItemNext>Select the next item and redraw the graph.</magItemNext>
+<magItemLast>Select the last item and redraw the graph.</magItemLast>
+
+<magJust1Value><![CDATA[specify just 1 value &rarr;]]></magJust1Value>
+
+<magRange>Range</magRange>
+<magRangeTo>to</magRangeTo>  <!-- e.g., from 0 to 100 -->
+
+<magRedraw>Redraw the Graph</magRedraw>
+<magRedrawTooltip>Redraw the graph based on the settings above.</magRedrawTooltip>
+
+<magTimeRange>Time range:</magTimeRange>
+<magTimeRangeFirst>Go to the dataset''s first {0} and redraw the graph.</magTimeRangeFirst>
+<magTimeRangeBack>Shift the time range back {0} and redraw the graph.</magTimeRangeBack>
+<magTimeRangeForward>Shift the time range forward {0} and redraw the graph.</magTimeRangeForward>
+<magTimeRangeLast>Go to the dataset''s last {0} and redraw the graph.</magTimeRangeLast>
+<magTimesVary>The resulting time range will vary a little, based on available data.</magTimesVary>
+
+<magTimeRangeTooltip><![CDATA[
+Select the desired time range.
+<br>Then click on an arrow icon to the right to apply the change.
+]]></magTimeRangeTooltip>
+
+<magTimeRangeTooltip2><![CDATA[
+<p>Long time ranges (e.g., 1 year) use a lot of computer resources.
+<br>Please don't select a long time range unless you need it.)
+]]></magTimeRangeTooltip2>
+
+<magViewUrl>or view the URL</magViewUrl>
+
+<magZoom>Zoom</magZoom>
+
+<magZoomCenter><![CDATA[<b>Click</b> on the map to specify a new center point.
+]]></magZoomCenter>
+
+<magZoomCenterTooltip><![CDATA[
+Click on the map to specify a new center point.
+<br>Or, click just outside the map to see a map of the adjacent area.
+<p>You can zoom way in very quickly by alternately:
+<br> * Clicking on a new center point.
+<br> * Pressing <tt>In 8x</tt>.
+<p>If a click doesn't change the center point, or a zoom button has 
+<br>no effect, reload this web page and try again.
+]]></magZoomCenterTooltip>
+
+<magZoomIn>In {0}</magZoomIn>
+<magZoomInTooltip>Zoom in {0} and redraw the map.</magZoomInTooltip>
+<magZoomOut>Out {0}</magZoomOut>
+<magZoomOutTooltip>Zoom out {0} and redraw the map.</magZoomOutTooltip>
+<magZoomALittle>a little</magZoomALittle>
+<magZoomData>Data</magZoomData>
+<magZoomOutData>to the full extent of the data</magZoomOutData>
+
+<magGridHtml><![CDATA[
+<b>To make a graph of data from this grid dataset, repeatedly:</b><ol>
+<li>Change the "Graph Type" and the variables for the graph's axes.
+<li>Change the "Dimension Ranges" to specify a subset of the data.
+<li>Change the "Graph Settings" as desired.
+<li>Press "Redraw the Graph".
+</ol>
+This Make A Graph web page just simplifies the creation of griddap URLs with graphics commands.
+<br><b>If you want, you can create these URLs by hand or have a computer program do it.
+<br>Then you don't have to use this form to get data. See the "Bypass this form" link below.</b>
+]]></magGridHtml>
+
+<magTableHtml><![CDATA[
+<b>To make a graph of data from this tabular dataset, repeatedly:</b><ol>
+<li>Change the "Graph Type" and the variables for the graph's axes.
+<li>Change the "Constraints" to specify a subset of the data.
+<li>Change the "Graph Settings" as desired.
+<li>Press "Redraw the Graph".
+</ol>
+This Make A Graph web page just simplifies the creation of tabledap URLs with graphics commands.
+<br><b>If you want, you can create these URLs by hand or have a computer program do it.
+<br>Then you don't have to use this form to get data. See the "Bypass this form" link below.</b>
+]]></magTableHtml>
+
+
+<memoryTooMuchData>Your query produced too much data.  Try to request less data.</memoryTooMuchData>
+
+<memoryArraySize>The request needs an array size ({0}) bigger than Java ever allows ({1}).</memoryArraySize>
+
+<memoryThanCurrentlySafe>The request needs more memory ({0} MB) than is currently available in this Java setup ({1} MB).</memoryThanCurrentlySafe> 
+
+<memoryThanSafe>The request needs more memory ({0} MB) than is ever safely available in this Java setup ({1} MB).</memoryThanSafe> 
+
+
+<metadataDownload>Click to download {0} metadata.</metadataDownload>
+
+
+<moreInformation>more information</moreInformation>
+
+<!-- These MessageFormat-style messages are pushed into MustBe.xxx. -->
+<!-- This is an important error message. It indicates the request was valid,
+but the result was no data. Clients may be looking for this exact message.
+For now, it is best not to change this.
+!!! This should at least have an error number, so not reliant on specific text!!!
+But dods.dap.DODSException has no relevant exception.
+Better to return an empty file? But .nc and others don't allow 0-length data.
+-->
+<MustBeThereIsNoData>Your query produced no matching results.</MustBeThereIsNoData>
+<!-- Many file types put a limit on how much data a file can hold (e.g., 2GB). -->
+<MustBeNotNull>{0} must not be null.</MustBeNotNull>
+<MustBeNotEmpty>{0} must not be an empty string.</MustBeNotEmpty>
+<MustBeInternalError>Internal Error</MustBeInternalError>
+<MustBeOutOfMemoryError>Out of Memory Error</MustBeOutOfMemoryError>
+
+<!-- These can have HTML content -->
+<nMatching1>1 matching dataset.</nMatching1>
+<nMatchingAlphabetical>{0} matching datasets, listed in alphabetical order.</nMatchingAlphabetical>
+<nMatchingMostRelevant>{0} matching datasets, with the most relevant ones listed first.</nMatchingMostRelevant>
+<nMatchingPage>View page: {2}.</nMatchingPage>
+<nMatchingCurrent>current</nMatchingCurrent>
+
+<noDataFixedValue>Fixed value variable={0} failed the test {1}.</noDataFixedValue>                   
+<noDataNoLL>There are no valid longitude or latitude values.</noDataNoLL>
+
+
+<!-- e.g., {0}="protocol=griddap" -->
+<noDatasetWith>Currently, there are no datasets with {0}.</noDatasetWith>
+
+<!-- {0}=page {1}=lastPage -->
+<noPage1>You requested results page={0}, but the last page is {1}.</noPage1>
+<noPage2>Please request a page from 1 through {1}.</noPage2>
+
+<notAuthorized>loggedInAs={0} isn''t authorized to access datasetID={1}.</notAuthorized>
+<notAvailable>Currently, datasetID={0} isn''t available.</notAvailable>
+
+<!-- Xxx is Make A Graph, FGDC, ISO 19115, SOS, WCS, WMS, ... -->
+<noXxxBecause>This dataset isn''t available via {0} because {1}.</noXxxBecause>
+<noXxxBecause2>{0} isn''t available for this dataset because {1}.</noXxxBecause2>
+<noXxxNotActive>this ERDDAP''s {0} service is not active</noXxxNotActive>
+<noXxxNoAxis1>there aren't any axis variables with more than one value</noXxxNoAxis1>
+<noXxxNoCdmDataType>cdm_data_type={0} is not a compatible type</noXxxNoCdmDataType>
+<noXxxNoColorBar>none of variables has colorBar metadata</noXxxNoColorBar>
+<noXxxNoLL>there is no longitude and/or latitude variable</noXxxNoLL>
+<noXxxNoLLGt1>the longitude and/or latitude variable has only one value</noXxxNoLLGt1>
+<noXxxNoLLEvenlySpaced>the dataset's longitude and/or latitude values aren't evenly spaced</noXxxNoLLEvenlySpaced>
+<noXxxNoLLT>there is no longitude, latitude, and/or time variable</noXxxNoLLT>
+<noXxxNoLonIn180>there are no longitude values within -180 to 360</noXxxNoLonIn180>
+<noXxxNoNonString>there are no non-String variables</noXxxNoNonString>
+<noXxxNo2NonString>there aren't at least two non-String variables</noXxxNo2NonString>
+<noXxxNoStation>cdmDataType={0} isn''t "TimeSeries"</noXxxNoStation>
+<noXxxNoStationID>there is no stationID-like variable</noXxxNoStationID>
+<noXxxNoMinMax>the source data server doesn't provide minimum and maximum values</noXxxNoMinMax>
+<noXxxItsGridded>it's a gridded dataset</noXxxItsGridded>
+<noXxxItsTabular>it's a tabular dataset</noXxxItsTabular>
+
+<optional>Optional</optional>
+
+<orRefineSearchWith>Or, Refine this Search with</orRefineSearchWith>
+<orSearchWith>Or, Search for Datasets with</orSearchWith>
+<orComma>Or,</orComma>
+
+<!--pageFirst>first</pageFirst>
+<pagePrevious>previous</pagePrevious>
+<pageCurrent>current</pageCurrent>
+<pageNext>next</pageNext>
+<pageLast>last</pageLast-->
+
+<!-- These are the palette options.
+     There must be a .cpt file for each in the erddap/WEB-INF/cptfiles directory.
+  The standard palettes are listed in 'palettes' in Bob's messages.xml,
+  EDDTable.java, EDDGrid.java, and setupDatasetsXml.html.
+-->
+<palettes>BlackBlueWhite, BlackGreenWhite, BlackRedWhite, BlackWhite, BlueWhiteRed,
+BlueWideWhiteRed, LightRainbow, Ocean, OceanDepth, Rainbow, Rainbow2, ReverseRainbow, RedWhiteBlue, RedWideWhiteBlue, Spectrum, Topography, WhiteBlueBlack, WhiteGreenBlack, WhiteRedBlack, WhiteBlack</palettes>
+
+
+<!-- When possible (and it isn't always possible), ERDDAP breaks data requests
+into chunks to conserve memory.
+
+With 32 bit Java, in a simplistic sense, the maximum number of simultaneous
+*large* requests is roughly 3/4 of the memory available
+(the -Xmx value passed to Tomcat) divided by the chunk size
+(e.g., 1200 MB / 100 MB => 12 requests).
+Other things require memory, so the actual number of requests will be less.
+In practice, chunking isn't always possible.
+So one huge or a few very large simultaneous non-chunkable requests
+could cause problems on 32 bit Java.
+
+With 64 bit Java, the -Xmx value can be much larger. So memory is much less
+likely to be a constraint.
+
+You can override the default chunk size by defining these tags in setup.xml
+(not here in messges.xml) and changing the values from the defaults shown here:
+  For grids:  <partialRequestMaxBytes>100000000</partialRequestMaxBytes>
+  For tables: <partialRequestMaxCells>100000</partialRequestMaxCells>
+
+partialRequestMaxBytes is the preferred maximum number of bytes for a partial
+grid data request (a chunk of the total request). Recommended = 100000000  (10^8).
+Larger sizes aren't necessarily better (and don't go over 500 MB because that is
+THREDD's limit for DAP responses). But larger sizes may require fewer accesses of
+tons of files (think of ERD's satellite data with each time point
+in a separate file - it's better to get more data from each file
+in each partial request).
+
+partialRequestMaxCells is the preferred maximum number of cells
+(nRows * nColumns in the data table) for a partial TABLE data request
+(a chunk of the total request).  Default = 100000.
+Larger sizes aren't necessarily better. They result in a longer wait for the
+initial batch of data from the source.
+-->
+
+<patientData>(Please be patient. It may take a while to get the data.)</patientData>
+<patientYourGraph>[The graph you specified. Please be patient.]</patientYourGraph>
+
+<!-- For each imageSize, there is a pdfWidth and pdfHeight (in 1/144ths inch).
+Big size is max to fit on page (.5" LR margins, 1" TB margins gives best legend size).
+Widths are in ratio 1:2:3.
+-->
+<pdfWidths>300, 600, 900</pdfWidths>
+<pdfHeights>380, 680, 980</pdfHeights>
+
+<pickADataset>Pick a Dataset</pickADataset>
+
+<!-- Messages related to protocol-based dataset searches. -->
+<protocolSearchHtml>Search for Datasets by Protocol</protocolSearchHtml>
+<protocolSearch2Html><![CDATA[
+  Protocols are the standards which specify how to request data.
+  <br>Different protocols are appropriate for different types of data and for different client applications.
+]]></protocolSearch2Html>
+
+<protocolClick>Click to see a list of datasets available via the {0} protocol.</protocolClick>
+
+<queryError>Query error:</queryError>
+<queryError180>For {0} requests, the longitude values can''t be below and above 180.</queryError180>
+<queryError1Value>For {0} requests, the size of axis={1} must be 1.</queryError1Value>
+<queryError1Var>The {0} format can only handle one data variable.</queryError1Var>
+<queryError2Var>Requests for the {0} format must include at least two numeric variables (for the X and Y axes).</queryError2Var>
+<queryErrorAscending>For {0} requests, the longitude values and latitude values must be ascending.</queryErrorAscending>
+<queryErrorAdjusted>For {0} requests, the adjusted longitude values ({1} to {2}) must be between -180 and 180.</queryErrorAdjusted>
+<queryErrorConstraintNaN>Constraint value="{0}" evaluates to NaN.  If you really want NaN, write it as NaN.</queryErrorConstraintNaN>
+<queryErrorEqualSpacing>For {0} requests, the longitude spacing ({1}) must equal the latitude spacing ({2}).</queryErrorEqualSpacing>
+<queryErrorExpectedAt>"{0}" was expected at position={1}.</queryErrorExpectedAt>
+<queryErrorFileType>fileType={0} isn''t supported by this dataset.</queryErrorFileType>
+<queryErrorInvalid>Invalid {0}.</queryErrorInvalid>
+<queryErrorLL>For {0} requests, the requested variables must include latitude and longitude.</queryErrorLL>
+<queryErrorLLGt1>For {0} requests, the requested subset of the latitude and longitude axes must be greater than 1.</queryErrorLLGt1>
+<queryErrorLLT>For {0} requests, the requested variables must include latitude, longitude and time.</queryErrorLLT>
+<queryErrorNeverTrue>{0} will never be true.</queryErrorNeverTrue>
+<queryErrorNeverBothTrue>{0} and {1} will never both be true.</queryErrorNeverBothTrue>
+<queryErrorNotAxis>The {0} format is for data (not axis) variables only.</queryErrorNotAxis>
+<queryErrorNotExpectedAt>"{0}" was not expected at position={1}.</queryErrorNotExpectedAt>
+<queryErrorNotFoundAfter>"{0}" was not found after position={1}.</queryErrorNotFoundAfter>
+<queryErrorOccursTwice>Variable name={0} occurs twice.</queryErrorOccursTwice>
+<queryErrorUnknownVariable>Unknown variable={0}.</queryErrorUnknownVariable>
+
+<queryErrorGrid1Axis>Grid axis queries must specify at least one axis variable.</queryErrorGrid1Axis>
+
+<queryErrorGridAmp>In a griddap query, '&amp;' must be followed by a .graphicsCommand.</queryErrorGridAmp>
+
+<queryErrorGridDiagnostic>For variable={0} axis#{1}={2}</queryErrorGridDiagnostic>
+
+<queryErrorGridBetween>{0}="{1}" is invalid.  It must be an integer between 0 and {2}.</queryErrorGridBetween>
+
+<queryErrorGridLessMin>{0}="{1}" is less than the axis minimum={2} (and even {3}).</queryErrorGridLessMin>
+<queryErrorGridGreaterMax>{0}="{1}" is greater than the axis maximum={2} (and even {3}).</queryErrorGridGreaterMax>
+
+<queryErrorGridMissing>The {0} value inside () is missing.</queryErrorGridMissing>
+
+<queryErrorGridNoAxisVar>A griddap data variable query can''t include an axis variable ({0}).</queryErrorGridNoAxisVar>
+
+<queryErrorGridNoDataVar>A griddap axis variable query can''t include a data variable ({0}).</queryErrorGridNoDataVar>
+
+<queryErrorGridNotIdentical>The constraint {0} for variable={1} is not identical the constraint {2} for variable={2}.  If you need different subsets, make separate requests.</queryErrorGridNotIdentical>
+
+<queryErrorGridSLessS>StartIndex={0} is less than StopIndex={1}.</queryErrorGridSLessS>
+
+<queryErrorLastEndP>{0} starts with "(", but doesn't end with ")".</queryErrorLastEndP>
+<queryErrorLastExpected>"last" was expected at the beginning of {0}.</queryErrorLastExpected>
+<queryErrorLastUnexpected>Unexpected character after "last" in {0}.</queryErrorLastUnexpected>
+<queryErrorLastPMInvalid>The +/- value in {0} isn''t valid.</queryErrorLastPMInvalid>
+<queryErrorLastPMInteger>The +/- index value in {0} isn''t an integer.</queryErrorLastPMInteger>
+
+
+<rangesFromTo>{0} ranges from {1} to {2}.</rangesFromTo>
+
+<resetTheForm>Reset the form to the default values.</resetTheForm>
+<resetTheFormWas>The form has been reset to the default values.</resetTheFormWas>
+
+<resourceNotFound>Resource not found:</resourceNotFound>
+
+<requestFormatExamplesHtml><![CDATA[
+(for example,
+  <a rel="help" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET</a>,
+  <a rel="help" href="http://www.xml.com/pub/a/98/10/guide0.html">XML</a>,
+  <a rel="help" href="http://www.w3schools.com/soap/soap_intro.asp">SOAP+XML</a>,
+  <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">OPeNDAP</a>,
+  <a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS</a>,
+  <a rel="help" href="http://www.opengeospatial.org/standards/wfs">WFS</a>,
+  <a rel="help" href="http://www.opengeospatial.org/standards/requests/32">SOS</a>,
+  or an HTML form)
+]]></requestFormatExamplesHtml>
+
+<resultsFormatExamplesHtml><![CDATA[
+(for example,
+  <a rel="help" href="http://www.w3schools.com/html/html_tables.asp">.html table</a>,
+  <a rel="help" href="http://www.geotools.org/ArcInfo+ASCII+Grid+format">ESRI .asc</a>,
+  <a rel="help" href="http://earth.google.com/">Google Earth .kml</a>,
+  <a rel="help" href="http://www.mathworks.com/">.mat</a>,
+  <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">.nc</a>,
+  <a rel="help" href="http://odv.awi.de/en/documentation/">ODV .txt</a>,
+  <a rel="help" href="http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm">.csv</a>,
+  <a rel="help" href="http://www.cs.tut.fi/~jkorpela/TSV.html">.tsv</a>,
+  <a rel="help" href="http://www.json.org/">.json</a>,
+  <a rel="help" href="http://www.w3schools.com/xhtml/xhtml_intro.asp">.xhtml</a>)
+]]></resultsFormatExamplesHtml>
+
+<!-- The searched-for text appears after this label. -->
+<resultsOfSearchFor>The results of the search for</resultsOfSearchFor>
+
+<restfulInformationFormats>This information is also available in other file formats</restfulInformationFormats>
+<restfulViaService>via a RESTful web service</restfulViaService>
+
+<rows>rows</rows>
+
+<searchTitle>Search</searchTitle>
+<searchDoFullTextHtml>Do a Full Text Search for Datasets</searchDoFullTextHtml>
+<searchFullTextHtml>Full Text Search for Datasets</searchFullTextHtml>
+<searchButton>Search</searchButton>
+
+<!-- The tooltip text for the full text search's Submit button. -->
+<searchClickTip>Click here to submit your search request.</searchClickTip>
+
+<!-- This is the html for describing the details of full text search. -->
+<searchHintsHtml><![CDATA[
+<b>Search Hints</b><ul><li>This is a Google-like search of the datasets' metadata:
+  <br>Type the words you want to search for, with spaces between the words.
+  <br>ERDDAP will search for the words separately, not as a phrase.
+<li>To search for a phrase, put double quotes around the phrase
+  <br>(for example, <tt>&quot;wind speed&quot;</tt>).
+  <br>
+<li>To exclude datasets with a specific word, use <tt>-<i>excludedWord</i></tt> .
+  <br>To exclude datasets with a specific phrase, use <tt>-&quot;<i>excluded phrase</i>&quot;</tt> .
+<li>Don't use <tt>AND</tt> between search terms. It is implied.
+  <br>The results will include only the datasets that have all of the specified
+  <br>words and phrases (and none of the excluded words and phrases) in the 
+  <br>dataset's metadata (data about the dataset).
+<li>Searches are not case-sensitive.
+<li>To find just grid or just table datasets, include <tt>protocol=griddap</tt>
+  <br>or <tt>protocol=tabledap</tt> in your search.
+]]></searchHintsHtml>
+
+<searchHintsOriginalHtml>
+<![CDATA[
+<li>This ERDDAP is using searchEngine=original.
+<li>In this ERDDAP, you can search for any part of a word. For example,
+  <br>searching for <tt>spee</tt> will find datasets with <tt>speed</tt> and datasets with
+  <br><tt>WindSpeed</tt>.
+<li>In this ERDDAP, the last word in a phrase may be a partial word. For 
+  <br>example, to find datasets from a specific website (usually the start
+  <br>of the datasetID), include (for example) <tt>&quot;datasetID=<i>erd</i>&quot;</tt> in your
+  <br>search.
+</ul>
+]]></searchHintsOriginalHtml>
+
+<searchHintsLuceneHtml>
+<![CDATA[
+<li>This ERDDAP is using searchEngine=lucene.
+<li>In this ERDDAP, you may search for the start of a word. For example, 
+  <br>searching for <tt>spee</tt> will find datasets with <tt>speed</tt>, but not datasets
+  <br>with <tt>WindSpeed</tt>.
+<li>In this ERDDAP, all words in a phrase must be a complete words.
+</ul>
+]]></searchHintsLuceneHtml>
+
+<searchNotAvailable>Sorry.  The search system is not available right now.</searchNotAvailable>
+
+<!-- The tooltip text for the full text search's textfield. -->
+<searchTip>Like Google, enter space-separated word(s), for example, &quot;noaa wind&quot;.</searchTip>
+
+<searchSpelling>Check the spelling of the word(s) you searched for.</searchSpelling>
+<searchFewerWords>Try using fewer search words.</searchFewerWords>
+<!-- {0}=plainFileType of a search query. -->
+<searchWithQuery>A {0} search request must include a query, for example, "?page=1&amp;itemsPerPage=1000&amp;searchFor=wind+temperature".</searchWithQuery>
+
+<!-- Yes, '' is correct.  {0}=erddapUrl {1}=lowercaseProtocol {2}=uppercaseProtocol -->
+<seeProtocolDocumentation><![CDATA[
+For details, see ERDDAP''s <a rel="help" href="{0}/{1}/documentation.html">{2} Documentation</a>.
+]]></seeProtocolDocumentation>
+
+<selectNext>Select the next item.</selectNext>
+<selectPrevious>Select the previous item.</selectPrevious>
+
+<!-- SlideSorter messages -->
+<ssUse><![CDATA[
+<li>Anyone can use ERDDAP's <a rel="help" href="&erddapUrl;/slidesorter.html">Slide Sorter</a>
+    to build a personal web page that displays graphs
+    with the latest data (or other images or HTML content), each in its own, draggable slide.
+]]></ssUse>
+
+<ssDisabled>The "Slide Sorter" system has been disabled on this ERDDAP.</ssDisabled>
+
+<ssBePatient>Be patient. Or, check the URL. Or, press 'Submit' again.</ssBePatient>
+
+<ssInstructionsHtml><![CDATA[
+<big><b>ERDDAP's Slide Sorter</b></big> helps you build a personal web page that displays content from many other
+<br>web pages, each in it's own, draggable slide.
+<br>&nbsp;
+<br><b>To add a slide:</b> Fill out the 'Add a Slide' form.
+<ul>
+<li>For ERDDAP grid datasets, you will usually change the time constraint in the URL to <tt>last</tt> so the
+  <br>graph always shows the latest data.
+<li>For ERDDAP tabular datasets, you will usually change the time constraint in the URL to something like
+  <br><tt>&amp;time&gt;now-7days</tt> so the graph always shows recent data.
+<li>'file://' URL's won't work because of security restrictions.
+</ul>
+<br><b>To move a slide:</b> Drag the slide with your mouse.
+<br>&nbsp;
+<br><b><font class="warningColor">WARNING!!!</font> Your slides will be lost when you close this browser window, unless you:</b><ol>
+<li>Scroll to the top of this document, then click on any <tt>Submit</tt> button so this document is up-to-date.
+<li>Use your browser's <tt>File : Save As</tt> to save this document to your hard drive.
+<li>Optional: Use your browser's <tt>File : Open</tt> to open the copy on your hard drive and bookmark it.
+</ol>
+]]></ssInstructionsHtml>
+
+
+<!-- The standard license is added to many dataset's global metadata (see datasets.xml) -->
+<standardLicense>
+The data may be used and redistributed for free but is not intended
+for legal use, since it may contain inaccuracies. Neither the data
+Contributor, ERD, NOAA, nor the United States Government, nor any
+of their employees or contractors, makes any warranty, express or
+implied, including warranties of merchantability and fitness for a
+particular purpose, or assumes any legal liability for the accuracy,
+completeness, or usefulness, of this information.
+</standardLicense>
+
+<!-- This is used by <legal> in setup.xml. -->
+<standardContact><![CDATA[
+<br>&nbsp;
+<hr>
+<h2><a name="contact">Contact</a></h2>
+Questions, comments, suggestions?  Please send an email to <tt>&adminEmail;</tt> .
+]]></standardContact>
+
+<!-- This is used by <legal> in setup.xml. -->
+<standardDataLicenses><![CDATA[
+<br>&nbsp;
+<hr>
+<h2><a name="dataLicenses">Data Licenses / Data Usage Restrictions</a></h2>
+The data from some datasets may be subject to usage limitations or restrictions. See the dataset's
+<br><tt>license</tt> metadata, which can be found on the dataset's Data Access Form (.html), Make A Graph
+<br>(.graph), and Dataset Attribute Structure (.das) web pages.
+]]></standardDataLicenses>
+
+<!-- This is used by <legal> in setup.xml. -->
+<standardDisclaimerOfEndorsement><![CDATA[
+<h3>DISCLAIMER OF ENDORSEMENT</h3>
+Any reference obtained from this server to a specific product, process, or service does not constitute
+<br>or imply an endorsement by the individuals or organizations associated with this web site of the
+<br>product, process, or service, or its producer or provider. The views and opinions expressed in any
+<br>referenced document do not necessarily state or reflect those of the individuals or organizations
+<br>associated with this web site.
+]]></standardDisclaimerOfEndorsement>
+
+<!-- This is used by <legal> in setup.xml.
+  This is based on http://swfsc.nmfs.noaa.gov/disclaimer.htm. -->
+<standardDisclaimerOfExternalLinks><![CDATA[
+<h3>DISCLAIMER OF EXTERNAL LINKS</h3>
+The appearance of external links on this World Wide Web site does not constitute endorsement by
+<br>the individuals and organizations associated with this web of external Web sites or the information,
+<br>products or services contained therein. The individuals and organizations associated with this web
+<br>site do not exercise any editorial control over the information you may find at these locations.
+<br>These links are provided consistent with the stated purpose of this web site.
+]]></standardDisclaimerOfExternalLinks>
+
+<!-- This is used by <legal> in setup.xml.
+  This is from BSD plus two instances of ", WEB SERVICE, AND/OR DATA".
+  Pre 2010-08-05 was
+  <br>Neither the data providers, ERD, CoastWatch, NOAA, nor the United States Government, nor any of their
+  <br>employees or contractors, makes any warranty, express or implied, including warranties of
+  <br>merchantability and fitness for a particular purpose, or assumes any legal liability for the accuracy,
+  <br>completeness, or usefulness, of any information at this site.
+-->
+<standardGeneralDisclaimer><![CDATA[
+<h3>GENERAL DISCLAIMER</h3>
+<tt>THIS SOFTWARE, WEB SERVICE, AND DATA ARE PROVIDED BY THE COPYRIGHT HOLDERS
+<br>AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
+<br>BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+<br>FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+<br>OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+<br>SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+<br>TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+<br>PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+<br>LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+<br>NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+<br>WEB SERVICE, OR DATA, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</tt>
+]]></standardGeneralDisclaimer>
+
+<!-- This is used by <legal> in setup.xml. -->
+<standardPrivacyPolicy><![CDATA[
+<br>&nbsp;
+<hr>
+<h2><a name="privacyPolicy">Privacy Policy</a></h2>
+ERDDAP follows <a rel="bookmark" href="http://www.noaa.gov/privacy.html">NOAA's Privacy Policy Guidelines</a>.
+]]></standardPrivacyPolicy>
+
+<!-- Text for the Submit button on various forms. -->
+<submit>Submit</submit>
+<submitTooltip>Submit this form and start downloading the data.</submitTooltip>
+
+<subscriptionsTitle>Subscriptions</subscriptionsTitle>
+<subscriptionOptions>Options</subscriptionOptions>
+<subscriptionAdd>Add a new subscription</subscriptionAdd>
+<subscriptionValidate>Validate a subscription</subscriptionValidate>
+<subscriptionList>List your subscriptions</subscriptionList>
+<subscriptionRemove>Remove a subscription</subscriptionRemove>
+
+<subscriptionHtml><![CDATA[
+ERDDAP has an email/URL subscription system so that you can be notified immediately whenever
+<br>a dataset changes (for example, whenever new data is added to a near-real-time dataset).
+<br>The system can send you an email or contact a URL that you specify.  
+<br>See also this <a rel="help" href="{0}/information.html#subscriptions">comparison</a>
+with ERDDAP''s RSS subscription service.
+]]></subscriptionHtml>
+
+<subscription2Html><![CDATA[
+<p><b>IMPORTANT INFORMATION:</b>
+<ul>
+<li> ERDDAP will store the information that you provide, including your email address.
+<li> ERDDAP will treat the information that you provide as confidential and will not release it to
+  <br>anyone else.
+<li> These subscriptions have nothing to do with getting the actual data (see
+  <a rel="start" href="{0}/index.html">ERDDAP''s home page</a>).
+<li> ERDDAP is very good at detecting changes to gridded datasets because it can detect when
+  <br>the axis values (e.g., the time values) change.
+<li> ERDDAP is not very good at detecting changes to tabular datasets because there are usually
+  <br>no changes to the metadata when new data is added.
+<li> ERDDAP will detect if a dataset becomes unavailable (but perhaps not immediately).
+  <br>ERDDAP will immediately detect when that dataset becomes available again.
+<li> ERDDAP makes no promises about the suitability, reliability, or correctness of this service
+  <br>(see ERDDAP''s <a rel="copyright" href="{0}/legal.html">DISCLAIMERS</a>).
+</ul>
+]]></subscription2Html>
+
+<subscriptionAbuse><![CDATA[
+<p><font class="warningColor">Don't abuse this system by entering someone else's email address!</font>
+<br>If you do, you may be blocked from using ERDDAP. Your IP address will be included in the email
+<br>with the subscription invitation. So if you enter someone else's email address, the email recipient
+<br>and the ERDDAP administrator will be able to figure out that you did it.
+]]></subscriptionAbuse>
+
+<subscriptionAddError><![CDATA[
+<b>Your request to add a subscription had one or more errors:</b>
+]]></subscriptionAddError>
+
+<subscriptionAddHtml><![CDATA[
+<p><b>To add a (another) subscription, please fill out this form:</b>
+<br>The easiest way to use this form is to click on an envelope icon
+<img alt="Subscribe" src="{0}/images/envelope.gif">
+on an ERDDAP web page with
+<br>a list of datasets (at the far right), or on a dataset''s Data Access Form or Make A Graph web page.
+<br>Then, the datasetID will be filled in for you.
+]]></subscriptionAddHtml>
+
+<subscriptionAdd2>Then, ERDDAP will send you an email with a link to validate your request.</subscriptionAdd2>
+
+<subscriptionAddSuccess><![CDATA[
+<p><font class="successColor"><b>
+Your request to add a subscription has been submitted successfully.</b>
+<br>You should get an email soon with instructions for validating the subscription.</font>
+]]></subscriptionAddSuccess>
+
+<subscriptionEmail>Get an email immediately whenever this dataset changes...</subscriptionEmail>
+<subscriptionEmailInvalid>The email address you submitted isn't valid.</subscriptionEmailInvalid>
+<subscriptionEmailTooLong>The email address you submitted is too long.</subscriptionEmailTooLong>
+<subscriptionEmailUnspecified>You didn't specify your email address.</subscriptionEmailUnspecified>
+<!-- ID is used for datasetID and subscriptionID. -->
+<subscriptionIDInvalid>The ID you submitted isn't valid.</subscriptionIDInvalid>
+<subscriptionIDTooLong>The ID you submitted is too long.</subscriptionIDTooLong>
+<subscriptionIDUnspecified>You didn't specify the ID.</subscriptionIDUnspecified>
+<subscriptionKeyInvalid>The key you submitted isn't valid.</subscriptionKeyInvalid>
+<subscriptionKeyUnspecified>You didn't specify the key.</subscriptionKeyUnspecified>
+
+<subscriptionListError><![CDATA[
+<b>Your request for an email with a list of your subscriptions had one or more errors:</b>
+]]></subscriptionListError>
+
+<subscriptionListHtml><![CDATA[
+<p><b>To request an email with a list of your subscriptions, please fill out this form:</b>
+]]></subscriptionListHtml>
+
+<subscriptionListSuccess><![CDATA[
+<p><font class="successColor"><b>
+Your request for an email with a list of your subscriptions has been submitted successfully.</b>
+<br>You should get an email with the list soon.</font>
+]]></subscriptionListSuccess>
+
+<subscriptionRemoveError><![CDATA[
+<b>Your request to remove a subscription had one or more errors:</b>
+]]></subscriptionRemoveError>
+
+<subscriptionRemoveHtml><![CDATA[
+<p><b>To remove a (another) subscription, please fill out this form:</b>
+<br>Normally, you won''t fill out this form by hand.
+<br>You will click on the link in the email that ERDDAP sends you after you request a
+<br><a rel="bookmark" href="{0}/subscriptions/list.html">list of your subscriptions</a>.
+]]></subscriptionRemoveHtml>
+
+<subscriptionRemove2>It includes URLs to remove each of your subscriptions.</subscriptionRemove2>
+
+<subscriptionRemoveSuccess><![CDATA[
+<p><font class="successColor"><b>Your request to remove a subscription was received.</b>
+<br>If the subscriptionID and the key match, the subscription will be removed.</font>
+]]></subscriptionRemoveSuccess>
+
+<subscriptionRSS>Subscribe to the RSS feed for this dataset...</subscriptionRSS>
+
+<subscriptionsNotAvailable><![CDATA[
+<p><b>Sorry.  The email/URL subscription system is not available at this ERDDAP installation.</b>
+<br>Consider using the <a rel="help" href="{0}/information.html#subscriptions">RSS</a>
+  subscription service instead.
+]]></subscriptionsNotAvailable>
+
+<subscriptionUrlHtml><![CDATA[
+<tt>URL/action</tt> is an optional URL that ERDDAP will contact instead of sending you an email.
+<br>So if you want to receive an email whenever the dataset changes, leave <tt>URL/action</tt> blank.
+<br>If you do supply a URL, ERDDAP will just contact the URL and ignore the response.
+<br>So this can be used to trigger some action at some other web service.
+<br>To use this feature, enter a percent-encoded URL, for example
+<br><tt>http://www.yourWebSite.com?department=R%26D&amp;action=rerunTheModel</tt>
+]]></subscriptionUrlHtml>
+
+<subscriptionUrlInvalid>The URL/action isn't valid. If present, it must start with "http://" and be percent encoded.</subscriptionUrlInvalid>
+<subscriptionUrlTooLong>The URL/action is too long.</subscriptionUrlTooLong>
+
+<subscriptionValidateError><![CDATA[
+<b>Your request to validate a subscription had one or more errors:</b>
+]]></subscriptionValidateError>
+
+<subscriptionValidateHtml><![CDATA[
+<p><b>To validate a (another) subscription, please fill out this form:</b>
+<br>Normally, you won''t fill out this form by hand.
+<br>You will click on a link in the email that ERDDAP sends you after you request to
+  <a rel="bookmark" href="{0}/subscriptions/add.html">add a subscription</a>.
+]]></subscriptionValidateHtml>
+
+<subscriptionValidateSuccess><![CDATA[
+<p><font class="successColor"><b>Your request to validate a subscription was received.</b>
+<br>If the key is correct and the subscription isn't already valid, the subscription will be validated.</font>
+]]></subscriptionValidateSuccess>
+
+
+<!--
+Test of setup.xml <style> h1, h2, h3 {line-height:130%; }
+<h1>Try H1<br>Try H1</h1>
+<h2>Try H2<br>Try H2</h2>
+<h3>Try H3<br>Try H3</h3>
+-->
+
+<!-- This is the short description of ERDDAP, which is used on the middle of the
+left side of ERDDAP's home page.
+This can refer to &convertTimeReference;, &erddapUrl;, 
+&requestFormatExamplesHtml; &resultsFormatExamplesHtml; &wmsManyDatasets;
+[Bob, see options in c:/content/gov/noaa/pfel/erddap/index1|2|3.html .]
+-->
+<standardShortDescriptionHtml><![CDATA[
+<h2><font class="highlightColor"><i>Easier Access to Scientific Data</i></font></h2>
+Our focus is on making it easier for you to get scientific data.
+
+<p><font class="highlightColor"><b>Different scientific communities have developed different types of data servers,</b></font>
+<br>for example, OPeNDAP, WCS, SOS, OBIS, and custom web pages with forms.
+Each is great on its own.
+But without ERDDAP, it is difficult to get data from different types of servers:
+<ul>
+<li>Different data servers make you format your data request in different ways.
+<li>Different data servers return data in different formats, usually not the common file format that you want.
+<li>Different datasets use different formats for time data, so the results are hard to compare.
+</ul>
+
+<!-- We believe that by focusing on your needs, ERDDAP can make it easier to get data.
+make it easier for you to get scientific data.-->
+
+<p><font class="highlightColor"><b>ERDDAP unifies the different types of data servers
+  so you have a consistent way to get the data you want, in the format you want.</b></font>
+<ul>
+<li><b>ERDDAP acts as a middleman between you and various remote data servers.</b>
+  <br>When you request data from ERDDAP,
+  ERDDAP reformats the request into the format required by the remote server,
+  sends the request to the remote server, gets the data, reformats the data into the
+  format that you requested, and sends the data to you.
+  You no longer have to go to different data servers to get data from different datasets.
+  <br>&nbsp;
+
+<li><b>ERDDAP offers an easy-to-use, consistent way to request data: via the OPeNDAP standard.</b>
+&wmsManyDatasets;
+  <br>&nbsp;
+
+<li><b>ERDDAP returns data in the common file format of your choice.</b>
+  <br>ERDDAP offers all data as .html table, ESRI .asc and .csv, Google Earth .kml, 
+    OPeNDAP binary, .mat, .nc, ODV .txt, .csv, .tsv, .json, and .xhtml.
+    So you no longer have to waste time and effort reformatting data.
+  <br>&nbsp;
+
+<li><b>ERDDAP can also return a .png or .pdf image with a customized graph or map.</b>
+  <br>&nbsp;
+
+<li><b>ERDDAP standardizes the dates+times in the results.</b>
+  <br>Data from other data servers is hard to compare
+    because the dates+times often are expressed in different formats
+    (for example, "Jan 2, 1985", 2 Jan 85, 02-JAN-1985, 1/2/85, 2/1/85,
+    1985-01-02, "days since Jan 1, 1900").
+  <br>For string times, ERDDAP always uses the ISO 8601:2004(E) standard format, for example, 1985-01-02T00:00:00Z.
+  <br>For numeric times, ERDDAP always uses "seconds since 1970-01-01T00:00:00Z".
+  <br>ERDDAP always uses the Zulu (UTC, GMT) time zone to remove the difficulties
+    of working with different time zones and standard time vs. daylight saving time.
+&convertTimeReference;  
+  <br>&nbsp;
+
+<li><b>ERDDAP has web pages (for humans with browsers) and 
+     <a rel="help" href="&erddapUrl;/rest.html">RESTful&nbsp;web&nbsp;services</a> 
+     (for computer programs).</b>
+  <br>You can bypass ERDDAP's web pages and use ERDDAP's RESTful web services 
+    (for example, for searching for datasets, for downloading data, for making maps)
+    directly from any computer program (for example, Matlab, R, or a program that you write)
+    and even from web pages (via HTML image tags or JavaScript).  
+</ul>
+
+<p><b><a rel="help" href="http://www.youtube.com/watch?v=18xZoXu1USM">For a quick introduction to ERDDAP,
+  watch the first half of this  
+  <img align="bottom" alt="YouTube" src="&erddapUrl;/images/youtube.png" >
+  video</a>.</b> <a name="video">(5 minutes)</a>
+<br>In it, a scientist downloads ocean currents forecast data from ERDDAP to model a toxic
+spill in the ocean using  
+<a rel="bookmark" href="http://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">NOAA's GNOME software</a> (in 5 minutes!).
+Thanks to Rich Signell. (One tiny error in the video: 
+when searching for datasets, don't use <tt>AND</tt> between search terms. It is implicit.)
+
+<p><a rel="help" href="&erddapUrl;/information.html"><b>Find out more about ERDDAP.</b></a>
+
+<p><b>Data Providers: You can
+  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">set up your own ERDDAP server</a>
+  and serve your own data.</b>
+  <br>The small effort to set up ERDDAP brings many benefits.
+If you already have a web service for distributing your data,
+you can set up ERDDAP to access your data via the existing service
+or via the source files or database.
+Then, people will have another way to access your data
+and will be able to download the data in additional file formats
+or as graphs or maps.
+]]></standardShortDescriptionHtml>
+
+<subset>Subset</subset>
+<subsetSelect>Select a subset</subsetSelect>
+<subsetNMatching>Current number of distinct combinations of matching data: {0}</subsetNMatching>
+<subsetInstructions>Make as many selections as you want, in any order. Each selection changes the other options (and the map and data below) accordingly.</subsetInstructions>
+<subsetOption>option</subsetOption>
+<subsetOptions>options</subsetOptions>
+<subsetRefineMapDownload>Refine the map and/or download the image</subsetRefineMapDownload>
+<subsetRefineSubsetDownload>Refine the data subset and/or download the data</subsetRefineSubsetDownload>
+<subsetClickResetClosest>Optional: Click on the map to select the closest data.</subsetClickResetClosest>
+<subsetClickResetLL>Click here to reset longitude and latitude to "{0}".</subsetClickResetLL>
+<subsetMetadata>Metadata</subsetMetadata>
+<subsetCount>Count</subsetCount>
+<subsetPercent>Percent</subsetPercent>
+
+<subsetViewSelect><![CDATA[
+To view {0},
+<br>check <tt>{1} : {2}</tt> above and select a value for one of the variables above.
+]]></subsetViewSelect>
+<subsetViewSelectDistinctCombos>the counts of distinct combinations of the variables listed above</subsetViewSelectDistinctCombos>
+<subsetViewSelectRelatedCounts>the related data counts</subsetViewSelectRelatedCounts>
+
+<subsetWhen>When {0},</subsetWhen>
+<subsetWhenNoConstraints>When there are no constraints,</subsetWhenNoConstraints>
+<!-- The following tag is preceded by 1 of the 2 preceding tags. 
+  {0} is subsetViewSelectDistintCombos or subsetViewSelectRelatedCounts. -->
+<subsetWhenCounts>{0} for the {1} values of "{2}" are:</subsetWhenCounts>
+
+
+<subsetComboClickSelect><![CDATA[
+To view the counts of distinct combinations of the variables listed above,
+<br>check <tt>{0} : {1}</tt> above and select a value for one of the variables above.
+]]></subsetComboClickSelect>
+
+<subsetNVariableCombos>In total, there are {0} rows of distinct combinations of the variables listed above.</subsetNVariableCombos>
+
+<subsetShowingAllRows>All of the rows are shown above.</subsetShowingAllRows>
+
+<subsetShowingNRows>The first {0} rows are shown above.  The remaining {1} rows aren''t being shown.</subsetShowingNRows>
+
+<subsetChangeShowing>To change the maximum number of rows displayed, change {0} above.</subsetChangeShowing>
+
+<subsetNRowsRelatedData>In total, there are {0} rows of related data.</subsetNRowsRelatedData>
+
+<subsetViewRelatedChange>To view the related data, change {0} above.</subsetViewRelatedChange>
+
+<subsetTotalCount>The total of the counts is {0}.</subsetTotalCount>
+
+<subsetView>View</subsetView>
+<subsetViewCheck>To view the map, check {0} above.</subsetViewCheck>
+<subsetViewCheck1>To view the {0}, you must select (above) at least one non-"{1}" option.</subsetViewCheck1>
+
+
+<subsetViewDistinctMap>Map of Distinct Data</subsetViewDistinctMap>
+<subsetViewRelatedMap>Map of All Related Data</subsetViewRelatedMap>
+<subsetViewDistinctDataCounts>Distinct Data Counts</subsetViewDistinctDataCounts>
+<subsetViewDistinctData>Distinct Data</subsetViewDistinctData>
+<subsetViewRelatedDataCounts>Related Data Counts</subsetViewRelatedDataCounts>
+<subsetViewRelatedData>Related Data</subsetViewRelatedData>
+
+<subsetViewDistinctMapTooltip><![CDATA[
+View a map of the distinct/unique combinations
+<br>of matching data.
+]]></subsetViewDistinctMapTooltip>
+
+<subsetViewRelatedMapTooltip><![CDATA[
+View a map of all of the data matching your selections.
+]]></subsetViewRelatedMapTooltip>
+
+<subsetViewDistinctDataCountsTooltip><![CDATA[
+View a table with counts of distinct combinations of
+<br>data matching the variables and constraints above.
+<br>The table shows all of the values of the last-selected
+<br>variable, not just the last selected value.
+]]></subsetViewDistinctDataCountsTooltip>
+
+<subsetViewDistinctDataTooltip><![CDATA[
+View a table of distinct combinations of data matching
+<br>the variables and constraints above, showing up to
+<br>0/10/100/1000/10000/100000 rows of data.
+<br>The table only shows the variables listed above.
+]]></subsetViewDistinctDataTooltip>
+
+<subsetViewRelatedDataCountsTooltip><![CDATA[
+View a table with counts of the matching, raw data.
+<br>The table shows all of the values of the last-selected
+<br>variable, not just the last selected value.
+]]></subsetViewRelatedDataCountsTooltip>
+
+<subsetViewRelatedDataTooltip><![CDATA[
+View a table of data matching your selections, showing
+<br>up to 0/10/100/1000/10000/100000 rows of data.
+<br>The table shows all of the dataset's variables, not just
+<br>the ones listed above.
+]]></subsetViewRelatedDataTooltip>
+
+
+<subsetWarn><![CDATA[
+<p>WARNING: This may involve lots of data.
+<br>For some datasets, this may be slow.
+<br>Consider using this only when you need it and
+<br>have selected a small subset of the data.
+]]></subsetWarn>
+            
+<subsetWarn10000><![CDATA[
+<p>WARNING: A table with 10000 rows may take a minute
+<br>to load.  A table with 100000 rows will take several
+<br>minutes to load and may crash your browser.
+<br>Use 10000 and 100000 only if you really need them.
+]]></subsetWarn10000>
+
+<subsetTooltip><![CDATA[
+This interactive web page helps you select a subset of this dataset
+<br>and view a map and a table of the selected data.
+<p>This web page just simplifies the creation of a certain type of tabledap URL.
+<br>To see and use these URLs, see the <tt>Refine ...</tt> links below.
+]]></subsetTooltip>
+
+<subsetNotSetUp>This dataset wasn't set up to support .subset (no &lt;subsetVariables&gt; were specified), probably because there are no suitable variables.</subsetNotSetUp>
+<subsetLongNotShown>[Some really long options aren't shown.]</subsetLongNotShown>
+
+
+<!-- This is the long description of ERDDAP, which is used on the Background Information web page.
+This can refer to &erddapUrl;, &requestFormatExamplesHtml; &ssUse and &resultsFormatExamplesHtml; .
+-->
+<theLongDescriptionHtml><![CDATA[
+<table style="width:640px; border-style:outset; border-width:0px; padding:0px; " 
+  cellspacing="0"> 
+<tr>
+<td>
+
+ERDDAP (the Environmental Research Division's Data Access Program) is a data server that gives you
+a simple, consistent way to download subsets of scientific datasets in common file formats and
+make graphs and maps.
+
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#problems">The Problems that ERDDAP Tries To Solve</a>
+<li><a href="#solutions">ERDDAP's Solutions</a>
+  <ul>
+  <li><a href="#video">For a quick introduction to ERDDAP, watch the first half of this 
+    <img align="bottom" alt="YouTube" src="&erddapUrl;/images/youtube.png" >
+    video</a>.
+    (5 minutes)
+  <li><a href="#localAndRemote">ERDDAP can get data from local (on the server's hard drive) and
+  remote (accessed via the web) data sources.</a>
+  <li><a href="#scientificData">ERDDAP can serve many types of scientific data, not just oceanographic data.</a>
+  <li><a href="#search">ERDDAP offers several ways to search for interesting datasets.</a>
+  <li><a href="#standardizedRequests">ERDDAP lets you request data in a standardized way.</a>
+  <li><a href="#userUnits">Requests for gridded data can be made in user units.</a>
+  <li><a href="#fileFormats">ERDDAP sends results in common data file formats.</a>
+  <li><a href="#LLAT">ERDDAP standardizes the variable names and units for longitude, latitude,
+  altitude, and time in the results.</a>
+  <li><a href="#metadata">ERDDAP can add or modify metadata.</a>
+  <li><a href="#images">ERDDAP lets you request .png and .pdf image files with graphs and maps.</a>
+  <li><a href="#compression">Requesting Compressed Files</a>
+  <li><a href="#interoperable">ERDDAP makes different types of data servers
+  (OPeNDAP, OBIS, SOS, WMS, ...) interoperable.</a>
+  <li><a href="#dataStructures">ERDDAP uses just two basic data structures to hold data.</a>
+  <li><a href="#subscriptions">ERDDAP offers email/URL and RSS subscription services.</a>
+  <li><a href="#diverseSources">ERDDAP is a web application and a web service.</a>
+  <li><a href="#rest">ERDDAP has REST- and ROA-style links to make its services available to
+  computer programs.</a>
+  <li><a href="#security">Security</a>
+  <li><a href="#chunks">ERDDAP processes data in chunks.</a>
+  <li><a href="#modular">ERDDAP has a modular structure.</a>
+  <li><a href="#pushPull">Data Dissemination / Data Distribution Networks: Push and Pull Technology</a>
+  <li><a href="#sweetSpot">Is ERDDAP a solution to everyone's data distribution / data access problems?</a>
+  <li><a href="#cite">How to Cite ERDDAP in a Paper</a>
+  <li><a href="#dataDistributionSystems">Guidelines for Data Distribution Systems</a>
+  <li><a href="#setup">You can set up your own ERDDAP server.</a>
+  </ul>
+<li><a href="#contact">Contact Us</a>
+</ul>
+
+<h2><a name="problems">The Problems</a> that ERDDAP Tries To Solve</h2>
+Without ERDDAP, when a person (or a computer program) looks on the Internet for a
+specific type of scientific data (for example, satellite sea surface temperature data),
+there are problems ...
+<ul>
+<li>Interesting datasets are hard to find because they are at many different web sites.
+  <br>&nbsp;
+<li>Each site requires a different protocol to request the data
+  &requestFormatExamplesHtml;.
+  <br>&nbsp;
+<li>Each site returns the data in a different format (for example, XML, SOAP+XML, OPeNDAP binary
+  data stream, ASCII text, HDF 4, HDF 5, NetCDF, ...) and it isn't the common file format
+  that you want.
+<!--  <a rel="help" href="http://www.xml.com/pub/a/98/10/guide0.html">XML</a>,
+  <a rel="help" href="http://www.w3schools.com/soap/soap_intro.asp">SOAP+XML</a>,
+  <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">OPeNDAP binary data stream</a>,
+  <a rel="help" href="http://www.webopedia.com/TERM/A/ASCII.html">ASCII text</a>,
+  <a rel="help" href="http://hdf.ncsa.uiuc.edu/products/hdf4/index.html">HDF 4</a>,
+  <a rel="help" href="http://hdf.ncsa.uiuc.edu/products/hdf5/index.html">HDF 5</a>,
+  <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF</a>, ...) -->
+  <br>&nbsp;
+<li>Data from different sites is hard to compare because the dates+times are expressed in
+  different formats for example, "Jan 2, 1985", "02-JAN-1985", "1/2/85", "2/1/85",
+  "1985-01-02", or days since Jan 1, 1980, or ...).
+</ul>
+
+<h2><a name="solutions">ERDDAP's Solutions</a></h2>
+
+<ul>
+<li><b><a name="video">For</a> a quick introduction to ERDDAP, 
+  <a rel="help" href="http://www.youtube.com/watch?v=18xZoXu1USM">watch the first half of this 
+  <img align="bottom" alt="YouTube" src="&erddapUrl;/images/youtube.png" >
+  video</a>.</b> (5 minutes)
+<br>In it, a scientist downloads ocean currents forecast data from ERDDAP to model a toxic
+spill in the ocean using  
+<a rel="bookmark"  href="http://response.restoration.noaa.gov/type_subtopic_entry.php?RECORD_KEY%28entry_subtopic_type%29=entry_id,subtopic_id,type_id&amp;entry_id%28entry_subtopic_type%29=292&amp;subtopic_id%28entry_subtopic_type%29=8&amp;type_id%28entry_subtopic_type%29=3">NOAA's GNOME software</a> (in 5 minutes!).
+This video shows:
+<ul>
+<li>With ERDDAP, you can easily <a href="#search">search for datasets</a>, 
+  <a href="#images">visualize data</a>, 
+  and <a href="#fileFormats">download data</a>.
+<li>ERDDAP can get data from <a href="#localAndRemote">local and remote data sources</a>
+  via <a href="#standardizedRequests">standardized requests</a>.
+<li>ERDDAP offers <a href="#rest">RESTful services</a>. A URL specifies an entire request.
+<li>ERDDAP can make <a href="#images">maps and graphs</a>.
+<li>ERDDAP offers <a href="#fileFormats">data</a> (not just maps and graphs).
+<li>ERDDAP can return data in lots of <a href="#fileFormats">file formats</a>
+  to enable getting data into lots of other programs.
+<li>NOAA works together: The analysis uses two free software programs from NOAA, 
+  ERDDAP and GNOME, and data served by NOAA's 
+  <a rel="bookmark" href="http://www.ncddc.noaa.gov/">NODC/NCDDC</a>
+  (facilitated by NOAA's 
+  <a rel="bookmark" href="http://geo-ide.noaa.gov/">UAF project</a>).
+<li>ERDDAP makes <a href="#scientificData">scientific data</a> more easily available 
+  to help scientists (and others) do their work more efficiently.
+<li>Using ERDDAP isn't hard. (Yes, Rich Signell is really smart, but anyone can use ERDDAP.)
+</ul>
+Thanks to Rich Signell.
+(One tiny error in the video: 
+when searching for datasets, don't use <tt>AND</tt> between search terms. It is implicit.)
+<br>&nbsp;
+
+
+<li><b><a name="localAndRemote">ERDDAP</a> can get data from local (on the server's hard drive) and
+remote (accessed via the web) data sources.</b>
+  <br>See the
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes">list
+    of types of data sources</a>
+    that ERDDAP can access.
+  <br>&nbsp;
+
+<li><b><a name="scientificData">ERDDAP</a> can serve many types of scientific data, not just oceanographic data.</b>
+  <br>ERDDAP is a Data Access Program that was written at
+      <a title="National Oceanic and Atmospheric Administration" rel="bookmark" href="http://www.noaa.gov">NOAA</a>
+      <a title="National Marine Fisheries Service" rel="bookmark" href="http://www.nmfs.noaa.gov">NMFS</a>
+      <a title="Southwest Fisheries Science Center" rel="bookmark" href="http://swfsc.noaa.gov">SWFSC</a>
+      <a title="Environmental Research Division" rel="bookmark" href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>.
+    The ERDDAP server at ERD serves oceanographic data,
+    but ERDDAP (the program) can access and serve any gridded or tabular data.
+  <br>&nbsp;
+
+<li><b><a name="search">ERDDAP</a> offers several ways to search for interesting datasets.</b>
+  <br>For example,
+  <a href="&erddapUrl;/search/index.html">full text search</a>,
+  <a href="&erddapUrl;/categorize/index.html">search by category</a> 
+  (also known as faceted search), and
+  <a href="&erddapUrl;/search/advanced.html">Advanced Search</a>.
+  Advanced Search combines all of the search techniques
+  and adds searches for datasets that have data within longitude, latitude, and time ranges,
+  so you can search for datasets based on many different criteria simultaneously.
+  <br>&nbsp;
+
+<li><b><a name="standardizedRequests">ERDDAP</a> lets you request data in a standardized way,</b>
+<br>regardless of the data source's request protocol.
+  <ul>
+  <li>ERDDAP makes gridded data available via griddap
+    (ERDDAP's implementation of the
+      <a rel="help" href="&erddapUrl;/griddap/index.html">OPeNDAP hyperslab protocol</a>)
+      and <a rel="help" href="&erddapUrl;/wms/index.html">WMS</a>.
+  <li>ERDDAP makes tabular data available via tabledap
+    (ERDDAP's implementation of the
+      <a rel="help" href="&erddapUrl;/tabledap/index.html">OPeNDAP constraint protocol</a>) and
+      <a rel="help" href="http://www.opengeospatial.org/standards/sos">SOS</a>.
+  </ul>
+  ERDDAP also provides Data Access Forms (web pages) which help humans create the OPeNDAP
+  requests. <a rel="bookmark" href="http://www.opendap.org">OPeNDAP's</a>
+    <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)</a>
+    is one of the recommended
+    <a rel="bookmark" href="http://www.ioos.gov/">IOOS</a>
+    <a rel="bookmark" href="http://www.ioos.gov/dif/">DMAC</a>
+    data transport mechanisms and a    
+    <a rel="bookmark" href="http://www.esdswg.org/spg/">NASA EOSDIS standard</a>.
+    (OPeNDAP is great!)
+  ERDDAP translates your request from the OPeNDAP, WMS, or SOS format to the data source's
+  request format and converts the response to one of ERDDAP's internal data structures.
+  Then ERDDAP reformats the data in the common file format of your choice (for example, as an
+  .html table, ESRI .asc, Google Earth .kml, .mat, .nc, ODV .txt, .csv, .tsv, .json, .xhtml, .png, .pdf)
+  and sends the file to you.
+  See the list of 
+  <a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">griddap file types</a>
+  and the list of 
+  <a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">tabledap file types</a>.
+  Other protocols for requesting the data (for example,
+    <a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS</a>)
+    may be added in the future.
+  ERDDAP is structured for these additions and there don't seem to be any impediments.
+  <br>&nbsp;
+
+<li><b><a name="userUnits">Requests</a> for gridded data can be made in user units.</b>
+  <br>Although requests for gridded data in ERDDAP can be made with array indices
+  (following the OPeNDAP specification), requests can also be in user units
+  (for example, degrees east), using
+  <a rel="help" href="&erddapUrl;/griddap/documentation.html#parentheses">a parentheses notation</a>,
+  since users think in those units,
+  not indices.
+  <br>&nbsp;
+
+<li><b><a name="fileFormats">ERDDAP</a> sends results in common data file formats.</b>
+  <br>The results can be returned in any of several common data file formats
+  &resultsFormatExamplesHtml;,
+  instead of just the original format or just the OPeNDAP transfer format (which has no
+  standard file manifestation). These files are created on-the-fly.
+  Since there are few internal data structures, it is easy to add additional file-type drivers.
+  See the complete list of 
+  <a rel="help" href="&erddapUrl;/griddap/documentation.html#fileType">grid file types</a>
+  and <a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">table file types</a>.
+  <br>&nbsp;
+
+<li><b><a name="LLAT">ERDDAP</a> standardizes the variable names and units for longitude, latitude, altitude,
+  depth, and time in the results.</b>
+  <br>To facilitate comparisons of data from different datasets, the requests and results in ERDDAP
+  use standardized space/time axis units:
+  <ul>
+  <li>longitude is always in degrees_east.
+  <li>latitude is always in degrees_north.
+  <li>altitude is always in meters with positive=up.
+  <li>depth is always in meters with positive=down.
+  <li>time, when formatted as a number, is always in "seconds since 1970-01-01T00:00:00Z"
+    (known as <a rel="help" href="http://en.wikipedia.org/wiki/Unix_time">Unix time</a> or epoch seconds,
+    which is
+      <a rel="bookmark"   href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUNITS</a>-compatible)
+      and, when formatted as a string, is formatted according
+    to the
+      <a rel="help" href="http://en.wikipedia.org/wiki/ISO_8601">ISO 8601:2004 "extended" format</a>
+      standard <span style="white-space: nowrap;">(YYYY-MM-DDThh:mm:ssZ,</span> for example,
+      <span style="white-space: nowrap;">"1985-01-02T00:00:00Z").</span>
+    (You can convert numeric times to/from ISO string times with ERDDAP's
+      <a rel="bookmark" href="&erddapUrl;/convert/time.html">time converter</a>.)
+    Also, to avoid time zone and daylight savings time confusion, time values are always
+    converted to the Zulu (UTC, GMT) time zone.
+  </ul>
+  This makes it easy to specify constraints in requests without having to worry about the altitude
+  data format (are positive values up or down? in meters or fathoms?) or the time data format
+  (a nightmarish realm of possible formats and time zones, for example, "Jan 2, 1985",
+  "02-JAN-1985", "1/2/85", "2/1/85", "1985-01-02", or days since Jan 1, 1980).
+  This makes the results from different data sources easy to compare.
+
+  <p>ERDDAP has a utility to 
+  <a rel="bookmark" href="&erddapUrl;/convert/time.html">Convert a Numeric Time to/from a String Time</a>.
+  <br>For more details, see 
+  <a rel="help" href="&erddapUrl;/convert/time.html#erddap">How ERDDAP Deals with Time</a>.
+
+  <p>Because the longitude, latitude, altitude, and time variables are specifically recognized,
+  ERDDAP is aware of the geo/temporal features of each dataset.
+  This is useful when making images with maps or time-series, and when saving data
+  in geo-referenced file types (e.g., .esriAscii, .geoJson, and .kml).
+
+  <p>Two common standards for writing units of measure are:
+  <ul>
+  <li><a rel="help" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUNITS</a>
+    - from
+    <a rel="bookmark" href="http://www.unidata.ucar.edu/">Unidata</a>,
+    which is used in
+    <a rel="help" href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a>,
+    <a rel="help" href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/">CF</a>, and
+    <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF</a> 
+    data files. For example,
+    UDUNITS has many options for degrees Celsius, including "degree_C" and "degC".
+    <br>&nbsp;
+  <li><a rel="help" href="http://unitsofmeasure.org/ucum.html">UCUM</a>
+    - the Unified Code for Units of Measure.
+    <a rel="bookmark" href="http://www.opengeospatial.org/">OGC</a>
+    services such as
+    <a rel="help" href="http://www.opengeospatial.org/standards/sos">SOS</a>,
+    <a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS</a>, and
+    <a rel="help" href="http://www.opengeospatial.org/standards/wms">WMS</a>
+    often refer to UCUM as UOM (Units Of Measure). For example, UCUM has just one
+    case-sensitive option for degrees Celsius: "Cel".
+    <br>&nbsp;
+  </ul>
+  Although ERDDAP doesn't require the use of either units standard, most ERDDAP installations
+  favor one or the other.
+  (ERDDAP administrators: you can specify this with the <tt>&lt;units_standard&gt;</tt> 
+  tag in setup.xml.)
+  You can convert UDUNITS to/from UCUM units with ERDDAP's
+      <a rel="bookmark" href="&erddapUrl;/convert/units.html">units converter</a>.
+  When you request data or a graph from a <a href="&erddapUrl;/tabledap/index.html">tabledap dataset</a>,
+      you can append <tt>&amp;units("UDUNITS")</tt>
+  or <tt>&amp;units("UCUM")</tt> to the end of the URL to request UDUNITS or UCUM units.
+      <a rel="help" href="&erddapUrl;/tabledap/documentation.html#functions">more information</a>
+  <br>&nbsp;
+
+<li><b><a name="metadata">ERDDAP</a> can add or modify metadata.</b>
+  <br>Many data sources have little or no
+    <a rel="help" href="http://en.wikipedia.org/wiki/Metadata">metadata</a>
+    (for example, 
+    <a rel="help" href="http://cf-pcmdi.llnl.gov/">CF metadata</a>)
+    describing the data.
+  ERDDAP lets (and encourages) the administrator to describe metadata which will be added
+  to datasets and their variables on-the-fly.
+  See the
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#addAttributes">addAttributes section</a>
+    of the
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html">directions for administrators</a>.
+  <br>&nbsp;
+
+<li><b><a name="images">ERDDAP</a> lets you request .png and .pdf image files with graphs and maps</b>
+  <br>of the data in addition to the actual data. And ERDDAP's Make A Graph lets you customize the images.
+  Some special uses of these images are:
+  <ul>
+  <li>Web page authors can
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/images/embed.html">embed a graph with the latest data in a web page</a> using an
+    HTML &lt;img&gt; tag.
+&ssUse;
+  <!--li>Anyone can use or make
+      <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/images/gadgets/GoogleGadgets.html">Google Gadgets</a>
+      to display images with the latest data. -->
+    <br>&nbsp;
+  </ul>
+
+<li><b><a name="compression">Requesting Compressed Files</a></b>
+  <br>ERDDAP doesn't offer results stored in compressed (e.g., .zip or .gzip) files.
+  Instead, ERDDAP looks for
+  <a rel="help" href="http://betterexplained.com/articles/how-to-optimize-your-site-with-gzip-compression/">accept-encoding</a>
+     in the HTTP GET request header sent by the client.
+  If a supported compression type ("gzip", "x-gzip", or "deflate") is found in the
+  accept-encoding list, ERDDAP includes "content-encoding" in the HTTP response header
+  and compresses the data as it transmits it.
+  It is up to the client program to look for "content-encoding" and decompress the data.
+  Browsers and OPeNDAP clients do this by default. They request compressed data and
+  decompress the returned data automatically.
+  Other clients (e.g., Java programs) have to do this explicitly.
+  <br>&nbsp;
+
+<li><b><a name="interoperable">ERDDAP</a>
+    makes different types of data servers (OPeNDAP, OBIS, SOS, WMS, ...) interoperable.</b>
+  <br>Different types of data servers are used in different scientific communities.
+  In the foreseeable future, it is unlikely that any one type will become dominant and
+  replace the others. So ERDDAP acts as a bridge between different types of
+  client programs (web browsers, IDV, Matlab, netCDF programs, ODV, WMS clients, etc.)
+  and the different types of data servers.
+  <ol>
+  <li>ERDDAP accepts client requests for data in different formats (e.g., OPeNDAP, WMS).
+  <li>ERDDAP converts a given request into the request format used by the source data server
+    (e.g., OPeNDAP, SOS, OBIS, ...) and sends that to the source data server.
+  <li>ERDDAP converts the response data from the source data server into an internal format,
+    including converting all time data to a common format: "seconds since 1970-01-01T00:00:00Z".
+  <li>ERDDAP converts the data from the internal format into the file format requested by the client
+    (e.g., .csv, Google Earth .kml, .htmlTable, .dods, .mat, .nc, ODV .txt, .png).
+  </ol>
+  Clients don't have to worry about, or know about, the type of the source data server.
+  They just get the data they want, in the file format they want.
+  <br>&nbsp;
+
+<li><b><a name="dataStructures">ERDDAP</a> uses just two basic data structures to hold data.</b>
+  <ul>
+  <li>Since it is difficult for human clients and computer clients to deal with a complex set of
+    possible dataset structures, ERDDAP uses just two basic data structures:
+    <ul>
+    <li>a <a rel="help" href="&erddapUrl;/griddap/documentation.html#dataModel">gridded data structure</a>
+      (for example, for satellite data and model data) and
+    <li>a <a rel="help" href="&erddapUrl;/tabledap/documentation.html#dataModel">tabular data structure</a>
+      (for example, for in-situ buoy, station, and trajectory data).
+    </ul>
+  <li>Certainly, not all data can be expressed in these structures, but much of it can.
+    Tables, in particular, are very flexible data structures (look at the phenomenal success
+    of
+      <a rel="help" href="http://en.wikipedia.org/wiki/Relational_database_management_system">relational database</a> programs).
+  <li>This makes data queries easier to construct.
+  <li>This makes data responses have a simple structure, which makes it easier to serve the data
+    in a wider variety of standard file types (which often just support simple data structures).
+    This is the main reason that we set up ERDDAP this way.
+  <li>This, in turn, makes it very easy for us (or anyone) to write client software which works
+    with all ERDDAP datasets.
+  <li>This makes it easier to compare data from different sources, for example for an
+    Integrated Ecosystem Analysis (IEA).
+  <li>We are very aware that if you are used to working with data in other data structures
+    you may initially think that this approach is simplistic or insufficient.
+    But all data structures have tradeoffs. None is perfect.
+    Even the do-it-all structures have their downsides: working with them is complex and
+    the files can only be written or read with special software libraries.
+    If you accept ERDDAP's approach enough to try to work with it, you may find that it has
+    its advantages (notably the support for multiple file types that can hold the data responses).
+    The  
+    <a rel="help" href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html">original ERDDAP slide show</a>
+    (particularly the
+    <a rel="help" href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/erddapTechTalk.html#dataStructures">data
+    structures slide</a>)
+    talks about these issues.
+  <li>And even if this approach sounds odd to you, most ERDDAP clients will never notice --
+    they will simply see that all of the datasets have a nice simple structure and they will
+    be thankful that they can get data from a wide variety of sources returned in a wide
+    variety of file formats.
+    <br>&nbsp;
+  </ul>
+
+
+<li><b><a name="subscriptions">ERDDAP</a> offers
+  <a rel="help" href="&erddapUrl;/subscriptions/index.html">email/URL</a> and
+  <a rel="help" href="http://en.wikipedia.org/wiki/RSS_(file_format)">RSS</a> subscription services,</b>
+  so you can be notified whenever a dataset changes.
+  <ul>
+  <li>ERDDAP is very good at detecting changes to gridded datasets because it can detect
+    when the axis values (e.g., the time values) change.
+  <li>ERDDAP is not very good at detecting changes to tabular datasets because there are usually
+    no changes to the metadata when new data is added.
+  <li>ERDDAP will detect if a dataset becomes unavailable (but perhaps not immediately).
+  <li>ERDDAP will detect when that dataset becomes available again.
+  <li>ERDDAP makes no promises about the suitability or accuracy of these services
+    (see ERDDAP's <a rel="copyright" href="&erddapUrl;/legal.html">DISCLAIMERS</a>).
+  </ul>
+
+  <p><b><a rel="help" href="&erddapUrl;/subscriptions/index.html">Email/URL</a> Subscriptions</b>
+     (not available at some ERDDAP installations)
+     Whenever a dataset changes, the email/URL subscription system will <b>immediately</b>
+     send you an email or contact a URL that you specify.
+     Email/URL subscriptions are not available at some ERDDAP installations.
+     To set up an email/URL subscription, click on one of the envelope icons
+       <img alt="Subscribe" align="top" title="The envelope icon." src="&erddapUrl;/images/envelope.gif" >
+       that appear at the far right on ERDDAP web pages with lists of datasets
+        (<a rel="contents" href="&erddapUrl;/info/index.html">example</a>)
+       and on the Data Access Forms and Make A Graph web pages for individual datasets
+        (<a href="&erddapUrl;/griddap/etopo180.html">example</a>)
+       if this ERDDAP installation supports email/URL subscriptions.
+     (Computer programmers: if you write web services, you can use the URL system
+     to have ERDDAP notify your web service immediately whenever a dataset changes.)
+
+  <p><b><a rel="help" href="http://en.wikipedia.org/wiki/RSS_(file_format)">RSS</a> Subscriptions</b>
+     RSS is standard system for notifying users when the content at a web site has changed.
+     Modern web browsers have an RSS client built in or you can use a separate
+       <a rel="help" href="http://blogspace.com/rss/readers">RSS Reader</a>.
+     ERDDAP offers a separate RSS 2.01 feed for each dataset so that you can find out
+     when interesting datasets have changed.
+     To subscribe to a dataset's RSS feed, click on one of the RSS icons
+       <img alt="RSS" align="top" title="The RSS icon." src="&erddapUrl;/images/rss.gif" >
+       that appear at the far right on ERDDAP web pages with lists of datasets
+        (<a rel="contents" href="&erddapUrl;/info/index.html">example</a>)
+       or on the Data Access Forms and Make A Graph web pages for individual datasets
+        (<a href="&erddapUrl;/griddap/etopo180.html">example</a>).
+
+  <p><b>Comparison</b>
+    The RSS service may be just what you are looking for.  It is a nice standard.
+    But if you need to know as soon as possible when a dataset changes, use the
+    email/URL system, not RSS. RSS clients periodically (every hour?) request and read
+    the RSS XML document to look for changes.
+    So typically, an RSS client will not detect a change to a dataset quickly (average 30 minutes?).
+    In contrast, the email/URL subscription system acts immediately whenever ERDDAP detects
+    a change to a dataset.
+    The more pro-active approach of the email/URL system is also much more efficient:
+    You may be able to set your RSS client to check for changes every minute (don't do it!),
+    but that would just lead to lots of unnecessary requests to the ERDDAP server
+    and it still wouldn't detect changes immediately.
+    <br>&nbsp;
+
+<li><b><a name="diverseSources">ERDDAP</a> is a
+    <a rel="help" href="http://en.wikipedia.org/wiki/Web_application">web application</a> 
+    (for humans with browsers)
+  <br>and a
+    <a rel="help" href="http://en.wikipedia.org/wiki/Web_service">web service</a>
+    (with <a rel="help" href="&erddapUrl;/rest.html">services for computer programs</a>).</b>
+  <br>&nbsp;
+
+<li><b><a name="rest">ERDDAP</a> has
+  <a rel="help" href="http://en.wikipedia.org/wiki/Representational_State_Transfer">REST</a>- 
+  and
+  <a rel="help" href="http://www.crummy.com/writing/RESTful-Web-Services/">ROA</a>-style
+  links to make its services available to computer programs.</b>
+  <br>These features can be used to build another web service on top of ERDDAP
+  (making ERDDAP do all the work!).
+  ERDDAP is not intended to be a high-level data exploration/graphing service.
+  Instead, ERDDAP is intended to provide services for such web sites and programs.
+  So if you have an idea for a better interface to the data the ERDDAP serves,
+  we encourage you to build your own web application or web service, and use ERDDAP
+  as the foundation. Read more about ERDDAP's 
+    <a rel="help" href="&erddapUrl;/rest.html">Services for Computer Programs</a>.
+  <br>&nbsp;
+
+<li><b><a name="security">Security</a></b> - By default, ERDDAP runs as an entirely public server with no login
+  system and no restrictions to data access.
+  However, an ERDDAP administrator can configure ERDDAP to restrict access to some
+  or all datasets to users who log in and have been assigned certain roles.
+  ERDDAP has built-in methods for authentication (logging in).
+  If an ERDDAP installation has authentication turned on, there will be a "log in" link
+  at the top of each web page.
+  Users never have to log in to access the publicly available datasets.
+  Users who have logged in can access public datasets and the private datasets to which
+  they are allowed access.
+  ERDDAP uses http: URLs for users who aren't logged in, and https: (Secure Sockets Layer)
+  URLs for users who are.
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#security">more information</a>
+  <br>&nbsp;
+
+<li><b><a name="chunks">ERDDAP</a> processes data in chunks.</b>
+  <br>To save memory (a big issue) and make responses start sooner, ERDDAP processes
+  data requests in chunks -- repeatedly getting a chunk of data from the source,
+  cleaning it up (for example, adding
+    <a rel="help" href="http://en.wikipedia.org/wiki/Metadata">metadata</a>),
+    and sending that to the client.
+  For many data sources, this means that the first chunk of data (for example, from the
+  first sensor) gets to the client in seconds instead of minutes (for example, after data
+  from the last sensor has been retrieved), reassuring the client that the data is coming.
+  From a memory standpoint, this allows numerous large requests (each larger than available
+  memory) to be handled simultaneously.
+  <br>&nbsp;
+
+<li><b><a name="modular">ERDDAP</a> has a modular structure.</b>
+  <br>ERDDAP is structured so that it is easy to add different components
+  (for example, a class to request data from a SOS server and store it as a table).
+  The new component then gains all the features and capabilities of the parent
+  (for example, support for OPeNDAP requests and the ability to save the data in several
+  common file formats).
+  <br>&nbsp;
+
+<li><b><a name="pushPull">Data Dissemination / Data Distribution Networks: Push and Pull Technology</a></b>
+<br>Normally, ERDDAP acts as an intermediary: it takes a request from a user;
+gets data from a remote data source; reformats the data; and sends it to the user.
+<a rel="help" href="http://en.wikipedia.org/wiki/Pull_technology">Pull Technology</a>:
+But ERDDAP also has the ability to actively get all of the available data
+from a remote data source and
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">store
+a local copy of the data</a>.
+<a rel="help" href="http://en.wikipedia.org/wiki/Push_technology">Push Technology</a>:
+By using ERDDAP's <a href="#subscriptions">subscription services</a>,
+other data servers can be notified
+as soon as new data is available so that they can request the data (by pulling the data).
+ERDDAP's
+<a rel="help"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGridFromErddap</a> and <a rel="help"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a> use ERDDAP's subscription services and
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag system</a>
+so that they will be notified immediately when new data is available.
+You can combine these to great effect:
+if you wrap an EDDGridCopy around an EDDGridFromErddap dataset
+(or wrap an EDDTableCopy around an EDDTableFromErddap dataset),
+ERDDAP will automatically create and maintain a local copy of another ERDDAP's dataset.
+Because the subscription services work as soon as new data is available,
+push technology disseminates data very quickly (within seconds).
+
+<p>This architecture puts each ERDDAP administrator in charge of determining where the data
+for his/her ERDDAP comes from. Other ERDDAP administrators can do the same.
+There is no need for coordination between administrators.
+If many ERDDAP administrators link to each other's ERDDAPs,
+a data distribution network is formed.
+Data will be quickly, efficiently, and automatically disseminated from data sources
+(ERDDAPs and other servers) to data re-distribution sites (ERDDAPs) anywhere in the network.
+A given ERDDAP can be both a source of data for some datasets and a re-distribution site
+for other datasets.
+The resulting network is roughly similar to data distribution networks set up with programs
+like
+   <a rel="bookmark" href="http://www.unidata.ucar.edu/software/idd/">Unidata's IDD/IDM</a>,
+   but less rigidly structured.
+<br>&nbsp;
+
+</ul>
+
+
+
+<p><b><a name="sweetSpot">Is</a> ERDDAP a solution to everyone's data distribution / data access problems?</b>
+<br>No. ERDDAP tries to find a sweet spot that is a really good solution to most of the
+data distribution problems that we confronted.
+ERDDAP takes a middleware approach:
+It can get data from lots of different types of remote data servers
+and it can give that data to clients in lots of different file formats.
+It is designed to be an agnostic solution which seeks to make other data servers
+(OPeNDAP, SOS, OBIS, WMS, ...) interoperable.
+Is there one perfect data server that meets everyone's needs perfectly?  We don't think so.
+And even if you think there is or will be, it will be a long time before everyone switches
+to it, if ever. Until then, ERDDAP is available right now to make other data servers
+interoperable and to serve data right now.
+
+<p><a name="complexDatasets">ERDDAP</a> can handle many/most datasets as is, but not all.
+It isn't that the remaining datasets (e.g., model data using a cubed sphere projection)
+aren't important.  It's just that ERDDAP's goal of returning data in common file formats
+(some of which are pretty simple), precludes a more complex internal data structure.
+Groups of researchers working with more complex data structures often already have specialized
+data servers and specialized client software which are customized to their community's needs.
+ERDDAP, as a general purpose data server, doesn't try to compete with these specialized data servers.
+They are customized to the needs of their community and do a great job.
+However, those datasets are often only "understood" by the specialized software in that community.
+
+<p>A Work-Around for Complex Datasets - ERDDAP has a way to handle complex datasets that it
+can't handle directly. Just as a
+<a rel="help" href="http://en.wikipedia.org/wiki/Relational_database_management_system">relational database</a>
+can store a complex dataset by using just
+one simple data structure (a table), ERDDAP can serve the data from more complex datasets by
+breaking the source dataset into a few ERDDAP datasets, each with similar, simple data structures.
+For example, some gridded environmental model datasets can be stored in ERDDAP by
+putting the sea surface variables ([time][latitude][longitude]) in one ERDDAP dataset,
+and by putting the variables with altitude ([time][altitude][latitude][longitude])
+in another ERDDAP dataset. We know this isn't ideal, but it is necessary to allow ERDDAP
+to return data in common file formats (some of which are pretty simple).
+
+<p>Another approach to dealing with complex datasets (e.g., for model data using a cubed
+sphere projection) is to also offer a reprojected version of the dataset
+([time][altitude][latitude][longitude]) which ERDDAP can work with easily.
+These simpler data structures aren't meant to replace the original data structures,
+but they can be a useful way to distribute the data to a wider audience.
+
+<p><b><a name="cite">How</a> to Cite ERDDAP in a Paper</b>
+<br>If you want to cite ERDDAP itself in a scientific paper, please use something like
+<pre>
+Simons, R.A. 2011. ERDDAP - The Environmental Research Division's 
+Data Access Program. http://coastwatch.pfeg.noaa.gov/erddap . 
+Pacific Grove, CA: NOAA/NMFS/SWFSC/ERD.</pre>
+
+<p>If you want to cite a specific dataset in ERDDAP, please generate the citation based on the information in the dataset's metadata.  If you are referring to a specific subset of a dataset, please include the complete URL needed to replicate that download.
+
+<p><b><a name="dataDistributionSystems">Guidelines</a> for Data Distribution Systems</b>
+<br>Bob's opinions about the design
+and evaluation of data distribution systems can be found
+<a rel="help" href="http://coastwatch.pfel.noaa.gov/erddap/images/erddapTalk/erdData.html">here</a>.
+
+<p><b><a name="setup">You</a> can</b>
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html"><b>Set Up Your Own ERDDAP Server</b></a>
+and serve your own data.
+<ul>
+<li>The small effort to set up ERDDAP brings many benefits.
+<li>If you already have a web service for distributing your data, you can set up ERDDAP
+  to access your data via the existing service or via the source files or database.
+  Then, people will have another way to access your data and will be able to download
+  the data in additional file formats or as graphs or maps.
+<li>If you have datasets that are in high demand, you can install
+  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/grids.html">multiple ERDDAPs
+  that work together</a> to scale up and meet the needs of a large data
+  distribution center.
+</ul>
+
+<h2><a name="contact">Contact Us</a></h2>
+If you have questions, suggestions, or comments about ERDDAP in general (not this specific
+ERDDAP installation), please send an email to <tt>bob dot simons at noaa dot gov</tt>
+and include the ERDDAP URL directly related to your question or comment.
+
+</td>
+</tr>
+</table>
+]]></theLongDescriptionHtml>
+
+
+<viewAllDatasetsHtml>View a List of All Datasets</viewAllDatasetsHtml>
+
+<waitThenTryAgain>There was a (temporary?) problem.  Wait a minute, then try again.  (In a browser, click the Reload button.)</waitThenTryAgain>
+
+<sosDescriptionHtml>The Sensor Observation Service (SOS) lets you request data via the SOS protocol.  This is an EXPERIMENTAL WORK-IN-PROGRESS.</sosDescriptionHtml>
+
+<sosLongDescriptionHtml><![CDATA[
+ERDDAP's Sensor Observation Service (SOS) lets you request data via the SOS protocol.
+<br><font class="warningColor"><b>This is an EXPERIMENTAL WORK-IN-PROGRESS.</b></font>
+<p><a rel="help" href="http://www.opengeospatial.org/standards/sos">SOS</a>
+is an <a rel="bookmark" href="http://www.opengeospatial.org/">Open Geospatial Consortium (OGC)</a>
+standard that "provides an API for managing deployed
+<br>sensors and retrieving sensor data and specifically 'observation' data. Whether from in-situ sensors
+<br>(e.g., water monitoring) or dynamic sensors (e.g., satellite imaging), measurements made from sensor
+<br>systems contribute most of the geospatial data by volume used in geospatial systems today."
+
+<p>The SOS specification is intentionally incomplete. Some parts must be specified separately.
+<br>ERDDAP's SOS service is intended to be compatible with the
+  <a rel="bookmark" href="http://sdf.ndbc.noaa.gov/sos/">IOOS DIF SOS servers</a>
+  (which use the
+<br><a rel="bookmark" href="http://www.csc.noaa.gov/ioos/schema/IOOS-DIF/">IOOS DIF SOS schemas</a>)
+  and the <a rel="bookmark" href="http://www.oostethys.org/">OOSTethys SOS servers</a>.
+]]></sosLongDescriptionHtml>
+
+<unknownDatasetID>Currently unknown datasetID={0}</unknownDatasetID>
+<unknownProtocol>Unknown protocol={0}</unknownProtocol>
+<unsupportedFileType>Unsupported fileType={0}</unsupportedFileType>
+
+<wcsDescriptionHtml>The Web Coverage Service (WCS) lets you request a data file or an image file with gridded data.  This is an EXPERIMENTAL WORK-IN-PROGRESS.</wcsDescriptionHtml>
+
+<wcsLongDescriptionHtml><![CDATA[
+ERDDAP's Web Coverage Service (WCS) lets you request a data file or an image file with gridded data.
+<br><font class="warningColor"><b>This is an EXPERIMENTAL WORK-IN-PROGRESS.</b></font>
+<p><a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS</a>
+is an <a rel="bookmark" href="http://www.opengeospatial.org/">Open Geospatial Consortium (OGC)</a>
+standard for "access to geospatial
+<a href="http://www.opengeospatial.org/ogc/glossary/c">coverages</a>.
+<br>The term 'grid coverages' typically refers to content such as satellite images, digital aerial photos,
+<br>digital elevation data, and other phenomena represented by values at each measurement point."
+]]></wcsLongDescriptionHtml>
+
+<wmsDescriptionHtml>The Web Map Service (WMS) lets you request an image with data plotted on a map.</wmsDescriptionHtml>
+
+<wmsInstructions><![CDATA[
+This web page is using <a rel="bookmark" href="http://openlayers.org">OpenLayers</a>
+to display maps which are created on-the-fly by ERDDAP's
+<br>Web Map Server (WMS) version &wmsVersion;.
+<br>The controls on the left of the map are for navigation.
+The control on the right manages the layers.
+<br>You can select different values for the data variable's dimension(s):
+]]></wmsInstructions>
+
+<wmsLongDescriptionHtml><![CDATA[
+ERDDAP's Web Map Service (WMS) lets you request an image with data plotted on a map.
+<br><a rel="help" href="http://www.opengeospatial.org/standards/wms">WMS</a>
+is an <a rel="bookmark" href="http://www.opengeospatial.org/">Open Geospatial Consortium (OGC)</a>
+and <a rel="help" href="http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=32546">ISO (19128)</a>
+standard for "the creation
+<br>and display of registered and superimposed map-like views of information that come
+<br>simultaneously from multiple remote and heterogeneous sources."
+]]></wmsLongDescriptionHtml>
+
+<wmsManyDatasets><![CDATA[
+<br>Many datasets can also be accessed via the Web Map Service (WMS).
+]]></wmsManyDatasets>
+
+</erddapMessages>
+

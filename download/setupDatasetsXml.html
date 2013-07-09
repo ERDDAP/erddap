@@ -66,7 +66,8 @@ in [tomcat]/content/erddap/ to describe the datasets that your ERDDAP installati
   <li><a rel="help" href="#encodingSpecialCharacters">Encoding Special Characters</a>
   <li><a rel="help" href="#noSyntaxErrors">XML doesn't tolerate syntax errors.</a>
   <li><a rel="help" href="#diagnoseProblems">Other Ways To Help Diagnose Problems With Datasets</a>
-  <li><a rel="help" href="#LLAT">The longitude, latitude, altitude, and time (LLAT) variables are special.</a>
+  <li><a rel="help" href="#LLAT">The longitude, latitude, altitude (or depth), and time (LLAT) 
+    variables are special.</a>
   <li><a rel="help" href="#dataStructures">Why just two basic data structures?</a>
   <li><a rel="help" href="#differentDimensions">What if the grid variables in the source dataset DON'T share the 
       same axis variables?</a>
@@ -81,6 +82,7 @@ in [tomcat]/content/erddap/ to describe the datasets that your ERDDAP installati
 
 <li><a rel="help" href="#details">Details</a> (Read as needed)
   <ul>
+  <li><a rel="help" href="#NcML">NcML</a>
   <li><a rel="help" href="#convertToPublicSourceUrl"><tt>&lt;convertToPublicSourceUrl&gt;</tt></a>
   <li><a rel="help" href="#requestBlacklist"><tt>&lt;requestBlacklist&gt;</tt></a>
   <li><a rel="help" href="#subscriptionEmailBlacklist"><tt>&lt;subscriptionEmailBlacklist&gt;</tt></a>
@@ -92,12 +94,14 @@ in [tomcat]/content/erddap/ to describe the datasets that your ERDDAP installati
     <li><a rel="help" href="#active"><tt>active="..."</tt></a>
 
     <li><a rel="help" href="#accessibleTo"><tt>&lt;accessibleTo&gt;</tt></a>
-    <li><a rel="help" href="#altitudeMetersPerSourceUnit"><tt>&lt;altitudeMetersPerSourceUnit&gt;</tt></a>
+    <li><a rel="help" href="#defaultDataQuery"><tt>&lt;defaultDataQuery&gt;</tt></a>
+    <li><a rel="help" href="#defaultGraphQuery"><tt>&lt;defaultGraphQuery&gt;</tt></a>
     <li><a rel="help" href="#fgdcFile"><tt>&lt;fgdcFile&gt;</tt></a>
     <li><a rel="help" href="#iso19115File"><tt>&lt;iso19115File&gt;</tt></a>
     <li><a rel="help" href="#onChange"><tt>&lt;onChange&gt;</tt></a>
 
     <li><a rel="help" href="#reloadEveryNMinutes"><tt>&lt;reloadEveryNMinutes&gt;</tt></a>
+    <li><a rel="help" href="#updateEveryNMillis"><tt>&lt;updateEveryNMillis&gt;</tt></a>
     <li><a rel="help" href="#sourceCanConstrainStringEQNE"><tt>&lt;sourceCanConstrainStringEQNE&gt;</tt></a>
     <li><a rel="help" href="#sourceCanConstrainStringGTLT"><tt>&lt;sourceCanConstrainStringGTLT&gt;</tt></a>
     <li><a rel="help" href="#sourceCanConstrainStringRegex"><tt>&lt;sourceCanConstrainStringRegex&gt;</tt></a>
@@ -163,7 +167,7 @@ directory or URL. You have to write a chunk of XML for datasets.xml which descri
   The additional metadata is a good addition to your dataset and helps ERDDAP do a better job of 
   presenting your data to users who aren't familiar with it.
 <li>ERDDAP needs you to do special things with the 
-  <a rel="help" href="#LLAT">longitude, latitude, altitude, and time variables</a>.
+  <a rel="help" href="#LLAT">longitude, latitude, altitude (or depth), and time variables</a>.
 </ul>
 If you buy into these ideas and expend the effort to create the XML for datasets.xml,
 you get all the advantages of ERDDAP, including:
@@ -214,9 +218,12 @@ And if you get stuck, please send an email with the details to <tt>bob dot simon
       <li>GenerateDatasetsXml asks you a series of questions so that it can access the dataset's source.
       <li>If you answer the questions correctly, GenerateDatasetsXml will connect to the dataset's source
          and gather basic information (e.g., variable names).
-      <li>GenerateDatasetsXml will generate and print a rough draft of the dataset XML for that dataset
-        and put the information on the system clipboard.
-      <li>You can then paste it into your datasets.xml file and start to edit it.
+      <li>GenerateDatasetsXml will generate, display on the screen, and 
+        put on the system clipboard (which sometimes fails on Linux)
+        a rough draft of the dataset XML for that dataset.
+        You can then paste it into your datasets.xml file and start to edit it.
+      <li>Diagnostic information and the rough draft of the dataset XML will be logged to 
+        [bigParentDirectory]/logs/generateDatasetsXmlLog.txt .
       <li>You can then use DasDds (see below) to repeatedly test the XML for that dataset.
       </ol>
       Often, one of your answers won't be what GenerateDatasetsXml needs.
@@ -308,7 +315,7 @@ Please read this entire web page carefully, especially these notes.
 dataset description in dataset.xml and then modifying it.
 <br>&nbsp;
 
-<li><b><a name="encodingSpecialCharacters">Encoding</a> Special Characters</b> - Since datasets.xml is an XML file, you need to encode "&amp;", "&lt;", and "&gt;" 
+<li><b><a name="encodingSpecialCharacters">Encoding</a> Special Characters</b> - Since datasets.xml is an XML file, you MUST encode "&amp;", "&lt;", and "&gt;" 
   in any content as "&amp;amp;", "&amp;lt;", and "&amp;gt;".
   <br>Wrong: <tt>&lt;title&gt;Time &amp; Tides&lt;/title&gt;</tt>
   <br>Right: &nbsp;&nbsp;<tt>&lt;title&gt;Time &amp;amp; Tides&lt;/title&gt;</tt> 
@@ -338,67 +345,84 @@ to verify that the result is well-formed XML by pasting the XML text into an XML
 <br>&nbsp;
 </ul>
 
-<li><b><a name="LLAT">The longitude, latitude, altitude, and time (LLAT)</a> variables names are special</b>.
+<li><b><a name="LLAT">The longitude, latitude, altitude (or depth), 
+  and time (LLAT)</a> variable destinationNames are special</b>.
   <ul>
-  <li>LLAT variables are made known to ERDDAP if the axis variable's (for EDDGrid datasets) or data
-    variable's (for EDDTable datasets) destinationName is "longitude", "latitude", "altitude", or "time".
-  <li>We strongly encourage you to use these standard names for these variables whenever possible.
-    If you don't use these special variable names, ERDDAP won't recognize their significance and, for example, 
-    will make a graph instead of a map if the x axis variable is lon and the y axis variable is lat.
-  <li>Use the destinationNames "longitude" and "latitude" only if the units are degrees_east 
-    and degrees_north, respectively.
-    If your data doesn't fit these requirements, use different variable names 
-    (e.g., lonRadians, latRadians).
-  <li>Use the destinationName "altitude" only if the data is the distance above or below sea level.
-    Use 
-    <a rel="help" href="#altitudeMetersPerSourceUnit"><tt>&lt;altitudeMetersPerSourceUnit&gt;</tt></a>
-    to convert the data to meter above sea level (e.g., use -1 for data that was
-    originally depth in meters).
-    If you know the 
-    <a rel="help" href="http://www.oostethys.org/best-practices/verticalcrs">vertical&nbsp;datum</a>, 
-    please specify it in the metadata.    
-    If your data doesn't fit these requirements, 
-    use a different destinationName (e.g., aboveGround, depth,
-    distanceToBottom).
-  <li>Use the destinationName "time" only for variables that include the entire date+time 
-    (or date, if that is all there is).
-    If, for example, there are separate columns for date and timeOfDay, don't use the variable name "time".
-    See <a rel="help" href="#units">units</a> for a discussion of time units.
-  <li>ERDDAP will automatically add lots of metadata to LLAT variables (e.g., "ioos_category", "units", 
-    and several standards-related attributes like "_CoordinateAxisType"). 
-  <li>ERDDAP will automatically, on-the-fly, add lots of global metadata related to the LLAT values 
-    of the selected data subset (e.g., "geospatial_lon_min"). 
-  <li>Clients that support these metadata standards will be able to take advantage of the added metadata
-    to position the data in time and space.
-  <li>Clients will find it easier to generate queries that include LLAT variables because the variable's 
-    names are the same in all relevant datasets.
-  <li>LLAT variables are treated specially by Make A Graph. For example, if the X Axis variable is 
-    "longitude" and the Y Axis variable is "latitude", you will get a map (using a standard
-    projection, and with a land mask, political boundaries, etc.) instead of a graph.
-  <li>If you have longitude and latitude data expressed in different units and thus 
-    with different destinationNames, e.g.,
-    lonRadians and latRadians, Make A Graph will make graphs (e.g., time series) instead of maps.
-  <li><a name="timeVariable">The</a> time variable and related <a rel="help" href="#units">timeStamp variables</a> are unique in that they
-    always convert data values from the source's time format (what ever it is) into a numeric value
-    (seconds since 1970-01-01T00:00:00Z) or a String value (ISO 8601:2004(E) format), depending on the
-    situation.
-  <li>Note that ERDDAP does NOT follow the CF standard when converting "years since" and
-    "months since" time values to "seconds since". The CF standard defines a year as a 
-    fixed, single value: 3.15569259747e7 seconds. And CF defines a month as year/12.
-    Unfortunately, most/all datasets that we have seen that use "years since" or 
-    "months since" clearly intend the values to be calendar years or calendar months. 
-    For example, "3 months since 1970-01-01" is clearly intended to mean 1970-04-01.
-    So, ERDDAP interprets "years since" and "months since" as calendar years and months,
-    and does not follow the strict CF standard.
-  <li>When a user requests time data, they can request it by specifying the time as a numeric value
-    (seconds since 1970-01-01T00:00:00Z) or a String value (ISO 8601:2004(E) format).
-  <li>See <a rel="help" href="#units">units</a> for more information about time and timeStamp variables.
-  <li>ERDDAP has a utility to 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Convert
-    a Numeric Time to/from a String Time</a>.
-  <li>See <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html#erddap">How ERDDAP
-     Deals with Time</a>.
-    <br>&nbsp;
+  <li>In general:
+    <ul>
+    <li>LLAT variables are made known to ERDDAP if the axis variable's (for EDDGrid datasets) or data
+      variable's (for EDDTable datasets) destinationName is "longitude", "latitude", "altitude", "depth", or "time".
+    <li>We strongly encourage you to use these standard names for these variables whenever possible.
+      If you don't use these special variable names, ERDDAP won't recognize their significance.
+      For example, LLAT variables are treated specially by Make A Graph: if the X Axis variable is 
+      "longitude" and the Y Axis variable is "latitude", you will get a map (using a standard
+      projection, and with a land mask, political boundaries, etc.) instead of a graph.    
+    <li>ERDDAP will automatically add lots of metadata to LLAT variables (e.g., "ioos_category", "units", 
+      and several standards-related attributes like "_CoordinateAxisType"). 
+    <li>ERDDAP will automatically, on-the-fly, add lots of global metadata related to the LLAT values 
+      of the selected data subset (e.g., "geospatial_lon_min"). 
+    <li>Clients that support these metadata standards will be able to take advantage of the added metadata
+      to position the data in time and space.
+    <li>Clients will find it easier to generate queries that include LLAT variables because the variable's 
+      names are the same in all relevant datasets.
+    </ul>
+  <li>For the <a name="longitudeVariable">"longitude"</a> variable and 
+      the <a name="latitudeVariable">"latitude"</a> variable:
+    <ul>
+    <li>Use the destinationNames "longitude" and "latitude" only if the units are degrees_east 
+      and degrees_north, respectively.
+      If your data doesn't fit these requirements, use different variable names 
+      (e.g., x, y, lonRadians, latRadians).
+    <li>If you have longitude and latitude data expressed in different units and thus 
+      with different destinationNames, e.g.,
+      lonRadians and latRadians, Make A Graph will make graphs (e.g., time series) instead of maps.
+    </ul>
+  <li>For the <a name="altitudeVariable">"altitude"</a> variable 
+    and the <a name="depthVariable">"depth"</a> variable:
+    <ul>
+    <li>Use the destinationName "altitude" to identify the data's distance 
+      above sea level (positive values).  
+      Optionally, you may use "altitude" for distances below sea level if the values are negative 
+      below the sea (or if you use 
+      <br>
+      <a rel="help" href="#scale_factor"><tt>&lt;att name="scale_factor"&gt;-1&lt;/att&gt;</tt></a> 
+      to convert depth values into altitude values.
+    <li>Use the destinationName "depth" to identify the data's distance 
+      below sea level (positive values).  
+    <li>A dataset may not have both "altitude" and "depth" variables.
+    <li>For these variable names, the units must be "m", "meter", or "meters".
+      If the units different (e.g., fathoms), you can use
+      <br>
+      <a rel="help" href="#scale_factor"><tt>&lt;att name="scale_factor"&gt;<i>someValue</i>&lt;/att&gt;</tt></a> and
+      <a rel="help" href="#units"><tt>&lt;att name="units"&gt;meters&lt;/att&gt;</tt></a> 
+      to convert the units to meters.
+    <li>If your data doesn't fit these requirements, 
+      use a different destinationName (e.g., aboveGround, distanceToBottom).
+    <li>If you know the 
+      <a rel="help" href="http://www.oostethys.org/best-practices/verticalcrs">vertical&nbsp;datum</a>, 
+      please specify it in the metadata.    
+    </ul>
+  <li>For the <a name="timeVariable">"time"</a> variable:
+    <ul>
+    <li>Use the destinationName "time" only for variables that include the entire date+time 
+      (or date, if that is all there is).
+      If, for example, there are separate columns for date and timeOfDay, don't use the variable name "time".
+    <li>See <a rel="help" href="#timeUnits">units</a> for more information about the units attribute for 
+      time and timeStamp variables.
+    <li>The time variable and related 
+      <a rel="help" href="#timeUnits">timeStamp variables</a> are unique in that they
+      always convert data values from the source's time format (what ever it is) into a numeric value
+      (seconds since 1970-01-01T00:00:00Z) or a String value (ISO 8601:2004(E) format), depending on the
+      situation.
+    <li>When a user requests time data, they can request it by specifying the time as a numeric value
+      (seconds since 1970-01-01T00:00:00Z) or a String value (ISO 8601:2004(E) format).
+    <li>ERDDAP has a utility to 
+      <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Convert
+      a Numeric Time to/from a String Time</a>.
+    <li>See <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html#erddap">How ERDDAP
+       Deals with Time</a>.
+      <br>&nbsp;
+    </ul>
   </ul>
 
 <li><b><a name="dataStructures">Why</a> just two basic data structures?</b>
@@ -596,10 +620,12 @@ Datasets fall into two categories.  (<a rel="help" href="#dataStructures">Why?</
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
-  <a rel="help" href="#altitudeMetersPerSourceUnit">&lt;altitudeMetersPerSourceUnit&gt;</a>...&lt;/altitudeMetersPerSourceUnit&gt; 
   <a rel="help" href="#globalAttributes">&lt;addAttributes&gt;</a>...&lt;/addAttributes&gt;
   <a rel="help" href="#axisVariable">&lt;axisVariable&gt;</a>...&lt;/axisVariable&gt; &lt;!-- 1 or more --&gt;
   <a rel="help" href="#dataVariable">&lt;dataVariable&gt;</a>...&lt;/dataVariable&gt; &lt;!-- 1 or more --&gt;
@@ -671,6 +697,9 @@ a remote ERDDAP server.
 &lt;dataset type="EDDGridFromErddap" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -683,6 +712,8 @@ a remote ERDDAP server.
 &lt;dataset type="EDDTableFromErddap" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -716,6 +747,7 @@ Instead, use a subclass of EDDGridFromFiles to handle the specific file type:
    <li><a rel="help" href="#EDDGridFromNcFiles">EDDGridFromNcFiles</a> handles data from gridded 
       <a rel="help" href="http://en.wikipedia.org/wiki/GRIB">GRIB .grb</a> files,
       <a rel="help" href="http://www.hdfgroup.org/">HDF .hdf 4 (and 5?)</a> files,
+      <a rel="help" href="#NcML">.ncml</a> files, and 
       <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF .nc</a> files.
       This may work with other file types (e.g., BUFR), we just haven't tested it -- 
       please send us some sample files if you are interested.
@@ -754,20 +786,34 @@ allows fast random access to the data, and is already supported by ERDDAP.
   subdirectories.
 <li><b>Cached File Information</b> - When an EDDGridFromFiles dataset is first loaded, 
   EDDGridFromFiles reads information from all of the relevant files 
-  and creates tables in memory with information about each valid file and each invalid file
-  (one file per row). 
+  and creates tables (one row for each file) with information about each valid file 
+  and each "bad" (different or invalid) file. 
   <ul>
-  <li>The tables are also stored on disk, as .json files in [bigParentDirectory]/dataset in
+  <li>The tables are also stored on disk, as .nc files in [bigParentDirectory]/dataset/[last2CharsOfDatasetID]/[datasetID]/ in
     files named:
-    <br>&nbsp;&nbsp;[datasetID].dirs.json (which holds a list of unique directory names),
-    <br>&nbsp;&nbsp;[datasetID].files.json (which holds the table with each valid file's information),
-    <br>&nbsp;&nbsp;[datasetID].bad.json (which holds the table with each bad file's information).
+    <br>&nbsp;&nbsp;dirTable.nc (which holds a list of unique directory names),
+    <br>&nbsp;&nbsp;fileTable.nc (which holds the table with each valid file's information),
+    <br>&nbsp;&nbsp;badFiles.json (which holds the table with each bad file's information).
+  <li>To speed up access to an EDDGridFromFiles dataset (but at the expense of using more memory),
+    you can use
+    <br><a rel="help" href="#fileTableInMemory"><tt>&lt;fileTableInMemory&gt;true&lt;/fileTableInMemory&gt;</tt></a>
+    <br>to tell ERDDAP to keep a copy of the file information tables in memory.
   <li>The copy of the file information tables on disk is also useful when ERDDAP is shut down and restarted: 
     it saves EDDGridFromFiles from having to re-read all of the data files.
+  <li>When a dataset is reloaded, ERDDAP only needs to read the data in new files
+    and files that have changed.
+  <li>If a file has a different structure from the other files (e.g., different data type
+    for one of the variables, different value for the "units" attribute), ERDDAP
+    adds the file to the list of "bad" files. Information about the problem with the file
+    will be written to the [bigParentDirectory]/logs/log.txt file.    
   <li>You shouldn't ever need to delete or work with these files.
-    You can delete these files (but why?).
-    If you ever do need to delete these files (why?), you can do it when ERDDAP is running. 
-    (Then set a flag.)
+    One exception is: if you are still making changes to a dataset's datasets.xml setup,
+    you may want to delete these files to force ERDDAP to reread all of the files
+    since the files will be read/interpreted differently.
+    If you ever do need to delete these files, you can do it when ERDDAP is running. 
+    (Then set a flag to reload the dataset ASAP.)
+    However, ERDDAP usually notices that the datasets.xml information doesn't match
+    the fileTable information and deletes the file tables automatically.
   <li>If you want to encourage ERDDAP to update the stored dataset information 
     (for example, if you just added, removed, or changed some files to the dataset's data directory), 
     use the 
@@ -814,10 +860,11 @@ allows fast random access to the data, and is already supported by ERDDAP.
 &lt;dataset type="EDDGridFrom...Files" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
-  <a rel="help" href="#altitudeMetersPerSourceUnit">&lt;altitudeMetersPerSourceUnit&gt;</a>...&lt;/altitudeMetersPerSourceUnit&gt; 
   &lt;fileDir&gt;...&lt;/fileDir&gt; &lt;-- The directory (absolute) with the data files. --&gt;
   &lt;recursive&gt;true|false&lt;/recursive&gt; &lt;-- Indicates if subdirectories
     of fileDir have data files, too. --&gt;
@@ -827,6 +874,7 @@ allows fast random access to the data, and is already supported by ERDDAP.
   &lt;metadataFrom&gt;...&lt;/metadataFrom&gt; &lt;-- The file to get 
     metadata from ("first" or "last" (the default) based on file's 
     lastModifiedTime). --&gt;
+  <a rel="help" href="#fileTableInMemory">&lt;fileTableInMemory&gt;</a>...&lt;/fileTableInMemory&gt; &lt;!-- 0 or 1 (true or false (the default)) --&gt;
   <a rel="help" href="#globalAttributes">&lt;addAttributes&gt;</a>...&lt;/addAttributes&gt;
   <a rel="help" href="#axisVariable">&lt;axisVariable&gt;</a>...&lt;/axisVariable&gt; &lt;!-- 1 or more --&gt;
   <a rel="help" href="#dataVariable">&lt;dataVariable&gt;</a>...&lt;/dataVariable&gt; &lt;!-- 1 or more --&gt;
@@ -835,9 +883,10 @@ allows fast random access to the data, and is already supported by ERDDAP.
 </ul>
 
 <p><a name="EDDGridFromNcFiles"><b>EDDGridFromNcFiles</b></a> aggregates data from local, gridded, 
-      <a rel="help" href="http://en.wikipedia.org/wiki/GRIB">GRIB .grb and .grb2</a> files,
-      <a rel="help" href="http://www.hdfgroup.org/">HDF .hdf 4 (and 5?)</a>
+    <a rel="help" href="http://en.wikipedia.org/wiki/GRIB">GRIB .grb and .grb2</a> files,
+    <a rel="help" href="http://www.hdfgroup.org/">HDF .hdf 4 (and 5?)</a>
 files,
+    <a rel="help" href="#NcML">.ncml</a> files, and 
     <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF .nc</a> files.
 This may work with other file types (e.g., BUFR), we just haven't tested it -- please send us
 some sample files.
@@ -878,6 +927,8 @@ aggregates two or more EDDGrid datasets (the children) side by side.
 &lt;dataset type="EDDGridSideBySide" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   &lt;dataset&gt;...&lt;/dataset&gt; &lt;!-- 2 or more --&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -912,7 +963,7 @@ aggregates two or more EDDGrid datasets based on different
   EDDGridAggregateExistingDimension based on a set of files served by a Hyrax or THREDDS server.
   For example, use this input for the program (the "/1988" in the URL makes the example run faster):<tt>
   <br>&nbsp;&nbsp;EDDType? EDDGridAggregateExistingDimension
-  <br>&nbsp;&nbsp;Server type (hyrax or thredds)? hyrax
+  <br>&nbsp;&nbsp;Server type (hyrax, thredds, or dodsindex)? hyrax
   <br>&nbsp;&nbsp;Parent URL (e.g., for hyrax, ending in "contents.html"; 
   <br>&nbsp;&nbsp;&nbsp;&nbsp;for thredds, ending in "catalog.xml")
   <br>&nbsp;&nbsp;? http://dods.jpl.nasa.gov/opendap/ocean_wind/ccmp/L3.5a/data/
@@ -935,22 +986,27 @@ aggregates two or more EDDGrid datasets based on different
     other children.  These children must be listed in order of ascending values 
     for the aggregated dimension. --&gt;
   &lt;sourceUrls serverType="..." regex="..." recursive="true" 
-    &gt;http://<i>someServer</i>/thredds/<i>someSubdirectory</i>/catalog.xml&lt;/sourceUrls&gt; 
+    &gt;http://<i>someServer/someDirectory/someSubdirectory</i>/catalog.xml&lt;/sourceUrls&gt; 
     &lt;!-- 0 or 1. This specifies how to find the other children, instead 
     of using separate sourceUrl tags for each child.  The advantage of this
     is: new children will be detected each time the dataset is reloaded. 
-    The serverType must be "thredds" or "hyrax".  
+    The serverType must be "thredds", "hyrax", or "dodsindex".  
     An example of a <a rel="help" href="http://download.oracle.com/javase/1.4.2/docs/api/java/util/regex/Pattern.html">regular expression</a> (regex) (<a rel="help" href="http://www.vogella.de/articles/JavaRegularExpressions/article.html">tutorial</a>) is .*\.nc 
     recursive can be "true" or "false".  
     An example of a thredds catalogUrl is
-    http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml
+    <a href="http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml">http://thredds1.pfeg.noaa.gov/thredds/catalog/Satellite/aggregsatMH/chla/catalog.xml</a>
     An example of a hyrax catalogUrl is
-    http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html
+    <a href="http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html">http://podaac-opendap.jpl.nasa.gov/opendap/allData/ccmp/L3.5a/monthly/flk/1988/contents.html</a>
+    An example of a dodsindex URL is . An example is
+    <a href="http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/">http://www.marine.csiro.au/dods/nph-dods/dods-data/bl/BRAN2.1/bodas/</a> 
+    (Note the "DODS Index of /..." at the top of the page.)
     When these children are sorted by file name, they must be in order of
     ascending values for the aggregated dimension. --&gt;
   &lt;ensureAxisValuesAreEqual&gt;true(the default) or 
     false&lt;/ensureAxisValuesAreEqual&gt; 
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -1087,10 +1143,13 @@ serves data from the local copy.
 &lt;dataset type="EDDGridCopy" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
   <a rel="help" href="#sourceNeedsExpandedFP_EQ">&lt;sourceNeedsExpandedFP_EQ&gt;</a>true(default)|false&lt;/sourceNeedsExpandedFP_EQ&gt;
+  <a rel="help" href="#fileTableInMemory">&lt;fileTableInMemory&gt;</a>...&lt;/fileTableInMemory&gt; &lt;!-- 0 or 1 (true or false (the default)) --&gt;
   &lt;dataset&gt;...&lt;/dataset&gt; &lt;!-- 1 --&gt;
 &lt;/dataset&gt;
 </pre>
@@ -1119,10 +1178,11 @@ p><a name="EDDTableFromBMDE"><b>EDDTableFromBMDE</b></a> handles data from a
     is the value from one of the &lt;resource&gt;&lt;code&gt; tags. - -&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!- - 0 or 1 - - &gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;! - - 0 or 1 - - &gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!- - 0 or more - -&gt;
-  <a rel="help" href="#altitudeMetersPerSourceUnit">&lt;altitudeMetersPerSourceUnit&gt;</a>...&lt;/altitudeMetersPerSourceUnit&gt;
   <a rel="help" href="#dataVariable">&lt;dataVariable&gt;</a>...&lt;/dataVariable&gt; &lt;!- - 1 or more - -&gt;
 
 &lt;/dataset&gt;
@@ -1150,10 +1210,11 @@ p><a name="EDDTableFromBMDE"><b>EDDTableFromBMDE</b></a> handles data from a
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
-  <a rel="help" href="#altitudeMetersPerSourceUnit">&lt;altitudeMetersPerSourceUnit&gt;</a>...&lt;/altitudeMetersPerSourceUnit&gt;
   &lt;outerSequenceName&gt;...&lt;/outerSequenceName&gt;
     &lt;!-- The name of the outer sequence for DAP sequence data. 
     This tag is REQUIRED. --&gt;
@@ -1198,9 +1259,11 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
   The <tt>&lt;driverName&gt;</tt>, driver .jar file, <tt>&lt;connectionProperty&gt;</tt> 
   names (e.g., "user",
   "password", and "ssl"), and some of the connectionProperty values can be found by searching
-  the web for "JDBC connection properties <i>databaseType</i>" (e.g., Oracle, MySQL, PostgreSQL).
+  the web for "JDBC connection properties <i>databaseType</i>" (e.g., Oracle, MySQL, MariaDB, PostgreSQL).
 <li>It is difficult to create the correct datasets.xml information needed for ERDDAP to establish
   a connection to the database.  Be patient. Be methodical.
+  Although databases often treat column names and table names in a case-insensitive way,
+  they may be case-sensitive in ERDDAP.
   Search the web for examples of using JDBC to connect to your type of database.
   Work closely with the database administrator, who may have relevant experience.
   If the dataset fails to load, read the 
@@ -1243,7 +1306,7 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
   <li>Consider replicating, on a different computer, the database and database tables 
     with the data that you want ERDDAP to serve.  
     (Yes, for commercial databases like Oracle, this involves
-    additional licensing fees. But for open source databases, like PostgreSQL and MySQL,
+    additional licensing fees. But for open source databases, like PostgreSQL, MySQL, and MariaDB,
     this costs nothing.)  This gives you a high level of security and also 
     prevents ERDDAP requests from slowing down the original database.
   <li>We encourage you to set up ERDDAP to connect to the database as a database user that only has
@@ -1274,17 +1337,31 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
 <li><a name="databaseSQL">SQL</a> - 
     It is easy for ERDDAP to convert user requests into simple SQL PreparedStatements. 
     For example, the ERDDAP request<tt>
-    <br>&nbsp;&nbsp;time,temperature&amp;time&gt;=2008-01-01T00:00:00&amp;time&lt;=2008-02-01T00:00:00</tt>
+    <br>&nbsp;&nbsp;time,temperature&amp;time&gt;=2008-01-01T00:00:00Z&amp;time&lt;=2008-02-01T00:00:00Z</tt>
     <br>will be converted into the SQL PreparedStatement<tt>
-    <br>&nbsp;&nbsp;SELECT time, temperature WHERE time >= 2008-01-01T00:00:00 AND
-    <br>&nbsp;&nbsp;time <= 2008-02-01T00:00:00</tt>
+    <br>&nbsp;&nbsp;SELECT "time", "temperature" FROM "<i>tableName</i>" 
+    <br>&nbsp;&nbsp;WHERE "time" >= 2008-01-01T00:00:00Z AND "time" <= 2008-02-01T00:00:00Z</tt>
     <br>ERDDAP requests with <tt>&amp;distinct()</tt> and/or <tt>&amp;orderBy(<i>variables</i>)</tt> will add
       <tt>DISTINCT</tt> and/or <tt>ORDER BY <i>variables</i></tt> to the SQL prepared statement. In general, this will greatly slow down the response from the database.
     <br>ERDDAP logs the PreparedStatement in 
     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#log">log.txt</a>
     as<tt> 
-    <br>&nbsp;&nbsp;statement=<i>thePreparedStatement</i></tt>.
+    <br>&nbsp;&nbsp;statement=<i>thePreparedStatement</i></tt>
+    <br>Note that this will be a text representation of the PreparedStatement, which 
+    may be slightly different from the actual PreparedStatement. 
+    For example, in the PreparedStatement, times are encoded in a special way.
+    But in the text representation, they appear as ISO 8601 date times.
 
+<li><a name="databaseQuotes">Quotes</a> -
+  EDDTableFromDatabase puts ANSI-SQL-standard double quotes around column names 
+  in SELECT statements in case you have used a reserved word as a column name.
+  <br>For MySQL, you may need to run the database with
+    <a rel="help" href="http://dev.mysql.com/doc/refman/5.1/en/server-sql-mode.html">--sql-mode=ANSI_QUOTES</a> .
+  <br>For MariaDB, you may need to run the database with 
+    <a rel="help" href="https://kb.askmonty.org/en/mysqld-options-full-list/">--sql-mode=ANSI_QUOTES</a> . 
+  <br>For some databases, using quotes causes the column names to be case sensitive.
+    For safety, always treat column names as case sensitive.
+  <br>DON'T use a reserved word as part of a table's name.  ERDDAP doesn't put quotes around table names.
 <li><a name="databaseViews">Views</a> - 
   EDDTableFromDatabase is limited to getting data from one table, but that shouldn't be a problem.
   If a table of interest has foreign keys which link to other tables,
@@ -1298,6 +1375,7 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
   <li>They increase abstraction (since the database can be changed without having to change how the
     VIEW appears to the client).
   </ul>
+
 <li><a name="databaseSpeed">Speed</a> - Databases can be slow. There are some things you can do:
   <ul>
   <li>In General -
@@ -1321,6 +1399,8 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
     in datasets.xml. For example, 
     <br>For MySQL, use
     <br><tt>&lt;connectionProperty name="defaultFetchSize"&gt;4096&lt;/connectionProperty&gt;</tt>
+    <br>For MariaDB, there is currently no way to change the fetch size. 
+      But it is a requested feature, so search the web to see if this has been implemented.
     <br>For Oracle, use
     <br><tt>&lt;connectionProperty name="defaultRowPrefetch"&gt;4096&lt;/connectionProperty&gt;</tt>
     <br>For PostgreSQL, use
@@ -1345,7 +1425,9 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
 
   <li>Vacuum the Table -
     <br>MySQL will respond much faster if you use
-    <a rel="help" href="http://dev.mysql.com/doc/refman/5.1/en/optimize-table.html">OPTIMIZE TABLE</a>.
+    <a rel="help" href="http://dev.mysql.com/doc/refman/5.5/en/optimize-table.html">OPTIMIZE TABLE</a>.
+    <br>MariaDB will respond much faster if you use
+    <a rel="help" href="https://kb.askmonty.org/en/optimize-table/">OPTIMIZE TABLE</a>.
     <br>PostgreSQL will respond much faster if you 
     <a rel="help" href="http://www.postgresql.org/docs/8.3/static/sql-vacuum.html">VACUUM</a> the table.
     <br>Oracle doesn't have or need an analogous command.
@@ -1409,10 +1491,11 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
   <a rel="help" href="#sourceNeedsExpandedFP_EQ">&lt;sourceNeedsExpandedFP_EQ&gt;</a>true(default)|false&lt;/sourceNeedsExpandedFP_EQ&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
-  <a rel="help" href="#altitudeMetersPerSourceUnit">&lt;altitudeMetersPerSourceUnit&gt;</a>...&lt;/altitudeMetersPerSourceUnit&gt;
   <a rel="help" href="#globalAttributes">&lt;addAttributes&gt;</a>...&lt;/addAttributes&gt;
   <a rel="help" href="#dataVariable">&lt;dataVariable&gt;</a>...&lt;/dataVariable&gt; &lt;!-- 1 or more.
      For date and timestamp database columns, set dataType=double and 
@@ -1421,6 +1504,52 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
 </pre>
 </ul>
 
+
+<p><a name="EDDTableFromEDDGrid"><b>EDDTableFromEDDGrid</b></a>  
+lets you create an EDDTable dataset from any EDDGrid dataset. 
+<ul>
+<li>Some common reasons for doing this are:
+  <ul>
+  <li>This allows the dataset to be queried with OPeNDAP selection constraints 
+    (which a user may have requested).
+  <li>The dataset is inherently a tabular dataset. 
+  </ul>
+
+<li>WARNING: For now, this should be considered an EXPERIMENTAL type of dataset.
+  ERDDAP does not put any limits on user requests to this dataset 
+  (such as requiring time, latitude, and/or longitude constraints).
+  As a result, this class probably shouldn't be used with very large datasets 
+  (e.g., satellite datasets) or with remote datasets because queries without
+  time, latitude, and/or longitude constraints may have to sift through 
+  the entire dataset to find matching data. For large and/or remote datasets,
+  those requests may fail because they take too long to complete.
+
+<li>Comments? If you have any comments about this type of dataset, please
+  email <tt>bob dot simons at noaa dot gov</tt>.
+
+<li>This class's <tt>&lt;reloadEveryNMinutes&gt;</tt> is what counts. 
+  The enclosed EDDGrid's <tt>&lt;reloadEveryNMinutes&gt;</tt> is ignored. 
+<li>This class doesn't support <tt>&lt;updateEveryNMillis&gt;</tt>. 
+  The enclosed EDDGrid's <tt>&lt;updateEveryNMillis&gt;</tt> is what matters.
+
+<li><a name="EDDTableFromEDDGridSkeletonXML">The</a> skeleton XML for an EDDTableFromEDDGrid dataset is:
+<pre>
+&lt;dataset type="EDDTableFromEDDGrid" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
+  <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a rel="help" href="#updateEveryNMillis">&lt;updateEveryNMillis&gt;</a>...&lt;/updateEveryNMillis&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
+  <a rel="help" href="#globalAttributes">&lt;addAttributes&gt;</a>...&lt;/addAttributes&gt; 
+  <a rel="help" href="#EDDGrid">&lt;dataset&gt;</a>...&lt;/dataset&gt; &lt;!-- 1 
+     Any type of EDDGrid dataset.  You can even use an EDDGridFromErddap to access 
+     an independent EDDGrid dataset on this server. --&gt;
+&lt;/dataset&gt;
+</pre>
+</ul>
 
 <p><a name="EDDTableFromFiles"><b>EDDTableFromFiles</b></a> is the superclass of all
 EDDTableFrom...Files classes. 
@@ -1435,11 +1564,14 @@ Instead, use a subclass of EDDTableFromFiles to handle the specific file type:
     aggregates data with several variables, each with shared dimensions
     (e.g., time, altitude, latitude, longitude), and served by a 
       <a rel="help" href="http://www.opendap.org/download/hyrax.html">Hyrax OPeNDAP server</a>.
-  <li><a rel="help" href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a> aggregates data from .nc files 
-      with several variables, 
+  <li><a rel="help" href="#EDDTableFromNcFiles">EDDTableFromNcFiles</a> aggregates data from .nc 
+    (or <a rel="help" href="#NcML">.ncml</a>)
+    files with several variables, 
     each with shared dimensions (e.g., time, altitude, latitude, longitude).
   <li><a rel="help" href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a> 
-    aggregates data from .nc files which use one of the file formats specified by the 
+    aggregates data from .nc 
+    (or <a rel="help" href="#NcML">.ncml</a>)
+    files which use one of the file formats specified by the 
     <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries"
     >CF Discrete Sampling Geometries</a> 
     conventions.
@@ -1480,22 +1612,40 @@ allows fast random access to the data, and is already supported by ERDDAP.
   (and thus EDDTableFromFiles) will operate much more efficiently if you store the files in a
   series of subdirectories.
 <li><b>Cached File Information</b> - When an EDDTableFromFiles dataset is first loaded, 
-  EDDTableFromFiles reads all of the relevant files and creates tables in memory with information
-  about each valid file (one file per row, including the minimum and maximum value of each variable,
-  even String variables) and each invalid file. 
+  EDDTableFromFiles reads information from all of the relevant files 
+  and creates tables (one row for each file) with information about each valid file and each "bad" 
+  (different or invalid) file. 
   <ul>
-  <li>The tables are also stored on disk, as .json files in [bigParentDirectory]/dataset
-     in files named:
-    <br>&nbsp;&nbsp;[datasetID].dirs.json (which holds a list of unique directory names) and
-    <br>&nbsp;&nbsp;[datasetID].files.json (which holds the table with each valid file's information),
-    <br>&nbsp;&nbsp;[datasetID].bad.json (which holds the table with each bad file's information).
-  <li>The copy of the file information tables on disk is also useful when ERDDAP is shut down and
-    restarted: it saves EDDTableFromFiles from having to re-read all of the data files.
+  <li>The tables are also stored on disk, as .nc files in [bigParentDirectory]/dataset/[last2CharsOfDatasetID]/[datasetID]/ in
+    files named:
+    <br>&nbsp;&nbsp;dirTable.nc (which holds a list of unique directory names),
+    <br>&nbsp;&nbsp;fileTable.nc (which holds the table with each valid file's information),
+    <br>&nbsp;&nbsp;badFiles.nc (which holds the table with each bad file's information).
+  <li>To speed up access to an EDDTableFromFiles dataset (but at the expense of using more memory),
+    you can use
+    <br><a rel="help" href="#fileTableInMemory"><tt>&lt;fileTableInMemory&gt;true&lt;/fileTableInMemory&gt;</tt></a>
+    <br>to tell ERDDAP to keep a copy of the file information tables in memory.
+  <li>The copy of the file information tables on disk is also useful when ERDDAP is shut down and restarted: 
+    it saves EDDTableFromFiles from having to re-read all of the data files.
+  <li>When a dataset is reloaded, ERDDAP only needs to read the data in new files
+    and files that have changed.
+  <li>If a file has a different structure from the other files (e.g., different data type
+    for one of the variables, different value for the "units" attribute), ERDDAP
+    adds the file to the list of "bad" files. Information about the problem with the file
+    will be written to the [bigParentDirectory]/logs/log.txt file.    
   <li>You shouldn't ever need to delete or work with these files.
-    You can delete these files (but why?).  You can use the 
+    One exception is: if you are still making changes to a dataset's datasets.xml setup,
+    you may want to delete these files to force ERDDAP to reread all of the files
+    since the files will be read/interpreted differently.
+    If you ever do need to delete these files, you can do it when ERDDAP is running. 
+    (Then set a flag to reload the dataset ASAP.)
+    However, ERDDAP usually notices that the datasets.xml information doesn't match
+    the fileTable information and deletes the file tables automatically.
+  <li>If you want to encourage ERDDAP to update the stored dataset information 
+    (for example, if you just added, removed, or changed some files to the dataset's data directory), 
+    use the 
       <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag system</a>
-      to force ERDDAP to update
-    the cached file information.
+      to force ERDDAP to update the cached file information.
   </ul>
 <li><b>Handling Requests</b> - ERDDAP tabular data requests can put constraints on any variable.
   <ul>
@@ -1556,24 +1706,36 @@ allows fast random access to the data, and is already supported by ERDDAP.
   to a reasonably
        small value (e.g., 60),
   but it doesn't have to be tiny (e.g., 3).
-
-  <p>Not recommended organization of near-real-time data in the files:
-  If, for example, you have a dataset that stores data for numerous stations (or buoy, or ...)
+  <br>&nbsp;
+  <ul>
+  <li><b>Not recommended</b> organization of near-real-time data in the files:
+  If, for example, you have a dataset that stores data for numerous stations (or buoy, or trajectory, ...)
   for many years, you could arrange the files so that, for example, there is one file per station.
   But then, every time new data for a station arrives, you have to read a large old file and
   write a large new file.
   And when ERDDAP reloads the dataset, it notices that some files have been modified, so it reads
   those files completely. 
   That is inefficient.
+  <br>&nbsp;
 
-  <p>Recommended organization of near-real-time data in the files:
-  We recommend that you store the data in chunks, e.g., all data for one station for
+  <li><b>Recommended</b> organization of near-real-time data in the files:
+  Store the data in chunks, e.g., all data for one station/buoy/trajectory for
   one year (or one month).
   Then, when a new datum arrives, you only have to read and rewrite the file with this year's
   (or month's) data. 
   All of the files for previous years (or months) for that station remain unchanged.
   And when ERDDAP reloads the dataset, most files are unchanged; only a few, small files have
   changed and need to be read.
+  <br>&nbsp;
+
+  <li><b>Best</b>: Use the technique recommended above (each file has the data
+  for one station/buoy/trajectory for a chunk of time) with .nc files which have an unlimited 
+  dimension in the files. Then,
+  to add new data, you can just append the new data without having to read and re-write the entire file.
+  
+  <br>&nbsp;
+  </ul>
+
 <li><b>FTP Trouble/Advice</b> - If you FTP new data files to the ERDDAP server while ERDDAP is running,
   there is the chance that ERDDAP will be reloading the dataset during the FTP process.
   It happens more often than you might think!
@@ -1655,11 +1817,12 @@ allows fast random access to the data, and is already supported by ERDDAP.
     but is now ignored. --&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
-  <a rel="help" href="#altitudeMetersPerSourceUnit">&lt;altitudeMetersPerSourceUnit&gt;</a>...&lt;/altitudeMetersPerSourceUnit&gt;
-  &lt;specialMode&gt;<i>mode</i>&lt;/specialMode&gt;  &lt;-- This rarely-used, optional tag can be used 
+  &lt;specialMode&gt;<i>mode</i>&lt;/specialMode&gt;  &lt;-- This rarely-used, OPTIONAL tag can be used 
     with EDDTableFromThreddsFiles to specify that special, hard-coded rules 
     should be used to determine which files should be downloaded from the server.
     Currently, the only valid <i>mode</i> is SAMOS which is used with datasets from
@@ -1679,11 +1842,13 @@ allows fast random access to the data, and is already supported by ERDDAP.
   &lt;metadataFrom&gt;...&lt;/metadataFrom&gt; &lt;-- The file to get metadata
     from ("first" or "last" (the default) based on file's 
     lastModifiedTime). --&gt;
-  <a name="columnNamesRow">&lt;columnNamesRow&gt;...&lt;/columnNamesRow&gt;</a> &lt;-- (For 
-    EDDTableFromAsciiFiles only) This specifies the number of the row
-    with the column names in the files. (The first row is "1". 
-    Default = 1.)  If you specify 0, ERDDAP will not look for column names
-    and will assign names: Column#1, Column#2, ... --&gt;
+  <a name="ETFFcharset">&lt;charset&gt;...&lt;/charset&gt;</a> (For EDDTableFromAsciiFiles only) This OPTIONAL tag
+    specifies the character set (case sensitive!) of the source files, e.g.,
+    ISO-8859-1 (the default) and UTF-8.  --&gt; 
+  <a name="columnNamesRow">&lt;columnNamesRow&gt;...&lt;/columnNamesRow&gt;</a> &lt;-- (For EDDTableFromAsciiFiles only) 
+    This specifies the number of the row with the column names in the files. 
+    (The first row is "1". Default = 1.)  If you specify 0, ERDDAP will not 
+    look for column names and will assign names: Column#1, Column#2, ... --&gt;
   &lt;firstDataRow&gt;...&lt;/firstDataRow&gt; &lt;-- (For 
     EDDTableFromAsciiFiles only) This specifies the number of the first
     row with data in the files. (The first row is "1". default = 2.) --&gt;
@@ -1719,6 +1884,7 @@ allows fast random access to the data, and is already supported by ERDDAP.
     (accessed via the web). The two types are treated slightly 
     differently.
   <a rel="help" href="#sourceNeedsExpandedFP_EQ">&lt;sourceNeedsExpandedFP_EQ&gt;</a>true(default)|false&lt;/sourceNeedsExpandedFP_EQ&gt;
+  <a rel="help" href="#fileTableInMemory">&lt;fileTableInMemory&gt;</a>...&lt;/fileTableInMemory&gt; &lt;!-- 0 or 1 (true or false (the default)) --&gt;
   <a rel="help" href="#globalAttributes">&lt;addAttributes&gt;</a>...&lt;/addAttributes&gt;
   <a rel="help" href="#dataVariable">&lt;dataVariable&gt;</a>...&lt;/dataVariable&gt; &lt;!-- 1 or more --&gt;
     &lt;-- For EDDTableFromHyraxFiles, EDDTableFromNcFiles, and 
@@ -1738,6 +1904,8 @@ allows fast random access to the data, and is already supported by ERDDAP.
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;! - - 0 or 1 - - &gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;! - - 0 or 1 - - &gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!- - 0 or 1 - -&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!- - 0 or more - -&gt;
@@ -1812,7 +1980,9 @@ on how to use this class and how this class works.
 
 
 <p><a name="EDDTableFromNcFiles"><b>EDDTableFromNcFiles</b></a> 
-aggregates data from .nc files with several variables, each with one shared
+  aggregates data from .nc 
+  (or <a rel="help" href="#NcML">.ncml</a>)
+  files with several variables, each with one shared
   dimension (e.g., time) or more than one shared dimensions (e.g., time, altitude, latitude,
   longitude).
   The files must have the same dimension names.
@@ -1873,7 +2043,9 @@ aggregates data from .nc files with several variables, each with one shared
 
 <p><a name="EDDTableFromNcCFFiles"><b>EDDTableFromNcCFFiles</b></a> 
   aggregates data aggregates data from 
-  .nc files which use one of the file formats specified by the 
+  .nc 
+  (or <a rel="help" href="#NcML">.ncml</a>)
+  files which use one of the file formats specified by the 
   <a href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#discrete-sampling-geometries">CF Discrete Sampling Geometries</a>
   conventions.
   See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
@@ -1913,6 +2085,8 @@ which uses
     &lt;resource&gt;&lt;code&gt; tags. --&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
@@ -1993,9 +2167,14 @@ Sensor Observation Service
   <a rel="help" href="#sourceUrl">&lt;sourceUrl&gt;</a>...&lt;/sourceUrl&gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
+  &lt;sosServerType&gt;...&lt;/sosServerType&gt; &lt;!-- 0 or 1, but strongly recommended.
+    This lets you specify the type of SOS server (so ERDDAP doesn't have to figure it out).
+    Valid values are: IOOS_NDBC, IOOS_NOS, OOSTethys, and WHOI. --&gt;
   &lt;stationIdSourceName&gt;...&lt;/stationIdSourceName&gt; &lt;!-- 0 or 1. 
     Default="station_id". --&gt;
   &lt;longitudeSourceName&gt;...&lt;/longitudeSourceName&gt;
@@ -2062,7 +2241,7 @@ Sensor Observation Service
   <br>use <tt>&lt;sourceUrl&gt;http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/catalog.xml&lt;/sourceUrl&gt;</tt> .
 <li>Since this class always downloads and makes a local copy of each remote
   data file, you should never wrap this dataset in <a rel="help" href="#EDDTableCopy">EDDTableCopy</a>.
-<li>This dataset type supports an optional, rarely-used, special tag, 
+<li>This dataset type supports an OPTIONAL, rarely-used, special tag, 
   <tt>&lt;specialMode&gt;<i>mode</i>&lt;/specialMode&gt;</tt>
   which can be used to specify that special, hard-coded rules should be
   used to determine which files should be downloaded from the server.
@@ -2249,11 +2428,14 @@ Sensor Observation Service
 &lt;dataset type="EDDTableCopy" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
   <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
   &lt;extractDestinationNames&gt;...&lt;/extractDestinationNames&gt;  &lt;!-- 1 --&gt;
   &lt;orderExtractBy&gt;...&lt;/orderExtractBy&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#fileTableInMemory">&lt;fileTableInMemory&gt;</a>...&lt;/fileTableInMemory&gt; &lt;!-- 0 or 1 (true or false (the default)) --&gt;
   &lt;dataset&gt;...&lt;/dataset&gt; &lt;!-- 1 --&gt;
 &lt;/dataset&gt;
 </pre>
@@ -2266,8 +2448,30 @@ Sensor Observation Service
 
 Here are detailed descriptions of common tags and attributes.
 <ul>
+<li><a name="NcML"><b>NcML .ncml Files</b></a> -
+  NcML files let you specify on-the-fly changes to original source .nc, .grib, and .bufr files, 
+  and then have ERDDAP treat the .ncml files as the source files.
+  ERDDAP datasets will accept .ncml files whenever .nc files are expected.
+  The NcML files MUST have the extension .ncml.
+  See the <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/ncml/">Unidata NcML documentation</a>.
+  NcML is useful because you can do some things with it (e.g., making different changes to 
+  different files in a collection, including adding a dimension with a specific value to a file),
+  that you can't do with ERDDAP's datasets.xml.
+  <ul>
+  <li>Note that changes to an .ncml file's lastModified time will cause the file to be 
+    reloaded whenever the dataset is reloaded, but changes to the underlying data files
+    won't be directly noticed (but will be noticed if the lastModified time of the 
+    .ncml file wrapping it is changed).
+  <li>Hint: NcML is *very* sensitive to the order of some 
+    items in the NcML file. Think of NcML as specifying a series
+    of instructions in the specified order, with the intention of
+    changing the source files (the state at the start of the NcML file)
+    into the destination files (the state at the end of the NcML file).
+    <br>&nbsp;
+  </ul>
+
 <li><a name="convertToPublicSourceUrl"><tt><b>&lt;convertToPublicSourceUrl /&gt;</b></tt></a>
-    is an optional tag within an <tt>&lt;erddapDatasets&gt;</tt> tag which contains a
+    is an OPTIONAL tag within an <tt>&lt;erddapDatasets&gt;</tt> tag which contains a
     "<tt>from</tt>" and a "<tt>to</tt>" attribute which specify how to convert 
       a matching local sourceUrl into a public sourceUrl.
     "<tt>from</tt>" must have the form "<tt>[something]//[something]/</tt>".
@@ -2281,7 +2485,7 @@ Here are detailed descriptions of common tags and attributes.
     <br>&nbsp;
 
 <li><a name="requestBlacklist"><tt><b>&lt;requestBlacklist&gt;</b></tt></a>
-    is an optional tag within an <tt>&lt;erddapDatasets&gt;</tt> tag which contains a
+    is an OPTIONAL tag within an <tt>&lt;erddapDatasets&gt;</tt> tag which contains a
   comma-separated list of numeric IP addresses which will be immediately blacklisted.
   <ul>
   <li>You can also replace the last number in an IP address with * to block 0-255 (e.g., 123.45.67.*).
@@ -2298,7 +2502,7 @@ Here are detailed descriptions of common tags and attributes.
   </ul>
 
 <li><a name="subscriptionEmailBlacklist"><tt><b>&lt;subscriptionEmailBlacklist&gt;</b></tt></a>
-  is an optional tag within an <tt>&lt;erddapDatasets&gt;</tt> tag which contains
+  is an OPTIONAL tag within an <tt>&lt;erddapDatasets&gt;</tt> tag which contains
   a comma-separated list of email address which are immediately blacklisted from the 
   <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/subscriptions">subscription system</a>, for example
   <br><tt>&lt;subscriptionEmailBlacklist&gt;bob@badguy.com, john@badguy.com&lt;/subscriptionEmailBlacklist&gt;</tt>
@@ -2426,19 +2630,84 @@ Here are detailed descriptions of common tags and attributes.
   </ul> 
 
 <li><a name="altitudeMetersPerSourceUnit"><tt><b>&lt;altitudeMetersPerSourceUnit&gt;</b></tt></a>
-  is an OPTIONAL tag within a <tt>&lt;dataset&gt;</tt> tag that specifies a 
-  number which is multiplied by the source altitude or depth values (after 
-    <a rel="help" href="#scale_factor"><tt>scale_factor</tt>&nbsp;and&nbsp;<tt>add_offset</tt></a>
-  have been applied) to convert them into altitude values (in meters above sea level).
+  is an OPTIONAL tag within the <tt>&lt;dataset&gt;</tt> tag for EDDTableFromSOS datasets that specifies a 
+  number which is multiplied by the source altitude or depth values 
+  to convert them into altitude values (in meters above sea level). 
+  This tag MUST be used if the dataset's vertical axis values aren't meters, positive=up.
+  Otherwise, it is OPTIONAL, since the default value is 1.
+  For example, 
   <ul>
-  <li>For example, if the source is already measured in meters above sea level, use 1.
-  <li>For example, if the source is measured in meters below sea level, use -1.
-  <li>For example, if the source is measured in km above sea level, use 0.001.
-  <li>This tag is OPTIONAL, but recommended. The default value is 1.
-  <li>An example is:
+  <li>If the source is already measured in meters above sea level, use 1
+    (or don't use this tag, since 1 is the default value).
+  <li>If the source is measured in meters below sea level, use -1.
     <br><tt>&lt;altitudeMetersPerSourceUnit&gt;-1&lt;/altitudeMetersPerSourceUnit&gt;</tt>
+  <li>If the source is measured in km above sea level, use 0.001.
     <br>&nbsp;
   </ul>
+
+<li><a name="defaultDataQuery"><tt><b>&lt;defaultDataQuery&gt;</b></tt></a> is an OPTIONAL tag
+  within a <tt>&lt;dataset&gt;</tt> tag that tells ERDDAP to use the specified
+  query (the part of the URL after the "?") 
+  if the .html fileType (the Data Access Form) is requested with no query.
+  <ul>
+  <li>You will probably rarely need to use this.
+  <li>You need to XML-encode or percent-encode (either one, but not both) 
+    the default queries since they are in an XML document.
+    For example, &amp; becomes &amp;amp; , &lt; becomes &amp;lt; , &gt; becomes &amp;gt; .
+  <li>Please check your work.  It is easy to make a mistake and not get what you want.
+    ERDDAP will try to clean up your errors -- but don't rely on that, since *how* it is cleaned up may change.
+  <li>For griddap datasets, a common use of this is to specify a different default 
+    depth or altitude dimension value (e.g., [0] instead of [last]).
+    <br>In any case, you should always list all of the variables, 
+      always use the same dimension values for all variables,
+      and almost always use [0], [last], or [0:last] for the dimension values.
+    <br>For example:        <br><tt>&lt;defaultDataQuery&gt;u[last][0][0:last][0:last],v[last][0][0:last][0:last]&lt;/defaultDataQuery&gt;</tt>
+  <li>For tabledap datasets, the most common use of this is to specify a different default 
+    time range (relative to <tt>now</tt>, e.g., <tt>&amp;time&gt;=now-1day</tt>).
+    <br>Remember that requesting no data variables is the same as specifying all data variables, 
+      so usually you can just specify the new time constraint.
+    <br>For example:        
+    <br><tt>&lt;defaultDataQuery&gt;&amp;amp;time&amp;gt;=now-1day&lt;/defaultDataQuery&gt;</tt>
+    <br>&nbsp;
+  </ul>
+
+<li><a name="defaultGraphQuery"><tt><b>&lt;defaultGraphQuery&gt;</b></tt></a> is an OPTIONAL tag
+  within a <tt>&lt;dataset&gt;</tt> tag that tells ERDDAP to use the specified
+  query (the part of the URL after the "?") 
+  if the .graph fileType (the Make A Graph Form) is requested with no query.
+  <ul>
+  <li>You will probably rarely need to use this.
+  <li>You need to XML-encode or percent-encode (either one, but not both) 
+    the default queries since they are in an XML document.
+    For example, &amp; becomes &amp;amp; , &lt; becomes &amp;lt; , &gt; becomes &amp;gt; .
+  <li>Please check your work.  It is easy to make a mistake and not get what you want.
+    ERDDAP will try to clean up your errors -- but don't rely on that, since *how* it is cleaned up may change.
+  <li>For gridddap datasets, the most common use of this is to specify a different default 
+    depth or altitude dimension value (e.g., [0] instead of [last]) and/or to specify that a specific
+    variable be graphed.
+    <br>In any case, you will almost always use [0], [last], or [0:last] for the dimension values.
+    <br>For example:                <br><tt>&lt;defaultGraphQuery&gt;temp[last][0][0:last][0:last]&amp;amp;.draw=surface&amp;amp;.vars=longitude|latitude|temp&lt;/defaultGraphQuery&gt;</tt>
+  <li>For tabledap datasets, the most common uses of this are to specify 
+    different variables to be graphed, a different default time range 
+    (relative to <tt>now</tt>, e.g., <tt>&amp;time&gt;=now-1day</tt>) 
+    and/or different default graphics settings (e.g., marker type).
+    <br>For example:        
+    <br><tt>&lt;defaultGraphQuery&gt;longitude,latitude,seaTemperature&amp;amp;time&gt;=now-1day&amp;amp;.marker=1|5&lt;/defaultGraphQuery&gt;</tt>
+    <br>&nbsp;
+  </ul>
+
+<li><a name="fileTableInMemory"><tt><b>&lt;fileTableInMemory&gt;</b></tt></a> 
+  (<tt>true</tt> or <tt>false</tt> (the default))
+  is an OPTIONAL tag that tells ERDDAP where to keep the fileTable 
+  (which has information about each source data file): 
+  <ul>
+  <li><tt>true</tt> = in memory (which is faster but uses more memory) 
+  <li><tt>false</tt> = on disk (which is slower but uses no memory)
+  </ul>
+  If you set this to <tt>true</tt> for any dataset, keep an eye on the 
+  <tt>Memory: currently using</tt> line at [yourDomain]/erddap/status.html 
+  to ensure that ERDDAP still has plenty of free memory. 
+  <br>&nbsp;
 
 <li><a name="fgdcFile"><tt><b>&lt;fgdcFile&gt;</b></tt></a> is an OPTIONAL tag
   within a <tt>&lt;dataset&gt;</tt> tag that tells ERDDAP to use a pre-made FGDC file
@@ -2512,8 +2781,8 @@ Here are detailed descriptions of common tags and attributes.
   </ul>
 
 <li><a name="reloadEveryNMinutes"><tt><b>&lt;reloadEveryNMinutes&gt;</b></tt></a>
-  is an OPTIONAL tag within a <tt>&lt;dataset&gt;</tt> tag that specifies how often the 
-  dataset should be reloaded.
+  is an OPTIONAL tag within a <tt>&lt;dataset&gt;</tt> tag of almost all dataset types
+  that specifies how often the dataset should be reloaded.
   <ul>
   <li>Generally, datasets that are updated frequently should be reloaded frequently, for example,
     every 60 minutes.
@@ -2536,6 +2805,41 @@ Here are detailed descriptions of common tags and attributes.
   <li>Regardless of reloadEveryNMinutes, you can manually tell ERDDAP to reload a specific dataset
     as soon as possible via a
      <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#flag">flag file</a>.
+  <br>&nbsp;
+  </ul>
+
+<li><a name="updateEveryNMillis"><tt><b>&lt;updateEveryNMillis&gt;</b></tt></a>
+  is an OPTIONAL tag within a <tt>&lt;dataset&gt;</tt> tag of a few dataset types
+  that helps ERDDAP work with datasets that change very frequently (as often as roughly every 0.5 s). 
+  Unlike ERDDAP's regular, proactive, 
+  <a rel="help" href="#reloadEveryNMinutes"><tt>&lt;reloadEveryNMinutes&gt;</tt></a>
+  system for completely reloading each dataset, 
+  this OPTIONAL additional system is reactive (triggered by a user request)
+  and incremental (just updating the information that needs to be updated).
+  For example, if a request to an EDDGridFromDap dataset occurs more than
+  the specified number of milliseconds since the last update,
+  ERDDAP will see if there are any new values for the leftmost (usually "time") dimension
+  and, if so, just download those new values before handling the user's request.
+  This system is very good at keeping a rapidly changing dataset up-to-date 
+  with minimal demands on the data source,
+  but at the cost of slightly slowing down the processing of some user requests.
+  <ul>  
+  <li>To use this system, add:
+    <br><tt>&lt;updateEveryNMillis&gt;1000&lt;/updateEveryNMillis&gt;</tt>
+    <br>right after the <tt>&lt;reloadEveryNMinutes&gt;</tt> tag for the dataset in datasets.xml.
+    The number of milliseconds that you specify can be as small as 1
+    (to ensure that the dataset is always up-to-date).
+  <li>If a second data request arrives before the previous update has finished,
+    the second request won't trigger another update.
+  <li>For testing purposes, some diagnostics are printed to 
+    log.txt if &lt;logLevel&gt; is set to "all" in setup.xml.
+    If you use incremental updates and especially if the
+    leftmost, e.g., time, axis is large, you may want to set 
+    <tt>&lt;reloadEveryNMinutes&gt;</tt> to a larger number (1440?).
+  <li>Note: this new update system updates metadata (e.g., time actual_range, time_coverage_end, ...)
+    but doesn't trigger onChange (email or touch URL) or change the RSS feed (perhaps it should...).
+  <li>Throughout the documentation, we will try to use the word "reload" for regular, 
+    full dataset reloads, and "update" for these new incremental, partial updates.
   <br>&nbsp;
   </ul>
 
@@ -2747,12 +3051,12 @@ Here are detailed descriptions of common tags and attributes.
         for the project that created this data.
 
       <li><a name="cdm_altitude_proxy"><b>cdm_altitude_proxy</b></a> is just for EDDTable datasets 
-        that don't have an altitude variable but do have 
-        a variable that is a proxy for altitude (e.g., depth, pressure, sigma, bottleNumber),
+        that don't have an altitude or depth variable but do have 
+        a variable that is a proxy for altitude or depth (e.g., pressure, sigma, bottleNumber),
         you may use this attribute to identify that variable.  For example,
-        <br><tt>&lt;att name="cdm_altitude_proxy"&gt;depth&lt;/att&gt;</tt>
+        <br><tt>&lt;att name="cdm_altitude_proxy"&gt;pressure&lt;/att&gt;</tt>
         <br>If the <a rel="help" href="#cdm_data_type">cdm_data_type</a> is Profile or TrajectoryProfile 
-          and there is no altitude variable,
+          and there is no altitude or depth variable,
         cdm_altitude_proxy MUST be defined.
         If cdm_altitude_proxy is defined, ERDDAP will add the following metadata to the variable:
         <tt>_CoordinateAxisType=Height</tt> and <tt>axis=Z</tt>.
@@ -3814,7 +4118,7 @@ Here are detailed descriptions of common tags and attributes.
           in your
             <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>
             file.
-        <li><a name="timeUnits">For</a> time variables, either the variable's <a rel="help" href="#variableAttributes">sourceAttributes</a>
+        <li><a name="timeUnits">For</a> time and timestamp variables, either the variable's <a rel="help" href="#variableAttributes">sourceAttributes</a>
           or <tt>&lt;addAttributes&gt;</tt> (which is read first) MUST have 
             <tt>units</tt> which is either 
           <ul>
@@ -3823,6 +4127,14 @@ Here are detailed descriptions of common tags and attributes.
             string (with the format <tt><i>units</i> since <i>baseTime</i></tt>) describing how to
             interpret source time values (e.g., <tt>seconds since 1970-01-01T00:00:00Z</tt>),
             where the base time is an ISO 8601:2004(E) formatted date time string (yyyy-MM-dd'T'HH:mm:ssZ).
+            <p>Technically, ERDDAP does NOT follow the CF standard when converting "years since" and
+              "months since" time values to "seconds since". The CF standard defines a year as a 
+              fixed, single value: 3.15569259747e7 seconds. And CF defines a month as year/12.
+              Unfortunately, most/all datasets that we have seen that use "years since" or 
+              "months since" clearly intend the values to be calendar years or calendar months. 
+              For example, "3 months since 1970-01-01" is usually intended to mean 1970-04-01.
+              So, ERDDAP interprets "years since" and "months since" as calendar years and months,
+              and does not strictly follow the CF standard.
           <li>For time data variables with String data: an org.joda.time.format.DateTimeFormat string
             (which is mostly compatible with java.text.SimpleDateFormat) describing how to interpret 
             string times (e.g., the ISO8601TZ_FORMAT <tt>yyyy-MM-dd'T'HH:mm:ssZ</tt>).
@@ -3883,7 +4195,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.42
+<p>ERDDAP, Version 1.46
 <br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

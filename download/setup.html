@@ -273,10 +273,12 @@ or Mac server instead.
 <li><a name="erddapContent">Set up the [tomcat]/content/erddap configuration files.</a> 
   <br>On Linux, Mac, and Windows, download
     <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>    
-<!-- this line is duplicated below
+<!-- Use: c:\programs\md5 erddapContent.zip
      (version 1.38, size=70,836 bytes, MD5=D927E8132F1F19A342274F37375619E6, Dated 2012-05-02) 
-     (version 1.40, size=72,108 bytes, MD5=2D110CC2472F39FF1FC4B27C8C1C720F, Dated 2012-10-25) -->
-     (version 1.42, size=72,146 bytes, MD5=4EC605978B939835947A9D551C947E97) <!-- Dated 2012-22-26) -->
+     (version 1.40, size=72,108 bytes, MD5=2D110CC2472F39FF1FC4B27C8C1C720F, Dated 2012-10-25) 
+     (version 1.42, size=72,146 bytes, MD5=4EC605978B939835947A9D551C947E97) Dated 2012-11-26) 
+     (version 1.44, size=72,757 bytes, MD5=39D59EACBA646AEAAA5FF6B5D267D91E) Dated 2013-05-30) -->
+     (version 1.46, size=22,268 bytes, MD5=FE827B9C411ECAC535F8C65392A5CDFD) <!-- Dated 2013-07-09) -->
     and unzip it into [tomcat], creating [tomcat]/content/erddap .
   <p>For Red Hat Enterprise Linux (RHEL), unzip it into ~tomcat
     and set the system property 
@@ -315,8 +317,10 @@ or Mac server instead.
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
     <!-- ver, size, md5 duplicated below 
     (version 1.38, size=478,799,083 bytes, MD5=7270FB700CAEF85A1F1A3B3326FAFE98) 
-    (version 1.40, size=477,338,971 bytes, MD5=138F354918668AB8414A8174365BD036) -->
-    (version 1.42, size=477,356,261 bytes, MD5=EC29F6D9E6185BC71557CF47063E3276)
+    (version 1.40, size=477,338,971 bytes, MD5=138F354918668AB8414A8174365BD036) 
+    (version 1.42, size=477,356,261 bytes, MD5=EC29F6D9E6185BC71557CF47063E3276) 
+    (version 1.44, size=482,013,960 bytes, MD5=CDFF1E9DD3201F6A5AEB19EB3DB556FC) -->
+    (version 1.46, size=482,115,063 bytes, MD5=26957D4A6866F5DBAF3238E7A39BD0FE)
     into [tomcat]/webapps .  
   The .war file is big because it contains high resolution coastline, boundary, 
   and elevation data needed to create maps.
@@ -361,23 +365,6 @@ or Mac server instead.
 <!-- ******* -->
 <h2><a name="update">How</a> To Do an Update of an Existing ERDDAP on Your Server</h2>
 <ol>
-<li>Download 
-  <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a> 
-<!-- this line is duplicated below
-     (version 1.38, size=70,836 bytes, MD5=D927E8132F1F19A342274F37375619E6, Dated 2012-05-02) 
-     (version 1.40, size=72,108 bytes, MD5=2D110CC2472F39FF1FC4B27C8C1C720F, Dated 2012-10-25) -->
-     (version 1.42, size=72,146 bytes, MD5=4EC605978B939835947A9D551C947E97) <!-- Dated 2012-22-26) -->
-
-    and unzip it into a temporary directory.
-  <ul>
-  <li>If you made changes to your previous copy of messages.xml, 
-    make the same changes to the new messages.xml in the temporary directory.
-  <li>Move messages.xml from the temporary directory to be
-    [tomcat]/content/erddap/messages.xml .
-  <li>Keep using your current <a rel="help" href="#setup.xml">setup.xml</a> and datasets.xml.
-    <br>&nbsp;
-  </ul>
-
 <li>Make the changes listed in 
   <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/changes.html">Changes</a> 
   in the section entitled "Things ERDDAP Administrators Need to Know and Do"
@@ -387,11 +374,32 @@ or Mac server instead.
 <li>Download <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
     <!-- ver, size, md5 duplicated above 
     (version 1.38, size=478,799,083 bytes, MD5=7270FB700CAEF85A1F1A3B3326FAFE98) 
-    (version 1.40, size=477,338,971 bytes, MD5=138F354918668AB8414A8174365BD036) -->
-    (version 1.42, size=477,356,261 bytes, MD5=EC29F6D9E6185BC71557CF47063E3276)
+    (version 1.40, size=477,338,971 bytes, MD5=138F354918668AB8414A8174365BD036) 
+    (version 1.42, size=477,356,261 bytes, MD5=EC29F6D9E6185BC71557CF47063E3276) 
+    (version 1.44, size=482,013,960 bytes, MD5=CDFF1E9DD3201F6A5AEB19EB3DB556FC) -->
+    (version 1.46, size=482,115,063 bytes, MD5=26957D4A6866F5DBAF3238E7A39BD0FE)
 
     into a  temporary directory.
   <br>&nbsp;
+
+<li>messages.xml
+  <ul>
+  <li>If you just use the standard messages, 
+    the new messages will be installed automatically.
+    <br>(But if you are upgrading from 1.44 (or below) to 1.46 (or above), 
+    you need to delete [tomcat]/content/erddap/messages.xml .)
+    <br>&nbsp;
+  <li>If you make changes to the default messages.xml file 
+    <br>(WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml),
+    you need to make those changes to the new default messages.xml file.
+    <br>&nbsp;
+  <li>If you maintain a custom messages.xml file in [tomcat]/content/erddap/,
+    <br>you need to figure out (via diff) what changes have been made to the default messages.xml 
+    (which are in the new erddap.war as
+    <br>WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml)
+    and modify your custom messages.xml file accordingly.
+    <br>&nbsp;
+  </ul>
 
 <li>In Tomcat Manager:
   <ol>
@@ -1185,18 +1193,22 @@ when making graphs and maps.
   (which is better than misusing the information).
   ERDDAP requires that all .cpt files be stored in [tomcat]/webapps/erddap/WEB-INF/cptfiles.
   To get ERDDAP to use a new .cpt file, store the file in that directory 
-  and modify the <tt>&lt;palettes&gt;</tt> tag in [tomcat]/content/erddap/messages.xml.
-  But don't remove any of the standard palettes. They are a standard feature of all ERDDAP installations.
+  and either:
+  <ul>
+  <li>If you use the default messages.xml file: add the file name to the &lt;palettes&gt; tag in
+    <br>[tomcat]/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml.
+    <br>If you do this, you need to do it every time you upgrade ERDDAP.
+  <li>If you use a custom messages.xml file: add the file name to the &lt;palettes&gt; tag 
+    in your custom messages.xml file: 
+    [tomcat]/content/erddap/messages.xml .
+    If you do this, you only need to do it once (but there is other work to maintain a custom messages.xml file). 
+  </ul>  
+  <br>But don't remove any of the standard palettes. They are a standard feature of all ERDDAP installations.
   An advantage of this approach is that you can specify the order of the palettes in the list 
   presented to users.
-  Every new ERDDAP release will overwrite these changes.
-  So, for every new ERDDAP release, you need to: 
-    <ol>
-    <li> Put your .cpt files in [tomcat]/webapps/erddap/WEB-INF/cptfiles
-    <li> Make the changes to <tt>&lt;palettes&gt;</tt> in messages.xml
-    <li> Restart ERDDAP so ERDDAP re-reads the messages.xml file.
-     <br>&nbsp;
-    </ol>
+  <br>And for every new ERDDAP release, you need to put your .cpt files in 
+    [tomcat]/webapps/erddap/WEB-INF/cptfiles and restart ERDDAP so ERDDAP findes the files.
+  <br>&nbsp;
 
 <li><b><a name="colorbars">How does ERDDAP generate the colors in a colorbar?</a></b>
   <ol>
@@ -1590,7 +1602,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.42
+<p>ERDDAP, Version 1.46
 <br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

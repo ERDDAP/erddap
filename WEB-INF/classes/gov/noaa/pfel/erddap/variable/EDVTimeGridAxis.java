@@ -461,14 +461,21 @@ public class EDVTimeGridAxis extends EDVGridAxis {
     }
 
     /**
+     * This returns one of this axis' source values as epochSeconds. 
+     */
+    public double destinationDouble(int which) {
+        return sourceTimeIsNumeric?
+            sourceTimeToEpochSeconds(sourceValues.getNiceDouble(which)) :
+            sourceTimeToEpochSeconds(sourceValues.getString(which));
+    }
+
+    /**
      * This returns one of this axis' source values as a nice String destination value. 
      * For most EDVGridAxis, this returns destinationValues (which equal
      * the String destination values). The Time subclass overrides this.
      */
     public String destinationString(int which) {
-        return destinationToString(sourceTimeIsNumeric?
-            sourceTimeToEpochSeconds(sourceValues.getNiceDouble(which)) :
-            sourceTimeToEpochSeconds(sourceValues.getString(which)));
+        return destinationToString(destinationDouble(which));
     }
 
     /** This returns a PrimitiveArray with the destination values for this axis. 

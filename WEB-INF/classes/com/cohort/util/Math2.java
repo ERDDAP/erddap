@@ -614,12 +614,34 @@ public class Math2 {
         double eps = nSignificantDigits >= 6? dEps : fEps;
         if (Math.abs(d2) < eps) {
             //This won't overflow, since d1 can't be <eps.
-            return (Math.abs(d1) < eps) ? true
-            : (Math.abs((d2 / d1) - 1) < InverseTen[nSignificantDigits]);
+            return (Math.abs(d1) < eps) ? true :
+                Math.rint(d2 / d1 * Ten[nSignificantDigits]) == Ten[nSignificantDigits];
         }
 
         //This won't overflow, since d2 can't be <eps.
-        return Math.abs((d1 / d2) - 1) < InverseTen[nSignificantDigits];
+        return Math.rint(d1 / d2 * Ten[nSignificantDigits]) == Ten[nSignificantDigits];
+    }
+
+    /**
+     * This tests if two floats are equal to at least n significant digits.
+     * 
+     * @param nSignificantDigits  0 to 18 are allowed; 5, 9, and 14 are common
+     * @param f1 any float
+     * @param f2 any float
+     * @return true if the numbers are equal to at least n significant digits
+     *    (or are both almost0).
+     *    If either number is NaN or Infinity, this returns false.
+     */
+    public static boolean almostEqual(int nSignificantDigits, float f1, float f2) {
+        //System.err.println(f1+" "+f2+" "+Math.rint(f2 / f1 * Ten[nSignificantDigits]) + "=?" + Ten[nSignificantDigits]);
+        if (Math.abs(f2) < fEps) {
+            //This won't overflow, since f1 can't be <eps.
+            return (Math.abs(f1) < fEps) ? true :
+                Math.rint(f2 / f1 * Ten[nSignificantDigits]) == Ten[nSignificantDigits];
+        }
+
+        //This won't overflow, since f2 can't be <eps.
+        return Math.rint(f1 / f2 * Ten[nSignificantDigits]) == Ten[nSignificantDigits];
     }
 
     /**

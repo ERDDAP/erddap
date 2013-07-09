@@ -100,8 +100,7 @@ public class TestAll  {
 //    double td = tl;
 //    String2.log("tl=" + tl + " td=" + td); 
 //    
-//
-//    DasDds.main(new String[]{"testWTDL", "-verbose"});
+//    DasDds.main(new String[]{"jplMURSST", "-verbose"});
 //    String2.log(DigirHelper.getObisInventoryString(
 //        "http://iobis.marine.rutgers.edu/digir2/DiGIR.php", 
 //        "OBIS-SEAMAP", 
@@ -470,6 +469,7 @@ public class TestAll  {
 
 //    String2.log(EDDTableFromErddap.generateDatasetsXml("http://coastwatch.pfeg.noaa.gov/erddap", true)); //keep original datasetID?
 //    String2.log(EDDTableFromErddap.generateDatasetsXml("http://oceanview.pfeg.noaa.gov/erddap", true)); 
+//    EDDTableFromErddap.testApostrophe();
 //    EDDTableFromErddap.testBasic(true);
 //    EDDTableFromErddap.testFromErddapFromErddap();
 //    EDDTableFromErddap.testDegreesSignAttribute();
@@ -578,7 +578,9 @@ public class TestAll  {
 //*** Consider temporarily switching off parts of McAfee : Virus Scan Console  (2X speedup!)
 //      On Access Scanner : All Processes
 //        Scan Items: check: specified file types only (instead of usual All Files) 
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2013, 2, 2013, 4, false);  //first/last year(1990..)/month(1..), testMode
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2012, 4, 2012, 4, false);  //first/last year(1990..)/month(1..), testMode
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2012, 8, 2012, 8, false);  //first/last year(1990..)/month(1..), testMode
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2013, 3, 2013, 5, false);  //first/last year(1990..)/month(1..), testMode
 //       log file is c:/data/gtspp/log.txt 
 //      2b) Email the "good" but "impossible" stations to Charles Sun
 //       Melanie Hamilton [retired?]
@@ -1117,6 +1119,7 @@ public class TestAll  {
 //level class and so won't recompile it.  Mentioning the class here solves 
 //the problem.
 Attributes att;       
+AttributedString2 as2;
 Boundaries boun;
 Browser browser;
 ByteArray ba;
@@ -1318,7 +1321,7 @@ TaskThread tt;
 WaitThenTryAgainException wttae;
 
 
-/* */
+/* */ 
 
         //convert isoDate to/from epoch seconds (a common utility I need)
         String2.log("Enter an ISO date/time or secondsSinceEpoch or YYYYDDD (or \"\" to stop)...");

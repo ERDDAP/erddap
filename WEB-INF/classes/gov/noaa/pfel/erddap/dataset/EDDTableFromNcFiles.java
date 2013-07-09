@@ -446,7 +446,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"source\">station observation</att>\n" +
 "        <att name=\"Southernmost_Northing\" type=\"float\">32.501</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
-"        <att name=\"summary\">The National Data Buoy Center (NDBC) distributes meteorological data from moored buoys maintained by NDBC and others. Moored buoys are the weather sentinels of the sea. They are deployed in the coastal and offshore waters from the western Atlantic to the Pacific Ocean around Hawaii, and from the Bering Sea to the South Pacific. NDBC&#039;s moored buoys measure and transmit barometric pressure; wind direction, speed, and gust; air and sea temperature; and wave energy spectra from which significant wave height, dominant wave period, and average wave period are derived. Even the direction of wave propagation is measured on many moored buoys. \n" +
+"        <att name=\"summary\">The National Data Buoy Center (NDBC) distributes meteorological data from moored buoys maintained by NDBC and others. Moored buoys are the weather sentinels of the sea. They are deployed in the coastal and offshore waters from the western Atlantic to the Pacific Ocean around Hawaii, and from the Bering Sea to the South Pacific. NDBC&#39;s moored buoys measure and transmit barometric pressure; wind direction, speed, and gust; air and sea temperature; and wave energy spectra from which significant wave height, dominant wave period, and average wave period are derived. Even the direction of wave propagation is measured on many moored buoys. \n" +
 "\n" +                                                            //changes 2 places...
 "This dataset has both historical data (quality controlled, before 2012-06-01T00:00:00) and near real time data (less quality controlled, from 2012-06-01T00:00:00 on).</att>\n" +
 "        <att name=\"time_coverage_end\">2012-06-25T15:00:00Z</att>\n" + //changes
@@ -712,7 +712,7 @@ cdmSuggestion() +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
 "            <att name=\"actual_range\" type=\"floatList\">976.5 1041.5</att>\n" +
-"            <att name=\"comment\">Air pressure (hPa). (&#039;PRES&#039; on some NDBC tables.) For C-MAN sites and Great Lakes buoys, the recorded pressure is reduced to sea level using the method described in NWS Technical Procedures Bulletin 291 (11/14/80).</att>\n" +
+"            <att name=\"comment\">Air pressure (hPa). (&#39;PRES&#39; on some NDBC tables.) For C-MAN sites and Great Lakes buoys, the recorded pressure is reduced to sea level using the method described in NWS Technical Procedures Bulletin 291 (11/14/80).</att>\n" +
 "            <att name=\"long_name\">Air Pressure</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
 "            <att name=\"standard_name\">air_pressure_at_sea_level</att>\n" +
@@ -2329,8 +2329,8 @@ expected =
 "given hour. The time values in the dataset are rounded to the nearest hour.\n" +
 "\n" +
 "This dataset has both historical data (quality controlled, before\n" +
-"2013-04-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
-"2013-04-01T00:00:00Z on).\";\n" +  //changes   
+"2013-06-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
+"2013-06-01T00:00:00Z on).\";\n" +  //changes   
 " :time_coverage_end = \"2012-06-25T15:00:00Z\";\n" +
 " :time_coverage_resolution = \"P1H\";\n" +
 " :time_coverage_start = \"1970-02-26T20:00:00Z\";\n" +
@@ -2451,8 +2451,8 @@ expected =
 "given hour. The time values in the dataset are rounded to the nearest hour.\n" +
 "\n" +
 "This dataset has both historical data (quality controlled, before\n" +
-"2013-04-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
-"2013-04-01T00:00:00Z on).\";\n" +    //changes
+"2013-06-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
+"2013-06-01T00:00:00Z on).\";\n" +    //changes
 " :time_coverage_end = \"2012-06-25T15:00:00Z\";\n" +
 " :time_coverage_resolution = \"P1H\";\n" +
 " :time_coverage_start = \"1970-02-26T20:00:00Z\";\n" +
@@ -4947,7 +4947,7 @@ expected =
 "    String long_name \"Data Type\";\n" +
 "  }\n" +
 "  station_id {\n" +
-"    Int32 actual_range 1, 16885719;\n" +  //changes every month
+"    Int32 actual_range 1, 17032894;\n" +  //changes every month
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station (profile) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -4987,7 +4987,7 @@ expected =
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 6.31152e+8, 1.36736628e+9;\n" + //2nd value changes
+"    Float64 actual_range 6.31152e+8, 1.369134e+9;\n" + //2nd value changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -5043,7 +5043,7 @@ expected =
 " }\n" +
 "  NC_GLOBAL {\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center (NODC) on 2013-05-13 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center (NODC) on 2013-06-13 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"org, type, station_id, longitude, latitude, time\";\n" +
@@ -5070,9 +5070,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.7\";\n" +  
-"    String history \"2013-05-01T17:33:09Z  writeGTSPPnc40.f90 Version 1.7\n" +  //date changes
+"    String history \"2013-06-01T18:49:39Z  writeGTSPPnc40.f90 Version 1.7\n" +  //date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (http://www.nodc.noaa.gov/GTSPP/)\n" +
-"2013-05-13 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n" + //date changes
+"2013-06-13 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n" + //date changes
 today;
         String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
@@ -5090,7 +5090,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2013-05-13 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2013-06-13 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -5116,7 +5116,7 @@ expected =
 "Requesting data for a specific platform, cruise, org, type, and/or station_id may be slow, but it works.\n" +
 "\n" +                       
 "*** This ERDDAP dataset has data for the entire world for all available times (currently, " +
-    "up to and including the April 2013 data) but is a subset of the " + //month changes
+    "up to and including the May 2013 data) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset (and additional, near-real-time data) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "* Profiles with a position_quality_flag or a time_quality_flag other than 1|2|5 were removed.\n" +
 "* Rows with a depth (z) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1|2|5 were removed.\n" +
@@ -5128,7 +5128,7 @@ expected =
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\n" +
 "The Quality Flag definitions are also at\n" +
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
-"    String time_coverage_end \"2013-04-30T23:58:00Z\";\n" + //changes
+"    String time_coverage_end \"2013-05-21T11:00:00Z\";\n" + //changes
 "    String time_coverage_start \"1990-01-01T00:00:00Z\";\n" +
 "    String title \"Global Temperature and Salinity Profile Programme (GTSPP) Data\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -6641,8 +6641,8 @@ String expected2 =
 "given hour. The time values in the dataset are rounded to the nearest hour.\n" +
 "\n" +
 "This dataset has both historical data (quality controlled, before\n" +
-"2013-04-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
-"2013-04-01T00:00:00Z on).\";\n" +                                                 //changes
+"2013-06-01T00:00:00Z) and near real time data (less quality controlled, from\n" + //changes
+"2013-06-01T00:00:00Z on).\";\n" +                                                 //changes
 " :time_coverage_end = \"2005-05-01T03:00:00Z\";\n" +
 " :time_coverage_resolution = \"P1H\";\n" +
 " :time_coverage_start = \"2005-05-01T00:00:00Z\";\n" +
@@ -6856,8 +6856,8 @@ expected =
 "given hour. The time values in the dataset are rounded to the nearest hour.\n" +
 "\n" +  //dates below change
 "This dataset has both historical data (quality controlled, before\n" +
-"2013-04-01T00:00:00Z) and near real time data (less quality controlled, from\n" +
-"2013-04-01T00:00:00Z on).\";\n" +
+"2013-06-01T00:00:00Z) and near real time data (less quality controlled, from\n" +
+"2013-06-01T00:00:00Z on).\";\n" +
 " :time_coverage_end = \"2005-05-01T03:00:00Z\";\n" +
 " :time_coverage_resolution = \"P1H\";\n" +
 " :time_coverage_start = \"2005-05-01T00:00:00Z\";\n" +
@@ -7955,8 +7955,7 @@ expected =
 "     :units = \"PSU\";\n" +
 "\n" +                                                                   
 " :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic Data " +
-    "Center (NODC) on 2013-05-13 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +  //date changes
-" :cdm_altitude_proxy = \"depth\";\n" +  //this will go away with next release (1.44)    
+    "Center (NODC) on 2013-06-13 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +  //date changes
 " :cdm_data_type = \"TrajectoryProfile\";\n" +
 " :cdm_profile_variables = \"org, type, station_id, longitude, latitude, time\";\n" +
 " :cdm_trajectory_variables = \"platform, cruise\";\n" +
@@ -7982,9 +7981,9 @@ expected =
 " :gtspp_handbook_version = \"GTSPP Data User's Manual 1.0\";\n" +
 " :gtspp_program = \"writeGTSPPnc40.f90\";\n" +
 " :gtspp_programVersion = \"1.7\";\n" +  
-" :history = \"2013-05-01T17:33:16Z  writeGTSPPnc40.f90 Version 1.7\n" + //date changes
+" :history = \"2013-06-01T18:49:48Z  writeGTSPPnc40.f90 Version 1.7\n" + //date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (http://www.nodc.noaa.gov/GTSPP/)\n" +
-"2013-05-13 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n"; //date changes
+"2013-06-13 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n"; //date changes
         String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
@@ -8003,7 +8002,7 @@ expected =
 " :keywords_vocabulary = \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 " :LEXICON = \"NODC_GTSPP\";\n" +                                                 //date below changes
 " :license = \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2013-05-13 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2013-06-13 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -8035,7 +8034,7 @@ expected =
     "bounding box (at most, several degrees square).\\\\nRequesting data for a specific " +
     "platform, cruise, org, type, and/or station_id may be slow, but it works.\\\\n\\\\n*** " +
     "This ERDDAP dataset has data for the entire world for all available times (currently, " +
-    "up to and including the April 2013 data) but is a subset of the original NODC " + //changes
+    "up to and including the May 2013 data) but is a subset of the original NODC " + //changes
     "'best-copy' data.  It only includes data where the quality flags indicate the data " +
     "is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, " +
     "any of the history data, or any of the quality flag data of the original dataset. You " +
@@ -8312,8 +8311,7 @@ expected =
 "     :units = \"PSU\";\n" +
 "\n" +                                                 
 " :acknowledgment = \"These data were acquired from the US NOAA National Oceanographic Data Center " +
-    "(NODC) on 2013-05-13 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +  //date changes
-" :cdm_altitude_proxy = \"depth\";\n" +  //this will go away with next release (1.44)
+    "(NODC) on 2013-06-13 from http://www.nodc.noaa.gov/GTSPP/.\";\n" +  //date changes
 " :cdm_data_type = \"TrajectoryProfile\";\n" +
 " :cdm_profile_variables = \"org, type, station_id, longitude, latitude, time\";\n" +
 " :cdm_trajectory_variables = \"platform, cruise\";\n" +
@@ -8339,9 +8337,9 @@ expected =
 " :gtspp_handbook_version = \"GTSPP Data User's Manual 1.0\";\n" +
 " :gtspp_program = \"writeGTSPPnc40.f90\";\n" +
 " :gtspp_programVersion = \"1.7\";\n" +  
-" :history = \"2013-05-01T17:33:16Z  writeGTSPPnc40.f90 Version 1.7\n" +   //date changes
+" :history = \"2013-06-01T18:49:48Z  writeGTSPPnc40.f90 Version 1.7\n" +   //date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ (http://www.nodc.noaa.gov/GTSPP/)\n" +
-"2013-05-13 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n";  //date changes
+"2013-06-13 Most recent ingest, clean, and reformat at ERD (bob.simons at noaa.gov).\n";  //date changes
         String tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
 
@@ -8360,7 +8358,7 @@ String expected2 =
 " :keywords_vocabulary = \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 " :LEXICON = \"NODC_GTSPP\";\n" +                                                //date below changes
 " :license = \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2013-05-13 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center (NODC) on 2013-06-13 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -8391,7 +8389,7 @@ String expected2 =
     "\\\\n* a small longitude and latitude bounding box (at most, several degrees square)." +
     "\\\\nRequesting data for a specific platform, cruise, org, type, and/or station_id may " +
     "be slow, but it works.\\\\n\\\\n*** This ERDDAP dataset has data for the entire world for " +
-    "all available times (currently, up to and including the April 2013 data) but is a " + //date changes
+    "all available times (currently, up to and including the May 2013 data) but is a " + //date changes
     "subset of the original NODC 'best-copy' data.  It only includes data where the quality " +
     "flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include " +
     "some of the metadata, any of the history data, or any of the quality flag data of the " +
@@ -10245,7 +10243,7 @@ expected =
             expected = 
 //"//<Creator>http://www.globec.org/</Creator>\n" +
 //"//<CreateTime>2013-03-22T17:52:05</CreateTime>\n" +
-"//<Software>ERDDAP - Version 1.43</Software>\n" +
+"//<Software>ERDDAP - Version 1.45</Software>\n" +
 "//<Source>http://127.0.0.1:8080/cwexperimental/tabledap/testGlobecBottle.html</Source>\n" +
 "//<Version>ODV Spreadsheet V4.0</Version>\n" +
 "//<DataField>GeneralField</DataField>\n" +
@@ -11122,7 +11120,7 @@ expected =
 "                  <gml:beginPosition>1977-11-06T12:00:00Z</gml:beginPosition>\n" +
 "                  <gml:endPosition indeterminatePosition=\"now\" />\n" +  //important test
 //but ALSO VALID: sometimes it is
-//                 <gml:endPosition>[yesterday or day before]T12:00:00Z</gml:endPosition>\n" +  
+//                 <gml:endPosition>[some day]T12:00:00Z</gml:endPosition>\n" +  
 "                </gml:TimePeriod>\n" +
 "              </gmd:extent>\n" +
 "            </gmd:EX_TemporalExtent>\n" +
@@ -11141,7 +11139,7 @@ expected =
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
                 "\nERROR may be expected: ALSO VALID:\n" +
-                "     <gml:endPosition>[yesterday or day before]T12:00:00Z</gml:endPosition>\n" +  
+                "     <gml:endPosition>[some day]T12:00:00Z</gml:endPosition>\n" +  
                 "\nPress ^C to stop or Enter to continue..."); 
         }
       

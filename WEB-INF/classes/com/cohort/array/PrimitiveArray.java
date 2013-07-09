@@ -449,6 +449,30 @@ public abstract class PrimitiveArray {
 
 
     /** 
+     * This converts a data class into an ESRI Pixel Type.
+     * http://help.arcgis.com/en/arcgismobile/10.0/apis/android/api/com/esri/core/map/ImageServiceParameters.PIXEL_TYPE.html
+     * Currently, long.class returns F64
+     * Currently, byte.class returns a Java-like S8, not an OPenDAP-like U8.
+     * Currently, char.class returns a numeric U16.
+     * Currently, String.class and others return UNKNOWN.
+     *
+     * @param tClass e.g., double.class or String.class
+     * @return the corresponding ESRI pixel type
+     */
+    public static String classToEsriPixelType(Class tClass) {
+        //I can't find definitions of C64 and C128
+        if (tClass == double.class) return "F64";
+        if (tClass == float.class)  return "F32"; 
+        if (tClass == long.class)   return "F64"; //not ideal, but no S64
+        if (tClass == int.class)    return "S32";
+        if (tClass == short.class)  return "S16";
+        if (tClass == byte.class)   return "S8"; //Java-like S8 or OPeNDAP-like U8 ?!
+        if (tClass == char.class)   return "U16"; //
+        //if (tClass == String.class) return ...
+        return "UNKNOWN";
+    }
+
+    /** 
      * This returns the recommended sql data type for this PrimitiveArray.
      * See 
      * <ul>
@@ -2600,7 +2624,52 @@ public abstract class PrimitiveArray {
      *   or an error message if not.
      *   If size is 0 or 1, this returns "".
      */
-    public abstract String isEvenlySpaced();
+    public String isEvenlySpaced() {
+        //This version works for all integer-based values.
+        //StringArray, FloatArray and DoubleArray overwrite this.
+        if (size <= 2)
+            return "";
+        //average is closer to exact than first diff
+        //and usually detects not-evenly-spaced anywhere in the array on first test!
+        double average = (getDouble(size - 1) - getDouble(0)) / (size - 1.0); 
+        for (int i = 1; i < size; i++) {
+            if (getDouble(i) - getDouble(i - 1) != average) {  //integer types must be exact
+                return MessageFormat.format(ArrayNotEvenlySpaced, getClass().getSimpleName(),
+                    "" + (i - 1), "" + getDouble(i - 1), "" + i, "" + getDouble(i),
+                    "" + (getDouble(i) - getDouble(i-1)), "" + average);
+            }
+        }
+        return "";
+    }
+
+    /**
+     * This returns a string indicating the smallest and largest actual spacing 
+     * (not absolute values) between two adjacent values.
+     * If there are ties, this returns the first one found.
+     * If size &lt;= 2, this returns "".
+     *
+     * @return a string indicating the smallest and largest actual spacing
+     * (not absolute values) between two adjacent values.
+     */
+    public String smallestBiggestSpacing() {
+        if (size <= 2)
+            return "";
+        int smalli = 1, bigi = 1;
+        double small = getDouble(1) - getDouble(0); 
+        double big = small;
+        for (int i = 2; i < size; i++) {
+            double diff = getDouble(i) - getDouble(i-1); 
+            if        (diff < small) {smalli = i; small = diff; 
+            } else if (diff > big)   {bigi = i;   big = diff; 
+            }
+        }
+        return "  smallest spacing=" + small + 
+             ": [" + (smalli-1) + "]=" + getDouble(smalli-1) + 
+             ", [" + smalli     + "]=" + getDouble(smalli) + "\n" +
+               "  biggest  spacing=" + big   + 
+             ": [" + (bigi-1)   + "]=" + getDouble(bigi-1) + 
+             ", [" + bigi       + "]=" + getDouble(bigi);
+    }
 
     /** This returns the minimum value that can be held by this class. */
     public abstract String minValue();

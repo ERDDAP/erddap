@@ -99,7 +99,8 @@ public class EDVGridAxis extends EDV {
         //test if evenly spaced
         error = sourceValues.isEvenlySpaced();
         if (verbose && error.length() > 0)
-            String2.log("  " + destinationName + ": " + error);
+            String2.log("  " + destinationName + ": " + error + "\n" + 
+                sourceValues.smallestBiggestSpacing());
         isEvenlySpaced = error.length() == 0;
 
         initializeAverageSpacingAndCoarseMinMax();

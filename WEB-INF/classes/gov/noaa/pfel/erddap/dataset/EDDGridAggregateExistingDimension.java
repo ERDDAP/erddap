@@ -659,7 +659,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
 "        <att name=\"Southernmost_Northing\" type=\"double\">-90.0</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-1.0</att>\n" +
 "        <att name=\"start_time\" type=\"double\">0.0</att>\n" +
-"        <att name=\"summary\">NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#039;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.</att>\n" +
+"        <att name=\"summary\">NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.</att>\n" +
 "        <att name=\"time_coverage_end\">2013-04-16T00:00:00Z</att>\n" +   //changes
 "        <att name=\"time_coverage_start\">2013-04-15T00:00:00Z</att>\n" + //changes
 "        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality</att>\n" +

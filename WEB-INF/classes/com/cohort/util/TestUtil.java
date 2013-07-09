@@ -1152,6 +1152,14 @@ public class TestUtil {
         s = "-1.0ee+5"; Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
         s = "e2";       Test.ensureEqual(String2.isNumber(s), false, "s=" + s);
 
+        //removeLeading
+        Test.ensureEqual(String2.removeLeading(null, ' '), null, "");
+        Test.ensureEqual(String2.removeLeading("", ' '),  "", "");
+        Test.ensureEqual(String2.removeLeading("0", '0'), "", "");
+        Test.ensureEqual(String2.removeLeading("00", '0'), "", "");
+        Test.ensureEqual(String2.removeLeading("00a0", '0'), "a0", "");
+        Test.ensureEqual(String2.removeLeading("b", 'a'), "b", "");
+
         //noLongLines
         s = "asdf asdf asfd asdf (b)asdflakjf(a) abc flkjf aflkjj(b) sl;kj abcdefghijklmnopqrstuvwxyzabcdef(b) a asdlkj(b) f aflkja(b) fasl faslfkj(b) flkajf sflkj(b) adfsl;kj";
         s = String2.noLongLines(s, 25, "  "); 
@@ -1580,19 +1588,24 @@ public class TestUtil {
         Test.ensureEqual(String2.isJsonpNameSafe("_"),  true,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("a"),  true,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("¿"),  true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe(" "),  false, "");
         Test.ensureEqual(String2.isJsonpNameSafe("."),  false, "");
         Test.ensureEqual(String2.isJsonpNameSafe("9"),  false, "");
-        Test.ensureEqual(String2.isJsonpNameSafe("\u0100"),  false, ""); //A macron
+        Test.ensureEqual(String2.isJsonpNameSafe("\u0100"),  false, ""); //A macron outside fo 8859 charset
         Test.ensureEqual(String2.isJsonpNameSafe("__"),  true,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("aa"),  true,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("a9"),  true,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("¿¿"),  true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("¿ "),  false,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("_."),  false,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("a."),  false,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("¿."),  false,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("a. "), false,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("a.."), false,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("a.9"), false,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("_._"), true,  "");
-        Test.ensureEqual(String2.isJsonpNameSafe("a.9"), true,  "");
         Test.ensureEqual(String2.isJsonpNameSafe("¿.¿"), true,  "");
+        Test.ensureEqual(String2.isJsonpNameSafe("¿.¿._a9"), true,  "");
 
         //modifyToBeVariableNameSafe
         String2.log("test modifyToBeVariableNameSafe");
@@ -1979,6 +1992,8 @@ public class TestUtil {
         Test.ensureEqual(String2.parseInt("0.2"),        0, "e");
         Test.ensureEqual(String2.parseInt("2a"),         Integer.MAX_VALUE, "f");
         Test.ensureEqual(String2.parseInt("0xFF"),       255, "g");
+        //number starting with 0 is treated as decimal (not octal as Java would)
+        Test.ensureEqual(String2.parseInt("0012"),        12, "h");   
 
         //2011-02-09  avoid Java bug parsing certain floating point numbers
         //http://www.exploringbinary.com/java-hangs-when-converting-2-2250738585072012e-308/
@@ -2001,6 +2016,8 @@ public class TestUtil {
         Test.ensureEqual(String2.parseDouble("1e400"),   Double.POSITIVE_INFINITY, "d");
         Test.ensureEqual(String2.parseDouble("0a"),      Double.NaN, "e");
         Test.ensureEqual(String2.parseDouble(null),      Double.NaN, "e");
+        //number starting with 0 is treated as decimal (not octal as Java would)
+        Test.ensureEqual(String2.parseDouble("0012"),        12, "h");   
         
         //2011-02-09  avoid Java bug parsing certain floating point numbers
         //http://www.exploringbinary.com/java-hangs-when-converting-2-2250738585072012e-308/
