@@ -125,13 +125,13 @@ import dods.dap.*;
 public class Table  {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
 
     /**
-     * Set this to true (by calling debug=true in your program, not but changing the code here)
+     * Set this to true (by calling debug=true in your program, not by changing the code here)
      * if you want lots and lots of diagnostic messages sent to String2.log.
      */
     public static boolean debug = false;    
@@ -139,7 +139,7 @@ public class Table  {
 
     /**
      * Set this to true (by calling reallyVerbose=true in your program, 
-     * not but changing the code here)
+     * not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean reallyVerbose = false; 
@@ -2014,7 +2014,8 @@ public class Table  {
         String loadColumns[], boolean simplify) {
 
         String sar[] = String2.readFromFile(fullFileName, charset, 2);
-        Test.ensureEqual(sar[0].length(), 0, sar[0]); //check that there was no error
+        if (sar[0].length() > 0) //check that there was no error
+            throw new SimpleException(sar[0]); 
         //String2.log(String2.annotatedString(sar[1]));
         readASCII(fullFileName, String2.splitNoTrim(sar[1], '\n'), columnNamesLine, dataStartLine,
             testColumns, testMin, testMax, loadColumns, simplify); 
@@ -2279,7 +2280,7 @@ public class Table  {
 
         //no data?
         if (loadColumnNumbers == null)
-            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (loadColumns not found)");
 
         //simplify the columns
         if (simplify) 
@@ -3932,7 +3933,7 @@ Dataset {
 
         //no data?
         if (nRows() == 0) {
-            writer.write(MustBe.THERE_IS_NO_DATA);
+            writer.write(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
         } else {
 
             writer.write(
@@ -4528,7 +4529,7 @@ Dataset {
      * (see ucar.nc2.NetcdfFile documentation).
      * 
      * @param fullName This may be a local file name, an "http:" address of a
-     *    .nc file, or an opendap url.
+     *    .nc file, an .ncml file (which must end with ".ncml"), or an opendap url.
      * @param loadVariableNames if null or length 0, all vars are read.
      *    <br>If a specified var isn't in the file, there won't be a column in the results file for it.
      *    <br>All dimension vars are automatically loaded.
@@ -5688,7 +5689,7 @@ Dataset {
 
                 //if nLevels=1, read via readNDNc
                 if (nLevels == 1) {
-                    if (debug) String2.log("  Debug: nLevels=1, outerDim==scalarDim, read via readNDNc");
+                    if (debug) String2.log("  Debug: nLevels=1, outerDim=scalarDim, read via readNDNc");
                     ncFile.close();
                     ncFile = null;
                     readNDNc(fullName, loadVariableNames.toArray(), null, 0, 0, true);
@@ -5708,7 +5709,7 @@ Dataset {
                 }
 
                 //if nLevels == 2
-                if (debug) String2.log("  Debug: nLevels=2, outerDim==scalarDim");
+                if (debug) String2.log("  Debug: nLevels=2, outerDim=scalarDim");
                 for (int v = 0; v < nVars; v++) {
                     //first: go through the dimensions
                     for (int d = 0; d < varNDims[v]; d++) {
@@ -5836,6 +5837,9 @@ Dataset {
                         NcHelper.getPrimitiveArray(vars[v]), varAtts[v]);
                 }
             }
+            if (debug) String2.log("  Debug: outerTable(nRows=" + outerTable.nRows() + 
+                ") nLoadVariablesInOuterTable=" + nLoadVariablesInOuterTable + 
+                " First <=3 rows:\n" + outerTable.dataToCSVString(3));
             globalAttributes.set(cdmOuterName,      cdmOuterVars.toString()); //may be "", that's okay
             if (cdmInnerName != null)
                 globalAttributes.set(cdmInnerName,  "");  //nLevel=2 will set it properly below
@@ -6088,8 +6092,9 @@ Dataset {
                         int innerTableNColumns = innerTable.nColumns();
                         int innerTableNRows    = innerTable.nRows();               
                         BitSet innerKeep = null; //if null, assume all innerKeep are true
-                        if (debug) String2.log("  Debug: innerTable nLoadVarsInInner=" + 
-                            nLoadVariablesInInnerTable + " nCols=" + innerTableNColumns);
+                        if (debug) String2.log("  Debug: innerTable nLoadVarsInInnerTable=" + 
+                            nLoadVariablesInInnerTable + " nCols=" + innerTableNColumns + 
+                            " nRows=" + innerTableNRows);
                         if (innerTableNColumns > 0) {
 
                             //apply constraints to innerTable  (but keep all innerTable rows)
@@ -6109,6 +6114,9 @@ Dataset {
                             innerTableNColumns = innerTable.nColumns();
 
                             //Are we done?  just outerTable + innerTable vars?
+                            if (debug) String2.log(  "  Debug: nLoadVariables InFile=" + nLoadVariablesInFile +
+                                " InOuter=" + nLoadVariablesInOuterTable +
+                                " InInner=" + nLoadVariablesInInnerTable);
                             if (nLoadVariablesInFile == nLoadVariablesInOuterTable + 
                                                         nLoadVariablesInInnerTable) {
 
@@ -6117,12 +6125,25 @@ Dataset {
                                 innerTableNRows = innerTable.nRows();
 
                                 //make columns in this table paralleling innerTable, but initially 0 rows
+                                boolean justInnerTable = nLoadVariablesInFile == nLoadVariablesInInnerTable;
                                 for (int col = 0; col < innerTableNColumns; col++) {
                                     addColumn(nColumns(), innerTable.getColumnName(col), 
-                                        PrimitiveArray.factory(innerTable.getColumn(col).elementClass(),
-                                            1024, false), 
+                                        justInnerTable?
+                                            innerTable.getColumn(col) :
+                                            PrimitiveArray.factory(innerTable.getColumn(col).elementClass(),
+                                                1024, false), 
                                         innerTable.columnAttributes(col));
                                 }
+
+                                //just want vars in innerTable?
+                                if (justInnerTable) {
+                                    if (verbose) String2.log("  readNcCF finished (nLevels=1, " + readAs + 
+                                        ", just innerTable vars)." + 
+                                        " nRows=" + nRows() + " nCols=" + nColumns() + 
+                                        " time=" + (System.currentTimeMillis() - time));
+                                    if (debug) ensureValid();
+                                    return;
+                                }                               
 
                                 if (nLoadVariablesInOuterTable > 0) {
                                     //join justKeep rows of outerTable
@@ -6134,7 +6155,7 @@ Dataset {
                                     //and the index to outerTable
                                     IntArray outerIndexPA = new IntArray();
                                     for (int oRow = 0; oRow < outerTableNRows; oRow++) {
-                                        for (int iCol = 0; iCol < innerTableNColumns; iCol++) {
+                                        for (int iCol = 0; iCol < innerTableNColumns; iCol++) 
                                             getColumn(iCol).append(innerTable.getColumn(iCol));
                                         outerIndexPA.add(innerTableNRows, oRow);
                                     }
@@ -6154,7 +6175,6 @@ Dataset {
                                     " time=" + (System.currentTimeMillis() - time));
                                 if (debug) ensureValid();
                                 return;
-                                }                               
                             }
                         }  //below, innerTable may have 0 or more columns
 
@@ -6175,9 +6195,10 @@ Dataset {
                                 obsRow++;
                             }
                         }
-                        if (debug) String2.log("  Debug: outerKeep=" + outerKeep +
-                            "\n    innerKeep=" + innerKeep +
-                            "\n    obsKeep=" + obsKeep);
+                        if (debug) String2.log("  Debug: outerKeep=" + 
+                                                 String2.noLongerThan(outerKeep == null? "null" : outerKeep.toString(), 60) +
+                            "\n    innerKeep=" + String2.noLongerThan(innerKeep == null? "null" : innerKeep.toString(), 60) +
+                            "\n    obsKeep="   + String2.noLongerThan(  obsKeep.toString(), 60));
 
                         if (obsKeep.isEmpty()) {
                             if (verbose) String2.log("  " + MustBe.THERE_IS_NO_DATA + 
@@ -6198,14 +6219,18 @@ Dataset {
                                 varNDims[v] == 2 && 
                                 varUsesDim[v][outerDim] && varUsesDim[v][obsDim]) { //dim order checked above
                                 PrimitiveArray pa = NcHelper.getPrimitiveArray(vars[v]);
+                                if (debug) String2.log("  Debug: read var=" + varNames[v] + " pa.size=" + pa.size());
                                 pa.justKeep(obsKeep); //as each var read in, to save memory
                                 pa.trimToSize();
+                                if (debug) String2.log("    trimmed pa.size=" + pa.size());
                                 addColumn(nColumns(), varNames[v], pa, varAtts[v]);
                             }
                         }
 
                         //Remove rows where all obs data is MV
                         //Rows with only outerTable or innerTable MVs have been removed by obsKeep above.
+                        if (debug) String2.log("  Debug: before remove rows where all obs data is MV (nRows=" + 
+                            nRows() + "):\n" + dataToCSVString(3));
                         obsKeep = rowsWithData();
                         addColumn(0, "outerKeyColumn", outerKeyColumnPA, new Attributes());
                         addColumn(1, "innerKeyColumn", innerKeyColumnPA, new Attributes());
@@ -8216,6 +8241,7 @@ String2.log(table.dataToCSVString());
 
         //***************  trajectory multiple multidimensional --- 
    try {
+
         fileName = "c:/git/CFPointConventions/trajectory/" +
             "trajectory-Incomplete-Multidimensional-MultipleTrajectories-H.4.1/" +
             "trajectory-Incomplete-Multidimensional-MultipleTrajectories-H.4.1.nc";
@@ -8312,10 +8338,12 @@ String2.log(table.dataToCSVString());
         if (pauseAfterEach) 
             String2.getStringFromSystemIn("#8b " + pauseMessage); 
     } catch (Exception e) {
-        String2.getStringFromSystemIn("\n" +
+        //String2.getStringFromSystemIn(
+        Test.knownProblem(
+            "KYLE WILCOX'S DSG TEST FILE.",
             MustBe.throwableToString(e) + 
             "\nI reported this problem to Kyle 2012-10-03" +
-            "\nPress ^C to stop or Enter to continue..."); 
+            "\n2013-10-30 Since Kyle is changing jobs, it is unlikely he will ever fix this.");
     }
 
         //***************  trajectory single multidimensional --- 
@@ -11246,6 +11274,8 @@ String2.log(table.dataToCSVString());
 
     /**
      * Like sort, but StringArrays are sorted in a case-insensitive way.
+     * This is more sophisticated than Java's String.CASE_INSENSITIVE_ORDER.
+     * E.g., all charAt(0) A's will sort by for all charAt(0) a's  (e.g., AA, Aa, aA, aa).
      *
      * <p>This sort is stable: equal elements will not be reordered as a result of the sort.
      *
@@ -11290,6 +11320,8 @@ String2.log(table.dataToCSVString());
 
     /**
      * Like ascendingSort, but StringArrays are sorted in a case-insensitive way.
+     * This is more sophisticated than Java's String.CASE_INSENSITIVE_ORDER.
+     * E.g., all charAt(0) A's will sort by for all charAt(0) a's  (e.g., AA, Aa, aA, aa).
      *
      * <p>This sort is stable: equal elements will not be reordered as a result of the sort.
      *
@@ -11327,6 +11359,8 @@ String2.log(table.dataToCSVString());
 
     /**
      * Like leftToRightSort, but StringArrays are sorted in a case-insensitive way.
+     * This is more sophisticated than Java's String.CASE_INSENSITIVE_ORDER.
+     * E.g., all charAt(0) A's will sort by for all charAt(0) a's  (e.g., AA, Aa, aA, aa).
      *
      * <p>This sort is stable: equal elements will not be reordered as a result of the sort.
      *
@@ -11661,7 +11695,7 @@ String2.log(table.dataToCSVString());
     /**
      * Like the other orderByMax, but based on keyColumnNames.
      *
-     * @param keyColumnsNames  1 or more column numbers (0..).
+     * @param keyColumnNames  1 or more column numbers (0..).
      * @throws Exception if trouble (e.g., a keyColumnName not found)
      */
     public void orderByMax(String keyColumnNames[]) throws Exception {
@@ -11680,7 +11714,7 @@ String2.log(table.dataToCSVString());
     /**
      * Like the other orderByMin, but based on keyColumnNames.
      *
-     * @param keyColumnsNames  1 or more column numbers (0..).
+     * @param keyColumnNames  1 or more column numbers (0..).
      * @throws Exception if trouble (e.g., a keyColumnName not found)
      */
     public void orderByMin(String keyColumnNames[]) throws Exception {
@@ -11699,7 +11733,7 @@ String2.log(table.dataToCSVString());
     /**
      * Like the other orderByMinMax, but based on keyColumnNames.
      *
-     * @param keyColumnsNames  1 or more column numbers (0..).
+     * @param keyColumnNames  1 or more column numbers (0..).
      * @throws Exception if trouble (e.g., a keyColumnName not found)
      */
     public void orderByMinMax(String keyColumnNames[]) throws Exception {
@@ -11853,6 +11887,8 @@ String2.log(table.dataToCSVString());
      * This is like the other saveAsMatlab, but writes to a file.
      *
      * @param fullName The full file name (dir + name + ext (usually .mat))
+     * @param varName  if varName isn't a valid Matlab variable name,
+     *    it will be made so via String2.modifyToBeVariableNameSafe().
      */
     public void saveAsMatlab(String fullName, String varName) throws Exception {
         if (verbose) String2.log("Table.saveAsMatlab " + fullName); 
@@ -11869,7 +11905,7 @@ String2.log(table.dataToCSVString());
             new FileOutputStream(fullName + randomInt));
 
         try {
-            saveAsMatlab(bos, varName);
+            saveAsMatlab(bos, varName);  //it calls modifyToBeVariableNameSafe
             bos.close();
 
             //rename the file to the specified name, instantly replacing the original file     
@@ -11976,18 +12012,21 @@ String2.log(table.dataToCSVString());
      *    Afterwards, it is flushed, not closed.
      * @param structureName the name to use for the Matlab structure which holds all of the data, 
      *    usually the dataset's internal name.
+     *    If varName isn't a valid Matlab variable name,
+     *    it will be made so via String2.modifyToBeVariableNameSafe().
      * @throws Exception 
      */
     public void saveAsMatlab(OutputStream outputStream, String structureName) 
         throws Exception {
         if (verbose) String2.log("Table.saveAsMatlab outputStream"); 
         long time = System.currentTimeMillis();
+        structureName = String2.modifyToBeVariableNameSafe(structureName);
 
         String errorInMethod = String2.ERROR + " in Table.saveAsMatlab:\n";
 
         //make sure there is data
         if (nRows() == 0)
-            throw new SimpleException(errorInMethod + MustBe.THERE_IS_NO_DATA);
+            throw new SimpleException(errorInMethod + MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
 
         //calculate the size of the structure
         int nCols = nColumns();
@@ -12217,7 +12256,7 @@ String2.log(table.dataToCSVString());
             int nColumns = nColumns();
             if (nRows == 0) {
                 throw new Exception(String2.ERROR + " in Table.saveAsFlatNc:\n" + 
-                    MustBe.THERE_IS_NO_DATA);
+                    MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
             }
             PrimitiveArray tPA[] = new PrimitiveArray[nColumns];
 
@@ -12560,7 +12599,7 @@ String2.log(table.dataToCSVString());
             Test.ensureNotEqual(stringVariableValue.length(), 0, errorInMethod + "stringVariableValue is \"\".");
         }
         if (nRows() == 0) {
-            throw new Exception(errorInMethod + MustBe.THERE_IS_NO_DATA);
+            throw new Exception(errorInMethod + MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
         }
 
         //open the file (before 'try'); if it fails, no temp file to delete
@@ -12708,6 +12747,7 @@ String2.log(table.dataToCSVString());
             }
 
             //leave "define" mode
+            //if (String2.OSIsWindows) Math2.sleep(100);
             nc.create();
 
             //write the data
@@ -13858,7 +13898,7 @@ String2.log(table.dataToCSVString());
         //ensure there is data
         if (nRows() == 0) {
             throw new Exception(String2.ERROR + " in Table.saveAsSeparatedAscii:\n" + 
-                MustBe.THERE_IS_NO_DATA);
+                MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
         }
 
         long time = System.currentTimeMillis();
@@ -14278,15 +14318,15 @@ String2.log(table.dataToCSVString());
 
         //for now, do it the simple but memory-expensive way
         //There will be 3 copies of data in memory: source String, json objects, Table!
-        //Math2.gc(500); String2.log("readJson start " + Math2.memoryString());
+        //Math2.gcAndWait(); String2.log("readJson start " + Math2.memoryString());
         //long tTime = System.currentTimeMillis();
         JSONObject mainObject = new JSONObject(source);
         //String2.log("  json main time=" + (System.currentTimeMillis() - tTime));  //all the JSON time is here: ~8000ms
-        //Math2.gc(500); String2.log("  place1 " + Math2.memoryString()); //max memory usage reached here
+        //Math2.gcAndWait(); String2.log("  place1 " + Math2.memoryString()); //max memory usage reached here
         //tTime = System.currentTimeMillis();
         JSONObject tableObject = mainObject.getJSONObject("table");
         //String2.log("  json table time=" + (System.currentTimeMillis() - tTime));
-        //Math2.gc(500); String2.log("  place2 " + Math2.memoryString());
+        //Math2.gcAndWait(); String2.log("  place2 " + Math2.memoryString());
     
         //read the parts of the table
         JSONArray tNames = tableObject.getJSONArray("columnNames");
@@ -14300,7 +14340,7 @@ String2.log(table.dataToCSVString());
 
         //create the table
         boolean isStringCol[] = new boolean[nColumns];
-        //Math2.gc(500); String2.log(" place3 " + Math2.memoryString());
+        //Math2.gcAndWait(); String2.log(" place3 " + Math2.memoryString());
         for (int col = 0; col < nColumns; col++) {
             addColumn(tNames.getString(col), 
                 tTypes == null? new StringArray(nRows, false) : 
@@ -14334,7 +14374,7 @@ String2.log(table.dataToCSVString());
                 }
             }
         }
-        //Math2.gc(500); String2.log(" place4 " + Math2.memoryString());
+        //Math2.gcAndWait(); String2.log(" place4 " + Math2.memoryString());
 
         //simplify
         if (tTypes == null)
@@ -14915,13 +14955,17 @@ touble: because table is JsonObject, info may not be in expected order
             Test.ensureEqual(table.globalAttributes.getString("title"), 
                 "TAO/TRITON, RAMA, and PIRATA Buoys, Daily, Sea Surface Temperature", 
                 ncHeader);
-            Test.ensureEqual(table.globalAttributes.get("history").size(), 2,  ncHeader);
+            Test.ensureEqual(table.globalAttributes.get("history").size(), 3,  ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").getString(0), 
-                "2013-06-06 Most recent downloading and reformatting of all " + //changes monthly
-                "cdf/sites/... files from PMEL TAO's FTP site by bob.simons at noaa.gov.", 
+                "This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.", 
                 ncHeader);
             Test.ensureEqual(table.globalAttributes.get("history").getString(1), 
-                "Since then, recent data has been updated every day.", 
+                "This dataset is a product of the TAO Project Office at NOAA/PMEL.", 
+                ncHeader);
+            Test.ensureLinesMatch(table.globalAttributes.get("history").getString(2), 
+                "20\\d{2}-\\d{2}-\\d{2} Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) " +
+                "fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  " +
+                "Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data.", 
                 ncHeader);
             Test.ensureEqual(table.nColumns(), 10, ncHeader);
             Test.ensureEqual(table.findColumnNumber("longitude"), 3, ncHeader);
@@ -15845,7 +15889,7 @@ touble: because table is JsonObject, info may not be in expected order
         Test.ensureEqual(table2.columnAttributes(8).getString("units"), "Strings", "");
 
         //** finally 
-        Math2.gc(10000); //do something useful while browser gets going to display it 
+        Math2.gc(10000); //in a test.  Do something useful while browser gets going to display the file.
         File2.delete(fileName);
     }
 
@@ -16336,6 +16380,7 @@ touble: because table is JsonObject, info may not be in expected order
 
 
         //************* TWO-LEVEL SEQUENCE *****************************
+        /* 2014-08-06 TEST REMOVED BECAUSE dataset is gone
 
         try {
 
@@ -16356,7 +16401,8 @@ touble: because table is JsonObject, info may not be in expected order
             long time1 = Calendar2.newGCalendarZulu(2004, 1, 1).getTimeInMillis();
             long time2 = time1 + Calendar2.MILLIS_PER_HOUR;
             //was http://las.pfeg.noaa.gov/dods/ndbc/all_noaa_time_series.cdp 
-            url = "http://las.pfeg.noaa.gov/dods/ndbcMet/ndbcMet_time_series.cdp?" +
+            //was http://las.pfeg.noaa.gov/dods/ndbcMet/ndbcMet_time_series.cdp?" +
+            url = "http://oceanview.pfeg.noaa.gov/dods/ndbcMet/ndbcMet_time_series.cdp?" +
                 "location.LON,location.LAT,location.DEPTH,location.profile.TIME,location.profile.WSPD,location.profile.BAR" +
                 "&location.LON>=" + (lon - .01f) + "&location.LON<=" + (lon + .01f) + //I couldn't catch lon with "="
                 "&location.LAT>=" + (lat - .01f) + "&location.LAT<=" + (lat + .01f) + //I couldn't catch lat with "="
@@ -16406,8 +16452,10 @@ touble: because table is JsonObject, info may not be in expected order
             String2.getStringFromSystemIn(
                 "\nRecover from opendapSequence failure? Press 'Enter' to continue or ^C to stop...");
         }    
+        */
 
 
+        /* 2014-08-06 INACTIVE BECAUSE DATASET NO LONGER AVAILABLE
         try {
             //This Calcofi test simply verifies that the results now are as they were when
             //  I wrote the test (circular logic).
@@ -16422,7 +16470,8 @@ touble: because table is JsonObject, info may not be in expected order
             long time = 947320140000L;
             //Starting url from roy: http://las.pfeg.noaa.gov/dods/
             //see info via url without query, but plus .dds or .das
-            url = "http://las.pfeg.noaa.gov/dods/CalCOFI/Biological.cdp?" +
+            //was las.pfeg.noaa.gov
+            url = "http://oceanview.pfeg.noaa.gov/dods/CalCOFI/Biological.cdp?" +
                 "location.lon,location.lat,location.time,location.profile.depth,location.profile.Line,location.profile.Disintegrated_fish_larvae_LarvaeCount" +
                 "&location.lon>=" + (lon - .01f) + "&location.lon<=" + (lon + .01f) + //I couldn't catch lon with "="
                 "&location.lat>=" + (lat - .01f) + "&location.lat<=" + (lat + .01f) + //I couldn't catch lat with "="
@@ -16505,7 +16554,7 @@ touble: because table is JsonObject, info may not be in expected order
             long time1 = Calendar2.newGCalendarZulu(2004, 1, 1).getTimeInMillis();
             long time2 = time1 + Calendar2.MILLIS_PER_HOUR;
             //was http://las.pfeg.noaa.gov/dods/ndbc/all_noaa_time_series.cdp
-            url = "http://las.pfeg.noaa.gov/dods/ndbcMet/ndbcMet_time_series.cdp?" +
+            url = "http://oceanview.pfeg.noaa.gov/dods/ndbcMet/ndbcMet_time_series.cdp?" +
                 "location.LON,location.LAT,location.DEPTH,location.profile.TIME,location.profile.WSPD,location.profile.BAR" +
                 "&location.LON>=" + (lon - 5f) + "&location.LON<=" + (lon + 5f) + 
                 "&location.LAT>=" + (lat - 5f) + "&location.LAT<=" + (lat + 5f) + 
@@ -16516,9 +16565,9 @@ touble: because table is JsonObject, info may not be in expected order
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
             String2.getStringFromSystemIn(
-                "\nStarted failing 2009-07-21 too much data, timeout.\n" +
                 "Recover from opendapSequence failure? Press 'Enter' to continue or ^C to stop...");
         }
+        */
 
     /*
         try{
@@ -16593,7 +16642,8 @@ touble: because table is JsonObject, info may not be in expected order
 /**
 [Bob talked to Lynn about this. Conclusions below.]
 1)   If I just get all lon,lat,time,depth, and English_sole_LarvaeCount
-        url = "http://las.pfeg.noaa.gov/dods/CalCOFI/Biological.cdp?" +
+          (was http://las.pfeg...)
+        url = "http://oceanview.pfeg.noaa.gov/dods/CalCOFI/Biological.cdp?" +
             "location.lon,location.lat,location.time,location.profile.depth,location.profile.English_sole_LarvaeCount";
     it looks like each time,lat,lon combo has a data row and a NaN row.
     ???Is this a real NaN row, or a mistake in my code (e.g., end of sequence beginning of next).
@@ -16630,7 +16680,7 @@ touble: because table is JsonObject, info may not be in expected order
    And requesting all data rows (so I can then filtering on my end) takes ~40 seconds
    for 98 rows of data.
    [Wasteful, but I believe Roy did it this way to conform to Dapper Conventions so
-   data easily served by Dapper/DChart, see http://las.pfeg.noaa.gov/dchart.]
+   data easily served by Dapper/DChart, see http://oceanview.pfeg.noaa.gov/dchart (was http://las.pfeg...).]
 
 4) There are no 0 values for English_sole_LarvaeCount.
    So how can one tell if people looked for English_sole_Larvae but didn't find any?
@@ -17352,6 +17402,206 @@ expected =
 
     }
 
+    /** 
+     * This tests reading data from a ncCF multidimensional dataset
+     * where the dimensions are in the discouraged order (e.g., var[time][station]).
+     */
+    public static void testReadNcCFMATimeSeriesReversed() throws Exception {
+        String2.log("\n*** testReadNcCFMATimeSeriesReversed");
+        //time is days since 2006-01-01 00:00:00.  file has  2007-10-01T04 through 2013-11-14T17:06
+        boolean oDebug = debug;
+        debug = true;
+        Table table = new Table();
+        String results, expected;
+        long time; 
+/* */
+        //               read all vars  when obs is constrained
+        String2.log("\n* read all vars  when obs is constrained");
+        time = System.currentTimeMillis();
+        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
+            null, //all vars
+            StringArray.fromCSV("time"), StringArray.fromCSV(">"), StringArray.fromCSV("2874.7"));
+        String2.log("time=" + (System.currentTimeMillis() - time));
+        results = table.dataToCSVString();
+        expected = 
+"latitude,discharge,longitude,station,time\n" +
+"39.01061275,57.76636788,-75.45794828,1484080.0,2874.70000000007\n" +
+"39.01061275,63.99607422,-75.45794828,1484080.0,2874.704166666721\n" +
+"43.26944444,176.13078833999998,-73.5958333,1327750.0,2874.708333333372\n" +
+"42.78527778,273.54074202,-73.7075,1357500.0,2874.708333333372\n" +
+"39.01061275,61.16438952,-75.45794828,1484080.0,2874.708333333372\n" +
+"39.01061275,60.59805258,-75.45794828,1484080.0,2874.7125000000233\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //               just read station vars (all stations)  no constraints
+        String2.log("\n* just read station vars (all stations)  no constraints");
+        time = System.currentTimeMillis();
+        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
+            StringArray.fromCSV("station,latitude,longitude"), 
+            null, null, null);
+        String2.log("time=" + (System.currentTimeMillis() - time));
+        results = table.dataToCSVString();
+        expected = 
+"station,latitude,longitude\n" +
+"1463500.0,40.22166667,-74.7780556\n" +
+"1389500.0,40.8847222,-74.2261111\n" +
+"1327750.0,43.26944444,-73.5958333\n" +
+"1357500.0,42.78527778,-73.7075\n" +
+"1403060.0,40.5511111,-74.5483333\n" +
+"1474500.0,39.9678905,-75.1885123\n" +
+"1477050.0,39.83677934,-75.36630199\n" +
+"1480120.0,39.7362245,-75.540172\n" +
+"1481500.0,39.7695,-75.5766944\n" +
+"1480065.0,39.71063889,-75.6087222\n" +
+"1480015.0,39.71575,-75.6399444\n" +
+"1482170.0,39.65680556,-75.562\n" +
+"1482800.0,39.5009454,-75.5682589\n" +
+"1413038.0,39.3836111,-75.35027778\n" +
+"1412150.0,39.23166667,-75.0330556\n" +
+"1411435.0,39.16166667,-74.8319444\n" +
+"1484085.0,39.05830556,-75.3976111\n" +
+"1484080.0,39.01061275,-75.45794828\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //               just read station vars (a few stations because lat is constrained)
+        String2.log("\n* just read station vars (a few stations because lat is constrained)");
+        time = System.currentTimeMillis();
+        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
+            StringArray.fromCSV("station,latitude,longitude"), 
+            StringArray.fromCSV("latitude"), StringArray.fromCSV("<"), StringArray.fromCSV("39.1"));
+        String2.log("time=" + (System.currentTimeMillis() - time));
+        results = table.dataToCSVString();
+        expected = 
+"station,latitude,longitude\n" +
+"1484085.0,39.05830556,-75.3976111\n" +
+"1484080.0,39.01061275,-75.45794828\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+
+        //               just read obs vars  (obs is constrained)
+        String2.log("\n* just read obs vars  (obs is constrained)");
+        time = System.currentTimeMillis();
+        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
+            StringArray.fromCSV("time,discharge"), 
+            StringArray.fromCSV("discharge"), StringArray.fromCSV(">"), StringArray.fromCSV("5400"));
+        String2.log("time=" + (System.currentTimeMillis() - time));
+        results = table.dataToCSVString();
+        expected = 
+"time,discharge\n" +
+"2076.5,5408.517777\n" +
+"2076.510416666628,5465.151471\n" +
+"2076.5208333332557,5493.468318\n" +
+"2076.53125,5521.785165\n" +
+"2076.541666666628,5521.785165\n" +
+"2076.5520833332557,5521.785165\n" +
+"2076.5625,5521.785165\n" +
+"2076.572916666628,5521.785165\n" +
+"2076.5833333332557,5493.468318\n" +
+"2076.59375,5465.151471\n" +
+"2076.604166666628,5436.834624\n" +
+"2076.6145833332557,5408.517777\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        
+        //               read all vars when station is constrained, 
+        String2.log("\n* read all vars when station is constrained");
+        time = System.currentTimeMillis();
+        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
+            StringArray.fromCSV("station,latitude,longitude,time,discharge"), 
+            StringArray.fromCSV("station"), StringArray.fromCSV("="), StringArray.fromCSV("1463500.0"));
+        String2.log("time=" + (System.currentTimeMillis() - time));
+        results = table.dataToCSVString();
+        expected = 
+"station,latitude,longitude,time,discharge\n" +
+"1463500.0,40.22166667,-74.7780556,638.1666666666279,92.02975275\n" +
+"1463500.0,40.22166667,-74.7780556,638.1770833332557,92.02975275\n" +
+"1463500.0,40.22166667,-74.7780556,638.1875,92.02975275\n" +
+"1463500.0,40.22166667,-74.7780556,638.1979166666279,92.87925815999999\n" +
+"1463500.0,40.22166667,-74.7780556,638.2083333332557,93.72876357\n" +
+"1463500.0,40.22166667,-74.7780556,638.21875,93.72876357\n" +
+"1463500.0,40.22166667,-74.7780556,638.2291666666279,94.86143745\n" +
+"1463500.0,40.22166667,-74.7780556,638.2395833332557,95.71094286\n" +
+"1463500.0,40.22166667,-74.7780556,638.25,95.71094286\n" +
+"1463500.0,40.22166667,-74.7780556,638.2604166666279,95.71094286\n" +
+"1463500.0,40.22166667,-74.7780556,638.2708333332557,97.40995368\n";  //stop there
+        results = results.substring(0, expected.length());
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 209126, "wrong nRows");
+
+        //               read all data 
+        String2.log("\n* read all data");
+        time = System.currentTimeMillis();
+        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
+            null, null, null, null);
+        String2.log("time=" + (System.currentTimeMillis() - time));
+        results = table.dataToCSVString();
+        expected = 
+"latitude,discharge,longitude,station,time\n" +
+"40.22166667,92.02975275,-74.7780556,1463500.0,638.1666666666279\n" +
+"40.8847222,1.500792891,-74.2261111,1389500.0,638.1666666666279\n" +
+"40.5511111,4.190893356,-74.5483333,1403060.0,638.1666666666279\n" +
+"39.9678905,11.921392587,-75.1885123,1474500.0,638.1666666666279\n" +
+"40.22166667,92.02975275,-74.7780556,1463500.0,638.1770833332557\n" +
+"40.8847222,1.500792891,-74.2261111,1389500.0,638.1770833332557\n" +
+"40.5511111,4.190893356,-74.5483333,1403060.0,638.1770833332557\n" +
+"40.22166667,92.02975275,-74.7780556,1463500.0,638.1875\n" +
+"40.8847222,1.500792891,-74.2261111,1389500.0,638.1875\n" +
+"40.5511111,4.275843897,-74.5483333,1403060.0,638.1875\n" +
+"39.9678905,11.921392587,-75.1885123,1474500.0,638.1875\n";  //stop there
+        results = results.substring(0, expected.length());
+        Test.ensureEqual(results, expected, "results=\n" + results);
+        Test.ensureEqual(table.nRows(), 1742115, "wrong nRows");
+
+
+        //               read all vars when obs is constrained, 
+        String2.log("\n* read all vars when obs is constrained");
+        time = System.currentTimeMillis();
+        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
+            StringArray.fromCSV("station,latitude,longitude,time,discharge"), 
+            StringArray.fromCSV("discharge"), StringArray.fromCSV(">"), StringArray.fromCSV("5400"));
+        String2.log("time=" + (System.currentTimeMillis() - time));
+        results = table.dataToCSVString();
+        expected = 
+"station,latitude,longitude,time,discharge\n" +
+"1463500.0,40.22166667,-74.7780556,2076.5,5408.517777\n" +
+"1463500.0,40.22166667,-74.7780556,2076.510416666628,5465.151471\n" +
+"1463500.0,40.22166667,-74.7780556,2076.5208333332557,5493.468318\n" +
+"1463500.0,40.22166667,-74.7780556,2076.53125,5521.785165\n" +
+"1463500.0,40.22166667,-74.7780556,2076.541666666628,5521.785165\n" +
+"1463500.0,40.22166667,-74.7780556,2076.5520833332557,5521.785165\n" +
+"1463500.0,40.22166667,-74.7780556,2076.5625,5521.785165\n" +
+"1463500.0,40.22166667,-74.7780556,2076.572916666628,5521.785165\n" +
+"1463500.0,40.22166667,-74.7780556,2076.5833333332557,5493.468318\n" +
+"1463500.0,40.22166667,-74.7780556,2076.59375,5465.151471\n" +
+"1463500.0,40.22166667,-74.7780556,2076.604166666628,5436.834624\n" +
+"1463500.0,40.22166667,-74.7780556,2076.6145833332557,5408.517777\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //               read all vars when station and obs are constrained, 
+        String2.log("\n* read all vars when station and obs are constrained");
+        time = System.currentTimeMillis();
+        table.readNcCF("/data/hunter/USGS_DISCHARGE_STATIONS_SUBSET.nc", 
+            StringArray.fromCSV("station,latitude,longitude,time,discharge"), 
+            StringArray.fromCSV("station,discharge"), StringArray.fromCSV("=,>"), StringArray.fromCSV("1463500.0,5400"));
+        String2.log("time=" + (System.currentTimeMillis() - time));
+        results = table.dataToCSVString();
+        expected = 
+"station,latitude,longitude,time,discharge\n" +
+"1463500.0,40.22166667,-74.7780556,2076.5,5408.517777\n" +
+"1463500.0,40.22166667,-74.7780556,2076.510416666628,5465.151471\n" +
+"1463500.0,40.22166667,-74.7780556,2076.5208333332557,5493.468318\n" +
+"1463500.0,40.22166667,-74.7780556,2076.53125,5521.785165\n" +
+"1463500.0,40.22166667,-74.7780556,2076.541666666628,5521.785165\n" +
+"1463500.0,40.22166667,-74.7780556,2076.5520833332557,5521.785165\n" +
+"1463500.0,40.22166667,-74.7780556,2076.5625,5521.785165\n" +
+"1463500.0,40.22166667,-74.7780556,2076.572916666628,5521.785165\n" +
+"1463500.0,40.22166667,-74.7780556,2076.5833333332557,5493.468318\n" +
+"1463500.0,40.22166667,-74.7780556,2076.59375,5465.151471\n" +
+"1463500.0,40.22166667,-74.7780556,2076.604166666628,5436.834624\n" +
+"1463500.0,40.22166667,-74.7780556,2076.6145833332557,5408.517777\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+    }
+
     /**
      * A main method -- used to test the methods in this class.
      *
@@ -17363,7 +17613,7 @@ expected =
         verbose = true;
         reallyVerbose = true;
 
-        /* */
+/* */
         testLittleMethods();
         testReorderColumns();
         testSortColumnsByName();
@@ -17391,6 +17641,7 @@ expected =
         testReadNcCFASATrajectory(false);
         testReadNcCFASATimeSeriesProfile(false);
         testReadNcCFASATrajectoryProfile(false);
+        testReadNcCFMATimeSeriesReversed();
 
         testReadASCIISpeed();
         testReadJsonSpeed();

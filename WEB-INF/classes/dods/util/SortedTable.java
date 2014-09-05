@@ -79,7 +79,7 @@ public final class SortedTable extends Dictionary {
     @param value the value
     @return the previous value to which the key is mapped, or null if the
             key did not have a previous mapping.
-    @throw NullPointerException if the key or value is null.
+    @throws NullPointerException if the key or value is null.
     */
   public synchronized Object put(Object key, Object value) throws NullPointerException{
     if (key == null || value == null)

@@ -1,6 +1,6 @@
-#!/bin/csh
+#!/bin/bash
 #
-# usage: MapViewer <in>  
+# usage: ./MapViewer <in>  
 # <in> must be the complete directory + name + extension of a
 # .hdf, .nc, or .grd gridded data file, where the x and y values represent
 # lon and lat.
@@ -11,15 +11,15 @@
 # to display the image.
 # To make this Linux/Unix script executable, use "chmod +x MapViewer".
 #
-# 2006-03-14
-# CoastWatch/Bob Simons  bob.simons@noaa.gov
+# original 2006-03-14  Bob Simons bob.simons@noaa.gov
+# updated 2014-02-13  Bob Simons bob.simons@noaa.gov
 #
 
-set commandLine=$0
-set tDir=`echo commandLine | dirname $0`
-set cp1="$tDir/classes:$tDir/lib/netcdfAll-latest.jar:$tDir/lib/slf4j-jdk14.jar:"
-set cp2="$tDir/lib/itext-1.3.1.jar:$tDir/lib/activation.jar:$tDir/lib/lucene-core.jar:"
-set cp0="$cp1$cp2$tDir/lib/mail.jar"
+commandLine=$0
+tDir=`echo $commandLine | dirname $0`
+cp1="$tDir/classes:$tDir/lib/netcdfAll-latest.jar:"
+cp2="$tDir/lib/itext-1.3.1.jar:$tDir/lib/activation.jar:$tDir/lib/lucene-core.jar:"
+cp0="$cp1$cp2$tDir/lib/mail.jar"
 
 java -cp $cp0 -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.sgt.SgtMap $1 $2 $3 $4 $5
 

@@ -24,8 +24,8 @@ import org.joda.time.format.*;
 
 /** 
  * This class holds information about *a* (not *the*) time variable,
- * which is like EDV, but the destinationName, long_name, and units
- * are standardized, and you need to specify the sourceTimeFormat so
+ * which is like EDV, but the units must be timestamp units, 
+ * and you need to specify the sourceTimeFormat so
  * that source values can be converted to seconds since 1970-01-01 in the results.
  *
  * <p>There is the presumption, not requirement, that if there are two time-related
@@ -75,8 +75,8 @@ public class EDVTimeStamp extends EDV {
      *      http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html or 
      *      http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html).
      *    </ul>
-     * actual_range, data_min, or data_max metadata (if any) should have the min and max times
-     * in 'units' format.
+     * This constructor gets/sets actual_range from actual_range, data_min, or data_max metadata.
+     * If present, they should have the source min and max times in 'units' format.
      *
      * <p> scale_factor an dadd_offset are allowed for numeric time variables.
      * This constructor removes any scale_factor and add_offset attributes
@@ -98,7 +98,7 @@ public class EDVTimeStamp extends EDV {
             Double.NaN, Double.NaN); //destinationMin and max are set below (via actual_range)
 
         //time_precision e.g., 1970-01-01T00:00:00Z
-        time_precision = combinedAttributes.getString(EDV.time_precision);
+        time_precision = combinedAttributes.getString(EDV.TIME_PRECISION);
         if (time_precision != null) {
             //ensure not just year (can't distinguish user input a year vs. epochSeconds)
             if (time_precision.equals("1970"))
@@ -127,8 +127,10 @@ public class EDVTimeStamp extends EDV {
         }
         combinedAttributes.set("ioos_category", TIME_CATEGORY);
         combinedAttributes.set("time_origin", "01-JAN-1970 00:00:00");
-        units = EDV.TIME_UNITS; 
+
+        units = TIME_UNITS; 
         combinedAttributes.set("units", units);
+
         longName = combinedAttributes.getString("long_name");
         if (longName == null) { //catch nothing 
             longName = suggestLongName(longName, destinationName,  
@@ -580,7 +582,7 @@ public class EDVTimeStamp extends EDV {
             null, 
             (new Attributes()).add("units", ISO8601TZ_FORMAT).
                 add("actual_range", new StringArray(new String[]{"1970-01-01T00:00:00Z", "2007-01-01T00:00:00Z"})),
-            "String");
+            "String"); //this constructor gets source / sets destination actual_range
 
         //test 'Z'
         String t1 = "2007-01-02T03:04:05Z";

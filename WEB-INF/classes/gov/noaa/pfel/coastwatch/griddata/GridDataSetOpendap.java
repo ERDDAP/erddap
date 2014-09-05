@@ -778,7 +778,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
      */
     public static void testGetTimeSeries() throws Exception {
         String2.log("\n*** start TestBrowsers.testGetTimeSeries");
-        String url = "http://192.168.31.18/thredds/dodsC/satellite/GA/ssta/"; //oceanwatch
+        String url = "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/GA/ssta/"; //oceanwatch
 
         DataHelper.verbose = true;
         GridDataSetOpendap.verbose = true;
@@ -947,7 +947,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
             //*********************************************************************
             internalName = "OQSux10";
             sixName = internalName.substring(1);
-            String url = "http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/"; //oceanwatch
+            String url = "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/"; //oceanwatch
             gridDataSet = new GridDataSetOpendap(
                 internalName, "QSux10", null, url, 
                 new String[]{"1day", "3day", "4day", "8day", "14day", "mday"}, 

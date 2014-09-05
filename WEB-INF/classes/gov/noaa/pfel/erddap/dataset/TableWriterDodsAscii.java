@@ -132,7 +132,7 @@ public class TableWriterDodsAscii extends TableWriter {
     public void finish() throws Throwable {
         //check for MustBe.THERE_IS_NO_DATA
         if (writer == null)
-            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
 
         //end of data
         writer.flush(); //essential

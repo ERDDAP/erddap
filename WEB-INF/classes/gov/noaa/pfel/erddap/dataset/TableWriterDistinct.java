@@ -116,7 +116,7 @@ public class TableWriterDistinct extends TableWriterAll {
     private void lowFinish(Table cumulativeTable) throws Throwable {
         //check for MustBe.THERE_IS_NO_DATA
         if (cumulativeTable.nRows() == 0)
-            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
 
         //sortAndRemoveDuplicates
         sortAndRemoveDuplicates(cumulativeTable);

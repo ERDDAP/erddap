@@ -1,6 +1,6 @@
-#!/bin/csh
+#!/bin/bash
 #
-# usage: GenerateThreddsXml <dataMainDir> <dataSubDir> <incompletMainCatalog> <xmlMainDir>
+# usage: ./GenerateThreddsXml <dataMainDir> <dataSubDir> <incompletMainCatalog> <xmlMainDir>
 #
 # The program generates two directories (Satellite and Hfradar) in xmlMainDir which
 #   which have the dataset catalog.xml files for all two-letter satellite
@@ -37,13 +37,12 @@
 # To make this Linux/Unix script executable, use 
 #    chmod +x GenerateThreddsDataSetHtml
 #
-# originally written 2006-10-04
-# last updated 2007-01-22
-# NOAA/Bob Simons  bob.simons@noaa.gov
+# original 2006-10-04  Bob Simons bob.simons@noaa.gov
+# updated 2014-02-13  Bob Simons bob.simons@noaa.gov
 #
 
-set commandLine=$0
-set thisDir=`echo commandLine | dirname $0`
-java -cp $thisDir/classes:$thisDir/lib/netcdfAll-latest.jar:$thisDir/lib/slf4j-jdk14.jar:$thisDir/lib/activation.jar:$thisDir/lib/lucene-core.jar:$thisDir/lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.GenerateThreddsXml $1 $2 $3 $4 $5
+commandLine=$0
+thisDir=`echo $commandLine | dirname $0`
+java -cp $thisDir/classes:$thisDir/lib/netcdfAll-latest.jar:$thisDir/lib/activation.jar:$thisDir/lib/lucene-core.jar:$thisDir/lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.GenerateThreddsXml $1 $2 $3 $4 $5
 
 # finished 

@@ -86,6 +86,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      */
     public EDDTableFromThreddsFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
@@ -99,7 +100,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
 
         super("EDDTableFromThreddsFiles", true, //isLocal is now set to true (copied files)
             tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File, 
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
@@ -115,7 +116,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
     /**
      * Create tasks to download files.
      * If getThreddsFileInfo is completelySuccessful, local files that
-     * aren't mentioned on the server will be deleted.
+     * aren't mentioned on the server will be renamed [fileName].ncRemoved .
      * <br>This won't throw an exception.
      * 
      * @param catalogUrl  should have /catalog/ in the middle and 
@@ -220,11 +221,12 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 //String2.log(sourceFileName.toNewlineString());
             }
 
-            //Delete local files that shouldn't exist?
+            //Rename (make inactive) local files that shouldn't exist?
             //If getThreddsFileInfo is completelySuccessful and found some files, 
-            //local files that aren't mentioned on the server will be deleted.
+            //local files that aren't mentioned on the server will be renamed
+            //[fileName].ncRemoved .
             //If not completelySuccessful, perhaps the server is down temporarily,
-            //so no files will be deleted.
+            //no files will be renamed.
             //!!! This is imperfect. If a remote sub webpage always fails, then
             //  no local files will ever be deleted.
             if (completelySuccessful && sourceFileName.size() > 0) {
@@ -249,35 +251,34 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                     RegexFilenameFilter.recursiveFullNameList(baseDir, fileNameRegex, false) : //directoriesToo
                     RegexFilenameFilter.fullNameList(baseDir, fileNameRegex);
 
-                //delete local files not in the hashset of files that will exist
+                //rename local files not in the hashset of files that will exist to [fileName].ncRemoved 
                 int nLocalFiles = localFiles.length;
-                int nDeleted = 0;
-                if (reallyVerbose) String2.log("Looking for local files to delete because the " +
+                int nRemoved = 0;
+                if (reallyVerbose) String2.log("Looking for local files to rename 'Removed' because the " +
                     "datasource no longer has the corresponding file...");
                 for (int f = 0; f < nLocalFiles; f++) {
                     //if a localFile isn't in hashset of willExist files, it shouldn't exist
                     if (!hashset.remove(localFiles[f])) {
-                        nDeleted++;
-                        if (reallyVerbose) String2.log("  deleting " + localFiles[f]);
-                        File2.simpleDelete(localFiles[f]);
+                        nRemoved++;
+                        if (reallyVerbose) String2.log("  renaming to " + localFiles[f] + "Removed");
+                        File2.rename(localFiles[f], localFiles[f] + "Removed");
                     }
                     localFiles[f] = null; //allow gc    (as does remove() above)
                 }
-                if (verbose) String2.log(nDeleted + 
-                    " local files were deleted because the datasource no longer has " +
+                if (verbose) String2.log(nRemoved + 
+                    " local files were renamed to [fileName].ncRemoved because the datasource no longer has " +
                       "the corresponding file.\n" +
-                    (nLocalFiles - nDeleted) + " files remain.");
+                    (nLocalFiles - nRemoved) + " files remain.");
 
-                //if 0 files remain (e.g., from significant change), delete empty subdir
-                //get all the existing local files
-                if (nLocalFiles - nDeleted == 0) {
+                /* /if 0 files remain (e.g., from significant change), delete empty subdir
+                if (nLocalFiles - nRemoved == 0) {
                     try {
                         RegexFilenameFilter.recursiveDelete(baseDir);
                         if (verbose) String2.log(tDatasetID + " copyDirectory is completely empty.");
                     } catch (Throwable t) {
                         String2.log(MustBe.throwableToString(t));
                     }
-                }
+                }*/
             }
 
             //make tasks to download files
@@ -602,7 +603,9 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      * @param tSortedColumnSourceName   use "" if not known or not needed. 
      * @param tSortFilesBySourceNames   This is useful, because it ultimately determines default results order.
      * @param externalAddGlobalAttributes  These attributes are given priority.  Use null in none available.
-     * @throws Throwable if trouble
+     * @return a suggested chunk of xml for this dataset for use in datasets.xml 
+     * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
+     *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(String tLocalDirUrl, 
         String tFileNameRegex, String oneFileDapUrl, int tReloadEveryNMinutes, 
@@ -680,7 +683,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 tLocalDirUrl, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
-        //write the information
+        //gather the information
         StringBuilder sb = new StringBuilder();
         if (tSortFilesBySourceNames.length() == 0)
             tSortFilesBySourceNames = (tColumnNameForExtract + 
@@ -734,10 +737,10 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 1440, 
                 "", "_.*$", ".*", "stationID",
                 "Time", "stationID Time",
-                null); //externalAddGlobalAttributes
+                null) + "\n"; //externalAddGlobalAttributes
 
             //GenerateDatasetsXml
-            GenerateDatasetsXml.doIt(new String[]{"-verbose", 
+            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromThreddsFiles",
                 "http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.xml",
                 ".*MTBD.*\\.nc",  
@@ -746,7 +749,6 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
                 "", "_.*$", ".*", "stationID",
                 "Time", "stationID Time"},
                 false); //doIt loop?
-            String gdxResults = String2.getClipboardString();
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
@@ -933,7 +935,7 @@ directionsForGenerateDatasetsXml() +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
-"\n";
+"\n\n";
 
             Test.ensureEqual(results, expected, "results=\n" + results);
             //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
@@ -1111,11 +1113,10 @@ expected =
 "    Float64 Westernmost_Easting -124.932;\n" +
 "  }\n" +
 "}\n";
-            int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) 
-                String2.log("results=\n" + results);
+            int tPo = results.indexOf(expected.substring(0, 17));
+            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
             Test.ensureEqual(
-                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
                 expected, "results=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -1272,7 +1273,7 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 
         try {
 
-        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 11); //[10]='T'
 
         String id = "fsuNoaaShipWTEP";
         if (deleteCachedInfo)
@@ -1288,35 +1289,35 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected =      
-"Attributes {\n" +
-" s {\n" +
-"  cruise_id {\n" +
+"Attributes \\{\n" +
+" s \\{\n" +
+"  cruise_id \\{\n" +
 "    String ioos_category \"Identifier\";\n" +
-"  }\n" +
-"  expocode {\n" +
+"  \\}\n" +
+"  expocode \\{\n" +
 "    String ioos_category \"Identifier\";\n" +
-"  }\n" +
-"  facility {\n" +
+"  \\}\n" +
+"  facility \\{\n" +
 "    String ioos_category \"Identifier\";\n" +
-"  }\n" +
-"  ID {\n" +
+"  \\}\n" +
+"  ID \\{\n" +
 "    String ioos_category \"Identifier\";\n" +
-"  }\n" +
-"  IMO {\n" +
+"  \\}\n" +
+"  IMO \\{\n" +
 "    String ioos_category \"Identifier\";\n" +
-"  }\n" +
-"  platform {\n" +
+"  \\}\n" +
+"  platform \\{\n" +
 "    String ioos_category \"Identifier\";\n" +
-"  }\n" +
-"  platform_version {\n" +
+"  \\}\n" +
+"  platform_version \\{\n" +
 "    String ioos_category \"Identifier\";\n" +
-"  }\n" +
-"  site {\n" +
+"  \\}\n" +
+"  site \\{\n" +
 "    String ioos_category \"Identifier\";\n" +
-"  }\n" +
-"  time {\n" +
+"  \\}\n" +
+"  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.1886048e+9, 1.37220474e+9;\n" + //2nd number changes
+"    Float64 actual_range 1.1886048e\\+9, .{8,14};\n" + //2nd number changes
 "    String axis \"T\";\n" +
 "    Int32 data_interval 60;\n" +
 "    String ioos_category \"Time\";\n" +
@@ -1326,8 +1327,8 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String standard_name \"time\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"  }\n" +
-"  latitude {\n" +
+"  \\}\n" +
+"  latitude \\{\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
 "    Float32 actual_range -46.45, 70.05856;\n" +
 "    String average_center \"time at end of period\";\n" +
@@ -1339,13 +1340,13 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
 "    String observation_type \"measured\";\n" +
-"    String original_units \"degrees (+N)\";\n" +
+"    String original_units \"degrees \\(\\+N\\)\";\n" +
 "    Int32 qcindex 2;\n" +
 "    Float32 sampling_rate 1.0;\n" +
 "    String standard_name \"latitude\";\n" +
 "    String units \"degrees_north\";\n" +
-"  }\n" +
-"  longitude {\n" +
+"  \\}\n" +
+"  longitude \\{\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
 "    Float32 actual_range 0.0, 351.15;\n" +
 "    String average_center \"time at end of period\";\n" +
@@ -1357,13 +1358,13 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
 "    String observation_type \"measured\";\n" +
-"    String original_units \"degrees (-W/+E)\";\n" +
+"    String original_units \"degrees \\(-W/\\+E\\)\";\n" +
 "    Int32 qcindex 3;\n" +
 "    Float32 sampling_rate 1.0;\n" +
 "    String standard_name \"longitude\";\n" +
 "    String units \"degrees_east\";\n" +
-"  }\n" +
-"  airPressure {\n" +
+"  \\}\n" +
+"  airPressure \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 958.88, 1047.82;\n" +
 "    String average_center \"time at end of period\";\n" +
@@ -1387,10 +1388,10 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"air_pressure\";\n" +
 "    String units \"millibar\";\n" +
-"  }\n" +
-"  airTemperature {\n" +
+"  \\}\n" +
+"  airTemperature \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range -13.77, 18.97;\n" +
+"    Float32 actual_range -13.77, 48.07;\n" +  //before 2013-08-28 was 18.97
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1410,12 +1411,12 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"air_temperature\";\n" +
 "    String units \"degree_C\";\n" +
-"  }\n" +
-"  conductivity {\n" +
+"  \\}\n" +
+"  conductivity \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 5.555556E7;\n" + //2013-03-26 new value is nonsense.  was 4.78
-"    String average_center \"unknown\";\n" +
-"    Int16 average_length 60;\n" +
+"    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared
+"    Int16 average_length 60;\n" +           //2014-08-11 they returned
 "    String average_method \"average\";\n" +
 "    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 4.0;\n" +
@@ -1434,8 +1435,8 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"sea_water_electrical_conductivity\";\n" +
 "    String units \"siemens meter-1\";\n" +
-"  }\n" +
-"  relativeHumidity {\n" +
+"  \\}\n" +
+"  relativeHumidity \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 24.0, 101.0;\n" +
 "    String average_center \"time at end of period\";\n" +
@@ -1458,12 +1459,12 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"relative_humidity\";\n" +
 "    String units \"percent\";\n" +
-"  }\n" +
-"  salinity {\n" +
+"  \\}\n" +
+"  salinity \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 7777777.0;\n" + //2013-03-26 nonsense!  was 9672.92
-"    String average_center \"unknown\";\n" +
-"    Int16 average_length -9999;\n" +
+"    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared
+"    Int16 average_length -9999;\n" +        //2014-08-11 they returned  
 "    String average_method \"average\";\n" +
 "    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 37.0;\n" +
@@ -1483,12 +1484,12 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"sea_water_salinity\";\n" +
 "    String units \"PSU\";\n" +
-"  }\n" +
-"  seaTemperature {\n" +
+"  \\}\n" +
+"  seaTemperature \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range -1.1, 7777777.0;\n" +  //nonsense!
-"    String average_center \"time at end of period\";\n" +
-"    Int16 average_length 60;\n" +
+"    String average_center \"time at end of period\";\n" + //2014-01-09 several lines disappeared
+"    Int16 average_length 60;\n" +                         //2014-08-11 they returned
 "    String average_method \"average\";\n" +
 "    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 40.0;\n" +
@@ -1508,8 +1509,8 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String standard_name \"sea_water_temperature\";\n" +
 "    Int16 ts_sensor_category 12;\n" +
 "    String units \"degree_C\";\n" +
-"  }\n" +
-"  windDirection {\n" +
+"  \\}\n" +
+"  windDirection \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 360.0;\n" +
 "    String average_center \"time at end of period\";\n" +
@@ -1527,14 +1528,14 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String long_name \"Earth Relative Wind Direction\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"calculated\";\n" +
-"    String original_units \"degrees (clockwise from true north)\";\n" +
+"    String original_units \"degrees \\(clockwise from true north\\)\";\n" +
 "    Int32 qcindex 6;\n" +
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"wind_from_direction\";\n" +
-"    String units \"degrees (clockwise from true north)\";\n" +
-"  }\n" +
-"  windSpeed {\n" +
+"    String units \"degrees \\(clockwise from true north\\)\";\n" +
+"  \\}\n" +
+"  windSpeed \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 2850253.0;\n" +
 "    String average_center \"time at end of period\";\n" +
@@ -1558,8 +1559,8 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"wind_speed\";\n" +
 "    String units \"meter second-1\";\n" +
-"  }\n" +
-"  platformCourse {\n" +
+"  \\}\n" +
+"  platformCourse \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 360.0;\n" +
 "    String average_center \"time at end of period\";\n" +
@@ -1573,13 +1574,13 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String long_name \"Platform Course\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"calculated\";\n" +
-"    String original_units \"degrees (clockwise towards true north)\";\n" +
+"    String original_units \"degrees \\(clockwise towards true north\\)\";\n" +
 "    Int32 qcindex 5;\n" +
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String units \"degrees_true\";\n" +
-"  }\n" +
-"  platformHeading {\n" +
+"  \\}\n" +
+"  platformHeading \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 360.0;\n" +
 "    String average_center \"time at end of period\";\n" +
@@ -1593,13 +1594,13 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String long_name \"Platform Heading\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"calculated\";\n" +
-"    String original_units \"degrees (clockwise towards true north)\";\n" +
+"    String original_units \"degrees \\(clockwise towards true north\\)\";\n" +
 "    Int32 qcindex 4;\n" +
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String units \"degrees_true\";\n" +
-"  }\n" +
-"  platformSpeed {\n" +
+"  \\}\n" +
+"  platformSpeed \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 2850255.0;\n" +
 "    String average_center \"time at end of period\";\n" +
@@ -1618,8 +1619,8 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 sampling_rate 0.5;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String units \"meter second-1\";\n" +
-"  }\n" +
-"  platformWindDirection {\n" +
+"  \\}\n" +
+"  platformWindDirection \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 360.0;\n" +
 "    String average_center \"time at end of period\";\n" +
@@ -1637,17 +1638,17 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String long_name \"Platform Relative Wind Direction\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
-"    String original_units \"degrees (clockwise from bow)\";\n" +
+"    String original_units \"degrees \\(clockwise from bow\\)\";\n" +
 "    Int32 qcindex 7;\n" +
 "    Float32 sampling_rate 1.0;\n" +
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"wind_from_direction\";\n" +
-"    String units \"degrees (clockwise from bow)\";\n" +
+"    String units \"degrees \\(clockwise from bow\\)\";\n" +
 "    Float32 zero_line_reference -9999.0;\n" +
-"  }\n" +
-"  platformWindSpeed {\n" +
+"  \\}\n" +
+"  platformWindSpeed \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
-"    Float32 actual_range 0.0, 36.09545;\n" +
+"    Float32 actual_range 0.0, 180.2509;\n" + //before 2013-08-28 was 36.09545
 "    String average_center \"time at end of period\";\n" +
 "    Int16 average_length 60;\n" +
 "    String average_method \"average\";\n" +
@@ -1669,14 +1670,14 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float32 special_value -8888.0;\n" +
 "    String standard_name \"wind_speed\";\n" +
 "    String units \"meter second-1\";\n" +
-"  }\n" +
-"  flag {\n" +
+"  \\}\n" +
+"  flag \\{\n" +
 "    String A \"Units added\";\n" +
 "    String B \"Data out of range\";\n" +
 "    String C \"Non-sequential time\";\n" +
 "    String D \"Failed T>=Tw>=Td\";\n" +
 "    String DODS_dimName \"f_string\";\n" +
-"    Int32 DODS_strlen 16;\n" +
+"    Int32 DODS_strlen \\d\\d;\n" +   //changes: 13, 16
 "    String E \"True wind error\";\n" +
 "    String F \"Velocity unrealistic\";\n" +
 "    String G \"Value > 4 s. d. from climatology\";\n" +
@@ -1700,18 +1701,18 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    String X \"Step - statistical\";\n" +
 "    String Y \"Suspect between X-flags\";\n" +
 "    String Z \"Good data\";\n" +
-"  }\n" +
-" }\n" +
-"  NC_GLOBAL {\n" +
+"  \\}\n" +
+" \\}\n" +
+"  NC_GLOBAL \\{\n" +
 "    String cdm_data_type \"Point\";\n" +
 "    String contact_email \"samos@coaps.fsu.edu\";\n" +
 "    String contact_info \"Center for Ocean-Atmospheric Prediction Studies, The Florida State University, Tallahassee, FL, 32306-2840, USA\";\n" +
 "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    String creator_email \"samos@coaps.fsu.edu\";\n" +
-"    String creator_name \"Shipboard Automated Meteorological and Oceanographic System (SAMOS)\";\n" +
+"    String creator_name \"Shipboard Automated Meteorological and Oceanographic System \\(SAMOS\\)\";\n" +
 "    String creator_url \"http://samos.coaps.fsu.edu/html/\";\n" +
-"    String Data_modification_date \"07/05/2013 13:02:44 EDT\";\n" + //changes
-"    String data_provider \"Timothy Salisbury\";\n" +
+"    String Data_modification_date \".{19} E.T\";\n" + //changes
+"    String data_provider \"unknown at this time\";\n" +
 "    Float64 Easternmost_Easting 351.15;\n" +
 "    Int16 elev 0;\n" +
 "    String featureType \"Point\";\n" +
@@ -1723,8 +1724,11 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "    Float64 geospatial_lon_min 0.0;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"" + today;
-        tResults = results.substring(0, Math.min(results.length(), expected.length()));
-        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+        String seek = "String history \"" + today;
+        int tPo = results.indexOf(seek);
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureLinesMatch(results.substring(0, tPo + seek.length()), expected,
+            "\nresults=\n" + results);
 
 //+ " http://coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\n" +
 //today + " http://127.0.0.1:8080/cwexperimental/tabledap/
@@ -1751,37 +1755,42 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    String Metadata_modification_date \"07/05/2013 13:02:44 EDT\";\n" + //changes
+"    String Metadata_modification_date \".{19} E.T\";\n" + //changes
 "    Float64 Northernmost_Northing 70.05856;\n" +
 "    String receipt_order \"01\";\n" +
 "    String sourceUrl \"http://coaps.fsu.edu/thredds/catalog/samos/data/research/WTEP/catalog.xml\";\n" +
 "    Float64 Southernmost_Northing -46.45;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String subsetVariables \"cruise_id, expocode, facility, ID, IMO, platform, platform_version, site\";\n" +
-"    String summary \"NOAA Ship Oscar Dyson Underway Meteorological Data (delayed ~10 days for quality control) are from the Shipboard Automated Meteorological and Oceanographic System (SAMOS) program.\n" +
+"    String summary \"NOAA Ship Oscar Dyson Underway Meteorological Data " +
+    "\\(delayed ~10 days for quality control\\) are from the Shipboard " +
+    "Automated Meteorological and Oceanographic System \\(SAMOS\\) program.\n" +
 "\n" +
-"IMPORTANT: ALWAYS USE THE QUALITY FLAG DATA! Each data variable's metadata includes a qcindex attribute which indicates a character number in the flag data.  ALWAYS check the flag data for each row of data to see which data is good (flag='Z') and which data isn't.  For example, to extract just data where time (qcindex=1), latitude (qcindex=2), longitude (qcindex=3), and airTemperature (qcindex=12) are 'good' data, include this constraint in your ERDDAP query:\n" +
-"  flag=~\\\"ZZZ........Z.*\\\"\n" +
+"IMPORTANT: ALWAYS USE THE QUALITY FLAG DATA! Each data variable's metadata " +
+    "includes a qcindex attribute which indicates a character number in the " +
+    "flag data.  ALWAYS check the flag data for each row of data to see which " +
+    "data is good \\(flag='Z'\\) and which data isn't.  For example, to extract " +
+    "just data where time \\(qcindex=1\\), latitude \\(qcindex=2\\), longitude " +
+    "\\(qcindex=3\\), and airTemperature \\(qcindex=12\\) are 'good' data, " +
+    "include this constraint in your ERDDAP query:\n" +
+"  flag=~\\\\\"ZZZ........Z.*\\\\\"\n" +
 "in your query.\n" +
 "'=~' indicates this is a regular expression constraint.\n" +
 "The 'Z's are literal characters.  In this dataset, 'Z' indicates 'good' data.\n" +
-"The '.'s say to match any character.\n" +
-"The '*' says to match the previous character 0 or more times.\n" +
-"(Don't include backslashes in your query.)\n" +
+"The '\\.'s say to match any character.\n" +
+"The '\\*' says to match the previous character 0 or more times.\n" +
+"\\(Don't include backslashes in your query.\\)\n" +
 "See the tutorial for regular expressions at\n" +
 "http://www.vogella.de/articles/JavaRegularExpressions/article.html\";\n" +
-"    String time_coverage_end \"2013-06-25T23:59:00Z\";\n" +  //changes
+"    String time_coverage_end \"20.{8}T.{8}Z\";\n" +  //changes
 "    String time_coverage_start \"2007-09-01T00:00:00Z\";\n" +
 "    String title \"NOAA Ship Oscar Dyson Underway Meteorological Data, Quality Controlled\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
-"  }\n" +
-"}\n";
-            int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) 
-                String2.log("results=\n" + results);
-            Test.ensureEqual(
-                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
-                expected, "results=\n" + results);
+"  \\}\n" +
+"\\}\n";
+            tPo = results.indexOf(expected.substring(0, 17));
+            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+            Test.ensureLinesMatch(results.substring(tPo), expected, "results=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
                 "\nUnexpected error. Press ^C to stop or Enter to continue..."); 

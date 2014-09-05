@@ -5,14 +5,12 @@
  */
 package com.cohort.array;
 
-import com.cohort.util.*;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 
 /**
- * This is used by StringArray to do a case insensited sort 
+ * This is used by StringArray to do a case-insensitive sort 
  * (better than String.CASE_INSENSITIVE_ORDER).
+ * 2013-12-30 Bob modified this to work with any type of object (via o.toString()), not just Strings.
  */
 public class StringComparatorIgnoreCase implements Comparator {
 
@@ -32,8 +30,8 @@ public class StringComparatorIgnoreCase implements Comparator {
             return o2 == null? 0 : -1;
         if (o2 == null) 
             return 1;
-        String s1 = (String)o1;
-        String s2 = (String)o2;
+        String s1 = o1.toString(); //as opposed to (String)o1, this works with many object types
+        String s2 = o2.toString();
 //        int c = s1.toUpperCase().compareTo(s2.toUpperCase());
         int c = s1.compareToIgnoreCase(s2);
         if (c != 0) 

@@ -38,13 +38,13 @@ public class GSHHS  {
 
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
 
     /**
-     * Set this to true (by calling reallyVerbose=true in your program, not but changing the code here)
+     * Set this to true (by calling reallyVerbose=true in your program, not by changing the code here)
      * if you want lots and lots of diagnostic messages sent to String2.log.
      */
     public static boolean reallyVerbose = false;
@@ -257,6 +257,8 @@ public class GSHHS  {
         //(so generally -360..360).
         boolean lonPM180 = westDeg < 0;
         int intShift = 360 * 1000000;
+        int shift[] = {-2 * intShift, -intShift, 0, intShift};
+        boolean doShift[] = new boolean[4];
 
         //open the file
         //String2.log(File2.hexDump(dir + "gshhs_" + resolution + ".b", 10000));
@@ -301,7 +303,7 @@ public class GSHHS  {
             // 4th byte:    source = (flag >> 24) & 1: Values: 0 = CIA WDBII, 1 = WVS
             // 4th byte:    river = (flag >> 25) & 1: Values: 0 = not set, 1 = river-lake and level = 2
             //
-            int west      = dis.readInt(); // min/max extent in micro-degrees 
+            int west      = dis.readInt(); // min/max extent in micro-degrees    0 - 360 deg
             int east      = dis.readInt(); 
             int south     = dis.readInt(); 
             int north     = dis.readInt(); 
@@ -312,12 +314,15 @@ public class GSHHS  {
 
             int level = flag & 255;
             int greenwich = (flag >> 16) & 1; //Values: Greenwich is 1 if Greenwich is crossed
-                        
-            //String2.log("id=" + id + " level=" + level + " gwch=" + greenwich + " ver=" + ((flag >> 8) & 255) + 
-            //  " n=" + n + " " + west + "/" + east + "/" + south + "/" + north);
 
-            //tests show greenwich objects have a negative west bound
-            //(even though <0 lon values are stored +360)
+            //if (debug && west > east) String2.getStringFromSystemIn("  west=" + west + "east=" + east + " greenwich=" + greenwich);
+
+            //if (greenwich == 1)                        
+            //String2.log("id=" + id + " level=" + level + " gwch=" + greenwich + " ver=" + ((flag >> 8) & 255) + 
+            //  " n=" + n + " wesn=" + west + "/" + east + "/" + south + "/" + north);
+
+            //tests show greenwich objects have a negative west bound (e.g., -1deg)
+            //even though <0 lon values are stored +360
             //if (!gMsgDisplayed && greenwich == 1) {
             //    String2.log("greenwich n=" + n + " west=" + west + " east=" + east + " south=" + south + " north=" + north);
             //    gMsgDisplayed = true;
@@ -330,32 +335,18 @@ public class GSHHS  {
             //    aMsgDisplayed = true;
             //}
 
-            //Do the tests for the 3 possible independent uses of this data.
-            //Note that often 2 of the 3 are true.
-            //can I use this object with standard coordinates?
-            boolean useStandard = 
-                level ==  desiredLevel &&  //was <=
-                west  < desiredEast &&
-                east  > desiredWest &&
+            //Do the tests for the 4 possible independent uses of this data.
+            boolean levelAndLatOK = level == desiredLevel &&  //was <=
                 south < desiredNorth &&
                 north > desiredSouth;
-            
-            //can I use this object with coordinates shifted left (e.g., pm 180)?
-            boolean useShiftedLeft = 
-                lonPM180 &&
-                level ==  desiredLevel &&
-                west-intShift < desiredEast &&
-                east-intShift > desiredWest &&
-                south < desiredNorth &&
-                north > desiredSouth;
-            
-            //can I use this object with coordinates shifted right (for greenwich==1 objects when !pm180)?
-            boolean useShiftedRight = 
-                level ==  desiredLevel &&
-                west+intShift < desiredEast &&
-                east+intShift > desiredWest &&
-                south < desiredNorth &&
-                north > desiredSouth;
+            boolean doSomething = false;
+            for (int i = 0; i < 4; i++) {
+                doShift[i] = levelAndLatOK &&
+                    west + shift[i] < desiredEast &&
+                    east + shift[i] > desiredWest;
+                if (doShift[i])
+                    doSomething = true;
+            }
 
             //skip small lakes
             //@param resolution 0='f'ull, 1='h'igh, 2='i'ntermediate, 3='l'ow, 4='c'rude.
@@ -365,13 +356,10 @@ public class GSHHS  {
                  (resolution == 'l' && n < lakeMinN / 2));
             
             //can I use the object?   
-            if ((useStandard || useShiftedLeft || useShiftedRight) && !skip) {
-                int cShift = 0;
-                if (useShiftedLeft) cShift = -intShift;
-                else if (useShiftedRight) cShift = intShift;
+            if (doSomething && !skip) {
 
                 //read the data
-                if (n > xArray.length) {
+                if (n + 4 > xArray.length) {
                     xArray = new int[n + 4];  //+4 for addAntarticCorners
                     yArray = new int[n + 4];
                 }
@@ -386,137 +374,61 @@ public class GSHHS  {
                 //antarctic object bounds (degrees) are west=0 east=360 south=-90 north=-63
                 //search for lon=0
                 if (south == -90000000) { //catches antarctic polygon
-                    //this shows first x=360, x decreases to 0, then jumps to 360 (last point)
+                    //this shows first x=360 (exact), x decreases to 0 (exact)
+                    //  and y's are the perimeter (not to south pole)
                     //String2.log("antarctic n=" + n + " x[0]=" + xArray[0] + 
                     //    " x[1]=" + xArray[1] + " x[n-2]=" + xArray[n-2] + 
-                    //    " x[n-1]=" + xArray[n-1]);
-                    if (desiredWest < 0 && desiredEast > 0) {
-                        //Desired is e.g. -180 to 180. 
-                        //To avoid seam in bad place, manually shift 1/2 of it left.
-                        useShiftedLeft = false; 
-                        for (int i = 0; i < n; i++) {
-                            if (xArray[i] >= 180000000) { //in practice there is no 180000000 point
-                                xArray[i] -= 360000000;
-                                if (i < n-1 && xArray[i+1] < 180000000) {
-                                    //We're crossing x=180, where we want the seam.
-                                    //These tests show x=180 isn't first or last point
-                                    //  and prev x is almost 0, next x is 360
-                                    //String2.log("antarctic x crosses 180 at x[" + 
-                                    //    i + "]=" + xArray[i] + " x[i+1]=" + xArray[i+1]);
-
-                                    if (addAntarcticCorners) {
-                                        //add the 4 antarctic corners  
-                                        //this puts a seam at x=-180 ... x=180
-                                        System.arraycopy(xArray, i + 1, xArray, i + 5, n - (i+1));
-                                        System.arraycopy(yArray, i + 1, yArray, i + 5, n - (i+1));
-                                        xArray[i + 1] = -180000000; yArray[i + 1] = yArray[i];
-                                        xArray[i + 2] = -180000000; yArray[i + 2] = -90000000;
-                                        xArray[i + 3] =  180000000; yArray[i + 3] = -90000000;
-                                        xArray[i + 4] =  180000000; yArray[i + 4] = yArray[i];
-                                        i += 4;
-                                        n += 4;
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        //probably just useStandard (e.g., 0..360)    
-                        //  or useLeft (limited range e.g., -130.. -120)
-                        if (addAntarcticCorners) {
-                            //this puts a seam at x=0 ... x=360
-                            for (int i = 0; i < n; i++) {
-                                if (xArray[i] == 0) {
-                                    //these tests show x=0 isn't first or last point
-                                    //  and prev x is almost 0, next x is 360
-                                    //String2.log("antarctic x=0 at i=" + i + " n=" + n);
-                                    //if (i > 0) String2.log("  x[i-1]=" + xArray[i-1]);
-                                    //if (i < n-1) String2.log("  x[i+1]=" + xArray[i+1]);
-
-                                    //add the 2 antarctic corners  
-                                    System.arraycopy(xArray, i + 1, xArray, i + 3, n - (i+1));
-                                    System.arraycopy(yArray, i + 1, yArray, i + 3, n - (i+1));
-                                    xArray[i + 1] =         0; yArray[i + 1] = -90000000;
-                                    xArray[i + 2] = 360000000; yArray[i + 2] = -90000000;
-                                    n += 2;
-                                    break;
-                                }
-                            }
-                        }
+                    //    " x[n-1]=" + xArray[n-1] + "\n" +
+                    //    "    y[0]=" + yArray[0] + 
+                    //    " y[1]=" + yArray[1] + " y[n-2]=" + yArray[n-2] + 
+                    //    " y[n-1]=" + yArray[n-1]);
+                    if (addAntarcticCorners) {
+                        //add the 3 antarctic corner points to make a polygon (1st pt = last)
+                        //this leaves seam at x=0 ... x=360
+                        xArray[n    ] = 0;         yArray[n    ] = -90000000;
+                        xArray[n + 1] = 360000000; yArray[n + 1] = -90000000;
+                        xArray[n + 2] = 360000000; yArray[n + 2] = yArray[0];
+                        n += 3;
                     }
                 }
 
-                //if polygon crosses greenwhich, x's < 0 are stored +360 degrees
+                //if polygon crosses greenwich, x's < 0 are stored +360 degrees
                 //see http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html  where is new gshhs.c?
+                //so shift left so points are continguous and match west/east of the polygon
                 if (greenwich == 1) {
                     for (int i = 0; i < n; i++) 
-                        if (xArray[i] > east) xArray[i] -= intShift;
+                        if (xArray[i] > east) {
+                            xArray[i] -= intShift; 
+                            //String2.log("greenwich left"); 
+                        }
                 }  
                 
 
-                //useShiftedLeft   (this is independent of useShiftedRight and useStandard)
-                if (useShiftedLeft) {
+                //test/do each doShift
+                for (int ds = 0; ds < 4; ds++) {
+                    if (doShift[ds]) {
+                        int tShift = shift[ds];
 
-                    //copy the data into x/yArray2's  
-                    //so data is undisturbed for useShiftedRight and useStandard
-                    if (n > xArray2.length) {
-                        xArray2 = new int[n];
-                        yArray2 = new int[n];
-                    }
-                    System.arraycopy(xArray, 0, xArray2, 0, n);
-                    System.arraycopy(yArray, 0, yArray2, 0, n);
-
-                    //reduce and draw
-                    int tn = reduce(n, xArray2, yArray2, 
-                        desiredWest + intShift, desiredEast + intShift, //shifting desired is faster than shifting all x,y
-                        desiredSouth, desiredNorth);
-                    if (tn > 0) {
-                        lon.add(Integer.MAX_VALUE); //indicates moveTo next point
-                        lat.add(Integer.MAX_VALUE);
-                        for (int i = 0; i < tn; i++) {
-                            lon.add(xArray2[i] - intShift);
-                            lat.add(yArray2[i]);
+                        //copy the data into x/yArray2's  
+                        //so source data is undisturbed for other doShift
+                        if (n > xArray2.length) {
+                            xArray2 = new int[n];
+                            yArray2 = new int[n];
                         }
-                    }
-                }
+                        System.arraycopy(xArray, 0, xArray2, 0, n);
+                        System.arraycopy(yArray, 0, yArray2, 0, n);
 
-                //useShiftedRight   (this is independent of useShiftedLeft and useStandard)
-                if (useShiftedRight) {
-                    //copy the data into x/yArray2's
-                    //so data is undisturbed for useShiftedRight and useStandard
-                    if (n > xArray2.length) {
-                        xArray2 = new int[n];
-                        yArray2 = new int[n];
-                    }
-                    System.arraycopy(xArray, 0, xArray2, 0, n);
-                    System.arraycopy(yArray, 0, yArray2, 0, n);
-
-                    //reduce and draw
-                    int tn = reduce(n, xArray2, yArray2, 
-                        desiredWest - intShift, desiredEast - intShift, //shifting desired is faster than shifting all x,y
-                        desiredSouth, desiredNorth);
-                    if (tn > 0) {
-                        lon.add(Integer.MAX_VALUE); //indicates moveTo next point
-                        lat.add(Integer.MAX_VALUE);
-                        for (int i = 0; i < tn; i++) {
-                            lon.add(xArray2[i] + intShift);
-                            lat.add(yArray2[i]);
-                        }
-                    }
-                }
-
-                //useStandard   (this is independent of useShiftedLeft and useShiftedRight)
-                if (useStandard) {
-                    //reduce and draw
-                    int tn = reduce(n, xArray, yArray, 
-                        desiredWest, desiredEast, 
-                        desiredSouth, desiredNorth);
-                    if (tn > 0) {
-                        //add to lon and lat
-                        lon.add(Integer.MAX_VALUE); //indicates moveTo next point
-                        lat.add(Integer.MAX_VALUE);
-                        for (int i = 0; i < tn; i++) {
-                            lon.add(xArray[i]);
-                            lat.add(yArray[i]);
+                        //reduce and draw
+                        int tn = reduce(n, xArray2, yArray2, 
+                            desiredWest - tShift, desiredEast - tShift, //faster to shift desired the opposite way                      
+                            desiredSouth, desiredNorth);                //  than to shift xArray2 the correct way
+                        if (tn > 0) {
+                            lon.add(Integer.MAX_VALUE); //indicates moveTo next point
+                            lat.add(Integer.MAX_VALUE);
+                            for (int i = 0; i < tn; i++) {
+                                lon.add(xArray2[i] + tShift);  //then shift xArray2
+                                lat.add(yArray2[i]);
+                            }
                         }
                     }
                 }
@@ -539,171 +451,420 @@ public class GSHHS  {
      * This is simpler than clipping but serves my purpose well --
      * far fewer points to store and draw.
      *
-     * @param n the number of active points in xa and ya (at least 2).
+     * @param n the number of active points in xa and ya.
      *    They must all be non-NaN.
      * @param xa the array with x values
      * @param ya the array with y values
-     * @param west   degrees * 1000000, in range (0 - 360 or +-180) appropriate for xa
-     * @param east   degrees * 1000000, in range (0 - 360 or +-180) appropriate for xa
-     * @param south  degrees * 1000000
-     * @param north  degrees * 1000000
+     * @param west   appropriate for xa
+     * @param east   appropriate for xa
+     * @param south  appropriate for ya
+     * @param north  appropriate for ya
      * @return n the new active number of points in the arrays (may be 0)
      */
     public static int reduce(int n, int x[], int y[], 
         int west, int east, int south, int north) {
- 
-        //algorithm relies on: 
-        //for a series of points which are out of bounds in the same direction,
-        //  only the first and last points need to be kept.
-        //But corners are a problem, so always permanentely save first and last 
-        //  out in given direction.
-        if (n < 2) return n;
-        int tn = 2;  //temp n good points  
-        int i = 2;  //next point to look at
-        while (i < n) {
-            //look for sequences of points all to beyond one border
-            boolean caughtSequence = false;
-            if (x[tn-2] < west  && x[tn-1] < west  && x[i] < west)  {
-                i++;
-                while (i < n && x[i] < west) 
-                    i++;
-                caughtSequence = true;
-            } else if (x[tn-2] > east  && x[tn-1] > east  && x[i] > east)  {
-                i++;
-                while (i < n && x[i] > east) 
-                    i++;
-                caughtSequence = true;
-            } else if (y[tn-2] < south && y[tn-1] < south && y[i] < south)  {
-                i++;
-                while (i < n && y[i] < south) 
-                    i++;
-                caughtSequence = true;
-            } else if (y[tn-2] > north && y[tn-1] > north && y[i] > north)  {
-                i++;
-                while (i < n && y[i] > north) 
-                    i++;
-                caughtSequence = true;
+
+        if (west > east) {
+            String2.log("ERROR in GSHHS.reduce: west=" + west + " > east=" + east);
+            return 0;
+        }
+        if (south > north) {
+            String2.log("ERROR in GSHHS.reduce: south=" + south + " > north=" + north);
+            return 0;
+        }
+        if (n == 0 || x == null || y == null) 
+            return 0;
+
+        //algorithm assigns a point to a sector:
+        //         north
+        //       6 | 7 | 8
+        //       ---------  
+        // west  3 | 4 | 5  east   4 is within desired bounds
+        //       ---------  
+        //       0 | 1 | 2
+        //         south
+        // * keep all points in sector 4
+        // * keep 1st and last points of a sequence in another sector
+        int nGood = 0;  //temp n good points  
+        int sequenceStarti = 0;
+        int sequenceSector = -1; //unknown
+        boolean sectorUsed[] = new boolean[9]; //all false
+        for (int i = 0; i <= n; i++) {  //yes, n deals with post code
+
+            //what sector is this point?
+            int sector = -1;  //for when i==n
+            if (i < n) {
+                sector = (y[i] > north? 6 : y[i] >= south? 3 : 0) +
+                         (x[i] > east?  2 : x[i] >= west?  1 : 0);
+                if (i == 0) {
+                    sequenceSector = sector;
+                    continue;
+                }
             } 
 
-            if (caughtSequence) {
-                //save the point one back
-                x[tn] = x[i-1];
-                y[tn] = y[i-1];
-                tn++;
-            } 
-            
-            //always save this point
-            if (i < n) {
-                x[tn] = x[i];
-                y[tn] = y[i];
-                tn++;
-                i++;
+            //did the sector change?
+            if (sector != sequenceSector) {
+                sectorUsed[sequenceSector] = true;
+                if (sequenceSector == 4) {
+                    //keep all of the points in the sequence
+                    if (nGood == 0) {
+                        nGood = i; //already in place
+                    } else {
+                        System.arraycopy(x, sequenceStarti, x, nGood, i - sequenceStarti);
+                        System.arraycopy(y, sequenceStarti, y, nGood, i - sequenceStarti);
+                        nGood += i - sequenceStarti;
+                    }
+                } else {
+                    //just keep the first and last points in the sequence
+                    x[nGood  ] = x[sequenceStarti];
+                    y[nGood++] = y[sequenceStarti];
+                    if (i - 1 > sequenceStarti) { //if >1 point in sequence
+                        x[nGood  ] = x[i - 1];
+                        y[nGood++] = y[i - 1];
+                    }
+                }
+                sequenceStarti = i;
+                sequenceSector = sector; 
             }
         }
-        //if (n > 1000) String2.log("GSHHS.reduce n=" + n + " newN=" + (n2+1)); 
 
-        //are the remaining points out of range?
-        if (tn <= 4) {
-            for (i = 0; i < tn; i++) if (x[i] >= west) break; 
-            if (i == tn) return 0;
-            for (i = 0; i < tn; i++) if (x[i] <= east) break; 
-            if (i == tn) return 0;
-            for (i = 0; i < tn; i++) if (y[i] >= south) break; 
-            if (i == tn) return 0;
-            for (i = 0; i < tn; i++) if (y[i] <= north) break; 
-            if (i == tn) return 0;
+        //if (n > 1000) String2.log("GSHHS.reduce n=" + n + " nGood=" + nGood); 
+
+        if (!sectorUsed[4]) {
+            //Can we reject all points because 
+            //all points too far N?
+            if (!sectorUsed[0] && !sectorUsed[1] && !sectorUsed[2] &&
+                !sectorUsed[3] && !sectorUsed[4] && !sectorUsed[5])
+                return 0;
+            //all points too far S?
+            if (!sectorUsed[3] && !sectorUsed[4] && !sectorUsed[5] &&
+                !sectorUsed[6] && !sectorUsed[7] && !sectorUsed[8])
+                return 0;
+            //all points too far E?
+            if (!sectorUsed[0] && !sectorUsed[1] && 
+                !sectorUsed[3] && !sectorUsed[4] && 
+                !sectorUsed[6] && !sectorUsed[7])
+                return 0;
+            //all points too far W?
+            if (!sectorUsed[1] && !sectorUsed[2] && 
+                !sectorUsed[4] && !sectorUsed[5] && 
+                !sectorUsed[7] && !sectorUsed[8])
+                return 0;
         }
-        return tn;
+
+        return nGood;
     }
 
     /**
-     * This reduces the points outside of the desired bounds.
-     * This is simpler than clipping but serves my purpose well --
-     * far fewer points to store and draw.
+     * This is perfectly identical to the int version of reduce() above, but for double parameters.
      *
-     * @param n the number of active points in xa and ya (at least 2).
-     *    They must all be non-NaN. 
+     * @param n the number of active points in xa and ya.
+     *    They must all be non-NaN.
      * @param xa the array with x values
      * @param ya the array with y values
-     * @param west
-     * @param east
-     * @param south
-     * @param north
+     * @param west   appropriate for xa
+     * @param east   appropriate for xa
+     * @param south  appropriate for ya
+     * @param north  appropriate for ya
      * @return n the new active number of points in the arrays (may be 0)
      */
     public static int reduce(int n, double x[], double y[], 
         double west, double east, double south, double north) {
- 
-        //algorithm relies on: 
-        //for a series of points which are out of bounds in the same direction,
-        //  only the first and last points need to be kept.
-        //But corners are a problem, so always permanentely save first and last 
-        //  out in given direction.
-        if (n < 2) return n;
-        int tn = 2;  //temp n good points
-        int i = 2;  //next point to look at
-        while (i < n) {
-            //look for sequences of points all to beyond one border
-            boolean caughtSequence = false;
-            if (x[tn-2] < west  && x[tn-1] < west  && x[i] < west)  {
-                i++;
-                while (i < n && x[i] < west) 
-                    i++;
-                caughtSequence = true;
-            } else if (x[tn-2] > east  && x[tn-1] > east  && x[i] > east)  {
-                i++;
-                while (i < n && x[i] > east) 
-                    i++;
-                caughtSequence = true;
-            } else if (y[tn-2] < south && y[tn-1] < south && y[i] < south)  {
-                i++;
-                while (i < n && y[i] < south) 
-                    i++;
-                caughtSequence = true;
-            } else if (y[tn-2] > north && y[tn-1] > north && y[i] > north)  {
-                i++;
-                while (i < n && y[i] > north) 
-                    i++;
-                caughtSequence = true;
+
+        if (west > east) {
+            String2.log("ERROR in GSHHS.reduce: west=" + west + " > east=" + east);
+            return 0;
+        }
+        if (south > north) {
+            String2.log("ERROR in GSHHS.reduce: south=" + south + " > north=" + north);
+            return 0;
+        }
+        if (n == 0 || x == null || y == null) 
+            return 0;
+
+        //algorithm assigns a point to a sector:
+        //         north
+        //       6 | 7 | 8
+        //       ---------  
+        // west  3 | 4 | 5  east   4 is within desired bounds
+        //       ---------  
+        //       0 | 1 | 2
+        //         south
+        // * keep all points in sector 4
+        // * keep 1st and last points of a sequence in another sector
+        int nGood = 0;  //temp n good points  
+        int sequenceStarti = 0;
+        int sequenceSector = -1; //unknown
+        boolean sectorUsed[] = new boolean[9]; //all false
+        for (int i = 0; i <= n; i++) {  //yes, n deals with post code
+
+            //what sector is this point?
+            int sector = -1;  //for when i==n
+            if (i < n) {
+                sector = (y[i] > north? 6 : y[i] >= south? 3 : 0) +
+                         (x[i] > east?  2 : x[i] >= west?  1 : 0);
+                if (i == 0) {
+                    sequenceSector = sector;
+                    continue;
+                }
             } 
 
-            if (caughtSequence) {
-                //save the point one back
-                x[tn] = x[i-1];
-                y[tn] = y[i-1];
-                tn++;
-            } 
-            
-            //always save this point
-            if (i < n) {
-                x[tn] = x[i];
-                y[tn] = y[i];
-                tn++;
-                i++;
+            //did the sector change?
+            if (sector != sequenceSector) {
+                sectorUsed[sequenceSector] = true;
+                if (sequenceSector == 4) {
+                    //keep all of the points in the sequence
+                    if (nGood == 0) {
+                        nGood = i; //already in place
+                    } else {
+                        System.arraycopy(x, sequenceStarti, x, nGood, i - sequenceStarti);
+                        System.arraycopy(y, sequenceStarti, y, nGood, i - sequenceStarti);
+                        nGood += i - sequenceStarti;
+                    }
+                } else {
+                    //just keep the first and last points in the sequence
+                    x[nGood  ] = x[sequenceStarti];
+                    y[nGood++] = y[sequenceStarti];
+                    if (i - 1 > sequenceStarti) { //if >1 point in sequence
+                        x[nGood  ] = x[i - 1];
+                        y[nGood++] = y[i - 1];
+                    }
+                }
+                sequenceStarti = i;
+                sequenceSector = sector; 
             }
         }
-        //if (n > 1000) String2.log("GSHHS.reduce n=" + n + " newN=" + (n2+1)); 
 
-        //are the remaining points out of range?
-        if (tn <= 4) {
-            for (i = 0; i < tn; i++) if (x[i] >= west) break; 
-            if (i == tn) return 0;
-            for (i = 0; i < tn; i++) if (x[i] <= east) break; 
-            if (i == tn) return 0;
-            for (i = 0; i < tn; i++) if (y[i] >= south) break; 
-            if (i == tn) return 0;
-            for (i = 0; i < tn; i++) if (y[i] <= north) break; 
-            if (i == tn) return 0;
+        //if (n > 1000) String2.log("GSHHS.reduce n=" + n + " nGood=" + nGood); 
+
+        if (!sectorUsed[4]) {
+            //Can we reject all points because 
+            //all points too far N?
+            if (!sectorUsed[0] && !sectorUsed[1] && !sectorUsed[2] &&
+                !sectorUsed[3] && !sectorUsed[4] && !sectorUsed[5])
+                return 0;
+            //all points too far S?
+            if (!sectorUsed[3] && !sectorUsed[4] && !sectorUsed[5] &&
+                !sectorUsed[6] && !sectorUsed[7] && !sectorUsed[8])
+                return 0;
+            //all points too far E?
+            if (!sectorUsed[0] && !sectorUsed[1] && 
+                !sectorUsed[3] && !sectorUsed[4] && 
+                !sectorUsed[6] && !sectorUsed[7])
+                return 0;
+            //all points too far W?
+            if (!sectorUsed[1] && !sectorUsed[2] && 
+                !sectorUsed[4] && !sectorUsed[5] && 
+                !sectorUsed[7] && !sectorUsed[8])
+                return 0;
         }
-        return tn;
+
+        return nGood;
     }
+
 
 
     /**
      * This runs a unit test.
      */
     public static void test() throws Exception {
-        verbose = true;
+        String2.log("\n*** GSSHS.test");
+
+        verbose = true;        
+        int xi[], yi[];
+        double xr[], yr[];
+        int n;
+
+        //1 good point
+        xi = new int[]{15};
+        yi = new int[]{150};
+        n = reduce(xi.length, xi, yi, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 1, "");
+        Test.ensureEqual(String2.toCSSVString(xi), "15", "");
+        Test.ensureEqual(String2.toCSSVString(yi), "150", "");
+
+        xr = new double[]{15};
+        yr = new double[]{150};
+        n = reduce(xr.length, xr, yr, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 1, "");
+        Test.ensureEqual(String2.toCSSVString(xr), "15.0", "");
+        Test.ensureEqual(String2.toCSSVString(yr), "150.0", "");
+
+        //1 bad point
+        xi = new int[]{5};
+        yi = new int[]{6};
+        n = reduce(xi.length, xi, yi, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 0, "");
+
+        xr = new double[]{5};
+        yr = new double[]{6};
+        n = reduce(xr.length, xr, yr, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 0, "");
+
+        //1 good and 1 bad point
+        xi = new int[]{15, 5};
+        yi = new int[]{150, 6};
+        n = reduce(xi.length, xi, yi, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 2, "");
+        Test.ensureEqual(String2.toCSSVString(xi), "15, 5", "");
+        Test.ensureEqual(String2.toCSSVString(yi), "150, 6", "");
+
+        xr = new double[]{15, 5};
+        yr = new double[]{150, 6};
+        n = reduce(xr.length, xr, yr, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 2, "");
+        Test.ensureEqual(String2.toCSSVString(xr), "15.0, 5.0", "");
+        Test.ensureEqual(String2.toCSSVString(yr), "150.0, 6.0", "");
+
+        //1 bad and 1 good point
+        xi = new int[]{5, 15};
+        yi = new int[]{6, 150};
+        n = reduce(xi.length, xi, yi, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 2, "");
+        Test.ensureEqual(String2.toCSSVString(xi), "5, 15", "");
+        Test.ensureEqual(String2.toCSSVString(yi), "6, 150", "");
+
+        xr = new double[]{5, 15};
+        yr = new double[]{6, 150};
+        n = reduce(xr.length, xr, yr, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 2, "");
+        Test.ensureEqual(String2.toCSSVString(xr), "5.0, 15.0", "");
+        Test.ensureEqual(String2.toCSSVString(yr), "6.0, 150.0", "");
+
+        //2 good and 2 bad points
+        xi = new int[]{15,  16,  5, 6};
+        yi = new int[]{150, 160, 6, 7};
+        n = reduce(xi.length, xi, yi, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 4, "");
+        Test.ensureEqual(String2.toCSSVString(xi), "15, 16, 5, 6", "");
+        Test.ensureEqual(String2.toCSSVString(yi), "150, 160, 6, 7", "");
+
+        xr = new double[]{15,  16,  5, 6};
+        yr = new double[]{150, 160, 6, 7};
+        n = reduce(xr.length, xr, yr, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 4, "");
+        Test.ensureEqual(String2.toCSSVString(xr), "15.0, 16.0, 5.0, 6.0", "");
+        Test.ensureEqual(String2.toCSSVString(yr), "150.0, 160.0, 6.0, 7.0", "");
+
+        //2 bad and 2 good point
+        xi = new int[]{5, 6, 15, 16};
+        yi = new int[]{6, 7, 150, 160};
+        n = reduce(xi.length, xi, yi, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 4, "");
+        Test.ensureEqual(String2.toCSSVString(xi), "5, 6, 15, 16", "");
+        Test.ensureEqual(String2.toCSSVString(yi), "6, 7, 150, 160", "");
+
+        xr = new double[]{5, 6, 15, 16};
+        yr = new double[]{6, 7, 150, 160};
+        n = reduce(xr.length, xr, yr, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 4, "");
+        Test.ensureEqual(String2.toCSSVString(xr), "5.0, 6.0, 15.0, 16.0", "");
+        Test.ensureEqual(String2.toCSSVString(yr), "6.0, 7.0, 150.0, 160.0", "");
+
+        //2 good and 2 bad (diff sector) points
+        xi = new int[]{15,  16,  5, 6};
+        yi = new int[]{150, 160, 6, 250};
+        n = reduce(xi.length, xi, yi, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 4, "");
+        Test.ensureEqual(String2.toCSSVString(xi), "15, 16, 5, 6", "");
+        Test.ensureEqual(String2.toCSSVString(yi), "150, 160, 6, 250", "");
+
+        xr = new double[]{15,  16,  5, 6};
+        yr = new double[]{150, 160, 6, 250};
+        n = reduce(xr.length, xr, yr, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 4, "");
+        Test.ensureEqual(String2.toCSSVString(xr), "15.0, 16.0, 5.0, 6.0", "");
+        Test.ensureEqual(String2.toCSSVString(yr), "150.0, 160.0, 6.0, 250.0", "");
+
+        //2 bad (diff sector) and 2 good point
+        xi = new int[]{5, 6, 15, 16};
+        yi = new int[]{6, 250, 150, 160};
+        n = reduce(xi.length, xi, yi, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 4, "");
+        Test.ensureEqual(String2.toCSSVString(xi), "5, 6, 15, 16", "");
+        Test.ensureEqual(String2.toCSSVString(yi), "6, 250, 150, 160", "");
+
+        xr = new double[]{5, 6, 15, 16};
+        yr = new double[]{6, 250, 150, 160};
+        n = reduce(xr.length, xr, yr, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 4, "");
+        Test.ensureEqual(String2.toCSSVString(xr), "5.0, 6.0, 15.0, 16.0", "");
+        Test.ensureEqual(String2.toCSSVString(yr), "6.0, 250.0, 150.0, 160.0", "");
+
+        //3 good and 3 bad points
+        xi = new int[]{15,  16,  17, 5, 6, 7};
+        yi = new int[]{150, 160, 170, 6, 7, 8};
+        n = reduce(xi.length, xi, yi, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 5, "");
+        Test.ensureEqual(String2.toCSSVString(xi), "15, 16, 17, 5, 7, 7", "");
+        Test.ensureEqual(String2.toCSSVString(yi), "150, 160, 170, 6, 8, 8", "");
+
+        xr = new double[]{15,  16,  17, 5, 6, 7};
+        yr = new double[]{150, 160, 170, 6, 7, 8};
+        n = reduce(xr.length, xr, yr, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 5, "");
+        Test.ensureEqual(String2.toCSSVString(xr), "15.0, 16.0, 17.0, 5.0, 7.0, 7.0", "");
+        Test.ensureEqual(String2.toCSSVString(yr), "150.0, 160.0, 170.0, 6.0, 8.0, 8.0", "");
+
+        //3 bad and 3 good point
+        xi = new int[]{5, 6, 7, 15, 16, 17};
+        yi = new int[]{6, 7, 8, 150, 160, 170};
+        n = reduce(xi.length, xi, yi, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 5, "");
+        Test.ensureEqual(String2.toCSSVString(xi), "5, 7, 15, 16, 17, 17", "");
+        Test.ensureEqual(String2.toCSSVString(yi), "6, 8, 150, 160, 170, 170", "");
+
+        xr = new double[]{5, 6, 7, 15, 16, 17};
+        yr = new double[]{6, 7, 8, 150, 160, 170};
+        n = reduce(xr.length, xr, yr, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 5, "");
+        Test.ensureEqual(String2.toCSSVString(xr), "5.0, 7.0, 15.0, 16.0, 17.0, 17.0", "");
+        Test.ensureEqual(String2.toCSSVString(yr), "6.0, 8.0, 150.0, 160.0, 170.0, 170.0", "");
+
+        //3 sectors, but all north 
+        xi = new int[]{5, 15, 25};
+        yi = new int[]{250, 260, 270};
+        n = reduce(xi.length, xi, yi, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 0, "");
+
+        xr = new double[]{5, 15, 25};
+        yr = new double[]{250, 260, 270};
+        n = reduce(xr.length, xr, yr, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 0, "");
+
+        //3 sectors, but all south
+        xi = new int[]{5, 15, 25};
+        yi = new int[]{60, 70, 80};
+        n = reduce(xi.length, xi, yi, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 0, "");
+
+        xr = new double[]{5, 15, 25};
+        yr = new double[]{60, 70, 80};
+        n = reduce(xr.length, xr, yr, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 0, "");
+
+        //3 sectors, but all east
+        xi = new int[]{25, 26, 27};
+        yi = new int[]{50, 150, 250};
+        n = reduce(xi.length, xi, yi, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 0, "");
+
+        xr = new double[]{25, 26, 27};
+        yr = new double[]{50, 150, 250};
+        n = reduce(xr.length, xr, yr, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 0, "");
+
+        //3 sectors, but all west
+        xi = new int[]{5, 6, 7};
+        yi = new int[]{50, 150, 250};
+        n = reduce(xi.length, xi, yi, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 0, "");
+
+        xr = new double[]{5, 6, 7};
+        yr = new double[]{50, 150, 250};
+        n = reduce(xr.length, xr, yr, 10, 20, 100, 200); //wesn
+        Test.ensureEqual(n, 0, "");
+
 
         //force creation of new file
         GeneralPath gp1 = getGeneralPath('h', 1, -135, -105, 22, 50, true);

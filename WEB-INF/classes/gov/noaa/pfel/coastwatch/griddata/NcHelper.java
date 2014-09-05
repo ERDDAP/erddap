@@ -51,13 +51,13 @@ import ucar.ma2.*;
 public class NcHelper  {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
 
     /**
-     * Set this to true (by calling reallyVerbose=true in your program, not but changing the code here)
+     * Set this to true (by calling reallyVerbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean reallyVerbose = false;
@@ -67,6 +67,12 @@ public class NcHelper  {
      * of a String variable. "_strlen" is what netcdf-java uses.
      */
     public final static String StringLengthSuffix = "_strlen"; //pre 2012-06-05 was StringLength="StringLength"; 
+
+    /** Since .nc files can store 16bit char or longs, those data types are stored as
+     * shorts or Strings and these messages are added to the attributes.
+     */
+    public final static String originally_a_CharArray = "originally a CharArray";
+    public final static String originally_a_LongArray = "originally a LongArray";
 
     /**
      * If saving longs as Strings, this is the maxStringLength.
@@ -118,9 +124,12 @@ public class NcHelper  {
         StringWriter sw = new StringWriter();
         //NCdumpW.printHeader(fullFileName, baos);
         NCdumpW.print(fullFileName, sw, 
-            varNames.length() > 0? false : printData, false /*print only coord variables*/, 
-            fullFileName.endsWith(".ncml"), false, //strict
-            String2.replaceAll(varNames, ',', ';'), null /*cancel*/);
+            varNames.length() > 0? false : printData, 
+            false /*print only coord variables*/, 
+            fullFileName.endsWith(".ncml"), 
+            false, //strict
+            String2.replaceAll(varNames, ',', ';'), 
+            null /*cancel*/);
         String s = sw.toString();
 
         //remove the directory name from the string
@@ -171,6 +180,7 @@ public class NcHelper  {
                 else if (ch == 'r') {}
                 else if (ch == '\'') sb.append('\'');
                 else sb.append("\\" + ch); //leave as backslash encoded
+            } else if (ch == '\r') { //2013-09-03 netcdf-java 4.3 started using \r\n on non-data lines. Remove \r.
             } else {
                 sb.append(ch);
             }
@@ -550,7 +560,7 @@ public class NcHelper  {
 
             //I care about this exception
             netcdfFile.close();
-            return results;
+            return String2.replaceAll(results, "\r", ""); //2013-09-03 netcdf-java 4.3 started using \r\n
 
         } catch (Exception e) {
             try {
@@ -877,7 +887,7 @@ public class NcHelper  {
     }
 
     /**
-     * This write the global attributes to a netcdf file.
+     * This writes the global attributes to a netcdf file.
      *
      * @param netcdfFile
      * @param varName   use "NC_GLOBAL" for global attributes
@@ -887,18 +897,97 @@ public class NcHelper  {
         boolean isGlobal = "NC_GLOBAL".equals(varName);
         String names[] = attributes.getNames();
         for (int ni = 0; ni < names.length; ni++) { 
-            PrimitiveArray tValue = attributes.get(names[ni]);
+            String tName = names[ni];
+            if (!String2.isSomething(tName)) 
+                continue;
+            PrimitiveArray tValue = attributes.get(tName);
             if (tValue == null || tValue.size() == 0 || tValue.toString().length() == 0) {
-                String2.log("WARNING in NcHelper.setAttributes: " + 
-                    varName + " attribute: " + names[ni] + " is \"" + tValue + "\".");
+                //do nothing
             } else if (isGlobal) {
-                netcdfFile.addGlobalAttribute(getAttribute(names[ni], tValue));
+                netcdfFile.addGlobalAttribute(getAttribute(tName, tValue));
             } else {
-                netcdfFile.addVariableAttribute(varName, getAttribute(names[ni], tValue));
+                netcdfFile.addVariableAttribute(varName, getAttribute(tName, tValue));
             }
         }
     }
 
+
+
+    /**
+     * Given an attribute, this adds the value to the attributes.
+     * If there is trouble, this lots a warning message and returns null.
+     * This is low level and isn't usually called directly.
+     *
+     * @param att   
+     * @param varName the variable name (or "global"), used for diagnostic messages only
+     * @return a PrimitiveArray or null if trouble
+     */
+    public static PrimitiveArray getAttributePA(String varName, ucar.nc2.Attribute att) {
+        if (att == null) {
+            if (reallyVerbose)
+                String2.log("Warning: NcHelper.getAttributePA " + varName + " att=null");
+            return null;
+        } else if (String2.isSomething(att.getName())) {
+            try {
+                //decodeAttribute added with switch to netcdf-java 4.0
+                return PrimitiveArray.factory(decodeAttribute(getArray(att.getValues()))); 
+            } catch (Throwable t) {
+                String2.log("Warning: NcHelper caught an exception while reading '" + 
+                    varName + "' attribute=" + att.getName() + "\n" +
+                    MustBe.throwableToString(t));
+                return null;
+            }
+        } else {
+            if (reallyVerbose)
+                String2.log("Warning: NcHelper.getAttributePA " + varName + 
+                    " att.getName()=" + String2.annotatedString(att.getName()));
+            return null;
+        }
+    }
+
+    /**
+     * This gets one attribute from a netcdf variable.
+     *
+     * @param variable
+     * @param attributeName
+     * @return the attribute (or null if none)
+     */
+    public static PrimitiveArray getVariableAttribute(Variable variable, String attributeName) {
+        return getAttributePA(variable.getName(), variable.findAttribute(attributeName)); 
+    }
+
+
+    /**
+     * This gets one global attribute from a netcdf variable.
+     *
+     * @param netcdfFile
+     * @param attributeName
+     * @return the attribute (or null if none)
+     */
+    public static PrimitiveArray getGlobalAttribute(NetcdfFile netcdfFile, String attributeName) {
+        return getAttributePA("global", netcdfFile.findGlobalAttribute(attributeName)); 
+    }
+
+    /**
+     * Given an attribute, this adds the value to the attributes.
+     * If there is trouble, this logs a warning message and returns.
+     * This is low level and isn't usually called directly.
+     */
+    public static void addAttribute(String varName, ucar.nc2.Attribute att, Attributes attributes) {
+        if (att == null) {
+            if (reallyVerbose)
+                String2.log("Warning: NcHelper.addAttribute " + varName + " att=null");
+            return;
+        }
+        if (String2.isSomething(att.getName())) {
+            //attributes.set calls String2.canonical (useful since many names are in many datasets)
+            attributes.set(att.getName(), getAttributePA(varName, att));
+        } else {
+            if (reallyVerbose)
+                String2.log("Warning: NcHelper.addAttribute " + varName + 
+                    " att.getName()=" + String2.annotatedString(att.getName()));
+        }
+    }
 
     /**
      * This reads the global attributes from a netcdf file.
@@ -919,26 +1008,11 @@ public class NcHelper  {
     public static void getGlobalAttributes(List globalAttList, Attributes attributes) {
 
         //read the globalAttributes
+        if (globalAttList == null)
+            return;
         int nAtt = globalAttList.size();
-        for (int att = 0; att < nAtt; att++) {
-            ucar.nc2.Attribute gAtt = (ucar.nc2.Attribute)globalAttList.get(att); //there is also a dods.dap.Attribute
-            //intern() will find canonical string and save memory (since I store so many similar attributes)
-            attributes.set(gAtt.getName(), //it calls String2.canonical
-                PrimitiveArray.factory(decodeAttribute(getArray(gAtt.getValues())))); //decodeAttribute added with switch to netcdf-java 4.0
-        }
-    }
-
-    /**
-     * This gets one global attribute from a netcdf variable.
-     *
-     * @param netcdfFile
-     * @param attributeName
-     * @return the attribute (or null if none)
-     */
-    public static PrimitiveArray getGlobalAttribute(NetcdfFile netcdfFile, String attributeName) {
-        ucar.nc2.Attribute att = netcdfFile.findGlobalAttribute(attributeName); //there is also a dods.dap.Attribute
-        if (att == null) return null;
-        return PrimitiveArray.factory(decodeAttribute(getArray(att.getValues()))); //decodeAttribute added with switch to netcdf-java 4.0
+        for (int att = 0; att < nAtt; att++)  //there is also a dods.dap.Attribute
+            addAttribute("global", (ucar.nc2.Attribute)globalAttList.get(att), attributes);
     }
 
     /**
@@ -948,26 +1022,14 @@ public class NcHelper  {
      * @param attributes the Attributes that will be added to
      */
     public static void getVariableAttributes(Variable variable, Attributes attributes) {
+        if (variable == null)
+            return;
+        String variableName = variable.getName();
         List variableAttList = variable.getAttributes();
-        for (int att = 0; att < variableAttList.size(); att++) {
-            ucar.nc2.Attribute vAtt = (ucar.nc2.Attribute)variableAttList.get(att); //there is also a dods.dap.Attribute
-            //intern() will find canonical string and save memory (since I store so many similar attributes)
-            attributes.set(vAtt.getName(), //it calls String2.canonical() 
-                PrimitiveArray.factory(decodeAttribute(getArray(vAtt.getValues())))); //decodeAttribute added with switch to netcdf-java 4.0
-        }
-    }
-
-    /**
-     * This gets one attribute from a netcdf variable.
-     *
-     * @param variable
-     * @param attributeName
-     * @return the attribute (or null if none)
-     */
-    public static PrimitiveArray getVariableAttribute(Variable variable, String attributeName) {
-        ucar.nc2.Attribute att = variable.findAttribute(attributeName); //there is also a dods.dap.Attribute
-        if (att == null) return null;
-        return PrimitiveArray.factory(decodeAttribute(getArray(att.getValues()))); //decodeAttribute added with switch to netcdf-java 4.0
+        if (variableAttList == null) 
+            return;
+        for (int att = 0; att < variableAttList.size(); att++) 
+            addAttribute(variableName, (ucar.nc2.Attribute)variableAttList.get(att), attributes);
     }
 
     /**
@@ -1488,7 +1550,24 @@ public class NcHelper  {
         */
     }
 
-    /* * 
+    /**
+     * This returns a PrimitiveArray (usually the same one) that has a 
+     * data type that is suitable for .nc files
+     * (LongArray becomes StringArray, CharArray becomes ShortArray).
+     *
+     * @param pa a PrimitiveArray
+     * @returns a PrimitiveArray (usually the same one) that has a 
+     * data type that is suitable for .nc files.
+     */
+    public static PrimitiveArray getNcSafePA(PrimitiveArray pa) {
+        if (pa.elementClass() == char.class) 
+            return new ShortArray(((CharArray)pa).toArray());
+        if (pa.elementClass() == long.class)
+            return new StringArray(pa);
+        return pa;
+    }
+
+    /** 
      * This is a thin wrapper to call netcdfFileWriteable.writeStringData (for StringArray)
      * or netcdfFileWriteable.write to write the pa to the file.
      *
@@ -1506,10 +1585,7 @@ public class NcHelper  {
     public static void write(NetcdfFileWriteable netcdfFileWriteable, 
         String varName, int origin[], int shape[], PrimitiveArray pa) throws Exception {
 
-        if (pa.elementClass() == char.class) 
-            pa = new ShortArray(((CharArray)pa).toArray());
-        else if (pa.elementClass() == long.class)
-            pa = new StringArray(pa);
+        pa = getNcSafePA(pa);
 
         if (pa instanceof StringArray) {
             netcdfFileWriteable.writeStringData(varName, origin, 
@@ -1660,13 +1736,13 @@ public class NcHelper  {
                     nc.addVariable(name, DataType.CHAR, 
                         new Dimension[]{dimension, lengthDimension}); 
                     if (pas[var].elementClass() == long.class) 
-                        nc.addVariableAttribute(name, "NcHelper", "originally a LongArray"); 
+                        nc.addVariableAttribute(name, "NcHelper", originally_a_LongArray); 
                     else if (pas[var].elementClass() == String.class) 
                         nc.addVariableAttribute(name, "NcHelper", "JSON encoded"); 
                 } else {
                     nc.addVariable(name, DataType.getType(type), new Dimension[]{dimension}); 
                     if (pas[var].elementClass() == char.class) 
-                        nc.addVariableAttribute(name, "NcHelper", "originally a CharArray"); 
+                        nc.addVariableAttribute(name, "NcHelper", originally_a_CharArray); 
                 }
             }
 
@@ -1758,10 +1834,10 @@ public class NcHelper  {
                         if (ncHelper == null) 
                             ncHelper = "";
                         if (pa.elementClass() == short.class && 
-                            ncHelper.indexOf("originally a CharArray") >= 0) {
+                            ncHelper.indexOf(originally_a_CharArray) >= 0) {
                             pa = new CharArray(((ShortArray)pa).toArray());
                         } else if (pa.elementClass() == String.class &&  
-                            ncHelper.indexOf("originally a LongArray") >= 0) {  //before JSON test
+                            ncHelper.indexOf(originally_a_LongArray) >= 0) {  //before JSON test
                             pa = new LongArray(pa);
                         } else if (pa.elementClass() == String.class && 
                             ncHelper.indexOf("JSON encoded") >= 0) {
@@ -1980,103 +2056,109 @@ String2.log(pas13.toString());
         }
 
         String results, expected;
-        for (int i = 0; i < 3; i++) {
-            //write 2 rows at a time to the file
-            int row = -1; 
-            try {
+        try {
+            for (int row = 0; row < 5; row++) {
+            //write 1 row at a time to the file
                 Math2.sleep(20);
-                file = null;
                 file = NetcdfFileWriteable.openExisting(testUnlimitedFileName);
                 Dimension timeDim = file.findDimension("time");
-                row = timeDim.getLength();
                 String2.log("writing row=" + row);
 
                 int[] origin1 = new int[] {row};    
                 int[] origin2 = new int[] {row, 0};  
                 Array array;
-                ArrayChar.D2 ac = new ArrayChar.D2(2, strlen);
+                ArrayChar.D2 ac = new ArrayChar.D2(1, strlen);
 
                 double cTime = System.currentTimeMillis() / 1000.0;
-                array = Array.factory(new double[] {row, row + 1});      file.write("time",    origin1, array);
-                array = Array.factory(new double[] {33.33, 33.33});      file.write("lat",     origin1, array);
-                array = Array.factory(new double[] {-123.45, -123.45});  file.write("lon",     origin1, array);
-                if (i == 2) { //current changes not yet flushed to disk.  This shows file after previous row.
+                array = Array.factory(new double[] {row});             file.write("time",    origin1, array);
+                array = Array.factory(new double[] {33.33});           file.write("lat",     origin1, array);
+                array = Array.factory(new double[] {-123.45});         file.write("lon",     origin1, array);
+                array = Array.factory(new double[] {10 + row / 10.0}); file.write("sst",     origin1, array);
+                ac.setString(0, row + " comment");                     file.write("comment", origin2, ac);
+                file.flush(); //force file update
+
+                if (row == 1) { 
                     results = NcHelper.dumpString(testUnlimitedFileName, true);
                     String2.log(results);
                     expected = 
-"netcdf unlimited.nc {\n" +
-" dimensions:\n" +
-"   time = UNLIMITED;   // (4 currently)\n" +
-"   comment_strlen = 6;\n" +
-" variables:\n" +
-"   double time(time=4);\n" +
-"     :units = \"seconds since 1970-01-01\";\n" +
-"   double lat(time=4);\n" +
-"     :units = \"degrees_north\";\n" +
-"   double lon(time=4);\n" +
-"     :units = \"degrees_east\";\n" +
-"   double sst(time=4);\n" +
-"     :units = \"degree_C\";\n" +
-"   char comment(time=4, comment_strlen=6);\n" +
+"netcdf unlimited.nc {\n" +  //2013-09-03 netcdf-java 4.3 added blank lines
+"  dimensions:\n" +
+"    time = UNLIMITED;   // (2 currently\n" +
+"    comment_strlen = 6;\n" +
+"  variables:\n" +
+"    double time(time=2);\n" +
+"      :units = \"seconds since 1970-01-01\";\n" +
+"\n" +
+"    double lat(time=2);\n" +
+"      :units = \"degrees_north\";\n" +
+"\n" +
+"    double lon(time=2);\n" +
+"      :units = \"degrees_east\";\n" +
+"\n" +
+"    double sst(time=2);\n" +
+"      :units = \"degree_C\";\n" +
+"\n" +
+"    char comment(time=2, comment_strlen=6);\n" +
+"\n" +
 " data:\n" +
 "time =\n" +
-"  {0.0, 1.0, 2.0, 3.0}\n" +
+"  {0.0, 1.0}\n" +
 "lat =\n" +
-"  {33.33, 33.33, 33.33, 33.33}\n" +
+"  {33.33, 33.33}\n" +
 "lon =\n" +
-"  {-123.45, -123.45, -123.45, -123.45}\n" +
+"  {-123.45, -123.45}\n" +
 "sst =\n" +
-"  {10.0, 10.1, 9.969209968386869E36, 9.969209968386869E36}\n" +
-"comment =\"0 comm\", \"1 comm\", \"\", \"\"\n" +
+"  {10.0, 10.1}\n" +
+"comment =\"0 comm\", \"1 comm\"\n" +
 "}\n";
-                    Test.ensureEqual(results, expected, "");
+                    if (!results.equals(expected)) {
+                        file.close();
+                        file = null;
+                        Test.ensureEqual(results, expected, "trouble when i==1");
+                    }
                 }
-                
-                if (i != 1) {
-                    array = Array.factory(new double[] {10 + row / 10.0, 10 + (row+1) / 10.0}); 
-                    file.write("sst",  origin1, array);
-                    ac.setString(0, row + " comment");
-                    ac.setString(1, (row+1) + " comment");
-                    String2.log("ac=" + ac);
-                    file.write("comment", origin2, ac);
-                }
-
-                //NOTE: instead of closing the file to write changes to disk, you can use file.flush().
-            } catch (Throwable t) {
-                String2.log(MustBe.throwableToString(t));
-            } finally {
-                //ensure file is closed
-                if (file != null) 
-                    file.close(); //writes changes to file
             }
+                
+
+            //NOTE: instead of closing the file to write changes to disk, you can use file.flush().
+        } finally {
+            //ensure file is closed
+            if (file != null) 
+                file.close(); //writes changes to file
         }
+
         results = NcHelper.dumpString(testUnlimitedFileName, true);
         String2.log(results);
         expected = 
-"netcdf unlimited.nc {\n" +
-" dimensions:\n" +
-"   time = UNLIMITED;   // (6 currently)\n" +
-"   comment_strlen = 6;\n" +
-" variables:\n" +
-"   double time(time=6);\n" +
-"     :units = \"seconds since 1970-01-01\";\n" +
-"   double lat(time=6);\n" +
-"     :units = \"degrees_north\";\n" +
-"   double lon(time=6);\n" +
-"     :units = \"degrees_east\";\n" +
-"   double sst(time=6);\n" +
-"     :units = \"degree_C\";\n" +
-"   char comment(time=6, comment_strlen=6);\n" +
+"netcdf unlimited.nc {\n" + //2013-09-03 netcdf-java 4.3 added blank lines
+"  dimensions:\n" +
+"    time = UNLIMITED;   // (5 currently\n" + //2013-09-03 bug! netcdf-java 4.3 removed close )
+"    comment_strlen = 6;\n" +
+"  variables:\n" +
+"    double time(time=5);\n" +
+"      :units = \"seconds since 1970-01-01\";\n" +
+"\n" +
+"    double lat(time=5);\n" +
+"      :units = \"degrees_north\";\n" +
+"\n" +
+"    double lon(time=5);\n" +
+"      :units = \"degrees_east\";\n" +
+"\n" +
+"    double sst(time=5);\n" +
+"      :units = \"degree_C\";\n" +
+"\n" +
+"    char comment(time=5, comment_strlen=6);\n" +
+"\n" +
 " data:\n" +
 "time =\n" +
-"  {0.0, 1.0, 2.0, 3.0, 4.0, 5.0}\n" +
+"  {0.0, 1.0, 2.0, 3.0, 4.0}\n" +
 "lat =\n" +
-"  {33.33, 33.33, 33.33, 33.33, 33.33, 33.33}\n" +
+"  {33.33, 33.33, 33.33, 33.33, 33.33}\n" +
 "lon =\n" +
-"  {-123.45, -123.45, -123.45, -123.45, -123.45, -123.45}\n" +
-"sst =\n" +
-"  {10.0, 10.1, 9.969209968386869E36, 9.969209968386869E36, 10.4, 10.5}\n" +
-"comment =\"0 comm\", \"1 comm\", \"\", \"\", \"4 comm\", \"5 comm\"\n" +
+"  {-123.45, -123.45, -123.45, -123.45, -123.45}\n" +
+"sst =\n" +  
+"  {10.0, 10.1, 10.2, 10.3, 10.4}\n" +
+"comment =\"0 comm\", \"1 comm\", \"2 comm\", \"3 comm\", \"4 comm\"\n" +
 "}\n";
         Test.ensureEqual(results, expected, "");
 
@@ -2353,16 +2435,17 @@ String2.log(pas13.toString());
             //Strings are truncated to maxCharLength specified in "define" mode.
             String results = dumpString(fullName, true); //printData
             String expected = 
-"netcdf StringsInNc.nc {\n" +
-" dimensions:\n" +
-"   dim0 = 2;\n" +
-"   dim1 = 3;\n" +
-"   s1_strlen = 4;\n" +
-" variables:\n" +
-"   char s1(dim0=2, dim1=3, s1_strlen=4);\n" +
+"netcdf StringsInNc.nc {\n" + 
+"  dimensions:\n" +
+"    dim0 = 2;\n" +
+"    dim1 = 3;\n" +
+"    s1_strlen = 4;\n" +
+"  variables:\n" +
+"    char s1(dim0=2, dim1=3, s1_strlen=4);\n" +
+"\n" +
 " data:\n" +
 "s1 =\n" +
-"  {\"\", \"a\", \"abcd\",\"abc\", \"abcd\", \"abcd\"\n" +
+"  {\"\", \"a\", \"abcd\",\"abc\", \"abcd\", \"abcd\"\n" + 
 "  }\n" +
 "}\n";
             String2.log("results=\n" + results);

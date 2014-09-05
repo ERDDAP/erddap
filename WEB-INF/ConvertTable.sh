@@ -1,6 +1,6 @@
-#!/bin/csh
+#!/bin/bash
 #
-# usage: ConvertTable <in> <inType> <out> <outType> 
+# usage: ./ConvertTable <in> <inType> <out> <outType> 
 # <in> must be the complete directory + name + extension
 #    or the complete url for an opendap sequence.
 # <inType> maybe 0 (ASCII), 1 (.nc), or 2 (opendapSequence).
@@ -16,13 +16,13 @@
 # A test which reads data from an opendap sequence and writes it to an .nc file: 
 # ./ConvertTable "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle?longitude,latitude,time,sal00,temperature0&amp;time=2002-08-19T08:58:00" 2 result.nc 1 row
 #
-# 2006-12-14
-# CoastWatch/Bob Simons  bob.simons@noaa.gov
+# original 2006-12-14  Bob Simons bob.simons@noaa.gov
+# updated 2014-02-13  Bob Simons bob.simons@noaa.gov
 #
 
-set commandLine=$0
-set thisDir=`echo commandLine | dirname $0`
-set cp0="$thisDir/classes:$thisDir/lib/netcdfAll-latest.jar:$thisDir/lib/slf4j-jdk14.jar"
+commandLine=$0
+thisDir=`echo $commandLine | dirname $0`
+cp0="$thisDir/classes:$thisDir/lib/netcdfAll-latest.jar"
 
 java -cp $cp0 -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.pointdata.ConvertTable "$1" $2 $3 $4 $5
 

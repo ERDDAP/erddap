@@ -258,9 +258,8 @@ public class drds extends dodsSQLServlet {
      *        where it is used.)
      *	</ul>
      *
-     * @param dataSet The name of the data set requested.
      *
-     * @returns The <code>sqlDDS</code> for the named data set.
+     * @return The <code>sqlDDS</code> for the named data set.
      *
      * @see dods.dap.Server.ServerDDS
      * @see dods.servers.sql.sqlServerFactory

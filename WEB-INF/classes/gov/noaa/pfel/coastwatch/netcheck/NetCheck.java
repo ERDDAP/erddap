@@ -36,9 +36,6 @@ import java.util.HashSet;
  *
  * <p>A log file will be created with the name of the xml file + ".log".
  *
- * <p>For SFTP, this program uses J2SSH.
- * See gov/noaa/pfel/coastwatch/util/SSR.getSshClient for more information.
- *  
  * <p>For Opendap, this program uses Java DAP 1.1.7.
  * See http://www.opendap.org/download/index.html for more information.
  * The .java and .class files for this are in the classes/dods directory.
@@ -52,14 +49,11 @@ import java.util.HashSet;
  * 2013-02-21 new netcdfAll uses Java logging, not slf4j.
  * Put both of these .jar files in the classpath for the compiler and for Java.
  *  
- * <p>J2SSH requires Jakarta Commons Logging.
- * See gov/noaa/pfel/coastwatch/util/SSR.getSshClient for more information.
- *
  * <p>To send emails, this program uses the JavaMail API 
  * and the JavaBeans Activation Framework extension or JAF (javax.activation).
  * See util/SSR.sendEmail for more information.
- * The required mail.jar and activation.jar files are freely available
- * from Sun (see http://www.oracle.com/technetwork/java/index-jsp-139225.html)
+ * The required mail.jar file is freely available
+ * from Sun (http://www.oracle.com/technetwork/java/javamail/index.html)
  * and can be redistributed freely.
  *
  * <p>WARNING! When a test times out, its thread is stopped which may
@@ -82,7 +76,7 @@ public class NetCheck  {
     //  simultaneously (each in its own thread).
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
@@ -137,9 +131,13 @@ public class NetCheck  {
         //route calls to a logger to com.cohort.util.String2Log
         String2.setupCommonsLogging(-1);
 
-        String2.setupLog(false, true, xmlFileName + ".log", false, true, 1000000);
+        String2.setupLog(true, false, xmlFileName + ".log", false, true, 1000000);
+        String2.log("*** Starting NetCheck " + 
+            Calendar2.getCurrentISODateTimeStringLocal() + "\n" +
+            "logFile=" + String2.logFileName() + "\n" +
+            String2.standardHelpAboutMessage()); 
         HttpTest.verbose = verbose;
-        SftpTest.verbose = verbose;
+        //SftpTest.verbose = verbose;
         SSR.verbose = false;
         File2.verbose = true;
 
@@ -154,10 +152,11 @@ public class NetCheck  {
         while (true) {
             long time = System.currentTimeMillis();
             test(pass % passesPerStatusReport == 0, pass == 0);
+            Math2.gcAndWait(); Math2.gcAndWait(); //NetCheck before get memoryString
+            String2.log(Math2.memoryString());
             time = System.currentTimeMillis() - time;
             String2.log("Sleeping...\n");
-            Math2.gc(Math.max(0, Math.round(minutesBetweenTests * 60 * 1000) - time));
-            String2.log(Math2.memoryString());
+            Math2.sleep(Math.max(0, Math.round(minutesBetweenTests * 60 * 1000) - time)); //NetCheck pause between runs
             pass++;
         } 
     }
@@ -260,10 +259,11 @@ public class NetCheck  {
                     //this reads all the tags until </pauseTest>
                     netCheckTests.add(new PauseTest(xmlReader)); 
 
-            } else if (tags.equals("<netCheck><sftpTest>")) { 
-                    //create a new sftpTest
-                    //this reads all the tags until </sftpTest>
-                    netCheckTests.add(new SftpTest(xmlReader)); 
+            //2014-08-05 DEACTIVATED BECAUSE NOT USED. IF NEEDED, SWITCH TO Apache commons-net???
+            //} else if (tags.equals("<netCheck><sftpTest>")) { 
+            //        //create a new sftpTest
+            //        //this reads all the tags until </sftpTest>
+            //        netCheckTests.add(new SftpTest(xmlReader)); 
 
             } else throw new RuntimeException(errorIn + "unrecognized tags: " + tags);
 

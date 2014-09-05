@@ -1067,7 +1067,8 @@ public class StringArray extends PrimitiveArray {
      * This sorts the elements in ascending order regardless of the case of the letters.
      * To get the elements in reverse order, just read from the end of the list
      * to the beginning.
-     * This is more sophisticated than Java's String.CASE_INSENSITIVE_ORDER
+     * This is more sophisticated than Java's String.CASE_INSENSITIVE_ORDER.
+     * E.g., all charAt(0) A's will sort by for all charAt(0) a's  (e.g., AA, Aa, aA, aa).
      */
     public void sortIgnoreCase() {
         Arrays.sort(array, 0, size, new StringComparatorIgnoreCase());
@@ -1417,6 +1418,7 @@ public class StringArray extends PrimitiveArray {
      *   (which are separated by white space; commas are treated like any other whitespace).
      *   Interior double quotes in double-quoted phrases must be doubled 
      *   (e.g., "a quote "" within a phrase").
+     *   The resulting parts are all trim'd.
      */
     public static StringArray wordsAndQuotedPhrases(String searchFor) {
         StringArray sa = new StringArray();

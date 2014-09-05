@@ -42,7 +42,7 @@ public class RunLoadDatasets extends Thread {
 
     /**
      * Set this to true (by calling verbose=true in your program, 
-     * not but changing the code here)
+     * not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false; 
@@ -137,7 +137,7 @@ public class RunLoadDatasets extends Thread {
                         Calendar2.getCurrentISODateTimeStringLocal();
                     String content = MustBe.throwableToString(t); 
                     String2.log(subject + ": " + content);
-                    EDStatic.email(EDStatic.emailEverythingTo, subject, content);
+                    EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
                 } catch (Throwable t2) {
                     if (t2 instanceof InterruptedException) 
                         break whileNotInterrupted;
@@ -262,7 +262,7 @@ public class RunLoadDatasets extends Thread {
                         Calendar2.getCurrentISODateTimeStringLocal();
                     String content = MustBe.throwableToString(t); 
                     String2.log(subject + ": " + content);
-                    EDStatic.email(EDStatic.emailEverythingTo, subject, content);
+                    EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
                 } catch (Throwable t2) {
                     if (t2 instanceof InterruptedException) 
                         break whileNotInterrupted;
@@ -309,7 +309,7 @@ public class RunLoadDatasets extends Thread {
                         Calendar2.elapsedTimeString(System.currentTimeMillis() - lastMajorLoadDatasetsStartTimeMillis) +
                         " > " + Calendar2.elapsedTimeString(EDStatic.loadDatasetsMaxMillis) + ") at " + 
                         Calendar2.getCurrentISODateTimeStringLocal();
-                    EDStatic.email(EDStatic.emailEverythingTo, 
+                    EDStatic.email(EDStatic.emailEverythingToCsv, 
                         "RunLoadDatasets Stalled", tError);
                     String2.log("\n*** " + tError);
 
@@ -332,7 +332,7 @@ public class RunLoadDatasets extends Thread {
                         Calendar2.getCurrentISODateTimeStringLocal();
                     String content = MustBe.throwableToString(t); 
                     String2.log(subject + ": " + content);
-                    EDStatic.email(EDStatic.emailEverythingTo, subject, content);
+                    EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
                 } catch (Throwable t2) {
                     if (t2 instanceof InterruptedException) 
                         break whileNotInterrupted;

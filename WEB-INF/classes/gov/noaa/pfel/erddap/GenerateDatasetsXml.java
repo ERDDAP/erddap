@@ -5,6 +5,7 @@
 package gov.noaa.pfel.erddap;
 
 import com.cohort.array.StringArray;
+import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
@@ -19,6 +20,16 @@ import gov.noaa.pfel.coastwatch.util.SSR;
 import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.util.EDStatic;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.InputStreamReader;
+import java.io.Writer;
+import java.util.GregorianCalendar;
+
 /**
  * This is a command line program to run GenerateDatasetsXml for the 
  * various EDD subclasses.
@@ -27,15 +38,20 @@ import gov.noaa.pfel.erddap.util.EDStatic;
  */
 public class GenerateDatasetsXml {
 
-    private static void println(String s) {
-        String2.setClipboardString(s);
+    OutputStreamWriter outFile = null;
+    static String logFileName = EDStatic.fullLogsDirectory + "GenerateDatasetsXml.log";
+    static String outFileName = EDStatic.fullLogsDirectory + "GenerateDatasetsXml.out";
+
+    private void printToBoth(String s) throws IOException {
         String2.log(s);
+        outFile.write(s);
+        outFile.write('\n');
     }
 
     /** This gets the i'th value from args, or prompts the user. 
      * @throws RuntimeException("ControlC") if user presses ^C.
      */
-    private static String get(String args[], int i, String def, String prompt) throws Throwable {
+    private String get(String args[], int i, String def, String prompt) throws Throwable {
         if (args.length > i) {
             String2.log(prompt + "? " + args[i]);
             return args[i];
@@ -55,9 +71,33 @@ public class GenerateDatasetsXml {
      * If args.length is 0, this loops; otherwise it returns when done.
      *
      * @param args if args has values, they are used to answer the questions.
+     * @returns the contents of outFileName (will be "" if trouble)
      */
-    public static void doIt(String args[], boolean loop) throws Throwable {
-        String logFileName = EDStatic.fullLogsDirectory + "generateDatasetsXmlLog.txt";
+    public String doIt(String args[], boolean loop) throws Throwable {
+        File2.safeRename(logFileName, logFileName + ".previous");
+        if (File2.isFile(outFileName)) {
+            try {
+                File2.rename(outFileName, outFileName + ".previous");
+            } catch (Throwable t) {
+                File2.delete(outFileName);
+            }
+        }
+        String2.setupLog(true, false,  //toSystemOut, toSystemErr
+            logFileName,
+            false, //logToStringBuffer
+            false, 20000000);  //append
+        GregorianCalendar gcLocal = Calendar2.newGCalendarLocal();
+        String localIsoTime     = Calendar2.formatAsISODateTimeT(gcLocal);
+        String localCompactTime = Calendar2.formatAsCompactDateTime(gcLocal);
+        String2.log("*** Starting GenerateDatasetsXml " + localIsoTime + "\n" + 
+            "logFile=" + String2.logFileName() + "\n" +
+            String2.standardHelpAboutMessage());
+        outFile = new OutputStreamWriter(
+            new FileOutputStream(outFileName), "ISO-8859-1"); //charset to match datasets.xml
+
+        //delete the old-system log files (pre 1.48 names)
+        File2.delete(EDStatic.fullLogsDirectory + "GenerateDatasetsXmlLog.txt");
+        File2.delete(EDStatic.fullLogsDirectory + "GenerateDatasetsXmlLog.txt.previous");
 
         if (args == null) 
             args = new String[0];
@@ -78,6 +118,20 @@ public class GenerateDatasetsXml {
             sa.remove(vi);
             args = sa.toArray();
         }
+
+        //look for -I (testmode) or -i
+        int ii = String2.lineStartsWith(args, "-I");
+        if (ii < 0)
+            ii = String2.lineStartsWith(args, "-i");
+        String insert = null;
+        if (ii >= 0) {
+            insert = args[ii];
+            String2.log(insert);
+            StringArray sa = new StringArray(args);
+            sa.remove(ii);
+            args = sa.toArray();
+        }
+
         EDD.verbose = true;
         EDD.reallyVerbose = reallyVerbose;
         NcHelper.verbose = reallyVerbose;
@@ -85,45 +139,45 @@ public class GenerateDatasetsXml {
         Table.verbose = reallyVerbose;
         Table.reallyVerbose = reallyVerbose;
 
-        do {
-            //get the EDD type
-            eddType = get(args, 0, eddType,
-                "\n*** GenerateDatasetsXml ***\n" +
-                "Results are shown on the screen, put on the clipboard and put in\n" +
-                logFileName + "\n" +
-                "Press ^C to exit at any time.\n" +
-                "Type \"\" to change from a non-nothing default back to nothing.\n" +
-                "DISCLAIMER:\n" +
-                "  The chunk of datasets.xml made by GenerateDatasetsXml isn't perfect.\n" +
-                "  YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.\n" +
-                "  GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always\n" +
-                "  correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML\n" +
-                "  THAT YOU ADD TO ERDDAP'S datasets.xml FILE.\n" +
-                "For detailed information, see\n" +
-                "http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html\n" +
-                "\n" +
-                "The EDDType options are:\n" +
-                "  EDDGridAggregateExistingDimension\n" +
-                "  EDDGridFromDap\n" +
-                "  EDDGridFromErddap\n" +
-                "  EDDGridFromNcFiles\n" +
-                "  EDDGridFromThreddsCatalog\n" +
-                "  EDDTableFromAsciiFiles\n" +                
-                "  EDDTableFromAwsXmlFiles\n" +                
-                "  EDDTableFromDapSequence\n" +
-                "  EDDTableFromDatabase\n" +
-                "  EDDTableFromErddap\n" +
-                "  EDDTableFromIoosSOS\n" +
-                "  EDDTableFromNcFiles\n" +
-                "  EDDTableFromNcCFFiles\n" +
-                "  EDDTableFromOBIS\n" +
-                "  EDDTableFromSOS\n" +           
-                "  EDDTableFromThreddsFiles\n" +
-                "  EDDTableFromWFSFiles\n" +
-                "Which EDDType");
-            if (eddType == null) return;
 
+        do {
             try {
+                //get the EDD type
+                eddType = get(args, 0, eddType,
+                    "\n*** GenerateDatasetsXml ***\n" +
+                    "Results are shown on the screen and put in\n" +
+                    outFileName + "\n" +
+                    "Press ^C to exit at any time.\n" +
+                    "Type \"\" to change from a non-nothing default back to nothing.\n" +
+                    "DISCLAIMER:\n" +
+                    "  The chunk of datasets.xml made by GenerateDatasetsXml isn't perfect.\n" +
+                    "  YOU MUST READ AND EDIT THE XML BEFORE USING IT IN A PUBLIC ERDDAP.\n" +
+                    "  GenerateDatasetsXml relies on a lot of rules-of-thumb which aren't always\n" +
+                    "  correct.  *YOU* ARE RESPONSIBLE FOR ENSURING THE CORRECTNESS OF THE XML\n" +
+                    "  THAT YOU ADD TO ERDDAP'S datasets.xml FILE.\n" +
+                    "For detailed information, see\n" +
+                    "http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html\n" +
+                    "\n" +
+                    "The EDDType options are:\n" +
+                    "  EDDGridAggregateExistingDimension\n" +
+                    "  EDDGridFromDap\n" +
+                    "  EDDGridFromErddap\n" +
+                    "  EDDGridFromNcFiles\n" +
+                    "  EDDGridFromThreddsCatalog\n" +
+                    "  EDDTableFromAsciiFiles\n" +                
+                    "  EDDTableFromAwsXmlFiles\n" +                
+                    "  EDDTableFromDapSequence\n" +
+                    "  EDDTableFromDatabase\n" +
+                    "  EDDTableFromErddap\n" +
+                    "  EDDTableFromIoosSOS\n" +
+                    "  EDDTableFromNcFiles\n" +
+                    "  EDDTableFromNcCFFiles\n" +
+                    "  EDDTableFromOBIS\n" +
+                    "  EDDTableFromSOS\n" +           
+                    "  EDDTableFromThreddsFiles\n" +
+                    "  EDDTableFromWFSFiles\n" +
+                    "Which EDDType");
+
 
                 //EDDGrid
                 if (eddType.equals("EDDGridAggregateExistingDimension")) {
@@ -132,8 +186,8 @@ public class GenerateDatasetsXml {
                                                              " for thredds, ending in \"catalog.xml\")");          
                     s3  = get(args,  3,  s3, "File name regex (e.g., \".*\\.nc\")");
                     s4  = get(args,  4,  s4, reloadEveryNMinutesMessage);
-                    System.out.println("working...");
-                    println(EDDGridAggregateExistingDimension.generateDatasetsXml(
+                    String2.log("working...");
+                    printToBoth(EDDGridAggregateExistingDimension.generateDatasetsXml(
                         s1, s2, s3, true, 
                         String2.parseInt(s4, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES)));
 
@@ -141,23 +195,23 @@ public class GenerateDatasetsXml {
                     s1  = get(args,  1,  s1, "URL (without trailing .dds or .html)");         
                     s2  = get(args,  2,  s2, "ReloadEveryNMinutes (e.g., " + 
                         EDD.DEFAULT_RELOAD_EVERY_N_MINUTES + ", recommended: -1 generates suggested values)");
-                    System.out.println("working...");
-                    println(EDDGridFromDap.generateDatasetsXml(true, //writeInstructions
+                    String2.log("working...");
+                    printToBoth(EDDGridFromDap.generateDatasetsXml(true, //writeInstructions
                         s1, null, null, null, 
                         String2.parseInt(s2, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), null));
 
                 } else if (eddType.equals("EDDGridFromErddap")) {
                     s1  = get(args,  1,  s1, "URL of remote ERDDAP (ending in (\"/erddap\")");  
-                    System.out.println("working...");
-                    println(EDDGridFromErddap.generateDatasetsXml(s1));
+                    String2.log("working...");
+                    printToBoth(EDDGridFromErddap.generateDatasetsXml(s1));
 
                 } else if (eddType.equals("EDDGridFromNcFiles")) {
                     s1  = get(args,  1,  s1, "Parent directory");
                     s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
                     s3  = get(args,  3,  s3, "Full file name of one file");                  
                     s4  = get(args,  4,  s4, reloadEveryNMinutesMessage);
-                    System.out.println("working...");
-                    println(EDDGridFromNcFiles.generateDatasetsXml(s1, 
+                    String2.log("working...");
+                    printToBoth(EDDGridFromNcFiles.generateDatasetsXml(s1, 
                         s2.length() == 0? ".*\\.nc" : s2, 
                         s3, String2.parseInt(s4, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), null));
 
@@ -166,14 +220,14 @@ public class GenerateDatasetsXml {
                     s2  = get(args,  2,  s2, "Dataset name regex (e.g., \".*\")");  //for now, always .*
                     s3  = get(args,  3,  s3, "ReloadEveryNMinutes (e.g., " + 
                         EDD.DEFAULT_RELOAD_EVERY_N_MINUTES + ", recommended: -1 generates suggested values)");
-                    System.out.println("working...");
+                    String2.log("working...");
                     String tempDir = SSR.getTempDirectory();
                     File2.makeDirectory(tempDir);
                     String resultsFileName = tempDir + "EDDGridFromThreddsCatalog.xml";
                     EDDGridFromDap.generateDatasetsXmlFromThreddsCatalog(
                         resultsFileName, s1, s2, 
                         String2.parseInt(s3, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES));
-                    println(String2.readFromFile(resultsFileName)[1]);
+                    printToBoth(String2.readFromFile(resultsFileName)[1]);
 
                 //EDDTable
                 } else if (eddType.equals("EDDTableFromAsciiFiles")) {
@@ -194,8 +248,8 @@ public class GenerateDatasetsXml {
                     s15 = get(args, 15, s15, "institution");
                     s16 = get(args, 16, s16, "summary");
                     s17 = get(args, 17, s17, "title");
-                    System.out.println("working...");
-                    println(EDDTableFromAsciiFiles.generateDatasetsXml(
+                    String2.log("working...");
+                    printToBoth(EDDTableFromAsciiFiles.generateDatasetsXml(
                         s1, s2, s3, s4, String2.parseInt(s5, 1), String2.parseInt(s6, 2), 
                         String2.parseInt(s7, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
                         s8, s9, s10, s11, s12, s13, s14, s15, s16, s17, null));
@@ -217,8 +271,8 @@ public class GenerateDatasetsXml {
                     s14 = get(args, 14, s14, "institution");
                     s15 = get(args, 15, s15, "summary");
                     s16 = get(args, 16, s16, "title");
-                    System.out.println("working...");
-                    println(EDDTableFromAwsXmlFiles.generateDatasetsXml(
+                    String2.log("working...");
+                    printToBoth(EDDTableFromAwsXmlFiles.generateDatasetsXml(
                         s1, s2, s3, String2.parseInt(s4, 1), String2.parseInt(s5, 2), 
                         String2.parseInt(s6, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
                         s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, null));
@@ -228,8 +282,8 @@ public class GenerateDatasetsXml {
                 } else if (eddType.equals("EDDTableFromDapSequence")) {
                     s1  = get(args,  1,  s1, "URL (without trailing .dds or .html)"); 
                     s2  = get(args,  2,  s2, reloadEveryNMinutesMessage);
-                    System.out.println("working...");
-                    println(EDDTableFromDapSequence.generateDatasetsXml(
+                    String2.log("working...");
+                    printToBoth(EDDTableFromDapSequence.generateDatasetsXml(
                         s1, String2.parseInt(s2, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), null));
 
                 } else if (eddType.equals("EDDTableFromDatabase")) {
@@ -246,8 +300,8 @@ public class GenerateDatasetsXml {
                     s11 = get(args, 11, s11, "summary");
                     s12 = get(args, 12, s12, "title");
                     String sa3[] = s3.length() == 0? new String[0] : String2.split(s3, '|');
-                    System.out.println("working...");
-                    println(EDDTableFromDatabase.generateDatasetsXml(
+                    String2.log("working...");
+                    printToBoth(EDDTableFromDatabase.generateDatasetsXml(
                         s1, s2, sa3, s4, s5, s6, s7, 
                         String2.parseInt(s8, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES),
                         s9, s10, s11, s12, null));
@@ -255,8 +309,8 @@ public class GenerateDatasetsXml {
                 } else if (eddType.equals("EDDTableFromErddap")) {
                     s1 = get(args, 1, s1, "URL of remote ERDDAP (ending in (\"/erddap\")");
                     s2 = get(args, 2, s2, "Keep original datasetIDs (true|false)");
-                    System.out.println("working...");
-                    println(EDDTableFromErddap.generateDatasetsXml(s1, String2.parseBoolean(s2)));
+                    String2.log("working...");
+                    printToBoth(EDDTableFromErddap.generateDatasetsXml(s1, String2.parseBoolean(s2)));
 
                 //INACTIVE: "EDDTableFromHyraxFiles"
 
@@ -276,8 +330,8 @@ public class GenerateDatasetsXml {
                     s13 = get(args, 13, s13, "institution");
                     s14 = get(args, 14, s14, "summary");
                     s15 = get(args, 15, s15, "title");
-                    System.out.println("working...");
-                    println(EDDTableFromNcFiles.generateDatasetsXml(
+                    String2.log("working...");
+                    printToBoth(EDDTableFromNcFiles.generateDatasetsXml(
                         s1, s2, s3, s4, String2.parseInt(s5, 
                         EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
                         s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, null));
@@ -296,8 +350,8 @@ public class GenerateDatasetsXml {
                     s11 = get(args, 11, s11, "institution");
                     s12 = get(args, 12, s12, "summary");
                     s13 = get(args, 13, s13, "title");
-                    System.out.println("working...");
-                    println(EDDTableFromNcCFFiles.generateDatasetsXml(
+                    String2.log("working...");
+                    printToBoth(EDDTableFromNcCFFiles.generateDatasetsXml(
                         s1, s2, s3, String2.parseInt(s4, 
                         EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
                         s5, s6, s7, s8, s9, s10, s11, s12, s13, null));
@@ -307,22 +361,22 @@ public class GenerateDatasetsXml {
                     s2  = get(args,  2,  s2, "Source Code");
                     s3  = get(args,  3,  s3, reloadEveryNMinutesMessage);
                     s4  = get(args,  4,  s4, "CreatorEmail");
-                    System.out.println("working...");
-                    println(EDDTableFromOBIS.generateDatasetsXml(s1, s2,
+                    String2.log("working...");
+                    printToBoth(EDDTableFromOBIS.generateDatasetsXml(s1, s2,
                         String2.parseInt(s3, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), s4, null));
 
                 } else if (eddType.equals("EDDTableFromIoosSOS")) {
                     s1  = get(args,  1,  s1, "URL");
                     s2  = get(args,  2,  s2, "SOS server type (IOOS_NDBC, IOOS_NOS)");
-                    System.out.println("working...");
-                    println(EDDTableFromSOS.generateDatasetsXmlFromIOOS(s1, s2));
+                    String2.log("working...");
+                    printToBoth(EDDTableFromSOS.generateDatasetsXmlFromIOOS(s1, s2));
 
                 } else if (eddType.equals("EDDTableFromSOS")) {
                     s1  = get(args,  1,  s1, "URL");
                     s2  = get(args,  2,  s2, "SOS version (or \"\" for default)");
                     s3  = get(args,  3,  s3, "SOS server type (IOOS_NDBC, IOOS_NOS, OOSTethys, or WHOI)");
-                    System.out.println("working...");
-                    println(EDDTableFromSOS.generateDatasetsXml(s1, s2, s3));
+                    String2.log("working...");
+                    printToBoth(EDDTableFromSOS.generateDatasetsXml(s1, s2, s3));
 
                 } else if (eddType.equals("EDDTableFromThreddsFiles")) {
                     s1  = get(args,  1,  s1, "Starting catalog.xml URL");
@@ -335,8 +389,8 @@ public class GenerateDatasetsXml {
                     s8  = get(args,  8,  s8, "Column name for extract");
                     s9  = get(args,  9,  s9, "Sorted column source name");
                     s10 = get(args, 10, s10, "Sort files by sourceName");
-                    System.out.println("working...");
-                    println(EDDTableFromThreddsFiles.generateDatasetsXml(
+                    String2.log("working...");
+                    printToBoth(EDDTableFromThreddsFiles.generateDatasetsXml(
                         s1, s2, s3, 
                         String2.parseInt(s4, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
                         s5, s6, s7, s8, s9, s10, null));
@@ -349,24 +403,146 @@ public class GenerateDatasetsXml {
                     s5  = get(args,  5,  s5, "institution");
                     s6  = get(args,  6,  s6, "summary");
                     s7  = get(args,  7,  s7, "title");
-                    System.out.println("working...");
+                    String2.log("working...");
                     s2 = s2.trim(); //space becomes ""
-                    println(EDDTableFromWFSFiles.generateDatasetsXml(
+                    printToBoth(EDDTableFromWFSFiles.generateDatasetsXml(
                         s1, s2, 
                         String2.parseInt(s3, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
                         s4, s5, s6, s7, null));
 
                 } else {
-                    println("ERROR: eddType=" + eddType + " is not an option.");
+                    String2.log("ERROR: eddType=" + eddType + " is not an option.");
                 }
             } catch (Throwable t) {
                 String msg = MustBe.throwableToString(t);
-                if (msg.indexOf("ControlC") >= 0)
-                    return;
-                println("\n*** An error occurred while trying to generate the information for datasets.xml:\n" +
-                    msg);
+                if (msg.indexOf("ControlC") >= 0) {
+                    outFile.close();
+                    return String2.readFromFile(outFileName)[1];
+                }
+                String2.log(msg);
             }
+            String2.flushLog();
+
         } while (loop && args.length == 0);
+
+        outFile.close();
+        String ret = String2.readFromFile(outFileName)[1]; 
+
+        //insert switch:  -idatasetsXmlName#tagName  
+        //(or -I for testmode: no overwrite datasets.xml)
+        //This looks for lines in datasetsXmlName that have
+        //<!-- Begin GenerateDatasetsXml #tagName 
+        //<!-- End GenerateDatasetsXml #tagName 
+        //and replaces everything in between those lines with the new content.
+        //The default datasetsXmlName is this installation's [tomcat]/content/erddap/datasets.xml .
+        //If Begin or End lines are not found, then those lines and the new content
+        //  are inserted right before </erddapDatasets>.
+        //Don't run this in two processes at once. At best, only one's changes 
+        //  will be kept and there may be trouble.
+        if (insert != null) {
+            BufferedReader inFile = null;
+            BufferedWriter outFile = null;
+            String tempName = null;
+
+            String2.log("\nprocessing " + insert);
+            String first2 = insert.substring(0, 2);
+            String abandoningI = "Abandoning " + first2 + " processing: ";
+            if (ret.length() < 80)
+                throw new RuntimeException(abandoningI + "GenerateDatasetsXml output only " + ret.length() + " bytes");
+            int npo = insert.indexOf('#');
+            if (npo <= 1)
+                throw new RuntimeException(abandoningI + 
+                    "'#' not found. Usage: " + first2 + "datasetsXmlName#tagName");
+            if (npo >= insert.length() - 1) 
+                throw new RuntimeException(abandoningI + 
+                    "no tagName after '#'. Usage: " + first2 + "datasetsXmlName#tagName");
+            String datasetsXmlName = insert.substring(2, npo);
+            if (datasetsXmlName.length() == 0) {
+                datasetsXmlName = EDStatic.contentDirectory + "datasets" + 
+                    (EDStatic.developmentMode? "2" : "") + ".xml";
+                String2.log("datasetsXmlName not specified, so using " + datasetsXmlName);
+            }
+            if (!File2.isFile(datasetsXmlName))
+                throw new RuntimeException(abandoningI + 
+                    "datasetsXmlName=" + datasetsXmlName + " file not found.");
+            String tagName = insert.substring(npo + 1);
+            if (reallyVerbose)
+                String2.log("datasetsXmlName=" + datasetsXmlName + "\n" +
+                    "tagName=" + tagName);
+            String beginLine = "<!-- Begin GenerateDatasetsXml #" + tagName + " ";
+            String endLine =   "<!-- End GenerateDatasetsXml #" + tagName + " ";
+            String timeEol = localIsoTime + " -->\n"; 
+            String endTag = "</erddapDatasets>";
+
+            //copy datasets.xml line-by-line to new file, 
+            tempName = datasetsXmlName + localCompactTime;
+            inFile = new BufferedReader(new InputStreamReader(
+                new FileInputStream(datasetsXmlName), "ISO-8859-1")); //charset to match datasets.xml
+            outFile = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(tempName), "ISO-8859-1")); //charset to match datasets.xml
+            
+            //look for the beginLine
+            String line = inFile.readLine();
+            while (line != null && line.indexOf(endTag) < 0 &&
+                line.indexOf(beginLine) < 0) {
+                //write if not stray endLine
+                if (line.indexOf(endLine) < 0)
+                    outFile.write(line + "\n");
+                line = inFile.readLine();
+            }
+            if (line == null) {
+                inFile.close();  inFile = null; 
+                outFile.close(); outFile = null; File2.delete(tempName);
+                throw new RuntimeException(abandoningI + endTag + " not found in " + 
+                    datasetsXmlName);
+            }
+            if (line.indexOf(endTag) >= 0) {
+                //found endTag </erddapDatasets>.  Write new stuff just before endTag.
+                outFile.write(beginLine + timeEol);
+                outFile.write(ret);
+                outFile.write(endLine + timeEol);
+                outFile.write(line + "\n");
+            } else {
+                //found beginLine, so now look for the endLine (discard lines in between)
+                while (line != null && line.indexOf(endTag) < 0 &&
+                    line.indexOf(endLine) < 0) 
+                    line = inFile.readLine();
+                if (line == null || line.indexOf(endTag) >= 0) {
+                    inFile.close();  inFile = null;
+                    outFile.close(); outFile = null; File2.delete(tempName);
+                    throw new RuntimeException(abandoningI + "\"" + beginLine + 
+                        "\" found, but \"" + endLine + "\" not found in " + 
+                        datasetsXmlName);
+                }
+                //found endLine.  finish up.
+                outFile.write(beginLine + timeEol);
+                outFile.write(ret);
+                outFile.write(endLine + timeEol);
+                line = inFile.readLine();
+                while (line != null) {
+                    outFile.write(line + "\n");
+                    line = inFile.readLine();
+                }
+            }
+            inFile.close();  inFile = null;
+            outFile.close(); outFile = null;
+
+            //rename temp file into place
+            if (insert.startsWith("-i")) { 
+                File2.rename(datasetsXmlName, tempName + "Retired");
+                File2.rename(tempName, datasetsXmlName);
+                //too risky to delete. If delete and trouble, people will be mad.
+                //File2.delete(tempName + "Retired"); //only if everything was successful
+                String2.log(insert + " finished successfully!");
+
+            } else { //testmode
+                String2.log(insert + " successfully created " + tempName);
+            }
+
+        }
+
+        String2.returnLoggingToSystemOut();
+        return ret;
     }
 
     /**
@@ -376,7 +552,7 @@ public class GenerateDatasetsXml {
      * @param args if args has values, they are used to answer the questions.
      */
     public static void main(String args[]) throws Throwable {
-        doIt(args, true);
+        (new GenerateDatasetsXml()).doIt(args, true);
         System.exit(0);
     }
 

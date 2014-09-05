@@ -57,8 +57,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-//these need access to the mail.jar (from JavaMail api; I'm using 1.3.2 FCS (Oct 2004))
-//and activation.jar (from JavaBeans(TM) Activation Framework; I'm using 1.0.2)
+//these need access to the mail.jar (from JavaMail api; I'm using 1.5.1 (Nov 2013, latest as of June 2014))
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -71,21 +70,23 @@ import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
 
+
 //directy use hdf libraries:
 //import ncsa.hdf.object.*;     // the common object package
 //import ncsa.hdf.object.h4.*;  // the HDF4 implementation
 
+// 2014-08-05 J2SSH DEACTIVATED BECAUSE NOT USED. IF NEEDED, SWITCH TO Apache commons-net???
 //for sftp
-import com.sshtools.j2ssh.SshClient;
-import com.sshtools.j2ssh.authentication.AuthenticationProtocolState;
-import com.sshtools.j2ssh.authentication.PasswordAuthenticationClient;
-import com.sshtools.j2ssh.io.UnsignedInteger32;
-import com.sshtools.j2ssh.session.SessionChannelClient;
-import com.sshtools.j2ssh.sftp.FileAttributes;
-import com.sshtools.j2ssh.sftp.SftpFile;
-import com.sshtools.j2ssh.sftp.SftpFileOutputStream;
-import com.sshtools.j2ssh.SftpClient;
-import com.sshtools.j2ssh.configuration.ConfigurationLoader;
+//import com.sshtools.j2ssh.SshClient;
+//import com.sshtools.j2ssh.authentication.AuthenticationProtocolState;
+//import com.sshtools.j2ssh.authentication.PasswordAuthenticationClient;
+//import com.sshtools.j2ssh.io.UnsignedInteger32;
+//import com.sshtools.j2ssh.session.SessionChannelClient;
+//import com.sshtools.j2ssh.sftp.FileAttributes;
+//import com.sshtools.j2ssh.sftp.SftpFile;
+//import com.sshtools.j2ssh.sftp.SftpFileOutputStream;
+//import com.sshtools.j2ssh.SftpClient;
+//import com.sshtools.j2ssh.configuration.ConfigurationLoader;
 
 /**
  * This Shell Script Replacement class has static methods to facilitate 
@@ -132,11 +133,12 @@ import com.sshtools.j2ssh.configuration.ConfigurationLoader;
 public class SSR {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
     public static boolean reallyVerbose = false;
+    public static boolean debugMode = false;
 
     private static String contextDirectory; //lazy creation by getContextDirectory
     private static String tempDirectory; //lazy creation by getTempDirectory
@@ -1099,13 +1101,11 @@ public class SSR {
      *           "re: dinner", "How about at 7?");
      * </pre>
      *
-     * <p>This code uses /libs/mail.jar from the JavaMail API (currently 1.4.3)
-     * and the JavaBeans Activation Framework extension or JAF (javax.activation)
-     * libs/activation.jar (currently version 1.1).
-     * This requires additions to jikes and java's -cp: 
-     * ";C:\programs\tomcat\webapps\cwexperimental\WEB-INF\lib\mail.jar;C:\programs\tomcat\webapps\cwexperimental\WEB-INF\lib\activation.jar"
-     * The mail.jar and activation.jar files are available from Sun
-     * (see http://www.oracle.com/technetwork/java/index-jsp-139225.html).
+     * <p>This code uses /libs/mail.jar from the JavaMail API (currently 1.5.1).
+     * This requires additions to javac's and java's -cp: 
+     * ";C:\programs\tomcat\webapps\cwexperimental\WEB-INF\lib\mail.jar"
+     * The mail.jar files are available from Sun
+     * (see http://www.oracle.com/technetwork/java/javamail/index.html).
      * The software is copyrighted by Sun, but Sun grants anyone 
      * the right to freely redistribute the binary .jar files.
      * The source code is also available from Sun.
@@ -1133,7 +1133,10 @@ public class SSR {
      *     Use null or "" is there are none.
      *     See http://javamail.kenai.com/nonav/javadocs/com/sun/mail/smtp/package-summary.html
      * @param fromAddress the email address the email is coming from
-     * @param toAddress the email address the email is going to
+     *   (usually the same as the userName)
+     * @param toAddresses a comma-separated list of the email addresses the email is going to.
+     *   (They will be sent as separate emails.)
+     *    If all or one is null or "" or "null", it's a silent error.
      * @param subject The subject is sent with UTF-8 encoding, 
      *    so any Unicode characters are (theoretically) ok.
      * @param content The content is sent with UTF-8 encoding, 
@@ -1142,7 +1145,7 @@ public class SSR {
      */
     public static void sendEmail(String smtpHost, int smtpPort,
         String userName, String password, String properties, 
-        String fromAddress, String toAddress,
+        String fromAddress, String toAddresses,
         String subject, String content) throws Exception {
 
         //String2.log("SSR.sendEmail host=" + smtpHost + " port=" + smtpPort + "\n" +
@@ -1150,6 +1153,10 @@ public class SSR {
         //    "  userName=" + userName + " password=" + (password.length() > 0? "[present]" : "[absent]") + "\n" + 
         //    "  toAddress=" + toAddress);
 
+        if (toAddresses == null || toAddresses.length() == 0 || toAddresses.equals("null")) {
+            String2.log("SSR.sendEmail: no toAddresses");
+            return;
+        }
         if (smtpPort < 0 || smtpPort == Integer.MAX_VALUE) 
             throw new Exception(String2.ERROR + " in sendEmail: smtpPort=" + smtpPort +
                 " is invalid.");
@@ -1176,41 +1183,47 @@ public class SSR {
         if (password == null || password.length() == 0) {
             session = Session.getInstance(props, null);
         } else {
-            props.setProperty("mail.smtp.auth", "true");
             //use non-default Session.getInstance (not shared) for password sessions
-            session = Session.getInstance(props, 
-                new PasswordAuthenticator(userName, password));
+            props.setProperty("mail.smtp.auth", "true");
+            props.setProperty("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            session = Session.getInstance(props);
         }
-        //session.setDebug(true);
+        if (debugMode) session.setDebug(true);
 
-        // Construct the message
-        MimeMessage msg = new MimeMessage(session);
-        msg.setFrom(new InternetAddress(fromAddress));
-        msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toAddress, false));
-        msg.setSubject(subject, "UTF-8");
-        msg.setText(content, "UTF-8"); 
-	    msg.setHeader("X-Mailer", "msgsend");
-        msg.setSentDate(new Date());
-
-        //do last 
-        msg.saveChanges();// don't forget this
+        Transport smtpTransport = null;
+        if (password != null && password.length() > 0) {
+            smtpTransport = session.getTransport("smtp");
+            smtpTransport.connect(smtpHost, userName, password);
+        }
 
         // Send the message
-        Transport smtpTransport = null;
-        try {
-            if (password == null || password.length() == 0)
-                Transport.send(msg);
-            else { 
-                smtpTransport = session.getTransport("smtp");
-                smtpTransport.connect(smtpHost, userName, password);
-                smtpTransport.sendMessage(msg, msg.getAllRecipients());
-                smtpTransport.close();    
+        String addresses[] = toAddresses.split(",");
+        for (int add = 0; add < addresses.length; add++) {
+            String toAddress = addresses[add].trim();
+            if (toAddress.length() == 0 || toAddress.equals("null"))
+                continue;
+
+            // Construct the message
+            MimeMessage msg = new MimeMessage(session);
+            msg.setFrom(new InternetAddress(fromAddress));
+            msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toAddress, false));
+            msg.setSubject(subject, "UTF-8");
+            msg.setText(content, "UTF-8"); 
+            msg.setHeader("X-Mailer", "msgsend");
+            msg.setSentDate(new Date());
+            msg.saveChanges();  //do last.  don't forget this
+
+            try {
+                if (password == null || password.length() == 0)
+                    Transport.send(msg);
+                else 
+                    smtpTransport.sendMessage(msg, msg.getAllRecipients());
+            } catch (Exception e) {
+                String2.log(MustBe.throwableWithMessage("SSR.sendEmail", "to=" + toAddress, e));
             }
-        } catch (Exception e) {
-            if (smtpTransport != null)
-                smtpTransport.close();    
-            throw e;
         }
+        if (smtpTransport != null)
+            smtpTransport.close();    
     }
 
     /**
@@ -1803,6 +1816,7 @@ public class SSR {
 
 
     /**
+     * 2014-08-05 DEACTIVATED BECAUSE NOT USED. IF NEEDED, SWITCH TO Apache commons-net???
      * This opens a secure socket shell connection.
      * When you are done using it, call sshClient.disconnect();
      * 
@@ -1835,7 +1849,7 @@ public class SSR {
      * @param password
      * @return SshClient
      * @throws Exception if trouble
-     */
+     *
     public static SshClient getSshClient(String hostName, String userName, String password)
          throws Exception {
 
@@ -1864,6 +1878,7 @@ public class SSR {
     }
 
     /**
+     * 2014-08-05 DEACTIVATED BECAUSE NOT USED. IF NEEDED, SWITCH TO Apache commons-net???
      * This sends and/or receives files via secure ftp.
      * For sending, the values in the parallel arrays 
      * sendLocalDirs, sendNames, sendRemoteDirs, specify which
@@ -1901,7 +1916,7 @@ public class SSR {
      *  See com/sshtools/j2ssh/SftpClient for details (including a few methods 
      *  more complex methods that I didn't implement but that could be implemented).
      * @throws Exception if trouble
-     */
+     *
     public static void sftp(String hostName, String userName, String password, 
         String commands) throws Exception {
 
@@ -1957,91 +1972,6 @@ public class SSR {
             if (sftp != null) 
                 sftp.quit();
             sshClient.disconnect();
-        }
-    }
-
-
-    /**
-     //SSR.windowsSftp never worked (authentication trouble) and SSR.sftp is
-     //  better anyway because it is Java-based and therefore platform independent.
-     * On Windows, given a stored Putty session, 
-     * this sends and/or receives files via secure ftp.
-     * This is a stop-gap method until I find a Java based SFTP program.
-     * (Keep an eye on http://www.ganymed.ethz.ch/ssh2/ which does the hard part
-     * SSH2 and plans to do SFTP, too.)
-     * 
-     * @param hostName the name of the remove computer
-     * @param userName
-     * @param password
-     * @param localDir
-     * @param remoteDir
-     * @param filesToSend an array of file names to be sent from localDir to remoteDir
-     *    (use null for none)
-     * @param filesToReceive an array of file names to be retrieved from remoteDir 
-     *    and put into localDir (use null for none)
-     * @param timeOutSeconds (use -1 for default time out)
-     * @throws Exception if trouble
-     */
-  /*  public static void windowsSftp(String hostName, String userName, String password, 
-        String localDir, String remoteDir, 
-        String[] filesToSend, String[] filesToReceive,
-        int timeOutSeconds) throws Exception {
-
-        //generate the commands for the batch file
-        StringBuilder sb = new StringBuilder();
-
-        //userName and password
-//        sb.append(userName + "\n");
-//        sb.append("yes\n");
-        sb.append(userName + "\n");
-        sb.append(password + "\n");
-
-
-        //change directories 
-        sb.append("cd " + remoteDir + "\n");
-        sb.append("lcd " + localDir + "\n");
-
-        //send/receive files
-        if (filesToSend != null)
-            for (int i = 0; i < filesToSend.length; i++)
-                sb.append("put " + filesToSend[i] + "\n");
-        if (filesToReceive != null)
-            for (int i = 0; i < filesToReceive.length; i++)
-                sb.append("get " + filesToReceive[i] + "\n");
-
-        //close the session
-        sb.append("quit");
-
-        //create the batch file
-        //POLICY: because this procedure may be used in more than one thread,
-        //do work on unique temp batch file name using randomInt.
-        String batchName = localDir + Math2.random(Integer.MAX_VALUE)) + ".tmp";
-        String error = String2.writeToFile(batchName, sb.toString());
-            
-        if (error.length() > 0)
-            throw new RuntimeException(
-                String2.ERROR + " in  SSR.windowsSftp while creating batch file\n  (" +
-                batchName + "):\n  " + error);
-
-        try {
-            //run psftp
-            //-batch causes session to end if trouble (better than hanging)
-            //-bc echos commands (simplify debugging)
-            //-b batchFileName
-            ArrayList al = dosShell(
-                "c:\\programs\\cygwin\\bin\\sftp " +
-                //"c:\\programs\\putty\\psftp.exe " + 
-                //userName + "@" + 
-                //"coastwatch" +
-                " -b " + batchName + " " +
-                hostName,
-                timeOutSeconds);
-            //if (verbose)
-            //    String2.log("psftp results:\n" + String2.toNewlineString(al.toArray()));
-        } catch (Exception e) {
-            throw new Exception(e);            
-        } finally {
-            File2.delete(batchName);
         }
     }
     */
@@ -2556,7 +2486,7 @@ public class SSR {
     //public static void main(String args[]) {
         //usage 
         //cd /usr/local/jakarta-tomcat-5.5.4/webapps/cwexperimental/WEB-INF/
-        //java -cp ./classes:./lib/mail.jar:./lib/netcdf-latest.jar:./lib/slf4j-jdk14.jar:./lib/nlog4j-1.2.21.jar:./lib/activation.jar gov.noaa.pfel.coastwatch.util.SSR /u00/data/GA/hday/grd/
+        //java -cp ./classes:./lib/mail.jar:./lib/netcdf-latest.jar:./lib/slf4j-jdk14.jar:./lib/nlog4j-1.2.21.jar gov.noaa.pfel.coastwatch.util.SSR /u00/data/GA/hday/grd/
         //the new files replace the old files
         //changeGA0ToGA20(args[0], "/u00/cwatch/bobtemp/");
     //}

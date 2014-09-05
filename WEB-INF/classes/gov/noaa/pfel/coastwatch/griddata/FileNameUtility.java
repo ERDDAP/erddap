@@ -48,7 +48,7 @@ import java.util.GregorianCalendar;
 public class FileNameUtility  {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
@@ -68,7 +68,7 @@ public class FileNameUtility  {
     public static String getContributorRole() {return "Source of level 2 data."; }
     public static String getConventions()         {return "COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF"; }
     public static String getMetadataConventions() {return "COARDS, CF-1.6, Unidata Dataset Discovery v1.0, CWHDF"; }
-    public static String getCreatorEmail() { return DataHelper.CW_CREATOR_EMAIL;  }
+    public static String getCreatorEmail() {return DataHelper.CW_CREATOR_EMAIL;  }
     public static String getCreatorName() {return DataHelper.CW_CREATOR_NAME;  }
     public static String getCreatorURL() {return DataHelper.CW_CREATOR_URL;  }
     public static String getDateCreated() {

@@ -142,7 +142,7 @@ public class TableWriterAll extends TableWriter {
     public void finish() throws Throwable {
         //check for MustBe.THERE_IS_NO_DATA
         if (columnStreams == null)
-            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
         //String2.log("TableWriterAll.finish  n columnStreams=" + columnStreams.length);
         for (int col = 0; col < columnStreams.length; col++) {
             //close the stream

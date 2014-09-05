@@ -38,17 +38,18 @@ public class EDVDepth extends EDV {
         String tSourceDataType, double tSourceMin, double tSourceMax) 
         throws Throwable {
 
-        super(tSourceName, EDV.DEPTH_NAME, tSourceAttributes, tAddAttributes,
+        super(tSourceName, DEPTH_NAME, tSourceAttributes, tAddAttributes,
             tSourceDataType, tSourceMin, tSourceMax); 
 
-        units = EDV.DEPTH_UNITS; 
+        units = DEPTH_UNITS; 
         combinedAttributes.set("_CoordinateAxisType", "Height");   //unidata
         combinedAttributes.set("_CoordinateZisPositive", "down");  //unidata
         combinedAttributes.set("axis", "Z");
         combinedAttributes.set("ioos_category", LOCATION_CATEGORY);
         longName = combinedAttributes.getString("long_name");
-        if (longName == null) {
-            longName = EDV.DEPTH_LONGNAME;
+        if (longName == null ||  //catch nothing
+            longName.toLowerCase().equals("depth")) { //catch alternate case
+            longName = DEPTH_LONGNAME;
             combinedAttributes.set("long_name", longName);
         }
         combinedAttributes.set("positive", "down"); //cf

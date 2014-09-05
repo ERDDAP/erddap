@@ -83,7 +83,7 @@ import ucar.nc2.dataset.NetcdfDataset;
 public class DigirHelper  {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
@@ -1524,9 +1524,10 @@ String2.log("inventoryTable:\n" + table.toString());
             "Press ^C to stop or Enter to continue..."); 
 
         } catch (Exception e) {
-            String2.getStringFromSystemIn(
+            String2.log(
                 "THIS STOPPED WORKING ~JAN 2009: " + MustBe.throwableToString(e) + 
-                "\nPress ^C to stop or Enter to continue..."); 
+                "\nI think Digir is dead."); 
+            Math2.gc(5000);  //in a test, after displaying a message
         }
 
     }
@@ -2302,9 +2303,9 @@ String2.log("inventoryTable:\n" + table.toString());
         //  the methods which get obis data, so don't test all the time.
         //testGetMetadata(); 
 
-        testGetInventory();
-        testObis();
-        testOpendapStyleObis();
+        //2014-08-06 REMOVED dataset no longer available: testGetInventory();
+        //2014-08-06 REMOVED dataset no longer available: testObis();
+        //2014-08-06 REMOVED dataset no longer available: testOpendapStyleObis();
         testBmde(); 
 
         //done

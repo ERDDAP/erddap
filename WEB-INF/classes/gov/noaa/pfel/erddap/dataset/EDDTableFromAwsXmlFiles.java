@@ -50,6 +50,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
      */
     public EDDTableFromAwsXmlFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
@@ -63,7 +64,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         throws Throwable {
 
         super("EDDTableFromAwsXmlFiles", true, tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File, 
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
@@ -138,7 +139,9 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
      * @param tSummary       or "" if in externalAddGlobalAttributes or if not available (but try hard!)
      * @param tTitle         or "" if in externalAddGlobalAttributes or if not available (but try hard!)
      * @param externalAddGlobalAttributes  These attributes are given priority.  Use null in none available.
-     * @throws Throwable if trouble
+     * @return a suggested chunk of xml for this dataset for use in datasets.xml 
+     * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
+     *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(String tFileDir, String tFileNameRegex, 
         String sampleFileName, 
@@ -276,10 +279,10 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
                 "", "-.*$", ".*", "fileName",  //just for test purposes; station is already a column in the file
                 "ob-date", "station-id ob-date", 
                 "http://www.exploratorium.edu", "exploratorium", "The new summary!", "The Newer Title!",
-                externalAddAttributes);
+                externalAddAttributes) + "\n";
 
             //GenerateDatasetsXml
-            GenerateDatasetsXml.doIt(new String[]{"-verbose", 
+            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromAwsXmlFiles",
                 "c:/data/aws/xml/",  ".*\\.xml",
                 "c:/data/aws/xml/SNFLS-2012-11-03T20_30_01Z.xml", 
@@ -288,7 +291,6 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
                 "ob-date", "station-id ob-date", 
                 "http://www.exploratorium.edu", "exploratorium", "The new summary!", "The Newer Title!"},
                 false); //doIt loop?
-            String gdxResults = String2.getClipboardString();
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
@@ -373,7 +375,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Station-id</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -384,7 +386,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Station</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -395,7 +397,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">City-state-zip</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -406,7 +408,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">City-state</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -929,7 +931,7 @@ directionsForGenerateDatasetsXml() +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
-"\n";
+"\n\n";
 
             Test.ensureEqual(results, expected, "results=\n" + results);
 
@@ -1327,11 +1329,10 @@ String expected2 =
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
         
-        int tpo = results.indexOf(expected2.substring(0, 17));
-        if (tpo < 0) 
-            String2.log("results=\n" + results);
+        int tPo = results.indexOf(expected2.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(
-            results.substring(tpo, Math.min(results.length(), tpo + expected2.length())),
+            results.substring(tPo, Math.min(results.length(), tPo + expected2.length())),
             expected2, "results=\n" + results);
         
         //*** test getting dds for entire dataset

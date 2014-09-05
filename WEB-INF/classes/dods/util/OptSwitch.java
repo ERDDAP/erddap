@@ -69,7 +69,7 @@ public class OptSwitch extends Object {
     /**
      *  Invocation with explicit Character switchname and type
      *
-     *  @param	name  letter to indicate the switch name
+     *  @param c  letter to indicate the switch name
      */
     public OptSwitch(Character c, int type) {
 	sw  = Character.digit(c.charValue(), 10);

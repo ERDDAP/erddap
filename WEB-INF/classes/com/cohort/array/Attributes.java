@@ -22,7 +22,7 @@ public class Attributes {
     //FUTURE: implement as ArrayString for names and ArrayList for values?
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
@@ -266,6 +266,21 @@ public class Attributes {
             (value.size() == 1 && value instanceof StringArray && value.getString(0).trim().length() == 0)) 
             return (PrimitiveArray)hashmap.remove(name);
         return (PrimitiveArray)hashmap.put(String2.canonical(name), value);
+    }
+
+    /** 
+     * Like set, but only sets the value if there is no current value.
+     * 
+     * @param name the name of the attribute
+     * @param value a PrimitiveArray which is the value associate with the 'name'.
+     *    If value is null or "", name is removed from attributes.
+     * @return the previous value stored for attributeName, or null if none
+     */
+    public PrimitiveArray setIfNotAlreadySet(String name, PrimitiveArray value) {
+        PrimitiveArray pa = get(name);
+        if (pa != null)
+            return pa;
+        return set(name, value);
     }
 
     /**

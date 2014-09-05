@@ -189,6 +189,24 @@ public class Test {
     }  
       
     /** 
+     * If the two double values aren't almost equal, this throws a RuntimeException 
+     * with the specified message. 
+     *
+     * @param significantDigits This let's the caller specify how many digits must be equal.
+     * @param d1
+     * @param d2 
+     * @param message
+     */
+    public static void ensureAlmostEqual(int significantDigits, double d1, 
+            double d2, String message)
+        throws RuntimeException {
+        if (!Math2.almostEqual(significantDigits, d1, d2))
+            error("\n" + String2.ERROR + " in Test.ensureAlmostEqual(significantDigits=" + 
+                significantDigits + ", double):\n" + 
+                message + "\nSpecifically: " + d1 + " != " + d2);
+    }  
+      
+    /** 
      * If the two double values are equal, this throws a RuntimeException 
      * with the specified message. 
      *
@@ -292,6 +310,64 @@ public class Test {
             "s2 " + lineString + line2Sample + "\n" +
             String2.makeString(' ', (3 + lineString.length() + po - lastNewlinePo - 1)) + "^" + "\n" +
             (line > 1? "\"" + annS1 + "\" != \n\"" + annS2 + "\""  : "");
+    }  
+
+    /** 
+     * This tests each line of the source against the regex in each line of the destination
+     * to ensure each matches.  If not, this throws a RuntimeException 
+     * with the specified message. 
+     * To prepare plain text for this method, you MUST add \\ before these characters {}[]()^$? .
+     * Adding \\ before . is optional (since it will match).
+     *
+     * @param tText a newline-separated block of text.    Carriage returns are ignored.
+     * @param tRegex  a newline-separated set of regexes. Carriage returns are ignored.
+     * @param message
+     * @return "" if no error or an error message.
+     */
+    public static String testLinesMatch(String tText, String tRegex, String message) {
+
+        tText  = tText  == null? "" : String2.replaceAll(tText,  "\r", "");
+        tRegex = tRegex == null? "" : String2.replaceAll(tRegex, "\r", "");
+        String[] text  = String2.splitNoTrim(tText,  '\n');
+        String[] regex = String2.splitNoTrim(tRegex, '\n');
+        int n = Math.min(text.length, regex.length);
+        for (int line = 0; line < n; line++) {
+            //String2.log("t" + line + "=" + text[line] + "\n" +
+            //            "r" + line + "=" + regex[line] + "\n\n");
+            if (!text[line].matches(regex[line]))
+                return "\n" + String2.ERROR + " in Test.ensureLinesMatch():\n" + 
+                    message + "\n" +                 
+                    "The first line that differs is:\n" +
+                    "  text [" + line + "]=" + String2.annotatedString(text[line]) + "\n" +
+                    "  regex[" + line + "]=" + String2.annotatedString(regex[line]) + "\n"; 
+                    //testEqual(text[line], regex[line], "");  //diagnostic
+        }
+        if (text.length != regex.length)
+            return "\n" + String2.ERROR + " in Test.ensureLinesMatch():\n" + 
+                message + "\n" +                 
+                "The number of lines differs: text.length=" + text.length + " != regex.length=" + regex.length; 
+        return "";
+    }  
+
+    /** 
+     * This tests each line of the source against the regex in each line of the destination
+     * to ensure each matches.  If not, this throws a RuntimeException 
+     * with the specified message. 
+     * To prepare plain text for this method, you MUST add \\ before these characters {}[]()^$ .
+     * Adding \\ before . is optional (since it will match).
+     *
+     * @param tText a newline-separated block of text
+     * @param tRegex  a newline-separated set of regexes
+     * @param message
+     * @throws RuntimeException if a line of tText doesn't match a regex in tRegex
+     */
+    public static void ensureLinesMatch(String tText, String tRegex, String message)
+        throws RuntimeException {
+
+        String error = testLinesMatch(tText, tRegex, message);
+        if (error.length() == 0)
+            return;
+        error(error);
     }  
 
     /** 
@@ -581,8 +657,8 @@ public class Test {
             error("\n" + String2.ERROR + " in Test.ensureSomthingUtf8():\n" + 
                 message + " has an invalid UTF-8 character (#" + (int)s.charAt(po) + ") at position=" + po + 
                 (po > 80? 
-                  "\npartial s=\"" + String2.annotatedString(s.substring(po - 20, max)) + "\"" :
-                  "\ns=\"" + String2.annotatedString(s) + "\""));
+                  "\n[#] at the center of \"" + String2.annotatedString(s.substring(po - 20, max)) + "\"" :
+                  "\n[#] in \"" + String2.annotatedString(s) + "\""));
         }
     }  
 
@@ -607,7 +683,25 @@ public class Test {
             ensureSomethingUtf8(atts.get(names[i]).toString(), message + ": the attribute value for name=" + names[i]);
         }
     }  
-      
+
+    /** 
+     * This is the standard way to display (during the unit tests) information 
+     * about a known problem that won't be fixed soon.
+     *
+     * @param title usually all caps
+     * @param msg
+     */
+    public static void knownProblem(String title, String msg) throws Exception {
+        String2.log( 
+            "\n\n*********\n" + 
+            msg + String2.beep(1) + "\n" +
+            (msg.endsWith("\n")? "" : "\n") + 
+            "*** KNOWN PROBLEM: " + title); // + "\n" +
+            //"Press ^C to stop.  Otherwise, testing will continue in 10 seconds.\n"));
+        //Math2.sleep(10000);
+        String2.getStringFromSystemIn( 
+            "Press ^C to stop or Enter to continue..."); 
+    }
 
 
 }

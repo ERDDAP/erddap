@@ -68,7 +68,7 @@ import ucar.unidata.geoloc.LatLonPointImpl;
 public class TwoGrids  {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
@@ -219,13 +219,17 @@ public class TwoGrids  {
      * @param name The file name with out the extension (e.g., myFile).
      *    The extension ".mat" will be added.
      * @param varName1 the name to use for the variable in grid1 (e.g., QNux10).
+     *    If it isn't variableNameSafe, it will be made so.
      * @param varName2 the name to use for the variable in grid2 (e.g., QNuy10).
+     *    If it isn't variableNameSafe, it will be made so.
      * @throws Exception 
      */
     public static void saveAsMatlab(Grid grid1, Grid grid2, String directory, 
         String name, String varName1, String varName2) throws Exception {
 
         String errorInMethod = String2.ERROR + " in TwoGrids.saveAsMatlab:\n";
+        varName1 = String2.modifyToBeVariableNameSafe(varName1);
+        varName2 = String2.modifyToBeVariableNameSafe(varName2);
 
         //POLICY: because this procedure may be used in more than one thread,
         //do work on unique temp files names using randomInt, then rename to proper file name.

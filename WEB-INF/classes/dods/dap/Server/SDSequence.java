@@ -81,7 +81,7 @@ public abstract class SDSequence extends DSequence implements  ServerMethods, Re
     * the constraint. The NOT recomended way is to read the ENTIRE sequence into memory
     * prior to sending it (that would be most inefficient).
     *
-    * @returns The base (row 0) row vector for this sequence.
+    * @return The base (row 0) row vector for this sequence.
     */
 
     public Vector getRowVector() throws NoSuchVariableException {

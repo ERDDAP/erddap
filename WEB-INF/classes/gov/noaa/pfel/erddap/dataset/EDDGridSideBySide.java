@@ -38,7 +38,7 @@ import java.util.Arrays;
  * All children must have the same values for axis[1+]. 
  * <p>If there is an exception while creating the first child, this throws the exception.
  * If there is an exception while creating other children, this emails
- *    EDStatic.emailEverythingTo and continues.
+ *    EDStatic.emailEverythingToCsv and continues.
  * <p>Children created by this method are held privately.
  *   They are not separately accessible datasets (e.g., by queries or by flag files).
  * 
@@ -134,7 +134,7 @@ public class EDDGridSideBySide extends EDDGrid {
             else xmlReader.unexpectedTagException();
         }
         if (messages.length() > 0) {
-            EDStatic.email(EDStatic.emailEverythingTo, 
+            EDStatic.email(EDStatic.emailEverythingToCsv, 
                 "Error in ERDDAP EDDGridSideBySide constructor for " + tDatasetID, 
                 messages.toString());
         }
@@ -338,8 +338,10 @@ public class EDDGridSideBySide extends EDDGrid {
      * 
      * <p>For simple failures, this writes into to log.txt but doesn't throw an exception.
      *
-     * <p>If the dataset has changed in a serious / incompatible way and needs a full
-     * reload, this calls requestReloadASAP() and throws WaitThenTryAgainException.
+     * @throws Throwable if trouble. 
+     * If the dataset has changed in a serious / incompatible way and needs a full
+     * reload, this throws WaitThenTryAgainException 
+     * (usually, catcher calls LoadDatasets.tryToUnload(...) and EDD.requestReloadASAP(tDatasetID))..
      */
     public void update() {
         //NOT FINISHED. NOT SIMPLE.
@@ -392,7 +394,7 @@ public class EDDGridSideBySide extends EDDGrid {
      *   are the dataValues.
      *   Both the axisValues and dataValues are straight from the source,
      *   not modified.
-     * @throws Throwable if trouble
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public PrimitiveArray[] getSourceData(EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
@@ -523,6 +525,7 @@ public class EDDGridSideBySide extends EDDGrid {
         Test.ensureEqual(edv.combinedAttributes().getString("standard_name"), "x_wind", "");
         edv = qsWind8.findDataVariableByDestinationName("y_wind");
         Test.ensureEqual(edv.combinedAttributes().getString("standard_name"), "y_wind", "");
+        Test.ensureEqual(qsWind8.combinedGlobalAttributes().getString("defaultGraphQuery"), "&.draw=vectors", "");
 
         //get data
         dapQuery = "x_wind[4:8][0][(-20)][(80)],y_wind[4:8][0][(-20)][(80)]";
@@ -874,6 +877,7 @@ public class EDDGridSideBySide extends EDDGrid {
 
         EDDGrid qsWind8 = (EDDGrid)oneFromDatasetXml("erdQSwind8day");
 /* */
+
         //surface  map
         dapQuery = 
             "x_wind[0][][][]" +

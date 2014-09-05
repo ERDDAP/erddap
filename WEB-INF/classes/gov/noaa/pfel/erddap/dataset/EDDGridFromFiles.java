@@ -859,8 +859,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             writeBadFileMap(    badFilesFileName + random, badFileMap);
         try {
             //if Windows, give OS file system time to settle, so things below go quickly
-            if (String2.OSIsWindows)
-                Math2.gc(4000);
+            if (String2.OSIsWindows) Math2.gc(2000); //in constructor, give Windows time to settle
             
             //Integrity of these files is important. Rename is less likely to have error.
             if (badFileMap.isEmpty())
@@ -873,9 +872,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         } catch (Throwable t) {
             msg = "Exception while saving dirTable, fileTable, or badFiles:\n" + 
                 MustBe.throwableToString(t);
-            String2.log(msg);
+            String2.log(errorInMethod + ":\n" + msg);
             emailSB.append(msg + "\n\n");
-            EDStatic.email(EDStatic.emailEverythingTo, errorInMethod, emailSB.toString());
+            EDStatic.email(EDStatic.emailEverythingToCsv, errorInMethod, emailSB.toString());
 
             File2.delete( dirTableFileName + random);
             File2.delete(fileTableFileName + random);
@@ -903,7 +902,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
         //send email with bad file info
         if (emailSB.length() > 0) 
-            EDStatic.email(EDStatic.emailEverythingTo, errorInMethod, emailSB.toString());
+            EDStatic.email(EDStatic.emailEverythingToCsv, errorInMethod, emailSB.toString());
         emailSB = null; //allow gc
 
         //no valid files?
@@ -996,7 +995,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             }
         }
 
-        //if aggregating time index, fix time_coverate_start/end global metadata
+        //if aggregating time index, fix time_coverage_start/end global metadata
         if (timeIndex == 0) {
             EDVTimeGridAxis tga = (EDVTimeGridAxis)axisVariables[0];
             combinedGlobalAttributes.add("time_coverage_start", 
@@ -1045,8 +1044,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      * 
      * <p>For simple failures, this writes into to log.txt but doesn't throw an exception.
      *
-     * <p>If the dataset has changed in a serious / incompatible way and needs a full
-     * reload, this calls requestReloadASAP() and throws WaitThenTryAgainException.
+     * @throws Throwable if trouble. 
+     * If the dataset has changed in a serious / incompatible way and needs a full
+     * reload, this throws WaitThenTryAgainException 
+     * (usually, catcher calls LoadDatasets.tryToUnload(...) and EDD.requestReloadASAP(tDatasetID))..
      */
     public void update() {
         //Seems like a full reload is needed to do any kind of check:
@@ -1147,7 +1148,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
      *   are the dataValues (using the sourceDataTypeClass).
      *   Both the axisValues and dataValues are straight from the source,
      *   not modified.
-     * @throws Throwable if trouble
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public PrimitiveArray[] getSourceData(EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
@@ -1161,11 +1162,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             String2.log("  fileTableInMemory=true");
         if (tFileTable == null && tDirTable != null) 
             tFileTable = tryToLoadDirFileTable(datasetDir() + FILE_TABLE_FILENAME);
-        if (tDirTable == null || tFileTable == null) {
-            requestReloadASAP(); 
+        if (tDirTable == null || tFileTable == null) 
             throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain +
                 "\n(Details: unable to read fileTable.)"); 
-        }
 
         //get the tDirTable and tFileTable PrimitiveArrays
         StringArray dirList      = (StringArray)tDirTable.getColumn(0);
@@ -1241,7 +1240,6 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                     //mark the file as bad   and reload the dataset
                     addBadFileToTableOnDisk(ftDirIndex.get(ftRow), tFileName, 
                         ftLastMod.get(ftRow), MustBe.throwableToShortString(t)); 
-                    requestReloadASAP();
                     //an exception here will cause data request to fail (as it should)
                     throw new WaitThenTryAgainException(t);  //original exception
                 }

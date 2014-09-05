@@ -60,6 +60,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
      */
     public EDDTableFromWFSFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tSosOfferingPrefix, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
@@ -73,7 +74,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
         throws Throwable {
 
         super("EDDTableFromWFSFiles", tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File, 
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
@@ -149,7 +150,9 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
      * @param tSummary       or "" if in externalAddGlobalAttributes or if not available (but try hard!)
      * @param tTitle         or "" if in externalAddGlobalAttributes or if not available (but try hard!)
      * @param externalAddGlobalAttributes  These attributes are given priority.  Use null in none available.
-     * @throws Throwable if trouble
+     * @return a suggested chunk of xml for this dataset for use in datasets.xml 
+     * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
+     *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(String tSourceUrl, String tRowElementXPath,
         int tReloadEveryNMinutes,
@@ -291,10 +294,10 @@ developmentMode = true;
             "Kentucky Geological Survey", 
             "The summary.", 
             "The Title",
-            externalAddAttributes);
+            externalAddAttributes) + "\n";
 
         //GenerateDatasetsXml
-        GenerateDatasetsXml.doIt(new String[]{"-verbose", 
+        String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
             "EDDTableFromWFSFiles",
             "http://kgs.uky.edu/arcgis/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&service=WFS&typename=aasg:BoreholeTemperature&format=\"text/xml;%20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0\"", 
             "", //default tRowElementXPath,
@@ -304,7 +307,6 @@ developmentMode = true;
             "The summary.", 
             "The Title"},
             false); //doIt loop?
-        String gdxResults = String2.getClipboardString();
         Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 developmentMode = true;
@@ -817,7 +819,7 @@ directionsForGenerateDatasetsXml() +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
-"\n";
+"\n\n";
 
             Test.ensureEqual(results, expected, "results=\n" + results);
             //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
@@ -897,7 +899,7 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range -1.1219904e+9, 1.204416e+9;\n" +
+"    Float64 actual_range -2.2379328e+9, 1.3441248e+9;\n" +
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Spud Date\";\n" +
@@ -907,7 +909,7 @@ directionsForGenerateDatasetsXml() +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "  }\n" +
 "  EndedDrillingDate {\n" +
-"    Float64 actual_range -1.05624e+9, 1.2204e+9;\n" +
+"    Float64 actual_range -2.5245216e+9, 1.3554432e+9;\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Ended Drilling Date\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
@@ -934,7 +936,7 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float32 actual_range 37.31314, 39.61155;\n" +
+"    Float32 actual_range 37.24673, 39.98267;\n" +
 "    String axis \"Y\";\n" +
 "    Float64 colorBarMaximum 90.0;\n" +
 "    Float64 colorBarMinimum -90.0;\n" +
@@ -947,7 +949,7 @@ directionsForGenerateDatasetsXml() +
 "  }\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float32 actual_range -82.54999, -78.80918;\n" +
+"    Float32 actual_range -82.54999, -78.80319;\n" +
 "    String axis \"X\";\n" +
 "    Float64 colorBarMaximum 180.0;\n" +
 "    Float64 colorBarMinimum -180.0;\n" +
@@ -959,7 +961,7 @@ directionsForGenerateDatasetsXml() +
 "    String units \"degrees_east\";\n" +
 "  }\n" +
 "  DrillerTotalDepth {\n" +
-"    Int16 actual_range 1608, 12683;\n" +
+"    Int16 actual_range 1161, 12996;\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Driller Total Depth\";\n" +
 "    String units \"ft\";\n" +
@@ -973,7 +975,7 @@ directionsForGenerateDatasetsXml() +
 "    String long_name \"Well Bore Shape\";\n" +
 "  }\n" +
 "  TrueVerticalDepth {\n" +
-"    Int16 actual_range 1608, 11792;\n" +
+"    Int16 actual_range 1161, 11792;\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"True Vertical Depth\";\n" +
 "    String units \"ft\";\n" +
@@ -989,9 +991,9 @@ directionsForGenerateDatasetsXml() +
 "    String long_name \"Formation TD\";\n" +
 "  }\n" +
 "  MeasuredTemperature {\n" +
-"    Float32 actual_range 59.0, 195.0;\n" +
-"    Float64 colorBarMaximum 200.0;\n" +
-"    Float64 colorBarMinimum 50.0;\n" +
+"    Float32 actual_range 8.0, 908.0;\n" +
+"    Float64 colorBarMaximum 1000.0;\n" +  
+"    Float64 colorBarMinimum 0.0;\n" +   
 "    String ioos_category \"Temperature\";\n" +
 "    String long_name \"Measured Temperature\";\n" +
 "    String MeasurementProcedure \"Temperature log evaluated by WVGES staff for deepest stable log segment to extract data otherwise used given bottom hole temperature on log header if available\";\n" +
@@ -999,7 +1001,7 @@ directionsForGenerateDatasetsXml() +
 "    String units \"degree_F\";\n" +
 "  }\n" +
 "  DepthOfMeasurement {\n" +
-"    Int16 actual_range 1180, 10000;\n" +
+"    Int16 actual_range 23, 26181;\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Depth Of Measurement\";\n" +
 "    String units \"ft\";\n" +
@@ -1038,12 +1040,12 @@ directionsForGenerateDatasetsXml() +
 "    String creator_name \"Doug Curl\";\n" +
 "    String creator_url \"http://www.uky.edu/KGS/\";\n" +
 "    String drawLandMask \"under\";\n" +
-"    Float64 Easternmost_Easting -78.80918;\n" +
+"    Float64 Easternmost_Easting -78.80319;\n" +
 "    String featureType \"Point\";\n" +
-"    Float64 geospatial_lat_max 39.61155;\n" +
-"    Float64 geospatial_lat_min 37.31314;\n" +
+"    Float64 geospatial_lat_max 39.98267;\n" +
+"    Float64 geospatial_lat_min 37.24673;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
-"    Float64 geospatial_lon_max -78.80918;\n" +
+"    Float64 geospatial_lon_max -78.80319;\n" +
 "    Float64 geospatial_lon_min -82.54999;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"" + today;
@@ -1062,24 +1064,23 @@ expected =
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    Float64 Northernmost_Northing 39.61155;\n" +
+"    Float64 Northernmost_Northing 39.98267;\n" +
 "    String rowElementXPath \"/wfs:FeatureCollection/gml:featureMember\";\n" +
 "    String sourceUrl \"http://kgs.uky.edu/arcgis/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&service=WFS&typename=aasg:BoreholeTemperature&format=\\\"text/xml;%20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0\\\"\";\n" +
-"    Float64 Southernmost_Northing 37.31314;\n" +
+"    Float64 Southernmost_Northing 37.24673;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String subsetVariables \"WellName,APINo,Label,Operator,WellType,Field,County,State,FormationTD,OtherName\";\n" +
 "    String summary \"Borehole temperature measurements in West Virginia\";\n" +
-"    String time_coverage_end \"2008-03-02T00:00:00Z\";\n" +
-"    String time_coverage_start \"1934-06-13T00:00:00Z\";\n" +
+"    String time_coverage_end \"2012-08-05T00:00:00Z\";\n" +
+"    String time_coverage_start \"1899-01-31T00:00:00Z\";\n" +
 "    String title \"West Virginia Borehole Temperatures, AASG State Geothermal Data\";\n" +
 "    Float64 Westernmost_Easting -82.54999;\n" +
 "  }\n" +
 "}\n";
-        int tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) 
-            String2.log("results=\n" + results);
+        int tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(
-            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
             expected, "results=\n" + results);
         
 
@@ -1131,7 +1132,7 @@ expected =
         expected = 
 "ObservationURI,WellName,APINo,HeaderURI,Label,Operator,time,EndedDrillingDate,WellType,Field,County,State,latitude,longitude,DrillerTotalDepth,DepthReferencePoint,WellBoreShape,TrueVerticalDepth,ElevationGL,FormationTD,MeasuredTemperature,DepthOfMeasurement,MeasurementFormation,RelatedResource,TimeSinceCirculation,OtherName,LeaseName,Notes\n" +
 ",,,,,,UTC,UTC,,,,,degrees_north,degrees_east,ft,,,ft,ft,,degree_F,ft,,,?,,,\n" +
-"http://resources.usgin.org/uri-gin/wvges/bhtemp/4700102422_105/,\"Fuel Resources, Inc.  Zona Bernard 2\",4700102422,http://resources.usgin.org/uri-gin/wvges/well/4700102422/,4700102422,\"Fuel Resources, Inc.\",1989-03-15T00:00:00Z,1989-03-21T00:00:00Z,Gas,Belington,Barbour,West Virginia,38.989952,-79.96464,5479,G.L.,vertical,5479,2028,Fox,105.0,4650,Elk,TL | GR | DEN | IL | CAL,5,Fuel Resources Inc,,\n";
+"http://resources.usgin.org/uri-gin/wvges/bhtemp/4700102422_105/,\"Fuel Resources, Inc.  Zona Bernard 2\",4700102422,http://resources.usgin.org/uri-gin/wvges/well/api:4700102422/,4700102422,\"Fuel Resources, Inc.\",1989-03-15T00:00:00Z,1989-03-21T00:00:00Z,Gas,Belington,Barbour,West Virginia,38.989952,-79.96464,5479,G.L.,vertical,5479,2028,Fox,105.0,4650,Elk,TL | GR | DEN | IL | CAL,5,Fuel Resources Inc,,\n";
 
         Test.ensureEqual(results.substring(0, expected.length()), expected, 
             "\nresults=\n" + results);

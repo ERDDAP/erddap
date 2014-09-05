@@ -18,7 +18,7 @@ import java.io.OutputStream;
 public class File2 {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
@@ -131,7 +131,7 @@ public class File2 {
                     String2.log("WARNING #" + attempt + 
                         ": File2.delete is having trouble. It will try again to delete " + dirName);
                     if (attempt % 4 == 1)
-                        Math2.gc(1000); //by experiment: gc works better than sleep
+                        Math2.gcAndWait(); //by experiment: gc works better than sleep
                     else Math2.sleep(1000);
                 }
 
@@ -253,7 +253,7 @@ public class File2 {
 
     /**
      * This renames the specified file.
-     * If the newDirName file already exists, it will be deleted.
+     * If the dir+newName file already exists, it will be deleted.
      *
      * @param dir the directory containing the file (with a trailing slash)
      * @param oldName the old name of the file
@@ -267,7 +267,7 @@ public class File2 {
 
     /**
      * This renames the specified file.
-     * If the newDirName file already exists, it will be deleted before the renaming.
+     * If the fullNewName file already exists, it will be deleted before the renaming.
      * The files must be in the same directory.
      *
      * @param fullOldName the complete old name of the file
@@ -292,9 +292,9 @@ public class File2 {
                     "Unable to rename\n" + fullOldName + " to\n" + fullNewName +
                     "\nbecause unable to delete an existing file with destinationName.");
 
-            //In Windows, file may be isFile() for a short time. Give it time (and gc encourage it) to delete.
+            //In Windows, file may be isFile() for a short time. Give it time to delete.
             if (String2.OSIsWindows)
-                Math2.gc(100);
+                Math2.gcAndWait();  //if Windows: encourage successful file deletion
         }
 
         //rename
@@ -304,6 +304,20 @@ public class File2 {
         throw new RuntimeException(
             "Unable to rename\n" + fullOldName + " to\n" + fullNewName);
     }
+
+    /**
+     * This is like rename(), but won't throw an exception if trouble.
+     *
+     * @param fullOldName the complete old name of the file
+     * @param fullNewName the complete new name of the file
+     */
+    public static void safeRename(String fullOldName, String fullNewName) {
+        try {
+            rename(fullOldName, fullNewName);
+        } catch (Throwable t) {
+        }
+    }
+
 
     /**
      * This renames fullOldName to fullNewName if fullNewName doesn't exist.
@@ -394,7 +408,7 @@ public class File2 {
      * This returns the length of the named file (or -1 if trouble).
      *
      * @param dirName the full name of the file
-     * @return true if the file exists
+     * @return the length of the named file (or -1 if trouble).
      */
     public static long length(String dirName) {
         try {
@@ -424,7 +438,7 @@ public class File2 {
         } catch (Exception e) {
             //pause and try again
             try {
-                Math2.gc(100);
+                Math2.gcAndWait(); //if trouble getting lastModified: gc encourages success
                 File file = new File(dirName);
                 return file.lastModified();
             } catch (Exception e2) {
@@ -692,12 +706,10 @@ public class File2 {
             delete(destination);
 
         return success;
-
     }
 
     /**
      * This makes a copy of a file to an outputStream.
-
      *
      * @param source the full file name of the source file
      * @param out  which is flushed, but not closed, at the end

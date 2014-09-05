@@ -61,13 +61,13 @@ import javax.swing.JFrame;
 public class SgtMap  {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
 
     /**
-     * Set this to true (by calling reallyVerbose=true in your program, not but changing the code here)
+     * Set this to true (by calling reallyVerbose=true in your program, not by changing the code here)
      * if you want lots and lots of diagnostic messages sent to String2.log.
      */
     public static boolean reallyVerbose = false;
@@ -80,8 +80,8 @@ public class SgtMap  {
 
     public static Color oceanColor  = new Color(128, 128, 128);
     public static Color landColor   = new Color(204, 204, 204);  //lynn uses 191
-    public static Color landMaskStrokeColor = Color.darkGray;
-    public static Color nationsColor = Color.darkGray;
+    public static Color landMaskStrokeColor = Color.DARK_GRAY;
+    public static Color nationsColor = Color.DARK_GRAY;
     public static Color statesColor = new Color(119, 0, 119); //192, 64, 192); //128, 32, 32);
     public static Color riversColor = new Color(122, 170, 210);  //matches ocean.cpt and topography.cpt
     public static Color lakesColor  = riversColor;  
@@ -101,10 +101,12 @@ public class SgtMap  {
     private final static int iRes = INTERMEDIATE_RESOLUTION; 
     private final static int lRes = LOW_RESOLUTION;
     private final static int cRes = CRUDE_RESOLUTION; 
-    private final static double maxRanges[]       = { 160,  80,  40,  16,   8,   4,  1.6,  0.8,  0.4,   .16, .08,  .04,  .016, 0};
-    private final static double majorIncrements[] = {  45,  20,  10,   5,   2,   1,   .5,   .2,   .1,   .05, .02,  .01,  .005, .002 };    //if decimal deg axis
-    private final static double minorIncrements[] = {  15,   5,   2,   1,  .5,  .2,   .1,  .05,   .02,  .01, .005, .002, .001, .0005};    //if decimal deg axis
-    private final static int boundaryResolutions[]= {cRes,cRes,lRes,lRes,iRes,iRes, hRes, hRes,  hRes, fRes, fRes, fRes, fRes, fRes}; 
+//retired 2014-01-09    private final static double maxRanges[]       = {1280, 640, 320, 160,  80,  40,  16,   8,   4,  1.6,  0.8,  0.4,   .16, .08,  .04,  .016, 0};
+    // note that                              e.g., 5-10X because here the #'s are ints e.g. 147 |  4-8X because here they #'s are floats e.g., 147.45
+    private final static double maxRanges[]       = { 900, 450, 200, 100,  50,  20,  10,   5,  1.6,   .8,  0.4,   .16, .08,  .04,  .016,  0};
+    private final static double majorIncrements[] = { 180,  90,  45,  20,  10,   5,   2,   1,   .5,   .2,   .1,   .05, .02,  .01,  .005, .002 };    //if decimal deg axis
+    private final static double minorIncrements[] = {  45,  30,  15,   5,   2,   1,  .5,  .2,   .1,  .05,   .02,  .01, .005, .002, .001, .0005};    //if decimal deg axis
+    private final static int boundaryResolutions[]= {cRes,cRes,cRes,cRes,cRes,lRes,lRes,iRes,iRes, hRes, hRes,  hRes, fRes, fRes, fRes, fRes, fRes}; 
 
     private final static String testImageExtension = ".png"; //was/could be ".gif"
     private static int topoFromCache = 0, topoNotFromCache = 0;
@@ -641,7 +643,8 @@ public class SgtMap  {
             Object originalAntialiasing = 
                 g2.getRenderingHint(RenderingHints.KEY_ANTIALIASING); 
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,                  
-                transparent? RenderingHints.VALUE_ANTIALIAS_OFF : RenderingHints.VALUE_ANTIALIAS_ON); 
+                transparent? RenderingHints.VALUE_ANTIALIAS_OFF : 
+                             RenderingHints.VALUE_ANTIALIAS_ON); 
 
             //draw legend basics
             if (!transparent) {
@@ -785,7 +788,7 @@ public class SgtMap  {
                     //*** draw land as base
                     {
                         CartesianGraph graph = new CartesianGraph("", xt, yt);
-                        Layer layer = new Layer("landmask", layerDimension2D);
+                        Layer layer = new Layer("landunder", layerDimension2D);
                         layerNames.add(layer.getId());
                         jPane.add(layer);      //calls layer.setPane(this);
                         layer.setGraph(graph); //calls graph.setLayer(this);
@@ -1451,7 +1454,7 @@ public class SgtMap  {
 
                 }
 
-                //turn off antialiasing           
+                //return antialiasing to original
                 if (originalAntialiasing != null)
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
                         originalAntialiasing); 
@@ -1522,7 +1525,7 @@ public class SgtMap  {
                 if (reallyVerbose && colorMap != null) String2.log(colorMap.getStats());
                 if (reallyVerbose) String2.log("  SgtMap.makeMap draw the graph time=" + 
                     (System.currentTimeMillis() - time));
-                //Math2.gc(200); //outside of timing system
+                //Math2.gcAndWait(); //Part of debug.  Before getMemoryString().  Outside of timing system.
                 //String2.log("  SgtMap.makeMap after jPane.draw: " + Math2.memoryString());
                 //String2.log("  SgtMap.makeMap after gc: " + Math2.memoryString());
             }
@@ -1900,7 +1903,7 @@ public class SgtMap  {
                 if (colorMap != null) String2.log(colorMap.getStats());
                 String2.log("  SgtMap.makeCleanMap draw graph time=" + 
                     (System.currentTimeMillis() - time));
-                //Math2.gc(200); //outside of timing system
+                //Math2.gcAndWait(); //Part of debug.  Before getMemoryString().  Outside of timing system.
                 //String2.log("  SgtMap.makeCleanMap after jPane.draw: " + Math2.memoryString());
                 //String2.log("  SgtMap.makeCleanMap after gc: " + Math2.memoryString());
             }
@@ -1947,6 +1950,7 @@ public class SgtMap  {
         String topoFileName = String2.canonical("Topography" +
             FileNameUtility.makeWESNString(minX, maxX, minY, maxY) +
             FileNameUtility.makeNLonNLatString(graphWidthPixels, graphHeightPixels));
+        String fullTopoFileName = fullPrivateDirectory + topoFileName + ".grd";
 
         //synchronize on canonical topoFileName, so >1 simultaneous request won't be duplicated
         synchronized(topoFileName) {
@@ -1954,14 +1958,26 @@ public class SgtMap  {
             //these get reused a lot, so cache them
             //does the file already exist?
             if (fullPrivateDirectory != null) {
-                if (File2.touch(fullPrivateDirectory + topoFileName + ".grd")) {
-                    topoFromCache++;
-                    Grid grid = new Grid();
-                    grid.readGrd(fullPrivateDirectory + topoFileName + ".grd", 
-                        DataHelper.lonNeedsToBePM180(minX, maxX));
-                    if (reallyVerbose) String2.log("  createTopographyGrid " + topoFileName + 
-                        " nFromCache=" + topoFromCache + "* nNotFromCache=" + topoNotFromCache);
-                    return grid;
+                if (File2.touch(fullTopoFileName)) {
+                    try {
+                        topoFromCache++;
+                        Grid grid = new Grid();
+                        grid.readGrd(fullTopoFileName, 
+                            minX, maxX, minY, maxY, graphWidthPixels, graphHeightPixels);
+                        //2014-01-08 new is above. Old is below. But old is silly and sometimes fails.
+                        //The file has what we want. Just read it.
+                        //grid.readGrd(fullPrivateDirectory + topoFileName + ".grd", 
+                        //    DataHelper.lonNeedsToBePM180(minX, maxX));
+                        if (reallyVerbose) String2.log("  createTopographyGrid " + topoFileName + 
+                            " nFromCache=" + topoFromCache + "* nNotFromCache=" + topoNotFromCache);
+                        return grid;
+                    } catch (Throwable t) {
+                        String2.log(MustBe.throwableToString(t) +
+                            "Caught that ERROR while reading cached topo file\n  " + 
+                            fullTopoFileName + 
+                            "\n  So deleting and recreating the grid and the file.");
+                        File2.delete(fullTopoFileName);
+                    }
                 }
             }
 
@@ -2687,7 +2703,8 @@ String2.log("err: " + errCatcher.getString());
      * @param baseULYPixel
      * @param imageWidth
      * @param imageHeight
-     * @param region 0=C2 1=C 2=US+Mexico 3=world  4=himalayas 5=peru
+     * @param region 0=C2 1=C 2=US+Mexico 3=world  4=himalayas 5=peru, 6=PacIsland offset, 
+     *     7=-400 to -40, 8=40 to 400, 9=-540 to 540, 10=C2-360, 11=C2+360
      * @param boundaryResAdjust
      * @param fontScale
      * @throws Exception if trouble
@@ -2698,10 +2715,10 @@ String2.log("err: " + errCatcher.getString());
             int boundaryResAdjust, double fontScale) throws Exception {
 
         //region? 0=SF 1=C  2=US+Mexico 3=world   minX, maxX, minY, maxY, 
-        double minX[] = {-122.47, -129.5, -135, -180,  75, -85, -176.5}; 
-        double maxX[] = {-122.3 , -120.5, -105,  180, 105, -55, -176.44}; 
-        double minY[] = {  37.8 ,   33.5,   22,  -90,  15, -35, .18};
-        double maxY[] = {  37.95,   42.5,   50,   90,  45,  -5, .24}; 
+        double minX[] = {-122.47, -129.5, -135, -180,  75, -85, -176.5,  -400,  40, -540, -495, 225, 585}; 
+        double maxX[] = {-122.3 , -120.5, -105,  180, 105, -55, -176.44,  -40, 400,  540, -465, 255, 615}; 
+        double minY[] = {  37.8 ,   33.5,   22,  -90,  15, -35, .18,      -90, -90,  -90,   22,  22,  22};
+        double maxY[] = {  37.95,   42.5,   50,   90,  45,  -5, .24,       90,  90,   90,   50,  50,  50}; 
         int predicted[] = predictGraphSize(1, imageWidth, imageHeight, 
             minX[region], maxX[region], minY[region], maxY[region]);
         makeMap(false, 
@@ -2748,14 +2765,14 @@ String2.log("err: " + errCatcher.getString());
 
     }
 
-    /** This tests SgtMap making bathymetry maps. */ 
-    public static void testBathymetry() throws Exception {
+    /** This tests SgtMap making bathymetry maps. 0, 11 */ 
+    public static void testBathymetry(int first, int last) throws Exception {
         verbose = true;
         reallyVerbose = true;
         Grid.verbose = true;
         String2.log("*** test SgtMap.testBathymetry");
 
-        for (int region = 0; region < 4; region++) {
+        for (int region = first; region <= last; region++) {
             BufferedImage bufferedImage = SgtUtil.getBufferedImage(480, 640);
             testBathymetryMap(true, (Graphics2D)bufferedImage.getGraphics(), 
                 0, 0, 480, 480, region, 0, 1);
@@ -2768,7 +2785,7 @@ String2.log("err: " + errCatcher.getString());
     }
 
 
-    /** This tests SgtMap making topography maps.  (0, 6) */ 
+    /** This tests SgtMap making topography maps.  (0, 11) */ 
     public static void testTopography(int first, int last) throws Exception {
         verbose = true;
         reallyVerbose = true;
@@ -2880,16 +2897,18 @@ String2.log("err: " + errCatcher.getString());
             }
 
             //look for memory leak
-            for (int i = 0; i < 3; i++)
-                Math2.gc(200); //all should be garbage collected now
+            Math2.gcAndWait(); Math2.gcAndWait(); //Part of test. Ensure all garbage collected.
             long using = Math2.getMemoryInUse();
-            if (baseMemory == 0) baseMemory = using;
+            if (baseMemory == 0) 
+                baseMemory = using;
+            long lpr = (using - baseMemory)/nReps;
             String2.log("\n**** SgtMap test for memory leak: nReps=" + nReps + 
-                    " memoryUsing=" + using + " leak/rep=" + ((using - baseMemory)/nReps) +
+                    " memoryUsing=" + using + " leak/rep=" + lpr +
                 "\n-> See all the " + SSR.getTempDirectory() + 
                     "tempXXX" + testImageExtension + " and .pdf files." +
                 "\nPress CtrlBreak in console window to generate hprof heap info.");
-            String2.getStringFromSystemIn("Press ^C to stop or Enter to continue..."); 
+            if (lpr > 0)
+                String2.getStringFromSystemIn("Press ^C to stop or Enter to continue..."); 
         }
         //String2.getStringFromSystemIn("Press 'Enter'...");
 
@@ -2980,9 +2999,7 @@ String2.log("err: " + errCatcher.getString());
         //view it
         //ImageViewer.display("SgtMap", image);
         SSR.displayInBrowser("file://" + dir + name);
-
-        //give it time to display
-        Math2.gc(2000);
+        Math2.gc(2000); //Part of a test.  Give it time to display image.  
 
         //delete it
         File2.delete(dir + name);

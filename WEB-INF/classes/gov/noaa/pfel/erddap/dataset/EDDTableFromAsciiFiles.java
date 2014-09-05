@@ -49,7 +49,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
      * <p>The sortedColumnSourceName isn't utilized.
      */
     public EDDTableFromAsciiFiles(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File,
+        String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
@@ -63,7 +64,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         throws Throwable {
 
         super("EDDTableFromAsciiFiles", true, tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File, 
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
@@ -76,7 +77,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
 
     /** The constructor for subclasses. */
     public EDDTableFromAsciiFiles(String tClassName, String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
@@ -90,7 +91,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         throws Throwable {
 
         super(tClassName, true, tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File, 
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
@@ -165,7 +166,9 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
      * @param tSummary       or "" if in externalAddGlobalAttributes or if not available (but try hard!)
      * @param tTitle         or "" if in externalAddGlobalAttributes or if not available (but try hard!)
      * @param externalAddGlobalAttributes  These attributes are given priority.  Use null in none available.
-     * @throws Throwable if trouble
+     * @return a suggested chunk of xml for this dataset for use in datasets.xml 
+     * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
+     *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(String tFileDir, String tFileNameRegex, 
         String sampleFileName, 
@@ -308,10 +311,10 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
                 "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
                 "time", "station time", 
                 "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!",
-                externalAddAttributes);
+                externalAddAttributes) + "\n";
 
             //GenerateDatasetsXml
-            GenerateDatasetsXml.doIt(new String[]{"-verbose", 
+            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromAsciiFiles",
                 "c:/u00/cwatch/testData/asciiNdbc/",  ".*\\.csv",
                 "c:/u00/cwatch/testData/asciiNdbc/31201_2009.csv", 
@@ -320,7 +323,6 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
                 "time", "station time", 
                 "http://www.ndbc.noaa.gov/", "NOAA NDBC", "The new summary!", "The Newer Title!"},
                 false); //doIt loop?
-            String gdxResults = String2.getClipboardString();
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
@@ -443,7 +445,7 @@ directionsForGenerateDatasetsXml() +
 "        <!-- sourceAttributes>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Station</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -498,7 +500,7 @@ directionsForGenerateDatasetsXml() +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
-"\n";
+"\n\n";
 
             Test.ensureEqual(results, expected, "results=\n" + results);
             //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
@@ -686,11 +688,10 @@ expected =
 "    Float64 Westernmost_Easting -122.88;\n" +
 "  }\n" +
 "}\n";
-        int tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) 
-            String2.log("results=\n" + results);
+        int tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(
-            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
             expected, "results=\n" + results);
         
         //*** test getting dds for entire dataset
