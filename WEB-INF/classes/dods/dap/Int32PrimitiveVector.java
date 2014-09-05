@@ -169,9 +169,9 @@ public class Int32PrimitiveVector extends PrimitiveVector implements Cloneable {
    * Write a subset of the data to a <code>DataOutputStream</code>.
    *
    * @param sink a <code>DataOutputStream</code> to write to.
-   * @param start: starting index (i=start)
-   * @param stop: ending index (i<=stop)
-   * @param stride: index stride (i+=stride)
+   * @param start starting index (i=start)
+   * @param stop ending index (i<=stop)
+   * @param stride index stride (i+=stride)
    * @exception IOException thrown on any <code>OutputStream</code> exception.
    */
   public void externalize(DataOutputStream sink, int start, int stop, int stride) throws IOException {

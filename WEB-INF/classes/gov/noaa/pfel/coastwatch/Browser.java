@@ -380,8 +380,7 @@ public abstract class Browser extends HttpServlet {
             entrySetIterator = null;
 
             //generate report of active datasets in nextShared 
-            Math2.gc(500); //for more accurate memoryString below
-            Math2.gc(500); //for more accurate memoryString below
+            Math2.gcAndWait(); Math2.gcAndWait(); //for more accurate memoryString in report below
             StringBuilder activeDataSets = new StringBuilder();
             activeDataSets.append(
                 "Report from " + oneOf.shortClassName() + " at " + 
@@ -499,10 +498,7 @@ public abstract class Browser extends HttpServlet {
             if (!reportDate.equals(lastReportDate) && hour >= 7 && 
                 !oneOf.displayDiagnosticInfo()) { //so browsers in development don't generate emails
                 lastReportDate = reportDate;
-                oneOf.email(oneOf.emailEverythingTo(), 
-                    "Daily Report from " + oneOf.shortClassName(), 
-                    activeDataSets + usageInfo);
-                oneOf.email(oneOf.emailDailyReportTo(), 
+                oneOf.email(oneOf.emailEverythingTo() + "," + oneOf.emailDailyReportTo(), 
                     "Daily Report from " + oneOf.shortClassName(), 
                     activeDataSets + usageInfo);
             }
@@ -786,7 +782,7 @@ public abstract class Browser extends HttpServlet {
         //htmlSB.append("<pre>" + getUsageInfo() + "</pre>\n");
 
         //pumping data through sgt uses lots of memory - be agressive with gc
-        System.gc();  //not Math2.incgc -- don't wait for it
+        //System.gc();  //not Math2.incgc -- don't wait for it.  Commented out 2013-12-05. Let Java handle memory.
         return htmlSB.toString();
     }
 
@@ -5408,9 +5404,9 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             String2.getStringFromSystemIn("Is GoogleEarth showing a coverage? \n" +
                 "Close it, then press ^C to stop or Enter to continue..."); 
         } catch (Exception e) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-                "\nThis test requires cwexperimental CWBrowserWW360.\n" +
-                "Press ^C to stop or Enter to continue..."); 
+            Test.knownProblem(
+                "THIS TEST REQUIRES cwexperimental CWBrowserWW360, so I usually skip it.",
+                MustBe.throwableToString(e)); 
         }
 
         try {
@@ -5426,9 +5422,9 @@ minLon=-135&maxLon=-105&minLat=22&maxLat=50&nLon=400&nLat=200&fileType=.nc</tt>
             String2.getStringFromSystemIn("Is GoogleEarth showing stations? \n" +
                 "Close it, then press ^C to stop or Enter to continue..."); 
         } catch (Exception e) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(e) + 
-                "\nThis test requires cwexperimental CWBrowserWW360.\n" +
-                "Press ^C to stop or Enter to continue..."); 
+            Test.knownProblem(
+                "THIS TEST REQUIRES cwexperimental CWBrowserWW360, so I usually skip it.",
+                MustBe.throwableToString(e)); 
         }
 
 

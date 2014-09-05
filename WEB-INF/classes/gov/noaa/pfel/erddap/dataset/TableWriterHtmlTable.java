@@ -48,7 +48,8 @@ public class TableWriterHtmlTable extends TableWriter {
     public static int htmlTableMaxMB = 15;
 
     //set by constructor
-    protected String loggedInAs, fileNameNoExt, preTableHtml, postTableHtml;
+    protected String loggedInAs, fileNameNoExt, preTableHtml, postTableHtml, 
+        tErddapUrl, externalLinkHtml;
     protected boolean writeHeadAndBodyTags, xhtmlMode, encode, writeUnits;
     protected int totalRows = 0, rowsShown = 0;
     protected int showFirstNRows;  //perhaps modified by htmlTableMaxMB in "do firstTime stuff"
@@ -107,6 +108,8 @@ public class TableWriterHtmlTable extends TableWriter {
         writeUnits = tWriteUnits;
         showFirstNRows = tShowFirstNRows >= 0? tShowFirstNRows : Integer.MAX_VALUE;
         noWrap = xhtmlMode? " nowrap=\"nowrap\"" : " nowrap"; 
+        tErddapUrl = EDStatic.erddapUrl(loggedInAs);
+        externalLinkHtml = EDStatic.externalLinkHtml(tErddapUrl);
     }
 
     /** This encodes s as XML or HTML */
@@ -169,7 +172,7 @@ public class TableWriterHtmlTable extends TableWriter {
                 isTimeStamp[col] = u != null && 
                     (u.equals(EDV.TIME_UNITS) || u.equals(EDV.TIME_UCUM_UNITS));
                 if (isTimeStamp[col] && !xhtmlMode)
-                    time_precision[col] = catts.getString(EDV.time_precision);
+                    time_precision[col] = catts.getString(EDV.TIME_PRECISION);
 
                 if (isTimeStamp[col]) {
                     bytesPerRow += 20 + noWrap.length();
@@ -208,7 +211,6 @@ public class TableWriterHtmlTable extends TableWriter {
                         "</head>\n" +
                         "<body style=\"color:black; background:white; " + HtmlWidgets.SANS_SERIF_STYLE + "\">\n");
                 else {
-                    String tErddapUrl = EDStatic.erddapUrl(loggedInAs);
                     writer.write(EDStatic.startHeadHtml(tErddapUrl, fileNameNoExt));
                     writer.write("\n</head>\n");
                     writer.write(EDStatic.startBodyHtml(loggedInAs));
@@ -293,8 +295,10 @@ public class TableWriterHtmlTable extends TableWriter {
                                 //if html, display urls and email addresses as links
                                 if (String2.isUrl(s)) {
                                     //display as a link
+                                    boolean isLocal = s.startsWith(EDStatic.baseUrl);
                                     s = XML.encodeAsHTMLAttribute(s);
-                                    s = "<a href=\"" + s + "\">" + s + "</a>";
+                                    s = "<a href=\"" + s + "\">" + s + 
+                                       (isLocal? "" : externalLinkHtml) + "</a>";
                                 } else if (String2.isEmailAddress(s)) {
                                     //display as a mailTo link
                                     s = XML.encodeAsHTMLAttribute(s);
@@ -334,7 +338,7 @@ public class TableWriterHtmlTable extends TableWriter {
     public void finish() throws Throwable {
         //check for MustBe.THERE_IS_NO_DATA
         if (writer == null)
-            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
 
         //close the table
         writer.write(

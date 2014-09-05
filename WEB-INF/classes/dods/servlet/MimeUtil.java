@@ -37,7 +37,6 @@ import java.io.*;
  *
  * @version $Revision: 1.2 $
  * @author ndp
- * @see BaseType
  */
 
 public class MimeUtil {

@@ -59,13 +59,13 @@ import javax.imageio.ImageIO;
 public class SgtGraph  {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
 
     /**
-     * Set this to true (by calling reallyVerbose=true in your program, not but changing the code here)
+     * Set this to true (by calling reallyVerbose=true in your program, not by changing the code here)
      * if you want lots and lots of diagnostic messages sent to String2.log.
      */
     public static boolean reallyVerbose = false;
@@ -545,11 +545,9 @@ public class SgtGraph  {
             //SgtUtil.drawHtmlText needs non-text antialiasing ON
             //but if transparent, turn antialiasing OFF (fuzzy pixels make a halo around things)
             RenderingHints oldRenderingHints = g2.getRenderingHints();
-            if (transparent) {
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,     RenderingHints.VALUE_ANTIALIAS_OFF); 
-            } else {
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,     RenderingHints.VALUE_ANTIALIAS_ON); 
-            }
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, transparent?
+                RenderingHints.VALUE_ANTIALIAS_OFF :
+                RenderingHints.VALUE_ANTIALIAS_ON); 
 
             //draw legend basics
             if (!transparent) {
@@ -1333,8 +1331,8 @@ public class SgtGraph  {
             if (reallyVerbose) {
                 String2.log("  draw the graph time=" + 
                     (System.currentTimeMillis() - drawGraphTime));
-                //Math2.gc(200); //outside of timing system
                 //String2.log("SgtGraph.makeGraph after jPane.draw: " + Math2.memoryString());
+                //Math2.gcAndWait(); //a diagnostic in development.  outside of timing system.
                 //String2.log("SgtGraph.makeGraph after gc: " + Math2.memoryString());
             }
 
@@ -1718,7 +1716,7 @@ public class SgtGraph  {
             //deconstruct jPane
             SgtMap.deconstructJPane("SgtMap.makeLegend", jPane, layerNames);
 
-            //turn off antialiasing           
+            //return antialiasing to original
             if (originalAntialiasing != null)
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
                     originalAntialiasing); 
@@ -2120,8 +2118,7 @@ public class SgtGraph  {
         File2.delete(fileName + "6.png");
 
         //done
-        for (int i = 0; i < 2; i++)
-            Math2.gc(500); //all should be garbage collected now
+        Math2.gcAndWait(); Math2.gcAndWait(); //part of a test.  Ensure all are garbage collected.
         String2.log("time=" + (System.currentTimeMillis() - time) + " ms\n" +
             Math2.memoryString());
     } 
@@ -2232,14 +2229,15 @@ public class SgtGraph  {
         //check memory usage
         for (int rep = 0; rep < nReps; rep++)
             File2.delete(tempDir + "SgtGraphMemoryTest" + rep + ".png");
-        for (int i = 0; i < 3; i++)
-            Math2.gc(200); //all should be garbage collected now
+        Math2.gcAndWait(); Math2.gcAndWait(); //in a test, before getMemoryInUse().  Ensure all garbage collected.
         long using = Math2.getMemoryInUse();
         if (baseMemory == 0) baseMemory = using;
+        long lpr = (using - baseMemory)/nReps;
         String2.log("\n*** SgtGraph test for memory leak: nReps=" + nReps + 
-                " memoryUsing=" + using + " leak/rep=" + ((using - baseMemory)/nReps) +
+                " memoryUsing=" + using + " leak/rep=" + lpr +
             "\nPress CtrlBreak in console window to generate hprof heap info.");
-        String2.getStringFromSystemIn("Press ^C to stop or Enter to continue..."); 
+        if (lpr > 0)
+            String2.getStringFromSystemIn("Press ^C to stop or Enter to continue..."); 
     }
 
     public static void testSurface() throws Exception {
@@ -2248,8 +2246,7 @@ public class SgtGraph  {
         PathCartesianRenderer.verbose = true;
         PathCartesianRenderer.reallyVerbose = true;
         //AttributedString2.verbose = true;
-        for (int i = 0; i < 3; i++)
-            Math2.gc(500); //all should be garbage collected now
+        Math2.gcAndWait(); Math2.gcAndWait(); //in a test, before getMemoryInUse().  Ensure all garbage collected.
         long time = System.currentTimeMillis();
         long memoryInUse = Math2.getMemoryInUse();
 
@@ -2317,8 +2314,7 @@ public class SgtGraph  {
         }
 
         //done
-        for (int i = 0; i < 3; i++)
-            Math2.gc(500); //all should be garbage collected now
+        Math2.gcAndWait(); Math2.gcAndWait(); //in a test, before getMemoryInUse().  Ensure all garbage collected.
         String2.log("time=" + (System.currentTimeMillis() - time) + " ms " +
             "changeInMemoryInUse=" + (Math2.getMemoryInUse() - memoryInUse));
     } 

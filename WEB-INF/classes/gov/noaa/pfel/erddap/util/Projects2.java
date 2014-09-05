@@ -48,7 +48,7 @@ import ucar.ma2.*;
 public class Projects2  {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
@@ -319,9 +319,10 @@ public class Projects2  {
 
         if (logFileName != null && logFileName.length() > 0)
             String2.setupLog(true, false, logFileName, false, true, Integer.MAX_VALUE);
-
-        String2.log("Projects2.copyHyraxFiles " + Calendar2.getCurrentISODateTimeStringLocal() +
-            "\n  " + urlDir + "\n  " + localDir);
+        String2.log("*** Projects2.copyHyraxFiles " + Calendar2.getCurrentISODateTimeStringLocal() +
+            "\nlogFile=" + String2.logFileName() + "\n" +
+            String2.standardHelpAboutMessage() + "\n  " + 
+            urlDir + "\n  " + localDir);
         
         //parse the hyrax catalog
         StringArray childUrls = new StringArray();
@@ -362,7 +363,10 @@ public class Projects2  {
                 }
             }
         }
-
+        String2.log("*** Projects2.copyHyraxFiles finished successfully at " + 
+            Calendar2.getCurrentISODateTimeStringLocal() + "\n");
+        if (logFileName != null && logFileName.length() > 0)
+            String2.returnLoggingToSystemOut();
     }
 
     public static void touchUsgs() throws Throwable {

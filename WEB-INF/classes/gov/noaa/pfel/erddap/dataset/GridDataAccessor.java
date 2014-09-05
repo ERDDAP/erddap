@@ -47,14 +47,14 @@ public class GridDataAccessor {
 
     /**
      * Set this to true (by calling verbose=true in your program, 
-     * not but changing the code here)
+     * not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false; 
 
     /**
      * Set this to true (by calling reallyVerbose=true in your program, 
-     * not but changing the code here)
+     * not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean reallyVerbose = false; 
@@ -561,7 +561,6 @@ public class GridDataAccessor {
                 throw t;
 
             //rewrap it as WTTAE
-            eddGrid.requestReloadASAP();
             throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
                 "\n(" + EDStatic.errorFromDataSource + tToString + ")", 
                 t); 
@@ -573,7 +572,6 @@ public class GridDataAccessor {
             if (avInDriver[av]) {
                 if (pa.size() != 1 ||
                     !Math2.almostEqual(9, pa.getDouble(0), avInDriverExpectedValues[av])) { //source values
-                    eddGrid.requestReloadASAP();
                     throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain +
                         "\n(Details: GridDataAccessor.increment: partialResults[" + av +
                         "]=\"" + pa + "\" was expected to be " + 
@@ -583,13 +581,11 @@ public class GridDataAccessor {
                 //convert source values to destination values
                 pa = axisVariables[av].toDestination(pa);
                 String tError = axisValues[av].almostEqual(pa); //destination values
-                if (tError.length() > 0) {
-                    eddGrid.requestReloadASAP();
+                if (tError.length() > 0) 
                     throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain +
                         "\n(Details: GridDataAccessor.increment: partialResults[" + 
                         av + "] was not as expected.\n" + 
                         tError + ")");
-                }
             }
         }
             

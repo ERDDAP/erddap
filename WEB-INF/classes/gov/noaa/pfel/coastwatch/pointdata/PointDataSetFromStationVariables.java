@@ -351,7 +351,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
                         localPa.switchFakeMissingValueToNaN(sourceFillValue[   station][0]);
                         localPa.switchFakeMissingValueToNaN(sourceMissingValue[station][0]);
                         String2.log("    v0 stats: " + localPa.statsString());
-                        Math2.gc(3000);
+                        Math2.gcAndWait(); //within a diagnostic
                     }
                     
                     //*** get the t information
@@ -528,7 +528,7 @@ public class PointDataSetFromStationVariables extends PointDataSet {
                             localPa.switchFakeMissingValueToNaN(sourceFillValue[   station][var]);
                             localPa.switchFakeMissingValueToNaN(sourceMissingValue[station][var]);
                             String2.log("    v" + var + " stats: " + localPa.statsString());
-                            Math2.gc(3000);
+                            Math2.gcAndWait(); //within a debug diagnostic
                         }
 
                     }

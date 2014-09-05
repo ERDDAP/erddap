@@ -47,7 +47,7 @@ public class MakeErdJavaZip  {
 
         //make the JavaDocs
         String coastWatchClass = "gov.noaa.pfel.coastwatch.";
-        String commandLine0 = "C:\\Progra~1\\Java\\jdk1.7.0_09\\bin\\javadoc" +
+        String commandLine0 = "C:\\Progra~1\\Java\\jdk1.7.0_67\\bin\\javadoc" +
             //" -source 1.4" + //use 1.4 for the DODS classes that use "enum" //2011-02-22 Bob Simons changed enum to en.
             " -sourcepath " + classPath +      //root directory of the classes
             " -d "; //+ baseDir + "ConvertTableDoc" + //dir to hold results
@@ -63,7 +63,7 @@ public class MakeErdJavaZip  {
             coastWatchDir + "ValidateDataSetProperties.java " +
             //recursively searched packages
             "-classpath " +  //';' separated;  //external packages are important here
-                baseDir + "lib/activation.jar;" +
+                //baseDir + "lib/activation.jar;" +
                 baseDir + "lib/commons-compress.jar;" + 
                 baseDir + "lib/commons-discovery.jar;" + 
                 //baseDir + "lib/commons-codec-1.3.jar;" +     //these 3 now in netcdfAll-latest
@@ -148,25 +148,25 @@ public class MakeErdJavaZip  {
 
         //accumulate the file names to be zipped
         ArrayList dirNames = new ArrayList();
-        dirNames.add(baseDir + "ConvertTable");
+        dirNames.add(baseDir + "ConvertTable.sh");
         dirNames.add(baseDir + "ConvertTable.bat");
-        dirNames.add(baseDir + "DoubleCenterGrids");
-        dirNames.add(baseDir + "GridSaveAs");
+        dirNames.add(baseDir + "DoubleCenterGrids.sh");
+        dirNames.add(baseDir + "GridSaveAs.sh");
         dirNames.add(baseDir + "GridSaveAs.bat");
-        dirNames.add(baseDir + "GenerateOceanwatchThreddsXml");
-        dirNames.add(baseDir + "GenerateOtterThreddsXml");
-        dirNames.add(baseDir + "GenerateThredds1ThreddsXml");
-        dirNames.add(baseDir + "GenerateThreddsXml");
+        dirNames.add(baseDir + "GenerateOceanwatchThreddsXml.sh");
+        dirNames.add(baseDir + "GenerateOtterThreddsXml.sh");
+        dirNames.add(baseDir + "GenerateThredds1ThreddsXml.sh");
+        dirNames.add(baseDir + "GenerateThreddsXml.sh");
         dirNames.add(baseDir + "incompleteMainCatalog.xml");
         dirNames.add(baseDir + "iobis.m");
-        dirNames.add(baseDir + "NetCheck");
+        dirNames.add(baseDir + "NetCheck.sh");
         dirNames.add(baseDir + "NetCheck.bat");
         dirNames.add(baseDir + "NetCheck.xml");
         dirNames.add(baseDir + "obis.m");
         dirNames.add(baseDir + "QN2005193_2005193_ux10_westus.grd");
-        dirNames.add(baseDir + "ValidateDataSetProperties");
+        dirNames.add(baseDir + "ValidateDataSetProperties.sh");
         dirNames.add(baseDir + "ValidateDataSetProperties.bat");
-        dirNames.add(baseDir + "lib/activation.jar");
+        //dirNames.add(baseDir + "lib/activation.jar");
         dirNames.add(baseDir + "lib/commons-compress.jar"); 
         dirNames.add(baseDir + "lib/commons-discovery.jar"); 
         //dirNames.add(baseDir + "lib/commons-codec-1.3.jar"); //these 3 are now in netcdfAll-latest
@@ -233,7 +233,7 @@ public class MakeErdJavaZip  {
         //accumulate the file names to be zipped
         String ctName = destinationDir + "converttable.jar";
         StringBuilder cmdLine = new StringBuilder();
-        cmdLine.append("\\Progra~1\\Java\\jdk1.7.0_09\\bin\\jar cvf " + ctName);
+        cmdLine.append("\\Progra~1\\Java\\jdk1.7.0_67\\bin\\jar cvf " + ctName);
         //I thought I could use -C once and have lots of files after it. 
         //But no. I need to use -C for each file.   (maybe just if 'file' is a directory)
         //And can't use *. List files separately.

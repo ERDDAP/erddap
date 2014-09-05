@@ -68,6 +68,7 @@ public class EDDTableCopy extends EDDTable{
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
+        String tSosOfferingPrefix = null;
         String tExtractDestinationNames = "";
         String tOrderExtractBy = "";
         boolean checkSourceData = defaultCheckSourceData;
@@ -98,6 +99,8 @@ public class EDDTableCopy extends EDDTable{
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<sosOfferingPrefix>")) {}
+            else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content; 
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<extractDestinationNames>")) {}
@@ -137,7 +140,7 @@ public class EDDTableCopy extends EDDTable{
         }
 
         return new EDDTableCopy(tDatasetID, 
-            tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
+            tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, 
             tExtractDestinationNames, tOrderExtractBy, tSourceNeedsExpandedFP_EQ,
             tSourceEdd, tFileTableInMemory);
@@ -187,7 +190,7 @@ public class EDDTableCopy extends EDDTable{
      */
     public EDDTableCopy(String tDatasetID, 
         String tAccessibleTo, 
-        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         int tReloadEveryNMinutes,
         String tExtractDestinationNames, String tOrderExtractBy,
@@ -208,6 +211,7 @@ public class EDDTableCopy extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        sosOfferingPrefix = tSosOfferingPrefix;
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
@@ -476,7 +480,8 @@ public class EDDTableCopy extends EDDTable{
         throws Throwable {
 
         return new EDDTableFromNcFiles(tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File, "", "", //tDefaultDataQuery, tDefaultGraphQuery,
+            tOnChange, tFgdcFile, tIso19115File, 
+            "", "", "", //tSosOfferingPrefix, tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, 
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
@@ -502,6 +507,7 @@ public class EDDTableCopy extends EDDTable{
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public void getDataForDapQuery(String loggedInAs, String requestUrl, String userDapQuery, 
         TableWriter tableWriter) throws Throwable {
@@ -813,7 +819,7 @@ public class EDDTableCopy extends EDDTable{
 "    String geospatial_lon_units \"degrees_east\";\n";
 //"    String history \"" + today + " 2012-07-29T19:11:09Z (local files; contact erd.data@noaa.gov)\n";  //date is from last created file, so varies sometimes
 //today + " http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGlobecBottle.das"; //\n" +
-//today + " http://192.168.31.18/opendap/GLOBEC/GLOBEC_bottle\n" +
+//today + " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
 //today + " http://127.0.0.1:8080/cwexperimental/tabledap/rGlobecBottle.das\";\n" +
     expected2 = 
 "    String infoUrl \"http://www.globec.org/\";\n" +

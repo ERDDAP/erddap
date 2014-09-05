@@ -92,6 +92,7 @@ public class EDDTableFromDapSequence extends EDDTable{
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
+        String tSosOfferingPrefix = null;
         String tLocalSourceUrl = null;
         String tOuterSequenceName = null;
         String tInnerSequenceName = null; 
@@ -149,6 +150,8 @@ public class EDDTableFromDapSequence extends EDDTable{
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<sosOfferingPrefix>")) {}
+            else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content; 
             else if (localTags.equals( "<defaultDataQuery>")) {}
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
@@ -162,7 +165,7 @@ public class EDDTableFromDapSequence extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromDapSequence(tDatasetID, tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl, 
@@ -265,6 +268,7 @@ public class EDDTableFromDapSequence extends EDDTable{
      */
     public EDDTableFromDapSequence(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
@@ -290,6 +294,7 @@ public class EDDTableFromDapSequence extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        sosOfferingPrefix= tSosOfferingPrefix;
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
         if (tAddGlobalAttributes == null)
@@ -336,6 +341,11 @@ public class EDDTableFromDapSequence extends EDDTable{
             //set creationTimeMillis to time of previous creation, so next time
             //to be reloaded will be same as if ERDDAP hadn't been restarted.
             creationTimeMillis = quickRestartAttributes.getLong("creationTimeMillis");
+
+            //Ensure quickRestart information is recent.
+            //If too old: abandon construction, delete quickRestart file, flag dataset reloadASAP
+            ensureQuickRestartInfoIsRecent(datasetID, getReloadEveryNMinutes(), 
+                creationTimeMillis, quickRestartFullFileName());
         }
       
         //DAS
@@ -524,13 +534,13 @@ public class EDDTableFromDapSequence extends EDDTable{
                 depthIndex = dv;
             } else if (EDV.TIME_NAME.equals(tDestName)) {  //look for TIME_NAME before check hasTimeUnits (next)
                 dataVariables[dv] = new EDVTime(tSourceName,
-                    tSourceAtt, tAddAtt, tSourceType);
+                    tSourceAtt, tAddAtt, 
+                    tSourceType); //this constructor gets source / sets destination actual_range
                 timeIndex = dv;
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
                 dataVariables[dv] = new EDVTimeStamp(tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
-                    tSourceType); //the constructor that reads actual_range
-                dataVariables[dv].setActualRangeFromDestinationMinMax();
+                    tSourceType); //this constructor gets source / sets destination actual_range
             } else {
                 dataVariables[dv] = new EDV(tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
@@ -576,6 +586,7 @@ public class EDDTableFromDapSequence extends EDDTable{
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public void getDataForDapQuery(String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
@@ -679,14 +690,13 @@ public class EDDTableFromDapSequence extends EDDTable{
             //if no data, convert to ERDDAP standard message
             String tToString = t.toString();
             if (tToString.indexOf("Your Query Produced No Matching Results.") >= 0) //the DAP standard
-                throw new SimpleException(MustBe.THERE_IS_NO_DATA);
+                throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (says DAP)");
 
             //if too much data, rethrow t
             if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
                 throw t;
 
             //any other error is real trouble
-            requestReloadASAP();
             throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
                 "\n(" + EDStatic.errorFromDataSource + tToString + ")", 
                 t); 
@@ -711,7 +721,8 @@ public class EDDTableFromDapSequence extends EDDTable{
      *    sources, e.g., a THREDDS catalog.xml file.
      *    These have priority over other sourceGlobalAttributes.
      *    Okay to use null if none.
-     * @throws Throwable if trouble.
+     * @return a suggested chunk of xml for this dataset for use in datasets.xml 
+     * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
      *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(String tLocalSourceUrl, 
@@ -907,7 +918,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_url\">http://cimt.dyndns.org:8080/dods/drds/vCTD</att>\n" +
 "        <att name=\"infoUrl\">http://cimt.dyndns.org:8080/dods/drds/vCTD</att>\n" +
 "        <att name=\"institution\">DYNDNS CIMT</att>\n" +
-"        <att name=\"keywords\">acceleration, anomaly, avg, cimt, cimt.dyndns.org, currents, data, density, depth, dods, drds, dyndns, fluorescence, geopotential, oceans,\n" +
+"        <att name=\"keywords\">acceleration, anomaly, avg, cimt, cimt.dyndns.org, currents, data, density, depth, dods, drds, dyndns, fluorescence, geopotential, identifier, oceans,\n" +
 "Oceans &gt; Salinity/Density &gt; Salinity,\n" +
 "optical, optical properties, properties, salinity, sea, sea_water_salinity, seawater, sigma, sound, station, temperature, time, vctd.das, velocity, water</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
@@ -968,7 +979,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"Description\">CIMT Station ID</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">Unknown</att>\n" +
+"            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Station</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
@@ -1083,21 +1094,19 @@ directionsForGenerateDatasetsXml() +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "</dataset>\n" +
-"\n";
-            String results = generateDatasetsXml(tUrl, 1440, null);
+"\n\n";
+            String results = generateDatasetsXml(tUrl, 1440, null) + "\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //GenerateDatasetsXml
-            GenerateDatasetsXml.doIt(new String[]{"-verbose", 
+            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromDapSequence",
                 tUrl, "1440"},
                 false); //doIt loop?
-            String gdxResults = String2.getClipboardString();
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
-
             //EDDGridFromDap should fail and try EDDTableFromDapSequence and generate same result
-            results = EDDGridFromDap.generateDatasetsXml(true, tUrl, null, null, null, 1440, null);
+            results = EDDGridFromDap.generateDatasetsXml(true, tUrl, null, null, null, 1440, null) + "\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //ensure it is ready-to-use by making a dataset from it
@@ -1566,7 +1575,7 @@ try {
     /** Test reading .das */
     public static void testReadDas() throws Exception {
         String2.log("\n*** EDDTableFromDapSequence.testReadDas\n");
-        String url = "http://192.168.31.6/erddap/tabledap/erdGtsppBest";
+        String url = "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/erdGtsppBest";
         try {
             DConnect dConnect = new DConnect(url, true, 1, 1);
             DAS das = dConnect.getDAS(OpendapHelper.DEFAULT_TIMEOUT);
@@ -1790,11 +1799,10 @@ expected =
 "  }[10]\n" +
 "}[10]\n" +
 "[end]";
-        int tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) 
-            String2.log("results=\n" + results);
+        int tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(
-            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
             expected, "results=\n" + results);
 
         } catch (Throwable t) {

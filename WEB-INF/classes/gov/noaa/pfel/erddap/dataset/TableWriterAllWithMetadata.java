@@ -169,7 +169,7 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
     private void finishMetadata() {
         //check for MustBe.THERE_IS_NO_DATA
         if (columnMinValue == null)
-            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
 
         int lonCol   = String2.indexOf(columnNames, EDV.LON_NAME);
         int latCol   = String2.indexOf(columnNames, EDV.LAT_NAME);

@@ -10,10 +10,10 @@ package dods.dap.Server;
  *
  *  The parser supports several kinds of top-level clause. These are described
  *  in the ClauseFactory interface.
+ *  See CEEValuator for an explanation of how Clauses are evaluated on 
+ *    data.
  *
  * @see SubClause for more about sub-clauses.
- * @see CEEValuator for an explanation of how Clauses are evaluated on 
- *    data.
  * @see ClauseFactory
  *
  * @author joew */

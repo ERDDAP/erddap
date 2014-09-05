@@ -57,6 +57,26 @@ public class TestUtil {
         double dar1[] = {1.1, 2.2};
         double dar2[] = {1.1, 2.200000000001};
         Test.ensureEqual(   dar1, dar2,   "idd");
+
+        String result;
+        result = Test.testLinesMatch(
+            "ab\nbbbb\n\nccc",
+            "ab\n.{4}\n\nc.c",
+            "Shouldn't happen.");
+        Test.ensureEqual(result, "", "\nresult=\n" + result);
+        
+        result = Test.testLinesMatch(
+            "ab\nbbbb\n\nccc",
+            "ab\n.{3}\n\nc.c",
+            "A specific message.");
+        Test.ensureEqual(result, 
+"\n" +
+"ERROR in Test.ensureLinesMatch():\n" +
+"A specific message.\n" +
+"The first line that differs is:\n" +
+"  text [1]=bbbb[end]\n" +
+"  regex[1]=.{3}[end]\n", 
+            "\nresult=\n" + result);
         
         Double Dar1[] = {new Double(1.1), new Double(2.2)};
         Double Dar2[] = {new Double(1.1), new Double(2.2)};
@@ -213,11 +233,11 @@ public class TestUtil {
         String2.log("after incgc: " + Math2.memoryString());
 
         //gc
-        String2.log("test gc(3000)");
+        String2.log("test gcAndWait()");
         da = new double[1000000];
         String2.log("after allocate = " + Math2.memoryString());
         da = null;
-        Math2.gc(3000);
+        Math2.gcAndWait();
         String2.log("after gc = " + Math2.memoryString());
 
         //odd
@@ -1221,13 +1241,13 @@ public class TestUtil {
         }
 
         //getPasswordFromConsole
-        s = String2.getPasswordFromSystemIn(
-            "getPasswordFromSystemIn: Enter a string (it won't be echoed): ");
+        s = String2.getPasswordFromSystemIn(String2.beep(1) +
+            "test getPasswordFromSystemIn: Enter a string (it won't be echoed): ");
         String2.log("You entered: " + s);
 
         //getStringFromConsole
-        s = String2.getStringFromSystemIn(
-            "getStringFromSystemIn: Enter a string (it will be echoed): ");
+        s = String2.getStringFromSystemIn(String2.beep(1) +
+            "test getStringFromSystemIn: Enter a string (it will be echoed): ");
         String2.log("You entered: " + s);
         Math2.incgc(3000);
 
@@ -1617,7 +1637,8 @@ public class TestUtil {
         Test.ensureEqual(String2.modifyToBeVariableNameSafe("_"),  "_",        "");
         Test.ensureEqual(String2.modifyToBeVariableNameSafe(","),  "_",        "");
         Test.ensureEqual(String2.modifyToBeVariableNameSafe("a"),  "a",        "");
-        Test.ensureEqual(String2.modifyToBeVariableNameSafe("a_"), "a",       "");
+        Test.ensureEqual(String2.modifyToBeVariableNameSafe("2"),  "_2",       "");
+        Test.ensureEqual(String2.modifyToBeVariableNameSafe("a_"), "a_",       "");
         Test.ensureEqual(String2.modifyToBeVariableNameSafe("_a"), "_a",       "");
 
         //differentLine
@@ -1813,7 +1834,7 @@ public class TestUtil {
         map.put("key a", "value a");
         map.put("Bob",   "Simons");
         //order of elements is not specified and may change
-        Test.ensureEqual(String2.toString(map), "Bob = Simons\nkey a = value a\n", "a");
+        Test.ensureEqual(String2.toString(map), "key a = value a\nBob = Simons\n", "a");
    
         //toByteArray(s)
         String2.log("test toByteArray(s)");
@@ -2410,8 +2431,23 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-01-02 23:59:59Z"),          "yyyy-MM-dd'T'HH:mm:ssZ", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("0000-01"),                       "yyyy-MM-dd'T'HH:mm:ssZ", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("2999-19"),                       "yyyy-MM-dd'T'HH:mm:ssZ", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("3000-01"),         "", ""); 
-        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-20"),         "", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("3000-01"),                       "", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-20"),                       "", ""); 
+
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-01-02T23:59:59.999-08:00"), "yyyy-MM-dd'T'HH:mm:ssZ", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-01-02T23:59:59.999"),       "yyyy-MM-dd'T'HH:mm:ssZ", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-01-02T23:59:59-08:00"),     "yyyy-MM-dd'T'HH:mm:ssZ", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-01-02T23:59:59"),           "yyyy-MM-dd'T'HH:mm:ssZ", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-01-02T23:59"),              "yyyy-MM-dd'T'HH:mm:ssZ", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-01-02T23"),                 "yyyy-MM-dd'T'HH:mm:ssZ", ""); 
+
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-01-02 23:59:59.999"),       "yyyy-MM-dd HH:mm:ss.sss", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-01-02 23:59:59.9"),         "yyyy-MM-dd HH:mm:ss.sss", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-01-02 23:59:59-08:00"),     "yyyy-MM-dd HH:mm:ssZ", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-01-02 23:59:59"),           "yyyy-MM-dd HH:mm:ss", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-01-02 23:59"),              "yyyy-MM-dd HH:mm", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-01-02 23"),                 "yyyy-MM-dd HH", ""); 
+        Test.ensureEqual(Calendar2.suggestDateTimeFormat("1985-01-02"),                    "yyyy-MM-dd", ""); 
 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("00000101000000"),  "yyyyMMddHHmmss", ""); 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat("29991939295959"),  "yyyyMMddHHmmss", ""); 
@@ -2469,7 +2505,7 @@ public class TestUtil {
                                                          "EEE, dd MMM yyyy HH:mm:ss Z", ""); 
 
         Test.ensureEqual(Calendar2.suggestDateTimeFormat(StringArray.fromCSV(", 1985-01-02, 1990-10-11")),
-            "yyyy-MM-dd'T'HH:mm:ssZ", "");
+            "yyyy-MM-dd", "");
         Test.ensureEqual(Calendar2.suggestDateTimeFormat(StringArray.fromCSV(", 1985-01-02, Jan 2, 1985")),
             "", "");
 
@@ -3662,7 +3698,7 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.epochSecondsToLimitedIsoStringT(
             "1970-01-01T00:00:00.000Z", d, "."), "-0005-08-31T16:01:02.123Z", "");
        
-        Math2.gc(1000);
+        Math2.gcAndWait();
     }
 
     /**
@@ -3838,9 +3874,10 @@ public class TestUtil {
         String s = File2.getSystemTempDirectory();
         if (!s.equals("C:/Documents and Settings/Bob.Simons/Local Settings/Temp/") &&
             !s.equals("C:/Documents and Settings/Robert/Local Settings/Temp/")) {
-            String2.getStringFromSystemIn(
-                "getSystemTempDirectory=" + s +
-                "\nPress ^C to stop or Enter to continue..."); 
+            String2.log(
+                "getSystemTempDirectory        =" + s);
+                //+ "\nPress ^C to stop or Enter to continue..."); 
+            Math2.gc(5000); //pause in test to display info
         }
         Test.ensurePrintable("test123\n\t ~¡ÿ", "ensurePrintable");
         try {
@@ -4029,16 +4066,14 @@ public class TestUtil {
 
         for (int loop = 0; loop < 3; loop++) {
             //test Strings
-            Math2.gc(500);  
-            Math2.gc(500);  //aggressive
+            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive
             memoryInUse = Math2.getMemoryInUse();
             time = System.currentTimeMillis();
             String sa[] = new String[n];
             for (int i = 0; i < n; i++)
                 sa[i] = "testABCD" + i;
             time = System.currentTimeMillis() - time;
-            Math2.gc(500);  
-            Math2.gc(500);  //aggressive
+            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive
             String2.log("String memoryUse/item=" + 
                 ((Math2.getMemoryInUse() - memoryInUse) / (n + 0.0)) +   //68.1 bytes
                 " time=" + time); // ~562  (after first time)
@@ -4050,8 +4085,7 @@ public class TestUtil {
             for (int i = 0; i < n; i++)
                 ba[i] = String2.getUTF8Bytes("testABCD" + i);  //usually 14 characters +4length +4pointer
             time = System.currentTimeMillis() - time;
-            Math2.gc(500);  
-            Math2.gc(500);  //aggressive
+            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive
             String2.log("utf8 memoryUse/item=" + 
                 ((Math2.getMemoryInUse() - memoryInUse) / (n + 0.0)) + //36.0 bytes; why so many?
                 " time=" + time); // ~1094
@@ -4063,8 +4097,7 @@ public class TestUtil {
             for (int i = 0; i < n; i++)
                 da[i] = i;  
             time = System.currentTimeMillis() - time;
-            Math2.gc(500);  
-            Math2.gc(500);  //aggressive
+            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive
             String2.log("double memoryUse/item=" + 
                 ((Math2.getMemoryInUse() - memoryInUse) / (n + 0.0)) + //8 bytes
                 " time=" + time); // ~6
@@ -4109,32 +4142,38 @@ public class TestUtil {
                 long time = System.currentTimeMillis();
                 for (int inner = 0; inner < n; inner++) 
                     //(char) at beginning means a different 100 strings are created for each outer loop
-                    sa[inner] = String2.canonical(((char)(65 + outer)) + filler100.substring(0, 98) + inner % 100);
+                    sa[inner] = String2.canonical(((char)(65 + outer)) + 
+                        filler100.substring(0, 98) + inner % 100);
 
                 //ensure that memory use and canonical size don't grow unexpectedly
                 time = System.currentTimeMillis() - time;
-                Math2.gc(500);  
-                Math2.gc(500);  //aggressive
-                String2.log("canonicalSize=" + String2.canonicalSize() + 
-                    " time=" + time + " (should be Java 1.7M4700=~280ms, 1.6=~1450ms, 1.5=~2000ms) " + Math2.memoryString());
+                Math2.gcAndWait(); Math2.gcAndWait();  //aggressive
                 long memoryInUse = Math2.getMemoryInUse();
+                int shouldBe = 280;
+                String2.log("canonicalSize=" + String2.canonicalSize() + 
+                    " time=" + time + " (should be Java 1.7M4700=~" + shouldBe + "ms, 1.6=~1450ms, 1.5=~2000ms) " + 
+                    Math2.memoryString());
+                Test.ensureTrue(time < shouldBe * 2, "Unexpected time");
                 if (oMemoryInUse == -1) {
                     oMemoryInUse = memoryInUse; 
                     canSize = String2.canonicalSize();
                 } else {
                     String2.log("  bytes/string=" + ((memoryInUse - oMemoryInUse) / (n + 0.0)));
                     Test.ensureTrue(memoryInUse - oMemoryInUse < 5000000, "Memory use is growing!");
+                    Test.ensureTrue(memoryInUse < 25 * Math2.BytesPerMB, 
+                        "Unexpected memoryInUse=" + (memoryInUse / Math2.BytesPerMB) + 
+                        " (Java 1.7 M4700: 19 then 23 MB).");
                 }
                 Test.ensureEqual(String2.canonicalSize(), canSize, "Unexpected String2.canonicalSize!");
             }   
-            String2.getStringFromSystemIn(
+            String2.log(
                 "\nStarting Dec 2012, it grows from 19MB to 23MB 1/2 way through.\n" +
-                "Is this a Java 1.7 thing?  Perhaps increase in memory allocated to the nursery?\n" +
-                "Press ^C to stop or Enter to continue..."); 
+                "Is this a Java 1.7 thing?  Perhaps it is increase in memory allocated to the nursery."); 
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "Unexpected TestUtil.testString2canonical() error:\n" +
+            String2.getStringFromSystemIn(
+                "\nUnexpected TestUtil.testString2canonical() error:\n" +
+                MustBe.throwableToString(t) + 
                 "Press ^C to stop or Enter to continue..."); 
         }
     }
@@ -4150,8 +4189,7 @@ public class TestUtil {
             String sar[] = new String[127];
 
             //what is initial memory level?
-            Math2.gc(1000);
-            Math2.gc(1000);
+            Math2.gcAndWait(); Math2.gcAndWait(); //aggressive
             long oMem = Math2.getMemoryInUse();
 
             //just store first 5 chars large strings
@@ -4161,8 +4199,7 @@ public class TestUtil {
             }            
 
             //what is final memory level?
-            Math2.gc(1000);
-            Math2.gc(1000);
+            Math2.gcAndWait(); Math2.gcAndWait(); //aggressive
             long cMem = Math2.getMemoryInUse();
             String2.log("oMem=" + oMem + "\n" +
                         "cMem=" + cMem + "\n");

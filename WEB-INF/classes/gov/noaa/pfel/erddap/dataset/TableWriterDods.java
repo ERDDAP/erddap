@@ -120,7 +120,7 @@ public class TableWriterDods extends TableWriter {
     public void finish() throws Throwable {
         //check for MustBe.THERE_IS_NO_DATA
         if (dos == null)
-            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
 
         //end of data
         dos.writeInt(0xA5 << 24); //end of sequence; so if nRows=0, this is all that is sent

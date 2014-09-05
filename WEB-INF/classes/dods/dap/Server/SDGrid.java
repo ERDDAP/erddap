@@ -71,7 +71,7 @@ public abstract class SDGrid extends DGrid implements ServerArrayMethods, RelOps
     /** When projected (using whatever the current constraint provides in the way
     *   of a projection) am I still a Grid?
     *
-    * @returns True if projected grid is still a grid. False otherwise.
+    * @return True if projected grid is still a grid. False otherwise.
     */
     
     public boolean projectionYieldsGrid() {
@@ -131,7 +131,7 @@ public abstract class SDGrid extends DGrid implements ServerArrayMethods, RelOps
 
     /**
     * How many prohected components of this Grid object?
-    * @returns The number of projected components.
+    * @return The number of projected components.
     */
     public int projectedComponents(boolean constrained) {
         int comp;

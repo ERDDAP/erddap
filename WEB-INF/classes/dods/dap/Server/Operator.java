@@ -44,7 +44,7 @@ public class Operator implements ExprParserConstants {
     *
     * @param rop A BaseType to be used as the right operand.
     *
-    * @returns True is the operation evaluates as true, flase otherwise.
+    * @return True is the operation evaluates as true, flase otherwise.
     *
     * @exception dods.dap.Server.InvalidOperatorException
     * @exception dods.dap.Server.RegExpException

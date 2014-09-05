@@ -432,7 +432,7 @@ public class EDDGridCopy extends EDDGrid {
      *   are the dataValues.
      *   Both the axisValues and dataValues are straight from the source,
      *   not modified.
-     * @throws Throwable if trouble
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public PrimitiveArray[] getSourceData(EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
@@ -606,7 +606,7 @@ today;
         tResults = results.substring(0, Math.min(results.length(), expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
     
-//+ " http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\n" +
+//+ " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/1day\n" +
 //today + 
 
 expected = 
@@ -628,6 +628,7 @@ expected =
     "    String satellite \"QuikSCAT\";\n" +
     "    String sensor \"SeaWinds\";\n" +
     "    String source \"satellite observation: QuikSCAT, SeaWinds\";\n" +
+        //it's still a numeric ip because the source file was created long ago
     "    String sourceUrl \"http://192.168.31.18/thredds/dodsC/satellite/QS/ux10/1day\";\n" +
     "    Float64 Southernmost_Northing -89.875;\n" +
     "    String standard_name_vocabulary \"CF-12\";\n" +
@@ -639,10 +640,8 @@ expected =
     "  }\n" +
     "}\n";
             int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) 
-                String2.log("results=\n" + results);
-            Test.ensureEqual(
-                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            Test.ensureTrue(tpo > 0, "tpo=-1 results=\n" + results);
+            Test.ensureEqual(results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
                 expected, "results=\n" + results);
             
             //*** test getting dds for entire dataset

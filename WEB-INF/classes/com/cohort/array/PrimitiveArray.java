@@ -972,6 +972,8 @@ public abstract class PrimitiveArray {
 
     /** 
      * This is like sort(), but StringArray calls sortIgnoreCase().
+     * This is more sophisticated than Java's String.CASE_INSENSITIVE_ORDER.
+     * E.g., all charAt(0) A's will sort by for all charAt(0) a's  (e.g., AA, Aa, aA, aa).
      */
     public void sortIgnoreCase() {
         sort();
@@ -2614,7 +2616,8 @@ public abstract class PrimitiveArray {
         String s1 = diffi == size? null : getString(diffi);
         String s2 = diffi == other.size()? null : other.getString(diffi);
         if (!Test.equal(s1, s2))
-            throw new RuntimeException(MessageFormat.format(ArrayDiff, "" + diffi, s1, s2));
+            throw new RuntimeException(String2.ERROR + ": The PrimitiveArrays differ at [" + diffi + "]:\n" + 
+                s1 + "\n" + s2);
     }
 
     /**

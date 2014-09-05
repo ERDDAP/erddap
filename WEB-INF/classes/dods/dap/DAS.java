@@ -156,7 +156,7 @@ public class DAS implements Cloneable {
    * method calls a generated parser to interpret an ASCII representation of a
    * <code>DAS</code>, and regenerate that <code>DAS</code> in memory.
    *
-   * @param isr the <code>InputStream</code> containing the <code>DAS</code> to
+   * @param is the <code>InputStream</code> containing the <code>DAS</code> to
    *    parse.
    * @exception ParseException error in parser.
    * @exception DASException error in constructing <code>DAS</code>.

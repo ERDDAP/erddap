@@ -54,7 +54,7 @@ public class EDUnits {
 
     /**
      * Set this to true (by calling reallyReallyVerbose=true in your program, 
-     * not but changing the code here)
+     * not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean reallyReallyVerbose = false; 
@@ -811,8 +811,8 @@ public class EDUnits {
         testUdunitsToUcum("printers_pica",     "[pca_pr]");  
         testUdunitsToUcum("printers_point",    "[pnt_pr]");
         testUdunitsToUcum("psi",               "[psi]");
-        testUdunitsToUcum("PSU",               "{psu}"); //???
-        testUdunitsToUcum("psu",               "{psu}"); //???
+        testUdunitsToUcum("PSU",               "10^-3"); //??? PSU changed to 1e-3 with CF std names 25
+        testUdunitsToUcum("psu",               "10^-3"); //??? PSU changed to 1e-3 with CF std names 25
         testUdunitsToUcum("pt",                "[pt_us]");
 
         testUdunitsToUcum("quart",             "[qt_us]");

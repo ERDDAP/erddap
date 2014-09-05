@@ -87,6 +87,7 @@ public class EDDTableFromBMDE extends EDDTable{
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
+        String tSosOfferingPrefix = null;
         Attributes tGlobalAttributes = null;
         String tLocalSourceUrl = null, tSourceCode = null;
         ArrayList tDataVariables = new ArrayList();
@@ -127,6 +128,8 @@ public class EDDTableFromBMDE extends EDDTable{
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<sosOfferingPrefix>")) {}
+            else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content; 
             else if (localTags.equals( "<defaultDataQuery>")) {}
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
@@ -140,7 +143,7 @@ public class EDDTableFromBMDE extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromBMDE(tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttDataVariables, tReloadEveryNMinutes, tLocalSourceUrl, tSourceCode);
     }
@@ -221,6 +224,7 @@ public class EDDTableFromBMDE extends EDDTable{
      */
     public EDDTableFromBMDE(String tDatasetID, String tAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tSosOfferingPrefix;
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object tDataVariables[][],
@@ -240,6 +244,7 @@ public class EDDTableFromBMDE extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        sosOfferingPrefix = tSosOfferingPrefix;
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
@@ -371,11 +376,10 @@ public class EDDTableFromBMDE extends EDDTable{
             } else if (tDestName.equals(EDV.TIME_NAME)) {  //look for TIME_NAME before check isTimeStamp (next)
                 timeIndex = v;
                 dataVariables[timeIndex] = new EDVTime(bmdePre + tSourceNames[v],
-                    tSourceAtt, tAddAtts[v], tSourceType);  
+                    tSourceAtt, tAddAtts[v], tSourceType);  //this constructor gets source / sets destination actual_range
             } else if (isTimeStamp) {
                 dataVariables[v] = new EDVTimeStamp(bmdePre + tSourceNames[v], tDestName,
-                    tSourceAtt, tAddAtts[v], tSourceType);  
-                dataVariables[v].setActualRangeFromDestinationMinMax();
+                    tSourceAtt, tAddAtts[v], tSourceType);  //this constructor gets source / sets destination actual_range
             } else {
                 //handle other variables            
                 //if (reallyVerbose) String2.log("v=" + v + " source=" + prefix+tSourceName + 
@@ -410,6 +414,7 @@ public class EDDTableFromBMDE extends EDDTable{
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public void getDataForDapQuery(String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
@@ -678,11 +683,10 @@ today + " " + EDStatic.erddapUrl + //in tests, always use non-https url
 "    Float64 Westernmost_Easting -124.0;\n" +
 "  }\n" +
 "}\n";
-        int tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) 
-            String2.log("results=\n" + results);
+        int tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(
-            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
             expected, "results=\n" + results);
 
         //.csv        

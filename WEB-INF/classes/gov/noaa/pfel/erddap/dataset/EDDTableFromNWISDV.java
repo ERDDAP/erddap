@@ -212,6 +212,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
+        String tSosOfferingPrefix = null;
         String tLocalSourceUrl = null;
         String tParameterCode = null;
         String tStatisticCode = null;
@@ -250,6 +251,8 @@ public class EDDTableFromNWISDV extends EDDTable{
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<sosOfferingPrefix>")) {}
+            else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content; 
             else if (localTags.equals( "<defaultDataQuery>")) {}
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
@@ -263,7 +266,7 @@ public class EDDTableFromNWISDV extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromNWISDV(tDatasetID, tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl);
@@ -347,6 +350,7 @@ public class EDDTableFromNWISDV extends EDDTable{
     public EDDTableFromNWISDV(
         String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
@@ -366,6 +370,7 @@ public class EDDTableFromNWISDV extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        sosOfferingPrefix = tSosOfferingPrefix;
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
         if (tAddGlobalAttributes == null)
@@ -452,11 +457,13 @@ public class EDDTableFromNWISDV extends EDDTable{
             } else if (EDV.TIME_NAME.equals(tDestName)) {  //look for TIME_NAME before check hasTimeUnits (next)
                 //time won't be in the stationTable, so no getNMinMax
                 dataVariables[dv] = new EDVTime(tSourceName,
-                    tSourceAtt, tAddAtt, tSourceType);  
-                timeIndex = dv;
+                    tSourceAtt, tAddAtt, 
+                    tSourceType); //this constructor gets source / sets destination actual_range 
+                timeIndex = dv; 
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
                 dataVariables[dv] = new EDVTimeStamp(tSourceName, tDestName, 
-                    tSourceAtt, tAddAtt, tSourceType);
+                    tSourceAtt, tAddAtt, 
+                    tSourceType); //this constructor gets source / sets destination actual_range
             } else {
                 dataVariables[dv] = new EDV(tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
@@ -535,6 +542,7 @@ public class EDDTableFromNWISDV extends EDDTable{
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public void getDataForDapQuery(String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
@@ -725,7 +733,7 @@ public class EDDTableFromNWISDV extends EDDTable{
             if (nRows == 0) {
                 if (!reallyVerbose)  //if reallyVerbose, it was done above
                     String2.log(encodedSourceUrl);
-                throw new SimpleException(MustBe.THERE_IS_NO_DATA);
+                throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (from source)");
             }
 
             //verify site Information (stationTable vs here)
@@ -1203,8 +1211,9 @@ public class EDDTableFromNWISDV extends EDDTable{
      * @param startTitle e.g., NWIS Daily Values
      * @param tQualificationCodes  usually either NWISDailyValue or NWISInstananeousValueQualificationCodes
      *    (see above).
-     * @return the xml for datasets.xml
-     * @throws Throwable if trouble
+     * @return a suggested chunk of xml for this dataset for use in datasets.xml 
+     * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
+     *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(boolean includeInstructions, boolean displayResults,
         String tLocalWaterMLUrl, String tSiteCode, String tAgency, 
@@ -1253,7 +1262,7 @@ public class EDDTableFromNWISDV extends EDDTable{
             String2.log(valuesUrl + "\n" +
                 MustBe.throwableToString(t) +
                 "Trying again...");
-            Math2.gc(1000);
+            Math2.gc(1000); //generateDatasetsXml: if trouble, pause, then try again.
             valuesTable = getValuesTable(SSR.getUncompressedUrlInputStream(valuesUrl));
         }
 
@@ -2034,9 +2043,11 @@ directionsForGenerateDatasetsXml() +
         String outputFile = "c:/data/waterML/scrapeNWISStations" + today + ".json";
         String logFile = "c:/data/waterML/logScrapeNWIS" + 
             String2.replaceAll(today, "-", "") + ".txt";
-        if (justAgency != null)
+        if (justAgency != null) 
             String2.setupLog(true, false, logFile, false, false, 1000000000);
-        String2.log("*** EDDTableFromNWISDV bobScrapeNWISStations " + today);
+        String2.log("*** EDDTableFromNWISDV bobScrapeNWISStations " + today + "\n" +
+            "logFile=" + String2.logFileName() + "\n" +
+            String2.standardHelpAboutMessage());
 
         long totalTime = System.currentTimeMillis();
 
@@ -2291,6 +2302,8 @@ directionsForGenerateDatasetsXml() +
             "\nCountries: " + String2.toCSSVString(countrySet.toArray()) +
             "\nTotalTime=" + 
             Calendar2.elapsedTimeString(System.currentTimeMillis() - totalTime));
+        if (justAgency != null)
+            String2.returnLoggingToSystemOut();
         String2.getStringFromSystemIn("Press enter to continue..."); 
     }
 
@@ -2370,7 +2383,9 @@ directionsForGenerateDatasetsXml() +
         String logFile = "c:/data/waterML/logNWISDatasets" + 
             String2.replaceAll(today, "-", "") + ".txt";
         String2.setupLog(true, false, logFile, false, false, 1000000000);
-        String2.log("*** EDDTableFromNWISDV bobMakeNWISDatasets " + today);
+        String2.log("*** EDDTableFromNWISDV bobMakeNWISDatasets " + today + "\n" +
+            "logFile=" + String2.logFileName() + "\n" +
+            String2.standardHelpAboutMessage());
         long totalTime = System.currentTimeMillis();
 
         //get the parameter codes table
@@ -2570,7 +2585,7 @@ directionsForGenerateDatasetsXml() +
                     String2.log("  ERROR getting data for site=" + site + "\n" + 
                         MustBe.throwableToString(t) +
                         "Trying again...");
-                    Math2.gc(1000);
+                    Math2.gc(1000); //generateDatasetsXml: if trouble, pause, then try again.
                     data = getValuesTable(
                         SSR.getUncompressedUrlInputStream(getDataUrl));
                 }
@@ -2727,6 +2742,7 @@ String2.log("\ndatasetStations=\n" + datasetStations.dataToCSVString());
             "\nTotalTime=" + 
             Calendar2.elapsedTimeString(System.currentTimeMillis() - totalTime) + 
             "\nDiagnostics are in logFile=" + logFile);
+        String2.returnLoggingToSystemOut();
         String2.getStringFromSystemIn("Press enter to continue..."); 
     }
 

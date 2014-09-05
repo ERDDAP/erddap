@@ -67,9 +67,10 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
+        String tSosOfferingPrefix = null;
         String tLocalSourceUrl = null;
 
-        String tBeforeData[] = new String[10];   //[0..9] correspond to beforeData1..10
+        String tBeforeData[] = new String[11];   //[0 unused, 1..10] correspond to beforeData1..10
         String tAfterData = null;
         String tNoData = null;
         String tDefaultDataQuery = null;
@@ -132,6 +133,8 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<sosOfferingPrefix>")) {}
+            else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content; 
             else if (localTags.equals( "<defaultDataQuery>")) {}
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
@@ -147,7 +150,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         if (tDatasetType.equals("EDDTableFromAsciiServiceNOS")) { 
 
             return new EDDTableFromAsciiServiceNOS(tDatasetID, tAccessibleTo,
-                tOnChange, tFgdcFile, tIso19115File,
+                tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
                 tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
                 ttDataVariables,
                 tReloadEveryNMinutes, tLocalSourceUrl,
@@ -230,6 +233,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
     public EDDTableFromAsciiService(String tDatasetType, 
         String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
@@ -250,6 +254,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        sosOfferingPrefix = tSosOfferingPrefix;
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
         if (tAddGlobalAttributes == null)
@@ -352,13 +357,12 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
                 depthIndex = dv;
             } else if (EDV.TIME_NAME.equals(tDestName)) {  //look for TIME_NAME before check hasTimeUnits (next)
                 dataVariables[dv] = new EDVTime(tSourceName,
-                    tSourceAtt, tAddAtt, tSourceType);
+                    tSourceAtt, tAddAtt, tSourceType); //this constructor gets source / sets destination actual_range
                 timeIndex = dv;
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
                 dataVariables[dv] = new EDVTimeStamp(tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
-                    tSourceType); //the constructor that reads actual_range
-                dataVariables[dv].setActualRangeFromDestinationMinMax();
+                    tSourceType); //this constructor gets source / sets destination actual_range
             } else {
                 dataVariables[dv] = new EDV(tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
@@ -394,6 +398,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public abstract void getDataForDapQuery(String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable;
@@ -440,11 +445,12 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         String s) throws Throwable {
 
         //look for beforeData
-        for (int bd = 0; bd < beforeData.length; bd++) {
+        if (debugMode) String2.log(">>findBeforeData\nold line=" + s);
+        for (int bd = 1; bd < beforeData.length; bd++) {
             String tBeforeData = beforeData[bd];
             if (tBeforeData != null && tBeforeData.length() > 0) {
                 s = find(in, s, tBeforeData, 
-                    "beforeData" + (bd+1) + "=\"" + tBeforeData + "\" wasn't found");
+                    "beforeData" + bd + "=\"" + tBeforeData + "\" wasn't found");
             }
         }
 
@@ -464,17 +470,20 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
     protected String find(BufferedReader in, 
         String s, String find, String error) throws Throwable {
 
+        if (debugMode) String2.log(">>find=" + find + "\nold line=" + s);
         while (s != null) {
-            if (s.indexOf(noData) >= 0) 
-                throw new SimpleException(MustBe.THERE_IS_NO_DATA);
+            if (s.indexOf(noData) >= 0) {
+                if (debugMode) String2.log(">>found noData=\"" + noData + "\"");
+                throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (in response from source)");
+            }
             int po = s.indexOf(find);
             if (po >= 0) {
                 //success
-                //if (reallyVerbose) String2.log("  found \"" + find + "\"");
+                if (debugMode) String2.log(">>found=" + find);
                 return s.substring(po + find.length());
             } else {
                 s = in.readLine(); //read the next line
-                //String2.log(s);
+                if (debugMode) String2.log(">>new line=" + s);
             }
         }
         throw new SimpleException(
@@ -497,7 +506,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         if (s != null && s.length() == 0)
             s = in.readLine();
         if (s == null) 
-            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (first data line is null)");
 
         //make the empty table with all of the columns (even fixedValue)
         Table table = makeEmptySourceTable(dataVariables, 32);
@@ -510,7 +519,7 @@ public abstract class EDDTableFromAsciiService extends EDDTable{
         boolean stopAfterThisLine = false;
         while (s != null) {
             if (s.indexOf(noData) >= 0) 
-                throw new SimpleException(MustBe.THERE_IS_NO_DATA);
+                throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (says source)");
             int po = s.indexOf(afterData);
             if (po == 0) {
                 //stop now

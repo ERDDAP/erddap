@@ -431,7 +431,7 @@ public class DDS implements Cloneable {
    * method calls a generated parser to interpret an ASCII representation of a
    * <code>DDS</code>, and regenerate that <code>DDS</code> in memory.
    *
-   * @param isr the InputStreamReader containing the <code>DDS</code> to parse.
+   * @param is the InputStreamReader containing the <code>DDS</code> to parse.
    * @exception ParseException thrown on a parser error.
    * @exception DDSException thrown on an error constructing the
    *    <code>DDS</code>.

@@ -81,8 +81,6 @@ import  dods.dap.DAS;
  *  and implement a dummy release() method.
  *
  *  @author jcaron
- *  @see dods.servers.netcdf.NcDataset
- *  @see dods.servers.agg.Dataset
  */
 
 public interface GuardedDataset {

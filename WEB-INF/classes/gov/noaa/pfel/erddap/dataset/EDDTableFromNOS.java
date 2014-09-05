@@ -115,6 +115,7 @@ public class EDDTableFromNOS extends EDDTable{
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
+        String tSosOfferingPrefix = null;
         String tLocalSourceUrl = null;
         String tXmlns = null, tGetWhat = null, tWsdlUrl = null, tRequestTimeFormat = null,
             tRowElementXPath = null;
@@ -163,6 +164,8 @@ public class EDDTableFromNOS extends EDDTable{
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<sosOfferingPrefix>")) {}
+            else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content; 
             else if (localTags.equals( "<defaultDataQuery>")) {}
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
@@ -176,7 +179,7 @@ public class EDDTableFromNOS extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromNOS(tDatasetID, tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             ttDataVariables,
             tReloadEveryNMinutes, tLocalSourceUrl,
@@ -268,6 +271,7 @@ public class EDDTableFromNOS extends EDDTable{
      */
     public EDDTableFromNOS(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
@@ -289,6 +293,7 @@ public class EDDTableFromNOS extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        sosOfferingPrefix = tSosOfferingPrefix;
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
         if (tAddGlobalAttributes == null)
@@ -461,12 +466,11 @@ public class EDDTableFromNOS extends EDDTable{
                 timeIndex = nFixedVariables + dv;
                 dataVariables[timeIndex] = new EDVTime(tSourceName,
                     tSourceAtt, tAddAtt, 
-                    tSourceType);
+                    tSourceType); //this constructor gets source / sets destination actual_range
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
                 dataVariables[nFixedVariables + dv] = new EDVTimeStamp(tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
-                    tSourceType); //the constructor that reads actual_range
-                dataVariables[nFixedVariables + dv].setActualRangeFromDestinationMinMax();
+                    tSourceType); //this constructor gets source / sets destination actual_range
             } else {
                 dataVariables[nFixedVariables + dv] = new EDV(tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
@@ -496,6 +500,7 @@ public class EDDTableFromNOS extends EDDTable{
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public void getDataForDapQuery(String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {

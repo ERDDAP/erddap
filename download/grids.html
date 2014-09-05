@@ -108,7 +108,9 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
   of ERDDAPs which allow the system to handle very heavy use (e.g., for a large data center). 
 
   <p>We're using 
-    <a href="http://en.wikipedia.org/wiki/Computer_cluster#Grid_computing">grid</a>
+    <a href="http://en.wikipedia.org/wiki/Computer_cluster#Grid_computing">grid<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
     as a general term to indicate a type of computer cluster where all of the
   parts may or may not be physically located in one facility and may or may not be centrally 
   administered. An advantage of co-located, centrally owned and administered grids (clusters) 
@@ -123,9 +125,10 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
     alleviate the bottlenecks. Ideally, each replicated part increases the capacity of that
     part of the system linearly (efficiency of scaling). The system isn't scalable unless
     there is a scalable solution for every bottleneck.  
-    <a href="http://en.wikipedia.org/wiki/Scalability">Scalability</a> is different from 
-        efficiency (how quickly a task can be done -- efficiency
-    
+    <a href="http://en.wikipedia.org/wiki/Scalability">Scalability<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+    is different from efficiency (how quickly a task can be done -- efficiency    
     of the parts).  Scalability allows the system to grow to handle any level of demand.
     <b>Efficiency</b> (of scaling and of the parts) determines how may servers, etc., will be needed
     to meet a given level of demand. Efficiency is very important, but always has limits.
@@ -164,7 +167,9 @@ With heavy use, a standalone ERDDAP will be constrained (from most to least like
     which refer to
     <br>datasets on other ERDDAPs. 
   <li>When the composite ERDDAP receives a request for data or images from these datasets, the
-    composite ERDDAP <a href="http://en.wikipedia.org/wiki/URL_redirection">redirects</a>
+    composite ERDDAP <a href="http://en.wikipedia.org/wiki/URL_redirection">redirects<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
        the data request to the other ERDDAP server. The result is:
     <ul>
     <li>This is very efficient (CPU, memory, and bandwidth), because otherwise 
@@ -244,8 +249,12 @@ and/or
       tolerance and data backup (via copying).      
     <li>[For a fascinating design of a high performance system running on one server, 
         see
-      <a href="http://www.pbs.org/cringely/pulpit/2008/pulpit_20080728_005308.html">Cringely's overview</a>
-      or the <a href="http://mailinator.blogspot.com/2007/01/architecture-of-mailinator.html">detailed description of Mailinator</a>.]
+      <a href="http://www.pbs.org/cringely/pulpit/2008/pulpit_20080728_005308.html">Cringely's overview<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+      or the <a href="http://mailinator.blogspot.com/2007/01/architecture-of-mailinator.html">detailed description of Mailinator<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.]
     </ul>
 
   <p><a name="copy">Datasets In Very High Demand</a> - In the really unusual case that one of the 
@@ -263,7 +272,9 @@ and/or
       Therefore, we recommend that the datasets be given slightly different titles (e.g.,
       "... (copy #1)" and "... (copy #2)", or perhaps "(mirror #<i>n</i>)" or "(server #<i>n</i>)") and
        appear as separate datasets in the composite ERDDAP.  Users are used to seeing lists of
-      <a href="http://en.wikipedia.org/wiki/Mirror_(computing)">mirror sites</a>
+      <a href="http://en.wikipedia.org/wiki/Mirror_(computing)">mirror sites<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
          at popular file download sites, so this shouldn't surprise or disappoint them.
       Because of bandwidth limitations at a given site, it may make sense to have the mirror
       located at another site. If the mirror copy is at a different data center, accessed just
@@ -276,8 +287,10 @@ and/or
       you don't need the processing power or bandwidth of another server. But if a dataset is
       heavily used, it may make more sense to copy the data on another server + ERDDAP + hard
       drive (similar to 
-        <a href="http://storagemojo.com/2007/02/19/googles-disk-failure-experience/">what Google does</a>)
-        rather than to use one server and a RAID to store
+      <a href="http://storagemojo.com/2007/02/19/googles-disk-failure-experience/">what Google does<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>)
+      rather than to use one server and a RAID to store
       multiple datasets since you get to use both server+hardDrive+ERDDAPs in the grid until
       one of them fails.
 
@@ -296,8 +309,10 @@ and/or
       drive and have the RAID rebuild the data on the drive.
   <li>The composite ERDDAP fails?
       If you have no 
-        <a href="http://vista.intersystems.com/csp/docbook/DocBook.UI.Page.cls?KEY=GHA_failover">hot or warm failover</a>, 
-        the system is effectively down until you set up
+      <a href="http://vista.intersystems.com/csp/docbook/DocBook.UI.Page.cls?KEY=GHA_failover">hot or warm failover<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>, 
+      the system is effectively down until you set up
       a replacement. That's not good. So if this is a concern, set up multiple composite ERDDAPs
       or a hot or warm failover. Then the effect is minimal. Failures of the composite ERDDAP
       should be rare because it has minimal hard drive activity. 
@@ -356,7 +371,9 @@ and/or
 
 <p>For general information on designing scalable, high capacity, fault-tolerant systems, 
   see Michael T. Nygard's book 
-      <a href="http://www.amazon.com/Release-Production-Ready-Software-Pragmatic-Programmers/dp/0978739213">Release It</a>.
+      <a href="http://www.amazon.com/Release-Production-Ready-Software-Pragmatic-Programmers/dp/0978739213">Release It<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
 
 <p>[Yes, these are simplistic calculations, but I think the conclusions are correct.
 Did I use faulty logic or make a mistake in my calculations? If so, the fault is mine alone. 
@@ -367,11 +384,17 @@ Please send an email with the correction to bob dot simons at noaa dot gov.]
 <!-- ******* -->
 <h2><a name="cloudComputing"><b>Cloud Computing</b></a></h2> 
 Several companies are starting to offer cloud computing services 
-    (e.g., <a href="http://aws.amazon.com/">Amazon Web Services</a>
+    (e.g., <a href="http://aws.amazon.com/">Amazon Web Services<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
       and
-        <a href="http://code.google.com/appengine/">Google App Engine</a>).
-        <a href="http://en.wikipedia.org/wiki/Web_hosting_service">Web hosting companies</a> 
-        have offered a range of roughly similar
+      <a href="http://code.google.com/appengine/">Google App Engine<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>).
+      <a href="http://en.wikipedia.org/wiki/Web_hosting_service">Web hosting companies<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a> 
+      have offered a range of roughly similar
       services since the mid-1990's. Since the ERDDAP grid just consists of ERDDAPs and
       since ERDDAPs are Java web applications that can run in Tomcat (the most common
       application server) or other application servers, it should be relatively easy to
@@ -391,7 +414,9 @@ Several companies are starting to offer cloud computing services
     <ul>
     <li>They charge for their services, sometimes a lot (in absolute terms; not that it isn't a
       good value). The prices listed here are for 
-      <a href="http://aws.amazon.com/ec2/#pricing">Amazon EC2</a>.
+      <a href="http://aws.amazon.com/ec2/#pricing">Amazon EC2<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>.
       These prices (as of March 2009) will come down, but there will also probably be more
       data and more requests for data in the future.
       <ul>

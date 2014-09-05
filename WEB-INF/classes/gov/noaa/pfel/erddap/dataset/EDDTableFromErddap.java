@@ -87,6 +87,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
+        String tSosOfferingPrefix = null;
         String tLocalSourceUrl = null;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
@@ -124,6 +125,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<sosOfferingPrefix>")) {}
+            else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content; 
             else if (localTags.equals( "<defaultDataQuery>")) {}
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
@@ -133,7 +136,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         }
 
         return new EDDTableFromErddap(tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, tLocalSourceUrl);
     }
 
@@ -161,6 +164,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      */
     public EDDTableFromErddap(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         int tReloadEveryNMinutes, 
         String tLocalSourceUrl) throws Throwable {
@@ -178,6 +182,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        sosOfferingPrefix = tSosOfferingPrefix;
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
         addGlobalAttributes = new Attributes();
@@ -219,6 +224,11 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             //set creationTimeMillis to time of previous creation, so next time
             //to be reloaded will be same as if ERDDAP hadn't been restarted.
             creationTimeMillis = quickRestartAttributes.getLong("creationTimeMillis");
+
+            //Ensure quickRestart information is recent.
+            //If too old: abandon construction, delete quickRestart file, flag dataset reloadASAP
+            ensureQuickRestartInfoIsRecent(datasetID, getReloadEveryNMinutes(), 
+                creationTimeMillis, quickRestartFullFileName());
         }
      
         //DAS
@@ -277,8 +287,18 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
                     attribute.getName() + "=" + attribute.getValueAt(0));
             }
 
-            //make the variable
+            //deal with remote not having ioos_category, but this ERDDAP requiring it
             Attributes tAddAtt = new Attributes();
+            if (EDStatic.variablesMustHaveIoosCategory &&
+                tSourceAtt.getString("ioos_category") == null) {
+
+                //guess ioos_category   (alternative is always assign "Unknown")
+                Attributes tAtts = EDD.makeReadyToUseAddVariableAttributesForDatasetsXml(
+                    tSourceAtt, tSourceName, false, false); //tryToAddColorBarMinMax, tryToFindLLAT
+                tAddAtt.add("ioos_category", tAtts.getString("ioos_category"));
+            }
+
+            //make the variable
             if (EDV.LON_NAME.equals(tSourceName)) {
                 lonIndex = tDataVariables.size();
                 tDataVariables.add(new EDVLon(tSourceName,
@@ -302,12 +322,12 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             } else if (EDV.TIME_NAME.equals(tSourceName)) {  //look for TIME_NAME before check hasTimeUnits (next)
                 timeIndex = tDataVariables.size();
                 tDataVariables.add(new EDVTime(tSourceName,
-                    tSourceAtt, tAddAtt, tSourceType));
+                    tSourceAtt, tAddAtt, 
+                    tSourceType));//this constructor gets source / sets destination actual_range
             } else if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
                 EDVTimeStamp edv = new EDVTimeStamp(tSourceName, tSourceName, 
                     tSourceAtt, tAddAtt,
-                    tSourceType); //the constructor that reads actual_range
-                edv.setActualRangeFromDestinationMinMax();
+                    tSourceType); //this constructor gets source / sets destination actual_range
                 tDataVariables.add(edv);
             } else {
                 EDV edv = new EDV(tSourceName, tSourceName, 
@@ -348,26 +368,26 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         //  and if flagKeyKey changes, the new tFlagUrl will be sent.
         //There is analogous code in EDDGridFromErddap.
         try {
-            if (EDStatic.emailEverythingTo == null) {
-                String2.log(
-                    "WARNING: Subscribing to the remote ERDDAP dataset failed because " +
-                    "emailEverythingTo wasn't specified in setup.xml.");
-            } else {
+            if (String2.isSomething(EDStatic.emailSubscriptionsFrom)) {
                 int gpo = tLocalSourceUrl.indexOf("/tabledap/");
                 String subscriptionUrl = tLocalSourceUrl.substring(0, gpo + 1) + Subscriptions.ADD_HTML + "?" +
                     "datasetID=" + File2.getNameNoExtension(tLocalSourceUrl) + 
-                    "&email=" + EDStatic.emailEverythingTo[0] +
+                    "&email=" + EDStatic.emailSubscriptionsFrom +
                     "&emailIfAlreadyValid=false" + 
                     "&action=" + SSR.minimalPercentEncode(flagUrl(datasetID)); // %encode deals with & within flagUrl
                 //String2.log("subscriptionUrl=" + subscriptionUrl); //don't normally display; flags are ~confidential
                 SSR.touchUrl(subscriptionUrl, 60000);
+            } else {
+                String2.log(
+                    String2.ERROR + ": Subscribing to the remote ERDDAP dataset failed because " +
+                    "emailEverythingTo wasn't specified in setup.xml.");
             }
         } catch (Throwable st) {
             String2.log(
-                "\nWARNING: an exception occurred while trying to subscribe to the remote ERDDAP dataset.\n" + 
+                "\n" + String2.ERROR + ": an exception occurred while trying to subscribe to the remote ERDDAP dataset.\n" + 
                 "If the subscription hasn't been set up already, you may need to\n" + 
                 "use a small reloadEveryNMinutes, or have the remote ERDDAP admin add onChange.\n\n" 
-                //+ MustBe.throwableToString(st) //don't normally display; flags are ~confidential
+                //+ MustBe.throwableToString(st) //don't display; flags are ~confidential
                 );
         }
 
@@ -421,6 +441,7 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public void getDataForDapQuery(String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
@@ -455,7 +476,9 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
      *   "http://coastwatch.pfeg.noaa.gov/erddap".
      *   This is a localSourceUrl since it has to be accessible, but usually it is also a publicSourceUrl.
      * @param keepOriginalDatasetIDs
-     * @throws Throwable if trouble
+     * @return a suggested chunk of xml for this dataset for use in datasets.xml 
+     * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
+     *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(String tLocalSourceUrl, boolean keepOriginalDatasetIDs) 
         throws Throwable {
@@ -492,6 +515,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
         if (sourceInfo.indexOf("\"table\"") > 0) {
             Table table = new Table();
             table.readJson(jsonUrl, sourceInfo);   //they are sorted by title
+            if (keepOriginalDatasetIDs)
+                table.ascendingSort(new String[]{"Dataset ID"});
 
             PrimitiveArray urlCol = table.findColumn("tabledap");
             PrimitiveArray titleCol = table.findColumn("Title");
@@ -556,16 +581,15 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
 
         //test local generateDatasetsXml.  In tests, always use non-https url.
         try { 
-            String results = generateDatasetsXml(EDStatic.erddapUrl, false); 
+            String results = generateDatasetsXml(EDStatic.erddapUrl, false) + "\n"; 
             String2.log("results=\n" + results);
 
             //GenerateDatasetsXml
-            GenerateDatasetsXml.doIt(new String[]{"-verbose", 
+            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromErddap",
                 EDStatic.erddapUrl,
                 "false"}, //keep original names?
               false); //doIt loop?
-            String gdxResults = String2.getClipboardString();
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 String expected = 
@@ -1003,10 +1027,10 @@ expected2 =
 "    Float64 Westernmost_Easting -126.2;\n" +
 "  }\n" +
 "}\n";
-            int tpo = results.indexOf(expected2.substring(0, 17));
-            if (tpo < 0) String2.log("results=\n" + results);
-            Test.ensureEqual(results.substring(tpo, 
-                Math.min(results.length(), tpo + expected2.length())), 
+            tPo = results.indexOf(expected2.substring(0, 17));
+            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+            Test.ensureEqual(results.substring(tPo, 
+                Math.min(results.length(), tPo + expected2.length())), 
                 expected2, "results=\n" + results);
 
             if (testLocalErddapToo) {
@@ -1014,10 +1038,10 @@ expected2 =
                 Test.ensureEqual(results.substring(0, expected.length()), 
                     expected, "\nresults=\n" + results);
 
-                tpo = results.indexOf(expected2.substring(0, 17));
-                if (tpo < 0) String2.log("results=\n" + results);
-                Test.ensureEqual(results.substring(tpo, 
-                    Math.min(results.length(), tpo + expected2.length())), 
+                tPo = results.indexOf(expected2.substring(0, 17));
+                Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+                Test.ensureEqual(results.substring(tPo, 
+                    Math.min(results.length(), tPo + expected2.length())), 
                     expected2, "results=\n" + results);
             }
             
@@ -1209,11 +1233,10 @@ expected2 =
 "    Float64 geospatial_lon_min -126.2;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String history \"" + today;
-        tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) 
-            String2.log("results=\n" + results);
+        tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(
-            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
             expected, "results=\n" + results);
             
 //+ " http://oceanwatch.pfeg.noaa.gov/opendap/GLOBEC/GLOBEC_bottle\n" +
@@ -1288,12 +1311,9 @@ expected =
 "    Float64 Westernmost_Easting -126.2;\n" +
 "  }\n" +
 "}\n";
-            tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0 || results.length() < tpo + expected.length()) 
-                String2.log("results=\n" + results);
-            Test.ensureEqual(results.substring(tpo, 
-                Math.min(results.length(), tpo + expected.length())),
-                expected, "results=\n" + results);
+            tPo = results.indexOf(expected.substring(0, 17));
+            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+            Test.ensureEqual(results.substring(tPo), expected, "results=\n" + results);
 
             //.dds 
             tName = globecBottle.makeNewFileForDapQuery(null, null, userDapQuery, EDStatic.fullTestCacheDirectory, 
@@ -1358,59 +1378,63 @@ expected =
             results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
             String tHeader = 
 "netcdf EDDTableFromErddap_Data.nc {\n" +
-" dimensions:\n" +
-"   row = 100;\n" +
-"   ship_strlen = 11;\n" +
-" variables:\n" +
-"   float longitude(row=100);\n" +
-"     :_CoordinateAxisType = \"Lon\";\n" +
-"     :_FillValue = NaNf; // float\n" +
-"     :actual_range = -125.67f, -124.8f; // float\n" +
-"     :axis = \"X\";\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Longitude\";\n" +
-"     :missing_value = NaNf; // float\n" +
-"     :standard_name = \"longitude\";\n" +
-"     :units = \"degrees_east\";\n" +
-"   float NO3(row=100);\n" +
-"     :_FillValue = -99.0f; // float\n" +
-"     :actual_range = 0.46f, 34.09f; // float\n" +
-"     :colorBarMaximum = 50.0; // double\n" +
-"     :colorBarMinimum = 0.0; // double\n" +
-"     :ioos_category = \"Dissolved Nutrients\";\n" +
-"     :long_name = \"Nitrate\";\n" +
-"     :missing_value = -9999.0f; // float\n" +
-"     :standard_name = \"mole_concentration_of_nitrate_in_sea_water\";\n" +
-"     :units = \"micromoles L-1\";\n" +
-"   double time(row=100);\n" +
-"     :_CoordinateAxisType = \"Time\";\n" +
-"     :_FillValue = NaN; // double\n" +
-"     :actual_range = 1.02928674E9, 1.02936804E9; // double\n" +
-"     :axis = \"T\";\n" +
-"     :cf_role = \"profile_id\";\n" +
-"     :ioos_category = \"Time\";\n" +
-"     :long_name = \"Time\";\n" +
-"     :missing_value = NaN; // double\n" +
-"     :standard_name = \"time\";\n" +
-"     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
-"     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"   char ship(row=100, ship_strlen=11);\n" +
-"     :ioos_category = \"Identifier\";\n" +
-"     :long_name = \"Ship\";\n" +
+"  dimensions:\n" +
+"    row = 100;\n" +
+"    ship_strlen = 11;\n" +
+"  variables:\n" +
+"    float longitude(row=100);\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"      :_FillValue = NaNf; // float\n" +
+"      :actual_range = -125.67f, -124.8f; // float\n" +
+"      :axis = \"X\";\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :missing_value = NaNf; // float\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
 "\n" +
-" :cdm_altitude_proxy = \"bottle_posn\";\n" +
-" :cdm_data_type = \"TrajectoryProfile\";\n" +
-" :cdm_profile_variables = \"cast, longitude, latitude, time\";\n" +
-" :cdm_trajectory_variables = \"cruise_id, ship\";\n" +
-" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" + 
+"    float NO3(row=100);\n" +
+"      :_FillValue = -99.0f; // float\n" +
+"      :actual_range = 0.46f, 34.09f; // float\n" +
+"      :colorBarMaximum = 50.0; // double\n" +
+"      :colorBarMinimum = 0.0; // double\n" +
+"      :ioos_category = \"Dissolved Nutrients\";\n" +
+"      :long_name = \"Nitrate\";\n" +
+"      :missing_value = -9999.0f; // float\n" +
+"      :standard_name = \"mole_concentration_of_nitrate_in_sea_water\";\n" +
+"      :units = \"micromoles L-1\";\n" +
+"\n" +
+"    double time(row=100);\n" +
+"      :_CoordinateAxisType = \"Time\";\n" +
+"      :_FillValue = NaN; // double\n" +
+"      :actual_range = 1.02928674E9, 1.02936804E9; // double\n" +
+"      :axis = \"T\";\n" +
+"      :cf_role = \"profile_id\";\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Time\";\n" +
+"      :missing_value = NaN; // double\n" +
+"      :standard_name = \"time\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"\n" +
+"    char ship(row=100, ship_strlen=11);\n" +
+"      :ioos_category = \"Identifier\";\n" +
+"      :long_name = \"Ship\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :cdm_altitude_proxy = \"bottle_posn\";\n" +
+"  :cdm_data_type = \"TrajectoryProfile\";\n" +
+"  :cdm_profile_variables = \"cast, longitude, latitude, time\";\n" +
+"  :cdm_trajectory_variables = \"cruise_id, ship\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" + 
 //goofy lat=double  lon=float!
-" :Easternmost_Easting = -124.8f; // float\n" +
-" :featureType = \"TrajectoryProfile\";\n" +
-" :geospatial_lat_units = \"degrees_north\";\n" +
-" :geospatial_lon_max = -124.8f; // float\n" +
-" :geospatial_lon_min = -125.67f; // float\n" +
-" :geospatial_lon_units = \"degrees_east\";\n" +
-" :history = \"" + today;
+"  :Easternmost_Easting = -124.8f; // float\n" +
+"  :featureType = \"TrajectoryProfile\";\n" +
+"  :geospatial_lat_units = \"degrees_north\";\n" +
+"  :geospatial_lon_max = -124.8f; // float\n" +
+"  :geospatial_lon_min = -125.67f; // float\n" +
+"  :geospatial_lon_units = \"degrees_east\";\n" +
+"  :history = \"" + today;
         tResults = results.substring(0, tHeader.length());
         Test.ensureEqual(tResults, tHeader, "\nresults=\n" + results);
 
@@ -1421,10 +1445,10 @@ expected =
 //today + " http://127.0.0.1:8080/cwexperimental/
 String tHeader2 =
 "tabledap/rGlobecBottle.nc?longitude,NO3,time,ship&latitude>0&time>=2002-08-14&time<=2002-08-15\";\n" +
-" :id = \"Globec_bottle_data_2002\";\n" +
-" :infoUrl = \"http://www.globec.org/\";\n" +
-" :institution = \"GLOBEC\";\n" +
-" :keywords = \"10um,\n" +
+"  :id = \"Globec_bottle_data_2002\";\n" +
+"  :infoUrl = \"http://www.globec.org/\";\n" +
+"  :institution = \"GLOBEC\";\n" +
+"  :keywords = \"10um,\n" +
 "Biosphere > Vegetation > Photosynthetically Active Radiation,\n" +
 "Oceans > Ocean Chemistry > Ammonia,\n" +
 "Oceans > Ocean Chemistry > Chlorophyll,\n" +
@@ -1439,19 +1463,19 @@ String tHeader2 =
 "Oceans > Ocean Temperature > Water Temperature,\n" +
 "Oceans > Salinity/Density > Salinity,\n" +
 "active, after, ammonia, ammonium, attenuation, biosphere, bottle, cast, chemistry, chlorophyll, chlorophyll-a, color, concentration, concentration_of_chlorophyll_in_sea_water, cruise, data, density, dissolved, dissolved nutrients, dissolved o2, fluorescence, fraction, from, globec, identifier, mass, mole, mole_concentration_of_ammonium_in_sea_water, mole_concentration_of_nitrate_in_sea_water, mole_concentration_of_nitrite_in_sea_water, mole_concentration_of_phosphate_in_sea_water, mole_concentration_of_silicate_in_sea_water, moles, moles_of_nitrate_and_nitrite_per_unit_mass_in_sea_water, n02, nep, nh4, nitrate, nitrite, nitrogen, no3, number, nutrients, o2, ocean, ocean color, oceans, optical, optical properties, optics, oxygen, passing, per, phaeopigments, phosphate, photosynthetically, pigments, plus, po4, properties, radiation, rosette, salinity, screen, sea, sea_water_salinity, sea_water_temperature, seawater, sensor, sensors, ship, silicate, temperature, time, total, transmission, transmissivity, unit, vegetation, voltage, volume, volume_fraction_of_oxygen_in_sea_water, water\";\n" +
-" :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
-" :license = \"The data may be used and redistributed for free but is not intended\n" +
+"  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
+"  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
 "of their employees or contractors, makes any warranty, express or\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-" :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
-" :standard_name_vocabulary = \"CF-12\";\n" +
-" :subsetVariables = \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
-" :summary = \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
+"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :sourceUrl = \"(local files; contact erd.data@noaa.gov)\";\n" +
+"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :subsetVariables = \"cruise_id, ship, cast, longitude, latitude, time\";\n" +
+"  :summary = \"GLOBEC (GLOBal Ocean ECosystems Dynamics) NEP (Northeast Pacific)\n" +
 "Rosette Bottle Data from New Horizon Cruise (NH0207: 1-19 August 2002).\n" +
 "Notes:\n" +
 "Physical data processed by Jane Fleischbein (OSU).\n" +
@@ -1479,10 +1503,10 @@ String tHeader2 =
 "\n" +
 "Inquiries about how to access this data should be directed to\n" +
 "Dr. Hal Batchelder (hbatchelder@coas.oregonstate.edu).\";\n" +
-" :time_coverage_end = \"2002-08-14T23:34:00Z\";\n" +
-" :time_coverage_start = \"2002-08-14T00:59:00Z\";\n" +
-" :title = \"GLOBEC NEP Rosette Bottle Data (2002)\";\n" +
-" :Westernmost_Easting = -125.67f; // float\n" +
+"  :time_coverage_end = \"2002-08-14T23:34:00Z\";\n" +
+"  :time_coverage_start = \"2002-08-14T00:59:00Z\";\n" +
+"  :title = \"GLOBEC NEP Rosette Bottle Data (2002)\";\n" +
+"  :Westernmost_Easting = -125.67f; // float\n" +
 " data:\n";
 
             expected = tHeader2 +
@@ -1494,9 +1518,9 @@ String tHeader2 =
     "  {1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02928674E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02929106E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.02930306E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.029309E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02931668E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02932484E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02933234E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934002E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02934632E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02935214E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936018E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9, 1.02936804E9}\n" +
     "ship =\"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\", \"New_Horizon\"\n" +
     "}\n";
-            tpo = results.indexOf(tHeader2.substring(0, 17));
-            if (tpo < 0) String2.log("results=\n" + results);
-            Test.ensureEqual(results.substring(tpo, tpo + tHeader2.length()), tHeader2, 
+            tPo = results.indexOf(tHeader2.substring(0, 17));
+            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+            Test.ensureEqual(results.substring(tPo, tPo + tHeader2.length()), tHeader2, 
                 "results=\n" + results);
 
             //.ncHeader
@@ -1509,11 +1533,10 @@ String tHeader2 =
             Test.ensureEqual(tResults, tHeader, "\nresults=\n" + results);
 
             expected = tHeader2 + "}\n";
-            tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) 
-                String2.log("results=\n" + results);
+            tPo = results.indexOf(expected.substring(0, 17));
+            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
             Test.ensureEqual(
-                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
                 expected, "results=\n" + results);
 
             //test .png
@@ -1568,13 +1591,31 @@ String tHeader2 =
     public static void testApostrophe() throws Throwable {
         String2.log("\n*** EDDTableFromErddap.testApostrophe");
 
-        EDDTable edd = (EDDTableFromErddap)oneFromDatasetXml("testWTEY"); 
-        String2.log("title=" + edd.title());
-        String tName = edd.makeNewFileForDapQuery(null, null, 
-            "longitude,latitude,platformSpeed_kts&time%3E=2013-05-30T00:00:00Z" +
-            "&time%3C=2013-06-06T00:00:00Z&.draw=markers&.marker=5|5&.color=0x000000&.colorBar=|||||",
-            EDStatic.fullTestCacheDirectory, edd.className() + "_Apos", ".png"); 
-        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        try {
+            EDDTable edd = (EDDTableFromErddap)oneFromDatasetXml("testWTEY"); 
+            String2.log("title=" + edd.title());
+            String tName = edd.makeNewFileForDapQuery(null, null, 
+                "longitude,latitude,platformSpeed_kts&time%3E=2013-05-30T00:00:00Z" +
+                "&time%3C=2013-06-06T00:00:00Z&.draw=markers&.marker=5|5&.color=0x000000&.colorBar=|||||",
+                EDStatic.fullTestCacheDirectory, edd.className() + "_Apos", ".png"); 
+            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        } catch (Throwable t) {
+            String msg = MustBe.throwableToString(t);
+            if (msg.indexOf("timed out") >= 0)
+                Test.knownProblem("2013-10-29 This fails because oceanview isn't accessible to my desktop via numeric IP." +
+                    "\n  I reported problem to Roy. He reported to Dave Nordelo. ... Hopefully will be fixed.",
+                    msg);
+            else String2.getStringFromSystemIn(msg + 
+                "\nUnexpected error.  Press ^C to stop or Enter to continue..."); 
+        }
+    }
+
+    /** This tests dealing with remote not having ioos_category, but local requiring it. */
+    public static void testTableNoIoosCat() throws Throwable {
+        String2.log("\n*** EDDTableFromErddap.testTableNoIoosCat");
+
+        //this failed because trajectory didn't have ioos_category
+        EDDTable edd = (EDDTable)oneFromDatasetXml("testTableNoIoosCat"); 
 
     }
 
@@ -1595,6 +1636,7 @@ String tHeader2 =
         testBasic(true);
         testGenerateDatasetsXml();
         testApostrophe();
+        testTableNoIoosCat();
 
         //not usually done
 

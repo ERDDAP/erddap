@@ -61,6 +61,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
+        String tSosOfferingPrefix = null;
         String tExtractDestinationNames = "";
         String tOrderExtractBy = "";
         boolean checkSourceData = defaultCheckSourceData;
@@ -91,6 +92,8 @@ public class EDDTableCopyPost extends EDDTableCopy {
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<sosOfferingPrefix>")) {}
+            else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content; 
             else if (localTags.equals( "<reloadEveryNMinutes>")) {}
             else if (localTags.equals("</reloadEveryNMinutes>")) tReloadEveryNMinutes = String2.parseInt(content); 
             else if (localTags.equals( "<extractDestinationNames>")) {}
@@ -129,7 +132,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
         }
 
         return new EDDTableCopyPost(tDatasetID, 
-            tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
+            tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, 
             tExtractDestinationNames, tOrderExtractBy, tSourceNeedsExpandedFP_EQ,
             tSourceEdd, tFileTableInMemory);
@@ -143,14 +146,14 @@ public class EDDTableCopyPost extends EDDTableCopy {
      */
     public EDDTableCopyPost(String tDatasetID, 
         String tAccessibleTo, 
-        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         int tReloadEveryNMinutes,
         String tExtractDestinationNames, String tOrderExtractBy, 
         Boolean tSourceNeedsExpandedFP_EQ,
         EDDTable tSourceEdd, boolean tFileTableInMemory) throws Throwable {
 
-        super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, 
+        super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery,
             tReloadEveryNMinutes,
             tExtractDestinationNames, tOrderExtractBy, tSourceNeedsExpandedFP_EQ, 
@@ -166,7 +169,7 @@ public class EDDTableCopyPost extends EDDTableCopy {
      *  and constructor will try again in 15 min.
      */
     EDDTableFromFiles makeLocalEdd(String tDatasetID, String tAccessibleTo,
-        StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        StringArray tOnChange, String tFgdcFile, String tIso19115File, String tSosOfferingPrefix,
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
         int tReloadEveryNMinutes,
@@ -179,7 +182,8 @@ public class EDDTableCopyPost extends EDDTableCopy {
         throws Throwable {
 
         return new EDDTableFromPostNcFiles(tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File, "", "", //tDefaultDataQuery, tDefaultGraphQuery
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
+            "", "", //tDefaultDataQuery, tDefaultGraphQuery
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes, 
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,

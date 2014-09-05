@@ -18,8 +18,6 @@ import dods.dap.*;
     `dods.dap.functions.Length' which has one method called main which takes
     an array of BaseType objects and returns its value in a BaseType object.
     @author jhrg
-    @see CEEValuator
-    @see FunctionClause 
     @version $Revision: 1.5 $
 */
 public class Length {

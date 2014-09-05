@@ -221,7 +221,7 @@ public class EDDGridFromEtopo extends EDDGrid {
      *   are the dataValues.
      *   Both the axisValues and dataValues are straight from the source,
      *   not modified.
-     * @throws Throwable if trouble
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public PrimitiveArray[] getSourceData(EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
@@ -446,90 +446,93 @@ public class EDDGridFromEtopo extends EDDGrid {
 //"   latitude = 11;\n" +   // (has coord.var)\n" +  //changed when switched to netcdf-java 4.0, 2009-02-23
 //"   longitude = 22;\n" +   // (has coord.var)\n" +
 "netcdf EDDGridFromEtopo_Entire.nc {\n" +
-" dimensions:\n" +
-"   latitude = 22;\n" +
-"   longitude = 44;\n" +
-" variables:\n" +
-"   double latitude(latitude=22);\n" +
-"     :_CoordinateAxisType = \"Lat\";\n" +
-"     :actual_range = -90.0, 85.0; // double\n" +
-"     :axis = \"Y\";\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Latitude\";\n" +
-"     :standard_name = \"latitude\";\n" +
-"     :units = \"degrees_north\";\n" +
-"   double longitude(longitude=44);\n" +
-"     :_CoordinateAxisType = \"Lon\";\n" +
-"     :actual_range = -180.0, 178.33333333333331; // double\n" +
-"     :axis = \"X\";\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Longitude\";\n" +
-"     :standard_name = \"longitude\";\n" +
-"     :units = \"degrees_east\";\n" +
-"   short altitude(latitude=22, longitude=44);\n" +
-"     :_FillValue = 32767S; // short\n" +
-"     :colorBarMaximum = 8000.0; // double\n" +
-"     :colorBarMinimum = -8000.0; // double\n" +
-"     :colorBarPalette = \"Topography\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Altitude\";\n" +
-"     :missing_value = 32767S; // short\n" +
-"     :positive = \"up\";\n" +
-"     :standard_name = \"altitude\";\n" +
-"     :units = \"m\";\n" +
+"  dimensions:\n" +
+"    latitude = 22;\n" +
+"    longitude = 44;\n" +
+"  variables:\n" +
+"    double latitude(latitude=22);\n" +
+"      :_CoordinateAxisType = \"Lat\";\n" +
+"      :actual_range = -90.0, 85.0; // double\n" +
+"      :axis = \"Y\";\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Latitude\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
 "\n" +
-" :acknowledgement = \"NOAA NGDC\";\n" +
-" :cdm_data_type = \"Grid\";\n" +
-" :contributor_name = \"GLOBE, SRTM30, Baltic Sea Bathymetry, Caspian Sea Bathymetry, Great Lakes Bathymetry, Gulf of California Bathymetry, IBCAO, JODC Bathymetry, Mediterranean Sea Bathymetry, U.S. Coastal Relief Model (CRM), Antarctica RAMP Topography, Antarctic Digital Database, GSHHS\";\n" +
-" :contributor_role = \"source data\";\n" +
-" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-" :creator_email = \"Barry.Eakins@noaa.gov \";\n" +
-" :creator_name = \"NOAA NGDC\";\n" +
-" :creator_url = \"http://www.ngdc.noaa.gov/mgg/global/global.html\";\n" +
-" :data_source = \"NOAA NGDC ETOPO1\";\n" +
-" :drawLandMask = \"under\";\n" +
-" :Easternmost_Easting = 178.33333333333331; // double\n" +
-" :geospatial_lat_max = 85.0; // double\n" +
-" :geospatial_lat_min = -90.0; // double\n" +
-" :geospatial_lat_resolution = 0.016666666666666666; // double\n" +
-" :geospatial_lat_units = \"degrees_north\";\n" +
-" :geospatial_lon_max = 178.33333333333331; // double\n" +
-" :geospatial_lon_min = -180.0; // double\n" +
-" :geospatial_lon_resolution = 0.016666666666666666; // double\n" +
-" :geospatial_lon_units = \"degrees_east\";\n" +
-" :history = \"2011-03-14 Downloaded http://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/binary/etopo1_ice_g_i2.zip\n";
+"    double longitude(longitude=44);\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"      :actual_range = -180.0, 178.33333333333331; // double\n" +
+"      :axis = \"X\";\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"\n" +
+"    short altitude(latitude=22, longitude=44);\n" +
+"      :_FillValue = 32767S; // short\n" +
+"      :colorBarMaximum = 8000.0; // double\n" +
+"      :colorBarMinimum = -8000.0; // double\n" +
+"      :colorBarPalette = \"Topography\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Altitude\";\n" +
+"      :missing_value = 32767S; // short\n" +
+"      :positive = \"up\";\n" +
+"      :standard_name = \"altitude\";\n" +
+"      :units = \"m\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :acknowledgement = \"NOAA NGDC\";\n" +
+"  :cdm_data_type = \"Grid\";\n" +
+"  :contributor_name = \"GLOBE, SRTM30, Baltic Sea Bathymetry, Caspian Sea Bathymetry, Great Lakes Bathymetry, Gulf of California Bathymetry, IBCAO, JODC Bathymetry, Mediterranean Sea Bathymetry, U.S. Coastal Relief Model (CRM), Antarctica RAMP Topography, Antarctic Digital Database, GSHHS\";\n" +
+"  :contributor_role = \"source data\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :creator_email = \"Barry.Eakins@noaa.gov \";\n" +
+"  :creator_name = \"NOAA NGDC\";\n" +
+"  :creator_url = \"http://www.ngdc.noaa.gov/mgg/global/global.html\";\n" +
+"  :data_source = \"NOAA NGDC ETOPO1\";\n" +
+"  :drawLandMask = \"under\";\n" +
+"  :Easternmost_Easting = 178.33333333333331; // double\n" +
+"  :geospatial_lat_max = 85.0; // double\n" +
+"  :geospatial_lat_min = -90.0; // double\n" +
+"  :geospatial_lat_resolution = 0.016666666666666666; // double\n" +
+"  :geospatial_lat_units = \"degrees_north\";\n" +
+"  :geospatial_lon_max = 178.33333333333331; // double\n" +
+"  :geospatial_lon_min = -180.0; // double\n" +
+"  :geospatial_lon_resolution = 0.016666666666666666; // double\n" +
+"  :geospatial_lon_units = \"degrees_east\";\n" +
+"  :history = \"2011-03-14 Downloaded http://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/binary/etopo1_ice_g_i2.zip\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
 
 //today + " (local file)\n" +
 //today + 
 expected =   
 " http://127.0.0.1:8080/cwexperimental/griddap/etopo180.nc?altitude[(-90):500:(90)][(-180):500:(180)]\";\n" +
-" :id = \"SampledFromETOPO1_ice_g_i2\";\n" +
-" :infoUrl = \"http://www.ngdc.noaa.gov/mgg/global/global.html\";\n" +
-" :institution = \"NOAA NGDC\";\n" +
-" :keywords = \"Oceans > Bathymetry/Seafloor Topography > Bathymetry\";\n" +
-" :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
-" :license = \"The data may be used and redistributed for free but is not intended\n" +
+"  :id = \"SampledFromETOPO1_ice_g_i2\";\n" +
+"  :infoUrl = \"http://www.ngdc.noaa.gov/mgg/global/global.html\";\n" +
+"  :institution = \"NOAA NGDC\";\n" +
+"  :keywords = \"Oceans > Bathymetry/Seafloor Topography > Bathymetry\";\n" +
+"  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
+"  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
 "of their employees or contractors, makes any warranty, express or\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-" :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
-" :Northernmost_Northing = 85.0; // double\n" +
-" :project = \"NOAA NGDC ETOPO\";\n" +
-" :projection = \"geographic\";\n" +
-" :projection_type = \"mapped\";\n" +
-" :references = \"Amante, C. and B. W. Eakins, ETOPO1 1 Arc-Minute Global Relief Model: Procedures, Data Sources and Analysis. NOAA Technical Memorandum NESDIS NGDC-24, 19 pp, March 2009.\";\n" +
-" :sourceUrl = \"(local file)\";\n" +
-" :Southernmost_Northing = -90.0; // double\n" +
-" :standard_name_vocabulary = \"CF-12\";\n" +
-" :summary = \"ETOPO1 is a 1 arc-minute global relief model of Earth's surface that integrates land topography and ocean bathymetry. It was built from numerous global and regional data sets. This is the 'Ice Surface' version, with the top of the Antarctic and Greenland ice sheets. The horizontal datum is WGS-84, the vertical datum is Mean Sea Level. Keywords: Bathymetry, Digital Elevation. This is the grid/node-registered version: the dataset's latitude and longitude values mark the centers of the cells.\";\n" +
-" :title = \"Topography, ETOPO1, 0.0166667 degrees, Global (longitude -180 to 180), (Ice Sheet Surface)\";\n" +
-" :Westernmost_Easting = -180.0; // double\n" +
+"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
+"  :Northernmost_Northing = 85.0; // double\n" +
+"  :project = \"NOAA NGDC ETOPO\";\n" +
+"  :projection = \"geographic\";\n" +
+"  :projection_type = \"mapped\";\n" +
+"  :references = \"Amante, C. and B. W. Eakins, ETOPO1 1 Arc-Minute Global Relief Model: Procedures, Data Sources and Analysis. NOAA Technical Memorandum NESDIS NGDC-24, 19 pp, March 2009.\";\n" +
+"  :sourceUrl = \"(local file)\";\n" +
+"  :Southernmost_Northing = -90.0; // double\n" +
+"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :summary = \"ETOPO1 is a 1 arc-minute global relief model of Earth's surface that integrates land topography and ocean bathymetry. It was built from numerous global and regional data sets. This is the 'Ice Surface' version, with the top of the Antarctic and Greenland ice sheets. The horizontal datum is WGS-84, the vertical datum is Mean Sea Level. Keywords: Bathymetry, Digital Elevation. This is the grid/node-registered version: the dataset's latitude and longitude values mark the centers of the cells.\";\n" +
+"  :title = \"Topography, ETOPO1, 0.0166667 degrees, Global (longitude -180 to 180), (Ice Sheet Surface)\";\n" +
+"  :Westernmost_Easting = -180.0; // double\n" +
 " data:\n" +
 "latitude =\n" +
 "  {-90.0, -81.66666666666667, -73.33333333333333, -65.0, -56.666666666666664, -48.333333333333336, -40.0, -31.666666666666664, -23.33333333333333, -15.0, -6.666666666666671, 1.6666666666666714, 10.0, 18.33333333333333, 26.66666666666667, 35.0, 43.33333333333334, 51.66666666666666, 60.0, 68.33333333333334, 76.66666666666666, 85.0}\n" +
@@ -561,11 +564,10 @@ expected =
 "    {-2192, -1676, -1998, -1924, -2164, -1795, -2219, -1842, -1451, -1393, -1764, -1978, -1291, -626, -560, -1157, -2733, -2293, -1400, -1160, -3957, -3945, -3087, -3454, -4301, -3977, -3677, -3903, -3888, -3809, -3754, -3710, -3639, -3928, -3511, -4254, -4296, -4254, -4074, -2583, -1403, -3518, -3220, -2210}\n" +
 "  }\n" +
 "}\n";
-        int tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) 
-            String2.log("results=\n" + results);
+        tPo = results.indexOf(expected.substring(0, 17));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureEqual(
-            results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
             expected, "results=\n" + results);
 
 

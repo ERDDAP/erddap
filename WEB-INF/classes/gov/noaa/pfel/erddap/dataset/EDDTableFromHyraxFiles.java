@@ -75,6 +75,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
      */
     public EDDTableFromHyraxFiles(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
@@ -89,7 +90,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
 
         super("EDDTableFromHyraxFiles", true, //isLocal is now set to true (copied files)
             tDatasetID, tAccessibleTo, 
-            tOnChange, tFgdcFile, tIso19115File, 
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
             tDataVariables, tReloadEveryNMinutes,
@@ -105,7 +106,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
     /**
      * Create tasks to download files.
      * If addToHyraxUrlList is completelySuccessful, local files that
-     * aren't mentioned on the server will be deleted.
+     * aren't mentioned on the server will be renamed [fileName].ncRemoved .
      * 
      * @param catalogUrl  should have /catalog/ in the middle and 
      *    / or contents.html at the end
@@ -156,13 +157,14 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                 catalogUrl, fileNameRegex, recursive,
                 sourceFileName, sourceFileLastMod);
 
-            //Delete local files that shouldn't exist?
+            //Rename local files that shouldn't exist?
             //If completelySuccessful and found some files, 
-            //local files that aren't mentioned on the server will be deleted.
+            //local files that aren't mentioned on the server will be renamed
+            //[fileName].ncRemoved .
             //If not completelySuccessful, perhaps the server is down temporarily,
-            //so no files will be deleted.
+            //no files will be renamed.
             //!!! This is imperfect. If a remote sub webpage always fails, then
-            //  no local files will ever be deleted.
+            //  no local files will ever be renamed.
             if (completelySuccessful && sourceFileName.size() > 0) {
                 //make a hashset of theoretical local fileNames that will exist 
                 //  after copying based on getHyraxFileInfo
@@ -182,35 +184,34 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                     RegexFilenameFilter.recursiveFullNameList(baseDir, fileNameRegex, false) : //directoriesToo
                     RegexFilenameFilter.fullNameList(baseDir, fileNameRegex);
 
-                //delete local files not in the hashset of files that will exist
+                //rename local files not in the hashset of files that will exist to [fileName].ncRemoved 
                 int nLocalFiles = localFiles.length;
-                int nDeleted = 0;
-                if (reallyVerbose) String2.log("Looking for local files to delete because the " +
+                int nRemoved = 0;
+                if (reallyVerbose) String2.log("Looking for local files to rename 'Removed' because the " +
                     "datasource no longer has the corresponding file...");
                 for (int f = 0; f < nLocalFiles; f++) {
                     //if a localFile isn't in hashset of willExist files, it shouldn't exist
                     if (!hashset.remove(localFiles[f])) {
-                        nDeleted++;
-                        if (reallyVerbose) String2.log("  deleting " + localFiles[f]);
-                        File2.simpleDelete(localFiles[f]);
+                        nRemoved++;
+                        if (reallyVerbose) String2.log("  renaming to " + localFiles[f] + "Removed");
+                        File2.rename(localFiles[f], localFiles[f] + "Removed");
                     }
                     localFiles[f] = null; //allow gc    (as does remove() above)
                 }
-                if (verbose) String2.log(nDeleted + 
-                    " local files were deleted because the datasource no longer has " +
+                if (verbose) String2.log(nRemoved + 
+                    " local files were renamed to [fileName].ncRemoved because the datasource no longer has " +
                       "the corresponding file.\n" +
-                    (nLocalFiles - nDeleted) + " files remain.");
+                    (nLocalFiles - nRemoved) + " files remain.");
 
-                //if 0 files remain (e.g., from significant change), delete empty subdir
-                //get all the existing local files
-                if (nLocalFiles - nDeleted == 0) {
+                /* /if 0 files remain (e.g., from significant change), delete empty subdir
+                if (nLocalFiles - nRemoved == 0) {
                     try {
                         RegexFilenameFilter.recursiveDelete(baseDir);
                         if (verbose) String2.log(tDatasetID + " copyDirectory is completely empty.");
                     } catch (Throwable t) {
                         String2.log(MustBe.throwableToString(t));
                     }
-                }
+                }*/
             }
 
             //make tasks to download files
@@ -346,7 +347,9 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
      * @param tSortedColumnSourceName   use "" if not known or not needed. 
      * @param tSortFilesBySourceNames   This is useful, because it ultimately determines default results order.
      * @param externalAddGlobalAttributes  These attributes are given priority.  Use null in none available.
-     * @throws Throwable if trouble
+     * @return a suggested chunk of xml for this dataset for use in datasets.xml 
+     * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
+     *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(String tLocalDirUrl, 
         String tFileNameRegex, String oneFileDapUrl, int tReloadEveryNMinutes, 
@@ -963,11 +966,10 @@ expected =
 "    Float64 Westernmost_Easting 0.125;\n" +
 "  }\n" +
 "}\n";
-            int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) 
-                String2.log("results=\n" + results);
+            int tPo = results.indexOf(expected.substring(0, 17));
+            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
             Test.ensureEqual(
-                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
                 expected, "results=\n" + results);
 
         } catch (Throwable t) {

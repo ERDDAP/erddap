@@ -457,8 +457,8 @@ public class Format implements Cloneable {
                     Class encoderClass = Class.forName("java.nio.charset.CharsetEncoder");
                     Method forName = charsetClass.getMethod("forName", new Class[]{String.class});
                     Object charsetObj = forName.invoke(null, new Object[]{encoding});
-                    Method newEncoder = charsetClass.getMethod("newEncoder", null);
-                    encoder = newEncoder.invoke(charsetObj, null);
+                    Method newEncoder = charsetClass.getMethod("newEncoder"); //2013-12-27 Bob Simons removed 2nd param=null
+                    encoder = newEncoder.invoke(charsetObj); //2013-12-27 Bob Simons removed 2nd param=null
                     canEncode = encoderClass.getMethod("canEncode", new Class[]{char.class});
                 }
                 catch (Exception ignored) {

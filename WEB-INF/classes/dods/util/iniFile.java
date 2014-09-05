@@ -241,7 +241,7 @@ public class iniFile {
     * @param sectionName A <code>String</code> containing the name of the
     * section whose property list is desired.
     *
-    * @returns An enumeration of the properties in the <code>sectionName</code>
+    * @return An enumeration of the properties in the <code>sectionName</code>
     * Returns <code>null</code> if the section name doesn't exist or there are
     * no properties for the section.
     */
@@ -281,7 +281,7 @@ public class iniFile {
     *
     * @param propertyName The name of the desired property.
     *
-    * @returns A <code>String</code> containing the value of property of the 
+    * @return A <code>String</code> containing the value of property of the 
     * passed property name. Returns null if the property name doesn't exist
     * or is not set.
     */
@@ -320,7 +320,7 @@ public class iniFile {
     /*************************************************************************
     * Get the list of Sections of this .ini File
     *
-    * @returns An enumeration of the sections in iniFile
+    * @return An enumeration of the sections in iniFile
     */
     public Enumeration getSectionList(){
     
@@ -389,7 +389,7 @@ public class iniFile {
     * @param sectionName A <code>String</code> containing the name of the 
     * section that is desired.
     *
-    * @returns true if the section exists and the operation was successful, 
+    * @return true if the section exists and the operation was successful, 
     * false otherwise.
     */
     public boolean setSection(String sectionName){

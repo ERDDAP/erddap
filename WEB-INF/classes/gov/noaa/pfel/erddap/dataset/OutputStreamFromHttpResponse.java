@@ -26,31 +26,13 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 
     /**
      * Set this to true (by calling verbose=true in your program, 
-     * not but changing the code here)
+     * not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false; 
 
     public static String HTML_MIME_TYPE = "text/html";
     public static String KML_MIME_TYPE  = "application/vnd.google-earth.kml+xml";
-
-    //See http://httpd.apache.org/docs/1.3/mod/mod_mime.html
-    //  which says that x-gzip=gzip and x-compress=compress
-    //This is also repeated in messages2.xml in 
-    //\"compress\", \"x-compress\" no longer supported because of difficulties with addEntry, closeEntry
-    public static String acceptEncodingHtml = 
-        "<b><a name=\"compression\">Requesting Compressed Files</a></b>\n" + 
-        "    <br>" + EDStatic.ProgramName + " doesn't offer results stored in compressed (e.g., .zip or .gzip) files.\n" +
-        "    <br>Instead, " + EDStatic.ProgramName + " looks for\n" +
-        "      <a href=\"http://betterexplained.com/articles/how-to-optimize-your-site-with-gzip-compression/\">accept-encoding</a>\n" +
-        "      in the HTTP GET request header sent\n" +
-        "    <br>by the client.  If a supported compression type (\"gzip\", \"x-gzip\", or \"deflate\") is found" +
-        "    <br>in the accept-encoding list, " + EDStatic.ProgramName + " includes \"content-encoding\" in the HTTP response\n" +
-        "    <br>header and compresses the data as it transmits it.\n" +
-        "    <br>It is up to the client program to look for \"content-encoding\" and decompress the data.\n" +
-        "    <br>Browsers and OPeNDAP clients do this by default. They request compressed data and\n" +
-        "    <br>decompress the returned data automatically.\n" +
-        "    <br>Other clients (e.g., Java programs) have to do this explicitly.\n"; 
 
     private HttpServletRequest request;
     private HttpServletResponse response;
@@ -329,6 +311,29 @@ public class OutputStreamFromHttpResponse implements OutputStreamSource {
 
         return outputStream;
     }
+
+    //See http://httpd.apache.org/docs/1.3/mod/mod_mime.html
+    //  which says that x-gzip=gzip and x-compress=compress
+    //This is also repeated in messages2.xml in 
+    //\"compress\", \"x-compress\" no longer supported because of difficulties with addEntry, closeEntry
+    public static String acceptEncodingHtml(String tErddapUrl) {
+        return 
+        "<b><a name=\"compression\">Requesting Compressed Files</a></b>\n" + 
+        "    <br>" + EDStatic.ProgramName + " doesn't offer results stored in compressed (e.g., .zip or .gzip) files.\n" +
+        "    <br>Instead, " + EDStatic.ProgramName + " looks for\n" +
+        "      <a href=\"http://betterexplained.com/articles/how-to-optimize-your-site-with-gzip-compression/\">accept-encoding" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
+        "      in the HTTP GET request header sent\n" +
+        "    <br>by the client.  If a supported compression type (\"gzip\", \"x-gzip\", or \"deflate\") is found" +
+        "    <br>in the accept-encoding list, " + EDStatic.ProgramName + " includes \"content-encoding\" in the HTTP response\n" +
+        "    <br>header and compresses the data as it transmits it.\n" +
+        "    <br>It is up to the client program to look for \"content-encoding\" and decompress the data.\n" +
+        "    <br>Browsers and OPeNDAP clients do this by default. They request compressed data and\n" +
+        "    <br>decompress the returned data automatically.\n" +
+        "    <br>Other clients (e.g., Java programs) have to do this explicitly.\n"; 
+    }
+
+
 }
 
 

@@ -59,7 +59,7 @@ import dods.dap.*;
 public class TwoTable  {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
@@ -96,7 +96,7 @@ public class TwoTable  {
         //POLICY: because this procedure may be used in more than one thread,
         //do work on unique temp files names using randomInt, then rename to proper file name.
         //If procedure fails half way through, there won't be a half-finished file.
-        int randomInt = Math2.random(Integer.MAX_VALUE));
+        int randomInt = Math2.random(Integer.MAX_VALUE);
 
         //open the file (before 'try'); if it fails, no temp file to delete
         NetcdfFileWriteable nc = new NetcdfFileWriteable(fullName + randomInt, false);

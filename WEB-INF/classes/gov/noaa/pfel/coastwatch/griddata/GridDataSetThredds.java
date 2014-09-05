@@ -233,8 +233,8 @@ J1ugeo has just one level: <dataset>   *** So look for <dataset> with urlPath at
                 long tTime = System.currentTimeMillis();
 
                 //need to convert 
-                //  baseUrl "http://192.168.31.18:8081/thredds/Satellite/aggregsatMO/k490/" + "catalog.xml", 
-                //  to      "http://192.168.31.18:8081" + "/thredds/dodsC/" + "satellite/MO/k490/hday",
+                //  baseUrl "http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMO/k490/" + "catalog.xml", 
+                //  to      "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/" + "satellite/MO/k490/hday",
                 //  just add  ".html" to make user-friendly link
                 dataSetUrl = baseBaseUrl + opendapServiceBase + urlPath;  
 
@@ -881,7 +881,7 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
     public static void testGetTimeSeries() throws Exception {
         String2.log("\n*** start TestBrowsers.testGetTimeSeries");
         String url = 
-            //was "http://192.168.31.18/thredds/Satellite/aggregsatGA/ssta/"; //oceanwatch
+            //was "http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatGA/ssta/"; //oceanwatch
             "http://thredds1.pfeg.noaa.gov/thredds/Satellite/aggregsatGA/ssta/"; 
 
         DataHelper.verbose = true;
@@ -1042,9 +1042,9 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
 //       String2.log(SSR.getUrlResponseString(baseUrl + "catalog.xml"));
 
 //       Opendap opendap = new Opendap(
-//           //"http://192.168.31.18:8081/thredds/Satellite/aggregsatMO/k490/hday", 
-//           //"http://oceanwatch.pfeg.noaa.gov:8081/thredds/Satellite/aggregsatMO/k490/hday", 
-//           "http://oceanwatch.pfeg.noaa.gov:8081/thredds/dodsC/satellite/MO/k490/hday.das",
+//           //"http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMO/k490/hday", 
+//           //"http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatMO/k490/hday", 
+//           "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MO/k490/hday.das",
 //           acceptDeflate); //throws Exception if trouble
 
 //    public GridDataSetThredds(FileNameUtility fileNameUtility, String internalName, String baseUrl, 

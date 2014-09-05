@@ -1,6 +1,6 @@
-#!/bin/csh
+#!/bin/bash
 #
-# usage: GenerateOceanwatchThreddsXml
+# usage: ./GenerateOceanwatchThreddsXml
 #
 # GenerateOceanwatchThreddsXml is a version of GenerateThreddsXml specifically
 # for use on the oceanwatch computer at ERD.
@@ -33,19 +33,18 @@
 # To make this Linux/Unix script executable, use 
 #    chmod +x GenerateOceanwatchThreddsXml
 #
-# originally written 2007-01-22
-# last updated 2007-12-06
-# NOAA/Bob Simons  bob.simons@noaa.gov
+# original 2007-01-22  Bob Simons bob.simons@noaa.gov
+# updated 2014-02-13  Bob Simons bob.simons@noaa.gov
 #
 
-set commandLine=$0
-set thisDir=`echo commandLine | dirname $0`
-set dataMainDir=/u00/ 
-set dataSubDir=satellite/ 
-set incomplete=/u00/tomcat6.0.14_thredds/content/thredds/GeneratedXml/incompleteMainCatalog.xml 
-set xmlMainDir=/u00/tomcat6.0.14_thredds/content/thredds/GeneratedXml
+commandLine=$0
+thisDir=`echo $commandLine | dirname $0`
+dataMainDir=/u00/ 
+dataSubDir=satellite/ 
+incomplete=/u00/tomcat6.0.14_thredds/content/thredds/GeneratedXml/incompleteMainCatalog.xml 
+xmlMainDir=/u00/tomcat6.0.14_thredds/content/thredds/GeneratedXml
 
-java -cp $thisDir/classes:$thisDir/lib/netcdfAll-latest.jar:$thisDir/lib/slf4j-jdk14.jar:$thisDir/lib/activation.jar:$thisDir/lib/lucene-core.jar:$thisDir/lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.GenerateThreddsXml $dataMainDir $dataSubDir $incomplete $xmlMainDir
+java -cp $thisDir/classes:$thisDir/lib/netcdfAll-latest.jar:$thisDir/lib/activation.jar:$thisDir/lib/lucene-core.jar:$thisDir/lib/mail.jar -Xms1000M -Xmx1000M gov.noaa.pfel.coastwatch.griddata.GenerateThreddsXml $dataMainDir $dataSubDir $incomplete $xmlMainDir
 
 
 # finished 

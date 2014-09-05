@@ -578,7 +578,8 @@ public class HtmlWidgets {
      */
     public String select(String name, String tooltip, int nRows,
         String options[], int selected, String other) {
-        return select(name, tooltip, nRows, options, selected, other, false);
+
+        return select(name, tooltip, nRows, options, selected, other, false, "");
     }
 
     /**
@@ -594,6 +595,24 @@ public class HtmlWidgets {
      */    
     public String select(String name, String tooltip, int nRows,
         String options[], int selected, String other, boolean encodeSpaces) {
+
+        return select(name, tooltip, nRows, options, selected, other, encodeSpaces, "");
+     }
+
+    /**
+     * This variant of select deals with a special case where 
+     * JavaScript code that transfers an option to a textfield
+     * e.g., document.form1.val0_0.value=this.options[this.selectedIndex].text
+     * converts internal &gt;1 space ("ab   c") into 1 space ("ab c").
+     * This also solves the problem of leading and trailing spaces being trimmed 
+     * by the JavaScript code.
+     * Set encodeSpaces=true for these special situations.
+     * This requires the little change I made in percentEncode above:
+     *   nbsp (char A0) is now percent encoded as %20 (a space).
+     */    
+    public String select(String name, String tooltip, int nRows,
+        String options[], int selected, String other, boolean encodeSpaces, 
+        String buttonJS) {
 
         StringBuilder sb = new StringBuilder();
         int nOptions = options.length;
@@ -652,14 +671,14 @@ public class HtmlWidgets {
             sb.append("        </td>\n"); //end of <select>'s td
 
             //        selectButton(name, nRows, test,    nOptions, minNOptions, incr,            img,             tooltip);
-            sb.append(selectButton(name, nRows, BUTTONS_0n,   nOptions, 2,    Integer.MIN_VALUE, "arrowLL.gif",   "Select the first item."));
-            sb.append(selectButton(name, nRows, BUTTONS_1000, nOptions, 1100, -1000,             "minus1000.gif", "Jump back 1000 items."));
-            sb.append(selectButton(name, nRows, BUTTONS_100,  nOptions, 110,  -100,              "minus100.gif",  "Jump back 100 items."));
-            sb.append(selectButton(name, nRows, BUTTONS_1,    nOptions, 2,    -1,                "minus.gif",     "Select the previous item."));
-            sb.append(selectButton(name, nRows, BUTTONS_1,    nOptions, 2,    1,                 "plus.gif",      "Select the next item."));
-            sb.append(selectButton(name, nRows, BUTTONS_100,  nOptions, 110,  100,               "plus100.gif",   "Jump forward 100 items."));
-            sb.append(selectButton(name, nRows, BUTTONS_1000, nOptions, 1100, 1000,              "plus1000.gif",  "Jump forward 1000 items."));
-            sb.append(selectButton(name, nRows, BUTTONS_0n,   nOptions, 2,    Integer.MAX_VALUE, "arrowRR.gif",   "Select the last item."));
+            sb.append(selectButton(name, nRows, BUTTONS_0n,   nOptions, 2,    Integer.MIN_VALUE, "arrowLL.gif",   "Select the first item.",    buttonJS));
+            sb.append(selectButton(name, nRows, BUTTONS_1000, nOptions, 1100, -1000,             "minus1000.gif", "Jump back 1000 items.",     buttonJS));
+            sb.append(selectButton(name, nRows, BUTTONS_100,  nOptions, 110,  -100,              "minus100.gif",  "Jump back 100 items.",      buttonJS));
+            sb.append(selectButton(name, nRows, BUTTONS_1,    nOptions, 2,    -1,                "minus.gif",     "Select the previous item.", buttonJS));
+            sb.append(selectButton(name, nRows, BUTTONS_1,    nOptions, 2,    1,                 "plus.gif",      "Select the next item.",     buttonJS));
+            sb.append(selectButton(name, nRows, BUTTONS_100,  nOptions, 110,  100,               "plus100.gif",   "Jump forward 100 items.",   buttonJS));
+            sb.append(selectButton(name, nRows, BUTTONS_1000, nOptions, 1100, 1000,              "plus1000.gif",  "Jump forward 1000 items.",  buttonJS));
+            sb.append(selectButton(name, nRows, BUTTONS_0n,   nOptions, 2,    Integer.MAX_VALUE, "arrowRR.gif",   "Select the last item.",     buttonJS));
 
             sb.append(
                 "\n        </tr>" +
@@ -684,10 +703,12 @@ public class HtmlWidgets {
      * @param imageName e.g., plus100.gif
      * @param tooltip If htmlTooltips is true, this is already html.
      *     If it is false, this is plain text.  Or "" if no tooltip.
+     * @param buttonJS additional javascript for the button
      * @return the HTML to make a button to assist select().
      */
     private String selectButton(String name, int nRows, int test, 
-        int nOptions, int minNOptions, int incr, String imageName, String tooltip) {
+        int nOptions, int minNOptions, int incr, String imageName, String tooltip,
+        String buttonJS) {
 
         StringBuilder sb = new StringBuilder();
         if ((-nRows & -test) != 0 && nOptions >= minNOptions) {
@@ -701,10 +722,11 @@ public class HtmlWidgets {
                 "<img src=\"" + XML.encodeAsHTMLAttribute(imageDirUrl + imageName) + "\"\n" +
                 " " + completeTooltip(tooltip) +
                 " alt=\"" + 
-                    (nRows == Integer.MIN_VALUE? "|&lt;" : nRows == Integer.MAX_VALUE? "&gt;|" : "" + nRows) + "\"\n" +
+                    (nRows == Integer.MIN_VALUE? "|&lt;" : nRows == Integer.MAX_VALUE? "&gt;|" : 
+                     incr >=0? "+" + incr : "" + incr) + "\"\n" +
                 //onMouseUp works much better than onClick and onDblClick
                 " onMouseUp=\"var sel=" +formName + "." + name + "; sel.selectedIndex=" + rhs + ";" +   
-                    " \" >\n" +
+                    buttonJS + " \" >\n" +
                 "</td>\n");
         }
         return sb.toString();
