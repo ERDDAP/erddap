@@ -31,13 +31,13 @@ public class PathCartesianRenderer extends CartesianRenderer {
 
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
 
     /**
-     * Set this to true (by calling reallyVerbose=true in your program, not but changing the code here)
+     * Set this to true (by calling reallyVerbose=true in your program, not by changing the code here)
      * if you want lots and lots of diagnostic messages sent to String2.log.
      */
     public static boolean reallyVerbose = false;
@@ -136,7 +136,7 @@ public class PathCartesianRenderer extends CartesianRenderer {
         }
 
         if (strokeColor != null && strokeColor.getAlpha() != 0) {
-            g2.setStroke(new BasicStroke(1.0f)); //set line width = 1 pixel (must be float)
+            g2.setStroke(new BasicStroke()); 
             g2.setColor(strokeColor);
             g2.draw(shape);
         }

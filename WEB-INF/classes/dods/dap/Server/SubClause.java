@@ -16,10 +16,10 @@ import dods.dap.BaseType;
  * 
  *  The parser supports several kinds of sub-clause. These are described
  *  in the ClauseFactory interface.
+ *  See CEEValuator for an explanation of how Clauses are evaluated on 
+ *    data.
  *
  * @see TopLevelClause for more about the parsing of clauses.
- * @see CEEValuator for an explanation of how Clauses are evaluated on 
- *    data.
  * @see ClauseFactory
 
  * @author joew */

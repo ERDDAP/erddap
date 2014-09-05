@@ -87,7 +87,7 @@ public class EDVTimeGridAxis extends EDVGridAxis {
         superConstructorIsFinished = true;
 
         //time_precision e.g., 1970-01-01T00:00:00Z
-        time_precision = combinedAttributes.getString(EDV.time_precision);
+        time_precision = combinedAttributes.getString(EDV.TIME_PRECISION);
         if (time_precision != null) {
             //ensure not just year (can't distinguish user input a year vs. epochSeconds)
             if (time_precision.equals("1970"))

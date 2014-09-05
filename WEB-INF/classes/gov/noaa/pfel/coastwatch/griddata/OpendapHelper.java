@@ -38,13 +38,13 @@ import dods.dap.*;
 public class OpendapHelper  {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
 
     /**
-     * Set this to true (by calling debug=true in your program, not but changing the code here)
+     * Set this to true (by calling debug=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean debug = false;
@@ -988,7 +988,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
      *
      * @param dds
      * @return String varNames[]
-     * @param throws Exception if trouble
+     * @throws Exception if trouble
      */
     public static String[] findVarsWithSharedDimensions(DDS dds) 
         throws Exception {
@@ -1060,14 +1060,21 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 
 
         //test of DArray DAP dataset
-        String2.log("\n*** test of DArray DAP dataset");
         String dArrayUrl = "http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+        String2.log("\n*** test of DArray DAP dataset\n" + dArrayUrl);
+        try {
         dConnect = new DConnect(dArrayUrl, true, 1, 1);
         dds = dConnect.getDDS(DEFAULT_TIMEOUT);
         results = String2.toCSSVString(findVarsWithSharedDimensions(dds));
         expected = 
 "time, lat, lon, PL_HD, PL_CRS, DIR, PL_WDIR, PL_SPD, SPD, PL_WSPD, P, T, RH, date, time_of_day, flag";
         Test.ensureEqual(results, expected, "results=" + results);
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(
+                "\nUnexpected error (server timed out 2013-10-24):\n" +
+                MustBe.throwableToString(t) +
+                 "Press ^C to stop or Enter to continue..."); 
+        }
 
 
         //***** test of DGrid DAP dataset
@@ -1115,7 +1122,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
      *
      * @param dds
      * @return String varNames[]
-     * @param throws Exception if trouble
+     * @throws Exception if trouble
      */
     public static String[] findAllScalarOrMultiDimVars(DDS dds) 
         throws Exception {
@@ -1153,14 +1160,21 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 
 
         //test of DArray DAP dataset
-        String2.log("\n*** test of DArray DAP dataset");
         url = "http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
-        dConnect = new DConnect(url, true, 1, 1);
-        dds = dConnect.getDDS(DEFAULT_TIMEOUT);
-        results = String2.toCSSVString(findAllScalarOrMultiDimVars(dds));
-        expected = 
+        String2.log("\n*** test of DArray DAP dataset\n" + url);
+        try {
+            dConnect = new DConnect(url, true, 1, 1);
+            dds = dConnect.getDDS(DEFAULT_TIMEOUT);
+            results = String2.toCSSVString(findAllScalarOrMultiDimVars(dds));
+            expected = 
 "time, lat, lon, PL_HD, PL_CRS, DIR, PL_WDIR, PL_SPD, SPD, PL_WSPD, P, T, RH, date, time_of_day, flag, history";
-        Test.ensureEqual(results, expected, "results=" + results);
+            Test.ensureEqual(results, expected, "results=" + results);
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(
+                "\nUnexpected error (server timed out 2013-10-24):\n" +
+                MustBe.throwableToString(t) +
+                 "Press ^C to stop or Enter to continue..."); 
+        }
 
 
         //***** test of DGrid DAP dataset
@@ -1460,6 +1474,7 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
      */
     public static void testAllDapToNc(int whichTests) throws Throwable {
         //tests from nodc template examples http://www.nodc.noaa.gov/data/formats/netcdf/
+        String2.log("\n*** OpendapHelper.testAllDapToNc(" + whichTests + ")");
         String dir = "c:/data/nodcTemplates/";
         String fileName;
         String url, results, expected;
@@ -1483,30 +1498,31 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             results = NcHelper.dds(dir + fileName);
             expected = 
 "netcdf c:/data/nodcTemplates/timeSeriesBodegaMarineLabBuoy.nc {\n" +
-" dimensions:\n" +
-"   time = 63242;\n" +
-"   string1 = 1;\n" +
-"   station_name_strlen = 17;\n" +
-" variables:\n" +
-"   double time(time=63242);\n" +
-"   float lat;\n" +
-"   float lon;\n" +
-"   double alt;\n" +
-"   char station_name(string1=1, station_name_strlen=17);\n" +
-"   double temperature(time=63242);\n" +
-"   double salinity(time=63242);\n" +
-"   double density(time=63242);\n" +
-"   double conductivity(time=63242);\n" +
-"   int platform1;\n" +
-"   int temperature_qc(time=63242);\n" +
-"   int salinity_qc(time=63242);\n" +
-"   int density_qc(time=63242);\n" +
-"   int conductivity_qc(time=63242);\n" +
-"   int instrument1;\n" +
-"   int instrument2;\n" +
-"   double ht_wgs84;\n" +
-"   double ht_mllw;\n" +
-"   int crs;\n" +
+"  dimensions:\n" +
+"    time = 63242;\n" +
+"    string1 = 1;\n" +
+"    station_name_strlen = 17;\n" +
+"  variables:\n" +
+"    double time(time=63242);\n" +
+"    float lat;\n" +
+"    float lon;\n" +
+"    double alt;\n" +
+"    char station_name(string1=1, station_name_strlen=17);\n" +
+"    double temperature(time=63242);\n" +
+"    double salinity(time=63242);\n" +
+"    double density(time=63242);\n" +
+"    double conductivity(time=63242);\n" +
+"    int platform1;\n" +
+"    int temperature_qc(time=63242);\n" +
+"    int salinity_qc(time=63242);\n" +
+"    int density_qc(time=63242);\n" +
+"    int conductivity_qc(time=63242);\n" +
+"    int instrument1;\n" +
+"    int instrument2;\n" +
+"    double ht_wgs84;\n" +
+"    double ht_mllw;\n" +
+"    int crs;\n" +
+"  // global attributes:\n" +
 "}\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
         }
@@ -1520,36 +1536,37 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             String2.log(results);
             expected = 
 "netcdf c:/data/nodcTemplates/trajectoryAoml_tsg.nc {\n" +
-" dimensions:\n" +
-"   trajectory = 1;\n" +
-"   obs = 2880;\n" +
-" variables:\n" +
-"   int trajectory(trajectory=1);\n" +
-"   int time(trajectory=1, obs=2880);\n" +
-"   double lat(trajectory=1, obs=2880);\n" +
-"   double lon(trajectory=1, obs=2880);\n" +
-"   double intp(trajectory=1, obs=2880);\n" +
-"   double sal(trajectory=1, obs=2880);\n" +
-"   double cond(trajectory=1, obs=2880);\n" +
-"   double ext(trajectory=1, obs=2880);\n" +
-"   double sst(trajectory=1, obs=2880);\n" +
-"   byte plt(trajectory=1);\n" +
-"   byte tsg(trajectory=1);\n" +
-"   byte tmsr(trajectory=1);\n" +
-"   byte sstr(trajectory=1);\n" +
-"   byte flag_a(trajectory=1, obs=2880);\n" +
-"   byte flag_b(trajectory=1, obs=2880);\n" +
-"   byte flag_c(trajectory=1, obs=2880);\n" +
-"   byte flag_d(trajectory=1, obs=2880);\n" +
-"   byte flag_e(trajectory=1, obs=2880);\n" +
-"   byte flag_f(trajectory=1, obs=2880);\n" +
-"   byte flag_g(trajectory=1, obs=2880);\n" +
-"   byte flag_h(trajectory=1, obs=2880);\n" +
-"   byte flag_i(trajectory=1, obs=2880);\n" +
-"   byte flag_j(trajectory=1, obs=2880);\n" +
-"   byte flag_k(trajectory=1, obs=2880);\n" +
-"   byte flag_l(trajectory=1, obs=2880);\n" +
-"   byte crs(trajectory=1);\n" +
+"  dimensions:\n" +
+"    trajectory = 1;\n" +
+"    obs = 2880;\n" +
+"  variables:\n" +
+"    int trajectory(trajectory=1);\n" +
+"    int time(trajectory=1, obs=2880);\n" +
+"    double lat(trajectory=1, obs=2880);\n" +
+"    double lon(trajectory=1, obs=2880);\n" +
+"    double intp(trajectory=1, obs=2880);\n" +
+"    double sal(trajectory=1, obs=2880);\n" +
+"    double cond(trajectory=1, obs=2880);\n" +
+"    double ext(trajectory=1, obs=2880);\n" +
+"    double sst(trajectory=1, obs=2880);\n" +
+"    byte plt(trajectory=1);\n" +
+"    byte tsg(trajectory=1);\n" +
+"    byte tmsr(trajectory=1);\n" +
+"    byte sstr(trajectory=1);\n" +
+"    byte flag_a(trajectory=1, obs=2880);\n" +
+"    byte flag_b(trajectory=1, obs=2880);\n" +
+"    byte flag_c(trajectory=1, obs=2880);\n" +
+"    byte flag_d(trajectory=1, obs=2880);\n" +
+"    byte flag_e(trajectory=1, obs=2880);\n" +
+"    byte flag_f(trajectory=1, obs=2880);\n" +
+"    byte flag_g(trajectory=1, obs=2880);\n" +
+"    byte flag_h(trajectory=1, obs=2880);\n" +
+"    byte flag_i(trajectory=1, obs=2880);\n" +
+"    byte flag_j(trajectory=1, obs=2880);\n" +
+"    byte flag_k(trajectory=1, obs=2880);\n" +
+"    byte flag_l(trajectory=1, obs=2880);\n" +
+"    byte crs(trajectory=1);\n" +
+"  // global attributes:\n" +
 "}\n";
             Test.ensureEqual(results, expected, "");
         }
@@ -1564,26 +1581,27 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             String2.log(results);
             expected = 
 "netcdf c:/data/nodcTemplates/trajectoryJason2_satelliteAltimeter.nc {\n" +
-" dimensions:\n" +
-"   trajectory = 1;\n" +
-"   obs = 3;\n" +
-"   meas_ind = 20;\n" +
-" variables:\n" +
-"   double time(trajectory=1, obs=3);\n" +
-"   byte meas_ind(trajectory=1, meas_ind=20);\n" +
-"   int lat(trajectory=1, obs=3);\n" +
-"   int lon(trajectory=1, obs=3);\n" +
-"   byte surface_type(trajectory=1, obs=3);\n" +
-"   byte orb_state_flag_rest(trajectory=1, obs=3);\n" +
-"   byte ecmwf_meteo_map_avail(trajectory=1, obs=3);\n" +
-"   byte interp_flag_meteo(trajectory=1, obs=3);\n" +
-"   int alt(trajectory=1, obs=3);\n" +
-"   byte range_numval_ku(trajectory=1, obs=3);\n" +
-"   short model_wet_tropo_corr(trajectory=1, obs=3);\n" +
-"   byte atmos_corr_sig0_ku(trajectory=1, obs=3);\n" +
-"   short tb_187(trajectory=1, obs=3);\n" +
-"   short rad_water_vapor(trajectory=1, obs=3);\n" +
-"   short ssha(trajectory=1, obs=3);\n" +
+"  dimensions:\n" +
+"    trajectory = 1;\n" +
+"    obs = 3;\n" +
+"    meas_ind = 20;\n" +
+"  variables:\n" +
+"    double time(trajectory=1, obs=3);\n" +
+"    byte meas_ind(trajectory=1, meas_ind=20);\n" +
+"    int lat(trajectory=1, obs=3);\n" +
+"    int lon(trajectory=1, obs=3);\n" +
+"    byte surface_type(trajectory=1, obs=3);\n" +
+"    byte orb_state_flag_rest(trajectory=1, obs=3);\n" +
+"    byte ecmwf_meteo_map_avail(trajectory=1, obs=3);\n" +
+"    byte interp_flag_meteo(trajectory=1, obs=3);\n" +
+"    int alt(trajectory=1, obs=3);\n" +
+"    byte range_numval_ku(trajectory=1, obs=3);\n" +
+"    short model_wet_tropo_corr(trajectory=1, obs=3);\n" +
+"    byte atmos_corr_sig0_ku(trajectory=1, obs=3);\n" +
+"    short tb_187(trajectory=1, obs=3);\n" +
+"    short rad_water_vapor(trajectory=1, obs=3);\n" +
+"    short ssha(trajectory=1, obs=3);\n" +
+"  // global attributes:\n" +
 "}\n";
             Test.ensureEqual(results, expected, "");
         }
@@ -1618,24 +1636,25 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
             String2.log(results);
             expected = 
 "netcdf c:/data/nodcTemplates/timeSeriesProfileUsgs_internal_wave_timeSeries.nc {\n" +
-" dimensions:\n" +
-"   station = 1;\n" +
-"   time = 38990;\n" +
-"   z = 5;\n" +
-" variables:\n" +
-"   int station_id(station=1);\n" +
-"   double time(time=38990);\n" +
-"   double z(z=5);\n" +
-"   double lon(station=1);\n" +
-"   double lat(station=1);\n" +
-"   double T_20(station=1, time=38990, z=5);\n" +
-"   double C_51(station=1, time=38990, z=5);\n" +
-"   double S_40(station=1, time=38990, z=5);\n" +
-"   double STH_71(station=1, time=38990, z=5);\n" +
-"   int instrument_1(station=1, z=5);\n" +
-"   int instrument_2(station=1);\n" +
-"   int platform;\n" +
-"   int crs;\n" +
+"  dimensions:\n" +
+"    station = 1;\n" +
+"    time = 38990;\n" +
+"    z = 5;\n" +
+"  variables:\n" +
+"    int station_id(station=1);\n" +
+"    double time(time=38990);\n" +
+"    double z(z=5);\n" +
+"    double lon(station=1);\n" +
+"    double lat(station=1);\n" +
+"    double T_20(station=1, time=38990, z=5);\n" +
+"    double C_51(station=1, time=38990, z=5);\n" +
+"    double S_40(station=1, time=38990, z=5);\n" +
+"    double STH_71(station=1, time=38990, z=5);\n" +
+"    int instrument_1(station=1, z=5);\n" +
+"    int instrument_2(station=1);\n" +
+"    int platform;\n" +
+"    int crs;\n" +
+"  // global attributes:\n" +
 "}\n";
             Test.ensureEqual(results, expected, "");
         }
@@ -2054,9 +2073,9 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 
     /** This tests getting attibutes, notably the DODS_strlen attribute. */
     public static void testGetAttributes() throws Throwable {
-
-        String2.log("\n* OpendapHelper.testGetAttributes");
         String url = "http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
+        String2.log("\n* OpendapHelper.testGetAttributes\n" + url);
+        try {
         DConnect dConnect = new DConnect(url, true, 1, 1);
         DAS das = dConnect.getDAS(DEFAULT_TIMEOUT);
         Attributes atts = new Attributes();
@@ -2093,6 +2112,12 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 "    Y=\"Suspect between X-flags\"\n" +
 "    Z=\"Good data\"\n";
         Test.ensureEqual(results, expected, "results=" + results);
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(
+                "\nUnexpected error (server timed out 2013-10-24):\n" +
+                MustBe.throwableToString(t) +
+                 "Press ^C to stop or Enter to continue..."); 
+        }
     }
 
 
@@ -2104,115 +2129,121 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 
         fileName = SSR.getTempDirectory() + "testDapToNcDArray.nc";
         String dArrayUrl = "http://coaps.fsu.edu/thredds/dodsC/samos/data/research/WTEP/2012/WTEP_20120128v30001.nc";
-        dapToNc(dArrayUrl, 
-            //note that request for zztop is ignored (because not found)
-            new String[] {"zztop", "time", "lat", "lon", "PL_HD", "flag"}, null, //projection
-            fileName, false); //jplMode
-        results = NcHelper.dumpString(fileName, true); //printData
-        expected = 
+        try {
+            dapToNc(dArrayUrl, 
+                //note that request for zztop is ignored (because not found)
+                new String[] {"zztop", "time", "lat", "lon", "PL_HD", "flag"}, null, //projection
+                fileName, false); //jplMode
+            results = NcHelper.dumpString(fileName, true); //printData
+            expected = 
 "netcdf testDapToNcDArray.nc {\n" +
-" dimensions:\n" +
-"   time = 144;\n" +
-"   flag_strlen = 13;\n" +
-" variables:\n" +
-"   int time(time=144);\n" +
-"     :actual_range = 16870896, 16871039; // int\n" +
-"     :data_interval = 60; // int\n" +
-"     :long_name = \"time\";\n" +
-"     :observation_type = \"calculated\";\n" +
-"     :original_units = \"hhmmss UTC\";\n" +
-"     :qcindex = 1; // int\n" +
-"     :units = \"minutes since 1-1-1980 00:00 UTC\";\n" +
-"   float lat(time=144);\n" +
-"     :actual_range = 44.6f, 44.75f; // float\n" +
-"     :average_center = \"time at end of period\";\n" +
-"     :average_length = 60S; // short\n" +
-"     :average_method = \"average\";\n" +
-"     :data_precision = -9999.0f; // float\n" +
-"     :instrument = \"unknown\";\n" +
-"     :long_name = \"latitude\";\n" +
-"     :observation_type = \"measured\";\n" +
-"     :original_units = \"degrees (+N)\";\n" +
-"     :qcindex = 2; // int\n" +
-"     :sampling_rate = 1.0f; // float\n" +
-"     :units = \"degrees (+N)\";\n" +
-"   float lon(time=144);\n" +
-"     :actual_range = 235.82f, 235.95f; // float\n" +
-"     :average_center = \"time at end of period\";\n" +
-"     :average_length = 60S; // short\n" +
-"     :average_method = \"average\";\n" +
-"     :data_precision = -9999.0f; // float\n" +
-"     :instrument = \"unknown\";\n" +
-"     :long_name = \"longitude\";\n" +
-"     :observation_type = \"measured\";\n" +
-"     :original_units = \"degrees (-W/+E)\";\n" +
-"     :qcindex = 3; // int\n" +
-"     :sampling_rate = 1.0f; // float\n" +
-"     :units = \"degrees (+E)\";\n" +
-"   float PL_HD(time=144);\n" +
-"     :actual_range = 37.89f, 355.17f; // float\n" +
-"     :average_center = \"time at end of period\";\n" +
-"     :average_length = 60S; // short\n" +
-"     :average_method = \"average\";\n" +
-"     :data_precision = -9999.0f; // float\n" +
-"     :instrument = \"unknown\";\n" +
-"     :long_name = \"platform heading\";\n" +
-"     :missing_value = -9999.0f; // float\n" +
-"     :observation_type = \"calculated\";\n" +
-"     :original_units = \"degrees (clockwise towards true north)\";\n" +
-"     :qcindex = 4; // int\n" +
-"     :sampling_rate = 1.0f; // float\n" +
-"     :special_value = -8888.0f; // float\n" +
-"     :units = \"degrees (clockwise towards true north)\";\n" +
-"   char flag(time=144, flag_strlen=13);\n" +
-"     :A = \"Units added\";\n" +
-"     :B = \"Data out of range\";\n" +
-"     :C = \"Non-sequential time\";\n" +
-"     :D = \"Failed T>=Tw>=Td\";\n" +
-"     :DODS_dimName = \"f_string\";\n" +
-"     :DODS_strlen = 13; // int\n" +
-"     :E = \"True wind error\";\n" +
-"     :F = \"Velocity unrealistic\";\n" +
-"     :G = \"Value > 4 s. d. from climatology\";\n" +
-"     :H = \"Discontinuity\";\n" +
-"     :I = \"Interesting feature\";\n" +
-"     :J = \"Erroneous\";\n" +
-"     :K = \"Suspect - visual\";\n" +
-"     :L = \"Ocean platform over land\";\n" +
-"     :long_name = \"quality control flags\";\n" +
-"     :M = \"Instrument malfunction\";\n" +
-"     :N = \"In Port\";\n" +
-"     :O = \"Multiple original units\";\n" +
-"     :P = \"Movement uncertain\";\n" +
-"     :Q = \"Pre-flagged as suspect\";\n" +
-"     :R = \"Interpolated data\";\n" +
-"     :S = \"Spike - visual\";\n" +
-"     :T = \"Time duplicate\";\n" +
-"     :U = \"Suspect - statistial\";\n" +
-"     :V = \"Spike - statistical\";\n" +
-"     :X = \"Step - statistical\";\n" +
-"     :Y = \"Suspect between X-flags\";\n" +
-"     :Z = \"Good data\";\n" +
+"  dimensions:\n" +
+"    time = 144;\n" +
+"    flag_strlen = 13;\n" +
+"  variables:\n" +
+"    int time(time=144);\n" +
+"      :actual_range = 16870896, 16871039; // int\n" +
+"      :data_interval = 60; // int\n" +
+"      :long_name = \"time\";\n" +
+"      :observation_type = \"calculated\";\n" +
+"      :original_units = \"hhmmss UTC\";\n" +
+"      :qcindex = 1; // int\n" +
+"      :units = \"minutes since 1-1-1980 00:00 UTC\";\n" +
 "\n" +
-" :contact_email = \"samos@coaps.fsu.edu\";\n" +
-" :contact_info = \"Center for Ocean-Atmospheric Prediction Studies, The Florida State University, Tallahassee, FL, 32306-2840, USA\";\n" +
-" :Cruise_id = \"Cruise_id undefined for now\";\n" +
-" :Data_modification_date = \"02/07/2012 10:03:37 EST\";\n" +
-" :data_provider = \"Timothy Salisbury\";\n" +
-" :elev = 0S; // short\n" +
-" :end_date_time = \"2012/01/28 -- 23:59  UTC\";\n" +
-" :EXPOCODE = \"EXPOCODE undefined for now\";\n" +
-" :facility = \"NOAA\";\n" +
-" :fsu_version = \"300\";\n" +
-" :ID = \"WTEP\";\n" +
-" :IMO = \"009270335\";\n" +
-" :Metadata_modification_date = \"02/07/2012 10:03:37 EST\";\n" +
-" :platform = \"SCS\";\n" +
-" :platform_version = \"4.0\";\n" +
-" :receipt_order = \"01\";\n" +
-" :site = \"OSCAR DYSON\";\n" +
-" :start_date_time = \"2012/01/28 -- 21:36  UTC\";\n" +
-" :title = \"OSCAR DYSON Meteorological Data\";\n" +
+"    float lat(time=144);\n" +
+"      :actual_range = 44.6f, 44.75f; // float\n" +
+"      :average_center = \"time at end of period\";\n" +
+"      :average_length = 60S; // short\n" +
+"      :average_method = \"average\";\n" +
+"      :data_precision = -9999.0f; // float\n" +
+"      :instrument = \"unknown\";\n" +
+"      :long_name = \"latitude\";\n" +
+"      :observation_type = \"measured\";\n" +
+"      :original_units = \"degrees (+N)\";\n" +
+"      :qcindex = 2; // int\n" +
+"      :sampling_rate = 1.0f; // float\n" +
+"      :units = \"degrees (+N)\";\n" +
+"\n" +
+"    float lon(time=144);\n" +
+"      :actual_range = 235.82f, 235.95f; // float\n" +
+"      :average_center = \"time at end of period\";\n" +
+"      :average_length = 60S; // short\n" +
+"      :average_method = \"average\";\n" +
+"      :data_precision = -9999.0f; // float\n" +
+"      :instrument = \"unknown\";\n" +
+"      :long_name = \"longitude\";\n" +
+"      :observation_type = \"measured\";\n" +
+"      :original_units = \"degrees (-W/+E)\";\n" +
+"      :qcindex = 3; // int\n" +
+"      :sampling_rate = 1.0f; // float\n" +
+"      :units = \"degrees (+E)\";\n" +
+"\n" +
+"    float PL_HD(time=144);\n" +
+"      :actual_range = 37.89f, 355.17f; // float\n" +
+"      :average_center = \"time at end of period\";\n" +
+"      :average_length = 60S; // short\n" +
+"      :average_method = \"average\";\n" +
+"      :data_precision = -9999.0f; // float\n" +
+"      :instrument = \"unknown\";\n" +
+"      :long_name = \"platform heading\";\n" +
+"      :missing_value = -9999.0f; // float\n" +
+"      :observation_type = \"calculated\";\n" +
+"      :original_units = \"degrees (clockwise towards true north)\";\n" +
+"      :qcindex = 4; // int\n" +
+"      :sampling_rate = 1.0f; // float\n" +
+"      :special_value = -8888.0f; // float\n" +
+"      :units = \"degrees (clockwise towards true north)\";\n" +
+"\n" +
+"    char flag(time=144, flag_strlen=13);\n" +
+"      :A = \"Units added\";\n" +
+"      :B = \"Data out of range\";\n" +
+"      :C = \"Non-sequential time\";\n" +
+"      :D = \"Failed T>=Tw>=Td\";\n" +
+"      :DODS_dimName = \"f_string\";\n" +
+"      :DODS_strlen = 13; // int\n" +
+"      :E = \"True wind error\";\n" +
+"      :F = \"Velocity unrealistic\";\n" +
+"      :G = \"Value > 4 s. d. from climatology\";\n" +
+"      :H = \"Discontinuity\";\n" +
+"      :I = \"Interesting feature\";\n" +
+"      :J = \"Erroneous\";\n" +
+"      :K = \"Suspect - visual\";\n" +
+"      :L = \"Ocean platform over land\";\n" +
+"      :long_name = \"quality control flags\";\n" +
+"      :M = \"Instrument malfunction\";\n" +
+"      :N = \"In Port\";\n" +
+"      :O = \"Multiple original units\";\n" +
+"      :P = \"Movement uncertain\";\n" +
+"      :Q = \"Pre-flagged as suspect\";\n" +
+"      :R = \"Interpolated data\";\n" +
+"      :S = \"Spike - visual\";\n" +
+"      :T = \"Time duplicate\";\n" +
+"      :U = \"Suspect - statistial\";\n" +
+"      :V = \"Spike - statistical\";\n" +
+"      :X = \"Step - statistical\";\n" +
+"      :Y = \"Suspect between X-flags\";\n" +
+"      :Z = \"Good data\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :contact_email = \"samos@coaps.fsu.edu\";\n" +
+"  :contact_info = \"Center for Ocean-Atmospheric Prediction Studies, The Florida State University, Tallahassee, FL, 32306-2840, USA\";\n" +
+"  :Cruise_id = \"Cruise_id undefined for now\";\n" +
+"  :Data_modification_date = \"02/07/2012 10:03:37 EST\";\n" +
+"  :data_provider = \"Timothy Salisbury\";\n" +
+"  :elev = 0S; // short\n" +
+"  :end_date_time = \"2012/01/28 -- 23:59  UTC\";\n" +
+"  :EXPOCODE = \"EXPOCODE undefined for now\";\n" +
+"  :facility = \"NOAA\";\n" +
+"  :fsu_version = \"300\";\n" +
+"  :ID = \"WTEP\";\n" +
+"  :IMO = \"009270335\";\n" +
+"  :Metadata_modification_date = \"02/07/2012 10:03:37 EST\";\n" +
+"  :platform = \"SCS\";\n" +
+"  :platform_version = \"4.0\";\n" +
+"  :receipt_order = \"01\";\n" +
+"  :site = \"OSCAR DYSON\";\n" +
+"  :start_date_time = \"2012/01/28 -- 21:36  UTC\";\n" +
+"  :title = \"OSCAR DYSON Meteorological Data\";\n" +
 " data:\n" +
 "time =\n" +
 "  {16870896, 16870897, 16870898, 16870899, 16870900, 16870901, 16870902, 16870903, 16870904, 16870905, 16870906, 16870907, 16870908, 16870909, 16870910, 16870911, 16870912, 16870913, 16870914, 16870915, 16870916, 16870917, 16870918, 16870919, 16870920, 16870921, 16870922, 16870923, 16870924, 16870925, 16870926, 16870927, 16870928, 16870929, 16870930, 16870931, 16870932, 16870933, 16870934, 16870935, 16870936, 16870937, 16870938, 16870939, 16870940, 16870941, 16870942, 16870943, 16870944, 16870945, 16870946, 16870947, 16870948, 16870949, 16870950, 16870951, 16870952, 16870953, 16870954, 16870955, 16870956, 16870957, 16870958, 16870959, 16870960, 16870961, 16870962, 16870963, 16870964, 16870965, 16870966, 16870967, 16870968, 16870969, 16870970, 16870971, 16870972, 16870973, 16870974, 16870975, 16870976, 16870977, 16870978, 16870979, 16870980, 16870981, 16870982, 16870983, 16870984, 16870985, 16870986, 16870987, 16870988, 16870989, 16870990, 16870991, 16870992, 16870993, 16870994, 16870995, 16870996, 16870997, 16870998, 16870999, 16871000, 16871001, 16871002, 16871003, 16871004, 16871005, 16871006, 16871007, 16871008, 16871009, 16871010, 16871011, 16871012, 16871013, 16871014, 16871015, 16871016, 16871017, 16871018, 16871019, 16871020, 16871021, 16871022, 16871023, 16871024, 16871025, 16871026, 16871027, 16871028, 16871029, 16871030, 16871031, 16871032, 16871033, 16871034, 16871035, 16871036, 16871037, 16871038, 16871039}\n" +
@@ -2224,8 +2255,14 @@ String2.log("    baseType is DString=" + String2.toJson(((DString)baseType).getV
 "  {75.53, 75.57, 75.97, 76.0, 75.81, 75.58, 75.99, 75.98, 75.77, 75.61, 75.72, 75.75, 75.93, 75.96, 76.01, 75.64, 75.65, 75.94, 75.93, 76.12, 76.65, 76.42, 76.25, 75.81, 76.5, 76.09, 76.35, 76.0, 76.16, 76.36, 76.43, 75.99, 75.93, 76.41, 75.85, 76.07, 76.15, 76.33, 76.7, 76.37, 76.58, 76.89, 77.14, 76.81, 74.73, 75.24, 74.52, 81.04, 80.64, 73.21, 63.34, 37.89, 347.02, 309.93, 290.99, 285.0, 279.38, 276.45, 270.26, 266.33, 266.49, 266.08, 263.59, 261.41, 259.05, 259.82, 260.35, 262.78, 258.73, 249.71, 246.52, 245.78, 246.16, 245.88, 243.52, 231.62, 223.09, 221.08, 221.01, 221.08, 220.81, 223.64, 234.12, 239.55, 241.08, 242.09, 242.04, 242.33, 242.06, 242.22, 242.11, 242.3, 242.07, 247.35, 285.6, 287.02, 287.96, 288.37, 321.32, 344.82, 346.91, 344.78, 347.95, 344.75, 344.66, 344.78, 344.7, 344.76, 343.89, 336.73, 334.01, 340.23, 344.76, 348.25, 348.74, 348.63, 351.97, 344.55, 343.77, 343.71, 347.04, 349.06, 349.45, 349.79, 349.66, 349.7, 349.74, 344.2, 343.22, 341.79, 339.11, 334.12, 334.47, 334.62, 334.7, 334.66, 327.06, 335.74, 348.25, 351.05, 355.17, 343.66, 346.85, 347.28}\n" +
 "flag =\"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZEZZSZZZZ\", \"ZZZZZEZZSZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\", \"ZZZZZZZZZZZZZ\"\n" +
 "}\n";
-        Test.ensureEqual(results, expected, "results=" + results);
-        File2.delete(fileName);
+            Test.ensureEqual(results, expected, "results=" + results);
+            File2.delete(fileName);
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(
+                "\nUnexpected error (server timed out 2013-10-24):\n" +
+                MustBe.throwableToString(t) +
+                 "Press ^C to stop or Enter to continue..."); 
+        }
 
         //test subset
         try {
@@ -2331,10 +2368,9 @@ PL_HD[10] 75.53, 75.72, 76.65, 76.43, 76.58, 63.34, 266.49, 246.52, 220.81, 242.
             File2.delete(fileName);
             if (true) throw new RuntimeException("shouldn't get here");
         } catch (OutOfMemoryError oome) {
-            String2.log(
-"\n" +
-"2012-03-02 Currently, this fails with OutOfMemoryError (from problem in TDS?).\n" +
-"I reported problem to John Caron.\n" +
+            Test.knownProblem(
+                "THREDDS OutOfMemoryError. I reported it to John Caron.",
+                "2012-03-02 A TDS problem. I reported it to John Caron:\n" +
                 MustBe.throwableToString(oome));
 //OpendapHelper.getPrimitiveArrays ?flag[0:10:99]
 //Exception in thread "main" java.lang.OutOfMemoryError: Java heap space
@@ -2348,11 +2384,11 @@ PL_HD[10] 75.53, 75.72, 76.65, 76.43, 76.58, 63.34, 266.49, 246.52, 220.81, 242.
 //        at gov.noaa.pfel.coastwatch.griddata.OpendapHelper.dapToNc(OpendapHelper.java:1398)
 //        at gov.noaa.pfel.coastwatch.griddata.OpendapHelper.testDapToNcDArray(OpendapHelper.java:1628)
 //        at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:723)
-            String2.getStringFromSystemIn(
-                "Press ^C to stop or Enter to continue..."); 
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nUnexpected error.   OutOfMememoryError from TDS bug was expected." + 
+                "\nUnexpected error." +
+                "\nOutOfMememoryError from TDS bug was expected." + 
+                "\n(server timed out 2013-10-24)\n" +
                 "\nPress ^C to stop or Enter to continue..."); 
         }
 
@@ -2372,7 +2408,12 @@ expected =
 "  varNames=zztop,time,lat,lon,PL_HD,history  projection=null\n" +
 "  file=C:/programs/tomcat/webapps/cwexperimental/WEB-INF/temp/testDapToNcDArraySubset.nc\n" +
 "var=history has different dimensions than previous vars.";
-            Test.ensureEqual(results, expected, "results=" + results);
+            if (results.indexOf("java.net.ConnectException: Connection timed out: connect") >= 0)
+                String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                    "\nurl=" + dArrayUrl +
+                    "\n(The server timed out 2013-10-24.)" +
+                    "\nPress ^C to stop or Enter to continue..."); 
+            else Test.ensureEqual(results, expected, "results=" + results);
         }
 
         String2.log("\n*** OpendapHelper.testDapToNcDArray finished.");
@@ -2394,140 +2435,146 @@ expected =
         results = NcHelper.dumpString(fileName, true); //printData
         expected = 
 "netcdf testDapToNcDGrid.nc {\n" +
-" dimensions:\n" +
-"   time = 1;\n" +
-"   altitude = 1;\n" +
-"   latitude = 7;\n" +
-"   longitude = 15;\n" +
-" variables:\n" +
-"   double time(time=1);\n" +
-"     :_CoordinateAxisType = \"Time\";\n" +
-"     :actual_range = 9.348048E8, 1.2556944E9; // double\n" +
-"     :axis = \"T\";\n" +
-"     :fraction_digits = 0; // int\n" +
-"     :ioos_category = \"Time\";\n" +
-"     :long_name = \"Centered Time\";\n" +
-"     :standard_name = \"time\";\n" +
-"     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
-"     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"   double altitude(altitude=1);\n" +
-"     :_CoordinateAxisType = \"Height\";\n" +
-"     :_CoordinateZisPositive = \"up\";\n" +
-"     :actual_range = 10.0, 10.0; // double\n" +
-"     :axis = \"Z\";\n" +
-"     :fraction_digits = 0; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Altitude\";\n" +
-"     :positive = \"up\";\n" +
-"     :standard_name = \"altitude\";\n" +
-"     :units = \"m\";\n" +
-"   double latitude(latitude=7);\n" +
-"     :_CoordinateAxisType = \"Lat\";\n" +
-"     :actual_range = -75.0, 75.0; // double\n" +
-"     :axis = \"Y\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 2; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Latitude\";\n" +
-"     :point_spacing = \"even\";\n" +
-"     :standard_name = \"latitude\";\n" +
-"     :units = \"degrees_north\";\n" +
-"   double longitude(longitude=15);\n" +
-"     :_CoordinateAxisType = \"Lon\";\n" +
-"     :actual_range = 0.0, 360.0; // double\n" +
-"     :axis = \"X\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 2; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Longitude\";\n" +
-"     :point_spacing = \"even\";\n" +
-"     :standard_name = \"longitude\";\n" +
-"     :units = \"degrees_east\";\n" +
-"   float x_wind(time=1, altitude=1, latitude=7, longitude=15);\n" +
-"     :_FillValue = -9999999.0f; // float\n" +
-"     :colorBarMaximum = 15.0; // double\n" +
-"     :colorBarMinimum = -15.0; // double\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 1; // int\n" +
-"     :ioos_category = \"Wind\";\n" +
-"     :long_name = \"Zonal Wind\";\n" +
-"     :missing_value = -9999999.0f; // float\n" +
-"     :standard_name = \"x_wind\";\n" +
-"     :units = \"m s-1\";\n" +
-"   float y_wind(time=1, altitude=1, latitude=7, longitude=15);\n" +
-"     :_FillValue = -9999999.0f; // float\n" +
-"     :colorBarMaximum = 15.0; // double\n" +
-"     :colorBarMinimum = -15.0; // double\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 1; // int\n" +
-"     :ioos_category = \"Wind\";\n" +
-"     :long_name = \"Meridional Wind\";\n" +
-"     :missing_value = -9999999.0f; // float\n" +
-"     :standard_name = \"y_wind\";\n" +
-"     :units = \"m s-1\";\n" +
+"  dimensions:\n" +
+"    time = 1;\n" +
+"    altitude = 1;\n" +
+"    latitude = 7;\n" +
+"    longitude = 15;\n" +
+"  variables:\n" +
+"    double time(time=1);\n" +
+"      :_CoordinateAxisType = \"Time\";\n" +
+"      :actual_range = 9.348048E8, 1.2556944E9; // double\n" +
+"      :axis = \"T\";\n" +
+"      :fraction_digits = 0; // int\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Centered Time\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "\n" +
-" :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
-" :cdm_data_type = \"Grid\";\n" +
-" :composite = \"true\";\n" +
-" :contributor_name = \"Remote Sensing Systems, Inc.\";\n" +
-" :contributor_role = \"Source of level 2 data.\";\n" +
-" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-" :creator_email = \"dave.foley@noaa.gov\";\n" +
-" :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
-" :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2010-04-18Z\";\n" +
-" :date_issued = \"2010-04-18Z\";\n" +
-" :Easternmost_Easting = 360.0; // double\n" +
-" :geospatial_lat_max = 75.0; // double\n" +
-" :geospatial_lat_min = -75.0; // double\n" +
-" :geospatial_lat_resolution = 0.125; // double\n" +
-" :geospatial_lat_units = \"degrees_north\";\n" +
-" :geospatial_lon_max = 360.0; // double\n" +
-" :geospatial_lon_min = 0.0; // double\n" +
-" :geospatial_lon_resolution = 0.125; // double\n" +
-" :geospatial_lon_units = \"degrees_east\";\n" +
-" :geospatial_vertical_max = 10.0; // double\n" +
-" :geospatial_vertical_min = 10.0; // double\n" +
-" :geospatial_vertical_positive = \"up\";\n" +
-" :geospatial_vertical_units = \"m\";\n" +
-" :history = \"Remote Sensing Systems, Inc.\n" +
+"    double altitude(altitude=1);\n" +
+"      :_CoordinateAxisType = \"Height\";\n" +
+"      :_CoordinateZisPositive = \"up\";\n" +
+"      :actual_range = 10.0, 10.0; // double\n" +
+"      :axis = \"Z\";\n" +
+"      :fraction_digits = 0; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Altitude\";\n" +
+"      :positive = \"up\";\n" +
+"      :standard_name = \"altitude\";\n" +
+"      :units = \"m\";\n" +
+"\n" +
+"    double latitude(latitude=7);\n" +
+"      :_CoordinateAxisType = \"Lat\";\n" +
+"      :actual_range = -75.0, 75.0; // double\n" +
+"      :axis = \"Y\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 2; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Latitude\";\n" +
+"      :point_spacing = \"even\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
+"\n" +
+"    double longitude(longitude=15);\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"      :actual_range = 0.0, 360.0; // double\n" +
+"      :axis = \"X\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 2; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :point_spacing = \"even\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"\n" +
+"    float x_wind(time=1, altitude=1, latitude=7, longitude=15);\n" +
+"      :_FillValue = -9999999.0f; // float\n" +
+"      :colorBarMaximum = 15.0; // double\n" +
+"      :colorBarMinimum = -15.0; // double\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 1; // int\n" +
+"      :ioos_category = \"Wind\";\n" +
+"      :long_name = \"Zonal Wind\";\n" +
+"      :missing_value = -9999999.0f; // float\n" +
+"      :standard_name = \"x_wind\";\n" +
+"      :units = \"m s-1\";\n" +
+"\n" +
+"    float y_wind(time=1, altitude=1, latitude=7, longitude=15);\n" +
+"      :_FillValue = -9999999.0f; // float\n" +
+"      :colorBarMaximum = 15.0; // double\n" +
+"      :colorBarMinimum = -15.0; // double\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 1; // int\n" +
+"      :ioos_category = \"Wind\";\n" +
+"      :long_name = \"Meridional Wind\";\n" +
+"      :missing_value = -9999999.0f; // float\n" +
+"      :standard_name = \"y_wind\";\n" +
+"      :units = \"m s-1\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
+"  :cdm_data_type = \"Grid\";\n" +
+"  :composite = \"true\";\n" +
+"  :contributor_name = \"Remote Sensing Systems, Inc.\";\n" +
+"  :contributor_role = \"Source of level 2 data.\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :creator_email = \"dave.foley@noaa.gov\";\n" +
+"  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
+"  :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
+"  :date_created = \"2010-04-18Z\";\n" +
+"  :date_issued = \"2010-04-18Z\";\n" +
+"  :Easternmost_Easting = 360.0; // double\n" +
+"  :geospatial_lat_max = 75.0; // double\n" +
+"  :geospatial_lat_min = -75.0; // double\n" +
+"  :geospatial_lat_resolution = 0.125; // double\n" +
+"  :geospatial_lat_units = \"degrees_north\";\n" +
+"  :geospatial_lon_max = 360.0; // double\n" +
+"  :geospatial_lon_min = 0.0; // double\n" +
+"  :geospatial_lon_resolution = 0.125; // double\n" +
+"  :geospatial_lon_units = \"degrees_east\";\n" +
+"  :geospatial_vertical_max = 10.0; // double\n" +
+"  :geospatial_vertical_min = 10.0; // double\n" +
+"  :geospatial_vertical_positive = \"up\";\n" +
+"  :geospatial_vertical_units = \"m\";\n" +
+"  :history = \"Remote Sensing Systems, Inc.\n" +
 "2010-04-18T02:00:49Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
 today + "T";  // + time " http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
 //today + " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
 String expected2 = 
-" :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
-" :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
-" :keywords = \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
+"  :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
+"  :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
+"  :keywords = \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
 "Oceans > Ocean Winds > Surface Winds,\n" +
 "atmosphere, atmospheric, coastwatch, degrees, global, level, monthly, noaa, ocean, oceans, quality, quikscat, science, science quality, seawinds, surface wcn, wind, winds, x_wind, zonal\";\n" +
-" :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
-" :license = \"The data may be used and redistributed for free but is not intended\n" +
+"  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
+"  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
 "of their employees or contractors, makes any warranty, express or\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-" :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
-" :Northernmost_Northing = 75.0; // double\n" +
-" :origin = \"Remote Sensing Systems, Inc.\";\n" +
-" :processing_level = \"3\";\n" +
-" :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
-" :projection = \"geographic\";\n" +
-" :projection_type = \"mapped\";\n" +
-" :references = \"RSS Inc. Winds: http://www.remss.com/ .\";\n" +
-" :satellite = \"QuikSCAT\";\n" +
-" :sensor = \"SeaWinds\";\n" +
-" :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
-" :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\";\n" +
-" :Southernmost_Northing = -75.0; // double\n" +
-" :standard_name_vocabulary = \"CF-12\";\n" +
-" :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
-" :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
-" :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +
-" :title = \"Wind, QuikSCAT, Global, Science Quality (Monthly Composite)\";\n" +
-" :Westernmost_Easting = 0.0; // double\n" +
+"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
+"  :Northernmost_Northing = 75.0; // double\n" +
+"  :origin = \"Remote Sensing Systems, Inc.\";\n" +
+"  :processing_level = \"3\";\n" +
+"  :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
+"  :projection = \"geographic\";\n" +
+"  :projection_type = \"mapped\";\n" +
+"  :references = \"RSS Inc. Winds: http://www.remss.com/ .\";\n" +
+"  :satellite = \"QuikSCAT\";\n" +
+"  :sensor = \"SeaWinds\";\n" +
+"  :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
+"  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\";\n" +
+"  :Southernmost_Northing = -75.0; // double\n" +
+"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
+"  :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
+"  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +
+"  :title = \"Wind, QuikSCAT, Global, Science Quality (Monthly Composite)\";\n" +
+"  :Westernmost_Easting = 0.0; // double\n" +
 " data:\n" +
 "time =\n" +
 "  {9.48024E8}\n" +
@@ -2586,7 +2633,7 @@ y_wind.y_wind[1][1][7][15]
 [0][0][6], -6.128998, 2.379096, 7.463917, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -9999999.0, -11.026609
 */
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=" + results);
-        int po = results.indexOf(" :infoUrl =");
+        int po = results.indexOf("  :infoUrl =");
         Test.ensureEqual(results.substring(po), expected2, "results=" + results);
         File2.delete(fileName);
 
@@ -2600,144 +2647,150 @@ y_wind.y_wind[1][1][7][15]
         results = NcHelper.dumpString(fileName, false); //printData
         expected = 
 "netcdf testDapToNcDGrid1D2D.nc {\n" +
-" dimensions:\n" +
-"   time = 1;\n" +
-"   altitude = 1;\n" +
-"   latitude = 7;\n" +
-"   longitude = 15;\n" +
-" variables:\n" +
-"   double time(time=1);\n" +
-"     :_CoordinateAxisType = \"Time\";\n" +
-"     :actual_range = 9.348048E8, 1.2556944E9; // double\n" +
-"     :axis = \"T\";\n" +
-"     :fraction_digits = 0; // int\n" +
-"     :ioos_category = \"Time\";\n" +
-"     :long_name = \"Centered Time\";\n" +
-"     :standard_name = \"time\";\n" +
-"     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
-"     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"   double altitude(altitude=1);\n" +
-"     :_CoordinateAxisType = \"Height\";\n" +
-"     :_CoordinateZisPositive = \"up\";\n" +
-"     :actual_range = 10.0, 10.0; // double\n" +
-"     :axis = \"Z\";\n" +
-"     :fraction_digits = 0; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Altitude\";\n" +
-"     :positive = \"up\";\n" +
-"     :standard_name = \"altitude\";\n" +
-"     :units = \"m\";\n" +
-"   double latitude(latitude=7);\n" +
-"     :_CoordinateAxisType = \"Lat\";\n" +
-"     :actual_range = -75.0, 75.0; // double\n" +
-"     :axis = \"Y\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 2; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Latitude\";\n" +
-"     :point_spacing = \"even\";\n" +
-"     :standard_name = \"latitude\";\n" +
-"     :units = \"degrees_north\";\n" +
-"   double longitude(longitude=15);\n" +
-"     :_CoordinateAxisType = \"Lon\";\n" +
-"     :actual_range = 0.0, 360.0; // double\n" +
-"     :axis = \"X\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 2; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Longitude\";\n" +
-"     :point_spacing = \"even\";\n" +
-"     :standard_name = \"longitude\";\n" +
-"     :units = \"degrees_east\";\n" +
-"   float x_wind(time=1, altitude=1, latitude=7, longitude=15);\n" +
-"     :_FillValue = -9999999.0f; // float\n" +
-"     :colorBarMaximum = 15.0; // double\n" +
-"     :colorBarMinimum = -15.0; // double\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 1; // int\n" +
-"     :ioos_category = \"Wind\";\n" +
-"     :long_name = \"Zonal Wind\";\n" +
-"     :missing_value = -9999999.0f; // float\n" +
-"     :standard_name = \"x_wind\";\n" +
-"     :units = \"m s-1\";\n" +
-"   float y_wind(time=1, altitude=1, latitude=7, longitude=15);\n" +
-"     :_FillValue = -9999999.0f; // float\n" +
-"     :colorBarMaximum = 15.0; // double\n" +
-"     :colorBarMinimum = -15.0; // double\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 1; // int\n" +
-"     :ioos_category = \"Wind\";\n" +
-"     :long_name = \"Meridional Wind\";\n" +
-"     :missing_value = -9999999.0f; // float\n" +
-"     :standard_name = \"y_wind\";\n" +
-"     :units = \"m s-1\";\n" +
+"  dimensions:\n" +
+"    time = 1;\n" +
+"    altitude = 1;\n" +
+"    latitude = 7;\n" +
+"    longitude = 15;\n" +
+"  variables:\n" +
+"    double time(time=1);\n" +
+"      :_CoordinateAxisType = \"Time\";\n" +
+"      :actual_range = 9.348048E8, 1.2556944E9; // double\n" +
+"      :axis = \"T\";\n" +
+"      :fraction_digits = 0; // int\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Centered Time\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "\n" +
-" :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
-" :cdm_data_type = \"Grid\";\n" +
-" :composite = \"true\";\n" +
-" :contributor_name = \"Remote Sensing Systems, Inc.\";\n" +
-" :contributor_role = \"Source of level 2 data.\";\n" +
-" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-" :creator_email = \"dave.foley@noaa.gov\";\n" +
-" :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
-" :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2010-04-18Z\";\n" +
-" :date_issued = \"2010-04-18Z\";\n" +
-" :Easternmost_Easting = 360.0; // double\n" +
-" :geospatial_lat_max = 75.0; // double\n" +
-" :geospatial_lat_min = -75.0; // double\n" +
-" :geospatial_lat_resolution = 0.125; // double\n" +
-" :geospatial_lat_units = \"degrees_north\";\n" +
-" :geospatial_lon_max = 360.0; // double\n" +
-" :geospatial_lon_min = 0.0; // double\n" +
-" :geospatial_lon_resolution = 0.125; // double\n" +
-" :geospatial_lon_units = \"degrees_east\";\n" +
-" :geospatial_vertical_max = 10.0; // double\n" +
-" :geospatial_vertical_min = 10.0; // double\n" +
-" :geospatial_vertical_positive = \"up\";\n" +
-" :geospatial_vertical_units = \"m\";\n" +
-" :history = \"Remote Sensing Systems, Inc.\n" +
+"    double altitude(altitude=1);\n" +
+"      :_CoordinateAxisType = \"Height\";\n" +
+"      :_CoordinateZisPositive = \"up\";\n" +
+"      :actual_range = 10.0, 10.0; // double\n" +
+"      :axis = \"Z\";\n" +
+"      :fraction_digits = 0; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Altitude\";\n" +
+"      :positive = \"up\";\n" +
+"      :standard_name = \"altitude\";\n" +
+"      :units = \"m\";\n" +
+"\n" +
+"    double latitude(latitude=7);\n" +
+"      :_CoordinateAxisType = \"Lat\";\n" +
+"      :actual_range = -75.0, 75.0; // double\n" +
+"      :axis = \"Y\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 2; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Latitude\";\n" +
+"      :point_spacing = \"even\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
+"\n" +
+"    double longitude(longitude=15);\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"      :actual_range = 0.0, 360.0; // double\n" +
+"      :axis = \"X\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 2; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :point_spacing = \"even\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"\n" +
+"    float x_wind(time=1, altitude=1, latitude=7, longitude=15);\n" +
+"      :_FillValue = -9999999.0f; // float\n" +
+"      :colorBarMaximum = 15.0; // double\n" +
+"      :colorBarMinimum = -15.0; // double\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 1; // int\n" +
+"      :ioos_category = \"Wind\";\n" +
+"      :long_name = \"Zonal Wind\";\n" +
+"      :missing_value = -9999999.0f; // float\n" +
+"      :standard_name = \"x_wind\";\n" +
+"      :units = \"m s-1\";\n" +
+"\n" +
+"    float y_wind(time=1, altitude=1, latitude=7, longitude=15);\n" +
+"      :_FillValue = -9999999.0f; // float\n" +
+"      :colorBarMaximum = 15.0; // double\n" +
+"      :colorBarMinimum = -15.0; // double\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 1; // int\n" +
+"      :ioos_category = \"Wind\";\n" +
+"      :long_name = \"Meridional Wind\";\n" +
+"      :missing_value = -9999999.0f; // float\n" +
+"      :standard_name = \"y_wind\";\n" +
+"      :units = \"m s-1\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
+"  :cdm_data_type = \"Grid\";\n" +
+"  :composite = \"true\";\n" +
+"  :contributor_name = \"Remote Sensing Systems, Inc.\";\n" +
+"  :contributor_role = \"Source of level 2 data.\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :creator_email = \"dave.foley@noaa.gov\";\n" +
+"  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
+"  :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
+"  :date_created = \"2010-04-18Z\";\n" +
+"  :date_issued = \"2010-04-18Z\";\n" +
+"  :Easternmost_Easting = 360.0; // double\n" +
+"  :geospatial_lat_max = 75.0; // double\n" +
+"  :geospatial_lat_min = -75.0; // double\n" +
+"  :geospatial_lat_resolution = 0.125; // double\n" +
+"  :geospatial_lat_units = \"degrees_north\";\n" +
+"  :geospatial_lon_max = 360.0; // double\n" +
+"  :geospatial_lon_min = 0.0; // double\n" +
+"  :geospatial_lon_resolution = 0.125; // double\n" +
+"  :geospatial_lon_units = \"degrees_east\";\n" +
+"  :geospatial_vertical_max = 10.0; // double\n" +
+"  :geospatial_vertical_min = 10.0; // double\n" +
+"  :geospatial_vertical_positive = \"up\";\n" +
+"  :geospatial_vertical_units = \"m\";\n" +
+"  :history = \"Remote Sensing Systems, Inc.\n" +
 "2010-04-18T02:00:49Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD\n" +
 today + "T"; //time http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\n" +
 //today + time " http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdQSwindmday.das\";\n" +
 expected2 = 
-" :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
-" :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
-" :keywords = \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
+"  :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/QS_ux10_las.html\";\n" +
+"  :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
+"  :keywords = \"Atmosphere > Atmospheric Winds > Surface Winds,\n" +
 "Oceans > Ocean Winds > Surface Winds,\n" +
 "atmosphere, atmospheric, coastwatch, degrees, global, level, monthly, noaa, ocean, oceans, quality, quikscat, science, science quality, seawinds, surface wcn, wind, winds, x_wind, zonal\";\n" +
-" :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
-" :license = \"The data may be used and redistributed for free but is not intended\n" +
+"  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
+"  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
 "of their employees or contractors, makes any warranty, express or\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-" :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
-" :Northernmost_Northing = 75.0; // double\n" +
-" :origin = \"Remote Sensing Systems, Inc.\";\n" +
-" :processing_level = \"3\";\n" +
-" :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
-" :projection = \"geographic\";\n" +
-" :projection_type = \"mapped\";\n" +
-" :references = \"RSS Inc. Winds: http://www.remss.com/ .\";\n" +
-" :satellite = \"QuikSCAT\";\n" +
-" :sensor = \"SeaWinds\";\n" +
-" :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
-" :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\";\n" +
-" :Southernmost_Northing = -75.0; // double\n" +
-" :standard_name_vocabulary = \"CF-12\";\n" +
-" :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
-" :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
-" :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +
-" :title = \"Wind, QuikSCAT, Global, Science Quality (Monthly Composite)\";\n" +
-" :Westernmost_Easting = 0.0; // double\n" +
+"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
+"  :Northernmost_Northing = 75.0; // double\n" +
+"  :origin = \"Remote Sensing Systems, Inc.\";\n" +
+"  :processing_level = \"3\";\n" +
+"  :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
+"  :projection = \"geographic\";\n" +
+"  :projection_type = \"mapped\";\n" +
+"  :references = \"RSS Inc. Winds: http://www.remss.com/ .\";\n" +
+"  :satellite = \"QuikSCAT\";\n" +
+"  :sensor = \"SeaWinds\";\n" +
+"  :source = \"satellite observation: QuikSCAT, SeaWinds\";\n" +
+"  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/QS/ux10/mday\";\n" +
+"  :Southernmost_Northing = -75.0; // double\n" +
+"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :summary = \"Remote Sensing Inc. distributes science quality wind velocity data from the SeaWinds instrument onboard NASA's QuikSCAT satellite.  SeaWinds is a microwave scatterometer designed to measure surface winds over the global ocean.  Wind velocity fields are provided in zonal, meridional, and modulus sets. The reference height for all wind velocities is 10 meters.\";\n" +
+"  :time_coverage_end = \"2009-10-16T12:00:00Z\";\n" +
+"  :time_coverage_start = \"1999-08-16T12:00:00Z\";\n" +
+"  :title = \"Wind, QuikSCAT, Global, Science Quality (Monthly Composite)\";\n" +
+"  :Westernmost_Easting = 0.0; // double\n" +
 " data:\n" +
 "}\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "results=" + results);
-        po = results.indexOf(" :infoUrl =");
+        po = results.indexOf("  :infoUrl =");
         Test.ensureEqual(results.substring(po), expected2, "results=" + results);
         File2.delete(fileName);
 
@@ -2852,7 +2905,7 @@ expected2 =
     public static void test() throws Throwable{
         String2.log("\n*** OpendapHelper.test...");
 
-        /* */
+/* */
         testGetAttributes();
         testParseStartStrideStop();
         testFindVarsWithSharedDimensions();

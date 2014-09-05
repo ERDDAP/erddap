@@ -61,13 +61,16 @@ public class String2 {
     public static String ERROR = "ERROR";
 
     //public static Logger log = Logger.getLogger("com.cohort.util");
-    private static boolean logToSystemOut = false;
-    private static boolean logToSystemErr = true;
+    private static boolean logToSystemOut = true;
+    private static boolean logToSystemErr = false;
     private static BufferedWriter logFile;
     private static String logFileName;
-    /** 2=flush after every other write.  Set this to 1 to flush every time.*/
-    public static int logFileFlushEveryNth = 2; 
+    /** e.g.,  1=flush after every log write.  e.g., 2=flush after every other write. */
+    public static int logFileFlushEveryNth = 1; 
     private static int logFileFlushCount = 0;
+    /** or flush if lots of text pending.*/
+    public static int logFileFlushEveryNBytes = 400; 
+    private static int logFileFlushBytesCount = 0;
     private static StringBuffer logStringBuffer; //thread-safe (writing is synchronized but many threads may read)
     private static int logMaxSize;
     private static long logFileSize;
@@ -79,14 +82,14 @@ public class String2 {
     public static String lineSeparator = System.getProperty("line.separator");
 
     /** Returns true if the current Operating System is Windows. */
-    public static boolean OSIsWindows =
-        System.getProperty("os.name").toLowerCase().indexOf("windows") >= 0;
+    public static String OSName = System.getProperty("os.name");
+    public static boolean OSIsWindows = OSName.toLowerCase().indexOf("windows") >= 0;
     /** Returns true if the current Operating System is Linux. */
-    public static boolean OSIsLinux =
-        System.getProperty("os.name").toLowerCase().indexOf("linux") >= 0;
-    /** Returns true if the current Operating System is Mac OS X. */
-    public static boolean OSIsMacOSX =
-        System.getProperty("mrj.version") != null;
+    public static boolean OSIsLinux = OSName.toLowerCase().indexOf("linux") >= 0;
+    /** Returns true if the current Operating System is Mac OS X. 
+        2014-01-09 was System.getProperty("mrj.version") != null
+        https://developer.apple.com/library/mac/technotes/tn2002/tn2110.html        */
+    public static boolean OSIsMacOSX = OSName.contains("OS X");
 
     /** These are NOT thread-safe.  Always use them in synchronized blocks ("synchronized(gen....) {}").*/
     private static DecimalFormat genStdFormat6 = new DecimalFormat("0.######");
@@ -567,7 +570,7 @@ public class String2 {
                         log("WARNING #" + attempt + 
                             ": String2.readFromFile is having trouble. It will try again to read " + 
                             fileName);
-                        if (attempt == 1) Math2.gc(1000);
+                        if (attempt == 1) Math2.gcAndWait(); //give OS/Java a time and gc to deal with trouble
                         else Math2.sleep(1000);
                     }
                 }
@@ -751,11 +754,10 @@ public class String2 {
     public static String javaInfo() {
         String javaVersion = System.getProperty("java.version");
         String mrjVersion = System.getProperty("mrj.version");
-        mrjVersion = (mrjVersion == null) ? "" : (" (mrj=" + mrjVersion + ")");
+        mrjVersion = (mrjVersion == null) ? "" : (" (mrj=" + mrjVersion + ")"); //unofficial Mac property
         return "Java " + javaVersion + mrjVersion + " (" + Math2.JavaBits + " bit, " +
             System.getProperty("java.vendor") + ") on " +
-            System.getProperty("os.name") + " (" +
-            System.getProperty("os.version") + ").";
+            OSName + " (" + System.getProperty("os.version") + ").";
     }
 
     /**
@@ -1245,6 +1247,8 @@ public class String2 {
      * @return a safe variable name (but perhaps two s's lead to the same result)
      */
     public static String modifyToBeVariableNameSafe(String s) {
+        if (isVariableNameSafe(s))
+            return s;
         if (s == null)
             return "_null";
         s = replaceAll(s, "%20", "_");
@@ -1257,11 +1261,11 @@ public class String2 {
         if (n == 0)
             return "_";
 
-        StringBuilder sb = new StringBuilder(n);
+        StringBuilder sb = new StringBuilder(n + 1);
 
         //first character must be (iso8859Letter|_)
         char ch = s.charAt(0);
-        sb.append(isLetter(ch)? ch : '_');     //'_' will be converted to '_'
+        sb.append(isLetter(ch)? ch : isDigit(ch)? "_" + ch : "_");
 
         //subsequent characters must be (iso8859Letter|_|0-9)
         for (int i = 1; i < n; i++) {
@@ -1712,8 +1716,9 @@ public class String2 {
             //"Copyright(c) 2004 - 2007, CoHort Software.\n" +
             //"For more information, visit www.cohort.com.\n" +
             //"\n" + 
-            "This program is using\n" + 
-            javaInfo();
+            //"This program is using\n" + 
+            javaInfo() + "\n" +
+            Math2.memoryString() + " " + Math2.xmxMemoryString();
     }
 
 
@@ -1807,6 +1812,23 @@ public class String2 {
     }
 
     /**
+     * Generates a sorted (ignoreCase) Comma-Space-Separated-Value (CSSV) string
+     * with the string version of each .  
+     *
+     * @param set
+     * @return a CSSV String with the values with ", " after
+     *    all but the last value.
+     *    Returns null if ar is null.
+     *    null elements are represented as "[null]".
+     */
+    public static String toCSSVString(Set set) {
+        Object ar[] = set.toArray();
+        Arrays.sort(ar, new StringComparatorIgnoreCase());
+        return toCSSVString(ar);
+    }
+
+
+    /**
      * Generates a space-separated-value string.  
      * <p>WARNING: This is simplistic. It doesn't do anything special for 
      *   strings with internal spaces.
@@ -1839,7 +1861,7 @@ public class String2 {
     }
 
     /**
-     * Generates a newline-separated string.
+     * Generates a newline-separated string, with a newline at the end.
      * <p>WARNING: This is simplistic. It doesn't do anything special for 
      *   strings with internal newlines.
      *
@@ -2173,7 +2195,7 @@ public class String2 {
     }
 
     /**
-     * This converts an ArrayList of Strings into a String[].
+     * This converts an Object[] into a String[].
      * If you have an ArrayList or a Vector, use arrayList.toArray().
      *
      * @param aa
@@ -2372,6 +2394,8 @@ public class String2 {
         if (value instanceof long[])   return toCSSVString((long[])value);
         if (value instanceof float[])  return toCSSVString((float[])value);
         if (value instanceof double[]) return toCSSVString((double[])value);
+        if (value instanceof String[]) return toCSSVString((String[])value);
+        if (value instanceof Object[]) return toCSSVString((Object[])value);
         return value.toString();
     }
 
@@ -2592,37 +2616,39 @@ public class String2 {
         return -1;
     }
 
-    /* *  NOT ACTIVE.     
-     * This replaces the current log.
-     * The default log prints to System.err.
-     * Use the logger by calling, e.g., String2.log.fine(msg) or
-     *   String2.log.log(level, msg);
+    /**
+     * This finds the first element in prefixes (starting at element startAt)
+     * where the longerString starts with prefixes[i].
      *
-     * @param mainClassName e.g., "gov.noaa.pfel.coastwatch.CWDataBrowser", 
-     *   sets up a separate logger related to the current program
-     * @param fullFileName the name for the log file (or null or "" for System.err).
-     *   Append .%g to the end of the file name to create and rotate through a series of 
-     *   up to 10 log files, each with up to 1MB of messages.
-     * @param append determines whether log info should be appended
-     *   or overwrite previous log files.
-     * @param defaultLevel e.g., java.util.logging.Level.FINER.
-     *    Note that this can be changed any time with String2.log.setLevel(level).
+     * @param prefixes the array of prefixes
+     * @param longerString the String to be found
+     * @param startAt the first element of ar to be checked.
+     *    If startAt < 0, this starts with startAt = 0.
+     * @return the element number of prefixes which starts with longerString (or -1 if not found)
      */
-    /*public static void setUpLog(String mainClassName, String fullFileName,
-            boolean append, Level initialLevel) throws Exception {
-        log = Logger.getLogger(mainClassName);
-        if (fullFileName.length() > 0) {
-            Handler har[] = log.getHandlers();
-            for (int i = 0; i < har.length; i++)
-                log.removeHandler(har[i]);
-            FileHandler fh = fullFileName.endsWith("%g")? 
-                new FileHandler(fullFileName, 1000000, 10, append) :
-                new FileHandler(fullFileName, 1000000, 1,  append);
-            fh.setFormatter(new RawFormatter()); //replace the default XMLFormatter
-            log.addHandler(fh);
-        }
-        log.setLevel(initialLevel);
-    }*/
+    public static int whichPrefix(String[] prefixes, String longerString, int startAt) {
+        if (prefixes == null || longerString == null || longerString.length() == 0)
+            return -1;
+        int n = prefixes.length;
+        for (int i = Math.max(0, startAt); i < n; i++)
+            if (prefixes[i] != null && longerString.startsWith(prefixes[i])) 
+                return i;
+        return -1;
+    }
+
+    /**
+     * This is like whichPrefix, but returns the found prefix (or null).
+     *
+     * @param prefixes the array of prefixes
+     * @param longerString the String to be found
+     * @param startAt the first element of ar to be checked.
+     *    If startAt < 0, this starts with startAt = 0.
+     * @return the prefixes[i] which starts with longerString (or null if not found)
+     */
+    public static String findPrefix(String[] prefixes, String longerString, int startAt) {
+        int i = whichPrefix(prefixes, longerString, startAt);
+        return i < 0? null : prefixes[i];
+    }
 
     /**
      * This tells Commons Logging to use com.cohort.util.String2Log.
@@ -2659,11 +2685,11 @@ public class String2 {
      * The default log prints to System.err.
      * Use the logger by calling String2.log(msg); 
      *
-     * @param tLogToSystemOut indicates if info should be printed to System.out (default = false).
-     * @param tLogToSystemErr indicates if info should be printed to System.err (default = true).
+     * @param tLogToSystemOut indicates if info should be printed to System.out (default = true).
+     * @param tLogToSystemErr indicates if info should be printed to System.err (default = false).
      * @param fullFileName the name for the log file (or "" for none).
      * @param logToStringBuffer specifies if the logged info should also
-     *   be saved in a StringBuffer (see getlogStringBuffer)
+     *   be saved in a StringBuffer (see getlogStringBuffer) 
      * @param append If a previous log file of the same name exists,
      *   and/or if a logStringBuffer exists,
      *   this determines whether a new log file should be created
@@ -2682,9 +2708,7 @@ public class String2 {
             boolean append, int maxSize) 
             throws Exception {
 
-        if (logFileName != null && logFileName.equals(fullFileName))
-            return;
-
+        String oLogFileName = logFileName;
         logToSystemOut = tLogToSystemOut;
         logToSystemErr = tLogToSystemErr;
 
@@ -2703,8 +2727,12 @@ public class String2 {
         } else logStringBuffer = null;
 
         //if no file name, return
-        if (fullFileName.length() == 0)
+        if (fullFileName.length() == 0) {
+            if (oLogFileName != null && oLogFileName.length() > 0)
+                log("*** closed logFile=" + oLogFileName + " at " + 
+                    Calendar2.getCurrentISODateTimeStringLocal());
             return;
+        }
 
         //open the file
         //This uses a BufferedWriter wrapped around a FileWriter
@@ -2712,23 +2740,35 @@ public class String2 {
         logFileName = fullFileName;
         logFile = new BufferedWriter(new FileWriter(fullFileName, append));
         logFileSize = (new File(fullFileName)).length();
+        logFileFlushCount = 0;
+        logFileFlushBytesCount = 0;
     }
 
     /**
      * This closes the log file (if it exists and is open).
-     * It is best if a crashing program calls this.
-     * It seems like Java should handle this if program crashes,
-     *   but it doesn't seem to (at least in Windows XP Pro).
+     * It is best if a crashing program calls this to ensure logFile is closed.
      */
     public static void closeLogFile() {
         if (logFile != null) {
             try {
+                logFile.flush(); //be extra sure it is flushed
                 logFile.close();
                 logFile = null;
                 logFileName = null;
             } catch (Exception e) {
                 //do nothing
             }
+        }
+    }
+
+    /**
+     * This returns logging to just System.out.
+     */
+    public static void returnLoggingToSystemOut() {
+        try {
+            String2.setupLog(true, false, "", false, false, 100000);
+        } catch (Throwable t2) {
+            System.out.println(MustBe.throwableToString(t2));
         }
     }
 
@@ -2772,7 +2812,7 @@ public class String2 {
                     logStringBuffer.append('\n');
             }
 
-            //write to system.out or logFile 
+            //write to system.out and/or logFile 
             if (!lineSeparator.equals("\n"))
                 message = replaceAll(message, "\n", lineSeparator);
 
@@ -2791,28 +2831,51 @@ public class String2 {
             if (logFile != null) {
                 //is file too big?
                 if (logFileSize > logMaxSize && logMaxSize > 0) {
+                    logFile.flush(); //extra sure it is flushed
                     logFile.close();
                     logFile = null; //otherwise, infinite loop if File2.rename calls String2.log
                     File2.rename(logFileName, logFileName + ".previous");
                     logFile = new BufferedWriter(new FileWriter(logFileName));
                     logFileSize = 0;
+                    logFileFlushCount = 0;
+                    logFileFlushBytesCount = 0;
                 }
 
                 //write the message to the file
                 logFile.write(message);
                 if (addNewline)
                     logFile.write(lineSeparator);
-                //flush so file is always up-to-date if trouble?
-                //  nice, but rarely used and big time penalty (2.5X slower!)
-                if (++logFileFlushCount >= logFileFlushEveryNth) {
-                    logFile.flush(); 
-                    logFileFlushCount = 0;
-                }
                 logFileSize += message.length(); 
 
+                //flush so file is always up-to-date if trouble?
+                //  nice, but significant time penalty (2.5X slower if flush every time)
+                if ((logFileFlushBytesCount += message.length()) > logFileFlushEveryNBytes ||
+                    ++logFileFlushCount >= logFileFlushEveryNth) {
+                    logFile.flush(); 
+                    logFileFlushCount = 0;
+                    logFileFlushBytesCount = 0;
+                }
             }
         } catch (Exception e) {
             //eek! what should I do?
+        }
+    }
+
+    /**
+     * This flushes the log system.
+     * In practice, this just flushes the logFile (if any), 
+     * since other log destinations (e.g., System.out) are flushed automatically every time.
+     * This will not throw an exception.
+     */
+    public static synchronized void flushLog() {
+        if (logFile != null) {
+            try {
+                logFile.flush(); 
+                logFileFlushCount = 0;
+                logFileFlushBytesCount = 0;
+            } catch (Exception e) {
+                //do nothing
+            }
         }
     }
 
@@ -4813,5 +4876,20 @@ public class String2 {
             if (s.charAt(i) > 255) return false;
         return true;
     }
+
+    /** This returns true if s isn't null and s.trim().length() > 0. */
+    public static boolean isSomething(String s) {
+        return s != null && s.trim().length() > 0;
+    }
+
+
+    /**
+     * This returns the text to make n system beeps if printed to the console.
+     */
+    public static String beep(int n) {
+        return makeString('\u0007', n);
+    }
+
+
 
 } //End of String2 class.

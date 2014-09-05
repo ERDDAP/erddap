@@ -30,16 +30,22 @@ import java.util.Map;
 public class Boundaries  {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
 
     /**
-     * Set this to true (by calling reallyVerbose=true in your program, not but changing the code here)
+     * Set this to true (by calling reallyVerbose=true in your program, not by changing the code here)
      * if you want lots and lots of diagnostic messages sent to String2.log.
      */
     public static boolean reallyVerbose = false;
+
+    /**
+     * Set this to true (by calling debug=true in your program, not by changing the code here)
+     * if you want lots and lots and lots of diagnostic messages sent to String2.log.
+     */
+    public static boolean debug = false;
 
     public final static String REF_DIRECTORY = SSR.getContextDirectory() + "WEB-INF/ref/";
 
@@ -132,8 +138,8 @@ public class Boundaries  {
      * This is thread-safe because the cache is thread-safe.
      *
      * @param resolution 0='f'ull, 1='h'igh, 2='i'ntermediate, 3='l'ow, 4='c'rude.
-     * @param west 0..360 or +/-180, 
-     * @param east 0..360 or +/-180
+     * @param west usually 0..360 or +/-180, but -720 to 720 is supported
+     * @param east usually 0..360 or +/-180, but -720 to 720 is supported
      * @param south +/-90
      * @param north +/-90
      * @return a SgtLine with the requested boundaries.
@@ -221,30 +227,37 @@ public class Boundaries  {
      * This creates an SGTLine from the line (e.g., boundary) 
      * info in an SGTLine object.
      * This is the newer version that reads from .double files.
-     *
      * 
      * @param fullFileName the full name of the .double format source file
-     * @param minX 0..360 or +/-180
-     * @param maxX 0..360 or +/-180 
-     * @param minY
-     * @param maxY
+     * @param requestMinX usually 0..360 or +/-180, but -720 to 720 is supported
+     *   (e.g., 74 to 434, see EDDGridFromDap.testMap74to434() and
+     *   SgtMap.testBathymetry() and SgtMap.testTopography() )
+     * @param requestMaxX usually 0..360 or +/-180, but -720 to 720 is supported
+     * @param requestMinY
+     * @param requestMaxY
      * @return an SGTLine object
      * @throws Exception if trouble
      */
     public static SGTLine readSgtLineDouble(String fullFileName,  
-            double minX, double maxX, 
-            double minY, double maxY) throws Exception {
+            double requestMinX, double requestMaxX, 
+            double requestMinY, double requestMaxY) throws Exception {
 
         //if (reallyVerbose) String2.log("    readSGTLine");
 
-        boolean lonPM180 = minX < 0;
         DataInputStream dis = new DataInputStream( new BufferedInputStream(
             new FileInputStream(fullFileName)));
-        DoubleArray lat = new DoubleArray(); 
+        DoubleArray lat = new DoubleArray(); //accumlate the results
         DoubleArray lon = new DoubleArray();
-        DoubleArray tempLat = new DoubleArray(); 
-        DoubleArray tempLon = new DoubleArray();
+        double shift[] = {-720, -360, 0, 360};
+        boolean doShift[] = new boolean[4];
+        DoubleArray tempLat[] = new DoubleArray[4];  //shift [left720,left360,0,right360]
+        DoubleArray tempLon[] = new DoubleArray[4];
+        for (int i = 0; i < 4; i++) {
+          tempLat[i] = new DoubleArray(); 
+          tempLon[i] = new DoubleArray();
+        }
         int nObjects = 0, nLatSkip = 0, nLonSkip = 0, nKeep = 0;
+        //double minMinLon = 1e10, maxMaxLon = -1e10;   //file has minMinLon=6.10360875868E-4 maxMaxLon=359.99969482
         while (true) { 
             //read a path
 
@@ -266,25 +279,39 @@ public class Boundaries  {
             double minLon = dis.readDouble();
             double minLat = dis.readDouble();      
             double maxLon = dis.readDouble();
-            double maxLat = dis.readDouble();      
+            double maxLat = dis.readDouble(); 
+            
+            //if (debug) {
+            //    minMinLon = Math.min(minMinLon, minLon);
+            //    maxMaxLon = Math.max(maxMaxLon, maxLon);
+            //}
 
             //lat test is easy
-            if (minLat > maxY || maxLat < minY) {
+            if (minLat > requestMaxY || maxLat < requestMinY) {
                 //skip this path
                 nLatSkip++;
                 dis.skipBytes(nPoints * 16);
                 continue;
             }
 
-            //lon test: always check for no overlap of request (min/max/X/Y)
-            //   and this path's shifted left, original position, and shifted right
+            //lon test: always check for no overlap of request (min/requestMaxX)
+            //   and this path's original position, and shifted right
+            // |requestHere?| |-720|     |requestHere?|
             // |requestHere?| |-360|     |requestHere?|
             // |requestHere?| |original| |requestHere?| 
             // |requestHere?| |+360|     |requestHere?|
-            if ((minLon-360 > maxX || maxLon-360 < minX) &&  //if true, no overlap
-                (minLon     > maxX || maxLon     < minX) &&  //if true, no overlap
-                (minLon+360 > maxX || maxLon+360 < minX)) {  //if true, no overlap
-
+            boolean displayIt = false;
+            for (int i = 0; i < 4; i++) {
+                doShift[i] = !(minLon + shift[i] >= requestMaxX || maxLon + shift[i] <= requestMinX);
+                if (doShift[i])
+                    displayIt = true;
+            }
+            if (debug) String2.log(
+                "> doShift -720=" + doShift[0] + " -360=" + doShift[1] + 
+                            " 0=" + doShift[2] +  " 360=" + doShift[3] +
+                " requestX=" + requestMinX + " " + requestMaxX + 
+                " polyLon=" + minLon + " " + maxLon);
+            if (!displayIt) {
                 //skip this path
                 nLonSkip++;
                 dis.skipBytes(nPoints * 16);
@@ -297,54 +324,78 @@ public class Boundaries  {
             double oLat = 0;
             double tLon = 0;
             double tLat = 0;      
+            double polyMinLon = 1e10, polyMaxLon = -1e10;  //see if actualy poly lon range is as promised
             for (int point = 0; point < nPoints; point++) {
                 oLon = tLon;
                 oLat = tLat;
                 tLon = dis.readDouble();
                 tLat = dis.readDouble();      
-                if (lonPM180) {
-                    if (tLon >= 180) tLon -= 360;
-                } else {
-                    if (tLon < 0) tLon += 360;
+                if (debug) {
+                    polyMinLon = Math.min(polyMinLon, tLon);
+                    polyMaxLon = Math.max(polyMaxLon, tLon);
                 }
                 //cut lines going from one edge of world to the other
-                if (tempLon.size() > 0 && Math.abs(oLon - tLon) > 50.0) {
-                    //try to add this subpath
-                    int tn = GSHHS.reduce(tempLat.size(), tempLon.array, tempLat.array, minX, maxX, minY, maxY);
-                    tempLat.removeRange(tn, tempLat.size());
-                    tempLon.removeRange(tn, tempLon.size());
-                    if (tn > 0) {
-                        lon.append(tempLon);
-                        lat.append(tempLat);
-                        lon.add(Double.NaN);
-                        lat.add(Double.NaN);
-                        nObjects++;
+                for (int i = 0; i < 4; i++) {
+                    if (doShift[i]) {
+                        //does this polyline wrap around 0 <--> 360?
+                        if (tempLon[i].size() > 0 && Math.abs(oLon - tLon) > 180.0) {
+                            //try to add this subpath
+                            if (oLon < tLon)                      //to make not disjoint, 
+                                 lon.add(tLon + shift[i] - 360);  //  shift this pt to left
+                            else lon.add(tLon + shift[i] + 360);  //  shift this pt to right
+                            lat.add(tLat);
+                            int tn = GSHHS.reduce(tempLat[i].size(), tempLon[i].array, tempLat[i].array, 
+                                requestMinX, requestMaxX, requestMinY, requestMaxY); 
+                            tempLat[i].removeRange(tn, tempLat[i].size());
+                            tempLon[i].removeRange(tn, tempLon[i].size());
+                            if (tn > 0) {
+                                lon.append(tempLon[i]);
+                                lat.append(tempLat[i]);
+                                lon.add(Double.NaN); //break in line
+                                lat.add(Double.NaN);
+                                nObjects++;
+                            }
+                            tempLon[i].clear();
+                            tempLat[i].clear();
+                        }
+                        tempLon[i].add(tLon + shift[i]);
+                        tempLat[i].add(tLat);
                     }
-                    tempLon.clear();
-                    tempLat.clear();
                 }
-                tempLon.add(tLon);
-                tempLat.add(tLat);
+            }
+            if (debug) {
+                if (polyMinLon < minLon ||
+                    polyMaxLon > maxLon) 
+                    String2.getStringFromSystemIn(
+//                    String2.log(
+                        "> Trouble: promisedLon=" + minLon + " " + maxLon + 
+                        " actualLon=" + polyMinLon + " " + polyMaxLon);
             }
 
             //try to add this subpath
-            int tn = GSHHS.reduce(tempLat.size(), tempLon.array, tempLat.array, minX, maxX, minY, maxY);
-            tempLat.removeRange(tn, tempLat.size());
-            tempLon.removeRange(tn, tempLon.size());
-            if (tn > 0) {
-                lon.append(tempLon);
-                lat.append(tempLat);
-                lon.add(Double.NaN);
-                lat.add(Double.NaN);
-                nObjects++;
+            for (int i = 0; i < 4; i++) {
+                if (tempLat[i].size() > 0) {
+                    int tn = GSHHS.reduce(tempLat[i].size(), tempLon[i].array, tempLat[i].array, 
+                        requestMinX, requestMaxX, requestMinY, requestMaxY);
+                    if (tn > 0) {
+                        tempLat[i].removeRange(tn, tempLat[i].size());
+                        tempLon[i].removeRange(tn, tempLon[i].size());
+                        lon.append(tempLon[i]);
+                        lat.append(tempLat[i]);
+                        lon.add(Double.NaN); //break in line
+                        lat.add(Double.NaN);
+                        nObjects++;
+                    }
+                    tempLon[i].clear();
+                    tempLat[i].clear();
+                }
             }
-            tempLon.clear();
-            tempLat.clear();
         }
 
         dis.close();
         if (reallyVerbose) String2.log("    Boundaries.readSgtLine nLatSkip=" + nLatSkip +
             " nLonSkip=" + nLonSkip + " nKeep=" + nKeep + " nObjects=" + nObjects);        
+        //if (debug) String2.log(">>>      minMinLon=" + minMinLon + " maxMaxLon=" + maxMaxLon);
 
         lon.trimToSize();
         lat.trimToSize();
@@ -353,17 +404,23 @@ public class Boundaries  {
         line.setXMetaData(new SGTMetaData("Longitude", "degrees_E", false, true));
         line.setYMetaData(new SGTMetaData("Latitude",  "degrees_N", false, false));
 
+        //for (int i = 0; i < lon.size(); i++) 
+        //    String2.log(String2.left("" + i, 5) + 
+        //        String2.left("" + lon.get(i), 18) + String2.left("" + lat.get(i), 18));
+
         return line;
     }
 
-    /** This is the older version that reads from .asc data files. */
+    /** This is the older version that reads from .asc data files. 
+     * [This probably doesn't work for min/requestMaxX&gt;360
+     */
     public static SGTLine readSgtLineAsc(String fullFileName, int format, 
-            double minX, double maxX, 
-            double minY, double maxY) throws Exception {
+            double requestMinX, double requestMaxX, 
+            double requestMinY, double requestMaxY) throws Exception {
 
         //if (reallyVerbose) String2.log("    readSGTLine");
 
-        boolean lonPM180 = minX < 0;
+        boolean lonPM180 = requestMinX < 0;
         BufferedReader bufferedReader = new BufferedReader(new FileReader(fullFileName));
         DoubleArray lat = new DoubleArray(); 
         DoubleArray lon = new DoubleArray();
@@ -377,7 +434,8 @@ public class Boundaries  {
             if (s.startsWith(startGapLine1) ||
                 s.startsWith(startGapLine2)) {
                 //try to add this subpath
-                int tn = GSHHS.reduce(tempLat.size(), tempLon.array, tempLat.array, minX, maxX, minY, maxY);
+                int tn = GSHHS.reduce(tempLat.size(), tempLon.array, tempLat.array, 
+                    requestMinX, requestMaxX, requestMinY, requestMaxY);
                 tempLat.removeRange(tn, tempLat.size());
                 tempLon.removeRange(tn, tempLon.size());
                 if (tn > 0) {
@@ -403,7 +461,8 @@ public class Boundaries  {
                     //cut lines going from one edge of world to the other
                     if (tempLon.size() > 0 && Math.abs(tLon - tempLon.get(tempLon.size() - 1)) > 50.0) {
                         //try to add this subpath
-                        int tn = GSHHS.reduce(tempLat.size(), tempLon.array, tempLat.array, minX, maxX, minY, maxY);
+                        int tn = GSHHS.reduce(tempLat.size(), tempLon.array, tempLat.array, 
+                            requestMinX, requestMaxX, requestMinY, requestMaxY);
                         tempLat.removeRange(tn, tempLat.size());
                         tempLon.removeRange(tn, tempLon.size());
                         if (tn > 0) {

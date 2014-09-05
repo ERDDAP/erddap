@@ -22,7 +22,9 @@ import java.util.GregorianCalendar;
  */
 public class EDVTime extends EDVTimeStamp { 
 
-     /** The constructor. */
+     /** The constructor. 
+      * This constructor gets source / sets destination actual_range.
+      */
     public EDVTime(String tSourceName, 
         Attributes tSourceAttributes, Attributes tAddAttributes,
         String tSourceDataType) 

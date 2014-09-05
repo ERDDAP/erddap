@@ -295,6 +295,11 @@ public class EDDGridFromDap extends EDDGrid {
             //set creationTimeMillis to time of previous creation, so next time
             //to be reloaded will be same as if ERDDAP hadn't been restarted.
             creationTimeMillis = quickRestartAttributes.getLong("creationTimeMillis");
+                       
+            //Ensure quickRestart information is recent.
+            //If too old: abandon construction, delete quickRestart file, flag dataset reloadASAP
+            ensureQuickRestartInfoIsRecent(datasetID, getReloadEveryNMinutes(), 
+                creationTimeMillis, quickRestartFullFileName());
         }
 
         //open the connection to the opendap source
@@ -525,8 +530,10 @@ public class EDDGridFromDap extends EDDGrid {
      *
      * <p>For simple failures, this writes to log.txt but doesn't throw an exception.
      *
-     * <p>If the dataset has changed in a serious / incompatible way and needs a full
-     * reload, this calls requestReloadASAP() and throws WaitThenTryAgainException.
+     * @throws Throwable if trouble. 
+     * If the dataset has changed in a serious / incompatible way and needs a full
+     * reload, this throws WaitThenTryAgainException 
+     * (usually, catcher calls LoadDatasets.tryToUnload(...) and EDD.requestReloadASAP(tDatasetID))..
      */
     public void update() {
         //return quickly if update system isn't active for this dataset
@@ -583,12 +590,10 @@ public class EDDGridFromDap extends EDDGrid {
             //get the leftmost dimension
             DArrayDimension dad = mainDArray.getDimension(0);
             int newSize = dad.getSize();  
-            if (newSize < oldSize) {
-                requestReloadASAP(); 
+            if (newSize < oldSize) 
                 throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
                     "\n(" + msg + "[" + edvga.destinationName() + "] newSize=" + newSize + 
                     " < oldSize=" + oldSize + ")"); 
-            } 
             if (newSize == oldSize) {
                 if (reallyVerbose) String2.log(msg + "no change to leftmost dimension");
                 return;  //finally{} below sets lastUpdate = now
@@ -618,22 +623,18 @@ public class EDDGridFromDap extends EDDGrid {
                     "expected=" + (newSize - oldSize) + ").");
                 return;
             }
-            if (oldValues.elementClass() != newValues.elementClass()) { //they're canonical, so != works
-                requestReloadASAP(); 
+            if (oldValues.elementClass() != newValues.elementClass())  //they're canonical, so != works
                 throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
                     "\n(" + msg + edvga.destinationName() + " dataType changed: " +
                        " new=" + newValues.elementClassString() +
                     " != old=" + oldValues.elementClassString() + ")"); 
-            }
 
             //ensure last old value is unchanged 
-            if (oldValues.getDouble(oldSize - 1) != newValues.getDouble(0)) { //they should be exactly equal
-                requestReloadASAP(); 
+            if (oldValues.getDouble(oldSize - 1) != newValues.getDouble(0))  //they should be exactly equal
                 throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
                     "\n(" + msg + edvga.destinationName() + "[" + (oldSize - 1) + 
                       "] changed!  old=" + oldValues.getDouble(oldSize - 1) + 
                               " != new=" + newValues.getDouble(0)); 
-            } 
 
             //prepare changes to update the dataset
             double newMin = oldValues.getDouble(0);
@@ -656,13 +657,11 @@ public class EDDGridFromDap extends EDDGrid {
 
             //test isAscending  (having last old value is essential)
             String error = edvga.isAscending()? newValues.isAscending() : newValues.isDescending();
-            if (error.length() > 0) {
-                requestReloadASAP(); 
+            if (error.length() > 0) 
                 throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
                     "\n(" + edvga.destinationName() + " was " + 
                     (edvga.isAscending()? "a" : "de") +
                     "scending, but the newest values aren't (" + error + ").)"); 
-            }
 
             //if was isEvenlySpaced, test that new values are and have same averageSpacing
             //(having last old value is essential)
@@ -840,7 +839,7 @@ public class EDDGridFromDap extends EDDGrid {
      *   are the dataValues.
      *   Both the axisValues and dataValues are straight from the source,
      *   not modified.
-     * @throws Throwable if trouble
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public PrimitiveArray[] getSourceData(EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
@@ -869,7 +868,6 @@ public class EDDGridFromDap extends EDDGrid {
                 if (tToString.indexOf(Math2.memoryTooMuchData) >= 0)
                     throw t;
 
-                requestReloadASAP(); 
                 throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
                     "\n(" + EDStatic.errorFromDataSource + t.toString() + ")", 
                     t); 
@@ -899,19 +897,16 @@ public class EDDGridFromDap extends EDDGrid {
                 } else if (pa.length != 1) {
                     for (int av = 0; av < axisVariables.length; av++) {
                         String tError = results[av].almostEqual(pa[av + 1]); 
-                        if (tError.length() > 0) {
-                            requestReloadASAP(); 
+                        if (tError.length() > 0) 
                             throw new WaitThenTryAgainException(
                                 EDStatic.waitThenTryAgain +
                                 "\nDetails: The axis values for dataVariable=0,axis=" + av +  
                                 ")\ndon't equal the axis values for dataVariable=" + dv + ",axis=" + av + ".\n" +
                                 tError);
-                        }
                     }
                 }
 
             } else {
-                requestReloadASAP(); 
                 throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
                     "\nDetails: An unexpected data structure was returned from the source (size observed=" + 
                     pa.length + ", expected=" + (axisVariables.length + 1) + ").");
@@ -946,6 +941,7 @@ public class EDDGridFromDap extends EDDGrid {
      *    sources, e.g., a THREDDS catalog.xml file.
      *    These have priority over other sourceGlobalAttributes.
      *    Okay to use null if none.
+     * @return a suggested chunk of xml for this dataset for use in datasets.xml 
      * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
      *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
@@ -1032,11 +1028,17 @@ public class EDDGridFromDap extends EDDGrid {
             if (numDimensions == 0)
                 continue;
             //skip if combo is 1D bnds=bounds info
-            if (numDimensions == 1 && mainDArray.getDimension(0).getName().endsWith("bnds")) 
-                continue;
+            if (numDimensions == 1) {
+                String tName = mainDArray.getDimension(0).getName();
+                if (tName == null || tName.endsWith("bnds")) 
+                    continue;
+            }
             //skip if combo is 2D bnds=bounds info  (bnds, time_bnds, etc)
-            if (numDimensions == 2 && mainDArray.getDimension(1).getName().endsWith("bnds"))
-                continue;
+            if (numDimensions == 2) {
+                String tName = mainDArray.getDimension(1).getName();
+                if (tName == null || tName.endsWith("bnds"))
+                    continue;
+            }
             //skip if varName endsWith("bnds")
             if (dName.endsWith("bnds"))
                 continue;
@@ -1340,7 +1342,7 @@ public class EDDGridFromDap extends EDDGrid {
             String2.distribute(time, datasetSuccessTimes);
             String ts = indent + tLocalSourceUrl + "  (" + time + " ms)\n";
             summary.append(ts);
-            System.out.print(ts);
+            String2.log(ts);
 
         } catch (Throwable t) {
             String2.log(String2.ERROR + " in safelyGenerateDatasetsXml\n" +
@@ -1353,7 +1355,7 @@ public class EDDGridFromDap extends EDDGrid {
                     String2.replaceAll(MustBe.getShortErrorMessage(t), "\n", "\n  " + indent) + 
                     "\n";
             summary.append(ts);
-            System.out.print(ts);
+            String2.log(ts);
         } 
     }
 
@@ -1405,12 +1407,12 @@ public class EDDGridFromDap extends EDDGrid {
             "\n<<< recursivelyGenerateDatasetsXmlFromThreddsCatalogs  regex=" + datasetNameRegex +
             "\n  tLocalSourceUrl=" + tLocalSourceUrl);
         long time = System.currentTimeMillis();
-        summary.append(  "\nStarting " + tLocalSourceUrl + "\n");
-        System.out.print("\nStarting " + tLocalSourceUrl + "\n");
+        summary.append("\nStarting " + tLocalSourceUrl + "\n");
+        String2.log(   "\nStarting " + tLocalSourceUrl + "\n");
         if (!alreadyDone.add(tLocalSourceUrl)) {
             String ts = "Catalog.xml already done!\n";
             summary.append(ts);
-            System.out.print(ts);
+            String2.log(ts);
             return;
         }
         if (parentName == null)
@@ -1611,7 +1613,7 @@ public class EDDGridFromDap extends EDDGrid {
                         (name[cLevel].length() == 0? "(No Name)" : name[cLevel]) + 
                         "\n";
                     summary.append(ts);
-                    System.out.print(ts);
+                    String2.log(ts);
 
 
                 //catch </dataset> and create a dataset
@@ -1686,7 +1688,7 @@ public class EDDGridFromDap extends EDDGrid {
                                 //UAF clean catalog has these when no valid dataset in directory
                                 String ts = indent[cLevel] + "  Skipping UAF catalog.html dataset: " + tUrlPath + "\n";
                                 summary.append(ts);
-                                System.out.print(ts);
+                                String2.log(ts);
                             } else if (justURLs) {
                                 results.write(tUrlPath + "\n");
                             } else {
@@ -1698,7 +1700,7 @@ public class EDDGridFromDap extends EDDGrid {
                         } else {
                             String ts = indent[cLevel] + "  Dataset already done: " + tUrlPath + "\n";
                             summary.append(ts);
-                            System.out.print(ts);
+                            String2.log(ts);
                         }
                     }
                     cLevel--;  //result may be -1
@@ -1795,7 +1797,7 @@ public class EDDGridFromDap extends EDDGrid {
                 String2.replaceAll(MustBe.throwableToShortString(t), "\n", "\n  ") +
                 "\n";
             summary.append(ts);
-            System.out.print(ts);
+            String2.log(ts);
         }
         if (reallyVerbose) String2.log(
             "\n>>> leaving recursivelyGenerateDatasetsXmlFromThreddsCatalogs\n" +
@@ -1805,7 +1807,7 @@ public class EDDGridFromDap extends EDDGrid {
         String ts = "Finished " + tLocalSourceUrl + "  (" + 
             Calendar2.elapsedTimeString(time) + ")\n\n";
         summary.append(ts);
-        System.out.print(ts);
+        String2.log(ts);
     }
 
     /**
@@ -1887,7 +1889,8 @@ public class EDDGridFromDap extends EDDGrid {
             "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2010.nc",
             "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2011.nc",
             "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2012.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2013.nc"};
+            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2013.nc",
+            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2014.nc"};
         Test.ensureEqual(results, expected, "results0=" + String2.toNewlineString(results));
 
         //test no regex
@@ -1978,6 +1981,10 @@ public class EDDGridFromDap extends EDDGrid {
         if (oLogFileName == null) {
             logFileName = resultsFileName + ".log.txt";
             String2.setupLog(false, false, logFileName, false, false, 1000000000);
+            String2.log("*** Starting runGenerateDatasetsXmlFromThreddsCatalog " + 
+                Calendar2.getCurrentISODateTimeStringLocal() + "\n" +
+                "logFile=" + String2.logFileName() + "\n" +
+                String2.standardHelpAboutMessage()); 
         }
         
         Writer results = new BufferedWriter(new OutputStreamWriter(
@@ -2013,7 +2020,7 @@ public class EDDGridFromDap extends EDDGrid {
         results.close();
 
         if (oLogFileName == null)
-            EDStatic.returnLoggingToSystemOut(); 
+            String2.returnLoggingToSystemOut(); 
 
         if (oLocalSourceUrl != null) {
             SSR.displayInBrowser(resultsFileName);
@@ -2027,21 +2034,21 @@ public class EDDGridFromDap extends EDDGrid {
 //there are several datasets in the resultsAr, but this is the one that changes least frequently (monthly)
 "<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_pfeg_7c78_3321_3466\" active=\"true\">\n" +
 "    <sourceUrl>http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/mday</sourceUrl>\n" +
-"    <reloadEveryNMinutes>5760</reloadEveryNMinutes>\n" +  //sometimes 2880
+"    <reloadEveryNMinutes>(2880|5760|11520)</reloadEveryNMinutes>\n" +  //2880 or 5760, rarely 11520
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
 "        <att name=\"cols\" type=\"int\">8640</att>\n" +
 "        <att name=\"composite\">true</att>\n" +
-"        <att name=\"contributor_name\">NASA GSFC (OBPG)</att>\n" +
+"        <att name=\"contributor_name\">NASA GSFC \\(OBPG\\)</att>\n" +
 "        <att name=\"contributor_role\">Source of level 2 data.</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.0, Unidata Dataset Discovery v1.0, CWHDF</att>\n" +
 "        <att name=\"creator_email\">dave.foley@noaa.gov</att>\n" +
 "        <att name=\"creator_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"creator_url\">http://coastwatch.pfel.noaa.gov</att>\n" +
 "        <att name=\"cwhdf_version\">3.4</att>\n" +
-"        <att name=\"date_created\">2013-05-12Z</att>\n" +  //changes
-"        <att name=\"date_issued\">2013-05-12Z</att>\n" + //changes
+"        <att name=\"date_created\">20.{8}Z</att>\n" +  //changes
+"        <att name=\"date_issued\">20.{8}Z</att>\n" + //changes
 "        <att name=\"Easternmost_Easting\" type=\"double\">360.0</att>\n" +
 "        <att name=\"et_affine\" type=\"doubleList\">0.0 0.041676313961565174 0.04167148975575877 0.0 0.0 -90.0</att>\n" +
 "        <att name=\"gctp_datum\" type=\"int\">12</att>\n" +
@@ -2060,7 +2067,13 @@ public class EDDGridFromDap extends EDDGrid {
 "        <att name=\"geospatial_vertical_min\" type=\"double\">0.0</att>\n" +
 "        <att name=\"geospatial_vertical_positive\">up</att>\n" +
 "        <att name=\"geospatial_vertical_units\">m</att>\n" +
-"        <att name=\"history\">NASA GSFC (OBPG)\n";
+"        <att name=\"history\">NASA GSFC \\(OBPG\\)";
+
+        int po  = resultsAr[1].indexOf(expected.substring(0, 80));
+        int po2 = resultsAr[1].indexOf("<att name=\"history\">NASA GSFC (OBPG)", po + 80);
+        String2.log("\npo=" + po + " po2=" + po2 + " results=\n" + resultsAr[1]);
+        String2.log("");  //ensure previous is written
+        Test.ensureLinesMatch(resultsAr[1].substring(po, po2 + 36), expected, "");
 
 /*"2010-01-08T00:51:12Z NOAA CoastWatch (West Coast Node) and NOAA SWFSC ERD</att>\n" +
 "        <att name=\"id\">LMHchlaSmday_20091216120000</att>\n" +
@@ -2097,7 +2110,6 @@ public class EDDGridFromDap extends EDDGrid {
 "        <att name=\"creator_name\">NASA GSFC (G. Feldman)</att>\n" +
 */
 
-//*** this is a different dataset!
 String expected2 = 
 "        <att name=\"infoUrl\">http://coastwatch.pfel.noaa.gov/infog/MH_chla_las.html</att>\n" +
 "        <att name=\"institution\">NOAA CoastWatch WCN</att>\n" +
@@ -2111,15 +2123,15 @@ String expected2 =
 "        <att name=\"publisher_name\">NOAA CoastWatch, West Coast Node</att>\n" +
 "        <att name=\"publisher_url\">http://coastwatch.pfel.noaa.gov</att>\n" +
 "        <att name=\"start_time\">null</att>\n" +
-"        <att name=\"summary\">NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft. Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft. This is Science Quality data.</att>\n" +
-"        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality (1-day)</att>\n" +
+"        <att name=\"summary\">NOAA CoastWatch distributes chlorophyll-a concentration data from NASA&#39;s Aqua Spacecraft. Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft. This is Science Quality data.</att>\n" +
+"        <att name=\"title\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality \\(1-day\\)</att>\n" +
 "    </addAttributes>\n" +
 "    <axisVariable>\n" +
 "        <sourceName>time</sourceName>\n" +
 "        <destinationName>time</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
 "            <att name=\"_CoordinateAxisType\">Time</att>\n" +
-"            <att name=\"actual_range\" type=\"doubleList\">1.3660272E9 1.3660272E9</att>\n" + //changes
+"            <att name=\"actual_range\" type=\"doubleList\">1.3660272E9 .{5,20}</att>\n" + //changes
 "            <att name=\"axis\">T</att>\n" +
 "            <att name=\"fraction_digits\" type=\"int\">0</att>\n" +
 "            <att name=\"long_name\">Centered Time</att>\n" +
@@ -2188,32 +2200,33 @@ String expected2 =
 "        <sourceName>MHchla</sourceName>\n" +
 "        <destinationName>MHchla</destinationName>\n" +
 "        <!-- sourceAttributes>\n" +
-"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n";
-/*
-"            <att name=\"actual_range\" type=\"floatList\">0.01 63.92</att>\n" + //changes
+"            <att name=\"_FillValue\" type=\"float\">-9999999.0</att>\n" +
+"            <att name=\"actual_range\" type=\"floatList\">.{1,10} .{1,10}</att>\n" + //changes
 "            <att name=\"coordsys\">geographic</att>\n" +
 "            <att name=\"fraction_digits\" type=\"int\">2</att>\n" +
 "            <att name=\"long_name\">Chlorophyll-a, Aqua MODIS, NPP, 0.05 degrees, Global, Science Quality</att>\n" +
 "            <att name=\"missing_value\" type=\"float\">-9999999.0</att>\n" +
-"            <att name=\"numberOfObservations\" type=\"int\">15412342</att>\n" +  //changes
-"            <att name=\"percentCoverage\" type=\"double\">0.4129249721364883</att>\n" +
+"            <att name=\"numberOfObservations\" type=\"int\">\\d{1,20}</att>\n" +  //changes
+"            <att name=\"percentCoverage\" type=\"double\">.{5,20}</att>\n" + //changes
 "            <att name=\"standard_name\">concentration_of_chlorophyll_in_sea_water</att>\n" +
 "            <att name=\"units\">mg m-3</att>\n" +
 "        </sourceAttributes -->\n" +
 "        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">30.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.03</att>\n" +
+"            <att name=\"colorBarScale\">Log</att>\n" +
 "            <att name=\"ioos_category\">Ocean Color</att>\n" +
+"            <att name=\"numberOfObservations\">null</att>\n" +
+"            <att name=\"percentCoverage\">null</att>\n" + 
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
-"</dataset>\n";
-*/
-        int po = resultsAr[1].indexOf(expected.substring(0, 80));
-        if (po < 0) String2.log("results=\n" + resultsAr[1]);
-        Test.ensureEqual(resultsAr[1].substring(po, po + expected.length()), expected, 
-            "results=\n" + resultsAr[1]);
+"</dataset>";
 
-        po = resultsAr[1].indexOf(expected2.substring(0, 80));
-        if (po < 0) String2.log("results=\n" + resultsAr[1]);
-        Test.ensureEqual(resultsAr[1].substring(po, po + expected2.length()), expected2, 
+        po  = resultsAr[1].indexOf(expected2.substring(0, 80));
+        po2 = resultsAr[1].indexOf("</dataset>", po + 80);
+        if (po < 0 || po2 < 0) 
+            String2.log("\npo=" + po + " po2=" + po2 + " results=\n" + resultsAr[1]);
+        Test.ensureLinesMatch(resultsAr[1].substring(po, po2 + 10), expected2, 
             "results=\n" + resultsAr[1]);
 
         String2.log("\ntestGenerateDatasetsXmlFromThreddsCatalog passed the test.");
@@ -2548,8 +2561,7 @@ String expected2 =
 
                 sb.append(
 "    <dataset type=\"EDDGridFromDap\" datasetID=\"erd" + twoLetter + fourLetter + timePeriod + "\">\n" +
-"        <!-- outside of ERD, use http://oceanwatch.pfeg.noaa.gov -->\n" +
-"        <sourceUrl>http://192.168.31.18/thredds/dodsC/satellite/" + twoLetter + 
+"        <sourceUrl>http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/" + twoLetter + 
                 "/" + fourLetter + "/" + timePeriod + "</sourceUrl>\n" +
 "        <reloadEveryNMinutes>" + reload + "</reloadEveryNMinutes>\n" +
 "        <addAttributes> \n" +
@@ -2745,8 +2757,10 @@ String expected2 =
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
         }
-        Test.ensureEqual(String2.split(error, '\n')[0],  //last # changes frequently
-            "SimpleException: Query error: For variable=chlorophyll axis#0=time Constraint=\"[(2007-02-06)[]\": Stop=\"\" is invalid.  It must be an integer between 0 and 493.", 
+        Test.ensureLinesMatch(String2.split(error, '\n')[0],  //last # changes frequently.   Was 500.
+            "SimpleException: Query error: For variable=chlorophyll axis#0=time " +
+                "Constraint=\"\\[\\(2007-02-06\\)\\[\\]\": Stop=\"\" is invalid\\.  " +
+                "It must be an integer between 0 and \\d{3}\\.", 
             "error=" + error);
 
         error = "";
@@ -2956,22 +2970,22 @@ String expected2 =
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"Dataset {\n" +
-"  Float64 time[time = 494];\n" +   //494 will change sometimes
-"  Float64 altitude[altitude = 1];\n" +
-"  Float64 latitude[latitude = 4320];\n" +
-"  Float64 longitude[longitude = 8640];\n" +
-"  GRID {\n" +
+"Dataset \\{\n" +
+"  Float64 time\\[time = \\d{3}\\];\n" +   //\\d was 500.  It changes sometimes.
+"  Float64 altitude\\[altitude = 1\\];\n" +
+"  Float64 latitude\\[latitude = 4320\\];\n" +
+"  Float64 longitude\\[longitude = 8640\\];\n" +
+"  GRID \\{\n" +
 "    ARRAY:\n" +
-"      Float32 chlorophyll[time = 494][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+"      Float32 chlorophyll\\[time = \\d{3}\\]\\[altitude = 1\\]\\[latitude = 4320\\]\\[longitude = 8640\\];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 494];\n" +
-"      Float64 altitude[altitude = 1];\n" +
-"      Float64 latitude[latitude = 4320];\n" +
-"      Float64 longitude[longitude = 8640];\n" +
-"  } chlorophyll;\n" +
-"} erdMHchla8day;\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+"      Float64 time\\[time = \\d{3}\\];\n" +
+"      Float64 altitude\\[altitude = 1\\];\n" +
+"      Float64 latitude\\[latitude = 4320\\];\n" +
+"      Float64 longitude\\[longitude = 8640\\];\n" +
+"  \\} chlorophyll;\n" +
+"\\} erdMHchla8day;\n";
+        Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
         //*** test DAP data access form
         tName = gridDataset.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
@@ -3011,18 +3025,18 @@ String expected2 =
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         expected = 
-"Dataset {\n" +
-"  GRID {\n" +
-"    ARRAY:\n" +   //494 will change sometimes
-"      Float32 chlorophyll[time = 494][altitude = 1][latitude = 4320][longitude = 8640];\n" +
+"Dataset \\{\n" +
+"  GRID \\{\n" +
+"    ARRAY:\n" +               //   \\d{3} was 500.  It changes sometimes.
+"      Float32 chlorophyll\\[time = \\d{3}\\]\\[altitude = 1\\]\\[latitude = 4320\\]\\[longitude = 8640\\];\n" +
 "    MAPS:\n" +
-"      Float64 time[time = 494];\n" +
-"      Float64 altitude[altitude = 1];\n" +
-"      Float64 latitude[latitude = 4320];\n" +
-"      Float64 longitude[longitude = 8640];\n" +
+"      Float64 time\\[time = \\d{3}\\];\n" +
+"      Float64 altitude\\[altitude = 1\\];\n" +
+"      Float64 latitude\\[latitude = 4320\\];\n" +
+"      Float64 longitude\\[longitude = 8640\\];\n" +
 "  } chlorophyll;\n" +
 "} erdMHchla8day;\n";
-        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
 
     }
@@ -3264,81 +3278,83 @@ String expected2 =
         results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory  + tName, true);
         expected = 
 "netcdf EDDGridFromDap_Axis.nc {\n" +
-" dimensions:\n" +
-"   time = 3;\n" +   // (has coord.var)\n" +    //changed when switched to netcdf-java 4.0, 2009-02-23
-"   longitude = 1;\n" +   // (has coord.var)\n" +
-" variables:\n" +
-"   double time(time=3);\n" +
-"     :_CoordinateAxisType = \"Time\";\n" +
-"     :actual_range = 1.0260864E9, 1.1661408E9; // double\n" + //up-to-date
-"     :axis = \"T\";\n" +
-"     :fraction_digits = 0; // int\n" +
-"     :ioos_category = \"Time\";\n" +
-"     :long_name = \"Centered Time\";\n" +
-"     :standard_name = \"time\";\n" +
-"     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
-"     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"   double longitude(longitude=1);\n" +
-"     :_CoordinateAxisType = \"Lon\";\n" +
-"     :actual_range = 360.0, 360.0; // double\n" +
-"     :axis = \"X\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 4; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Longitude\";\n" +
-"     :point_spacing = \"even\";\n" +
-"     :standard_name = \"longitude\";\n" +
-"     :units = \"degrees_east\";\n" +
+"  dimensions:\n" +
+"    time = 3;\n" +   // (has coord.var)\n" +    //changed when switched to netcdf-java 4.0, 2009-02-23
+"    longitude = 1;\n" +   // (has coord.var)\n" +
+"  variables:\n" +
+"    double time(time=3);\n" +
+"      :_CoordinateAxisType = \"Time\";\n" +
+"      :actual_range = 1.0260864E9, 1.1661408E9; // double\n" + //up-to-date
+"      :axis = \"T\";\n" +
+"      :fraction_digits = 0; // int\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Centered Time\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "\n" +
-" :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
-" :cdm_data_type = \"Grid\";\n" +
-" :composite = \"true\";\n" +
-" :contributor_name = \"NASA GSFC (OBPG)\";\n" +
-" :contributor_role = \"Source of level 2 data.\";\n" +
-" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-" :creator_email = \"dave.foley@noaa.gov\";\n" +
-" :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
-" :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n";
+"    double longitude(longitude=1);\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"      :actual_range = 360.0, 360.0; // double\n" +
+"      :axis = \"X\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 4; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :point_spacing = \"even\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
+"  :cdm_data_type = \"Grid\";\n" +
+"  :composite = \"true\";\n" +
+"  :contributor_name = \"NASA GSFC (OBPG)\";\n" +
+"  :contributor_role = \"Source of level 2 data.\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :creator_email = \"dave.foley@noaa.gov\";\n" +
+"  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
+"  :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         expected = 
-" :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
-" :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
-" :keywords = \"8-day,\n" +
+"  :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
+"  :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
+"  :keywords = \"8-day,\n" +
 "Oceans > Ocean Chemistry > Chlorophyll,\n" +
 "aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\";\n" +
-" :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
-" :license = \"The data may be used and redistributed for free but is not intended\n" +
+"  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
+"  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
 "of their employees or contractors, makes any warranty, express or\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-" :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
-" :origin = \"NASA GSFC (OBPG)\";\n" +
-" :processing_level = \"3\";\n" +
-" :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
-" :projection = \"geographic\";\n" +
-" :projection_type = \"mapped\";\n" +
-" :references = \"Aqua/MODIS information: http://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .\";\n" +
-" :satellite = \"Aqua\";\n" +
-" :sensor = \"MODIS\";\n" +
-" :source = \"satellite observation: Aqua, MODIS\";\n" +
-" :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
-" :standard_name_vocabulary = \"CF-12\";\n" +
-" :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-" :time_coverage_end = \"2006-12-15T00:00:00Z\";\n" +
-" :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
-" :title = \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
-" :Westernmost_Easting = 360.0; // double\n" +
+"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
+"  :origin = \"NASA GSFC (OBPG)\";\n" +
+"  :processing_level = \"3\";\n" +
+"  :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
+"  :projection = \"geographic\";\n" +
+"  :projection_type = \"mapped\";\n" +
+"  :references = \"Aqua/MODIS information: http://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .\";\n" +
+"  :satellite = \"Aqua\";\n" +
+"  :sensor = \"MODIS\";\n" +
+"  :source = \"satellite observation: Aqua, MODIS\";\n" +
+"  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
+"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
+"  :time_coverage_end = \"2006-12-15T00:00:00Z\";\n" +
+"  :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
+"  :Westernmost_Easting = 360.0; // double\n" +
 " data:\n" +
 "time =\n" +
 "  {1.0260864E9, 1.0960704E9, 1.1661408E9}\n" +
 "longitude =\n" +
 "  {360.0}\n" +
 "}\n";
-        tPo = results.indexOf(" :infoUrl");
+        tPo = results.indexOf("  :infoUrl");
         Test.ensureEqual(results.substring(tPo), expected, "RESULTS=\n" + results);
            
 
@@ -3350,37 +3366,39 @@ String expected2 =
         //String2.log(results);
         expected = 
 "netcdf EDDGridFromDap_Axis.nc {\n" +
-" dimensions:\n" +
-"   time = 3;\n" +   // (has coord.var)\n" +   //changed when switched to netcdf-java 4.0, 2009-02-23
-"   longitude = 1;\n" +   // (has coord.var)\n" +
-" variables:\n" +
-"   double time(time=3);\n" +
-"     :_CoordinateAxisType = \"Time\";\n" +
-"     :actual_range = 1.0260864E9, 1.1661408E9; // double\n" +  //up-to-date
-"     :axis = \"T\";\n" +
-"     :fraction_digits = 0; // int\n" +
-"     :ioos_category = \"Time\";\n" +
-"     :long_name = \"Centered Time\";\n" +
-"     :standard_name = \"time\";\n" +
-"     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
-"     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"   double longitude(longitude=1);\n" +
-"     :_CoordinateAxisType = \"Lon\";\n" +
-"     :actual_range = 360.0, 360.0; // double\n" +
-"     :axis = \"X\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 4; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Longitude\";\n" +
-"     :point_spacing = \"even\";\n" +
-"     :standard_name = \"longitude\";\n" +
-"     :units = \"degrees_east\";\n" +
+"  dimensions:\n" +
+"    time = 3;\n" +   // (has coord.var)\n" +   //changed when switched to netcdf-java 4.0, 2009-02-23
+"    longitude = 1;\n" +   // (has coord.var)\n" +
+"  variables:\n" +
+"    double time(time=3);\n" +
+"      :_CoordinateAxisType = \"Time\";\n" +
+"      :actual_range = 1.0260864E9, 1.1661408E9; // double\n" +  //up-to-date
+"      :axis = \"T\";\n" +
+"      :fraction_digits = 0; // int\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Centered Time\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "\n" +
-" :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n";
+"    double longitude(longitude=1);\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"      :actual_range = 360.0, 360.0; // double\n" +
+"      :axis = \"X\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 4; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :point_spacing = \"even\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         expected = 
-" :title = \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
-" :Westernmost_Easting = 360.0; // double\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
+"  :Westernmost_Easting = 360.0; // double\n" +
 " data:\n" +
 "}\n";
         Test.ensureTrue(results.indexOf(expected) > 0, "RESULTS=\n" + results);
@@ -3906,112 +3924,117 @@ pre 2012-08-17 was
         results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory  + tName, true);
         expected = //changed a little ("// (has coord.var)") when switched to netcdf-java 4.0, 2009-02-23
 "netcdf EDDGridFromDap_Data.nc {\n" +
-" dimensions:\n" +
-"   time = 1;\n" +
-"   altitude = 1;\n" +
-"   latitude = 51;\n" +
-"   longitude = 53;\n" +
-" variables:\n" +
-"   double time(time=1);\n" +
-"     :_CoordinateAxisType = \"Time\";\n" +
-"     :actual_range = 1.17072E9, 1.17072E9; // double\n" +
-"     :axis = \"T\";\n" +
-"     :fraction_digits = 0; // int\n" +
-"     :ioos_category = \"Time\";\n" +
-"     :long_name = \"Centered Time\";\n" +
-"     :standard_name = \"time\";\n" +
-"     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
-"     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"   double altitude(altitude=1);\n" +
-"     :_CoordinateAxisType = \"Height\";\n" +
-"     :_CoordinateZisPositive = \"up\";\n" +
-"     :actual_range = 0.0, 0.0; // double\n" +
-"     :axis = \"Z\";\n" +
-"     :fraction_digits = 0; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Altitude\";\n" +
-"     :positive = \"up\";\n" +
-"     :standard_name = \"altitude\";\n" +
-"     :units = \"m\";\n" +
-"   double latitude(latitude=51);\n" +
-"     :_CoordinateAxisType = \"Lat\";\n" +
-"     :actual_range = 28.985876360268577, 49.82403334105115; // double\n" +
-"     :axis = \"Y\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 4; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Latitude\";\n" +
-"     :point_spacing = \"even\";\n" +
-"     :standard_name = \"latitude\";\n" +
-"     :units = \"degrees_north\";\n" +
-"   double longitude(longitude=53);\n" +
-"     :_CoordinateAxisType = \"Lon\";\n" +
-"     :actual_range = 224.98437319134158, 246.65354786433613; // double\n" +
-"     :axis = \"X\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 4; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Longitude\";\n" +
-"     :point_spacing = \"even\";\n" +
-"     :standard_name = \"longitude\";\n" +
-"     :units = \"degrees_east\";\n" +
-"   float chlorophyll(time=1, altitude=1, latitude=51, longitude=53);\n" +
-"     :_FillValue = -9999999.0f; // float\n" +
-"     :colorBarMaximum = 30.0; // double\n" +
-"     :colorBarMinimum = 0.03; // double\n" +
-"     :colorBarScale = \"Log\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 2; // int\n" +
-"     :ioos_category = \"Ocean Color\";\n" +
-"     :long_name = \"Concentration Of Chlorophyll In Sea Water\";\n" +
-"     :missing_value = -9999999.0f; // float\n" +
-"     :standard_name = \"concentration_of_chlorophyll_in_sea_water\";\n" +
-"     :units = \"mg m-3\";\n" +
+"  dimensions:\n" +
+"    time = 1;\n" +
+"    altitude = 1;\n" +
+"    latitude = 51;\n" +
+"    longitude = 53;\n" +
+"  variables:\n" +
+"    double time(time=1);\n" +
+"      :_CoordinateAxisType = \"Time\";\n" +
+"      :actual_range = 1.17072E9, 1.17072E9; // double\n" +
+"      :axis = \"T\";\n" +
+"      :fraction_digits = 0; // int\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Centered Time\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "\n" +
-" :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
-" :cdm_data_type = \"Grid\";\n" +
-" :composite = \"true\";\n" +
-" :contributor_name = \"NASA GSFC (OBPG)\";\n" +
-" :contributor_role = \"Source of level 2 data.\";\n" +
-" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-" :creator_email = \"dave.foley@noaa.gov\";\n" +
-" :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
-" :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n";
+"    double altitude(altitude=1);\n" +
+"      :_CoordinateAxisType = \"Height\";\n" +
+"      :_CoordinateZisPositive = \"up\";\n" +
+"      :actual_range = 0.0, 0.0; // double\n" +
+"      :axis = \"Z\";\n" +
+"      :fraction_digits = 0; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Altitude\";\n" +
+"      :positive = \"up\";\n" +
+"      :standard_name = \"altitude\";\n" +
+"      :units = \"m\";\n" +
+"\n" +
+"    double latitude(latitude=51);\n" +
+"      :_CoordinateAxisType = \"Lat\";\n" +
+"      :actual_range = 28.985876360268577, 49.82403334105115; // double\n" +
+"      :axis = \"Y\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 4; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Latitude\";\n" +
+"      :point_spacing = \"even\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
+"\n" +
+"    double longitude(longitude=53);\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"      :actual_range = 224.98437319134158, 246.65354786433613; // double\n" +
+"      :axis = \"X\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 4; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :point_spacing = \"even\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"\n" +
+"    float chlorophyll(time=1, altitude=1, latitude=51, longitude=53);\n" +
+"      :_FillValue = -9999999.0f; // float\n" +
+"      :colorBarMaximum = 30.0; // double\n" +
+"      :colorBarMinimum = 0.03; // double\n" +
+"      :colorBarScale = \"Log\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 2; // int\n" +
+"      :ioos_category = \"Ocean Color\";\n" +
+"      :long_name = \"Concentration Of Chlorophyll In Sea Water\";\n" +
+"      :missing_value = -9999999.0f; // float\n" +
+"      :standard_name = \"concentration_of_chlorophyll_in_sea_water\";\n" +
+"      :units = \"mg m-3\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
+"  :cdm_data_type = \"Grid\";\n" +
+"  :composite = \"true\";\n" +
+"  :contributor_name = \"NASA GSFC (OBPG)\";\n" +
+"  :contributor_role = \"Source of level 2 data.\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :creator_email = \"dave.foley@noaa.gov\";\n" +
+"  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
+"  :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n";
         Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
         expected = //note original missing values
-" :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
-" :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
-" :keywords = \"8-day,\n" +
+"  :infoUrl = \"http://coastwatch.pfeg.noaa.gov/infog/MH_chla_las.html\";\n" +
+"  :institution = \"NOAA CoastWatch, West Coast Node\";\n" +
+"  :keywords = \"8-day,\n" +
 "Oceans > Ocean Chemistry > Chlorophyll,\n" +
 "aqua, chemistry, chlorophyll, chlorophyll-a, coastwatch, color, concentration, concentration_of_chlorophyll_in_sea_water, day, degrees, global, modis, noaa, npp, ocean, ocean color, oceans, quality, science, science quality, sea, seawater, water, wcn\";\n" +
-" :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
-" :license = \"The data may be used and redistributed for free but is not intended\n" +
+"  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
+"  :license = \"The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
 "Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
 "of their employees or contractors, makes any warranty, express or\n" +
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-" :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-" :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
-" :Northernmost_Northing = 49.82403334105115; // double\n" +
-" :origin = \"NASA GSFC (OBPG)\";\n" +
-" :processing_level = \"3\";\n" +
-" :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
-" :projection = \"geographic\";\n" +
-" :projection_type = \"mapped\";\n" +
-" :references = \"Aqua/MODIS information: http://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .\";\n" +
-" :satellite = \"Aqua\";\n" +
-" :sensor = \"MODIS\";\n" +
-" :source = \"satellite observation: Aqua, MODIS\";\n" +
-" :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
-" :Southernmost_Northing = 28.985876360268577; // double\n" +
-" :standard_name_vocabulary = \"CF-12\";\n" +
-" :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-" :time_coverage_end = \"2007-02-06T00:00:00Z\";\n" +
-" :time_coverage_start = \"2007-02-06T00:00:00Z\";\n" +
-" :title = \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
-" :Westernmost_Easting = 224.98437319134158; // double\n" +
+"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :naming_authority = \"gov.noaa.pfel.coastwatch\";\n" +
+"  :Northernmost_Northing = 49.82403334105115; // double\n" +
+"  :origin = \"NASA GSFC (OBPG)\";\n" +
+"  :processing_level = \"3\";\n" +
+"  :project = \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
+"  :projection = \"geographic\";\n" +
+"  :projection_type = \"mapped\";\n" +
+"  :references = \"Aqua/MODIS information: http://oceancolor.gsfc.nasa.gov/ . MODIS information: http://coastwatch.noaa.gov/modis_ocolor_overview.html .\";\n" +
+"  :satellite = \"Aqua\";\n" +
+"  :sensor = \"MODIS\";\n" +
+"  :source = \"satellite observation: Aqua, MODIS\";\n" +
+"  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
+"  :Southernmost_Northing = 28.985876360268577; // double\n" +
+"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
+"  :time_coverage_end = \"2007-02-06T00:00:00Z\";\n" +
+"  :time_coverage_start = \"2007-02-06T00:00:00Z\";\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
+"  :Westernmost_Easting = 224.98437319134158; // double\n" +
 " data:\n" +
 "time =\n" +
 "  {1.17072E9}\n" +
@@ -4030,7 +4053,7 @@ pre 2012-08-17 was
 //pre 2012-08-17 was
 //"        {-9999999.0, -9999999.0, 0.10655, 0.12478, -9999999.0, 0.09398, -9999999.0, 0.08919, 0.09892, 0.10007, -9999999.0, 0.09986, -9999999.0, 0.07119, -9999999.0, 0.08288, 0.08163, -9999999.0, -9999999.0, -9999999.0, 0.08319, -9999999.0, 0.09706, 0.08309, -9999999.0, -9999999.0, 0.0996, -9999999.0, 0.08962, 0.08329, 0.09101, -9999999.0, 0.08679, 0.13689, 0.21315, 0.18729, 0.21642, 0.15069, 0.15123, 0.18849, 0.22975, 0.27075, 0.29062, 0.27878, 0.31141, 0.32663, 0.41135, 0.40628, 0.65426, 0.4827, -9999999.0, -9999999.0, 1.16268},\n";
   "        {-9999999.0, -9999999.0, 0.11093, 0.12439, -9999999.0, 0.09554, -9999999.0, 0.09044, 0.10009, 0.10116, -9999999.0, 0.10095, -9999999.0, 0.07243, -9999999.0, 0.08363, 0.08291, -9999999.0, -9999999.0, -9999999.0, 0.08885, -9999999.0, 0.09632, 0.0909, -9999999.0, -9999999.0, 0.09725, -9999999.0, 0.09978, 0.09462, 0.09905, -9999999.0, 0.09937, 0.12816, 0.20255, 0.17595, 0.20562, 0.14333, 0.15073, 0.18803, 0.22673, 0.27252, 0.29005, 0.28787, 0.31865, 0.33447, 0.43293, 0.43297, 0.68101, 0.48409, -9999999.0, -9999999.0, 1.20716},\n";
-        tPo = results.indexOf(" :infoUrl");
+        tPo = results.indexOf("  :infoUrl");
         Test.ensureEqual(results.substring(tPo, tPo + expected.length()), expected, "RESULTS=\n" + results);
 
 
@@ -4043,38 +4066,38 @@ pre 2012-08-17 was
         //if (true) System.exit(1);
         expected = 
 "netcdf EDDGridFromDap_Data.nc {\n" +
-" dimensions:\n" +
-"   time = 1;\n" +   // (has coord.var)\n" +   //changed when switched to netcdf-java 4.0, 2009-02-23
-"   altitude = 1;\n" +   // (has coord.var)\n" +
-"   latitude = 51;\n" +   // (has coord.var)\n" +
-"   longitude = 53;\n" +   // (has coord.var)\n" +
-" variables:\n" +
-"   double time(time=1);\n";
+"  dimensions:\n" +
+"    time = 1;\n" +   // (has coord.var)\n" +   //changed when switched to netcdf-java 4.0, 2009-02-23
+"    altitude = 1;\n" +   // (has coord.var)\n" +
+"    latitude = 51;\n" +   // (has coord.var)\n" +
+"    longitude = 53;\n" +   // (has coord.var)\n" +
+"  variables:\n" +
+"    double time(time=1);\n";
         Test.ensureTrue(results.indexOf(expected) == 0, "RESULTS=\n" + results);
 
         expected =  //test that sourceMissingValue is intact
          //(but complicated because that is the mv I use in Grid)
          //test that actual_range has been removed
-"   float chlorophyll(time=1, altitude=1, latitude=51, longitude=53);\n" +
-"     :_FillValue = -9999999.0f; // float\n" +
-"     :colorBarMaximum = 30.0; // double\n" +
-"     :colorBarMinimum = 0.03; // double\n" +
-"     :colorBarScale = \"Log\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 2; // int\n" +
-"     :ioos_category = \"Ocean Color\";\n" +
-"     :long_name = \"Concentration Of Chlorophyll In Sea Water\";\n" +
-"     :missing_value = -9999999.0f; // float\n" +
-"     :standard_name = \"concentration_of_chlorophyll_in_sea_water\";\n" +
-"     :units = \"mg m-3\";\n";
+"    float chlorophyll(time=1, altitude=1, latitude=51, longitude=53);\n" +
+"      :_FillValue = -9999999.0f; // float\n" +
+"      :colorBarMaximum = 30.0; // double\n" +
+"      :colorBarMinimum = 0.03; // double\n" +
+"      :colorBarScale = \"Log\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 2; // int\n" +
+"      :ioos_category = \"Ocean Color\";\n" +
+"      :long_name = \"Concentration Of Chlorophyll In Sea Water\";\n" +
+"      :missing_value = -9999999.0f; // float\n" +
+"      :standard_name = \"concentration_of_chlorophyll_in_sea_water\";\n" +
+"      :units = \"mg m-3\";\n";
         Test.ensureTrue(results.indexOf(expected) > 0, "RESULTS=\n" + results);
 
         expected = 
-" :title = \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
-" :Westernmost_Easting = 224.98437319134158; // double\n" +  //note updated value
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
+"  :Westernmost_Easting = 224.98437319134158; // double\n" +  //note updated value
 " data:\n" +
 "}\n";
-        int po10 = results.indexOf(" :title");
+        int po10 = results.indexOf("  :title");
         Test.ensureEqual(results.substring(po10), expected, "RESULTS=\n" + results);
 
         //.tsv
@@ -4384,7 +4407,7 @@ boolean testAll = true;
             IntArray constraints = new IntArray();
 
             //get das and dds
-            String threddsUrl = "http://192.168.31.18/thredds/dodsC/satellite/MH/chla/8day";
+            String threddsUrl = "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day";
             String erddapUrl  = EDStatic.erddapUrl + "/griddap/erdMHchla8day"; //in tests, always non-https url
             DConnect threddsConnect = new DConnect(threddsUrl, true, 1, 1);
             DConnect erddapConnect  = new DConnect(erddapUrl,  true, 1, 1); //in tests, always non-https url
@@ -4469,112 +4492,117 @@ boolean testAll = true;
                 results = NcHelper.decodeNcDump(results); //added with switch to netcdf-java 4.0
                 String tUrl = String2.replaceAll(EDStatic.erddapUrl, "http:", "dods:"); //in tests, always non-https url
                 expected = 
-"netcdf " + tUrl + "/griddap/erdMHchla8day {\n" +
-" dimensions:\n" +
-"   time = 494;\n" +   // (has coord.var)\n" +  //changes sometimes
-"   altitude = 1;\n" +   // (has coord.var)\n" +
-"   latitude = 4320;\n" +   // (has coord.var)\n" +
-"   longitude = 8640;\n" +   // (has coord.var)\n" +
-" variables:\n" +
-"   double time(time=494);\n" +
-"     :_CoordinateAxisType = \"Time\";\n" +
-"     :actual_range = 1.0260864E9, 1.3718592E9; // double\n" +  //2nd value changes sometimes
-"     :axis = \"T\";\n" +
-"     :fraction_digits = 0; // int\n" +
-"     :ioos_category = \"Time\";\n" +
-"     :long_name = \"Centered Time\";\n" +
-"     :standard_name = \"time\";\n" +
-"     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
-"     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"   double altitude(altitude=1);\n" +
-"     :_CoordinateAxisType = \"Height\";\n" +
-"     :_CoordinateZisPositive = \"up\";\n" +
-"     :actual_range = 0.0, 0.0; // double\n" +
-"     :axis = \"Z\";\n" +
-"     :fraction_digits = 0; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Altitude\";\n" +
-"     :positive = \"up\";\n" +
-"     :standard_name = \"altitude\";\n" +
-"     :units = \"m\";\n" +
-"   double latitude(latitude=4320);\n" +
-"     :_CoordinateAxisType = \"Lat\";\n" +
-"     :actual_range = -90.0, 90.0; // double\n" +
-"     :axis = \"Y\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 4; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Latitude\";\n" +
-"     :point_spacing = \"even\";\n" +
-"     :standard_name = \"latitude\";\n" +
-"     :units = \"degrees_north\";\n" +
-"   double longitude(longitude=8640);\n" +
-"     :_CoordinateAxisType = \"Lon\";\n" +
-"     :actual_range = 0.0, 360.0; // double\n" +
-"     :axis = \"X\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 4; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Longitude\";\n" +
-"     :point_spacing = \"even\";\n" +
-"     :standard_name = \"longitude\";\n" +
-"     :units = \"degrees_east\";\n" +
-"   float chlorophyll(time=494, altitude=1, latitude=4320, longitude=8640);\n" +
-"     :_CoordinateAxes = \"time altitude latitude longitude \";\n" +
-"     :_FillValue = -9999999.0f; // float\n" +
-"     :colorBarMaximum = 30.0; // double\n" +
-"     :colorBarMinimum = 0.03; // double\n" +
-"     :colorBarScale = \"Log\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 2; // int\n" +
-"     :ioos_category = \"Ocean Color\";\n" +
-"     :long_name = \"Concentration Of Chlorophyll In Sea Water\";\n" +
-"     :missing_value = -9999999.0f; // float\n" +
-"     :standard_name = \"concentration_of_chlorophyll_in_sea_water\";\n" +
-"     :units = \"mg m-3\";\n" +
+"netcdf " + tUrl + "/griddap/erdMHchla8day \\{\n" +
+"  dimensions:\n" +
+"    time = \\d{3};\n" +   // (has coord.var)\n" +  //changes sometimes  \\d{3} was 500
+"    altitude = 1;\n" +   // (has coord.var)\n" +
+"    latitude = 4320;\n" +   // (has coord.var)\n" +
+"    longitude = 8640;\n" +   // (has coord.var)\n" +
+"  variables:\n" +
+"    double time\\(time=\\d{3}\\);\n" +
+"      :_CoordinateAxisType = \"Time\";\n" +
+"      :actual_range = 1.0260864E9, .{8,14}; // double\n" +  //2nd value changes sometimes
+"      :axis = \"T\";\n" +
+"      :fraction_digits = 0; // int\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Centered Time\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
 "\n" +
-" :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
-" :cdm_data_type = \"Grid\";\n" +
-" :composite = \"true\";\n" +
-" :contributor_name = \"NASA GSFC (OBPG)\";\n" +
-" :contributor_role = \"Source of level 2 data.\";\n" +
-" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-" :creator_email = \"dave.foley@noaa.gov\";\n" +
-" :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
-" :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2013-07-07Z\";\n" + //changes
-" :date_issued = \"2013-07-07Z\";\n" + //changes
-" :Easternmost_Easting = 360.0; // double\n" +
-" :geospatial_lat_max = 90.0; // double\n" +
-" :geospatial_lat_min = -90.0; // double\n" +
-" :geospatial_lat_resolution = 0.041676313961565174; // double\n" +
-" :geospatial_lat_units = \"degrees_north\";\n" +
-" :geospatial_lon_max = 360.0; // double\n" +
-" :geospatial_lon_min = 0.0; // double\n" +
-" :geospatial_lon_resolution = 0.04167148975575877; // double\n" +
-" :geospatial_lon_units = \"degrees_east\";\n" +
-" :geospatial_vertical_max = 0.0; // double\n" +
-" :geospatial_vertical_min = 0.0; // double\n" +
-" :geospatial_vertical_positive = \"up\";\n" +
-" :geospatial_vertical_units = \"m\";\n" +
-" :history = \"NASA GSFC (OBPG)\n" +  //important test   re netcdf 4.0
-"20";
-                Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
+"    double altitude\\(altitude=1\\);\n" +
+"      :_CoordinateAxisType = \"Height\";\n" +
+"      :_CoordinateZisPositive = \"up\";\n" +
+"      :actual_range = 0.0, 0.0; // double\n" +
+"      :axis = \"Z\";\n" +
+"      :fraction_digits = 0; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Altitude\";\n" +
+"      :positive = \"up\";\n" +
+"      :standard_name = \"altitude\";\n" +
+"      :units = \"m\";\n" +
+"\n" +
+"    double latitude\\(latitude=4320\\);\n" +
+"      :_CoordinateAxisType = \"Lat\";\n" +
+"      :actual_range = -90.0, 90.0; // double\n" +
+"      :axis = \"Y\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 4; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Latitude\";\n" +
+"      :point_spacing = \"even\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
+"\n" +
+"    double longitude\\(longitude=8640\\);\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"      :actual_range = 0.0, 360.0; // double\n" +
+"      :axis = \"X\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 4; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :point_spacing = \"even\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"\n" +
+"    float chlorophyll\\(time=\\d{3}, altitude=1, latitude=4320, longitude=8640\\);\n" +
+"      :_CoordinateAxes = \"time altitude latitude longitude \";\n" +
+"      :_FillValue = -9999999.0f; // float\n" +
+"      :colorBarMaximum = 30.0; // double\n" +
+"      :colorBarMinimum = 0.03; // double\n" +
+"      :colorBarScale = \"Log\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 2; // int\n" +
+"      :ioos_category = \"Ocean Color\";\n" +
+"      :long_name = \"Concentration Of Chlorophyll In Sea Water\";\n" +
+"      :missing_value = -9999999.0f; // float\n" +
+"      :standard_name = \"concentration_of_chlorophyll_in_sea_water\";\n" +
+"      :units = \"mg m-3\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
+"  :cdm_data_type = \"Grid\";\n" +
+"  :composite = \"true\";\n" +
+"  :contributor_name = \"NASA GSFC \\(OBPG\\)\";\n" +
+"  :contributor_role = \"Source of level 2 data.\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :creator_email = \"dave.foley@noaa.gov\";\n" +
+"  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
+"  :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
+"  :date_created = \"20.{8}Z\";\n" + //changes
+"  :date_issued = \"20.{8}Z\";\n" + //changes
+"  :Easternmost_Easting = 360.0; // double\n" +
+"  :geospatial_lat_max = 90.0; // double\n" +
+"  :geospatial_lat_min = -90.0; // double\n" +
+"  :geospatial_lat_resolution = 0.041676313961565174; // double\n" +
+"  :geospatial_lat_units = \"degrees_north\";\n" +
+"  :geospatial_lon_max = 360.0; // double\n" +
+"  :geospatial_lon_min = 0.0; // double\n" +
+"  :geospatial_lon_resolution = 0.04167148975575877; // double\n" +
+"  :geospatial_lon_units = \"degrees_east\";\n" +
+"  :geospatial_vertical_max = 0.0; // double\n" +
+"  :geospatial_vertical_min = 0.0; // double\n" +
+"  :geospatial_vertical_positive = \"up\";\n" +
+"  :geospatial_vertical_units = \"m\";\n" +
+"  :history = \"NASA GSFC \\(OBPG\\)\n";  //important test   re netcdf 4.0
+                int po = results.indexOf(":history = \"NASA GSFC (OBPG)\n");
+                Test.ensureLinesMatch(results.substring(0, po + 29), expected, "RESULTS=\n" + results);
 
                 expected = 
-" :satellite = \"Aqua\";\n" +
-" :sensor = \"MODIS\";\n" +
-" :source = \"satellite observation: Aqua, MODIS\";\n" +
-" :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
-" :Southernmost_Northing = -90.0; // double\n" +
-" :standard_name_vocabulary = \"CF-12\";\n" +
-" :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-" :time_coverage_end = \"2013-06-22T00:00:00Z\";\n" + //changes
-" :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
-" :title = \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
-" :Westernmost_Easting = 0.0; // double\n" +
+"  :satellite = \"Aqua\";\n" +
+"  :sensor = \"MODIS\";\n" +
+"  :source = \"satellite observation: Aqua, MODIS\";\n" +
+"  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
+"  :Southernmost_Northing = -90.0; // double\n" +
+"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
+"  :time_coverage_end = \"20.{8}T00:00:00Z\";\n" + //changes
+"  :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
+"  :Westernmost_Easting = 0.0; // double\n" +
 "}\n";
-                Test.ensureEqual(results.substring(results.indexOf(" :satellite =")), expected, "RESULTS=\n" + results);
+                Test.ensureLinesMatch(results.substring(results.indexOf("  :satellite =")), expected, "RESULTS=\n" + results);
 
                 attributes.clear();
                 NcHelper.getGlobalAttributes(nc, attributes);
@@ -4804,12 +4832,11 @@ directionsForGenerateDatasetsXml() +
             //Test.ensureEqual(results.substring(po), expected2, "results=\n" + results);
 
             //GenerateDatasetsXml
-            GenerateDatasetsXml.doIt(new String[]{"-verbose", 
-                "EDDGridFromDap",
-                url, "-1"},
+            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{
+                "-verbose", "-i#testGenerateDatasetsXml",
+                "EDDGridFromDap", url, "-1"},
                 false); //doIt loop?
-            String gdxResults = String2.getClipboardString();
-            Test.ensureEqual(gdxResults, results, 
+            Test.ensureEqual(gdxResults.substring(0, expected1.length()), expected1,
                 "Unexpected results from GenerateDatasetsXml.doIt.");
 
             //ensure it is ready-to-use by making a dataset from it
@@ -5047,10 +5074,11 @@ String expected2 =
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
             if (msg.indexOf("ERROR: unsorted axis: ") >= 0) 
-                String2.log("\nExpected error:\n" + msg);
+                String2.log("\nCommon error:\n" + msg);
             else {
-                String2.log("\nUnexpected error (2013-05-21 source was gone):\n" + msg);
-                String2.getStringFromSystemIn("\nPress ^C to stop or Enter to continue..."); 
+                Test.knownProblem(
+                    "STARTING 2013-05-21 SOURCE IS GONE.   FIX IT?",
+                    msg);
             }
         }
     
@@ -5432,8 +5460,7 @@ String expected2 =
 "    String geospatial_vertical_units \"m\";\n" +
 "    String history \"" + today;
         int tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) 
-            String2.log("results=\n" + results);
+        Test.ensureTrue(tpo >= 0, "tpo=-1 results=\n" + results);
         Test.ensureEqual(
             results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
             expected, "results=\n" + results);
@@ -5471,8 +5498,7 @@ expected =
 "  }\n" +
 "}\n";
         tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) 
-            String2.log("results=\n" + results);
+        Test.ensureTrue(tpo >= 0, "tpo=-1 results=\n" + results);
         Test.ensureEqual(
             results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
             expected, "results=\n" + results);
@@ -5567,8 +5593,7 @@ expected =
 " :geospatial_lat_units = \"degrees_north\";\n" +
 " :history = \"";
         tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) 
-            String2.log("results=\n" + results);
+        Test.ensureTrue(tpo >= 0, "tpo=-1 results=\n" + results);
         Test.ensureEqual(
             results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
             expected, "results=\n" + results);
@@ -5607,8 +5632,7 @@ expected =
 "  {69.5, 59.5, 49.5, 39.5, 29.5, 19.5, 9.5, -0.5, -10.5, -20.5, -30.5, -40.5, -50.5, -60.5}\n" +
 "}\n";
         tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) 
-            String2.log("results=\n" + results);
+        Test.ensureTrue(tpo >= 0, "tpo=-1 results=\n" + results);
         Test.ensureEqual(
             results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
             expected, "results=\n" + results);
@@ -5716,6 +5740,301 @@ expected =
         //Test.ensureTrue(results.indexOf(" 0.160069") > 0, "\nresults=\n" + results);
         //Test.ensureTrue(results.indexOf("-0.00983669") > 0, "\nresults=\n" + results);
         //Test.ensureTrue(results.indexOf("-0.0477982") > 0, "\nresults=\n" + results);
+
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                "\nUnexpected error accessing " + EDStatic.erddapUrl + //in tests, always non-https url
+                "\nPress ^C to stop or Enter to continue..."); 
+        }
+
+    }
+
+    /**
+     * This does important tests with usgsCeCrm10 (which has descending lat axis values).
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testDescendingLat(boolean doGraphicsTests) throws Throwable {
+        String2.log("\n*** testDescendinglat");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery;
+        try {
+        EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("usgsCeCrm10"); 
+        // if need a different test dataset in the future: 
+        EDVGridAxis edvga;
+        int tpo;
+        String query180       = "topo[][]&.draw=surface&.vars=longitude|latitude|topo";
+        String query180stride = "topo[0:20:last][0:20:last]&.draw=surface&.vars=longitude|latitude|topo";
+/* */
+        //***test some edvga things
+        edvga = eddGrid.axisVariables()[0];
+        Test.ensureEqual(edvga.isEvenlySpaced(), true, "");
+        Test.ensureEqual(edvga.averageSpacing(), -8.333333333333334E-4, "");
+        Test.ensureEqual(edvga.spacingDescription(), "-8.333333E-4 (even)", "");
+
+        edvga = eddGrid.axisVariables()[1];
+        Test.ensureEqual(edvga.isEvenlySpaced(), true, "");
+        Test.ensureEqual(edvga.averageSpacing(), 8.333333333333334E-4, "");
+        Test.ensureEqual(edvga.spacingDescription(), "8.333333E-4 (even)", "");
+
+        //lat
+        results = eddGrid.axisVariables[0].sliderCsvValues();
+        expected = 
+"23, 22.98, 22.96, 22.94, 22.92, 22.9, 22.88, 22.86, 22.84";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+        expected =
+"18.14, 18.12, 18.1, 18.08, 18.060000000000002, 18.04, 18.02, 18"; 
+        Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "results=\n" + results);
+
+        //lon
+        results = eddGrid.axisVariables[1].sliderCsvValues();
+        expected =
+"-161, -160.95, -160.9, -160.85, -160.8, -160.75, -160.7, -160.65, -160.6, -160.55,";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);
+        expected =
+"-153.45, -153.4, -153.35, -153.3, -153.25, -153.2, -153.15, -153.1, -153.05, -153"; 
+        Test.ensureEqual(results.substring(results.length() - expected.length()), expected, "results=\n" + results);
+
+
+        //.das     das isn't affected by userDapQuery
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".das"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"Attributes {\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float64 actual_range 23.0, 18.0;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 actual_range -161.0, -153.0;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  topo {\n" +
+"    Float32 _FillValue -9999.0;\n" +
+"    Float64 colorBarMaximum 8000.0;\n" +
+"    Float64 colorBarMinimum -8000.0;\n" +
+"    String colorBarPalette \"Topography\";\n" +
+"    String drawLandMask \"under\";\n" +
+"    String grid_mapping \"GDAL_Geographics\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Topography\";\n" +
+"    String standard_name \"altitude\";\n" +
+"    String units \"meters\";\n" +
+"  }\n" +
+"  NC_GLOBAL {\n" +
+"    String AREA_OR_POINT \"Area\";\n" +
+"    String cdm_data_type \"Grid\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String creator_email \"Barry.Eakins@noaa.gov\";\n" +
+"    Float64 Easternmost_Easting -153.0;\n" +
+"    Float64 geospatial_lat_max 23.0;\n" +
+"    Float64 geospatial_lat_min 18.0;\n" +
+"    Float64 geospatial_lat_resolution 8.333333333333334e-4;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max -153.0;\n" +
+"    Float64 geospatial_lon_min -161.0;\n" +
+"    Float64 geospatial_lon_resolution 8.333333333333334e-4;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String history \"Mon Apr 28 13:22:51 2008: ncrename crm_vol10.nc -d x,lon -d y,lat -v Band1,topo\n";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, "\nresults=\n" + results);
+
+//"2013-08-29T17:33:53Z http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\n" +
+//"2013-08-29T17:33:53Z 
+expected = "http://127.0.0.1:8080/cwexperimental/griddap/usgsCeCrm10.das\";\n" +
+"    String infoUrl \"http://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
+"    String institution \"NOAA NGDC\";\n" +
+"    String keywords \"Oceans > Bathymetry/Seafloor Topography > Bathymetry,\n" +
+"altitude, arc, atmosphere, bathymetry, coastal, earth science, hawaii, height, model, ngdc, noaa, oceans, relief, second, station, topography, vol.\";\n" +
+"    String keywords_vocabulary \"GCMD Science Keywords\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    Float64 Northernmost_Northing 23.0;\n" +
+"    String reference \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, http://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
+"    String sourceUrl \"http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\";\n" +
+"    Float64 Southernmost_Northing 18.0;\n" +
+"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String summary \"This Coastal Relief Gridded database provides the first comprehensive view of the US Coastal Zone; one that extends from the coastal state boundaries to as far offshore as the NOS hydrographic data will support a continuous view of the seafloor. In many cases, this seaward limit reaches out to, and in places even beyond the continental slope. The gridded database contains data for the entire coastal zone of the conterminous US, including Hawaii and Puerto Rico.\";\n" +
+"    String title \"Topography, NOAA Coastal Relief Model, 3 arc second, Vol. 10 (Hawaii)\";\n" +
+"    Float64 Westernmost_Easting -161.0;\n" +
+"  }\n" +
+"}\n";
+        tpo = results.indexOf(expected.substring(0, 30));
+        Test.ensureTrue(tpo >= 0, "\nresults=\n" + results);
+        Test.ensureEqual(results.substring(tpo), expected, "\nresults=\n" + results);
+
+
+        //.dds     dds isn't affected by userDapQuery
+        tName = eddGrid.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".dds"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"Dataset {\n" +
+"  Float64 latitude[latitude = 6001];\n" +
+"  Float64 longitude[longitude = 9601];\n" +
+"  GRID {\n" +
+"    ARRAY:\n" +
+"      Float32 topo[latitude = 6001][longitude = 9601];\n" +
+"    MAPS:\n" +
+"      Float64 latitude[latitude = 6001];\n" +
+"      Float64 longitude[longitude = 9601];\n" +
+"  } topo;\n" +
+"} usgsCeCrm10;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.nc lat values subset (subset correct? actual_range correct?)
+        userDapQuery = "latitude[(22):10:(21)]"; 
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "Lat", ".nc"); 
+        results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory + tName, true);
+        results = String2.replaceAll(results, "\r", "");
+        expected = //note actual range is low to high
+"netcdf EDDGridFromDapLat.nc {\n" +
+"  dimensions:\n" +
+"    latitude = 121;\n" +
+"  variables:\n" +
+"    double latitude(latitude=121);\n" +
+"      :_CoordinateAxisType = \"Lat\";\n" +
+"      :actual_range = 21.0, 22.0; // double\n" +
+"      :axis = \"Y\";\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Latitude\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :AREA_OR_POINT = \"Area\";\n" +
+"  :cdm_data_type = \"Grid\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :creator_email = \"Barry.Eakins@noaa.gov\";\n" +
+"  :geospatial_lat_max = 22.0; // double\n" +
+"  :geospatial_lat_min = 21.0; // double\n" +
+"  :geospatial_lat_units = \"degrees_north\";\n" +
+"  :history = \"Mon Apr 28 13:22:51 2008: ncrename crm_vol10.nc -d x,lon -d y,lat -v Band1,topo\n";
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "results=\n" + results);
+
+//2013-08-29T17:41:13Z http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc
+//2013-08-29T17:41:13Z 
+        expected = 
+"http://127.0.0.1:8080/cwexperimental/griddap/usgsCeCrm10.nc?latitude[(22):10:(21)]\";\n" +
+"  :infoUrl = \"http://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
+"  :institution = \"NOAA NGDC\";\n" +
+"  :keywords = \"Oceans > Bathymetry/Seafloor Topography > Bathymetry,\n" +
+"altitude, arc, atmosphere, bathymetry, coastal, earth science, hawaii, height, model, ngdc, noaa, oceans, relief, second, station, topography, vol.\";\n" +
+"  :keywords_vocabulary = \"GCMD Science Keywords\";\n" +
+"  :license = \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Northernmost_Northing = 22.0; // double\n" +
+"  :reference = \"Divins, D.L., and D. Metzger, NGDC Coastal Relief Model, http://www.ngdc.noaa.gov/mgg/coastal/coastal.html\";\n" +
+"  :sourceUrl = \"http://geoport.whoi.edu/thredds/dodsC/bathy/crm_vol10.nc\";\n" +
+"  :Southernmost_Northing = 21.0; // double\n" +
+"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :summary = \"This Coastal Relief Gridded database provides the first comprehensive view of the US Coastal Zone; one that extends from the coastal state boundaries to as far offshore as the NOS hydrographic data will support a continuous view of the seafloor. In many cases, this seaward limit reaches out to, and in places even beyond the continental slope. The gridded database contains data for the entire coastal zone of the conterminous US, including Hawaii and Puerto Rico.\";\n" +
+"  :title = \"Topography, NOAA Coastal Relief Model, 3 arc second, Vol. 10 (Hawaii)\";\n" +
+" data:\n" +
+"latitude =\n" +
+"  {22.0, 21.991666666666667, 21.983333333333334, 21.975, 21.96666666666667, 21.958333333333332, 21.95, 21.941666666666666, 21.933333333333334, 21.925, 21.916666666666668, 21.908333333333335, 21.9, 21.891666666666666, 21.883333333333333, 21.875, 21.866666666666667, 21.858333333333334, 21.85, 21.84166666666667, 21.833333333333332, 21.825, 21.816666666666666, 21.808333333333334, 21.8, 21.791666666666668, 21.783333333333335, 21.775, 21.766666666666666, 21.758333333333333, 21.75, 21.741666666666667, 21.733333333333334, 21.725, 21.71666666666667, 21.708333333333332, 21.7, 21.691666666666666, 21.683333333333334, 21.675, 21.666666666666668, 21.658333333333335, 21.65, 21.641666666666666, 21.633333333333333, 21.625, 21.616666666666667, 21.608333333333334, 21.6, 21.59166666666667, 21.583333333333332, 21.575, 21.566666666666666, 21.558333333333334, 21.55, 21.541666666666668, 21.533333333333335, 21.525, 21.516666666666666, 21.508333333333333, 21.5, 21.491666666666667, 21.483333333333334, 21.475, 21.46666666666667, 21.458333333333332, 21.45, 21.441666666666666, 21.433333333333334, 21.425, 21.416666666666668, 21.408333333333335, 21.4, 21.391666666666666, 21.383333333333333, 21.375, 21.366666666666667, 21.358333333333334, 21.35, 21.34166666666667, 21.333333333333332, 21.325, 21.316666666666666, 21.308333333333334, 21.3, 21.291666666666668, 21.283333333333335, 21.275, 21.266666666666666, 21.258333333333333, 21.25, 21.241666666666667, 21.233333333333334, 21.225, 21.21666666666667, 21.208333333333332, 21.2, 21.191666666666666, 21.183333333333334, 21.175, 21.166666666666668, 21.158333333333335, 21.15, 21.141666666666666, 21.133333333333333, 21.125, 21.116666666666667, 21.108333333333334, 21.1, 21.09166666666667, 21.083333333333332, 21.075, 21.066666666666666, 21.058333333333334, 21.05, 21.041666666666668, 21.033333333333335, 21.025, 21.016666666666666, 21.008333333333333, 21.0}\n" +
+"}\n";
+        tpo = results.indexOf(expected.substring(0, 30));
+        Test.ensureTrue(tpo >= 0, "tpo=-1 results=\n" + results);
+        Test.ensureEqual(results.substring(tpo), expected, "results=\n" + results);
+
+        //.csv data 
+        userDapQuery = "topo[(20.005):(20.003)][(-156.002):(-156)]"; 
+        tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
+            EDStatic.fullTestCacheDirectory, eddGrid.className(), ".csv"); 
+        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        String2.log(results);
+        expected = 
+"latitude,longitude,topo\n" +
+"degrees_north,degrees_east,meters\n" +
+"20.005,-156.00166666666667,-423.5\n" +
+"20.005,-156.00083333333333,-423.0\n" +
+"20.005,-156.0,-423.1\n" +
+"20.004166666666666,-156.00166666666667,-424.0\n" +
+"20.004166666666666,-156.00083333333333,-423.5\n" +
+"20.004166666666666,-156.0,-423.1\n" +
+"20.003333333333334,-156.00166666666667,-424.0\n" +
+"20.003333333333334,-156.00083333333333,-424.0\n" +
+"20.003333333333334,-156.0,-423.5\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        String mapDapQuery = 
+            "topo[(23):(18)][(-161):(-153)]" +
+            "&.draw=surface&.vars=longitude|latitude|topo";
+        
+        tName = eddGrid.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "_Map", ".png"); 
+        if (doGraphicsTests) SSR.displayInBrowser(
+            "file://" + EDStatic.fullTestCacheDirectory + tName);
+
+        String transparentQuery = 
+            "topo[(23):20:(18)][(-161):20:(-153)]" +
+            "&.draw=surface&.vars=longitude|latitude|topo";
+        tName = eddGrid.makeNewFileForDapQuery(null, null, transparentQuery, 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "_Transparent", ".transparentPng"); 
+        if (doGraphicsTests) SSR.displayInBrowser(
+            "file://" + EDStatic.fullTestCacheDirectory + tName);
+
+        //this test requires usgsCeCrm10 to be available from localhost erddap
+        //  (The .kml is produced locally.  But it refers to a .png on the localhost erddap.)
+        tName = eddGrid.makeNewFileForDapQuery(null, null, query180, 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "_Map", ".kml"); 
+        if (doGraphicsTests) SSR.displayInBrowser(
+            "file://" + EDStatic.fullTestCacheDirectory + tName);
+
+
+        //2013-10-21 this works with new GeotiffWriter (which rearranges lat values)
+        tName = eddGrid.makeNewFileForDapQuery(null, null, query180stride, EDStatic.fullTestCacheDirectory, 
+            eddGrid.className() + "_Map", ".geotif"); 
+        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+
+        tName = eddGrid.makeNewFileForDapQuery(null, null, 
+            "topo[0:1000:last][0:1000:last]", 
+            EDStatic.fullTestCacheDirectory, eddGrid.className() + "_Map", ".esriAscii"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        String2.log(results);
+        expected = 
+"ncols 10\n" +
+"nrows 7\n" +
+"xllcenter -161.0\n" +
+"yllcenter 18.0\n" +
+"cellsize 0.8333333333333334\n" +
+"nodata_value -9999\n" +
+"-4232.9 -9999 -4865.5 -4753.1 -9999 -9999 -9999 -9999 -9999 -9999\n" +
+"-9999 -1773.1 171.0 -4647.8 -4740.0 -9999 -9999 -9999 -9999 -9999\n" +
+"-9999 -9999 -3645.5 -2465.4 -14.5 -1828.4 -5134.5 -9999 -9999 -9999\n" +
+"-9999 -9999 -9999 -9999 -9999 -397.4 -1850.7 -2912.0 -5551.7 -9999\n" +
+"-9999 -9999 -9999 -9999 -4289.5 -4729.6 79.0 538.0 -4666.6 -9999\n" +
+"-9999 -9999 -9999 -9999 -4391.0 -4526.5 -3830.6 -4417.2 -9999 -9999\n" +
+"-9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999 -9999\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
 
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -5919,8 +6238,7 @@ today + " " + EDStatic.erddapUrl + //in tests, always non-https url
 "  }\n" +
 "}\n";
         int tpo = results.indexOf(expected.substring(0, 17));
-        if (tpo < 0) 
-            String2.log("results=\n" + results);
+        Test.ensureTrue(tpo >= 0, "tpo=-1 results=\n" + results);
         Test.ensureEqual(
             results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
             expected, "results=\n" + results);
@@ -6121,7 +6439,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>2001-12-15T00:00:00Z\n" +
-"<td align=\"right\">5.0\n" +
+"<td align=\"right\">5.01\n" +  //2014-01-17 was 5.0
 "<td align=\"right\">23.25\n" +
 "<td align=\"right\">185.25\n" +
 "<td align=\"right\">26.7815\n" +
@@ -6132,7 +6450,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>2001-12-15T00:00:00Z\n" +
-"<td align=\"right\">15.0\n" +
+"<td align=\"right\">15.07\n" +  //2014-01-17 was 15.0
 "<td align=\"right\">23.25\n" +
 "<td align=\"right\">185.25\n" +
 "<td align=\"right\">26.77543\n" +
@@ -6143,7 +6461,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "</tr>\n" +
 "<tr>\n" +
 "<td nowrap>2001-12-15T00:00:00Z\n" +
-"<td align=\"right\">25.0\n" +
+"<td align=\"right\">25.28\n" + //2014-01-17 was 25.0
 "<td align=\"right\">23.25\n" +
 "<td align=\"right\">185.25\n" +
 "<td align=\"right\">26.774588\n" +
@@ -6163,9 +6481,9 @@ EDStatic.startBodyHtml(null) + "\n" +
 "69 6c 65 2c 20 43 72 65   61 74 65 64 20 62 79 3a   ile, Created by: |\n" +
 "20 67 6f 76 2e 6e 6f 61   61 2e 70 66 65 6c 2e 63    gov.noaa.pfel.c |\n" +
 "6f 61 73 74 77 61 74 63   68 2e 4d 61 74 6c 61 62   oastwatch.Matlab |\n" +
-//"2c 20 43 72 65 61 74 65   64 20 6f 6e 3a 20 53 75   , Created on: Su |\n" +
-//"6e 20 4a 61 6e 20 31 33   20 31 31 3a 31 33 3a 33   n Jan 13 11:13:3 |\n" +
-//"30 20 32 30 31 33 20 20   20 20 20 20 20 20 20 20   0 2013           |\n" +
+//"2c 20 43 72 65 61 74 65   64 20 6f 6e 3a 20 46 72   , Created on: Fr |\n" +
+//"69 20 4a 61 6e 20 31 37   20 31 35 3a 30 38 3a 32   i Jan 17 15:08:2 |\n" +
+//"38 20 32 30 31 34 20 20   20 20 20 20 20 20 20 20   8 2014           |\n" +
 "20 20 20 20 00 00 00 00   00 00 00 00 01 00 4d 49                 MI |\n" +
 "00 00 00 0e 00 00 05 d0   00 00 00 06 00 00 00 08                    |\n" +
 "00 00 00 02 00 00 00 00   00 00 00 05 00 00 00 08                    |\n" +
@@ -6198,16 +6516,16 @@ EDStatic.startBodyHtml(null) + "\n" +
 "00 00 00 06 00 00 00 08   00 00 00 06 00 00 00 00                    |\n" +
 "00 00 00 05 00 00 00 08   00 00 00 13 00 00 00 01                    |\n" +
 "00 00 00 01 00 00 00 00   00 00 00 09 00 00 00 98                    |\n" +
-"40 14 00 00 00 00 00 00   40 2e 00 00 00 00 00 00   @       @.       |\n" +
-"40 39 00 00 00 00 00 00   40 41 80 00 00 00 00 00   @9      @A       |\n" +
-"40 47 00 00 00 00 00 00   40 4c 80 00 00 00 00 00   @G      @L       |\n" +
-"40 51 80 00 00 00 00 00   40 54 80 00 00 00 00 00   @Q      @T       |\n" +
-"40 58 00 00 00 00 00 00   40 5c 00 00 00 00 00 00   @X      @\\       |\n" +
-"40 60 20 00 00 00 00 00   40 62 80 00 00 00 00 00   @`      @b       |\n" +
-"40 65 60 00 00 00 00 00   40 68 a0 00 00 00 00 00   @e`     @h       |\n" +
-"40 6c a0 00 00 00 00 00   40 70 c0 00 00 00 00 00   @l      @p       |\n" +
-"40 73 d0 00 00 00 00 00   40 77 d0 00 00 00 00 00   @s      @w       |\n" +
-"40 7d 10 00 00 00 00 00   00 00 00 0e 00 00 00 38   @}             8 |\n" +
+"40 14 0a 3d 70 a3 d7 0a   40 2e 23 d7 0a 3d 70 a4   @  =p   @.#  =p  |\n" +
+"40 39 47 ae 14 7a e1 48   40 41 e1 47 ae 14 7a e1   @9G  z H@A G  z  |\n" +
+"40 47 4e 14 7a e1 47 ae   40 4c fd 70 a3 d7 0a 3d   @GN z G @L p   = |\n" +
+"40 51 81 47 ae 14 7a e1   40 54 ba e1 47 ae 14 7b   @Q G  z @T  G  { |\n" +
+"40 58 3a e1 47 ae 14 7b   40 5c 14 7a e1 47 ae 14   @X: G  {@\\ z G   |\n" +
+"40 60 2f ae 14 7a e1 48   40 62 9e b8 51 eb 85 1f   @`/  z H@b  Q    |\n" +
+"40 65 6c cc cc cc cc cd   40 68 b9 47 ae 14 7a e1   @el     @h G  z  |\n" +
+"40 6c af 5c 28 f5 c2 8f   40 70 c7 5c 28 f5 c2 8f   @l \\(   @p \\(    |\n" +
+"40 73 da 66 66 66 66 66   40 77 d6 3d 70 a3 d7 0a   @s fffff@w =p    |\n" +
+"40 7d 1e 8f 5c 28 f5 c3   00 00 00 0e 00 00 00 38   @}  \\(         8 |\n" +
 "00 00 00 06 00 00 00 08   00 00 00 06 00 00 00 00                    |\n" +
 "00 00 00 05 00 00 00 08   00 00 00 01 00 00 00 01                    |\n" +
 "00 00 00 01 00 00 00 00   00 00 00 09 00 00 00 08                    |\n" +
@@ -6305,7 +6623,8 @@ EDStatic.startBodyHtml(null) + "\n" +
         for (int i = 0; i < dataFileTypeNames.length; i++) {
             String fileType = dataFileTypeNames[i];
             if (String2.indexOf(new String[]{
-                ".das", ".dds", ".fgdc", ".graph", ".help", ".html", ".iso19115"}, fileType) >= 0)
+                ".das", ".dds", ".fgdc", ".graph", ".help", ".html", ".iso19115",
+                ".ncml"}, fileType) >= 0)
                 continue;
 
             results = "This shouldn't happen.";
@@ -6339,14 +6658,20 @@ EDStatic.startBodyHtml(null) + "\n" +
 
         //time
         results = gridDataset.axisVariables[0].sliderCsvValues();
-                 //changes frequently:
         expected = "\"2002-07-06T12:00:00Z\", \"2002-08-01T12:00:00Z\", \"2002-09-01T12:00:00Z\", \"2002-10-01T12:00:00Z\", \"2002-11-01T12:00:00Z\", \"2002-12-01T12:00:00Z\", \"2003-01-03T12:00:00Z\", \"2003-02-01T12:00:00Z\", \"2003-03-01T12:00:00Z\", \"2003-04-01T12:00:00Z\", \"2003-05-01T12:00:00Z\",";
         Test.ensureEqual(results.substring(0, expected.length()), expected, 
-            "results=\n" + results);
-                 //changes frequently:
-        expected = "\"2013-05-01T12:00:00Z\", \"2013-06-01T12:00:00Z\", \"2013-07-01T12:00:00Z\", \"2013-07-06T12:00:00Z\"";
-        Test.ensureEqual(results.substring(results.length() - expected.length()), expected, 
-            "results=\n" + results);
+            "results=\n" + results + "\n\nThese expected values should rarely (never?) change.\n");
+                   //changes frequently:
+        expected = ", \"201\\d-\\d\\d-01T12:00:00Z\"";
+        expected = expected + expected + expected + ", \"201\\d-\\d\\d-\\d\\dT12:00:00Z\"";
+        if (!results.endsWith(expected)) 
+            String2.getStringFromSystemIn(
+                "results=\n" + results + "\n" +
+                "\nexpected=" + expected + 
+                "\nThis changes often.\n" +
+                "Normally, the penultimate 3 are YYYY-MM-01 and last is most recent date.\n" +
+                "But sometimes there is no data for -01 so nearby dates are used instead.\n" +
+                "Press ^C to stop or Enter to continue..."); 
 
         //alt
         results = gridDataset.axisVariables[1].sliderCsvValues();
@@ -6695,7 +7020,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         results = generateDatasetsXml(true, url, 
             null, null, null, 10080, null);
         po = results.indexOf("<sourceName>z</sourceName>");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "results=\n" + results);
         expected = 
 "<sourceName>z</sourceName>\n" +
 "        <destinationName>depth</destinationName>\n" +
@@ -6721,12 +7046,12 @@ EDStatic.startBodyHtml(null) + "\n" +
         results = new String((new ByteArray(
             EDStatic.fullTestCacheDirectory + tName)).toArray());
         po = results.indexOf("depth {");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "results=\n" + results);
         expected = 
   "depth {\n" +
 "    String _CoordinateAxisType \"Height\";\n" +
 "    String _CoordinateZisPositive \"down\";\n" +
-"    Float64 actual_range 5.0, 5374.0;\n" +
+"    Float64 actual_range 5.01, 5375.0;\n" +  //2014-01-17 was 5.0, 5374.0
 "    String axis \"Z\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Depth\";\n" +
@@ -6743,7 +7068,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         results = new String((new ByteArray(
             EDStatic.fullTestCacheDirectory + tName)).toArray());
         po = results.indexOf("<vertdef>");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         expected = 
   "<vertdef>\n" +
 "      <depthsys>\n" +
@@ -6765,7 +7090,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 
         po = results.indexOf(
 "codeListValue=\"vertical\">");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         expected = 
                  "codeListValue=\"vertical\">vertical</gmd:MD_DimensionNameTypeCode>\n" +
 "          </gmd:dimensionName>\n" +
@@ -6773,7 +7098,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "            <gco:Integer>40</gco:Integer>\n" +
 "          </gmd:dimensionSize>\n" +
 "          <gmd:resolution>\n" +
-"            <gco:Measure uom=\"m\">137.66666666666666</gco:Measure>\n" +
+"            <gco:Measure uom=\"m\">137.69205128205127</gco:Measure>\n" + //2014-01-17 was 137.66666666666666
 "          </gmd:resolution>\n" +
 "        </gmd:MD_Dimension>\n" +
 "      </gmd:axisDimensionProperties>\n";
@@ -6782,11 +7107,11 @@ EDStatic.startBodyHtml(null) + "\n" +
 
         po = results.indexOf(
 "<gmd:EX_VerticalExtent>");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         expected = 
            "<gmd:EX_VerticalExtent>\n" +
-"              <gmd:minimumValue><gco:Real>-5374.0</gco:Real></gmd:minimumValue>\n" +
-"              <gmd:maximumValue><gco:Real>-5.0</gco:Real></gmd:maximumValue>\n" +
+"              <gmd:minimumValue><gco:Real>-5375.0</gco:Real></gmd:minimumValue>\n" +
+"              <gmd:maximumValue><gco:Real>-5.01</gco:Real></gmd:maximumValue>\n" +
 "              <gmd:verticalCRS gco:nilReason=\"missing\"/>\n" +
 "            </gmd:EX_VerticalExtent>";
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
@@ -6799,7 +7124,7 @@ EDStatic.startBodyHtml(null) + "\n" +
             "http://127.0.0.1:8080/cwexperimental/wms/hawaii_d90f_20ee_c4cb/request?" +
             "service=WMS&request=GetCapabilities&version=1.1.0");
         po = results.indexOf("</Layer>");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         expected = 
 "</Layer>\n" +
 "      <Layer>\n" +
@@ -6809,14 +7134,15 @@ EDStatic.startBodyHtml(null) + "\n" +
 "        <BoundingBox SRS=\"EPSG:4326\" minx=\"0.25\" miny=\"-75.25\" maxx=\"359.75\" maxy=\"89.25\" resx=\"0.5\" resy=\"0.5\" />\n" +
 "        <Dimension name=\"time\" units=\"ISO8601\" />\n" +
 "        <Dimension name=\"elevation\" units=\"EPSG:5030\" />\n" +
-"        <Extent name=\"time\" default=\"2008-12-15T00:00:00Z\" >1871-01-15T00:00:00Z,1871-02-15T00:00:00Z,1871-03-15T00:00:00Z,";
+          //2014-01-24 default was 2008-12-15
+"        <Extent name=\"time\" default=\"2010-12-15T00:00:00Z\" >1871-01-15T00:00:00Z,1871-02-15T00:00:00Z,1871-03-15T00:00:00Z,";
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
             "results=\n" + results);
 
         po = results.indexOf("<Extent name=\"elevation\"");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         expected = 
-"<Extent name=\"elevation\" default=\"-5374.0\" >-5.0,-15.0,-25.0,-35.0,-46.0,-57.0,-70.0,-82.0,-96.0,-112.0,-129.0,-148.0,-171.0,-197.0,-229.0,-268.0,-317.0,-381.0,-465.0,-579.0,-729.0,-918.0,-1139.0,-1378.0,-1625.0,-1875.0,-2125.0,-2375.0,-2624.0,-2874.0,-3124.0,-3374.0,-3624.0,-3874.0,-4124.0,-4374.0,-4624.0,-4874.0,-5124.0,-5374.0</Extent>\n" +
+"<Extent name=\"elevation\" default=\"-5375.0\" >-5.01,-15.07,-25.28,-35.76,-46.61,-57.98,-70.02,-82.92,-96.92,-112.32,-129.49,-148.96,-171.4,-197.79,-229.48,-268.46,-317.65,-381.39,-465.91,-579.31,-729.35,-918.37,-1139.15,-1378.57,-1625.7,-1875.11,-2125.01,-2375.0,-2625.0,-2875.0,-3125.0,-3375.0,-3625.0,-3875.0,-4125.0,-4375.0,-4625.0,-4875.0,-5125.0,-5375.0</Extent>\n" +
 "        <Attribution>\n" +
 "          <Title>TAMU/UMD</Title>\n" +
 "          <OnlineResource xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n" +
@@ -6863,7 +7189,7 @@ EDStatic.startBodyHtml(null) + "\n" +
             "service=WMS&request=GetCapabilities&version=1.3.0");
  
         po = results.indexOf("</Layer>");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         expected =  
 "</Layer>\n" +
 "      <Layer>\n" +
@@ -6877,14 +7203,14 @@ EDStatic.startBodyHtml(null) + "\n" +
 "          <northBoundLatitude>89.25</northBoundLatitude>\n" +
 "        </EX_GeographicBoundingBox>\n" +
 "        <BoundingBox CRS=\"EPSG:4326\" minx=\"0.25\" miny=\"-75.25\" maxx=\"359.75\" maxy=\"89.25\" resx=\"0.5\" resy=\"0.5\" />\n" +
-"        <Dimension name=\"time\" units=\"ISO8601\" multipleValues=\"0\" nearestValue=\"1\" default=\"2008-12-15T00:00:00Z\" >1871-01-15T00:00:00Z,1871-02-15T00:00:00Z,";
+"        <Dimension name=\"time\" units=\"ISO8601\" multipleValues=\"0\" nearestValue=\"1\" default=\"2010-12-15T00:00:00Z\" >1871-01-15T00:00:00Z,1871-02-15T00:00:00Z,";
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
             "results=\n" + results);
 
         po = results.indexOf("<Dimension name=\"elevation\"");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         expected =  
-"<Dimension name=\"elevation\" units=\"CRS:88\" unitSymbol=\"m\" multipleValues=\"0\" nearestValue=\"1\" default=\"-5374.0\" >-5.0,-15.0,-25.0,-35.0,-46.0,-57.0,-70.0,-82.0,-96.0,-112.0,-129.0,-148.0,-171.0,-197.0,-229.0,-268.0,-317.0,-381.0,-465.0,-579.0,-729.0,-918.0,-1139.0,-1378.0,-1625.0,-1875.0,-2125.0,-2375.0,-2624.0,-2874.0,-3124.0,-3374.0,-3624.0,-3874.0,-4124.0,-4374.0,-4624.0,-4874.0,-5124.0,-5374.0</Dimension>";
+"<Dimension name=\"elevation\" units=\"CRS:88\" unitSymbol=\"m\" multipleValues=\"0\" nearestValue=\"1\" default=\"-5375.0\" >-5.01,-15.07,-25.28,-35.76,-46.61,-57.98,-70.02,-82.92,-96.92,-112.32,-129.49,-148.96,-171.4,-197.79,-229.48,-268.46,-317.65,-381.39,-465.91,-579.31,-729.35,-918.37,-1139.15,-1378.57,-1625.7,-1875.11,-2125.01,-2375.0,-2625.0,-2875.0,-3125.0,-3375.0,-3625.0,-3875.0,-4125.0,-4375.0,-4625.0,-4875.0,-5125.0,-5375.0</Dimension>";
         Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
             "results=\n" + results);
 
@@ -6919,8 +7245,9 @@ EDStatic.startBodyHtml(null) + "\n" +
     }
 
 
-    /** This tests a depth axis variable. This requires testGridWithDepth dataset in localhost ERDDAP. */
-    public static void testGridWithDepth() throws Throwable {
+    /** 2013-10-24 INACTIVE. THE TEST DATASET IS NO LONGER AVAILABLE. 
+     * This tests a depth axis variable. This requires testGridWithDepth dataset in localhost ERDDAP. */
+    /*public static void testGridWithDepth() throws Throwable {
         String2.log("\n*** EDDGridFromDap.testGridWithDepth");
         String results, expected, tName;
         int po;
@@ -6931,7 +7258,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         results = generateDatasetsXml(true, url, 
             null, null, null, DEFAULT_RELOAD_EVERY_N_MINUTES, null);
         po = results.indexOf("<sourceName>z</sourceName>");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         expected = 
 "<sourceName>z</sourceName>\n" +
 "        <destinationName>depth</destinationName>\n" +
@@ -6956,7 +7283,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         results = new String((new ByteArray(
             EDStatic.fullTestCacheDirectory + tName)).toArray());
         po = results.indexOf("depth {");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         expected = 
   "depth {\n" +
 "    String _CoordinateAxisType \"Height\";\n" +
@@ -6979,7 +7306,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         results = new String((new ByteArray(
             EDStatic.fullTestCacheDirectory + tName)).toArray());
         po = results.indexOf("<vertdef>");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         expected = 
     "<vertdef>\n" +
 "      <depthsys>\n" +
@@ -7001,7 +7328,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 
         po = results.indexOf(
 "codeListValue=\"vertical\">");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         expected = 
                  "codeListValue=\"vertical\">vertical</gmd:MD_DimensionNameTypeCode>\n" +
 "          </gmd:dimensionName>\n" +
@@ -7018,7 +7345,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 
         po = results.indexOf(
 "<gmd:EX_VerticalExtent>");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         expected = 
            "<gmd:EX_VerticalExtent>\n" +
 "              <gmd:minimumValue><gco:Real>-4499.0</gco:Real></gmd:minimumValue>\n" +
@@ -7035,7 +7362,7 @@ EDStatic.startBodyHtml(null) + "\n" +
             "http://127.0.0.1:8080/cwexperimental/wms/testGridWithDepth/request?" +
             "service=WMS&request=GetCapabilities&version=1.1.0");
         po = results.indexOf("</Layer>");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         expected = 
 "</Layer>\n" +
 "      <Layer>\n" +
@@ -7082,7 +7409,7 @@ EDStatic.startBodyHtml(null) + "\n" +
             "http://127.0.0.1:8080/cwexperimental/wms/testGridWithDepth/request?" +
             "service=WMS&request=GetCapabilities&version=1.3.0");
         po = results.indexOf("</Layer>");
-        Test.ensureTrue(po > 0, "results=\n" + results);
+        Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
         expected = 
 "</Layer>\n" +
 "      <Layer>\n" +
@@ -7130,6 +7457,7 @@ EDStatic.startBodyHtml(null) + "\n" +
                 "\nPress ^C to stop or Enter to continue..."); 
         }
     }
+    */
 
 
     /** This tests non-nc-"Grid" data variable (dimensions don't have axis/coordinate variable). 
@@ -7202,7 +7530,7 @@ EDStatic.startBodyHtml(null) + "\n" +
 "  }\n" +
 "}\n";
         int tpo = results.indexOf("String tiling ");
-        if (tpo < 0) String2.log("results=\n" + results);
+        Test.ensureTrue(tpo >= 0, "tpo=-1 results=\n" + results);
         Test.ensureEqual(results.substring(tpo), expected, 
             "results=\n" + results);
 
@@ -7501,16 +7829,104 @@ EDStatic.startBodyHtml(null) + "\n" +
     }
 
 
+    /** Test getting geotiffs.
+     */
+    public static void testGeotif() throws Throwable {
+        String2.log("\n*** EDDGridFromDap.testGeotif");
+        EDD.testVerbose(false);
+        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdBAssta5day");  
+        String mapDapQuery   = "sst[200][][(20):(50)][(220):(250)]"; 
+        String tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            EDStatic.fullTestCacheDirectory, "testGeotif", ".geotif"); 
+        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+    }
+
     /** Test getting a geotiff from a dataset with descending lat values.
      *  Sometimes: use this with profiler: -agentlib:hprof=cpu=samples,depth=20,file=/JavaHeap.txt   
+     *
+     * This also tests Mercator lat Geotif. (Currently not supported.)
      */
     public static void testDescendingAxisGeotif() throws Throwable {
         String2.log("\n*** EDDGridFromDap.testDescendingAxisGeotif");
         EDD.testVerbose(false);
-        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetXml("usgsCeCrm10"); 
-        String tName = gridDataset.makeNewFileForDapQuery(null, null, "topo[][]", 
+        EDDGrid gridDataset; 
+        String tName; 
+/* */
+        //descending Lat axis
+        gridDataset = (EDDGrid)oneFromDatasetXml("usgsCeCrm10"); 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "topo[0:20:last][0:20:last]&.draw=surface&.vars=longitude|latitude|topo", 
             EDStatic.fullTestCacheDirectory, "descendingAxisGeotif", ".geotif"); 
         SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+
+        //NOT FINISHED ADDING FEATURE
+        //descending Lat axis AND &.size=width|height
+        //gridDataset = (EDDGridFromDap)oneFromDatasetXml("usgsCeCrm10"); 
+        //tName = gridDataset.makeNewFileForDapQuery(null, null, 
+        //    "topo[(23):(19)][(-161):(-155)]&.draw=surface&.vars=longitude|latitude|topo&.size=200|300", 
+        //    EDStatic.fullTestCacheDirectory, "descendingAxisGeotifSize", ".geotif"); 
+        //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+
+        //Mercator Lat axis
+        //2013-10-21 this still fails. Bizarre error is
+        //  Exception in thread "main" java.lang.IllegalArgumentException: Must have 1D x and y axes for heatFlux
+        //  at ucar.nc2.geotiff.GeotiffWriter.writeGrid(GeotiffWriter.java:80)
+        //  at gov.noaa.pfel.erddap.dataset.EDDGrid.saveAsGeotiff(EDDGrid.java:4497)
+        //  at gov.noaa.pfel.erddap.dataset.EDDGrid.respondToDapQuery(EDDGrid.java:2242)
+        //  at gov.noaa.pfel.erddap.dataset.EDD.lowMakeFileForDapQuery(EDD.java:2511)
+        //  at gov.noaa.pfel.erddap.dataset.EDD.makeNewFileForDapQuery(EDD.java:2430)
+        //  at gov.noaa.pfel.erddap.dataset.EDDGridFromDap.testDescendingAxisGeotif(EDDGridFromDap.java:7846)
+        //  at gov.noaa.pfel.coastwatch.TestAll.main(TestAll.java:180)
+
+        //test lon can't be below and above 180
+        String error = "shoudn't happen";
+        try {
+            gridDataset = (EDDGrid)oneFromDatasetXml("jplAmsreSstMon"); 
+            tName = gridDataset.makeNewFileForDapQuery(null, null, 
+                "tos[(2010-12-16T12)][(-89.5):(89.5)][(0.5):(359.5)]"+
+                "&.draw=surface&.vars=longitude|latitude|tos", 
+                EDStatic.fullTestCacheDirectory, "LonBelowAbove180", ".geotif"); 
+            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        } catch (Throwable t) {
+            error = t.toString();
+        }
+
+        try {
+            String expected = "com.cohort.util.SimpleException: " +
+                "Query error: For .geotif requests, the longitude values can't be " +
+                "below and above 180.";
+            Test.ensureEqual(error, expected, "Unexpected error:\n" + error);
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                "\nPress ^C to stop or Enter to continue..."); 
+        }
+
+        //test unevenly spaced lat not allowed
+        //(2014-08-07 I verified it is still a requirement by removing check in EDDGrid.saveAsGeotiff,
+        //  although error is odd: java.lang.IllegalArgumentException: Must have 1D x and y axes for tos)
+        error = "shouldn't happen";
+        try {
+            gridDataset = (EDDGrid)oneFromDatasetXml("gfdlCM2120C3M5OS"); 
+            tName = gridDataset.makeNewFileForDapQuery(null, null, 
+                "tos[(2000-11-12T12)][(-81.5):(89.5)][(0.5):(179.5)]"+
+                "&.draw=surface&.vars=longitude|latitude|tos", 
+                EDStatic.fullTestCacheDirectory, "MercatorAxisGeotif", ".geotif"); 
+            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        } catch (Throwable t) {
+            error = t.toString();
+        }
+
+        try {
+            String expected = "com.cohort.util.SimpleException: " +
+                ".geotif isn't available for this dataset because the dataset's " +
+                "longitude and/or latitude values aren't evenly spaced.";
+            Test.ensureEqual(error, expected, "Unexpected error:\n" + error);
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                "\nPress ^C to stop or Enter to continue..."); 
+        }
+
+
     }
 
     /** 
@@ -7548,6 +7964,175 @@ EDStatic.startBodyHtml(null) + "\n" +
 
     }
 
+    /** This tests saveAsNcml. */
+    public static void testNcml() throws Throwable {
+        testVerboseOn();
+        try {
+
+        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetXml("erdBAssta5day"); 
+        String name, tName, results, expected;
+
+        tName = gridDataset.makeNewFileForDapQuery(null, null, "",
+            EDStatic.fullTestCacheDirectory, gridDataset.className() + "_testNcml", ".ncml"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
+        expected = 
+"<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>\n" +
+"<netcdf xmlns=\"http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\" location=\"http://127.0.0.1:8080/griddap/erdBAssta5day\">\n" +
+"  <attribute name=\"acknowledgement\" value=\"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\" />\n" +
+"  <attribute name=\"cdm_data_type\" value=\"Grid\" />\n" +
+"  <attribute name=\"composite\" value=\"true\" />\n" +
+"  <attribute name=\"contributor_name\" value=\"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\" />\n" +
+"  <attribute name=\"contributor_role\" value=\"Source of level 2 data.\" />\n" +
+"  <attribute name=\"Conventions\" value=\"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\" />\n" +
+"  <attribute name=\"creator_email\" value=\"dave.foley@noaa.gov\" />\n" +
+"  <attribute name=\"creator_name\" value=\"NOAA CoastWatch, West Coast Node\" />\n" +
+"  <attribute name=\"creator_url\" value=\"http://coastwatch.pfel.noaa.gov\" />\n" +
+"  <attribute name=\"date_created\" value=\"2014-03-08Z\" />\n" +
+"  <attribute name=\"date_issued\" value=\"2014-03-08Z\" />\n" +
+"  <attribute name=\"Easternmost_Easting\" type=\"double\" value=\"360.0\" />\n" +
+"  <attribute name=\"geospatial_lat_max\" type=\"double\" value=\"75.0\" />\n" +
+"  <attribute name=\"geospatial_lat_min\" type=\"double\" value=\"-75.0\" />\n" +
+"  <attribute name=\"geospatial_lat_resolution\" type=\"double\" value=\"0.1\" />\n" +
+"  <attribute name=\"geospatial_lat_units\" value=\"degrees_north\" />\n" +
+"  <attribute name=\"geospatial_lon_max\" type=\"double\" value=\"360.0\" />\n" +
+"  <attribute name=\"geospatial_lon_min\" type=\"double\" value=\"0.0\" />\n" +
+"  <attribute name=\"geospatial_lon_resolution\" type=\"double\" value=\"0.1\" />\n" +
+"  <attribute name=\"geospatial_lon_units\" value=\"degrees_east\" />\n" +
+"  <attribute name=\"geospatial_vertical_max\" type=\"double\" value=\"0.0\" />\n" +
+"  <attribute name=\"geospatial_vertical_min\" type=\"double\" value=\"0.0\" />\n" +
+"  <attribute name=\"geospatial_vertical_positive\" value=\"up\" />\n" +
+"  <attribute name=\"geospatial_vertical_units\" value=\"m\" />\n" +
+"  <attribute name=\"history\" value=\"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\n" +
+"2014-03-08T23:30:04Z NOAA CoastWatch \\(West Coast Node\\) and NOAA SFSC ERD\" />\n" +
+"  <attribute name=\"infoUrl\" value=\"http://coastwatch.pfeg.noaa.gov/infog/BA_ssta_las.html\" />\n" +
+"  <attribute name=\"institution\" value=\"NOAA CoastWatch, West Coast Node\" />\n" +
+"  <attribute name=\"keywords\" value=\"5-day,\n" +
+"Oceans &gt; Ocean Temperature &gt; Sea Surface Temperature,\n" +
+"blended, coastwatch, day, degrees, experimental, global, noaa, ocean, oceans, sea, sea_surface_temperature, sst, surface, temperature, wcn\" />\n" +
+"  <attribute name=\"keywords_vocabulary\" value=\"GCMD Science Keywords\" />\n" +
+"  <attribute name=\"license\" value=\"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\" />\n" +
+"  <attribute name=\"Metadata_Conventions\" value=\"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\" />\n" +
+"  <attribute name=\"naming_authority\" value=\"gov.noaa.pfel.coastwatch\" />\n" +
+"  <attribute name=\"Northernmost_Northing\" type=\"double\" value=\"75.0\" />\n" +
+"  <attribute name=\"origin\" value=\"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\" />\n" +
+"  <attribute name=\"processing_level\" value=\"3\" />\n" +
+"  <attribute name=\"project\" value=\"CoastWatch \\(http://coastwatch.noaa.gov/\\)\" />\n" +
+"  <attribute name=\"projection\" value=\"geographic\" />\n" +
+"  <attribute name=\"projection_type\" value=\"mapped\" />\n" +
+"  <attribute name=\"references\" value=\"Blended SST from satellites information: This is an experimental product which blends satellite-" +
+"derived SST data from multiple platforms using a weighted mean.  Weights are based on the inverse square of the nominal accuracy of ea" +
+"ch satellite. AMSR_E Processing information: http://www.ssmi.com/amsr/docs/AMSRE_V05_Updates.pdf . AMSR-E Processing reference: Wentz, " +
+"F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing Systems " +
+"Internal Report. AVHRR Processing Information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing Reference: Wa" +
+"lton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measure" +
+"ment of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: \\(C12\\) 27999-28012, 1998. Cloudmas" +
+"k reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud " +
+"classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration " +
+"and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea s" +
+"urface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, M" +
+"arch 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea " +
+"and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285" +
+"-1303, 2001b. GOES Imager Processing Information: http://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager Processing Referenc" +
+"e: Wu, X., W. P. Menzel, and G. S. Wade, 1999. Estimation of sea surface temperatures using GOES-8/9 radiance measurements, Bull. Amer" +
+". Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: http://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Proces" +
+"sing reference: Not Available.\" />\n" +
+"  <attribute name=\"satellite\" value=\"Aqua, GOES, POES\" />\n" +
+"  <attribute name=\"sensor\" value=\"AMSR-E, MODIS, Imager, AVHRR\" />\n" +
+"  <attribute name=\"source\" value=\"satellite observation: Aqua, GOES, POES, AMSR-E, MODIS, Imager, AVHRR\" />\n" +
+"  <attribute name=\"sourceUrl\" value=\"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\" />\n" +
+"  <attribute name=\"Southernmost_Northing\" type=\"double\" value=\"-75.0\" />\n" +
+"  <attribute name=\"standard_name_vocabulary\" value=\"CF-12\" />\n" +
+"  <attribute name=\"summary\" value=\"NOAA OceanWatch provides a blended sea surface temperature \\(SST\\) products derived from both microwa" +
+"ve and infrared sensors carried on multiple platforms.  The microwave instruments can measure ocean temperatures even in the presence " +
+"of clouds, though the resolution is a bit coarse when considering features typical of the coastal environment.  These are complemented " +
+"by the relatively fine measurements of infrared sensors.  The blended data are provided at moderate spatial resolution \\(0.1 degrees\\) " +
+"for the Global Ocean.  Measurements are gathered by Japan&#39;s Advanced Microwave Scanning Radiometer \\(AMSR-E\\) instrument, a passive " +
+"radiance sensor carried aboard NASA&#39;s Aqua spacecraft, NOAA&#39;s Advanced Very High Resolution Radiometer, NOAA GOES Imager, and " +
+"NASA&#39;s Moderate Resolution Imaging Spectrometer \\(MODIS\\). THIS IS AN EXPERIMENTAL PRODUCT: intended strictly for scientific evaluat" +
+"ion by professional marine scientists.\" />\n" +
+"  <attribute name=\"time_coverage_end\" value=\"20.{8}T12:00:00Z\" />\n" +
+"  <attribute name=\"time_coverage_start\" value=\"2002-07-06T12:00:00Z\" />\n" +
+"  <attribute name=\"title\" value=\"SST, Blended, Global, EXPERIMENTAL \\(5 Day Composite\\)\" />\n" +
+"  <attribute name=\"Westernmost_Easting\" type=\"double\" value=\"0.0\" />\n" +
+"  <dimension name=\"time\" length=\"3880\" />\n" +
+"  <dimension name=\"altitude\" length=\"1\" />\n" +
+"  <dimension name=\"latitude\" length=\"1501\" />\n" +
+"  <dimension name=\"longitude\" length=\"3601\" />\n" +
+"  <variable name=\"time\" shape=\"time\" type=\"double\">\n" +
+"    <attribute name=\"_CoordinateAxisType\" value=\"Time\" />\n" +
+"    <attribute name=\"actual_range\" type=\"double\" value=\"1.0259568E9 1.{5,11}\" />\n" +
+"    <attribute name=\"axis\" value=\"T\" />\n" +
+"    <attribute name=\"fraction_digits\" type=\"int\" value=\"0\" />\n" +
+"    <attribute name=\"ioos_category\" value=\"Time\" />\n" +
+"    <attribute name=\"long_name\" value=\"Centered Time\" />\n" +
+"    <attribute name=\"standard_name\" value=\"time\" />\n" +
+"    <attribute name=\"time_origin\" value=\"01-JAN-1970 00:00:00\" />\n" +
+"    <attribute name=\"units\" value=\"seconds since 1970-01-01T00:00:00Z\" />\n" +
+"  </variable>\n" +
+"  <variable name=\"altitude\" shape=\"altitude\" type=\"double\">\n" +
+"    <attribute name=\"_CoordinateAxisType\" value=\"Height\" />\n" +
+"    <attribute name=\"_CoordinateZisPositive\" value=\"up\" />\n" +
+"    <attribute name=\"actual_range\" type=\"double\" value=\"0.0 0.0\" />\n" +
+"    <attribute name=\"axis\" value=\"Z\" />\n" +
+"    <attribute name=\"fraction_digits\" type=\"int\" value=\"0\" />\n" +
+"    <attribute name=\"ioos_category\" value=\"Location\" />\n" +
+"    <attribute name=\"long_name\" value=\"Altitude\" />\n" +
+"    <attribute name=\"positive\" value=\"up\" />\n" +
+"    <attribute name=\"standard_name\" value=\"altitude\" />\n" +
+"    <attribute name=\"units\" value=\"m\" />\n" +
+"  </variable>\n" +
+"  <variable name=\"latitude\" shape=\"latitude\" type=\"double\">\n" +
+"    <attribute name=\"_CoordinateAxisType\" value=\"Lat\" />\n" +
+"    <attribute name=\"actual_range\" type=\"double\" value=\"-75.0 75.0\" />\n" +
+"    <attribute name=\"axis\" value=\"Y\" />\n" +
+"    <attribute name=\"coordsys\" value=\"geographic\" />\n" +
+"    <attribute name=\"fraction_digits\" type=\"int\" value=\"1\" />\n" +
+"    <attribute name=\"ioos_category\" value=\"Location\" />\n" +
+"    <attribute name=\"long_name\" value=\"Latitude\" />\n" +
+"    <attribute name=\"point_spacing\" value=\"even\" />\n" +
+"    <attribute name=\"standard_name\" value=\"latitude\" />\n" +
+"    <attribute name=\"units\" value=\"degrees_north\" />\n" +
+"  </variable>\n" +
+"  <variable name=\"longitude\" shape=\"longitude\" type=\"double\">\n" +
+"    <attribute name=\"_CoordinateAxisType\" value=\"Lon\" />\n" +
+"    <attribute name=\"actual_range\" type=\"double\" value=\"0.0 360.0\" />\n" +
+"    <attribute name=\"axis\" value=\"X\" />\n" +
+"    <attribute name=\"coordsys\" value=\"geographic\" />\n" +
+"    <attribute name=\"fraction_digits\" type=\"int\" value=\"1\" />\n" +
+"    <attribute name=\"ioos_category\" value=\"Location\" />\n" +
+"    <attribute name=\"long_name\" value=\"Longitude\" />\n" +
+"    <attribute name=\"point_spacing\" value=\"even\" />\n" +
+"    <attribute name=\"standard_name\" value=\"longitude\" />\n" +
+"    <attribute name=\"units\" value=\"degrees_east\" />\n" +
+"  </variable>\n" +
+"  <variable name=\"sst\" shape=\"time altitude latitude longitude\" type=\"float\">\n" +
+"    <attribute name=\"_FillValue\" type=\"float\" value=\"-9999999.0\" />\n" +
+"    <attribute name=\"colorBarMaximum\" type=\"double\" value=\"32.0\" />\n" +
+"    <attribute name=\"colorBarMinimum\" type=\"double\" value=\"0.0\" />\n" +
+"    <attribute name=\"coordsys\" value=\"geographic\" />\n" +
+"    <attribute name=\"fraction_digits\" type=\"int\" value=\"1\" />\n" +
+"    <attribute name=\"ioos_category\" value=\"Temperature\" />\n" +
+"    <attribute name=\"long_name\" value=\"Sea Surface Temperature\" />\n" +
+"    <attribute name=\"missing_value\" type=\"float\" value=\"-9999999.0\" />\n" +
+"    <attribute name=\"standard_name\" value=\"sea_surface_temperature\" />\n" +
+"    <attribute name=\"units\" value=\"degree_C\" />\n" +
+"  </variable>\n" +
+"</netcdf>\n";
+        Test.ensureLinesMatch(results, expected, "RESULTS=\n" + results);
+
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
+        }
+    }
+
     public static void testNetcdfJava() throws Throwable {
         //open as a NetcdfDataset, not a NetcdfFile as above
         String url = "http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdMHchla8day";
@@ -7561,112 +8146,119 @@ EDStatic.startBodyHtml(null) + "\n" +
             results = NcHelper.decodeNcDump(results); //added with switch to netcdf-java 4.0
             String tUrl = String2.replaceAll(EDStatic.erddapUrl, "http:", "dods:"); //in tests, always non-https url
             expected = 
-"netcdf dods" + url.substring(4) + " {\n" +
-" dimensions:\n" +
-"   time = 494;\n" +
-"   altitude = 1;\n" +
-"   latitude = 4320;\n" +
-"   longitude = 8640;\n" +
-" variables:\n" +
-"   float chlorophyll(time=494, altitude=1, latitude=4320, longitude=8640);\n" +
-"     :_CoordinateAxes = \"time altitude latitude longitude \";\n" +
-"     :_FillValue = -9999999.0f; // float\n" +
-"     :colorBarMaximum = 30.0; // double\n" +
-"     :colorBarMinimum = 0.03; // double\n" +
-"     :colorBarScale = \"Log\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 2; // int\n" +
-"     :ioos_category = \"Ocean Color\";\n" +
-"     :long_name = \"Concentration Of Chlorophyll In Sea Water\";\n" +
-"     :missing_value = -9999999.0f; // float\n" +
-"     :standard_name = \"concentration_of_chlorophyll_in_sea_water\";\n" +
-"     :units = \"mg m-3\";\n" +
-"   double time(time=494);\n" +
-"     :_CoordinateAxisType = \"Time\";\n" +
-"     :actual_range = 1.0260864E9, 1.3718592E9; // double\n" +  //2nd number changes
-"     :axis = \"T\";\n" +
-"     :fraction_digits = 0; // int\n" +
-"     :ioos_category = \"Time\";\n" +
-"     :long_name = \"Centered Time\";\n" +
-"     :standard_name = \"time\";\n" +
-"     :time_origin = \"01-JAN-1970 00:00:00\";\n" +
-"     :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"   double altitude(altitude=1);\n" +
-"     :_CoordinateAxisType = \"Height\";\n" +
-"     :_CoordinateZisPositive = \"up\";\n" +
-"     :actual_range = 0.0, 0.0; // double\n" +
-"     :axis = \"Z\";\n" +
-"     :fraction_digits = 0; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Altitude\";\n" +
-"     :positive = \"up\";\n" +
-"     :standard_name = \"altitude\";\n" +
-"     :units = \"m\";\n" +
-"   double latitude(latitude=4320);\n" +
-"     :_CoordinateAxisType = \"Lat\";\n" +
-"     :actual_range = -90.0, 90.0; // double\n" +
-"     :axis = \"Y\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 4; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Latitude\";\n" +
-"     :point_spacing = \"even\";\n" +
-"     :standard_name = \"latitude\";\n" +
-"     :units = \"degrees_north\";\n" +
-"   double longitude(longitude=8640);\n" +
-"     :_CoordinateAxisType = \"Lon\";\n" +
-"     :actual_range = 0.0, 360.0; // double\n" +
-"     :axis = \"X\";\n" +
-"     :coordsys = \"geographic\";\n" +
-"     :fraction_digits = 4; // int\n" +
-"     :ioos_category = \"Location\";\n" +
-"     :long_name = \"Longitude\";\n" +
-"     :point_spacing = \"even\";\n" +
-"     :standard_name = \"longitude\";\n" +
-"     :units = \"degrees_east\";\n" +
+"netcdf dods" + url.substring(4) + " \\{\n" +
+"  dimensions:\n" +
+"    time = \\d{3};\n" +  //was 500   It changes (here and below...)
+"    altitude = 1;\n" +
+"    latitude = 4320;\n" +
+"    longitude = 8640;\n" +
+"  variables:\n" +
+"    float chlorophyll\\(time=\\d{3}, altitude=1, latitude=4320, longitude=8640\\);\n" +
+"      :_CoordinateAxes = \"time altitude latitude longitude \";\n" +
+"      :_FillValue = -9999999.0f; // float\n" +
+"      :colorBarMaximum = 30.0; // double\n" +
+"      :colorBarMinimum = 0.03; // double\n" +
+"      :colorBarScale = \"Log\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 2; // int\n" +
+"      :ioos_category = \"Ocean Color\";\n" +
+"      :long_name = \"Concentration Of Chlorophyll In Sea Water\";\n" +
+"      :missing_value = -9999999.0f; // float\n" +
+"      :standard_name = \"concentration_of_chlorophyll_in_sea_water\";\n" +
+"      :units = \"mg m-3\";\n" +
 "\n" +
-" :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
-" :cdm_data_type = \"Grid\";\n" +
-" :composite = \"true\";\n" +
-" :contributor_name = \"NASA GSFC (OBPG)\";\n" +
-" :contributor_role = \"Source of level 2 data.\";\n" +
-" :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-" :creator_email = \"dave.foley@noaa.gov\";\n" +
-" :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
-" :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
-" :date_created = \"2013-07-07Z\";\n" +  //changes
-" :date_issued = \"2013-07-07Z\";\n" +   //changes
-" :Easternmost_Easting = 360.0; // double\n" +
-" :geospatial_lat_max = 90.0; // double\n" +
-" :geospatial_lat_min = -90.0; // double\n" +
-" :geospatial_lat_resolution = 0.041676313961565174; // double\n" +
-" :geospatial_lat_units = \"degrees_north\";\n" +
-" :geospatial_lon_max = 360.0; // double\n" +
-" :geospatial_lon_min = 0.0; // double\n" +
-" :geospatial_lon_resolution = 0.04167148975575877; // double\n" +
-" :geospatial_lon_units = \"degrees_east\";\n" +
-" :geospatial_vertical_max = 0.0; // double\n" +
-" :geospatial_vertical_min = 0.0; // double\n" +
-" :geospatial_vertical_positive = \"up\";\n" +
-" :geospatial_vertical_units = \"m\";\n" +
-" :history = \"NASA GSFC (OBPG)";
-            Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
+"    double time\\(time=\\d{3}\\);\n" +
+"      :_CoordinateAxisType = \"Time\";\n" +
+"      :actual_range = 1.0260864E9, .{5,15}; // double\n" +  //2nd number changes
+"      :axis = \"T\";\n" +
+"      :fraction_digits = 0; // int\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Centered Time\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"\n" +
+"    double altitude\\(altitude=1\\);\n" +
+"      :_CoordinateAxisType = \"Height\";\n" +
+"      :_CoordinateZisPositive = \"up\";\n" +
+"      :actual_range = 0.0, 0.0; // double\n" +
+"      :axis = \"Z\";\n" +
+"      :fraction_digits = 0; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Altitude\";\n" +
+"      :positive = \"up\";\n" +
+"      :standard_name = \"altitude\";\n" +
+"      :units = \"m\";\n" +
+"\n" +
+"    double latitude\\(latitude=4320\\);\n" +
+"      :_CoordinateAxisType = \"Lat\";\n" +
+"      :actual_range = -90.0, 90.0; // double\n" +
+"      :axis = \"Y\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 4; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Latitude\";\n" +
+"      :point_spacing = \"even\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
+"\n" +
+"    double longitude\\(longitude=8640\\);\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"      :actual_range = 0.0, 360.0; // double\n" +
+"      :axis = \"X\";\n" +
+"      :coordsys = \"geographic\";\n" +
+"      :fraction_digits = 4; // int\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :point_spacing = \"even\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
+"  :cdm_data_type = \"Grid\";\n" +
+"  :composite = \"true\";\n" +
+"  :contributor_name = \"NASA GSFC \\(OBPG\\)\";\n" +
+"  :contributor_role = \"Source of level 2 data.\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :creator_email = \"dave.foley@noaa.gov\";\n" +
+"  :creator_name = \"NOAA CoastWatch, West Coast Node\";\n" +
+"  :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
+"  :date_created = \"20.{8}Z\";\n" +  //changes
+"  :date_issued = \"20.{8}Z\";\n" +   //changes
+"  :Easternmost_Easting = 360.0; // double\n" +
+"  :geospatial_lat_max = 90.0; // double\n" +
+"  :geospatial_lat_min = -90.0; // double\n" +
+"  :geospatial_lat_resolution = 0.041676313961565174; // double\n" +
+"  :geospatial_lat_units = \"degrees_north\";\n" +
+"  :geospatial_lon_max = 360.0; // double\n" +
+"  :geospatial_lon_min = 0.0; // double\n" +
+"  :geospatial_lon_resolution = 0.04167148975575877; // double\n" +
+"  :geospatial_lon_units = \"degrees_east\";\n" +
+"  :geospatial_vertical_max = 0.0; // double\n" +
+"  :geospatial_vertical_min = 0.0; // double\n" +
+"  :geospatial_vertical_positive = \"up\";\n" +
+"  :geospatial_vertical_units = \"m\";\n" +
+"  :history = \"NASA GSFC \\(OBPG\\)";
+            int po = results.indexOf(":history = \"NASA GSFC (OBPG)");
+            Test.ensureTrue(po >= 0, "po=-1 results=\n" + results);
+            Test.ensureLinesMatch(results.substring(0, po + 28), expected, "RESULTS=\n" + results);
 
             expected = 
-" :satellite = \"Aqua\";\n" +
-" :sensor = \"MODIS\";\n" +
-" :source = \"satellite observation: Aqua, MODIS\";\n" +
-" :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
-" :Southernmost_Northing = -90.0; // double\n" +
-" :standard_name_vocabulary = \"CF-12\";\n" +
-" :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer (MODIS) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
-" :time_coverage_end = \"2013-06-22T00:00:00Z\";\n" + //changes
-" :time_coverage_start = \"2002-07-08T00:00:00Z\";\n" +
-" :title = \"Chlorophyll-a, Aqua MODIS, NPP, Global, Science Quality (8 Day Composite)\";\n" +
-" :Westernmost_Easting = 0.0; // double\n" +
-" :_CoordSysBuilder = \"ucar.nc2.dataset.conv.CF1Convention\";\n" +
-"}\n";
-            Test.ensureEqual(results.substring(results.indexOf(" :satellite =")), expected, "RESULTS=\n" + results);
+"  :satellite = \"Aqua\";\n" +
+"  :sensor = \"MODIS\";\n" +
+"  :source = \"satellite observation: Aqua, MODIS\";\n" +
+"  :sourceUrl = \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/8day\";\n" +
+"  :Southernmost_Northing = -90.0; // double\n" +
+"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :summary = \"NOAA CoastWatch distributes chlorophyll-a concentration data from NASA's Aqua Spacecraft.  Measurements are gathered by the Moderate Resolution Imaging Spectroradiometer \\(MODIS\\) carried aboard the spacecraft.   This is Science Quality data.\";\n" +
+"  :time_coverage_end = \"20.{8}T00:00:00Z\";\n" + //changes
+"  :time_coverage_start = \"20.{8}T00:00:00Z\";\n" +
+"  :title = \"Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION \\(8 Day Composite\\)\";\n" +
+"  :Westernmost_Easting = 0.0; // double\n" +
+"  :_CoordSysBuilder = \"ucar.nc2.dataset.conv.CF1Convention\";\n" +
+"\\}\n";
+            Test.ensureLinesMatch(results.substring(results.indexOf("  :satellite =")), expected, "RESULTS=\n" + results);
 
             attributes.clear();
             NcHelper.getGlobalAttributes(nc, attributes);
@@ -7739,6 +8331,51 @@ EDStatic.startBodyHtml(null) + "\n" +
         */
     }
 
+    /**
+     * This tests making maps where lon is 74 to 434
+     */     
+    public static void testMap74to434() throws Throwable {
+        String2.log("\n*** EDDGridFromDap.testMap74to434\n");
+        testVerboseOn();
+        String mapDapQuery = "sst[last][0][0:last][0:last]&.land=under"; //stride irrelevant 
+        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetXml("ncepRtofsG2DNowDailyProg"); //should work
+        String tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            EDStatic.fullTestCacheDirectory, gridDataset.className() + "_434_Map", ".png"); 
+        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+        //String2.getStringFromSystemIn("\nPress ^C to stop or Enter to continue..."); 
+    }
+
+    /**
+     * This tests a bug in which land and national boundaries were draw twice
+     * and offset horizontally if drawLandMask=under.
+     * <p>ANTIALIASING PROBLEM NOT YET SOLVED. 2014-08-26 It seems to be a problem with antialiasing,
+     * but turning antialiasing off or changing other renderingHints had no effict
+     * (e.g., in SgtMap, see g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, )).
+     * I spent hours trying to characterize then fix this, but found no solution.
+     */     
+    public static void testMapAntialiasing() throws Throwable {
+        String2.log("\n*** EDDGridFromDap.testMapAntialiasing\n");
+        testVerboseOn();
+        EDDGrid gridDataset = (EDDGrid)oneFromDatasetXml("etopo360"); 
+
+        //most color backgrounds don't have a problem
+        String mapDapQuery = "altitude" +
+            "[(68):(71)][(217):(220)]" + //stride irrelevant 
+            "&.draw=surface&.vars=longitude|latitude|altitude"; 
+        String tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            EDStatic.fullTestCacheDirectory, gridDataset.className() + "_mapAntialiasingOKAY", ".png"); 
+        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+
+        //some color backgrounds have a problem
+        //as if it is bad interpolation based on pixel to left and right.
+        //So vertical lines look worst and pure horizontal lines are okay.
+        mapDapQuery += "&.colorBar=BlackBlueWhite|||||"; 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+            EDStatic.fullTestCacheDirectory, gridDataset.className() + "_mapAntialiasingBAD", ".png"); 
+        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+
+        String2.getStringFromSystemIn("\nANTIALIASING PROBLEM NOT YET SOLVED. Press ^C to stop or Enter to continue..."); 
+    }
 
     /**
      * This tests the methods in this class.
@@ -7758,6 +8395,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         if (doGraphicsTests) testGraphics();
         testOpendap();
         testScaleAddOffset();
+        testNcml();
         //testPmelOscar(doGraphicsTests); DAPPER IS NO LONGER ACTIVE!
         testGenerateDatasetsXml();
         testGenerateDatasetsXml2();
@@ -7771,7 +8409,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         testKml();
         testNoAxisVariable();
         testClimatologyTime();
-        testGridWithDepth();
+        //testGridWithDepth(); //test dataset no longer available
         testGridWithDepth2(); 
         testBigRequest(2); //if partialRequestMaxBytes is 10^8, this will be handled in 1 partial request
         testBigRequest(4); //if partialRequestMaxBytes is 10^8, this will be handled in 1 partial request
@@ -7780,7 +8418,11 @@ EDStatic.startBodyHtml(null) + "\n" +
         testSpeedMAG();
         testQuickRestart();
         testNetcdfJava();
-        //testDescendingAxisGeotif(); //not working yet
+        testGeotif();
+        testDescendingLat(true);  //testGraphics?
+        testDescendingAxisGeotif();
+        testMap74to434();
+        testMapAntialiasing();
         /* */
 
         //not regularly done

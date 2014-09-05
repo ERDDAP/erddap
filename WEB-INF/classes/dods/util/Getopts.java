@@ -133,7 +133,7 @@ public class Getopts extends Object {
      *	is parsed according to the flags.
      *<P>
      *  @param flags a string with the valid switch names
-     *  @param args[] array of strings (usually args)
+     *  @param args array of strings (usually args)
      *<P>
      *  @exception InvalidSwitch	thrown when invalid options are found
      *<P>
@@ -269,7 +269,7 @@ public class Getopts extends Object {
      * 		java Getopts "option set" arg0 arg1 ... argn
      *</PRE>
      *
-     *  @params args		arguments passed
+     *  @param args		arguments passed
      *  @exception InvalidSwitch	thrown when invalid options are found
      */
     public static void main(String args[]) 

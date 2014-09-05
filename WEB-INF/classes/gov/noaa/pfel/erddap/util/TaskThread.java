@@ -62,7 +62,7 @@ public class TaskThread extends Thread {
 
     /**
      * Set this to true (by calling verbose=true in your program, 
-     * not but changing the code here)
+     * not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false; 
@@ -209,7 +209,7 @@ public class TaskThread extends Thread {
                 String content = "" + taskSummary + "\n" +
                     MustBe.throwableToString(t);
                 String2.log("%%% " + subject + "\n" + content);
-                EDStatic.email(EDStatic.emailEverythingTo, subject, content);
+                EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
             }
 
             //whether succeeded or failed

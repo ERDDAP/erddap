@@ -16,6 +16,7 @@ import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.*;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
@@ -65,7 +66,7 @@ import ucar.ma2.*;
 public class Projects  {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
@@ -920,7 +921,7 @@ Should the license/disclaimer still be:
             data.removeColumn(5);
 
             //add metadata for data columns
-            //standardNames from http://cf-pcmdi.llnl.gov/documents/cf-standard-names/2/cf-standard-name-table.html
+            //standardNames from http://cfconventions.org/Data/cf-standard-names/27/build/cf-standard-name-table.html
             //none seem relevant here
             for (int col = 5; col < data.nColumns(); col++) {
                 String pm2 = " per square meter";  //must be all lowercase
@@ -1264,7 +1265,7 @@ String2.log("uniqueYear = " + uniqueYear);
             String2.log("newDataName=" + newDataName + " newDataUnits=" + newDataUnits);
 
             //add metadata for data columns
-            //standardNames from http://cf-pcmdi.llnl.gov/documents/cf-standard-names/2/cf-standard-name-table.html
+            //standardNames from http://cfconventions.org/Data/cf-standard-names/27/build/cf-standard-name-table.html
             //none seem relevant here
             for (int col = 5; col < data.nColumns(); col++) {
                 String pm2 = " per square meter";  //must be all lowercase
@@ -1637,7 +1638,7 @@ String2.log("uniqueYear = " + uniqueYear);
             //    CommonName, Number fish per 100mX2mX30m transect",  //6,7
 
             //add metadata for data columns
-            //standardNames from http://cf-pcmdi.llnl.gov/documents/cf-standard-names/2/cf-standard-name-table.html
+            //standardNames from http://cfconventions.org/Data/cf-standard-names/27/build/cf-standard-name-table.html
             //none seem relevant here
 //Year	IslandName	SiteName	Date	Species	Species Name	Adult/Juvenile/sex	CommonName	Transect	Number fish per 100mX2mX30m transect
 //1985	Anacapa	Admiral's Reef	8/30/1985 0:00:00	14001.00	Chromis punctipinnis	 Adult	Blacksmith Adult	1	224
@@ -1963,7 +1964,7 @@ String2.log("uniqueSpp = " + uniqueSpp);
             data.removeColumn(5);
 
             //add metadata for data columns
-            //standardNames from http://cf-pcmdi.llnl.gov/documents/cf-standard-names/2/cf-standard-name-table.html
+            //standardNames from http://cfconventions.org/Data/cf-standard-names/27/build/cf-standard-name-table.html
             //none seem relevant here
             for (int col = 5; col < data.nColumns(); col++) {
                 String colName = data.getColumnName(col);
@@ -2266,7 +2267,7 @@ String2.log("sppCol name = " + data.getColumnName(sppCol));
             //data.columnAttributes(4).set("units", DataHelper.UNITLESS);
 
             //add metadata for data columns
-            //standardNames from http://cf-pcmdi.llnl.gov/documents/cf-standard-names/2/cf-standard-name-table.html
+            //standardNames from http://cfconventions.org/Data/cf-standard-names/27/build/cf-standard-name-table.html
             //none seem relevant here
             for (int col = 5; col < data.nColumns(); col++) {
                 String colName = data.getColumnName(col);
@@ -3319,7 +3320,7 @@ public static void testJanino() throws Exception {
             //NetcdfFile nc = NetcdfDataset.openFile("http://dapper.pmel.noaa.gov/dapper/epic/tao_time_series.cdp", null);
             //NetcdfFile nc = NetcdfDataset.openFile("http://coastwatch.pfeg.noaa.gov/erddap2/tabledap/cwwcNDBCMet", null);
             NetcdfFile nc = NetcdfDataset.openFile("http://127.0.0.1:8080/cwexperimental/tabledap/cwwcNDBCMet", null);
-            //NetcdfFile nc = NetcdfDataset.openFile("http://192.168.31.27:8080/thredds/dodsC/satellite/cwtest/aqua/modis/chlora/D1", null);
+            //NetcdfFile nc = NetcdfDataset.openFile("http://thredds1.pfeg.noaa.gov:8080/thredds/dodsC/satellite/cwtest/aqua/modis/chlora/D1", null);
             String2.log(nc.toString());
             nc.close();
         }
@@ -3498,7 +3499,7 @@ public static void testJanino() throws Exception {
             String.class};
         String dataUnits[] = { //date will be ...
             null,          "seconds since 1970-01-01T00:00:00Z", null, null, "meters",
-            "degree_C",    "psu",        "sigma",      "volts",      null,
+            "degree_C",    "1e-3",       "sigma",      "volts",      null, //1e-3 replaces PSU in CF std names 25
             null};
       
         Test.ensureEqual(dataColNames.length, dataColTypes.length, "dataColNames.length != dataColTypes.length");
@@ -6207,6 +6208,7 @@ project)
      * <br>3) need to process files anyway, to combine date+time.
      * <br>2) .csv is closer to what ERDDAP wants.
      * Created 2011-05-01.
+     * 2014-04-08 Changed PSU to 1e-3 (used in cf std names 25)
      */
     public static void convertCchdoBottle() throws Exception {
         String inDir  = "c:/data/cchdo/botcsv/";
@@ -6215,11 +6217,12 @@ project)
         Attributes colInfo = new Attributes();  //colName -> units|type
 
         String2.setupLog(true, false, logFile, false, false, 1000000000);
-        String2.log("Projects.convertCchdoBottle " + 
+        String2.log("*** Projects.convertCchdoBottle " + 
             Calendar2.getCurrentISODateTimeStringLocal() + "\n" +
               " inDir=" + inDir +
             "\noutDir=" + outDir +
-            "\nlogFile=" + logFile);
+            "\nlogFile=" + logFile + "\n" +
+            String2.standardHelpAboutMessage());
         long eTime = System.currentTimeMillis();
         HashSet ipts68Columns = new HashSet();
         File2.deleteAllFiles(outDir);
@@ -6353,7 +6356,9 @@ project)
 
                     //get units
                     String tUnits = units[col];
-                    if (!tUnits.equals("PSU"))
+                    if (tUnits.equals("PSU"))
+                        tUnits = "1e-3"; //used in CF std names 25
+                    else 
                         tUnits = tUnits.toLowerCase();
                     //String2.log("orig colName=" + colName + " tUnits=" + tUnits);
 
@@ -6500,8 +6505,8 @@ project)
                                tUnits.equals("iss78") || 
                                tUnits.equals("pss-78") ||
                                tUnits.equals("c  pss-7")) {
-                        String2.log("change colName=" + colName + " units=" + tUnits + " to PSU");
-                        tUnits = "PSU"; 
+                        String2.log("change colName=" + colName + " units=" + tUnits + " to 1e-3");
+                        tUnits = "1e-3"; //PSU changed to 1e-3 in CF std names 25
                     } else if (colName.equals("cfc_12") &&
                                tUnits.equals("pm/kg")) {
                         String2.log("change colName=" + colName + " units=" + tUnits + " to pmol/kg");
@@ -6656,12 +6661,12 @@ project)
                          colName.equals("salnty"))) {
                         //convert ctdpers to dbar and NaNs
                         String2.log("change colName=" + colName + " units=" + tUnits + 
-                            " to PSU and set all to -999");
-                        tUnits = "PSU";
+                            " to 1e-3 and set all to -999");
+                        tUnits = "1e-3"; //PSU changed to 1e-3 in CF std names 25
                         table.setColumn(col, PrimitiveArray.factory(float.class, nRows, "-999"));
-                    } else if ((tUnits.equals("PSU")) && 
+                    } else if (tUnits.equals("1e-3") &&  //?  was PSU
                         colName.equals("ctdtmp")) {
-                        //convert ctdpers to dbar and NaNs
+                        //convert ctdtmp to degree_C and NaNs
                         String2.log("change colName=" + colName + " units=" + tUnits + 
                             " to degree_C and set all to -999");
                         tUnits = "degree_C";
@@ -6793,7 +6798,7 @@ project)
 
         String2.log("colInfo:");
         String2.log(colInfo.toString());
-
+        String2.returnLoggingToSystemOut();
     }
 
     /** This makes the NetCheck tests for all of an ERDDAP's datasets. 
@@ -7859,7 +7864,7 @@ towTypesDescription);
                 }
                 table.setColumn(v, datePA);
                 atts.set("units", Calendar2.SECONDS_SINCE_1970);
-                atts.set("time_precision", 
+                atts.set("time_precision", //AKA EDV.TIME_PRECISION 
                     nextHasMinutes? "1970-01-01T00:00" : "1970-01-01");
                 if (nextHasMinutes) 
                     table.removeColumn(v + 1);
@@ -8315,6 +8320,403 @@ towTypesDescription);
             ") finished successfully");
     }
 
+    /**
+     * This queries a list of coastwatch ERDDAP datasets and makes a table with
+     * the last time point for each dataset.
+     *
+     * @param griddapUrl e.g., "http://coastwatch.pfeg.noaa.gov/erddap/griddap/"
+     * @param datasetIDs a list of datasetIDs
+     */
+    public static void lastTime(String griddapUrl, StringArray datasetIDs) throws Exception {
+        String2.log("\n*** Projects.lastTime(" + griddapUrl + ")");
+        int n = datasetIDs.size();
+        StringArray datasetInfo = new StringArray(n, false);
+        for (int i = 0; i < n; i++) {
+            String result = "";
+            try {
+                //request time[last] and get the date from the 3rd line   2007-04-12T14:00:00Z
+                String response[] = SSR.getUrlResponse(
+                    griddapUrl + datasetIDs.get(i) + ".csv?time[last]");
+                if (response.length >= 3)
+                    result = response[2];
+                else if (response.length >= 1)
+                    result = response[0];
+                else result = "[Response = \"\"]";
+            } catch (Throwable t) {
+                result = t.toString();
+            }
+            if (result.length() > 64)
+                result = result.substring(0, 64);
+            datasetInfo.add(String2.left(datasetIDs.get(i), 21) + " " + result);
+            String2.log(datasetInfo.get(i));
+        }
+        String2.log("\nLast Times (as of " + Calendar2.getCurrentISODateTimeStringLocal() + 
+            " Pacific time)\n" + datasetInfo.toNewlineString());
+    }
+
+    /**
+     * This makes regularly-spaced (alternate 3, 4 days) .ncml files for the CRW datasets.
+     * 
+     * @param isoStartDate Exact Date for first .ncml file, e.g., "2000-12-09" 
+     * @param firstIncrement 3 or 4 days to second .ncml file
+     * @param isoEndDate doesn't have to fall on valid date
+     * @param varName   e.g., sst, anomaly, dhw, hotspot, baa
+     */
+    public static void makeCRWNcml34(String isoStartDate, int firstIncrement, String isoEndDate,
+        String varName) {
+
+        int secondsPerDay = Calendar2.SECONDS_PER_DAY;
+        double startSeconds = Calendar2.isoStringToEpochSeconds(isoStartDate);
+        double endSeconds   = Calendar2.isoStringToEpochSeconds(isoEndDate);
+        double seconds = startSeconds;
+        int increment = firstIncrement;
+        String dir = "/u00/satellite/CRW/" + varName + "/ncml/";
+        String varNameInFileName = varName.equals("sst")? "night" : varName;
+        String varNameInFile = 
+            varName.equals("sst")?     "CRW_SST"        : 
+            varName.equals("anomaly")? "CRW_SSTANOMALY" :
+            varName.equals("dhw")?     "CRW_DHW"        :
+            varName.equals("hotspot")? "CRW_HOTSPOT"    :   
+            varName.equals("baa")?     "CRW_BAA"        : "error";
+        if (varNameInFile.equals("error"))
+            throw new RuntimeException("Unknown varName=" + varName);
+        //String2.log("dir=" + dir);
+
+        while (seconds <= endSeconds) {
+            String yyyymmdd = String2.replaceAll(
+                Calendar2.epochSecondsToIsoStringT(seconds).substring(0, 10), "-", "");
+            int daysSince = Math2.roundToInt(seconds / secondsPerDay);
+            int n = yyyymmdd.compareTo("20090604") >= 0? 19 :
+                    yyyymmdd.compareTo("20050822") >= 0? 18 :
+                    yyyymmdd.compareTo("20010223") >= 0? 16 : 14;
+            String fileName = "sst." + varNameInFileName + ".field.50km.n" + n + "." + yyyymmdd;
+            String2.log(daysSince + " " + fileName);
+
+            String contents = 
+"<netcdf xmlns=\"http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2\">\n" +
+"  <variable name=\"time\" type=\"int\" shape=\"time\">\n" +
+"    <attribute name=\"units\" value=\"days since 1970-01-01T00:00:00Z\"/>\n" +
+"    <attribute name=\"_CoordinateAxisType\" value=\"Time\" />\n" +
+"    <attribute name=\"axis\" value=\"T\" />\n" +
+"  </variable>\n" +
+"  <aggregation dimName=\"time\" type=\"joinNew\">\n" +
+"    <variableAgg name=\"" + varNameInFile + "\"/>\n" +
+"    <variableAgg name=\"surface_flag\"/>\n" +
+"    <netcdf location=\"" + fileName + ".hdf\" coordValue=\"" + daysSince + "\"/>\n" +
+"  </aggregation>\n" +
+"</netcdf>\n";
+            String2.writeToFile(dir + fileName + ".ncml", contents);
+
+            //increment seconds
+            seconds += increment * Calendar2.SECONDS_PER_DAY;
+            increment = increment == 3? 4 : 3;
+        }
+    }
+
+    /** 
+     * This was needed to make the initial, irregularly-spaced ncml files
+     * corresponding to the .hdf files because the .hdf files often
+     * break the 3/4 day pattern.
+     *
+     * @param varName   e.g., sst, anomaly, dhw, hotspot, baa
+     */
+    public static void makeCRWToMatch(String varName) {
+        String dataDir = "/u00/satellite/CRW/" + varName + "/";
+        String ncmlDir = dataDir + "ncml/";
+
+        //get the list of .hdf files
+        String[] fileNames = RegexFilenameFilter.list(dataDir, ".*\\.hdf");
+
+        //make an ncml file for each
+        int n = fileNames.length;
+        for (int i = 0; i < n; i++) {
+            //String2.log(fileNames[i]);
+            String nameNoExt = fileNames[i].substring(0, fileNames[i].length() - 4);
+            String compactDate = nameNoExt.substring(nameNoExt.length() - 8);
+            String isoDate = compactDate.substring(0, 4) + "-" + 
+                             compactDate.substring(4, 6) + "-" + 
+                             compactDate.substring(6); 
+            makeCRWNcml34(isoDate, 3, isoDate, varName);
+        }
+    }
+
+    /**
+     * Convert Isaac's North Pacific High .csv into .nc (and clean up).
+     */
+    public static void makeIsaacNPH() throws Throwable {
+        Table table = new Table();
+        table.readASCII("/u00/data/points/isaac/NPH_IDS_Feb2014.csv");
+        //Year,Month,Lon Center,Lat Center,Area,Max SLP
+        Test.ensureEqual(table.getColumnNamesCSVString(), 
+            "Year,Month,Lon Center,Lat Center,Area,Max SLP", "");
+
+        table.setColumnName(0, "year");
+        table.columnAttributes(0).set("long_name", "Year");
+
+        table.setColumnName(1, "month");
+        table.columnAttributes(1).set("long_name", "Month (1 - 12)");
+
+        table.setColumnName(2, "longitude");
+        table.columnAttributes(2).set("units", "degrees_east");
+        table.columnAttributes(2).set("long_name", "Longitude of the Center of the NPH");
+
+        table.setColumnName(3, "latitude");
+        table.columnAttributes(3).set("units", "degrees_north");
+        table.columnAttributes(3).set("long_name", "Latitude of the Center of the NPH");
+
+        table.setColumnName(4, "area");
+        table.columnAttributes(4).set("long_name", "Areal Extent of the 1020 hPa Contour");
+        table.columnAttributes(4).set("units", "km2");
+
+        table.setColumnName(5, "maxSLP");
+        table.columnAttributes(5).set("long_name", "Maximum Sea Level Pressure");
+        table.columnAttributes(5).set("units", "hPa");
+
+        //make seconds since 1970-01-01  
+        PrimitiveArray year = table.getColumn(0);
+        PrimitiveArray mon  = table.getColumn(1);
+        DoubleArray time = new DoubleArray();
+        int nRows = table.nRows();
+        for (int i = 0; i < nRows; i++) {
+            GregorianCalendar gc = Calendar2.newGCalendarZulu(year.getInt(i), mon.getInt(i), 16);  //centered
+            time.add(Calendar2.gcToEpochSeconds(gc));
+        }
+        table.addColumn(0, "time", time, new Attributes());
+        table.setColumnName(0, "time");
+        table.columnAttributes(0).set("long_name", "Centered Time");
+        table.columnAttributes(0).set("units", Calendar2.SECONDS_SINCE_1970);
+
+        String2.log(table.toCSVString(3));
+
+        table.saveAsFlatNc("/u00/data/points/isaac/NPH_IDS.nc", "time", false);  //convertToFakeMV=false
+    }
+
+    /**
+     * Convert Isaac's PCUI .csv into .nc (and clean up).
+     * I removed 2014 row by hand: 2014,-9999,-9999,-9999,-9999,-9999,-9999
+     */
+    public static void makeIsaacPCUI() throws Throwable {
+        Table table = new Table();
+        table.readASCII("/u00/data/points/isaac/PCUI_IDS_Feb2014-1.csv");
+        //Year,Month,Lon Center,Lat Center,Area,Max SLP
+        Test.ensureEqual(table.getColumnNamesCSVString(), 
+            "Year,33N,36N,39N,42N,45N,48N", "");
+        String pcui = "PCUI at ";
+
+
+        table.setColumnName(0, "time");
+        table.columnAttributes(0).set("long_name", "Centered Time");
+        table.columnAttributes(0).set("units", Calendar2.SECONDS_SINCE_1970);
+
+        table.setColumnName(1, "pcui33N");
+        table.columnAttributes(1).set("long_name", pcui + "33N");
+        table.columnAttributes(1).set("units", "m^3 s^-1 100m^-1");
+
+        table.setColumnName(2, "pcui36N");
+        table.columnAttributes(2).set("long_name", pcui + "36N");
+        table.columnAttributes(2).set("units", "m^3 s^-1 100m^-1");
+
+        table.setColumnName(3, "pcui39N");
+        table.columnAttributes(3).set("long_name", pcui + "39N");
+        table.columnAttributes(3).set("units", "m^3 s^-1 100m^-1");
+
+        table.setColumnName(4, "pcui42N");
+        table.columnAttributes(4).set("long_name", pcui + "42N");
+        table.columnAttributes(4).set("units", "m^3 s^-1 100m^-1");
+
+        table.setColumnName(5, "pcui45N");
+        table.columnAttributes(5).set("long_name", pcui + "45N");
+        table.columnAttributes(5).set("units", "m^3 s^-1 100m^-1");
+
+        table.setColumnName(6, "pcui48N");
+        table.columnAttributes(6).set("long_name", pcui + "48N");
+        table.columnAttributes(6).set("units", "m^3 s^-1 100m^-1");
+
+        for (int col = 1; col < 7; col++)
+            table.setColumn(col, new FloatArray(table.getColumn(col)));
+
+        //make seconds since 1970-01-01  
+        PrimitiveArray year = table.getColumn(0);
+        DoubleArray time = new DoubleArray();
+        int nRows = table.nRows();
+        for (int i = 0; i < nRows; i++) {
+            GregorianCalendar gc = Calendar2.newGCalendarZulu(year.getInt(i), 7, 1); //centered
+            time.add(Calendar2.gcToEpochSeconds(gc));
+        }
+        table.setColumn(0, time);
+        String2.log(table.toCSVString(3));
+
+        table.saveAsFlatNc("/u00/data/points/isaac/PCUI_IDS.nc", "time", false);  //convertToFakeMV=false
+    }
+
+    /**
+     * This gets a list and a count of varNames and data types in a group of files.
+     */
+    public static void getTabularFileVarNamesAndTypes(String dir, String nameRegex) 
+          throws Throwable {
+        String fileNames[] = (new File(dir)).list(); 
+        int nMatching = 0;
+        Table table = new Table();
+        Tally tally = new Tally();
+        for (int f = 0; f < fileNames.length; f++) {
+            String fileName = fileNames[f];
+
+            if (fileName != null && fileName.matches(nameRegex)) {
+                table.clear();
+                table.readNDNc(dir + fileName, null, null, 0, 0, true);
+                int nCols = table.nColumns();
+                PrimitiveArray pa = table.globalAttributes().get("wmo_platform_code");
+                tally.add("wmo_platform_code",
+                    pa == null? "null" : pa.elementClassString());
+
+                for (int c = 0; c < nCols; c++)
+                    tally.add(table.getColumnName(c), 
+                        table.getColumn(c).elementClassString());
+            }
+        }
+        String2.log("\n*** Projects.lookAtFiles finished successfully. nMatchingFiles=" + nMatching + "\n" +
+            dir + ", " + nameRegex + "\n" +
+            tally);
+    }
+
+    /** Make VH 1day .ncml files. */
+    public static void makeVH1dayNcmlFiles(int startYear, int endYear) throws Throwable {
+        String varDirNames[] = new String[]{
+            "chla",       "k490",        "r671",       "par",    "pic",    "poc"};
+        String jplNames[]    = new String[]{
+            "CHL_chlor_a","KD490_Kd_490","RRS_Rrs_671","PAR_par","PIC_pic","POC_poc"};
+
+        for (int year = startYear; year <= endYear; year++) {
+            int nDays = year % 4 == 0? 366 : 365;
+            for (int jDate = 1; jDate <= nDays; jDate++) {
+                String yj = year + String2.zeroPad("" + jDate, 3);
+                int daysSince = Math2.roundToInt(
+                    Calendar2.epochSecondsToUnitsSince(0, Calendar2.SECONDS_PER_DAY,
+                        Calendar2.newGCalendarZulu(year, jDate).getTimeInMillis()/1000));
+                String2.log(yj + " " + daysSince);      
+                for (int var = 0; var < varDirNames.length; var++) {
+                    FileWriter w = new FileWriter("/content/scripts/VHncml/" +
+                        varDirNames[var] + "/ncml1day/V" + yj + ".ncml");
+                    w.write(
+/* C:/content/scripts/VHncml/chla/ncml1day/V2014365.ncml is
+<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+   <variable name='time' type='int' shape='time' />
+   <aggregation dimName='time' type='joinNew'>
+     <variableAgg name='l3m_data'/>
+     <netcdf location='V2014365.L3m_DAY_NPP_CHL_chlor_a_4km' coordValue='16435'/>
+   </aggregation>
+ </netcdf> */
+"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"  <variable name='time' type='int' shape='time' />\n" +
+"  <aggregation dimName='time' type='joinNew'>\n" +
+"    <variableAgg name='l3m_data'/>\n" +
+"    <netcdf location='V" + yj + ".L3m_DAY_NPP_" + jplNames[var] + "_4km' " +
+            "coordValue='" + daysSince + "'/>\n" +
+"  </aggregation>\n" +
+"</netcdf>\n");
+                    w.close();
+                }
+            }
+        }
+    }
+
+    /** Make VH 8day .ncml files. 
+     * coordValue is firstDay. First 3 of 2012 are 15340, 15348, 15356. 
+     * Every year, start again Jan 1-8, 9-16, ...
+     * End of year, 
+     */
+    public static void makeVH8dayNcmlFiles(int startYear, int endYear) throws Throwable {
+        String varDirNames[] = new String[]{
+            "chla",       "k490",        "r671",       "par",    "pic",    "poc"};
+        String jplNames[]    = new String[]{
+            "CHL_chlor_a","KD490_Kd_490","RRS_Rrs_671","PAR_par","PIC_pic","POC_poc"};
+
+        for (int year = startYear; year <= endYear; year++) {
+            int nDays = year % 4 == 0? 366 : 365;
+            for (int day1 = 1; day1 <= nDays; day1 += 8) {
+                GregorianCalendar firstDay = Calendar2.newGCalendarZulu(year, day1);
+
+                GregorianCalendar lastDay  = Calendar2.newGCalendarZulu(year, 
+                    Math.min(nDays, day1+7));
+                String yj1 = Calendar2.formatAsYYYYDDD(firstDay);
+                String yj2 = Calendar2.formatAsYYYYDDD(lastDay);
+                int daysSince = Math2.roundToInt(
+                    Calendar2.epochSecondsToUnitsSince(0, Calendar2.SECONDS_PER_DAY,
+                        firstDay.getTimeInMillis()/1000));
+                if (day1+7 > nDays)
+                    daysSince--; //imperfect
+                String2.log(yj1 + " " + yj2 + " " + daysSince);
+                for (int var = 0; var < varDirNames.length; var++) {
+                    FileWriter w = new FileWriter("/content/scripts/VHncml/" +
+                        varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml");
+                    w.write(
+/* C:/content/scripts/VHncml/chla/ncml8day/V20120012012008.ncml is
+ <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+   <variable name='time' type='int' shape='time' />
+   <aggregation dimName='time' type='joinNew'>
+     <variableAgg name='l3m_data'/>
+     <netcdf location='V20120012012008.L3m_8D_NPP_CHL_chlor_a_4km' coordValue='15340'/>
+   </aggregation>
+ </netcdf> */
+"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"  <variable name='time' type='int' shape='time' />\n" +
+"  <aggregation dimName='time' type='joinNew'>\n" +
+"    <variableAgg name='l3m_data'/>\n" +
+"    <netcdf location='V" + yj1 + yj2 + ".L3m_8D_NPP_" + jplNames[var] + "_4km' " +
+            "coordValue='" + daysSince + "'/>\n" +
+"  </aggregation>\n" +
+"</netcdf>\n");
+                    w.close();
+                }
+            }
+        }
+    }
+
+    /** Make VH mday .ncml files. 
+     * coordValue is firstDay of the month. First 3 of 2012 are 15340, 15371, 15400. 
+     */
+    public static void makeVHmdayNcmlFiles(int startYear, int endYear) throws Throwable {
+        String varDirNames[] = new String[]{
+            "chla",       "k490",        "r671",       "par",    "pic",    "poc"};
+        String jplNames[]    = new String[]{
+            "CHL_chlor_a","KD490_Kd_490","RRS_Rrs_671","PAR_par","PIC_pic","POC_poc"};
+
+        for (int year = startYear; year <= endYear; year++) {
+            for (int month = 1; month <= 12; month++) {
+                GregorianCalendar firstDay = Calendar2.newGCalendarZulu(year, month, 1);
+                GregorianCalendar lastDay  = Calendar2.newGCalendarZulu(year, month+1, 0);
+                String yj1 = Calendar2.formatAsYYYYDDD(firstDay);
+                String yj2 = Calendar2.formatAsYYYYDDD(lastDay);
+                int daysSince = Math2.roundToInt(
+                    Calendar2.epochSecondsToUnitsSince(0, Calendar2.SECONDS_PER_DAY,
+                        firstDay.getTimeInMillis()/1000));
+                String2.log(yj1 + " " + yj2 + " " + daysSince);
+                for (int var = 0; var < varDirNames.length; var++) {
+                    FileWriter w = new FileWriter("/content/scripts/VHncml/" +
+                        varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml");
+                    w.write(
+/* C:/content/scripts/VHncml/chla/ncmlmon/V20120012012031.ncml is
+ <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+   <variable name='time' type='int' shape='time' />
+   <aggregation dimName='time' type='joinNew'>
+     <variableAgg name='l3m_data'/>
+     <netcdf location='V20120012012031.L3m_MO_NPP_CHL_chlor_a_4km' coordValue='15340'/>
+   </aggregation>
+ </netcdf>
+ */
+"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"  <variable name='time' type='int' shape='time' />\n" +
+"  <aggregation dimName='time' type='joinNew'>\n" +
+"    <variableAgg name='l3m_data'/>\n" +
+"    <netcdf location='V" + yj1 + yj2 + ".L3m_MO_NPP_" + jplNames[var] + "_4km' " +
+            "coordValue='" + daysSince + "'/>\n" +
+"  </aggregation>\n" +
+"</netcdf>\n");
+                    w.close();
+                }
+            }
+        }
+    }
 
 }
 

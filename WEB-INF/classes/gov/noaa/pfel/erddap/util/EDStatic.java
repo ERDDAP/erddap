@@ -9,7 +9,6 @@ import com.cohort.array.Attributes;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
 import com.cohort.util.File2;
-import com.cohort.util.Image2;
 import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.ResourceBundle2;
@@ -38,7 +37,6 @@ import gov.noaa.pfel.erddap.*;
 import gov.noaa.pfel.erddap.dataset.*;
 import gov.noaa.pfel.erddap.variable.*;
 
-import java.awt.Image;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -126,8 +124,11 @@ public class EDStatic {
      * <br>1.42 released on 2012-11-26
      * <br>1.44 released on 2013-05-30
      * <br>1.46 released on 2013-07-09
+     * <br>It's okay if .001 used for minor releases.
+     *    Some code deals with it as a double, but never d.dd.
+     * <br>1.48 released on 2014-09-04
      */   
-    public static String erddapVersion = "1.46";  
+    public static String erddapVersion = "1.48";  
 
     /** 
      * This is almost always false.  
@@ -377,8 +378,9 @@ public static boolean developmentMode = false;
         authentication,  //will be one of "", "custom", "openid"
         datasetsRegex,
         drawLandMask,
-        emailEverythingTo[], 
-        emailDailyReportTo[],
+        emailEverythingToCsv, 
+        emailDailyReportToCsv,
+        emailSubscriptionsFrom,
         flagKeyKey,
         fontFamily,
         googleEarthLogoFile,
@@ -386,7 +388,7 @@ public static boolean developmentMode = false;
         legendTitle1, 
         legendTitle2, 
         lowResLogoImageFile,
-        passwordEncoding, //will be one of "plaintext", "MD5", or "UEPMD5"
+        passwordEncoding, //will be one of "plaintext", "MD5", or "UEPMD5"  
         questionMarkImageFile,
         searchEngine,
         warName;
@@ -405,7 +407,7 @@ public static boolean developmentMode = false;
     public final static String loggedInAsSuperuser = "\u0000superuser\uffff"; //final so not changeable
     private static String startBodyHtml,  endBodyHtml, startHeadHtml; //see xxx() methods
 
-    public static boolean displayDiagnosticInfo, listPrivateDatasets, 
+    public static boolean listPrivateDatasets, 
         reallyVerbose,
         postShortDescriptionActive, //if true, PostIndexHtml is on home page and /post/index.html redirects there        
         subscriptionSystemActive,  convertersActive, slideSorterActive,
@@ -456,6 +458,57 @@ public static boolean developmentMode = false;
     /** These values are loaded from the [contentDirectory]messages.xml file (if present)
         or .../classes/gov/noaapfel/erddap/util/messages.xml. */
     public static String 
+        admKeywords,
+        admSubsetVariables,
+        admSummary,
+        admTitle,
+        advl_datasetID,
+        advc_accessible,
+        advl_accessible,
+        advl_institution,
+        advc_dataStructure,
+        advl_dataStructure,
+        advr_dataStructure,
+        advl_cdm_data_type,
+        advr_cdm_data_type,
+        advl_class,
+        advr_class,
+        advl_title,
+        advl_minLongitude,
+        advl_maxLongitude,
+        advl_longitudeSpacing,
+        advl_minLatitude,
+        advl_maxLatitude,
+        advl_latitudeSpacing,
+        advl_minAltitude,
+        advl_maxAltitude,
+        advl_minTime,
+        advc_maxTime,
+        advl_maxTime,
+        advl_timeSpacing,
+        advc_griddap,
+        advl_griddap,
+        advl_subset,
+        advc_tabledap,
+        advl_tabledap,
+        advl_MakeAGraph,
+        advc_sos,
+        advl_sos,
+        advl_wcs,
+        advl_wms,
+        advc_fgdc,
+        advl_fgdc,
+        advc_iso19115,
+        advl_iso19115,
+        advc_metadata,
+        advl_metadata,
+        advl_sourceUrl,
+        advl_infoUrl,
+        advl_rss,
+        advc_email,
+        advl_email,
+        advl_summary,
+
         advancedSearch,
         advancedSearchResults,
         advancedSearchDirections,
@@ -478,6 +531,7 @@ public static boolean developmentMode = false;
         advancedSearchWithCriteria,
         advancedSearchFewerCriteria,
         advancedSearchNoCriteria,
+        blacklistMsg,
         categoryTitleHtml,
         category1Html,
         category2Html,
@@ -490,6 +544,7 @@ public static boolean developmentMode = false;
         clickAccessHtml,
         clickAccess,
         clickBackgroundInfo,
+        clickERDDAP,
         clickInfo,
         clickToSubmit,
         convertFipsCounty,        
@@ -522,6 +577,7 @@ public static boolean developmentMode = false;
         dafTableHtml,
         dasTitle,
         dataAccessNotAllowed,
+        databaseUnableToConnect,
         disabled,
         distinctValuesHtml,
         doWithGraphs,
@@ -641,9 +697,13 @@ public static boolean developmentMode = false;
         errorNotFoundIn,
         errorOdvLLTGrid,
         errorOdvLLTTable,
+        errorOnWebPage,
+        externalLink,
+        externalWebSite,
         fileHelp_asc,
         fileHelp_csv,
         fileHelp_csvp,
+        fileHelp_csv0,
         fileHelp_das,
         fileHelp_dds,
         fileHelp_dods,
@@ -666,11 +726,13 @@ public static boolean developmentMode = false;
         fileHelp_ncCFHeader,
         fileHelp_ncCFMA,
         fileHelp_ncCFMAHeader,
+        fileHelp_ncml,
         fileHelpGrid_odvTxt,
         fileHelpTable_odvTxt,
         fileHelp_subset,
         fileHelp_tsv,
         fileHelp_tsvp,
+        fileHelp_tsv0,
         fileHelp_xhtml,
         fileHelp_geotif,  //graphical
         fileHelpGrid_kml,
@@ -864,6 +926,8 @@ public static boolean developmentMode = false;
         noXxxNo2NonString,
         noXxxNoStation,
         noXxxNoStationID,
+        noXxxNoSubsetVariables,
+        noXxxNoOLLSubsetVariables,
         noXxxNoMinMax,
         noXxxItsGridded,
         noXxxItsTabular,
@@ -890,6 +954,7 @@ public static boolean developmentMode = false;
         queryError1Value,
         queryError1Var,
         queryError2Var,
+        queryErrorActualRange,
         queryErrorAdjusted,
         queryErrorAscending,
         queryErrorConstraintNaN,
@@ -1070,8 +1135,9 @@ public static boolean developmentMode = false;
 
 
     /** This static block reads this class's static String values from
-     * contentDirectory, which must contain setup.xml and datasets.xml (and may contain messages.xml).
-     * It may be a defined environment variable (erddapContent)
+     * contentDirectory, which must contain setup.xml and datasets.xml 
+     * (and may contain messages.xml).
+     * It may be a defined environment variable ("erddapContentDirectory")
      * or a subdir of <tomcat> (e.g., usr/local/tomcat/content/erddap/)
      *   (more specifically, a sibling of 'tomcat'/webapps).
      *
@@ -1079,20 +1145,26 @@ public static boolean developmentMode = false;
      */
     static {
 
+    String erdStartup = "ERD Low Level Startup";
     String errorInMethod = "";
     try {
 
-        //*** Set up logging systems.
         //route calls to a logger to com.cohort.util.String2Log
         String2.setupCommonsLogging(-1);
 
+        String eol = String2.lineSeparator;
+        String2.log(eol + "////**** " + erdStartup + eol +
+            "localTime=" + Calendar2.getCurrentISODateTimeStringLocal() + eol +
+            String2.standardHelpAboutMessage());
+
         //**** find contentDirectory
+        String ecd = "erddapContentDirectory"; //the name of the environment variable
         errorInMethod = 
-            "Couldn't find 'content' directory (<tomcat>/content/erddap/) " +
-            "because 'erddapContent' environment variable not found " +
+            "Couldn't find 'content' directory (<tomcat>/content/erddap/ ?) " +
+            "because '" + ecd + "' environment variable not found " +
             "and couldn't find '/webapps/' in classPath=" + String2.getClassPath() +
             " (and 'content/erddap' should be a sibling of <tomcat>/webapps).";
-        contentDirectory = System.getProperty("erddapContentDirectory");        
+        contentDirectory = System.getProperty(ecd);        
         if (contentDirectory == null) {
             //Or, it must be sibling of webapps
             //e.g., c:/programs/tomcat/webapps/erddap/WEB-INF/classes/[these classes]
@@ -1111,7 +1183,7 @@ public static boolean developmentMode = false;
         //read static Strings from setup.xml 
         String setupFileName = contentDirectory + 
             "setup" + (developmentMode? "2" : "") + ".xml";
-        errorInMethod = "EDStatic error while reading " + setupFileName;
+        errorInMethod = "ERROR while reading " + setupFileName;
         ResourceBundle2 setup = ResourceBundle2.fromXml(XML.parseXml(setupFileName, false));
 
         //logLevel may be: warning, info(default), all
@@ -1167,19 +1239,21 @@ public static boolean developmentMode = false;
 
 
         //email  (do early on so email can be sent if trouble later in this method)
-        emailSmtpHost      = setup.getString("emailSmtpHost",  null);
-        emailSmtpPort      = setup.getInt(   "emailSmtpPort",  25);
-        emailUserName      = setup.getString("emailUserName",  null);
-        emailPassword      = setup.getString("emailPassword",  null);
-        emailProperties    = setup.getString("emailProperties",  null);
-        emailFromAddress   = setup.getString("emailFromAddress", null);
-        String ts          = setup.getString("emailEverythingTo", null); 
-        emailEverythingTo  = (ts == null || ts.length() == 0)? null : String2.split(ts, ',');
-        ts                 = setup.getString("emailDailyReportTo", null);
-        emailDailyReportTo = (ts == null || ts.length() == 0)? null : String2.split(ts, ',');
+        emailSmtpHost          = setup.getString("emailSmtpHost",  null);
+        emailSmtpPort          = setup.getInt(   "emailSmtpPort",  25);
+        emailUserName          = setup.getString("emailUserName",  null);
+        emailPassword          = setup.getString("emailPassword",  null);
+        emailProperties        = setup.getString("emailProperties",  null);
+        emailFromAddress       = setup.getString("emailFromAddress", null);
+        emailEverythingToCsv   = setup.getString("emailEverythingTo", "");  //won't be null
+        emailDailyReportToCsv  = setup.getString("emailDailyReportTo", ""); //won't be null
+        String tsar[] = String2.split(emailEverythingToCsv, ',');
+        emailSubscriptionsFrom = tsar.length > 0? tsar[0] : ""; //won't be null
 
         //test of email
         //Test.error("This is a test of emailing an error in Erddap constructor.");
+
+        //2014-09-03 deleting all cache and public files was moved from here to ERDDAP constructor
 
         //*** set up directories  //all with slashes at end
         //before 2011-12-30, was fullDatasetInfoDirectory datasetInfo/; see conversion below
@@ -1192,9 +1266,7 @@ public static boolean developmentMode = false;
 
         Test.ensureTrue(File2.isDirectory(fullPaletteDirectory),  
             "fullPaletteDirectory (" + fullPaletteDirectory + ") doesn't exist.");
-        Test.ensureTrue(File2.isDirectory(fullPublicDirectory),  
-            "fullPublicDirectory (" + fullPublicDirectory + ") doesn't exist.");
-        errorInMethod = "EDStatic error while creating directories.";
+        errorInMethod = "ERROR while creating directories.";
         File2.makeDirectory(fullPublicDirectory);  //make it, because Git doesn't track empty dirs
         File2.makeDirectory(fullDatasetDirectory);
         File2.makeDirectory(fullCacheDirectory);
@@ -1203,79 +1275,20 @@ public static boolean developmentMode = false;
         File2.makeDirectory(fullCopyDirectory);
         File2.makeDirectory(fullLuceneDirectory);
 
-        //set up log (after fullLogsDirectory is known)
-        errorInMethod = "EDStatic error while setting up log files.";
-        String timeStamp = String2.replaceAll(Calendar2.getCurrentISODateTimeStringLocal(), ":", ".");
-        try {
-            //rename log.txt to preserve it so it can be analyzed if there was trouble before restart
-            if (File2.isFile(bigParentDirectory + "log.txt")) {
-                //pre ERDDAP version 1.15
-                File2.copy(  bigParentDirectory + "log.txt", 
-                              fullLogsDirectory + "logArchivedAt" + timeStamp + ".txt");
-                File2.delete(bigParentDirectory + "log.txt");
-            } 
-            if (File2.isFile(fullLogsDirectory + "log.txt"))
-                File2.rename(fullLogsDirectory + "log.txt", 
-                             fullLogsDirectory + "logArchivedAt" + timeStamp + ".txt");
-        } catch (Throwable t) {
-            String2.log("WARNING: " + MustBe.throwableToString(t));
-        }
-        try {
-            //rename log.txt.previous to preserve it so it can be analyzed if there was trouble before restart
-            if (File2.isFile(bigParentDirectory + "log.txt.previous")) {
-                //pre ERDDAP version 1.15
-                File2.copy(  bigParentDirectory + "log.txt.previous", 
-                              fullLogsDirectory + "logPreviousArchivedAt" + timeStamp + ".txt");
-                File2.delete(bigParentDirectory + "log.txt.previous");
-            }
-            if (File2.isFile(fullLogsDirectory + "log.txt.previous"))
-                File2.rename(fullLogsDirectory + "log.txt.previous", 
-                             fullLogsDirectory + "logPreviousArchivedAt" + timeStamp + ".txt");
-        } catch (Throwable t) {
-            String2.log("WARNING: " + MustBe.throwableToString(t));
-        }
-        //open String2 log system
-        String2.setupLog(false, false, 
-            fullLogsDirectory + "log.txt",
-            true, true, 20000000);
-        try {
-            //copy (not rename!) subscriptionsV1.txt to preserve it 
-            if (File2.isFile(bigParentDirectory + "subscriptionsV1.txt"))
-                File2.copy(  bigParentDirectory + "subscriptionsV1.txt", 
-                             bigParentDirectory + "subscriptionsV1ArchivedAt" + timeStamp + ".txt");
-        } catch (Throwable t) {
-            String2.log("WARNING: " + MustBe.throwableToString(t));
-        }
-
-        //after log is setup
-        Math2.gc(200); 
-        String2.log("\n////**** ERDDAP/EDStatic initialization. localTime=" + 
-            Calendar2.getCurrentISODateTimeStringLocal() + "\n" +
-            String2.standardHelpAboutMessage() + "\n" +
-            Math2.memoryString() + " " + Math2.xmxMemoryString() + "\n" +
-            "logLevel=" + logLevel + ": verbose=" + verbose + " reallyVerbose=" + reallyVerbose + "\n");
-
         String2.log(
-            "bigParentDirectory=" + bigParentDirectory +
-            "\ncontextDirectory=" + contextDirectory +
-            "\nfullPaletteDirectory=" + fullPaletteDirectory +
-            "\nfullPublicDirectory=" + fullPublicDirectory +
-            "\nfullCacheDirectory=" + fullCacheDirectory +
-            "\nfullResetFlagDirectory=" + fullResetFlagDirectory);
+            "logLevel=" + logLevel + ": verbose=" + verbose + " reallyVerbose=" + reallyVerbose + eol +
+            "bigParentDirectory=" + bigParentDirectory + eol +
+            "contextDirectory=" + contextDirectory);
 
         //are bufferedImages hardware accelerated?
         String2.log(SgtUtil.isBufferedImageAccelerated());
-
-        //get rid of old "private" directory (as of 1.14, ERDDAP uses fullCacheDirectory instead)
-        //remove this code 2014?
-        File2.deleteAllFiles(bigParentDirectory + "private", true, true); //empty it
-        File2.delete(        bigParentDirectory + "private"); //delete it
 
         //2011-12-30 convert /datasetInfo/[datasetID]/ to 
         //                   /dataset/[last2char]/[datasetID]/
         //to prepare for huge number of datasets
         String oldBaseDir = bigParentDirectory + "datasetInfo/";   //the old name
         if (File2.isDirectory(oldBaseDir)) {
+            errorInMethod = "ERROR while converting from oldBaseDir=" + oldBaseDir;
             try { 
                 String2.log("[[converting datasetInfo/ to dataset/");
                 String oldBaseDirList[] = (new File(oldBaseDir)).list();
@@ -1313,19 +1326,13 @@ public static boolean developmentMode = false;
             }
         }
 
-
         //deal with cache
         //how many millis should files be left in the cache (if untouched)?
         cacheMillis = setup.getInt("cacheMinutes", 60) * 60000L; // millis/min
-        displayDiagnosticInfo = setup.getBoolean("displayDiagnosticInfo", false);
-
-        //on start up, always delete all files from fullPublicDirectory and fullCacheDirectory
-        File2.deleteAllFiles(fullPublicDirectory,      true, false);  //recursive, deleteEmptySubdirectories 
-        File2.deleteAllFiles(fullCacheDirectory,       true, true);   
 
         //make some subdirectories of fullCacheDirectory
         //'_' distinguishes from dataset cache dirs
-        errorInMethod = "EDStatic error while creating directories.";
+        errorInMethod = "ERROR while creating directories.";
         fullCptCacheDirectory              = fullCacheDirectory + "_cpt/";   
         fullPlainFileNcCacheDirectory      = fullCacheDirectory + "_plainFileNc/";   
         fullSgtMapTopographyCacheDirectory = fullCacheDirectory + "_SgtMapTopography/";
@@ -1341,14 +1348,10 @@ public static boolean developmentMode = false;
         File2.makeDirectory(fullWmsCacheDirectory + "LakesAndRivers");
         File2.makeDirectory(fullWmsCacheDirectory + "Nations");
         File2.makeDirectory(fullWmsCacheDirectory + "States");
-
-        //2009-11-01 delete old dir name for topography; but someday remove this (only needed once)
-        File2.deleteAllFiles(fullCacheDirectory + "_SgtMapBathymetry", false, true);
-        File2.delete(        fullCacheDirectory + "_SgtMapBathymetry"); 
-        
+       
 
         //get other info from setup.xml
-        errorInMethod = "EDStatic error while reading " + setupFileName;
+        errorInMethod = "ERROR while reading " + setupFileName;
         baseUrl                    = setup.getNotNothingString("baseUrl",                    "");
         baseHttpsUrl               = setup.getString(          "baseHttpsUrl",               "(not specified)");
         categoryAttributes         = String2.split(setup.getNotNothingString("categoryAttributes", ""), ',');
@@ -1411,7 +1414,8 @@ public static boolean developmentMode = false;
         iso19115Active             = setup.getBoolean(         "iso19115Active",             true); 
 //until it is finished, it is always inactive
 geoServicesRestActive      = false; //setup.getBoolean(         "geoServicesRestActive",      false); 
-        sosActive                  = setup.getBoolean(         "sosActive",                  false); 
+//until it is finished, it is always inactive
+        sosActive          = false; //setup.getBoolean(         "sosActive",                  false); 
         if (sosActive) {
             sosFeatureOfInterest   = setup.getNotNothingString("sosFeatureOfInterest",       "");
             sosStandardNamePrefix  = setup.getNotNothingString("sosStandardNamePrefix",      "");
@@ -1458,11 +1462,11 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         authentication             = setup.getString(          "authentication",             "");
         datasetsRegex              = setup.getString(          "datasetsRegex",              ".*");
         drawLandMask               = setup.getString(          "drawLandMask",               null);
-        if (drawLandMask == null) 
-            drawLandMask           = setup.getString(          "drawLand",                   "over"); //legacy
+        if (drawLandMask == null) //2014-08-28 changed defaults below to "under". It will be in v1.48
+            drawLandMask           = setup.getString(          "drawLand",                   "under"); 
         if (!drawLandMask.equals("under") && 
             !drawLandMask.equals("over"))
-             drawLandMask = "over"; //default
+             drawLandMask = "under"; //default
         endBodyHtml                = setup.getNotNothingString("endBodyHtml",                "");
         endBodyHtml                = String2.replaceAll(endBodyHtml, "&erddapVersion;", erddapVersion);
         flagKeyKey                 = setup.getString(          "flagKeyKey",                 "");
@@ -1483,21 +1487,6 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         quickRestart               = setup.getBoolean(         "quickRestart",               true);
         passwordEncoding           = setup.getString(          "passwordEncoding",           "UEPMD5");
         searchEngine               = setup.getString(          "searchEngine",               "original");
-        if (searchEngine.equals("lucene")) {
-            useLuceneSearchEngine = true;
-            //ERDDAP consciously doesn't use any stopWords
-            //1) this matches the behaviour of the original searchEngine
-            //2) this is what users expect, e.g., when searching for a phrase
-            //3) the content here isn't prose, so the stop words aren't nearly as common
-            HashSet stopWords = new HashSet();
-            luceneAnalyzer = new StandardAnalyzer(luceneVersion, stopWords);
-            //it is important that the queryParser use the same analyzer as the indexWriter
-            luceneQueryParser = new QueryParser(luceneVersion, luceneDefaultField, luceneAnalyzer);
-        } else {
-            Test.ensureEqual(searchEngine, "original", 
-                "<searchEngine> must be \"original\" (the default) or \"lucene\".");
-            useOriginalSearchEngine = true;
-        }
         startBodyHtml              = setup.getNotNothingString("startBodyHtml",              "");
         startHeadHtml              = setup.getNotNothingString("startHeadHtml",              "");
         subscriptionSystemActive   = setup.getBoolean(         "subscriptionSystemActive",   true);
@@ -1507,28 +1496,22 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         unusualActivity            = setup.getInt(             "unusualActivity",            unusualActivity);
         variablesMustHaveIoosCategory = setup.getBoolean(      "variablesMustHaveIoosCategory", true);
         warName                    = setup.getNotNothingString("warName",                    "");
- 
-        //copy all <contentDirectory>images/ (and subdirectories) files to imageDir (and subdirectories)
-        errorInMethod = "EDStatic error while copying " + contentDirectory + "images/ .";
-        String imageFiles[] = RegexFilenameFilter.recursiveFullNameList(
-            contentDirectory + "images/", ".+", false);
-        for (int i = 0; i < imageFiles.length; i++) {
-            int tpo = imageFiles[i].indexOf("/images/");
-            if (tpo < 0) tpo = imageFiles[i].indexOf("\\images\\");
-            if (tpo < 0) {
-                String2.log("'/images/' not found in images/ file: " + imageFiles[i]);
-                continue;
-            }
-            String tName = imageFiles[i].substring(tpo + 8);
-            if (verbose) String2.log("  copying images/ file: " + tName);
-            File2.copy(contentDirectory + "images/" + tName,  imageDir + tName);
-        }
 
-        errorInMethod = "EDStatic error while initializing SgtGraph.";
+        //use Lucence?
+        if (searchEngine.equals("lucene")) {
+            useLuceneSearchEngine = true;
+        } else {
+            Test.ensureEqual(searchEngine, "original", 
+                "<searchEngine> must be \"original\" (the default) or \"lucene\".");
+            useOriginalSearchEngine = true;
+        }
+        
+       
+        errorInMethod = "ERROR while initializing SgtGraph.";
         sgtGraph = new SgtGraph(fontFamily);
 
         //ensure authentication setup is okay
-        errorInMethod = "EDStatic error while checking authentication setup.";
+        errorInMethod = "ERROR while checking authentication setup.";
         if (authentication == null)
             authentication = "";
         authentication = authentication.trim().toLowerCase();
@@ -1542,7 +1525,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             throw new RuntimeException("setup.xml error: " + 
                 ": For any <authentication> other than \"\", the baseHttpsUrl=" + baseHttpsUrl + 
                 " must start with \"https://\".");
-        if (!passwordEncoding.equals("plaintext") &&
+        if (!passwordEncoding.equals("plaintext") && 
             !passwordEncoding.equals("MD5") &&
             !passwordEncoding.equals("UEPMD5"))
             throw new RuntimeException("setup.xml error: passwordEncoding=" + passwordEncoding + 
@@ -1560,25 +1543,6 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         //???if logoImgTag is needed, convert to method logoImgTag(loggedInAs)
         //logoImgTag = "      <img src=\"" + imageDirUrl(loggedInAs) + lowResLogoImageFile + "\" " +
         //    "alt=\"logo\" title=\"logo\">\n";
-        if (subscriptionSystemActive) {
-            //make subscriptions
-            errorInMethod = "Error while initializing Subscriptions.";
-            subscriptions = new Subscriptions(
-                bigParentDirectory + "subscriptionsV1.txt", 48, //maxHoursPending, 
-                erddapUrl); //always use non-https url                
-        }
-
-        //ensure images exist and get their sizes
-        errorInMethod = "Error while ensuring images exist.";
-        Image tImage = Image2.getImage(imageDir + lowResLogoImageFile, 10000, false);
-        lowResLogoImageFileWidth   = tImage.getWidth(null);
-        lowResLogoImageFileHeight  = tImage.getHeight(null);
-        tImage = Image2.getImage(imageDir + highResLogoImageFile, 10000, false);
-        highResLogoImageFileWidth  = tImage.getWidth(null);
-        highResLogoImageFileHeight = tImage.getHeight(null);
-        tImage = Image2.getImage(imageDir + googleEarthLogoFile, 10000, false);
-        googleEarthLogoFileWidth   = tImage.getWidth(null);
-        googleEarthLogoFileHeight  = tImage.getHeight(null);
 
 
         //**** messages.xml *************************************************************
@@ -1594,11 +1558,61 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             messagesFileName = String2.getClassPath() + "gov/noaa/pfel/erddap/util/messages.xml";
             String2.log("Using default messages.xml from  " + messagesFileName);
         }
-        errorInMethod = "Error while reading messages.xml.";
+        errorInMethod = "ERROR while reading messages.xml.";
         ResourceBundle2 messages = ResourceBundle2.fromXml(XML.parseXml(messagesFileName, false));
 
 
         //read all the static Strings from messages.xml
+        admKeywords                = messages.getNotNothingString("admKeywords",                "");
+        admSubsetVariables         = messages.getNotNothingString("admSubsetVariables",         "");
+        admSummary                 = messages.getNotNothingString("admSummary",                 "");
+        admTitle                   = messages.getNotNothingString("admTitle",                   "");
+        advl_datasetID             = messages.getNotNothingString("advl_datasetID",             "");
+        advc_accessible            = messages.getNotNothingString("advc_accessible",            "");
+        advl_accessible            = messages.getNotNothingString("advl_accessible",            "");
+        advl_institution           = messages.getNotNothingString("advl_institution",           "");
+        advc_dataStructure         = messages.getNotNothingString("advc_dataStructure",         "");
+        advl_dataStructure         = messages.getNotNothingString("advl_dataStructure",         "");
+        advr_dataStructure         = messages.getNotNothingString("advr_dataStructure",         "");
+        advl_cdm_data_type         = messages.getNotNothingString("advl_cdm_data_type",         "");
+        advr_cdm_data_type         = messages.getNotNothingString("advr_cdm_data_type",         "");
+        advl_class                 = messages.getNotNothingString("advl_class",                 "");
+        advr_class                 = messages.getNotNothingString("advr_class",                 "");
+        advl_title                 = messages.getNotNothingString("advl_title",                 "");
+        advl_minLongitude          = messages.getNotNothingString("advl_minLongitude",          "");
+        advl_maxLongitude          = messages.getNotNothingString("advl_maxLongitude",          "");
+        advl_longitudeSpacing      = messages.getNotNothingString("advl_longitudeSpacing",      "");
+        advl_minLatitude           = messages.getNotNothingString("advl_minLatitude",           "");
+        advl_maxLatitude           = messages.getNotNothingString("advl_maxLatitude",           "");
+        advl_latitudeSpacing       = messages.getNotNothingString("advl_latitudeSpacing",       "");
+        advl_minAltitude           = messages.getNotNothingString("advl_minAltitude",           "");
+        advl_maxAltitude           = messages.getNotNothingString("advl_maxAltitude",           "");
+        advl_minTime               = messages.getNotNothingString("advl_minTime",               "");
+        advc_maxTime               = messages.getNotNothingString("advc_maxTime",               "");
+        advl_maxTime               = messages.getNotNothingString("advl_maxTime",               "");
+        advl_timeSpacing           = messages.getNotNothingString("advl_timeSpacing",           "");
+        advc_griddap               = messages.getNotNothingString("advc_griddap",               "");
+        advl_griddap               = messages.getNotNothingString("advl_griddap",               "");
+        advl_subset                = messages.getNotNothingString("advl_subset",                "");
+        advc_tabledap              = messages.getNotNothingString("advc_tabledap",              "");
+        advl_tabledap              = messages.getNotNothingString("advl_tabledap",              "");
+        advl_MakeAGraph            = messages.getNotNothingString("advl_MakeAGraph",            "");
+        advc_sos                   = messages.getNotNothingString("advc_sos",                   "");
+        advl_sos                   = messages.getNotNothingString("advl_sos",                   "");
+        advl_wcs                   = messages.getNotNothingString("advl_wcs",                   "");
+        advl_wms                   = messages.getNotNothingString("advl_wms",                   "");
+        advc_fgdc                  = messages.getNotNothingString("advc_fgdc",                  "");
+        advl_fgdc                  = messages.getNotNothingString("advl_fgdc",                  "");
+        advc_iso19115              = messages.getNotNothingString("advc_iso19115",              "");
+        advl_iso19115              = messages.getNotNothingString("advl_iso19115",              "");
+        advc_metadata              = messages.getNotNothingString("advc_metadata",              "");
+        advl_metadata              = messages.getNotNothingString("advl_metadata",              "");
+        advl_sourceUrl             = messages.getNotNothingString("advl_sourceUrl",             "");
+        advl_infoUrl               = messages.getNotNothingString("advl_infoUrl",               "");
+        advl_rss                   = messages.getNotNothingString("advl_rss",                   "");
+        advc_email                 = messages.getNotNothingString("advc_email",                 "");
+        advl_email                 = messages.getNotNothingString("advl_email",                 "");
+        advl_summary               = messages.getNotNothingString("advl_summary",               "");
         advancedSearch             = messages.getNotNothingString("advancedSearch",             "");
         advancedSearchResults      = messages.getNotNothingString("advancedSearchResults",      "");
         advancedSearchDirections   = messages.getNotNothingString("advancedSearchDirections",   "");
@@ -1619,8 +1633,9 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         advancedSearchLonTooltip   = messages.getNotNothingString("advancedSearchLonTooltip",   "");
         advancedSearchTimeTooltip  = messages.getNotNothingString("advancedSearchTimeTooltip",  "");
         advancedSearchWithCriteria = messages.getNotNothingString("advancedSearchWithCriteria", "");
-        advancedSearchFewerCriteria = messages.getNotNothingString("advancedSearchFewerCriteria", "");
+        advancedSearchFewerCriteria= messages.getNotNothingString("advancedSearchFewerCriteria","");
         advancedSearchNoCriteria   = messages.getNotNothingString("advancedSearchNoCriteria",   "");
+        blacklistMsg               = messages.getNotNothingString("blacklistMsg",               "");
         PrimitiveArray.ArrayAddN           = messages.getNotNothingString("ArrayAddN",          "");
         PrimitiveArray.ArrayAppendTables   = messages.getNotNothingString("ArrayAppendTables",  "");
         PrimitiveArray.ArrayDiff           = messages.getNotNothingString("ArrayDiff",          "");
@@ -1646,6 +1661,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         clickAccessHtml            = messages.getNotNothingString("clickAccessHtml",            "");
         clickAccess                = messages.getNotNothingString("clickAccess",                "");
         clickBackgroundInfo        = messages.getNotNothingString("clickBackgroundInfo",        "");
+        clickERDDAP                = messages.getNotNothingString("clickERDDAP",                "");
         clickInfo                  = messages.getNotNothingString("clickInfo",                  "");
         clickToSubmit              = messages.getNotNothingString("clickToSubmit",              "");
         convertFipsCounty          = messages.getNotNothingString("convertFipsCounty",          "");
@@ -1678,6 +1694,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         dafTableHtml               = messages.getNotNothingString("dafTableHtml",               "");
         dasTitle                   = messages.getNotNothingString("dasTitle",                   "");
         dataAccessNotAllowed       = messages.getNotNothingString("dataAccessNotAllowed",       "");
+        databaseUnableToConnect    = messages.getNotNothingString("databaseUnableToConnect",    "");
         disabled                   = messages.getNotNothingString("disabled",                   "");
         distinctValuesHtml         = messages.getNotNothingString("distinctValuesHtml",         "");
         doWithGraphs               = messages.getNotNothingString("doWithGraphs",               "");
@@ -1798,9 +1815,13 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         errorNotFoundIn            = messages.getNotNothingString("errorNotFoundIn",            "");
         errorOdvLLTGrid            = messages.getNotNothingString("errorOdvLLTGrid",            "");
         errorOdvLLTTable           = messages.getNotNothingString("errorOdvLLTTable",           "");
+        errorOnWebPage             = messages.getNotNothingString("errorOnWebPage",             "");
+        externalLink         = " " + messages.getNotNothingString("externalLink",               "");
+        externalWebSite            = messages.getNotNothingString("externalWebSite",            "");
         fileHelp_asc               = messages.getNotNothingString("fileHelp_asc",               "");
         fileHelp_csv               = messages.getNotNothingString("fileHelp_csv",               "");
         fileHelp_csvp              = messages.getNotNothingString("fileHelp_csvp",              "");
+        fileHelp_csv0              = messages.getNotNothingString("fileHelp_csv0",              "");
         fileHelp_das               = messages.getNotNothingString("fileHelp_das",               "");
         fileHelp_dds               = messages.getNotNothingString("fileHelp_dds",               "");
         fileHelp_dods              = messages.getNotNothingString("fileHelp_dods",              "");
@@ -1823,11 +1844,13 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         fileHelp_ncCFHeader        = messages.getNotNothingString("fileHelp_ncCFHeader",        "");
         fileHelp_ncCFMA            = messages.getNotNothingString("fileHelp_ncCFMA",            "");
         fileHelp_ncCFMAHeader      = messages.getNotNothingString("fileHelp_ncCFMAHeader",      "");
+        fileHelp_ncml              = messages.getNotNothingString("fileHelp_ncml",              "");
         fileHelpGrid_odvTxt        = messages.getNotNothingString("fileHelpGrid_odvTxt",        "");
         fileHelpTable_odvTxt       = messages.getNotNothingString("fileHelpTable_odvTxt",       "");
         fileHelp_subset            = messages.getNotNothingString("fileHelp_subset",            "");
         fileHelp_tsv               = messages.getNotNothingString("fileHelp_tsv",               "");
         fileHelp_tsvp              = messages.getNotNothingString("fileHelp_tsvp",              "");
+        fileHelp_tsv0              = messages.getNotNothingString("fileHelp_tsv0",              "");
         fileHelp_xhtml             = messages.getNotNothingString("fileHelp_xhtml",             "");
         fileHelp_geotif            = messages.getNotNothingString("fileHelp_geotif",            "");
         fileHelpGrid_kml           = messages.getNotNothingString("fileHelpGrid_kml",           "");
@@ -2033,6 +2056,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         noXxxNo2NonString          = messages.getNotNothingString("noXxxNo2NonString",          "");
         noXxxNoStation             = messages.getNotNothingString("noXxxNoStation",             "");
         noXxxNoStationID           = messages.getNotNothingString("noXxxNoStationID",           "");
+        noXxxNoSubsetVariables     = messages.getNotNothingString("noXxxNoSubsetVariables",     "");
+        noXxxNoOLLSubsetVariables  = messages.getNotNothingString("noXxxNoOLLSubsetVariables",  "");
         noXxxNoMinMax              = messages.getNotNothingString("noXxxNoMinMax",              "");
         noXxxItsGridded            = messages.getNotNothingString("noXxxItsGridded",            "");
         noXxxItsTabular            = messages.getNotNothingString("noXxxItsTabular",            "");
@@ -2061,6 +2086,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         queryError1Value           = messages.getNotNothingString("queryError1Value",           "");
         queryError1Var             = messages.getNotNothingString("queryError1Var",             "");
         queryError2Var             = messages.getNotNothingString("queryError2Var",             "");
+        queryErrorActualRange      = messages.getNotNothingString("queryErrorActualRange",      "");
         queryErrorAdjusted         = messages.getNotNothingString("queryErrorAdjusted",         "");
         queryErrorAscending        = messages.getNotNothingString("queryErrorAscending",        "");
         queryErrorConstraintNaN    = messages.getNotNothingString("queryErrorConstraintNaN",    "");
@@ -2305,25 +2331,20 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         Test.ensureTrue(testCfToGcmd.length > 0, 
             "testCfToGcmd=" + String2.toCSSVString(testCfToGcmd));
 
+        //successfully finished
+        String2.log("*** " + erdStartup + " finished successfully." + eol);
+
     } catch (Throwable t) {
-        //display detailed information (e.g., dir names) in log.txt, not on a web page
-        errorInMethod = "Error in EDStatic static{}:\n" + 
+        errorInMethod = "ERROR during " + erdStartup + ":\n" + 
             errorInMethod + "\n" + 
             MustBe.throwableToString(t);
-        String tell = "Ask the ERDDAP administrator to look at the detailed error message in ";
-        if (String2.logFileName() == null) {
-            System.out.println(errorInMethod);
-            throw new RuntimeException(tell + "the tomcat logs (catalina.out?)."); 
-        } else {
-            String2.log(errorInMethod);
-            //ensure log is flushed
-            for (int i = 0; i < String2.logFileFlushEveryNth; i++)
-                String2.log(""); 
-            throw new RuntimeException(tell + "[bigParentDirectory]/logs/log.txt ."); 
-        }
+        System.out.println(errorInMethod);
+//        if (String2.logFileName() != null) 
+//            String2.log(errorInMethod);
+//        String2.returnLoggingToSystemOut();
+        throw new RuntimeException(errorInMethod);
     }
 
-    String2.log("EDStatic initialization finished successfully.\n");
     }
   
     /** 
@@ -2372,6 +2393,21 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      */
     public static String imageDirUrl(String loggedInAs) {
         return loggedInAs == null? imageDirUrl : imageDirHttpsUrl;
+    }
+
+    /** 
+     * This returns the html needed to display the external.png image 
+     * with the warning that the link is to an external web site.
+     *
+     * @param tErddapUrl
+     * @return the html needed to display the external.png image and messages.
+     */
+    public static String externalLinkHtml(String tErddapUrl) {
+        return 
+            "<img\n" +
+            "    src=\"" + tErddapUrl + "/images/external.png\" " +
+                "align=\"bottom\" alt=\"" + externalLink + "\"\n" + 
+            "    title=\"" + externalWebSite + "\"/>";
     }
 
     /**
@@ -2582,48 +2618,29 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         return htmlTooltipImage(loggedInAs, XML.encodeAsPreHTML(sb.toString(), 100));
     }
 
-    /**
-     * This writes the diagnostic info to an html writer.
-     *
-     * @param writer
-     * @throws Throwable if trouble
-     */
-    public static void writeDiagnosticInfoHtml(Writer writer) throws Throwable {
-
-        StringBuffer logSB = String2.getLogStringBuffer();
-        if (logSB != null) {
-            writer.write("<hr><h3>Diagnostic info</h3><pre>\n");
-            //encodeAsHTML(logSB) is essential -- to prevent Cross-site-scripting security vulnerability
-            //(which allows hacker to insert his javascript into pages returned by server)
-            //See Tomcat (Definitive Guide) pg 147
-            writer.write(XML.encodeAsHTML(logSB.toString()));
-            writer.write("\n");
-            //clear the String2.logStringBuffer
-            logSB.setLength(0); 
-            writer.write("</pre>\n"); 
-        }
-    }
 
     /**
-     * This sends the specified email to *one* emailAddress.
+     * This sends the specified email to one or more emailAddresses.
      *
-     * @param emailAddress   
+     * @param emailAddressCsv  comma-separated list (may have ", ")
      * @return an error message ("" if no error).
      *     If emailAddress is null or "", this logs the message and returns "".
      */
-    public static String email(String emailAddress, String subject, String content) {
-        return email(new String[]{emailAddress}, subject, content);
+    public static String email(String emailAddressCsv, String subject, String content) {
+        return email(String2.split(emailAddressCsv, ','), subject, content);
     }
 
 
     /**
-     * This sends the specified email to the emailAddress.
+     * This sends the specified email to the emailAddresses.
      * <br>This won't throw an exception if trouble.
      * <br>This method always prepends the subject and content with [erddapUrl],
      *   so that it will be clear which ERDDAP this came from 
      *   (in case you administer multiple ERDDAPs).
-     * <br>This method logs all emails (except duplicate emailDailyReportTo emails) 
-     * to log, e.g., (bigParentDirectory)/emailLog2009-01.txt
+     * <br>This method always logs that an email was sent: to whom and the subject, 
+     *   but not the content.
+     * <br>This method logs all emails to the email log, e.g., 
+     *   (bigParentDirectory)/emailLog2009-01.txt
      *
      * @param emailAddresses   each e.g., john.doe@company.com
      * @param subject If error, recommended: "Error in ERDDAP".
@@ -2634,10 +2651,11 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
     public static String email(String emailAddresses[], String subject, String content) {
 
         //write the email to the log
+        String emailAddressesCSSV = String2.toCSSVString(emailAddresses);
         String localTime = Calendar2.getCurrentISODateTimeStringLocal();
         String fullMessage = 
             "\n==== BEGIN =====================================================================" +
-            "\n     To: " + String2.toCSSVString(emailAddresses) + 
+            "\n     To: " + emailAddressesCSSV + 
             "\nSubject: " + erddapUrl + " " + subject +  //always non-https url
             "\n   Date: " + localTime + 
             "\n--------------------------------------------------------------------------------" +
@@ -2646,81 +2664,69 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             "\n==== END =======================================================================" +
             "\n";
 
-        //Don't String2.log(fullMessage) since private info may show up in diagnostic 
-        //info at bottom of web pages and since it is written to emailLogFile below.
+        //Always note that email sent in log.
+        String2.log("Emailing \"" + subject + "\" to " + emailAddressesCSSV);
 
-        //write to emailLog
-        if (emailAddresses != null && emailAddresses.equals(emailDailyReportTo)) { 
-            //don't log duplicate DailyReports  (feeble, but better than nothing)
-            //i.e., only daily reports are sent to emailDailyReportTo
-            //      and they are always also sent to emailEverythingTo (which will log it
-        } else {
-            try {
-                String date = localTime.substring(0, 10);
-                if (!emailLogDate.equals(date) || emailLogFile == null) {
-                    //update emailLogDate
-                    //do first so other threads won't do this simultaneously
-                    emailLogDate = date;
+        //always write to emailLog
+        try {
+            String date = localTime.substring(0, 10);
+            if (!emailLogDate.equals(date) || emailLogFile == null) {
+                //update emailLogDate
+                //do first so other threads won't do this simultaneously
+                emailLogDate = date;
 
-                    //close the previous file
-                    if (emailLogFile != null) {
-                        try {emailLogFile.close(); 
-                        } catch (Throwable t) {
-                        }
-                        emailLogFile = null;
-                    }
-
-                    //open a new file
-                    emailLogFile = new BufferedWriter(new FileWriter(
-                        fullLogsDirectory + "emailLog" + date + ".txt", 
-                        true)); //true=append
-                }
-
-                //write the email to the log
-                //do in one write encourages threads not to intermingle   (or synchronize on emailLogFile?)
-                emailLogFile.write(fullMessage);
-                emailLogFile.flush();
-
-            } catch (Throwable t) {
-                String2.log(MustBe.throwable("Error: Writing to emailLog failed.", t));
+                //close the previous file
                 if (emailLogFile != null) {
                     try {emailLogFile.close(); 
-                    } catch (Throwable t2) {
+                    } catch (Throwable t) {
                     }
                     emailLogFile = null;
                 }
+
+                //open a new file
+                emailLogFile = new BufferedWriter(new FileWriter(
+                    fullLogsDirectory + "emailLog" + date + ".txt", 
+                    true)); //true=append
+            }
+
+            //write the email to the log
+            //do in one write encourages threads not to intermingle   (or synchronize on emailLogFile?)
+            emailLogFile.write(fullMessage);
+            emailLogFile.flush();
+
+        } catch (Throwable t) {
+            String2.log(MustBe.throwable("Error: Writing to emailLog failed.", t));
+            if (emailLogFile != null) {
+                try {emailLogFile.close(); 
+                } catch (Throwable t2) {
+                }
+                emailLogFile = null;
             }
         }
 
         //done?
-        if (emailAddresses == null ||
+        if (emailAddressesCSSV == null || emailAddressesCSSV.length() == 0 ||
             emailSmtpHost == null || emailSmtpHost.length() == 0) 
             return "";
 
         //send email
-        StringBuilder errors = new StringBuilder();
-        for (int ea = 0; ea < emailAddresses.length; ea++) {
-            if (emailAddresses[ea] != null && emailAddresses[ea].length() > 0) {
-                try {
-                    SSR.sendEmail(emailSmtpHost, emailSmtpPort, emailUserName, 
-                        emailPassword, emailProperties, emailFromAddress, emailAddresses[ea], 
-                        erddapUrl + " " + subject, //always non-https url
-                        erddapUrl + " reports:\n" + content); //always non-https url
-                } catch (Throwable t) {
-                    String msg = "Error: Sending email to " + emailAddresses[ea] + " failed";
-                    String2.log(MustBe.throwable(msg, t));
-                    errors.append(msg + ": " + t.toString() + "\n");
-                   
-
-                }
-            }
+        String errors = "";
+        try {
+            SSR.sendEmail(emailSmtpHost, emailSmtpPort, emailUserName, 
+                emailPassword, emailProperties, emailFromAddress, emailAddressesCSSV, 
+                erddapUrl + " " + subject, //always non-https url
+                erddapUrl + " reports:\n" + content); //always non-https url
+        } catch (Throwable t) {
+            String msg = "Error: Sending email to " + emailAddressesCSSV + " failed";
+            String2.log(MustBe.throwable(msg, t));
+            errors = msg + ": " + t.toString() + "\n";
         }
 
         //write errors to email log
         if (errors.length() > 0 && emailLogFile != null) {
             try {
                 //do in one write encourages threads not to intermingle   (or synchronize on emailLogFile?)
-                emailLogFile.write("\n********** ERRORS **********\n" + errors.toString());
+                emailLogFile.write("\n********** ERRORS **********\n" + errors);
                 emailLogFile.flush();
 
             } catch (Throwable t) {
@@ -2734,17 +2740,9 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             }
         }
 
-        return errors.toString();
+        return errors;
     }
 
-    /**
-     * This undoes the EDStatic initialization set up which sends log messages to 
-     * log.txt, and sets up sending messages to System.out (with a buffer of 100000 chars).
-     *
-     */
-    public static void returnLoggingToSystemOut() throws Throwable {
-        String2.setupLog(true, false, "", true, false, 100000);
-    }
 
     /**
      * This throws an exception if the requested nBytes are unlikely to be
@@ -2784,14 +2782,14 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
 
         //lots of memory is in use
         //is the request is too big for right now?
-        Math2.gc(500);
+        Math2.gcAndWait();
         memoryInUse = Math2.getMemoryInUse();
         if (memoryInUse + nBytes > Math2.maxSafeMemory) {
             //eek! not enough memory! 
             //Wait, then try gc again and hope that some other request requiring lots of memory will finish.
             //If nothing else, this 5 second delay will delay another request by same user (e.g., programmatic re-request)
             Math2.sleep(5000);
-            Math2.gc(500); 
+            Math2.gcAndWait(); 
             memoryInUse = Math2.getMemoryInUse();
         }
         if (memoryInUse > Math2.maxSafeMemory) { 
@@ -3090,11 +3088,13 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             return false;
 
         //generate observedPassword from plaintextPassword via passwordEncoding 
-        String observed = plaintextPassword;
-        if (passwordEncoding.equals("MD5"))
+        String observed = plaintextPassword;  
+        if (passwordEncoding.equals("plaintext")) {}
+        else if (passwordEncoding.equals("MD5"))
             observed = String2.md5Hex(plaintextPassword); //it will be lowercase
         else if (passwordEncoding.equals("UEPMD5"))
             observed = String2.md5Hex(loggedInAs + ":ERDDAP:" + plaintextPassword); //it will be lowercase
+        else throw new RuntimeException("Unexpected passwordEncoding=" + passwordEncoding);
         //only for debugging:
         //String2.log("loggedInAs=" + loggedInAs +
         //    "\nobsPassword=" + observed +
@@ -3244,7 +3244,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
     public static String theLongDescriptionHtml(   String tErddapUrl) {return String2.replaceAll(theLongDescriptionHtml,  "&erddapUrl;", tErddapUrl); }
     public static String theShortDescriptionHtml(  String tErddapUrl) {return String2.replaceAll(theShortDescriptionHtml, "&erddapUrl;", tErddapUrl); }
     public static String erddapHref(               String tErddapUrl) {
-        return "<a title=\"The Environmental Research Division's Data Access Program\" \n" +
+        return "<a title=\"" + clickERDDAP + "\" \n" +
             "rel=\"start\" " +
             "href=\"" + tErddapUrl + "/index.html\">" + ProgramName + "</a>"; 
     }
@@ -3288,9 +3288,9 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             MustBe.throwableToString(t)); //log full message with stack trace
         return 
             "<p>&nbsp;<hr>\n" +
-            "<p><font class=\"warningColor\"><b>An error occurred while writing this web page:</b>\n" +
+            "<p><font class=\"warningColor\"><b>" + errorOnWebPage + "</b></font>\n" +
             "<pre>" + XML.encodeAsPreHTML(message, 120) +
-            "</pre></font>\n";
+            "</pre>\n";
     }
 
     /** This interrupts/kill all of the thredds in runningThreads. 
@@ -3440,8 +3440,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
                         Calendar2.elapsedTimeString(eTime) + " > " + 
                         Calendar2.elapsedTimeString(maxTime) + ") at " + 
                         Calendar2.getCurrentISODateTimeStringLocal();
-                    email(emailEverythingTo, 
-                        "taskThread Stalled", tError);
+                    email(emailEverythingToCsv, "taskThread Stalled", tError);
                     String2.log("\n*** " + tError);
 
                     stopThread(taskThread, 10); //short time; it is already in trouble
@@ -3590,6 +3589,18 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         return memoryUseLoadDatasetsSB.length() == 0;
     }
 
+    /** This is called by the ERDDAP constructor to initialize Lucene. */
+    public static void initializeLucene() {
+        //ERDDAP consciously doesn't use any stopWords (words not included in the index)
+        //1) this matches the behaviour of the original searchEngine
+        //2) this is what users expect, e.g., when searching for a phrase
+        //3) the content here isn't prose, so the stop words aren't nearly as common
+        HashSet stopWords = new HashSet();
+        luceneAnalyzer = new StandardAnalyzer(luceneVersion, stopWords);
+        //it is important that the queryParser use the same analyzer as the indexWriter
+        luceneQueryParser = new QueryParser(luceneVersion, luceneDefaultField, luceneAnalyzer);
+    }
+
     /** 
      * This creates an IndexWriter.
      * Normally, this is created once in RunLoadDatasets.
@@ -3686,7 +3697,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
                 } catch (Throwable t) {
                     String subject = String2.ERROR + " while creating Lucene Searcher";
                     String msg = MustBe.throwableToString(t);
-                    email(emailEverythingTo, subject, msg);
+                    email(emailEverythingToCsv, subject, msg);
                     String2.log(subject + "\n" + msg);            
 
                     //clear out old one
@@ -3990,8 +4001,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      * since catalina code is linked in after deployment.
      * So this looks for the string.
      *
-     * Normal use: Use this first thing in catch, before calling 
-     * requestReloadASAP and throwing WaitThenTryAgainException.
+     * Normal use: Use this first thing in catch, before throwing WaitThenTryAgainException.
      *
      * @param t the exception which will be thrown again if it is a ClientAbortException
      * @throws Throwable

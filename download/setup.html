@@ -96,17 +96,22 @@ or Mac server instead.
 <ol>
 <li><a name="java">Set up Java.</a>  
     <br>Type "java -version" from your server's command line to make sure you have 
-    <a rel="bookmark" href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java</a>
-    (JRE or JDK) version 1.7 installed.  <!-- javaVersion -->
+    <a rel="bookmark" href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+    (JRE or JDK) version 1.7 or higher installed (1.8 is STRONGLY RECOMMENDED,
+    because Java 1.7 will reach its end-of-life in April 2015).  <!-- javaVersion -->
     For security reasons, it is almost always best to use the latest version of Java.
     ERDDAP works with 32 bit or 64 bit Java. 64 bit is preferred for 64-bit operating systems. 
     On Linux, we recommend that you download and install Java even if your computer came with Java
     installed. This lets you be in control of which Java you have and where it is (usr/local?).
     To install Java on Linux, see these
-      <a rel="help" href="http://www.java.com/en/download/help/linux_install.xml">instructions</a>.
+    <a rel="help" href="http://www.java.com/en/download/help/linux_install.xml">instructions<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
 
-    <p>This version of ERDDAP will work with Java 6; however, we recommend against using Java 6.  
-    Java 6 is past its official end of life and so is no longer supported by Oracle.  
+    <p>This version of ERDDAP will not work with Java 1.6 (AKA 6). <!-- javaVersion -->
+    Java 1.6 is past its official end-of-life and so is no longer supported by Oracle.  
     As Oracle's Java SE 6 Downloads web page says: "WARNING: These older versions 
     of the JRE and JDK are provided to help developers debug issues in older systems. 
     They are not updated with the latest security patches and are not recommended for 
@@ -114,9 +119,11 @@ or Mac server instead.
 
     <br>&nbsp;
 
-<li><a name="tomcat">Set</a> up <a rel="help" href="http://tomcat.apache.org/">Tomcat</a>.    
+<li><a name="tomcat">Set</a> up <a rel="help" href="http://tomcat.apache.org/">Tomcat<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.    
     <br>For security reasons, it is almost always best to use the latest version of Tomcat.
-    Below, the Tomcat directory will be referred to as [tomcat] .
+    Below, the Tomcat directory will be referred to as <i>tomcat</i>.
     Warning! If you already have a Tomcat running some other web application (especially THREDDS), 
     we recommend that you install ERDDAP in <a rel="help" href="#secondTomcat">a&nbsp;second&nbsp;Tomcat</a>,
        because ERDDAP may need different settings 
@@ -125,7 +132,9 @@ or Mac server instead.
     <ul>
 
     <li>Follow the instructions at 
-      <a rel="help" href="http://tomcat.apache.org/">http://tomcat.apache.org/</a> 
+      <a rel="help" href="http://tomcat.apache.org/">http://tomcat.apache.org/<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a> 
       to set up Tomcat on your server.
       <br>On Linux, we recommend installing it in /usr/local.
       <br>On a Mac, it is probably already installed in /Library/Tomcat.
@@ -135,11 +144,15 @@ or Mac server instead.
      
     <li>Security recommendation: you can remove some possible avenues for attackers by following 
       <a rel="help" href="http://www.j2eeprogrammer.com/2011/11/disabling-certain-http-methods-in.html"
-      >these&nbsp;instructions</a> (especially the article's second recommendation) 
+      >these&nbsp;instructions<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> (especially the article's second recommendation) 
       to disable certain HTTP methods 
       (TRACE, PUT, OPTIONS, DELETE) in Tomcat.
       (<a rel="help" href="https://www.owasp.org/index.php/Testing_for_HTTP_Methods_and_XST_%28OWASP-CM-008%29"
-      >background&nbsp;information</a>)
+      >background&nbsp;information<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>)
       <br>&nbsp;
 
     <li><a name="WindowsMemory">On Windows,</a> run Tomcat Manager and right click on the 
@@ -147,7 +160,7 @@ or Mac server instead.
       select <tt>Configure : Java</tt>.
       <ul>
       <li>Set the <tt>Java Virtual Machine</tt> directory, e.g.,
-        C:\Program Files\Java\jre7\bin\client\jvm.dll.    <!-- javaVersion -->  
+        C:\Program Files\Java\jre8\bin\client\jvm.dll.    <!-- javaVersion -->  
       <li>Set <tt>Initial Memory Pool</tt> and 
         <tt>Maximum Memory Pool</tt> to <tt>1200</tt> MB on 32-bit Windows computers or
         up to 1/2 of physical memory on 64-bit Windows computers. 
@@ -158,8 +171,8 @@ or Mac server instead.
     <li>On Linux and Macs, Tomcat is often set up as belonging to 
       user "tomcat". Set up that account now.  
       From the parent of the apache-tomcat directory, type 
-      <br><tt>chown -R tomcat apache-tomcat-<i>7.0.32</i></tt>  <!-- tomcatVersion -->
-      <br><tt>chgrp -R tomcat apache-tomcat-<i>7.0.32</i></tt>  <!-- tomcatVersion -->
+      <br><tt>chown -R tomcat apache-tomcat-<i>8.0.9</i></tt>  <!-- tomcatVersion -->
+      <br><tt>chgrp -R tomcat apache-tomcat-<i>8.0.9</i></tt>  <!-- tomcatVersion -->
       <br>(but substitute the actual name of your tomcat directory) right after unpacking Tomcat.
       Do most of the rest of the setup instructions as user "tomcat".
       Later, run the startup.sh and shutdown.sh scripts as user "tomcat" so that Tomcat has 
@@ -167,15 +180,15 @@ or Mac server instead.
       <br>&nbsp;
 
     <li>On <a name="LinuxMemory">Linux</a> and <a name="MacMemory">Macs</a>, 
-      create a file [tomcat]/bin/setenv.sh 
-      (or in Red Hat Enterprise Linux (RHEL), edit ~tomcat/conf/tomcat7.conf) <!-- tomcatVersion -->
+      create a file <i>tomcat</i>/bin/setenv.sh 
+      (or in Red Hat Enterprise Linux (RHEL), edit ~tomcat/conf/tomcat8.conf) <!-- tomcatVersion -->
       to set environmental variables.
-      This file will be used by [tomcat]/bin/startup.sh and shutdown.sh.
+      This file will be used by <i>tomcat</i>/bin/startup.sh and shutdown.sh.
       The file should contain<tt>
-      <br>export JAVA_HOME=/usr/local/jre1.7.0_09  <!-- javaVersion -->
+      <br>export JAVA_HOME=/usr/local/jdk1.8.0_20/jre  <!-- javaVersion -->
       <br>export JAVA_OPTS='-server -Djava.awt.headless=true -Xmx1500M -Xms1500M'
-      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>7.0.32</i>         <!-- tomcatVersion -->
-      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>7.0.32</i></tt>  <!-- tomcatVersion -->
+      <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>8.0.9</i>         <!-- tomcatVersion -->
+      <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>8.0.9</i></tt>  <!-- tomcatVersion -->
       <br>(but substitute the directory names from your computer).        
       <br>(If you previously set JRE_HOME, you can remove that.)
       <br>On Macs, you probably don't need to set JAVA_HOME.
@@ -199,7 +212,7 @@ or Mac server instead.
         physical memory.
         You can see if Tomcat, Java, and ERDDAP are indeed running in 64 bit mode by searching for 
         " bit," in ERDDAP's Daily Report email or in the 
-        &lt;<i>bigParentDirectory</i>&gt;/logs/log.txt file (as specified in 
+        <i>bigParentDirectory</i>/logs/log.txt file (<i>bigParentDirectory</i> is specified in 
           <a rel="help" href="#setup.xml">setup.xml</a>). 
         <br>&nbsp;
       </ul>
@@ -207,11 +220,11 @@ or Mac server instead.
       <!--p>Optional: You can add <tt>-verbose:gc</tt> to the JAVA_OPTS (or to the list of Java Options
       <br>in the Window's Tomcat Manager icon in the systemtry). It tells Java to send   
   <a rel="help" href="http://download.oracle.com/javase/technologies/hotspot/gc/gc_tuning_6.html">Java garbage collection</a>
-      information to [tomcat]/logs/catalina.out (or some other Tomcat log file) 
+      information to <i>tomcat</i>/logs/catalina.out (or some other Tomcat log file) 
       which is useful if your ERDDAP has memory problems. -->
 
     <li><a name="permissions">On</a> Linux and Macs, change the permissions of all 
-      *.sh files in [tomcat]/bin/ to be executable by the owner, e.g., with
+      *.sh files in <i>tomcat</i>/bin/ to be executable by the owner, e.g., with
       <br><tt>chmod +x *.sh</tt>
       <br>&nbsp;
 
@@ -227,7 +240,7 @@ or Mac server instead.
         and unzip the font files to a temporary directory.
       <ul>
       <li>On Linux (as the root user) and Windows XP (as the administrator), 
-         copy the font files into &lt;<i>JAVA_HOME</i>&gt;/lib/fonts 
+         copy the font files into <i>JAVA_HOME</i>/lib/fonts 
          so Java can find the fonts.
          Remember: if/when you later upgrade to a newer version of Java, you need to reinstall
          these fonts.
@@ -240,70 +253,79 @@ or Mac server instead.
     <li><a name="testTomcat">Test</a> your Tomcat installation.
       <ul>
       <li>Linux:
-        <br>As user "tomcat", run <tt>[tomcat]/bin/startup.sh</tt>
+        <br>As user "tomcat", run <tt><i>tomcat</i>/bin/startup.sh</tt>
         <br>View your URL + ":8080/" in your browser (e.g., 
            <a href="http://coastwatch.pfeg.noaa.gov:8080/">http://coastwatch.pfeg.noaa.gov:8080/</a>).
         <br>You should see the Tomcat "Congratulations" page. 
-        <br>If there is trouble, see the Tomcat log file [tomcat]/logs/catalina.out.
+        <br>If there is trouble, see the Tomcat log file <i>tomcat</i>/logs/catalina.out.
       <li>Mac (run tomcat as the system administrator user):
-        <br>Run <tt>[tomcat]/bin/startup.sh</tt>
+        <br>Run <tt><i>tomcat</i>/bin/startup.sh</tt>
         <br>View your URL + ":8080/" in your browser (e.g., 
            <a href="http://coastwatch.pfeg.noaa.gov:8080/">http://coastwatch.pfeg.noaa.gov:8080/</a>).
         <br>You should see the Tomcat "Congratulations" page. 
-        <br>If there is trouble, see the Tomcat log file [tomcat]/logs/catalina.out.
+        <br>If there is trouble, see the Tomcat log file <i>tomcat</i>/logs/catalina.out.
       <li>Windows localhost: 
         <br>Right click on the Tomcat icon in the system tray, and choose "Start service".
         <br>View <a href="http://127.0.0.1:8080/">http://127.0.0.1:8080/</a> in your browser.
         <br>You should see the Tomcat "Congratulations" page. 
-        <br>If there is trouble, see the Tomcat log file [tomcat]/logs/catalina.out.
+        <br>If there is trouble, see the Tomcat log file <i>tomcat</i>/logs/catalina.out.
         <br>&nbsp;
       </ul>
 
     <li>Troubles with the Tomcat installation? 
       <ul>
-      <li>See the Tomcat log file [tomcat]/logs/catalina.out.  
+      <li>See the Tomcat log file <i>tomcat</i>/logs/catalina.out.  
         Tomcat problems are almost always indicated there.
-      <li>See the <a rel="help" href="http://tomcat.apache.org/">Tomcat</a> web site or search the web for help,
+      <li>See the <a rel="help" href="http://tomcat.apache.org/">Tomcat<img 
+          src="../images/external.png" align="bottom" alt=" (external link)" 
+          title="This link to an external web site does not constitute an endorsement."/></a> 
+        web site or search the web for help,
         but please let us know the problems you had and the solutions you found.
       <li>Email me at <tt>bob dot simons at noaa dot gov</tt> .  I will try to help you.
         <br>&nbsp;
       </ul>
     </ul>
 
-<li><a name="erddapContent">Set up the [tomcat]/content/erddap configuration files.</a> 
+<li><a name="erddapContent">Set up the <i>tomcat</i>/content/erddap configuration files.</a> 
   <br>On Linux, Mac, and Windows, download
     <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>    
+     (version 1.48, size=22,132 bytes, MD5=25697F19B1AE7C595EFE0E3F25DFFDE2) <!-- Dated 2014-09-04) -->
+    and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
+
+  <p>[The <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.46.zip">previous version</a> 
+  is also available
 <!-- Use: c:\programs\md5 erddapContent.zip
      (version 1.38, size=70,836 bytes, MD5=D927E8132F1F19A342274F37375619E6, Dated 2012-05-02) 
      (version 1.40, size=72,108 bytes, MD5=2D110CC2472F39FF1FC4B27C8C1C720F, Dated 2012-10-25) 
      (version 1.42, size=72,146 bytes, MD5=4EC605978B939835947A9D551C947E97) Dated 2012-11-26) 
      (version 1.44, size=72,757 bytes, MD5=39D59EACBA646AEAAA5FF6B5D267D91E) Dated 2013-05-30) -->
-     (version 1.46, size=22,268 bytes, MD5=FE827B9C411ECAC535F8C65392A5CDFD) <!-- Dated 2013-07-09) -->
-    and unzip it into [tomcat], creating [tomcat]/content/erddap .
+     (version 1.46, size=22,268 bytes, MD5=FE827B9C411ECAC535F8C65392A5CDFD).] <!-- Dated 2013-07-09) -->
   <p>For Red Hat Enterprise Linux (RHEL), unzip it into ~tomcat
     and set the system property 
     <tt>erddapContentDirectory=~tomcat/content/erddap</tt>
-    in ~tomcat/conf/tomcat7.conf <!-- tomcatVersion --> so ERDDAP can find the directory.
+    in ~tomcat/conf/tomcat8.conf <!-- tomcatVersion --> so ERDDAP can find the directory.
     
   <p>Then,
   <ul>
-  <li><a name="setup.xml">Read</a> the comments in [tomcat]/content/erddap/<b>setup.xml</b>
+  <li><a name="setup.xml">Read</a> the comments in <i>tomcat</i>/content/erddap/<b>setup.xml</b>
       and make the requested changes.
     setup.xml is the file with all of the settings which specify how your ERDDAP behaves.
   <li><a name="datasets.xml">Read</a> the comments in 
       <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><b>Working with the datasets.xml File</b></a>, then modify the XML in 
-    [tomcat]/content/erddap/<b>datasets.xml</b> to specify all of the datasets 
+    <i>tomcat</i>/content/erddap/<b>datasets.xml</b> to specify all of the datasets 
       you want your ERDDAP to serve.
   <li>(Unlikely) Now or (slightly more likely) in the future, 
     if you want to modify erddap's CSS file,
-    make a copy of [tomcat]/content/erddap/images/erddapStart.css called erddap.css 
+    make a copy of <i>tomcat</i>/content/erddap/images/erddapStart.css called erddap.css 
     and then make changes to it.    
     Changes to erddap.css only take affect when ERDDAP is restarted 
     and often also require the user to clear the browser's cached files.
   </ul>
   After you edit the .xml files, it is a good idea to verify that the result is well-formed XML
   by pasting the XML text into an XML checker like
-    <a rel="help" href="http://www.xml.com/pub/a/tools/ruwf/check.html">RUWF</a>.
+    <a rel="help" href="http://www.xml.com/pub/a/tools/ruwf/check.html">RUWF<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
 
   <p>In the unusual situation where you aren't allowed to modify the Tomcat directory,
   you can put the ERDDAP content directory somewhere else (e.g., /usr/local/erddap). 
@@ -315,32 +337,37 @@ or Mac server instead.
 <li><a name="erddap.war">Install</a> the erddap.war file.
   <br>On Linux, Mac, and Windows, download 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
+    (version 1.48, size=486,082,750 bytes, MD5=6DC8DA75FF9DE313B3622854A59564EC)
+    into <i>tomcat</i>/webapps .  
+  The .war file is big because it contains high resolution coastline, boundary, 
+  and elevation data needed to create maps.
+
+  <p>[The 
+    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.46.war">previous version</a> 
+    is also available
     <!-- ver, size, md5 duplicated below 
     (version 1.38, size=478,799,083 bytes, MD5=7270FB700CAEF85A1F1A3B3326FAFE98) 
     (version 1.40, size=477,338,971 bytes, MD5=138F354918668AB8414A8174365BD036) 
     (version 1.42, size=477,356,261 bytes, MD5=EC29F6D9E6185BC71557CF47063E3276) 
     (version 1.44, size=482,013,960 bytes, MD5=CDFF1E9DD3201F6A5AEB19EB3DB556FC) -->
-    (version 1.46, size=482,115,063 bytes, MD5=26957D4A6866F5DBAF3238E7A39BD0FE)
-    into [tomcat]/webapps .  
-  The .war file is big because it contains high resolution coastline, boundary, 
-  and elevation data needed to create maps.
-  <br>&nbsp;
+    (version 1.46, size=482,115,063 bytes, MD5=26957D4A6866F5DBAF3238E7A39BD0FE).
+    Rename it to erddap.war after you download it.]
 
-<li><a name="ProxyPass">Use</a> ProxyPass so users don't have to put :8080 in the URL.
-  <br>On Linux computers, if Tomcat is running in Apache, you need to modify the
-    /etc/httpd/conf/httpd.conf
-  file to allow HTTP traffic to/from ERDDAP:
+<li><a name="ProxyPass">Use</a> ProxyPass so users don't have to put the port number, e.g., :8080, in the URL.
+  <br>On Linux computers, if Tomcat is running in Apache, please modify the
+  <br>/etc/httpd/conf/httpd.conf
+  file to allow HTTP traffic to/from ERDDAP without requiring the port number, e.g., :8080, in the URL:
   <ol>
   <li>Add the following lines right before <tt>#&lt;IfModule mod_proxy.c&gt;</tt> :<tt>
-    <br>&nbsp;&nbsp; ProxyPass /erddap <i>http://www.YourServer.org</i>:8080/erddap
-    <br>&nbsp;&nbsp; ProxyPassReverse /erddap <i>http://www.YourServer.org</i>:8080/erddap</tt>
+    <br>&nbsp;&nbsp; ProxyPass /erddap http://<i>www.YourServer.org</i>:8080/erddap
+    <br>&nbsp;&nbsp; ProxyPassReverse /erddap http://<i>www.YourServer.org</i>:8080/erddap</tt>
   <li>Then restart Apache: <tt>/usr/sbin/apachectl restart</tt> (but sometimes it is in a different directory).
     <br>&nbsp;
   </ol>
 
 <li>Start Tomcat.
-  <br>If Tomcat is already running, use [tomcat]/bin/shutdown.sh to shut down Tomcat.
-  <br>Use [tomcat]/bin/startup.sh to start Tomcat.
+  <br>If Tomcat is already running, use <i>tomcat</i>/bin/shutdown.sh to shut down Tomcat.
+  <br>Use <i>tomcat</i>/bin/startup.sh to start Tomcat.
   <br>Or, if you use the Tomcat Web Application Manager:
   <ul>
   <li>Download <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
@@ -351,15 +378,55 @@ or Mac server instead.
   </ul>
 
 <li>Is ERDDAP running?
-  <br>Hopefully, you can now use a browser to view &lt;<i>YourServer'sURL</i>&gt;/erddap/ 
-  and see ERDDAP within a minute (the first time is slow).
-  ERDDAP starts up without any datasets loaded. 
+  <br>Use a browser to try to view http://<i>www.YourServer.org</i>/erddap/ 
+  <br>ERDDAP starts up without any datasets loaded. 
   Datasets are loaded in a background thread and so become available one-by-one.
+
+  <p>Trouble? Tomcat has to do a lot of work the first time an application like ERDDAP is started.
+  On some servers, the first attempt to view ERDDAP stalls (30 seconds?) until this work is finished.
+  On other servers, the first attempt will fail immediately. But if you wait 30 seconds and try again,
+  it will succeed if ERDDAP was installed correctly.
+  <br>If your second attempt to view ERDDAP fails, look for error messages in 
+  <br><a rel="help" href="#tomcatLogs">Tomcat's log file</a> (<i>tomcat</i>/logs/catalina.out) and
+  <br><a rel="help" href="#log">ERDDAP's log file</a> (<i>bigParentDirectory</i>/logs/log.txt).
+
+<li>In the future, to shut down (and restart) ERDDAP, see 
+  <br><a rel="help" href="#shutdown">How to Shut Down and Restart Tomcat and ERDDAP</a>.
   <br>&nbsp;
 
 <li>Troubles installing Tomcat or ERDDAP?
   <br>Email me at <tt>bob dot simons at noaa dot gov</tt> .  I will help you.
   <br>&nbsp;
+
+<li>Email <a name="updateNotification">Notification</a> of New Versions of ERDDAP
+  <br>If you want to receive an 
+  email whenever a new version of ERDDAP 
+  is available, send an email to <tt>bob dot simons at noaa dot gov</tt> requesting this.
+  <br>&nbsp;
+
+<li><a name="customize">Customize</a> your ERDDAP to highlight your organization (not ERD).
+  <ul>
+  <li>To change the banner that appears at the top of all ERDDAP .html pages,
+    change the HTML content specified in the setup.xml file in the &lt;startBodyHtml&gt; tag.
+    For example, you could:
+    <ul>
+    <li>Use a different image (i.e., your organization's logo).
+    <li>Change the background color.
+    <li>Change "ERDDAP" to "<i>YourOrganization</i>'s ERDDAP" 
+    <li>Change "Easier access to scientific data" to "Easier access to <i>YourOrganization</i>'s data".
+    <li>Change the "Brought to you by" links to be links to your organization and funding sources.
+    </ul>
+  <li>To change the information on the left side of the home page, e.g., to 
+    information about your project, change the HTML content specified in the setup.xml 
+    file in the &lt;theShortDescriptionHtml&gt; tag.
+  <li>To change the icon that appears on browser tabs, put your organization's favicon.ico in 
+    <i>tomcat</i>/content/erddap/images/ .
+    See <a rel="help"
+    href="http://en.wikipedia.org/wiki/Favicon">http://en.wikipedia.org/wiki/Favicon<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
+  </ul>
+
 </ol>
 
 <!-- ******* -->
@@ -376,44 +443,54 @@ or Mac server instead.
     (version 1.38, size=478,799,083 bytes, MD5=7270FB700CAEF85A1F1A3B3326FAFE98) 
     (version 1.40, size=477,338,971 bytes, MD5=138F354918668AB8414A8174365BD036) 
     (version 1.42, size=477,356,261 bytes, MD5=EC29F6D9E6185BC71557CF47063E3276) 
-    (version 1.44, size=482,013,960 bytes, MD5=CDFF1E9DD3201F6A5AEB19EB3DB556FC) -->
-    (version 1.46, size=482,115,063 bytes, MD5=26957D4A6866F5DBAF3238E7A39BD0FE)
+    (version 1.44, size=482,013,960 bytes, MD5=CDFF1E9DD3201F6A5AEB19EB3DB556FC) 
+    (version 1.46, size=482,115,063 bytes, MD5=26957D4A6866F5DBAF3238E7A39BD0FE) -->
+    (version 1.48, size=486,082,750 bytes, MD5=6DC8DA75FF9DE313B3622854A59564EC)
 
     into a  temporary directory.
   <br>&nbsp;
 
-<li>messages.xml
+<li><a name="messages.xml">messages.xml</a>
   <ul>
-  <li>If you just use the standard messages, 
+  <li>If you are upgrading from ERDDAP version 1.46 (or above)
+    and you just use the standard messages, 
     the new messages will be installed automatically.
-    <br>(But if you are upgrading from 1.44 (or below) to 1.46 (or above), 
-    you need to delete [tomcat]/content/erddap/messages.xml .)
+    The standard messages are stored in the erddap.war file
+    (not a separate messages.xml file).  
     <br>&nbsp;
-  <li>If you make changes to the default messages.xml file 
-    <br>(WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml),
-    you need to make those changes to the new default messages.xml file.
+  <li>If you are upgrading from ERDDAP version 1.44 (or below), 
+    <br>you MUST delete the old messages.xml file:
+    <br><i>tomcat</i>/content/erddap/messages.xml .
     <br>&nbsp;
-  <li>If you maintain a custom messages.xml file in [tomcat]/content/erddap/,
-    <br>you need to figure out (via diff) what changes have been made to the default messages.xml 
+  <li>Rare: If you always make changes to the standard messages, 
+    <br>you need to make those changes to the new messages.xml file (which is
+    <br>WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml after erddap.war is decompressed by Tomcat).
+    <br>&nbsp;
+  <li>Rare: If you maintain a custom messages.xml file 
+    <br>in <i>tomcat</i>/content/erddap/,
+    you need to figure out (via diff) what changes have been made to the default messages.xml 
     (which are in the new erddap.war as
     <br>WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml)
     and modify your custom messages.xml file accordingly.
     <br>&nbsp;
   </ul>
 
-<li>In Tomcat Manager:
+<li>If you use Tomcat Manager:
   <ol>
   <li>"Undeploy" ERDDAP.
-  <li>"Deploy" the erddap.war file.
+  <li>"Deploy" the erddap.war file (it will ask you for the location of the erddap.war file).
   </ol>
-  <br>Or from a Linux or Mac command line:
+  <br>If you use a Linux or Mac command line:
   <ol>
-  <li>In <tt>[tomcat]/bin</tt>, use <tt>./shutdown.sh</tt>
-  <li>Use <tt>ps -u <i>tomcatUser</i></tt> to ensure that the java/tomcat thread has stopped.
-  <li>In <tt>[tomcat]/webapps</tt>, use <tt>rm -r erddap</tt>
-  <li>In <tt>[tomcat]/webapps</tt>, use <tt>rm erddap.war</tt>
-  <li>Copy the new erddap.war file from the temporary directory to <tt>[tomcat]/webapps</tt> .
-  <li>In <tt>[tomcat]/bin</tt>, use <tt>./startup.sh</tt>
+  <li>Follow the first part of these instructions to 
+     <a rel="help" href="#shutdown">shut down Tomcat and ERDDAP</a>
+     <br>(but don't restart it yet).
+  <li>In <tt><i>tomcat</i>/webapps</tt>, use <tt>rm -r erddap</tt>
+  <li>In <tt><i>tomcat</i>/webapps</tt>, use <tt>rm erddap.war</tt>
+  <li>Copy the new erddap.war file from the temporary directory to <tt><i>tomcat</i>/webapps</tt> .
+  <li>In <tt><i>tomcat</i>/bin</tt>, use <tt>./startup.sh</tt> to restart Tomcat and ERDDAP.
+  <li>View ERDDAP in your browser to check that the restart succeeded.
+      (Sometimes, you need to try to load ERDDAP in your browser a few times before it succeeds.)
      <br>&nbsp;
   </ol>
 
@@ -425,6 +502,306 @@ or Mac server instead.
 <!-- ******* -->
 <h2><a name="needToKnow">Things You Need To Know</a></h2>
 <ul>
+
+<li><b><a name="respondingSlowly">If ERDDAP Is Responding</a> Slowly</b> 
+    <br>you may be able to figure out if the slowness is reasonable 
+    and temporary (e.g., because of lots of requests from scripts or WMS users),
+    or if ERDDAP is having trouble and you need to 
+    <a rel="help" href="#restart">shut down and restart Tomcat and ERDDAP</a>.
+
+  <p>If ERDDAP is responding slowly, here are some things you can do to determine the cause:
+
+  <ul>
+  <li>Look for clues (e.g., error messages) in 
+    <br><a rel="help" href="#log">ERDDAP's log file</a> (<i>bigParentDirectory</i>/logs/log.txt) and
+    <br><a rel="help" href="#tomcatLogs">Tomcat's log file</a> (<i>tomcat</i>/logs/catalina.out). 
+    <br>&nbsp;
+
+  <li>If just one dataset is responding slowly (perhaps only for certain types of requests),
+    the problem may be:
+    <ul>
+    <li>ERDDAP's access to the dataset's source data may be temporarily or permanently slow.
+      Try to check the source's speed independent of ERDDAP. 
+      If it is slow, perhaps you can improve it.
+    <li>The dataset may be not optimally configured. You may be able to make changes to the dataset's
+      datasets.xml chunk to help ERDDAP handle the dataset better.
+      For example, the configuration of the 
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#subsetVariables"><tt>&lt;subsetVariables&gt;</tt></a> tag has a huge influence on how ERDDAP handles EDDTable datasets.
+      Similarly, many factors influence the 
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#databaseSpeed">speed 
+        of an EDDTableFromDatabase</a> dataset.
+      If you want help speeding up a specific dataset, 
+      email a description of the problem and the dataset's chunk of datasets.xml to
+      <tt>bob dot simons at noaa dot gov</tt>.  
+      <br>&nbsp;
+    </ul>
+
+  <li>If everything in ERDDAP is <b>always</b> slow,
+    the problem may be:
+    <ul>
+    <li>The computer that is runnning ERDDAP may not have enough memory or processing power.
+        It is good to run ERDDAP on a modern, multi-core server.
+        For heavy use, the server should have a 64-bit operating system and 8 GB or more of memory.
+    <li>The computer that is runnning ERDDAP may be also running other applications that
+        are consuming lots of system resources. If so, can you get a dedicated server
+        for ERDDAP? For example (this is not an endorsement), you can get 
+        a quad-core Mac Mini Server with 8 GB of memory for ~$1100.
+      <br>&nbsp;
+    </ul>
+
+  <li>If everything in ERDDAP is <b>temporarily</b> slow, view your ERDDAP's 
+    <br><a rel="help" href="#statusPage">/erddap/status.html page</a> in your browser.
+    <ul>
+    <li>Does the ERDDAP status page fail to load?
+        <br>Is so, <a rel="help" href="#restart">restart ERDDAP</a>.
+    <li>Did the ERDDAP status page load slowly (e.g., &gt;5 seconds)?
+        <br>That is a sign that everything in ERDDAP is running slowly, 
+        but it isn't necessarily trouble.
+    <li>For "Response Failed Time (since last major LoadDatasets)", is n= a large number?
+        <br>That indicates there have been lots of failed requests recently.
+        That may be trouble or the start of trouble.
+        The <tt>median</tt> time for the failures is often large (e.g., 210000 ms), 
+        <br>which means that there were (are?) lots of active threads. 
+        <br>which were tying up lots of resources (like memory, open files, open sockets, ...),
+        <br>which is not good.
+    <li>For "Response Succeeded Time (since last major LoadDatasets)", is n= a large number?
+        <br>That indicates there have been lots of successful requests recently.
+        This isn't trouble. It just means your ERDDAP is getting heavy use.
+    <li>Is the "Number of non-Tomcat-waiting threads" double a typical value?
+        <br>This is often serious trouble that will cause ERDDAP to slow down and eventually 
+        freeze. 
+        If this persists for hours, you may want to proactively
+        <a rel="help" href="#restart">restart ERDDAP</a>.
+    <li>At the bottom of the "Memory Use Summary" list, is the last "Memory: currently using" value very high?
+        <br>That may just indicate high usage, or it may be a sign of trouble.
+        <br>&nbsp;
+    </ul>
+
+  <li>Is your internet connection currently slow?
+    <br>Search the internet for "internet speed test" and use one of the free online tests,
+    such as 
+    <a rel="help" href="http://www.speakeasy.net/speedtest/">http://www.speakeasy.net/speedtest//<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
+    If your internet connection is slow, it slows down ERDDAP.
+    Sometimes, you can solve this by stopping unnecessary internet use 
+    (e.g., people watching streaming videos or on video conference calls).
+    <br>&nbsp;
+
+  <li>Use the "Server Status" link in your Tomcat Manager
+    to check on the status of all of the response threads.  
+    <br>&nbsp;
+
+  </ul>
+
+<li><b><a name="shutdown">How</a> 
+       <a name="restart">to</a> 
+       <a name="frozen">Shut</a> Down and Restart Tomcat and ERDDAP</b> 
+
+  <br>You don't need to shut down and restart Tomcat and ERDDAP
+  if ERDDAP is temporarily</br> slow, or slow for some known reason 
+  (like lots of requests from scripts or WMS users).
+
+  <p>You do need to shut down and restart Tomcat and ERDDAP 
+  if you need to apply changes to the setup.xml file,
+  or if ERDDAP freezes, hangs, or locks up.
+
+  <p>To shutdown and restart Tomcat and ERDDAP:
+  &nbsp;
+  <ul> 
+  <li>If you use Linux or a Mac:
+    <ol>
+    <li>Use <tt>cd <i>tomcat</i>/bin</tt>
+    <li>Use <tt>ps -u <i>tomcatUser</i> | grep java</tt> to find the java/tomcat processID
+      (hopefully, just one process will be listed),
+      which we'll call <tt><i>javaProcessID</i></tt> below.
+    <li>If ERDDAP is frozen/hung/locked up, use <tt>kill -3 <i>javaProcessID</i></tt> 
+      to tell Java (which is running Tomcat)
+      to do a thread dump to the Tomcat log file 
+      <br><i>tomcat</i>/logs/catalina.out.  
+      After you reboot, you can diagnose the problem by finding the thread dump information 
+      (and any other useful information above it) in <i>tomcat</i>/logs/catalina.out and
+      also by reading relevant parts of the <a rel="help" href="#log">ERDDAP log archive</a>.
+      If you want, you can email that information to <tt>bob dot simons at noaa dot gov</tt> 
+      so I can see what went wrong.
+    <li>Use <tt>./shutdown.sh</tt>
+    <li>Use <tt>ps -u <i>tomcatUser</i> | grep java</tt> repeatedly until the java/tomcat process isn't listed.
+
+      <br>Sometimes, the java/tomcat process will take up to two minutes to shut down.  
+      The reason is: ERDDAP sends a message to its background threads
+      to tell them to stop, but sometimes it takes these threads up to two minutes
+      to get to a good stopping place.
+
+    <li>If you don't want to wait for java/tomcat to stop by itself, 
+      you can use 
+      <br><tt>kill -9 <i>javaProcessID</i></tt> 
+      <br>to force the java/tomcat process to stop immediately.
+      If possible, use this only as a last resort.
+      The -9 switch is powerful, but it may cause various problems.
+
+    <li>To restart ERDDAP, use <tt>./startup.sh</tt>
+
+    <li>View ERDDAP in your browser to check that the restart succeeded.
+      (Sometimes, you need to wait 30 seconds and try to load ERDDAP again 
+      in your browser for it to succeed.)
+      <br>&nbsp;
+    </ol>
+
+  <li>If you use Windows:
+    <ol>
+    <li>Use <tt>cd <i>tomcat</i>/bin</tt>
+    <li>Use <tt>shutdown</tt>
+    <li>You may want/need to use the Windows Task Manager (accessible via Ctrl Alt Del) 
+      to ensure that the Java/Tomcat/ERDDAP process/application has fully stopped.
+      <br>Sometimes, the process/application will take up to two minutes to shut down.  
+      The reason is: ERDDAP sends a message to its background threads
+      to tell them to stop, but sometimes it takes these threads up to two minutes
+      to get to a good stopping place.
+    <li>To restart ERDDAP, use <tt>startup</tt>
+    <li>View ERDDAP in your browser to check that the restart succeeded.
+      (Sometimes, you need to wait 30 seconds and try to load ERDDAP again 
+      in your browser for it to succeed.)
+      <br>&nbsp;
+    </ol>
+
+  </ul>
+
+<li><b><a name="frequentCrashes">Frequent Crashes</a></b> - 
+  If ERDDAP freezes/stops twice or more in one day, you probably have an troublesome user
+  running several scripts at once and/or someone making a large number of invalid requests. 
+  If this happens, you should probably blacklist that user. 
+  When a blacklisted user makes a request, the error message in the response encourages 
+  them to email you to work out the problems. Then, you can encourage them
+  to run just one script at a time and to fix the problems in their script
+  (e.g., requesting data from a remote dataset that can't respond before timing out).
+  See <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#requestBlacklist"
+      >&lt;requestBlacklist&gt; in your datasets.xml file</a>.
+    <br>&nbsp;
+
+<li><b><a name="monitor">Monitor ERDDAP</a></b> - 
+  My experience is that ERDDAP can run for months without needing a 
+  <a rel="help" href="#restart">restart</a>. 
+  But sometimes, if there is heavy use (e.g., scripts or WMS users) and especially if 
+  many of the requests are failing in odd ways, 
+  then ERDDAP freezes (and needs to be restarted) every few days or even every day.
+  I suspect that the problem is related to the program stopping lower 
+  level processing threads that froze or otherwise failed in an odd way.
+  Java only offers one way for a program to stop these threads and 
+  that method is not good (and deprecated) because it is highly likely that it causes 
+  memory and other resource leaks. Those leaks accumulate. 
+  After 1000's of leaks, 
+  <a rel="help" href="#respondingSlowly">ERDDAP becomes very slow</a> 
+  or freezes.  
+  Unfortunately, I haven't found which resource leak is causing the problem. 
+  But if you look at your ERDDAP's <a rel="help" href="#statusPage">/erddap/status.html page</a>,
+  when the number on the line 
+  <br><tt>Number of non-Tomcat-waiting threads in this JVM</tt>
+  <br>increases significantly (e.g., doubles) and permanently (more than an hour or two),
+  that is usually a sign that trouble is here or is coming soon.
+
+  <p>If you find that you frequently need to restart ERDDAP, you might try using  
+  <a rel="help" href="http://mmonit.com/monit/">Monit<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+  to monitor your ERDDAP and restart it if needed.
+  Or, you could make a cron job to restart ERDDAP (proactively) periodically.
+  It may be a little challenging to write a script to automate monitoring and restarting ERDDAP.
+  Some tips that might help:
+  <ul>
+  <li>You can simplify testing if the Tomcat process is still running 
+    by using the -c switch with grep:
+    <br><tt>ps -u <i>tomcatUser</i> | grep -c java</tt>
+    <br>That will reduce the output to "1" if the tomcat process is still alive,
+    or "0" if the process has stopped.
+    <br>&nbsp;
+  <li>If you are good with gawk, you can extract the processID from the results of 
+     <br><tt>ps -u <i>tomcatUser</i> | grep java</tt>, and use the 
+     processID in other lines of the script.
+    <br>&nbsp;
+  </ul>
+  If you do set up Monit or a cron job, please email the details to 
+  <tt>bob dot simons at noaa dot gov</tt> .
+  <br>&nbsp;
+
+<li><b><a name="permgen">PermGen</a></b> - 
+If you repeatedly use Tomcat Manager to <tt>Reload</tt> (or <tt>Stop</tt> and <tt>Start</tt>) ERDDAP, 
+  ERDDAP may fail to start up and throw <tt>java.lang.OutOfMemoryError: PermGen</tt>.
+  The solution is to periodically (or every time?) 
+  <a rel="help" href="#restart">shut down and restart tomcat and ERDDAP</a>,
+  instead of just reloading ERDDAP.
+  <br>[Update: This problem should be greatly minimized or fixed in ERDDAP version 1.24.]
+  <br>&nbsp;
+
+<li><b><a name="log">log.txt</a></b> -
+  If ERDDAP doesn't start up or if something isn't working as expected, 
+  it is very useful to look at the error and diagnostic messages in the ERDDAP log file.  
+  <ul>
+  <li>The log file is <i>bigParentDirectory</i>/logs/log.txt 
+    <br>(<i>bigParentDirectory</i> is specified in <a rel="help" href="#setup.xml">setup.xml</a>).
+    If there is no log.txt file or if the log.txt file hasn't been updated since
+    you restarted ERDDAP, look in the <a rel="help" href="#tomcatLogs">Tomcat Log Files</a> 
+    to see if there is an error message there.
+  <li>Types of diagnostic messages in the log file:
+    <ul>
+    <li>The word "error" is used when something went so wrong that the procedure failed to complete.
+      Although it is annoying to get an error, the error forces you to deal with the problem.
+      Our thinking is that it is better to throw an error, than to have ERDDAP hobble along, 
+      working in a way you didn't expect.
+    <li>The word "warning" is used when something went wrong, but the procedure was able to complete. 
+      These are pretty rare.
+    <li>Anything else is just an informative message. 
+      You can control how much information is logged with <tt>&lt;logLevel&gt;</tt> in 
+        <a rel="help" href="#setup.xml">setup.xml</a>.
+    </ul>
+  <li>When the log.txt files gets to 20 MB, 
+    <br>the file is renamed log.txt.previous and a new log.txt file is created.
+    So log files don't accumulate.
+  <li>Whenever you restart ERDDAP, 
+    <br>ERDDAP makes an archive copy of the 
+    log.txt and log.txt.previous files with a time stamp in the file's name. 
+    If there was trouble before the restart, 
+    it may be useful to analyze these archived files for clues as to what the trouble was.
+    You can delete the archive files if they are no longer needed.
+    <br>&nbsp;
+  </ul>
+
+<li><b><a name="tomcatLogs">Tomcat Log Files</a></b> - 
+  If ERDDAP doesn't start up because an error occured very early in ERDDAP's startup, 
+  the error message will show up in Tomcat's log files
+  (<i>tomcat</i>/logs/catalina.<i>today</i>.log or 
+   <i>tomcat</i>/logs/catalina.out),
+  not in <a rel="help" href="#log">ERDDAP's log.txt file</a>.
+  <br>&nbsp;
+
+<li><b><a name="emailLog">emailLogYEAR-MM-DD.txt</a></b> -
+  ERDDAP always writes the text of all out-going email messages 
+  in the current day's emailLogYEAR-MM-DD.txt file in <i>bigParentDirectory</i>/logs 
+  (<i>bigParentDirectory</i> is specified in <a rel="help" href="#setup.xml">setup.xml</a>).
+  <ul>
+  <li>If the server can't send out email messages, or if you have configured ERDDAP not to send 
+    out email messages, or if you are just curious, this file is a convenient way to see 
+    all of the email messages that have been sent out.
+  <li>You can delete previous days' email log files if they are no longer needed.
+    <br>&nbsp;
+  </ul>
+
+<li><b><a name="dailyReport">Daily Report</a></b> - 
+  The Daily Report has lots of useful information -- all of the information from 
+  your ERDDAP's <a rel="help" href="#statusPage">/erddap/status.html page</a> and more.
+  <ul>
+  <li>It is the most complete summary of your ERDDAP's status.
+  <li>Among other statistics, it includes a list of datasets that didn't load and the exceptions 
+    they generated.
+  <li>It is generated when you start up ERDDAP (just after ERDDAP finishes trying to load all of 
+    the datasets) and generated soon after 7 am local time every morning.
+  <li>Whenever it is generated, it is written to <a rel="help" href="#log">ERDDAP's log.txt file</a>.
+  <li>Whenever it is generated, it is emailed to <tt>&lt;emailDailyReportsTo&gt;</tt> and 
+    <tt>&lt;emailEverythingTo&gt;</tt> (which are specified in 
+    <a rel="help" href="#setup.xml">setup.xml</a>) 
+    provided you have set up the email system (in setup.xml).
+    <br>&nbsp;
+  </ul>
+
 <li><b><a name="statusPage">Status Page</a></b> - 
   You can view the status of your ERDDAP from any browser by going to 
   &lt;baseUrl&gt;/erddap/status.html 
@@ -437,96 +814,13 @@ or Mac server instead.
     <br>&nbsp;
   </ul>
 
-<li><b><a name="log">log.txt</a></b> -
-  When you are first installing ERDDAP or any time something isn't working as expected, 
-  it is very useful to look at the diagnostic messages in the ERDDAP log file.  
-  <ul>
-  <li>The log file is the log.txt file in [bigParentDirectory]/logs 
-      (as specified in <a rel="help" href="#setup.xml">setup.xml</a>).
-  <li>When the log.txt files gets to 5 MB, it is renamed log.txt.previous and a new log.txt file is created.
-    So log files don't accumulate.
-  <li>Whenever you restart ERDDAP, it makes an archive copy of the log.txt and log.txt.previous files with 
-    a time stamp. If there was trouble before the restart, it may be useful to analyze these archived 
-    files for clues as to what the trouble was.
-  <li>You can delete the archive files if they are no longer needed.
-  <li>Types of diagnostic messages in the log file:
-    <ul>
-    <li>The word "error" is used when something went so wrong that the procedure failed to complete.
-      Although it is annoying to get an error, the error forces you to deal with the problem.
-      Our thinking is that it is better to throw an error, than to have ERDDAP hobble along, 
-      working in a way you didn't expect.
-    <li>The word "warning" is used when something went wrong, but the procedure was able to complete. 
-      These are pretty rare.
-    <li>Anything else is just an informative message. 
-      You can control how much information is logged with <tt>&lt;logLevel&gt;</tt> in 
-        <a rel="help" href="#setup.xml">setup.xml</a>.
-      <br>&nbsp;
-    </ul>
-  </ul>
-
-<li><b><a name="shutdown">Tomcat Shutdown Sometimes Slow</a></b> - 
-  On Linux and Macs, when you use 
-  <br>&nbsp;&nbsp;<tt>[tomcat]/bin/shutdown.sh</tt> 
-  <br>to 
-  shutdown Tomcat (and ERDDAP), Tomcat (and ERDDAP) may not be completely shut down
-  for a few minutes.  
-  The reason is: ERDDAP sends a message to its background threads
-  to tell them to stop, but sometimes it takes these threads a few minutes
-  to get to a good stopping place.
-  So, you should always use 
-  <br>&nbsp;&nbsp;<tt>ps -u <i>tomcatUser</i></tt> 
-  <br>(or with other switches)
-  to ensure that the java/tomcat thread has stopped running before using 
-  <br>&nbsp;&nbsp;<tt>[tomcat]/bin/startup.sh</tt> 
-  <br>to restart tomcat (and ERDDAP).
-  If you don't want to wait for Tomcat (and ERDDAP) to stop by itself, 
-  you can use 
-  <br>&nbsp;&nbsp;<tt>kill -9 <i>processID</i></tt> 
-  <br>to force the tomcat process to stop immediately.
-  <br>(Sorry, I don't know the analogous commands for Windows servers.)
-  <br>&nbsp;
-
-<li><b><a name="tomcatLogs">Tomcat Log Files</a></b> - Tomcat errors are logged to
-  [tomcat]/logs/catalina.(today).log or 
-  [tomcat]/logs/catalina.out.
-  These are often particularly helpful if ERDDAP won't even start up.
-  <br>&nbsp;
-
-<li><b><a name="emailLog">emailLogYEAR-MM-DD.txt</a></b> -
-  ERDDAP always writes the text of all out-going email messages 
-  in the current day's emailLogYEAR-MM-DD.txt file in [bigParentDirectory]/logs 
-  (as specified in <a rel="help" href="#setup.xml">setup.xml</a>).
-  <ul>
-  <li>If the server can't send out email messages, or if you have configured ERDDAP not to send 
-    out email messages, or if you are just curious, this file is a convenient way to see 
-    all of the email messages that have been sent out.
-  <li>You can delete previous days' email log files if they are no longer needed.
-    <br>&nbsp;
-  </ul>
-
-<li><b><a name="dailyReport">Daily Report</a></b> - 
-  The Daily Report has lots of useful information -- more than the Status Page.
-  <ul>
-  <li>It is the most complete summary of your ERDDAP's status.
-  <li>Among other statistics, it includes a list of datasets that didn't load and the exceptions 
-    they generated.
-  <li>It is emailed to <tt>&lt;emailDailyReportsTo&gt;</tt> and 
-    <tt>&lt;emailEverythingTo&gt;</tt> (as specified in 
-    <a rel="help" href="#setup.xml">setup.xml</a>) provided you have set up the email email system (in setup.xml).
-  <li>It is also written to the <a rel="help" href="#log">log file</a>.
-  <li>It is generated when you start up ERDDAP, just after ERDDAP's first attempt to load all of 
-    the datasets.
-  <li>It is also generated soon after 7 am local time every morning.
-    <br>&nbsp;
-  </ul>
-
 <li><b><a name="addingDatasets">Adding/Changing</a> Datasets</b> - 
-  ERDDAP usually rereads datasets.xml every <tt>&lt;<i>loadDatasetsMinMinutes</i>&gt;</tt> 
+  ERDDAP usually rereads datasets.xml every <tt><i>loadDatasetsMinMinutes</i></tt> 
   (specified in <a rel="help" href="#setup.xml">setup.xml</a>). 
     So you can make changes to datasets.xml any time, even while ERDDAP is running.
   <br>A new dataset will be detected soon, usually within 
-    <tt>&lt;<i>loadDatasetsMinMinutes</i>&gt;</tt>.
-  <br>A changed dataset will be reloaded when it is <tt>&lt;<i>reloadEveryNMinutes</i>&gt;</tt>
+    <tt><i>loadDatasetsMinMinutes</i></tt>.
+  <br>A changed dataset will be reloaded when it is <tt><i>reloadEveryNMinutes</i></tt>
     old (as specified in datasets.xml).
 <br>&nbsp;
 
@@ -536,11 +830,11 @@ or Mac server instead.
   <li>ERDDAP won't notice any changes to a dataset's setup in datasets.xml until ERDDAP reloads the dataset.
   <li>If a dataset is active in ERDDAP and you want to force ERDDAP to reload it as soon as possible
     (before the dataset's <tt>&lt;reloadEveryNMinutes&gt;</tt> would cause it to be reloaded),
-    put a file in [bigParentDirectory]/flag 
-      (as specified in <a rel="help" href="#setup.xml">setup.xml</a>) that has the
-    same name as the datasetID (as specified in datasets.xml). 
+    put a file in <i>bigParentDirectory</i>/flag 
+      (<i>bigParentDirectory</i> is specified in <a rel="help" href="#setup.xml">setup.xml</a>) that has the
+    same name as the dataset's datasetID. 
   <li>The contents of the flag file are irrelevant.
-  <li>ERDDAP continuously looks for flag files. 
+  <li>In between major dataset reloads, ERDDAP looks continuously for flag files. 
   <li>When ERDDAP finds a flag file, it deletes the file and tries to reload the dataset very soon
     (usually within seconds).
   <li>Note that when a dataset is reloaded, all files in the 
@@ -597,8 +891,9 @@ or Mac server instead.
   <ol>
   <li>RunLoadDatasets notes the current time.
   <li>RunLoadDatasets starts a LoadDatasets thread to do a "majorLoad".  
-    You can see information about the current/previous majorLoad at the top of your
-    ERDDAP's status page at http://<i>www.yourSite.org</i>/erddap/status.html
+    You can see information about the current/previous majorLoad at the top of 
+    your ERDDAP's 
+    <br><a rel="help" href="#statusPage">/erddap/status.html page</a>
     (<a href="http://coastwatch.pfeg.noaa.gov/erddap/status.html">status&nbsp;page&nbsp;example</a>).
     <ol>
     <li>LoadDatasets makes a copy of datasets.xml.
@@ -630,10 +925,10 @@ or Mac server instead.
   <li>While the time since the start of the last majorLoad is less than
     <tt>loadDatasetsMinMinutes</tt> (as specified in setup.xml, e.g., 15 minutes),
     RunLoadDatasets repeatedly looks for <a rel="help" href="#flag">flag</a> files
-    in the [bigParentDirectory]/flag directory.  If one or more flag files are 
+    in the <i>bigParentDirectory</i>/flag directory.  If one or more flag files are 
     found, they are deleted, and RunLoadDatasets starts a LoadDatasets thread to do a 
     "minorLoad" (majorLoad=false).  You can't see minorLoad information on 
-    your ERDDAP's status page. 
+    your ERDDAP's <a rel="help" href="#statusPage">/erddap/status.html page</a>. 
     <ol>
     <li>LoadDatasets makes a copy of datasets.xml.
     <li>LoadDatasets reads through the copy of datasets.xml and, 
@@ -679,7 +974,7 @@ or Mac server instead.
     But if a LoadDatasets thread is currently running, the dataset probably won't be reloaded
     until after that LoadDatasets thread is finished.
   <li><a name="DRFlagFileDeleted">Flag File Deleted</a>
-    <br>In general, if you put a flag file in the <tt>[bigParentDirectory]/erddap/flag</tt>
+    <br>In general, if you put a flag file in the <tt><i>bigParentDirectory</i>/erddap/flag</tt>
     directory (by visiting the dataset's flagUrl or putting an actual file there), the
     dataset will usually be reloaded very soon after that flag file is deleted.    
   <li><a name="DRFlagVsReloadEveryNMinutes">Flag vs. Small <tt>reloadEveryNMinutes</tt></a>
@@ -692,7 +987,7 @@ or Mac server instead.
     receive messages that the dataset needs to be reloaded.
   <li><a name="DRLookInLog">Look in log.txt</a>
     <br>Lots of relevant information is written to the 
-    &lt;<i>bigParentDirectory</i>&gt;/logs/log.txt file.
+    <i>bigParentDirectory</i>/logs/log.txt file.
     If things aren't working as you expect, looking at log.txt
     lets you diagnose the problem by finding out exactly what ERDDAP did.
     <ul>
@@ -742,7 +1037,7 @@ or Mac server instead.
   when the dataset is reloaded. This greatly speeds the reloading process.  
   <ul>
   <li>The dataset information files are human-readable .json files and are stored in
-    &lt;<i>bigParentDirectory</i>&gt;/dataset .
+    <i>bigParentDirectory</i>/dataset .
   <li>ERDDAP only deletes these files in unusual situations.
   <li>It shouldn't ever be necessary for you to delete these files because ERDDAP verifies and updates 
     the stored information when the dataset is reloaded.
@@ -769,7 +1064,9 @@ or Mac server instead.
   And it fills the search engine with goofy, pointless subsets of the actual data.
 
   <p>To tell the web crawlers to stop filling out forms, you need to create a text file called 
-  <a rel="help" href="http://en.wikipedia.org/wiki/Robots_exclusion_standard">robots.txt</a> 
+  <a rel="help" href="http://en.wikipedia.org/wiki/Robots_exclusion_standard">robots.txt<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
   in the root directory of your web site's document hierarchy so that it can be viewed by 
   anyone as, e.g., http://www.example.com/robots.txt .
   <br>If you are creating a new robots.txt file, put these two lines in it:
@@ -785,7 +1082,9 @@ or Mac server instead.
   <br>&nbsp;
 
 <li><b><a name="sitemap">sitemap.xml</a></b> - As the
-  <a rel="help" href="http://www.sitemaps.org/">www.sitemaps.org</a> web site says:
+  <a rel="help" href="http://www.sitemaps.org/">www.sitemaps.org<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> web site says:
   <blockquote>Sitemaps are an easy way for webmasters to inform search engines about pages on their 
   sites that are available for crawling. In its simplest form, a Sitemap is an XML file that lists
   URLs for a site along with additional metadata about each URL (when it was last updated, how
@@ -806,7 +1105,9 @@ or Mac server instead.
   <li>So ERDDAP generates a sitemap.xml file for your ERDDAP which tells search engines 
     that your ERDDAP only needs to be crawled every month.
   <li>You should add a refernce to ERDDAP's sitemap.xml to your 
-     <a rel="help" href="http://en.wikipedia.org/wiki/Robots_exclusion_standard">robots.txt</a> file:
+     <a rel="help" href="http://en.wikipedia.org/wiki/Robots_exclusion_standard">robots.txt<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> file:
      <br>&nbsp;&nbsp;<tt>Sitemap: http://<b>www.yoursite.org</b>/erddap/sitemap.xml</tt>
   <li>If that doesn't seem to be getting the message to the crawlers, you can tell the various search 
     engines about the sitemap.xml file by visiting these URLs (but change <b>YourInstitution</b> 
@@ -821,21 +1122,20 @@ or Mac server instead.
   </ul>
 <br>&nbsp;
 
-<li><b>Email <a name="updateNotification">Notification</a> of Updates</b> - If you want to receive an 
-email whenever a new version of ERDDAP 
-is available, send an email to <tt>bob dot simons at noaa dot gov</tt> requesting this.
-<br>&nbsp;
-
 <li><b><a name="pushPull">Data Dissemination / Data Distribution Networks: Push and Pull Technology</a></b> 
   <ul>
   <li>Normally, ERDDAP acts as an intermediary: it takes a request from a user; 
     gets data from a remote data source; reformats the data; and sends it to the user.
-  <li><a rel="help" href="http://en.wikipedia.org/wiki/Pull_technology">Pull Technology</a>: 
+  <li><a rel="help" href="http://en.wikipedia.org/wiki/Pull_technology">Pull Technology<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>: 
     ERDDAP also has the ability to actively get all of the available data  
     from a remote data source and 
     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">store 
     a local copy of the data</a>.
-  <li><a rel="help" href="http://en.wikipedia.org/wiki/Push_technology">Push Technology</a>: 
+  <li><a rel="help" href="http://en.wikipedia.org/wiki/Push_technology">Push Technology<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>: 
     By using ERDDAP's 
     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/information.html#subscriptions">subscription services</a>, 
     other data servers can be notified as soon 
@@ -862,7 +1162,9 @@ is available, send an email to <tt>bob dot simons at noaa dot gov</tt> requestin
   <li>A given ERDDAP can be both a source of data for some datasets and a re-distribution site for other
     datasets.
   <li>The resulting network is roughly similar to data distribution networks set up with programs like 
-    <a rel="help" href="http://www.unidata.ucar.edu/software/idd/">Unidata's IDD/IDM</a>, but less rigidly structured.
+    <a rel="help" href="http://www.unidata.ucar.edu/software/idd/">Unidata's IDD/IDM<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>, but less rigidly structured.
     <br>&nbsp;
   </ul>
 
@@ -870,14 +1172,20 @@ is available, send an email to <tt>bob dot simons at noaa dot gov</tt> requestin
 <li><b><a name="security">Security/Authentication/Authorization</a></b> - By default, ERDDAP 
 runs as an entirely public server (using http)  
 with no login system 
-(<a rel="help" href="http://en.wikipedia.org/wiki/Authentication">authentication</a>) 
+(<a rel="help" href="http://en.wikipedia.org/wiki/Authentication">authentication<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>) 
 and no restrictions to data access 
-(<a rel="help" href="http://en.wikipedia.org/wiki/Authorization">authorization</a>). 
+(<a rel="help" href="http://en.wikipedia.org/wiki/Authorization">authorization<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>). 
 If you want to restrict access to some or all datasets to some users, you can use ERDDAP's
 built-in security system. When the security system is in use:
 <ul>
 <li>ERDDAP uses 
-    <a rel="help" href="http://en.wikipedia.org/wiki/Role-based_access_control">role-based access control</a>.
+    <a rel="help" href="http://en.wikipedia.org/wiki/Role-based_access_control">role-based access control<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
   <ul>
   <li>The ERDDAP administrator defines users with the
     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a>
@@ -894,7 +1202,9 @@ built-in security system. When the security system is in use:
 <li>Users who are not logged in use ERDDAP's <b>http</b> URLs.
   Users who are logged in use ERDDAP's <b>https</b> URLs. 
   This helps prevent 
-    <a rel="help" href="http://en.wikipedia.org/wiki/Session_hijacking">session hijacking and sidejacking</a>.    
+    <a rel="help" href="http://en.wikipedia.org/wiki/Session_hijacking">session hijacking and sidejacking<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.    
 <li>Anyone who isn't logged in can access and use the public datasets.
   By default, private datasets don't appear in lists of datasets if a user isn't logged in.
   If the administrator has set setup.xml's <tt>&lt;listPrivateDatasets&gt;</tt> to true, 
@@ -929,31 +1239,41 @@ built-in security system. When the security system is in use:
     the user's log in/out info 
     at the top of each web page.
   </ul>
-<li><a rel="help" href="http://tomcat.apache.org/tomcat-7.0-doc/ssl-howto.html">Configure tomcat to support SSL</a>
+<li><a rel="help" href="http://tomcat.apache.org/tomcat-7.0-doc/ssl-howto.html"
+    >Configure tomcat to support SSL<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
      (the basis for https connections) by creating a keystore with a 
-  <a rel="help" href="http://en.wikipedia.org/wiki/Public_key_certificate">digital certificate</a>
-     and by modifying [tomcat]/conf/server.xml to uncomment the connector for port 8443.
+  <a rel="help" href="http://en.wikipedia.org/wiki/Public_key_certificate">digital certificate<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+     and by modifying <i>tomcat</i>/conf/server.xml to uncomment the connector for port 8443.
   It is better to get a digital certificate from a 
-     <a rel="help" href="http://en.wikipedia.org/wiki/Certificate_authority">certificate authority</a>
+     <a rel="help" href="http://en.wikipedia.org/wiki/Certificate_authority">certificate authority<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
      than to make a 
-     <a rel="help" href="http://en.wikipedia.org/wiki/Self-signed_certificate">self-signed certificate</a>
-  (<a rel="help" href="http://www.exampledepot.com/egs/java.security.cert/CreateCert.html">instructions</a>), 
+     <a rel="help" href="http://en.wikipedia.org/wiki/Self-signed_certificate">self-signed certificate<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+  (<a rel="help" href="http://www.exampledepot.com/egs/java.security.cert/CreateCert.html">instructions<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>), 
      because it gives your clients more assurance that they are indeed connecting to your
   ERDDAP, not an imposter's website.
   Many vendors sell digital certificates. (Search for web.) They are not expensive. 
   On Windows, you may have to move .keystore from "c:\Documents and Settings\<i>you</i>\.keystore" to 
   "c:\Documents and Settings\Default User\.keystore"  or "c:\.keystore" 
-  (see [tomcat]/logs/catalina.(today).log if the application doesn't load or users can't see the log in
+  (see <i>tomcat</i>/logs/catalina.<i>today</i>.log if the application doesn't load or users can't see the log in
   page).
   You can see when the .keystore certificate will expire by examining the certificate when you log in.
   For additional security, create a signed certificate from a trusted source. 
   (Search the web for more information.)
 <li>If Tomcat is running in Apache, you need to modify the
-  /etc/httpd/conf/httpd.conf file to allow HTTPS 
-  traffic to/from ERDDAP:
+  /etc/httpd/conf/httpd.conf file to allow HTTPS traffic to/from ERDDAP:
   To the "VirtualHost" tag, add the lines:<tt>
-  <br>&nbsp;&nbsp; ProxyPass /erddap &lt;<i>YourServer'sHttpsURL</i>&gt;/erddap
-  <br>&nbsp;&nbsp; ProxyPassReverse /erddap &lt;<i>YourServer'sHttpsURL</i>&gt;/erddap</tt>
+  <br>&nbsp;&nbsp; ProxyPass /erddap https://<i>www.YourServer.org</i>:8443/erddap
+  <br>&nbsp;&nbsp; ProxyPassReverse /erddap https://<i>www.YourServer.org</i>:8443/erddap</tt>
   <br>(This is untested. If you do this and it works or doesn't work, let us know.)
 <li>In datasets.xml, create a 
   <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a>
@@ -980,7 +1300,9 @@ built-in security system. When the security system is in use:
 
 <p>Authentication (logging in) - Currently, ERDDAP supports 
   <tt>custom</tt> and 
-  <a rel="help" href="http://openid.net/"><tt>openid</tt></a> (recommended) authentication.
+  <a rel="help" href="http://openid.net/"><tt>openid</tt><img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> (recommended) authentication.
 We strongly recommend OpenID because it frees you from storing and handling user's passwords.
 Remember that users often use the same password at different sites.
 So they may be using the same password for your ERDDAP as they do at their bank.
@@ -998,12 +1320,18 @@ So you are freed from that responsibility.
   email isn't secure!) and store them in datasets.xml in  
     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a> tags.
 
-  <p>The <tt>custom</tt> approach uses a <a rel="help" href="http://en.wikipedia.org/wiki/HTTP_cookie">cookie</a> on the user's computer,
-    so the user's browser must be 
+  <p>The <tt>custom</tt> approach uses a 
+    <a rel="help" href="http://en.wikipedia.org/wiki/HTTP_cookie">cookie<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+    on the user's computer, so the user's browser must be 
   set to allow cookies.  If a user is making ERDDAP requests from a computer program 
   (not a browser), cookies are hard to work with. Sorry.
 
-<li><a rel="help" href="http://openid.net/"><tt>openid</tt></a> is an open standard that lets users log 
+<li><a rel="help" href="http://openid.net/"><tt>openid</tt><img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+  is an open standard that lets users log 
   in with your password at one web site
   and then log in without your password at many other web sites, including ERDDAP.
   OpenID is very convenient for ERDDAP administrators -- you don't ever have to deal with passwords.
@@ -1011,8 +1339,10 @@ So you are freed from that responsibility.
   so that you can define the users and their roles in datasets.xml with 
      <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#user"><tt>&lt;user&gt;</tt></a> tags.
 
-  <p>OpenID uses a <a rel="help" href="http://en.wikipedia.org/wiki/HTTP_cookie">cookie</a> on the user's computer,
-    so the user's browser must be set to allow cookies.
+  <p>OpenID uses a <a rel="help" href="http://en.wikipedia.org/wiki/HTTP_cookie">cookie<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+    on the user's computer, so the user's browser must be set to allow cookies.
   If a user is making ERDDAP requests from a computer program (not a browser), 
   cookies are hard to work with. Sorry.
 </ul>
@@ -1030,9 +1360,13 @@ So how can ERDDAP get the data for restricted access datasets? Some options are:
 <li>ERDDAP can serve data from local files (for example, via EDDTableFromFiles or EDDGridFromFiles).  
   <br>&nbsp;
 <li>ERDDAP can be in a 
-     <a rel="help" href="http://en.wikipedia.org/wiki/Demilitarized_zone_(computing)">DMZ</a>
+     <a rel="help" href="http://en.wikipedia.org/wiki/Demilitarized_zone_(computing)">DMZ<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
      and the data source (e.g., an OPeNDAP server or a database) can be 
-   behind a <a rel="help" href="http://en.wikipedia.org/wiki/Firewall">firewall</a>,
+   behind a <a rel="help" href="http://en.wikipedia.org/wiki/Firewall">firewall<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
      where it is accessible to ERDDAP but not to the public.
   <br>&nbsp;
 <li>The data source can be on a public web site, but require a login to get the data.
@@ -1069,25 +1403,36 @@ These are details that you don't need to know until a need arises.
 <ul>
 <li><b><a name="secondErddap">Setting</a> Up a Second ERDDAP for Testing/Development</b>  
   <br>If you want to do this, there are two approaches:
-  <ol>
+  <ul>
   <li> (Best) Install Tomcat and ERDDAP on a computer other than the computer that has your public ERDDAP.
-    If you use your personal computer, 
-    <ul>
+    If you use your personal computer: 
+    <ol>
     <li>Do the installation one step at a time. Get Tomcat up and running first.
-    <li>When Tomcat is running, the Tomcat Manager should be at http://127.0.0.1:8080/manager/html/
-    <li>In ERDDAP's <a rel="help" href="#setup.xml">setup.xml</a>, set <tt>baseUrl</tt> to <tt>http://127.0.0.1:8080</tt> 
-    <li>ERDDAP will be at http://127.0.0.1:8080/erddap 
-    </ul>
+      <br>When Tomcat is running, the Tomcat Manager should be at 
+      <br><a rel="help" href="http://127.0.0.1:8080/manager/html/">http://127.0.0.1:8080/manager/html/</a>
+    <li>Install ERDDAP.
+    <li>Don't use ProxyPass to eliminate the port number from the ERDDAP URL.
+    <li>In <a rel="help" href="#setup.xml">setup.xml</a>, set <tt>baseUrl</tt> 
+      to <tt>http://127.0.0.1:8080</tt> 
+    <li>After you start up this ERDDAP, you should be able to see it at 
+      <br><a rel="help" href="http://127.0.0.1:8080/erddap">http://127.0.0.1:8080/erddap</a> 
+    </ol>
   <li> <a name="secondTomcat">(Second Best)</a> Install another Tomcat on the same computer as your public ERDDAP.
     <ol>
-    <li> Change all of the port numbers associated with the second Tomcat (e.g., change 8080 to 8081)
-      (see these <a rel="help" href="http://viralpatel.net/blogs/2009/08/running-multiple-instance-apache-tomcat-single-server.html">directions</a>).    
-    <li> Install ERDDAP in the new Tomcat.
-      In the new ERDDAP's <a rel="help" href="#setup.xml">setup.xml</a>, set <tt>baseUrl</tt> to <tt>http://www.your.site.name:8081</tt> 
-      You can then access the new ERDDAP via http://www.your.site.name:8081/erddap .
+    <li>Do the installation one step at a time. Get Tomcat up and running first.
+      <br>Change all of the port numbers associated with the second Tomcat (e.g., change 8080 to 8081)
+      (see these <a rel="help" href="http://viralpatel.net/blogs/2009/08/running-multiple-instance-apache-tomcat-single-server.html">directions<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).    
+    <li>Install ERDDAP in the new Tomcat.
+    <li>Don't use ProxyPass to eliminate the port number from the ERDDAP URL.
+    <li>In <a rel="help" href="#setup.xml">setup.xml</a>, set <tt>baseUrl</tt> 
+      to <tt>http://www.<i>yourDomainName</i>:8081</tt> 
+    <li>After you start up this ERDDAP, you should be able to see it at 
+      <br><tt>http://www.<i>yourDomainName</i>:8081/erddap</tt>
       <br>&nbsp;
     </ol>
-  </ol>
+  </ul>
 
 <li><b><a name="heavyLoads">Heavy Loads / Constraints</a></b> - 
   With heavy use, a standalone ERDDAP may be constrained by various problems. 
@@ -1108,8 +1453,12 @@ These are details that you don't need to know until a need arises.
 
 <li><a name="cloudComputing"><b>Cloud Computing</b></a> - 
   Several companies are starting to offer cloud computing services 
-  (e.g., <a rel="help" href="http://aws.amazon.com/">Amazon Web Services</a>).
-  <a rel="help" href="http://en.wikipedia.org/wiki/Web_hosting_service">Web hosting companies</a> 
+  (e.g., <a rel="help" href="http://aws.amazon.com/">Amazon Web Services<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
+  <a rel="help" href="http://en.wikipedia.org/wiki/Web_hosting_service">Web hosting companies<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
      have offered a range of roughly similar services since the mid-1990's.
   You can use these services to set up a grid/cluster of ERDDAPs to handle very heavy use.
   For more information, see  
@@ -1147,67 +1496,36 @@ These are details that you don't need to know until a need arises.
   Often this succeeds. When it does, the user will simply see that a given request took a little longer 
   than usual. If it fails, the user should (as the message says) wait a minute, then try again.
 
-<li><b><a name="respondingSlowly">Responding</a> Slowly</b> - 
-  <br>If ERDDAP is responding slowly, view your ERDDAP's Status Page from any browser: 
-  &lt;baseUrl&gt;/erddap/status.html .
-  It has lots of useful information about memory usage, number of requests, thread usage, etc.
-  Is recent memory usage really high? Are a large number of threads in use?
-  And/or you can use the "Server Status" link in the Tomcat Manager
-  to check on the status of all of the response threads.  
-  Is your network / internet connection running slowly?
-  There may be other useful diagnostic information in the <a rel="help" href="#log">ERDDAP log</a> or in [tomcat]/logs/catalina.out.
-  <br>&nbsp;
-
-<li><b><a name="frozen">Frozen,</a> Hung, Locked Up</b> - 
-  If ERDDAP freezes, hangs, or locks up, you need to restart Tomcat 
-  or perhaps reboot the server. Before you do, if the server uses Linux, from a command line,
-  <ol>
-  <li> Type <tt>"ps -u &lt;tomcatUser&gt;"</tt> (but substitute the name of the user that ran 
-    Tomcat).
-  <li> In the ps output, find the processID for the "java" process.
-  <li> Type <tt>"kill -3 &lt;processID&gt;"</tt> to tell Java (which is running Tomcat) to do a thread dump to [tomcat]/logs/catalina.out.
-  <li> After you reboot, you can diagnose the problem by finding the thread dump information 
-    (and any other useful information above it) in [tomcat]/logs/catalina.out and
-    also by reading relevant parts of the <a rel="help" href="#log">ERDDAP log archive</a>.
-  <li> Please email that information to <tt>bob dot simons at noaa dot gov</tt> so we can see 
-    what went wrong.
-    <br>&nbsp;
-  </ol>
-
-<li><b><a name="permgen">PermGen</a></b> - 
-If you repeatedly use Tomcat Manager to Reload (or Stop and Start) ERDDAP, 
-  ERDDAP may fail to start up and throw <tt>java.lang.OutOfMemoryError: PermGen</tt>.
-  The solution is to periodically (or every time?) shut down and restart Tomcat,
-  instead of Reloading ERDDAP.
-  <br>[Update: This problem should be greatly minimized or fixed in ERDDAP version 1.24.]
-  <br>&nbsp;
-
 <li><b><a name="palettes">Palettes</a></b> are used to convert a range of numbers into a range of colors
 when making graphs and maps. 
   ERDDAP comes with several pre-made palettes. You can add additional palettes.
-  ERDDAP's palettes are defined in <a rel="help" href="http://gmt.soest.hawaii.edu/">GMT</a>-style 
-    <a rel="help" href="http://gmt.soest.hawaii.edu/gmt/html/GMT_Docs.html#x1-720004.15">.cpt (Color Palette Table) files</a>.
+  ERDDAP's palettes are defined in <a rel="help" href="http://gmt.soest.hawaii.edu/">GMT<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>-style 
+    <a rel="help" href="http://gmt.soest.hawaii.edu/gmt/html/GMT_Docs.html#x1-720004.15">.cpt (Color Palette Table) files<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
   All ERDDAP .cpt files are valid GMT .cpt files, but the opposite may not be true.
   ERDDAP may just support a subset of what GMT supports.  
   If there is trouble, ERDDAP will probably throw an error when the .cpt file is parsed 
   (which is better than misusing the information).
-  ERDDAP requires that all .cpt files be stored in [tomcat]/webapps/erddap/WEB-INF/cptfiles.
+  ERDDAP requires that all .cpt files be stored in <i>tomcat</i>/webapps/erddap/WEB-INF/cptfiles.
   To get ERDDAP to use a new .cpt file, store the file in that directory 
   and either:
   <ul>
   <li>If you use the default messages.xml file: add the file name to the &lt;palettes&gt; tag in
-    <br>[tomcat]/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml.
+    <br><i>tomcat</i>/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/erddap/util/messages.xml.
     <br>If you do this, you need to do it every time you upgrade ERDDAP.
   <li>If you use a custom messages.xml file: add the file name to the &lt;palettes&gt; tag 
     in your custom messages.xml file: 
-    [tomcat]/content/erddap/messages.xml .
+    <i>tomcat</i>/content/erddap/messages.xml .
     If you do this, you only need to do it once (but there is other work to maintain a custom messages.xml file). 
   </ul>  
   <br>But don't remove any of the standard palettes. They are a standard feature of all ERDDAP installations.
   An advantage of this approach is that you can specify the order of the palettes in the list 
   presented to users.
   <br>And for every new ERDDAP release, you need to put your .cpt files in 
-    [tomcat]/webapps/erddap/WEB-INF/cptfiles and restart ERDDAP so ERDDAP findes the files.
+    <i>tomcat</i>/webapps/erddap/WEB-INF/cptfiles and restart ERDDAP so ERDDAP findes the files.
   <br>&nbsp;
 
 <li><b><a name="colorbars">How does ERDDAP generate the colors in a colorbar?</a></b>
@@ -1242,7 +1560,7 @@ when making graphs and maps.
   <p>So how can you mimic what ERDDAP is doing?  That isn't easy.
   Basically you need to duplicate the process that ERDDAP is using.
   If you are a Java programmer, you can use the same Java class that ERDDAP uses to do all of this: 
-  <br>[tomcat]/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/coastwatch/sgt/CompoundColorMap.java.
+  <br><i>tomcat</i>/webapps/erddap/WEB-INF/classes/gov/noaa/pfel/coastwatch/sgt/CompoundColorMap.java.
 
 
 <li><b><a name="dataDistribution">Guidelines for Data Distribution Systems</a></b> 
@@ -1263,8 +1581,12 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
   <ul>
   <li>The source code for the current version of ERDDAP is always in the current erddap.war file.
   <li>The source code for recent public versions and in-development versions 
-    is available via <a rel="help" href="https://github.com/BobSimons">GitHub</a>.
-    Please read the <a rel="help" href="https://github.com/BobSimons/erddap/wiki">Wiki</a> 
+    is available via <a rel="help" href="https://github.com/BobSimons">GitHub<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
+    Please read the <a rel="help" href="https://github.com/BobSimons/erddap/wiki">Wiki<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
     for that project.
   <li>ERDDAP has a very liberal, open-source <a rel="copyright" href="#license">license</a>,
     so you can use the source code for any purpose.  
@@ -1313,17 +1635,17 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
     <li>If you are installing ERDDAP in a Tomcat (whether or not you will actually use it that way),
       follow the instructions above.
     <li>If you aren't installing ERDDAP in a Tomcat, you still need to make a Tomcat-like directory structure,
-      so that ERDDAP can find the setup files in [tomcat]/content/erddap .
+      so that ERDDAP can find the setup files in <i>tomcat</i>/content/erddap .
       <ul>
       <li>Make a directory somewhere called "tomcat" (it can be something else, but this is easier to explain).
-      <li>As indicated above, unzip erddapContent.zip into [tomcat], creating [tomcat]/content/erddap .
+      <li>As indicated above, unzip erddapContent.zip into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
         Follow the instructions above to modify <a rel="help" href="#setup.xml">setup.xml</a> and datasets.xml.
         Depending on your situation, you may need to specify that directory by adding something like
         <br>&nbsp;&nbsp;<tt>-DErddapContentDirectory="<i>/someDirectory/content/erddap/</i>"</tt>  
         <br>to the Java command line for your program.
-      <li>Make a [tomcat]/webapps/erddap directory.
+      <li>Make a <i>tomcat</i>/webapps/erddap directory.
       <li>.war files are just .zip files that follow a few additional conventions.
-        So you can use an unzip program to unzip erddap.war into [tomcat]/webapps/erddap .
+        So you can use an unzip program to unzip erddap.war into <i>tomcat</i>/webapps/erddap .
         That has all of ERDDAP's .java classes and many other files.
       </ul>
     </ul>
@@ -1331,16 +1653,16 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
     (No, we don't use Eclipse, Ant, Maven, or ...; nor do we offer ERDDAP-related support for them.
     If we required you to use Ant and you preferred Maven (or vice versa), you wouldn't be very happy about it.)
   <li>We use a batch file which deletes all of the .class files in the source tree.
-  <li>We currently use javac 1.6.0_35 <!-- javaVersion --> to compile gov.noaa.pfel.coastwatch.TestAll  
+  <li>We currently use javac 1.7.0_67 <!-- javaVersion --> to compile gov.noaa.pfel.coastwatch.TestAll  
      (it has links to a few classes that wouldn't be compiled otherwise) 
-     and java 1.6.0_35 and 1.7.0_09 <!-- javaVersion --> to run the tests.  
+     and java 1.7.0_67 and 1.8.0_20 <!-- javaVersion --> to run the tests.  
      For security reasons, it is almost always best to use the latest versions of Java and Tomcat.
      <ul>
-     <li>When we run javac or java, the current directory is [tomcat]/webapps/erddap/WEB-INF .
+     <li>When we run javac or java, the current directory is <i>tomcat</i>/webapps/erddap/WEB-INF .
      <li>Our javac and java classpath (including some unnecessary items) is currently
        <!-- Bob: don't forget to update the classpath in the .bat/shell script files in WEB-INF. -->
        <br><tt>
-./classes;../../../lib/servlet-api.jar;lib/activation.jar;lib/axis.jar;lib/commons-compress.jar;lib/commons-discovery.jar;lib/itext-1.3.1.jar;lib/joda-time.jar;lib/joid.jar;lib/lucene-core.jar;lib/mail.jar;lib/netcdfAll-latest.jar;lib/postgresql.jdbc.jar;lib/jaxrpc.jar;lib/saaj.jar;lib/slf4j-jdk14.jar;lib/tsik.jar;lib/wsdl4j.jar</tt>
+./classes;../../../lib/servlet-api.jar;lib/axis.jar;lib/commons-compress.jar;lib/commons-discovery.jar;lib/itext-1.3.1.jar;lib/jaxrpc.jar;lib/joid.jar;lib/lucene-core.jar;lib/mail.jar;lib/netcdfAll-latest.jar;lib/postgresql.jdbc.jar;lib/saaj.jar;lib/tsik.jar;lib/wsdl4j.jar</tt>
 
      <li>So your javac command line will be something like
        <br><tt>javac -cp (classpath above) classes/gov/noaa/pfel/coastwatch/TestAll.java</tt>
@@ -1394,9 +1716,15 @@ at the source code and try to figure out how ERDDAP works, please do.
   And it will be easy for us to incorporate your code in ERDDAP.
   Note that if you do submit code, the license will need compatible with the ERDDAP 
     <a rel="copyright" href="#license">license</a> (e.g., 
-    <a rel="bookmark" href="http://www.apache.org/licenses/">Apache</a>,
-    <a rel="bookmark" href="http://www.opensource.org/licenses/bsd-license.php">BSD</a>, or
-    <a rel="bookmark" href="http://www.opensource.org/licenses/mit-license.php">MIT-X</a>).
+    <a rel="bookmark" href="http://www.apache.org/licenses/">Apache<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
+    <a rel="bookmark" href="http://www.opensource.org/licenses/bsd-license.php">BSD<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>, or
+    <a rel="bookmark" href="http://www.opensource.org/licenses/mit-license.php">MIT-X<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
   You can hold the copyright to your code. We'll list your contribution in the 
     <a rel="copyright" href="#credits">credits</a>.
   <br>&nbsp;
@@ -1417,78 +1745,165 @@ for each ERDDAP release is now on a separate web page.
 <h2><a name="credits">Credits</a></h2>
 
 ERDDAP is a product of the  
-<a title="National Oceanic and Atmospheric Administration" rel="bookmark" href="http://www.noaa.gov">NOAA</a>  
-<a title="National Marine Fisheries Service"               rel="bookmark" href="http://www.nmfs.noaa.gov">NMFS</a>  
+<a title="National Oceanic and Atmospheric Administration" rel="bookmark" href="http://www.noaa.gov">NOAA<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>  
+<a title="National Marine Fisheries Service" rel="bookmark" href="http://www.nmfs.noaa.gov">NMFS<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>  
 <a title="Environmental Research Division" rel="bookmark" href="http://swfsc.noaa.gov/textblock.aspx?Division=ERD&amp;id=1315&amp;ParentMenuId=200">ERD</a>.
 <br>Bob Simons is the author of ERDDAP (the designer and programmer who wrote the ERDDAP-specific code).
 <br>Roy Mendelssohn instigated the project.
 <br>The ERDDAP-specific code is licensed as copyrighted open source, with 
-  <a rel="bookmark" href="http://www.noaa.gov">NOAA</a> 
+  <a rel="bookmark" href="http://www.noaa.gov">NOAA<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
   holding the copyright. See the <a rel="copyright" href="#license">ERDDAP license</a>.
 <br>ERDDAP uses copyrighted open source, Apache, LGPL, MIT/X, Mozilla, and public domain libraries and data.
 <br>ERDDAP does not require any GPL code or commercial programs.
 <br>Some of the funding for work on ERDDAP has come from the 
-<a rel="bookmark" href="http://coastwatch.noaa.gov/">NOAA CoastWatch</a> program, 
-the <a rel="bookmark" href="http://www.ioos.gov/">NOAA IOOS</a>
-program, and the <a rel="bookmark" href="http://www.postprogram.org/">POST</a> program.  
+<a rel="bookmark" href="http://coastwatch.noaa.gov/">NOAA CoastWatch<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> program, 
+the <a rel="bookmark" href="http://www.ioos.gov/">NOAA IOOS<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+program, and the now defunct POST program.  
 <br>Thank you all very much.
 
 <ul>
 <li>ERDDAP is a 
-    <a rel="help" href="http://www.oracle.com/technetwork/java/javaee/servlet/index.html">Java Servlet</a>
+    <a rel="help" href="http://www.oracle.com/technetwork/java/javaee/servlet/index.html">Java Servlet<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
     program. At ERD, it runs inside of a
-    <a rel="help" href="http://tomcat.apache.org/">Tomcat</a> application server
-    (license: <a rel="bookmark" href="http://www.apache.org/licenses/">Apache</a>), 
+    <a rel="help" href="http://tomcat.apache.org/">Tomcat<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> application server
+    (license: <a rel="bookmark" href="http://www.apache.org/licenses/">Apache<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>), 
   with an 
-    <a rel="help" href="http://httpd.apache.org/">Apache</a> web server
-    (license: <a rel="bookmark" href="http://www.apache.org/licenses/">Apache</a>), 
+    <a rel="help" href="http://httpd.apache.org/">Apache<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> web server
+    (license: <a rel="bookmark" href="http://www.apache.org/licenses/">Apache<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>), 
     running on a computer using the 
-    <a rel="help" href="http://www.redhat.com/">Red Hat Linux</a> operating 
-  system (license: <a rel="bookmark" href="http://www.linux.org/info/gnu.html">GPL</a>).
+    <a rel="help" href="http://www.redhat.com/">Red Hat Linux<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> operating 
+  system (license: <a rel="bookmark" href="http://www.linux.org/info/gnu.html">GPL<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
 <li>The data sets are from various sources. See the metadata (in particular the "sourceUrl", "infoUrl", 
   and "institution") for each dataset.
 <li> The com/cohort classes are from CoHort Software 
-    (<a rel="help" href="http://www.cohort.com">http://www.cohort.com</a>)
+    (<a rel="help" href="http://www.cohort.com">http://www.cohort.com<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>)
     which makes these classes available with an MIT/X-like license (see classes/com/cohort/util/LICENSE.txt).
-<li>Data from <a rel="help" href="http://www.opendap.org">OPeNDAP</a> servers are read 
-    with <a rel="bookmark" href="http://www.opendap.org/download/index.html">Java DAP 1.1.7</a>
+<li>Data from <a rel="help" href="http://www.opendap.org">OPeNDAP<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> servers are read 
+    with <a rel="bookmark" href="http://www.opendap.org/download/index.html">Java DAP 1.1.7<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
     (license: LGPL).
 <li>NetCDF files (.nc) and GMT-style NetCDF files (.grd) are read and written with code in the
-  <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/index.htm">NetCDF Java Library</a>
-    (license: <a rel="bookmark" href="http://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like</a>)
-    from <a rel="bookmark" href="http://www.unidata.ucar.edu/">Unidata</a>.
+  <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/index.htm">NetCDF Java Library<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+    (license: <a rel="bookmark" href="http://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>)
+    from <a rel="bookmark" href="http://www.unidata.ucar.edu/">Unidata<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
 <li>The NetCDF Java Library reads GRIB files via the Unidata
-    <a rel="help" href="http://www.unidata.ucar.edu/software/decoders/">GRIB decoder (grib-6.0.jar)</a>
-  (license: <a rel="bookmark" href="http://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like</a>).
+    <a rel="help" href="http://www.unidata.ucar.edu/software/decoders/">GRIB decoder (grib-6.0.jar)<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+  (license: <a rel="bookmark" href="http://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
 <li>The NetCDF Java Library reads BUFR files via the Unidata
-    <a rel="help" href="http://www.unidata.ucar.edu/software/decoders/">BUFR decoder (bufrTables-1.5.jar)</a>
-  (license: <a rel="bookmark" href="http://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like</a>).
-<li>The NetCDF Java Library requires a logger facade (we chose slf4j-jdk14.jar) from the
-  <a rel="help" href="http://www.slf4j.org/">Simple Logging Facade for Java</a> project
-    (license: <a rel="bookmark" href="http://www.slf4j.org/license.html">MIT/X</a>).
-<li>The NetCDF Java Library uses code from several .jar files from 
-  <a rel="help" href="http://www.apache.org/">Apache projects</a>:
-  <a rel="help" href="http://commons.apache.org/codec/">commons-codec</a>, 
-  <a rel="help" href="http://hc.apache.org/httpcomponents-client-ga/">commons-httpclient</a>, and
-  <a rel="help" href="http://commons.apache.org/logging/">commons-logging</a>
-  (license: <a rel="bookmark" href="http://www.apache.org/licenses/LICENSE-2.0">Apache</a>).
+    <a rel="help" href="http://www.unidata.ucar.edu/software/decoders/">BUFR decoder <img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+  (license: <a rel="bookmark" href="http://www.unidata.ucar.edu/software/netcdf/copyright.html">MIT/X-like<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
+<li>The NetCDF Java Library includes <a rel="help" href="http://www.slf4j.org/">slf4j from the
+  Simple Logging Facade for Java</a> project
+    (license: <a rel="bookmark" href="http://www.slf4j.org/license.html">MIT/X<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
+<li>ERDDAP and the NetCDF Java Library use <a rel="help" href="http://joda-time.sourceforge.net/">Joda<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+     for some calendar calculations.
+     (license: <a rel="bookmark" href="http://joda-time.sourceforge.net/license.html">Apache<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
+<li>The NetCDF Java Library uses code from some .jar files from 
+  <a rel="help" href="http://www.apache.org/">Apache projects<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>:
+  <a rel="help" href="http://commons.apache.org/codec/">commons-codec<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>, 
+  <a rel="help" href="http://hc.apache.org/httpcomponents-client-ga/">commons-httpclient<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>, and
+  <!--a rel="help" href="http://commons.apache.org/logging/">commons-logging<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+  (license: <a rel="bookmark" href="http://www.apache.org/licenses/LICENSE-2.0">Apache<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>). -->
 <li>Other parts of ERDDAP use code from other 
-  <a rel="help" href="http://www.apache.org/">Apache projects</a>:
-  <a rel="help" href="http://commons.apache.org/compress/">commons-compress</a> and
-  <a rel="help" href="http://commons.apache.org/discovery/">commons-discovery</a>
-  (license: <a rel="bookmark" href="http://www.apache.org/licenses/LICENSE-2.0">Apache</a>).
+  <a rel="help" href="http://www.apache.org/">Apache projects<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>:
+  <a rel="help" href="http://commons.apache.org/compress/">commons-compress<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> and
+  <a rel="help" href="http://commons.apache.org/discovery/">commons-discovery<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+  (license: <a rel="bookmark" href="http://www.apache.org/licenses/LICENSE-2.0">Apache<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
 <li>The NetCDF Java Library uses XML processing code from 
-    <a rel="help" href="http://www.jdom.org/">JDOM</a>
-    (license: <a rel="bookmark" href="http://www.jdom.org/docs/faq.html#a0030">Apache</a>).
+    <a rel="help" href="http://www.jdom.org/">JDOM<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+    (license: <a rel="bookmark" href="http://www.jdom.org/docs/faq.html#a0030">Apache<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
 <li>ERDDAP uses 
-    <a rel="help" href="http://www.json.org/java/index.html">json.org's Java-based JSON library</a> 
-    to parse <a rel="help" href="http://www.json.org/">JSON</a> data
-  (license: <a rel="bookmark" href="http://www.json.org/license.html">copyrighted open source</a>).
+    <a rel="help" href="http://www.json.org/java/index.html">json.org's Java-based JSON library<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+    to parse <a rel="help" href="http://www.json.org/">JSON<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> data
+  (license: <a rel="bookmark" href="http://www.json.org/license.html">copyrighted open source<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
 <li>The graphs and maps are created on-the-fly with a modified version of NOAA's 
-    <a rel="help" href="http://www.epic.noaa.gov/java/sgt/">SGT</a> version 3
+    <a rel="help" href="http://www.epic.noaa.gov/java/sgt/">SGT<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> version 3
   (a Java-based Scientific Graphics Toolkit written by Donald Denbo at
-    <a rel="help" href="http://www.pmel.noaa.gov/">NOAA PMEL</a>)
-  (license: <a rel="bookmark" href="http://www.epic.noaa.gov/java/license.html">copyrighted open source</a>).
+    <a rel="help" href="http://www.pmel.noaa.gov/">NOAA PMEL<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>)
+  (license: <a rel="bookmark" href="http://www.epic.noaa.gov/java/license.html">copyrighted open source<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
 <li>Big, HTML tooltips on ERDDAP's HTML pages are created with Walter Zorn's wz_tooltip.js
     <!-- was http://wztip.info/index.php/Main_Page -->
   (license: LGPL).
@@ -1496,89 +1911,148 @@ program, and the <a rel="bookmark" href="http://www.postprogram.org/">POST</a> p
   wz_dragdrop.js <!-- was http://www.walterzorn.com/dragdrop/dragdrop_e.htm -->
     (license: LGPL).
 <li>The .pdf files are created with
-    <a rel="help" href="http://itextpdf.com/">iText</a> (version 1.3.1, which used the 
+    <a rel="help" href="http://itextpdf.com/">iText<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+      (version 1.3.1, which used the 
     <!-- was http://www.lowagie.com/iText/download.html --> Mozilla license),
     a free Java-PDF library by Bruno Lowagie and Paulo Soares.
 <li>The shoreline and lake data are from
-    <a rel="help" href="http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html">GSHHS</a>
+    <a rel="help" href="http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html">GSHHS<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
     - A Global Self-consistent, Hierarchical, 
     High-resolution Shoreline Database
-    (license: <a rel="bookmark" href="http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT">GPL</a>)
+    (license: <a rel="bookmark" href="http://www.soest.hawaii.edu/pwessel/gshhs/README.TXT">GPL<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>)
     and created by Paul Wessel and Walter Smith.
 <li>The political boundary and river data are from the 
-    <a rel="help" href="http://gmt.soest.hawaii.edu/gmt/doc/gmt/html/man/pscoast.html">pscoast</a>
+    <a rel="help" href="http://gmt.soest.hawaii.edu/gmt/doc/gmt/html/man/pscoast.html">pscoast<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
     program in 
-    <a rel="help" href="http://gmt.soest.hawaii.edu">GMT</a>,
+    <a rel="help" href="http://gmt.soest.hawaii.edu">GMT<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
     which uses data from the 
-  <a rel="help" href="http://www.evl.uic.edu/pape/data/WDB/">CIA World Data Bank II</a>
+  <a rel="help" href="http://www.evl.uic.edu/pape/data/WDB/">CIA World Data Bank II<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
     (license: public domain).
 <li>The bathymetry/topography data used in the background of some maps is the  
-  <a rel="help" href="http://www.ngdc.noaa.gov/mgg/global/global.html">ETOPO1 Global 1-Minute Gridded Elevation Data Set</a> (Ice Surface, grid registered, binary, 
+  <a rel="help" href="http://www.ngdc.noaa.gov/mgg/global/global.html">ETOPO1 Global 1-Minute Gridded Elevation Data Set<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+      (Ice Surface, grid registered, binary, 
   2 byte int: etopo1_ice_g_i2.zip)
     (license:  
-    <a rel="bookmark" href="http://www.ngdc.noaa.gov/ngdcinfo/privacy.html#copyright">public domain</a>), 
+    <a rel="bookmark" href="http://www.ngdc.noaa.gov/ngdcinfo/privacy.html#copyright">public domain<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>), 
   which is distributed for free by 
-    <a rel="bookmark" href="http://www.ngdc.noaa.gov">NOAA NGDC</a>.
+    <a rel="bookmark" href="http://www.ngdc.noaa.gov">NOAA NGDC<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
 <li> Emails are sent using code in mail.jar from Oracle's   
-    <a rel="help" href="http://www.oracle.com/technetwork/java/javamail/index.html">JavaMail API</a>
+    <a rel="help" href="http://www.oracle.com/technetwork/java/javamail/index.html">JavaMail API<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
     (license: 
-    <a rel="bookmark" href="http://download.oracle.com/otn-pub/java/licenses/OTN_JavaEE_Legacy_Binary-Code-License_30Jan2012.txt">Oracle 
-    Binary Code License Agreement for Java EE Technologies</a>).
+    <a rel="bookmark" href="http://download.oracle.com/otn-pub/java/licenses/OTN_JavaEE_Legacy_Binary-Code-License_30Jan2012.txt"
+      >Oracle Binary Code License Agreement for Java EE Technologies<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
 <li> JavaMail uses activation.jar from the 
-    <a rel="help" href="http://www.oracle.com/technetwork/java/jaf11-139815.html">JavaBeans Activation Framework</a>
+    <a rel="help" href="http://www.oracle.com/technetwork/java/jaf11-139815.html">JavaBeans Activation Framework<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
     (license: 
-    <a rel="bookmark" href="http://download.oracle.com/otn-pub/java/licenses/OTN_JavaEE_Legacy_Binary-Code-License_30Jan2012.txt">Oracle 
-    Binary Code License Agreement for Java EE Technologies</a>.
-<li> For <a rel="help" href="http://openid.net/">OpenID</a> authentication, ERDDAP uses the
+    <a rel="bookmark" href="http://download.oracle.com/otn-pub/java/licenses/OTN_JavaEE_Legacy_Binary-Code-License_30Jan2012.txt"
+    >Oracle Binary Code License Agreement for Java EE Technologies<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
+<li> For <a rel="help" href="http://openid.net/">OpenID<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+      authentication, ERDDAP uses the
      joid.jar and tsik.jar libraries from the 
-     <a rel="help" href="http://code.google.com/p/joid/">joid project</a>
-  from <a rel="bookmark" href="http://www.verisign.com">Verisign</a>
-     (license: <a rel="bookmark" href="http://code.google.com/p/joid/">Apache 2.0</a>).
-<li> ERDDAP uses <a rel="help" href="http://joda-time.sourceforge.net/">Joda</a> 
-     for some calendar calculations.
-     (license: <a rel="bookmark" href="http://joda-time.sourceforge.net/license.html">Apache</a>).
+     <a rel="help" href="http://code.google.com/p/joid/">joid project<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+  from <a rel="bookmark" href="http://www.verisign.com">Verisign<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+     (license: <a rel="bookmark" href="http://code.google.com/p/joid/">Apache 2.0<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
 <li> ERDDAP includes the 
-     <a rel="help" href="http://jdbc.postgresql.org/">PostGres JDBC4</a> driver
-     (license: <a rel="bookmark" href="http://jdbc.postgresql.org/license.html">BSD</a>).
+     <a rel="help" href="http://jdbc.postgresql.org/">PostGres JDBC4<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> driver
+     (license: <a rel="bookmark" href="http://jdbc.postgresql.org/license.html">BSD<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
     The driver is Copyright (c) 1997-2010, PostgreSQL Global Development Group. All rights reserved.
 <li> For SOAP services, ERDDAP uses: 
   <ul>
-  <li><a rel="help" href="http://ws.apache.org/axis/index.html">axis.jar</a> 
+  <li><a rel="help" href="http://ws.apache.org/axis/index.html">axis.jar<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
       (license: 
-      <a rel="bookmark" href="http://www.apache.org/licenses/">Apache</a>)
-  <li><a rel="help" href="http://java.net/projects/jax-rpc/">jaxrpc.jar</a> 
+      <a rel="bookmark" href="http://www.apache.org/licenses/">Apache<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>)
+  <li><a rel="help" href="http://java.net/projects/jax-rpc/">jaxrpc.jar<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
       (license: 
-      <a rel="bookmark" href="http://www.opensource.org/licenses/cddl1.php">CDDL v1.0</a>)
-  <li><a rel="help" href="http://java.net/projects/saaj/">saaj.jar</a> 
+      <a rel="bookmark" href="http://www.opensource.org/licenses/cddl1.php">CDDL v1.0<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>)
+  <li><a rel="help" href="http://java.net/projects/saaj/">saaj.jar<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
       (license: 
-      <a rel="bookmark" href="http://www.opensource.org/licenses/cddl1.php">CDDL v1.0</a>)
-  <li><a rel="help" href="http://sourceforge.net/projects/wsdl4j/">wsdl4j.jar</a> 
+      <a rel="bookmark" href="http://www.opensource.org/licenses/cddl1.php">CDDL v1.0<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>)
+  <li><a rel="help" href="http://sourceforge.net/projects/wsdl4j/">wsdl4j.jar<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
       (license: 
-      <a rel="bookmark" href="http://sourceforge.net/projects/wsdl4j/">Common Public License 1.0</a>)
+      <a rel="bookmark" href="http://sourceforge.net/projects/wsdl4j/">Common Public License 1.0<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>)
   </ul>
 
 <li> ERDDAP uses code from the 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser</a> 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
     project from the
-    <a rel="bookmark" href="http://coastwatch.noaa.gov">NOAA CoastWatch</a>
-    <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/">West Coast Regional Node</a>
+    <a rel="bookmark" href="http://coastwatch.noaa.gov">NOAA CoastWatch<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+    <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/">West Coast Regional Node<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
     (license:  
-    <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowserInfo.html#Credits">copyrighted open source</a>).
+    <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowserInfo.html#Credits">copyrighted open source<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
   That project was initiated and managed by Dave Foley, the Coordinator of the NOAA CoastWatch 
   West Coast Regional Node.  
   The CoastWatch Browser code was written by Bob Simons.
-<li>The ERDDAP distribution includes code from the J2SSH project which is distributed by  
-    <a rel="help" href="http://sourceforge.net/projects/sshtools/">SSHTools</a> 
-  (version 0.2.2, license: <a rel="bookmark" href="http://www.apache.org/licenses/">Apache</a>).
-    It is based on j2ssh/examples/SftpConnect.java (License: LGPL) which is 
-  Copyright (C) 2002 Lee David Painter (lee@sshtools.com).
 </ul>
 
 
 <!-- ******* -->
 <h2><a name="license">License</a></h2>
 The ERDDAP-specific code is licensed as copyrighted open source, 
-  with <a rel="bookmark" href="http://www.noaa.gov">NOAA</a> holding the copyright.  
+  with <a rel="bookmark" href="http://www.noaa.gov">NOAA<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> holding the copyright.  
 The license is:
 <blockquote>
 ERDDAP, Copyright 2012, NOAA.

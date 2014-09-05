@@ -40,7 +40,7 @@ import java.util.Vector;
 public abstract class GridDataSet { 
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false; 
@@ -71,7 +71,7 @@ public abstract class GridDataSet {
     public int[]    activeTimePeriodNHours;
 
     /** The active time period opendapUrl (or array of nulls if none available).
-     * E.g., http://192.168.31.18:8081/thredds/dodsC/satellite/MO/k490/hday
+     * E.g., http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/MO/k490/hday
      * which just needs .html suffix to make link for user to click on.
      */
     public String[] activeTimePeriodOpendapUrls; //set by the constructor
@@ -631,9 +631,9 @@ public abstract class GridDataSet {
         if (gridGlobalAttributes.get("project") == null)
             gridGlobalAttributes.set("project",               FileNameUtility.getProject());
         if (gridGlobalAttributes.get("processing_level") == null)
-            gridGlobalAttributes.set("processing_level",          FileNameUtility.getProcessingLevel());
+            gridGlobalAttributes.set("processing_level",      FileNameUtility.getProcessingLevel());
         if (gridGlobalAttributes.get("acknowledgement") == null)
-            gridGlobalAttributes.set("acknowledgement",           FileNameUtility.getAcknowledgement());
+            gridGlobalAttributes.set("acknowledgement",       FileNameUtility.getAcknowledgement());
         gridGlobalAttributes.set("geospatial_lat_min",        Math.min(lat[0], lat[nLat-1]));
         gridGlobalAttributes.set("geospatial_lat_max",        Math.max(lat[0], lat[nLat-1]));
         gridGlobalAttributes.set("geospatial_lon_min",        Math.min(lon[0], lon[nLon-1]));

@@ -114,7 +114,7 @@ public interface ServerMethods  {
     /** Read a value from the named dataset for this variable. 
 	@param datasetName String identifying the file or other data store
 	from which to read a vaue for this variable.
-	@param o Object this is a goody that is used by Server implementations
+	@param specialO Object this is a goody that is used by Server implementations
 	to deliver important, and as yet unknown, stuff to the read method. If you
 	don't need it, make it a <code>null</code>.
 	@return <code>true</code> if more data remains to be read, otehrwise

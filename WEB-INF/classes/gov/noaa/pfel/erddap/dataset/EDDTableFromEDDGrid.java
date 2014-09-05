@@ -66,6 +66,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
+        String tSosOfferingPrefix = null;
         int tReloadEveryNMinutes = DEFAULT_RELOAD_EVERY_N_MINUTES;
         int tUpdateEveryNMillis = 0;
         String tDefaultDataQuery = null;
@@ -106,6 +107,8 @@ public class EDDTableFromEDDGrid extends EDDTable{
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<sosOfferingPrefix>")) {}
+            else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content; 
             else if (localTags.equals( "<defaultDataQuery>")) {}
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
@@ -118,7 +121,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         }
 
         return new EDDTableFromEDDGrid(tDatasetID, tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tAddGlobalAttributes,
             tReloadEveryNMinutes, //tUpdateEveryNMillis, 
             tEDDGrid);
@@ -131,6 +134,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
      */
     public EDDTableFromEDDGrid(String tDatasetID, String tAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery,
         Attributes tAddGlobalAttributes,
         int tReloadEveryNMinutes, //int tUpdateEveryNMillis, 
@@ -159,6 +163,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        sosOfferingPrefix = tSosOfferingPrefix;
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
@@ -213,11 +218,18 @@ public class EDDTableFromEDDGrid extends EDDTable{
                 newVar = new EDVDepth(tSourceName, tSourceAtts, tAddAtts, tDataType, tMin, tMax);
                 depthIndex = dv;
             } else if (tSourceName.equals(EDV.TIME_NAME)) {
-                //tMin tMax are epochSeconds
+                //tMin tMax are epochSeconds    
                 tAddAtts.add("data_min", "" + tMin);
-                if (Math.abs(tMax - System.currentTimeMillis()/1000.0) > 3 * Calendar2.SECONDS_PER_DAY)
-                    tAddAtts.add("data_max", "" + tMax);
-                newVar = new EDVTime(tSourceName, tSourceAtts, tAddAtts, tDataType);
+                if (debugMode) String2.log("> time tMax=" + tMax + " NOW=" + (System.currentTimeMillis()/1000.0) +
+                    " abs(diff)=" + Math.abs(tMax - System.currentTimeMillis()/1000.0) +
+                    " 3days=" + (3 * Calendar2.SECONDS_PER_DAY));
+                newVar = new EDVTime(tSourceName, tSourceAtts, tAddAtts, 
+                    tDataType); //this constructor gets source / sets destination actual_range
+                //actively unset destinationMax if time is close to NOW)
+                if (Math.abs(tMax - System.currentTimeMillis()/1000.0) < 3 * Calendar2.SECONDS_PER_DAY) {
+                    newVar.setDestinationMax(Double.NaN);
+                    newVar.setActualRangeFromDestinationMinMax();
+                }
                 timeIndex = dv;
             //currently, there is no EDVTimeStampGridAxis
             } else newVar = new EDV(tSourceName, "", tSourceAtts, tAddAtts, tDataType, tMin, tMax);
@@ -243,17 +255,13 @@ public class EDDTableFromEDDGrid extends EDDTable{
      * 
      * <p>For simple failures, this writes into to log.txt but doesn't throw an exception.
      *
-     * <p>If the dataset has changed in a serious / incompatible way and needs a full
-     * reload, this calls requestReloadASAP() and throws WaitThenTryAgainException.
+     * @throws Throwable if trouble. 
+     * If the dataset has changed in a serious / incompatible way and needs a full
+     * reload, this throws WaitThenTryAgainException 
+     * (usually, catcher calls LoadDatasets.tryToUnload(...) and EDD.requestReloadASAP(tDatasetID))..
      */
     public void update() {
-        try {
-            eddGrid.update();
-        } catch (WaitThenTryAgainException e) {
-            //convert call to reload underlying dataset into call to reload this dataset
-            requestReloadASAP();
-            throw e;
-        }
+        eddGrid.update();
     }
 
    /** 
@@ -265,6 +273,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public void getDataForDapQuery(String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
@@ -312,35 +321,36 @@ public class EDDTableFromEDDGrid extends EDDTable{
             if (conOp.equals(PrimitiveArray.REGEX_OP)) {
                 //FUTURE: this could be improved to find the range of matching axis values
             } else {
+                boolean avIsTime = edvga instanceof EDVTimeGridAxis;
                 double oldAvMin = avMin[av];
                 double oldAvMax = avMax[av];
                 double conValD = String2.parseDouble(conVal);
-                String neverTrue = MustBe.THERE_IS_NO_DATA + " " + 
-                    MessageFormat.format(EDStatic.queryErrorNeverTrue, 
-                        conVar + conOp + conValD);
-                if (!conOp.equals("!=") && Double.isNaN(conValD))
-                    throw new SimpleException(neverTrue);                
-                if (conOp.startsWith(">")) {    //treat > and >= the same way
-                    if (conValD > edvga.destinationMax())
-                        throw new SimpleException(neverTrue);                
-                    avMin[av] = Math.max(avMin[av], conValD);
-                } else if (conOp.startsWith("<")) { //treat < and <= the same way
-                    if (conValD < edvga.destinationMin())
-                        throw new SimpleException(neverTrue);                
-                    avMax[av] = Math.min(avMax[av], conValD);
-                } else if (conOp.equals("=")) {
-                    int si = edvga.destinationToClosestSourceIndex(conValD);
-                    if (si < 0)
-                        throw new SimpleException(neverTrue);                
-                    double destVal = edvga.destinationValue(si).getDouble(0);
-                    if (!Math2.almostEqual(edvga instanceof EDVTimeGridAxis? 14 : 5, //nSignificantFigures
-                            conValD, destVal))
-                        throw new SimpleException(neverTrue);                
-                    avMin[av] = Math.max(avMin[av], conValD);
-                    avMax[av] = Math.min(avMax[av], conValD);
-                } else if (conOp.equals("!=")) {
-                    //not very useful
-                } 
+                boolean passed = true; //look for some aspect that doesn't pass
+                if (!conOp.equals("!=") && Double.isNaN(conValD)) {
+                    passed = false;
+                } else {
+                    // > >= < <= (and =somethingOutOfRange) were tested in EDDTable.parseUserDapQuery
+                    if (conOp.equals("=")) {
+                        int si = edvga.destinationToClosestSourceIndex(conValD);
+                        if (si < 0)
+                            passed = false;
+                        else {
+                            double destVal = edvga.destinationValue(si).getDouble(0);
+                            passed = avIsTime?
+                                conValD == destVal : //exact
+                                Math2.almostEqual(5, conValD, destVal); //fuzzy, biased towards passing                                    
+                            avMin[av] = Math.max(avMin[av], conValD);
+                            avMax[av] = Math.min(avMax[av], conValD);
+                        }
+                    } else if (conOp.equals("!=")) {
+                        //not very useful
+                    } 
+                }
+                if (!passed) 
+                    throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (" + 
+                        MessageFormat.format(EDStatic.queryErrorNeverTrue, 
+                            conVar + conOp + conValD) + 
+                        ")");
 
                 if (oldAvMin != avMin[av] || oldAvMax != avMax[av])
                     hasAvConstraints = true;
@@ -546,20 +556,21 @@ public class EDDTableFromEDDGrid extends EDDTable{
     public static void testBasic() throws Throwable {
         String2.log("\nEDDTableFromEDDGrid.testBasic()");
         testVerboseOn();
-debugMode = false; //normally false.  Set it to true if need help.
+debugMode = true; //normally false.  Set it to true if need help.
         String results, query, tName, expected, expected2;
         String id = "testEDDTableFromEDDGrid";
         EDDTable tedd = (EDDTable)oneFromDatasetXml(id);
+        String dir = EDStatic.fullTestCacheDirectory;
 
 
         //das
-        tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "1", ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
-"Attributes {\n" +
-" s {\n" +
-"  longitude {\n" +
+"Attributes \\{\n" +
+" s \\{\n" +
+"  longitude \\{\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
 "    Float64 actual_range 0.0, 360.0;\n" +
 "    String axis \"X\";\n" +
@@ -570,8 +581,8 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String point_spacing \"even\";\n" +
 "    String standard_name \"longitude\";\n" +
 "    String units \"degrees_east\";\n" +
-"  }\n" +
-"  latitude {\n" +
+"  \\}\n" +
+"  latitude \\{\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
 "    Float64 actual_range -75.0, 75.0;\n" +
 "    String axis \"Y\";\n" +
@@ -582,8 +593,8 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String point_spacing \"even\";\n" +
 "    String standard_name \"latitude\";\n" +
 "    String units \"degrees_north\";\n" +
-"  }\n" +
-"  altitude {\n" +
+"  \\}\n" +
+"  altitude \\{\n" +
 "    String _CoordinateAxisType \"Height\";\n" +
 "    String _CoordinateZisPositive \"up\";\n" +
 "    Float64 actual_range 0.0, 0.0;\n" +
@@ -594,10 +605,10 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String positive \"up\";\n" +
 "    String standard_name \"altitude\";\n" +
 "    String units \"m\";\n" +
-"  }\n" +
-"  time {\n" +
+"  \\}\n" +
+"  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0259568e+9, 1.373112e+9;\n" +  //2nd number changes
+"    Float64 actual_range 1.0259568e\\+9, 1.3940208e\\+9;\n" +  
 "    String axis \"T\";\n" +
 "    Int32 fraction_digits 0;\n" +
 "    String ioos_category \"Time\";\n" +
@@ -605,8 +616,8 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String standard_name \"time\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"  }\n" +
-"  sst {\n" +
+"  \\}\n" +
+"  sst \\{\n" +
 "    Float32 _FillValue -9999999.0;\n" +
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -617,9 +628,9 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    Float32 missing_value -9999999.0;\n" +
 "    String standard_name \"sea_surface_temperature\";\n" +
 "    String units \"degree_C\";\n" +
-"  }\n" +
-" }\n" +
-"  NC_GLOBAL {\n" +
+"  \\}\n" +
+" \\}\n" +
+"  NC_GLOBAL \\{\n" +
 "    String acknowledgement \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
 "    String cdm_data_type \"Point\";\n" +
 "    String composite \"true\";\n" +
@@ -629,8 +640,8 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String creator_email \"dave.foley@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
-"    String date_created \"2013-07-08Z\";\n" + //changes
-"    String date_issued \"2013-07-08Z\";\n" +  //changes
+"    String date_created \"20.{8}Z\";\n" + //changes
+"    String date_issued \"20.{8}Z\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
 "    String featureType \"Point\";\n" +
 "    Float64 geospatial_lat_max 75.0;\n" +
@@ -645,10 +656,14 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    Float64 geospatial_vertical_min 0.0;\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\n";
+"    String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch";
 //2013-03-10T15:13:48Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD
 //2013-04-04T21:43:14Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day
 //2013-04-04T21:43:14Z http://127.0.0.1:8080/cwexperimental/tabledap/testEDDTableFromEDDGrid.das
+
+        int tPo = results.indexOf("String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch");
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureLinesMatch(results.substring(0, tPo + 73), expected, "results=\n" + results);      
 
 expected2 = 
    "String infoUrl \"http://coastwatch.pfeg.noaa.gov/infog/BA_ssta_las.html\";\n" +
@@ -669,31 +684,73 @@ expected2 =
 "    Float64 Northernmost_Northing 75.0;\n" +
 "    String origin \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\";\n" +
 "    String processing_level \"3\";\n" +
-"    String project \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
+"    String project \"CoastWatch \\(http://coastwatch.noaa.gov/\\)\";\n" +
 "    String projection \"geographic\";\n" +
 "    String projection_type \"mapped\";\n" +
-"    String references \"Blended SST from satellites information: This is an experimental product which blends satellite-derived SST data from multiple platforms using a weighted mean.  Weights are based on the inverse square of the nominal accuracy of each satellite. AMSR_E Processing information: http://www.ssmi.com/amsr/docs/AMSRE_V05_Updates.pdf . AMSR-E Processing reference: Wentz, F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing Systems Internal Report. AVHRR Processing Information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing Reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b. GOES Imager Processing Information: http://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager Processing Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. Estimation of sea surface temperatures using GOES-8/9 radiance measurements, Bull. Amer. Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: http://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Processing reference: Not Available.\";\n" +
+"    String references \"Blended SST from satellites information: This is an " + 
+    "experimental product which blends satellite-derived SST data from multiple " + 
+    "platforms using a weighted mean.  Weights are based on the inverse square " + 
+    "of the nominal accuracy of each satellite. AMSR_E Processing information: " + 
+    "http://www.ssmi.com/amsr/docs/AMSRE_V05_Updates.pdf . AMSR-E Processing " + 
+    "reference: Wentz, F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT " + 
+    "CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing " + 
+    "Systems Internal Report. AVHRR Processing Information: " + 
+    "http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing " + 
+    "Reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The " + 
+    "development and operational application of nonlinear algorithms for the " + 
+    "measurement of sea surface temperatures with the NOAA polar-orbiting " + 
+    "environmental satellites. J.G.R., 103: \\(C12\\) 27999-28012, 1998. " + 
+    "Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  " + 
+    "Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud " + 
+    "classification algorithm for the advanced very high resolution radiometer. " + 
+    "J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: " + 
+    "Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving " + 
+    "the operational nonlinear multi-channel sea surface temperature algorithm " + 
+    "coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, " + 
+    "Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: " + 
+    "Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. " + 
+    "Validation of coastal sea and lake surface temperature measurements derived " + 
+    "from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, " + 
+    "No. 7, 1285-1303, 2001b. GOES Imager Processing Information: " + 
+    "http://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager " + 
+    "Processing Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. " + 
+    "Estimation of sea surface temperatures using GOES-8/9 radiance measurements, " + 
+    "Bull. Amer. Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: " + 
+    "http://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Processing " + 
+    "reference: Not Available.\";\n" +
 "    String satellite \"Aqua, GOES, POES\";\n" +
 "    String sensor \"AMSR-E, MODIS, Imager, AVHRR\";\n" +
 "    String source \"satellite observation: Aqua, GOES, POES, AMSR-E, MODIS, Imager, AVHRR\";\n" +
 "    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\";\n" +
 "    Float64 Southernmost_Northing -75.0;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
-"    String summary \"NOAA OceanWatch provides a blended sea surface temperature (SST) products derived from both microwave and infrared sensors carried on multiple platforms.  The microwave instruments can measure ocean temperatures even in the presence of clouds, though the resolution is a bit coarse when considering features typical of the coastal environment.  These are complemented by the relatively fine measurements of infrared sensors.  The blended data are provided at moderate spatial resolution (0.1 degrees) for the Global Ocean.  Measurements are gathered by Japan's Advanced Microwave Scanning Radiometer (AMSR-E) instrument, a passive radiance sensor carried aboard NASA's Aqua spacecraft, NOAA's Advanced Very High Resolution Radiometer, NOAA GOES Imager, and NASA's Moderate Resolution Imaging Spectrometer (MODIS). THIS IS AN EXPERIMENTAL PRODUCT: intended strictly for scientific evaluation by professional marine scientists.\";\n" +
-"    String time_coverage_end \"2013-07-06T12:00:00Z\";\n" +    //changes
+"    String summary \"NOAA OceanWatch provides a blended sea surface temperature " + 
+    "\\(SST\\) products derived from both microwave and infrared sensors carried " + 
+    "on multiple platforms.  The microwave instruments can measure ocean " + 
+    "temperatures even in the presence of clouds, though the resolution is a bit " + 
+    "coarse when considering features typical of the coastal environment.  These " + 
+    "are complemented by the relatively fine measurements of infrared sensors.  The " + 
+    "blended data are provided at moderate spatial resolution \\(0.1 degrees\\) " + 
+    "for the Global Ocean.  Measurements are gathered by Japan's Advanced " + 
+    "Microwave Scanning Radiometer \\(AMSR-E\\) instrument, a passive radiance " + 
+    "sensor carried aboard NASA's Aqua spacecraft, NOAA's Advanced Very High " + 
+    "Resolution Radiometer, NOAA GOES Imager, and NASA's Moderate Resolution " + 
+    "Imaging Spectrometer \\(MODIS\\). THIS IS AN EXPERIMENTAL PRODUCT: " + 
+    "intended strictly for scientific evaluation by professional marine scientists.\";\n" +
+"    String time_coverage_end \"20.{8}T12:00:00Z\";\n" +    //changes
 "    String time_coverage_start \"2002-07-06T12:00:00Z\";\n" +
-"    String title \"SST, Blended, Global, EXPERIMENTAL (5 Day Composite)\";\n" +
+"    String title \"SST, Blended, Global, EXPERIMENTAL \\(5 Day Composite\\)\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
-"  }\n" +
-"}\n";
-        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);      
-        int po = results.indexOf("String infoUrl ");
-        Test.ensureEqual(results.substring(Math.max(0, po)), expected2, "results=\n" + results);      
+"  \\}\n" +
+"\\}\n";
+        tPo = results.indexOf("String infoUrl ");
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureLinesMatch(results.substring(tPo), expected2, "results=\n" + results);      
 
         //das
-        tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "2", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -710,9 +767,9 @@ expected2 =
         //query 1 axis
         query = "latitude&latitude>20&latitude<=20.5" +
             "&longitude=0"; //longitude constraint is ignored (since it's valid)
-        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "1axis", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "latitude\n" +
 "degrees_north\n" +
@@ -723,26 +780,194 @@ expected2 =
 "20.5\n";
         Test.ensureEqual(results, expected, "results=\n" + results);      
 
+        //query 1 axis =min
+        tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude=0", 
+            dir, tedd.className() + "1axisMin", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        expected = 
+"longitude\n" +
+"degrees_east\n" +
+"0.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+        //query 1 axis <=min 
+        tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude<=0", 
+            dir, tedd.className() + "1axisLEMin", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        expected = 
+"longitude\n" +
+"degrees_east\n" +
+"0.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+        //query 1 axis <min fails but not immediately
+        try {
+            tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude<0", 
+                dir, tedd.className() + "1axisLMin", ".csv"); 
+            results = "shouldn't get here";
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, "com.cohort.util.SimpleException: Your query produced no matching results. (nRows = 0)", 
+            "results=\n" + results);      
+
+        //query 1 axis <min fails immediately
+        try {
+            tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude<-0.01", 
+                dir, tedd.className() + "1axisLMin2", ".csv"); 
+            results = "shouldn't get here";
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, "com.cohort.util.SimpleException: Your query produced no matching results. " +
+            "(longitude<-0.01 is outside of the variable's actual_range: 0.0 to 360.0)", 
+            "results=\n" + results);      
+
+
+        //query 1 axis =max
+        tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude=360", 
+            dir, tedd.className() + "1axisMax", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        expected = 
+"longitude\n" +
+"degrees_east\n" +
+"360.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+        //query 1 axis >=max 
+        tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude>=360", 
+            dir, tedd.className() + "1axisGEMax", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        expected = 
+"longitude\n" +
+"degrees_east\n" +
+"360.0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+        //query 1 axis <max fails but not immediately
+        try {
+            tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude>360", 
+                dir, tedd.className() + "1axisGMax", ".csv"); 
+            results = "shouldn't get here";
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, "com.cohort.util.SimpleException: Your query produced no matching results. (nRows = 0)", 
+            "results=\n" + results);      
+
+        //query 1 axis >max fails immediately
+        try {
+            tName = tedd.makeNewFileForDapQuery(null, null, "longitude&longitude>360.01", 
+                dir, tedd.className() + "1axisGMin2", ".csv"); 
+            results = "shouldn't get here";
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, "com.cohort.util.SimpleException: Your query produced no matching results. " +
+            "(longitude>360.01 is outside of the variable's actual_range: 0.0 to 360.0)", 
+            "results=\n" + results);      
+
+
+        //query time axis =min
+        String timeMin = "2002-07-06T12:00:00Z";
+        tName = tedd.makeNewFileForDapQuery(null, null, "time&time=" + timeMin, 
+            dir, tedd.className() + "timeAxisMin", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        expected = 
+"time\n" +
+"UTC\n" +
+"2002-07-06T12:00:00Z\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+        //query time axis <=min 
+        tName = tedd.makeNewFileForDapQuery(null, null, "time&time<=" + timeMin, 
+            dir, tedd.className() + "timeAxisLEMin", ".csv"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        expected = 
+"time\n" +
+"UTC\n" +
+"2002-07-06T12:00:00Z\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+        //query time axis <min fails but not immediately   (< is tested as <=)
+        try {
+            tName = tedd.makeNewFileForDapQuery(null, null, "time&time<2002-07-06T12:00:00Z", 
+                dir, tedd.className() + "timeAxisLMin", ".csv"); 
+            results = "shouldn't get here";
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureEqual(results, "com.cohort.util.SimpleException: Your query produced no matching results. (nRows = 0)", 
+            "results=\n" + results);      
+
+        //query time axis <min-1sec fails immediately
+        try {
+            tName = tedd.makeNewFileForDapQuery(null, null, "time&time<2002-07-06T11:59:59.9Z", 
+                dir, tedd.className() + "timeAxisLMin2", ".csv"); 
+            results = "shouldn't get here";
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureLinesMatch(results, 
+            "com.cohort.util.SimpleException: Your query produced no matching results. " +
+            "\\(time<20.{17}Z is outside of the variable's actual_range: " +
+            "2002-07-06T12:00:00Z to 20.{17}Z\\)", 
+            "results=\n" + results);      
+
+
+        //time axis max is NaN (e.g., ~now)
+        //query time axis <max fails
+        try {
+            tName = tedd.makeNewFileForDapQuery(null, null, "time&time>=now-1hour", 
+                dir, tedd.className() + "timeAxisGMax", ".csv"); 
+            results = "shouldn't get here";
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        Test.ensureLinesMatch(results, 
+            "com.cohort.util.SimpleException: " +
+            "Your query produced no matching results. " +
+            "\\(time>=20.{17}Z is outside of the variable's actual_range: " +
+            "2002-07-06T12:00:00Z to 20.{17}Z\\)", 
+            "results=\n" + results);      
+
+
+
         //query error   
         results = "";
         try {
             query = "latitude&latitude>20&latitude<=20.5" +
-                "&longitude=1.04"; //invalid
-            tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+                "&longitude=1.04"; //invalid:  in middle of range but no match
+            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
                 tedd.className() + "1axisInvalid", ".csv"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
             results = t.toString();
         }
-        expected = "com.cohort.util.SimpleException: Your query produced no matching results. longitude=1.04 will never be true.";
+        expected = "com.cohort.util.SimpleException: Your query produced no matching results. (longitude=1.04 will never be true.)";
+        Test.ensureEqual(results, expected, "results=\n" + results);      
+
+        //query error   
+        results = "";
+        try {
+            query = "latitude&latitude>20&latitude<=20.5" +
+                "&longitude=-1"; //invalid:  out of actual_range
+            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+                tedd.className() + "1axisInvalid", ".csv"); 
+            results = "shouldn't get here";
+        } catch (Throwable t) {
+            results = t.toString();
+        }
+        expected = "com.cohort.util.SimpleException: Your query produced no matching results. " +
+            "(longitude=-1 is outside of the variable's actual_range: 0.0 to 360.0)";
         Test.ensureEqual(results, expected, "results=\n" + results);      
 
         //query 2 axes
         query = "longitude,latitude&latitude>20&latitude<=20.3" +
                 "&longitude>=15&longitude<15.3&time=\"2012-01-01T12\""; //time constraint is ignored (since it's valid)
-        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "2axes", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "longitude,latitude\n" +
 "degrees_east,degrees_north\n" +
@@ -761,9 +986,9 @@ expected2 =
         //query all axes  (different order)
         query = "latitude,longitude,altitude,time&latitude>20&latitude<=20.3" +
                 "&longitude>=15&longitude<15.3&time=\"2012-01-01T12\""; 
-        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "allaxes", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "latitude,longitude,altitude,time\n" +
 "degrees_north,degrees_east,m,UTC\n" +
@@ -780,9 +1005,9 @@ expected2 =
 
         //av+dv query with dv and av constraints
         query = "latitude,longitude,altitude,time,sst&sst>35&time=\"2012-01-01T12\""; 
-        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "_dvav1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "latitude,longitude,altitude,time,sst\n" +
 "degrees_north,degrees_east,m,UTC,degree_C\n" +
@@ -793,9 +1018,9 @@ expected2 =
            
         //av query with dv and av constraints
         query = "latitude,longitude,altitude,time&sst>35&time=\"2012-01-01T12\""; 
-        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "_dvav2", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "latitude,longitude,altitude,time\n" +
 "degrees_north,degrees_east,m,UTC\n" +
@@ -806,9 +1031,9 @@ expected2 =
            
         //dv query with dv and av constraint
         query = "sst&sst>35&time=\"2012-01-01T12\""; 
-        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "_dvav3", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "sst\n" +
 "degree_C\n" +
@@ -829,16 +1054,17 @@ debugMode = false; //normally false.  Set it to true if need help.
         String results, query, tName, expected, expected2;
         String id = "testTableFromGriddap";
         EDDTable tedd = (EDDTable)oneFromDatasetXml(id);
+        String dir = EDStatic.fullTestCacheDirectory;
 
 
         //das
-        tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "1", ".das"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
-"Attributes {\n" +
-" s {\n" +
-"  longitude {\n" +
+"Attributes \\{\n" +
+" s \\{\n" +
+"  longitude \\{\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
 "    Float64 actual_range 0.0, 360.0;\n" +
 "    String axis \"X\";\n" +
@@ -849,8 +1075,8 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String point_spacing \"even\";\n" +
 "    String standard_name \"longitude\";\n" +
 "    String units \"degrees_east\";\n" +
-"  }\n" +
-"  latitude {\n" +
+"  \\}\n" +
+"  latitude \\{\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
 "    Float64 actual_range -75.0, 75.0;\n" +
 "    String axis \"Y\";\n" +
@@ -861,8 +1087,8 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String point_spacing \"even\";\n" +
 "    String standard_name \"latitude\";\n" +
 "    String units \"degrees_north\";\n" +
-"  }\n" +
-"  altitude {\n" +
+"  \\}\n" +
+"  altitude \\{\n" +
 "    String _CoordinateAxisType \"Height\";\n" +
 "    String _CoordinateZisPositive \"up\";\n" +
 "    Float64 actual_range 0.0, 0.0;\n" +
@@ -873,10 +1099,10 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String positive \"up\";\n" +
 "    String standard_name \"altitude\";\n" +
 "    String units \"m\";\n" +
-"  }\n" +
-"  time {\n" +
+"  \\}\n" +
+"  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.0259568e+9, 1.373112e+9;\n" +  //2nd number changes
+"    Float64 actual_range 1.0259568e\\+9, .{5,14};\n" +  
 "    String axis \"T\";\n" +
 "    Int32 fraction_digits 0;\n" +
 "    String ioos_category \"Time\";\n" +
@@ -884,8 +1110,8 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String standard_name \"time\";\n" +
 "    String time_origin \"01-JAN-1970 00:00:00\";\n" +
 "    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
-"  }\n" +
-"  sst {\n" +
+"  \\}\n" +
+"  sst \\{\n" +
 "    Float32 _FillValue -9999999.0;\n" +
 "    Float64 colorBarMaximum 32.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
@@ -896,9 +1122,9 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    Float32 missing_value -9999999.0;\n" +
 "    String standard_name \"sea_surface_temperature\";\n" +
 "    String units \"degree_C\";\n" +
-"  }\n" +
-" }\n" +
-"  NC_GLOBAL {\n" +
+"  \\}\n" +
+" \\}\n" +
+"  NC_GLOBAL \\{\n" +
 "    String acknowledgement \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n" +
 "    String cdm_data_type \"Point\";\n" +
 "    String composite \"true\";\n" +
@@ -908,8 +1134,8 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    String creator_email \"dave.foley@noaa.gov\";\n" +
 "    String creator_name \"NOAA CoastWatch, West Coast Node\";\n" +
 "    String creator_url \"http://coastwatch.pfel.noaa.gov\";\n" +
-"    String date_created \"2013-07-08Z\";\n" + //changes
-"    String date_issued \"2013-07-08Z\";\n" +  //changes
+"    String date_created \"20.{8}Z\";\n" + //changes
+"    String date_issued \"20.{8}Z\";\n" +  //changes
 "    Float64 Easternmost_Easting 360.0;\n" +
 "    String featureType \"Point\";\n" +
 "    Float64 geospatial_lat_max 75.0;\n" +
@@ -924,10 +1150,14 @@ debugMode = false; //normally false.  Set it to true if need help.
 "    Float64 geospatial_vertical_min 0.0;\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
-"    String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\n";
+"    String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch";
 //2013-03-10T15:13:48Z NOAA CoastWatch (West Coast Node) and NOAA SFSC ERD
 //2013-04-04T21:43:14Z http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day
 //2013-04-04T21:43:14Z http://127.0.0.1:8080/cwexperimental/tabledap/testEDDTableFromEDDGrid.das
+
+        int tPo = results.indexOf("String history \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch");
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureLinesMatch(results.substring(0, tPo + 73), expected, "results=\n" + results);      
 
 expected2 = 
    "String infoUrl \"http://coastwatch.pfeg.noaa.gov/infog/BA_ssta_las.html\";\n" +
@@ -948,31 +1178,74 @@ expected2 =
 "    Float64 Northernmost_Northing 75.0;\n" +
 "    String origin \"Remote Sensing Systems Inc, JAXA, NASA, OSDPD, CoastWatch\";\n" +
 "    String processing_level \"3\";\n" +
-"    String project \"CoastWatch (http://coastwatch.noaa.gov/)\";\n" +
+"    String project \"CoastWatch \\(http://coastwatch.noaa.gov/\\)\";\n" +
 "    String projection \"geographic\";\n" +
 "    String projection_type \"mapped\";\n" +
-"    String references \"Blended SST from satellites information: This is an experimental product which blends satellite-derived SST data from multiple platforms using a weighted mean.  Weights are based on the inverse square of the nominal accuracy of each satellite. AMSR_E Processing information: http://www.ssmi.com/amsr/docs/AMSRE_V05_Updates.pdf . AMSR-E Processing reference: Wentz, F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing Systems Internal Report. AVHRR Processing Information: http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing Reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The development and operational application of nonlinear algorithms for the measurement of sea surface temperatures with the NOAA polar-orbiting environmental satellites. J.G.R., 103: (C12) 27999-28012, 1998. Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud classification algorithm for the advanced very high resolution radiometer. J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the operational nonlinear multi-channel sea surface temperature algorithm coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation of coastal sea and lake surface temperature measurements derived from NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, 1285-1303, 2001b. GOES Imager Processing Information: http://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager Processing Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. Estimation of sea surface temperatures using GOES-8/9 radiance measurements, Bull. Amer. Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: http://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Processing reference: Not Available.\";\n" +
+"    String references \"Blended SST from satellites information: This is an " +
+    "experimental product which blends satellite-derived SST data from multiple " +
+    "platforms using a weighted mean.  Weights are based on the inverse square " +
+    "of the nominal accuracy of each satellite. AMSR_E Processing information: " +
+    "http://www.ssmi.com/amsr/docs/AMSRE_V05_Updates.pdf . AMSR-E Processing " +
+    "reference: Wentz, F.J., C. Gentemann, and P. Ashcroft. 2005. ON-ORBIT " +
+    "CALIBRATION OF AMSR-E AND THE RETRIEVAL OF OCEAN PRODUCTS. Remote Sensing " +
+    "Systems Internal Report. AVHRR Processing Information: " +
+    "http://www.osdpd.noaa.gov/PSB/EPS/CW/coastwatch.html .  AVHRR Processing " +
+    "Reference: Walton C. C., W. G. Pichel, J. F. Sapper, D. A. May. The " +
+    "development and operational application of nonlinear algorithms for the " +
+    "measurement of sea surface temperatures with the NOAA polar-orbiting " +
+    "environmental satellites. J.G.R., 103: \\(C12\\) 27999-28012, 1998. " +
+    "Cloudmask reference: Stowe, L. L., P. A. Davis, and E. P. McClain.  " +
+    "Scientific basis and initial evaluation of the CLAVR-1 global clear/cloud " +
+    "classification algorithm for the advanced very high resolution radiometer. " +
+    "J. Atmos. Oceanic Technol., 16, 656-681. 1999. Calibration and Validation: " +
+    "Li, X., W. Pichel, E. Maturi, P. Clemente-Colon, and J. Sapper. Deriving the " +
+    "operational nonlinear multi-channel sea surface temperature algorithm " +
+    "coefficients for NOAA-15 AVHRR/3. International Journal of Remote Sensing, " +
+    "Volume 22, No. 4, 699 - 704, March 2001a. Calibration and Validation: Li, " +
+    "X, W. Pichel, P. Clemente-Colon, V. Krasnopolsky, and J. Sapper. Validation " +
+    "of coastal sea and lake surface temperature measurements derived from " +
+    "NOAA/AVHRR Data. International Journal of Remote Sensing, Vol. 22, No. 7, " +
+    "1285-1303, 2001b. GOES Imager Processing Information: " +
+    "http://coastwatch.noaa.gov/goes_sst_overview.html .  GOES Imager " +
+    "Processing Reference: Wu, X., W. P. Menzel, and G. S. Wade, 1999. " +
+    "Estimation of sea surface temperatures using GOES-8/9 radiance measurements, " +
+    "Bull. Amer. Meteor. Soc., 80, 1127-1138.  MODIS Aqua Processing Information: " +
+    "http://oceancolor.gsfc.nasa.gov/DOCS/modis_sst/ . MODIS Aqua Processing " +
+    "reference: Not Available.\";\n" +
 "    String satellite \"Aqua, GOES, POES\";\n" +
 "    String sensor \"AMSR-E, MODIS, Imager, AVHRR\";\n" +
 "    String source \"satellite observation: Aqua, GOES, POES, AMSR-E, MODIS, Imager, AVHRR\";\n" +
 "    String sourceUrl \"http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day\";\n" +
 "    Float64 Southernmost_Northing -75.0;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
-"    String summary \"NOAA OceanWatch provides a blended sea surface temperature (SST) products derived from both microwave and infrared sensors carried on multiple platforms.  The microwave instruments can measure ocean temperatures even in the presence of clouds, though the resolution is a bit coarse when considering features typical of the coastal environment.  These are complemented by the relatively fine measurements of infrared sensors.  The blended data are provided at moderate spatial resolution (0.1 degrees) for the Global Ocean.  Measurements are gathered by Japan's Advanced Microwave Scanning Radiometer (AMSR-E) instrument, a passive radiance sensor carried aboard NASA's Aqua spacecraft, NOAA's Advanced Very High Resolution Radiometer, NOAA GOES Imager, and NASA's Moderate Resolution Imaging Spectrometer (MODIS). THIS IS AN EXPERIMENTAL PRODUCT: intended strictly for scientific evaluation by professional marine scientists.\";\n" +
-"    String time_coverage_end \"2013-07-06T12:00:00Z\";\n" +    //changes
+"    String summary \"NOAA OceanWatch provides a blended sea surface temperature " +
+    "\\(SST\\) products derived from both microwave and infrared sensors carried " +
+    "on multiple platforms.  The microwave instruments can measure ocean " +
+    "temperatures even in the presence of clouds, though the resolution is a bit " +
+    "coarse when considering features typical of the coastal environment.  These " +
+    "are complemented by the relatively fine measurements of infrared sensors.  The " +
+    "blended data are provided at moderate spatial resolution \\(0.1 degrees\\) for " +
+    "the Global Ocean.  Measurements are gathered by Japan's Advanced Microwave " +
+    "Scanning Radiometer \\(AMSR-E\\) instrument, a passive radiance sensor carried " +
+    "aboard NASA's Aqua spacecraft, NOAA's Advanced Very High Resolution Radiometer, " +
+    "NOAA GOES Imager, and NASA's Moderate Resolution Imaging Spectrometer " +
+    "\\(MODIS\\). THIS IS AN EXPERIMENTAL PRODUCT: intended strictly for scientific " +
+    "evaluation by professional marine scientists.\";\n" +
+"    String time_coverage_end \"20.{8}T12:00:00Z\";\n" +    //changes
 "    String time_coverage_start \"2002-07-06T12:00:00Z\";\n" +
-"    String title \"SST, Blended, Global, EXPERIMENTAL (5 Day Composite)\";\n" +
+"    String title \"SST, Blended, Global, EXPERIMENTAL \\(5 Day Composite\\)\";\n" +
 "    Float64 Westernmost_Easting 0.0;\n" +
-"  }\n" +
-"}\n";
-        Test.ensureEqual(results.substring(0, expected.length()), expected, "results=\n" + results);      
-        int po = results.indexOf("String infoUrl ");
-        Test.ensureEqual(results.substring(Math.max(0, po)), expected2, "results=\n" + results);      
+"  \\}\n" +
+"\\}\n";
+
+        tPo = results.indexOf("String infoUrl ");
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureLinesMatch(results.substring(tPo), expected2, "results=\n" + results);      
 
         //das
-        tName = tedd.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, "", dir, 
             tedd.className() + "2", ".dds"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "Dataset {\n" +
 "  Sequence {\n" +
@@ -989,9 +1262,9 @@ expected2 =
         //query 1 axis
         query = "latitude&latitude>20&latitude<=20.5" +
             "&longitude=0"; //longitude constraint is ignored (since it's valid)
-        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "1axis", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "latitude\n" +
 "degrees_north\n" +
@@ -1007,21 +1280,22 @@ expected2 =
         try {
             query = "latitude&latitude>20&latitude<=20.5" +
                 "&longitude=1.04"; //invalid
-            tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
                 tedd.className() + "1axisInvalid", ".csv"); 
             results = "shouldn't get here";
         } catch (Throwable t) {
             results = t.toString();
         }
-        expected = "com.cohort.util.SimpleException: Your query produced no matching results. longitude=1.04 will never be true.";
-        Test.ensureEqual(results, expected, "results=\n" + results);      
+        String2.log("results=\n" + results);
+        expected = "com.cohort.util.SimpleException: Your query produced no matching results. (longitude=1.04 will never be true.)";
+        Test.ensureEqual(results, expected, "");      
 
         //query 2 axes
         query = "longitude,latitude&latitude>20&latitude<=20.3" +
                 "&longitude>=15&longitude<15.3&time=\"2012-01-01T12\""; //time constraint is ignored (since it's valid)
-        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "2axes", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "longitude,latitude\n" +
 "degrees_east,degrees_north\n" +
@@ -1040,9 +1314,9 @@ expected2 =
         //query all axes  (different order)
         query = "latitude,longitude,altitude,time&latitude>20&latitude<=20.3" +
                 "&longitude>=15&longitude<15.3&time=\"2012-01-01T12\""; 
-        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "allaxes", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "latitude,longitude,altitude,time\n" +
 "degrees_north,degrees_east,m,UTC\n" +
@@ -1059,9 +1333,9 @@ expected2 =
 
         //av+dv query with dv and av constraints
         query = "latitude,longitude,altitude,time,sst&sst>35&time=\"2012-01-01T12\""; 
-        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "_dvav1", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "latitude,longitude,altitude,time,sst\n" +
 "degrees_north,degrees_east,m,UTC,degree_C\n" +
@@ -1072,9 +1346,9 @@ expected2 =
            
         //av query with dv and av constraints
         query = "latitude,longitude,altitude,time&sst>35&time=\"2012-01-01T12\""; 
-        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "_dvav2", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "latitude,longitude,altitude,time\n" +
 "degrees_north,degrees_east,m,UTC\n" +
@@ -1085,9 +1359,9 @@ expected2 =
            
         //dv query with dv and av constraint
         query = "sst&sst>35&time=\"2012-01-01T12\""; 
-        tName = tedd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
+        tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
             tedd.className() + "_dvav3", ".csv"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        results = new String((new ByteArray(dir + tName)).toArray());
         expected = 
 "sst\n" +
 "degree_C\n" +

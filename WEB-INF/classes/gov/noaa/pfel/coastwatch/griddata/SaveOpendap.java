@@ -45,7 +45,7 @@ import ucar.ma2.*;
 public class SaveOpendap  {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
@@ -66,7 +66,7 @@ public class SaveOpendap  {
         NCdump.print(fullFileName, baos, 
             printData, false /*print only coord variables*/, false /*ncml*/, false,
             "" /*varNames*/, null /*cancel*/);
-        return baos.toString();
+        return String2.replaceAll(baos.toString(), "\r", "");
     }
 
     /**
@@ -251,129 +251,145 @@ public class SaveOpendap  {
             info = info.substring(po);
     String shouldBe =         
 "{\n" +
-" dimensions:\n" +
-"   time = UNLIMITED;   // (803 currently)\n" +
-"   latitude = 1;\n" +
-"   longitude = 1;\n" +
-" variables:\n" +
-"   int wind_dir(time=803, latitude=1, longitude=1);\n" +
-"     :_CoordinateAxes = \"time latitude longitude \";\n" +
-"     :long_name = \"Wind Direction\";\n" +
-"     :short_name = \"wdir\";\n" +
-"     :standard_name = \"wind_from_direction\";\n" +
-"     :units = \"degrees_true\";\n" +
-"     :_FillValue = 999; // int\n" +
-"   float wind_spd(time=803, latitude=1, longitude=1);\n" +
-"     :_CoordinateAxes = \"time latitude longitude \";\n" +
-"     :long_name = \"Wind Speed\";\n" +
-"     :short_name = \"wspd\";\n" +
-"     :standard_name = \"wind_speed\";\n" +
-"     :units = \"meters/second\";\n" +
-"     :_FillValue = 99.0f; // float\n" +
-"   float gust(time=803, latitude=1, longitude=1);\n" +
-"     :_CoordinateAxes = \"time latitude longitude \";\n" +
-"     :long_name = \"Wind Gust Speed\";\n" +
-"     :short_name = \"gst\";\n" +
-"     :standard_name = \"gust\";\n" +
-"     :units = \"meters/second\";\n" +
-"     :_FillValue = 99.0f; // float\n" +
-"   float wave_height(time=803, latitude=1, longitude=1);\n" +
-"     :_CoordinateAxes = \"time latitude longitude \";\n" +
-"     :long_name = \"Significant Wave Height\";\n" +
-"     :short_name = \"wvht\";\n" +
-"     :standard_name = \"significant_height_of_wave\";\n" +
-"     :units = \"meters\";\n" +
-"     :_FillValue = 99.0f; // float\n" +
-"   float dominant_wpd(time=803, latitude=1, longitude=1);\n" +
-"     :_CoordinateAxes = \"time latitude longitude \";\n" +
-"     :long_name = \"Dominant Wave Period\";\n" +
-"     :short_name = \"dpd\";\n" +
-"     :standard_name = \"dominant_wave_period\";\n" +
-"     :units = \"seconds\";\n" +
-"     :_FillValue = 99.0f; // float\n" +
-"   float average_wpd(time=803, latitude=1, longitude=1);\n" +
-"     :_CoordinateAxes = \"time latitude longitude \";\n" +
-"     :long_name = \"Average Wave Period\";\n" +
-"     :short_name = \"apd\";\n" +
-"     :standard_name = \"average_wave_period\";\n" +
-"     :units = \"seconds\";\n" +
-"     :_FillValue = 99.0f; // float\n" +
-"   int mean_wave_dir(time=803, latitude=1, longitude=1);\n" +
-"     :_CoordinateAxes = \"time latitude longitude \";\n" +
-"     :long_name = \"Mean Wave Direction\";\n" +
-"     :short_name = \"mwd\";\n" +
-"     :standard_name = \"mean_wave_direction\";\n" +
-"     :units = \"degrees_true\";\n" +
-"     :_FillValue = 999; // int\n" +
-"   float air_pressure(time=803, latitude=1, longitude=1);\n" +
-"     :_CoordinateAxes = \"time latitude longitude \";\n" +
-"     :long_name = \"Sea Level Pressure\";\n" +
-"     :short_name = \"pres\";\n" +
-"     :standard_name = \"air_pressure_at_sea_level\";\n" +
-"     :units = \"hPa\";\n" +
-"     :_FillValue = 9999.0f; // float\n" +
-"   float air_temperature(time=803, latitude=1, longitude=1);\n" +
-"     :_CoordinateAxes = \"time latitude longitude \";\n" +
-"     :long_name = \"Air Temperature\";\n" +
-"     :short_name = \"atmp\";\n" +
-"     :standard_name = \"air_temperature\";\n" +
-"     :units = \"degree_Celsius\";\n" +
-"     :_FillValue = 999.0f; // float\n" +
-"   float sea_surface_temperature(time=803, latitude=1, longitude=1);\n" +
-"     :_CoordinateAxes = \"time latitude longitude \";\n" +
-"     :long_name = \"Sea Surface Temperature\";\n" +
-"     :short_name = \"wtmp\";\n" +
-"     :standard_name = \"sea_surface_temperature\";\n" +
-"     :units = \"degree_Celsius\";\n" +
-"     :_FillValue = 999.0f; // float\n" +
-"   float dewpt_temperature(time=803, latitude=1, longitude=1);\n" +
-"     :_CoordinateAxes = \"time latitude longitude \";\n" +
-"     :long_name = \"Dew Point Temperature\";\n" +
-"     :short_name = \"dewp\";\n" +
-"     :standard_name = \"dew_point_temperature\";\n" +
-"     :units = \"degree_Celsius\";\n" +
-"     :_FillValue = 999.0f; // float\n" +
-"   float visibility(time=803, latitude=1, longitude=1);\n" +
-"     :_CoordinateAxes = \"time latitude longitude \";\n" +
-"     :long_name = \"Visibility\";\n" +
-"     :short_name = \"vis\";\n" +
-"     :standard_name = \"visibility_in_air\";\n" +
-"     :units = \"US_statute_miles\";\n" +
-"     :_FillValue = 99.0f; // float\n" +
-"   float water_level(time=803, latitude=1, longitude=1);\n" +
-"     :_CoordinateAxes = \"time latitude longitude \";\n" +
-"     :long_name = \"Tide Water Level\";\n" +
-"     :short_name = \"tide\";\n" +
-"     :standard_name = \"water_level\";\n" +
-"     :units = \"feet\";\n" +
-"     :_FillValue = 99.0f; // float\n" +
-"   int time(time=803);\n" +
-"     :long_name = \"Epoch Time\";\n" +
-"     :short_name = \"time\";\n" +
-"     :standard_name = \"time\";\n" +
-"     :units = \"seconds since 1970-01-01 00:00:00 UTC\";\n" +
-"     :_CoordinateAxisType = \"Time\";\n" +
-"   float latitude(latitude=1);\n" +
-"     :long_name = \"Latitude\";\n" +
-"     :short_name = \"latitude\";\n" +
-"     :standard_name = \"latitude\";\n" +
-"     :units = \"degrees_north\";\n" +
-"     :_CoordinateAxisType = \"Lat\";\n" +
-"   float longitude(longitude=1);\n" +
-"     :long_name = \"Longitude\";\n" +
-"     :short_name = \"longitude\";\n" +
-"     :standard_name = \"longitude\";\n" +
-"     :units = \"degrees_east\";\n" +
-"     :_CoordinateAxisType = \"Lon\";\n" +
+"  dimensions:\n" +
+"    time = UNLIMITED;   // (803 currently\n" +
+"    latitude = 1;\n" +
+"    longitude = 1;\n" +
+"  variables:\n" +
+"    int wind_dir(time=803, latitude=1, longitude=1);\n" +
+"      :_CoordinateAxes = \"time latitude longitude \";\n" +
+"      :long_name = \"Wind Direction\";\n" +
+"      :short_name = \"wdir\";\n" +
+"      :standard_name = \"wind_from_direction\";\n" +
+"      :units = \"degrees_true\";\n" +
+"      :_FillValue = 999; // int\n" +
 "\n" +
-" :institution = \"NOAA National Data Buoy Center and Participators in Data Assembly Center\";\n" +
-" :url = \"http://dods.ndbc.noaa.gov\";\n" +
-" :quality = \"Automated QC checks with manual editing and comprehensive monthly QC\";\n" +
-" :conventions = \"COARDS\";\n" +
-" :station = \"31201\";\n" +
-" :comment = \"Floripa, Brazil (109)\";\n" +
-" :location = \"27.70 S 48.13 W \";\n" +
-" :_CoordSysBuilder = \"ucar.nc2.dataset.conv.COARDSConvention\";\n" + //2013-02-21 reappeared. 2012-07-30 disappeared
+"    float wind_spd(time=803, latitude=1, longitude=1);\n" +
+"      :_CoordinateAxes = \"time latitude longitude \";\n" +
+"      :long_name = \"Wind Speed\";\n" +
+"      :short_name = \"wspd\";\n" +
+"      :standard_name = \"wind_speed\";\n" +
+"      :units = \"meters/second\";\n" +
+"      :_FillValue = 99.0f; // float\n" +
+"\n" +
+"    float gust(time=803, latitude=1, longitude=1);\n" +
+"      :_CoordinateAxes = \"time latitude longitude \";\n" +
+"      :long_name = \"Wind Gust Speed\";\n" +
+"      :short_name = \"gst\";\n" +
+"      :standard_name = \"gust\";\n" +
+"      :units = \"meters/second\";\n" +
+"      :_FillValue = 99.0f; // float\n" +
+"\n" +
+"    float wave_height(time=803, latitude=1, longitude=1);\n" +
+"      :_CoordinateAxes = \"time latitude longitude \";\n" +
+"      :long_name = \"Significant Wave Height\";\n" +
+"      :short_name = \"wvht\";\n" +
+"      :standard_name = \"significant_height_of_wave\";\n" +
+"      :units = \"meters\";\n" +
+"      :_FillValue = 99.0f; // float\n" +
+"\n" +
+"    float dominant_wpd(time=803, latitude=1, longitude=1);\n" +
+"      :_CoordinateAxes = \"time latitude longitude \";\n" +
+"      :long_name = \"Dominant Wave Period\";\n" +
+"      :short_name = \"dpd\";\n" +
+"      :standard_name = \"dominant_wave_period\";\n" +
+"      :units = \"seconds\";\n" +
+"      :_FillValue = 99.0f; // float\n" +
+"\n" +
+"    float average_wpd(time=803, latitude=1, longitude=1);\n" +
+"      :_CoordinateAxes = \"time latitude longitude \";\n" +
+"      :long_name = \"Average Wave Period\";\n" +
+"      :short_name = \"apd\";\n" +
+"      :standard_name = \"average_wave_period\";\n" +
+"      :units = \"seconds\";\n" +
+"      :_FillValue = 99.0f; // float\n" +
+"\n" +
+"    int mean_wave_dir(time=803, latitude=1, longitude=1);\n" +
+"      :_CoordinateAxes = \"time latitude longitude \";\n" +
+"      :long_name = \"Mean Wave Direction\";\n" +
+"      :short_name = \"mwd\";\n" +
+"      :standard_name = \"mean_wave_direction\";\n" +
+"      :units = \"degrees_true\";\n" +
+"      :_FillValue = 999; // int\n" +
+"\n" +
+"    float air_pressure(time=803, latitude=1, longitude=1);\n" +
+"      :_CoordinateAxes = \"time latitude longitude \";\n" +
+"      :long_name = \"Sea Level Pressure\";\n" +
+"      :short_name = \"pres\";\n" +
+"      :standard_name = \"air_pressure_at_sea_level\";\n" +
+"      :units = \"hPa\";\n" +
+"      :_FillValue = 9999.0f; // float\n" +
+"\n" +
+"    float air_temperature(time=803, latitude=1, longitude=1);\n" +
+"      :_CoordinateAxes = \"time latitude longitude \";\n" +
+"      :long_name = \"Air Temperature\";\n" +
+"      :short_name = \"atmp\";\n" +
+"      :standard_name = \"air_temperature\";\n" +
+"      :units = \"degree_Celsius\";\n" +
+"      :_FillValue = 999.0f; // float\n" +
+"\n" +
+"    float sea_surface_temperature(time=803, latitude=1, longitude=1);\n" +
+"      :_CoordinateAxes = \"time latitude longitude \";\n" +
+"      :long_name = \"Sea Surface Temperature\";\n" +
+"      :short_name = \"wtmp\";\n" +
+"      :standard_name = \"sea_surface_temperature\";\n" +
+"      :units = \"degree_Celsius\";\n" +
+"      :_FillValue = 999.0f; // float\n" +
+"\n" +
+"    float dewpt_temperature(time=803, latitude=1, longitude=1);\n" +
+"      :_CoordinateAxes = \"time latitude longitude \";\n" +
+"      :long_name = \"Dew Point Temperature\";\n" +
+"      :short_name = \"dewp\";\n" +
+"      :standard_name = \"dew_point_temperature\";\n" +
+"      :units = \"degree_Celsius\";\n" +
+"      :_FillValue = 999.0f; // float\n" +
+"\n" +
+"    float visibility(time=803, latitude=1, longitude=1);\n" +
+"      :_CoordinateAxes = \"time latitude longitude \";\n" +
+"      :long_name = \"Visibility\";\n" +
+"      :short_name = \"vis\";\n" +
+"      :standard_name = \"visibility_in_air\";\n" +
+"      :units = \"US_statute_miles\";\n" +
+"      :_FillValue = 99.0f; // float\n" +
+"\n" +
+"    float water_level(time=803, latitude=1, longitude=1);\n" +
+"      :_CoordinateAxes = \"time latitude longitude \";\n" +
+"      :long_name = \"Tide Water Level\";\n" +
+"      :short_name = \"tide\";\n" +
+"      :standard_name = \"water_level\";\n" +
+"      :units = \"feet\";\n" +
+"      :_FillValue = 99.0f; // float\n" +
+"\n" +
+"    int time(time=803);\n" +
+"      :long_name = \"Epoch Time\";\n" +
+"      :short_name = \"time\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :units = \"seconds since 1970-01-01 00:00:00 UTC\";\n" +
+"      :_CoordinateAxisType = \"Time\";\n" +
+"\n" +
+"    float latitude(latitude=1);\n" +
+"      :long_name = \"Latitude\";\n" +
+"      :short_name = \"latitude\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
+"      :_CoordinateAxisType = \"Lat\";\n" +
+"\n" +
+"    float longitude(longitude=1);\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :short_name = \"longitude\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :institution = \"NOAA National Data Buoy Center and Participators in Data Assembly Center\";\n" +
+"  :url = \"http://dods.ndbc.noaa.gov\";\n" +
+"  :quality = \"Automated QC checks with manual editing and comprehensive monthly QC\";\n" +
+"  :conventions = \"COARDS\";\n" +
+"  :station = \"31201\";\n" +
+"  :comment = \"Floripa, Brazil (109)\";\n" +
+"  :location = \"27.70 S 48.13 W \";\n" +
+"  :_CoordSysBuilder = \"ucar.nc2.dataset.conv.COARDSConvention\";\n" + //2013-02-21 reappeared. 2012-07-30 disappeared
 " data:\n" +
 "}\n";
             Test.ensureEqual(info, shouldBe, "info=" + info);

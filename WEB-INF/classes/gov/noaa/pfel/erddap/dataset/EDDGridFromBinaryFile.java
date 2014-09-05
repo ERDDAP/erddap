@@ -308,7 +308,7 @@ public class EDDGridFromBinaryFile extends EDDGrid {
      *   are the dataValues.
      *   Both the axisValues and dataValues are straight from the source,
      *   not modified.
-     * @throws Throwable if trouble
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public PrimitiveArray[] getSourceData(EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {

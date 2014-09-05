@@ -42,7 +42,7 @@ public class DummySink extends DeflaterOutputStream  {
      * buffer size.
      * @param out the output stream
      * @param def the compressor ("deflater")
-     * @param len the output buffer size
+     * @param size the output buffer size
      * @exception IllegalArgumentException if size is <= 0
      */
     public DummySink(OutputStream out, Deflater def, int size) {
@@ -80,7 +80,7 @@ public class DummySink extends DeflaterOutputStream  {
     /**
      * Writes an array of bytes to the compressed output stream. This
      * method will block until all the bytes are written.
-     * @param buf the data to be written
+     * @param b the data to be written
      * @param off the start offset of the data
      * @param len the length of the data
      * @exception IOException if an I/O error has occurred

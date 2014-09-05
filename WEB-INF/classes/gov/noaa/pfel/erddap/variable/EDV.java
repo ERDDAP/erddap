@@ -27,19 +27,19 @@ import java.util.GregorianCalendar;
 public class EDV { 
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false; 
 
     /**
-     * Set this to true (by calling reallyVerbose=true in your program, not but changing the code here)
+     * Set this to true (by calling reallyVerbose=true in your program, not by changing the code here)
      * if you want lots and lots of diagnostic messages sent to String2.log.
      */
     public static boolean reallyVerbose = false; 
 
     /**
-     * Set this to true (by calling debug=true in your program, not but changing the code here)
+     * Set this to true (by calling debug=true in your program, not by changing the code here)
      * if you want lots and lots of diagnostic messages sent to String2.log.
      */
     public static boolean debug = false; 
@@ -49,9 +49,8 @@ public class EDV {
      * and units for the lon, lat, alt, and time axes in the results. 
      * These names are suggested by
      * http://www.unidata.ucar.edu/software/netcdf-java/formats/UnidataObsConvention.html 
-     * and match the CF 1.0 standard names
-     * (see http://cf-pcmdi.llnl.gov/documents/cf-standard-names/6/cf-standard-name-table.html or
-     * xml version from http://marinemetadata.org/cf).
+     * and match the CF standard names
+     * (see http://cfconventions.org/Data/cf-standard-names/27/build/cf-standard-name-table.html).
      */
     public final static String
         LON_NAME  = "longitude", LON_LONGNAME  = "Longitude", LON_STANDARD_NAME  = "longitude", LON_UNITS  = "degrees_east",        
@@ -150,7 +149,7 @@ public class EDV {
 
     /** The time variable attribute that has the precision specification for 
         Calendar2.epochSecondsToLimitedIsoStringT. */
-    public final static String time_precision = "time_precision"; 
+    public final static String TIME_PRECISION = "time_precision"; 
 
     /** This is the standard slider size. */
     public final static int SLIDER_PIXELS = 501;
@@ -906,6 +905,10 @@ public class EDV {
      * altitude values are in meters, positive=up 
      * and time values are in seconds since 1970-01-01).
      * scaleFactor() and addOffset() have been applied.
+     *
+     * <p>For time in near-real-time EDDTable datasets, destinationMax should be NaN 
+     * to indicate that the roughly NOW.  For example, see cwwcNDBCMet: data is from files,
+     * but presumption is data in files may change before next time file is read.
      * 
      * @return the cleaned up destinationMax value for this axis.
      */

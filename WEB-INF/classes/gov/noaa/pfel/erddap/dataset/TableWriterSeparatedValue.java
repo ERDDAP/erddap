@@ -31,7 +31,7 @@ public class TableWriterSeparatedValue extends TableWriter {
 
     //set by constructor
     protected String separator;
-    protected boolean quoted;
+    protected boolean quoted, writeColumnNames;
     protected char writeUnits;
     protected String nanString; 
 
@@ -53,6 +53,7 @@ public class TableWriterSeparatedValue extends TableWriter {
      *    the value will be written in double quotes
      *    and internal double quotes become two double quotes.
      *    In any case, newline characters are replaced by char #166 (pipe with gap).
+     * @param tWriteColumnNames if false, data starts on line 0.
      * @param tWriteUnits  '0'=no, 
      *    '('=on the first line as "variableName (units)" (if present),
      *    2=on the second line.
@@ -61,11 +62,13 @@ public class TableWriterSeparatedValue extends TableWriter {
      *    because it is easier/safer to replace "NaN" with "" than replace nothing with "NaN".
      */
     public TableWriterSeparatedValue(OutputStreamSource tOutputStreamSource,
-        String tSeparator, boolean tQuoted, char tWriteUnits, String tNanString) {
+        String tSeparator, boolean tQuoted, boolean tWriteColumnNames, 
+        char tWriteUnits, String tNanString) {
 
         super(tOutputStreamSource);
         separator = tSeparator;
         quoted = tQuoted;
+        writeColumnNames = tWriteColumnNames;
         writeUnits = tWriteUnits;
         nanString = tNanString;
         if ("0(2".indexOf(writeUnits) < 0)
@@ -115,27 +118,29 @@ public class TableWriterSeparatedValue extends TableWriter {
             for (int col = 0; col < nColumns; col++) {
                 isString[col] = table.getColumn(col).elementClass() == String.class;
                 
-                String units = "";
-                if (writeUnits == '[' ||
-                    writeUnits == '(') {
-                    units = table.columnAttributes(col).getString("units");
-                    if (units == null) units = "";
-                    if (isTimeStamp[col])
-                        units = "UTC"; //"seconds since 1970-01-01..." is no longer true
-                    if (units.length() > 0) {
-                        if (writeUnits == '[') 
-                             units = " [" + units + "]";
-                        else units = " (" + units + ")";
+                if (writeColumnNames) {
+                    String units = "";
+                    if (writeUnits == '[' ||
+                        writeUnits == '(') {
+                        units = table.columnAttributes(col).getString("units");
+                        if (units == null) units = "";
+                        if (isTimeStamp[col])
+                            units = "UTC"; //"seconds since 1970-01-01..." is no longer true
+                        if (units.length() > 0) {
+                            if (writeUnits == '[') 
+                                 units = " [" + units + "]";
+                            else units = " (" + units + ")";
+                        }
                     }
-                }
 
-                //quoteIfNeeded converts carriageReturns/newlines to (char)166; //'¦'  (#166)
-                writer.write(String2.quoteIfNeeded(quoted, table.getColumnName(col) + units));
-                writer.write(col == nColumns - 1? "\n" : separator);
+                    //quoteIfNeeded converts carriageReturns/newlines to (char)166; //'¦'  (#166)
+                    writer.write(String2.quoteIfNeeded(quoted, table.getColumnName(col) + units));
+                    writer.write(col == nColumns - 1? "\n" : separator);
+                }
             }
 
             //write the units on 2nd line of header  
-            if (writeUnits == '2') {
+            if (writeColumnNames && writeUnits == '2') {
                 for (int col = 0; col < nColumns; col++) {
                     String units = table.columnAttributes(col).getString("units");
                     if (units == null) units = "";
@@ -190,7 +195,7 @@ public class TableWriterSeparatedValue extends TableWriter {
     public void finish() throws Throwable {
         //check for MustBe.THERE_IS_NO_DATA
         if (writer == null)
-            throw new SimpleException(MustBe.THERE_IS_NO_DATA);
+            throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
 
         writer.flush(); //essential
 
@@ -207,11 +212,13 @@ public class TableWriterSeparatedValue extends TableWriter {
      *
      * @throws Throwable if trouble  (no columns is trouble; no rows is not trouble)
      */
-    public static void writeAllAndFinish(Table table, OutputStreamSource tOutputStreamSource, 
-        String tSeparator, boolean tQuoted, char tWriteUnits, String tNanString) throws Throwable {
+    public static void writeAllAndFinish(Table table, 
+        OutputStreamSource tOutputStreamSource, String tSeparator, boolean tQuoted, 
+        boolean tWriteColumnNames, char tWriteUnits, String tNanString) throws Throwable {
 
         TableWriterSeparatedValue twsv = new TableWriterSeparatedValue(
-            tOutputStreamSource, tSeparator, tQuoted, tWriteUnits, tNanString);
+            tOutputStreamSource, tSeparator,tQuoted, tWriteColumnNames, tWriteUnits,
+            tNanString);
         twsv.writeAllAndFinish(table);
     }
 

@@ -97,8 +97,7 @@ public class Shared extends Thread {
      */
     public void run() {
         ResourceBundle2 classRB2 = oneOf.classRB2();
-        Math2.gc(500); //so getMemoryInUse more accurate
-        Math2.gc(500);
+        Math2.gcAndWait(); Math2.gcAndWait(); //before getMemoryInUse() in run()  //so getMemoryInUse more accurate
         long memoryInUse = Math2.getMemoryInUse();
         try {
             long startTime = System.currentTimeMillis();
@@ -250,7 +249,7 @@ String2.log("!!!Category=" + category);
             }
 
             //call gc
-            Math2.incgc(100); 
+            //Math2.incgc(100); //2013-12-05 commented out. Let Java handle memory.
 
             //*** look for available vector info
             long vectorInfoTime = System.currentTimeMillis();
@@ -392,7 +391,7 @@ String2.log("!!!Category=" + category);
             vectorInfoTime = System.currentTimeMillis() - vectorInfoTime;
 
             //call gc
-            Math2.incgc(100); 
+            //Math2.incgc(100); //2013-12-05 commented out. Let Java handle memory.
 
             //*** generate the PointDataSet info
             String2.log("pointsDir=" + oneOf.pointsDir());
@@ -482,7 +481,7 @@ String2.log("!!!Category=" + category);
             String2.log("activePointDataSetOptions=" + String2.toCSSVString(activePointDataSetOptions));
 
             //call gc
-            Math2.incgc(100); 
+            //Math2.incgc(100); //2013-12-05 commented out. Let Java handle memory.
 
             //*** look for available pointVector info
             long pointVectorInfoTime = System.currentTimeMillis();
@@ -572,7 +571,7 @@ String2.log("!!!Category=" + category);
             pointVectorInfoTime = System.currentTimeMillis() - pointVectorInfoTime;
 
             //call gc
-            Math2.incgc(100); 
+            //Math2.incgc(100); //2013-12-05 commented out. Let Java handle memory.
 
             //*** generate the TrajectoryDataSet info
             activeTrajectoryDataSets = new Vector();
@@ -612,13 +611,10 @@ String2.log("!!!Category=" + category);
                 return;
             }
 
-            //call gc
-            Math2.incgc(100); 
 
             //*** print lots of useful information
             resetTime = System.currentTimeMillis() - startTime;
-            Math2.gc(500); //so getMemoryInUse more accurate
-            Math2.gc(500); 
+            Math2.gcAndWait(); Math2.gcAndWait(); //before getMemoryInUse() in run()   //so getMemoryInUse more accurate
             String2.log( 
                 "Shared.run ending stats:\n" +
                 "  Memory used (KB) = " + ((Math2.getMemoryInUse() - memoryInUse) / 1024) + "\n" +
@@ -1030,11 +1026,11 @@ String2.log("!!!Category=" + category);
         String[] name7s  = shared.activeGridDataSet7Names();
         for (int i = 0; i < options.length; i++)
             String2.log(name7s[i] + " = " + String2.noLongerThan(options[i], 68));
-        Math2.gc(500);
-        Math2.gc(500);
+        Math2.gcAndWait(); Math2.gcAndWait(); //part of a test 
         String2.log(Math2.memoryString() +  //~45 MB for CWBrowser
             "\nShared.test done. TIME=" + 
             Calendar2.elapsedTimeString(System.currentTimeMillis() - time));
+        String2.returnLoggingToSystemOut();
 //System.exit(0); //exit when shared is alive when using -agentlib:hprof=heap=sites,file=/JavaHeap.txt  
 
     }

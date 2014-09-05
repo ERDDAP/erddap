@@ -65,7 +65,7 @@ import javax.imageio.ImageIO;
 public class SgtUtil  {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
@@ -349,7 +349,7 @@ public class SgtUtil  {
         Graphics g = bi.getGraphics(); 
         Graphics2D g2 = (Graphics2D)g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, 
-            RenderingHints.VALUE_ANTIALIAS_ON); 
+            RenderingHints.VALUE_ANTIALIAS_ON);  
         g2.setColor(Color.white);                //I'm not sure why necessary, but it is
         g2.fillRect(0, 0, gifWidth, gifHeight);  //I'm not sure why necessary, but it is
 
@@ -479,7 +479,7 @@ public class SgtUtil  {
         Graphics g = bi.getGraphics();
         g.drawImage(image, 0, 0, bi.getWidth(), bi.getHeight(), null);
         image = null; //encourage garbage collection
-        //Math2.gc(100);
+        //Math2.gcAndWait(); //commented out to let Java handle gc
         
         //save as png
         int random = Math2.random(Integer.MAX_VALUE);

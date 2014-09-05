@@ -182,6 +182,7 @@ public class EDDTableFromSOS extends EDDTable{
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
+        String tSosOfferingPrefix = null;
         String tLocalSourceUrl = null, tObservationOfferingIdRegex = null;
         boolean tRequestObservedPropertiesSeparately = false;
         String tResponseFormat = null;
@@ -258,6 +259,8 @@ public class EDDTableFromSOS extends EDDTable{
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<sosOfferingPrefix>")) {}
+            else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content; 
             else if (localTags.equals( "<defaultDataQuery>")) {}
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
@@ -271,7 +274,7 @@ public class EDDTableFromSOS extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromSOS(tDatasetID, tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes, tSosServerType,
             tStationIdSourceName, tLongitudeSourceName, tLatitudeSourceName,
             tAltitudeSourceName, tAltitudeSourceMinimum, tAltitudeSourceMaximum, 
@@ -389,6 +392,7 @@ public class EDDTableFromSOS extends EDDTable{
      */
     public EDDTableFromSOS(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes, String tSosServerType,
         String tStationIdSourceName,
@@ -417,6 +421,7 @@ public class EDDTableFromSOS extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        sosOfferingPrefix = tSosOfferingPrefix;
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
         if (tAddGlobalAttributes == null)
@@ -544,6 +549,11 @@ public class EDDTableFromSOS extends EDDTable{
             if (verbose)
                 String2.log("  using getCapabilities from quickRestartFile " +
                     Calendar2.millisToIsoZuluString(creationTimeMillis) + "Z");
+
+            //Ensure quickRestart information is recent.
+            //If too old: abandon construction, delete quickRestart file, flag dataset reloadASAP
+            ensureQuickRestartInfoIsRecent(datasetID, getReloadEveryNMinutes(), 
+                creationTimeMillis, quickRestartFileName);
 
         } else {
             //re-download the file
@@ -933,7 +943,8 @@ public class EDDTableFromSOS extends EDDTable{
             .add("units", tTimeSourceFormat);
         if (CDM_TIMESERIESPROFILE.equals(cdmType) || CDM_TRAJECTORYPROFILE.equals(cdmType)) 
             tAtts.add("cf_role", "profile_id");
-        EDVTime edvTime = new EDVTime(tTimeSourceName, null, tAtts, "String");
+        EDVTime edvTime = new EDVTime(tTimeSourceName, null, tAtts, 
+            "String"); //this constructor gets source / sets destination actual_range
         if (!Double.isNaN(tTimeMin)) edvTime.setDestinationMin(tTimeMin);
         if (!Double.isNaN(tTimeMax)) edvTime.setDestinationMax(tTimeMax);
         edvTime.setActualRangeFromDestinationMinMax();
@@ -951,8 +962,7 @@ public class EDDTableFromSOS extends EDDTable{
 
             if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
                 dataVariables[nFixedVariables + dv] = new EDVTimeStamp(tSourceName, tDestName, 
-                    tSourceAtt, tAddAtt, tSourceType); //the constructor that reads actual_range
-                dataVariables[nFixedVariables + dv].setActualRangeFromDestinationMinMax();
+                    tSourceAtt, tAddAtt, tSourceType); //this constructor gets source / sets destination actual_range
             } else {
                 dataVariables[nFixedVariables + dv] = new EDV(tSourceName, tDestName, 
                     tSourceAtt, tAddAtt, tSourceType); //the constructor that reads actual_range
@@ -963,12 +973,14 @@ public class EDDTableFromSOS extends EDDTable{
                 "\"" + EDV.observedProperty + "\" attribute not assigned for variable sourceName=" + tSourceName);
         }
 
-        //gather ERDDAP sos information
+        //Gather information to serve this dataset via ERDDAP's SOS server.
+        //This has an advantage over the generic gathering of SOS data:
+        //  it can determine the min/max lon/lat/time of each station.
         //SOS datasets always have actual lon,lat values and stationTable time is always epochSeconds,
         //  so I can just use source station info directly (without conversion).
         //Note that times are often too wide a range because they are for all observedProperties,
         //  not just the one used by this dataset.
-        if (EDStatic.sosActive && setSosOfferingTypeAndIndex()) {  //it should succeed
+        if (preliminaryAccessibleViaSOS().length() == 0) {  //it should succeed
             sosMinLon    = stationTable.getColumn(stationLonCol);
             sosMaxLon    = sosMinLon;
             sosMinLat    = stationTable.getColumn(stationLatCol);
@@ -978,6 +990,7 @@ public class EDDTableFromSOS extends EDDTable{
             sosOfferings = (StringArray)stationTable.getColumn(stationIDCol).clone(); //clone since it changes below
             int nSosOfferings = sosOfferings.size();
             //convert sosOfferings to short name
+//!!! This should determine sosOfferingPrefix, then for each offering: ensure it exists and remove it
             for (int offering = 0; offering < nSosOfferings; offering++) {
                 String so = sosOfferings.getString(offering);
                 int cpo = so.lastIndexOf(":");
@@ -1006,6 +1019,7 @@ public class EDDTableFromSOS extends EDDTable{
      *
      * @param loggedInAs the user's login name if logged in (or null if not logged in).
      * @param userDapQuery the part after the '?', still percentEncoded, may be null.
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public void getDataForDapQuery(String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
@@ -1445,10 +1459,19 @@ public class EDDTableFromSOS extends EDDTable{
         //also this simplifies catching/processing xml error
         String grabFileName = cacheDirectory() + 
             "grabFile" + Math2.random(Integer.MAX_VALUE);
+        long downloadTime = System.currentTimeMillis();
         try {
-            long downloadTime = System.currentTimeMillis();
             SSR.downloadFile(localSourceUrl + kvp, grabFileName, true);
             downloadTime = System.currentTimeMillis() - downloadTime;
+        } catch (Throwable t) {
+            //Normal error returns xml ExceptionReport.  So package anything else as WaitThenTryAgainException.
+            String2.log("ERROR while trying to download from " + localSourceUrl + kvp + "\n" +
+                MustBe.throwableToString(t));
+            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                "\n(" + t.toString() + ")"); 
+        }
+
+        try {
 
             //read the file
             String sar[] = String2.readFromFile(grabFileName, null, 2);
@@ -1645,7 +1668,7 @@ public class EDDTableFromSOS extends EDDTable{
                     " processTime=" + processTime);
 
         } catch (Throwable t) {
-            String2.log("  " + String2.ERROR + " is from requestUrl=" + localSourceUrl + kvp);
+            String2.log("  " + String2.ERROR + " while processing response from requestUrl=" + localSourceUrl + kvp);
             throw t;
 
         } finally {
@@ -1689,16 +1712,25 @@ if (debugMode) String2.log("* readFromWhoiServer tStationID=" + tStationID);
 
 
         //InputStream in = SSR.getPostInputStream(sourceUrl, "text/xml", "UTF-8", constraintSB.toString());
-        InputStream in = SSR.getUrlInputStream(localSourceUrl + kvp);
-
+        InputStream in;
+        SimpleXMLReader xmlReader;
         //values that need to be parsed from the xml and held
         IntArray fieldToCol = new IntArray(); //converts results field# to table col#
         String tokenSeparator = null, blockSeparator = null, decimalSeparator = null;
+        try {    
+            in = SSR.getUrlInputStream(localSourceUrl + kvp);
+            xmlReader = new SimpleXMLReader(in);
+            //request the data
+            //???Future: need to break the request up into smaller time chunks???
+            xmlReader.nextTag();
+        } catch (Throwable t) {
+            //Normal error returns xml ExceptionReport.  So package anything else as WaitThenTryAgainException.
+            String2.log("ERROR while trying to getUrlInputStream from " + localSourceUrl + kvp + "\n" +
+                MustBe.throwableToString(t));
+            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                "\n(" + t.toString() + ")"); 
+        }
 
-        //request the data
-        //???Future: need to break the request up into smaller time chunks???
-        SimpleXMLReader xmlReader = new SimpleXMLReader(in);
-        xmlReader.nextTag();
         String tags = xmlReader.allTags();
         if (tags.equals("<ServiceExceptionReport>")) {   
             //<?xml version="1.0" encoding="UTF-8"?>
@@ -1965,16 +1997,27 @@ if (debugMode) String2.log("* readFromWhoiServer tStationID=" + tStationID);
 
 
         //InputStream in = SSR.getPostInputStream(sourceUrl, "text/xml", "UTF-8", constraintSB.toString());
-        InputStream in = SSR.getUrlInputStream(localSourceUrl + kvp);
+        InputStream in;
+        SimpleXMLReader xmlReader;
 
         //values that need to be parsed from the xml and held
         IntArray fieldToCol = new IntArray(); //converts results field# to table col#
         String tokenSeparator = null, blockSeparator = null, decimalSeparator = null;
 
-        //request the data
-        //???Future: need to break the request up into smaller time chunks???
-        SimpleXMLReader xmlReader = new SimpleXMLReader(in);
-        xmlReader.nextTag();
+        try {
+            in = SSR.getUrlInputStream(localSourceUrl + kvp);
+            //request the data
+            //???Future: need to break the request up into smaller time chunks???
+            xmlReader = new SimpleXMLReader(in);
+            xmlReader.nextTag();
+        } catch (Throwable t) {
+            //Normal error returns xml ExceptionReport.  So package anything else as WaitThenTryAgainException.
+            String2.log("ERROR while trying to getUrlInputStream from " + localSourceUrl + kvp + "\n" +
+                MustBe.throwableToString(t));
+            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                "\n(" + t.toString() + ")"); 
+        }
+
         String tags = xmlReader.allTags();
         if (tags.equals("<ServiceExceptionReport>") || //tamu
             tags.equals("<ows:ExceptionReport>")) {    //gomoos
@@ -2447,7 +2490,7 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
 " s {\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -177.36, 167.7362;\n" +
+"    Float64 actual_range -177.36, 166.618;\n" +
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -2507,12 +2550,12 @@ private static String standardSummary = //from http://www.oostethys.org/ogc-ocea
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
 "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    Float64 Easternmost_Easting 167.7362;\n" +
+"    Float64 Easternmost_Easting 166.618;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.4;\n" +
 "    Float64 geospatial_lat_min -14.28;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
-"    Float64 geospatial_lon_max 167.7362;\n" +
+"    Float64 geospatial_lon_max 166.618;\n" +
 "    Float64 geospatial_lon_min -177.36;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
@@ -2615,7 +2658,7 @@ expected =
 "longitude,latitude,station_id\n" +
 "degrees_east,degrees_north,\n" +
 //"122.6003,37.7501,urn:ioos:station:NOAA.NOS.CO-OPS:1600012\n" + //disappeared 2012-08-17
-"-159.3561,21.9544,urn:ioos:station:NOAA.NOS.CO-OPS:1611400\n" +
+//"-159.3561,21.9544,urn:ioos:station:NOAA.NOS.CO-OPS:1611400\n" + //gone 2014-08-12
 "-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340\n" +
 "-157.79,21.4331,urn:ioos:station:NOAA.NOS.CO-OPS:1612480\n" +
 "-156.4767,20.895,urn:ioos:station:NOAA.NOS.CO-OPS:1615680\n" +
@@ -2697,7 +2740,7 @@ expected =
 " s {\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -177.36, 167.7362;\n" +
+"    Float64 actual_range -177.36, 166.618;\n" +
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -2757,12 +2800,12 @@ expected =
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
 "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    Float64 Easternmost_Easting 167.7362;\n" +
+"    Float64 Easternmost_Easting 166.618;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.4;\n" +
 "    Float64 geospatial_lat_min -14.28;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
-"    Float64 geospatial_lon_max 167.7362;\n" +
+"    Float64 geospatial_lon_max 166.618;\n" +
 "    Float64 geospatial_lon_min -177.36;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
@@ -2793,25 +2836,31 @@ expected =
             //it was hard to find data. station advertises 1999+ for several composites.
             //but searching January's for each year found no data until 2006
             //2012-03-16 I used station=...8419317 for years, now station=...8419317 not found.
+
+            //Use this to find a valid station and time range
+            //testFindValidStation(eddTable, testNosStations,
+            //    "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:",
+            //    "\"&time>=2013-09-01T00:03&time<=2013-09-01T01");
+
             String2.log("\n*** EDDTableFromSOS nos Conductivity test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
-                "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8447386\"&time>=2012-01-01T00&time<=2012-01-01T01", 
+                "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8452660\"&time>=2013-09-01T00&time<=2013-09-01T01", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosCond", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,conductivity\n" +
 "degrees_east,degrees_north,,m,UTC,,mS cm-1\n" +
-"-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2012-01-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:G1,27.5\n" +
-"-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2012-01-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:G1,27.4\n" +
-"-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2012-01-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:G1,27.5\n" +
-"-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2012-01-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:G1,27.5\n" +
-"-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2012-01-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:G1,27.6\n" +
-"-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2012-01-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:G1,27.6\n" +
-"-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2012-01-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:G1,27.7\n" +
-"-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2012-01-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:G1,27.7\n" +
-"-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2012-01-01T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:G1,27.6\n" +
-"-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2012-01-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:G1,27.7\n" +
-"-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2012-01-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:G1,27.7\n";
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:G1,42.6\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:G1,42.5\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:G1,42.6\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:G1,42.6\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:G1,42.6\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:G1,42.6\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:G1,42.6\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:G1,42.6\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:G1,42.6\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:G1,42.7\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:G1,42.6\n";
 Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             
 
@@ -2825,7 +2874,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 " s {\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -94.985, -71.1641;\n" +
+"    Float64 actual_range -145.753, -71.1641;\n" + //changes sometimes
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -2834,7 +2883,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range 29.6817, 41.7043;\n" + //2013-05-22 was 29.48
+"    Float64 actual_range 29.48, 60.5583;\n" + //changes sometimes
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -2885,11 +2934,11 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Easternmost_Easting -71.1641;\n" +
 "    String featureType \"TimeSeries\";\n" +
-"    Float64 geospatial_lat_max 41.7043;\n" +
-"    Float64 geospatial_lat_min 29.6817;\n" + //2013-05-11 was 29.48
+"    Float64 geospatial_lat_max 60.5583;\n" + //changes sometimes
+"    Float64 geospatial_lat_min 29.48;\n" + //2013-05-11 was 29.48  then 29.6817, then...
 "    String geospatial_lat_units \"degrees_north\";\n" +
 "    Float64 geospatial_lon_max -71.1641;\n" +
-"    Float64 geospatial_lon_min -94.985;\n" +
+"    Float64 geospatial_lon_min -145.753;\n" + //changes sometimes
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
 "    String geospatial_vertical_units \"m\";\n" +
@@ -2903,6 +2952,33 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         }
     }
 
+    /** Bob uses this to find a valid station and time period for unit tests. */
+    static String testNosStations[] = {
+        "g06010", "gl0101", "gl0201", "gl0301", "hb0101", "hb0201", "hb0301",
+        "hb0401", "lc0101", "lc0201", "lc0301", "lm0101", "mb0101", "mb0301", 
+        "mb0401", "n05010", "nb0201", "nb0301", "nl0101", "ps0201", "ps0301",
+        "8447386", "8452660", "8454049", "8537121", "8574680", "8635750",
+        "8637689", "8638610", "8638863", "8639348", "8737048", "8770613",
+        "8771013", "9454050"};
+    public static void testFindValidStation(EDDTable eddTable, String stations[],
+            String preQuery, String postQuery) throws Exception {
+        String2.log("\n*** testFindValidStation");
+        int i = -1; 
+        while (++i < stations.length) {
+            try {
+                String tName = eddTable.makeNewFileForDapQuery(null, null, 
+                    preQuery + stations[i] + postQuery, 
+                    EDStatic.fullTestCacheDirectory, eddTable.className() + "_testFindValidStation", ".csv"); 
+                String2.getStringFromSystemIn("SUCCESS with station=" + stations[i]);
+                break;
+            } catch (Throwable t) {
+                String2.log(MustBe.throwableToString(t));
+            }
+        }
+        if (i >= stations.length)
+            String2.getStringFromSystemIn("FAILED to find a valid station.");
+    }
+
     /**
      * This should work, but server is in flux so it often breaks.
      *
@@ -2911,60 +2987,81 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
     public static void testNosSosCurrents(String datasetIdPrefix) throws Throwable {
         testVerboseOn();
         EDDTable eddTable;               
-        String name, tName, results, expected, userDapQuery;
+        String name, tName = "", results, expected, userDapQuery;
  
         try { 
             eddTable = (EDDTable)oneFromDatasetXml(datasetIdPrefix + "nosSosCurrents");  
 
+            //worked until Feb 2013:  (then: no matching station)
+            //That means a request for historical data stopped working!
+            //  "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:g07010\"" +
+            //  "&time>=2012-02-01T00:03&time<=2012-02-01T00:03", //It was hard to find a request that had data
+
+            //Use this to find a valid station and time range
+            //testFindValidStation(eddTable, testNosStations,
+            //    "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:",
+            //    "\"&time>=2013-09-01T00:03&time<=2013-09-01T00:03");
+
             String2.log("\n*** EDDTableFromSOS nos Currents test get one station .CSV data\n");
+
+            
             tName = eddTable.makeNewFileForDapQuery(null, null, 
-                "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:g07010\"" +
-                "&time>=2012-02-01T00:03&time<=2012-02-01T00:03", //It was hard to find a request that had data
-                EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosCurrents", ".csv"); 
+                "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:lc0301\"" +
+                "&time>=2013-09-01T00:03&time<=2013-09-01T00:03", //It was hard to find a request that had data
+                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosCurrents", ".csv"); 
+                
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
 "longitude,latitude,station_id,altitude,time,sensor_id,sensor_depth,direction_of_sea_water_velocity,sea_water_speed,platform_orientation,platform_pitch_angle,platform_roll_angle,sea_water_temperature,orientation,sampling_rate,reporting_interval,processing_level,bin_size,first_bin_center,number_of_bins,bin\n" +
 "degrees_east,degrees_north,,m,UTC,,m,degrees_true,cm s-1,degrees_true,degrees,degrees,degree_C,,Hz,s,,m,m,,count\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-11.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,335.0,3.7,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,1\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-19.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,297.0,7.1,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,2\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-27.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,288.0,5.8,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,3\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-35.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,271.0,5.2,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,4\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-43.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,261.0,5.7,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,5\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-51.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,234.0,4.7,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,6\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-59.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,203.0,4.5,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,7\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-67.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,211.0,3.4,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,8\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-75.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,151.0,7.0,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,9\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-83.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,131.0,14.7,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,10\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-91.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,124.0,20.4,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,11\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-99.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,122.0,21.8,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,12\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-107.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,120.0,21.8,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,13\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-115.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,118.0,20.1,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,14\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-123.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,121.0,17.7,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,15\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-131.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,117.0,15.2,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,16\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-139.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,129.0,9.4,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,17\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-147.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,128.0,7.8,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,18\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-155.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,146.0,11.5,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,19\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-163.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,144.0,11.6,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,20\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-171.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,141.0,12.2,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,21\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-179.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,135.0,14.4,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,22\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-187.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,130.0,20.6,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,23\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-195.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,128.0,23.1,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,24\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-203.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,121.0,27.6,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,25\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-211.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,118.0,25.8,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,26\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-219.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,123.0,23.6,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,27\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-227.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,122.0,27.9,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,28\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-235.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,121.0,25.4,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,29\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-243.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,124.0,27.4,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,30\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-251.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,123.0,24.2,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,31\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-259.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,127.0,21.5,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,32\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-267.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,133.0,22.2,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,33\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-275.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,130.0,25.2,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,34\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-283.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,125.0,28.3,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,35\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-291.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,123.0,32.2,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,36\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-299.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,123.0,21.7,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,37\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-307.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,126.0,8.6,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,38\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-315.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,81.0,11.3,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,39\n" +
-"-95.022,29.7271,urn:ioos:station:NOAA.NOS.CO-OPS:g07010,-323.0,2012-02-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:g07010:SONTEK-ADP-705,6,132.0,20.2,312.0,0.4,0.2,16.11,sidewaysLooking,0.0,360,RAW,8.0,11.0,40,40\n";
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-5.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,283.0,7.6,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,1\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-9.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,288.0,13.0,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,2\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-13.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,301.0,10.0,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,3\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-17.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,283.0,12.4,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,4\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-21.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,291.0,13.9,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,5\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-25.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,284.0,14.8,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,6\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-29.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,293.0,16.2,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,7\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-33.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,276.0,11.5,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,8\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-37.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,282.0,9.0,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,9\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-41.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,285.0,7.6,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,10\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-45.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,293.0,10.4,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,11\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-49.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,299.0,10.8,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,12\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-53.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,296.0,12.5,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,13\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-57.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,287.0,11.6,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,14\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-61.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,298.0,8.7,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,15\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-65.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,296.0,14.9,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,16\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-69.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,302.0,8.4,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,17\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-73.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,289.0,14.3,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,18\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-77.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,290.0,11.5,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,19\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-81.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,293.0,9.6,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,20\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-85.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,300.0,8.6,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,21\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-89.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,298.0,9.4,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,22\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-93.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,300.0,10.4,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,23\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-97.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,292.0,11.1,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,24\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-101.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,282.0,10.4,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,25\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-105.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,282.0,9.5,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,26\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-109.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,290.0,10.5,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,27\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-113.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,289.0,8.5,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,28\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-117.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,289.0,6.4,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,29\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-121.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,297.0,8.4,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,30\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-125.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,295.0,10.8,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,31\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-129.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,282.0,8.9,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,32\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-133.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,290.0,7.4,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,33\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-137.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,288.0,11.8,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,34\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-141.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,302.0,6.7,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,35\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-145.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,336.0,3.6,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,36\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-149.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,290.0,5.7,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,37\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-153.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,311.0,3.7,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,38\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-157.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,171.0,1.7,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,39\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-161.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,133.0,1.7,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,40\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-165.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,269.0,2.8,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,41\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-169.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,64.0,3.1,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,42\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-173.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,277.0,1.2,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,43\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-177.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,310.0,1.5,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,44\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-181.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,313.0,0.6,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,45\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-185.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,102.0,1.8,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,46\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-189.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,302.0,3.7,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,47\n" +
+"-93.2494,30.2178,urn:ioos:station:NOAA.NOS.CO-OPS:lc0301,-193.5,2013-09-01T00:03:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:lc0301:SONTEK-ADP-808,3,80.0,3.9,100.0,0.8,0.2,30.65,sidewaysLooking,0.0,360,RAW,4.0,5.5,48,48\n";
 Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             
 
@@ -3175,7 +3272,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 " s {\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -94.985, -71.1641;\n" + //changed 2012-03-16
+"    Float64 actual_range -145.753, -71.1641;\n" + //pre 2013-11-04 was -94.985, changed 2012-03-16
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -3184,7 +3281,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range 29.48, 41.7043;\n" + //pre 2013-06-28 was 29.6817 pre 2013-05-22 was 29.48 ;pre 2012-03-16 was 43.32
+"    Float64 actual_range 29.48, 60.5583;\n" + //pre 2013-11-04 was 41.7043, pre 2013-06-28 was 29.6817 pre 2013-05-22 was 29.48 ;pre 2012-03-16 was 43.32
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -3217,10 +3314,14 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 //<ExceptionReport><Exception>atts=exceptionCode="NoApplicableCode", locator="8419317"
             //2012-03-16 station=...8419317 stopped working
             //2012-11-18 I switched to station 8447386
+            //2013-11-04 used
+            //testFindValidStation(eddTable, testNosStations,
+            //    "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:",
+            //    "\"&time>=2013-09-01T00:03&time<=2013-09-01T01");
 
             String2.log("\n*** EDDTableFromSOS nos Salinity test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
-                "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8447386\"&time>=2012-01-01T00&time<=2012-01-01T01", 
+                "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8452660\"&time>=2013-09-01T00&time<=2013-09-01T01", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosSalinity", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
@@ -3264,7 +3365,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,26.957\n" +
 "-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,29.2\n" +
 "-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:SALINITY,29.675\n";    
-*/
+retired 2013-11-04:
 "longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
 "degrees_east,degrees_north,,m,UTC,,PSU\n" +
 "-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2012-01-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:SALINITY,26.718\n" +
@@ -3278,6 +3379,33 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2012-01-01T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:SALINITY,26.747\n" +
 "-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2012-01-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:SALINITY,26.854\n" +
 "-71.1641,41.7043,urn:ioos:station:NOAA.NOS.CO-OPS:8447386,NaN,2012-01-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8447386:SALINITY,26.854\n";
+2013-11-04 forced to switch stations 
+"longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
+"degrees_east,degrees_north,,m,UTC,,PSU\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.692\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.614\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.692\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.692\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.692\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.692\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.692\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.692\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.692\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.77\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.692\n";
+2014-01-24 results modified a little */
+"longitude,latitude,station_id,altitude,time,sensor_id,sea_water_salinity\n" +
+"degrees_east,degrees_north,,m,UTC,,PSU\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.677\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.608\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.689\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.682\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.713\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.695\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.67\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.704\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.748\n" +
+"-71.3267,41.505,urn:ioos:station:NOAA.NOS.CO-OPS:8452660,NaN,2013-09-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8452660:SALINITY,29.68\n";
 Test.ensureEqual(results, expected, "RESULTS=\n" + results);
             
 
@@ -3338,7 +3466,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 " s {\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -176.632, 167.7362;\n" +
+"    Float64 actual_range -176.632, 166.618;\n" +
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -3413,12 +3541,12 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
 "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    Float64 Easternmost_Easting 167.7362;\n" +
+"    Float64 Easternmost_Easting 166.618;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.4;\n" +
 "    Float64 geospatial_lat_min -14.28;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
-"    Float64 geospatial_lon_max 167.7362;\n" +
+"    Float64 geospatial_lon_max 166.618;\n" +
 "    Float64 geospatial_lon_min -176.632;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
@@ -3446,6 +3574,11 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
         try { 
             eddTable = (EDDTable)oneFromDatasetXml(datasetIdPrefix + "nosSosWLevel");  
+
+            //2013-11-04 used to find a station with data:
+            //testFindValidStation(eddTable, testNosStations,
+            //    "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:",
+            //    "\"&time>=2013-09-01T00:03&time<=2013-09-01T01");
 
             String2.log("\n*** EDDTableFromSOS nos wLevel .das\n");
             String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
@@ -3501,14 +3634,23 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "  sensor_id {\n" +
 "    String ioos_category \"Identifier\";\n" +
 "    String long_name \"Sensor ID\";\n" +
-"    String observedProperty \"http://mmisw.org/ont/cf/parameter/water_level\";\n" +
+"    String observedProperty \"http://mmisw.org/ont/cf/parameter/water_surface_height_above_reference_datum\";\n" +
 "  }\n" +
 "  water_level {\n" +
-"    Float64 colorBarMaximum 8000.0;\n" +
-"    Float64 colorBarMinimum 0.0;\n" +
+"    Float64 colorBarMaximum 5.0;\n" +
+"    Float64 colorBarMinimum -5.0;\n" +
 "    String ioos_category \"Sea Level\";\n" +
-"    String observedProperty \"http://mmisw.org/ont/cf/parameter/water_level\";\n" +
-"    String standard_name \"sea_floor_depth_below_sea_level\";\n" +
+"    String observedProperty \"http://mmisw.org/ont/cf/parameter/water_surface_height_above_reference_datum\";\n" +
+"    String standard_name \"water_surface_height_above_reference_datum\";\n" +
+"    String units \"m\";\n" +
+"  }\n" +
+"  datum_id {\n" +
+"    String ioos_category \"Sea Level\";\n" +
+"    String observedProperty \"http://mmisw.org/ont/cf/parameter/water_surface_height_above_reference_datum\";\n" +
+"  }\n" +
+"  vertical_position {\n" +
+"    String ioos_category \"Sea Level\";\n" +
+"    String observedProperty \"http://mmisw.org/ont/cf/parameter/water_surface_height_above_reference_datum\";\n" +
 "    String units \"m\";\n" +
 "  }\n" +
 " }\n" +
@@ -3530,15 +3672,14 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 //+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //-test
             Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
 
+
             
             String2.log("\n*** EDDTableFromSOS nos WLevel test get one station .CSV data\n");
             tName = eddTable.makeNewFileForDapQuery(null, null, 
-                "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8311062\"&time>=2008-08-01T14:00&time<=2008-08-01T15:00", 
+                "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:9454050\"&time>=2013-09-01T00&time<=2013-09-01T01", 
                 EDStatic.fullTestCacheDirectory, eddTable.className() + "_nosSosWLevel", ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"zztop\n";
-
 /*//pre 2009-11-15 and post 2009-12-13
 "longitude,latitude,station_id,altitude,time,WaterLevel\n" +
 "degrees_east,degrees_north,,m,UTC,m\n" +
@@ -3568,6 +3709,19 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T14:54:00Z,75.026\n" +
 "-75.9345,44.3311,urn:x-noaa:def:station:NOAA.NOS.CO-OPS::8311062,-999.0,2008-08-01T15:00:00Z,75.024\n";
 */
+"longitude,latitude,station_id,altitude,time,sensor_id,water_level,datum_id,vertical_position\n" +
+"degrees_east,degrees_north,,m,UTC,,m,,m\n" +
+"-145.753,60.5583,urn:ioos:station:NOAA.NOS.CO-OPS:9454050,NaN,2013-09-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9454050:A1,1.601,urn:ioos:def:datum:noaa::MLLW,1.916\n" +
+"-145.753,60.5583,urn:ioos:station:NOAA.NOS.CO-OPS:9454050,NaN,2013-09-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9454050:A1,1.584,urn:ioos:def:datum:noaa::MLLW,1.916\n" +
+"-145.753,60.5583,urn:ioos:station:NOAA.NOS.CO-OPS:9454050,NaN,2013-09-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9454050:A1,1.569,urn:ioos:def:datum:noaa::MLLW,1.916\n" +
+"-145.753,60.5583,urn:ioos:station:NOAA.NOS.CO-OPS:9454050,NaN,2013-09-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9454050:A1,1.558,urn:ioos:def:datum:noaa::MLLW,1.916\n" +
+"-145.753,60.5583,urn:ioos:station:NOAA.NOS.CO-OPS:9454050,NaN,2013-09-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9454050:A1,1.547,urn:ioos:def:datum:noaa::MLLW,1.916\n" +
+"-145.753,60.5583,urn:ioos:station:NOAA.NOS.CO-OPS:9454050,NaN,2013-09-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9454050:A1,1.534,urn:ioos:def:datum:noaa::MLLW,1.916\n" +
+"-145.753,60.5583,urn:ioos:station:NOAA.NOS.CO-OPS:9454050,NaN,2013-09-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9454050:A1,1.522,urn:ioos:def:datum:noaa::MLLW,1.916\n" +
+"-145.753,60.5583,urn:ioos:station:NOAA.NOS.CO-OPS:9454050,NaN,2013-09-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9454050:A1,1.509,urn:ioos:def:datum:noaa::MLLW,1.916\n" +
+"-145.753,60.5583,urn:ioos:station:NOAA.NOS.CO-OPS:9454050,NaN,2013-09-01T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9454050:A1,1.5,urn:ioos:def:datum:noaa::MLLW,1.916\n" +
+"-145.753,60.5583,urn:ioos:station:NOAA.NOS.CO-OPS:9454050,NaN,2013-09-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9454050:A1,1.495,urn:ioos:def:datum:noaa::MLLW,1.916\n" +
+"-145.753,60.5583,urn:ioos:station:NOAA.NOS.CO-OPS:9454050,NaN,2013-09-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:9454050:A1,1.491,urn:ioos:def:datum:noaa::MLLW,1.916\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -3599,7 +3753,7 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 " s {\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -177.36, 167.7362;\n" +
+"    Float64 actual_range -177.36, 166.618;\n" +
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -3658,12 +3812,12 @@ Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
 "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    Float64 Easternmost_Easting 167.7362;\n" +
+"    Float64 Easternmost_Easting 166.618;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 70.4;\n" +
 "    Float64 geospatial_lat_min -14.28;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
-"    Float64 geospatial_lon_max 167.7362;\n" +
+"    Float64 geospatial_lon_max 166.618;\n" +
 "    Float64 geospatial_lon_min -177.36;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
@@ -4039,11 +4193,10 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "    Float64 Westernmost_Easting -172.17;\n" +
 "  }\n" +
 "}\n";
-            int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) 
-                String2.log("results=\n" + results);
+            int tPo = results.indexOf(expected.substring(0, 17));
+            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
             Test.ensureEqual(
-                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
                 expected, "results=\n" + results);
 
             //test lon lat (numeric) = > <, and time > <
@@ -4239,7 +4392,7 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 " s {\n" +
 "  longitude {\n" +
 "    String _CoordinateAxisType \"Lon\";\n" +
-"    Float64 actual_range -148.28, -65.927;\n" +  //2012-10-10 was -151.719
+"    Float64 actual_range -148.28, -64.763;\n" + //2014-08-11 was -65.927 //2012-10-10 was -151.719
 "    String axis \"X\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Longitude\";\n" +
@@ -4248,7 +4401,7 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "  }\n" +
 "  latitude {\n" +
 "    String _CoordinateAxisType \"Lat\";\n" +
-"    Float64 actual_range 24.843, 60.8;\n" +  //2010-10-10 was 17.93
+"    Float64 actual_range 17.86, 60.8;\n" +  //2014-08-12 was 24.843, 2010-10-10 was 17.93
 "    String axis \"Y\";\n" +
 "    String ioos_category \"Location\";\n" +
 "    String long_name \"Latitude\";\n" +
@@ -4299,12 +4452,12 @@ datasetIdPrefix + "ndbcSosCurrents.das\";\n" +
 "    String cdm_data_type \"TimeSeries\";\n" +
 "    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
 "    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
-"    Float64 Easternmost_Easting -65.927;\n" +
+"    Float64 Easternmost_Easting -64.763;\n" +
 "    String featureType \"TimeSeries\";\n" +
 "    Float64 geospatial_lat_max 60.8;\n" +
-"    Float64 geospatial_lat_min 24.843;\n" +
+"    Float64 geospatial_lat_min 17.86;\n" +
 "    String geospatial_lat_units \"degrees_north\";\n" +
-"    Float64 geospatial_lon_max -65.927;\n" +
+"    Float64 geospatial_lon_max -64.763;\n" +
 "    Float64 geospatial_lon_min -148.28;\n" +
 "    String geospatial_lon_units \"degrees_east\";\n" +
 "    String geospatial_vertical_positive \"up\";\n" +
@@ -4334,7 +4487,7 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 60.8;\n" +
 "    String sourceUrl \"http://sdf" + datasetIdPrefix + ".ndbc.noaa.gov/sos/server.php\";\n" +
-"    Float64 Southernmost_Northing 24.843;\n" +
+"    Float64 Southernmost_Northing 17.86;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String subsetVariables \"station_id, longitude, latitude\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_water_salinity data.\n" +
@@ -4345,11 +4498,10 @@ datasetIdPrefix + "ndbcSosSalinity.das\";\n" +
 "    Float64 Westernmost_Easting -148.28;\n" +
 "  }\n" +
 "}\n";
-            int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) 
-                String2.log("results=\n" + results);
+            int tPo = results.indexOf(expected.substring(0, 17));
+            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
             Test.ensureEqual(
-                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
                 expected, "results=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS Salinity test get one station .CSV data\n");
@@ -4588,11 +4740,10 @@ datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
 "    Float64 Westernmost_Easting -176.25;\n" +
 "  }\n" +
 "}\n";
-            int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) 
-                String2.log("results=\n" + results);
+            int tPo = results.indexOf(expected.substring(0, 17));
+            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
             Test.ensureEqual(
-                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
                 expected, "results=\n" + results);
 
             
@@ -4673,7 +4824,7 @@ datasetIdPrefix + "ndbcSosWLevel.das\";\n" +
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.1540346e+9, NaN;\n" +
+"    Float64 actual_range 1.1360742e+9, NaN;\n" +  //pre 2013-11-01 was 1.1540346e+9
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -4742,16 +4893,15 @@ datasetIdPrefix + "ndbcSosWTemp.das\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_water_temperature data.\n" +
 "\n" +
 "Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.\";\n" +
-"    String time_coverage_start \"2006-07-27T21:10:00Z\";\n" +
+"    String time_coverage_start \"2006-01-01T00:10:00Z\";\n" +  //pre 2013-11-01 was 2006-07-27T21:10:00Z
 "    String title \"NOAA NDBC SOS - sea_water_temperature\";\n" +
 "    Float64 Westernmost_Easting -178.343;\n" +
 "  }\n" +
 "}\n";
-            int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) 
-                String2.log("results=\n" + results);
+            int tPo = results.indexOf(expected.substring(0, 17));
+            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
             Test.ensureEqual(
-                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
                 expected, "results=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS ndbc WTemp test get one station .CSV data\n");
@@ -5097,11 +5247,10 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 "    Float64 Westernmost_Easting -177.75;\n" +
 "  }\n" +
 "}\n";
-            int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) 
-                String2.log("results=\n" + results);
+            int tPo = results.indexOf(expected.substring(0, 17));
+            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
             Test.ensureEqual(
-                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
                 expected, "results=\n" + results);
 
             //test  station=    and superfluous string data > < constraints
@@ -5212,7 +5361,7 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 "  }\n" +
 "  time {\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
-"    Float64 actual_range 1.1540346e+9, NaN;\n" +
+"    Float64 actual_range 1.1360742e+9, NaN;\n" + //pre 2013-11-01 was 1.1540346e+9
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -5308,16 +5457,15 @@ datasetIdPrefix + "ndbcSosWind.das\";\n" +
 "    String summary \"The NOAA NDBC SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have winds data.\n" +
 "\n" +
 "Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.\";\n" +
-"    String time_coverage_start \"2006-07-27T21:10:00Z\";\n" +
+"    String time_coverage_start \"2006-01-01T00:10:00Z\";\n" + //pre 2013-11-01 was 2006-07-27T21:10:00Z
 "    String title \"NOAA NDBC SOS - winds\";\n" +
 "    Float64 Westernmost_Easting -177.75;\n" +
 "  }\n" +
 "}\n";
-            int tpo = results.indexOf(expected.substring(0, 17));
-            if (tpo < 0) 
-                String2.log("results=\n" + results);
+            int tPo = results.indexOf(expected.substring(0, 17));
+            Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
             Test.ensureEqual(
-                results.substring(tpo, Math.min(results.length(), tpo + expected.length())),
+                results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
                 expected, "results=\n" + results);
 
             String2.log("\n*** EDDTableFromSOS Wind test get one station .CSV data\n");
@@ -5406,13 +5554,17 @@ So I will make ERDDAP able to read
         //2008-07-25 was .5655, pre 2008-10-09 was .5658, 2009-03-23 changed, 
         //pre 2010-07-08 was -70.5600967407227
         //pre 2013-06-28 was -70.5655
-        Test.ensureEqual(eddTable.sosMinLon.getNiceDouble(which), -70.5645150078668, "");  
-        Test.ensureEqual(eddTable.sosMaxLon.getNiceDouble(which), -70.5645150078668, "");
+        //pre 2013-11-01 was -70.5645150078668
+        //give up on =.  Use almostEqual
+        Test.ensureAlmostEqual(4, eddTable.sosMinLon.getNiceDouble(which), -70.565, "");  
+        Test.ensureAlmostEqual(4, eddTable.sosMaxLon.getNiceDouble(which), -70.565, "");
         //2008-07-25 was 42.5232, pre 2008-10-09 was .5226, 2009-03-23 changed
         //pre 2010-07-08 was 42.5261497497559;
         //pre 2013-06-28 was 42.5232
-        Test.ensureEqual(eddTable.sosMinLat.getNiceDouble(which), 42.5223609076606, "");  
-        Test.ensureEqual(eddTable.sosMaxLat.getNiceDouble(which), 42.5223609076606, "");
+        //pre 2013-11-01 was 42.5223609076606
+        //give up on =.  Use almostEqual
+        Test.ensureAlmostEqual(4, eddTable.sosMinLat.getNiceDouble(which), 42.522, "");  
+        Test.ensureAlmostEqual(4, eddTable.sosMaxLat.getNiceDouble(which), 42.522, "");
         Test.ensureEqual(eddTable.sosMinTime.getNiceDouble(which), 9.94734E8, "");
         Test.ensureEqual(eddTable.sosMaxTime.getNiceDouble(which), Double.NaN, "");
 //        Test.ensureEqual(String2.toCSSVString(eddTable.sosObservedProperties()), 
@@ -5618,16 +5770,28 @@ So I will make ERDDAP able to read
 //"-68.1087,44.1058\n" +
 //"-67.8798,43.4907\n" +
 //"-65.907,42.3303\n";   //pre 2011-09-05 was "-65.9081802368164,42.3263664245605\n";
-"longitude,latitude\n" + //starting 2012-03-16
+//"longitude,latitude\n" + //starting 2012-03-16
+//"degrees_east,degrees_north\n" +
+//"-69.9877,43.7628\n" +
+//"-69.3578,43.7148\n" +
+//"-69.319580078125,43.7063484191895\n" +
+//"-68.9982,44.0555\n" +
+//"-68.996696472168,44.0559844970703\n" + //pre 2013-06-28 was "-68.9982,44.0555\n" + //pre 2012-06-18 was -68.9981,44.055
+//"-68.109302520752,44.1061248779297\n" + //pre 2013-06-28 was "-68.1090882815856,44.105949650925\n" + //pre 2012-11-02 was -68.1087,44.1058
+//"-67.8798,43.4907\n"
+"longitude,latitude\n" +  //starting 2014-08-11
 "degrees_east,degrees_north\n" +
 "-69.9877,43.7628\n" +
 "-69.3578,43.7148\n" +
 "-69.319580078125,43.7063484191895\n" +
-"-68.996696472168,44.0559844970703\n" + //pre 2013-06-28 was "-68.9982,44.0555\n" + //pre 2012-06-18 was -68.9981,44.055
-"-68.8308,44.3878\n" +
-"-68.109302520752,44.1061248779297\n" + //pre 2013-06-28 was "-68.1090882815856,44.105949650925\n" + //pre 2012-11-02 was -68.1087,44.1058
+"-68.9982,44.0555\n" +
+"-68.8249619164502,44.3871537467378\n" +
+"-68.1084442138672,44.1057103474935\n" +
 "-67.8798,43.4907\n" +
-"-65.9069544474284,42.3313840230306\n"; //pre 2013-06-28 was "-65.907,42.3303\n"; 
+"-65.9061666666667,42.3336666666667\n";
+
+
+//"-65.9069544474284,42.3313840230306\n"; //pre 2013-06-28 was "-65.907,42.3303\n"; 
        Test.ensureEqual(results, expected, "\nresults=\n" + results);  
 
 
@@ -5752,10 +5916,19 @@ So I will make ERDDAP able to read
         int which = eddTable.sosOfferings.indexOf("A01");
         String2.log("which=" + which);
         Test.ensureEqual(eddTable.sosOfferings.getString(which), "A01", "");
-        Test.ensureEqual(eddTable.sosMinLon.getNiceDouble(which), -70.5645150078668, ""); //pre 2013-06-28 -70.5655, ""); //pre 2010-06-22 was -70.5600967407227
-        Test.ensureEqual(eddTable.sosMaxLon.getNiceDouble(which), -70.5645150078668, "");
-        Test.ensureEqual(eddTable.sosMinLat.getNiceDouble(which), 42.5223609076606, ""); //pre 2013-06-28 was 42.5232, ""); //pre 2010-06-10 was 42.5261497497559
-        Test.ensureEqual(eddTable.sosMaxLat.getNiceDouble(which), 42.5223609076606, "");
+        //pre 2010-06-22 was -70.5600967407227
+        //pre 2013-06-28 was -70.5655, ""); 
+        //pre 2013-11-01 was -70.5645150078668
+        //give up on =.  Use almostEqual
+        Test.ensureAlmostEqual(4, eddTable.sosMinLon.getNiceDouble(which), -70.565, "");  
+        Test.ensureAlmostEqual(4, eddTable.sosMaxLon.getNiceDouble(which), -70.565, "");
+        //pre 2010-06-10 was 42.5261497497559
+        //pre 2013-06-28 was 42.5232, ""); 
+        //pre 2013-11-01 was 42.5223609076606
+        //give up on =.  Use almostEqual
+        Test.ensureAlmostEqual(4, eddTable.sosMinLat.getNiceDouble(which), 42.522, "");  
+        Test.ensureAlmostEqual(4, eddTable.sosMaxLat.getNiceDouble(which), 42.522, "");
+
         Test.ensureEqual(eddTable.sosMinTime.getNiceDouble(which), 9.94734E8, "");
         Test.ensureEqual(eddTable.sosMaxTime.getNiceDouble(which), Double.NaN, "");
 //        Test.ensureEqual(String2.toCSSVString(eddTable.sosObservedProperties()), 
@@ -5851,11 +6024,11 @@ So I will make ERDDAP able to read
 "-69.9877,43.7628,D02\n" +
 "-69.3578,43.7148,E01\n" +
 "-69.319580078125,43.7063484191895,E02\n" +
-"-68.996696472168,44.0559844970703,F01\n" + //2013-06-28 was "-68.9982,44.0555,F01\n" + //2012-04-20 was -68.9981,44.055,F01
-"-68.8308,44.3878,F02\n" +
-"-68.109302520752,44.1061248779297,I01\n" + //2013-06-28 was "-68.1090882815856,44.105949650925,I01\n" + //2011-11-02 was -68.1087,44.1058,I01
+"-68.9982,44.0555,F01\n" + //2014-08-11 "-68.996696472168,44.0559844970703,F01\n" + //2013-06-28 was "-68.9982,44.0555,F01\n" + //2012-04-20 was -68.9981,44.055,F01
+"-68.8249619164502,44.3871537467378,F02\n" + //2014-08-11 was "-68.8308,44.3878,F02\n" +
+"-68.1084442138672,44.1057103474935,I01\n" + //2014-08-11 was "-68.109302520752,44.1061248779297,I01\n" + //2013-06-28 was "-68.1090882815856,44.105949650925,I01\n" + //2011-11-02 was -68.1087,44.1058,I01
 "-67.8798,43.4907,M01\n" +
-"-65.9069544474284,42.3313840230306,N01\n" + //2013-06-28 was "-65.907,42.3303,N01\n" +
+"-65.9061666666667,42.3336666666667,N01\n" + //2014/08-11 was "-65.9069544474284,42.3313840230306,N01\n" + //2013-06-28 was "-65.907,42.3303,N01\n" +
 "-54.688,46.9813,SMB-MO-01\n" +
 "-54.1317,47.3255,SMB-MO-04\n" +
 "-54.0488,47.7893,SMB-MO-05\n"; 
@@ -5964,7 +6137,9 @@ So I will make ERDDAP able to read
      * @param tLocalSourceUrl
      * @param version may be null or "" if not needed
      * @param sosServerType may be "", or one of IOOS_NDBC, IOOS_NOS, OOSTethys, WHOI (case insensitive)
-     * @throws Throwable if trouble
+     * @return a suggested chunk of xml for this dataset for use in datasets.xml 
+     * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
+     *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(String tLocalSourceUrl, String sosVersion, 
         String sosServerType) throws Throwable {
@@ -6264,11 +6439,10 @@ So I will make ERDDAP able to read
                 "http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", "IOOS_NDBC");
 
             //GenerateDatasetsXml
-            GenerateDatasetsXml.doIt(new String[]{"-verbose", 
+            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromSOS",
                 "http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", "IOOS_NDBC"},
                 false); //doIt loop?
-            String gdxResults = String2.getClipboardString();
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 
@@ -6489,7 +6663,9 @@ String expected2 =
      * <br>The XML can then be edited by hand and added to the datasets.xml file.
      *
      * @param tLocalSourceUrl  with no '?', e.g., http://sdf.ndbc.noaa.gov/sos/server.php
-     * @throws Throwable if trouble
+     * @return a suggested chunk of xml for this dataset for use in datasets.xml 
+     * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
+     *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXmlFromIOOS(String tLocalSourceUrl, 
         String sosServerType) throws Throwable {
@@ -6774,7 +6950,9 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
 &featureofinterest=BBOX:-151.719,17.93,-65.927,60.8
      * @param tInfoUrl  the suggested infoUrl (use null or "" if nothing to suggest)
      * @param tInstitution  the suggested institution (use null or "" if nothing to suggest)
-     * @throws Throwable if trouble
+     * @return a suggested chunk of xml for this dataset for use in datasets.xml 
+     * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
+     *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXmlFromOneIOOS(String tLocalSourceUrl, 
         String sosServerType, String tInfoUrl, String tInstitution) throws Throwable {
@@ -7688,9 +7866,10 @@ testQuickRestart = true;
     public static void test() throws Throwable {
         String2.log("\n****************** EDDTableFromSos.test() *****************\n");
         testVerboseOn();
+        testQuickRestart = false;  //normally false. Only true when actively testing quickRestart.
  
         // usually run
-/* */
+        /* */
         testOostethys(); //gomoosBuoy    //TimeSeriesProfile
         testNeracoos(); 
 
@@ -7715,10 +7894,10 @@ testQuickRestart = true;
         testNosSosATempAllStations(""); //long test; important because it tests NO DATA from a station
         testNosSosATempStationList("");
         testNosSosBPres("");
- //testNosSosCond(""); 2013-06-28 needs work.  "dissemination has been stopped" for that sensor of that station
+        testNosSosCond("");  
         testNosSosCurrents("");
- //testNosSosSalinity(""); 2013-06-28 needs work. no matching station
- //testNosSosWLevel("");  //no stations?!
+        testNosSosSalinity(""); 
+        testNosSosWLevel(""); 
         testNosSosWTemp("");  
         testNosSosWind("");
         testWhoiSos();        

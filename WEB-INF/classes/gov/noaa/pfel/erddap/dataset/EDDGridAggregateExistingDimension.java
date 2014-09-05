@@ -420,7 +420,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      *   are the dataValues.
      *   Both the axisValues and dataValues are straight from the source,
      *   not modified.
-     * @throws Throwable if trouble
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public PrimitiveArray[] getSourceData(EDV tDataVariables[], IntArray tConstraints) 
         throws Throwable {
@@ -500,6 +500,9 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      *   <br>hyrax: "pentad.*flk\\.nc\\.gz"
      *   <br>thredds: ".*"
      * @param recursive
+     * @return a suggested chunk of xml for this dataset for use in datasets.xml 
+     * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
+     *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(String serverType, String startUrl, 
         String fileNameRegex, boolean recursive, int tReloadEveryNMinutes) throws Throwable {

@@ -10,7 +10,7 @@ import com.cohort.util.Test;
 
 /** 
  * This class holds information about the longitude variable,
- * which is like EDV, but the destinationName, long_name, and units
+ * which is like EDV, but the destinationName, and units
  * are standardized.
  * 
  * @author Bob Simons (bob.simons@noaa.gov) 2007-06-04
@@ -19,7 +19,7 @@ public class EDVLon extends EDV {
 
 
     /**
-     * The constructor -- like EDV, but the destinationName, long_name, and units
+     * The constructor -- like EDV, but the destinationName, and units
      * are standardized.
      *
      * @param tSourceMin  is pre-scale_factor and add_offset.
@@ -32,16 +32,23 @@ public class EDVLon extends EDV {
         String tSourceDataType, double tSourceMin, double tSourceMax) 
         throws Throwable {
 
-        super(tSourceName, EDV.LON_NAME, tSourceAttributes, tAddAttributes,
+        super(tSourceName, LON_NAME, tSourceAttributes, tAddAttributes,
             tSourceDataType, tSourceMin, tSourceMax);
 
-        longName = EDV.LON_LONGNAME;
-        units = EDV.LON_UNITS; 
         combinedAttributes.set("_CoordinateAxisType", "Lon");  //unidata-related
         combinedAttributes.set("axis", "X");
         combinedAttributes.set("ioos_category", LOCATION_CATEGORY);
-        combinedAttributes.set("long_name", longName);
         combinedAttributes.set("standard_name", LON_STANDARD_NAME);
+
+        longName = combinedAttributes.getString("long_name");
+        if (longName == null ||  //catch nothing
+            longName.toLowerCase().equals("lon") ||
+            longName.toLowerCase().equals("longitude")) { //catch alternate case
+            longName = LON_LONGNAME;
+            combinedAttributes.set("long_name", longName);
+        }
+
+        units = LON_UNITS; 
         combinedAttributes.set("units", units);
 
         extractAndSetActualRange();

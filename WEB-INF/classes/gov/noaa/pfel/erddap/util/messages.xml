@@ -23,6 +23,61 @@ BOB! For POST: remove [font class="standoutColor"] and [/font] around "GetStarte
 -->
 <erddapMessages>
 
+<!-- (a)ll(D)atasets (m)etadata and (v)ariable text -->
+<admKeywords>19115, accessible, altitude, average, background, base, dataset, depth, email, erddap, fgdc, graph, grid, information, institution, iso, latitude, location, longitude, make-a-graph, maximum, metadata, minimum, opendap, rss, sequence, service, sos, source, spacing, structure, subscription, subset, summary, table, time, title, url, wcs, wms</admKeywords>
+<admSubsetVariables>accessible, dataStructure, cdm_data_type, class, institution</admSubsetVariables>
+<admSummary>This dataset is a table which has a row of information for each dataset currently active in this ERDDAP.</admSummary>
+<admTitle>The List of All Active Datasets in this ERDDAP</admTitle>
+
+<!-- (a)ll(D)atasets (v)ariable (c)omment, (l)ong_name, or (r)eference text -->
+<advl_datasetID>Dataset ID</advl_datasetID>
+<advc_accessible>Some datasets are public. Some may be private and perhaps not accessible to you.</advc_accessible>
+<advl_accessible>Accessible</advl_accessible>
+<advl_institution>Institution</advl_institution>
+<advc_dataStructure>ERDDAP treats each dataset as either a 'grid' or a 'table' dataset.</advc_dataStructure>
+<advl_dataStructure>Data Structure</advl_dataStructure>
+<advr_dataStructure>http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#dataStructures</advr_dataStructure>
+<advl_cdm_data_type>Common Data Model Type</advl_cdm_data_type>
+<advr_cdm_data_type>http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#cdm_data_type</advr_cdm_data_type>
+<advl_class>ERDDAP Class</advl_class>
+<advr_class>http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#datasetTypes</advr_class>
+<advl_title>Title</advl_title>
+<advl_minLongitude>Minimum Longitude</advl_minLongitude>
+<advl_maxLongitude>Maximum Longitude</advl_maxLongitude>
+<advl_longitudeSpacing>Average Grid Longitude Spacing</advl_longitudeSpacing>
+<advl_minLatitude>Minimum Latitude</advl_minLatitude>
+<advl_maxLatitude>Maximum Latitude</advl_maxLatitude>
+<advl_latitudeSpacing>Average Grid Latitude Spacing</advl_latitudeSpacing>
+<advl_minAltitude>Minimum Altitude or -Depth</advl_minAltitude>
+<advl_maxAltitude>Maximum Altitude or -Depth</advl_maxAltitude>
+<advl_minTime>Minimum Time</advl_minTime>
+<advc_maxTime>If dataStructure=table and minTime is specified and maxTime isn't, then this is a near-real-time dataset.</advc_maxTime>
+<advl_maxTime>Maximum Time</advl_maxTime>
+<advl_timeSpacing>Average Grid Time Spacing</advl_timeSpacing>
+<advc_griddap>Add .html to see a data request web page.</advc_griddap>
+<advl_griddap>Base URL of OPeNDAP Grid Service</advl_griddap>
+<advl_subset>URL of Subset Web Page</advl_subset>
+<advc_tabledap>Add .html to see a data request web page.</advc_tabledap>
+<advl_tabledap>Base URL of OPeNDAP Table/Sequence Service</advl_tabledap>
+<advl_MakeAGraph>URL of Make-A-Graph Web Page</advl_MakeAGraph>
+<advc_sos>Or, replace 'service' with 'index.html' to see a web page with SOS information.</advc_sos>
+<advl_sos>Base URL of SOS Service</advl_sos>
+<advl_wcs>Base URL of WCS Service</advl_wcs>
+<advl_wms>Base URL of WMS Service</advl_wms>
+<advc_fgdc>The FGDC .xml document has geographic metadata.</advc_fgdc>
+<advl_fgdc>URL of FGDC Document</advl_fgdc>
+<advc_iso19115>The ISO 19115 .xml document has geographic metadata.</advc_iso19115>
+<advl_iso19115>URL of ISO 19115 Document</advl_iso19115>
+<advc_metadata>To make a complete URL, add .htmlTable, .csv, .tsv, .json, .xhtml, ... to the Base URL.</advc_metadata>
+<advl_metadata>Base URL of a Table with Metadata</advl_metadata>
+<advl_sourceUrl>URL of the Source Data</advl_sourceUrl>
+<advl_infoUrl>URL of Background Information (from the source)</advl_infoUrl>
+<advl_rss>URL of RSS</advl_rss>
+<advc_email>To subscribe, add your email address to the Base URL.</advc_email>
+<advl_email>Base URL of Email Subscription</advl_email>
+<advl_summary>Summary Text</advl_summary>
+
+
 <advancedSearch>Advanced Search</advancedSearch>
 <advancedSearchResults>Advanced Search Results</advancedSearchResults>
 
@@ -131,6 +186,11 @@ the tables have a different number of columns ({0} != {1}).</ArrayAppendTables>
 <ArraySubsetStart>ERROR in {0}.subset: startIndex={1} must be at least 0.</ArraySubsetStart>
 <ArraySubsetStride>ERROR in {0}.subset: stride={1} must greater than 0.</ArraySubsetStride>
 
+<blacklistMsg>Access Forbidden -- Your IP address is on this ERDDAP''s request blacklist.
+Did you often submit more than one request at a time?
+Did you often submit identical requests in a short period of time?
+Did you submit a large number of invalid requests?
+If you are ready to avoid these problems, please email {0} to request to be taken off of the blacklist.</blacklistMsg>
 
 <!-- These messages are related to Search by Category. -->
 <categoryTitleHtml>Search for Datasets by Category</categoryTitleHtml>
@@ -175,6 +235,8 @@ whenever a table of datasets is displayed (e.g., when you do a full text search 
 <clickBackgroundInfo>Click to see background information from the source of this dataset.
 </clickBackgroundInfo>
 
+<clickERDDAP>Click here to return to the ERDDAP home page.</clickERDDAP>
+
 <!-- This message is used as a tooltip for the "info" link on HTML pages whenever
 a table of datasets is displayed (e.g., when you do a full text search for datasets).
 -->
@@ -189,7 +251,9 @@ a table of datasets is displayed (e.g., when you do a full text search for datas
 <!-- Don't change the examples (from defaultN...). -->
 <convertFipsCountyIntro><![CDATA[
 This web page lets you convert a 5-digit, U.S.
-<a rel="bookmark" href="http://www.itl.nist.gov/fipspubs/fip6-4.htm">FIPS county code</a>
+<a rel="bookmark" href="http://www.itl.nist.gov/fipspubs/fip6-4.htm">FIPS county code<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
 to/from a county name.
 <br>For example, FIPS code "06053" converts to "CA, Monterey" (the state's postal
 <br>abbreviation plus the county's name).
@@ -227,7 +291,9 @@ to/from a county name.
 <li><a name="equivalent">County-Equivalent Entities</a> -
   This service includes county-equivalent entities from
   <br>U.S. protectorates and freely associated states from Appendix A and B of the
-  <br><a rel="bookmark" href="http://www.itl.nist.gov/fipspubs/co-codes/states.txt">official FIPS list</a>.
+  <br><a rel="bookmark" href="http://www.itl.nist.gov/fipspubs/co-codes/states.txt">official FIPS list<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>.
     The state-level entities are:
   <br>60000=AS=AMERICA SAMOA
   <br>64000=FM=FEDERATED STATES OF MICRONESIA
@@ -261,7 +327,9 @@ href="{0}/convert/fipscounty.txt?county=CA%2C%20Monterey"
   <br>&nbsp;
 </ul>
 Note that the parameter values in the URL must be properly
- <a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded</a>,
+ <a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
  which is normally taken care of by a browser.
 ]]></convertFipsCountyService>
 
@@ -274,9 +342,14 @@ Note that the parameter values in the URL must be properly
 <!-- Don't change the examples (from defaultN...). -->
 <convertKeywordsIntro><![CDATA[
 This web page lets you convert a 
-<a rel="bookmark" href="http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/current/cf-standard-name-table.html/">CF Standard Name</a>
+<a rel="bookmark" href="http://cfconventions.org/Data/cf-standard-names/27/build/cf-standard-name-table.html">CF Standard Name<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
 to/from a 
-<a rel="bookmark" href="http://gcmd.nasa.gov/Resources/valids/archives/keyword_list.html">GCMD Science Keyword</a>.
+<a rel="bookmark" href="http://gcmd.nasa.gov/Resources/valids/archives/keyword_list.html"
+  >GCMD Science Keyword<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>.
 <br>Usually, there are more than one GCMD Science Keywords associated with a given
 <br>CF Standard Name, and vice versa.  For example, converting the CF Standard Name<tt>
 <br>&nbsp;&nbsp;air_pressure</tt> 
@@ -337,7 +410,9 @@ href="{0}/convert/keywords.txt?gcmd=Atmosphere%20%3e%20Atmospheric%20Pressure%20
 </ul>
 Percent Encoding - 
 The parameter values in the URL must be properly 
-<a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">Percent Encoded</a>,
+<a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">Percent Encoded<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
 <br>which is normally taken care of by a browser.
 
 <p><a name="exact">Exact Match</a> -
@@ -361,9 +436,15 @@ The parameter values in the URL must be properly
 <convertTimeIntro><![CDATA[
 This web page lets you convert a time value to/from an
 <ul>
-<li><a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/">UDUNITS-compatible Number</a>
+<li><a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/"
+  >UDUNITS-compatible Number<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
   - for example, 473472000 "seconds since 1970-01-01T00:00:00Z", or
-<li><a rel="help" href="http://en.wikipedia.org/wiki/ISO_8601">ISO 8601:2004 "extended" format String</a>
+<li><a rel="help" href="http://en.wikipedia.org/wiki/ISO_8601"
+  >ISO 8601:2004 "extended" format String<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
   in the form
   <span style="white-space: nowrap;">YYYY-MM-DDThh:mm:ssZ</span> - for example,
   <span style="white-space: nowrap;">1985-01-02T00:00:00Z</span> .
@@ -426,27 +507,42 @@ time values in ERDDAP always use the Zulu (UTC, GMT) time zone.
   <br>for all datasets allows times from different datasets to be compared easily. 
   <br>Seconds are the 
     <a rel="help" href="http://en.wikipedia.org/wiki/International_System_of_Units">International 
-      System of Units (SI)</a>
+      System of Units (SI)<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
     base unit of time.
   <br>1970-01-01T00:00:00Z is the start of the Unix epoch, which is widely used by computer 
   <br>operating systems.  "seconds since 1970-00-00T00:00:00Z" are widely used and are 
   <br>often called
-    <a rel="help" href="http://en.wikipedia.org/wiki/Unix_time">Unix time</a> or epoch seconds.
-    The use of the units string 
+    <a rel="help" href="http://en.wikipedia.org/wiki/Unix_time">Unix time<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
+    or epoch seconds.  The use of the units string 
   <br>"seconds since 1970-00-00T00:00:00Z" makes Unix time compatible with
-    <a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUNITS-2</a>
+    <a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html"
+      >UDUNITS-2<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
     and 
-  <br>the <a rel="help" href="http://cf-pcmdi.llnl.gov/documents/cf-conventions">Climate and Forecast Metadata
-    Conventions (CF)</a>,
+  <br>the <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">Climate and Forecast Metadata
+    Conventions (CF)<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
     which uses UDUNITS-2 for units 
   <br>definitions.
   <br>&nbsp;
   
 <li><a name="textRepresentation">Text Representation</a> - By default, when formatting times as
     text, ERDDAP uses the 
-  <br><a rel="help" href="http://en.wikipedia.org/wiki/ISO_8601">ISO 8601:2004 "extended" format String</a>, 
+  <br><a rel="help" href="http://en.wikipedia.org/wiki/ISO_8601"
+    >ISO 8601:2004 "extended" format String<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>, 
     truncated to the second 
-  <br>(e.g., 2011-04-26T14:07:12Z).  (Related humor: <a href="http://xkcd.com/1179/">http://xkcd.com/1179/</a>)
+  <br>(e.g., 2011-04-26T14:07:12Z).  (Related humor: 
+    <a href="http://xkcd.com/1179/">http://xkcd.com/1179/<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>)
   <br>ERDDAP administrators can configure a given dataset to display the time data values
   <br>truncated to 0.001 second, 0.01 second, 0.1 second, second, minute, hour, date, or month
   <br>to indicate the precision of the time data values.  
@@ -460,14 +556,19 @@ time values in ERDDAP always use the Zulu (UTC, GMT) time zone.
   <br>discontinuity in 1582 and the Julian calendar for times before the discontinuity.
   <br>(The ISO 8601:2004 standard doesn''t specify how to handle times before 1582.)
   <br>See the
-    <a rel="help" href="http://download.oracle.com/javase/6/docs/api/java/util/GregorianCalendar.html">Java GregorianCalendar class</a>
+    <a rel="help" href="http://download.oracle.com/javase/6/docs/api/java/util/GregorianCalendar.html"
+      >Java GregorianCalendar class<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
     (which ERDDAP uses) for details.
   <br>For example, 17611992 hours since 0001-01-01T00:00:00Z = 2010-03-01T00:00:00Z
   <br>(<a href="{0}/convert/time.html?n=17611992&amp;units=hours%20since%200001-01-01T00:00:00Z">see for yourself</a>)
   <br>&nbsp;
   <br>Currently, ERDDAP does not support any other calendar (including the noleap, 365_day,
   <br>360_day, and Julian calendars defined by the
-    <a rel="help" href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html#calendar">CF metadata conventions</a>).  However, you 
+    <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#calendar">CF metadata conventions<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>).  However, you 
   <br>can store such data in ERDDAP by storing the numbers or Strings in a variable that is
   <br>named something other than "time" and doesn''t include "since" in the units metadata.
   <br>Then, ERDDAP won''t interpret the values as times and won''t convert the data to 
@@ -489,12 +590,17 @@ time values in ERDDAP always use the Zulu (UTC, GMT) time zone.
 
 <li><a name="UTC">UTC</a> - As much as is practical, ERDDAP, like Unix time and UDUNITS-2, uses the 
   <br><a rel="help" href="http://en.wikipedia.org/wiki/Coordinated_Universal_Time">Coordinated Universal 
-    Time (UTC)</a> 
+    Time (UTC)<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a> 
     time system. UTC is the modern version of the GMT 
   <br>time system.  UTC uses occasional leap seconds to stay close to the International Atomic
   <br>Time (TAI). GPS devices use GPS time (which doesn''t use leap seconds) internally,
   <br>but display UTC time to users. (See 
-    <a rel="help" href="http://tycho.usno.navy.mil/systime.html">http://tycho.usno.navy.mil/systime.html</a>
+    <a rel="help" href="http://tycho.usno.navy.mil/systime.html"
+    >http://tycho.usno.navy.mil/systime.html<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
     or other 
   <br>discussions of Systems of Time.) Strictly speaking, UTC can''t be used in some
   <br>situations for far future times (e.g., in models), since the occurrence of leap
@@ -513,13 +619,24 @@ time values in ERDDAP always use the Zulu (UTC, GMT) time zone.
   <br>time calculations and ignore leap seconds.  With ERDDAP, Unix time, and UDUNITS-2
   <br>numeric time values, all minutes are treated as having 60 seconds, even though UTC
   <br>minutes with leap seconds have 61 seconds.  Note that database programs like
-    <a rel="bookmark" href="http://www.sql4oracle.com/?p=504">Oracle</a>,
+    <a rel="bookmark" href="http://www.sql4oracle.com/?p=504">Oracle<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
   <br>
-    <a rel="bookmark" href="http://dev.mysql.com/doc/refman/5.0/en/time-zone-leap-seconds.html">MySQL</a>
+    <a rel="bookmark" href="http://dev.mysql.com/doc/refman/5.0/en/time-zone-leap-seconds.html"
+      >MySQL<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
     (and so probably MariaDB also),
-    <a rel="bookmark" href="http://postgresql-8.4.sourcearchive.com/documentation/8.4.0/pgtz_8c-source.html">PostgreSQL</a>,
+    <a rel="bookmark" href="http://postgresql-8.4.sourcearchive.com/documentation/8.4.0/pgtz_8c-source.html"
+      >PostgreSQL<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
     and languages like 
-     <a rel="bookmark" href="http://bytes.com/topic/c-sharp/answers/231842-datetime-accounts-leap-seconds">C#</a>
+     <a rel="bookmark" href="http://bytes.com/topic/c-sharp/answers/231842-datetime-accounts-leap-seconds"
+       >C#<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
      also 
   <br>basically try to ignore leap seconds.
   <br>This won''t cause problems when converting UTC String date+time+timeZone values into
@@ -536,7 +653,9 @@ time values in ERDDAP always use the Zulu (UTC, GMT) time zone.
   <br>seconds between two points in time, you can use ERDDAP to handle the time data,
   <br>but subtracting one numeric time value from the other is just the first step in
   <br>the calculation.  You need manually adjust that value by consulting a
-  <br><a rel="help" href="http://en.wikipedia.org/wiki/Leap_seconds">table of leap seconds</a>.
+  <br><a rel="help" href="http://en.wikipedia.org/wiki/Leap_seconds">table of leap seconds<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>.
   <br>&nbsp;
 
 <li><a name="lowResolutionTimes">Low Resolution Times and Time Spans (Time Ranges)</a> - 
@@ -588,7 +707,9 @@ href="{0}/convert/time.txt?isoTime=1985-01-02T00:00:00Z&amp;units=seconds%20sinc
   <br>&nbsp;
 </ul>
 Note that the parameter values in the URL must be properly
- <a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded</a>,
+ <a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
  which is normally taken care of by a browser.
 <br>The "&amp;units=..." parameter is optional. The default value is "seconds since 1970-01-01T00:00:00Z".
 ]]></convertTimeService>
@@ -627,8 +748,12 @@ For example, "seconds since 1970-01-01T00:00:00Z".
 <table class="erd commonBGColor" cellspacing="2">
 <tr>
   <th width="8%">Issue</th>
-  <th width="23%"><a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2lib.html#Syntax">UDUNITS</a></th>
-  <th width="23%"><a rel="bookmark" href="http://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM</a></th>
+  <th width="23%"><a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2lib.html#Syntax">UDUNITS<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a></th>
+  <th width="23%"><a rel="bookmark" href="http://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a></th>
   <th width="23%">UDUNITS &rarr; UCUM Converter</th>
   <th width="23%">UCUM &rarr; UDUNITS Converter</th>
 </tr>
@@ -659,34 +784,36 @@ For example, "seconds since 1970-01-01T00:00:00Z".
 </tr>
 
 <tr>
-  <td>metric prefixes<br>(e.g., "kilo" and ''k'' mean "times 1000";
-    "&micro;" and ''u'' means "times 10^-6")</td>
+  <td>metric prefixes<br>(e.g., "kilo" and 'k' mean "times 1000";
+    "&micro;" and 'u' means "times 10^-6")</td>
   <td>Supported (see UDUNITS-2 udunits2-prefixes.xml)</td>
   <td>Supported (see the c/s column of the
-    <a rel="bookmark" href="http://unitsofmeasure.org/ucum.html#prefixes">prefix symbol table</a>)</td>
-  <td>The prefix is converted to its acronym (e.g., ''u'')</td>
-  <td>The prefix is left as its acronym (e.g., ''u'')</td>
+    <a rel="bookmark" href="http://unitsofmeasure.org/ucum.html#prefixes">prefix symbol table<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>)</td>
+  <td>The prefix is converted to its acronym (e.g., 'u')</td>
+  <td>The prefix is left as its acronym (e.g., 'u')</td>
 </tr>
 <tr>
   <td>multiplication operators</td>
-  <td>space (most common), ''-'' (a typo in the spec???), ''.'', ''*'', ''&middot;'' (in UDUNITS-2)</td>
-  <td>''.''</td>
-  <td>space, ''*'', and ''&middot;'', are converted to ''.''</td>
-  <td>''.'' is converted to a space</td>
+  <td>space (most common), '-' (a typo in the spec???), '.', '*', '&middot;' (in UDUNITS-2)</td>
+  <td>'.'</td>
+  <td>space, '*', and '&middot;', are converted to '.'</td>
+  <td>'.' is converted to a space</td>
 </tr>
 <tr>
   <td>division operators</td>
-  <td>''/'', "per", "PER"</td>
-  <td>''/''</td>
-  <td>"per" and "PER" are converted to ''/''</td>
+  <td>'/', "per", "PER"</td>
+  <td>'/'</td>
+  <td>"per" and "PER" are converted to '/'</td>
   <td>(No changes needed)</td>
 </tr>
 <tr>
   <td>exponent operators</td>
-  <td>"**", ''^'', nothing (e.g., m-2 = m^-2)</td>
-  <td>''*'' (really!), ''^'', nothing (e.g., m-2 = m^-2)</td>
-  <td>"**" is converted to ''^''.</td>
-  <td>''*'' is converted to ''^''.</td>
+  <td>"**", '^', nothing (e.g., m-2 = m^-2)</td>
+  <td>'*' (really!), '^', nothing (e.g., m-2 = m^-2)</td>
+  <td>"**" is converted to '^'.</td>
+  <td>'*' is converted to '^'.</td>
 </tr>
 <tr>
   <td>operator precedence</td>
@@ -700,7 +827,7 @@ For example, "seconds since 1970-01-01T00:00:00Z".
   <td>integer and floating point (e.g., 1.23456e-5)</td>
   <td>integer only</td>
   <td>floating point numbers are converted to rational numbers
-    (e.g., 12.34 becomes 1234.10^-2 (remember that ''.'' means "times")</td>
+    (e.g., 12.34 becomes 1234.10^-2 (remember that '.' means "times")</td>
   <td>(No changes needed)</td>
 </tr>
 <tr>
@@ -711,9 +838,9 @@ For example, "seconds since 1970-01-01T00:00:00Z".
   <td>(No changes needed)</td>
 </tr>
 <tr>
-  <td>'' (apostrophe)</td>
+  <td>' (apostrophe)</td>
   <td>Not used.</td>
-  <td>Used to separate words in a multi-word name (e.g., "[todd''U]" for a Todd unit)</td>
+  <td>Used to separate words in a multi-word name (e.g., "[todd'U]" for a Todd unit)</td>
   <td>(No changes needed)</td>
   <td>(No changes needed)</td>
 </tr>
@@ -738,7 +865,7 @@ For example, "seconds since 1970-01-01T00:00:00Z".
   <td>Used for annotations (e.g., "%{vol}" for percent by volume).</td>
   <td>(No changed needed)</td>
   <td>If the comment is defined in the UCUM standard, it will be converted.
-    If it isn''t defined, it will be left intact.</td>
+    If it isn't defined, it will be left intact.</td>
 </tr>
 </table>
 <p>&nbsp;<hr>
@@ -749,8 +876,12 @@ For most units, there is a one-to-one correspondence between units in UDUNITS an
 <table class="erd commonBGColor" cellspacing="2">
 <tr>
   <th width="8%">Units</th>
-  <th width="23%"><a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2lib.html#Syntax">UDUNITS</a></th>
-  <th width="23%"><a rel="bookmark" href="http://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM</a></th>
+  <th width="23%"><a rel="bookmark" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2lib.html#Syntax">UDUNITS<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a></th>
+  <th width="23%"><a rel="bookmark" href="http://unitsofmeasure.org/ucum.html#section-Grammar-of-Units-and-Unit-Terms">UCUM<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a></th>
   <th width="23%">UDUNITS &rarr; UCUM Converter</th>
   <th width="23%">UCUM &rarr; UDUNITS Converter</th>
 </tr>
@@ -766,8 +897,12 @@ For most units, there is a one-to-one correspondence between units in UDUNITS an
   <td>UDUNITS treats degF, degC, degK, degree_north, degree_east, degree_west,
     degree_true, and their aliases as separate units.
     Some standards (e.g.,
-    <a rel="help" href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a> and
-    <a rel="help" href="http://cf-pcmdi.llnl.gov/">CF</a>), use
+    <a rel="help" href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a> and
+    <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>), use
     degree_east and degree_north to identify the longitude and latitude variables
     in a data file.</td>
   <td>UCUM recognizes separate temperature degree units (e.g, [degF], Cel, K),
@@ -786,7 +921,7 @@ For most units, there is a one-to-one correspondence between units in UDUNITS an
   <td>UDUNITS has a system to specify specific times as
     <br>"<i>units</i> since <i>ISO8601Time</i>",
     <br>e.g., "seconds since 1970-01-01T00:00:00Z".
-  <td>UCUM doesn''t seem to have a system to specify specific times.
+  <td>UCUM doesn't seem to have a system to specify specific times.
   <td>The converter converts, e.g.,
     <br>"seconds since 1970-01-01T00:00:00Z"
     <br>to "s{since 1970-01-01T00:00:00Z}".
@@ -847,13 +982,14 @@ you can request that the units
 <li>Always check the results from the converters.
 <li>The UDUNITS to UCUM converter can convert all UDUNITS-1 units Strings and most of UDUNITS-2.
 <li>The UCUM to UDUNITS converter can convert almost all case-sensitive UCUM units Strings.
-<li>If the UDUNITS (or UCUM) units string isn''t valid, the converter will do its best and won''t generate an
+<li>If the UDUNITS (or UCUM) units string isn't valid, the converter will do its best and won't generate an
   <br>error message. Unrecognized UDUNITS (or UCUM) names will be passed through unchanged.
 <li>If you think that a converter did a conversion incorrectly,
     first make sure that the input string is valid.
   <br>If you think the input string is valid,
     please email the details to <tt>bob dot simons at noaa dot gov</tt> .
-<li>See the detailed comparison of UDUNITS and UCUM <a rel="help" href="#syntaxComparison">syntax</a>
+<li>See the detailed comparison of UDUNITS and UCUM 
+  <a rel="help" href="#syntaxComparison">syntax</a>
     and <a rel="help" href="#unitsComparison">units</a> below.
 <li>DISCLAIMER OF LIABILITY - No person or organization associated with this web site
   <br>makes any warranty, express or implied, including warranties of merchantability
@@ -865,23 +1001,43 @@ you can request that the units
 <convertUnitsIntro><![CDATA[
 Two common standards for writing units of measure are:
 <ul>
-<li><a rel="help" href="http://www.unidata.ucar.edu/software/udunits/">UDUNITS</a>
+<li><a rel="help" href="http://www.unidata.ucar.edu/software/udunits/">UDUNITS<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
   - from
-  <a rel="bookmark" href="http://www.unidata.ucar.edu/">Unidata</a>,
+  <a rel="bookmark" href="http://www.unidata.ucar.edu/">Unidata<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
   which is used in
-  <a rel="help" href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a>,
-  <a rel="help" href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/">CF</a>, and
-  <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF</a> 
+  <a rel="help" href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>, and
+  <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a> 
   data files. For example,
   <br>UDUNITS has many options for degrees Celsius, including "degree_C" and "degC".
   <br>&nbsp;
-<li><a rel="help" href="http://unitsofmeasure.org/ucum.html">UCUM</a>
+<li><a rel="help" href="http://unitsofmeasure.org/ucum.html">UCUM<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
   - the Unified Code for Units of Measure.
-  <a rel="bookmark" href="http://www.opengeospatial.org/">OGC</a>
+  <a rel="bookmark" href="http://www.opengeospatial.org/">OGC<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
   services such as
-  <a rel="help" href="http://www.opengeospatial.org/standards/sos">SOS</a>,
-  <a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS</a>, and
-  <a rel="help" href="http://www.opengeospatial.org/standards/wms">WMS</a>
+  <a rel="help" href="http://www.opengeospatial.org/standards/sos">SOS<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>, and
+  <a rel="help" href="http://www.opengeospatial.org/standards/wms">WMS<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
   <br>often refer to UCUM as UOM (Units Of Measure). For example, UCUM has just one
   <br>case-sensitive option for degrees Celsius: "Cel".
 </ul>
@@ -904,7 +1060,9 @@ If you change the extension of this web page''s URL from .html to .txt,
   >{0}/convert/units.txt?UCUM=Cel.m-1</a>
 </ul>
 Note that the parameter value must be properly
-<a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded</a>,
+<a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img 
+    src="../images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
 which is normally taken care of by a browser.
 ]]></convertUnitsService>
 
@@ -945,6 +1103,7 @@ This Data Access Form helps you download a subset of the data from a dataset wit
 <!-- The message to be displayed if the data can't be downloaded (e.g., SeaWiFS <=14 days old). -->
 <dataAccessNotAllowed>[Sorry. That data can't be downloaded.]</dataAccessNotAllowed>
 
+<databaseUnableToConnect>Unable to connect to database.</databaseUnableToConnect>
 
 <disabled>The "{0}" system has been disabled on this ERDDAP.</disabled>
 
@@ -961,7 +1120,7 @@ This Data Access Form helps you download a subset of the data from a dataset wit
 <br>of this dataset by selecting combinations of distinct values.
 ]]></distinctValuesHtml>
 
-<!-- This uses &ssUse; and &erddpUrl; -->
+<!-- This uses &ssUse; and &erddapUrl; -->
 <doWithGraphs><![CDATA[
 <br>&nbsp;
 <hr>
@@ -970,7 +1129,8 @@ Well, you can do anything you want with your graphs, of course.
 But some things you might not have considered are:
 <ul>
 <li>Web page authors can
-  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/images/embed.html">embed a graph of the latest data in a web page</a>
+  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/images/embed.html"
+    >embed a graph of the latest data in a web page</a>
   using HTML &lt;img&gt; tags.
 &ssUse;
 <br>&nbsp;
@@ -1057,9 +1217,15 @@ But some things you might not have considered are:
 <EDDGridDapLongDescription><![CDATA[
 <b>griddap</b> lets you request a data subset, graph, or map from a gridded dataset (for example, sea surface
 <br>temperature data from a satellite), via a specially formed URL. griddap uses the
-<br><a rel="bookmark" href="http://www.opendap.org">OPeNDAP</a>
-    <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)</a> and its
-    <a rel="help"  href="http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions">projection constraints</a>.
+<br><a rel="bookmark" href="http://www.opendap.org">OPeNDAP<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+    <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> and its
+    <a rel="help"  href="http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Selecting_Data:_Using_Constraint_Expressions">projection constraints<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
 <p><b>The URL specifies what you want:</b> the dataset, a description of the graph or the subset of the data, and the file
 <br>type for the response.
 <ul>
@@ -1126,9 +1292,16 @@ But some things you might not have considered are:
 <EDDTableDapLongDescription><![CDATA[
 <b>tabledap</b> lets you request a data subset, a graph, or a map from a tabular dataset (for example, buoy data),
 <br>via a specially formed URL. tabledap uses the 
-  <a rel="bookmark" href="http://www.opendap.org">OPeNDAP</a>
-  <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)</a> and its
-  <a rel="help" href="http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Constraint_Expressions">selection constraints</a>.
+  <a rel="bookmark" href="http://www.opendap.org">OPeNDAP<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
+  <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a> and its
+  <a rel="help" href="http://docs.opendap.org/index.php/UserGuideOPeNDAPMessages#Constraint_Expressions"
+    >selection constraints<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>.
 <p><b>The URL specifies what you want:</b> the dataset, a description of the graph or the subset of the data, and the file
 <br>type for the response.
 <ul>
@@ -1218,24 +1391,29 @@ This constraint variable has a limited number of values. They are listed here.
 <errorNotFoundIn>Error: {0} wasn''t found in {1}.</errorNotFoundIn>
 <errorOdvLLTGrid>For an ODV .txt file, the dataset MUST include longitude, latitude, and time axes.</errorOdvLLTGrid>
 <errorOdvLLTTable>Data requests for ODV .txt files must include longtitude, latitude, and time data.</errorOdvLLTTable>
+<errorOnWebPage>An error occurred while writing this web page:</errorOnWebPage>
+
+<externalLink>(external link)</externalLink>
+<externalWebSite>This link to an external web site does not constitute an endorsement.</externalWebSite>
 
 <fileHelp_asc>View OPeNDAP-style comma-separated ASCII text.</fileHelp_asc>
 <fileHelp_csv>Download a comma-separated ASCII text table (line 1: names; line 2: units; ISO 8601 times).</fileHelp_csv>
 <fileHelp_csvp>Download a .csv file with line 1: name (units). Times are ISO 8601 strings.</fileHelp_csvp>
-<fileHelp_das>View the data's metadata via an OPeNDAP Dataset Attribute Structure (DAS).</fileHelp_das>
-<fileHelp_dds>View the data's structure via an OPeNDAP Dataset Descriptor Structure (DDS).</fileHelp_dds>
+<fileHelp_csv0>Download a .csv file without column names or units. Times are ISO 8601 strings.</fileHelp_csv0>
+<fileHelp_das>View the dataset's metadata via an OPeNDAP Dataset Attribute Structure (DAS).</fileHelp_das>
+<fileHelp_dds>View the dataset's structure via an OPeNDAP Dataset Descriptor Structure (DDS).</fileHelp_dds>
 <fileHelp_dods>OPeNDAP clients use this to download the data in the DODS binary format.</fileHelp_dods>
 <fileHelpGrid_esriAscii>Download an ESRI ASCII file (for lat lon data only; lon must be all below or all above 180).</fileHelpGrid_esriAscii>
 <fileHelpTable_esriAscii>Download a .csv file for ESRI's ArcGIS 9.x and below (separate date and time columns).
 </fileHelpTable_esriAscii>
-<fileHelp_fgdc>View the data's FGDC .xml metadata.</fileHelp_fgdc>
+<fileHelp_fgdc>View the dataset's FGDC .xml metadata.</fileHelp_fgdc>
 <fileHelp_geoJson>Download longitude,latitude,otherColumns data as a GeoJSON .json file.</fileHelp_geoJson>
 <fileHelp_graph>View a Make A Graph web page.</fileHelp_graph>
 <fileHelpGrid_help>View a web page with a description of griddap.</fileHelpGrid_help>
 <fileHelpTable_help>View a web page with a description of tabledap.</fileHelpTable_help>
 <fileHelp_html>View an OPeNDAP-style HTML Data Access Form.</fileHelp_html>
 <fileHelp_htmlTable>View a .html web page with the data in a table. Times are ISO 8601 strings.</fileHelp_htmlTable>
-<fileHelp_iso19115>View the data's ISO 19115-2/19139 .xml metadata.</fileHelp_iso19115>
+<fileHelp_iso19115>View the dataset's ISO 19115-2/19139 .xml metadata.</fileHelp_iso19115>
 <fileHelp_json>View a table-like JSON file (missing value = 'null'; times are ISO 8601 strings).</fileHelp_json>
 <fileHelp_mat>Download a MATLAB binary file.</fileHelp_mat>
 <fileHelpGrid_nc>Download a NetCDF-3 binary file with COARDS/CF/ACDD metadata.</fileHelpGrid_nc>
@@ -1245,11 +1423,13 @@ This constraint variable has a limited number of values. They are listed here.
 <fileHelp_ncCFHeader>View the header (the metadata) for the .ncCF file.</fileHelp_ncCFHeader>
 <fileHelp_ncCFMA>Download a NetCDF-3 CF Discrete Sampling Geometries file (Multidimensional Array).</fileHelp_ncCFMA>
 <fileHelp_ncCFMAHeader>View the header (the metadata) for the .ncCFMA file.</fileHelp_ncCFMAHeader>
+<fileHelp_ncml>View the dataset's structure and metadata as an NCML .xml file.</fileHelp_ncml>
 <fileHelpGrid_odvTxt>Download time,latitude,longitude,otherVariables as an ODV Generic Spreadsheet File (.txt).</fileHelpGrid_odvTxt>
 <fileHelpTable_odvTxt>Download longitude,latitude,time,otherColumns as an ODV Generic Spreadsheet File (.txt).</fileHelpTable_odvTxt>
 <fileHelp_subset>View an HTML form which uses faceted search to simplify picking subsets of the data.</fileHelp_subset>
 <fileHelp_tsv>Download a tab-separated ASCII text table (line 1: names; line 2: units; ISO 8601 times).</fileHelp_tsv>
 <fileHelp_tsvp>Download a .tsv file with line 1: name (units). Times are ISO 8601 strings.</fileHelp_tsvp>
+<fileHelp_tsv0>Download a .tsv file without column names or units. Times are ISO 8601 strings.</fileHelp_tsv0>
 <fileHelp_xhtml>View an XHTML (XML) file with the data in a table. Times are ISO 8601 strings.</fileHelp_xhtml>
 
 <fileHelp_geotif>View a GeoTIFF .tif image file (for lat lon data only; lon must be all below or all above 180).</fileHelp_geotif>
@@ -1319,12 +1499,18 @@ Checking 'distinct()' tells ERDDAP to sort the results table by all of the
 
 <geoServicesDescription><![CDATA[
 In order to make this ERDDAP's data more accessible to ArcGIS users, this part of ERDDAP mimics part of
-<br><a rel="bookmark" href="http://www.esri.com/software/arcgis/arcgisserver">ArcGIS for Server</a>
+<br><a rel="bookmark" href="http://www.esri.com/software/arcgis/arcgisserver">ArcGIS for Server<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
   by following parts of the
   <a rel="help" href="http://www.esri.com/industries/landing-pages/geoservices/geoservices" 
-    >ESRI GeoServices REST Specification</a> 
+    >ESRI GeoServices REST Specification<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a> 
   (<a rel="copyright" 
-  href="http://www.openwebfoundation.org/announcements/introducingtheopenwebfoundationagreement">license</a>)
+  href="http://www.openwebfoundation.org/announcements/introducingtheopenwebfoundationagreement">license<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>)
   Version 1.0.
 <p><b>To connect your ArcGIS program to this server:</b>
 <p><b><a name="InArcMap">In ArcMap:</a></b>
@@ -1474,8 +1660,10 @@ Wait {1} minutes, then try again.
 ]]></loginDescribeCustom>
 
 <loginDescribeOpenID><![CDATA[
-<p><a rel="help" href="http://openid.net/">OpenID</a> is an open standard that lets you
-log in with your password at one web site
+<p><a rel="help" href="http://openid.net/">OpenID<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a> 
+    is an open standard that lets you log in with your password at one web site
 <br>and then log in without your password at many other web sites, including ERDDAP.
 ]]></loginDescribeOpenID>
 
@@ -1511,7 +1699,9 @@ log in with your password at one web site
 <li>Your password must be 7 or more characters long.
   <br>&nbsp;
 <li>Make sure your browser is set to allow
-  <a rel="help" href="http://en.wikipedia.org/wiki/HTTP_cookie">cookies</a>:
+  <a rel="help" href="http://en.wikipedia.org/wiki/HTTP_cookie">cookies<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>:
   <ul>
   <li>In Internet Explorer, use "Tools : Internet Options : Privacy"
   <li>In Firefox, use "Options : Options : Privacy"
@@ -1872,7 +2062,6 @@ Better to return an empty file? But .nc and others don't allow 0-length data.
 <noDataFixedValue>Fixed value variable={0} failed the test {1}.</noDataFixedValue>                   
 <noDataNoLL>There are no valid longitude or latitude values.</noDataNoLL>
 
-
 <!-- e.g., {0}="protocol=griddap" -->
 <noDatasetWith>Currently, there are no datasets with {0}.</noDatasetWith>
 
@@ -1899,6 +2088,8 @@ Better to return an empty file? But .nc and others don't allow 0-length data.
 <noXxxNo2NonString>there aren't at least two non-String variables</noXxxNo2NonString>
 <noXxxNoStation>cdmDataType={0} isn''t "TimeSeries"</noXxxNoStation>
 <noXxxNoStationID>there is no stationID-like variable</noXxxNoStationID>
+<noXxxNoSubsetVariables>subsetVariables wasn't specified</noXxxNoSubsetVariables>
+<noXxxNoOLLSubsetVariables>subsetVariables doesn't have the offering, longtitude, and latitude variables</noXxxNoOLLSubsetVariables>
 <noXxxNoMinMax>the source data server doesn't provide minimum and maximum values</noXxxNoMinMax>
 <noXxxItsGridded>it's a gridded dataset</noXxxItsGridded>
 <noXxxItsTabular>it's a tabular dataset</noXxxItsTabular>
@@ -1985,6 +2176,7 @@ Widths are in ratio 1:2:3.
 <queryError1Value>For {0} requests, the size of axis={1} must be 1.</queryError1Value>
 <queryError1Var>The {0} format can only handle one data variable.</queryError1Var>
 <queryError2Var>Requests for the {0} format must include at least two numeric variables (for the X and Y axes).</queryError2Var>
+<queryErrorActualRange>{0} is outside of the variable''s actual_range: {1} to {2}</queryErrorActualRange>
 <queryErrorAscending>For {0} requests, the longitude values and latitude values must be ascending.</queryErrorAscending>
 <queryErrorAdjusted>For {0} requests, the adjusted longitude values ({1} to {2}) must be between -180 and 180.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Constraint value="{0}" evaluates to NaN.  If you really want NaN, write it as NaN.</queryErrorConstraintNaN>
@@ -2040,28 +2232,62 @@ Widths are in ratio 1:2:3.
 
 <requestFormatExamplesHtml><![CDATA[
 (for example,
-  <a rel="help" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET</a>,
-  <a rel="help" href="http://www.xml.com/pub/a/98/10/guide0.html">XML</a>,
-  <a rel="help" href="http://www.w3schools.com/soap/soap_intro.asp">SOAP+XML</a>,
-  <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">OPeNDAP</a>,
-  <a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS</a>,
-  <a rel="help" href="http://www.opengeospatial.org/standards/wfs">WFS</a>,
-  <a rel="help" href="http://www.opengeospatial.org/standards/requests/32">SOS</a>,
+  <a rel="help" href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html#sec9.3">HTTP GET<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://www.xml.com/pub/a/98/10/guide0.html">XML<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://www.w3schools.com/soap/soap_intro.asp">SOAP+XML<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">OPeNDAP<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://www.opengeospatial.org/standards/wfs">WFS<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://www.opengeospatial.org/standards/requests/32">SOS<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
   or an HTML form)
 ]]></requestFormatExamplesHtml>
 
 <resultsFormatExamplesHtml><![CDATA[
 (for example,
-  <a rel="help" href="http://www.w3schools.com/html/html_tables.asp">.html table</a>,
-  <a rel="help" href="http://www.geotools.org/ArcInfo+ASCII+Grid+format">ESRI .asc</a>,
-  <a rel="help" href="http://earth.google.com/">Google Earth .kml</a>,
-  <a rel="help" href="http://www.mathworks.com/">.mat</a>,
-  <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">.nc</a>,
-  <a rel="help" href="http://odv.awi.de/en/documentation/">ODV .txt</a>,
-  <a rel="help" href="http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm">.csv</a>,
-  <a rel="help" href="http://www.cs.tut.fi/~jkorpela/TSV.html">.tsv</a>,
-  <a rel="help" href="http://www.json.org/">.json</a>,
-  <a rel="help" href="http://www.w3schools.com/xhtml/xhtml_intro.asp">.xhtml</a>)
+  <a rel="help" href="http://www.w3schools.com/html/html_tables.asp">.html table<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://www.geotools.org/ArcInfo+ASCII+Grid+format">ESRI .asc<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://earth.google.com/">Google Earth .kml<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://www.mathworks.com/">.mat<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">.nc<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://odv.awi.de/en/documentation/">ODV .txt<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://www.creativyst.com/Doc/Articles/CSV/CSV01.htm">.csv<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://www.cs.tut.fi/~jkorpela/TSV.html">.tsv<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://www.json.org/">.json<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
+  <a rel="help" href="http://www.w3schools.com/xhtml/xhtml_intro.asp">.xhtml<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>)
 ]]></resultsFormatExamplesHtml>
 
 <!-- The searched-for text appears after this label. -->
@@ -2216,11 +2442,11 @@ Any reference obtained from this server to a specific product, process, or servi
   This is based on http://swfsc.nmfs.noaa.gov/disclaimer.htm. -->
 <standardDisclaimerOfExternalLinks><![CDATA[
 <h3>DISCLAIMER OF EXTERNAL LINKS</h3>
-The appearance of external links on this World Wide Web site does not constitute endorsement by
-<br>the individuals and organizations associated with this web of external Web sites or the information,
+The appearance of external links on this World Wide Web site does not constitute endorsement by 
+<br>the individuals and organizations associated with this web site of external Web sites or the information,
 <br>products or services contained therein. The individuals and organizations associated with this web
-<br>site do not exercise any editorial control over the information you may find at these locations.
-<br>These links are provided consistent with the stated purpose of this web site.
+<br>site do not exercise any editorial control over the information you may find at these locations. These
+<br>links are provided consistent with the stated purpose of this web site.
 ]]></standardDisclaimerOfExternalLinks>
 
 <!-- This is used by <legal> in setup.xml.
@@ -2251,7 +2477,9 @@ The appearance of external links on this World Wide Web site does not constitute
 <br>&nbsp;
 <hr>
 <h2><a name="privacyPolicy">Privacy Policy</a></h2>
-ERDDAP follows <a rel="bookmark" href="http://www.noaa.gov/privacy.html">NOAA's Privacy Policy Guidelines</a>.
+ERDDAP follows 
+<a rel="bookmark" href="http://www.noaa.gov/privacy.html"
+  >NOAA's Privacy Policy Guidelines</a>.
 ]]></standardPrivacyPolicy>
 
 <!-- Text for the Submit button on various forms. -->
@@ -2418,7 +2646,7 @@ This can refer to &convertTimeReference;, &erddapUrl;,
 Our focus is on making it easier for you to get scientific data.
 
 <p><font class="highlightColor"><b>Different scientific communities have developed different types of data servers,</b></font>
-<br>for example, OPeNDAP, WCS, SOS, OBIS, and custom web pages with forms.
+<br>for example, OPeNDAP, WCS, SOS, OBIS, and countless custom web pages with forms.
 Each is great on its own.
 But without ERDDAP, it is difficult to get data from different types of servers:
 <ul>
@@ -2478,10 +2706,15 @@ make it easier for you to get scientific data.-->
 <p><b><a rel="help" href="http://www.youtube.com/watch?v=18xZoXu1USM">For a quick introduction to ERDDAP,
   watch the first half of this  
   <img align="bottom" alt="YouTube" src="&erddapUrl;/images/youtube.png" >
-  video</a>.</b> <a name="video">(5 minutes)</a>
+  video<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>.</b> 
+    <a name="video">(5 minutes)</a>
 <br>In it, a scientist downloads ocean currents forecast data from ERDDAP to model a toxic
 spill in the ocean using  
-<a rel="bookmark" href="http://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">NOAA's GNOME software</a> (in 5 minutes!).
+<a rel="bookmark" href="http://response.restoration.noaa.gov/oil-and-chemical-spills/oil-spills/response-tools/gnome.html">NOAA's GNOME software<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a> (in 5 minutes!).
 Thanks to Rich Signell. (One tiny error in the video: 
 when searching for datasets, don't use <tt>AND</tt> between search terms. It is implicit.)
 
@@ -2490,7 +2723,9 @@ when searching for datasets, don't use <tt>AND</tt> between search terms. It is 
 <p><b>Data Providers: You can
   <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">set up your own ERDDAP server</a>
   and serve your own data.</b>
-  <br>The small effort to set up ERDDAP brings many benefits.
+<br>ERDDAP is free and open source. It uses Apache-like licenses, so you can do anything you want with it.
+ERDDAP's appearance is customizable, so your ERDDAP will reflect your institution, not NOAA. 
+The small effort to set up ERDDAP brings many benefits.
 If you already have a web service for distributing your data,
 you can set up ERDDAP to access your data via the existing service
 or via the source files or database.
@@ -2629,9 +2864,8 @@ This can refer to &erddapUrl;, &requestFormatExamplesHtml; &ssUse and &resultsFo
 <tr>
 <td>
 
-ERDDAP (the Environmental Research Division's Data Access Program) is a data server that gives you
-a simple, consistent way to download subsets of scientific datasets in common file formats and
-make graphs and maps.
+ERDDAP is a data server that gives you a simple, consistent way to download 
+subsets of scientific datasets in common file formats and make graphs and maps.
 
 <h2>Table of Contents</h2>
 <ul>
@@ -2665,11 +2899,12 @@ make graphs and maps.
   <li><a href="#chunks">ERDDAP processes data in chunks.</a>
   <li><a href="#modular">ERDDAP has a modular structure.</a>
   <li><a href="#pushPull">Data Dissemination / Data Distribution Networks: Push and Pull Technology</a>
-  <li><a href="#sweetSpot">Is ERDDAP a solution to everyone's data distribution / data access problems?</a>
-  <li><a href="#cite">How to Cite ERDDAP in a Paper</a>
-  <li><a href="#dataDistributionSystems">Guidelines for Data Distribution Systems</a>
-  <li><a href="#setup">You can set up your own ERDDAP server.</a>
   </ul>
+<li><a href="#sweetSpot">Is ERDDAP a solution to everyone's data distribution / data access problems?</a>
+<li><a href="#cite">How to Cite ERDDAP in a Paper</a>
+<li><a href="#acronym">What does the acronym "ERDDAP" stand for?</a>
+<li><a href="#dataDistributionSystems">Guidelines for Data Distribution Systems</a>
+<li><a href="#setup">You can set up your own ERDDAP server.</a>
 <li><a href="#contact">Contact Us</a>
 </ul>
 
@@ -2686,7 +2921,9 @@ there are problems ...
 <li>Each site returns the data in a different format (for example, XML, SOAP+XML, OPeNDAP binary
   data stream, ASCII text, HDF 4, HDF 5, NetCDF, ...) and it isn't the common file format
   that you want.
-<!--  <a rel="help" href="http://www.xml.com/pub/a/98/10/guide0.html">XML</a>,
+<!--  <a rel="help" href="http://www.xml.com/pub/a/98/10/guide0.html">XML<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>,
   <a rel="help" href="http://www.w3schools.com/soap/soap_intro.asp">SOAP+XML</a>,
   <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">OPeNDAP binary data stream</a>,
   <a rel="help" href="http://www.webopedia.com/TERM/A/ASCII.html">ASCII text</a>,
@@ -2705,10 +2942,14 @@ there are problems ...
 <li><b><a name="video">For</a> a quick introduction to ERDDAP, 
   <a rel="help" href="http://www.youtube.com/watch?v=18xZoXu1USM">watch the first half of this 
   <img align="bottom" alt="YouTube" src="&erddapUrl;/images/youtube.png" >
-  video</a>.</b> (5 minutes)
+  video<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>.</b> (5 minutes)
 <br>In it, a scientist downloads ocean currents forecast data from ERDDAP to model a toxic
 spill in the ocean using  
-<a rel="bookmark"  href="http://response.restoration.noaa.gov/type_subtopic_entry.php?RECORD_KEY%28entry_subtopic_type%29=entry_id,subtopic_id,type_id&amp;entry_id%28entry_subtopic_type%29=292&amp;subtopic_id%28entry_subtopic_type%29=8&amp;type_id%28entry_subtopic_type%29=3">NOAA's GNOME software</a> (in 5 minutes!).
+<a rel="bookmark"  href="http://response.restoration.noaa.gov/type_subtopic_entry.php?RECORD_KEY%28entry_subtopic_type%29=entry_id,subtopic_id,type_id&amp;entry_id%28entry_subtopic_type%29=292&amp;subtopic_id%28entry_subtopic_type%29=8&amp;type_id%28entry_subtopic_type%29=3">NOAA's GNOME software<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a> (in 5 minutes!).
 This video shows:
 <ul>
 <li>With ERDDAP, you can easily <a href="#search">search for datasets</a>, 
@@ -2723,9 +2964,13 @@ This video shows:
   to enable getting data into lots of other programs.
 <li>NOAA works together: The analysis uses two free software programs from NOAA, 
   ERDDAP and GNOME, and data served by NOAA's 
-  <a rel="bookmark" href="http://www.ncddc.noaa.gov/">NODC/NCDDC</a>
+  <a rel="bookmark" href="http://www.ncddc.noaa.gov/">NODC/NCDDC<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
   (facilitated by NOAA's 
-  <a rel="bookmark" href="http://geo-ide.noaa.gov/">UAF project</a>).
+  <a rel="bookmark" href="http://geo-ide.noaa.gov/">UAF project<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>).
 <li>ERDDAP makes <a href="#scientificData">scientific data</a> more easily available 
   to help scientists (and others) do their work more efficiently.
 <li>Using ERDDAP isn't hard. (Yes, Rich Signell is really smart, but anyone can use ERDDAP.)
@@ -2745,7 +2990,7 @@ remote (accessed via the web) data sources.</b>
   <br>&nbsp;
 
 <li><b><a name="scientificData">ERDDAP</a> can serve many types of scientific data, not just oceanographic data.</b>
-  <br>ERDDAP is a Data Access Program that was written at
+  <br>ERDDAP is a data server that was written at
       <a title="National Oceanic and Atmospheric Administration" rel="bookmark" href="http://www.noaa.gov">NOAA</a>
       <a title="National Marine Fisheries Service" rel="bookmark" href="http://www.nmfs.noaa.gov">NMFS</a>
       <a title="Southwest Fisheries Science Center" rel="bookmark" href="http://swfsc.noaa.gov">SWFSC</a>
@@ -2775,16 +3020,28 @@ remote (accessed via the web) data sources.</b>
   <li>ERDDAP makes tabular data available via tabledap
     (ERDDAP's implementation of the
       <a rel="help" href="&erddapUrl;/tabledap/index.html">OPeNDAP constraint protocol</a>) and
-      <a rel="help" href="http://www.opengeospatial.org/standards/sos">SOS</a>.
+      <a rel="help" href="http://www.opengeospatial.org/standards/sos">SOS<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>.
   </ul>
   ERDDAP also provides Data Access Forms (web pages) which help humans create the OPeNDAP
-  requests. <a rel="bookmark" href="http://www.opendap.org">OPeNDAP's</a>
-    <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)</a>
+  requests. <a rel="bookmark" href="http://www.opendap.org">OPeNDAP's<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
+    <a rel="help" href="http://www.opendap.org/pdf/ESE-RFC-004v1.2.pdf">Data Access Protocol (DAP)<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
     is one of the recommended
-    <a rel="bookmark" href="http://www.ioos.gov/">IOOS</a>
-    <a rel="bookmark" href="http://www.ioos.gov/dif/">DMAC</a>
+    <a rel="bookmark" href="http://www.ioos.gov/">IOOS<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
+    <a rel="bookmark" href="http://www.ioos.gov/dif/">DMAC<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
     data transport mechanisms and a    
-    <a rel="bookmark" href="http://www.esdswg.org/spg/">NASA EOSDIS standard</a>.
+    <a rel="bookmark" href="http://www.esdswg.org/spg/">NASA EOSDIS standard<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>.
     (OPeNDAP is great!)
   ERDDAP translates your request from the OPeNDAP, WMS, or SOS format to the data source's
   request format and converts the response to one of ERDDAP's internal data structures.
@@ -2796,7 +3053,9 @@ remote (accessed via the web) data sources.</b>
   and the list of 
   <a rel="help" href="&erddapUrl;/tabledap/documentation.html#fileType">tabledap file types</a>.
   Other protocols for requesting the data (for example,
-    <a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS</a>)
+    <a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>)
     may be added in the future.
   ERDDAP is structured for these additions and there don't seem to be any impediments.
   <br>&nbsp;
@@ -2831,12 +3090,19 @@ remote (accessed via the web) data sources.</b>
   <li>altitude is always in meters with positive=up.
   <li>depth is always in meters with positive=down.
   <li>time, when formatted as a number, is always in "seconds since 1970-01-01T00:00:00Z"
-    (known as <a rel="help" href="http://en.wikipedia.org/wiki/Unix_time">Unix time</a> or epoch seconds,
+    (known as <a rel="help" href="http://en.wikipedia.org/wiki/Unix_time">Unix time<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a> or epoch seconds,
     which is
-      <a rel="bookmark"   href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUNITS</a>-compatible)
+      <a rel="bookmark"   href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html"
+      >UDUNITS<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>-compatible)
       and, when formatted as a string, is formatted according
     to the
-      <a rel="help" href="http://en.wikipedia.org/wiki/ISO_8601">ISO 8601:2004 "extended" format</a>
+      <a rel="help" href="http://en.wikipedia.org/wiki/ISO_8601">ISO 8601:2004 "extended" format<img 
+    src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+    title="This link to an external web site does not constitute an endorsement."/></a>
       standard <span style="white-space: nowrap;">(YYYY-MM-DDThh:mm:ssZ,</span> for example,
       <span style="white-space: nowrap;">"1985-01-02T00:00:00Z").</span>
     (You can convert numeric times to/from ISO string times with ERDDAP's
@@ -2846,7 +3112,7 @@ remote (accessed via the web) data sources.</b>
   </ul>
   This makes it easy to specify constraints in requests without having to worry about the altitude
   data format (are positive values up or down? in meters or fathoms?) or the time data format
-  (a nightmarish realm of possible formats and time zones, for example, "Jan 2, 1985",
+  (a nightmarish realm of possible formats, for example, "Jan 2, 1985",
   "02-JAN-1985", "1/2/85", "2/1/85", "1985-01-02", or days since Jan 1, 1980).
   This makes the results from different data sources easy to compare.
 
@@ -2862,23 +3128,43 @@ remote (accessed via the web) data sources.</b>
 
   <p>Two common standards for writing units of measure are:
   <ul>
-  <li><a rel="help" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUNITS</a>
+  <li><a rel="help" href="http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html">UDUNITS<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
     - from
-    <a rel="bookmark" href="http://www.unidata.ucar.edu/">Unidata</a>,
+    <a rel="bookmark" href="http://www.unidata.ucar.edu/">Unidata<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
     which is used in
-    <a rel="help" href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS</a>,
-    <a rel="help" href="http://cf-pcmdi.llnl.gov/documents/cf-conventions/">CF</a>, and
-    <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF</a> 
+    <a rel="help" href="http://ferret.wrc.noaa.gov/noaa_coop/coop_cdf_profile.html">COARDS<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
+    <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>, and
+    <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf/">NetCDF<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
     data files. For example,
     UDUNITS has many options for degrees Celsius, including "degree_C" and "degC".
     <br>&nbsp;
-  <li><a rel="help" href="http://unitsofmeasure.org/ucum.html">UCUM</a>
+  <li><a rel="help" href="http://unitsofmeasure.org/ucum.html">UCUM<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
     - the Unified Code for Units of Measure.
-    <a rel="bookmark" href="http://www.opengeospatial.org/">OGC</a>
+    <a rel="bookmark" href="http://www.opengeospatial.org/">OGC<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
     services such as
-    <a rel="help" href="http://www.opengeospatial.org/standards/sos">SOS</a>,
-    <a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS</a>, and
-    <a rel="help" href="http://www.opengeospatial.org/standards/wms">WMS</a>
+    <a rel="help" href="http://www.opengeospatial.org/standards/sos">SOS<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
+    <a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>, and
+    <a rel="help" href="http://www.opengeospatial.org/standards/wms">WMS<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
     often refer to UCUM as UOM (Units Of Measure). For example, UCUM has just one
     case-sensitive option for degrees Celsius: "Cel".
     <br>&nbsp;
@@ -2897,9 +3183,13 @@ remote (accessed via the web) data sources.</b>
 
 <li><b><a name="metadata">ERDDAP</a> can add or modify metadata.</b>
   <br>Many data sources have little or no
-    <a rel="help" href="http://en.wikipedia.org/wiki/Metadata">metadata</a>
+    <a rel="help" href="http://en.wikipedia.org/wiki/Metadata">metadata<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
     (for example, 
-    <a rel="help" href="http://cf-pcmdi.llnl.gov/">CF metadata</a>)
+    <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF metadata<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>)
     describing the data.
   ERDDAP lets (and encourages) the administrator to describe metadata which will be added
   to datasets and their variables on-the-fly.
@@ -2926,7 +3216,10 @@ remote (accessed via the web) data sources.</b>
 <li><b><a name="compression">Requesting Compressed Files</a></b>
   <br>ERDDAP doesn't offer results stored in compressed (e.g., .zip or .gzip) files.
   Instead, ERDDAP looks for
-  <a rel="help" href="http://betterexplained.com/articles/how-to-optimize-your-site-with-gzip-compression/">accept-encoding</a>
+  <a rel="help" href="http://betterexplained.com/articles/how-to-optimize-your-site-with-gzip-compression/"
+    >accept-encoding<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
      in the HTTP GET request header sent by the client.
   If a supported compression type ("gzip", "x-gzip", or "deflate") is found in the
   accept-encoding list, ERDDAP includes "content-encoding" in the HTTP response header
@@ -2970,7 +3263,9 @@ remote (accessed via the web) data sources.</b>
   <li>Certainly, not all data can be expressed in these structures, but much of it can.
     Tables, in particular, are very flexible data structures (look at the phenomenal success
     of
-      <a rel="help" href="http://en.wikipedia.org/wiki/Relational_database_management_system">relational database</a> programs).
+      <a rel="help" href="http://en.wikipedia.org/wiki/Relational_database_management_system">relational database<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> programs).
   <li>This makes data queries easier to construct.
   <li>This makes data responses have a simple structure, which makes it easier to serve the data
     in a wider variety of standard file types (which often just support simple data structures).
@@ -3002,7 +3297,10 @@ remote (accessed via the web) data sources.</b>
 
 <li><b><a name="subscriptions">ERDDAP</a> offers
   <a rel="help" href="&erddapUrl;/subscriptions/index.html">email/URL</a> and
-  <a rel="help" href="http://en.wikipedia.org/wiki/RSS_(file_format)">RSS</a> subscription services,</b>
+  <a rel="help" href="http://en.wikipedia.org/wiki/RSS_(file_format)">RSS<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+    subscription services,</b>
   so you can be notified whenever a dataset changes.
   <ul>
   <li>ERDDAP is very good at detecting changes to gridded datasets because it can detect
@@ -3030,10 +3328,15 @@ remote (accessed via the web) data sources.</b>
      (Computer programmers: if you write web services, you can use the URL system
      to have ERDDAP notify your web service immediately whenever a dataset changes.)
 
-  <p><b><a rel="help" href="http://en.wikipedia.org/wiki/RSS_(file_format)">RSS</a> Subscriptions</b>
+  <p><b><a rel="help" href="http://en.wikipedia.org/wiki/RSS_(file_format)">RSS<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+      Subscriptions</b>
      RSS is standard system for notifying users when the content at a web site has changed.
      Modern web browsers have an RSS client built in or you can use a separate
-       <a rel="help" href="http://blogspace.com/rss/readers">RSS Reader</a>.
+       <a rel="help" href="http://blogspace.com/rss/readers">RSS Reader<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
      ERDDAP offers a separate RSS 2.01 feed for each dataset so that you can find out
      when interesting datasets have changed.
      To subscribe to a dataset's RSS feed, click on one of the RSS icons
@@ -3058,17 +3361,25 @@ remote (accessed via the web) data sources.</b>
     <br>&nbsp;
 
 <li><b><a name="diverseSources">ERDDAP</a> is a
-    <a rel="help" href="http://en.wikipedia.org/wiki/Web_application">web application</a> 
+    <a rel="help" href="http://en.wikipedia.org/wiki/Web_application">web application<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
     (for humans with browsers)
   <br>and a
-    <a rel="help" href="http://en.wikipedia.org/wiki/Web_service">web service</a>
+    <a rel="help" href="http://en.wikipedia.org/wiki/Web_service">web service<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
     (with <a rel="help" href="&erddapUrl;/rest.html">services for computer programs</a>).</b>
   <br>&nbsp;
 
 <li><b><a name="rest">ERDDAP</a> has
-  <a rel="help" href="http://en.wikipedia.org/wiki/Representational_State_Transfer">REST</a>- 
+  <a rel="help" href="http://en.wikipedia.org/wiki/Representational_State_Transfer">REST<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>- 
   and
-  <a rel="help" href="http://www.crummy.com/writing/RESTful-Web-Services/">ROA</a>-style
+  <a rel="help" href="http://www.crummy.com/writing/RESTful-Web-Services/">ROA<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>-style
   links to make its services available to computer programs.</b>
   <br>These features can be used to build another web service on top of ERDDAP
   (making ERDDAP do all the work!).
@@ -3099,7 +3410,9 @@ remote (accessed via the web) data sources.</b>
   <br>To save memory (a big issue) and make responses start sooner, ERDDAP processes
   data requests in chunks -- repeatedly getting a chunk of data from the source,
   cleaning it up (for example, adding
-    <a rel="help" href="http://en.wikipedia.org/wiki/Metadata">metadata</a>),
+    <a rel="help" href="http://en.wikipedia.org/wiki/Metadata">metadata<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>),
     and sending that to the client.
   For many data sources, this means that the first chunk of data (for example, from the
   first sensor) gets to the client in seconds instead of minutes (for example, after data
@@ -3119,12 +3432,16 @@ remote (accessed via the web) data sources.</b>
 <li><b><a name="pushPull">Data Dissemination / Data Distribution Networks: Push and Pull Technology</a></b>
 <br>Normally, ERDDAP acts as an intermediary: it takes a request from a user;
 gets data from a remote data source; reformats the data; and sends it to the user.
-<a rel="help" href="http://en.wikipedia.org/wiki/Pull_technology">Pull Technology</a>:
+<a rel="help" href="http://en.wikipedia.org/wiki/Pull_technology">Pull Technology<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>:
 But ERDDAP also has the ability to actively get all of the available data
 from a remote data source and
 <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridCopy">store
 a local copy of the data</a>.
-<a rel="help" href="http://en.wikipedia.org/wiki/Push_technology">Push Technology</a>:
+<a rel="help" href="http://en.wikipedia.org/wiki/Push_technology">Push Technology<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>:
 By using ERDDAP's <a href="#subscriptions">subscription services</a>,
 other data servers can be notified
 as soon as new data is available so that they can request the data (by pulling the data).
@@ -3150,7 +3467,9 @@ A given ERDDAP can be both a source of data for some datasets and a re-distribut
 for other datasets.
 The resulting network is roughly similar to data distribution networks set up with programs
 like
-   <a rel="bookmark" href="http://www.unidata.ucar.edu/software/idd/">Unidata's IDD/IDM</a>,
+   <a rel="bookmark" href="http://www.unidata.ucar.edu/software/idd/">Unidata's IDD/IDM<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>,
    but less rigidly structured.
 <br>&nbsp;
 
@@ -3183,7 +3502,10 @@ However, those datasets are often only "understood" by the specialized software 
 
 <p>A Work-Around for Complex Datasets - ERDDAP has a way to handle complex datasets that it
 can't handle directly. Just as a
-<a rel="help" href="http://en.wikipedia.org/wiki/Relational_database_management_system">relational database</a>
+<a rel="help" href="http://en.wikipedia.org/wiki/Relational_database_management_system"
+  >relational database<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
 can store a complex dataset by using just
 one simple data structure (a table), ERDDAP can serve the data from more complex datasets by
 breaking the source dataset into a few ERDDAP datasets, each with similar, simple data structures.
@@ -3202,11 +3524,14 @@ but they can be a useful way to distribute the data to a wider audience.
 <p><b><a name="cite">How</a> to Cite ERDDAP in a Paper</b>
 <br>If you want to cite ERDDAP itself in a scientific paper, please use something like
 <pre>
-Simons, R.A. 2011. ERDDAP - The Environmental Research Division's 
-Data Access Program. http://coastwatch.pfeg.noaa.gov/erddap . 
+Simons, R.A. 2011. ERDDAP. http://coastwatch.pfeg.noaa.gov/erddap . 
 Pacific Grove, CA: NOAA/NMFS/SWFSC/ERD.</pre>
 
 <p>If you want to cite a specific dataset in ERDDAP, please generate the citation based on the information in the dataset's metadata.  If you are referring to a specific subset of a dataset, please include the complete URL needed to replicate that download.
+
+<p><b><a name="acronym">What</a> does the acronym "ERDDAP" stand for?</b>
+<br>"ERDDAP" used to be an acronym, but it outgrew that original description.
+Now, please just think of it as a name that has no meaning.
 
 <p><b><a name="dataDistributionSystems">Guidelines</a> for Data Distribution Systems</b>
 <br>Bob's opinions about the design
@@ -3248,8 +3573,12 @@ and include the ERDDAP URL directly related to your question or comment.
 <sosLongDescriptionHtml><![CDATA[
 ERDDAP's Sensor Observation Service (SOS) lets you request data via the SOS protocol.
 <br><font class="warningColor"><b>This is an EXPERIMENTAL WORK-IN-PROGRESS.</b></font>
-<p><a rel="help" href="http://www.opengeospatial.org/standards/sos">SOS</a>
-is an <a rel="bookmark" href="http://www.opengeospatial.org/">Open Geospatial Consortium (OGC)</a>
+<p><a rel="help" href="http://www.opengeospatial.org/standards/sos">SOS<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+is an <a rel="bookmark" href="http://www.opengeospatial.org/">Open Geospatial Consortium (OGC)<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
 standard that "provides an API for managing deployed
 <br>sensors and retrieving sensor data and specifically 'observation' data. Whether from in-situ sensors
 <br>(e.g., water monitoring) or dynamic sensors (e.g., satellite imaging), measurements made from sensor
@@ -3257,10 +3586,16 @@ standard that "provides an API for managing deployed
 
 <p>The SOS specification is intentionally incomplete. Some parts must be specified separately.
 <br>ERDDAP's SOS service is intended to be compatible with the
-  <a rel="bookmark" href="http://sdf.ndbc.noaa.gov/sos/">IOOS DIF SOS servers</a>
+  <a rel="bookmark" href="http://sdf.ndbc.noaa.gov/sos/">IOOS DIF SOS servers<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
   (which use the
-<br><a rel="bookmark" href="http://www.csc.noaa.gov/ioos/schema/IOOS-DIF/">IOOS DIF SOS schemas</a>)
-  and the <a rel="bookmark" href="http://www.oostethys.org/">OOSTethys SOS servers</a>.
+<br><a rel="bookmark" href="http://www.csc.noaa.gov/ioos/schema/IOOS-DIF/">IOOS DIF SOS schemas<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>)
+  and the <a rel="bookmark" href="http://www.oostethys.org/">OOSTethys SOS servers<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
 ]]></sosLongDescriptionHtml>
 
 <unknownDatasetID>Currently unknown datasetID={0}</unknownDatasetID>
@@ -3272,10 +3607,16 @@ standard that "provides an API for managing deployed
 <wcsLongDescriptionHtml><![CDATA[
 ERDDAP's Web Coverage Service (WCS) lets you request a data file or an image file with gridded data.
 <br><font class="warningColor"><b>This is an EXPERIMENTAL WORK-IN-PROGRESS.</b></font>
-<p><a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS</a>
-is an <a rel="bookmark" href="http://www.opengeospatial.org/">Open Geospatial Consortium (OGC)</a>
+<p><a rel="help" href="http://www.opengeospatial.org/standards/wcs">WCS<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+is an <a rel="bookmark" href="http://www.opengeospatial.org/">Open Geospatial Consortium (OGC)<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
 standard for "access to geospatial
-<a href="http://www.opengeospatial.org/ogc/glossary/c">coverages</a>.
+<a href="http://www.opengeospatial.org/ogc/glossary/c">coverages<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
 <br>The term 'grid coverages' typically refers to content such as satellite images, digital aerial photos,
 <br>digital elevation data, and other phenomena represented by values at each measurement point."
 ]]></wcsLongDescriptionHtml>
@@ -3283,7 +3624,9 @@ standard for "access to geospatial
 <wmsDescriptionHtml>The Web Map Service (WMS) lets you request an image with data plotted on a map.</wmsDescriptionHtml>
 
 <wmsInstructions><![CDATA[
-This web page is using <a rel="bookmark" href="http://openlayers.org">OpenLayers</a>
+This web page is using <a rel="bookmark" href="http://openlayers.org">OpenLayers<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
 to display maps which are created on-the-fly by ERDDAP's
 <br>Web Map Server (WMS) version &wmsVersion;.
 <br>The controls on the left of the map are for navigation.
@@ -3293,9 +3636,16 @@ The control on the right manages the layers.
 
 <wmsLongDescriptionHtml><![CDATA[
 ERDDAP's Web Map Service (WMS) lets you request an image with data plotted on a map.
-<br><a rel="help" href="http://www.opengeospatial.org/standards/wms">WMS</a>
-is an <a rel="bookmark" href="http://www.opengeospatial.org/">Open Geospatial Consortium (OGC)</a>
-and <a rel="help" href="http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=32546">ISO (19128)</a>
+<br><a rel="help" href="http://www.opengeospatial.org/standards/wms">WMS<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+is an <a rel="bookmark" href="http://www.opengeospatial.org/">Open Geospatial Consortium (OGC)<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+and <a rel="help" href="http://www.iso.org/iso/iso_catalogue/catalogue_tc/catalogue_detail.htm?csnumber=32546"
+  >ISO (19128)<img 
+      src="&erddapUrl;/images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
 standard for "the creation
 <br>and display of registered and superimposed map-like views of information that come
 <br>simultaneously from multiple remote and heterogeneous sources."

@@ -66,6 +66,7 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
      */
     public EDDTableFromPostDatabase(String tDatasetID, String tAccessibleTo, 
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
@@ -74,17 +75,18 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
         String tLocalSourceUrl, String tDriverName, 
         String tConnectionProperties[],
         String tCatalogName, String tSchemaName, String tTableName,
-        String tOrderBy[],
+        String tColumnNameQuotes, String tOrderBy[],
         boolean tSourceNeedsExpandedFP_EQ
         ) throws Throwable {
 
         super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, 
+            tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes,
             tDataVariables, tReloadEveryNMinutes,
             tDataSourceName,
             tLocalSourceUrl, tDriverName, tConnectionProperties,
-            tCatalogName, tSchemaName, tTableName, tOrderBy,
+            tCatalogName, tSchemaName, tTableName, tColumnNameQuotes, tOrderBy,
             tSourceNeedsExpandedFP_EQ);
         
         if (verbose) String2.log(
@@ -174,9 +176,9 @@ public class EDDTableFromPostDatabase extends EDDTableFromDatabase {
             for (int row = 0; row < nUsers; row++) {
                 String name      = namePa.getString(row);
                 String password  = passwordPa.getString(row);
-if (verbose) // && name.equals("ERDUSER"))
-    String2.log("name=" + name + " " + password);
-else if (verbose) String2.log("name=" + name);
+//if (verbose) // && name.equals("ERDUSER"))
+//    String2.log("name=" + name + " " + password);
+//else if (verbose) String2.log("name=" + name);
                 if (name == null || name.length() == 0 || 
                     !name.equals(String2.justPrintable(name)) ||
                     password == null || password.length() != 32 ||  //md5 always 32 chars
@@ -362,6 +364,7 @@ boolean addTestPostUser = false;
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public void getDataForDapQuery(String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {

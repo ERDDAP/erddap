@@ -216,6 +216,7 @@ public class EDDTableFromOBIS extends EDDTable{
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
+        String tSosOfferingPrefix = null;
         double tLongitudeSourceMinimum = Double.NaN;  
         double tLongitudeSourceMaximum = Double.NaN;  
         double tLatitudeSourceMinimum = Double.NaN;  
@@ -276,6 +277,8 @@ public class EDDTableFromOBIS extends EDDTable{
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<sosOfferingPrefix>")) {}
+            else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content; 
             else if (localTags.equals( "<defaultDataQuery>")) {}
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
@@ -285,7 +288,7 @@ public class EDDTableFromOBIS extends EDDTable{
         }
 
         return new EDDTableFromOBIS(tDatasetID, tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             tLocalSourceUrl, tSourceCode, tReloadEveryNMinutes, 
             tLongitudeSourceMinimum, tLongitudeSourceMaximum,
@@ -359,6 +362,7 @@ public class EDDTableFromOBIS extends EDDTable{
      */
     public EDDTableFromOBIS(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         String tLocalSourceUrl, String tSourceCode,
@@ -382,6 +386,7 @@ public class EDDTableFromOBIS extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        sosOfferingPrefix = tSosOfferingPrefix;
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
@@ -466,7 +471,7 @@ public class EDDTableFromOBIS extends EDDTable{
                 .add("comment", "Created from the darwin:YearCollected-darwin:MonthCollected-darwin:DayCollected and darwin:TimeOfDay variables.")
                 .add("units", EDV.TIME_UNITS), 
                 //estimate actual_range?
-            null, "double");  
+            null, "double");  //this constructor gets source / sets destination actual_range
         dataVariables[4] = new EDV("ID", null, 
             (new Attributes())
                 .add("comment", "Created from the [darwin:InstitutionCode]:[darwin:CollectionCode]:[darwin:CatalogNumber] variables.") 
@@ -526,12 +531,11 @@ public class EDDTableFromOBIS extends EDDTable{
             if (isTimeStamp) {
                 dataVariables[tv] = new EDVTimeStamp(prefix + tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
-                    tSourceType); //the constructor that reads actual_range
-                dataVariables[tv].setActualRangeFromDestinationMinMax();
+                    tSourceType); //this constructor gets source / sets destination actual_range
                 tv++;
             } else {
                 dataVariables[tv] = new EDV(prefix + tSourceName, tDestName, 
-                    tSourceAtt, tAddAtt, tSourceType); //the constructor that reads actual_range
+                    tSourceAtt, tAddAtt, tSourceType); //the constructor that reads source actual_range
                 dataVariables[tv].setActualRangeFromDestinationMinMax();
                 tv++;
             }
@@ -558,6 +562,7 @@ public class EDDTableFromOBIS extends EDDTable{
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public void getDataForDapQuery(String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {
@@ -684,7 +689,9 @@ public class EDDTableFromOBIS extends EDDTable{
      * @param tReloadEveryNMinutes
      * @param tCreatorEmail  A suitable email address can be found by reading the XML response from the sourceURL.
      * @param externalAddGlobalAttributes  These attributes are given priority.  Use null in none available.
-     * @throws Throwable if trouble
+     * @return a suggested chunk of xml for this dataset for use in datasets.xml 
+     * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
+     *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(
         String tLocalSourceUrl, String tSourceCode, 
@@ -763,15 +770,14 @@ directionsForGenerateDatasetsXml() +
             results = generateDatasetsXml(
                 "http://iobis.marine.rutgers.edu/digir2/DiGIR.php", 
                 "OBIS-SEAMAP", DEFAULT_RELOAD_EVERY_N_MINUTES, "dhyrenbach@duke.edu",
-                null);
+                null) + "\n";
 
             //GenerateDatasetsXml
-            GenerateDatasetsXml.doIt(new String[]{"-verbose", 
+            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromOBIS",
                 "http://iobis.marine.rutgers.edu/digir2/DiGIR.php", 
                 "OBIS-SEAMAP", "" + DEFAULT_RELOAD_EVERY_N_MINUTES, "dhyrenbach@duke.edu"},
                 false); //doIt loop?
-            String gdxResults = String2.getClipboardString();
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 
 expected = 
@@ -805,7 +811,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"title\">OBIS-SEAMAP Data from the OBIS Server at RUTGERS</att>\n" +
 "    </addAttributes>\n" +
 "</dataset>\n" +
-"\n";
+"\n\n";
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //ensure it is ready-to-use by making a dataset from it

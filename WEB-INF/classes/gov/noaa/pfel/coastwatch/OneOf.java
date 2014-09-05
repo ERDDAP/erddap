@@ -274,12 +274,11 @@ public class OneOf {
             String2.setupLog(false, false, 
                 bigParentDirectory + "log.txt",
                 true, true, 5000000);
-
-            //after log is setup
-            Math2.gc(200); 
-            String2.log("Constructing OneOf for " + shortClassName + ":\n" +
-                String2.standardHelpAboutMessage() + "\n" +
-                Math2.memoryString());
+            Math2.gcAndWait();  //before get memoryString() in OneOf constructor
+            String2.log("*** Constructing OneOf for " + shortClassName + " at " + 
+                Calendar2.getCurrentISODateTimeStringLocal() + "\n" +
+                "logFile=" + String2.logFileName() + "\n" +
+                String2.standardHelpAboutMessage());
 
             //get the relative directories
             fullPaletteDirectory = classRB2.getNotNothingString("paletteDirectory", errorInMethod);
@@ -1435,18 +1434,17 @@ public class OneOf {
      * This sends the specified email to the emailAddress.
      * This won't throw an exception if trouble.
      *
-     * @param emailAddress   (if null or "", silent error)
+     * @param emailToAddresses a comma-separated list of To addresses.
+     *    If all or one is null or "" or "null", it's a silent error.
      * @param subject If error, recommended: String2.ERROR + " in " + fullClassName
      * @param content If error, recommended: MustBe.throwableToString(t);
      */
-    public void email(String emailAddress, String subject, String content) {
+    public void email(String emailToAddresses, String subject, String content) {
         try {
-            if (emailAddress != null &&
-                emailAddress.length() > 0)
-                SSR.sendEmail(emailSmtpHost, emailSmtpPort, emailUserName, 
-                    emailSmtpPassword, 
-                    emailSmtpProperties,
-                    emailFromAddress, emailAddress, subject, content);
+            SSR.sendEmail(emailSmtpHost, emailSmtpPort, emailUserName, 
+                emailSmtpPassword, 
+                emailSmtpProperties,
+                emailFromAddress, emailToAddresses, subject, content);
         } catch (Exception e) {
             String2.log(MustBe.throwable(String2.ERROR + ": Sending email failed.", e));
         }

@@ -83,6 +83,7 @@ public class EDDTableFromMWFS extends EDDTable{
         StringArray tOnChange = new StringArray();
         String tFgdcFile = null;
         String tIso19115File = null;
+        String tSosOfferingPrefix = null;
         String tLocalSourceUrl = null;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
@@ -133,6 +134,8 @@ public class EDDTableFromMWFS extends EDDTable{
             else if (localTags.equals("</fgdcFile>"))     tFgdcFile = content; 
             else if (localTags.equals( "<iso19115File>")) {}
             else if (localTags.equals("</iso19115File>")) tIso19115File = content; 
+            else if (localTags.equals( "<sosOfferingPrefix>")) {}
+            else if (localTags.equals("</sosOfferingPrefix>")) tSosOfferingPrefix = content; 
             else if (localTags.equals( "<defaultDataQuery>")) {}
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
@@ -146,7 +149,7 @@ public class EDDTableFromMWFS extends EDDTable{
             ttDataVariables[i] = (Object[])tDataVariables.get(i);
 
         return new EDDTableFromMWFS(tDatasetID, tAccessibleTo,
-            tOnChange, tFgdcFile, tIso19115File,
+            tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tGlobalAttributes,
             tLongitudeSourceMinimum, tLongitudeSourceMaximum,
             tLatitudeSourceMinimum,  tLatitudeSourceMaximum,
@@ -224,6 +227,7 @@ public class EDDTableFromMWFS extends EDDTable{
      */
     public EDDTableFromMWFS(String tDatasetID, String tAccessibleTo,
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
+        String tSosOfferingPrefix,
         String tDefaultDataQuery, String tDefaultGraphQuery,
         Attributes tAddGlobalAttributes,
         double tLonMin, double tLonMax,
@@ -247,6 +251,7 @@ public class EDDTableFromMWFS extends EDDTable{
         onChange = tOnChange;
         fgdcFile = tFgdcFile;
         iso19115File = tIso19115File;
+        sosOfferingPrefix = tSosOfferingPrefix;
         defaultDataQuery = tDefaultDataQuery;
         defaultGraphQuery = tDefaultGraphQuery;
         if (tAddGlobalAttributes == null)
@@ -288,7 +293,7 @@ public class EDDTableFromMWFS extends EDDTable{
         dataVariables[timeIndex] = new EDVTime(EDV.TIME_NAME, null, 
             (new Attributes()).add("units", EDVTimeStamp.ISO8601TZ_FORMAT).
             add("actual_range", new StringArray(new String[]{tTimeMin, tTimeMax})), 
-            "String");
+            "String"); //this constructor gets source / sets destination actual_range
         dataVariables[stationIDIndex] = new EDV("station_id", null, 
             null, (new Attributes()) 
                 .add("long_name", "Station ID")
@@ -311,8 +316,7 @@ public class EDDTableFromMWFS extends EDDTable{
             if (EDVTimeStamp.hasTimeUnits(tSourceAtt, tAddAtt)) {
                 dataVariables[nFixedVariables + dv] = new EDVTimeStamp(tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
-                    tSourceType); //the constructor that reads actual_range
-                dataVariables[nFixedVariables + dv].setActualRangeFromDestinationMinMax();
+                    tSourceType); //this constructor gets source / sets destination actual_range
             } else {
                 dataVariables[nFixedVariables + dv] = new EDV(tSourceName, tDestName, 
                     tSourceAtt, tAddAtt,
@@ -343,6 +347,7 @@ public class EDDTableFromMWFS extends EDDTable{
      * @param requestUrl the part of the user's request, after EDStatic.baseUrl, before '?'.
      * @param userDapQuery the part of the user's request after the '?', still percentEncoded, may be null.
      * @param tableWriter
+     * @throws Throwable if trouble (notably, WaitThenTryAgainException)
      */
     public void getDataForDapQuery(String loggedInAs, String requestUrl, 
         String userDapQuery, TableWriter tableWriter) throws Throwable {

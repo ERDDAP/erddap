@@ -49,6 +49,8 @@ import java.util.GregorianCalendar;
  */
 import ucar.ma2.*;
 import ucar.nc2.*;
+import ucar.nc2.dt.grid.GeoGrid;
+import ucar.nc2.dt.grid.GridDataset;
 import ucar.nc2.geotiff.GeotiffWriter;
 import ucar.nc2.util.*;
 import ucar.unidata.geoloc.LatLonRect;
@@ -118,13 +120,13 @@ public class Grid  {
     public int nValidPoints = Integer.MIN_VALUE;
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false;
 
     /**
-     * Set this to true (by calling doExtraErrorChecking=true in your program, not but changing the code here)
+     * Set this to true (by calling doExtraErrorChecking=true in your program, not by changing the code here)
      * if you want extra error checking to be done.
      */
     public static boolean doExtraErrorChecking = false;
@@ -1160,8 +1162,14 @@ switch to finally clause
             int getLonEnd   = DataHelper.binaryFindEndIndex(fileLon, getMaxLon);
             int getLatStart = DataHelper.binaryFindStartIndex(fileLat, getMinLat); 
             int getLatEnd   = DataHelper.binaryFindEndIndex(fileLat, getMaxLat);
-            if (getLonStart < 0 || getLonEnd < 0 || getLatStart < 0 || getLatEnd < 0)
-                Test.error(MustBe.THERE_IS_NO_DATA);
+            if (getLonStart < 0 || getLonEnd < 0 || getLatStart < 0 || getLatEnd < 0) {
+                String2.log("Failure: getMinLon=" + getMinLon + "(i=" + getLonStart + 
+                                      ") maxLon=" + getMaxLon + "(i=" + getLonEnd +
+                                   ") getMinLat=" + getMinLat + "(i=" + getLatStart + 
+                                      ") maxLat=" + getMaxLat + "(i=" + getLatEnd + ")");
+                            
+                Test.error(MustBe.THERE_IS_NO_DATA + " (out of range)");
+            }
             getMinLat = fileLat[getLatStart];
             getMaxLat = fileLat[getLatEnd];
 
@@ -1296,7 +1304,7 @@ switch to finally clause
         //get desired subset (after makeLonPM180 so desired... are appropriate)
         if (!subset(desiredMinLon, desiredMaxLon, desiredMinLat, desiredMaxLat,
                 desiredNLon, desiredNLat))
-            Test.error(MustBe.THERE_IS_NO_DATA);
+            Test.error(MustBe.THERE_IS_NO_DATA + " (after subset)");
     }
 
 
@@ -1400,29 +1408,35 @@ switch to finally clause
         //This .grd file was originally created by saveAsGrd, so circular logic
         //But manual test showed I could read into GMT.
         String grdDump = 
-            //"netcdf " + dir + testName + 
-                ".grd {\n" +
-            " dimensions:\n" +
-            "   side = 2;\n" +
-            "   xysize = 13673;\n" +
-            " variables:\n" +
-            "   double x_range(side=2);\n" +
-            "     :units = \"user_x_unit\";\n" +
-            "   double y_range(side=2);\n" +
-            "     :units = \"user_y_unit\";\n" +
-            "   double z_range(side=2);\n" +
-            "     :units = \"user_z_unit\";\n" +
-            "   double spacing(side=2);\n" +
-            "   int dimension(side=2);\n" +
-            "   float z(xysize=13673);\n" +
-            "     :scale_factor = 1.0; // double\n" +
-            "     :add_offset = 0.0; // double\n" +
-            "     :node_offset = 0; // int\n" +
-            "\n" +
-            " :title = \"\";\n" +
-            " :source = \"CoastWatch West Coast Node\";\n" +
-            " data:\n" +
-            "}\n";
+//"netcdf " + dir + testName + 
+    ".grd {\n" +
+"  dimensions:\n" +
+"    side = 2;\n" +
+"    xysize = 13673;\n" +
+"  variables:\n" +
+"    double x_range(side=2);\n" +
+"      :units = \"user_x_unit\";\n" +
+"\n" +
+"    double y_range(side=2);\n" +
+"      :units = \"user_y_unit\";\n" +
+"\n" +
+"    double z_range(side=2);\n" +
+"      :units = \"user_z_unit\";\n" +
+"\n" +
+"    double spacing(side=2);\n" +
+"\n" +
+"    int dimension(side=2);\n" +
+"\n" +
+"    float z(xysize=13673);\n" +
+"      :scale_factor = 1.0; // double\n" +
+"      :add_offset = 0.0; // double\n" +
+"      :node_offset = 0; // int\n" +
+"\n" +
+"  // global attributes:\n" + 
+"  :title = \"\";\n" +
+"  :source = \"CoastWatch West Coast Node\";\n" +
+" data:\n" +
+"}\n";
 
         //input file is as expected (independent test) 
         Test.ensureEqual(NcHelper.dumpString(testDir + testName + ".grd", false), 
@@ -1465,7 +1479,7 @@ switch to finally clause
         Test.ensureEqual(grid.nValidPoints,        6043, "subset nValid 2");
 
         time = System.currentTimeMillis() - time;
-        Math2.gc(200);
+        Math2.gcAndWait(); //before get memoryString() in a test
         String2.log("Grid.testGrd time=" + time + " " + Math2.memoryString());
 
         //test saveAsGrd;
@@ -1485,27 +1499,30 @@ switch to finally clause
         String name4= "TestGMT4";
         grdDump = 
 "netcdf TestGMT4.grd {\n" +  //2013-03-20 changed with ncdumpW: had dir, too
-" dimensions:\n" +
-"   x = 4001;\n" +   // (has coord.var)\n" +    //changed when switched to netcdf-java 4.0, 2009-02-23
-"   y = 2321;\n" +   // (has coord.var)\n" +
-" variables:\n" +
-"   double x(x=4001);\n" +
-"     :long_name = \"x\";\n" +
-"     :actual_range = 205.0, 255.0; // double\n" +
-"   float y(y=2321);\n" +
-"     :long_name = \"y\";\n" +
-"     :actual_range = 22.0, 51.0; // double\n" +
-"   float z(y=2321, x=4001);\n" +
-"     :long_name = \"z\";\n" +
-"     :_FillValue = NaNf; // float\n" +
-"     :actual_range = 0.0010000000474974513, 183.41700744628906; // double\n" +
-"     :coordinates = \"x y\";\n" +
+"  dimensions:\n" +
+"    x = 4001;\n" +   // (has coord.var)\n" +    //changed when switched to netcdf-java 4.0, 2009-02-23
+"    y = 2321;\n" +   // (has coord.var)\n" +
+"  variables:\n" +
+"    double x(x=4001);\n" +
+"      :long_name = \"x\";\n" +
+"      :actual_range = 205.0, 255.0; // double\n" +
 "\n" +
-" :Conventions = \"COARDS, CF-1.0\";\n" +
-" :title = \"/u00/modisgf/data/2007/1day/MW2007339_2007339_chla.grd\";\n" +
-" :history = \"nearneighbor -V -R205/255/22/51 -I0.0125/0.0125 -S2k -G/u00/modisgf/data/2007/1day/MW2007339_2007339_chla.grd -N1\";\n" +
-" :GMT_version = \"4.2.1\";\n" +
-" :node_offset = 0; // int\n" +
+"    float y(y=2321);\n" +
+"      :long_name = \"y\";\n" +
+"      :actual_range = 22.0, 51.0; // double\n" +
+"\n" +
+"    float z(y=2321, x=4001);\n" +
+"      :long_name = \"z\";\n" +
+"      :_FillValue = NaNf; // float\n" +
+"      :actual_range = 0.0010000000474974513, 183.41700744628906; // double\n" +
+"      :coordinates = \"x y\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :Conventions = \"COARDS, CF-1.0\";\n" +
+"  :title = \"/u00/modisgf/data/2007/1day/MW2007339_2007339_chla.grd\";\n" +
+"  :history = \"nearneighbor -V -R205/255/22/51 -I0.0125/0.0125 -S2k -G/u00/modisgf/data/2007/1day/MW2007339_2007339_chla.grd -N1\";\n" +
+"  :GMT_version = \"4.2.1\";\n" +
+"  :node_offset = 0; // int\n" +
 " data:\n" +
 "}\n";
         //input file is as expected (independent test)
@@ -2108,7 +2125,7 @@ try {
             int latEnd   = DataHelper.binaryFindEndIndex(  lat, desiredMaxLat);
             if (latStart < 0 || latEnd < 0) {
                 ncFile.close();
-                Test.error(MustBe.THERE_IS_NO_DATA);
+                Test.error(MustBe.THERE_IS_NO_DATA + " (out of latitude range)");
             }
             int lonStart = 0;
             int lonEnd   = nLon - 1;
@@ -2817,7 +2834,7 @@ try {
         Test.ensureTrue(
             lat != null && lon != null && data != null && 
             lat.length > 0 && lon.length > 0 && data.length > 0,
-            MustBe.THERE_IS_NO_DATA);
+            MustBe.THERE_IS_NO_DATA + " (ensure)");
     }
 
 
@@ -3051,24 +3068,23 @@ try {
         saveAsNetCDF(directory, name, dataName);
 
         //attempt via java netcdf libraries
-        LatLonRect latLonRect = new LatLonRect(
-            new LatLonPointImpl(lat[0], lon[0]),
-            new LatLonPointImpl(lat[lat.length - 1], lon[lon.length - 1]));
         GeotiffWriter writer = new GeotiffWriter(directory + name + ".tif");
 
-        //2013-03-20 pre 4.3.16, was 
-        writer.writeGrid(directory + name + ".nc", dataName, 0, 0, 
-            true, //true=grayscale   color didn't work for me. and see javadocs above.
-            latLonRect);
+        //2013-08-28 new code to deal with GeotiffWritter in netcdf-java 4.3+
+        GridDataset gridDataset = GridDataset.open(directory + name + ".nc");
+        java.util.List grids = gridDataset.getGrids();
+        //if (grids.size() == 0) ...
+        GeoGrid geoGrid = (GeoGrid)grids.get(0);
+        Array dataArray = geoGrid.readDataSlice(-1, -1, -1, -1); //get all
+        writer.writeGrid(gridDataset, geoGrid, dataArray, true); //true=grayscale
 
-        //I didn't finish changes. revert to older netcdfAll 
-        //   writeGrid(GridDataset dataset, GridDatatype grid, Array data, boolean greyScale)
-        //GridDataset gd = GridDataset.open(directory + name + ".nc");
-        //GeoGrid gg = (Geogrid)grids.get(0);
-        //writer.writeGrid(gd, directory + name + ".nc", dataName, 0, 0, 
+        //2013-08-28 pre 4.3.16, it was 
+        //LatLonRect latLonRect = new LatLonRect(
+        //    new LatLonPointImpl(lat[0], lon[0]),
+        //    new LatLonPointImpl(lat[lat.length - 1], lon[lon.length - 1]));
+        //writer.writeGrid(directory + name + ".nc", dataName, 0, 0, 
         //    true, //true=grayscale   color didn't work for me. and see javadocs above.
         //    latLonRect);
-
 
         writer.close();    
 
@@ -3803,9 +3819,10 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
      * If no exception is thrown, the file was successfully created.
      * 
      * @param directory with a slash at the end
-     * @param name The file name with out the extension (e.g., myFile).
+     * @param name The file name without the extension (e.g., myFile).
      *    The extension ".mat" will be added.
      * @param varName the name to use for the variable (e.g., ux10).
+     *    If it isn't variableNameSafe, it will be made so.
      * @throws Exception 
      */
     public void saveAsMatlab(String directory, String name, String varName) 
@@ -3813,6 +3830,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
         if (verbose) String2.log("Grid.saveAsMatlab " + name);
         long time = System.currentTimeMillis();
+        varName = String2.modifyToBeVariableNameSafe(varName);
 
         //POLICY: because this procedure may be used in more than one thread,
         //do work on unique temp files names using randomInt, then rename to proper file name.
@@ -5447,18 +5465,21 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         //test for memory leak in readGrd
         dir = "c:\\programs\\GrdFiles\\";
         String[] grdFiles = RegexFilenameFilter.list(dir, ".*\\.grd");
-        Math2.gc(200);
+        Math2.gcAndWait(); Math2.gcAndWait(); //before get memoryString() in a test
         long um = Math2.getMemoryInUse();
         String2.log("\n***** Grid.testForMemoryLeak; at start: " + Math2.memoryString());
         for (int i = 0; i < Math.min(50, grdFiles.length); i++) {
             grid.readGrd(dir + grdFiles[i], true);
-            Math2.gc(200);
+            //Math2.gcAndWait(); //2013-12-05 Commented out. In a test, let Java handle memory. 
         }
         grid = null;
-        Math2.gc(200);
+        Math2.gcAndWait(); Math2.gcAndWait(); //in a test, before getMemoryInUse()
         grid = new Grid();
-        String2.log("Memory used change after MemoryLeak test: " + (Math2.getMemoryInUse() - um));
-        Math2.sleep(5000);
+        long increase = Math2.getMemoryInUse() - um;
+        String2.log("Memory used change after MemoryLeak test: " + increase);
+        if (increase > 50000) 
+            String2.getStringFromSystemIn("Press ^C to stop or Enter to continue..."); 
+        else Math2.gc(5000); //in a test, a pause after message displayed
     }
 
     /**
@@ -5948,7 +5969,10 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
      * @throws Exception if trouble
      */
     public static void main(String args[]) throws Exception {
-      
+
+        FileNameUtility fileNameUtility = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser");
+
+/* */
         Grid.verbose = true;
 
         //test readGrd speed
@@ -5966,8 +5990,6 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
         //maskAsciiXYT("c:/temp/temp/lsmask.xyz", "c:/temp/temp/NorthAtlantic.xyz", 
         //    "c:/temp/temp/NorthAtlanticMasked.xyz");
-
-        FileNameUtility fileNameUtility = new FileNameUtility("gov.noaa.pfel.coastwatch.CWBrowser");
 
         //testLittleMethods
         testLittleMethods();

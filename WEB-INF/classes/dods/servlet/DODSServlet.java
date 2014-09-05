@@ -1489,7 +1489,6 @@ public abstract class DODSServlet extends HttpServlet {
 
     /**
      * @param request
-     * @return
      */
     private ReqState getRequestState(HttpServletRequest request) {
 

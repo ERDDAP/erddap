@@ -43,7 +43,7 @@ public class PersistentTable {
 
     /**
      * Set this to true (by calling verbose=true in your program, 
-     * not but changing the code here)
+     * not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose = false; 
@@ -714,7 +714,7 @@ public class PersistentTable {
             modeTime = System.currentTimeMillis() - modeTime;
             String2.log(modes[mode] + " TOTAL time to read " + n + " items=" + 
                 modeTime + "   (" + expected[mode] + "ms)"); 
-            Test.ensureTrue(modeTime < 1.5*expected[mode], "That is too slow!"); 
+            Test.ensureTrue(modeTime < 2 * expected[mode], "That is too slow!"); 
 
             pt.close();
         }

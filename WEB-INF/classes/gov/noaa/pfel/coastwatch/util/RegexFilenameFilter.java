@@ -131,7 +131,7 @@ public class RegexFilenameFilter implements FilenameFilter {
      * 
      * @param dir the directory of interest (with or without a trailing slash)
      * @param regex  See regEx documentation in Java Docs for java.util.regex.Pattern.
-     * @returns PrimitiveArray[] [0]=dirNames(StringArray), [1]=fileNames(StringArray), 
+     * @return PrimitiveArray[] [0]=dirNames(StringArray), [1]=fileNames(StringArray), 
      *   [2]=fileLastModified(LongArray), [3]=fileSize(LongArray).
      *   dirNames will not include parent ("..") or self (".").
      *   The sizes of [1], [2], [3] will be the same.
@@ -371,7 +371,6 @@ public class RegexFilenameFilter implements FilenameFilter {
             coastwatchDir + "hdf/SdsReader.java",
             coastwatchDir + "hdf/SdsWriter.java",
             coastwatchDir + "netcheck/",
-            coastwatchDir + "netcheck/SftpTest.java",
             coastwatchDir + "pointdata/",
             coastwatchDir + "pointdata/StationVariableNc4D.java",
             coastwatchDir + "pointdata/StoredIndex.java",
@@ -395,7 +394,6 @@ public class RegexFilenameFilter implements FilenameFilter {
             coastwatchDir + "griddata/SaveOpendap.java",
             coastwatchDir + "hdf/SdsReader.java",
             coastwatchDir + "hdf/SdsWriter.java",
-            coastwatchDir + "netcheck/SftpTest.java",
             coastwatchDir + "pointdata/StationVariableNc4D.java",
             coastwatchDir + "pointdata/StoredIndex.java",
             coastwatchDir + "sgt/SGTPointsVector.java",

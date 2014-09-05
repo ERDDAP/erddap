@@ -59,7 +59,7 @@ import javax.servlet.http.HttpSession;
 public class CWDataBrowser extends EmaClass  {
 
     /**
-     * Set this to true (by calling verbose=true in your program, not but changing the code here)
+     * Set this to true (by calling verbose=true in your program, not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean verbose;
@@ -140,7 +140,9 @@ public class CWDataBrowser extends EmaClass  {
         String2.setupLog(false, false, String2.getClassPath() + logDir + "log.txt",
             false, true, 1000000);
         String2.log("\n" + String2.makeString('*', 80) +  
-            "\nCWDataBrowser.constructor " + constructorDateTime);
+            "\nCWDataBrowser.constructor " + constructorDateTime +
+            "\nlogFile=" + String2.logFileName() + "\n" +
+            String2.standardHelpAboutMessage());
 
         //get baseDataDirectory (for access within this program)
         baseDataDirectory = classRB2.getString("dataDirectory", null);

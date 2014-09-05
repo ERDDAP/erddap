@@ -469,7 +469,7 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
             fileName2 + ", " + diffName + "):\n";
 
         //Call the garbage collector. This uses a lot of memory.
-        Math2.gc(0);
+        Math2.gcAndWait(); //in compareImages
 
         //get the images
         Image image1 = getImage(fileName1, 10000, false);
@@ -521,7 +521,7 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
         //recover some memory
         image1 = null;
         image2 = null;
-        Math2.gc(0);
+        Math2.gcAndWait(); //in compareImages
 
         //if different, make array of differences
         int[] pixels3 = new int[widthHeight];
@@ -557,7 +557,7 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
         //recover some memory
         pixels1 = null;
         pixels2 = null;
-        Math2.gc(0);
+        Math2.gcAndWait(); //in compareImages
 
         //if different, save as a file 
         if (nDifferent > 0) {

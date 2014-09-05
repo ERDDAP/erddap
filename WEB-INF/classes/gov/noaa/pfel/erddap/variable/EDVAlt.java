@@ -42,17 +42,19 @@ public class EDVAlt extends EDV {
         String tSourceDataType, double tSourceMin, double tSourceMax) 
         throws Throwable {
 
-        super(tSourceName, EDV.ALT_NAME, tSourceAttributes, tAddAttributes,
+        super(tSourceName, ALT_NAME, tSourceAttributes, tAddAttributes,
             tSourceDataType, tSourceMin, tSourceMax); 
 
-        units = EDV.ALT_UNITS; 
+        units = ALT_UNITS; 
         combinedAttributes.set("_CoordinateAxisType", "Height");   //unidata
         combinedAttributes.set("_CoordinateZisPositive", "up");  //unidata
         combinedAttributes.set("axis", "Z");
         combinedAttributes.set("ioos_category", LOCATION_CATEGORY);
         longName = combinedAttributes.getString("long_name");
-        if (longName == null) {
-            longName = EDV.ALT_LONGNAME;
+        if (longName == null ||  //catch nothing
+            longName.toLowerCase().equals("alt") ||
+            longName.toLowerCase().equals("altitude")) { //catch alternate case
+            longName = ALT_LONGNAME;
             combinedAttributes.set("long_name", longName);
         }
         combinedAttributes.set("positive", "up"); //cf

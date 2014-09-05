@@ -14,12 +14,13 @@ References:
       Portable Data; version 3", 
       Russ Rew, Glenn Davis, Steve Emmerson, and Harvey Davies, June 1997.
    [CF] refers to 
-     http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.0/cf-conventions.html
-     (was at http://www.cgd.ucar.edu/cms/eaton/cf-metadata/CF-1.0.html) .
-     1.1 is at http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.1/cf-conventions.html
-     1.2 is at http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.2/cf-conventions.html
-     1.4 is at http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.4/cf-conventions.html
-     1.6 is at http://cf-pcmdi.llnl.gov/documents/cf-conventions/1.6/cf-conventions.html
+     http://cfconventions.org/Data/cf-conventions/cf-conventions-1.0/build/cf-conventions.html
+     (was at http://www.cgd.ucar.edu/cms/eaton/cf-metadata/CF-1.0.html) 
+     was at https://cf-pcmdi.llnl.gov/documents/cf-conventions
+     1.1 is at http://cfconventions.org/Data/cf-conventions/cf-conventions-1.1/build/cf-conventions.html
+     1.2 is at http://cfconventions.org/Data/cf-conventions/cf-conventions-1.2/build/cf-conventions.html
+     1.4 is at http://cfconventions.org/Data/cf-conventions/cf-conventions-1.4/build/cf-conventions.html
+     1.6 is at http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html
    [UDD] refers to 
      http://www.unidata.ucar.edu/software/netcdf-java/formats/DataDiscoveryAttConvention.html
      which is used by the THREDDS data server.
@@ -32,7 +33,8 @@ References:
    [UODC] refers to 
       http://www.unidata.ucar.edu/software/netcdf-java/formats/UnidataObsConvention.html .
       2010 - this is deprecated in favor of [POC]
-   [POC] refers to https://cf-pcmdi.llnl.gov/trac/wiki/PointObservationConventions
+   [POC] refers to http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries
+      (WAS https://cf-pcmdi.llnl.gov/trac/wiki/PointObservationConventions )
       is a new part of [CF] conventions.
    "[Lynn's File]" refers to http://oceanwatch.pfeg.noaa.gov/cgi-bin/nph-dods/data/ATdata/AT8day_wcs.nc.info 
      Bob has this locally as C:/programs/netcdf/AT8day_wcs.nc.htm .
@@ -40,7 +42,7 @@ References:
      http://gcmd.gsfc.nasa.gov/Resources/valids/gcmd_parameters.html
      2008, see http://gcmd.gsfc.nasa.gov/Resources/valids/archives/GCMD_Science_Keywords.pdf
    [CF Standard Names]   //note that version, e.g., /10/, changes often
-     http://cf-pcmdi.llnl.gov/documents/cf-standard-names/10/cf-standard-name-table.html 
+     http://cfconventions.org/Data/cf-standard-names/27/build/cf-standard-name-table.html
    [NETCDF] refers to 
      http://www.unidata.ucar.edu/software/netcdf/docs/netcdf.html#Attribute-Conventions
    [NC]
@@ -339,7 +341,9 @@ geospatial_vertical_resolution =
 geospatial_vertical_positive =
 
 Dave says Google Earth can read .nc files if they have
-(terms originally from GDAL? see http://gdal.maptools.org/frmt_dods.html) 
+(terms originally from GDAL? see http://gdal.maptools.org/frmt_dods.html ?!
+  now: http://archive-org.com/page/2888493/2013-09-21/http://www.gdal.org/frmt_dods.html
+  see http://osgeo-org.1560.x6.nabble.com/gdal-dev-geolocation-info-in-netCDF-quot-northernmost-northing-quot-etc-not-universal-td3750542.html ) 
 (Bob has never tested this): 
 Southernmost_Northing = <minLat>
 Northernmost_Northing = <maxLat>

@@ -61,6 +61,17 @@ public class Math2 {
         "than is ever safely available in this Java setup ({1} MB).";
     public static String memoryArraySize = 
         "The request needs an array size ({0}) bigger than Java ever allows ({1}).";
+    /** gcSleep is used by gcAndWait() and a few other places.
+     * 2013-12-06 If I use -verbose:gc with my localhost ERDDAP 
+     * and hammer it with WMS requests, I can get memory use up to 500 MB (1.5 GB allocated).
+     * GC (&lt; 0.02 s) runs often by itself and Full GC (&lt; 0.06 s) runs fairly often.
+     * So I'm guessing delay of 0.25 s is sufficient even for coastwatch ERDDAP
+     * with high memory use and heavy usage.
+     * This is one value (not adjusted by total memory or ...), on the theory that 
+     * bigger tasks are usually given to computers with more, faster cores and more memory,
+     * and smaller tasks are usually given to computers with fewer, slower cores and less memory.
+     */
+    public static int gcSleep = 250; 
 
 
     /** If memory use jumps by this amount, a call to incgc will trigger a call
@@ -276,8 +287,6 @@ public class Math2 {
 
     /**
      * Asks this thread to sleep for a specified number of milliseconds.
-     * When millis>=500, most callers call incgc() instead
-     * (so time is used by garbage collector).
      *
      * @param millis the number of milliseconds for the thread to pause
      */
@@ -315,7 +324,6 @@ public class Math2 {
 
     /**
      * This returns the number of bytes currently in use by this program.
-     * This is often called getMemoryInUse(getAllocatedMemory());
      *
      * @param allocatedMemory the value from getAllocatedMemory()
      * @return the number of bytes currently in use by this program
@@ -365,6 +373,7 @@ public class Math2 {
      *   sleeps for a specified number of milliseconds.
      * This will always sleep or yield.
      * It will call gc() (not incgc) if memory use is creeping up.
+     * 2013-12-05 Years ago, I called this often. But now Java recommends letting Java handle memory/gc.
      * 
      * @param millis the number of millis to sleep
      */
@@ -397,6 +406,14 @@ public class Math2 {
 
     }
 
+    /** 
+     * This calls gc(standardWaitTime).
+     * standardWaitTime is intended to give gc sufficient time to do its job, even under heavy use.
+     */
+    public static void gcAndWait() {
+        gc(gcSleep);
+    }
+
     /**
      * Asks the garbage collector to run and the current
      *   thread to sleep for a specified number of milliseconds
@@ -424,7 +441,7 @@ public class Math2 {
         //sleep - subtract time already used by gc
         //always call sleep, even if <0, since it yields, too.
         sleep(millis - (System.currentTimeMillis() - time));
-        lastUsingMemory = getMemoryInUse(getAllocatedMemory());
+        lastUsingMemory = getMemoryInUse();
     }
 
 
@@ -463,14 +480,14 @@ public class Math2 {
 
         //lots of memory is in use
         //is the request is too big for right now?
-        Math2.gc(500);
+        Math2.gcAndWait();
         memoryInUse = Math2.getMemoryInUse();
         if (memoryInUse + nBytes > Math2.maxSafeMemory) {
             //eek! not enough memory! 
             //Wait, then try gc again and hope that some other thread requiring lots of memory will finish.
             //If nothing else, this 5 second delay will delay another request by same user (e.g., programmatic re-request)
             Math2.sleep(5000);
-            Math2.gc(500); 
+            Math2.gcAndWait(); 
             memoryInUse = Math2.getMemoryInUse();
         }
         if (memoryInUse > maxSafeMemory) {

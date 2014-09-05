@@ -22,7 +22,7 @@ import java.util.HashSet;
  * ~2011-09-29 based on 
  * ./cfStdNames.txt 
  * (Bob created from CF Standard Names, Version 18, 22 July 2011
- * at http://cf-pcmdi.llnl.gov/documents/cf-standard-names/standard-name-table/current/cf-standard-name-table.html/ 
+ * at http://cfconventions.org/Data/cf-standard-names/18/build/cf-standard-name-table.html 
  * Aliases are treated like other Standard Names.  File sorted by EditPlus.)
  * and 
  * ./gcmdScienceKeywords.txt 
@@ -35,7 +35,7 @@ public class CfToFromGcmd {
 
     /**
      * Set this to true (by calling reallyVerbose=true in your program, 
-     * not but changing the code here)
+     * not by changing the code here)
      * if you want lots of diagnostic messages sent to String2.log.
      */
     public static boolean reallyVerbose = false; 
