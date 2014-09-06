@@ -2524,6 +2524,7 @@ expected =
 "  :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
 "  :date_created = \"2010-04-18Z\";\n" +
 "  :date_issued = \"2010-04-18Z\";\n" +
+"  :defaultGraphQuery = \"&.draw=vectors\";\n" +
 "  :Easternmost_Easting = 360.0; // double\n" +
 "  :geospatial_lat_max = 75.0; // double\n" +
 "  :geospatial_lat_min = -75.0; // double\n" +
@@ -2736,6 +2737,7 @@ y_wind.y_wind[1][1][7][15]
 "  :creator_url = \"http://coastwatch.pfel.noaa.gov\";\n" +
 "  :date_created = \"2010-04-18Z\";\n" +
 "  :date_issued = \"2010-04-18Z\";\n" +
+"  :defaultGraphQuery = \"&.draw=vectors\";\n" +
 "  :Easternmost_Easting = 360.0; // double\n" +
 "  :geospatial_lat_max = 75.0; // double\n" +
 "  :geospatial_lat_min = -75.0; // double\n" +

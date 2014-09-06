@@ -47,7 +47,8 @@ public class Math2 {
      */
     public static long maxSafeMemory = Math.max(
         maxMemory - 500L * BytesPerMB,  //if maxMemory>2GB, just keep 500MB aside for safety
-        maxMemory / 4 * 3); //operator order avoids numeric overflow 
+        (maxMemory / 4) * 3); //operator order avoids numeric overflow 
+    public static long ensureMemoryAvailableTrigger = maxSafeMemory / 8;
 
     /** 
      * These are *not* final so EDStatic can replace them with translated Strings. 
@@ -77,7 +78,7 @@ public class Math2 {
     /** If memory use jumps by this amount, a call to incgc will trigger a call
      * to System.gc.
      */
-    public static long gcTrigger = maxMemory / 16;
+    public static long gcTrigger = maxMemory / 8;
 
 
     /** This should return "?", "32", or "64". */
@@ -381,7 +382,7 @@ public class Math2 {
         //long time = System.currentTimeMillis(); //diagnostic
 
         //get usingMemory 
-        long using = getMemoryInUse(getAllocatedMemory());
+        long using = getMemoryInUse();
         maxUsingMemory = Math.max(maxUsingMemory, using); //before gc
 
         //memory usage declined?
@@ -460,12 +461,12 @@ public class Math2 {
      */
     public static void ensureMemoryAvailable(long nBytes, String attributeTo) {
 
-        if (nBytes < 10000000) //10MB
+        if (nBytes < ensureMemoryAvailableTrigger) //e.g., 8GB -> maxSafe=6GB  /8=750MB    //2014-09-05 was 10MB!
             return;
         String attributeToParen = 
             attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")";
        
-        //is the request too big under any circumstances?
+        //is this single request too big under any circumstances?
         if (nBytes > maxSafeMemory) {
             throw new RuntimeException(memoryTooMuchData + "  " +
                 MessageFormat.format(memoryThanSafe, "" + (nBytes / BytesPerMB),  
@@ -474,21 +475,21 @@ public class Math2 {
         }
 
         //request is fine without gc?
-        long memoryInUse = Math2.getMemoryInUse();
-        if (memoryInUse + nBytes < maxSafeMemory / 2)  //getting close   was /4*3
+        long memoryInUse = getMemoryInUse();
+        if (memoryInUse + nBytes < maxSafeMemory)  //getting close  
             return;
 
         //lots of memory is in use
         //is the request is too big for right now?
-        Math2.gcAndWait();
-        memoryInUse = Math2.getMemoryInUse();
-        if (memoryInUse + nBytes > Math2.maxSafeMemory) {
+        gcAndWait();
+        memoryInUse = getMemoryInUse();
+        if (memoryInUse + nBytes > maxSafeMemory) {
             //eek! not enough memory! 
             //Wait, then try gc again and hope that some other thread requiring lots of memory will finish.
-            //If nothing else, this 5 second delay will delay another request by same user (e.g., programmatic re-request)
-            Math2.sleep(5000);
-            Math2.gcAndWait(); 
-            memoryInUse = Math2.getMemoryInUse();
+            //If nothing else, this 1 second delay will delay another request by same user (e.g., programmatic re-request)
+            sleep(1000);
+            gcAndWait(); 
+            memoryInUse = getMemoryInUse();
         }
         if (memoryInUse > maxSafeMemory) {
             String2.log("WARNING: memoryInUse > maxSafeMemory" + attributeToParen + ".");
@@ -1115,7 +1116,7 @@ public class Math2 {
      * <UL>
      * <LI> Euclidean greatest common divisor algorithm.
      * <LI> If either is 0, it returns 1.
-     * <LI> For example, Math2.gcd(18,30) returns 6.
+     * <LI> For example, gcd(18,30) returns 6.
      * </UL>
      */
     public static int gcd(int n, int d) {
@@ -1149,7 +1150,7 @@ public class Math2 {
      * <pre>
      *     int ar[]=new int[3];
      *     double d=-1.75;
-     *     int whole=Math2.guessFrac(d,ar);
+     *     int whole=guessFrac(d,ar);
      *     //results: ar[0]=-1, ar[1]=-3, ar[2]=4
      * </pre>
      * </UL>
@@ -1427,7 +1428,7 @@ public class Math2 {
         if (!isFinite(range) || range == 0)
             return 0.1;
 
-        return Math2.exponent(Math.abs(range) / 2) / 10;
+        return exponent(Math.abs(range) / 2) / 10;
     }
 
     /**
@@ -1480,7 +1481,7 @@ public class Math2 {
             return d;
 
         //which 15degree step?
-        int i = floorDiv(Math2.roundToInt(angle0360(d)), 15) + 1;
+        int i = floorDiv(roundToInt(angle0360(d)), 15) + 1;
 
         if (i >= 24)
             i -= 24;
@@ -1501,7 +1502,7 @@ public class Math2 {
             return d;
 
         //which 15degree step?
-        int i = floorDiv(Math2.roundToInt(angle0360(d)), 15) - 1;
+        int i = floorDiv(roundToInt(angle0360(d)), 15) - 1;
 
         if (i < 0)
             i += 24;
@@ -1643,9 +1644,9 @@ public class Math2 {
         //man10 must be in range 10..99
         range = Math.abs(range);
         int man10 =
-            Math2.minMax(10, 99,
-                Math2.roundToInt(Math2.trunc(10 * Math2.mantissa(range))));
-        double power = Math2.exponent(range);
+            minMax(10, 99,
+                roundToInt(trunc(10 * mantissa(range))));
+        double power = exponent(range);
 
         if (man10 <= 12) {
             results[0] = (2 * power) / 10;
@@ -1695,8 +1696,8 @@ public class Math2 {
         double dist = range / maxDivisions;
 
         //man1 must be in range 1..9.99999
-        double man   = Math2.mantissa(dist);
-        double power = Math2.exponent(dist);
+        double man   = mantissa(dist);
+        double power = exponent(dist);
 
         //round up to nice number
         if (man <=  1) return power * factor;
