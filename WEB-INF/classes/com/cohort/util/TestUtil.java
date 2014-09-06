@@ -223,6 +223,7 @@ public class TestUtil {
         //memory
         double da[] = new double[1000000]; //use some memory
         String2.log("getAllocatedMemory = " + Math2.getAllocatedMemory());
+        String2.log("maxSafeMemory = " + Math2.maxSafeMemory);
         String2.log("getUsingMemory = " + Math2.getMemoryInUse());
         String2.log("memoryString = " + Math2.memoryString());
 
