@@ -289,7 +289,7 @@ or Mac server instead.
 <li><a name="erddapContent">Set up the <i>tomcat</i>/content/erddap configuration files.</a> 
   <br>On Linux, Mac, and Windows, download
     <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>    
-     (version 1.48, size=22,132 bytes, MD5=25697F19B1AE7C595EFE0E3F25DFFDE2) <!-- Dated 2014-09-04) -->
+     (version 1.50, size=22,132 bytes, MD5=25697F19B1AE7C595EFE0E3F25DFFDE2) <!-- Dated 2014-09-06) -->
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
   <p>[The <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.46.zip">previous version</a> 
@@ -337,7 +337,7 @@ or Mac server instead.
 <li><a name="erddap.war">Install</a> the erddap.war file.
   <br>On Linux, Mac, and Windows, download 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    (version 1.48, size=486,082,750 bytes, MD5=6DC8DA75FF9DE313B3622854A59564EC)
+    (version 1.50, size=486,076,835 bytes, MD5=917B108FDF089B6426027168A2DC2B8A)
     into <i>tomcat</i>/webapps .  
   The .war file is big because it contains high resolution coastline, boundary, 
   and elevation data needed to create maps.
@@ -444,8 +444,9 @@ or Mac server instead.
     (version 1.40, size=477,338,971 bytes, MD5=138F354918668AB8414A8174365BD036) 
     (version 1.42, size=477,356,261 bytes, MD5=EC29F6D9E6185BC71557CF47063E3276) 
     (version 1.44, size=482,013,960 bytes, MD5=CDFF1E9DD3201F6A5AEB19EB3DB556FC) 
-    (version 1.46, size=482,115,063 bytes, MD5=26957D4A6866F5DBAF3238E7A39BD0FE) -->
-    (version 1.48, size=486,082,750 bytes, MD5=6DC8DA75FF9DE313B3622854A59564EC)
+    (version 1.46, size=482,115,063 bytes, MD5=26957D4A6866F5DBAF3238E7A39BD0FE) 
+    (version 1.48, size=486,082,750 bytes, MD5=6DC8DA75FF9DE313B3622854A59564EC) -->
+    (version 1.50, size=486,076,835 bytes, MD5=917B108FDF089B6426027168A2DC2B8A)
 
     into a  temporary directory.
   <br>&nbsp;
@@ -454,13 +455,14 @@ or Mac server instead.
   <ul>
   <li>If you are upgrading from ERDDAP version 1.46 (or above)
     and you just use the standard messages, 
-    the new messages will be installed automatically.
-    The standard messages are stored in the erddap.war file
-    (not a separate messages.xml file).  
+    the new standard messages.xml will be installed automatically 
+    (amongst the .class files via erddap.war).
     <br>&nbsp;
   <li>If you are upgrading from ERDDAP version 1.44 (or below), 
     <br>you MUST delete the old messages.xml file:
     <br><i>tomcat</i>/content/erddap/messages.xml .
+    <br>The new standard messages.xml will be installed automatically 
+    (amongst the .class files via erddap.war).
     <br>&nbsp;
   <li>Rare: If you always make changes to the standard messages, 
     <br>you need to make those changes to the new messages.xml file (which is
@@ -2076,7 +2078,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.46
+<p>ERDDAP, Version 1.50
 <br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

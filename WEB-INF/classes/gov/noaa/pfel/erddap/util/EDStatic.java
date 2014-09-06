@@ -127,8 +127,9 @@ public class EDStatic {
      * <br>It's okay if .001 used for minor releases.
      *    Some code deals with it as a double, but never d.dd.
      * <br>1.48 released on 2014-09-04
+     * <br>1.50 released on 2014-09-06
      */   
-    public static String erddapVersion = "1.48";  
+    public static String erddapVersion = "1.50";  
 
     /** 
      * This is almost always false.  
