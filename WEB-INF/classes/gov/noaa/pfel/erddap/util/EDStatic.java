@@ -128,8 +128,9 @@ public class EDStatic {
      *    Some code deals with it as a double, but never d.dd.
      * <br>1.48 released on 2014-09-04
      * <br>1.50 released on 2014-09-06
+     * <br>1.52 released on 2014-10-03
      */   
-    public static String erddapVersion = "1.50";  
+    public static String erddapVersion = "1.52";  
 
     /** 
      * This is almost always false.  
@@ -910,6 +911,7 @@ public static boolean developmentMode = false;
         noDatasetWith,
         noPage1,
         noPage2,
+        notAllowed,
         notAuthorized,
         notAvailable,
         noXxxBecause,
@@ -2040,6 +2042,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         noDatasetWith              = messages.getNotNothingString("noDatasetWith",              "");
         noPage1                    = messages.getNotNothingString("noPage1",                    "");
         noPage2                    = messages.getNotNothingString("noPage2",                    "");
+        notAllowed                 = messages.getNotNothingString("notAllowed",                 "");
         notAuthorized              = messages.getNotNothingString("notAuthorized",              "");
         notAvailable               = messages.getNotNothingString("notAvailable",               "");
         noXxxBecause               = messages.getNotNothingString("noXxxBecause",               "");
@@ -2761,7 +2764,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
     public static void ensureMemoryAvailable(long nBytes, String attributeTo) {
 
         //if it is a small request, don't take the time/effort to check 
-        if (nBytes < partialRequestMaxBytes) 
+        if (nBytes < Math2.ensureMemoryAvailableTrigger) 
             return;
         String attributeToParen = 
             attributeTo == null || attributeTo.length() == 0? "" : " (" + attributeTo + ")";
@@ -2778,7 +2781,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
 
         //request is fine without gc?
         long memoryInUse = Math2.getMemoryInUse();
-        if (memoryInUse + nBytes < Math2.maxSafeMemory / 2)  //getting close to maxSafeMemory?  was /4*3
+        if (memoryInUse + nBytes <= Math2.maxSafeMemory)  //it'll work
             return;
 
         //lots of memory is in use
@@ -2788,8 +2791,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         if (memoryInUse + nBytes > Math2.maxSafeMemory) {
             //eek! not enough memory! 
             //Wait, then try gc again and hope that some other request requiring lots of memory will finish.
-            //If nothing else, this 5 second delay will delay another request by same user (e.g., programmatic re-request)
-            Math2.sleep(5000);
+            //If nothing else, this 1 second delay will delay another request by same user (e.g., programmatic re-request)
+            Math2.sleep(1000);
             Math2.gcAndWait(); 
             memoryInUse = Math2.getMemoryInUse();
         }

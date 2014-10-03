@@ -404,6 +404,10 @@ public class EDDTableFromDatabase extends EDDTable{
             tAddGlobalAttributes = new Attributes();
         addGlobalAttributes = tAddGlobalAttributes;
         setReloadEveryNMinutes(tReloadEveryNMinutes);
+        if (String2.isSomething(tDataSourceName)) {
+            tLocalSourceUrl = "(using dataSource)";
+            tDriverName = "(using dataSource)";
+        }
         Test.ensureNotNothing(tLocalSourceUrl, "'sourceUrl' wasn't defined.");
         Test.ensureNotNothing(tDriverName, "'driverName' wasn't defined.");
         //catalog and schema may be ""

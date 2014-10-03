@@ -1535,7 +1535,8 @@ try {
            
         } catch (Throwable t) {
             String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\nUnexpected error for testSourceNeedsExpandedFP_EQ." +
+                "\n2014 THIS DATASET HAS BEEN UNAVAILABLE FOR MONTHS." + 
+                //Unexpected error for testSourceNeedsExpandedFP_EQ." +
                 "\nPress ^C to stop or Enter to continue..."); 
         }
     }
@@ -1604,7 +1605,8 @@ try {
 
         } catch (Throwable t) {
             String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
-                "\nUnexpected error for testSubsetVariablesGraph." +
+                "\n2014 THIS DATASET HAS BEEN UNAVAILABLE FOR MONTHS." + 
+                //"\nUnexpected error for testSubsetVariablesGraph." +
                 "\nPress ^C to stop or Enter to continue..."); 
         }
     }
@@ -1806,7 +1808,10 @@ expected =
             expected, "results=\n" + results);
 
         } catch (Throwable t) {
-            String2.getStringFromSystemIn("\nUnexpected error:\n" + MustBe.throwableToString(t) + 
+            String2.getStringFromSystemIn(
+                MustBe.throwableToString(t) + 
+                "\n2014 THIS DATASET HAS BEEN UNAVAILABLE FOR MONTHS." + 
+                //"\nUnexpected error:" + 
                 "\nPress ^C to stop or Enter to continue..."); 
         }
     }

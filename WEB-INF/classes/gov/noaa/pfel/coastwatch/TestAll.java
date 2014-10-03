@@ -207,6 +207,7 @@ public class TestAll  {
 //    EDDGridFromDap.generateErdThreddsDatasetXml("Hfradar/aggreghfradar", "satellite"));
 //    EDDGridFromDap.testAccessibleTo();
 //    EDDGridFromDap.testAddToHyraxUrlList();
+//    EDDGridFromDap.testBasic1();
 //    EDDGridFromDap.testBasic2();
 //    EDDGridFromDap.testBigRequest(2); //~21.6MB/timePoint  2=1request, 6=6requests, 96=~2070000000 Bytes
 //    EDDGridFromDap.testClimatologyTime();
@@ -274,8 +275,8 @@ public class TestAll  {
 //    EDDGridFromNcFiles.testGrib2_43(true); //42 or 43 for netcdfAll 4.2- or 4.3+
 //    EDDGridFromNcFiles.testNc(false);
 //    String2.log(EDDGridFromNcFiles.generateDatasetsXml(
-//        "/u00/satellite/CRW/sstn/1day/", "*.ncml", 
-//        "/u00/satellite/CRW/sstn/1day/sst.night.field.50km.n14.20001202.ncml",
+//        "c:/data/dominic/", ".*\\.nc", 
+//        "c:/data/dominic/IT_MAG-L1b-GEOF_G16_s20140201000000_e20140201000029_c00000000000000.nc",
 //        -1, null));
         /*         
         StringBuilder sb = new StringBuilder();
@@ -289,7 +290,7 @@ public class TestAll  {
 //    *** Daily
 //    Projects.viirsLatLon(true); //create
     
-//    String2.log(NcHelper.dumpString("/u00/data/points/scrippsGliders/sp025-20140820T093600.nc", true));
+//    String2.log(NcHelper.dumpString("/data/scrippsGliders/sp063-20140928T065100.nc", true));
 //    String2.log(NcHelper.dumpString("/u00/data/points/scrippsGlidersIoos1/sp031-20140412T155500.nc", false));
 //    String2.log(NcHelper.dumpString("c:/u00/satellite/VH/pic/8day/V20120012012008.L3m_8D_NPP_PIC_pic_4km", false));
 //    String2.log(NcHelper.dumpString("/u00/data/points/tao/daily/airt0n110w_dy.cdf", "AT_21"));
@@ -478,9 +479,9 @@ public class TestAll  {
 //EDDTableCopyPost.run(-1); //-1=allTests, 0..6
 
 //    String2.log(EDDTableFromAsciiFiles.generateDatasetsXml(
-//        "/u00/data/points/liquidr/FontaineMaru20140721/", "Power.csv",
-//        "/u00/data/points/liquidr/FontaineMaru20140721/Power.csv",
-//        "", 1, 2, 180,
+//        "/data/austin/", "ADB.csv",
+//        "/data/austin/ADB.csv",
+//        "", 1, 2, -1,
 //        "", "", "", "", "",
 //        "", // tSortFilesBySourceNames, 
 //        "", "", "", "", null));
@@ -642,14 +643,14 @@ public class TestAll  {
 //         Temporarily switching off parts of McAfee : Virus Scan Console  (2X speedup!)
 //           On Access Scanner : All Processes
 //             Scan Items: check: specified file types only (instead of usual All Files) 
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2012, 6, 2014, 7, false);  //first/last year(1990..)/month(1..), testMode
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2014, 5, 2014, 8, false);  //first/last year(1990..)/month(1..), testMode
 //       log file is c:/data/gtspp/log.txt 
 //      2b) Email the "good" but "impossible" stations to Charles Sun
 //       [was Melanie Hamilton, now retired]
 //       [start in 2011? but not longer valid 2012-10-19 Meilin.Chen@noaa.gov]
 //      2c) Undo changes to McAfee scanner
 //    3) Update the dates in history and summary for erdGtsppBestNc in datasets2.xml 
-//       and the date for erdGtsppBest in datasets2.xml and datasetsFEDCW.xml
+//       and the query dates for erdGtsppBest in datasets2.xml and datasetsFEDCW.xml
 //    4) * In [tomcat]/content/erddap/subset/
 //          delete erdGtsppBestNc.json and erdGtsppBest.json
 //       * Load erdGtsppBestNc in localHost ERDDAP.  (long time if lots of files changed)
@@ -661,9 +662,9 @@ public class TestAll  {
 //       //one time: File2.touch("c:/data/gtspp/bestNcConsolidated/2011/09/2011-09_0E_0N.nc"); //one time
 //       //one time: EDDTableFromNcFiles.bobFindGtsppDuplicateCruises();
 //       EDDTableFromNcFiles.testErdGtsppBest("erdGtsppBestNc");
-//    6) Create ncCF files: 
+//    6) Create ncCF files with the same date range as 2a) above: 
 //       !!!! HIDE THE WINDOW !!! IT WILL RUN 1000X FASTER!!!
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(1990, 1, 2014, 7); //e.g., first/last year(1990..)/month(1..)
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2014, 5, 2014, 8); //e.g., first/last year(1990..)/month(1..)
 //       String2.log(NcHelper.dumpString("/u00/data/points/gtsppNcCF/201406a.nc", false));
 //    7) * Load erdGtsppBest in localHost ERDDAP.  (long time if lots of files changed)
 //       * Generate .json file from
@@ -1628,11 +1629,11 @@ WaitThenTryAgainException wttae;
                 long time9 = System.currentTimeMillis();
                 Opendap.doOceanWatchSpeedTests(false, false); //dotTest, asciiTest 
                 time9 = System.currentTimeMillis() - time9;
-                if (i > 0 && time9 > 1000) 
+                if (i > 0 && time9 > 10000) //2014-08 was 1000 in ERD building. Now 10000 from outside
                     String2.getStringFromSystemIn("OceanWatch Thredds too slow: " + time9 +
                         "\nPress ^C to stop or Enter to continue..."); 
             }
-            //don't run often; run 20000 for better test
+            //don't run often
             Opendap.threddsTunnelTest(200, 
                 "http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/CM/usfc/hday",
                 "CMusfc"); 
@@ -1647,11 +1648,11 @@ WaitThenTryAgainException wttae;
         //        long time9 = System.currentTimeMillis();
         //        Opendap.doThredds1_8081SpeedTests(false, true); //dotTest, asciiTest
         //        time9 = System.currentTimeMillis() - time9;
-        //        if (i > 0 && time9 > 1000) 
+        //        if (i > 0 && time9 > 10000) //2014-08 was 1000 in ERD building. Now 10000 from outside
         //            String2.getStringFromSystemIn("Thredds1 8081 Thredds too slow: " + time9 +
         //                "\nPress ^C to stop or Enter to continue..."); 
         //    }
-        //    //don't run often; run 20000 for better test
+        //    //don't run often
         //    Opendap.threddsTunnelTest(200, 
         //        "http://thredds1.pfeg.noaa.gov:8081/thredds/dodsC/satellite/CM/usfc/hday",
         //        "CMusfc"); 
@@ -1666,11 +1667,11 @@ WaitThenTryAgainException wttae;
         //        long time8 = System.currentTimeMillis();
         //        Opendap.doOtterSpeedTests(false, false, 8081); //dotTest, asciiTest
         //        time8 = System.currentTimeMillis() - time8;
-        //        if (i > 0 && time8 > 1000) 
+        //        if (i > 0 && time8 > 10000) //2014-08 was 1000 in ERD building. Now 10000 from outside
         //            String2.getStringFromSystemIn("Otter Thredds 8081 too slow: " + time8 +
         //                "\nPress ^C to stop or Enter to continue..."); 
         //    }
-        //    //don't run often; run 20000 for better test
+        //    //don't run often
         //    Opendap.threddsTunnelTest(200, 
         //        "http://161.55.17.243:8081/thredds/dodsC/satellite/CM/usfc/hday", //otter
         //        "CMusfc"); 
@@ -1686,12 +1687,12 @@ WaitThenTryAgainException wttae;
         //        Opendap.doOtterSpeedTests(false, false, 8087);  //dotTest, asciiTest
         //        if (true) throw new Exception("SHOULDN'T GET HERE.");
         //        time8 = System.currentTimeMillis() - time8;
-        //        if (i > 0 && time8 > 1000) 
+        //        if (i > 0 && time8 > 10000) //2014-08 was 1000 in ERD building. Now 10000 from outside
         //            String2.getStringFromSystemIn("Otter Thredds 8087 too slow: " + time8 +
         //                "\nPress ^C to stop or Enter to continue..."); 
         //    }
-        //    //don't run often; run 20000 for better test
-        //    Opendap.threddsTunnelTest(2000, 
+        //    //don't run often
+        //    Opendap.threddsTunnelTest(200, 
         //        "http://161.55.17.243:8087/thredds/dodsC/satellite/CM/usfc/hday", //otter
         //        "CMusfc"); 
         //} catch (Exception e) {
@@ -1706,11 +1707,11 @@ WaitThenTryAgainException wttae;
                 long time9 = System.currentTimeMillis();
                 Opendap.doErddapSpeedTests(false, false); //dotTest, asciiTest 
                 time9 = System.currentTimeMillis() - time9;
-                if (i > 0 && time9 > 1000) 
+                if (i > 0 && time9 > 3000) //2014-08 was 1000 in ERD building. Now 3000 from outside
                     String2.getStringFromSystemIn("Erddap too slow: " + time9 +
                         "\nPress ^C to stop or Enter to continue..."); 
             }
-            //don't run often; run 20000 for better test
+            //don't run often
             Opendap.threddsTunnelTest(200, 
                 "http://coastwatch.pfeg.noaa.gov/erddap/griddap/erdCMsfc",
                 "eastCurrent"); 

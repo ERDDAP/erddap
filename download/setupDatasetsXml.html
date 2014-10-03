@@ -1831,12 +1831,42 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
     <a rel="help" href="#subsetVariables"><tt>&lt;subsetVariables&gt;</tt></a> and/or
     the latitude, longitude, and time variables.
 
-  <li><a name="databaseConnectionPooling">Connection Pooling</a> - 
+  <li><a name="databaseConnectionPooling">Use Connection Pooling</a> -
+    <br>Normally, ERDDAP makes a separate connection to the database for each request.
+      This is the most reliable approach. The faster alternative 
+      is to use a DataSource which supports connection pooling. 
+      To set it up, specify (for example)
+      <br><tt>&lt;dataSourceName&gt;java:comp/env/jdbc/postgres/erddap&lt;/dataSourceName&gt;</tt>
+      <br>right next to &lt;sourceUrl&gt;, &lt;driverName&gt;, and &lt;connectionProperty&gt.
+      <br>And in <i>tomcat</i>/conf/context.xml, define a resource with the same information, e.g., 
+      <br><tt>&lt;Resource
+      <br>  name="jdbc/postgres/erddap" auth="Container" type="javax.sql.DataSource"
+      <br>  driverClassName="org.postgresql.Driver"
+      <br>  url="<i>jdbc:postgresql://somehost:5432/myDatabaseName</i>"
+      <br>  username="<i>myUsername</i>" password="<i>myPassword</i>"
+      <br>  initialSize="0" maxActive="8" minIdle="0" maxIdle="0" maxWait="-1"/&gt;</tt>
+      <br>General information about using a DataSource is at
+        <a rel="help" href="http://docs.oracle.com/javase/tutorial/jdbc/basics/sqldatasources.html">http://docs.oracle.com/javase/tutorial/jdbc/basics/sqldatasources.html<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
+      <br>See 
+        <a rel="help"
+        href="http://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html#JDBC_Data_Sources">Tomcat
+        DataSource information<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> and 
+        <a rel="help"
+        href="http://tomcat.apache.org/tomcat-7.0-doc/jndi-datasource-examples-howto.html">Tomcat DataSource examples<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+        or search the web for examples of using DataSources with other application servers.
+
+  <!-- <li><a name="databaseConnectionPooling">Connection Pooling</a> - 
     <br>ERDDAP currently doesn't use connection pooling. ERDDAP makes a new connection 
     to the database for each SQL query that it sends to the database. 
     This adds about 0.1 seconds per request (sometimes longer, for example, for remote databases), 
     but is a more robust and safe approach.
-    We may add optional connection pooling in the future.
+    We may add optional connection pooling in the future.  -->
 
   <li>If all else fails, 
     <br>consider storing the data in a collection of .nc files (especially .nc files that use the 
@@ -1844,7 +1874,7 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
     >CF Discrete Sampling Geometries<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> 
-    conventions and so can be handled with ERDDAP's
+    Contiguous Ragged Array data structures and so can be handled with ERDDAP's
     <a rel="help" href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a>).
     If they are logically organized (each with data for a chunk of space and time), 
     ERDDAP can extract data from them very quickly.
@@ -1872,6 +1902,7 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
     &lt;!-- The names (for example, "user", "password", and "ssl") and values 
       of the properties needed for ERDDAP to establish the connection
       to the database.  0 or more. --&gt;
+  <a rel="help" href="#databaseConnectionPooling">&lt;dataSourceName&gt;</a>...&lt;/dataSourceName&gt;  &lt;!-- 0 or 1 --&gt;
   &lt;catalogName&gt;...&lt;/catalogName&gt;
     &lt;!-- The name of the catalog which has the schema which has the 
       table, default = "".  OPTIONAL.  Some databases don't use this. --&gt;
@@ -2836,7 +2867,10 @@ Sensor Observation Service
 <ul>
 <li>You need to specify a specially formatted <tt>sourceUrl</tt> global attribute to tell
   ERDDAP how to request feature information from the server.  Please use this example as a template:
-  <br><tt>&lt;att name="sourceUrl"&gt;http://kgs.uky.edu/arcgis/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?request=GetFeature&amp;amp;service=WFS&amp;amp;typename=aasg:BoreholeTemperature&amp;amp;format=&amp;quot;text/xml;%20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0&quot;&lt;/att&gt;</tt>
+  <br><tt>&lt;att name="sourceUrl"&gt;
+  <br>http://kgs.uky.edu/arcgis/services/aasggeothermal/WVBoreholeTemperatures/MapServer/WFSServer?
+  <br>request=GetFeature&amp;amp;service=WFS&amp;amp;typename=aasg:BoreholeTemperature
+  <br>&amp;amp;format=&amp;quot;text/xml;%20subType=gml/3.1.1/profiles/gmlsf/1.0.0/0&quot;&lt;/att&gt;</tt>
 <li>You need to add a special global attribute to tell ERDDAP how to identify the
   names of the chunks of data that should be downloaded.  This will probably work for all 
   EDDTableFromWFSFiles datasets: 
@@ -3730,12 +3764,7 @@ for details.
         title="This link to an external web site does not constitute an endorsement."/></a>
         data type for the dataset.    For example,
         <br><tt>&lt;att name="cdm_data_type"&gt;Point&lt;/att&gt;</tt>
-        <br>The CDM standard is still evolving and may change again.
-        The best overview of the different feature types (but out-of-date!) is currently
-          <a rel="help" href="http://www.unidata.ucar.edu/software/netcdf-java/CDM/CDMfeatures.doc">Unidata's CDMfeatures.doc<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>.
-        <br>ERDDAP complies with the newly ratified 
+        <br>The CDM is still evolving and may change again. ERDDAP complies with the  
         <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries">Discrete&nbsp;Sampling&nbsp;Geometries<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a> chapter of the 
@@ -5182,7 +5211,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.50
+<p>ERDDAP, Version 1.52
 <br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

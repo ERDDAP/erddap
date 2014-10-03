@@ -1587,16 +1587,16 @@ public class Erddap extends HttpServlet {
                 "<ul>\n" +
                 "<li><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Web_application\">A web application" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> \n" +
-                "  &ndash; a web site that humans with browsers can use\n" +
-                "  (in this case, to get data, graphs, and information about datasets).\n" +
+                "  &ndash; a web page with a form that humans with browsers can use\n" +
+                "  (in this case, to get data, graphs, or information about datasets).\n" +
                 "  <br>&nbsp;\n" +
                 "<li><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Web_service\">A RESTful web service" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> \n" +
-                "  &ndash; a web site that computer programs can use\n" +
+                "  &ndash; a URL that computer programs can use\n" +
                 "  (in this case, to get data, graphs, and information about datasets).\n" +
                 "</ul>\n" +
-                "For every ERDDAP feature that you as a human with a browser can use, there is an\n" +
-                "<br>almost identical feature that is designed to be easy for computer programs to use.\n" +
+                "For every ERDDAP web page with a form that you as a human with a browser can use, there is a\n" +
+                "<br>corresponding ERDDAP web service that is designed to be easy for computer programs to use.\n" +
                 "For example, humans can use this URL to do a Full Text Search for interesting datasets:\n" +
                 "<br><a href=\"" + htmlQueryUrl + "\">" + htmlQueryUrl + "</a>\n" +
                 "<br>By changing the file extension in the URL from .html to .json:\n" +
@@ -1611,7 +1611,7 @@ public class Erddap extends HttpServlet {
                 "that you write. You can use them to build other web applications or web services on\n" +
                 "top of ERDDAP, making ERDDAP do most of the work!\n" +
                 "So if you have an idea for a better interface to the data that ERDDAP serves or a web\n" +
-                "page that needs an easy way to access data, we encourage you to build your own web\n" +
+                "page that needs an easy way to access data, we encourage you to build your own\n" +
                 "web application, web service, or web page and use ERDDAP as the foundation.\n" +
                 "Your system can get data, graphs, and other information from ERD's ERDDAP or from\n" +
                 "other ERDDAP installations, or you can \n" +
@@ -1639,7 +1639,7 @@ public class Erddap extends HttpServlet {
                 "and get the response.  URLs via HTTP GET were chosen because\n" +
                 "<ul>\n" +
                 "<li> They are simple to use.\n" +
-                "<li> They work.\n" +
+                "<li> They work well.\n" +
                 "<li> They are universally supported (in browsers, computer languages, operating system\n" +
                 "  tools, etc).\n" +
                 "<li> They are a foundation of\n" +
@@ -1867,7 +1867,7 @@ public class Erddap extends HttpServlet {
                 "    <br><a href=\"" + tabledapExample + ".dds\">" + tabledapExample + ".dds</a> (tabular data).\n" +
                 "    <br>&nbsp;\n" +
                 "  <li>To get a <b>dataset's metadata</b>, use a standard OPeNDAP\n" +
-                "      <a rel=\"help\" href=\"" + XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo[tDdsIndex]) + "\">.das" +
+                "      <a rel=\"help\" href=\"" + XML.encodeAsHTMLAttribute(EDDTable.dataFileTypeInfo[tDasIndex]) + "\">.das" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
                 "      resquest.\n" +
                 "    For example,\n" + 
@@ -6911,6 +6911,7 @@ breadCrumbs + endBreadCrumbs +
         //isFileNameSafe is doubly useful: it ensures datasetID could be a dataseID, 
         //  and it ensures file of this name can be created
         String message;
+        int delaySeconds = 5; //slow down brute force attack or trying to guess flagKey
         if (datasetID == null || datasetID.length() == 0 ||
             flagKey == null   || flagKey.length() == 0) {
             message = String2.ERROR + ": Incomplete request.";
@@ -6925,8 +6926,10 @@ breadCrumbs + endBreadCrumbs +
             EDStatic.tally.add("SetDatasetFlag (since last daily report)", datasetID);
             String2.writeToFile(EDStatic.fullResetFlagDirectory + datasetID, datasetID);
             message = "SUCCESS: The flag has been set.";
+            delaySeconds = 0;
         }
 
+        Math2.sleep(delaySeconds * 1000);
         writer.write(message);
         if (verbose) String2.log(message);
 
@@ -13123,7 +13126,7 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
             expected = 
                 "Core Version: DAP/2.0\n" +
                 "Server Version: dods/3.7\n" +
-                "ERDDAP_version: 1.47\n";
+                "ERDDAP_version: " + EDStatic.erddapVersion + "\n";
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/griddap/version");
             Test.ensureEqual(results, expected, "results=\n" + results);
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/tabledap/version");
