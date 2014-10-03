@@ -56,9 +56,10 @@
 <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"><b>Working with the datasets.xml File</b></a>
 </center>
 
-<p>ERDDAP is an all-open source, all-Java (servlet), web application that runs in a web application server 
-(for example, Tomcat). This web page is mostly for people ("ERDDAP administrators") who want to set up 
-their own ERDDAP installation at their own web site.
+<p>ERDDAP is a free and open source, all-Java (servlet), web application that
+runs in a web application server 
+(for example, Tomcat). This web page is mostly for people ("ERDDAP administrators")
+who want to set up their own ERDDAP installation at their own web site.
 
 <h2>Why use ERDDAP to distribute your data?</h2>
 Because the small effort to setup ERDDAP brings many benefits.
@@ -1051,10 +1052,70 @@ If you repeatedly use Tomcat Manager to <tt>Reload</tt> (or <tt>Stop</tt> and <t
     <br>&nbsp;
   </ul>
 
+<li><b><a name="requestsFailed">Unusual Activity: >25% of requests failed</a></b> - 
+<br>You will probably get an email from ERDDAP periodically with the subject 
+"Unusual Activity: >25% of requests failed". It is worth figuring out what is going wrong.
+The only way to figure out what is going wrong is to read the 
+[bigParentDirectory]/logs/log.txt file and search for "error". 
+For each error message, look just above it to find the line where the original request is logged.
+The line starts with "{{{{#" and includes the user's IP number and the actual request.
+
+<p>Use the user's IP number (for example, with 
+<a rel="help" href="http://network-tools.com/">http://network-tools.com/<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>)
+to try to figure who or what the user is.
+Sometimes that will tell you pretty accurately who the user is (e.g., it's a search engine's web crawler).
+Most of the time it just gives you a clue 
+(e.g., it's an amazonaws computer, it's from some university, 
+it's someone in Washington State (no offense intended; I like Washington)).
+
+<p>By looking at the actual request, the IP number, and the error message (all from log.txt) for
+a series of errors, you can usually figure out basically what is going wrong.
+In my experience, there are three common causes of lots of failed requests:
+
+<p>1) A search engine is naively trying the URLs listed in ERDDAP web pages and 
+ISO 19115 documents. For example, there are many places which list the base OPeNDAP URL, for example,
+http://coastwatch.pfeg.noaa.gov/erddap/griddap/jplMURSST, to which the user is 
+supposed to add a file type (e.g., .das, .dds, .html). 
+But the search engine doesn't know this. And the request to the base URL fails. 
+A related situation is when the search engine generates bizarre requests or 
+tries to fill out forms in order to get to "hidden" web pages. 
+But the search engines often do a bad job of this, leading to failures. 
+The solution is: create a <a rel="help" href="#robots">robots.txt</a> file.
+
+<p>2) Some user is running a script that is repeatedly asking for something that isn't there. 
+Maybe it is a dataset that used to exist, but is gone now (temporarily or permanently).
+Scripts often don't expect this and so don't deal with it intelligently. 
+So the script just keeps making requests and the requests keep failing.  
+If you can guess who the user is (from the IP number above), contact them 
+and tell them the dataset is no longer available and ask them to change their script.
+
+<p>3) Something is really wrong with some dataset. Usually, ERDDAP will 
+make the troubled dataset inactive. Sometimes it doesn't, so all the requests
+to it just lead to errors. If so, fix the problem with the dataset or (if you can't)
+set the dataset to 
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#active">active="false"</a>.
+Of course, this may lead to problem #2.
+
+<p>Sometimes the errors aren't so bad, notably, if ERDDAP can detect the error
+and respond very quickly (&lt;=1ms). So you may decide to take no action.
+
+<p>If all else fails, there is a universal solution: 
+add the user's IP number to the <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#requestBlacklist">&lt;requestBlacklist&gt;</a>.
+This isn't as bad or as drastic an option as it might seem. 
+The user will then get an error message saying s/he has been blacklisted and 
+telling them your (the ERDDAP administrator's) email address.  
+Sometimes the user will contact you and you can resolve the problem. 
+Sometimes the user doesn't contact you and you will see the exact same behavior 
+coming from a different IP number the next day. 
+Blacklist the new IP number and hope that they will eventually get the message.
+(Or this is your Groundhog Day, from which you will never escape. Sorry.)
+
 <li><b><a name="robots">robots.txt</a></b> - 
   The search engine companies use web crawlers (e.g., GoogleBot) to examine all of
   the pages on the web to add the content to the search engines.
-  For ERDDAP, that is good.  ERDDAP has lots of links between pages, so the crawlers
+  For ERDDAP, that is basically good.  ERDDAP has lots of links between pages, so the crawlers
   will find all of the web pages and add them to the search engines. 
   Then, users of the search engines will be able to find datasets on your ERDDAP.
 
@@ -1065,21 +1126,41 @@ If you repeatedly use Tomcat Manager to <tt>Reload</tt> (or <tt>Stop</tt> and <t
   This can lead to more requests for data than from all other users combined.
   And it fills the search engine with goofy, pointless subsets of the actual data.
 
-  <p>To tell the web crawlers to stop filling out forms, you need to create a text file called 
+  <p>To tell the web crawlers to stop filling out forms and just generally not 
+    looking at web pages they don't need to look at, you need to create a text file called 
   <a rel="help" href="http://en.wikipedia.org/wiki/Robots_exclusion_standard">robots.txt<img 
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> 
   in the root directory of your web site's document hierarchy so that it can be viewed by 
   anyone as, e.g., http://www.example.com/robots.txt .
-  <br>If you are creating a new robots.txt file, put these two lines in it:
+  <br>If you are creating a new robots.txt file, this is a good start:
     <pre>
-    User-agent: *
-    Disallow: /*?</pre>
-  If you already have a robots.txt file, add this line to the Disallow section:
-    <pre>
-    Disallow: /*?</pre>
-  This tells the web crawler not to visit URLs with "?" in the URL 
-    (i.e., all form submissions).
+User-Agent: *
+Disallow: /images/ 
+Disallow: /*?
+Disallow: /*?*
+Disallow: /*.asc*
+Disallow: /*.csv*
+Disallow: /*.dods*
+Disallow: /*.esriAscii*
+Disallow: /*.esriCsv*
+Disallow: /*.geoJson*
+Disallow: /*.htmlTable*
+Disallow: /*.json*
+Disallow: /*.mat*
+Disallow: /*.nc*
+Disallow: /*.odvTxt*
+Disallow: /*.tsv*
+Disallow: /*.xhtml*
+Disallow: /*.geotif*
+Disallow: /*.kml*
+Disallow: /*.pdf*
+Disallow: /*.png*
+Disallow: /*.large*
+Disallow: /*.small*
+Disallow: /*.transparentPng*
+Sitemap: http://<b><i>your.institutions.url</i></b>/erddap/sitemap.xml</pre>
+  (But replace <i>your.institutions.url</i> with your ERDDAP's base URL.
   <br>It may take a few days for the search engines to notice and for the changes to take effect.
   <br>&nbsp;
 
@@ -2078,7 +2159,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.50
+<p>ERDDAP, Version 1.52
 <br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

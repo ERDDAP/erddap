@@ -477,7 +477,11 @@ public class Subscriptions {
             if (status == STATUS_PENDING || status == STATUS_VALID) {
 
                 StringBuilder sb = new StringBuilder( 
-                    "ERDDAP received a request from " + ipAddress + " referencing your email address to subscribe to" +
+                    //2014-09-24 I changed this to not show ipAddress for security reasons
+                    //Is a hacker somehow using this to report back ipAddress of just hacked computers?
+                    "ERDDAP received your request " + //a -> your
+                    //from " + ipAddress + " referencing your email address 
+                    "to subscribe to" +
                     "\ndatasetID=" + readDatasetID(row) + 
                     "\nwith action=" + readAction(row) + 
                     "\n");
@@ -659,7 +663,11 @@ public class Subscriptions {
      */
     public synchronized String listSubscriptions(String ipAddress, String email) throws Throwable {
         StringBuilder sb = new StringBuilder(
-            "ERDDAP received a request from " + ipAddress + " for a list of your valid and pending subscriptions.\n\n");
+            //2014-09-24 I changed this to not show ipAddress for security reasons
+            //Is a hacker somehow using this to report back ipAddress of just hacked computers?
+            "ERDDAP received your request" + //a -> your
+            //from " + ipAddress + 
+            " for a list of your valid and pending subscriptions.\n\n");
 
         ensureEmailValid(email);
 
@@ -776,7 +784,7 @@ public class Subscriptions {
         Test.ensureEqual(sub.listActions(sampleDatasetID).toString(), "", "");
         results = sub.listSubscriptions("(unknownIPAddress)", sampleEmail);
         Test.ensureEqual(results,
-"ERDDAP received a request from (unknownIPAddress) for a list of your valid and pending subscriptions.\n" +
+"ERDDAP received your request for a list of your valid and pending subscriptions.\n" +
 "\n" +
 "Currently, you have no valid or pending subscriptions.", 
             "results=\n" + results);
@@ -807,7 +815,7 @@ public class Subscriptions {
                 key = sub.readKey(row);
             else Test.ensureEqual(key, sub.readKey(row), "");
             expected = 
-"ERDDAP received a request from (unknownIPAddress) referencing your email address to subscribe to\n" +
+"ERDDAP received your request to subscribe to\n" +
 "datasetID=pmelTao\n" +
 "with action=mailto:" + sampleEmail + "\n" +
 "\n" +
@@ -835,7 +843,7 @@ public class Subscriptions {
             Test.ensureEqual(sub.listActions(sampleDatasetID).toString(), "", "");
             results = sub.listSubscriptions("(unknownIPAddress)", sampleEmail);
             Test.ensureEqual(results,
-"ERDDAP received a request from (unknownIPAddress) for a list of your valid and pending subscriptions.\n" +
+"ERDDAP received your request for a list of your valid and pending subscriptions.\n" +
 "\n" +
 "Your valid and pending subscriptions are:\n" +
 "\n" +
@@ -867,7 +875,7 @@ public class Subscriptions {
                 "mailto:" + sampleEmail, "");
             results = sub.listSubscriptions("(unknownIPAddress)", sampleEmail);
             Test.ensureEqual(results,
-"ERDDAP received a request from (unknownIPAddress) for a list of your valid and pending subscriptions.\n" +
+"ERDDAP received your request for a list of your valid and pending subscriptions.\n" +
 "\n" +
 "Your valid and pending subscriptions are:\n" +
 "\n" +
@@ -901,7 +909,7 @@ public class Subscriptions {
             Test.ensureEqual(sub.listActions(sampleDatasetID).toString(), "", "");
             results = sub.listSubscriptions("(unknownIPAddress)", sampleEmail);
             Test.ensureEqual(results,
-"ERDDAP received a request from (unknownIPAddress) for a list of your valid and pending subscriptions.\n" +
+"ERDDAP received your request for a list of your valid and pending subscriptions.\n" +
 "\n" +
 "Currently, you have no valid or pending subscriptions.", 
                 "results=\n" + results);
@@ -958,7 +966,7 @@ public class Subscriptions {
         Test.ensureTrue(actions.indexOf("mailto:john.smith@company.com") >= 0, "actions=" + actions);
         results = sub.listSubscriptions("(unknownIPAddress)", sampleEmail);
         Test.ensureEqual(results, 
-"ERDDAP received a request from (unknownIPAddress) for a list of your valid and pending subscriptions.\n" +
+"ERDDAP received your request for a list of your valid and pending subscriptions.\n" +
 "\n" +
 "Your valid and pending subscriptions are:\n" +
 "\n" +
@@ -1004,7 +1012,7 @@ public class Subscriptions {
         Test.ensureEqual(sub.listActions(sampleDatasetID).toString(), "", "");
         results = sub.listSubscriptions("(unknownIPAddress)", sampleEmail);
         Test.ensureEqual(results,
-"ERDDAP received a request from (unknownIPAddress) for a list of your valid and pending subscriptions.\n" +
+"ERDDAP received your request for a list of your valid and pending subscriptions.\n" +
 "\n" +
 "Currently, you have no valid or pending subscriptions.", 
                 "results=\n" + results);

@@ -60,7 +60,7 @@ import ucar.ma2.*;
  */
 public class EDDTableFromErddap extends EDDTable implements FromErddap { 
 
-    protected double sourceErddapVersion = 1.22; //last version before /version service was added
+    protected double sourceErddapVersion = 1.22; //default = last version before /version service was added
 
     /** Indicates if data can be transmitted in a compressed form.
      * It is unlikely anyone would want to change this. */

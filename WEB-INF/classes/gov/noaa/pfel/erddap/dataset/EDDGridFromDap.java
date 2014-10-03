@@ -2034,7 +2034,7 @@ public class EDDGridFromDap extends EDDGrid {
 //there are several datasets in the resultsAr, but this is the one that changes least frequently (monthly)
 "<dataset type=\"EDDGridFromDap\" datasetID=\"noaa_pfeg_7c78_3321_3466\" active=\"true\">\n" +
 "    <sourceUrl>http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/MH/chla/mday</sourceUrl>\n" +
-"    <reloadEveryNMinutes>(2880|5760|11520)</reloadEveryNMinutes>\n" +  //2880 or 5760, rarely 11520
+"    <reloadEveryNMinutes>(2880|5760|11520|43200)</reloadEveryNMinutes>\n" +  //2880 or 5760, rarely 11520, 2014-09 now 43200 because not being updated
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
@@ -2747,12 +2747,14 @@ String expected2 =
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0],
-            "SimpleException: Query error: For variable=chlorophyll axis#3=longitude: \"[\" was expected at position=17.", 
+            "SimpleException: Query error: For variable=chlorophyll axis#3=longitude: " +
+            "\"[\" was expected at or after position=17, not [end of query].", 
             "error=" + error);
 
         error = "";
         try {
-            gridDataset.parseDataDapQuery("chlorophyll[(2007-02-06)[][(29):10:(50)][(225):10:(247)]", 
+            gridDataset.parseDataDapQuery(
+                "chlorophyll[(2007-02-06)[][(29):10:(50)][(225):10:(247)]", 
                 destinationNames, constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
@@ -2761,6 +2763,50 @@ String expected2 =
             "SimpleException: Query error: For variable=chlorophyll axis#0=time " +
                 "Constraint=\"\\[\\(2007-02-06\\)\\[\\]\": Stop=\"\" is invalid\\.  " +
                 "It must be an integer between 0 and \\d{3}\\.", 
+            "error=" + error);
+
+        //invalid date format    2014-10-02
+        error = "";
+        try {
+            gridDataset.parseDataDapQuery(
+                "chlorophyll[(2007-2-06):(2007-02-06)][][(29):10:(50)][(225):10:(247)]", 
+                destinationNames, constraints, false);  
+        } catch (Throwable t) {
+            error = MustBe.throwableToString(t);
+        }
+        Test.ensureEqual(String2.split(error, '\n')[0],  
+            "SimpleException: Query error: For variable=chlorophyll axis#0=time " +
+                "Constraint=\"[(2007-2-06):(2007-02-06)]\": " +
+                "Start=NaN (invalid format?) isn't allowed.", 
+            "error=" + error);
+
+        //invalid date format    2014-10-02
+        error = "";
+        try {
+            gridDataset.parseDataDapQuery(
+                "chlorophyll[(2007-02-06):(2007-2-06)][][(29):10:(50)][(225):10:(247)]", 
+                destinationNames, constraints, false);  
+        } catch (Throwable t) {
+            error = MustBe.throwableToString(t);
+        }
+        Test.ensureEqual(String2.split(error, '\n')[0],  
+            "SimpleException: Query error: For variable=chlorophyll axis#0=time " +
+                "Constraint=\"[(2007-02-06):(2007-2-06)]\": " +
+                "Stop=NaN (invalid format?) isn't allowed.", 
+            "error=" + error);
+
+        //extra dimension    2014-10-02
+        error = "";
+        try {
+            gridDataset.parseDataDapQuery(
+                "chlorophyll[(2007-02-06)][][(29):10:(50)][(225):10:(247)][somethingElse]", 
+                destinationNames, constraints, false);  
+        } catch (Throwable t) {
+            error = MustBe.throwableToString(t);
+        }
+        Test.ensureEqual(String2.split(error, '\n')[0],  
+            "SimpleException: Query error: \",\" or \"[end of query]\" was expected " +
+            "at or after position=57, not \"[\".", 
             "error=" + error);
 
         error = "";
@@ -2775,32 +2821,38 @@ String expected2 =
 
         error = "";
         try {
-            gridDataset.parseAxisDapQuery("latitude,chlorophyll", destinationNames, constraints, false);  
+            gridDataset.parseAxisDapQuery("latitude,chlorophyll", destinationNames, 
+                constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0],
-            "SimpleException: Query error: A griddap axis variable query can't include a data variable (chlorophyll).", 
+            "SimpleException: Query error: A griddap axis variable query can't " +
+            "include a data variable (chlorophyll).", 
             "error=" + error);
 
         error = "";
         try {
-            gridDataset.parseDataDapQuery("chlorophyll,latitude", destinationNames, constraints, false);  
+            gridDataset.parseDataDapQuery("chlorophyll,latitude", destinationNames, 
+                constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0],
-            "SimpleException: Query error: A griddap data variable query can't include an axis variable (latitude).", 
+            "SimpleException: Query error: A griddap data variable query can't " +
+            "include an axis variable (latitude).", 
             "error=" + error);
 
         error = "";
         try {
-            gridDataset.parseAxisDapQuery("latitude[", destinationNames, constraints, false);  
+            gridDataset.parseAxisDapQuery("latitude[", destinationNames, 
+                constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
         }
         Test.ensureEqual(String2.split(error, '\n')[0],
-            "SimpleException: Query error: For variable=latitude axis#2=latitude: \"]\" was not found after position=8.", 
+            "SimpleException: Query error: For variable=latitude axis#2=latitude: " +
+            "\"]\" was not found after position=8.", 
             "error=" + error);
 
         //test error message from dataset that doesn't load
@@ -2814,17 +2866,20 @@ String expected2 =
         gridDataset.parseDataDapQuery(userDapQuery, destinationNames, constraints, false);
         Test.ensureEqual(destinationNames.toString(), "chlorophyll", "");
         //pre 2009-09-09 was different. Based on other changes: Dave must have regridded the dataset
-        Test.ensureEqual(constraints.toString(), "206, 1, 206, 0, 1, 0, 2855, 10, 3359, 5399, 10, 5927", "");
+        Test.ensureEqual(constraints.toString(), 
+            "206, 1, 206, 0, 1, 0, 2855, 10, 3359, 5399, 10, 5927", "");
 
         String tDapQuery  = "chlorophyll[(2007-02-06)][][(29):10:(50)][last:1:last]"; //test last
         gridDataset.parseDataDapQuery(tDapQuery, destinationNames, constraints, false);
         Test.ensureEqual(destinationNames.toString(), "chlorophyll", "");
-        Test.ensureEqual(constraints.toString(), "206, 1, 206, 0, 1, 0, 2855, 10, 3359, 8639, 1, 8639", "");
+        Test.ensureEqual(constraints.toString(), 
+            "206, 1, 206, 0, 1, 0, 2855, 10, 3359, 8639, 1, 8639", "");
 
         tDapQuery  = "chlorophyll[(2007-02-06T12:00:00)][][(29):10:(50)][last]"; //test colons
         gridDataset.parseDataDapQuery(tDapQuery, destinationNames, constraints, false);
         Test.ensureEqual(destinationNames.toString(), "chlorophyll", "");
-        Test.ensureEqual(constraints.toString(), "206, 1, 206, 0, 1, 0, 2855, 10, 3359, 8639, 1, 8639", "");
+        Test.ensureEqual(constraints.toString(), 
+            "206, 1, 206, 0, 1, 0, 2855, 10, 3359, 8639, 1, 8639", "");
 
         Test.ensureTrue(gridDataset.isAxisDapQuery("time"), "");
         gridDataset.parseAxisDapQuery("time", destinationNames, constraints, false);
@@ -2832,65 +2887,83 @@ String expected2 =
         //Test.ensureEqual(constraints.toString(), "0, 1, 331", ""); //this will increase once in a while
 
         Test.ensureTrue(gridDataset.isAxisDapQuery("time["), "");
-        gridDataset.parseAxisDapQuery("time[(2007-02-06)]", destinationNames, constraints, false);
+        gridDataset.parseAxisDapQuery("time[(2007-02-06)]", destinationNames, 
+            constraints, false);
         Test.ensureEqual(destinationNames.toString(), "time", "");
         Test.ensureEqual(constraints.toString(), "206, 1, 206", "");
 
-        gridDataset.parseAxisDapQuery("longitude[ last : 1 : last ]", destinationNames, constraints, false);
+        gridDataset.parseAxisDapQuery("longitude[ last : 1 : last ]", 
+            destinationNames, constraints, false);
         Test.ensureEqual(destinationNames.toString(), "longitude", "");
         Test.ensureEqual(constraints.toString(), "8639, 1, 8639", "");
 
-        gridDataset.parseAxisDapQuery("longitude[ last ]", destinationNames, constraints, false);
+        gridDataset.parseAxisDapQuery("longitude[ last ]", destinationNames, 
+            constraints, false);
         Test.ensureEqual(destinationNames.toString(), "longitude", "");
         Test.ensureEqual(constraints.toString(), "8639, 1, 8639", "");
 
-        gridDataset.parseAxisDapQuery("longitude[ last - 20]", destinationNames, constraints, false);
+        gridDataset.parseAxisDapQuery("longitude[ last - 20]", destinationNames, 
+            constraints, false);
         Test.ensureEqual(constraints.toString(), "8619, 1, 8619", "");
 
-        gridDataset.parseAxisDapQuery("longitude[last+-20]", destinationNames, constraints, false);
+        gridDataset.parseAxisDapQuery("longitude[last+-20]", destinationNames, 
+            constraints, false);
         Test.ensureEqual(constraints.toString(), "8619, 1, 8619", "");
 
-        gridDataset.parseAxisDapQuery("time[20:10:(2007-02-06)],altitude,longitude[last]", destinationNames, constraints, false);
-        Test.ensureEqual(destinationNames.toNewlineString(), "time\naltitude\nlongitude\n", "");
-        Test.ensureEqual(constraints.toString(), "20, 10, 206, 0, 1, 0, 8639, 1, 8639", "");
+        gridDataset.parseAxisDapQuery("time[20:10:(2007-02-06)],altitude,longitude[last]", 
+            destinationNames, constraints, false);
+        Test.ensureEqual(destinationNames.toNewlineString(), 
+            "time\naltitude\nlongitude\n", "");
+        Test.ensureEqual(constraints.toString(), 
+            "20, 10, 206, 0, 1, 0, 8639, 1, 8639", "");
 
         //lon: incr=0.04166667   n=8640
-        gridDataset.parseAxisDapQuery("longitude[(last-0.4166)]", destinationNames, constraints, false);
+        gridDataset.parseAxisDapQuery("longitude[(last-0.4166)]", destinationNames, 
+            constraints, false);
         Test.ensureEqual(constraints.toString(), "8629, 1, 8629", "");
 
-        gridDataset.parseAxisDapQuery("longitude[(last+-0.4166)]", destinationNames, constraints, false);
+        gridDataset.parseAxisDapQuery("longitude[(last+-0.4166)]", 
+            destinationNames, constraints, false);
         Test.ensureEqual(constraints.toString(), "8629, 1, 8629", "");
 
         //time: incr=8days  n=272    16days=16*86400=1382400
-        gridDataset.parseAxisDapQuery("time[(last-1382400)]", destinationNames, constraints, false);
+        gridDataset.parseAxisDapQuery("time[(last-1382400)]", destinationNames, 
+            constraints, false);
         //Test.ensureEqual(constraints.toString(), "329, 1, 329", ""); //changes sometimes
 
-        gridDataset.parseAxisDapQuery("time[(last+-1382400)]", destinationNames, constraints, false);
+        gridDataset.parseAxisDapQuery("time[(last+-1382400)]", destinationNames, 
+            constraints, false);
         //Test.ensureEqual(constraints.toString(), "329, 1, 329", ""); //changes sometimes
 
         error = "";
         try {
-            gridDataset.parseAxisDapQuery("latitude[last-2.0]", destinationNames, constraints, false);  
+            gridDataset.parseAxisDapQuery("latitude[last-2.0]", destinationNames, 
+                constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
         }
-        Test.ensureTrue(error.indexOf("SimpleException: Query error: The +/- index value in Start=last-2.0 isn't an integer.") >= 0, "error=" + error);
+        Test.ensureTrue(error.indexOf("SimpleException: Query error: The +/- index " +
+            "value in Start=last-2.0 isn't an integer.") >= 0, "error=" + error);
 
         error = "";
         try {
-            gridDataset.parseAxisDapQuery("latitude[(last-2.0a)]", destinationNames, constraints, false);  
+            gridDataset.parseAxisDapQuery("latitude[(last-2.0a)]", destinationNames, 
+                constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
         }
-        Test.ensureTrue(error.indexOf("SimpleException: Query error: The +/- value in Start=(last-2.0a) isn't valid.") >= 0, "error=" + error);
+        Test.ensureTrue(error.indexOf("SimpleException: Query error: The +/- " +
+            "value in Start=(last-2.0a) isn't valid.") >= 0, "error=" + error);
 
         error = "";
         try {
-            gridDataset.parseAxisDapQuery("latitude[(last*2)]", destinationNames, constraints, false);  
+            gridDataset.parseAxisDapQuery("latitude[(last*2)]", destinationNames, 
+                constraints, false);  
         } catch (Throwable t) {
             error = MustBe.throwableToString(t);
         }
-        Test.ensureTrue(error.indexOf("SimpleException: Query error: Unexpected character after \"last\" in Start=(last*2).") >= 0, "error=" + error);
+        Test.ensureTrue(error.indexOf("SimpleException: Query error: Unexpected " +
+            "character after \"last\" in Start=(last*2).") >= 0, "error=" + error);
 
         //***test some edvga things
         EDVGridAxis edvga = gridDataset.axisVariables()[0];
@@ -2988,13 +3061,15 @@ String expected2 =
         Test.ensureLinesMatch(results, expected, "\nresults=\n" + results);
 
         //*** test DAP data access form
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "", EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, "", 
+            EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Entire", ".html"); 
         //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
 
         //*** test getting das for 1 variable     das isn't affected by userDapQuery
         String2.log("\n****************** EDDGridFromDap test 1 variable\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "chlorophyll", EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, "chlorophyll", 
+            EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_1Variable", ".das"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
@@ -3020,7 +3095,8 @@ String expected2 =
 
 
         //*** test getting dds for 1 variable
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "chlorophyll", EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, "chlorophyll", 
+            EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_1Variable", ".dds"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
@@ -3062,7 +3138,8 @@ String expected2 =
 
         //.asc
         String2.log("\n*** EDDGridFromDap test get .ASC axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "time[0:100:200],longitude[last]", EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "time[0:100:200],longitude[last]", EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Axis", ".asc"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
@@ -3081,7 +3158,8 @@ String expected2 =
  
         //.csv
         String2.log("\n*** EDDGridFromDap test get .csv axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "time[0:100:200],longitude[last]", EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "time[0:100:200],longitude[last]", EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Axis", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
@@ -3096,7 +3174,8 @@ String expected2 =
 
         //.csvp
         String2.log("\n*** EDDGridFromDap test get .csvp axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "time[0:100:200],longitude[last]", EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "time[0:100:200],longitude[last]", EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Axis", ".csvp"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
@@ -3110,7 +3189,8 @@ String expected2 =
 
         //.csv  test of gridName.axisName notation
         String2.log("\n*** EDDGridFromDap test get .CSV axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "chlorophyll.time[0:100:200],chlorophyll.longitude[last]", 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "chlorophyll.time[0:100:200],chlorophyll.longitude[last]", 
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_AxisG.A", ".csv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
@@ -3126,9 +3206,11 @@ String expected2 =
 
         //.das     which disregards userDapQuery
         String2.log("\n*** EDDGridFromDap test get .DAS axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "time[0:100:200],longitude[last]", EDStatic.fullTestCacheDirectory, 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "time[0:100:200],longitude[last]", EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Axis", ".das"); 
-        results = String2.annotatedString(new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
+        results = String2.annotatedString(new String((
+            new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray()));
         expected =  //see OpendapHelper.EOL definition for comments
 //"Attributes {[10]\n" + 
 //"  time {[10]\n" +
@@ -3151,7 +3233,8 @@ String expected2 =
 
         //.dds
         String2.log("\n*** EDDGridFromDap test get .DDS axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "time[0:100:200],longitude[last]", 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, 
             gridDataset.className() + "_Axis", ".dds"); 
         results = String2.annotatedString(new String((new ByteArray(
@@ -3185,7 +3268,8 @@ String expected2 =
 
         //.json
         String2.log("\n*** EDDGridFromDap test get .JSON axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "time[0:100:200],longitude[last]", 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".json"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
@@ -3273,13 +3357,14 @@ String expected2 =
 /* */
         //.nc
         String2.log("\n*** EDDGridFromDap test get .nc axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "time[0:100:200],longitude[last]", 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".nc"); 
         results = NcHelper.dumpString(EDStatic.fullTestCacheDirectory  + tName, true);
         expected = 
 "netcdf EDDGridFromDap_Axis.nc {\n" +
 "  dimensions:\n" +
-"    time = 3;\n" +   // (has coord.var)\n" +    //changed when switched to netcdf-java 4.0, 2009-02-23
+"    time = 3;\n" + //(has coord.var)\n" + //changed when switched to netcdf-java 4.0, 2009-02-23
 "    longitude = 1;\n" +   // (has coord.var)\n" +
 "  variables:\n" +
 "    double time(time=3);\n" +
@@ -3395,7 +3480,8 @@ String expected2 =
 "\n" +
 "  // global attributes:\n" +
 "  :acknowledgement = \"NOAA NESDIS COASTWATCH, NOAA SWFSC ERD\";\n";
-        Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "RESULTS=\n" + results);
         expected = 
 "  :title = \"Chlorophyll-a, Aqua MODIS, NPP, DEPRECATED OLDER VERSION (8 Day Composite)\";\n" +
 "  :Westernmost_Easting = 360.0; // double\n" +
@@ -3405,7 +3491,8 @@ String expected2 =
 
          //.tsv
         String2.log("\n*** EDDGridFromDap test get .TSV axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "time[0:100:200],longitude[last]", 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".tsv"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
@@ -3421,7 +3508,8 @@ String expected2 =
 
          //.tsvp
         String2.log("\n*** EDDGridFromDap test get .tsv axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "time[0:100:200],longitude[last]", 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "time[0:100:200],longitude[last]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_Axis", ".tsvp"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
@@ -3435,7 +3523,8 @@ String expected2 =
 
         //.xhtml   latitude
         String2.log("\n*** EDDGridFromDap test get .XHTML axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "latitude[0:10:40],longitude[last]", 
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "latitude[0:10:40],longitude[last]", 
             EDStatic.fullTestCacheDirectory, gridDataset.className() + "_LatAxis", ".xhtml"); 
         results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
@@ -3488,9 +3577,12 @@ String expected2 =
 
         //.htmlTable   latitude
         String2.log("\n*** EDDGridFromDap test get .htmlTable axis data\n");
-        tName = gridDataset.makeNewFileForDapQuery(null, null, "latitude[0:10:40],longitude[last]", 
-            EDStatic.fullTestCacheDirectory, gridDataset.className() + "_LatAxis", ".htmlTable"); 
-        results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
+        tName = gridDataset.makeNewFileForDapQuery(null, null, 
+            "latitude[0:10:40],longitude[last]", 
+            EDStatic.fullTestCacheDirectory, 
+            gridDataset.className() + "_LatAxis", ".htmlTable"); 
+        results = new String((new ByteArray(
+            EDStatic.fullTestCacheDirectory + tName)).toArray());
         //String2.log(results);
         //SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
         expected = 
@@ -3567,8 +3659,6 @@ EDStatic.endBodyHtml(EDStatic.erddapUrl((String)null)) + "\n" +
 "</body>\n" +
 "</html>\n";
         Test.ensureTrue(results.indexOf(expected) > 0, "RESULTS=\n" + results);
-
-
     }
 
 
@@ -5077,7 +5167,7 @@ String expected2 =
                 String2.log("\nCommon error:\n" + msg);
             else {
                 Test.knownProblem(
-                    "STARTING 2013-05-21 SOURCE IS GONE.   FIX IT?",
+                    "STARTING 2013-05-21 DATA SOURCE IS GONE.   FIX IT?",
                     msg);
             }
         }
@@ -8337,12 +8427,20 @@ EDStatic.startBodyHtml(null) + "\n" +
     public static void testMap74to434() throws Throwable {
         String2.log("\n*** EDDGridFromDap.testMap74to434\n");
         testVerboseOn();
-        String mapDapQuery = "sst[last][0][0:last][0:last]&.land=under"; //stride irrelevant 
-        EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetXml("ncepRtofsG2DNowDailyProg"); //should work
-        String tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
-            EDStatic.fullTestCacheDirectory, gridDataset.className() + "_434_Map", ".png"); 
-        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-        //String2.getStringFromSystemIn("\nPress ^C to stop or Enter to continue..."); 
+        try {
+            String mapDapQuery = "sst[last][0][0:last][0:last]&.land=under"; //stride irrelevant 
+            EDDGridFromDap gridDataset = (EDDGridFromDap)oneFromDatasetXml("ncepRtofsG2DNowDailyProg"); //should work
+            String tName = gridDataset.makeNewFileForDapQuery(null, null, mapDapQuery, 
+                EDStatic.fullTestCacheDirectory, gridDataset.className() + "_434_Map", ".png"); 
+            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
+            //String2.getStringFromSystemIn("\nPress ^C to stop or Enter to continue..."); 
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                "\nOCCASIONAL ERROR. " +
+                "\nSometimes this test catches the dataset after the dir has been created," + 
+                "\nbut before data files are in it." +
+                "\nPress ^C to stop or Enter to continue..."); 
+        }
     }
 
     /**

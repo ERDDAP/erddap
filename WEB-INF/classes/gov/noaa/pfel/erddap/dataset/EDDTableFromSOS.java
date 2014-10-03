@@ -5782,13 +5782,13 @@ So I will make ERDDAP able to read
 "longitude,latitude\n" +  //starting 2014-08-11
 "degrees_east,degrees_north\n" +
 "-69.9877,43.7628\n" +
-"-69.3578,43.7148\n" +
+"-69.3550033569336,43.7163009643555\n" + //2014-09-22 was -69.3578,43.7148\n" +
 "-69.319580078125,43.7063484191895\n" +
 "-68.9982,44.0555\n" +
 "-68.8249619164502,44.3871537467378\n" +
 "-68.1084442138672,44.1057103474935\n" +
 "-67.8798,43.4907\n" +
-"-65.9061666666667,42.3336666666667\n";
+"-65.907,42.3303\n"; //2014-09-22 was -65.9061666666667,42.3336666666667\n";
 
 
 //"-65.9069544474284,42.3313840230306\n"; //pre 2013-06-28 was "-65.907,42.3303\n"; 
@@ -6018,21 +6018,21 @@ So I will make ERDDAP able to read
 //"-54.688,46.9813,SMB-MO-01\n" +
 //"-54.1317,47.3255,SMB-MO-04\n" +
 //"-54.0488,47.7893,SMB-MO-05\n";
-"longitude,latitude,station_id\n" + //starting 2012-03-16
+"longitude,latitude,station_id\n" + 
 "degrees_east,degrees_north,\n" +
-"-63.4082,44.5001,CDIP176\n" +
-"-69.9877,43.7628,D02\n" +
-"-69.3578,43.7148,E01\n" +
-"-69.319580078125,43.7063484191895,E02\n" +
-"-68.9982,44.0555,F01\n" + //2014-08-11 "-68.996696472168,44.0559844970703,F01\n" + //2013-06-28 was "-68.9982,44.0555,F01\n" + //2012-04-20 was -68.9981,44.055,F01
-"-68.8249619164502,44.3871537467378,F02\n" + //2014-08-11 was "-68.8308,44.3878,F02\n" +
-"-68.1084442138672,44.1057103474935,I01\n" + //2014-08-11 was "-68.109302520752,44.1061248779297,I01\n" + //2013-06-28 was "-68.1090882815856,44.105949650925,I01\n" + //2011-11-02 was -68.1087,44.1058,I01
-"-67.8798,43.4907,M01\n" +
-"-65.9061666666667,42.3336666666667,N01\n" + //2014/08-11 was "-65.9069544474284,42.3313840230306,N01\n" + //2013-06-28 was "-65.907,42.3303,N01\n" +
-"-54.688,46.9813,SMB-MO-01\n" +
-"-54.1317,47.3255,SMB-MO-04\n" +
-"-54.0488,47.7893,SMB-MO-05\n"; 
-       Test.ensureEqual(results, expected, "\nresults=\n" + results);  
+"-63.\\d+,44.\\d+,CDIP176\n" +
+"-69.\\d+,43.\\d+,D02\n" +
+"-69.\\d+,43.\\d+,E01\n" +
+"-69.\\d+,43.\\d+,E02\n" +
+"-68.\\d+,44.\\d+,F01\n" + 
+"-68.\\d+,44.\\d+,F02\n" +
+"-68.\\d+,44.\\d+,I01\n" +
+"-67.\\d+,43.\\d+,M01\n" +
+"-65.\\d+,42.\\d+,N01\n" + 
+"-54.\\d+,46.\\d+,SMB-MO-01\n" +
+"-54.\\d+,47.\\d+,SMB-MO-04\n" +
+"-54.\\d+,47.\\d+,SMB-MO-05\n"; 
+       Test.testLinesMatch(results, expected, "\nresults=\n" + results);  
 
 
         //data for mapExample (with time
@@ -7755,7 +7755,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         boolean oDebugMode = debugMode;
         debugMode = true;
         boolean oTestQuickRestart = testQuickRestart;
-testQuickRestart = true; 
+        testQuickRestart = false; 
 
         try {
         String2.log("\n*** testWhoiSos");
@@ -7764,9 +7764,6 @@ testQuickRestart = true;
         String name, tName, results, expected, userDapQuery;
         String error = "";
         String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
-
-
-
 
         EDDTable eddTable = (EDDTable)oneFromDatasetXml("whoiSos"); //should work
 

@@ -250,8 +250,9 @@ a table of datasets is displayed (e.g., when you do a full text search for datas
 
 <!-- Don't change the examples (from defaultN...). -->
 <convertFipsCountyIntro><![CDATA[
-This web page lets you convert a 5-digit, U.S.
-<a rel="bookmark" href="http://www.itl.nist.gov/fipspubs/fip6-4.htm">FIPS county code<img 
+This web page lets you convert a 5-digit, U.S. 
+<!-- was http://www.itl.nist.gov/fipspubs/fip6-4.htm -->
+<a rel="bookmark" href="http://www.census.gov/geo/reference/codes/cou.html">FIPS county code<img 
     src="../images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>
 to/from a county name.
@@ -268,6 +269,12 @@ to/from a county name.
   <br>makes any warranty, express or implied, including warranties of merchantability and
   <br>fitness for a particular purpose, or assumes any legal liability for the accuracy,
   <br>completeness, or usefulness, of any information at this web site.
+  <br>&nbsp;
+<li><a name="background">Background</a> - 
+  The Federal Information Processing Standard (FIPS) 6-4 assigned
+  <br>numbers to U.S. counties, county equivalents, states, and possessions.
+  <br>On September 2, 2008, the standard was withdrawn by NIST. But the list is
+  <br>still useful for decoding older data that uses the FIPS county codes.
   <br>&nbsp;
 <li><a name="exact">Exact Match</a> -
   This service requires exact matches. Entering a partial county code or
@@ -290,8 +297,8 @@ to/from a county name.
   <br>&nbsp;
 <li><a name="equivalent">County-Equivalent Entities</a> -
   This service includes county-equivalent entities from
-  <br>U.S. protectorates and freely associated states from Appendix A and B of the
-  <br><a rel="bookmark" href="http://www.itl.nist.gov/fipspubs/co-codes/states.txt">official FIPS list<img 
+  <br>U.S. protectorates and freely associated states originally in Appendix A and B of the
+  <br><a rel="bookmark" href="http://www.census.gov/geo/reference/codes/cou.html">FIPS list<img 
     src="../images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>.
     The state-level entities are:
@@ -2069,6 +2076,7 @@ Better to return an empty file? But .nc and others don't allow 0-length data.
 <noPage1>You requested results page={0}, but the last page is {1}.</noPage1>
 <noPage2>Please request a page from 1 through {1}.</noPage2>
 
+<notAllowed>{0} isn''t allowed.</notAllowed>
 <notAuthorized>loggedInAs={0} isn''t authorized to access datasetID={1}.</notAuthorized>
 <notAvailable>Currently, datasetID={0} isn''t available.</notAvailable>
 
@@ -2181,7 +2189,7 @@ Widths are in ratio 1:2:3.
 <queryErrorAdjusted>For {0} requests, the adjusted longitude values ({1} to {2}) must be between -180 and 180.</queryErrorAdjusted>
 <queryErrorConstraintNaN>Constraint value="{0}" evaluates to NaN.  If you really want NaN, write it as NaN.</queryErrorConstraintNaN>
 <queryErrorEqualSpacing>For {0} requests, the longitude spacing ({1}) must equal the latitude spacing ({2}).</queryErrorEqualSpacing>
-<queryErrorExpectedAt>"{0}" was expected at position={1}.</queryErrorExpectedAt>
+<queryErrorExpectedAt>"{0}" was expected at or after position={1}, not {2}.</queryErrorExpectedAt>
 <queryErrorFileType>fileType={0} isn''t supported by this dataset.</queryErrorFileType>
 <queryErrorInvalid>Invalid {0}.</queryErrorInvalid>
 <queryErrorLL>For {0} requests, the requested variables must include latitude and longitude.</queryErrorLL>
