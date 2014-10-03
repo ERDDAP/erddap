@@ -15328,6 +15328,8 @@ writer.write(
      * <br>from Nearshore Sensor 1 dataset from 
      * <br>http://oos.soest.hawaii.edu/thredds/idd/nss_hioos.html
      * <br>and stored on Bob's computer as F:/programs/iso19115/ns01agg.xml
+     * <br>2014-09-24 Example with protocols:
+     * <br>http://oos.soest.hawaii.edu/pacioos/metadata/roms_hiig_forecast.xml
      *
      * <br>See also  https://geo-ide.noaa.gov/wiki/index.php?title=NcISO#Questions_and_Answers
      *
@@ -15653,20 +15655,28 @@ writer.write(
 
 //*** IdentificationInfo loop
 int iiDataIdentification = 0;
-int iiOPeNDAP = 1;
-int iiWMS = 2;
-for (int ii = 0; ii <= iiWMS; ii++) {  
+int iiERDDAP = 1;
+int iiOPeNDAP = 2;
+int iiWMS = 3;
+int iiSubset = 4;
+for (int ii = 0; ii <= iiSubset; ii++) {  
 
     //currently, no tabular datasets are accessibleViaWMS
     if (ii == iiWMS && accessibleViaWMS().length() > 0)
-        break;
+        continue;
+
+    //not all datasets are accessible via .subset
+    if (ii == iiSubset && accessibleViaSubset().length() > 0)
+        continue;
 
     writer.write(
 "  <gmd:identificationInfo>\n" +
 
 (ii == iiDataIdentification?   "    <gmd:MD_DataIdentification id=\"DataIdentification\">\n" :
+ ii == iiERDDAP?               "    <srv:SV_ServiceIdentification id=\"ERDDAP-tabledap\">\n" :
  ii == iiOPeNDAP?              "    <srv:SV_ServiceIdentification id=\"OPeNDAP\">\n" :
  ii == iiWMS?                  "    <srv:SV_ServiceIdentification id=\"OGC-WMS\">\n" :
+ ii == iiSubset?               "    <srv:SV_ServiceIdentification id=\"search\">\n" :
                                "    <gmd:ERROR id=\"ERROR\">\n") +
 
 "      <gmd:citation>\n" +
@@ -15756,8 +15766,9 @@ for (int ii = 0; ii <= iiWMS; ii++) {
 "                      <gmd:linkage>\n" +  //in ERDDAP, infoUrl is better and more reliable than creator_url
 "                        <gmd:URL>" + XML.encodeAsXML(infoUrl) + "</gmd:URL>\n" +
 "                      </gmd:linkage>\n" +
-"                      <gmd:protocol>\n" +
-"                        <gco:CharacterString>http</gco:CharacterString>\n" +
+"                      <gmd:protocol>\n" + 
+//see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv from John Maurer
+"                        <gco:CharacterString>information</gco:CharacterString>\n" +
 "                      </gmd:protocol>\n" +
 "                      <gmd:applicationProfile>\n" +
 "                        <gco:CharacterString>web browser</gco:CharacterString>\n" +
@@ -15765,7 +15776,9 @@ for (int ii = 0; ii <= iiWMS; ii++) {
 "                      <gmd:name>\n" +
 "                        <gco:CharacterString>Background Information</gco:CharacterString>\n" +
 "                      </gmd:name>\n" +
-"                      <gmd:description><gco:CharacterString/></gmd:description>\n" +
+"                      <gmd:description>\n" +
+"                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n" +
+"                      </gmd:description>\n" +
 "                      <gmd:function>\n" +
 "                        <gmd:CI_OnLineFunctionCode " +
                            "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
@@ -15870,7 +15883,8 @@ if (ii == iiDataIdentification) {
 "                    <gmd:URL>" + XML.encodeAsXML(infoUrl) + "</gmd:URL>\n" +
 "                  </gmd:linkage>\n" +
 "                  <gmd:protocol>\n" +
-"                    <gco:CharacterString>http</gco:CharacterString>\n" +
+//see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv from John Maurer
+"                    <gco:CharacterString>information</gco:CharacterString>\n" +
 "                  </gmd:protocol>\n" +
 "                  <gmd:applicationProfile>\n" +
 "                    <gco:CharacterString>web browser</gco:CharacterString>\n" +
@@ -15878,7 +15892,9 @@ if (ii == iiDataIdentification) {
 "                  <gmd:name>\n" +
 "                    <gco:CharacterString>Background Information</gco:CharacterString>\n" +
 "                  </gmd:name>\n" +
-"                  <gmd:description><gco:CharacterString/></gmd:description>\n" +
+"                  <gmd:description>\n" +
+"                    <gco:CharacterString>Background information from the source</gco:CharacterString>\n" +
+"                  </gmd:description>\n" +
 "                  <gmd:function>\n" +
 "                    <gmd:CI_OnLineFunctionCode " +
                        "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
@@ -16104,10 +16120,18 @@ writer.write(
     //extent
 "      <gmd:extent>\n");
 
+} else if (ii == iiERDDAP) {
+    writer.write(
+"      <srv:serviceType>\n" +
+"        <gco:LocalName>ERDDAP tabledap</gco:LocalName>\n" +
+"      </srv:serviceType>\n" +
+    //extent
+"      <srv:extent>\n");
+
 } else if (ii == iiOPeNDAP) {
     writer.write(
 "      <srv:serviceType>\n" +
-"        <gco:LocalName>ERDDAP OPeNDAP</gco:LocalName>\n" +
+"        <gco:LocalName>OPeNDAP</gco:LocalName>\n" +
 "      </srv:serviceType>\n" +
     //extent
 "      <srv:extent>\n");
@@ -16116,6 +16140,14 @@ writer.write(
     writer.write(
 "      <srv:serviceType>\n" +
 "        <gco:LocalName>Open Geospatial Consortium Web Map Service (WMS)</gco:LocalName>\n" +
+"      </srv:serviceType>\n" +
+    //extent
+"      <srv:extent>\n");
+
+} else if (ii == iiSubset) {
+    writer.write(
+"      <srv:serviceType>\n" +
+"        <gco:LocalName>ERDDAP Subset</gco:LocalName>\n" +
 "      </srv:serviceType>\n" +
     //extent
 "      <srv:extent>\n");
@@ -16167,10 +16199,12 @@ writer.write(
     (ii == iiDataIdentification? " id=\"boundingTemporalExtent\"" : "") +
     ">\n" +
 "              <gmd:extent>\n" +
-"                <gml:TimePeriod gml:id=\"" +  //id is required    //ncISO has "d293"
+"                <gml:TimePeriod gml:id=\"" +  //id is required    //ncISO has "d293e106"
     (ii == iiDataIdentification? "DI"  : 
+     ii == iiERDDAP?             "ED"  :
      ii == iiOPeNDAP?            "OD"  :
      ii == iiWMS?                "WMS" :
+     ii == iiSubset?             "SUB" :
     "ERROR") + 
     "_gmdExtent_timePeriod_id\">\n" + 
 "                  <gml:description>seconds</gml:description>\n" +
@@ -16205,6 +16239,50 @@ if (ii == iiDataIdentification) {
 "    </gmd:MD_DataIdentification>\n");
 }
 
+if (ii == iiERDDAP) {
+    writer.write(
+"      </srv:extent>\n" +
+"      <srv:couplingType>\n" +
+"        <srv:SV_CouplingType " +
+           "codeList=\"http://www.tc211.org/ISO19139/resources/codeList.xml#SV_CouplingType\" " +
+           "codeListValue=\"tight\">tight</srv:SV_CouplingType>\n" +
+"      </srv:couplingType>\n" +
+"      <srv:containsOperations>\n" +
+"        <srv:SV_OperationMetadata>\n" +
+"          <srv:operationName>\n" +
+"            <gco:CharacterString>ERDDAPtabledapDatasetQueryAndAccess</gco:CharacterString>\n" +
+"          </srv:operationName>\n" +
+"          <srv:DCP gco:nilReason=\"unknown\"/>\n" +  //??? Distributed Computing Platform  
+"          <srv:connectPoint>\n" +
+"            <gmd:CI_OnlineResource>\n" +
+"              <gmd:linkage>\n" +
+"                <gmd:URL>" + XML.encodeAsXML(datasetUrl) + "</gmd:URL>\n" +
+"              </gmd:linkage>\n" +
+"              <gmd:protocol>\n" +
+//see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv 
+"                <gco:CharacterString>ERDDAP:tabledap</gco:CharacterString>\n" +
+"              </gmd:protocol>\n" +
+"              <gmd:name>\n" +
+"                <gco:CharacterString>ERDDAP-tabledap</gco:CharacterString>\n" +
+"              </gmd:name>\n" +
+"              <gmd:description>\n" +
+"                <gco:CharacterString>ERDDAP's tabledap service (a flavor of OPeNDAP) " +
+                   "for tabular (sequence) data. Add different extensions " +
+                   "(e.g., .html, .graph, .das, .dds) to the base URL for different purposes.</gco:CharacterString>\n" +
+"              </gmd:description>\n" +
+"              <gmd:function>\n" +
+"                <gmd:CI_OnLineFunctionCode " +
+                   "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                   "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
+"              </gmd:function>\n" +
+"            </gmd:CI_OnlineResource>\n" +
+"          </srv:connectPoint>\n" +
+"        </srv:SV_OperationMetadata>\n" +
+"      </srv:containsOperations>\n" +
+"      <srv:operatesOn xlink:href=\"#DataIdentification\"/>\n" +
+"    </srv:SV_ServiceIdentification>\n");
+}
+
 if (ii == iiOPeNDAP) {
     writer.write(
 "      </srv:extent>\n" +
@@ -16224,12 +16302,17 @@ if (ii == iiOPeNDAP) {
 "              <gmd:linkage>\n" +
 "                <gmd:URL>" + XML.encodeAsXML(datasetUrl) + "</gmd:URL>\n" +
 "              </gmd:linkage>\n" +
+"              <gmd:protocol>\n" +
+//see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv 
+"                <gco:CharacterString>OPeNDAP:OPeNDAP</gco:CharacterString>\n" +
+"              </gmd:protocol>\n" +
 "              <gmd:name>\n" +
 "                <gco:CharacterString>OPeNDAP</gco:CharacterString>\n" +
 "              </gmd:name>\n" +
 "              <gmd:description>\n" +
-"                <gco:CharacterString>ERDDAP's tabledap OPeNDAP service. Add different extensions " +
-                   "(e.g., .html, .das, .dds) for different purposes.</gco:CharacterString>\n" +
+"                <gco:CharacterString>An OPeNDAP service for tabular (sequence) data. " +
+                   "Add different extensions (e.g., .html, .das, .dds) to the " +
+                   "base URL for different purposes.</gco:CharacterString>\n" +
 "              </gmd:description>\n" +
 "              <gmd:function>\n" +
 "                <gmd:CI_OnLineFunctionCode " +
@@ -16264,11 +16347,57 @@ if (ii == iiWMS) {
 "                <gmd:URL>" + XML.encodeAsXML(wmsUrl + 
                      "?service=WMS&version=1.3.0&request=GetCapabilities") + "</gmd:URL>\n" +
 "              </gmd:linkage>\n" +
+"              <gmd:protocol>\n" +
+//see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv from John Maurer
+"                <gco:CharacterString>OGC:WMS</gco:CharacterString>\n" +
+"              </gmd:protocol>\n" +
 "              <gmd:name>\n" +
 "                <gco:CharacterString>OGC-WMS</gco:CharacterString>\n" +
 "              </gmd:name>\n" +
 "              <gmd:description>\n" +
 "                <gco:CharacterString>Open Geospatial Consortium Web Map Service (WMS)</gco:CharacterString>\n" +
+"              </gmd:description>\n" +
+"              <gmd:function>\n" +
+"                <gmd:CI_OnLineFunctionCode " +
+                   "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                   "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
+"              </gmd:function>\n" +
+"            </gmd:CI_OnlineResource>\n" +
+"          </srv:connectPoint>\n" +
+"        </srv:SV_OperationMetadata>\n" +
+"      </srv:containsOperations>\n" +
+"      <srv:operatesOn xlink:href=\"#DataIdentification\"/>\n" +
+"    </srv:SV_ServiceIdentification>\n");
+}
+
+if (ii == iiSubset) {
+    writer.write(
+"      </srv:extent>\n" +
+"      <srv:couplingType>\n" +
+"        <srv:SV_CouplingType " +
+           "codeList=\"http://www.tc211.org/ISO19139/resources/codeList.xml#SV_CouplingType\" " +
+           "codeListValue=\"tight\">tight</srv:SV_CouplingType>\n" +
+"      </srv:couplingType>\n" +
+"      <srv:containsOperations>\n" +
+"        <srv:SV_OperationMetadata>\n" +
+"          <srv:operationName>\n" +
+"            <gco:CharacterString>ERDDAP_Subset</gco:CharacterString>\n" +
+"          </srv:operationName>\n" +
+"          <srv:DCP gco:nilReason=\"unknown\"/>\n" +  //Distributed Computing Platform  
+"          <srv:connectPoint>\n" +
+"            <gmd:CI_OnlineResource>\n" +
+"              <gmd:linkage>\n" +
+"                <gmd:URL>" + XML.encodeAsXML(datasetUrl) + ".subset</gmd:URL>\n" +
+"              </gmd:linkage>\n" +
+"              <gmd:protocol>\n" +
+//see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv from John Maurer
+"                <gco:CharacterString>search</gco:CharacterString>\n" +
+"              </gmd:protocol>\n" +
+"              <gmd:name>\n" +
+"                <gco:CharacterString>Subset</gco:CharacterString>\n" +
+"              </gmd:name>\n" +
+"              <gmd:description>\n" +
+"                <gco:CharacterString>Web page to facilitate selecting subsets of the dataset</gco:CharacterString>\n" +
 "              </gmd:description>\n" +
 "              <gmd:function>\n" +
 "                <gmd:CI_OnLineFunctionCode " +
@@ -16418,8 +16547,12 @@ writer.write(
 "                  <gmd:linkage>\n" +  
 "                    <gmd:URL>" + XML.encodeAsXML(datasetUrl) + ".html</gmd:URL>\n" +
 "                  </gmd:linkage>\n" +
+"                  <gmd:protocol>\n" +
+//see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv from John Maurer
+"                    <gco:CharacterString>template</gco:CharacterString>\n" +
+"                  </gmd:protocol>\n" +
 "                  <gmd:name>\n" +        
-"                    <gco:CharacterString>OPeNDAP</gco:CharacterString>\n" +
+"                    <gco:CharacterString>Data Subset Form</gco:CharacterString>\n" +
 "                  </gmd:name>\n" +
 "                  <gmd:description>\n" + 
 "                    <gco:CharacterString>ERDDAP's version of the OPeNDAP .html web page for this dataset. " +
@@ -16444,8 +16577,12 @@ writer.write(
 "                  <gmd:linkage>\n" +  
 "                    <gmd:URL>" + XML.encodeAsXML(datasetUrl) + ".graph</gmd:URL>\n" +
 "                  </gmd:linkage>\n" +
+"                  <gmd:protocol>\n" +
+//see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv from John Maurer
+"                    <gco:CharacterString>template</gco:CharacterString>\n" +
+"                  </gmd:protocol>\n" +
 "                  <gmd:name>\n" +        
-"                    <gco:CharacterString>Viewer Information</gco:CharacterString>\n" +
+"                    <gco:CharacterString>Make-A-Graph Form</gco:CharacterString>\n" +
 "                  </gmd:name>\n" +
 "                  <gmd:description>\n" + 
 "                    <gco:CharacterString>ERDDAP's Make-A-Graph .html web page for this dataset. " +

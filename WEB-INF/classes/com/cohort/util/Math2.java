@@ -476,7 +476,7 @@ public class Math2 {
 
         //request is fine without gc?
         long memoryInUse = getMemoryInUse();
-        if (memoryInUse + nBytes < maxSafeMemory)  //getting close  
+        if (memoryInUse + nBytes <= maxSafeMemory)  //it'll work
             return;
 
         //lots of memory is in use

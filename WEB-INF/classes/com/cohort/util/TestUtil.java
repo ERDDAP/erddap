@@ -4134,6 +4134,7 @@ public class TestUtil {
             int n = 1000000;
             String sa[] = new String[n];
             long oMemoryInUse = -1;
+            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive preparation
             int canSize = -1;
 
             //for each outer loop, create a different group of 100 canonical strings 
@@ -4150,9 +4151,10 @@ public class TestUtil {
                 time = System.currentTimeMillis() - time;
                 Math2.gcAndWait(); Math2.gcAndWait();  //aggressive
                 long memoryInUse = Math2.getMemoryInUse();
-                int shouldBe = 280;
+                int shouldBe = outer == 0? 550 : 280;
                 String2.log("canonicalSize=" + String2.canonicalSize() + 
-                    " time=" + time + " (should be Java 1.7M4700=~" + shouldBe + "ms, 1.6=~1450ms, 1.5=~2000ms) " + 
+                    " time=" + time + " (should be Java 1.7M4700=~" + shouldBe + 
+                    "ms [2014-07: 1st pass ~550], 1.6=~1450ms, 1.5=~2000ms) " + 
                     Math2.memoryString());
                 Test.ensureTrue(time < shouldBe * 2, "Unexpected time");
                 if (oMemoryInUse == -1) {
@@ -4263,6 +4265,7 @@ public class TestUtil {
         long time = System.currentTimeMillis();
         String2.log("time=" + time);
         //storeLongsInDoubles(); //one time
+        /* */
         testTest();
         testMath2();
         testString2();

@@ -774,17 +774,17 @@ EDD.debugMode=true;
             expected =   //this changes every day
 "stationID,stationName,longitude,latitude,time,datum,dcp,sensor,waterLevel,sigma,O,F,R,L\n" +
 ",,degrees_east,degrees_north,UTC,,,,m,m,count,,,\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:00:00Z,MLLW,1,..,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,4},NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:06:00Z,MLLW,1,..,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,4},NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:12:00Z,MLLW,1,..,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,4},NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:18:00Z,MLLW,1,..,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,4},NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:24:00Z,MLLW,1,..,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,4},NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:30:00Z,MLLW,1,..,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,4},NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:36:00Z,MLLW,1,..,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,4},NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:42:00Z,MLLW,1,..,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,4},NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:48:00Z,MLLW,1,..,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,4},NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:54:00Z,MLLW,1,..,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,4},NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "22:00:00Z,MLLW,1,..,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,4},NaN,0,0,0\n";
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:00:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:06:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:12:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:18:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:24:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:30:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:36:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:42:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:48:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:54:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "22:00:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -805,17 +805,17 @@ EDD.debugMode=true;
             expected = 
 "stationID,stationName,longitude,latitude,time,datum,dcp,sensor,waterLevel\n" +
 ",,degrees_east,degrees_north,UTC,,,,m\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:00:00Z,MLLW,1,..,[\\-\\.\\d]{1,6}\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:01:00Z,MLLW,1,..,[\\-\\.\\d]{1,6}\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:02:00Z,MLLW,1,..,[\\-\\.\\d]{1,6}\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:03:00Z,MLLW,1,..,[\\-\\.\\d]{1,6}\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:04:00Z,MLLW,1,..,[\\-\\.\\d]{1,6}\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:05:00Z,MLLW,1,..,[\\-\\.\\d]{1,6}\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:06:00Z,MLLW,1,..,[\\-\\.\\d]{1,6}\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:07:00Z,MLLW,1,..,[\\-\\.\\d]{1,6}\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:08:00Z,MLLW,1,..,[\\-\\.\\d]{1,6}\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:09:00Z,MLLW,1,..,[\\-\\.\\d]{1,6}\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:10:00Z,MLLW,1,..,[\\-\\.\\d]{1,6}\n";
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:00:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:01:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:02:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:03:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:04:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:05:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:06:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:07:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:08:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:09:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:10:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -842,17 +842,17 @@ EDD.debugMode=true;
             expected = //changes every day
 "stationID,stationName,longitude,latitude,time,datum,waterLevel,sigma,I,F,R,L\n" +
 ",,degrees_east,degrees_north,UTC,,m,m,,,,\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:00:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:06:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:12:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:18:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:24:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:30:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:36:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:42:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:48:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:54:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "22:00:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0,0,0\n";
+"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:06:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:12:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:18:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:24:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:30:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:36:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:42:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:48:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:54:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,-122.465,37.8067," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -879,16 +879,16 @@ EDD.debugMode=true;
             expected = 
 "stationID,stationName,longitude,latitude,time,datum,waterLevel,sigma,I,L\n" +
 ",,degrees_east,degrees_north,UTC,,m,m,,\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "14:00:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "15:00:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "16:00:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "17:00:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "18:00:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "19:00:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "20:00:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "21:00:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "22:00:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "23:00:00Z,MLLW,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6},0,0\n";
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "14:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "15:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "16:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "17:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "18:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "19:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "20:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "21:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "23:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -920,7 +920,7 @@ EDD.debugMode=true;
 ",,degrees_east,degrees_north,UTC,,m,,,\n";
             for (int i = 2; i < sar.length - 1; i++)
                 expected += 
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "..:..:00Z,MLLW,[\\-\\.\\d]{1,6},.{1,2},0,0\n";
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2},0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -955,7 +955,7 @@ EDD.debugMode=true;
 ",,degrees_east,degrees_north,UTC,,m,\n";
             for (int i = 2; i < sar.length - 1; i++)
                 expected += 
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "..:..:00Z,MLLW,[\\-\\.\\d]{1,6},.{1,2}\n";
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2}\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -987,17 +987,17 @@ EDD.debugMode=true;
             expected = 
 "stationID,stationName,longitude,latitude,time,datum,predictedWL\n" +
 ",,degrees_east,degrees_north,UTC,,m\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:00:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:06:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:12:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:18:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:24:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:30:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:36:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:42:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:48:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:54:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "01:00:00Z,MLLW,[\\-\\.\\d]{1,6}\n";
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:06:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:12:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:18:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:24:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:30:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:36:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:42:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:48:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:54:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "01:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1028,17 +1028,17 @@ EDD.debugMode=true;
             expected = 
 "stationID,stationName,longitude,latitude,time,datum,predictedWL\n" +
 ",,degrees_east,degrees_north,UTC,,m\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:00:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "01:00:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "02:00:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "03:00:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "04:00:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "05:00:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "06:00:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "07:00:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "08:00:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "09:00:00Z,MLLW,[\\-\\.\\d]{1,6}\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "10:00:00Z,MLLW,[\\-\\.\\d]{1,6}\n";
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "01:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "02:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "03:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "04:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "05:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "06:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "07:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "08:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "09:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAhead + "10:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1065,17 +1065,17 @@ EDD.debugMode=true;
             expected = 
 "stationID,stationName,longitude,latitude,time,dcp,sensor,AT,X,N,R\n" +
 ",,degrees_east,degrees_north,UTC,,,degree_C,,,\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:00:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:06:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:12:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:18:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:24:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:30:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:36:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:42:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:48:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:54:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "01:00:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n";
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:06:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:12:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:18:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:24:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:30:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:36:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:42:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:48:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:54:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1102,17 +1102,17 @@ EDD.debugMode=true;
             expected = 
 "stationID,stationName,longitude,latitude,time,dcp,sensor,BP,X,N,R\n" +
 ",,degrees_east,degrees_north,UTC,,,hPa,,,\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:00:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:06:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:12:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:18:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:24:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:30:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:36:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:42:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:48:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:54:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "01:00:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n";
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:06:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:12:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:18:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:24:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:30:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:36:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:42:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:48:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:54:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1141,17 +1141,17 @@ EDD.debugMode=true;
             expected = 
 "stationID,stationName,longitude,latitude,time,dcp,sensor,CN,X,N,R\n" +
 ",,degrees_east,degrees_north,UTC,,,mS/cm,,,\n" +
-id + cityLL + daysAgo + "00:00:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-id + cityLL + daysAgo + "00:06:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-id + cityLL + daysAgo + "00:12:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-id + cityLL + daysAgo + "00:18:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-id + cityLL + daysAgo + "00:24:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-id + cityLL + daysAgo + "00:30:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-id + cityLL + daysAgo + "00:36:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-id + cityLL + daysAgo + "00:42:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-id + cityLL + daysAgo + "00:48:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-id + cityLL + daysAgo + "00:54:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n" +
-id + cityLL + daysAgo + "01:00:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n";
+id + cityLL + daysAgo + "00:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:06:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:12:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:18:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:24:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:30:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:36:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:42:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:48:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:54:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
             Test.ensureEqual(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1297,17 +1297,17 @@ id + cityLL + daysAgo + "01:00:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n";
             expected = 
 "stationID,stationName,longitude,latitude,time,dcp,sensor,WS,WD,WG,X,R\n" +
 ",,degrees_east,degrees_north,UTC,,,m s-1,degrees_true,m s-1,,\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:00:00Z,1,..,\\d\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:06:00Z,1,..,\\d\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:12:00Z,1,..,\\d\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:18:00Z,1,..,\\d\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:24:00Z,1,..,\\d\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:30:00Z,1,..,\\d\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:36:00Z,1,..,\\d\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:42:00Z,1,..,\\d\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:48:00Z,1,..,\\d\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:54:00Z,1,..,\\d\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "01:00:00Z,1,..,\\d\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d\\.\\d{1,2},0,0\n";
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:00:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:06:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:12:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:18:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:24:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:30:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:36:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:42:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:48:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:54:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,-71.4012,41.8071," + daysAgo + "01:00:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1339,7 +1339,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n";
             String sar[] = String2.split(results, '\n');
             for (int i = 2; i < sar.length - 1; i++)
                 expected += 
-"8737005,Pinto Island,-88.0311,30.6711," + daysAgo + "..:..:00Z,[\\-\\.\\d]{1,6}\n";
+"8737005,Pinto Island,-88.0311,30.6711," + daysAgo + "..:..:00Z,([\\-\\.\\d]{1,6}|NaN)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1367,16 +1367,16 @@ id + cityLL + daysAgo + "01:00:00Z,1,..,[\\-\\.\\d]{1,6},0,0,0\n";
             expected = 
 "stationID,stationName,longitude,latitude,time,CS,CD\n" +
 ",,degrees_east,degrees_north,UTC,knots,degrees_true\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:03:00Z,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6}\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:09:00Z,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6}\n" +
-//"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:15:00Z,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6}\n" + //not on 2010-11-21
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:21:00Z,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6}\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:27:00Z,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6}\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:33:00Z,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6}\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:39:00Z,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6}\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:45:00Z,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6}\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:51:00Z,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6}\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:57:00Z,[\\-\\.\\d]{1,6},[\\-\\.\\d]{1,6}\n";
+"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:03:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:09:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+//"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:15:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" + //not on 2010-11-21
+"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:21:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:27:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:33:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:39:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:45:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:51:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:57:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {

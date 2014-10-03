@@ -16697,36 +16697,38 @@ touble: because table is JsonObject, info may not be in expected order
     public static void testReadASCIISpeed() throws Exception {
 
         try {
-            //warmup
-            String2.log("\n*** Table.testReadASCIISpeed\n");
             String fileName = "c:/data/ndbc/ndbcMetHistoricalTxt/41009h1990.txt"; 
-            Table table = new Table();
-            table.readASCII(fileName);
+            long time = 0;
 
-            //time it
-            long fileLength = File2.length(fileName); //was 1335204
-            Test.ensureTrue(fileLength > 1335000, "fileName=" + fileName + " length=" + fileLength); 
-            long time = System.currentTimeMillis();
-            table = new Table();
-            table.readASCII(fileName);
-            time = System.currentTimeMillis() - time;
+            for (int attempt = 0; attempt < 3; attempt++) {
+                String2.log("\n*** Table.testReadASCIISpeed attempt #" + attempt + "\n");
+                Math2.gcAndWait();
+                //time it
+                long fileLength = File2.length(fileName); //was 1335204
+                Test.ensureTrue(fileLength > 1335000, "fileName=" + fileName + " length=" + fileLength); 
+                time = System.currentTimeMillis();
+                Table table = new Table();
+                table.readASCII(fileName);
+                time = System.currentTimeMillis() - time;
 
-            String results = table.dataToCSVString(3);
-            String expected =
+                String results = table.dataToCSVString(3);
+                String expected =
 "row,YY,MM,DD,hh,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS\n" +
 "0,90,01,01,00,161,08.6,10.7,01.50,05.00,04.80,999,1017.2,22.7,22.0,999.0,99.0\n" +
 "1,90,01,01,01,163,09.3,11.3,01.50,05.00,04.90,999,1017.3,22.7,22.0,999.0,99.0\n" +
 "2,90,01,01,01,164,09.2,10.6,01.60,04.80,04.90,999,1017.3,22.7,22.0,999.0,99.0\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
-            Test.ensureEqual(table.nColumns(), 16, "nColumns=" + table.nColumns()); 
-            Test.ensureEqual(table.nRows(), 17117, "nRows=" + table.nRows()); 
+                Test.ensureEqual(results, expected, "results=\n" + results);
+                Test.ensureEqual(table.nColumns(), 16, "nColumns=" + table.nColumns()); 
+                Test.ensureEqual(table.nRows(), 17117, "nRows=" + table.nRows()); 
 
-            String2.log("********** Done. cells/ms=" + 
-                (table.nColumns() * table.nRows()/time) + " (usual=2711 Java 1.7M4700, was 648)" +
-                " time=" + time + " ms (usual=101 Java 1.7M4700, was 422, java 1.5 was 719)"); 
-            if (time > 700)
+                String2.log("********** attempt #" + attempt + " Done. cells/ms=" + 
+                    (table.nColumns() * table.nRows()/time) + " (usual=2711 Java 1.7M4700, was 648)" +
+                    "\ntime=" + time + " ms (usual=101 Java 1.7M4700, was 422, java 1.5 was 719)"); 
+                if (time <= 200)
+                    break;
+            }
+            if (time > 200)
                 throw new SimpleException("readASCII took too long.");
-            Math2.sleep(5000);
         } catch (Exception e) {
             String2.getStringFromSystemIn(
                 MustBe.throwableToString(e) +
@@ -16740,37 +16742,41 @@ touble: because table is JsonObject, info may not be in expected order
 
         try {
             //warmup
-            String2.log("\n*** Table.testReadJsonSpeed\n");
             String fileName = "c:/u00/cwatch/testData/cPostDet3.files.json"; 
-            Table table=new Table();
-            table.readJson(fileName, String2.readFromFile(fileName)[1]);
+            long time = 0;
 
-            //time it
-            long time = System.currentTimeMillis();
-            long fileLength = File2.length(fileName); //was 10,166KB
-            Test.ensureTrue(fileLength > 9000000, "fileName=" + fileName + " length=" + fileLength); 
-            table=new Table();
-            table.readJson(fileName, String2.readFromFile(fileName)[1]);
+            for (int attempt = 0; attempt < 3; attempt++) {
+                String2.log("\n*** Table.testReadJsonSpeed attempt#" + attempt + "\n");
+                Math2.gcAndWait();
 
-            String results = table.dataToCSVString(3);
-            String2.log("results=\n" + results);
-//row,dirIndex,fileName,lastMod,sortedSpacing,unique_tag_id_min_,unique_tag_id_max_,PI_min_,PI_max_,longitude_min_,longitude_max_,l
-//atitude_min_,latitude_max_,time_min_,time_max_,bottom_depth_min_,bottom_depth_max_,common_name_min_,common_name_max_,date_public_min
-//_,date_public_max_,line_min_,line_max_,position_on_subarray_min_,position_on_subarray_max_,project_min_,project_max_,riser_height_mi
-//n_,riser_height_max_,role_min_,role_max_,scientific_name_min_,scientific_name_max_,serial_number_min_,serial_number_max_,stock_min_,
-// stock_max_,surgery_time_min_,surgery_time_max_,surgery_location_min_,surgery_location_max_,tagger_min_,tagger_max_
-            Test.ensureTrue(results.indexOf("unique_tag_id_max") > 0, "test 1");
-            Test.ensureTrue(results.indexOf("surgery_time_min") > 0,  "test 2");
-            Test.ensureTrue(table.nColumns() > 40, "nColumns=" + table.nColumns()); //was 42
-            Test.ensureTrue(table.nRows() > 15000, "nRows=" + table.nRows()); //was 15024
+                //time it
+                time = System.currentTimeMillis();
+                long fileLength = File2.length(fileName); //was 10,166KB
+                Test.ensureTrue(fileLength > 9000000, "fileName=" + fileName + " length=" + fileLength); 
+                Table table=new Table();
+                table.readJson(fileName, String2.readFromFile(fileName)[1]);
 
-            time = System.currentTimeMillis() - time;
-            String2.log("********* Done. cells/ms=" + 
-                (table.nColumns() * table.nRows()/time) + " (usual=2881 Java 1.7M4700, was 747)" +
-                " time=" + time + " ms (usual=219 Java 1.7M4700, was 844, java 1.5 was 1687)"); 
-            if (time > 1200)
+                String results = table.dataToCSVString(3);
+                String2.log("results=\n" + results);
+    //row,dirIndex,fileName,lastMod,sortedSpacing,unique_tag_id_min_,unique_tag_id_max_,PI_min_,PI_max_,longitude_min_,longitude_max_,l
+    //atitude_min_,latitude_max_,time_min_,time_max_,bottom_depth_min_,bottom_depth_max_,common_name_min_,common_name_max_,date_public_min
+    //_,date_public_max_,line_min_,line_max_,position_on_subarray_min_,position_on_subarray_max_,project_min_,project_max_,riser_height_mi
+    //n_,riser_height_max_,role_min_,role_max_,scientific_name_min_,scientific_name_max_,serial_number_min_,serial_number_max_,stock_min_,
+    // stock_max_,surgery_time_min_,surgery_time_max_,surgery_location_min_,surgery_location_max_,tagger_min_,tagger_max_
+                Test.ensureTrue(results.indexOf("unique_tag_id_max") > 0, "test 1");
+                Test.ensureTrue(results.indexOf("surgery_time_min") > 0,  "test 2");
+                Test.ensureTrue(table.nColumns() > 40, "nColumns=" + table.nColumns()); //was 42
+                Test.ensureTrue(table.nRows() > 15000, "nRows=" + table.nRows()); //was 15024
+
+                time = System.currentTimeMillis() - time;
+                String2.log("********* Done. cells/ms=" + 
+                    (table.nColumns() * table.nRows()/time) + " (usual=2881 Java 1.7M4700, was 747)" +
+                    "\ntime=" + time + " ms (usual=219 Java 1.7M4700, was 844, java 1.5 was 1687)"); 
+                if (time <= 400)
+                    break;
+            }
+            if (time > 400)
                 throw new SimpleException("readJson took too long.");
-            Math2.sleep(5000);
         } catch (Exception e) {
             String2.getStringFromSystemIn(
                 MustBe.throwableToString(e) +
@@ -16783,37 +16789,40 @@ touble: because table is JsonObject, info may not be in expected order
     public static void testReadNDNcSpeed() throws Exception {
 
         try {
-            //warmup
-            String2.log("\n*** Table.testReadNDNcSpeed\n");
             String fileName = "c:/u00/data/points/ndbcMet/NDBC_41002_met.nc"; 
             Table table = new Table();
-            table.readNDNc(fileName, null, null, 0, 0, true);
+            long time = 0;
 
-            //time it
-            long time = System.currentTimeMillis();
+            for (int attempt = 0; attempt < 3; attempt++) {
+                String2.log("\n*** Table.testReadNDNcSpeed attempt+" + attempt + "\n");
+                Math2.gcAndWait();
 
-            long fileLength = File2.length(fileName); //was 20580000
-            Test.ensureTrue(fileLength > 20570000, "fileName=" + fileName + " length=" + fileLength); 
-            table = new Table();
-            table.readNDNc(fileName, null, null, 0, 0, true);
+                //time it
+                time = System.currentTimeMillis();
+                long fileLength = File2.length(fileName); //was 20580000
+                Test.ensureTrue(fileLength > 20570000, "fileName=" + fileName + " length=" + fileLength); 
+                table = new Table();
+                table.readNDNc(fileName, null, null, 0, 0, true);
 
-            String results = table.dataToCSVString(3);
-            String expected =  //before 2011-06-14 was 32.31, -75.35
+                String results = table.dataToCSVString(3);
+                String expected =  //before 2011-06-14 was 32.31, -75.35
 "row,TIME,DEPTH,LAT,LON,WD,WSPD,GST,WVHT,DPD,APD,MWD,BAR,ATMP,WTMP,DEWP,VIS,PTDY,TIDE,WSPU,WSPV,ID\n" +
 "0,1.235556E8,0.0,32.309,-75.483,149,1.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1031.0,15.5,-9999999.0,5.4,-9999999.0,-9999999.0,-9999999.0,-0.8,1.3,41002\n" +
 "1,1.235592E8,0.0,32.309,-75.483,145,0.3,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1031.0,13.9,-9999999.0,7.3,-9999999.0,-9999999.0,-9999999.0,-0.2,0.2,41002\n" +
 "2,1.235628E8,0.0,32.309,-75.483,315,1.4,-9999999.0,-9999999.0,-9999999.0,-9999999.0,,1031.0,11.4,-9999999.0,6.5,-9999999.0,-9999999.0,-9999999.0,1.0,-1.0,41002\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
-            Test.ensureEqual(table.nColumns(), 21, "nColumns=" + table.nColumns()); 
-            Test.ensureTrue(table.nRows() >= 309736, "nRows=" + table.nRows()); 
+                Test.ensureEqual(results, expected, "results=\n" + results);
+                Test.ensureEqual(table.nColumns(), 21, "nColumns=" + table.nColumns()); 
+                Test.ensureTrue(table.nRows() >= 309736, "nRows=" + table.nRows()); 
 
-            time = System.currentTimeMillis() - time;
-            String2.log("********** Done. cells/ms=" + 
-                (table.nColumns() * table.nRows()/time) + " (usual=31414 Java 1.7M4700, was 9679)" +
-                " time=" + time + " ms (usual=226 Java 1.7M4700, was 640, java 1.5 was 828, but varies a lot)"); 
-            if (time > 1000)
+                time = System.currentTimeMillis() - time;
+                String2.log("********** Done. cells/ms=" + 
+                    (table.nColumns() * table.nRows()/time) + " (usual=31414 Java 1.7M4700, was 9679)" +
+                    "\ntime=" + time + " ms (usual=226 Java 1.7M4700, was 640, java 1.5 was 828, but varies a lot)"); 
+                if (time <= 400)
+                    break;
+            }
+            if (time > 400)
                 throw new SimpleException("readNDNc took too long.");
-            Math2.sleep(5000);
         } catch (Exception e) {
             String2.getStringFromSystemIn(
                 MustBe.throwableToString(e) +
@@ -16826,33 +16835,36 @@ touble: because table is JsonObject, info may not be in expected order
     public static void testReadOpendapSequenceSpeed() throws Exception {
 
         try {
-            //warm up
-            String2.log("\n*** Table.testReadOpendapSequenceSpeed\n");
             String url = 
                 "http://coastwatch.pfeg.noaa.gov/erddap/tabledap/cwwcNDBCMet?&time>=1999-01-01&time<=1999-04-01&station=%2241009%22";
-            Table table = new Table();
-            table.readOpendapSequence(url);
+            long time = 0;
 
-            //time it
-            long time = System.currentTimeMillis();
-            table = new Table();
-            table.readOpendapSequence(url);
-            String results = table.dataToCSVString(3);            
-            String expected = //before 2011-06-14 was -80.17, 28.5
+            for (int attempt = 0; attempt < 3; attempt++) {
+                String2.log("\n*** Table.testReadOpendapSequenceSpeed\n");
+                Math2.gcAndWait();
+
+                //time it
+                time = System.currentTimeMillis();
+                Table table = new Table();
+                table.readOpendapSequence(url);
+                String results = table.dataToCSVString(3);            
+                String expected = //before 2011-06-14 was -80.17, 28.5
 "row,station,longitude,latitude,time,wd,wspd,gst,wvht,dpd,apd,mwd,bar,atmp,wtmp,dewp,vis,ptdy,tide,wspu,wspv\n" +
 "0,41009,-80.166,28.519,9.151488E8,0,1.9,2.7,1.02,11.11,6.49,,1021.0,20.4,24.2,-9999999.0,-9999999.0,-9999999.0,-9999999.0,0.0,-1.9\n" +
 "1,41009,-80.166,28.519,9.151524E8,53,1.5,2.8,0.99,11.11,6.67,,1021.0,20.6,24.5,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-1.2,-0.9\n" +
 "2,41009,-80.166,28.519,9.15156E8,154,1.0,2.2,1.06,11.11,6.86,,1021.2,20.6,24.6,-9999999.0,-9999999.0,-9999999.0,-9999999.0,-0.4,0.9\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);
+                Test.ensureEqual(results, expected, "results=\n" + results);
 
-            Test.ensureTrue(table.nRows() > 2100, "nRows=" + table.nRows());
-            time = System.currentTimeMillis() - time;
-            String2.log("********** Done. cells/ms=" + 
-                (table.nColumns() * table.nRows()/time) + " (usual=337 Java 1.7M4700, was 106)" +
-                " time=" + time + " ms (usual=128 Java 1.7M4700, was 406, java 1.5 was 562)");  
-            if (time > 700)
+                Test.ensureTrue(table.nRows() > 2100, "nRows=" + table.nRows());
+                time = System.currentTimeMillis() - time;
+                String2.log("********** Done. cells/ms=" + 
+                    (table.nColumns() * table.nRows()/time) + " (usual=337 Java 1.7M4700, was 106)" +                
+                    "\ntime=" + time + " ms (usual=600 since remote, was 128 Java 1.7M4700, was 406, java 1.5 was 562)");  
+                if (time <= 900)
+                    break;
+            }
+            if (time > 900)
                 throw new SimpleException("readOpendapSequence took too long.");
-            Math2.sleep(5000);
         } catch (Exception e) {
             String2.getStringFromSystemIn(
                 MustBe.throwableToString(e) +
@@ -16876,39 +16888,55 @@ touble: because table is JsonObject, info may not be in expected order
             table.saveAsCsvASCII(destName + ".csv");
             table.saveAsJson(destName + ".json", table.findColumnNumber("time"), true); //writeUnits
             table.saveAsFlatNc(destName + ".nc", "row");
+            long time = 0;
 
-            //time it
-            String2.log("\ntime it\n");
+            for (int attempt = 0; attempt < 3; attempt++) {
+                //time it
+                String2.log("\ntime it\n");
 
-            //saveAsCsvASCII
-            long time = System.currentTimeMillis();
-            table.saveAsCsvASCII(destName + ".csv");
-            time = System.currentTimeMillis() - time;
-            String2.log("saveAsCsvASCII done. cells/ms=" + (table.nColumns() * table.nRows() / time) + //796
-                " time=" + time + " ms  (expected=344)"); 
-            File2.delete(destName + ".csv");
+                //saveAsCsvASCII
+                time = System.currentTimeMillis();
+                table.saveAsCsvASCII(destName + ".csv");
+                time = System.currentTimeMillis() - time;
+                String2.log("saveAsCsvASCII attempt#" + attempt + 
+                    " done. cells/ms=" + (table.nColumns() * table.nRows() / time) + //796
+                    "\ntime=" + time + " ms  (expected=344, was 532 for Java 1.5 Dell)"); 
+                File2.delete(destName + ".csv");
+                if (time <= 550)
+                    break;
+            }
             if (time > 550)
-                throw new SimpleException("saveAsCsvASCII took too long. Expected=~532 for 17117 rows.");
+                throw new SimpleException("saveAsCsvASCII took too long. Expected=~344 for 17117 rows.");
 
-            //saveAsJson
-            time = System.currentTimeMillis();
-            table.saveAsJson(destName + ".json", table.findColumnNumber("time"), true); //writeUnits
-            time = System.currentTimeMillis() - time;
-            String2.log("saveAsJson done. cells/ms=" + (table.nColumns() * table.nRows() / time) +   //974
-                " time=" + time + " ms  (expect=281)"); 
-            File2.delete(destName + ".json");
-            if (time > 400)
-                throw new SimpleException("saveAsJson took too long. Expected=~515 for 17117 rows.");
+            for (int attempt = 0; attempt < 3; attempt++) {
+                //saveAsJson
+                time = System.currentTimeMillis();
+                table.saveAsJson(destName + ".json", table.findColumnNumber("time"), true); //writeUnits
+                time = System.currentTimeMillis() - time;
+                String2.log("saveAsJson attempt#" + attempt + 
+                    " done. cells/ms=" + (table.nColumns() * table.nRows() / time) +   //974
+                    "\ntime=" + time + " ms  (expect=281, was 515 for Java 1.5 Dell)"); 
+                File2.delete(destName + ".json");
+                if (time <= 450)
+                    break;
+            }
+            if (time >= 450)
+                throw new SimpleException("saveAsJson took too long. Expected=~281 for 17117 rows.");
 
             //saveAsFlatNc
-            time = System.currentTimeMillis();
-            table.saveAsFlatNc(destName + ".nc", "row");
-            time = System.currentTimeMillis() - time;
-            String2.log("saveAsFlatNc done. cells/ms=" + (table.nColumns() * table.nRows() / time) + //2190
-                " time=" + time + " ms  (expected=125)"); 
-            File2.delete(destName + ".nc");
+            for (int attempt = 0; attempt < 3; attempt++) {
+                time = System.currentTimeMillis();
+                table.saveAsFlatNc(destName + ".nc", "row");
+                time = System.currentTimeMillis() - time;
+                String2.log("saveAsFlatNc attempt#" + attempt + 
+                    " done. cells/ms=" + (table.nColumns() * table.nRows() / time) + //2190
+                    "\ntime=" + time + " ms  (expected=125, was 172 for Java 1.5 Dell)"); 
+                File2.delete(destName + ".nc");
+                if (time <= 200)
+                    break;
+            }
             if (time > 200)
-                throw new SimpleException("saveAsFlatNc took too long. Expected=~172 for 17117 rows.");
+                throw new SimpleException("saveAsFlatNc took too long. Expected=~125 for 17117 rows.");
             
 
         } catch (Exception e) {

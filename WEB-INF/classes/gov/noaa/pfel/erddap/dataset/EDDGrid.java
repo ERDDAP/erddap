@@ -1142,7 +1142,8 @@ public abstract class EDDGrid extends EDD {
                 if (query.charAt(po) != ',') {
                     if (repair) return; //this can only be trouble for second variable
                     else throw new SimpleException(EDStatic.queryError + 
-                        MessageFormat.format(EDStatic.queryErrorExpectedAt, ",", "" + po));
+                        MessageFormat.format(EDStatic.queryErrorExpectedAt, 
+                            ",\" or \"[end of query]", "" + po, "\"" + query.charAt(po) + "\""));
                 }
                 po++;
             }
@@ -1153,7 +1154,8 @@ public abstract class EDDGrid extends EDD {
             if (leftPo < 0) {
                 if (repair) return; //this can only be trouble for second variable
                 else throw new SimpleException(EDStatic.queryError + 
-                    MessageFormat.format(EDStatic.queryErrorExpectedAt, "[", "" + po));
+                    MessageFormat.format(EDStatic.queryErrorExpectedAt, 
+                        "[", "" + po, "[end of query]"));
             }
             String destinationName = query.substring(po, leftPo);
 
@@ -1366,12 +1368,13 @@ public abstract class EDDGrid extends EDD {
 
         //leftPo must be '['
         int po = leftPo;
-        if (po >= deQuery.length() || deQuery.charAt(leftPo) != '[') {
+        if (po >= deQuery.length() || deQuery.charAt(po) != '[') {
             if (repair) return defaults;
             else throw new SimpleException(EDStatic.queryError + 
                 diagnostic + ": " +
                 MessageFormat.format(EDStatic.queryErrorExpectedAt, 
-                    "[", "" + leftPo));
+                    "[", "" + po, 
+                    po >= deQuery.length()? "[end of query]" : "\"" + deQuery.charAt(po) + "\""));
         }
 
         //find the ']'    
@@ -1443,7 +1446,7 @@ public abstract class EDDGrid extends EDD {
                         else throw new SimpleException(EDStatic.queryError +
                             diagnostic + ": " +
                             MessageFormat.format(EDStatic.queryErrorExpectedAt, 
-                                ":", "" + colon2));                    
+                                "]\" or \":", "" + colon2, "\"" + deQuery.charAt(colon2) + "\""));                    
                     }
                 }
             } else {
@@ -1496,22 +1499,25 @@ public abstract class EDDGrid extends EDD {
                 //convert paren startS
                 startS = startS.substring(1, startS.length() - 1).trim(); //remove begin and end parens
                 if (startS.length() == 0 && !repair) 
-                    throw new SimpleException(EDStatic.queryError +
-                        diagnostic + ": " +
+                    throw new SimpleException(EDStatic.queryError + diagnostic + ": " +
                         MessageFormat.format(EDStatic.queryErrorGridMissing, 
                             EDStatic.EDDGridStart));
                 double startDestD = av.destinationToDouble(startS);
 
                 //since closest() below makes far out values valid, need to test validity
-                if (repair && Double.isNaN(startDestD))
-                    startDestD = av.destinationMin();
+                if (Double.isNaN(startDestD)) {
+                    if (repair)
+                        startDestD = av.destinationMin();
+                    else throw new SimpleException(EDStatic.queryError + diagnostic + ": " +
+                        MessageFormat.format(EDStatic.notAllowed,
+                            EDStatic.EDDGridStart + "=NaN (invalid format?)"));
+                }
 
                 if (Math2.greaterThanAE(precision, startDestD, av.destinationCoarseMin())) {
                 } else {
                     if (repair) startDestD = av.firstDestinationValue();
                     else throw new SimpleException(MustBe.THERE_IS_NO_DATA + " " +
-                        EDStatic.queryError +
-                        diagnostic + ": " +
+                        EDStatic.queryError + diagnostic + ": " +
                         MessageFormat.format(EDStatic.queryErrorGridLessMin,
                             EDStatic.EDDGridStart, "" + startDestD, 
                             "" + av.destinationMin(),
@@ -1567,8 +1573,13 @@ public abstract class EDDGrid extends EDD {
                 double stopDestD = av.destinationToDouble(stopS);
 
                 //since closest() below makes far out values valid, need to test validity
-                if (repair && Double.isNaN(stopDestD))
-                    stopDestD = av.destinationMax();
+                if (Double.isNaN(stopDestD)) {
+                    if (repair)
+                        stopDestD = av.destinationMax();
+                    else throw new SimpleException(EDStatic.queryError + diagnostic + ": " +
+                        MessageFormat.format(EDStatic.notAllowed,
+                            EDStatic.EDDGridStop + "=NaN (invalid format?)"));
+                }
 
                 if (Math2.greaterThanAE(precision, stopDestD, av.destinationCoarseMin())) {
                 } else {
@@ -7802,14 +7813,17 @@ Attributes {
 
             //ArcGIS
             "<p><b><a rel=\"bookmark\" href=\"http://www.esri.com/software/arcgis/index.html\">ArcGIS" +
-                    EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
+                    EDStatic.externalLinkHtml(tErddapUrl) + "</a><a name=\"ArcGIS\">&nbsp;</a>\n" +
             "     <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/Esri_grid\">.esriAsc" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a></b>\n" +
             "   <br>.esriAsc is an old and inherently limited file format. If you have <b>ArcGIS 10 or higher</b>, we strongly recommend\n" +
             "   <br>that you download gridded data from ERDDAP in a <a rel=\"help\" href=\"#nc\">NetCDF .nc file</a>," +
-            "     which can be opened directly by ArcGIS 10+.\n" +
+            "     which can be opened directly by ArcGIS 10+\n" +
+            "   <br>using the\n" +
+            "   <a rel=\"help\" href=\"http://resources.arcgis.com/en/help/main/10.1/index.html#//004600000011000000\">Make\n" +
+            "     NetCDF Raster Layer tool in the Multidimension Tools toolbox</a>.\n" +
             "   <p>If you have <b>ArcGIS 9.x or lower</b>:\n" +
-            "   <br><a name=\"ArcGIS\">ArcGIS</a> is a family of Geographical Information Systems (GIS) products from ESRI: ArcView, ArcEditor, and ArcInfo.\n" +
+            "   <br>ArcGIS is a family of Geographical Information Systems (GIS) products from ESRI: ArcView, ArcEditor, and ArcInfo.\n" +
             "   <br>To download data for use with ArcGIS 9.x or lower:\n" +
             "   <br>in ERDDAP, choose the .esriAscii file type to save a latitude longitude subset of data for just one point in time.\n" +
             "   <br>The file's extension will be .asc.  This file format was designed by ESRI to transfer coverage data between computers.\n" +
@@ -10992,6 +11006,8 @@ writer.write(
      * 
      * <p>Help with schema: http://www.schemacentral.com/sc/niem21/e-gmd_contact-1.html
      * <br>List of nilReason: http://www.schemacentral.com/sc/niem21/a-gco_nilReason.html
+     * <br>2014-09-24 Example with protocols:
+     * <br>http://oos.soest.hawaii.edu/pacioos/metadata/roms_hiig_forecast.xml
      * 
      * <p>If getAccessibleTo()==null, the fgdc refers to http: ERDDAP links; otherwise,
      * it refers to https: ERDDAP links.
@@ -11359,17 +11375,19 @@ writer.write(
 
 //*** IdentificationInfo loop
 int iiDataIdentification = 0;
-int iiOPeNDAP = 1;
-int iiWMS = 2;
+int iiERDDAP = 1;
+int iiOPeNDAP = 2;
+int iiWMS = 3;
 for (int ii = 0; ii <= iiWMS; ii++) {
 
     if (ii == iiWMS && accessibleViaWMS().length() > 0)
-        break;
+        continue;
 
     writer.write(
 "  <gmd:identificationInfo>\n" +
 
 (ii == iiDataIdentification?   "    <gmd:MD_DataIdentification id=\"DataIdentification\">\n" :
+ ii == iiERDDAP?               "    <srv:SV_ServiceIdentification id=\"ERDDAP-griddap\">\n" :
  ii == iiOPeNDAP?              "    <srv:SV_ServiceIdentification id=\"OPeNDAP\">\n" :
  ii == iiWMS?                  "    <srv:SV_ServiceIdentification id=\"OGC-WMS\">\n" :
                                "    <gmd:ERROR id=\"ERROR\">\n") +
@@ -11462,7 +11480,8 @@ for (int ii = 0; ii <= iiWMS; ii++) {
 "                        <gmd:URL>" + XML.encodeAsXML(infoUrl) + "</gmd:URL>\n" +
 "                      </gmd:linkage>\n" +
 "                      <gmd:protocol>\n" +
-"                        <gco:CharacterString>http</gco:CharacterString>\n" +
+//see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv from John Maurer
+"                        <gco:CharacterString>information</gco:CharacterString>\n" +
 "                      </gmd:protocol>\n" +
 "                      <gmd:applicationProfile>\n" +
 "                        <gco:CharacterString>web browser</gco:CharacterString>\n" +
@@ -11470,7 +11489,9 @@ for (int ii = 0; ii <= iiWMS; ii++) {
 "                      <gmd:name>\n" +
 "                        <gco:CharacterString>Background Information</gco:CharacterString>\n" +
 "                      </gmd:name>\n" +
-"                      <gmd:description><gco:CharacterString/></gmd:description>\n" +
+"                      <gmd:description>\n" +
+"                        <gco:CharacterString>Background information from the source</gco:CharacterString>\n" +
+"                      </gmd:description>\n" +
 "                      <gmd:function>\n" +
 "                        <gmd:CI_OnLineFunctionCode " +
                            "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
@@ -11575,7 +11596,8 @@ if (ii == iiDataIdentification) {
 "                    <gmd:URL>" + XML.encodeAsXML(infoUrl) + "</gmd:URL>\n" +
 "                  </gmd:linkage>\n" +
 "                  <gmd:protocol>\n" +
-"                    <gco:CharacterString>http</gco:CharacterString>\n" +
+//see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv from John Maurer
+"                    <gco:CharacterString>information</gco:CharacterString>\n" +
 "                  </gmd:protocol>\n" +
 "                  <gmd:applicationProfile>\n" +
 "                    <gco:CharacterString>web browser</gco:CharacterString>\n" +
@@ -11583,7 +11605,9 @@ if (ii == iiDataIdentification) {
 "                  <gmd:name>\n" +
 "                    <gco:CharacterString>Background Information</gco:CharacterString>\n" +
 "                  </gmd:name>\n" +
-"                  <gmd:description><gco:CharacterString/></gmd:description>\n" +
+"                  <gmd:description>\n" +
+"                    <gco:CharacterString>Background information from the source</gco:CharacterString>\n" +
+"                  </gmd:description>\n" +
 "                  <gmd:function>\n" +
 "                    <gmd:CI_OnLineFunctionCode " +
                        "codeList=\"http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#gmd:CI_OnLineFunctionCode\" " +
@@ -11809,10 +11833,18 @@ writer.write(
     //extent
 "      <gmd:extent>\n");
 
+} else if (ii == iiERDDAP) {
+    writer.write(
+"      <srv:serviceType>\n" +
+"        <gco:LocalName>ERDDAP griddap</gco:LocalName>\n" +
+"      </srv:serviceType>\n" +
+    //extent
+"      <srv:extent>\n");
+
 } else if (ii == iiOPeNDAP) {
     writer.write(
 "      <srv:serviceType>\n" +
-"        <gco:LocalName>ERDDAP OPeNDAP</gco:LocalName>\n" +
+"        <gco:LocalName>OPeNDAP</gco:LocalName>\n" +
 "      </srv:serviceType>\n" +
     //extent
 "      <srv:extent>\n");
@@ -11861,6 +11893,7 @@ writer.write(
 "              <gmd:extent>\n" +
 "                <gml:TimePeriod gml:id=\"" +  //id is required    //ncISO has "d293"
     (ii == iiDataIdentification? "DI"  : 
+     ii == iiERDDAP?             "ED"  :
      ii == iiOPeNDAP?            "OD"  :
      ii == iiWMS?                "WMS" :
     "ERROR") + 
@@ -11892,6 +11925,50 @@ if (ii == iiDataIdentification) {
 "    </gmd:MD_DataIdentification>\n");
 }
 
+if (ii == iiERDDAP) {
+    writer.write(
+"      </srv:extent>\n" +
+"      <srv:couplingType>\n" +
+"        <srv:SV_CouplingType " +
+           "codeList=\"http://www.tc211.org/ISO19139/resources/codeList.xml#SV_CouplingType\" " +
+           "codeListValue=\"tight\">tight</srv:SV_CouplingType>\n" +
+"      </srv:couplingType>\n" +
+"      <srv:containsOperations>\n" +
+"        <srv:SV_OperationMetadata>\n" +
+"          <srv:operationName>\n" +
+"            <gco:CharacterString>ERDDAPgriddapDatasetQueryAndAccess</gco:CharacterString>\n" +
+"          </srv:operationName>\n" +
+"          <srv:DCP gco:nilReason=\"unknown\"/>\n" +  //Distributed Computing Platform  
+"          <srv:connectPoint>\n" +
+"            <gmd:CI_OnlineResource>\n" +
+"              <gmd:linkage>\n" +
+"                <gmd:URL>" + XML.encodeAsXML(datasetUrl) + "</gmd:URL>\n" +
+"              </gmd:linkage>\n" +
+"              <gmd:protocol>\n" +
+//see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv 
+"                <gco:CharacterString>ERDDAP:griddap</gco:CharacterString>\n" +
+"              </gmd:protocol>\n" +
+"              <gmd:name>\n" +
+"                <gco:CharacterString>ERDDAP-griddap</gco:CharacterString>\n" +
+"              </gmd:name>\n" +
+"              <gmd:description>\n" +
+"                <gco:CharacterString>ERDDAP's griddap service (a flavor of OPeNDAP) " +
+                   "for gridded data. Add different extensions (e.g., .html, .graph, .das, .dds) " +
+                   "to the base URL for different purposes.</gco:CharacterString>\n" +
+"              </gmd:description>\n" +
+"              <gmd:function>\n" +
+"                <gmd:CI_OnLineFunctionCode " +
+                   "codeList=\"http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#CI_OnLineFunctionCode\" " +
+                   "codeListValue=\"download\">download</gmd:CI_OnLineFunctionCode>\n" +
+"              </gmd:function>\n" +
+"            </gmd:CI_OnlineResource>\n" +
+"          </srv:connectPoint>\n" +
+"        </srv:SV_OperationMetadata>\n" +
+"      </srv:containsOperations>\n" +
+"      <srv:operatesOn xlink:href=\"#DataIdentification\"/>\n" +
+"    </srv:SV_ServiceIdentification>\n");
+}
+
 if (ii == iiOPeNDAP) {
     writer.write(
 "      </srv:extent>\n" +
@@ -11911,12 +11988,16 @@ if (ii == iiOPeNDAP) {
 "              <gmd:linkage>\n" +
 "                <gmd:URL>" + XML.encodeAsXML(datasetUrl) + "</gmd:URL>\n" +
 "              </gmd:linkage>\n" +
+"              <gmd:protocol>\n" +
+//see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv 
+"                <gco:CharacterString>OPeNDAP:OPeNDAP</gco:CharacterString>\n" +
+"              </gmd:protocol>\n" +
 "              <gmd:name>\n" +
 "                <gco:CharacterString>OPeNDAP</gco:CharacterString>\n" +
 "              </gmd:name>\n" +
 "              <gmd:description>\n" +
-"                <gco:CharacterString>ERDDAP's griddap OPeNDAP service. Add different extensions " +
-                   "(e.g., .html, .das, .dds) for different purposes.</gco:CharacterString>\n" +
+"                <gco:CharacterString>An OPeNDAP service for gridded data. Add different extensions " +
+                   "(e.g., .html, .das, .dds) to the base URL for different purposes.</gco:CharacterString>\n" +
 "              </gmd:description>\n" +
 "              <gmd:function>\n" +
 "                <gmd:CI_OnLineFunctionCode " +
@@ -11951,6 +12032,9 @@ if (ii == iiWMS) {
 "                <gmd:URL>" + XML.encodeAsXML(wmsUrl + 
                      "?service=WMS&version=1.3.0&request=GetCapabilities") + "</gmd:URL>\n" +
 "              </gmd:linkage>\n" +
+"              <gmd:protocol>\n" +
+"                <gco:CharacterString>OGC:WMS</gco:CharacterString>\n" +
+"              </gmd:protocol>\n" +
 "              <gmd:name>\n" +
 "                <gco:CharacterString>OGC-WMS</gco:CharacterString>\n" +
 "              </gmd:name>\n" +
@@ -12141,8 +12225,12 @@ writer.write(
 "                  <gmd:linkage>\n" +  
 "                    <gmd:URL>" + XML.encodeAsXML(datasetUrl) + ".html</gmd:URL>\n" +
 "                  </gmd:linkage>\n" +
+"                  <gmd:protocol>\n" +
+//see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv from John Maurer
+"                    <gco:CharacterString>template</gco:CharacterString>\n" +
+"                  </gmd:protocol>\n" +
 "                  <gmd:name>\n" +        
-"                    <gco:CharacterString>OPeNDAP</gco:CharacterString>\n" +
+"                    <gco:CharacterString>Data Subset Form</gco:CharacterString>\n" +
 "                  </gmd:name>\n" +
 "                  <gmd:description>\n" + 
 "                    <gco:CharacterString>ERDDAP's version of the OPeNDAP .html web page for this dataset. " +
@@ -12167,8 +12255,12 @@ writer.write(
 "                  <gmd:linkage>\n" +  
 "                    <gmd:URL>" + XML.encodeAsXML(datasetUrl) + ".graph</gmd:URL>\n" +
 "                  </gmd:linkage>\n" +
+"                  <gmd:protocol>\n" +
+//see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv from John Maurer
+"                    <gco:CharacterString>template</gco:CharacterString>\n" +
+"                  </gmd:protocol>\n" +
 "                  <gmd:name>\n" +        
-"                    <gco:CharacterString>Viewer Information</gco:CharacterString>\n" +
+"                    <gco:CharacterString>Make-A-Graph Form</gco:CharacterString>\n" +
 "                  </gmd:name>\n" +
 "                  <gmd:description>\n" + 
 "                    <gco:CharacterString>ERDDAP's Make-A-Graph .html web page for this dataset. " +
