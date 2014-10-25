@@ -2985,7 +2985,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 String fileTypeName = EDDTable.sosResponseFormatToFileTypeName(responseFormat);
                 if (fileTypeName == null)
                     //this format EDStatic.queryError + "xxx=" is parsed by Erddap section "deal with SOS error"
-                    throw new SimpleException(EDStatic.queryError + "responseFormat=" + responseFormat + " is invalid."); 
+                    throw new SimpleException(EDStatic.queryError + 
+                        "responseFormat=" + responseFormat + " is invalid."); 
 
                 String responseMode = queryMap.get("responsemode");  //map keys are lowercase
                 if (responseMode == null)
@@ -4285,18 +4286,22 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                 //bboxCsv = "-180,-90,180,90";  //be lenient, default to full range
             double bbox[] = String2.toDoubleArray(String2.split(bboxCsv, ','));
             if (bbox.length != 4)
-                throw new SimpleException(EDStatic.queryError + "BBOX length=" + bbox.length + " must be 4.");
+                throw new SimpleException(EDStatic.queryError + 
+                    "BBOX length=" + bbox.length + " must be 4.");
             double minx = bbox[0];
             double miny = bbox[1];
             double maxx = bbox[2];
             double maxy = bbox[3];
             if (!Math2.isFinite(minx) || !Math2.isFinite(miny) ||
                 !Math2.isFinite(maxx) || !Math2.isFinite(maxy))
-                throw new SimpleException(EDStatic.queryError + "invalid number in BBOX=" + bboxCsv + ".");
+                throw new SimpleException(EDStatic.queryError + 
+                    "invalid number in BBOX=" + bboxCsv + ".");
             if (minx >= maxx)
-                throw new SimpleException(EDStatic.queryError + "BBOX minx=" + minx + " must be < maxx=" + maxx + ".");
+                throw new SimpleException(EDStatic.queryError + 
+                    "BBOX minx=" + minx + " must be < maxx=" + maxx + ".");
             if (miny >= maxy)
-                throw new SimpleException(EDStatic.queryError + "BBOX miny=" + miny + " must be < maxy=" + maxy + ".");
+                throw new SimpleException(EDStatic.queryError + 
+                    "BBOX miny=" + miny + " must be < maxy=" + maxy + ".");
 
 
             //if request is for JUST a transparent, non-data layer, use a _wms/... cache 
@@ -4418,7 +4423,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                     if (avi == eddGrid.lonIndex()) {
                         if (maxx <= av.destinationMin() ||
                             minx >= av.destinationMax()) {
-                            if (reallyVerbose) String2.log("  layer=" + layeri + " rejected because request is out of lon range.");
+                            if (reallyVerbose) String2.log("  layer=" + layeri + 
+                                " rejected because request is out of lon range.");
                             continue LAYER;
                         }
                         int first = av.destinationToClosestSourceIndex(minx);
@@ -4432,7 +4438,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                     if (avi == eddGrid.latIndex()) {
                         if (maxy <= av.destinationMin() ||
                             miny >= av.destinationMax()) {
-                            if (reallyVerbose) String2.log("  layer=" + layeri + " rejected because request is out of lat range.");
+                            if (reallyVerbose) String2.log("  layer=" + layeri + 
+                                " rejected because request is out of lat range.");
                             continue LAYER;
                         }
                         int first = av.destinationToClosestSourceIndex(miny);
@@ -4461,7 +4468,8 @@ Spec questions? Ask Jeff DLb (author of WMS spec!): Jeff.deLaBeaujardiere@noaa.g
                         if (Double.isNaN(tValueD) ||
                             tValueD < av.destinationCoarseMin() ||
                             tValueD > av.destinationCoarseMax()) {
-                            if (reallyVerbose) String2.log("  layer=" + layeri + " rejected because tValueD=" + tValueD + 
+                            if (reallyVerbose) String2.log("  layer=" + layeri + 
+                                " rejected because tValueD=" + tValueD + 
                                 " for " + tAvName);
                             continue LAYER;
                         }
@@ -9827,7 +9835,8 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         } else if (tEmail.length() > Subscriptions.EMAIL_LENGTH) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionEmailTooLong + "</font>\n";
             tEmail = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
-        } else if (!String2.isEmailAddress(tEmail)) {
+        } else if (!String2.isEmailAddress(tEmail) ||
+                   tEmail.startsWith("your.name") || tEmail.startsWith("your.email")) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionEmailInvalid + "</font>\n";
             tEmail = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
         }
@@ -9972,7 +9981,8 @@ XML.encodeAsXML(String2.noLongerThan(EDStatic.adminInstitution, 256)) + "</Attri
         } else if (tEmail.length() > Subscriptions.EMAIL_LENGTH) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionEmailTooLong + "</font>\n";
             tEmail = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
-        } else if (!String2.isEmailAddress(tEmail)) {
+        } else if (!String2.isEmailAddress(tEmail) ||
+                   tEmail.startsWith("your.name") || tEmail.startsWith("your.email")) {
             trouble += "<li><font class=\"warningColor\">" + EDStatic.subscriptionEmailInvalid + "</font>\n";
             tEmail = ""; //Security: if it was bad, don't show it in form (could be malicious java script)
         }

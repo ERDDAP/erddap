@@ -242,7 +242,7 @@ public class EDVTimeStamp extends EDV {
 
     /**
      * This determines if a variable is a TimeStamp variable by looking
-     * for " since " (used for numeric times) or 
+     * for " since " (used for UDUNITS numeric times) or 
      * "yy" or "YY" (a formatting string which has the year designator) in the units attribute.
      */
     public static boolean hasTimeUnits(String tUnits) {
@@ -383,7 +383,9 @@ public class EDVTimeStamp extends EDV {
             return Double.NaN;
         if (scaleAddOffset)
             sourceTime = sourceTime * scaleFactor + addOffset;
-        return Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
+        double d = Calendar2.unitsSinceToEpochSeconds(sourceTimeBase, sourceTimeFactor, sourceTime);
+        //String2.log("!sourceTimeToEp " + destinationName + " src=" + sourceTime + " ep=" + d);
+        return d;
     }
 
     /**

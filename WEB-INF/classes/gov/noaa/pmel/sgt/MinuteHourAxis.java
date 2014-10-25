@@ -57,10 +57,10 @@ public class MinuteHourAxis implements TimeAxisStyle {
   }
   public void computeDefaults(GeoDate delta) {
     long msec = delta.getTime() % GeoDate.MSECS_IN_DAY;
-    if(msec > 7200000) {
+    if(msec > 6000000) {
       defaultMinorLabelInterval_ = 15;
       defaultMajorLabelInterval_ = 2;
-    } else if(msec > 1800000) {
+    } else if(msec > 1200000) {
       defaultMinorLabelInterval_ = 5;
       defaultMajorLabelInterval_ = 1;
     } else {

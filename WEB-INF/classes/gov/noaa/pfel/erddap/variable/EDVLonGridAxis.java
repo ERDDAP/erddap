@@ -56,7 +56,7 @@ public class EDVLonGridAxis extends EDVGridAxis {
      * @return a string representation of this EDV.
      */
     public String toString() {
-        return "Lon " + super.toString();
+        return "EDVLonGridAxis/" + super.toString();
     }
 
 

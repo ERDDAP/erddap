@@ -300,6 +300,11 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     tAxisVariables.add(new EDVTimeGridAxis(varName, 
                         tSourceAttributes, tAddAttributes, tSourceValues));
 
+                //is this a timestamp axis?
+                } else if (EDVTimeStampGridAxis.hasTimeUnits(tSourceAttributes, tAddAttributes)) {
+                    tAxisVariables.add(new EDVTimeStampGridAxis(varName, varName,
+                        tSourceAttributes, tAddAttributes, tSourceValues));
+
                 //it is some other axis variable
                 } else {
                     tAxisVariables.add(new EDVGridAxis(varName, varName,
@@ -324,10 +329,15 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     tAddAttributes.add("ioos_category", tAtts.getString("ioos_category"));
                 }
 
-                EDV edv = new EDV(
-                    varName, varName, 
-                    tSourceAttributes, tAddAttributes,
-                    dataType, 
+                EDV edv;
+                if (varName.equals(EDV.TIME_NAME))
+                    throw new RuntimeException(errorInMethod +
+                        "No EDDGrid dataVariable may have destinationName=" + EDV.TIME_NAME);
+                else if (EDVTime.hasTimeUnits(tSourceAttributes, tAddAttributes)) 
+                    edv = new EDVTimeStamp(varName, varName,
+                        tSourceAttributes, tAddAttributes, dataType);  
+                else edv = new EDV(varName, varName, 
+                    tSourceAttributes, tAddAttributes, dataType, 
                     Double.NaN, Double.NaN);  //hard to get min and max
                 edv.extractAndSetActualRange();
                 tDataVariables.add(edv);
@@ -499,7 +509,8 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
             //has edvga[0] changed size?
             EDVGridAxis edvga = axisVariables[0];
-            EDVTimeGridAxis edvtga = edvga instanceof EDVTimeGridAxis? (EDVTimeGridAxis)edvga : null;
+            EDVTimeStampGridAxis edvtsga = edvga instanceof EDVTimeStampGridAxis? 
+                (EDVTimeStampGridAxis)edvga : null;
             PrimitiveArray oldValues = edvga.sourceValues();
             int oldSize = oldValues.size();
 
@@ -569,9 +580,9 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             //prepare changes to update the dataset
             double newMin = oldValues.getDouble(0);
             double newMax = newValues.getDouble(newValues.size() - 1);
-            if (edvtga != null) {
-                newMin = edvtga.sourceTimeToEpochSeconds(newMin);
-                newMax = edvtga.sourceTimeToEpochSeconds(newMax);
+            if (edvtsga != null) {
+                newMin = edvtsga.sourceTimeToEpochSeconds(newMin);
+                newMax = edvtsga.sourceTimeToEpochSeconds(newMax);
             } else if (edvga.scaleAddOffset()) {
                 newMin = newMin * edvga.scaleFactor() + edvga.addOffset();
                 newMax = newMax * edvga.scaleFactor() + edvga.addOffset();
@@ -636,9 +647,10 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             edvga.setIsEvenlySpaced(newIsEvenlySpaced);
             edvga.initializeAverageSpacingAndCoarseMinMax();  
             edvga.setActualRangeFromDestinationMinMax();
-            if (edvtga != null) 
+            if (edvga instanceof EDVTimeGridAxis) 
                 combinedGlobalAttributes.set("time_coverage_end",   
-                    Calendar2.epochSecondsToIsoStringT(newMax) + "Z");
+                    Calendar2.epochSecondsToLimitedIsoStringT(
+                        edvga.combinedAttributes().getString(EDV.TIME_PRECISION), newMax, ""));
             edvga.clearSliderCsvValues();  //do last, to force recreation next time needed
 
             updateCount++;

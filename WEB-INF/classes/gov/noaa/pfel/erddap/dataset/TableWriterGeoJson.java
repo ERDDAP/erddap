@@ -4,6 +4,7 @@
  */
 package gov.noaa.pfel.erddap.dataset;
 
+import com.cohort.array.Attributes;
 import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -36,8 +37,9 @@ public class TableWriterGeoJson extends TableWriter {
 
     //set by firstTime
     protected int lonColumn = -1, latColumn = -1, altColumn = -1;
-    protected boolean isTimeStamp[];
     protected boolean isString[];
+    protected boolean isTimeStamp[];
+    protected String time_precision[];
     protected BufferedWriter writer;
     protected double minLon = Double.MAX_VALUE, maxLon = -Double.MAX_VALUE;
     protected double minLat = Double.MAX_VALUE, maxLat = -Double.MAX_VALUE;
@@ -102,10 +104,19 @@ public class TableWriterGeoJson extends TableWriter {
             //it is unclear to me if specification supports altitude in coordinates info...
             altColumn = -1; //table.findColumnNumber(EDV.ALT_NAME); 
             isTimeStamp = new boolean[nColumns];
+            time_precision = new String[nColumns];
             for (int col = 0; col < nColumns; col++) {
-                String u = table.columnAttributes(col).getString("units");
+                Attributes catts = table.columnAttributes(col);
+                String u = catts.getString("units");
                 isTimeStamp[col] = u != null && 
                     (u.equals(EDV.TIME_UNITS) || u.equals(EDV.TIME_UCUM_UNITS));
+                if (isTimeStamp[col]) {
+                    //just keep time_precision if it includes fractional seconds 
+                    String tp = catts.getString(EDV.TIME_PRECISION);
+                    if (tp != null && !tp.startsWith("1970-01-01T00:00:00.0")) 
+                        tp = null; //default
+                    time_precision[col] = tp;
+                }
             }
 
             //write the header
@@ -235,7 +246,8 @@ public class TableWriterGeoJson extends TableWriter {
                         if (isTimeStamp[col]) {
                             double d = table.getDoubleData(col, row);
                             s = Double.isNaN(d)? "null" : 
-                                "\"" + Calendar2.epochSecondsToIsoStringT(d) + "Z\"";
+                                "\"" + Calendar2.epochSecondsToLimitedIsoStringT(
+                                    time_precision[col], d, "") + "\"";
                         } else if (isString[col]) {
                             s = String2.toJson(table.getStringData(col, row));
                         } else { //numeric

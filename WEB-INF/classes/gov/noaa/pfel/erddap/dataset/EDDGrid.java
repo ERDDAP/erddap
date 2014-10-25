@@ -71,6 +71,7 @@ import org.apache.lucene.document.Field.Store;
 
 
 import ucar.ma2.Array;
+import ucar.ma2.DataType;
 import ucar.nc2.Dimension;
 
 import ucar.nc2.dataset.NetcdfDataset;
@@ -533,19 +534,6 @@ public abstract class EDDGrid extends EDD {
                             EDStatic.noXxxNoLLEvenlySpaced));
 
                 //else {  //NO. other axes are allowed.
-                //    //is there an axis (with size > 0) that isn't one of LLAT?
-                //    for (int av = 0; av < axisVariables.length; av++) {
-                //        if (av == lonIndex || av == latIndex ||
-                //            av == altIndex || av == depthIndex ||
-                //            av == timeIndex) {
-                //        } else if (axisVariables[av].sourceValues().size() > 1) {
-                //            accessibleViaGeoServicesRest = String2.canonical(start + "???");
-                //        }
-                //    }
-
-                //else for (int dv = 0; dv < dataVariables.length; dv++)
-                //    if (dataVariables[dv].hasColorBarMinMax())
-                //        accessibleViaGeoServicesRest = String2.canonical("???");
 
             }
 
@@ -610,19 +598,6 @@ public abstract class EDDGrid extends EDD {
                             EDStatic.noXxxNoLLEvenlySpaced));
 
                 //else {  //NO. other axes are allowed.
-                //    //is there an axis (with size > 0) that isn't one of LLAT?
-                //    for (int av = 0; av < axisVariables.length; av++) {
-                //        if (av == lonIndex || av == latIndex ||
-                //            av == altIndex || av == depthIndex ||
-                //            av == timeIndex) {
-                //        } else if (axisVariables[av].sourceValues().size() > 1) {
-                //            accessibleViaWCS = String2.canonical(start + "???");
-                //        }
-                //    }
-
-                //else for (int dv = 0; dv < dataVariables.length; dv++)
-                //    if (dataVariables[dv].hasColorBarMinMax())
-                //        accessibleViaWCS = String2.canonical("???");
 
                 else accessibleViaWCS = String2.canonical("");
             }
@@ -731,6 +706,8 @@ public abstract class EDDGrid extends EDD {
         super.ensureValid();
         String errorInMethod = "datasets.xml/EDDGrid.ensureValid error for datasetID=" + datasetID + ":\n ";
 
+        HashSet sourceNamesHS = new HashSet(2 * (axisVariables.length + dataVariables.length));
+        HashSet destNamesHS   = new HashSet(2 * (axisVariables.length + dataVariables.length));        
         for (int v = 0; v < axisVariables.length; v++) {
             Test.ensureTrue(axisVariables[v] != null, 
                 errorInMethod + "axisVariable[" + v + "] is null.");
@@ -739,7 +716,38 @@ public abstract class EDDGrid extends EDD {
             Test.ensureTrue(axisVariables[v] instanceof EDVGridAxis, 
                 tErrorInMethod + "axisVariable[" + v + "] isn't an EDVGridAxis.");
             axisVariables[v].ensureValid(tErrorInMethod);
+
+            //ensure unique sourceNames
+            String sn = axisVariables[v].sourceName();
+            if (!sn.startsWith("=")) {
+                if (!sourceNamesHS.add(sn))
+                    throw new RuntimeException(errorInMethod + 
+                        "Two axisVariables have the same sourceName=" + sn + ".");
+            }
+
+            //ensure unique destNames
+            String dn = axisVariables[v].destinationName();
+            if (!destNamesHS.add(dn))
+                throw new RuntimeException(errorInMethod + 
+                    "Two axisVariables have the same destinationName=" + dn + ".");
         }
+
+        for (int v = 0; v < dataVariables.length; v++) {
+            //ensure unique sourceNames
+            String sn = dataVariables[v].sourceName();
+            if (!sn.startsWith("=")) {
+                if (!sourceNamesHS.add(sn))
+                    throw new RuntimeException(errorInMethod + 
+                        "Two variables have the same sourceName=" + sn + ".");
+            }
+
+            //ensure unique destNames
+            String dn = dataVariables[v].destinationName();
+            if (!destNamesHS.add(dn))
+                throw new RuntimeException(errorInMethod + 
+                    "Two variables have the same destinationName=" + dn + ".");
+        }
+
         Test.ensureTrue(lonIndex < 0 || axisVariables[lonIndex] instanceof EDVLonGridAxis, 
             errorInMethod + "axisVariable[lonIndex=" + lonIndex + "] isn't an EDVLonGridAxis.");
         Test.ensureTrue(latIndex < 0 || axisVariables[latIndex] instanceof EDVLatGridAxis, 
@@ -840,13 +848,14 @@ public abstract class EDDGrid extends EDD {
             if (pa != null) { //it should be; but it can be low,high or high,low, so
                 double ttMin = Math.min(pa.getDouble(0), pa.getDouble(1));
                 double ttMax = Math.max(pa.getDouble(0), pa.getDouble(1));
-                if (!Double.isNaN(ttMin))  //it should be
-                    combinedGlobalAttributes.set("time_coverage_start",
-                        Calendar2.epochSecondsToIsoStringT(ttMin) + "Z");
+                String tp = axisVariables[av].combinedAttributes().getString(
+                    EDV.TIME_PRECISION);
+                //"" unsets the attribute if dMin or dMax isNaN
+                combinedGlobalAttributes.set("time_coverage_start", 
+                    Calendar2.epochSecondsToLimitedIsoStringT(tp, ttMin, ""));
                 //for tables (not grids) will be NaN for 'present'.   Deal with this better???
-                if (!Double.isNaN(ttMax))  //it should be 
-                    combinedGlobalAttributes.set("time_coverage_end",   
-                        Calendar2.epochSecondsToIsoStringT(ttMax) + "Z");
+                combinedGlobalAttributes.set("time_coverage_end", 
+                    Calendar2.epochSecondsToLimitedIsoStringT(tp, ttMax, ""));
             }
         }
 
@@ -1359,7 +1368,8 @@ public abstract class EDDGrid extends EDD {
 
         EDVGridAxis av = axisVariables[axis];
         int nAvSourceValues = av.sourceValues().size();
-        int precision = axis == timeIndex? 9 : 5;
+        int precision = av instanceof EDVTimeStampGridAxis? 13 : 
+            av.destinationDataTypeClass() == double.class? 9 : 5;
         String diagnostic = 
             MessageFormat.format(EDStatic.queryErrorGridDiagnostic,
                 destinationName, "" + axis, av.destinationName());
@@ -1502,7 +1512,8 @@ public abstract class EDDGrid extends EDD {
                     throw new SimpleException(EDStatic.queryError + diagnostic + ": " +
                         MessageFormat.format(EDStatic.queryErrorGridMissing, 
                             EDStatic.EDDGridStart));
-                double startDestD = av.destinationToDouble(startS);
+                double startDestD = av.destinationToDouble(startS); //ISO 8601 times -> to epochSeconds w/millis precision
+                //String2.log("\n! startS=" + startS + " startDestD=" + startDestD + "\n");
 
                 //since closest() below makes far out values valid, need to test validity
                 if (Double.isNaN(startDestD)) {
@@ -1536,6 +1547,8 @@ public abstract class EDDGrid extends EDD {
                 }
 
                 startI = av.destinationToClosestSourceIndex(startDestD);
+                //String2.log("!ParseAxisBrackets startS=" + startS + " startD=" + startDestD + " startI=" + startI);
+
             } else {
                 //it must be a >= 0 integer index
                 if (!startS.matches("[0-9]+")) {
@@ -1547,6 +1560,7 @@ public abstract class EDDGrid extends EDD {
                 }
 
                 startI = String2.parseInt(startS);
+
                 if (startI < 0 || startI > nAvSourceValues - 1) {
                     if (repair) startI = 0;
                     else throw new SimpleException(EDStatic.queryError + 
@@ -1570,7 +1584,8 @@ public abstract class EDDGrid extends EDD {
                         diagnostic + ": " +
                         MessageFormat.format(EDStatic.queryErrorGridMissing, 
                             EDStatic.EDDGridStop));                    
-                double stopDestD = av.destinationToDouble(stopS);
+                double stopDestD = av.destinationToDouble(stopS); //ISO 8601 times -> to epochSeconds w/millis precision
+                //String2.log("\n! stopS=" + stopS + " stopDestD=" + stopDestD + "\n");
 
                 //since closest() below makes far out values valid, need to test validity
                 if (Double.isNaN(stopDestD)) {
@@ -1604,6 +1619,8 @@ public abstract class EDDGrid extends EDD {
                 }
 
                 stopI = av.destinationToClosestSourceIndex(stopDestD);
+                //String2.log("!ParseAxisBrackets stopS=" + stopS + " stopD=" + stopDestD + " stopI=" + stopI);
+
             } else {
                 //it must be a >= 0 integer index
                 stopS = stopS.trim();
@@ -2610,10 +2627,10 @@ public abstract class EDDGrid extends EDD {
                 latStop=Double.NaN,   lonStop=Double.NaN,   timeStop=Double.NaN,
                 latCenter=Double.NaN, lonCenter=Double.NaN, timeCenter=Double.NaN,
                 latRange=Double.NaN,  lonRange=Double.NaN,  timeRange=Double.NaN;
+            String time_precision = null;
             int lonAscending = 0, latAscending = 0, timeAscending = 0;
             for (int av = 0; av < nAv; av++) {
                 EDVGridAxis edvga = axisVariables[av];
-                EDVTimeGridAxis edvtga = av == timeIndex? (EDVTimeGridAxis)edvga : null;
                 double defStart = av == timeIndex?  //note max vs first
                     Math.max(edvga.destinationMax() - 7 * Calendar2.SECONDS_PER_DAY, edvga.destinationMin()) :
                     edvga.firstDestinationValue();
@@ -2621,7 +2638,9 @@ public abstract class EDDGrid extends EDD {
                     edvga.destinationMax():
                     edvga.lastDestinationValue();
                 sourceSize[av] = edvga.sourceValues().size();
-                int precision = av == timeIndex? 10 : 7;
+                boolean isTimeStamp = edvga instanceof EDVTimeStampGridAxis;
+                int precision = isTimeStamp? 13 : 
+                    edvga.destinationDataTypeClass() == double.class? 9 : 5; 
                 showStartAndStopFields[av] = av == axisVarX || av == axisVarY;
 
                 //find start and end
@@ -2700,6 +2719,7 @@ public abstract class EDDGrid extends EDD {
                     timeStop   = dStop;
                     timeCenter = (dStart + dStop) / 2;
                     timeRange  = dStop - dStart;
+                    time_precision = edvga.combinedAttributes().getString(EDV.TIME_PRECISION);
                 }
             }
            
@@ -2911,7 +2931,7 @@ public abstract class EDDGrid extends EDD {
                 String tLast  = edvga.destinationToString(edvga.lastDestinationValue());
                 String edvgaTooltip = edvga.htmlRangeTooltip();
 
-                String tUnits = av == timeIndex? "UTC" : edvga.units();
+                String tUnits = edvga instanceof EDVTimeStampGridAxis? "UTC" : edvga.units();
                 tUnits = tUnits == null? "" : "(" + tUnits + ") ";
                 writer.write(
                     "<tr>\n" +
@@ -3488,10 +3508,14 @@ public abstract class EDDGrid extends EDD {
                     MessageFormat.format(EDStatic.magZoomOut, "8x"),  
                     "class=\"skinny\" " + 
                     (disableZoomOut? "disabled" : 
-                    "onMouseUp='f1.start" + lonIndex + ".value=\"" + String2.genEFormat6(tLonCenter - lonAscending * zoomOut8) + "\"; " +
-                               "f1.stop"  + lonIndex + ".value=\"" + String2.genEFormat6(tLonCenter + lonAscending * zoomOut8) + "\"; " +
-                               "f1.start" + latIndex + ".value=\"" + String2.genEFormat6(tLatCenter - latAscending * zoomOut8) + "\"; " +
-                               "f1.stop"  + latIndex + ".value=\"" + String2.genEFormat6(tLatCenter + latAscending * zoomOut8) + "\"; " +
+                    "onMouseUp='f1.start" + lonIndex + ".value=\"" + 
+                    String2.genEFormat6(tLonCenter - lonAscending * zoomOut8) + "\"; " +
+                               "f1.stop"  + lonIndex + ".value=\"" + 
+                    String2.genEFormat6(tLonCenter + lonAscending * zoomOut8) + "\"; " +
+                               "f1.start" + latIndex + ".value=\"" + 
+                    String2.genEFormat6(tLatCenter - latAscending * zoomOut8) + "\"; " +
+                               "f1.stop"  + latIndex + ".value=\"" + 
+                    String2.genEFormat6(tLatCenter + latAscending * zoomOut8) + "\"; " +
                                "mySubmit(true);'")));
 
                 //if zoom out, keep ranges intact by moving tCenter to safe place
@@ -3505,10 +3529,14 @@ public abstract class EDDGrid extends EDD {
                     MessageFormat.format(EDStatic.magZoomOut, "2x"),  
                     "class=\"skinny\" " + 
                     (disableZoomOut? "disabled" : 
-                    "onMouseUp='f1.start" + lonIndex + ".value=\"" + String2.genEFormat6(tLonCenter - lonAscending * zoomOut2) + "\"; " +
-                               "f1.stop"  + lonIndex + ".value=\"" + String2.genEFormat6(tLonCenter + lonAscending * zoomOut2) + "\"; " +
-                               "f1.start" + latIndex + ".value=\"" + String2.genEFormat6(tLatCenter - latAscending * zoomOut2) + "\"; " +
-                               "f1.stop"  + latIndex + ".value=\"" + String2.genEFormat6(tLatCenter + latAscending * zoomOut2) + "\"; " +
+                    "onMouseUp='f1.start" + lonIndex + ".value=\"" + 
+                    String2.genEFormat6(tLonCenter - lonAscending * zoomOut2) + "\"; " +
+                               "f1.stop"  + lonIndex + ".value=\"" + 
+                    String2.genEFormat6(tLonCenter + lonAscending * zoomOut2) + "\"; " +
+                               "f1.start" + latIndex + ".value=\"" + 
+                    String2.genEFormat6(tLatCenter - latAscending * zoomOut2) + "\"; " +
+                               "f1.stop"  + latIndex + ".value=\"" + 
+                    String2.genEFormat6(tLatCenter + latAscending * zoomOut2) + "\"; " +
                                "mySubmit(true);'")));
 
                 //if zoom out, keep ranges intact by moving tCenter to safe place
@@ -3522,10 +3550,14 @@ public abstract class EDDGrid extends EDD {
                     MessageFormat.format(EDStatic.magZoomOut, "").trim(),  
                     "class=\"skinny\" " + 
                     (disableZoomOut? "disabled" : 
-                    "onMouseUp='f1.start" + lonIndex + ".value=\"" + String2.genEFormat6(tLonCenter - lonAscending * zoomOut) + "\"; " +
-                               "f1.stop"  + lonIndex + ".value=\"" + String2.genEFormat6(tLonCenter + lonAscending * zoomOut) + "\"; " +
-                               "f1.start" + latIndex + ".value=\"" + String2.genEFormat6(tLatCenter - latAscending * zoomOut) + "\"; " +
-                               "f1.stop"  + latIndex + ".value=\"" + String2.genEFormat6(tLatCenter + latAscending * zoomOut) + "\"; " +
+                    "onMouseUp='f1.start" + lonIndex + ".value=\"" + 
+                    String2.genEFormat6(tLonCenter - lonAscending * zoomOut) + "\"; " +
+                               "f1.stop"  + lonIndex + ".value=\"" + 
+                    String2.genEFormat6(tLonCenter + lonAscending * zoomOut) + "\"; " +
+                               "f1.start" + latIndex + ".value=\"" + 
+                    String2.genEFormat6(tLatCenter - latAscending * zoomOut) + "\"; " +
+                               "f1.stop"  + latIndex + ".value=\"" + 
+                    String2.genEFormat6(tLatCenter + latAscending * zoomOut) + "\"; " +
                                "mySubmit(true);'")));
 
                 //zoom in     Math.max moves rectangular maps toward square
@@ -3534,30 +3566,42 @@ public abstract class EDDGrid extends EDD {
                         MessageFormat.format(EDStatic.magZoomInTooltip, EDStatic.magZoomALittle),  
                         MessageFormat.format(EDStatic.magZoomIn, "").trim(),  
                         "class=\"skinny\" " + 
-                        "onMouseUp='f1.start" + lonIndex + ".value=\"" + String2.genEFormat6(lonCenter - lonAscending * zoomIn) + "\"; " +
-                                   "f1.stop"  + lonIndex + ".value=\"" + String2.genEFormat6(lonCenter + lonAscending * zoomIn) + "\"; " +
-                                   "f1.start" + latIndex + ".value=\"" + String2.genEFormat6(latCenter - latAscending * zoomIn) + "\"; " +
-                                   "f1.stop"  + latIndex + ".value=\"" + String2.genEFormat6(latCenter + latAscending * zoomIn) + "\"; " +
+                        "onMouseUp='f1.start" + lonIndex + ".value=\"" + 
+                    String2.genEFormat6(lonCenter - lonAscending * zoomIn) + "\"; " +
+                                   "f1.stop"  + lonIndex + ".value=\"" + 
+                    String2.genEFormat6(lonCenter + lonAscending * zoomIn) + "\"; " +
+                                   "f1.start" + latIndex + ".value=\"" + 
+                    String2.genEFormat6(latCenter - latAscending * zoomIn) + "\"; " +
+                                   "f1.stop"  + latIndex + ".value=\"" + 
+                    String2.genEFormat6(latCenter + latAscending * zoomIn) + "\"; " +
                                    "mySubmit(true);'") +
 
                     widgets.button("button", "", 
                         MessageFormat.format(EDStatic.magZoomInTooltip, "2x"),  
                         MessageFormat.format(EDStatic.magZoomIn, "2x"),  
                         "class=\"skinny\" " + 
-                        "onMouseUp='f1.start" + lonIndex + ".value=\"" + String2.genEFormat6(lonCenter - lonAscending * zoomIn2) + "\"; " +
-                                   "f1.stop"  + lonIndex + ".value=\"" + String2.genEFormat6(lonCenter + lonAscending * zoomIn2) + "\"; " +
-                                   "f1.start" + latIndex + ".value=\"" + String2.genEFormat6(latCenter - latAscending * zoomIn2) + "\"; " +
-                                   "f1.stop"  + latIndex + ".value=\"" + String2.genEFormat6(latCenter + latAscending * zoomIn2) + "\"; " +
+                        "onMouseUp='f1.start" + lonIndex + ".value=\"" + 
+                        String2.genEFormat6(lonCenter - lonAscending * zoomIn2) + "\"; " +
+                                   "f1.stop"  + lonIndex + ".value=\"" + 
+                        String2.genEFormat6(lonCenter + lonAscending * zoomIn2) + "\"; " +
+                                   "f1.start" + latIndex + ".value=\"" + 
+                        String2.genEFormat6(latCenter - latAscending * zoomIn2) + "\"; " +
+                                   "f1.stop"  + latIndex + ".value=\"" + 
+                        String2.genEFormat6(latCenter + latAscending * zoomIn2) + "\"; " +
                                    "mySubmit(true);'") + 
                     
                     widgets.button("button", "", 
                         MessageFormat.format(EDStatic.magZoomInTooltip, "8x"),  
                         MessageFormat.format(EDStatic.magZoomIn, "8x"),  
                         "class=\"skinny\" " + 
-                        "onMouseUp='f1.start" + lonIndex + ".value=\"" + String2.genEFormat6(lonCenter - lonAscending * zoomIn8) + "\"; " +
-                                   "f1.stop"  + lonIndex + ".value=\"" + String2.genEFormat6(lonCenter + lonAscending * zoomIn8) + "\"; " +
-                                   "f1.start" + latIndex + ".value=\"" + String2.genEFormat6(latCenter - latAscending * zoomIn8) + "\"; " +
-                                   "f1.stop"  + latIndex + ".value=\"" + String2.genEFormat6(latCenter + latAscending * zoomIn8) + "\"; " +
+                        "onMouseUp='f1.start" + lonIndex + ".value=\"" + 
+                        String2.genEFormat6(lonCenter - lonAscending * zoomIn8) + "\"; " +
+                                   "f1.stop"  + lonIndex + ".value=\"" + 
+                        String2.genEFormat6(lonCenter + lonAscending * zoomIn8) + "\"; " +
+                                   "f1.start" + latIndex + ".value=\"" + 
+                        String2.genEFormat6(latCenter - latAscending * zoomIn8) + "\"; " +
+                                   "f1.stop"  + latIndex + ".value=\"" + 
+                        String2.genEFormat6(latCenter + latAscending * zoomIn8) + "\"; " +
                                    "mySubmit(true);'"));
 
                 //trailing <br>
@@ -3568,16 +3612,17 @@ public abstract class EDDGrid extends EDD {
             if (zoomTime) {
                 if (reallyVerbose)
                     String2.log("zoomTime range=" + Calendar2.elapsedTimeString(timeRange * 1000) +
-                      " center=" + Calendar2.epochSecondsToIsoStringT(timeCenter) +
-                    "\n  first=" + Calendar2.epochSecondsToIsoStringT(timeFirst) +
-                      "  start=" + Calendar2.epochSecondsToIsoStringT(timeStart) +
-                    "\n   last=" + Calendar2.epochSecondsToIsoStringT(timeLast) +
-                      "   stop=" + Calendar2.epochSecondsToIsoStringT(timeStop));
+                      " center=" + Calendar2.epochSecondsToLimitedIsoStringT(time_precision, timeCenter, "") +
+                    "\n  first=" + Calendar2.epochSecondsToLimitedIsoStringT(time_precision, timeFirst, "") +
+                      "  start=" + Calendar2.epochSecondsToLimitedIsoStringT(time_precision, timeStart, "") +
+                    "\n   last=" + Calendar2.epochSecondsToLimitedIsoStringT(time_precision, timeLast, "") +
+                      "   stop=" + Calendar2.epochSecondsToLimitedIsoStringT(time_precision, timeStop, ""));
 
                 writer.write(
                     "<b>" + EDStatic.magTimeRange + "</b>\n");
 
-                String timeRangeString = idealTimeN + " " + Calendar2.IDEAL_UNITS_OPTIONS[idealTimeUnits];
+                String timeRangeString = idealTimeN + " " + 
+                    Calendar2.IDEAL_UNITS_OPTIONS[idealTimeUnits];
                 String timesVary = "<br>(" + EDStatic.magTimesVary + ")";
                 String timeRangeTip = EDStatic.magTimeRangeTooltip + 
                     EDStatic.magTimeRangeTooltip2;
@@ -3602,7 +3647,8 @@ public abstract class EDDGrid extends EDD {
 
 
                 //make idealized current centered time period
-                GregorianCalendar idMinGc = Calendar2.roundToIdealGC(timeCenter, idealTimeN, idealTimeUnits);
+                GregorianCalendar idMinGc = Calendar2.roundToIdealGC(timeCenter, 
+                    idealTimeN, idealTimeUnits);
                 //if it rounded to later time period, shift to earlier time period
                 if (idMinGc.getTimeInMillis() / 1000 > timeCenter)
                     idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);                                 
@@ -3612,7 +3658,8 @@ public abstract class EDDGrid extends EDD {
                 //time back
                 {
                     //make idealized beginning time
-                    GregorianCalendar tidMinGc = Calendar2.roundToIdealGC(timeFirst, idealTimeN, idealTimeUnits);
+                    GregorianCalendar tidMinGc = Calendar2.roundToIdealGC(timeFirst, 
+                        idealTimeN, idealTimeUnits);
                     //if it rounded to later time period, shift to earlier time period
                     if (tidMinGc.getTimeInMillis() / 1000 > timeFirst)
                         tidMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);                                 
@@ -3630,8 +3677,10 @@ public abstract class EDDGrid extends EDD {
                             MessageFormat.format(EDStatic.magTimeRangeFirst, timeRangeString) +
                                 timesVary,  
                             "align=\"top\" " +
-                            "onMouseUp='f1.start" + timeIndex + ".value=\"" + Calendar2.formatAsISODateTimeT(tidMinGc)  + "Z\"; " +
-                                       "f1.stop"  + timeIndex + ".value=\"" + Calendar2.formatAsISODateTimeT(tidMaxGc)  + "Z\"; " +
+                            "onMouseUp='f1.start" + timeIndex + ".value=\"" + 
+                                Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMinGc) + "\"; " +
+                                       "f1.stop"  + timeIndex + ".value=\"" + 
+                                Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMaxGc) + "\"; " +
                                        "mySubmit(true);'"));
                     } else {
                         writer.write(timeGap);
@@ -3649,8 +3698,10 @@ public abstract class EDDGrid extends EDD {
                             MessageFormat.format(EDStatic.magTimeRangeBack, timeRangeString) +
                                 timesVary,  
                             "align=\"top\" " +
-                            "onMouseUp='f1.start" + timeIndex + ".value=\"" + Calendar2.formatAsISODateTimeT(idMinGc)  + "Z\"; " +
-                                       "f1.stop"  + timeIndex + ".value=\"" + Calendar2.formatAsISODateTimeT(idMaxGc)  + "Z\"; " +
+                            "onMouseUp='f1.start" + timeIndex + ".value=\"" + 
+                            Calendar2.limitedFormatAsISODateTimeT(time_precision, idMinGc) + "\"; " +
+                                       "f1.stop"  + timeIndex + ".value=\"" + 
+                            Calendar2.limitedFormatAsISODateTimeT(time_precision, idMaxGc) + "\"; " +
                                        "mySubmit(true);'"));
                         idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);                                 
                         idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], idealTimeN);                                 
@@ -3675,8 +3726,10 @@ public abstract class EDDGrid extends EDD {
                             MessageFormat.format(EDStatic.magTimeRangeForward, timeRangeString) +
                                 timesVary,  
                             "align=\"top\" " +
-                            "onMouseUp='f1.start" + timeIndex + ".value=\"" + Calendar2.formatAsISODateTimeT(idMinGc)  + "Z\"; " +
-                                       "f1.stop"  + timeIndex + ".value=\"" + Calendar2.formatAsISODateTimeT(idMaxGc)  + "Z\"; " +
+                            "onMouseUp='f1.start" + timeIndex + ".value=\"" + 
+                            Calendar2.limitedFormatAsISODateTimeT(time_precision, idMinGc) + "\"; " +
+                                       "f1.stop"  + timeIndex + ".value=\"" + 
+                            Calendar2.limitedFormatAsISODateTimeT(time_precision, idMaxGc) + "\"; " +
                                        "mySubmit(true);'"));
                         idMinGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);                                 
                         idMaxGc.add(Calendar2.IDEAL_UNITS_FIELD[idealTimeUnits], -idealTimeN);                                 
@@ -3704,8 +3757,10 @@ public abstract class EDDGrid extends EDD {
                             MessageFormat.format(EDStatic.magTimeRangeLast, timeRangeString) +
                                 timesVary,  
                             "align=\"top\" " +
-                            "onMouseUp='f1.start" + timeIndex + ".value=\"" + Calendar2.formatAsISODateTimeT(tidMinGc)  + "Z\"; " +
-                                       "f1.stop"  + timeIndex + ".value=\"" + Calendar2.formatAsISODateTimeT(tidMaxGc)  + "Z\"; " +
+                            "onMouseUp='f1.start" + timeIndex + ".value=\"" + 
+                            Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMinGc) + "\"; " +
+                                       "f1.stop"  + timeIndex + ".value=\"" + 
+                            Calendar2.limitedFormatAsISODateTimeT(time_precision, tidMaxGc) + "\"; " +
                                        "mySubmit(true);'"));
                     } else {
                         writer.write(timeGap);
@@ -5207,8 +5262,10 @@ Attributes {
 
             boolean isMap = vars[0] instanceof EDVLonGridAxis &&
                             vars[1] instanceof EDVLatGridAxis;
-            boolean xIsTimeAxis = vars[0] instanceof EDVTimeGridAxis;
-            boolean yIsTimeAxis = vars[1] instanceof EDVTimeGridAxis;
+            boolean xIsTimeAxis = vars[0] instanceof EDVTimeStampGridAxis ||
+                                  vars[0] instanceof EDVTimeStamp;
+            boolean yIsTimeAxis = vars[1] instanceof EDVTimeStampGridAxis ||
+                                  vars[1] instanceof EDVTimeStamp;
             int xAxisIndex = String2.indexOf(axisVariableDestinationNames(), vars[0].destinationName());
             int yAxisIndex = String2.indexOf(axisVariableDestinationNames(), vars[1].destinationName());
 
@@ -5326,7 +5383,7 @@ Attributes {
                         otherInfo.append(td + " E"); //° didn't work
                     else if (av == latIndex) 
                         otherInfo.append(td + " N"); //° didn't work
-                    else if (axisVar instanceof EDVTimeGridAxis) 
+                    else if (axisVar instanceof EDVTimeStampGridAxis) 
                         otherInfo.append(Calendar2.epochSecondsToLimitedIsoStringT(
                             axisVar.combinedAttributes().getString(EDV.TIME_PRECISION), td, "NaN"));
                     else {
@@ -6100,12 +6157,14 @@ Attributes {
 
         String datasetUrl = tErddapUrl + "/" + dapProtocol + "/" + datasetID;
         String timeString = "";
-        if (nTimes >= 1) timeString += Calendar2.epochSecondsToIsoStringT(Math.min(timeStartd, timeStopd)) + "Z";
+        if (nTimes >= 1) timeString += 
+            Calendar2.epochSecondsToLimitedIsoStringT(
+                timeEdv.combinedAttributes().getString(EDV.TIME_PRECISION),
+                Math.min(timeStartd, timeStopd), "");
         if (nTimes >= 2) 
             throw new SimpleException("Error: " +
                 "For .kml requests, the time dimension size must be 1."); 
-            //timeString += " through " +
-            //Calendar2.epochSecondsToIsoStringT(Math.max(timeStartd, timeStopd)) + "Z";
+            //timeString += " through " + limitedIsoStringT ... Math.max(timeStartd, timeStopd), "");
         String brTimeString = timeString.length() == 0? "" : "Time: " + timeString + "<br />\n"; 
 
         //calculate doMax and get drawOrder
@@ -6363,223 +6422,6 @@ Attributes {
         return true;
     }
 
-    /*
-    public void saveAsKml(String requestUrl, String userDapQuery, 
-        OutputStreamSource outputStreamSource) throws Throwable {
-
-        if (reallyVerbose) String2.log("  EDDGrid.saveAsKml"); 
-        long time = System.currentTimeMillis();
-
-        //handle axis request
-        if (isAxisDapQuery(userDapQuery)) 
-            throw new SimpleException("Error: " +
-                "The .kml format is for latitude longitude data requests only.");
-
-        //lon and lat are required; time is not required
-        if (lonIndex < 0 || latIndex < 0) 
-            throw new SimpleException("Error: " +
-                "The .kml format is for latitude longitude data requests only.");
-
-        //parse the userDapQuery and get the GridDataAccessor
-        //this also tests for error when parsing query
-        GridDataAccessor gridDataAccessor = new GridDataAccessor(this, 
-            requestUrl, userDapQuery, true, true);  //rowMajor, convertToNaN
-        if (gridDataAccessor.dataVariables().length != 1) 
-            throw new SimpleException("Error: " +
-                "The .kml format can only handle one data variable.");
-        StringArray tDestinationNames = new StringArray();
-        tDestinationNames.add(gridDataAccessor.dataVariables()[0].destinationName());
-
-        //check that request meets .kml restrictions.
-        //.transparentPng does some of these tests, but better to catch problems
-        //here than in GoogleEarth.
-        int nTimes = 0;
-        double firstTime = Double.NaN, lastTime = Double.NaN, timeSpacing = Double.NaN;
-        PrimitiveArray lonPa = null, latPa = null, timePa = null, allTimeDestPa = null;
-        EDVTimeGridAxis timeEdv = null;
-        double lonAdjust = 0;
-        for (int av = 0; av < axisVariables.length; av++) {
-            PrimitiveArray avpa = gridDataAccessor.axisValues(av);
-            if (av == lonIndex) {
-                lonPa = avpa;
-
-                //lon and lat axis values don't have to be evenly spaced.
-                //.transparentPng uses Sgt.makeCleanMap which projects data (even, e.g., Mercator)
-                //so resulting .png will use a geographic projection.
-
-                //although the Google docs say lon must be +-180, lon > 180 is ok!
-                //if (lonPa.getDouble(0) < 180 && lonPa.getDouble(lonPa.size() - 1) > 180)
-                //    throw new SimpleException("Error: " +
-                //    "For .kml requests, the longitude values can't be below and above 180.");
-
-                //But if minLon>=180, it is easy to adjust the lon value references in the kml,
-                //but leave the userDapQuery for the .transparentPng unchanged.
-                if (lonPa.getDouble(0) >= 180)
-                    lonAdjust = -360;
-            } else if (av == latIndex) {
-                latPa = avpa;
-            } else if (av == timeIndex) {
-                timeEdv = (EDVTimeGridAxis)axisVariables[timeIndex];
-                allTimeDestPa = timeEdv.destinationValues();
-                timePa = avpa;
-                nTimes = timePa.size();
-                if (nTimes > 500) //arbitrary: prevents requests that would take too long to respond to
-                    throw new SimpleException("Error: " +
-                        "For .kml requests, the time dimension's size must be less than 500.");
-                firstTime = timePa.getDouble(0);
-                lastTime = timePa.getDouble(nTimes - 1);
-                if (nTimes > 1) 
-                    timeSpacing = (lastTime - firstTime) / (nTimes - 1);
-            } else {
-                if (avpa.size() > 1)
-                    throw new SimpleException("Error: " +
-                        "For .kml requests, the " + 
-                        axisVariables[av].destinationName() + " dimension's size must be 1."); 
-            }
-        }
-        if (lonPa == null || latPa == null || lonPa.size() < 2 || latPa.size() < 2) 
-            throw new SimpleException("Error: " +
-                "For .kml requests, the lon and lat dimension sizes must be greater than 1."); 
-        //request is ok and compatible with .kml request!
-
-        //based on quirky example (but lots of useful info):
-        //http://161.55.17.243/cgi-bin/pydap.cgi/AG/ssta/3day/AG2006001_2006003_ssta.nc.kml?LAYERS=AGssta
-        //kml docs: http://earth.google.com/kml/kml_tags.html
-        //CDATA is necessary for url's with queries
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-            outputStreamSource.outputStream("UTF-8"), "UTF-8"));
-        double dWest = lonPa.getNiceDouble(0) + lonAdjust;
-        double dEast = lonPa.getNiceDouble(lonPa.size() - 1) + lonAdjust;
-        if (dWest > dEast) {  //it happens if axis is in descending order
-            double td = dWest; dWest = dEast; dEast = td;}
-        String west  = String2.genEFormat10(dWest);
-        String east  = String2.genEFormat10(dEast);
-
-        double dSouth = latPa.getNiceDouble(0);
-        double dNorth = latPa.getNiceDouble(latPa.size() - 1);
-        if (dSouth > dNorth) { //it happens if axis is in descending order
-            double td = dSouth; dSouth = dNorth; dNorth = td; }        
-        String south  = String2.genEFormat10(dSouth);
-        String north  = String2.genEFormat10(dNorth);
-        String datasetUrl = tErddapUrl + "/" + dapProtocol + "/" + datasetID;
-        String timeString = nTimes == 0? "" :
-            nTimes == 1? Calendar2.epochSecondsToIsoStringT(firstTime) :
-              Calendar2.epochSecondsToIsoStringT(firstTime) + " through " + 
-              Calendar2.epochSecondsToIsoStringT(lastTime);
-        String brTimeString = timeString.length() == 0? "" : "Time: " + timeString + "<br />\n"; 
-        writer.write(
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
-            "<Document>\n" +
-            //human-friendly, but descriptive, <name>
-            //name is used as link title -- leads to <description> 
-            "  <name>" + XML.encodeAsXML(title()) + "</name>\n" +
-            //<description appears in help balloon
-            //<br /> is what kml/description documentation recommends
-            "  <description><![CDATA[" + 
-            brTimeString +
-            MessageFormat.format(EDStatic.imageDataCourtesyOf, XML.encodeAsXML(institution())) + "<br />\n" +
-            //link to download data
-            "<a href=\"" + datasetUrl + ".html?" + SSR.minimalPercentEncode(userDapQuery) + //XML.encodeAsXML isn't ok
-                "\">Download data from this dataset.</a><br />\n" +
-            "    ]]></description>\n");
-
-        //is nTimes <= 1?
-        if (nTimes <= 1) {
-            //no timeline in Google Earth
-            writer.write(
-                //the kml link to the data 
-                "  <GroundOverlay>\n" +
-                "    <name>" + title() + 
-                    (timeString.length() > 0? ", " + timeString : "") +
-                    "</name>\n" +
-                "    <Icon>\n" +
-                "      <href>" + 
-                    datasetUrl + ".transparentPng?" + SSR.minimalPercentEncode(userDapQuery) + //XML.encodeAsXML isn't ok
-                    "</href>\n" +
-                "    </Icon>\n" +
-                "    <LatLonBox>\n" +
-                "      <west>" + west + "</west>\n" +
-                "      <east>" + east + "</east>\n" +
-                "      <south>" + south + "</south>\n" +
-                "      <north>" + north + "</north>\n" +
-                "    </LatLonBox>\n" +
-                "    <visibility>1</visibility>\n" +
-                "  </GroundOverlay>\n");
-        } else { 
-            //nTimes >= 2, so make a timeline in Google Earth
-            //Problem: I don't know what time range each image represents.
-            //  Because I don't know what the timePeriod is for the dataset (e.g., 8day).
-            //  And I don't know if the images overlap (e.g., 8day composites, every day)
-            //  And if the stride>1, it is further unknown.
-            //Solution (crummy): assume an image represents -1/2 time to previous image until 1/2 time till next image
-
-            //get all the .dotConstraints
-            String parts[] = getUserQueryParts(userDapQuery); //decoded.  always at least 1 part (may be "")
-            StringBuilder dotConstraintsSB = new StringBuilder();
-            for (int i = 0; i < parts.length; i++) {
-                if (parts[i].startsWith(".")) {
-                    if (dotConstraintsSB.size() > 0)
-                        dotConstraintsSB.append("&");
-                    dotConstraintsSB.append(parts[i]);
-                }
-            }        
-            String dotConstraints = dotConstraintsSB.toString();
-
-            IntArray tConstraints = (IntArray)gridDataAccessor.constraints().clone();
-            int startTimeIndex = tConstraints.get(timeIndex * 3);
-            int timeStride     = tConstraints.get(timeIndex * 3 + 1);
-            int stopTimeIndex  = tConstraints.get(timeIndex * 3 + 2); 
-            double preTime = Double.NaN;
-            double nextTime = allTimeDestPa.getDouble(startTimeIndex);
-            double currentTime = nextTime - (allTimeDestPa.getDouble(startTimeIndex + timeStride) - nextTime);
-            for (int tIndex = startTimeIndex; tIndex <= stopTimeIndex; tIndex += timeStride) {
-                preTime = currentTime;
-                currentTime = nextTime;
-                nextTime = tIndex + timeStride > stopTimeIndex? 
-                    currentTime + (currentTime - preTime) :
-                    allTimeDestPa.getDouble(tIndex + timeStride);
-                //String2.log("  tIndex=" + tIndex + " preT=" + preTime + " curT=" + currentTime + " nextT=" + nextTime);
-                //just change the time constraints; leave all others unchanged
-                tConstraints.set(timeIndex * 3, tIndex);
-                tConstraints.set(timeIndex * 3 + 1, 1);
-                tConstraints.set(timeIndex * 3 + 2, tIndex); 
-                String tDapQuery = buildDapQuery(tDestinationNames, tConstraints) + dotConstraints;
-                writer.write(
-                    //the kml link to the data 
-                    "  <GroundOverlay>\n" +
-                    "    <name>" + Calendar2.epochSecondsToIsoStringT(currentTime) + "Z" + "</name>\n" +
-                    "    <Icon>\n" +
-                    "      <href>" + 
-                        datasetUrl + ".transparentPng?" + SSR.minimalPercentEncode(tDapQuery) + //XML.encodeAsXML isn't ok
-                        "</href>\n" +
-                    "    </Icon>\n" +
-                    "    <LatLonBox>\n" +
-                    "      <west>" + west + "</west>\n" +
-                    "      <east>" + east + "</east>\n" +
-                    "      <south>" + south + "</south>\n" +
-                    "      <north>" + north + "</north>\n" +
-                    "    </LatLonBox>\n" +
-                    "    <TimeSpan>\n" +
-                    "      <begin>" + Calendar2.epochSecondsToIsoStringT((preTime + currentTime)  / 2.0) + "Z</begin>\n" +
-                    "      <end>"   + Calendar2.epochSecondsToIsoStringT((currentTime + nextTime) / 2.0) + "Z</end>\n" +
-                    "    </TimeSpan>\n" +
-                    "    <visibility>1</visibility>\n" +
-                    "  </GroundOverlay>\n");
-            }
-        }
-        writer.write(
-            getKmlIconScreenOverlay() +
-            "</Document>\n" +
-            "</kml>\n");
-        writer.flush(); //essential
-
-        //diagnostic
-        if (reallyVerbose)
-            String2.log("  EDDGrid.saveAsKml done. TIME=" + 
-                (System.currentTimeMillis() - time) + "\n");
-    }
-    */
     /**
      * This writes the grid from this dataset to the outputStream in 
      * Matlab .mat format.
@@ -6891,23 +6733,27 @@ Attributes {
             return;
         }
 
-        //get gridDataAccessor first, in case of error when parsing query
-        //(This makes an unneccessary call to ensureMemoryAvailable with a 
-        //  possibly different nBytes than will actually be used below (via dvGda). 
-        //  But it isn't an unreasonable request.
-        //  nBytes will still be less than partialRequestMaxBytes.)
-        GridDataAccessor mainGda = new GridDataAccessor(this, requestUrl, userDapQuery, 
+        //** create gridDataAccessor first, 
+        //to check for error when parsing query or getting data,
+        //and to check that file size < 2GB
+        GridDataAccessor gda = new GridDataAccessor(this, requestUrl, userDapQuery, 
             true, false);  //rowMajor, convertToNaN         
-        EDV tDataVariables[] = mainGda.dataVariables();
 
         //ensure file size < 2GB  
         //???is there a way to allow >2GB netcdf 3 files?
+        //Yes: the 64-bit extension!  But this code doesn't yet use that.
         //   And even if so, what about OS limit ERDDAP is running on? and client OS?
         //Or, view this as protection against accidental requests for too much data (e.g., whole dataset).
-        if (mainGda.totalNBytes() > 2100000000) //leave some space for axis vars, etc.
+        if (gda.totalNBytes() > 2100000000) //leave some space for axis vars, etc.
             throw new SimpleException(Math2.memoryTooMuchData + "  " +
                 MessageFormat.format(EDStatic.errorMoreThan2GB,
-                    ".nc", ((mainGda.totalNBytes() + 100000) / Math2.BytesPerMB) + " MB"));
+                    ".nc", ((gda.totalNBytes() + 100000) / Math2.BytesPerMB) + " MB"));
+
+
+        //** Then get gridDataAllAccessor
+        //AllAccessor so max length of String variables will be known.
+        GridDataAllAccessor gdaa = new GridDataAllAccessor(gda); 
+        EDV tDataVariables[] = gda.dataVariables();
 
         //write the data
         //items determined by looking at a .nc file; items written in that order 
@@ -6918,7 +6764,7 @@ Attributes {
             //find active axes
             IntArray activeAxes = new IntArray();
             for (int av = 0; av < axisVariables.length; av++) {
-                if (keepUnusedAxes || mainGda.axisValues(av).size() > 1)
+                if (keepUnusedAxes || gda.axisValues(av).size() > 1)
                     activeAxes.add(av);
             }
 
@@ -6926,16 +6772,18 @@ Attributes {
             int nActiveAxes = activeAxes.size();
             Dimension dimensions[] = new Dimension[nActiveAxes];
             Array axisArrays[] = new Array[nActiveAxes];
+            int stdShape[] = new int[nActiveAxes];
             for (int a = 0; a < nActiveAxes; a++) {
                 int av = activeAxes.get(a);
                 String avName = axisVariables[av].destinationName();
-                PrimitiveArray pa = mainGda.axisValues(av);
+                PrimitiveArray pa = gda.axisValues(av);
                 //if (reallyVerbose) String2.log(" create dim=" + avName + " size=" + pa.size());
+                stdShape[a] = pa.size();
                 dimensions[a] = nc.addDimension(avName, pa.size());
                 if (av == lonIndex)
                     pa.scaleAddOffset(1, lonAdjust);
                 axisArrays[a] = Array.factory(
-                    mainGda.axisValues(av).elementClass(),
+                    gda.axisValues(av).elementClass(),
                     new int[]{pa.size()},
                     pa.toObjectArray());
                 //if (reallyVerbose) String2.log(" create var=" + avName);
@@ -6945,28 +6793,41 @@ Attributes {
             }            
 
             //define the data variables
-            Array dataArrays[] = new Array[tDataVariables.length]; 
             for (int dv = 0; dv < tDataVariables.length; dv++) {
-                //if (reallyVerbose) String2.log(" create var=" + tDataVariables[dv].destinationName());
-                nc.addVariable(tDataVariables[dv].destinationName(),
-                    NcHelper.getDataType(tDataVariables[dv].destinationDataTypeClass()), 
-                    dimensions);
+                String destName = tDataVariables[dv].destinationName();
+                Class destClass = tDataVariables[dv].destinationDataTypeClass();
+                //if (reallyVerbose) String2.log(" create var=" + destName);
+
+                //String data? need to create a strlen dimension for this variable
+                if (destClass == String.class) {
+                    StringArray tsa = (StringArray)gdaa.getPrimitiveArray(dv);
+                    Dimension tDims[] = new Dimension[nActiveAxes + 1];
+                    System.arraycopy(dimensions, 0, tDims, 0, nActiveAxes);
+                    tDims[nActiveAxes] = nc.addDimension(
+                        destName + NcHelper.StringLengthSuffix, //"_strlen"
+                        tsa.maxStringLength());
+                    nc.addVariable(destName, DataType.CHAR, tDims);
+
+                } else {
+                    nc.addVariable(destName, NcHelper.getDataType(destClass), 
+                        dimensions);
+                }
             }
 
             //write global attributes
-            NcHelper.setAttributes(nc, "NC_GLOBAL", mainGda.globalAttributes);
+            NcHelper.setAttributes(nc, "NC_GLOBAL", gda.globalAttributes);
 
             //write axis attributes
             for (int a = 0; a < nActiveAxes; a++) {
                 int av = activeAxes.get(a);
                 NcHelper.setAttributes(nc, axisVariables[av].destinationName(), 
-                    mainGda.axisAttributes[av]);
+                    gda.axisAttributes[av]);
             }
 
             //write data attributes
             for (int dv = 0; dv < tDataVariables.length; dv++) {
                 NcHelper.setAttributes(nc, tDataVariables[dv].destinationName(), 
-                    mainGda.dataAttributes[dv]);
+                    gda.dataAttributes[dv]);
             }
 
             //leave "define" mode
@@ -6978,57 +6839,22 @@ Attributes {
                 nc.write(axisVariables[av].destinationName(), axisArrays[a]);
             }
 
-            //get the constraints string
-            String constraintsString = mainGda.constraintsString();
-
             //write the data variables
             for (int dv = 0; dv < tDataVariables.length; dv++) {
-                long dvTime = System.currentTimeMillis();
 
-                //Read/write chunks
-                //(I tried write data values one-by-one, but it is too slow. 
-                //Writing takes 10X longer than reading! 9/10 of time is in nc.write(...).)                
-
-                //make a GridDataAccessor for this dv
                 EDV edv = tDataVariables[dv];
                 String destName = edv.destinationName();
                 Class edvClass = edv.destinationDataTypeClass();
-                GridDataAccessor dvGda = new GridDataAccessor(this, requestUrl, 
-                    edv.destinationName() + constraintsString, 
-                    true, false);  //rowMajor, convertToNaN         
-
-                int partialIndexShape[] = dvGda.partialIndex().shape();
-                int totalIndexCurrent[] = dvGda.totalIndex().getCurrent();
-                long rwTime = System.currentTimeMillis();
-                while (dvGda.incrementChunk()) {
-                    //make shape with just activeAxes
-                    int ncShape[] = new int[nActiveAxes];
-                    int ncOffset[] = new int[nActiveAxes];
-                    for (int a = 0; a < nActiveAxes; a++) { 
-                        int aaa = activeAxes.get(a);
-                        ncShape[ a] = partialIndexShape[aaa];
-                        ncOffset[a] = totalIndexCurrent[aaa];
-                    }
-                    if (reallyVerbose)String2.log(
-                        "        ncShape=[" + String2.toCSSVString(ncShape) + "]\n" +
-                        "        ncOffset=[" + String2.toCSSVString(ncOffset) + "]");
-
-                    Array array = Array.factory(edvClass, ncShape, 
-                        dvGda.getPartialDataValues(0).toObjectArray());
-                    nc.write(destName, ncOffset, array);
-                    if (reallyVerbose) {
-                        String2.log(
-                            "        rwTime=" + (System.currentTimeMillis() - rwTime));
-                        rwTime = System.currentTimeMillis();
-                    }
-                }                   
-
-                if (reallyVerbose) String2.log("dv=" + dv + " done. time=" + 
-                    (System.currentTimeMillis() - dvTime));
+                Array array = Array.factory(edvClass, 
+                    stdShape, gdaa.getPrimitiveArray(dv).toObjectArray());
+                if (edvClass == String.class)
+                     nc.writeStringData(destName, array);
+                else nc.write(destName, array);
             }
 
             //if close throws Throwable, it is trouble
             nc.close(); //it calls flush() and doesn't like flush called separately
+            nc = null;
 
             //rename the file to the specified name
             File2.rename(fullFileName + randomInt, fullFileName);
@@ -7040,10 +6866,12 @@ Attributes {
 
         } catch (Throwable t) {
             //try to close the file
-            try {
-                nc.close(); //it calls flush() and doesn't like flush called separately
-            } catch (Throwable t2) {
-                //don't care
+            if (nc != null) {
+                try {
+                    nc.close(); //it calls flush() and doesn't like flush called separately
+                } catch (Throwable t2) {
+                    //don't care
+                }
             }
 
             //delete the partial file
@@ -7275,14 +7103,14 @@ Attributes {
         throws Throwable {
 
         //make the table
-        //note that TableWriter expects time values as doubles, and (sometimes) displays them as ISO 8601 strings
+        //note that TableWriter expects time values as doubles,
+        //  and (sometimes) displays them as ISO 8601 strings
         Table table = new Table();
+        table.globalAttributes().add(ada.globalAttributes());
         int nRAV = ada.nRequestedAxisVariables();
         for (int av = 0; av < nRAV; av++) {
-            table.addColumn(ada.axisVariables(av).destinationName(), ada.axisValues(av));
-            String tUnits = ada.axisVariables(av).units(); //ok if null
-            if (tUnits != null) 
-                table.columnAttributes(av).set("units", tUnits);
+            table.addColumn(av, ada.axisVariables(av).destinationName(), 
+                ada.axisValues(av), ada.axisAttributes(av));
         }
         table.makeColumnsSameSize();
 
@@ -7328,7 +7156,7 @@ Attributes {
             avPa[av] = PrimitiveArray.factory(tClass, nBufferRows, false);
             //???need to remove file-specific metadata (e.g., actual_range) from Attributes clone?
             table.addColumn(av, edv.destinationName(), avPa[av], 
-                (Attributes)edv.combinedAttributes().clone());
+                gridDataAccessor.axisAttributes(av)); //(Attributes)edv.combinedAttributes().clone());
         }
         for (int dv = 0; dv < nDv; dv++) {
             EDV edv = queryDataVariables[dv];
@@ -7339,13 +7167,13 @@ Attributes {
             dvPa[dv] = PrimitiveArray.factory(tClass, nBufferRows, false);
             //???need to remove file-specific metadata (e.g., actual_range) from Attributes clone?
             table.addColumn(nAv + dv, edv.destinationName(), dvPa[dv], 
-                (Attributes)edv.combinedAttributes().clone());
+                gridDataAccessor.dataAttributes(dv)); //(Attributes)edv.combinedAttributes().clone());
         }
 
         //write the data
         int tRows = 0;
         while (gridDataAccessor.increment()) {
-            //put the data in row one of the table
+            //add a row of data to the table
             for (int av = 0; av < nAv; av++) {
                 if      (isDoubleAv[av]) avPa[av].addDouble(gridDataAccessor.getAxisValueAsDouble(av));
                 else if (isFloatAv[av])  avPa[av].addFloat( gridDataAccessor.getAxisValueAsFloat(av));
@@ -7417,7 +7245,6 @@ Attributes {
         writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
         HtmlWidgets widgets = new HtmlWidgets("", true, EDStatic.imageDirUrl(loggedInAs));
         String formName = "form1";
-        EDVTimeGridAxis timeVar = timeIndex >= 0? (EDVTimeGridAxis)axisVariables[timeIndex] : null;
         String liClickSubmit = "\n" +
             "  <li> " + EDStatic.EDDClickOnSubmitHtml + "\n" +
             "  </ol>\n";
@@ -7469,7 +7296,7 @@ Attributes {
             
             //get the extra info   
             String extra = edvga.units();
-            if (av == timeIndex)
+            if (edvga instanceof EDVTimeStampGridAxis)
                 extra = "UTC"; //no longer true: "seconds since 1970-01-01..."
             if (extra == null) 
                 extra = "";
@@ -8334,14 +8161,17 @@ Attributes {
             "     <br>technique to convert a stride value in parentheses into a stride index value.\n" +
             "     <br>But dimension values often aren't evenly spaced. So for now, ERDDAP doesn't support the\n" +
             "     <br>parentheses notation for stride values.\n" +
-            "   <li>griddap always stores date/time values as numbers (in seconds since 1970-01-01T00:00:00Z).\n" +
+            "   <li><a name=\"time\">griddap</a> always stores date/time values as double precision floating point numbers\n" +
+            "     <br>(seconds since 1970-01-01T00:00:00Z, sometimes with some number of milliseconds).\n" +
             "     <br>Here is an example of a query which includes date/time numbers:\n" +
             "     <br><a href=\"" + fullValueExample + "\"><tt>" + 
                                     fullValueExample + "</tt></a>\n" +
-            "     <br>Some fileTypes (notably, .csv, .tsv, .htmlTable, .odvTxt, and .xhtml) display date/time values as\n" +
-            "     <br><a rel=\"help\" href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time strings" +
+            "     <br>The more human-oriented fileTypes (notably, .csv, .tsv, .htmlTable, .odvTxt, and .xhtml)\n" +
+            "     <br>display date/time values as " +
+            "       <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time strings" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "       (e.g., 2002-08-03T12:30:00Z).\n" +
+            "     <br>(e.g., 2002-08-03T12:30:00Z, but some variables include milliseconds, e.g.,\n" +
+            "     <br>2002-08-03T12:30:00.123Z).\n" +
             (EDStatic.convertersActive? 
               "     <br>ERDDAP has a utility to\n" +
               "       <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
@@ -8354,10 +8184,12 @@ Attributes {
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
             "       in parentheses, which griddap then converts to the\n" +
             "     <br>internal number (in seconds since 1970-01-01T00:00:00Z) and then to the appropriate\n" +
-            "     <br>array index.  The ISO date/time value should be in the form: <i>YYYY-MM-DD</i>T<i>hh:mm:ssZ</i>,\n" +
-            "     <br>where Z is 'Z' or a &plusmn;hh:mm offset from UTC.\n" +
-            "     <br>If you omit Z (or the &plusmn;hh:mm offset), :ssZ, :mm:ssZ, or Thh:mm:ssZ from the ISO date/time\n" +
-            "     <br>that you specify, the missing fields are assumed to be 0.\n" +
+            "     <br>array index.  The ISO date/time value should be in the form: <i>YYYY-MM-DD</i>T<i>hh:mm:ss.sssZ</i>,\n" +
+            "     <br>where Z is 'Z' or a &plusmn;hh or &plusmn;hh:mm offset from the Zulu/GMT time zone. If you omit Z and the\n" +
+            "     <br>offset, the Zulu/GMT time zone is used. Separately, if you omit .sss, :ss.sss, :mm:ss.sss, or\n" +
+            "     <br>Thh:mm:ss.sss from the ISO date/time that you specify, the missing fields are assumed to be 0.\n" +
+            "     <br>In some places, ERDDAP accepts a comma (ss,sss) as the seconds decimal point, but ERDDAP\n" +
+            "     <br>always uses a period when formatting times as ISO 8601 strings.\n" +
             "     <br>The example below is equivalent (at least at the time of writing this) to the examples above:\n" +
             "     <br><a href=\"" + fullTimeExample + "\"><tt>" + 
                                     fullTimeExample + "</tt></a>\n" +
@@ -11029,8 +10861,7 @@ writer.write(
         String domain = EDStatic.baseUrl;
         if (domain.startsWith("http://"))
             domain = domain.substring(7);
-        String eddCreationDate = String2.replaceAll(
-            Calendar2.millisToIsoZuluString(creationTimeMillis()), "-", "").substring(0, 8) + "Z";
+        String eddCreationDate = Calendar2.millisToIsoZuluString(creationTimeMillis()).substring(0, 10);
 
         String acknowledgement = combinedGlobalAttributes.getString("acknowledgement");
         String contributorName = combinedGlobalAttributes.getString("contributor_name");
@@ -11042,10 +10873,10 @@ writer.write(
         //creatorUrl: use infoUrl
         String dateCreated     = combinedGlobalAttributes.getString("date_created");
         String dateIssued      = combinedGlobalAttributes.getString("date_issued");
-        if (dateCreated != null && dateCreated.length() >= 10 && !dateCreated.endsWith("Z"))
-            dateCreated = dateCreated.substring(0, 10) + "Z";
-        if (dateIssued  != null && dateIssued.length()  >= 10 && !dateIssued.endsWith("Z"))
-            dateIssued  = dateIssued.substring(0, 10)  + "Z";
+        if (dateCreated != null && dateCreated.length() > 10)
+            dateCreated = dateCreated.substring(0, 10);
+        if (dateIssued  != null && dateIssued.length()  > 10)
+            dateIssued  = dateIssued.substring(0, 10);
         String history         = combinedGlobalAttributes.getString("history");
         String infoUrl         = combinedGlobalAttributes.getString("infoUrl"); 
         String institution     = combinedGlobalAttributes.getString("institution");
@@ -12227,7 +12058,7 @@ writer.write(
 "                  </gmd:linkage>\n" +
 "                  <gmd:protocol>\n" +
 //see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv from John Maurer
-"                    <gco:CharacterString>template</gco:CharacterString>\n" +
+"                    <gco:CharacterString>order</gco:CharacterString>\n" +
 "                  </gmd:protocol>\n" +
 "                  <gmd:name>\n" +        
 "                    <gco:CharacterString>Data Subset Form</gco:CharacterString>\n" +
@@ -12257,7 +12088,7 @@ writer.write(
 "                  </gmd:linkage>\n" +
 "                  <gmd:protocol>\n" +
 //see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv from John Maurer
-"                    <gco:CharacterString>template</gco:CharacterString>\n" +
+"                    <gco:CharacterString>order</gco:CharacterString>\n" +
 "                  </gmd:protocol>\n" +
 "                  <gmd:name>\n" +        
 "                    <gco:CharacterString>Make-A-Graph Form</gco:CharacterString>\n" +

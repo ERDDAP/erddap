@@ -252,6 +252,17 @@ And if you get stuck, please send an email with the details to <tt>bob dot simon
         to ensure that the resulting dataset appears as you want it to in ERDDAP.
       <li>Feel free to make small changes by hand, for example, supply a better <tt>infoUrl,
         summary,</tt> or <tt>title</tt>.             
+      <li>Scripting: As an alternative to answering the questions interactively 
+        at the keyboard and looping to generate additional datasets, 
+        you can provide command line arguments to answer 
+        all of the questions to generate one dataset.
+        GenerateDatasetsXml will process those parameters, 
+        write the output to the output file, and exit the program.
+        To set this up, first use the program in interactive mode 
+        and write down your answers.
+        Then generate the command line (usually in a script) with all of the arguments.
+        This should be useful for datasets that change frequently in a way that 
+        necessitates re-running GenerateDatasetsXml (notably EDDGridFromThreddsCatalog).
       <li>GenerateDatasetsXml supports a -i<i>datasetsXmlName</i>#<i>tagName</i>
         command line parameter which inserts the output into the specified datasets.xml file 
         (the default is <i>tomcat</i>/content/erddap/datasets.xml). 
@@ -260,14 +271,23 @@ And if you get stuck, please send an email with the details to <tt>bob dot simon
         <br>and 
         <br><tt>&lt;!-- End GenerateDatasetsXml #<i>tagName someDatetime</i> --&gt;</tt>
         <br>and replaces everything in between those lines with the new content, and changes the someDatetime.
-        <br>If the Begin and End lines are not found, then those lines and the new content
+        <ul>
+        <li>The -i switch is only processed (and changes to datasets.xml are only made)
+          if you run GenerateDatasetsXml with command line arguments which specify all
+          the answers to all of the questions for one loop of the program. (See 'Scripting' above.)
+          (The thinking is: This parameter is for use with scripts.
+          If you use the program in interactive mode (typing info on the keyboard), you are
+          likely to generate some incorrect chunks of XML before you generate
+          the one you want.)
+        <li>If the Begin and End lines are not found, then those lines and the new content
           are inserted right before &lt;/erddapDatasets&gt;.
-        <br>There is also a -I switch for testing purposes which works the same as -i, 
+        <li>There is also a -I switch for testing purposes which works the same as -i, 
           but creates a file called datasets.xml<i>DateTime</i> and doesn't make 
           changes to datasets.xml.
-        <br>Don't run GenerateDatasetsXml with -i in two processes at once. 
+        <li>Don't run GenerateDatasetsXml with -i in two processes at once. 
           There is a chance only one set of changes will be kept. 
           There may be serious trouble (for example, corrupted files).
+        </ul>
       </ul>
       If you use "GenerateDatasetsXml -verbose", it will print more diagnostic messages than usual.
 
@@ -477,10 +497,9 @@ by pasting the XML text into an XML checker like
     <li>Use the <a rel="help" href="#destinationName">destinationName</a> "time" only for variables that include the entire date+time 
       (or date, if that is all there is).
       If, for example, there are separate columns for date and timeOfDay, don't use the variable name "time".
-    <li>See <a rel="help" href="#timeUnits">units</a> for more information about the units attribute for 
-      time and timeStamp variables.
+    <li>See <a rel="help" href="#timeUnits">units</a> for more information about the units attribute for time and timeStamp variables.
     <li>The time variable and related 
-      <a rel="help" href="#timeUnits">timeStamp variables</a> are unique in that they
+      <a rel="help" href="#timeStampVariable">timeStamp variables</a> are unique in that they
       always convert data values from the source's time format (what ever it is) into a numeric value
       (seconds since 1970-01-01T00:00:00Z) or a String value (ISO 8601:2004(E) format), depending on the
       situation.
@@ -4345,7 +4364,8 @@ for details.
             <tt>&lt;subsetVariables&gt;</tt>, 
             but the columns MAY be in any order.
           <li>It MAY have extra columns (they'll be removed and newly redundant rows will be removed).
-          <li>TimeStamp columns should have ISO 8601:2004(E) formatted date+timeZ strings
+          <li><a rel="help" href="#timeUnits">Time and timestamp</a> columns should have 
+            ISO 8601:2004(E) formatted date+timeZ strings
            (for example, <tt>1985-01-31T15:31:00Z</tt>).
           <li>Missing values should be missing values (not fake numbers like -99).
           <li>.json files may be a little harder to create but deal with Unicode characters well.
@@ -4634,7 +4654,8 @@ for details.
           <tt>&lt;addAttributes&gt;</tt> for this dataset in datasets.xml, for example,
           <br><tt>&lt;att name="actual_range" 
             <a rel="help" href="#attributeType">type="doubleList"</a>&gt;-180 180&lt;/att&gt;</tt>
-        <li>For numeric time and timestamp variables, the values specified should be the 
+        <li>For numeric <a rel="help" href="#timeUnits">time and timestamp variables</a>,
+          the values specified should be the 
           relevant source (not destination) numeric values. For example, if the source time values 
           are stored as "days since 1985-01-01", then the actual_range should be specified 
           in "days since 1985-01-01".
@@ -5015,11 +5036,15 @@ for details.
       <li><a name="time_precision"><b>time_precision</b></a> 
         <ul>
         <li>time_precision is an OPTIONAL attribute used by ERDDAP (and no metadata standards)
-          for time and timestamp variables.           
-          It specifies the precision to be used when displaying time values from the variable
-          on web pages in ERDDAP.  The only data file output format that uses
-          this is .htmlTable.  For example,
+          for <a rel="help" href="#timeUnits">time and timestamp variables</a>,
+          which may be in gridded datasets or tabular datasets, 
+          and in axisVariables or dataVariables.  For example,
           <br><tt>&lt;att name="time_precision"&gt;1970-01-01&lt;/att&gt;</tt>
+          <br>time_precision specifies the precision to be used whenever ERDDAP formats the time
+          values from that variable as strings on web pages, including .htmlTable responses.
+          In file formats where ERDDAP formats times as strings (e.g., .csv and .json),
+          ERDDAP only uses the time_precision-specified format if it includes 
+          fractional seconds; otherwise, ERDDAP uses the 1970-01-01T00:00:00Z format.
         <li>Valid values are <tt>1970-01, 1970-01-01, 1970-01-01T00Z,
           1970-01-01T00:00Z, 1970-01-01T00:00:00Z</tt> (the default), 
           <tt>1970-01-01T00:00:00.0Z, 1970-01-01T00:00:00.00Z, 1970-01-01T00:00:00.000Z</tt>.
@@ -5037,7 +5062,7 @@ for details.
           <a rel="help" href="http://www.iso.org/iso/date_and_time_format">ISO 8601:2004 "extended" Time Format Specification<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
-        <li><b>WARNING:</b> You should only use a limited time_precision to the extent that 
+        <li><b>WARNING:</b> You should only use a limited time_precision if 
           <b>all</b> of the data values for the variable have only the minimum value 
           for all of the fields that are hidden.
           <ul>
@@ -5048,7 +5073,7 @@ for details.
             if there are non-0 hour, minute, or seconds values, 
             (for example <tt>2005-03-05T12:00:00Z</tt>)
             because the non-default hour value wouldn't be displayed.
-            <br>Otherwise, if a user asks for all data with <tt>time=2005-03-05</tt>,
+            Otherwise, if a user asks for all data with <tt>time=2005-03-05</tt>,
             the request will fail unexpectedly.
           </ul>
         </ul>
@@ -5135,7 +5160,7 @@ for details.
               and does not strictly follow the CF standard.
              
              <p>Ideally, the <tt><i>baseTime</i></tt> is an ISO 8601:2004(E) formatted date time string <br>(yyyy-MM-dd'T'HH:mm:ssZ, for example, 1970-01-01T00:00:00Z). 
-             ERDDAP tries to work with a wide range of variations of that ideal format, for example, "1970-1-1 0:0:0".
+             ERDDAP tries to work with a wide range of variations of that ideal format, for example, "1970-1-1 0:0:0" is supported.
              If the time zone information is missing, it is assumed to be Zulu time zone (AKA GMT).
              Even if another time zone is specified, ERDDAP never uses Daylight Savings Time.
 
@@ -5177,12 +5202,17 @@ for details.
           <a rel="help" href="#destinationName">destinationName</a> <tt>time</tt>
           and their <tt>units</tt> metadata (which must be suitable).
 
-          <p>For tabular datasets, other variables can be timeStamp variables. They behave
-          like the main time variable (converting the source's time format into 
-          "seconds since 1970-01-01T00:00:00Z" and/or ISO 8601:2004(E) format), but have a
-          different destinationName. TimeStamp variables are recognized by their 
+          <p><a name="timeStampVariable">Any</a> other variable 
+          (axisVariable or dataVariable, in an EDDGrid or EDDTable dataset)
+          can be a timeStamp variable. 
+          Timestamp variables are variables that have time-related units and time data,
+          but have a &lt;destinationName&gt; other than <tt>time</tt>.
+          TimeStamp variables behave like the main time variable in that they
+          convert the source's time format into 
+          "seconds since 1970-01-01T00:00:00Z" and/or ISO 8601:2004(E) format). 
+          ERDDAP recognizes timeStamp variables by their time-related
           "<a rel="help" href="#units">units</a>"
-          metadata, which must contain " since " (for numeric dateTimes) or "yy" or "YY"
+          metadata, which must contain "&nbsp;since&nbsp;" (for numeric dateTimes) or "yy" or "YY"
           for formatted String dateTimes.
           But please still use the destinationName "time" for the main dateTime variable.
 

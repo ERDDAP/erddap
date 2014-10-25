@@ -247,6 +247,12 @@ public class EDDGridFromBinaryFile extends EDDGrid {
                 axisVariables[av] = new EDVTimeGridAxis(tSourceAxisName, 
                     tSourceAttributes, tAddAttributes, tSourceValues);
 
+            //is it a timestamp axis?
+            } else if (EDVTimeStampGridAxis.hasTimeUnits(tSourceAttributes, tAddAttributes)) {
+                axisVariables[av] = new EDVTimestampGridAxis(
+                    tSourceAxisName, tDestinationName,
+                    tSourceAttributes, tAddAttributes, tSourceValues);
+
             //it is some other axis variable
             } else {
                 axisVariables[av] = new EDVGridAxis(
@@ -257,17 +263,24 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         }
 
         //create dataVariable
-        Test.ensureEqual(tDataVariables.length, 1, errorInMethod + "dataVariables.length must be 1."); 
+        Test.ensureEqual(tDataVariables.length, 1, 
+            errorInMethod + "dataVariables.length must be 1."); 
         dataVariables = new EDV[1];
         String tSourceName = (String)tDataVariables[0][0];
         String tDestinationName = (String)tDataVariables[0][1];
+        if (tDestinationName == null || tDestinationName.length() == 0)
+            tDestinationName = tSourceName;
         Attributes tSourceAttributes = new Attributes();
         Attributes tAddAttributes = (Attributes)tDataVariables[0][2];
-        dataVariables[0] = new EDV(
-            (String)tDataVariables[0][0],
-            (String)tDataVariables[0][1],
-            new Attributes(),
-            (Attributes)tDataVariables[0][2],
+        if (tDestinationName.equals(EDV.TIME_NAME))
+            throw new RuntimeException(errorInMethod +
+                "No EDDGrid dataVariable may have destinationName=" + EDV.TIME_NAME);
+        else if (EDVTime.hasTimeUnits(tSourceAttributes, tAddAttributes)) 
+            dataVariables[0] = new EDVTimeStamp(tSourceName, tDestinationName,
+                tSourceAttributes, tAddAttributes,
+                ???int.class);  
+        else dataVariables[0] = new EDV(tSourceName, tDestinationName,
+            tSourceAttributes, tAddAttributes,
             ???int.class);  
         dataVariables[0].setActualRangeFromDestinationMinMax();
 

@@ -231,8 +231,13 @@ public class GridDataAccessor {
                     globalAttributes.set("geospatial_vertical_max", dMax);
                 }
             } else if (av == eddGrid.timeIndex) {
-                globalAttributes.set("time_coverage_start", Calendar2.epochSecondsToIsoStringT(dMin) + "Z");   //unidata-related
-                globalAttributes.set("time_coverage_end",   Calendar2.epochSecondsToIsoStringT(dMax) + "Z");
+                String tp = axisAttributes[av].getString(EDV.TIME_PRECISION);
+                //"" unsets the attribute if dMin or dMax isNaN
+                globalAttributes.set("time_coverage_start", 
+                    Calendar2.epochSecondsToLimitedIsoStringT(tp, dMin, ""));
+                //for tables (not grids) will be NaN for 'present'.   Deal with this better???
+                globalAttributes.set("time_coverage_end", 
+                    Calendar2.epochSecondsToLimitedIsoStringT(tp, dMax, ""));
             }
         }
 
@@ -547,7 +552,7 @@ public class GridDataAccessor {
                     " nElements/dv=" + partialResults[partialResults.length - 1].size() +
                     " time=" + (System.currentTimeMillis() - time));
             //for (int i = 0; i < partialResults.length; i++)
-            //    String2.log("      pa[" + i + "]=" + partialResults[i]);
+            //    String2.log("!pa[" + i + "]=" + partialResults[i]);
 
         } catch (WaitThenTryAgainException twwae) {
             throw twwae;
@@ -592,7 +597,9 @@ public class GridDataAccessor {
         //process the results
         for (int dv = 0; dv < dataVariables.length; dv++) { //dv in the query
             //convert source values to destination values and store
+            //String2.log("!source  dv=" + dataVariables[dv].destinationName() + " " + partialResults[nAxisVariables + dv]);
             partialDataValues[dv] = dataVariables[dv].toDestination(partialResults[nAxisVariables + dv]);
+            //String2.log("!dest    dv=" + dataVariables[dv].destinationName() + " " + partialDataValues[dv]);
 
             //convert missing_value to NaN
             if (convertToNaN) {

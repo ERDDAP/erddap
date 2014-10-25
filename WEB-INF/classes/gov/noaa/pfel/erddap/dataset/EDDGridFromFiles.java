@@ -988,6 +988,10 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 axisVariables[av] = new EDVTimeGridAxis(tSourceName,
                     tSourceAtt, tAddAtt, sourceAxisValues[av]);
                 timeIndex = av;
+            } else if (EDVTimeStampGridAxis.hasTimeUnits(tSourceAtt, tAddAtt)) {
+                axisVariables[av] = new EDVTimeStampGridAxis(
+                    tSourceName, tDestName,
+                    tSourceAtt, tAddAtt, sourceAxisValues[av]);
             } else {
                 axisVariables[av] = new EDVGridAxis(tSourceName, tDestName, 
                     tSourceAtt, tAddAtt, sourceAxisValues[av]); 
@@ -1009,6 +1013,8 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         for (int dv = 0; dv < ndv; dv++) {
             String tSourceName = sourceDataNames.get(dv);
             String tDestName = (String)tDataVariables[dv][1];
+            if (tDestName == null || tDestName.length() == 0)
+                tDestName = tSourceName;
             Attributes tSourceAtt = sourceDataAttributes[dv];
             Attributes tAddAtt = (Attributes)tDataVariables[dv][2];
             //PrimitiveArray taa = tAddAtt.get("_FillValue");
@@ -1016,7 +1022,13 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             String tSourceType = sourceDataTypes[dv];
             //if (reallyVerbose) String2.log("  dv=" + dv + " sourceName=" + tSourceName + " sourceType=" + tSourceType);
 
-            dataVariables[dv] = new EDV(tSourceName, tDestName, 
+            if (tDestName.equals(EDV.TIME_NAME))
+                throw new RuntimeException(errorInMethod +
+                    "No EDDGrid dataVariable may have destinationName=" + EDV.TIME_NAME);
+            else if (EDVTime.hasTimeUnits(tSourceAtt, tAddAtt)) 
+                dataVariables[dv] = new EDVTimeStamp(tSourceName, tDestName,
+                    tSourceAtt, tAddAtt, tSourceType);  
+            else dataVariables[dv] = new EDV(tSourceName, tDestName, 
                 tSourceAtt, tAddAtt, tSourceType, Double.NaN, Double.NaN); 
             dataVariables[dv].setActualRangeFromDestinationMinMax();
         }
@@ -1186,9 +1198,11 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 tConstraints.get(avi*3 + 0),
                 tConstraints.get(avi*3 + 1),
                 tConstraints.get(avi*3 + 2));
-        for (int dvi = 0; dvi < ndv; dvi++)
+        for (int dvi = 0; dvi < ndv; dvi++) {
+            //String2.log("!dvi#" + dvi + " " + tDataVariables[dvi].destinationName() + " " + tDataVariables[dvi].sourceDataTypeClass().toString());
             results[nav + dvi] = PrimitiveArray.factory(
-                dataVariables[dvi].sourceDataTypeClass(), 64, false);
+                tDataVariables[dvi].sourceDataTypeClass(), 64, false);
+        }
         IntArray ttConstraints = (IntArray)tConstraints.clone();
         int nFiles = ftStartIndex.size();
         int axis0Start  = tConstraints.get(0);
@@ -1202,9 +1216,12 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             int tNValues = ftNValues.get(ftRow);
             int tStart = axis0Start - ftStartIndex.get(ftRow);
             int tStop = tStart;
-            //get as many as possible from this file
-            while (tStop + axis0Stride < tNValues) 
+            //get as many axis0 values as possible from this file
+            //                    (in this file, if this file had all the remaining values)
+            int lookMax = Math.min(tNValues - 1, axis0Stop - ftStartIndex.get(ftRow));
+            while (tStop + axis0Stride <= lookMax) 
                 tStop += axis0Stride;          
+            //String2.log("!tStart=" + tStart + " stride=" + axis0Stride + " tStop=" + tStop + " tNValues=" + tNValues);
 
             //set ttConstraints
             ttConstraints.set(0, tStart);
@@ -1221,6 +1238,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             try {
                 tResults = getSourceDataFromFile(tFileDir, tFileName, 
                     tDataVariables, ttConstraints);
+                //String2.log("!tResults[0]=" + tResults[0].toString());
             } catch (Throwable t) {
                 EDStatic.rethrowClientAbortException(t);  //first thing in catch{}
 
@@ -1248,6 +1266,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             //merge dataVariables   (converting to sourceDataTypeClass if needed)
             for (int dv = 0; dv < ndv; dv++) 
                 results[nav + dv].append(tResults[dv]);
+            //String2.log("!merged tResults[1stDV]=" + results[nav].toString());
 
             //set up for next while-iteration
             axis0Start += (tStop - tStart) + axis0Stride; 

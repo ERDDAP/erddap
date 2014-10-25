@@ -45,6 +45,59 @@
 <!-- ****************************************************************************** -->
 <tr>
 <td>
+<h2><a name="changes1.54">Changes</a> in ERDDAP version 1.54 (released 2014-10-24)</h2>
+<ul>
+<li><b>New Features (for users):</b> 
+  <ul>
+  <li>Some variables now work with time at the milliseconds precision, e.g.,
+    2014-10-24T16:41:22.485Z.
+    Thanks to Dominic Fuller-Rowell.
+  </ul>
+
+<li><b>Small changes/Bug Fixes:</b>
+  <ul>
+  <li>Bug fix: with a certain combination of circumstances, EDDGridFromNcFile
+    datasets returned data at reduced precision (e.g., floats instead of doubles).
+    This could only affect data values with &gt; 8 significant figures.
+    My apologies. (And it was a classic computer programming bug: one wrong character.)
+    Thanks to Dominic Fuller-Rowell.
+  <li>Many small changes.
+  </ul>
+
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <ul>
+  <li>Griddap datasets now support timestamp axis variables and data variables
+     (i.e., variables with time values, but a destinationName other than "time").
+     Thanks to Dominic Fuller-Rowell.
+  <li>ERDDAP now correctly supports milliseconds time_precision "1970-01-01T00:00:00.000Z".
+     One intentional quirk: 
+     when writing times to human-oriented files (e.g., .csv, .tsv, .json, .xhtml),
+     ERDDAP uses the specified time_precision if it includes seconds and/or decimal seconds;
+     otherwise, it uses seconds time_precision "1970-01-01T00:00:00Z" (for consistency
+     and backwards compatibility).
+     Thanks to Dominic Fuller-Rowell.
+  <li>EDDGridFromNcFiles now supports reading String dataVariables.
+  <li>.nc files written by griddap can now have String dataVariables.
+  <li>GenerateDatasetsXml now includes more flush() calls to avoid the problem
+    of information not being written to the files. 
+    Thanks to Thierry Valero.
+  <li>The documentation for GenerateDatasetsXml was improved, notably to point
+    out that the -i switch only works if you specify all the answers on the command line
+    (e.g., script mode). And script mode is explained.
+    Thanks to Thierry Valero.
+  <li>ERDDAP no longer allows two variables in a dataset to have the same sourceName.
+    (If someone did it before, it probably led to error messages.)
+    As before, ERDDAP doesn't allow two variables in a dataset to have the same destinationName.
+  </ul>
+
+</ul>
+
+</td>
+</tr>
+
+<!-- ****************************************************************************** -->
+<tr>
+<td>
 <h2><a name="changes1.52">Changes</a> in ERDDAP version 1.52 (released 2014-10-03)</h2>
 <ul>
 <li><b>New Features:</b> (none)

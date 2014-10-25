@@ -342,9 +342,11 @@ public class EDDGridFromDap extends EDDGrid {
         for (int dv = 0; dv < tDataVariables.length; dv++) {
             String tDataSourceName = (String)tDataVariables[dv][0];
             String tDataDestName   = (String)tDataVariables[dv][1];
-            Attributes tDataSourceAttributes = new Attributes();
-
-            OpendapHelper.getAttributes(das, tDataSourceName, tDataSourceAttributes);
+            if (tDataDestName == null || tDataDestName.length() == 0)
+                tDataDestName = tDataSourceName;
+            Attributes tDataSourceAtts = new Attributes();
+            OpendapHelper.getAttributes(das, tDataSourceName, tDataSourceAtts);
+            Attributes tDataAddAtts = (Attributes)tDataVariables[dv][2];
 
             //get the variable
             BaseType bt = dds.getVariable(tDataSourceName);  //throws Throwable if not found
@@ -461,6 +463,12 @@ public class EDDGridFromDap extends EDDGrid {
                     axisVariables[av] = new EDVTimeGridAxis(tSourceAxisName, 
                         tSourceAttributes, tAddAttributes, tSourceValues);
 
+                //is this a timestamp axis?
+                } else if (EDVTimeStampGridAxis.hasTimeUnits(tSourceAttributes, tAddAttributes)) {
+                    axisVariables[av] = new EDVTimeStampGridAxis(
+                        tSourceAxisName, tDestinationAxisName,
+                        tSourceAttributes, tAddAttributes, tSourceValues);
+
                 //it is some other axis variable
                 } else {
                     axisVariables[av] = new EDVGridAxis(
@@ -470,11 +478,16 @@ public class EDDGridFromDap extends EDDGrid {
                 }
             }
 
-            //create the EDVGridData
-            dataVariables[dv] = new EDV(
+            //create the EDV dataVariable
+            if (tDataDestName.equals(EDV.TIME_NAME))
+                throw new RuntimeException(errorInMethod +
+                    "No EDDGrid dataVariable may have destinationName=" + EDV.TIME_NAME);
+            else if (EDVTime.hasTimeUnits(tDataSourceAtts, tDataAddAtts)) 
+                dataVariables[dv] = new EDVTimeStamp(tDataSourceName, tDataDestName,
+                    tDataSourceAtts, tDataAddAtts, dvSourceDataType);  
+            else dataVariables[dv] = new EDV(
                 tDataSourceName, tDataDestName, 
-                tDataSourceAttributes, (Attributes)tDataVariables[dv][2],
-                dvSourceDataType, 
+                tDataSourceAtts, tDataAddAtts, dvSourceDataType, 
                 Double.NaN, Double.NaN);  //hard to get min and max
             dataVariables[dv].extractAndSetActualRange();
 
@@ -569,7 +582,8 @@ public class EDDGridFromDap extends EDDGrid {
 
             //has edvga[0] changed size?
             EDVGridAxis edvga = axisVariables[0];
-            EDVTimeGridAxis edvtga = edvga instanceof EDVTimeGridAxis? (EDVTimeGridAxis)edvga : null;
+            EDVTimeStampGridAxis edvtsga = edvga instanceof EDVTimeStampGridAxis? 
+                (EDVTimeStampGridAxis)edvga : null;
             PrimitiveArray oldValues = edvga.sourceValues();
             int oldSize = oldValues.size();
 
@@ -639,9 +653,9 @@ public class EDDGridFromDap extends EDDGrid {
             //prepare changes to update the dataset
             double newMin = oldValues.getDouble(0);
             double newMax = newValues.getDouble(newValues.size() - 1);
-            if (edvtga != null) {
-                newMin = edvtga.sourceTimeToEpochSeconds(newMin);
-                newMax = edvtga.sourceTimeToEpochSeconds(newMax);
+            if (edvtsga != null) {
+                newMin = edvtsga.sourceTimeToEpochSeconds(newMin);
+                newMax = edvtsga.sourceTimeToEpochSeconds(newMax);
             } else if (edvga.scaleAddOffset()) {
                 newMin = newMin * edvga.scaleFactor() + edvga.addOffset();
                 newMax = newMax * edvga.scaleFactor() + edvga.addOffset();
@@ -706,9 +720,10 @@ public class EDDGridFromDap extends EDDGrid {
             edvga.setIsEvenlySpaced(newIsEvenlySpaced);
             edvga.initializeAverageSpacingAndCoarseMinMax();  
             edvga.setActualRangeFromDestinationMinMax();
-            if (edvtga != null) 
+            if (edvga instanceof EDVTimeGridAxis) 
                 combinedGlobalAttributes.set("time_coverage_end",   
-                    Calendar2.epochSecondsToIsoStringT(newMax) + "Z");
+                    Calendar2.epochSecondsToLimitedIsoStringT(
+                        edvga.combinedAttributes().getString(EDV.TIME_PRECISION), newMax, ""));
             edvga.clearSliderCsvValues();  //do last, to force recreation next time needed
 
             updateCount++;
@@ -6839,6 +6854,21 @@ EDStatic.startBodyHtml(null) + "\n" +
             seconds.add(123456 + i);
         String2.log("  make DoubleArray time=" + (System.currentTimeMillis() - time));
 
+        //test EDVTimeStampGridAxis
+        EDVTimeStampGridAxis edvtsga = new EDVTimeStampGridAxis("mytime", null,
+            (new Attributes()).add("units", Calendar2.SECONDS_SINCE_1970), 
+            new Attributes(), seconds);
+        time = System.currentTimeMillis();
+        results = edvtsga.sliderCsvValues();         
+        expected = "\"1970-01-02T10:17:36Z\", \"1970-01-02T12:00:00Z\", \"1970-01-03\", \"1970-01-03T12:00:00Z\", \"1970-01-04\", \"1970-01-04T12:00:00Z\",";
+        Test.ensureEqual(results.substring(0, expected.length()), expected, 
+            "results=\n" + results);
+        expected = "\"1970-04-27\", \"1970-04-27T12:00:00Z\", \"1970-04-28\", \"1970-04-28T04:04:15Z\"";
+        Test.ensureEqual(results.substring(results.length() - expected.length()), expected, 
+            "results=\n" + results);
+        String2.log("  TimeStamp sliderCsvValues time=" + (System.currentTimeMillis() - time));
+
+        //EDVTimeGridAxis
         EDVTimeGridAxis edvtga = new EDVTimeGridAxis("time", 
             (new Attributes()).add("units", Calendar2.SECONDS_SINCE_1970), 
             new Attributes(), seconds);
@@ -6850,7 +6880,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         expected = "\"1970-04-27\", \"1970-04-27T12:00:00Z\", \"1970-04-28\", \"1970-04-28T04:04:15Z\"";
         Test.ensureEqual(results.substring(results.length() - expected.length()), expected, 
             "results=\n" + results);
-        String2.log("  sliderCsvValues time=" + (System.currentTimeMillis() - time));
+        String2.log("  Time sliderCsvValues time=" + (System.currentTimeMillis() - time));
 
     }
 

@@ -2814,6 +2814,42 @@ public abstract class PrimitiveArray {
      }
 
     /**
+     * This tests if 'value1 op value2' is true for doubles to 12 sig figures 
+     *  (e.g., for time).
+     * The &lt;=, &gt;=, and = tests are (partly) done with Math2.almostEqual12
+     *   so there is a little fudge factor.
+     * The =~ regex test must be tested with String testValueOpValue, not here,
+     *   because value2 is a regex (not a double).
+     * 
+     * @param value1
+     * @param op one of EDDTable.OPERATORS
+     * @param value2
+     * @return true if 'value1 op value2' is true.
+     *    <br>Tests of "NaN = NaN" will evaluate to true. 
+     *    <br>Tests of "nonNaN != NaN" will evaluate to true.
+     *    <br>All other tests where value1 is NaN or value2 is NaN will evaluate to false.
+     * @throws RuntimeException if trouble (e.g., invalid op)
+     */
+     public static boolean testValueOpValueExtra(double value1, String op, double value2) {
+         //String2.log("testValueOpValue (double): " + value1 + op + value2);
+         //if (Double.isNaN(value2) && Double.isNaN(value1)) { //test2 first, less likely to be NaN
+         //    return (op.equals("=") || op.equals("<=") || op.equals(">=")); //the '=' matters 
+         //}
+         if (op.equals("<=")) return value1 <= value2 || Math2.almostEqual(12, value1, value2);
+         if (op.equals(">=")) return value1 >= value2 || Math2.almostEqual(12, value1, value2);
+         if (op.equals("="))  return (Double.isNaN(value1) && Double.isNaN(value2)) ||
+                                     Math2.almostEqual(12, value1, value2);
+         if (op.equals("<"))  return value1 < value2;
+         if (op.equals(">"))  return value1 > value2;
+         if (op.equals("!=")) return Double.isNaN(value1) && Double.isNaN(value2)? false : 
+                                     value1 != value2;
+         //Regex test has to be handled via String testValueOpValue 
+         //  if (op.equals(PrimitiveArray.REGEX_OP))  
+         throw new SimpleException("Query error: " +
+             "Unknown operator=\"" + op + "\".");
+     }
+
+    /**
      * This tests if 'value1 op value2' is true.
      * The ops containing with &lt; and &gt; compare value1.toLowerCase()
      * and value2.toLowerCase().
@@ -2855,7 +2891,8 @@ public abstract class PrimitiveArray {
      * This tests the keep=true elements to see if 'get(element) op value2' is true.
      *   If the test is false, the keep element is set to false.
      * <br>For float and double tests, the &lt;=, &gt;=, and = tests are (partly) 
-     *   done with Math2.almostEqual(6) and (9), so there is a little fudge factor.
+     *   done with Math2.almostEqual(6) and (9) and (13 for morePrecise doubles), 
+     *   so there is a little fudge factor.
      * <br>The =~ regex test is tested with String testValueOpValue,
      *   because value2 is a regex (not a numeric type).
      *
@@ -2871,7 +2908,7 @@ public abstract class PrimitiveArray {
      * @return nStillGood
      * @throws RuntimeException if trouble (e.g., invalid op or invalid keep element)
      */
-    public int applyConstraint(BitSet keep, String op, String value2) {
+    public int applyConstraint(boolean morePrecise, BitSet keep, String op, String value2) {
 
         //regex
         if (op.equals(REGEX_OP)) {
@@ -2919,6 +2956,19 @@ public abstract class PrimitiveArray {
             float value2f = String2.parseFloat(value2);
             for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
                 if (testValueOpValue(getFloat(row), op, value2f)) 
+                    nStillGood++;
+                else keep.clear(row);
+            }
+            return nStillGood;
+        }
+
+        //treat everything else via double tests (that should be all that is left)
+        if (morePrecise) {
+            //String2.log("applyConstraint(double)");
+            int nStillGood = 0;
+            double value2d = String2.parseDouble(value2);
+            for (int row = keep.nextSetBit(0); row >= 0; row = keep.nextSetBit(row + 1)) {
+                if (testValueOpValueExtra(getDouble(row), op, value2d)) 
                     nStillGood++;
                 else keep.clear(row);
             }
@@ -3791,7 +3841,7 @@ public abstract class PrimitiveArray {
         keep = new BitSet();
         keep.set(0, pa.size());
         tTime = System.currentTimeMillis();
-        pa.applyConstraint(keep, "=~", "(10|zztop)");
+        pa.applyConstraint(false, keep, "=~", "(10|zztop)");
         pa.justKeep(keep);
         Test.ensureEqual(pa.size(), 1, "");
         Test.ensureEqual(pa.getDouble(0), 10, "");
@@ -3805,7 +3855,7 @@ public abstract class PrimitiveArray {
         keep = new BitSet();
         keep.set(0, pa.size());
         tTime = System.currentTimeMillis();
-        pa.applyConstraint(keep, ">=", "hubert");  //>= uses case insensitive test
+        pa.applyConstraint(false, keep, ">=", "hubert");  //>= uses case insensitive test
         pa.justKeep(keep);
         Test.ensureEqual(pa.size(), 1, "");
         Test.ensureEqual(pa.getString(0), "Nate", "");
@@ -3819,7 +3869,7 @@ public abstract class PrimitiveArray {
         keep = new BitSet();
         keep.set(0, pa.size());
         tTime = System.currentTimeMillis();
-        pa.applyConstraint(keep, ">=", "9");
+        pa.applyConstraint(false, keep, ">=", "9");
         pa.justKeep(keep);
         Test.ensureEqual(pa.size(), 1, "");
         Test.ensureEqual(pa.getDouble(0), 10, "");
@@ -3833,7 +3883,7 @@ public abstract class PrimitiveArray {
         keep = new BitSet();
         keep.set(0, pa.size());
         tTime = System.currentTimeMillis();
-        pa.applyConstraint(keep, ">=", "9");
+        pa.applyConstraint(false, keep, ">=", "9");
         pa.justKeep(keep);
         Test.ensureEqual(pa.size(), 1, "");
         Test.ensureEqual(pa.getDouble(0), 10, "");
@@ -3847,7 +3897,7 @@ public abstract class PrimitiveArray {
         keep = new BitSet();
         keep.set(0, pa.size());
         tTime = System.currentTimeMillis();
-        pa.applyConstraint(keep, ">=", "9");
+        pa.applyConstraint(false, keep, ">=", "9");
         pa.justKeep(keep);
         Test.ensureEqual(pa.size(), 1, "");
         Test.ensureEqual(pa.getDouble(0), 10, "");

@@ -472,6 +472,12 @@ time values in ERDDAP always use the Zulu (UTC, GMT) time zone.
   <br>&nbsp;
 <li><a name="units">UDUNITS Time Units</a> - {1}
 
+<li><a name="converterPrecision">Converter Precision</a> -
+  When representing times as numbers, this converter always 
+  <br>leaves the numbers at their full precision. When representing times as Strings, 
+  <br>this converter formats times to the (truncated) second (i.e., omitting millis). 
+  <br>&nbsp;
+
 <li><a name="invalidInput">Invalid Input</a> -
   ERDDAP tries to deal with improperly formatted input.
   <br>If the input can''t be dealt with, ERDDAP will generate an error message.
@@ -494,19 +500,33 @@ time values in ERDDAP always use the Zulu (UTC, GMT) time zone.
   <br>Zulu time zone, each an instant in time).
   <br>&nbsp;
 
-<li><a name="timeZones">Time Zones</a> - ERDDAP always uses the Zulu (UTC, GMT) time zone
-    and never uses 
-  <br>daylight savings times.  Time data from a source with time zone information (which
-  <br>may incorporate daylight savings time information) is converted to Zulu time.
-  <br>Time data from a source without time zone information is assumed to be already in 
-  <br>Zulu time.
+<li><a name="timeZones">Time Zones</a> - When writing time values, ERDDAP always uses the Zulu (UTC, GMT)
+  <br>time zone and never uses daylight savings times.  Time data from a source with 
+  <br>time zone information (which may incorporate daylight savings time information) 
+  <br>is converted to Zulu time. Time data from a source without time zone information 
+  <br>is assumed to be already in Zulu time.
   <br>&nbsp;
   
 <li><a name="precision">Precision</a> - ERDDAP deals with time internally as 
   "seconds since 1970-00-00T00:00:00Z", 
-  <br>ignoring leap seconds (see below), stored as double precision floating point numbers.  
-  <br>Thus, most time data can be stored very precisely (roughly to the nearest microsecond,
+  <br>ignoring <a rel="help" href="#leapSeconds">leap seconds</a>, stored as double precision floating point numbers. Thus,
+  <br>most time data can be stored very precisely (roughly to the nearest microsecond,
   <br>but progressively less precisely very far in the past or future).  
+  <br>&nbsp;
+  <br>When doing calculations, ERDDAP often works to the nearest millisecond, to 
+  <br>avoid problems with floating point numbers that are slightly more or less 
+  <br>than you expect.
+  <br>&nbsp;
+  <br>When representing times as numbers, ERDDAP always leaves the numbers at their full
+  <br>precision.
+  <br>&nbsp;
+  <br>By default, when representing times as Strings, ERDDAP formats times to the 
+  <br>(truncated) second (i.e., omitting millis). However, ERDDAP administrators can
+  <br>configure specific variables in specific datasets to represent String times at 
+  <br>other precisions (e.g., from millisecond precision up to month precision; see the 
+  <br>&lt;time_precision&gt; variable attribute).  Whenever a time field (e.g., milliseconds
+  <br>or seconds) is not shown, the absent value is assumed to be 0 (except for 
+  <br>day-of-month, which is assumed to be 1).
   <br>&nbsp;
 
 <li><a name="consistentUnits">Consistent Units</a> - Using the same units for time
@@ -550,10 +570,12 @@ time values in ERDDAP always use the Zulu (UTC, GMT) time zone.
     <a href="http://xkcd.com/1179/">http://xkcd.com/1179/<img 
     src="../images/external.png" align="bottom" alt=" (external link)" 
     title="This link to an external web site does not constitute an endorsement."/></a>)
-  <br>ERDDAP administrators can configure a given dataset to display the time data values
-  <br>truncated to 0.001 second, 0.01 second, 0.1 second, second, minute, hour, date, or month
+  <br>ERDDAP administrators can configure a given variable to display the time data values
+  <br>to greater precision (truncated to 0.001 second, 0.01 second, 0.1 second)
+  <br>or to lesser precision (truncated to second, minute, hour, date, or month)
   <br>to indicate the precision of the time data values.  
-  <p>When reading ISO 8601 times with decimal seconds, ERDDAP accepts a period separator
+  <br>&nbsp;
+  <br>When reading ISO 8601 times with decimal seconds, ERDDAP accepts a period separator
   <br>(e.g., 2011-04-26T14:07:12.059Z) or a comma separator (e.g., 2011-04-26T14:07:12,059Z).
   <br>Currently, when writing ISO 8601 times ERDDAP always uses a period separator.
   <br>&nbsp;
@@ -734,8 +756,11 @@ For example, "seconds since 1970-01-01T00:00:00Z".
 <br>&nbsp;&nbsp;mon, mons, month, months,
 <br>&nbsp;&nbsp;yr, yrs, year, or years.
 <p>"since" is required.
-<p>The time can be any time in the format YYYY-MM-DDThh:mm:ssZ .
-<br>The T, hh, :mm, :ss, and Z parts are optional.
+<p>The time can be any time in the format YYYY-MM-DDThh:mm:ss.sssZ,
+<br>where Z is 'Z' or a &plusmn;hh or &plusmn;hh:mm offset from the Zulu/GMT time zone.
+<br>If you omit Z and the offset, the Zulu/GMT time zone is used.
+<br>Separately, if you omit .sss, :ss.sss, :mm:ss.sss, or Thh:mm:ss.sss, the
+<br>missing fields are assumed to be 0. 
 <p>So another example is "hours since 0001-01-01".
 <p>Technically, ERDDAP does NOT follow the CF standard when converting "years since"
 <br>and "months since" time values to "seconds since". The CF standard defines a

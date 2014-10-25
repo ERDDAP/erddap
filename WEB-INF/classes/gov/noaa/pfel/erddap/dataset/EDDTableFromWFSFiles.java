@@ -1071,8 +1071,8 @@ expected =
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String subsetVariables \"WellName,APINo,Label,Operator,WellType,Field,County,State,FormationTD,OtherName\";\n" +
 "    String summary \"Borehole temperature measurements in West Virginia\";\n" +
-"    String time_coverage_end \"2012-08-05T00:00:00Z\";\n" +
-"    String time_coverage_start \"1899-01-31T00:00:00Z\";\n" +
+"    String time_coverage_end \"2012-08-05\";\n" +
+"    String time_coverage_start \"1899-01-31\";\n" +
 "    String title \"West Virginia Borehole Temperatures, AASG State Geothermal Data\";\n" +
 "    Float64 Westernmost_Easting -82.54999;\n" +
 "  }\n" +

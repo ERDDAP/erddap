@@ -290,17 +290,19 @@ or Mac server instead.
 <li><a name="erddapContent">Set up the <i>tomcat</i>/content/erddap configuration files.</a> 
   <br>On Linux, Mac, and Windows, download
     <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>    
-     (version 1.50, size=22,132 bytes, MD5=25697F19B1AE7C595EFE0E3F25DFFDE2) <!-- Dated 2014-09-06) -->
+     <!-- Use: c:\content\bat\md5.bat erddapContent.zip -->
+     (version 1.52, size=22,132 bytes, MD5=9CFB41D3FA7F6A267B600D629FABBC17) <!-- Dated 2014-10-03) -->
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
   <p>[The <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.46.zip">previous version</a> 
-  is also available
-<!-- Use: c:\programs\md5 erddapContent.zip
+  is also available  <!--
      (version 1.38, size=70,836 bytes, MD5=D927E8132F1F19A342274F37375619E6, Dated 2012-05-02) 
      (version 1.40, size=72,108 bytes, MD5=2D110CC2472F39FF1FC4B27C8C1C720F, Dated 2012-10-25) 
      (version 1.42, size=72,146 bytes, MD5=4EC605978B939835947A9D551C947E97) Dated 2012-11-26) 
      (version 1.44, size=72,757 bytes, MD5=39D59EACBA646AEAAA5FF6B5D267D91E) Dated 2013-05-30) -->
-     (version 1.46, size=22,268 bytes, MD5=FE827B9C411ECAC535F8C65392A5CDFD).] <!-- Dated 2013-07-09) -->
+     (version 1.46, size=22,268 bytes, MD5=FE827B9C411ECAC535F8C65392A5CDFD).] <!-- Dated 2013-07-09) 
+     (version 1.50, size=22,132 bytes, MD5=25697F19B1AE7C595EFE0E3F25DFFDE2) Dated 2014-09-06) -->
+
   <p>For Red Hat Enterprise Linux (RHEL), unzip it into ~tomcat
     and set the system property 
     <tt>erddapContentDirectory=~tomcat/content/erddap</tt>
@@ -338,7 +340,9 @@ or Mac server instead.
 <li><a name="erddap.war">Install</a> the erddap.war file.
   <br>On Linux, Mac, and Windows, download 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    (version 1.50, size=486,076,835 bytes, MD5=917B108FDF089B6426027168A2DC2B8A)
+    <!-- use: c:\content\bat\md5.bat erddap.war  
+         ver, size, md5 duplicated below -->
+    (version 1.52, size=486,085,688 bytes, MD5=4CDAF259D9E51792D75C6CE66570BF2C)
     into <i>tomcat</i>/webapps .  
   The .war file is big because it contains high resolution coastline, boundary, 
   and elevation data needed to create maps.
@@ -346,12 +350,13 @@ or Mac server instead.
   <p>[The 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.46.war">previous version</a> 
     is also available
-    <!-- ver, size, md5 duplicated below 
+    <!-- 
     (version 1.38, size=478,799,083 bytes, MD5=7270FB700CAEF85A1F1A3B3326FAFE98) 
     (version 1.40, size=477,338,971 bytes, MD5=138F354918668AB8414A8174365BD036) 
     (version 1.42, size=477,356,261 bytes, MD5=EC29F6D9E6185BC71557CF47063E3276) 
     (version 1.44, size=482,013,960 bytes, MD5=CDFF1E9DD3201F6A5AEB19EB3DB556FC) -->
     (version 1.46, size=482,115,063 bytes, MD5=26957D4A6866F5DBAF3238E7A39BD0FE).
+<!--(version 1.50, size=486,076,835 bytes, MD5=917B108FDF089B6426027168A2DC2B8A) -->
     Rename it to erddap.war after you download it.]
 
 <li><a name="ProxyPass">Use</a> ProxyPass so users don't have to put the port number, e.g., :8080, in the URL.
@@ -446,8 +451,9 @@ or Mac server instead.
     (version 1.42, size=477,356,261 bytes, MD5=EC29F6D9E6185BC71557CF47063E3276) 
     (version 1.44, size=482,013,960 bytes, MD5=CDFF1E9DD3201F6A5AEB19EB3DB556FC) 
     (version 1.46, size=482,115,063 bytes, MD5=26957D4A6866F5DBAF3238E7A39BD0FE) 
-    (version 1.48, size=486,082,750 bytes, MD5=6DC8DA75FF9DE313B3622854A59564EC) -->
-    (version 1.50, size=486,076,835 bytes, MD5=917B108FDF089B6426027168A2DC2B8A)
+    (version 1.48, size=486,082,750 bytes, MD5=6DC8DA75FF9DE313B3622854A59564EC) 
+    (version 1.50, size=486,076,835 bytes, MD5=917B108FDF089B6426027168A2DC2B8A) -->
+    (version 1.52, size=486,085,688 bytes, MD5=4CDAF259D9E51792D75C6CE66570BF2C)
 
     into a  temporary directory.
   <br>&nbsp;
