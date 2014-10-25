@@ -5,14 +5,7 @@
 package gov.noaa.pfel.erddap.variable;
 
 import com.cohort.array.Attributes;
-import com.cohort.array.PrimitiveArray;
-import com.cohort.array.StringArray;
-import com.cohort.util.Calendar2;
-import com.cohort.util.MustBe;
 import com.cohort.util.String2;
-import com.cohort.util.Test;
-
-import java.util.GregorianCalendar;
 
 /** 
  * This class holds information about *the* main time variable,
@@ -34,4 +27,12 @@ public class EDVTime extends EDVTimeStamp {
             tSourceDataType); 
     }
         
+    /**
+     * This returns a string representation of this EDV.
+     *
+     * @return a string representation of this EDV.
+     */
+    public String toString() {
+        return "EDVTime/" + super.toString(); 
+    }
 }

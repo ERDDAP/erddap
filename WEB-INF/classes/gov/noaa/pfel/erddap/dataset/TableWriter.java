@@ -83,7 +83,8 @@ public abstract class TableWriter {
             columnTypes = tColumnTypes;
             columnAttributes = new Attributes[nColumns];
             for (int col = 0; col < nColumns; col++) {
-                //no need to make copies (clones) off atts since standardizeResultsTable has made copies for the table
+                //no need to make copies (clones) off atts since standardizeResultsTable
+                //has made copies for the table
                 columnAttributes[col] = table.columnAttributes(col); 
                 //String2.log("\nTableWriter attributes " + columnNames[col] + "\n" + columnAttributes[col]);
             }

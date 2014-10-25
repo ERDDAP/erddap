@@ -276,10 +276,12 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         else if (altIndex    == 0) axisVariables[0] = new EDVAltGridAxis(  sn, sa, aa, cumSV);
         else if (depthIndex  == 0) axisVariables[0] = new EDVDepthGridAxis(sn, sa, aa, cumSV);
         else if (timeIndex   == 0) axisVariables[0] = new EDVTimeGridAxis( sn, sa, aa, cumSV);
+        else if (av0 instanceof EDVTimeStampGridAxis)
+            axisVariables[0] = 
+                        new EDVTimeStampGridAxis(sn, av0.destinationName(),    sa, aa, cumSV);
         else {axisVariables[0] = new EDVGridAxis(sn, av0.destinationName(),    sa, aa, cumSV);
               axisVariables[0].setActualRangeFromDestinationMinMax();
         }
-
 
         int nDv = firstChild.dataVariables.length;
         dataVariables = new EDV[nDv];

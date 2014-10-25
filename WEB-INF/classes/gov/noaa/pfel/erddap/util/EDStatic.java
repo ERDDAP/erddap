@@ -130,7 +130,7 @@ public class EDStatic {
      * <br>1.50 released on 2014-09-06
      * <br>1.52 released on 2014-10-03
      */   
-    public static String erddapVersion = "1.52";  
+    public static String erddapVersion = "1.54";  
 
     /** 
      * This is almost always false.  
@@ -1250,8 +1250,21 @@ public static boolean developmentMode = false;
         emailFromAddress       = setup.getString("emailFromAddress", null);
         emailEverythingToCsv   = setup.getString("emailEverythingTo", "");  //won't be null
         emailDailyReportToCsv  = setup.getString("emailDailyReportTo", ""); //won't be null
+
         String tsar[] = String2.split(emailEverythingToCsv, ',');
+        if (emailEverythingToCsv.length() > 0)
+            for (int i = 0; i < tsar.length; i++)
+                if (!String2.isEmailAddress(tsar[i]) || tsar[i].startsWith("your.")) //prohibit the default email addresses
+                    throw new RuntimeException("setup.xml error: invalid email address=" + tsar[i] + 
+                        " in <emailEverythingTo>.");  
         emailSubscriptionsFrom = tsar.length > 0? tsar[0] : ""; //won't be null
+
+        tsar = String2.split(emailDailyReportToCsv, ',');
+        if (emailDailyReportToCsv.length() > 0)
+            for (int i = 0; i < tsar.length; i++)
+                if (!String2.isEmailAddress(tsar[i]) || tsar[i].startsWith("your.")) //prohibit the default email addresses
+                    throw new RuntimeException("setup.xml error: invalid email address=" + tsar[i] + 
+                        " in <emailDailyReportTo>.");  
 
         //test of email
         //Test.error("This is a test of emailing an error in Erddap constructor.");
@@ -1405,6 +1418,27 @@ public static boolean developmentMode = false;
         adminPostalCode            = setup.getNotNothingString("adminPostalCode",            "");
         adminCountry               = setup.getNotNothingString("adminCountry",               "");
         adminEmail                 = setup.getNotNothingString("adminEmail",                 "");
+
+        if (adminInstitution.length() == 0 || adminInstitution.startsWith("Your"))
+            throw new RuntimeException("setup.xml error: invalid <adminInstitution>=" + adminInstitution);  
+        if (adminIndividualName.length() == 0 || adminIndividualName.startsWith("Your"))
+            throw new RuntimeException("setup.xml error: invalid <adminIndividualName>=" + adminIndividualName);             
+        if (adminPosition.length() == 0)
+            throw new RuntimeException("setup.xml error: invalid <adminPosition>=" + adminPosition);             
+        if (adminPhone.length() == 0 || adminPhone.indexOf("999-999") >= 0)
+            throw new RuntimeException("setup.xml error: invalid <adminPhone>=" + adminPhone);              
+        if (adminAddress.length() == 0 || adminAddress.equals("123 Main St."))
+            throw new RuntimeException("setup.xml error: invalid <adminAddress>=" + adminAddress);  
+        if (adminCity.length() == 0 || adminCity.equals("Some Town"))
+            throw new RuntimeException("setup.xml error: invalid <adminCity>=" + adminCity);  
+        if (adminStateOrProvince.length() == 0)
+            throw new RuntimeException("setup.xml error: invalid <adminStateOrProvince>=" + adminStateOrProvince);  
+        if (adminPostalCode.length() == 0 || adminPostalCode.equals("99999"))
+            throw new RuntimeException("setup.xml error: invalid <adminPostalCode>=" + adminPostalCode);  
+        if (adminCountry.length() == 0)
+            throw new RuntimeException("setup.xml error: invalid <adminCountry>=" + adminCountry);  
+        if (!String2.isEmailAddress(adminEmail) || adminEmail.startsWith("your.")) 
+            throw new RuntimeException("setup.xml error: invalid <adminEmail>=" + adminEmail);  
 
         accessConstraints          = setup.getNotNothingString("accessConstraints",          ""); 
         accessRequiresAuthorization= setup.getNotNothingString("accessRequiresAuthorization",""); 
@@ -2713,13 +2747,24 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             emailSmtpHost == null || emailSmtpHost.length() == 0) 
             return "";
 
+
         //send email
         String errors = "";
         try {
-            SSR.sendEmail(emailSmtpHost, emailSmtpPort, emailUserName, 
-                emailPassword, emailProperties, emailFromAddress, emailAddressesCSSV, 
-                erddapUrl + " " + subject, //always non-https url
-                erddapUrl + " reports:\n" + content); //always non-https url
+            //catch common problem: sending email to one invalid address
+            if (emailAddresses.length == 1 &&
+                !String2.isEmailAddress(emailAddresses[0]) ||
+                emailAddresses[0].startsWith("your.name") || 
+                emailAddresses[0].startsWith("your.email")) {
+                errors = "Error in EDStatic.email: invalid emailAddresses=" + emailAddressesCSSV;
+                String2.log(errors);
+            }
+
+            if (errors.length() == 0)
+                SSR.sendEmail(emailSmtpHost, emailSmtpPort, emailUserName, 
+                    emailPassword, emailProperties, emailFromAddress, emailAddressesCSSV, 
+                    erddapUrl + " " + subject, //always non-https url
+                    erddapUrl + " reports:\n" + content); //always non-https url
         } catch (Throwable t) {
             String msg = "Error: Sending email to " + emailAddressesCSSV + " failed";
             String2.log(MustBe.throwable(msg, t));

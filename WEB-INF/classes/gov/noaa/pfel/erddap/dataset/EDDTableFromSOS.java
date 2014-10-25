@@ -7856,6 +7856,49 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 
     }
 
+    /**
+     * This tests that ensureValid throws exception if 2  
+     * dataVariables use the same sourceName.
+     * These tests are in EDDTableFromSOS because EDDTableFromFiles has a separate test.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void test2DVSameSource() throws Throwable {
+        String2.log("\n****************** EDDTableFromNcFiles.test2DVSameSource() *****************\n");
+        String error = "shouldn't happen";
+        try {
+            EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("tabletest2DVSameSource"); 
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            error = String2.split(MustBe.throwableToString(t), '\n')[1]; 
+        }
+
+        Test.ensureEqual(error, 
+            "Two dataVariables have the same sourceName=sensor_id.", 
+            "Unexpected error message:\n" + error);
+    }
+
+    /**
+     * This tests that ensureValid throws exception if 2  
+     * dataVariables use the same destinationName.
+     * These tests are in EDDTableFromSOS because EDDTableFromFiles has a separate test.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void test2DVSameDestination() throws Throwable {
+        String2.log("\n****************** EDDTableFromNcFiles.test2DVSameDestination() *****************\n");
+        String error = "shouldn't happen";
+        try {
+            EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml("tabletest2DVSameDestination"); 
+        } catch (Throwable t) {
+            String2.log(MustBe.throwableToString(t));
+            error = String2.split(MustBe.throwableToString(t), '\n')[1]; 
+        }
+
+        Test.ensureEqual(error, 
+            "Two dataVariables have the same destinationName=sensor_id.", 
+            "Unexpected error message:\n" + error);
+    }
 
     /**
      * This runs all of the tests for this class.
@@ -7876,6 +7919,9 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         testNdbcSosWLevel("");  
         testNdbcSosWTemp("");  
         testNdbcSosWaves("");
+
+        test2DVSameSource();
+        test2DVSameDestination();
 
         //test NDBC Wind and quickRestart
         String qrName = File2.forceExtension(quickRestartFullFileName("ndbcSosWind"), ".xml");

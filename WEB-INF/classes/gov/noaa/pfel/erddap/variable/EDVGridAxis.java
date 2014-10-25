@@ -222,7 +222,7 @@ public class EDVGridAxis extends EDV {
 
     /**
      * This returns one of this axis' source values as a nice double destination value. 
-     * EDVTimeGridAxis subclass overrides this.
+     * EDVTimeStampGridAxis subclass overrides this.
      */
     public double destinationDouble(int which) {
         if (scaleAddOffset) {
@@ -284,7 +284,7 @@ public class EDVGridAxis extends EDV {
         try {
             long eTime = System.currentTimeMillis();
             int nSourceValues = sourceValues.size();
-            boolean isTime = this instanceof EDVTimeGridAxis;
+            boolean isTimeStamp = this instanceof EDVTimeStampGridAxis;
             IntArray sliderIndices = new IntArray();
             sliderIndices.add(0);  //add first index
 
@@ -292,7 +292,7 @@ public class EDVGridAxis extends EDV {
                 for (int i = 1; i < nSourceValues; i++)
                     sliderIndices.add(i);
 
-            } else if (isTime) {
+            } else if (isTimeStamp) {
                 //make evenly spaced nice numbers (like EDV.sliderCsvValues()), 
                 //  then find closest actual values.
                 //Dealing with indices (later sorted) works regardless of isAscending.
@@ -330,7 +330,7 @@ public class EDVGridAxis extends EDV {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < nValues; i++) {
                 if (i > 0) sb.append(", ");
-                sb.append(toSliderString(destinationString(sliderIndices.get(i)), isTime));
+                sb.append(toSliderString(destinationString(sliderIndices.get(i)), isTimeStamp));
             }
 
             //store in compact utf8 format
@@ -474,7 +474,7 @@ public class EDVGridAxis extends EDV {
      * If there are 2 or more values, this returns the average spacing between values 
      * (will be negative if axis is descending!).
      * If isEvenlySpaced, then these are evenly spaced.
-     * For EDVTimeGridAxis, this is in epochSeconds.
+     * For EDVTimeStampGridAxis, this is in epochSeconds.
      *
      * @return If there are 2 or more values, 
      * this returns the average spacing between values (in destination units).
@@ -485,10 +485,10 @@ public class EDVGridAxis extends EDV {
      * This returns a human-oriented description of the spacing of this EDVGridAxis. (May be negative.)
      */
     public String spacingDescription() {
-        boolean isTime = destinationName.equals(EDV.TIME_NAME);
+        boolean isTimeStamp = this instanceof EDVTimeStampGridAxis;
         if (sourceValues.size() == 1) 
             return "(" + EDStatic.EDDGridJustOneValue + ")";
-        String s = isTime? 
+        String s = isTimeStamp? 
             Calendar2.elapsedTimeString(Math.rint(averageSpacing()) * 1000) : 
             "" + Math2.floatToDouble(averageSpacing());
         return s + " (" +
@@ -503,14 +503,14 @@ public class EDVGridAxis extends EDV {
      */
     public String htmlRangeTooltip() {
         String tUnits = units();
-        boolean isTime = destinationName.equals(EDV.TIME_NAME);
-        if (tUnits == null || isTime)
+        boolean isTimeStamp = this instanceof EDVTimeStampGridAxis;
+        if (tUnits == null || isTimeStamp)
             tUnits = "";
         if (sourceValues.size() == 1)
             return destinationName + " has 1 value: " + destinationToString(firstDestinationValue()) + 
                 " " + tUnits; 
 
-        String tSpacing = isTime? 
+        String tSpacing = isTimeStamp? 
             Calendar2.elapsedTimeString(Math.rint(averageSpacing()) * 1000) : 
             "" + Math2.floatToDouble(averageSpacing()) + " " + tUnits;
         return 

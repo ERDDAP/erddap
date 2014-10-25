@@ -516,6 +516,24 @@ public abstract class EDDTable extends EDD {
         String errorInMethod = "datasets.xml/EDDTable.ensureValid error for datasetID=" + 
             datasetID + ":\n ";
 
+        HashSet sourceNamesHS = new HashSet(2 * dataVariables.length);
+        HashSet destNamesHS   = new HashSet(2 * dataVariables.length);        
+        for (int v = 0; v < dataVariables.length; v++) {
+            //ensure unique sourceNames
+            String sn = dataVariables[v].sourceName();
+            if (!sn.startsWith("=")) {
+                if (!sourceNamesHS.add(sn))
+                    throw new RuntimeException(errorInMethod + 
+                        "Two dataVariables have the same sourceName=" + sn + ".");
+            }
+
+            //ensure unique destNames
+            String dn = dataVariables[v].destinationName();
+            if (!destNamesHS.add(dn))
+                throw new RuntimeException(errorInMethod + 
+                    "Two dataVariables have the same destinationName=" + dn + ".");
+        }
+
         Test.ensureTrue(lonIndex < 0 || dataVariables[lonIndex] instanceof EDVLon, 
             errorInMethod + "dataVariable[lonIndex=" + lonIndex + "] isn't an EDVLon.");
         Test.ensureTrue(latIndex < 0 || dataVariables[latIndex] instanceof EDVLat, 
@@ -625,14 +643,16 @@ public abstract class EDDTable extends EDD {
 
         //time
         if (timeIndex >= 0) {
-            PrimitiveArray pa = dataVariables[timeIndex].combinedAttributes().get("actual_range");
+            Attributes catts = dataVariables[timeIndex].combinedAttributes();
+            PrimitiveArray pa = catts.get("actual_range");
             if (pa != null) {
-                double d = pa.getDouble(0);
-                if (!Double.isNaN(d))
-                    combinedGlobalAttributes.set("time_coverage_start", Calendar2.epochSecondsToIsoStringT(d) + "Z");
-                d = pa.getDouble(1);  //will be NaN for 'present'.   Deal with this better???
-                if (!Double.isNaN(d))
-                    combinedGlobalAttributes.set("time_coverage_end",   Calendar2.epochSecondsToIsoStringT(d) + "Z");
+                String tp = catts.getString(EDV.TIME_PRECISION);
+                //"" unsets the attribute if min or max isNaN
+                combinedGlobalAttributes.set("time_coverage_start", 
+                    Calendar2.epochSecondsToLimitedIsoStringT(tp, pa.getDouble(0), ""));
+                //for tables (not grids) will be NaN for 'present'.   Deal with this better???
+                combinedGlobalAttributes.set("time_coverage_end", 
+                    Calendar2.epochSecondsToLimitedIsoStringT(tp, pa.getDouble(1), ""));
             }
         }
 
@@ -1437,7 +1457,8 @@ public abstract class EDDTable extends EDD {
                     edv.destinationFillValue(), edv.destinationMissingValue());            
                 //String2.log("    nSwitched=" + nSwitched);
             }
-            int nStillGood = dataPa.applyConstraint(keep, constraintOp, constraintValue);
+            int nStillGood = dataPa.applyConstraint(edv instanceof EDVTimeStamp, 
+                keep, constraintOp, constraintValue);
             if (reallyVerbose) String2.log("    nStillGood=" + nStillGood);
             if (nStillGood == 0)
                 break;
@@ -2936,7 +2957,7 @@ public abstract class EDDTable extends EDD {
         String columnUnits[] = new String[table.nColumns()];
         boolean columnIsString[] = new boolean[table.nColumns()];
         boolean columnIsTimeStamp[] = new boolean[table.nColumns()];
-        String columnTimeFormat[] = new String[table.nColumns()];
+        String columnTimePrecision[] = new String[table.nColumns()];
         for (int col = 0; col < table.nColumns(); col++) {
             String units = table.columnAttributes(col).getString("units");
             //test isTimeStamp before prepending " "
@@ -2946,7 +2967,7 @@ public abstract class EDDTable extends EDD {
                 " " + units;
             columnUnits[col] = units;
             columnIsString[col] = table.getColumn(col) instanceof StringArray;
-            columnTimeFormat[col] = table.columnAttributes(col).getString(EDV.TIME_PRECISION);
+            columnTimePrecision[col] = table.columnAttributes(col).getString(EDV.TIME_PRECISION);
         }
 
         //based on kmz example from http://www.coriolis.eu.org/cdc/google_earth.htm
@@ -3049,7 +3070,7 @@ public abstract class EDDTable extends EDD {
                             XML.encodeAsXML(table.getColumnName(col) + " = " +
                                 (columnIsTimeStamp[col]? 
                                      Calendar2.epochSecondsToLimitedIsoStringT(
-                                        columnTimeFormat[col], td, "") :
+                                        columnTimePrecision[col], td, "") :
                                  columnIsString[col]? ts :
                                  (Double.isNaN(td)? "NaN" : ts) + columnUnits[col])));
                     }
@@ -5062,13 +5083,13 @@ public abstract class EDDTable extends EDD {
         if (tnRows == 0)
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (at start of saveAsODV)");
         //the other params are all required by EDD, so it's a programming error if they are missing
-        if (tDatasetID == null || tDatasetID.length() == 0)
+        if (!String2.isSomething(tDatasetID))
             throw new SimpleException(EDStatic.errorInternal + 
                 "saveAsODV error: datasetID wasn't specified.");
-        if (tPublicSourceUrl == null || tPublicSourceUrl.length() == 0)
+        if (!String2.isSomething(tPublicSourceUrl))
             throw new SimpleException(EDStatic.errorInternal + 
                 "saveAsODV error: publicSourceUrl wasn't specified.");
-        if (tInfoUrl == null || tInfoUrl.length() == 0)
+        if (!String2.isSomething(tInfoUrl))
             throw new SimpleException(EDStatic.errorInternal + 
                 "saveAsODV error: infoUrl wasn't specified.");
 
@@ -5115,7 +5136,7 @@ public abstract class EDDTable extends EDD {
         //Presence of longitude, latitude, time is checked above.
         int cruiseCol = -1;
         int stationCol = -1;
-        int timeCol = table.findColumnNumber(EDV.TIME_NAME);  //but ODV requires it. see above
+        int timeCol = table.findColumnNumber(EDV.TIME_NAME);  //ODV requires it. see above
         //2010-07-07 email from Stephan Heckendorff says altitude (or similar) if present MUST be primaryVar
         int primaryVarCol = table.findColumnNumber(EDV.ALT_NAME); 
         if (primaryVarCol < 0) 
@@ -5162,11 +5183,10 @@ public abstract class EDDTable extends EDD {
             writer.write("\tCruise:METAVAR:TEXT:2");
         if (stationCol == -1)
             writer.write("\tStation:METAVAR:TEXT:2");
-        if (timeCol == -1)
-            writer.write("\tyyyy-mm-ddThh:mm:ss.sss");
 
         //columns from selected data
-        boolean isTimeStamp[] = new boolean[nCols];
+        boolean isTimeStamp[] = new boolean[nCols];  //includes time var 
+        String time_precision[] = new String[nCols]; //includes time var 
         for (int col = 0; col < nCols; col++) {
 
             //write tab first (since Type column comes before first table column)
@@ -5177,6 +5197,12 @@ public abstract class EDDTable extends EDD {
             String colNameLC = colName.toLowerCase();
             String units = table.columnAttributes(col).getString("units");
             isTimeStamp[col] = EDV.TIME_UNITS.equals(units); //units may be null
+            //just keep time_precision if it includes fractional seconds 
+            String tp = table.columnAttributes(col).getString(EDV.TIME_PRECISION);
+            if (tp != null && !tp.startsWith("1970-01-01T00:00:00.0")) 
+                tp = null; //default
+            time_precision[col] = tp;
+
             if (units == null || units.length() == 0) {
                 units = "";
             } else {
@@ -5265,9 +5291,10 @@ public abstract class EDDTable extends EDD {
             for (int col = 0; col < nCols; col++) {
                 writer.write('\t');  //since Type and other columns were written above
                 if (isTimeStamp[col]) {
-                    //no Z at end;  ODV ignores time zone info (see 2010-06-15 notes)
-                    //!!! Keep as ISO 8601, not time_precision.
-                    writer.write(Calendar2.safeEpochSecondsToIsoStringT(table.getDoubleData(col, row), "")); 
+                    //!!! use time_precision (may be greater seconds or decimal seconds).
+                    //ODV ignores time zone info, but okay to specify, e.g., Z (see 2010-06-15 notes)
+                    writer.write(Calendar2.epochSecondsToLimitedIsoStringT(
+                        time_precision[col], table.getDoubleData(col, row), ""));
                     //missing numeric will be empty cell; that's fine
                 } else {
                     //See comments above about ISO-8859-1. I am choosing *not* to strip high ASCII chars here.
@@ -6620,15 +6647,17 @@ public abstract class EDDTable extends EDD {
             "      <br>these extensions (notably \"=~\") sometimes aren't practical because tabledap\n" +
             "      <br>may need to download lots of extra data from the source (which takes time)\n" +
             "      <br>in order to test the constraint.\n" +
-            "    <li><a name=\"timeConstraints\">tabledap</a> always stores date/time values as numbers (in seconds since 1970-01-01T00:00:00Z).\n" +
+            "    <li><a name=\"timeConstraints\">tabledap</a> always stores date/time values as double precision floating point numbers\n" +
+            "      <br>(seconds since 1970-01-01T00:00:00Z, sometimes with some number of milliseconds).\n" +
             "      <br>Here is an example of a query which includes date/time numbers:\n" +
             "      <br><a href=\"" + EDStatic.phEncode(fullValueExample) + "\"><tt>" + 
                                      XML.encodeAsHTML( fullValueExample) + "</tt></a>\n" +
-            "      <br>Some fileTypes (notably, .csv, .tsv, .htmlTable, .odvTxt, and .xhtml) display\n" +
-            "      <br>date/time values as \n" +
+            "      <br>The more human-oriented fileTypes (notably, .csv, .tsv, .htmlTable, .odvTxt, and .xhtml)\n" +
+            "      <br>display date/time values as \n" +
             "        <a rel=\"help\" href=\"http://en.wikipedia.org/wiki/ISO_8601\">ISO 8601:2004 \"extended\" date/time strings" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "      <br>(e.g., <tt>2002-08-03T12:30:00Z</tt>).\n" +
+            "      <br>(e.g., <tt>2002-08-03T12:30:00Z</tt>, but some variables include milliseconds, e.g.,\n" +
+            "      <br>2002-08-03T12:30:00.123Z).\n" +
             (EDStatic.convertersActive? 
               "      <br>ERDDAP has a utility to\n" +
               "        <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
@@ -6636,10 +6665,13 @@ public abstract class EDDTable extends EDD {
               "      <br>See also:\n" +
               "        <a rel=\"help\" href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
               "        ERDDAP Deals with Time</a>.\n" : "") +
-            "    <li>tabledap extends the OPeNDAP standard to allow you to specify time values in the ISO 8601\n" +
-            "      <br>date/time format (<tt><i>YYYY-MM-DD</i>T<i>hh:mm:ssZ</i></tt>, where Z is 'Z' or a &plusmn;hh:mm offset from UTC). \n" +
-            "      <br>If you omit Z (or the &plusmn;hh:mm offset), :ssZ, :mm:ssZ, or Thh:mm:ssZ from the ISO date/time\n" +
-            "      <br>that you specify, the missing fields are assumed to be 0.\n" +
+            "    <li>tabledap extends the OPeNDAP standard to allow you to specify time values in the\n" +
+            "      <br>ISO 8601 date/time format (<tt><i>YYYY-MM-DD</i>T<i>hh:mm:ss.sssZ</i></tt>, where Z is 'Z' or a &plusmn;hh\n" +
+            "      <br>or &plusmn;hh:mm offset from the Zulu/GMT time zone. If you omit Z and the offset, the\n" +
+            "      <br>Zulu/GMT time zone is used. Separately, if you omit .sss, :ss.sss, :mm:ss.sss, or\n" +
+            "      <br>Thh:mm:ss.sss from the ISO date/time that you specify, the missing fields are assumed\n" +
+            "      <br>to be 0. In some places, ERDDAP accepts a comma (ss,sss) as the seconds decimal point,\n" +
+            "      <br>but ERDDAP always uses a period when formatting times as ISO 8601 strings.\n" +
             "      <br>Here is an example of a query which includes ISO date/time values:\n" +
             "      <br><a href=\"" + EDStatic.phEncode(fullTimeExample) + "\"><tt>" + 
                                      XML.encodeAsHTML( fullTimeExample) + "</tt></a> .\n" +
@@ -6985,18 +7017,23 @@ public abstract class EDDTable extends EDD {
         StringArray nonAxisSA = new StringArray();
         EDVTime timeVar = null;
         int dvTime = -1;
+        String time_precision[] = new String[dataVariables.length];
         for (int dv = 0; dv < dataVariables.length; dv++) {
-            if (dataVariables[dv].destinationDataTypeClass() != String.class) {
-                String dn = dataVariables[dv].destinationName();
+            EDV edv = dataVariables[dv];
+            if (edv.destinationDataTypeClass() != String.class) {
+                String dn = edv.destinationName();
                 if        (dv == lonIndex)   {axisSA.add(dn); 
                 } else if (dv == latIndex)   {axisSA.add(dn); 
                 } else if (dv == altIndex)   {axisSA.add(dn); 
                 } else if (dv == depthIndex) {axisSA.add(dn); 
                 } else if (dv == timeIndex)  {axisSA.add(dn);  dvTime = sa.size(); 
-                    timeVar = (EDVTime)dataVariables[dv]; 
+                    timeVar = (EDVTime)edv; 
                 } else { 
                     nonAxisSA.add(dn);
                 }
+
+                if (edv instanceof EDVTimeStamp)
+                    time_precision[dv] = edv.combinedAttributes().getString(EDV.TIME_PRECISION);
 
                 if (dv != lonIndex && dv != latIndex)
                     nonLLSA.add(dn);
@@ -10457,7 +10494,8 @@ public abstract class EDDTable extends EDD {
                     //is it true?
                     PrimitiveArray pa = PrimitiveArray.factory(edv.destinationDataTypeClass(), 
                         1, edv.sourceName().substring(1));
-                    if (pa.applyConstraint(keep, constraintOps.get(cv), constraintValues.get(cv)) == 0)
+                    if (pa.applyConstraint(edv instanceof EDVTimeStamp,
+                        keep, constraintOps.get(cv), constraintValues.get(cv)) == 0)
                         throw new SimpleException(MustBe.THERE_IS_NO_DATA + 
                             " (after " + constraintVariables.get(cv) + constraintOps.get(cv) + constraintValues.get(cv) + ")");
                 } else {
@@ -15355,8 +15393,7 @@ writer.write(
         String domain = EDStatic.baseUrl;
         if (domain.startsWith("http://"))
             domain = domain.substring(7);
-        String eddCreationDate = String2.replaceAll(
-            Calendar2.millisToIsoZuluString(creationTimeMillis()), "-", "").substring(0, 8) + "Z";
+        String eddCreationDate = Calendar2.millisToIsoZuluString(creationTimeMillis()).substring(0, 10);
 
         String acknowledgement = combinedGlobalAttributes.getString("acknowledgement");
         String contributorName = combinedGlobalAttributes.getString("contributor_name");
@@ -15368,10 +15405,10 @@ writer.write(
         //creatorUrl: use infoUrl
         String dateCreated     = combinedGlobalAttributes.getString("date_created");
         String dateIssued      = combinedGlobalAttributes.getString("date_issued");
-        if (dateCreated != null && dateCreated.length() >= 10 && !dateCreated.endsWith("Z"))
-            dateCreated = dateCreated.substring(0, 10) + "Z";
-        if (dateIssued  != null && dateIssued.length()  >= 10 && !dateIssued.endsWith("Z"))
-            dateIssued  = dateIssued.substring(0, 10)  + "Z";
+        if (dateCreated != null && dateCreated.length() > 10)
+            dateCreated = dateCreated.substring(0, 10);
+        if (dateIssued  != null && dateIssued.length()  > 10)
+            dateIssued  = dateIssued.substring(0, 10);
         String history         = combinedGlobalAttributes.getString("history");
         String infoUrl         = combinedGlobalAttributes.getString("infoUrl"); 
         String institution     = combinedGlobalAttributes.getString("institution");
@@ -16549,7 +16586,7 @@ writer.write(
 "                  </gmd:linkage>\n" +
 "                  <gmd:protocol>\n" +
 //see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv from John Maurer
-"                    <gco:CharacterString>template</gco:CharacterString>\n" +
+"                    <gco:CharacterString>order</gco:CharacterString>\n" +
 "                  </gmd:protocol>\n" +
 "                  <gmd:name>\n" +        
 "                    <gco:CharacterString>Data Subset Form</gco:CharacterString>\n" +
@@ -16579,7 +16616,7 @@ writer.write(
 "                  </gmd:linkage>\n" +
 "                  <gmd:protocol>\n" +
 //see list at https://github.com/OSGeo/Cat-Interop/blob/master/LinkPropertyLookupTable.csv from John Maurer
-"                    <gco:CharacterString>template</gco:CharacterString>\n" +
+"                    <gco:CharacterString>order</gco:CharacterString>\n" +
 "                  </gmd:protocol>\n" +
 "                  <gmd:name>\n" +        
 "                    <gco:CharacterString>Make-A-Graph Form</gco:CharacterString>\n" +

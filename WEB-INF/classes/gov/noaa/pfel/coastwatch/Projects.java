@@ -8492,6 +8492,62 @@ towTypesDescription);
     }
 
     /**
+     * Make simpleTest.nc
+     */
+    public static void makeSimpleTestNc() throws Throwable {
+        Table table = new Table();
+
+        ByteArray timeStamps = new ByteArray(new byte[]{});
+                ByteArray arByte2     = new ByteArray(   new byte[]  {5,   15,  50,   25});
+
+        table.addColumn(0, "days", 
+            new ByteArray(new byte[]  {1,2,3,4}), 
+            new Attributes());
+        table.addColumn(1, "hours", 
+            new ByteArray(new byte[]  {5,6,7,8}), 
+            new Attributes());
+        table.addColumn(2, "minutes", 
+            new ByteArray(new byte[]  {9,10,11,12}), 
+            new Attributes());
+        table.addColumn(3, "seconds", 
+            new ByteArray(new byte[]  {20,21,22,23}), 
+            new Attributes());
+        table.addColumn(4, "millis", 
+            new ByteArray(new byte[]  {30,31,32,33}), 
+            new Attributes());
+        table.addColumn(5, "bytes", 
+            new ByteArray(new byte[]  {40,41,42,43}), 
+            new Attributes());
+        table.addColumn(6, "shorts", 
+            new ShortArray(new short[]  {10000,10001,10002,10004}), 
+            new Attributes());
+        table.addColumn(7, "ints", 
+            new IntArray(new int[]  {1000000,1000001,1000002,1000004}), 
+            new Attributes());
+        table.addColumn(8, "longs", 
+            new LongArray(new long[]  {10000000000L,10000000001L,10000000002L,10000000004L}), 
+            new Attributes());
+        table.addColumn(9, "floats", 
+            new FloatArray(new float[]  {0,1.1f,2.2f,4.4f}), 
+            new Attributes());
+        double d = 1e12;
+        table.addColumn(10, "doubles", 
+            new DoubleArray(new double[]  {d, d+0.1, d+0.2, d+0.3}), 
+            new Attributes());
+        table.addColumn(11, "Strings", 
+            new StringArray(new String[]  {"0","10","20","30"}), 
+            new Attributes());
+
+        table.columnAttributes(0).set("units", "days since 1970-01-01");
+        table.columnAttributes(1).set("units", "hours since 1980-01-01");
+        table.columnAttributes(2).set("units", "minutes since 1990-01-01");
+        table.columnAttributes(3).set("units", "seconds since 2000-01-01");
+        table.columnAttributes(4).set("units", "millis since 2010-01-01");
+
+        table.saveAsFlatNc("/erddapTest/simpleTest.nc", "row", false);  //convertToFakeMV=false
+    }
+
+    /**
      * Convert Isaac's PCUI .csv into .nc (and clean up).
      * I removed 2014 row by hand: 2014,-9999,-9999,-9999,-9999,-9999,-9999
      */

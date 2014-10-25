@@ -4,6 +4,7 @@
  */
 package gov.noaa.pfel.erddap.dataset;
 
+import com.cohort.array.Attributes;
 import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -36,8 +37,9 @@ public class TableWriterSeparatedValue extends TableWriter {
     protected String nanString; 
 
     //set by firstTime
-    protected boolean isTimeStamp[];
     protected boolean isString[];
+    protected boolean isTimeStamp[];
+    protected String time_precision[];
     protected BufferedWriter writer;
 
     public long totalNRows = 0;
@@ -103,10 +105,19 @@ public class TableWriterSeparatedValue extends TableWriter {
         int nColumns = table.nColumns();
         if (firstTime) {
             isTimeStamp = new boolean[nColumns];
+            time_precision = new String[nColumns];
             for (int col = 0; col < nColumns; col++) {
-                String u = table.columnAttributes(col).getString("units");
+                Attributes catts = table.columnAttributes(col);
+                String u = catts.getString("units");
                 isTimeStamp[col] = u != null && 
                     (u.equals(EDV.TIME_UNITS) || u.equals(EDV.TIME_UCUM_UNITS));
+                if (isTimeStamp[col]) {
+                    //just keep time_precision if it includes fractional seconds 
+                    String tp = catts.getString(EDV.TIME_PRECISION);
+                    if (tp != null && !tp.startsWith("1970-01-01T00:00:00.0")) 
+                        tp = null; //default
+                    time_precision[col] = tp;
+                }
             }
 
             //write the header
@@ -164,12 +175,8 @@ public class TableWriterSeparatedValue extends TableWriter {
         for (int row = 0; row < nRows; row++) {
             for (int col = 0; col < nColumns; col++) {
                 if (isTimeStamp[col]) {
-                    double d = table.getDoubleData(col, row);
-                    //Always using standard ISO 8601 string (seconds) ensures easy to parse.
-                    //It would be nice to use decimal seconds if variables time_precision specifies it, 
-                    //but time_precision isn't known here
-                    String s = Calendar2.safeEpochSecondsToIsoStringTZ(d, "");  
-                    writer.write(s);
+                    writer.write(Calendar2.epochSecondsToLimitedIsoStringT(
+                        time_precision[col], table.getDoubleData(col, row), ""));
                 } else if (isString[col]) {
                     writer.write(String2.quoteIfNeeded(quoted, table.getStringData(col, row)));
                 } else {
