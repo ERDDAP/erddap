@@ -4119,7 +4119,7 @@ expected =
 "  \\}\n" +
 "  station_id \\{\n" +
 "    Int32 _FillValue 2147483647;\n" +
-"    Int32 actual_range 1, 20668663;\n" +  //changes every month  //don't regex this. It's important to see the changes.
+"    Int32 actual_range 1, 20937550;\n" +  //changes every month  //don't regex this. It's important to see the changes.
 "    String cf_role \"profile_id\";\n" +
 "    String comment \"Identification number of the station \\(profile\\) in the GTSPP Continuously Managed Database\";\n" +
 "    String ioos_category \"Identifier\";\n" +
@@ -4165,7 +4165,7 @@ expected =
 "  time \\{\n" +
 "    String _CoordinateAxisType \"Time\";\n" +
 "    Float64 _FillValue NaN;\n" +
-"    Float64 actual_range 6.31152e\\+8, 1.4091408e\\+9;\n" + //2nd value changes
+"    Float64 actual_range 6.31152e\\+8, 1.411992e\\+9;\n" + //2nd value changes
 "    String axis \"T\";\n" +
 "    String ioos_category \"Time\";\n" +
 "    String long_name \"Time\";\n" +
@@ -4228,7 +4228,7 @@ expected =
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center \\(NODC\\) on 2014-09-16 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center \\(NODC\\) on 2014-10-07 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -4239,7 +4239,7 @@ expected =
 "    String creator_url \"http://www.nodc.noaa.gov/GTSPP/\";\n" +
 "    String crs \"EPSG:4326\";\n" +
 (tDatasetID.equals("erdGtsppBest")?                                    //changes
-    "    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2014-08-25&time%3C=2014-09-01&.draw=markers&.marker=1\\|5\";\n" : 
+    "    String defaultGraphQuery \"longitude,latitude,station_id&time%3E=2014-09-24&time%3C=2014-10-01&.draw=markers&.marker=1\\|5\";\n" : 
     "") +
 "    Float64 Easternmost_Easting 179.999;\n" +
 "    String featureType \"TrajectoryProfile\";\n" +
@@ -4258,9 +4258,9 @@ expected =
 "    String gtspp_handbook_version \"GTSPP Data User's Manual 1.0\";\n" +
 "    String gtspp_program \"writeGTSPPnc40.f90\";\n" +
 "    String gtspp_programVersion \"1.7\";\n" +  
-"    String history \"2014-09-01 csun writeGTSPPnc40.f90 Version 1.7\n" +  //date changes
+"    String history \"2014-10-01 csun writeGTSPPnc40.f90 Version 1.7\n" +  //date changes
 ".tgz files from ftp.nodc.noaa.gov /pub/gtspp/best_nc/ \\(http://www.nodc.noaa.gov/GTSPP/\\)\n" +
-"2014-09-15 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
+"2014-10-07 Most recent ingest, clean, and reformat at ERD \\(bob.simons at noaa.gov\\).\n"; //date changes
 
         po = results.indexOf("bob.simons at noaa.gov).\n");
         String tResults = results.substring(0, po + 25);
@@ -4279,7 +4279,7 @@ expected =
 "    String keywords_vocabulary \"NODC Data Types, CF Standard Names, GCMD Science Keywords\";\n" +
 "    String LEXICON \"NODC_GTSPP\";\n" +                                      //date below changes
 "    String license \"These data are openly available to the public.  Please acknowledge the use of these data with:\n" +
-"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2014-09-16 from http://www.nodc.noaa.gov/GTSPP/.\n" +
+"These data were acquired from the US NOAA National Oceanographic Data Center \\(NODC\\) on 2014-10-07 from http://www.nodc.noaa.gov/GTSPP/.\n" +
 "\n" +
 "The data may be used and redistributed for free but is not intended\n" +
 "for legal use, since it may contain inaccuracies. Neither the data\n" +
@@ -4305,7 +4305,7 @@ expected =
 "Requesting data for a specific station_id may be slow, but it works.\n" +
 "\n" +                       
 "\\*\\*\\* This ERDDAP dataset has data for the entire world for all available times \\(currently, " +
-    "up to and including the August 2014 data\\) but is a subset of the " + //month changes
+    "up to and including the September 2014 data\\) but is a subset of the " + //month changes
     "original NODC 'best-copy' data.  It only includes data where the quality flags indicate the data is 1=CORRECT, 2=PROBABLY GOOD, or 5=MODIFIED. It does not include some of the metadata, any of the history data, or any of the quality flag data of the original dataset. You can always get the complete, up-to-date dataset \\(and additional, near-real-time data\\) from the source: http://www.nodc.noaa.gov/GTSPP/ .  Specific differences are:\n" +
 "\\* Profiles with a position_quality_flag or a time_quality_flag other than 1\\|2\\|5 were removed.\n" +
 "\\* Rows with a depth \\(z\\) value less than -0.4 or greater than 10000 or a z_variable_quality_flag other than 1\\|2\\|5 were removed.\n" +
@@ -4317,7 +4317,7 @@ expected =
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/GTSPP_RT_QC_Manual_20090916.pdf .\n" +
 "The Quality Flag definitions are also at\n" +
 "http://www.nodc.noaa.gov/GTSPP/document/qcmans/qcflags.htm .\";\n" +
-"    String time_coverage_end \"2014-08-27T12:00:00Z\";\n" + //changes
+"    String time_coverage_end \"2014-09-29T12:00:00Z\";\n" + //changes
 "    String time_coverage_start \"1990-01-01T00:00:00Z\";\n" +
 "    String title \"Global Temperature and Salinity Profile Programme \\(GTSPP\\) Data\";\n" +
 "    Float64 Westernmost_Easting -180.0;\n" +
@@ -4720,7 +4720,7 @@ expected =
         expected = 
 "time,irradiance\n" +
 "UTC,W/m^2\n" +
-"2011-07-01T00:00:00Z,1361.3473\n";
+"2011-07-01T00:00:00.000Z,1361.3473\n";
 
         dapQuery = "time,irradiance&time=\"2011-07-01\"";
         tName = eddTable.makeNewFileForDapQuery(null, null, dapQuery, 
@@ -9978,9 +9978,9 @@ expected =
 "//<DataField>GeneralField</DataField>\n" +
 "//<DataType>GeneralType</DataType>\n" +
 "Type:METAVAR:TEXT:2\tStation:METAVAR:TEXT:2\tCruise:METAVAR:TEXT:7\tship:METAVAR:TEXT:12\tcast:SHORT\tLongitude [degrees_east]:METAVAR:FLOAT\tLatitude [degrees_north]:METAVAR:FLOAT\taltitude [m]:PRIMARYVAR:INTEGER\tyyyy-mm-ddThh:mm:ss.sss\tbottle_posn:BYTE\tchl_a_total [ug L-1]:FLOAT\tchl_a_10um [ug L-1]:FLOAT\tphaeo_total [ug L-1]:FLOAT\tphaeo_10um [ug L-1]:FLOAT\tsal00 [PSU]:FLOAT\tsal11 [PSU]:FLOAT\ttemperature0 [degree_C]:FLOAT\ttemperature1 [degree_C]:FLOAT\tfluor_v [volts]:FLOAT\txmiss_v [volts]:FLOAT\tPO4 [micromoles L-1]:FLOAT\tN_N [micromoles L-1]:FLOAT\tNO3 [micromoles L-1]:FLOAT\tSi [micromoles L-1]:FLOAT\tNO2 [micromoles L-1]:FLOAT\tNH4 [micromoles L-1]:FLOAT\toxygen [mL L-1]:FLOAT\tpar [volts]:FLOAT\n" +
-"*\t\tnh0207\tNew_Horizon\t20\t-124.4\t44.0\t0\t2002-08-03T01:29:00\t1\t\t\t\t\t33.9939\t33.9908\t7.085\t7.085\t0.256\t0.518\t2.794\t35.8\t35.7\t71.11\t0.093\t0.037\t\t0.1545\n" +
-"*\t\tnh0207\tNew_Horizon\t20\t-124.4\t44.0\t0\t2002-08-03T01:29:00\t2\t\t\t\t\t33.8154\t33.8111\t7.528\t7.53\t0.551\t0.518\t2.726\t35.87\t35.48\t57.59\t0.385\t0.018\t\t0.1767\n" +
-"*\t\tnh0207\tNew_Horizon\t20\t-124.4\t44.0\t0\t2002-08-03T01:29:00\t3\t1.463\t\t1.074\t\t33.5858\t33.5834\t7.572\t7.573\t0.533\t0.518\t2.483\t31.92\t31.61\t48.54\t0.307\t0.504\t\t0.3875\n";
+"*\t\tnh0207\tNew_Horizon\t20\t-124.4\t44.0\t0\t2002-08-03T01:29:00Z\t1\t\t\t\t\t33.9939\t33.9908\t7.085\t7.085\t0.256\t0.518\t2.794\t35.8\t35.7\t71.11\t0.093\t0.037\t\t0.1545\n" +
+"*\t\tnh0207\tNew_Horizon\t20\t-124.4\t44.0\t0\t2002-08-03T01:29:00Z\t2\t\t\t\t\t33.8154\t33.8111\t7.528\t7.53\t0.551\t0.518\t2.726\t35.87\t35.48\t57.59\t0.385\t0.018\t\t0.1767\n" +
+"*\t\tnh0207\tNew_Horizon\t20\t-124.4\t44.0\t0\t2002-08-03T01:29:00Z\t3\t1.463\t\t1.074\t\t33.5858\t33.5834\t7.572\t7.573\t0.533\t0.518\t2.483\t31.92\t31.61\t48.54\t0.307\t0.504\t\t0.3875\n";
             po = results.indexOf(expected.substring(0, 13));
             Test.ensureEqual(results.substring(po, po + expected.length()), expected, 
                 "\nresults=\n" + String2.annotatedString(results));
@@ -11148,7 +11148,7 @@ expected =
 "    String geospatial_vertical_units \"m\";\n" + //date on line below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
-"2014-09-12 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+"2014-10-06 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);
@@ -11541,6 +11541,1318 @@ So the changes seem good. */
         //if (true) throw new RuntimeException("stop here");
     }
 
+    /**
+     * This tests sub-second time_precision in all output file types.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testTimePrecisionMillis() throws Throwable {
+        String2.log("\n****************** EDDTableFromNcFiles.testTimePrecisionMillis() *****************\n");
+        EDDTable eddTable = (EDDTable)oneFromDatasetXml("testTimePrecisionMillisTable"); 
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String userDapQuery = "time,ECEF_X,IB_time" +
+            "&time>1984-02-01T12:00:59.001Z" + //value is .001, so this just barely fails
+            "&time<=1984-02-01T12:00:59.401Z"; //value is .401, so this just barely succeeds
+        String fName = "testTimePrecisionMillis";
+        String tName, results, ts, expected;
+        int po;
+
+        //.asc  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".asc"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"Dataset {\n" +
+"  Sequence {\n" +
+"    Float64 time;\n" +
+"    Float32 ECEF_X;\n" +
+"    Float64 IB_time;\n" +
+"  } s;\n" +
+"} s;\n" +
+"---------------------------------------------\n" +
+"s.time, s.ECEF_X, s.IB_time\n" +
+"4.44484859101E8, 9.96921E36, 7.600176591E8\n" +
+"4.44484859201E8, 9.96921E36, 7.600176592E8\n" +
+"4.44484859301E8, 9.96921E36, 7.600176593E8\n" +
+"4.4448485940099996E8, 9.96921E36, 7.600176594E8\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"time,ECEF_X,IB_time\n" +
+"UTC,m,UTC\n" +
+"1984-02-01T12:00:59.101Z,9.96921E36,1994-01-31T12:00:59.100Z\n" +
+"1984-02-01T12:00:59.201Z,9.96921E36,1994-01-31T12:00:59.200Z\n" +
+"1984-02-01T12:00:59.301Z,9.96921E36,1994-01-31T12:00:59.300Z\n" +
+"1984-02-01T12:00:59.401Z,9.96921E36,1994-01-31T12:00:59.400Z\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.dods  doesn't write strings
+
+        //.htmlTable
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".htmlTable"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"<table class=\"erd commonBGColor\" cellspacing=\"0\">\n" +
+"<tr>\n" +
+"<th>time\n" +
+"<th>ECEF_X\n" +
+"<th>IB_time\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<th>UTC\n" +
+"<th>m\n" +
+"<th>UTC\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap>1984-02-01T12:00:59.101Z\n" +
+"<td align=\"right\">9.96921E36\n" +
+"<td nowrap>1994-01-31T12:00:59.100Z\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap>1984-02-01T12:00:59.201Z\n" +
+"<td align=\"right\">9.96921E36\n" +
+"<td nowrap>1994-01-31T12:00:59.200Z\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap>1984-02-01T12:00:59.301Z\n" +
+"<td align=\"right\">9.96921E36\n" +
+"<td nowrap>1994-01-31T12:00:59.300Z\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap>1984-02-01T12:00:59.401Z\n" +
+"<td align=\"right\">9.96921E36\n" +
+"<td nowrap>1994-01-31T12:00:59.400Z\n" +
+"</tr>\n" +
+"</table>\n";
+        po = results.indexOf("<table class");
+        ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
+        Test.ensureEqual(ts, expected, "\nresults=\n" + results);
+
+        //.json  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".json"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"{\n" +
+"  \"table\": {\n" +
+"    \"columnNames\": [\"time\", \"ECEF_X\", \"IB_time\"],\n" +
+"    \"columnTypes\": [\"String\", \"float\", \"String\"],\n" +
+"    \"columnUnits\": [\"UTC\", \"m\", \"UTC\"],\n" +
+"    \"rows\": [\n" +
+"      [\"1984-02-01T12:00:59.101Z\", 9.96921E36, \"1994-01-31T12:00:59.100Z\"],\n" +
+"      [\"1984-02-01T12:00:59.201Z\", 9.96921E36, \"1994-01-31T12:00:59.200Z\"],\n" +
+"      [\"1984-02-01T12:00:59.301Z\", 9.96921E36, \"1994-01-31T12:00:59.300Z\"],\n" +
+"      [\"1984-02-01T12:00:59.401Z\", 9.96921E36, \"1994-01-31T12:00:59.400Z\"]\n" +
+"    ]\n" +
+"  }\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.mat  doesn't write strings
+//!!! but need to test to ensure not rounding to the nearest second
+
+        //.nc  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".nc"); 
+        results = NcHelper.dumpString(tDir + tName, true);
+        expected = 
+"netcdf testTimePrecisionMillis.nc {\n" +
+"  dimensions:\n" +
+"    row = 4;\n" +
+"  variables:\n" +
+"    double time(row=4);\n" +
+"      :_CoordinateAxisType = \"Time\";\n" +
+"      :actual_range = 4.44484859101E8, 4.4448485940099996E8; // double\n" + //important full precision
+"      :axis = \"T\";\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"L1a Outboard intermediate timestamp. Seconds since the J2K epoch\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :time_precision = \"1970-01-01T00:00:00.000Z\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"\n" +
+"    float ECEF_X(row=4);\n" +
+"      :actual_range = 9.96921E36f, 9.96921E36f; // float\n" +
+"      :ioos_category = \"Other\";\n" +
+"      :long_name = \"Spacecraft ECEF position X value\";\n" +
+"      :units = \"m\";\n" +
+"\n" +
+"    double IB_time(row=4);\n" +
+"      :actual_range = 7.600176591E8, 7.600176594E8; // double\n" + //important full precision
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"L1a Inboard intermediate timestamp. Seconds since the J2K epoch\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :time_precision = \"1970-01-01T00:00:00.000Z\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :algorithm_date = \"2014-06-18\";\n" +
+"  :algorithm_version = \"OR_ALG_MAG_L1b_GEOF_v01r01.tgz\";\n" +
+"  :cdm_data_type = \"Other\";\n" +
+"  :dataset_name = \"IT_MAG-L1b-GEOF_G16_s2044065031446_e2044065031546_c2014064151446.nc\";\n";
+        ts = results.substring(0, expected.length()); 
+        Test.ensureEqual(ts, expected, "\nresults=\n" + results);
+        
+        expected = 
+"  :time_coverage_end = \"1984-02-01T12:00:59.401Z\";\n" +
+"  :time_coverage_start = \"1984-02-01T12:00:59.101Z\";\n" +
+"  :title = \"L1b Magnetometer (MAG) Geomagnetic Field Product\";\n" +
+" data:\n" +
+"time =\n" +
+"  {4.44484859101E8, 4.44484859201E8, 4.44484859301E8, 4.4448485940099996E8}\n" +
+"ECEF_X =\n" +
+"  {9.96921E36, 9.96921E36, 9.96921E36, 9.96921E36}\n" +
+"IB_time =\n" +
+"  {7.600176591E8, 7.600176592E8, 7.600176593E8, 7.600176594E8}\n" +
+"}\n";
+        po = results.indexOf("  :time_coverage_end");
+        ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
+        Test.ensureEqual(ts, expected, "\nresults=\n" + results);
+
+        //.odvTxt
+        /* can't test because it needs lon lat values
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".odvTxt"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"zztop\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+        */
+
+        //.xhtml  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".xhtml"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"<table border=\"1\" cellpadding=\"2\" cellspacing=\"0\">\n" +
+"<tr>\n" +
+"<th>time</th>\n" +
+"<th>ECEF_X</th>\n" +
+"<th>IB_time</th>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<th>UTC</th>\n" +
+"<th>m</th>\n" +
+"<th>UTC</th>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap=\"nowrap\">1984-02-01T12:00:59.101Z</td>\n" +
+"<td align=\"right\">9.96921E36</td>\n" +
+"<td nowrap=\"nowrap\">1994-01-31T12:00:59.100Z</td>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap=\"nowrap\">1984-02-01T12:00:59.201Z</td>\n" +
+"<td align=\"right\">9.96921E36</td>\n" +
+"<td nowrap=\"nowrap\">1994-01-31T12:00:59.200Z</td>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap=\"nowrap\">1984-02-01T12:00:59.301Z</td>\n" +
+"<td align=\"right\">9.96921E36</td>\n" +
+"<td nowrap=\"nowrap\">1994-01-31T12:00:59.300Z</td>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap=\"nowrap\">1984-02-01T12:00:59.401Z</td>\n" +
+"<td align=\"right\">9.96921E36</td>\n" +
+"<td nowrap=\"nowrap\">1994-01-31T12:00:59.400Z</td>\n" +
+"</tr>\n" +
+"</table>\n";
+        po = results.indexOf("<table ");
+        ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
+        Test.ensureEqual(ts, expected, "\nresults=\n" + results);
+
+
+    }
+
+    /**
+     * This tests timestamps and other things.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testSimpleTestNcTable() throws Throwable {
+        String2.log("\n****************** EDDTableFromNcFiles.testSimpleTestNcTable() *****************\n");
+        EDDTable eddTable = (EDDTable)oneFromDatasetXml("testSimpleTestNcTable"); 
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String userDapQuery = "time,hours,minutes,seconds,millis,latitude," +
+            "longitude,ints,floats,doubles,Strings" +
+            "&time>=1970-01-02T00:00:00Z" + //should just barely succeed, 86400
+            "&time<1970-01-05T00:00:00Z";   //should just barely fail, 345600
+        String fName = "testSimpleTestNcTable";
+        String tName, results, ts, expected;
+        int po;
+
+        String2.log(NcHelper.dumpString("/erddapTest/simpleTest.nc", true));
+
+        //all  
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", tDir, 
+            fName, ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"time,hours,minutes,seconds,millis,latitude,longitude,ints,floats,doubles,Strings\n" +
+"UTC,UTC,UTC,UTC,UTC,degrees_north,degrees_east,,,,\n" +
+"1970-01-02T00:00:00Z,1980-01-01T05:00:00Z,1990-01-01T00:09:00Z,2000-01-01T00:00:20Z,2010-01-01T00:00:00.030Z,40,10000,1000000,0.0,1.0E12,0\n" +
+"1970-01-03T00:00:00Z,1980-01-01T06:00:00Z,1990-01-01T00:10:00Z,2000-01-01T00:00:21Z,2010-01-01T00:00:00.031Z,41,10001,1000001,1.1,1.0000000000001E12,10\n" +
+"1970-01-04T00:00:00Z,1980-01-01T07:00:00Z,1990-01-01T00:11:00Z,2000-01-01T00:00:22Z,2010-01-01T00:00:00.032Z,42,10002,1000002,2.2,1.0000000000002E12,20\n" +
+"1970-01-05T00:00:00Z,1980-01-01T08:00:00Z,1990-01-01T00:12:00Z,2000-01-01T00:00:23Z,2010-01-01T00:00:00.033Z,43,10004,1000004,4.4,1.0000000000003E12,30\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.asc  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".asc"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"Dataset {\n" +
+"  Sequence {\n" +
+"    Float64 time;\n" +
+"    Float64 hours;\n" +
+"    Float64 minutes;\n" +
+"    Float64 seconds;\n" +
+"    Float64 millis;\n" +
+"    Byte latitude;\n" +
+"    Int16 longitude;\n" +
+"    Int32 ints;\n" +
+"    Float32 floats;\n" +
+"    Float64 doubles;\n" +
+"    String Strings;\n" +
+"  } s;\n" +
+"} s;\n" +
+"---------------------------------------------\n" +
+"s.time, s.hours, s.minutes, s.seconds, s.millis, s.latitude, s.longitude, s.ints, s.floats, s.doubles, s.Strings\n" +
+"86400.0, 3.155508E8, 6.3115254E8, 9.4668482E8, 1.26230400003E9, 40, 10000, 1000000, 0.0, 1.0E12, \"0\"\n" +
+"172800.0, 3.155544E8, 6.311526E8, 9.46684821E8, 1.262304000031E9, 41, 10001, 1000001, 1.1, 1.0000000000001E12, \"10\"\n" +
+"259200.0, 3.15558E8, 6.3115266E8, 9.46684822E8, 1.262304000032E9, 42, 10002, 1000002, 2.2, 1.0000000000002E12, \"20\"\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"time,hours,minutes,seconds,millis,latitude,longitude,ints,floats,doubles,Strings\n" +
+"UTC,UTC,UTC,UTC,UTC,degrees_north,degrees_east,,,,\n" +
+"1970-01-02T00:00:00Z,1980-01-01T05:00:00Z,1990-01-01T00:09:00Z,2000-01-01T00:00:20Z,2010-01-01T00:00:00.030Z,40,10000,1000000,0.0,1.0E12,0\n" +
+"1970-01-03T00:00:00Z,1980-01-01T06:00:00Z,1990-01-01T00:10:00Z,2000-01-01T00:00:21Z,2010-01-01T00:00:00.031Z,41,10001,1000001,1.1,1.0000000000001E12,10\n" +
+"1970-01-04T00:00:00Z,1980-01-01T07:00:00Z,1990-01-01T00:11:00Z,2000-01-01T00:00:22Z,2010-01-01T00:00:00.032Z,42,10002,1000002,2.2,1.0000000000002E12,20\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.dods  hard to test
+
+        //.geoJson  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".geoJson"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"{\n" +
+"  \"type\": \"FeatureCollection\",\n" +
+"  \"propertyNames\": [\"time\", \"hours\", \"minutes\", \"seconds\", \"millis\", \"ints\", \"floats\", \"doubles\", \"Strings\"],\n" +
+"  \"propertyUnits\": [\"UTC\", \"UTC\", \"UTC\", \"UTC\", \"UTC\", null, null, null, null],\n" +
+"  \"features\": [\n" +
+"\n" +
+"{\"type\": \"Feature\",\n" +
+"  \"geometry\": {\n" +
+"    \"type\": \"Point\",\n" +
+"    \"coordinates\": [10000.0, 40.0] },\n" +
+"  \"properties\": {\n" +
+"    \"time\": \"1970-01-02T00:00:00Z\",\n" +
+"    \"hours\": \"1980-01-01T05:00:00Z\",\n" +
+"    \"minutes\": \"1990-01-01T00:09:00Z\",\n" +
+"    \"seconds\": \"2000-01-01T00:00:20Z\",\n" +
+"    \"millis\": \"2010-01-01T00:00:00.030Z\",\n" +
+"    \"ints\": 1000000,\n" +
+"    \"floats\": 0.0,\n" +
+"    \"doubles\": 1.0E12,\n" +
+"    \"Strings\": \"0\" }\n" +
+"},\n" +
+"{\"type\": \"Feature\",\n" +
+"  \"geometry\": {\n" +
+"    \"type\": \"Point\",\n" +
+"    \"coordinates\": [10001.0, 41.0] },\n" +
+"  \"properties\": {\n" +
+"    \"time\": \"1970-01-03T00:00:00Z\",\n" +
+"    \"hours\": \"1980-01-01T06:00:00Z\",\n" +
+"    \"minutes\": \"1990-01-01T00:10:00Z\",\n" +
+"    \"seconds\": \"2000-01-01T00:00:21Z\",\n" +
+"    \"millis\": \"2010-01-01T00:00:00.031Z\",\n" +
+"    \"ints\": 1000001,\n" +
+"    \"floats\": 1.1,\n" +
+"    \"doubles\": 1.0000000000001E12,\n" +
+"    \"Strings\": \"10\" }\n" +
+"},\n" +
+"{\"type\": \"Feature\",\n" +
+"  \"geometry\": {\n" +
+"    \"type\": \"Point\",\n" +
+"    \"coordinates\": [10002.0, 42.0] },\n" +
+"  \"properties\": {\n" +
+"    \"time\": \"1970-01-04T00:00:00Z\",\n" +
+"    \"hours\": \"1980-01-01T07:00:00Z\",\n" +
+"    \"minutes\": \"1990-01-01T00:11:00Z\",\n" +
+"    \"seconds\": \"2000-01-01T00:00:22Z\",\n" +
+"    \"millis\": \"2010-01-01T00:00:00.032Z\",\n" +
+"    \"ints\": 1000002,\n" +
+"    \"floats\": 2.2,\n" +
+"    \"doubles\": 1.0000000000002E12,\n" +
+"    \"Strings\": \"20\" }\n" +
+"}\n" +
+"\n" +
+"  ],\n" +
+"  \"bbox\": [10000.0, 40.0, 10002.0, 42.0]\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.htmlTable
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".htmlTable"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"<table class=\"erd commonBGColor\" cellspacing=\"0\">\n" +
+"<tr>\n" +
+"<th>time\n" +
+"<th>hours\n" +
+"<th>minutes\n" +
+"<th>seconds\n" +
+"<th>millis\n" +
+"<th>latitude\n" +
+"<th>longitude\n" +
+"<th>ints\n" +
+"<th>floats\n" +
+"<th>doubles\n" +
+"<th>Strings\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<th>UTC\n" +
+"<th>UTC\n" +
+"<th>UTC\n" +
+"<th>UTC\n" +
+"<th>UTC\n" +
+"<th>degrees_north\n" +
+"<th>degrees_east\n" +
+"<th>&nbsp;\n" +
+"<th>&nbsp;\n" +
+"<th>&nbsp;\n" +
+"<th>&nbsp;\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap>1970-01-02\n" +
+"<td nowrap>1980-01-01T05Z\n" +
+"<td nowrap>1990-01-01T00:09Z\n" +
+"<td nowrap>2000-01-01T00:00:20Z\n" +
+"<td nowrap>2010-01-01T00:00:00.030Z\n" +
+"<td align=\"right\">40\n" +
+"<td align=\"right\">10000\n" +
+"<td align=\"right\">1000000\n" +
+"<td align=\"right\">0.0\n" +
+"<td align=\"right\">1.0E12\n" +
+"<td nowrap>0\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap>1970-01-03\n" +
+"<td nowrap>1980-01-01T06Z\n" +
+"<td nowrap>1990-01-01T00:10Z\n" +
+"<td nowrap>2000-01-01T00:00:21Z\n" +
+"<td nowrap>2010-01-01T00:00:00.031Z\n" +
+"<td align=\"right\">41\n" +
+"<td align=\"right\">10001\n" +
+"<td align=\"right\">1000001\n" +
+"<td align=\"right\">1.1\n" +
+"<td align=\"right\">1.0000000000001E12\n" +
+"<td nowrap>10\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap>1970-01-04\n" +
+"<td nowrap>1980-01-01T07Z\n" +
+"<td nowrap>1990-01-01T00:11Z\n" +
+"<td nowrap>2000-01-01T00:00:22Z\n" +
+"<td nowrap>2010-01-01T00:00:00.032Z\n" +
+"<td align=\"right\">42\n" +
+"<td align=\"right\">10002\n" +
+"<td align=\"right\">1000002\n" +
+"<td align=\"right\">2.2\n" +
+"<td align=\"right\">1.0000000000002E12\n" +
+"<td nowrap>20\n" +
+"</tr>\n" +
+"</table>\n";
+        po = results.indexOf("<table class");
+        ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
+        Test.ensureEqual(ts, expected, "\nresults=\n" + results);
+
+        //.json  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".json"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"{\n" +
+"  \"table\": {\n" +
+"    \"columnNames\": [\"time\", \"hours\", \"minutes\", \"seconds\", \"millis\", \"latitude\", \"longitude\", \"ints\", \"floats\", \"doubles\", \"Strings\"],\n" +
+"    \"columnTypes\": [\"String\", \"String\", \"String\", \"String\", \"String\", \"byte\", \"short\", \"int\", \"float\", \"double\", \"String\"],\n" +
+"    \"columnUnits\": [\"UTC\", \"UTC\", \"UTC\", \"UTC\", \"UTC\", \"degrees_north\", \"degrees_east\", null, null, null, null],\n" +
+"    \"rows\": [\n" +
+"      [\"1970-01-02T00:00:00Z\", \"1980-01-01T05:00:00Z\", \"1990-01-01T00:09:00Z\", \"2000-01-01T00:00:20Z\", \"2010-01-01T00:00:00.030Z\", 40, 10000, 1000000, 0.0, 1.0E12, \"0\"],\n" +
+"      [\"1970-01-03T00:00:00Z\", \"1980-01-01T06:00:00Z\", \"1990-01-01T00:10:00Z\", \"2000-01-01T00:00:21Z\", \"2010-01-01T00:00:00.031Z\", 41, 10001, 1000001, 1.1, 1.0000000000001E12, \"10\"],\n" +
+"      [\"1970-01-04T00:00:00Z\", \"1980-01-01T07:00:00Z\", \"1990-01-01T00:11:00Z\", \"2000-01-01T00:00:22Z\", \"2010-01-01T00:00:00.032Z\", 42, 10002, 1000002, 2.2, 1.0000000000002E12, \"20\"]\n" +
+"    ]\n" +
+"  }\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.kml  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".kml"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
+"<Document>\n" +
+"  <name>My Title</name>\n" +
+"  <description><![CDATA[Data courtesy of NOAA NMFS SWFSC ERD\n" +
+"<br />My summary.\n" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"testSimpleTestNcTable&#x2e;html&#x3f;time&#x2c;hours&#x2c;minutes&#x2c;seconds&#x2c;millis&#x2c;latitude&#x2c;l" +
+"ongitude&#x2c;ints&#x2c;floats&#x2c;doubles&#x2c;Strings&#x26;time&#x3e;&#x3d;1970&#x2d;01&#x2d;02T00&#x3a;00&#" +
+"x3a;00Z&#x26;time&#x3c;1970&#x2d;01&#x2d;05T00&#x3a;00&#x3a;00Z\">View/download more data from this dataset.</a>\n" +
+"    ]]></description>\n" +
+"  <open>1</open>\n" +
+"  <Style id=\"BUOY ON\">\n" +
+"    <IconStyle>\n" +
+"      <color>ff0099ff</color>\n" +
+"      <scale>1.2000000000000002</scale>\n" +
+"      <Icon>\n" +
+"        <href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href>\n" +
+"      </Icon>\n" +
+"    </IconStyle>\n" +
+"  </Style>\n" +
+"  <Style id=\"BUOY OUT\">\n" +
+"    <IconStyle>\n" +
+"      <color>ff0099ff</color>\n" +
+"      <scale>0.8</scale>\n" +
+"      <Icon>\n" +
+"        <href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href>\n" +
+"      </Icon>\n" +
+"    </IconStyle>\n" +
+"    <LabelStyle><scale>0</scale></LabelStyle>\n" +
+"  </Style>\n" +
+"  <StyleMap id=\"BUOY\">\n" +
+"    <Pair><key>normal</key><styleUrl>#BUOY OUT</styleUrl></Pair>\n" +
+"    <Pair><key>highlight</key><styleUrl>#BUOY ON</styleUrl></Pair>\n" +
+"  </StyleMap>\n" +
+"  <Placemark>\n" +
+"    <name>Lat=40, Lon=-80</name>\n" +
+"    <description><![CDATA[My Title\n" +
+"<br />Data courtesy of NOAA NMFS SWFSC ERD\n" +
+"<br />time = 1970-01-02\n" +
+"<br />hours = 1980-01-01T05Z\n" +
+"<br />minutes = 1990-01-01T00:09Z\n" +
+"<br />seconds = 2000-01-01T00:00:20Z\n" +
+"<br />millis = 2010-01-01T00:00:00.030Z\n" +
+"<br />latitude = 40 degrees_north\n" +
+"<br />longitude = 10000 degrees_east\n" +
+"<br />ints = 1000000\n" +
+"<br />floats = 0.0\n" +
+"<br />doubles = 1.0E12\n" +
+"<br />Strings = 0\n" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"testSimpleTestNcTable&#x2e;htmlTable&#x3f;&#x26;time&#x25;3E&#x3d;1969&#x2d;12&#x2d;28&#x26;time&#x25;3C&#x3d;1" +
+"970&#x2d;01&#x2d;04&#x26;longitude&#x25;3E9999&#x2e;99&#x26;longitude&#x25;3C10000&#x2e;01&#x26;latitude&#x25;3" +
+"E39&#x2e;99&#x26;latitude&#x25;3C40&#x2e;01\">View tabular data for this location.</a>\n" +
+"\n" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"testSimpleTestNcTable&#x2e;html&#x3f;time&#x2c;hours&#x2c;minutes&#x2c;seconds&#x2c;millis&#x2c;latitude&#x2c;l" +
+"ongitude&#x2c;ints&#x2c;floats&#x2c;doubles&#x2c;Strings&#x26;time&#x3e;&#x3d;1970&#x2d;01&#x2d;02T00&#x3a;00&#" +
+"x3a;00Z&#x26;time&#x3c;1970&#x2d;01&#x2d;05T00&#x3a;00&#x3a;00Z\">View/download more data from this dataset.</a>\n" +
+"]]></description>\n" +
+"    <styleUrl>#BUOY</styleUrl>\n" +
+"    <Point>\n" +
+"      <coordinates>-79.99999999999972,40.0</coordinates>\n" +
+"    </Point>\n" +
+"  </Placemark>\n" +
+"  <Placemark>\n" +
+"    <name>Lat=41, Lon=-79</name>\n" +
+"    <description><![CDATA[My Title\n" +
+"<br />Data courtesy of NOAA NMFS SWFSC ERD\n" +
+"<br />time = 1970-01-03\n" +
+"<br />hours = 1980-01-01T06Z\n" +
+"<br />minutes = 1990-01-01T00:10Z\n" +
+"<br />seconds = 2000-01-01T00:00:21Z\n" +
+"<br />millis = 2010-01-01T00:00:00.031Z\n" +
+"<br />latitude = 41 degrees_north\n" +
+"<br />longitude = 10001 degrees_east\n" +
+"<br />ints = 1000001\n" +
+"<br />floats = 1.1\n" +
+"<br />doubles = 1.0000000000001E12\n" +
+"<br />Strings = 10\n" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"testSimpleTestNcTable&#x2e;htmlTable&#x3f;&#x26;time&#x25;3E&#x3d;1969&#x2d;12&#x2d;28&#x26;time&#x25;3C&#x3d;1" +
+"970&#x2d;01&#x2d;04&#x26;longitude&#x25;3E10000&#x2e;99&#x26;longitude&#x25;3C10001&#x2e;01&#x26;latitude&#x25;" +
+"3E40&#x2e;99&#x26;latitude&#x25;3C41&#x2e;01\">View tabular data for this location.</a>\n" +
+"\n" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"testSimpleTestNcTable&#x2e;html&#x3f;time&#x2c;hours&#x2c;minutes&#x2c;seconds&#x2c;millis&#x2c;latitude&#x2c;l" +
+"ongitude&#x2c;ints&#x2c;floats&#x2c;doubles&#x2c;Strings&#x26;time&#x3e;&#x3d;1970&#x2d;01&#x2d;02T00&#x3a;00&#" +
+"x3a;00Z&#x26;time&#x3c;1970&#x2d;01&#x2d;05T00&#x3a;00&#x3a;00Z\">View/download more data from this dataset.</a>\n" +
+"]]></description>\n" +
+"    <styleUrl>#BUOY</styleUrl>\n" +
+"    <Point>\n" +
+"      <coordinates>-79.00000000000023,41.0</coordinates>\n" +
+"    </Point>\n" +
+"  </Placemark>\n" +
+"  <Placemark>\n" +
+"    <name>Lat=42, Lon=-78</name>\n" +
+"    <description><![CDATA[My Title\n" +
+"<br />Data courtesy of NOAA NMFS SWFSC ERD\n" +
+"<br />time = 1970-01-04\n" +
+"<br />hours = 1980-01-01T07Z\n" +
+"<br />minutes = 1990-01-01T00:11Z\n" +
+"<br />seconds = 2000-01-01T00:00:22Z\n" +
+"<br />millis = 2010-01-01T00:00:00.032Z\n" +
+"<br />latitude = 42 degrees_north\n" +
+"<br />longitude = 10002 degrees_east\n" +
+"<br />ints = 1000002\n" +
+"<br />floats = 2.2\n" +
+"<br />doubles = 1.0000000000002E12\n" +
+"<br />Strings = 20\n" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"testSimpleTestNcTable&#x2e;htmlTable&#x3f;&#x26;time&#x25;3E&#x3d;1969&#x2d;12&#x2d;28&#x26;time&#x25;3C&#x3d;1" +
+"970&#x2d;01&#x2d;04&#x26;longitude&#x25;3E10001&#x2e;99&#x26;longitude&#x25;3C10002&#x2e;01&#x26;latitude&#x25;" +
+"3E41&#x2e;99&#x26;latitude&#x25;3C42&#x2e;01\">View tabular data for this location.</a>\n" +
+"\n" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"testSimpleTestNcTable&#x2e;html&#x3f;time&#x2c;hours&#x2c;minutes&#x2c;seconds&#x2c;millis&#x2c;latitude&#x2c;l" +
+"ongitude&#x2c;ints&#x2c;floats&#x2c;doubles&#x2c;Strings&#x26;time&#x3e;&#x3d;1970&#x2d;01&#x2d;02T00&#x3a;00&#" +
+"x3a;00Z&#x26;time&#x3c;1970&#x2d;01&#x2d;05T00&#x3a;00&#x3a;00Z\">View/download more data from this dataset.</a>\n" +
+"]]></description>\n" +
+"    <styleUrl>#BUOY</styleUrl>\n" +
+"    <Point>\n" +
+"      <coordinates>-77.99999999999943,42.0</coordinates>\n" +
+"    </Point>\n" +
+"  </Placemark>\n" +
+"  <LookAt>\n" +
+"    <longitude>-79.00000000000023</longitude>\n" +
+"    <latitude>41.0</latitude>\n" +
+"    <range>466666.6666666667</range>\n" +
+"  </LookAt>\n" +
+"  <ScreenOverlay id=\"Logo\">\n" +
+"    <description>http://127.0.0.1:8080/cwexperimental</description>\n" +
+"    <name>Logo</name>\n" +
+"    <Icon><href>http://127.0.0.1:8080/cwexperimental/images/nlogo.gif</href></Icon>\n" +
+"    <overlayXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" +
+"    <screenXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" +
+"    <size x=\"0\" y=\"0\" xunits=\"pixels\" yunits=\"pixels\"/>\n" +
+"  </ScreenOverlay>\n" +
+"  </Document>\n" +
+"</kml>\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.mat  is hard to test
+//!!! but need to test to ensure not rounding to the nearest second
+
+        //.nc  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".nc"); 
+        results = NcHelper.dumpString(tDir + tName, true);
+        expected = 
+"netcdf testSimpleTestNcTable.nc {\n" +
+"  dimensions:\n" +
+"    row = 3;\n" +
+"    Strings_strlen = 2;\n" +
+"  variables:\n" +
+"    double time(row=3);\n" +
+"      :_CoordinateAxisType = \"Time\";\n" +
+"      :actual_range = 86400.0, 259200.0; // double\n" +
+"      :axis = \"T\";\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Time\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :time_precision = \"1970-01-01\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"\n" +
+"    double hours(row=3);\n" +
+"      :actual_range = 3.155508E8, 3.15558E8; // double\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Hours\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :time_precision = \"1970-01-01T00Z\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"\n" +
+"    double minutes(row=3);\n" +
+"      :actual_range = 6.3115254E8, 6.3115266E8; // double\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Minutes\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :time_precision = \"1970-01-01T00:00Z\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"\n" +
+"    double seconds(row=3);\n" +
+"      :actual_range = 9.4668482E8, 9.46684822E8; // double\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Seconds\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :time_precision = \"not valid\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"\n" +
+"    double millis(row=3);\n" +
+"      :actual_range = 1.26230400003E9, 1.262304000032E9; // double\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Millis\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :time_precision = \"1970-01-01T00:00:00.000Z\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"\n" +
+"    byte latitude(row=3);\n" +
+"      :_CoordinateAxisType = \"Lat\";\n" +
+"      :actual_range = 40B, 42B; // byte\n" +
+"      :axis = \"Y\";\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Latitude\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
+"\n" +
+"    short longitude(row=3);\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"      :actual_range = 10000S, 10002S; // short\n" +
+"      :axis = \"X\";\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"\n" +
+"    int ints(row=3);\n" +
+"      :actual_range = 1000000, 1000002; // int\n" +
+"      :ioos_category = \"Unknown\";\n" +
+"\n" +
+"    float floats(row=3);\n" +
+"      :actual_range = 0.0f, 2.2f; // float\n" +
+"      :ioos_category = \"Unknown\";\n" +
+"\n" +
+"    double doubles(row=3);\n" +
+"      :actual_range = 1.0E12, 1.0000000000002E12; // double\n" +
+"      :ioos_category = \"Unknown\";\n" +
+"\n" +
+"    char Strings(row=3, Strings_strlen=2);\n" +
+"      :ioos_category = \"Unknown\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :cdm_data_type = \"Point\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Easternmost_Easting = 10002.0; // double\n" +
+"  :featureType = \"Point\";\n" +
+"  :geospatial_lat_max = 42.0; // double\n" +
+"  :geospatial_lat_min = 40.0; // double\n" +
+"  :geospatial_lat_units = \"degrees_north\";\n" +
+"  :geospatial_lon_max = 10002.0; // double\n" +
+"  :geospatial_lon_min = 10000.0; // double\n" +
+"  :geospatial_lon_units = \"degrees_east\";\n" +
+"  :history = \"";  //2014-10-22T16:16:21Z (local files)\n";
+        ts = results.substring(0, expected.length()); 
+        Test.ensureEqual(ts, expected, "\nresults=\n" + results);
+
+expected = 
+//"2014-10-22T16:16:21Z http://127.0.0.1:8080/cwexperimental
+"/tabledap/testSimpleTestNcTable.nc?time,hours,minutes,seconds,millis,latitude,longitude,ints,floats,doubles,Strings&time>=1970-01-02T00:00:00Z&time<1970-01-05T00:00:00Z\";\n" +
+"  :id = \"simpleTest\";\n" +
+"  :infoUrl = \"???\";\n" +
+"  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :keywords = \"data, local, longs, source, strings\";\n" +
+"  :license = \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Northernmost_Northing = 42.0; // double\n" +
+"  :sourceUrl = \"(local files)\";\n" +
+"  :Southernmost_Northing = 40.0; // double\n" +
+"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :summary = \"My summary.\";\n" +
+"  :time_coverage_end = \"1970-01-04\";\n" +
+"  :time_coverage_start = \"1970-01-02\";\n" +
+"  :title = \"My Title\";\n" +
+"  :Westernmost_Easting = 10000.0; // double\n" +
+" data:\n" +
+"time =\n" +
+"  {86400.0, 172800.0, 259200.0}\n" +
+"hours =\n" +
+"  {3.155508E8, 3.155544E8, 3.15558E8}\n" +
+"minutes =\n" +
+"  {6.3115254E8, 6.311526E8, 6.3115266E8}\n" +
+"seconds =\n" +
+"  {9.4668482E8, 9.46684821E8, 9.46684822E8}\n" +
+"millis =\n" +
+"  {1.26230400003E9, 1.262304000031E9, 1.262304000032E9}\n" +
+"latitude =\n" +
+"  {40, 41, 42}\n" +
+"longitude =\n" +
+"  {10000, 10001, 10002}\n" +
+"ints =\n" +
+"  {1000000, 1000001, 1000002}\n" +
+"floats =\n" +
+"  {0.0, 1.1, 2.2}\n" +
+"doubles =\n" +
+"  {1.0E12, 1.0000000000001E12, 1.0000000000002E12}\n" +
+"Strings =\"0\", \"10\", \"20\"\n" +
+"}\n";
+        po = results.indexOf("/tabledap/testSimpleTestNcTable.nc?");
+        ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
+        Test.ensureEqual(ts, expected, "\nresults=\n" + results);
+
+        //.odvTxt
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".odvTxt"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+////<Creator>???</Creator>
+////<CreateTime>2014-10-22T21:33:31</CreateTime>
+////<Software>ERDDAP - Version 1.53</Software>
+////<Source>http://127.0.0.1:8080/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>
+"//<Version>ODV Spreadsheet V4.0</Version>\n" +
+"//<DataField>GeneralField</DataField>\n" +
+"//<DataType>GeneralType</DataType>\n" +
+"Type:METAVAR:TEXT:2\tCruise:METAVAR:TEXT:2\tStation:METAVAR:TEXT:2\tyyyy-mm-ddThh:mm:ss.sss\ttime_ISO8601\ttime_ISO8601\ttime_ISO8601\ttime_ISO8601\tLatitude [degrees_north]:METAVAR:BYTE\tLongitude [degrees_east]:METAVAR:SHORT\tints:PRIMARYVAR:INTEGER\tfloats:FLOAT\tdoubles:DOUBLE\tStrings:METAVAR:TEXT:3\n" +
+"*\t\t\t1970-01-02T00:00:00Z\t1980-01-01T05:00:00Z\t1990-01-01T00:09:00Z\t2000-01-01T00:00:20Z\t2010-01-01T00:00:00.030Z\t40\t10000\t1000000\t0.0\t1.0E12\t0\n" +
+"*\t\t\t1970-01-03T00:00:00Z\t1980-01-01T06:00:00Z\t1990-01-01T00:10:00Z\t2000-01-01T00:00:21Z\t2010-01-01T00:00:00.031Z\t41\t10001\t1000001\t1.1\t1.0000000000001E12\t10\n" +
+"*\t\t\t1970-01-04T00:00:00Z\t1980-01-01T07:00:00Z\t1990-01-01T00:11:00Z\t2000-01-01T00:00:22Z\t2010-01-01T00:00:00.032Z\t42\t10002\t1000002\t2.2\t1.0000000000002E12\t20\n";
+        po = results.indexOf("//<Version>");
+        ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
+        Test.ensureEqual(ts, expected, "\nresults=\n" + results);
+
+        //.xhtml  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".xhtml"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n" +
+"  \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
+"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
+"<head>\n" +
+"  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n" +
+"  <title>testSimpleTestNcTable</title>\n" +
+"</head>\n" +
+"<body style=\"color:black; background:white; font-family:Arial,Helvetica,sans-serif; font-size:85%; line-height:130%;\">\n" +
+"\n" +
+"&nbsp;\n" +
+"<table border=\"1\" cellpadding=\"2\" cellspacing=\"0\">\n" +
+"<tr>\n" +
+"<th>time</th>\n" +
+"<th>hours</th>\n" +
+"<th>minutes</th>\n" +
+"<th>seconds</th>\n" +
+"<th>millis</th>\n" +
+"<th>latitude</th>\n" +
+"<th>longitude</th>\n" +
+"<th>ints</th>\n" +
+"<th>floats</th>\n" +
+"<th>doubles</th>\n" +
+"<th>Strings</th>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<th>UTC</th>\n" +
+"<th>UTC</th>\n" +
+"<th>UTC</th>\n" +
+"<th>UTC</th>\n" +
+"<th>UTC</th>\n" +
+"<th>degrees_north</th>\n" +
+"<th>degrees_east</th>\n" +
+"<th></th>\n" +
+"<th></th>\n" +
+"<th></th>\n" +
+"<th></th>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap=\"nowrap\">1970-01-02T00:00:00Z</td>\n" +
+"<td nowrap=\"nowrap\">1980-01-01T05:00:00Z</td>\n" +
+"<td nowrap=\"nowrap\">1990-01-01T00:09:00Z</td>\n" +
+"<td nowrap=\"nowrap\">2000-01-01T00:00:20Z</td>\n" +
+"<td nowrap=\"nowrap\">2010-01-01T00:00:00.030Z</td>\n" +
+"<td align=\"right\">40</td>\n" +
+"<td align=\"right\">10000</td>\n" +
+"<td align=\"right\">1000000</td>\n" +
+"<td align=\"right\">0.0</td>\n" +
+"<td align=\"right\">1.0E12</td>\n" +
+"<td nowrap=\"nowrap\">0</td>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap=\"nowrap\">1970-01-03T00:00:00Z</td>\n" +
+"<td nowrap=\"nowrap\">1980-01-01T06:00:00Z</td>\n" +
+"<td nowrap=\"nowrap\">1990-01-01T00:10:00Z</td>\n" +
+"<td nowrap=\"nowrap\">2000-01-01T00:00:21Z</td>\n" +
+"<td nowrap=\"nowrap\">2010-01-01T00:00:00.031Z</td>\n" +
+"<td align=\"right\">41</td>\n" +
+"<td align=\"right\">10001</td>\n" +
+"<td align=\"right\">1000001</td>\n" +
+"<td align=\"right\">1.1</td>\n" +
+"<td align=\"right\">1.0000000000001E12</td>\n" +
+"<td nowrap=\"nowrap\">10</td>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap=\"nowrap\">1970-01-04T00:00:00Z</td>\n" +
+"<td nowrap=\"nowrap\">1980-01-01T07:00:00Z</td>\n" +
+"<td nowrap=\"nowrap\">1990-01-01T00:11:00Z</td>\n" +
+"<td nowrap=\"nowrap\">2000-01-01T00:00:22Z</td>\n" +
+"<td nowrap=\"nowrap\">2010-01-01T00:00:00.032Z</td>\n" +
+"<td align=\"right\">42</td>\n" +
+"<td align=\"right\">10002</td>\n" +
+"<td align=\"right\">1000002</td>\n" +
+"<td align=\"right\">2.2</td>\n" +
+"<td align=\"right\">1.0000000000002E12</td>\n" +
+"<td nowrap=\"nowrap\">20</td>\n" +
+"</tr>\n" +
+"</table>\n" +
+"</body>\n" +
+"</html>\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+    }
+
+    /**
+     * This tests timestamps and other things.
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testSimpleTestNc2Table() throws Throwable {
+        String2.log("\n****************** EDDTableFromNcFiles.testSimpleTestNc2Table() *****************\n");
+        EDDTable eddTable = (EDDTable)oneFromDatasetXml("testSimpleTestNcTable"); 
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String userDapQuery = "time,millis,latitude,longitude,doubles,Strings" +
+            "&millis>2010-01-01T00:00:00.030Z" + //should reject .030 and accept 0.031 
+            "&millis<=2010-01-01T00:00:00.032Z"; //should accept 0.032, but reject 0.033
+        String fName = "testSimpleTestNc2Table";
+        String tName, results, ts, expected;
+        int po;
+
+        String2.log(NcHelper.dumpString("/erddapTest/simpleTest.nc", true));
+
+        //.asc  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".asc"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"Dataset {\n" +
+"  Sequence {\n" +
+"    Float64 time;\n" +
+"    Float64 millis;\n" +
+"    Byte latitude;\n" +
+"    Int16 longitude;\n" +
+"    Float64 doubles;\n" +
+"    String Strings;\n" +
+"  } s;\n" +
+"} s;\n" +
+"---------------------------------------------\n" +
+"s.time, s.millis, s.latitude, s.longitude, s.doubles, s.Strings\n" +
+"172800.0, 1.262304000031E9, 41, 10001, 1.0000000000001E12, \"10\"\n" +
+"259200.0, 1.262304000032E9, 42, 10002, 1.0000000000002E12, \"20\"\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.csv  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"time,millis,latitude,longitude,doubles,Strings\n" +
+"UTC,UTC,degrees_north,degrees_east,,\n" +
+"1970-01-03T00:00:00Z,2010-01-01T00:00:00.031Z,41,10001,1.0000000000001E12,10\n" +
+"1970-01-04T00:00:00Z,2010-01-01T00:00:00.032Z,42,10002,1.0000000000002E12,20\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.dods  hard to test
+
+        //.geoJson  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".geoJson"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"{\n" +
+"  \"type\": \"FeatureCollection\",\n" +
+"  \"propertyNames\": [\"time\", \"millis\", \"doubles\", \"Strings\"],\n" +
+"  \"propertyUnits\": [\"UTC\", \"UTC\", null, null],\n" +
+"  \"features\": [\n" +
+"\n" +
+"{\"type\": \"Feature\",\n" +
+"  \"geometry\": {\n" +
+"    \"type\": \"Point\",\n" +
+"    \"coordinates\": [10001.0, 41.0] },\n" +
+"  \"properties\": {\n" +
+"    \"time\": \"1970-01-03T00:00:00Z\",\n" +
+"    \"millis\": \"2010-01-01T00:00:00.031Z\",\n" +
+"    \"doubles\": 1.0000000000001E12,\n" +
+"    \"Strings\": \"10\" }\n" +
+"},\n" +
+"{\"type\": \"Feature\",\n" +
+"  \"geometry\": {\n" +
+"    \"type\": \"Point\",\n" +
+"    \"coordinates\": [10002.0, 42.0] },\n" +
+"  \"properties\": {\n" +
+"    \"time\": \"1970-01-04T00:00:00Z\",\n" +
+"    \"millis\": \"2010-01-01T00:00:00.032Z\",\n" +
+"    \"doubles\": 1.0000000000002E12,\n" +
+"    \"Strings\": \"20\" }\n" +
+"}\n" +
+"\n" +
+"  ],\n" +
+"  \"bbox\": [10001.0, 41.0, 10002.0, 42.0]\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.htmlTable
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".htmlTable"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"<table class=\"erd commonBGColor\" cellspacing=\"0\">\n" +
+"<tr>\n" +
+"<th>time\n" +
+"<th>millis\n" +
+"<th>latitude\n" +
+"<th>longitude\n" +
+"<th>doubles\n" +
+"<th>Strings\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<th>UTC\n" +
+"<th>UTC\n" +
+"<th>degrees_north\n" +
+"<th>degrees_east\n" +
+"<th>&nbsp;\n" +
+"<th>&nbsp;\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap>1970-01-03\n" +
+"<td nowrap>2010-01-01T00:00:00.031Z\n" +
+"<td align=\"right\">41\n" +
+"<td align=\"right\">10001\n" +
+"<td align=\"right\">1.0000000000001E12\n" +
+"<td nowrap>10\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap>1970-01-04\n" +
+"<td nowrap>2010-01-01T00:00:00.032Z\n" +
+"<td align=\"right\">42\n" +
+"<td align=\"right\">10002\n" +
+"<td align=\"right\">1.0000000000002E12\n" +
+"<td nowrap>20\n" +
+"</tr>\n" +
+"</table>\n";
+        po = results.indexOf("<table class");
+        ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
+        Test.ensureEqual(ts, expected, "\nresults=\n" + results);
+
+        //.json  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".json"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"{\n" +
+"  \"table\": {\n" +
+"    \"columnNames\": [\"time\", \"millis\", \"latitude\", \"longitude\", \"doubles\", \"Strings\"],\n" +
+"    \"columnTypes\": [\"String\", \"String\", \"byte\", \"short\", \"double\", \"String\"],\n" +
+"    \"columnUnits\": [\"UTC\", \"UTC\", \"degrees_north\", \"degrees_east\", null, null],\n" +
+"    \"rows\": [\n" +
+"      [\"1970-01-03T00:00:00Z\", \"2010-01-01T00:00:00.031Z\", 41, 10001, 1.0000000000001E12, \"10\"],\n" +
+"      [\"1970-01-04T00:00:00Z\", \"2010-01-01T00:00:00.032Z\", 42, 10002, 1.0000000000002E12, \"20\"]\n" +
+"    ]\n" +
+"  }\n" +
+"}\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.kml  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".kml"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
+"<Document>\n" +
+"  <name>My Title</name>\n" +
+"  <description><![CDATA[Data courtesy of NOAA NMFS SWFSC ERD\n" +
+"<br />My summary.\n" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"testSimpleTestNcTable&#x2e;html&#x3f;time&#x2c;millis&#x2c;latitude&#x2c;longitude&#x2c;doubles&#x2c;Strings&#x" +
+"26;millis&#x3e;2010&#x2d;01&#x2d;01T00&#x3a;00&#x3a;00&#x2e;030Z&#x26;millis&#x3c;&#x3d;2010&#x2d;01&#x2d;01T00" +
+"&#x3a;00&#x3a;00&#x2e;032Z\">View/download more data from this dataset.</a>\n" +
+"    ]]></description>\n" +
+"  <open>1</open>\n" +
+"  <Style id=\"BUOY ON\">\n" +
+"    <IconStyle>\n" +
+"      <color>ff0099ff</color>\n" +
+"      <scale>1.2000000000000002</scale>\n" +
+"      <Icon>\n" +
+"        <href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href>\n" +
+"      </Icon>\n" +
+"    </IconStyle>\n" +
+"  </Style>\n" +
+"  <Style id=\"BUOY OUT\">\n" +
+"    <IconStyle>\n" +
+"      <color>ff0099ff</color>\n" +
+"      <scale>0.8</scale>\n" +
+"      <Icon>\n" +
+"        <href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href>\n" +
+"      </Icon>\n" +
+"    </IconStyle>\n" +
+"    <LabelStyle><scale>0</scale></LabelStyle>\n" +
+"  </Style>\n" +
+"  <StyleMap id=\"BUOY\">\n" +
+"    <Pair><key>normal</key><styleUrl>#BUOY OUT</styleUrl></Pair>\n" +
+"    <Pair><key>highlight</key><styleUrl>#BUOY ON</styleUrl></Pair>\n" +
+"  </StyleMap>\n" +
+"  <Placemark>\n" +
+"    <name>Lat=41, Lon=-79</name>\n" +
+"    <description><![CDATA[My Title\n" +
+"<br />Data courtesy of NOAA NMFS SWFSC ERD\n" +
+"<br />time = 1970-01-03\n" +
+"<br />millis = 2010-01-01T00:00:00.031Z\n" +
+"<br />latitude = 41 degrees_north\n" +
+"<br />longitude = 10001 degrees_east\n" +
+"<br />doubles = 1.0000000000001E12\n" +
+"<br />Strings = 10\n" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"testSimpleTestNcTable&#x2e;htmlTable&#x3f;&#x26;time&#x25;3E&#x3d;1969&#x2d;12&#x2d;28&#x26;time&#x25;3C&#x3d;1" +
+"970&#x2d;01&#x2d;04&#x26;longitude&#x25;3E10000&#x2e;99&#x26;longitude&#x25;3C10001&#x2e;01&#x26;latitude&#x25;" +
+"3E40&#x2e;99&#x26;latitude&#x25;3C41&#x2e;01\">View tabular data for this location.</a>\n" +
+"\n" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"testSimpleTestNcTable&#x2e;html&#x3f;time&#x2c;millis&#x2c;latitude&#x2c;longitude&#x2c;doubles&#x2c;Strings&#x" +
+"26;millis&#x3e;2010&#x2d;01&#x2d;01T00&#x3a;00&#x3a;00&#x2e;030Z&#x26;millis&#x3c;&#x3d;2010&#x2d;01&#x2d;01T00" +
+"&#x3a;00&#x3a;00&#x2e;032Z\">View/download more data from this dataset.</a>\n" +
+"]]></description>\n" +
+"    <styleUrl>#BUOY</styleUrl>\n" +
+"    <Point>\n" +
+"      <coordinates>-79.00000000000023,41.0</coordinates>\n" +
+"    </Point>\n" +
+"  </Placemark>\n" +
+"  <Placemark>\n" +
+"    <name>Lat=42, Lon=-78</name>\n" +
+"    <description><![CDATA[My Title\n" +
+"<br />Data courtesy of NOAA NMFS SWFSC ERD\n" +
+"<br />time = 1970-01-04\n" +
+"<br />millis = 2010-01-01T00:00:00.032Z\n" +
+"<br />latitude = 42 degrees_north\n" +
+"<br />longitude = 10002 degrees_east\n" +
+"<br />doubles = 1.0000000000002E12\n" +
+"<br />Strings = 20\n" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"testSimpleTestNcTable&#x2e;htmlTable&#x3f;&#x26;time&#x25;3E&#x3d;1969&#x2d;12&#x2d;28&#x26;time&#x25;3C&#x3d;1" +
+"970&#x2d;01&#x2d;04&#x26;longitude&#x25;3E10001&#x2e;99&#x26;longitude&#x25;3C10002&#x2e;01&#x26;latitude&#x25;" +
+"3E41&#x2e;99&#x26;latitude&#x25;3C42&#x2e;01\">View tabular data for this location.</a>\n" +
+"\n" +
+"<br /><a href=\"http&#x3a;&#x2f;&#x2f;127&#x2e;0&#x2e;0&#x2e;1&#x3a;8080&#x2f;cwexperimental&#x2f;tabledap&#x2f;" +
+"testSimpleTestNcTable&#x2e;html&#x3f;time&#x2c;millis&#x2c;latitude&#x2c;longitude&#x2c;doubles&#x2c;Strings&#x" +
+"26;millis&#x3e;2010&#x2d;01&#x2d;01T00&#x3a;00&#x3a;00&#x2e;030Z&#x26;millis&#x3c;&#x3d;2010&#x2d;01&#x2d;01T00" +
+"&#x3a;00&#x3a;00&#x2e;032Z\">View/download more data from this dataset.</a>\n" +
+"]]></description>\n" +
+"    <styleUrl>#BUOY</styleUrl>\n" +
+"    <Point>\n" +
+"      <coordinates>-77.99999999999943,42.0</coordinates>\n" +
+"    </Point>\n" +
+"  </Placemark>\n" +
+"  <LookAt>\n" +
+"    <longitude>-78.49999999999977</longitude>\n" +
+"    <latitude>41.5</latitude>\n" +
+"    <range>466666.6666666667</range>\n" +
+"  </LookAt>\n" +
+"  <ScreenOverlay id=\"Logo\">\n" +
+"    <description>http://127.0.0.1:8080/cwexperimental</description>\n" +
+"    <name>Logo</name>\n" +
+"    <Icon><href>http://127.0.0.1:8080/cwexperimental/images/nlogo.gif</href></Icon>\n" +
+"    <overlayXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" +
+"    <screenXY x=\"0.005\" y=\".04\" xunits=\"fraction\" yunits=\"fraction\"/>\n" +
+"    <size x=\"0\" y=\"0\" xunits=\"pixels\" yunits=\"pixels\"/>\n" +
+"  </ScreenOverlay>\n" +
+"  </Document>\n" +
+"</kml>\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //.mat  hard to test
+//!!! but need to test to ensure not rounding to the nearest second
+
+        //.nc  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".nc"); 
+        results = NcHelper.dumpString(tDir + tName, true);
+        expected = 
+"netcdf testSimpleTestNc2Table.nc {\n" +
+"  dimensions:\n" +
+"    row = 2;\n" +
+"    Strings_strlen = 2;\n" +
+"  variables:\n" +
+"    double time(row=2);\n" +
+"      :_CoordinateAxisType = \"Time\";\n" +
+"      :actual_range = 172800.0, 259200.0; // double\n" +
+"      :axis = \"T\";\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Time\";\n" +
+"      :standard_name = \"time\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :time_precision = \"1970-01-01\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"\n" +
+"    double millis(row=2);\n" +
+"      :actual_range = 1.262304000031E9, 1.262304000032E9; // double\n" +
+"      :ioos_category = \"Time\";\n" +
+"      :long_name = \"Millis\";\n" +
+"      :time_origin = \"01-JAN-1970 00:00:00\";\n" +
+"      :time_precision = \"1970-01-01T00:00:00.000Z\";\n" +
+"      :units = \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"\n" +
+"    byte latitude(row=2);\n" +
+"      :_CoordinateAxisType = \"Lat\";\n" +
+"      :actual_range = 41B, 42B; // byte\n" +
+"      :axis = \"Y\";\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Latitude\";\n" +
+"      :standard_name = \"latitude\";\n" +
+"      :units = \"degrees_north\";\n" +
+"\n" +
+"    short longitude(row=2);\n" +
+"      :_CoordinateAxisType = \"Lon\";\n" +
+"      :actual_range = 10001S, 10002S; // short\n" +
+"      :axis = \"X\";\n" +
+"      :ioos_category = \"Location\";\n" +
+"      :long_name = \"Longitude\";\n" +
+"      :standard_name = \"longitude\";\n" +
+"      :units = \"degrees_east\";\n" +
+"\n" +
+"    double doubles(row=2);\n" +
+"      :actual_range = 1.0000000000001E12, 1.0000000000002E12; // double\n" +
+"      :ioos_category = \"Unknown\";\n" +
+"\n" +
+"    char Strings(row=2, Strings_strlen=2);\n" +
+"      :ioos_category = \"Unknown\";\n" +
+"\n" +
+"  // global attributes:\n" +
+"  :cdm_data_type = \"Point\";\n" +
+"  :Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Easternmost_Easting = 10002.0; // double\n" +
+"  :featureType = \"Point\";\n" +
+"  :geospatial_lat_max = 42.0; // double\n" +
+"  :geospatial_lat_min = 41.0; // double\n" +
+"  :geospatial_lat_units = \"degrees_north\";\n" +
+"  :geospatial_lon_max = 10002.0; // double\n" +
+"  :geospatial_lon_min = 10001.0; // double\n" +
+"  :geospatial_lon_units = \"degrees_east\";\n" +
+"  :history = \""; //2014-10-22T16:16:21Z (local files)\n";
+        ts = results.substring(0, expected.length()); 
+        Test.ensureEqual(ts, expected, "\nresults=\n" + results);
+
+expected = 
+//"2014-10-22T16:16:21Z http://127.0.0.1:8080/cwexperimental
+"/tabledap/testSimpleTestNcTable.nc?time,millis,latitude,longitude,doubles,Strings&millis>2010-01-01T00:00:00.030Z&millis<=2010-01-01T00:00:00.032Z\";\n" +
+"  :id = \"simpleTest\";\n" +
+"  :infoUrl = \"???\";\n" +
+"  :institution = \"NOAA NMFS SWFSC ERD\";\n" +
+"  :keywords = \"data, local, longs, source, strings\";\n" +
+"  :license = \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"  :Metadata_Conventions = \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"  :Northernmost_Northing = 42.0; // double\n" +
+"  :sourceUrl = \"(local files)\";\n" +
+"  :Southernmost_Northing = 41.0; // double\n" +
+"  :standard_name_vocabulary = \"CF-12\";\n" +
+"  :summary = \"My summary.\";\n" +
+"  :time_coverage_end = \"1970-01-04\";\n" +
+"  :time_coverage_start = \"1970-01-03\";\n" +
+"  :title = \"My Title\";\n" +
+"  :Westernmost_Easting = 10001.0; // double\n" +
+" data:\n" +
+"time =\n" +
+"  {172800.0, 259200.0}\n" +
+"millis =\n" +
+"  {1.262304000031E9, 1.262304000032E9}\n" +
+"latitude =\n" +
+"  {41, 42}\n" +
+"longitude =\n" +
+"  {10001, 10002}\n" +
+"doubles =\n" +
+"  {1.0000000000001E12, 1.0000000000002E12}\n" +
+"Strings =\"10\", \"20\"\n" +
+"}\n";
+        po = results.indexOf("/tabledap/testSimpleTestNcTable.nc?");
+        ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
+        Test.ensureEqual(ts, expected, "\nresults=\n" + results);
+
+        //.odvTxt
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".odvTxt"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+//<Creator>???</Creator>
+//<CreateTime>2014-10-22T22:43:55</CreateTime>
+//<Software>ERDDAP - Version 1.53</Software>
+//<Source>http://127.0.0.1:8080/cwexperimental/tabledap/testSimpleTestNcTable.html</Source>
+"//<Version>ODV Spreadsheet V4.0</Version>\n" +
+"//<DataField>GeneralField</DataField>\n" +
+"//<DataType>GeneralType</DataType>\n" +
+"Type:METAVAR:TEXT:2\tCruise:METAVAR:TEXT:2\tStation:METAVAR:TEXT:2\tyyyy-mm-ddThh:mm:ss.sss\ttime_ISO8601\tLatitude [degrees_north]:METAVAR:BYTE\tLongitude [degrees_east]:METAVAR:SHORT\tdoubles:PRIMARYVAR:DOUBLE\tStrings:METAVAR:TEXT:3\n" +
+"*\t\t\t1970-01-03T00:00:00Z\t2010-01-01T00:00:00.031Z\t41\t10001\t1.0000000000001E12\t10\n" +
+"*\t\t\t1970-01-04T00:00:00Z\t2010-01-01T00:00:00.032Z\t42\t10002\t1.0000000000002E12\t20\n";
+        po = results.indexOf("//<Version>");
+        ts = results.substring(Math.max(0, po), Math.min(results.length(), po + expected.length())); 
+        Test.ensureEqual(ts, expected, "\nresults=\n" + results);
+
+        //.xhtml  
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
+            fName, ".xhtml"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        expected = 
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+"<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"\n" +
+"  \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
+"<html xmlns=\"http://www.w3.org/1999/xhtml\">\n" +
+"<head>\n" +
+"  <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\" />\n" +
+"  <title>testSimpleTestNc2Table</title>\n" +
+"</head>\n" +
+"<body style=\"color:black; background:white; font-family:Arial,Helvetica,sans-serif; font-size:85%; line-height:130%;\">\n" +
+"\n" +
+"&nbsp;\n" +
+"<table border=\"1\" cellpadding=\"2\" cellspacing=\"0\">\n" +
+"<tr>\n" +
+"<th>time</th>\n" +
+"<th>millis</th>\n" +
+"<th>latitude</th>\n" +
+"<th>longitude</th>\n" +
+"<th>doubles</th>\n" +
+"<th>Strings</th>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<th>UTC</th>\n" +
+"<th>UTC</th>\n" +
+"<th>degrees_north</th>\n" +
+"<th>degrees_east</th>\n" +
+"<th></th>\n" +
+"<th></th>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap=\"nowrap\">1970-01-03T00:00:00Z</td>\n" +
+"<td nowrap=\"nowrap\">2010-01-01T00:00:00.031Z</td>\n" +
+"<td align=\"right\">41</td>\n" +
+"<td align=\"right\">10001</td>\n" +
+"<td align=\"right\">1.0000000000001E12</td>\n" +
+"<td nowrap=\"nowrap\">10</td>\n" +
+"</tr>\n" +
+"<tr>\n" +
+"<td nowrap=\"nowrap\">1970-01-04T00:00:00Z</td>\n" +
+"<td nowrap=\"nowrap\">2010-01-01T00:00:00.032Z</td>\n" +
+"<td align=\"right\">42</td>\n" +
+"<td align=\"right\">10002</td>\n" +
+"<td align=\"right\">1.0000000000002E12</td>\n" +
+"<td nowrap=\"nowrap\">20</td>\n" +
+"</tr>\n" +
+"</table>\n" +
+"</body>\n" +
+"</html>\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+    }
 
     /**
      * This tests the methods in this class.
@@ -11598,6 +12910,9 @@ So the changes seem good. */
         testBigRequest();
         testPmelTaoAirt();
         testNow();
+        testTimePrecisionMillis();
+        testSimpleTestNcTable();
+        testSimpleTestNc2Table();
         /* */
 
         //not usually run

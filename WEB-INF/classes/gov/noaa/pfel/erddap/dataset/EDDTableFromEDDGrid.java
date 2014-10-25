@@ -321,7 +321,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
             if (conOp.equals(PrimitiveArray.REGEX_OP)) {
                 //FUTURE: this could be improved to find the range of matching axis values
             } else {
-                boolean avIsTime = edvga instanceof EDVTimeGridAxis;
+                boolean avIsTimeStamp = edvga instanceof EDVTimeStampGridAxis;
                 double oldAvMin = avMin[av];
                 double oldAvMax = avMax[av];
                 double conValD = String2.parseDouble(conVal);
@@ -336,7 +336,7 @@ public class EDDTableFromEDDGrid extends EDDTable{
                             passed = false;
                         else {
                             double destVal = edvga.destinationValue(si).getDouble(0);
-                            passed = avIsTime?
+                            passed = avIsTimeStamp?
                                 conValD == destVal : //exact
                                 Math2.almostEqual(5, conValD, destVal); //fuzzy, biased towards passing                                    
                             avMin[av] = Math.max(avMin[av], conValD);

@@ -1546,8 +1546,10 @@ public class Table  {
         trySet(globalAttributes, "cdm_data_type", cdmDataType);
         trySet(globalAttributes, "contributor_name", courtesy);
         trySet(globalAttributes, "contributor_role", "Source of data."); 
-        trySet(globalAttributes, "Conventions",          "COARDS, CF-1.6, Unidata Dataset Discovery v1.0"); //unidata-related
-        trySet(globalAttributes, "Metadata_Conventions", "COARDS, CF-1.6, Unidata Dataset Discovery v1.0"); //unidata-related
+        trySet(globalAttributes, "Conventions",          
+            "COARDS, CF-1.6, Unidata Dataset Discovery v1.0"); //unidata-related
+        trySet(globalAttributes, "Metadata_Conventions", 
+            "COARDS, CF-1.6, Unidata Dataset Discovery v1.0"); //unidata-related
         trySet(globalAttributes, "creator_email", creatorEmail);
         trySet(globalAttributes, "creator_name", creatorName);
         trySet(globalAttributes, "creator_url", creatorUrl);
@@ -1727,8 +1729,10 @@ public class Table  {
                     globalAttributes.remove("time_coverage_start");   //unidata-related
                     globalAttributes.remove("time_coverage_end");
                 } else {
-                    globalAttributes.set("time_coverage_start", Calendar2.epochSecondsToIsoStringT(range.getDouble(0)) + "Z");
-                    globalAttributes.set("time_coverage_end",   Calendar2.epochSecondsToIsoStringT(range.getDouble(1)) + "Z");
+                    globalAttributes.set("time_coverage_start", 
+                        Calendar2.epochSecondsToIsoStringT(range.getDouble(0)) + "Z");
+                    globalAttributes.set("time_coverage_end",   
+                        Calendar2.epochSecondsToIsoStringT(range.getDouble(1)) + "Z");
                 }
                 //this doesn't set tableGlobalAttributes.set("time_coverage_resolution", "P1H");
             } 
@@ -11084,7 +11088,7 @@ String2.log(table.dataToCSVString());
 
         //test the keep=true rows for this constraint
         PrimitiveArray conPa = getColumn(conVarCol);
-        int nKeep = conPa.applyConstraint(keep, conOp, conVal);
+        int nKeep = conPa.applyConstraint(false, keep, conOp, conVal);
 
         if (reallyVerbose) 
             String2.log("    applyConstraint: after " + conVar + conOp + "\"" + conVal + "\", " +

@@ -4,6 +4,7 @@
  */
 package gov.noaa.pfel.erddap.dataset;
 
+import com.cohort.array.Attributes;
 import com.cohort.util.Calendar2;
 import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
@@ -33,8 +34,9 @@ public class TableWriterJson extends TableWriter {
     protected boolean writeUnits;
 
     //set by firstTime
-    protected boolean isTimeStamp[];
     protected boolean isString[];
+    protected boolean isTimeStamp[];
+    protected String time_precision[];
     protected BufferedWriter writer;
 
     //other
@@ -92,10 +94,19 @@ public class TableWriterJson extends TableWriter {
         int nColumns = table.nColumns();
         if (firstTime) {
             isTimeStamp = new boolean[nColumns];
+            time_precision = new String[nColumns];
             for (int col = 0; col < nColumns; col++) {
-                String u = table.columnAttributes(col).getString("units");
+                Attributes catts = table.columnAttributes(col);
+                String u = catts.getString("units");
                 isTimeStamp[col] = u != null && 
                     (u.equals(EDV.TIME_UNITS) || u.equals(EDV.TIME_UCUM_UNITS));
+                if (isTimeStamp[col]) {
+                    //just keep time_precision if it includes fractional seconds 
+                    String tp = catts.getString(EDV.TIME_PRECISION);
+                    if (tp != null && !tp.startsWith("1970-01-01T00:00:00.0")) 
+                        tp = null; //default
+                    time_precision[col] = tp;
+                }
             }
 
             //write the header
@@ -157,9 +168,9 @@ public class TableWriterJson extends TableWriter {
                 if (col > 0) writer.write(", "); 
                 if (isTimeStamp[col]) {
                     double d = table.getDoubleData(col, row);
-                    String s = Double.isNaN(d)? "null" : 
-                        "\"" + Calendar2.epochSecondsToIsoStringT(d) + "Z\"";
-                    writer.write(s);
+                    writer.write(Double.isNaN(d)? "null" : 
+                        "\"" + Calendar2.epochSecondsToLimitedIsoStringT(
+                        time_precision[col], d, "") + "\"");
                 } else if (isString[col]) {
                     String s = table.getStringData(col, row);
                     writer.write(String2.toJson(s));

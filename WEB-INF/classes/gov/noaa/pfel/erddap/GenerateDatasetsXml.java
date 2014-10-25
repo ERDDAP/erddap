@@ -44,8 +44,10 @@ public class GenerateDatasetsXml {
 
     private void printToBoth(String s) throws IOException {
         String2.log(s);
+        String2.flushLog();
         outFile.write(s);
         outFile.write('\n');
+        outFile.flush();
     }
 
     /** This gets the i'th value from args, or prompts the user. 
@@ -147,7 +149,7 @@ public class GenerateDatasetsXml {
                     "\n*** GenerateDatasetsXml ***\n" +
                     "Results are shown on the screen and put in\n" +
                     outFileName + "\n" +
-                    "Press ^C to exit at any time.\n" +
+                    "Press ^D or ^C to exit at any time.\n" +
                     "Type \"\" to change from a non-nothing default back to nothing.\n" +
                     "DISCLAIMER:\n" +
                     "  The chunk of datasets.xml made by GenerateDatasetsXml isn't perfect.\n" +
@@ -416,6 +418,8 @@ public class GenerateDatasetsXml {
             } catch (Throwable t) {
                 String msg = MustBe.throwableToString(t);
                 if (msg.indexOf("ControlC") >= 0) {
+                    String2.flushLog();
+                    outFile.flush();
                     outFile.close();
                     return String2.readFromFile(outFileName)[1];
                 }
@@ -481,7 +485,7 @@ public class GenerateDatasetsXml {
             outFile = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(tempName), "ISO-8859-1")); //charset to match datasets.xml
             
-            //look for the beginLine
+            //look for the beginLine  
             String line = inFile.readLine();
             while (line != null && line.indexOf(endTag) < 0 &&
                 line.indexOf(beginLine) < 0) {
@@ -490,20 +494,28 @@ public class GenerateDatasetsXml {
                     outFile.write(line + "\n");
                 line = inFile.readLine();
             }
+
+            //unexpected end of file?
             if (line == null) {
                 inFile.close();  inFile = null; 
                 outFile.close(); outFile = null; File2.delete(tempName);
-                throw new RuntimeException(abandoningI + endTag + " not found in " + 
-                    datasetsXmlName);
+                throw new RuntimeException(abandoningI + "\"" + beginLine + 
+                    "\" and \"" + endTag + "\" not found in " + datasetsXmlName);
             }
+
+            //found end of file
             if (line.indexOf(endTag) >= 0) {
                 //found endTag </erddapDatasets>.  Write new stuff just before endTag.
+                if (reallyVerbose)
+                    String2.log("found endTag=" + endTag + " so writing info at end of file.");
                 outFile.write(beginLine + timeEol);
                 outFile.write(ret);
                 outFile.write(endLine + timeEol);
-                outFile.write(line + "\n");
+                outFile.write(line + "\n");  //line with endTag
             } else {
                 //found beginLine, so now look for the endLine (discard lines in between)
+                if (reallyVerbose)
+                    String2.log("found beginLine: " + beginLine);
                 while (line != null && line.indexOf(endTag) < 0 &&
                     line.indexOf(endLine) < 0) 
                     line = inFile.readLine();
@@ -515,6 +527,8 @@ public class GenerateDatasetsXml {
                         datasetsXmlName);
                 }
                 //found endLine.  finish up.
+                if (reallyVerbose)
+                    String2.log("found endLine: " + endLine);
                 outFile.write(beginLine + timeEol);
                 outFile.write(ret);
                 outFile.write(endLine + timeEol);

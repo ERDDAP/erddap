@@ -210,11 +210,13 @@ public class AxisDataAccessor {
                     globalAttributes.set("geospatial_vertical_max", dMax);
                 }
             } else if (rAxisVariables[av] instanceof EDVTimeGridAxis) {
-                if (Double.isNaN(dMin)) {
-                } else {  //always iso string
-                    globalAttributes.set("time_coverage_start", Calendar2.epochSecondsToIsoStringT(dMin) + "Z");   //unidata-related
-                    globalAttributes.set("time_coverage_end",   Calendar2.epochSecondsToIsoStringT(dMax) + "Z");
-                }
+                String tp = rAxisVariables[av].combinedAttributes().getString(
+                    EDV.TIME_PRECISION);
+                //"" unsets the attribute if dMin or dMax isNaN
+                globalAttributes.set("time_coverage_start", 
+                    Calendar2.epochSecondsToLimitedIsoStringT(tp, dMin, ""));
+                globalAttributes.set("time_coverage_end", 
+                    Calendar2.epochSecondsToLimitedIsoStringT(tp, dMax, ""));
             }
         }
     }

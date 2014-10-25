@@ -582,16 +582,11 @@ public abstract class EDD {
             combinedGlobalAttributes.remove("featureType"); //featureType is for point types only (table 9.1)
         Test.ensureTrue(dataVariables != null && dataVariables.length > 0, 
             errorInMethod + "'dataVariables' wasn't set.");
-        HashSet destNames = new HashSet(Math2.roundToInt(1.4 * dataVariables.length));
         for (int i = 0; i < dataVariables.length; i++) {
             Test.ensureNotNull(dataVariables[i], errorInMethod + "'dataVariables[" + i + "]' wasn't set.");
             String tErrorInMethod = errorInMethod + 
                 "for dataVariable #" + i + "=" + dataVariables[i].destinationName() + ":\n";
             dataVariables[i].ensureValid(tErrorInMethod);
-            if (!destNames.add(dataVariables[i].destinationName()))
-                throw new IllegalArgumentException(tErrorInMethod + 
-                    "Two variables have destinationName=" + 
-                    dataVariables[i].destinationName() + ".");
         }
         //ensure these are set in the constructor (they may be "")
         extendedSummary();  //ensures that extendedSummaryPartB is constructed

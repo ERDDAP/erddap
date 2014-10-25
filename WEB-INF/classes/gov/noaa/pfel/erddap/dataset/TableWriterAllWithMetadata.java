@@ -251,8 +251,13 @@ public class TableWriterAllWithMetadata extends TableWriterAll {
                     globalAttributes.remove("time_coverage_start");   //unidata-related
                     globalAttributes.remove("time_coverage_end");
                 } else {  //always iso string
-                    globalAttributes.set("time_coverage_start", Calendar2.epochSecondsToIsoStringT(dMin) + "Z");   //unidata-related
-                    globalAttributes.set("time_coverage_end",   Calendar2.epochSecondsToIsoStringT(dMax) + "Z");
+                    String tp = columnAttributes(col).getString(EDV.TIME_PRECISION);
+                    //"" unsets the attribute if min or max isNaN
+                    globalAttributes.set("time_coverage_start", 
+                        Calendar2.epochSecondsToLimitedIsoStringT(tp, dMin, ""));
+                    //for tables (not grids) will be NaN for 'present'.   Deal with this better???
+                    globalAttributes.set("time_coverage_end", 
+                        Calendar2.epochSecondsToLimitedIsoStringT(tp, dMax, ""));
                 }
             }
         }

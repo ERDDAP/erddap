@@ -56,10 +56,10 @@ public class TableWriterHtmlTable extends TableWriter {
     protected String noWrap;
 
     //set firstTime
-    protected boolean isTimeStamp[];
     protected boolean isString[];
-    protected BufferedWriter writer;
+    protected boolean isTimeStamp[];
     protected String time_precision[];
+    protected BufferedWriter writer;
 
     //set later
     public boolean isMBLimited = false; //ie, did htmlTableMaxMB reduce showFirstNRows?
@@ -171,8 +171,13 @@ public class TableWriterHtmlTable extends TableWriter {
                 String u = catts.getString("units");
                 isTimeStamp[col] = u != null && 
                     (u.equals(EDV.TIME_UNITS) || u.equals(EDV.TIME_UCUM_UNITS));
-                if (isTimeStamp[col] && !xhtmlMode)
-                    time_precision[col] = catts.getString(EDV.TIME_PRECISION);
+                if (isTimeStamp[col]) {
+                    //for xhtmlMode, just keep time_precision if it includes fractional seconds 
+                    String tp = catts.getString(EDV.TIME_PRECISION);
+                    if (xhtmlMode && tp != null && !tp.startsWith("1970-01-01T00:00:00.0")) 
+                        tp = null; //default
+                    time_precision[col] = tp;
+                }
 
                 if (isTimeStamp[col]) {
                     bytesPerRow += 20 + noWrap.length();

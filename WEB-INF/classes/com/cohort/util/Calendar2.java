@@ -337,12 +337,11 @@ public class Calendar2 {
      * The 'T' connector can be any non-digit.
      * This may include hours, minutes, seconds, decimal, and Z or timezone offset (default=Zulu).  
      *
-     * @param isoZuluString
+     * @param isoZuluString (to millis precision)
      * @return seconds 
      * @throws exception if trouble (e.g., input is null or invalid format)
      */
     public static double isoStringToEpochSeconds(String isoZuluString) {
-        //pre 2012-05-22 was return Math2.floorDiv(isoZuluStringToMillis(isoZuluString), 1000);
         return isoZuluStringToMillis(isoZuluString) / 1000.0;
     }
 
@@ -351,7 +350,6 @@ public class Calendar2 {
      */
     public static double safeIsoStringToEpochSeconds(String isoZuluString) {
         try {
-            //pre 2012-05-22 was return Math2.floorDiv(isoZuluStringToMillis(isoZuluString), 1000);
             return isoZuluStringToMillis(isoZuluString) / 1000.0;
         } catch (Exception e) {
             return Double.NaN;
@@ -507,7 +505,7 @@ public class Calendar2 {
     /**
      * This converts seconds since 1970-01-01T00:00:00Z  
      * to an ISO Zulu dateTime String with 'T'.
-     * The doubles are rounded to the nearest second.
+     * The doubles are rounded to the nearest millisecond.
      * In many ways trunc would be better, but doubles are often bruised.
      * round works symmetrically with + and - numbers.
      *
@@ -1011,7 +1009,7 @@ public class Calendar2 {
      * limited precision string.
      *
      * @param time_precision can be "1970", "1970-01", "1970-01-01", "1970-01-01T00Z",
-     *    "1970-01-01T00:00Z", "1970-01-01T00:00:00Z" (used if time_precision not matched), 
+     *    "1970-01-01T00:00Z", "1970-01-01T00:00:00Z" (used if time_precision is null or not matched), 
      *    "1970-01-01T00:00:00.0Z", "1970-01-01T00:00:00.00Z", "1970-01-01T00:00:00.000Z".
      *    Versions without 'Z' are allowed.
      */
@@ -1020,7 +1018,7 @@ public class Calendar2 {
 
         String zString = "";  
         if (time_precision == null || time_precision.length() == 0) 
-            time_precision = "Z";
+            time_precision = "1970-01-01T00:00:00Z";
         if (time_precision.charAt(time_precision.length() - 1) == 'Z') {
             time_precision = time_precision.substring(0, time_precision.length() - 1);
             zString = "Z";

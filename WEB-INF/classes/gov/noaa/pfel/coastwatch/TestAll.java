@@ -136,7 +136,7 @@ public class TestAll  {
 //    String2.log("tl=" + tl + " td=" + td); 
 //    
 
-//    Table.debug = true; DasDds.main(new String[]{"erdMH1chla1day", "-verbose"});
+//    Table.debug = true; DasDds.main(new String[]{"dominic2", "-verbose"});
 //    String2.log(DigirHelper.getObisInventoryString(
 //        "http://iobis.marine.rutgers.edu/digir2/DiGIR.php", 
 //        "OBIS-SEAMAP", 
@@ -275,9 +275,9 @@ public class TestAll  {
 //    EDDGridFromNcFiles.testGrib2_43(true); //42 or 43 for netcdfAll 4.2- or 4.3+
 //    EDDGridFromNcFiles.testNc(false);
 //    String2.log(EDDGridFromNcFiles.generateDatasetsXml(
-//        "c:/data/dominic/", ".*\\.nc", 
-//        "c:/data/dominic/IT_MAG-L1b-GEOF_G16_s20140201000000_e20140201000029_c00000000000000.nc",
-//        -1, null));
+//        "/erddapTest/", "simpleTest\\.nc", 
+//        "/erddapTest/simpleTest.nc",
+//        90, null));
         /*         
         StringBuilder sb = new StringBuilder();
         //for (int i1 = 0; i1 < 4320; i1++) 
@@ -290,7 +290,7 @@ public class TestAll  {
 //    *** Daily
 //    Projects.viirsLatLon(true); //create
     
-//    String2.log(NcHelper.dumpString("/data/scrippsGliders/sp063-20140928T065100.nc", true));
+//    String2.log(NcHelper.dumpString("/erddapTest/dominic2/IT_MAG-L1b-GEOF_G16_s20140201000030_e20140201000059_c00000000000000.nc", "IB_time"));
 //    String2.log(NcHelper.dumpString("/u00/data/points/scrippsGlidersIoos1/sp031-20140412T155500.nc", false));
 //    String2.log(NcHelper.dumpString("c:/u00/satellite/VH/pic/8day/V20120012012008.L3m_8D_NPP_PIC_pic_4km", false));
 //    String2.log(NcHelper.dumpString("/u00/data/points/tao/daily/airt0n110w_dy.cdf", "AT_21"));
@@ -643,7 +643,7 @@ public class TestAll  {
 //         Temporarily switching off parts of McAfee : Virus Scan Console  (2X speedup!)
 //           On Access Scanner : All Processes
 //             Scan Items: check: specified file types only (instead of usual All Files) 
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2014, 5, 2014, 8, false);  //first/last year(1990..)/month(1..), testMode
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2014, 3, 2014, 9, false);  //first/last year(1990..)/month(1..), testMode
 //       log file is c:/data/gtspp/log.txt 
 //      2b) Email the "good" but "impossible" stations to Charles Sun
 //       [was Melanie Hamilton, now retired]
@@ -663,8 +663,8 @@ public class TestAll  {
 //       //one time: EDDTableFromNcFiles.bobFindGtsppDuplicateCruises();
 //       EDDTableFromNcFiles.testErdGtsppBest("erdGtsppBestNc");
 //    6) Create ncCF files with the same date range as 2a) above: 
-//       !!!! HIDE THE WINDOW !!! IT WILL RUN 1000X FASTER!!!
-//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2014, 5, 2014, 8); //e.g., first/last year(1990..)/month(1..)
+//       !!!! HIDE THE WINDOW !!! IT WILL RUN MUCH FASTER!!!  takes ~2 minutes per month processed
+//       EDDTableFromNcFiles.bobCreateGtsppNcCFFiles(2014, 3, 2014, 9); //e.g., first/last year(1990..)/month(1..)
 //       String2.log(NcHelper.dumpString("/u00/data/points/gtsppNcCF/201406a.nc", false));
 //    7) * Load erdGtsppBest in localHost ERDDAP.  (long time if lots of files changed)
 //       * Generate .json file from
@@ -921,6 +921,7 @@ public class TestAll  {
 //    Projects.makeCRWNcml34("2000-12-02", 3, "2000-12-05", "dhw"); //sst, anomaly, dhw, hotspot, baa
 //    Projects.makeCRWToMatch("baa");
 //    Projects.makeCRWNcml34("2013-12-19", 4, "2014-12-31", "baa"); //sst, anomaly, dhw, hotspot, baa
+//    Projects.makeSimpleTestNc();
 //    Projects.makeVH1dayNcmlFiles(2012, 2035);
 //    Projects.makeVH8dayNcmlFiles(2012, 2035);
 //    Projects.makeVHmdayNcmlFiles(2012, 2035);
@@ -1380,6 +1381,7 @@ EDVLonGridAxis edvlonga;
 EDVTime edvt;
 EDVTimeGridAxis edvtga;
 EDVTimeStamp edvts;
+EDVTimeStampGridAxis edvtsga;
 Erddap erddap;       
 ErddapRedirect erddapRedirect;       
 FishBase fb;

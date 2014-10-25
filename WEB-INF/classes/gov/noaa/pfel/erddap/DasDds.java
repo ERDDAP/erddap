@@ -32,8 +32,10 @@ public class DasDds {
 
     private void printToBoth(String s) throws IOException {
         String2.log(s);
+        String2.flushLog();
         outFile.write(s);
         outFile.write('\n');
+        outFile.flush();
     }
 
     /** This gets the i'th value from args, or prompts the user. */
@@ -104,10 +106,12 @@ public class DasDds {
                 "\n*** DasDds ***\n" +
                 "This generates the DAS and DDS for a dataset and puts it in\n" +
                 outFileName + "\n" +
-                "Press ^C to exit at any time.\n\n" +
+                "Press ^D or ^C to exit at any time.\n\n" +
                 "Which datasetID",
                 datasetID);
             if (datasetID == null) {
+                String2.flushLog();
+                outFile.flush();
                 outFile.close();
                 return String2.readFromFile(outFileName)[1];
             }
@@ -135,6 +139,7 @@ public class DasDds {
 
         } while (loop && args.length == 0);
 
+        outFile.flush();
         outFile.close();
         String ret = String2.readFromFile(outFileName)[1];
         String2.returnLoggingToSystemOut();

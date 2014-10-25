@@ -307,6 +307,10 @@ public class EDDGridSideBySide extends EDDGrid {
         else if (timeIndex == 0)
             axisVariables[0] = new EDVTimeGridAxis(fav.sourceName(), 
                 fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
+        else if (fav instanceof EDVTimeStampGridAxis) 
+            axisVariables[0] = new EDVTimeStampGridAxis(
+                fav.sourceName(), fav.destinationName(),
+                fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
         else {axisVariables[0] = new EDVGridAxis(fav.sourceName(), fav.destinationName(),
                 fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
               axisVariables[0].setActualRangeFromDestinationMinMax();
