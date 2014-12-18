@@ -427,7 +427,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataAddTable)? "Point" : "Other",
+                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
                 tLocalDirUrl, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 

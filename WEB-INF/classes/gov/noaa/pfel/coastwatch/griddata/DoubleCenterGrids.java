@@ -69,7 +69,7 @@ public class DoubleCenterGrids {
         String2.setupCommonsLogging(-1);
 
         //set up the log file
-        String logDir = String2.getClassPath();
+        String logDir = String2.getClassPath(); //with / separator and / at the end
         logDir = logDir.substring(0, logDir.length() - 1); //remove last "/"
         logDir = File2.getDirectory(logDir); //remove "classes"
         String2.setupLog(true, false, //tLogToSystemOut, tLogToSystemErr,

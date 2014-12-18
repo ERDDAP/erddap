@@ -6436,7 +6436,7 @@ So I will make ERDDAP able to read
 
         try {
             String results = generateDatasetsXml(
-                "http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", "IOOS_NDBC");
+                "http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", "IOOS_NDBC") + "\n";
 
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 

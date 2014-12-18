@@ -2868,7 +2868,9 @@ expected =
                     Math2.gcAndWait();
                     time = System.currentTimeMillis();
                     tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
-                        dir, eddGrid.className() + "_testSpeed" + ext, extensions[ext]); 
+                        dir, eddGrid.className() + 
+                        "_testSpeed" + extensions[ext].substring(1) + chance + ext, 
+                        extensions[ext]); 
                     time = System.currentTimeMillis() - time;
                     cLength = File2.length(dir + tName);
                     String2.log("\n*** EDDGridFromNcFiles.testSpeed test#" + ext + 

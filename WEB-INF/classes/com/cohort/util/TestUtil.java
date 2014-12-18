@@ -35,7 +35,8 @@ import org.joda.time.format.DateTimeFormatter;
  */
 public class TestUtil {
 
-    public static String utilDir = String2.getClassPath() + "com/cohort/util/";
+    public static String utilDir = String2.getClassPath() + //with / separator and / at the end
+        "com/cohort/util/";
 
     /**
      * Test the methods in Test.
@@ -2309,7 +2310,7 @@ public class TestUtil {
         Test.ensureEqual(String2.alternateGetValue(alternate, "b"),          "baker", "'b' still there");
         
 
-        //getClassPath
+        //getClassPath  (with / separator and / at the end)
         String2.log("test getClassPath   current=" + String2.getClassPath());
         //there is no way to test this and have it work with different installations
         //test for my computer (comment out on other computers):

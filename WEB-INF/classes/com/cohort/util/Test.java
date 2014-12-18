@@ -28,7 +28,8 @@ import javax.imageio.ImageIO;
  */
 public class Test {
 
-    public static String utilDir = String2.getClassPath() + "com/cohort/util/";
+    public static String utilDir = String2.getClassPath() + //with / separator and / at the end
+        "com/cohort/util/";
 
     /** 
      * This throws a runtime exception with the specified error message. 

@@ -41,7 +41,8 @@ public class MakeErdJavaZip  {
         String errorInMethod = String2.ERROR + " while generating ErdJava.zip:\n";
 
         //define directories
-        String baseDir = SSR.getContextDirectory() + "WEB-INF/";
+        String baseDir = SSR.getContextDirectory() + //with / separator and / at the end
+            "WEB-INF/";
         String classPath = baseDir + "classes/";
         String coastWatchDir = classPath + "gov/noaa/pfel/coastwatch/";
 
@@ -108,7 +109,8 @@ public class MakeErdJavaZip  {
             Test.ensureTrue(File2.isFile(tDir + checkNames[i]), errorInMethod + tDir + checkNames[i] + " not found.");
 
         //generate javadocs again for online use
-        tDir = SSR.getContextDirectory() + "ErdJavaDoc"; //dir to hold results
+        tDir = SSR.getContextDirectory() + //with / separator and / at the end
+            "ErdJavaDoc"; //dir to hold results
         SSR.dosShell("del /s /q " + //delete (/s=recursive /q=quiet) previous results
             String2.replaceAll(tDir, "/", "\\"), 20); 
         for (int i = 0; i < checkNames.length; i++)
@@ -147,7 +149,7 @@ public class MakeErdJavaZip  {
         File2.delete("c:/programs/tomcat/webapps/cwexperimental/WEB-INF/result.nc");
 
         //accumulate the file names to be zipped
-        ArrayList dirNames = new ArrayList();
+        ArrayList<String> dirNames = new ArrayList();
         dirNames.add(baseDir + "ConvertTable.sh");
         dirNames.add(baseDir + "ConvertTable.bat");
         dirNames.add(baseDir + "DoubleCenterGrids.sh");
@@ -199,12 +201,13 @@ public class MakeErdJavaZip  {
         String2.add(dirNames, RegexFilenameFilter.fullNameList(         coastWatchDir + "util/",              ".+"));
 
         //convert to sorted String array
-        String dirNameArray[] = String2.toStringArray(dirNames.toArray());
+        String dirNameArray[] = dirNames.toArray(new String[0]);
         Arrays.sort(dirNameArray);
         //String2.log(String2.toNewlineString(dirNameArray));
 
         //make the zip file
-        String zipName = SSR.getContextDirectory() + "ErdJava.zip";
+        String zipName = SSR.getContextDirectory() + //with / separator and / at the end
+            "ErdJava.zip";
         String2.log("MakeErdJavaZip is making " + zipName + ".");
         File2.delete(zipName);
         SSR.zip(zipName, dirNameArray, 60, baseDir);
@@ -227,7 +230,8 @@ public class MakeErdJavaZip  {
 
         //define directories
         destinationDir = File2.addSlash(destinationDir);
-        String baseDir = (SSR.getContextDirectory() + "WEB-INF\\classes").substring(2);
+        String baseDir = (SSR.getContextDirectory() + //with / separator and / at the end
+            "WEB-INF\\classes").substring(2);
         String coastWatchDir = "gov\\noaa\\pfel\\coastwatch\\";
 
         //accumulate the file names to be zipped
@@ -274,11 +278,11 @@ public class MakeErdJavaZip  {
 
         //accumulate the file names to be zipped
         String baseDir = "c:/content/";
-        ArrayList dirNames = new ArrayList();
+        ArrayList<String> dirNames = new ArrayList();
         String2.add(dirNames, RegexFilenameFilter.recursiveFullNameList(baseDir + "cwhdfToNc/", ".+", false)); 
 
         //convert to sorted String array
-        String dirNameArray[] = String2.toStringArray(dirNames.toArray());
+        String dirNameArray[] = dirNames.toArray(new String[0]);
         Arrays.sort(dirNameArray);
         //String2.log(String2.toNewlineString(dirNameArray));
 

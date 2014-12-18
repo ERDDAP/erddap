@@ -3520,12 +3520,8 @@ public static void testJanino() throws Exception {
         //read the data source file
         String2.log("\nreading the data source file");
         Table dataTable = new Table();
-        {   //so sar can be garbage collected
-            String sar[] = String2.readFromFile(sourceDir + sourceCsv);
-            Test.ensureEqual(sar[0].length(), 0, sar[0]);
-            dataTable.readASCII(sourceDir + sourceCsv, String2.splitNoTrim(sar[1], '\n'), 
-                -1, 0, null, null, null, null, false); //don't simplify
-        }
+        dataTable.readASCII(sourceDir + sourceCsv, String2.readLinesFromFile(sourceDir + sourceCsv, null, 3), 
+            -1, 0, null, null, null, null, false); //don't simplify
         Test.ensureEqual(dataTable.nColumns(), dataColNames.length, "dataTable.nColumns() != dataColNames.length");
         String2.log("");
 
@@ -3781,12 +3777,8 @@ public static void testJanino() throws Exception {
         //read the data source file
         String2.log("\nreading the data source file");
         Table dataTable = new Table();
-        {   //so sar can be garbage collected
-            String sar[] = String2.readFromFile(sourceDir + sourceCsv);
-            Test.ensureEqual(sar[0].length(), 0, sar[0]);
-            dataTable.readASCII(sourceDir + sourceCsv, String2.splitNoTrim(sar[1], '\n'), 
-                -1, 0, null, null, null, null, false);  //don't simplify
-        }
+        dataTable.readASCII(sourceDir + sourceCsv, String2.readLinesFromFile(sourceDir + sourceCsv, null, 3), 
+            -1, 0, null, null, null, null, false);  //don't simplify
         Test.ensureEqual(dataTable.nColumns(), dataColNames.length, "dataTable.nColumns() != dataColNames.length");
         String2.log("");
 
@@ -6234,9 +6226,7 @@ project)
         for (int f = 0; f < fileNames.length; f++) {
             try {
                 String2.log("\n#" + f + " " + fileNames[f]);
-                String sar[] = String2.readFromFile(inDir + fileNames[f], null, 2);
-                Test.ensureEqual(sar[0].length(), 0, sar[0]); //check that there was no error
-                String lines[] = String2.split(sar[1], '\n');
+                String lines[] = String2.readLinesFromFile(inDir + fileNames[f], null, 2);
 
                 //BOTTLE,20030711WHPSIODMB
                 //#code : jjward hyd_to_exchange.pl 
@@ -7929,9 +7919,9 @@ towTypesDescription);
         //extract unique sourceUrls
         FileInputStream is = new FileInputStream(datasetsXmlFileName); 
         BufferedReader in = new BufferedReader(new InputStreamReader(is));
-        HashSet ferretAggregations = new HashSet();  //hashsets automatically avoid duplicates
-        HashSet ferretAggregationSources = new HashSet();
-        HashSet others = new HashSet();
+        HashSet<String> ferretAggregations = new HashSet();  //hashsets automatically avoid duplicates
+        HashSet<String> ferretAggregationSources = new HashSet();
+        HashSet<String> others = new HashSet();
         String source;
         while ((source = in.readLine()) != null) {
             source = source.trim();
@@ -7962,12 +7952,12 @@ towTypesDescription);
         in.close();
 
         String2.log("***** ferretAggregations");
-        String sar[] = String2.toStringArray(ferretAggregations.toArray());
+        String sar[] = ferretAggregations.toArray(new String[0]);
         Arrays.sort(sar);
         String2.log(String2.toNewlineString(sar));
 
         String2.log("***** ferretAggregationSources");
-        sar = String2.toStringArray(ferretAggregationSources.toArray());
+        sar = ferretAggregationSources.toArray(new String[0]);
         Arrays.sort(sar);
         String2.log(String2.toNewlineString(sar));
         Tally tally = new Tally();
@@ -7975,7 +7965,7 @@ towTypesDescription);
             tally.add("ferretAggregationSources", File2.getProtocolDomain(sar[i]));
 
         String2.log("\n***** others");
-        sar = String2.toStringArray(others.toArray());
+        sar = others.toArray(new String[0]);
         Arrays.sort(sar);
         String2.log(String2.toNewlineString(sar));
         for (int i = 0; i < sar.length; i++)

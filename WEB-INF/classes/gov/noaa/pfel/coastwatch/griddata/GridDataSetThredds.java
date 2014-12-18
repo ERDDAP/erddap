@@ -1062,7 +1062,8 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
             String internalName, sixName;
             GridDataSetThredds.verbose = true;
             Opendap.verbose = true;
-            String dir = String2.getClassPath() + "gov/noaa/pfel/coastwatch/griddata/";
+            String dir = String2.getClassPath() + //with / separator and / at the end
+                "gov/noaa/pfel/coastwatch/griddata/";
 
             //****************************
             //ensure J1ugeo loads  (it has 1 level: <dataset>)
@@ -1342,7 +1343,8 @@ String2.log("trying dataSetUrl=" + dataSetUrl);
         String2.log("\n*** GridDataSetThredds.quickTest of " + internalName);
         GridDataSetThredds.verbose = true;
         Opendap.verbose = true;
-        String dir = String2.getClassPath() + "gov/noaa/pfel/coastwatch/griddata/";
+        String dir = String2.getClassPath() + //with / separator and / at the end
+            "gov/noaa/pfel/coastwatch/griddata/";
         GridDataSetThredds gridDataSet = new GridDataSetThredds(fnu, 
             internalName,
             //was "http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsat" + 

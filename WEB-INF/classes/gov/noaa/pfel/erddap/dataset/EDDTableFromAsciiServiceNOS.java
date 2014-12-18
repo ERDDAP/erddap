@@ -6,7 +6,7 @@ package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
-import com.cohort.array.FloatArray;
+import com.cohort.array.DoubleArray;
 import com.cohort.array.PrimitiveArray;
 import com.cohort.array.StringArray;
 import com.cohort.util.Calendar2;
@@ -41,8 +41,11 @@ import java.util.HashMap;
  */
 public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService { 
 
-    protected Table stationTable;
-    protected int stationIDCol, stationNameCol, stationLonCol, stationLatCol; 
+    //stationTable created in constructor; col numbers == -1 if not present
+    protected Table stationTable;    
+    protected int stationIDCol, stationNameCol, stationStateCol,
+        stationLonCol, stationLatCol, stationDateEstCol;
+
     protected boolean datumIsFixedValue;
 
 
@@ -76,14 +79,50 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         //make the stationTable (expected columns and no others) 
         //which is a subset of the subsetVariables table (which may have extra cols like 'datum')
         stationTable = subsetVariablesDataTable(user);  //exception if trouble
-        stationTable.justKeepColumns(new String[]{"stationID", "stationName", "longitude", "latitude"},
-            " It must be in <subsetVariables>.");
-        stationTable.leftToRightSort(4);
+        int nCols = stationTable.nColumns();
+        String keepCols[] = new String[]{"stationID", "stationName",  "state",
+            "dateEstablished", "longitude", "latitude"};
+        for (int col = nCols - 1; col >= 0; col--) {
+            String colName = stationTable.getColumnName(col);
+            if (String2.indexOf(keepCols, colName) < 0)
+                stationTable.removeColumn(col);
+        }
+        stationIDCol      = stationTable.findColumnNumber("stationID");
+        stationNameCol    = stationTable.findColumnNumber("stationName");
+        stationStateCol   = stationTable.findColumnNumber("state");
+        stationLonCol     = stationTable.findColumnNumber("longitude");
+        stationLatCol     = stationTable.findColumnNumber("latitude");
+        stationDateEstCol = stationTable.findColumnNumber("dateEstablished"); //epochSeconds
+        //String2.log(">>dateEstablished=" + stationTable.getColumn("dateEstablished"));
+        stationTable.leftToRightSort(1); //stationID
         //remove duplicate rows  (e.g., perhaps caused by removing datum column)
         stationTable.removeDuplicates();
-        //String2.log("\nstationTable=\n" + stationTable);
+        //String2.log("\nstationTable=\n" + stationTable.getNCHeader("row") + 
+        //    stationTable.dataToCSVString(5));
 
-        // Not perfectly SOS-able: each offering's min/MaxTime isn't known.
+        //Most/all of these datasets are SOS-able
+        //Gather information to serve this dataset via ERDDAP's SOS server.
+        //This has an advantage over the generic gathering of SOS data:
+        //  it can determine the min/max lon/lat/time of each station.
+        //SOS datasets always have actual lon,lat values and stationTable time is always epochSeconds,
+        //  so I can just use source station info directly (without conversion).
+        //Note that times are often too wide a range because they are for all observedProperties,
+        //  not just the one used by this dataset.
+//This is not tested!
+        if (EDStatic.sosActive && stationDateEstCol >= 0) {
+            sosOfferingPrefix = "urn:ioos:station:NOAA.NOS.CO-OPS:";
+            sosOfferingType = "Station"; 
+            //The index of the dataVariable with the sosOffering outer var (e.g. with cf_role=timeseries_id). 
+            sosOfferingIndex = String2.indexOf(dataVariableDestinationNames(), "stationID");
+            int nSosOfferings = stationTable.nColumns();
+            sosMinLon    = stationTable.getColumn(stationLonCol);
+            sosMaxLon    = sosMinLon;
+            sosMinLat    = stationTable.getColumn(stationLatCol);
+            sosMaxLat    = sosMinLat;
+            sosMinTime   = stationTable.getColumn(stationDateEstCol); //epochSeconds
+            sosMaxTime   = PrimitiveArray.factory(double.class, nSosOfferings, "");
+            sosOfferings = stationTable.getColumn(stationIDCol);
+        }
 
     }
 
@@ -139,11 +178,14 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
             }
 
             //is this constraint for a column that's in the stationTable?
-            int nKeep = stationTable.tryToApplyConstraint(stationIDCol, conVar, conOp, conVal, keep);
+            int nKeep = stationTable.tryToApplyConstraint(
+                stationIDCol, //stationID is used for log messages only
+                conVar, conOp, conVal, keep);
             if (nKeep == 0)
                 throw new SimpleException(MustBe.THERE_IS_NO_DATA +
                    " (There are no matching stations.)");
         }
+
         //ensure the required constraints were specified
         if (!datumIsFixedValue && (datum == null || datum.length() == 0))
             throw new SimpleException(
@@ -169,11 +211,28 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         boolean errorPrinted = false;
         while (stationRow >= 0) {
 
+            String tStationID = stationTable.getStringData(stationIDCol, stationRow);
+
+            //apply time constraint's endSeconds to stationDateEstablished
+            //i.e., reject this station if the request is for a time range 
+            //  before the station was established
+            if (Math2.isFinite(endSeconds) && stationDateEstCol >= 0) {
+                double secondsEstablished = stationTable.getDoubleData(stationDateEstCol, stationRow);
+                //String2.log(">> stationID=" + tStationID + " secondsEstablished=" + secondsEstablished);
+                if (Math2.isFinite(secondsEstablished) &&
+                    endSeconds < secondsEstablished) {
+                    if (reallyVerbose)
+                        String2.log("skip " + tStationID + " reqEnd=" + endSeconds + 
+                          " < secondsEstablished=" + secondsEstablished);
+                    stationRow = keep.nextSetBit(stationRow + 1);
+                    continue;
+                }
+            }
+
             //format the query
             //http://opendap.co-ops.nos.noaa.gov/axis/webservices/waterlevelrawsixmin/
             //plain/response.jsp?stationId=9414290&beginDate=20101110+05:00&endDate=20101110+06:00
             //&datum=MLLW&unit=0&timeZone=0&metadata=yes&Submit=Submit
-            String tStationID = stationTable.getStringData(stationIDCol, stationRow);
             String encodedSourceUrl = localSourceUrl +
                 "&stationId=" + SSR.minimalPercentEncode(tStationID) + 
                 "&beginDate=" + beginTime +
@@ -208,13 +267,13 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                 //read latitude
                 s = find(in, s, "Latitude",  "\"Latitude\" wasn't found");
                 s = find(in, s, ":",         "\":\" wasn't found after \"Latitude\"");
-                float tLatitude = String2.parseFloat(s);
+                double tLatitude = String2.parseDouble(s);
                 s = in.readLine();
 
                 //read longitude
                 s = find(in, s, "Longitude", "\"Longitude\" wasn't found");
                 s = find(in, s, ":",         "\":\" wasn't found after \"Longitude\"");
-                float tLongitude = String2.parseFloat(s);
+                double tLongitude = String2.parseDouble(s);
                 s = in.readLine();
 
                 //read beforeData
@@ -271,6 +330,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                 }
 
                 if (nRows > 0) {
+                    DoubleArray da;
 
                     //do standard processing
                     //fill the stationID column
@@ -283,15 +343,32 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
                     sa.clear();
                     sa.addN(nRows, stationName);
 
+                    //fill the state column
+                    int col = table.findColumnNumber("state");
+                    if (col >= 0 && stationStateCol >= 0) {
+                        sa = (StringArray)table.getColumn(col);
+                        sa.clear();
+                        sa.addN(nRows, 
+                            stationTable.getStringData(stationStateCol, stationRow));
+                    }
+
+                    //fill the dateEstablished column
+                    col = table.findColumnNumber("dateEstablished");
+                    if (col >= 0 && stationDateEstCol >= 0) {
+                        da = (DoubleArray)table.getColumn(col);
+                        da.clear();
+                        da.addN(nRows, stationTable.getDoubleData(stationDateEstCol, stationRow));
+                    }
+
                     //fill the longitude column
-                    FloatArray fa = (FloatArray)table.getColumn("longitude");
-                    fa.clear();
-                    fa.addN(nRows, tLongitude);
+                    da = (DoubleArray)table.getColumn("longitude");
+                    da.clear();
+                    da.addN(nRows, tLongitude);
 
                     //fill the latitude column
-                    fa = (FloatArray)table.getColumn("latitude");
-                    fa.clear();
-                    fa.addN(nRows, tLatitude);
+                    da = (DoubleArray)table.getColumn("latitude");
+                    da.clear();
+                    da.addN(nRows, tLatitude);
 
                     int datumCol = String2.indexOf(dataVariableDestinationNames(), "datum");
                     if (datumIsFixedValue) {
@@ -384,6 +461,7 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         SSR.downloadFile(
             "http://opendap.co-ops.nos.noaa.gov/axis/webservices/activestations/response.jsp",
             stationsFileName, true);
+
     }
 
 
@@ -395,59 +473,77 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
      */
     public static Table lookForStations(String lookFor) throws Exception {
         String2.log("lookForStations(" + lookFor + ")");
-
+//was
 //        <parameter DCP="1" name="Water Level" sensorID="V1" status="1"/>
 //</station>
 //<station ID="8410140" name="Eastport">
 //<lat>21.9544</lat>
 //<long>-159.3561</long>
+
+//2014-10-29 is (but without newlines) (note that ID now points to the name, and name now has ID!
+//<?xml version="1.0" encoding="utf-8"?><soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope
+///" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><soapenv:
+//Body><ActiveStations xmlns="http://opendap.co-ops.nos.noaa.gov/axis/webservices/activestations/wsdl"><stations>
+//<station ID="Nawiliwili" name="1611400">
+//<metadata><location><lat>21.9544</lat><long>-159.3561</long>
+//<state>HI</state></location><date_established>1954-11-24</date_established></metadata>
+//<parameter DCP="1" name="Water Level" sensorID="A1" status="1"/>
+//<parameter DCP="1" name="Water Temp" sensorID="E1" status="1"/>
+//</station>
+
         StringArray stationID = new StringArray();
         StringArray stationName = new StringArray();
-        FloatArray longitude = new FloatArray();
-        FloatArray latitude = new FloatArray();
+        DoubleArray longitude = new DoubleArray();
+        DoubleArray latitude = new DoubleArray();
+        StringArray state = new StringArray();
+        StringArray date = new StringArray();
         Table table = new Table();
         table.addColumn("stationID", stationID);
         table.addColumn("stationName", stationName);
         table.addColumn("longitude", longitude);
         table.addColumn("latitude", latitude);
+        table.addColumn("state", state);
+        table.addColumn("dateEstablished", date);
         String s2[] = String2.readFromFile(stationsFileName);
         String stationsXML = s2[1];
-        int stationIDPo = stationsXML.indexOf("<station ID=\"");
-        while (stationIDPo > 0) {
-            int stationIDEnd   = stationsXML.indexOf('\"',      stationIDPo + 13);
-            int stationNamePo  = stationsXML.indexOf("name=\"", stationIDEnd + 1);
-            int stationNameEnd = stationsXML.indexOf('\"',      stationNamePo + 6);
-            int latPo          = stationsXML.indexOf("<lat>",   stationNameEnd + 1);
-            int latEnd         = stationsXML.indexOf("</lat>",  latPo + 5);
-            int lonPo          = stationsXML.indexOf("<long>",  latEnd + 6);
-            int lonEnd         = stationsXML.indexOf("</long>", lonPo + 6);
-            int lookForPo      = lookFor.length() == 0? (lonEnd + 7) :
-                                 stationsXML.indexOf("name=\"" + lookFor + "\"", lonEnd + 7);
-            int nextStationIDPo = stationsXML.indexOf("<station ID=\"", stationIDPo + 13);
+        //2014-10-29 note that ID now points to the name, and name now has ID!
+        int stationEndPo = 0;
+        while (true) {
+            int stationNamePo = stationsXML.indexOf("<station ID=\"", stationEndPo + 10); 
+            if (stationNamePo < 0)
+                break;
+            stationNamePo += 13;
+            int stationNameEnd = stationsXML.indexOf('\"',      stationNamePo);
+            int stationIDPo    = stationsXML.indexOf("name=\"", stationNameEnd + 1);
+            stationIDPo += 6;
+            int stationIDEnd   = stationsXML.indexOf('\"',      stationIDPo);
+            int latPo          = stationsXML.indexOf("<lat>",   stationNameEnd);
+            int latEnd         = stationsXML.indexOf("</lat>",  Math.max(0, latPo));
+            int lonPo          = stationsXML.indexOf("<long>",  stationNameEnd);
+            int lonEnd         = stationsXML.indexOf("</long>", Math.max(0, lonPo));
+            int statePo        = stationsXML.indexOf("<state>", stationNameEnd);
+            int stateEnd       = stationsXML.indexOf("</state>", Math.max(0, statePo));            
+            int datePo         = stationsXML.indexOf("<date_established>", stationNameEnd);
+            int dateEnd        = stationsXML.indexOf("</date_established>", Math.max(0, datePo));            
+            stationEndPo       = stationsXML.indexOf("</station>", stationNameEnd);
+            if (stationEndPo < 0)
+                throw new RuntimeException("</station> po<0!");
+            int lookForPo      = lookFor.length() == 0? stationNameEnd :
+                                 stationsXML.indexOf("name=\"" + lookFor + "\"", stationNameEnd);
+            if (lookForPo < 0 || lookForPo > stationEndPo)
+                continue;
 
-            String tStationID = stationsXML.substring(stationIDPo + 13, stationIDEnd);
-
-            if (stationIDEnd < 0 || stationNamePo < 0 || stationNameEnd < 0 ||
-                latPo < 0 || latEnd < 0 || lonPo < 0 || lonEnd < 0 ||
-                (nextStationIDPo > 0 && lonEnd > nextStationIDPo)) 
-                throw new Exception("trouble: stationID=" + tStationID + 
-                    " stationIDPo=" + stationIDPo + 
-                    " stationIDEnd=" + stationIDEnd + 
-                    " stationNamePo=" + stationNamePo +
-                    " latPo=" + latPo + " latEnd=" + latEnd +
-                    " lonPo=" + lonPo + " lonEnd=" + lonEnd +
-                    " nextStationIDPo=" + nextStationIDPo); 
-
-            //does lookFor occur before start of next station?
-            if (lookForPo < nextStationIDPo ||
-                (nextStationIDPo == -1 && lookForPo > 0)) { //last station
-                stationID.add(tStationID);
-                stationName.add(                 stationsXML.substring(stationNamePo + 6, stationNameEnd));
-                longitude.add(String2.parseFloat(stationsXML.substring(lonPo + 6, lonEnd)));
-                latitude.add( String2.parseFloat(stationsXML.substring(latPo + 5, latEnd)));
-            }
-
-            stationIDPo = nextStationIDPo;
+            //keep it
+            stationID.add(         stationsXML.substring(stationIDPo, stationIDEnd).trim());
+            stationName.add(       stationsXML.substring(stationNamePo, stationNameEnd).trim());
+            latitude.add(latPo < 0 || latPo > stationEndPo? Double.NaN :
+                String2.parseDouble(stationsXML.substring(latPo + 5, latEnd).trim()));
+            longitude.add(lonPo < 0 || lonPo > stationEndPo? Double.NaN :
+                String2.parseDouble(stationsXML.substring(lonPo + 6, lonEnd).trim()));
+            state.add(statePo < 0 || statePo > stationEndPo? "" :
+                stationsXML.substring(statePo + 7, stateEnd).trim());
+            date.add(datePo < 0 || datePo > stationEndPo? "" :
+                stationsXML.substring(datePo + 18, dateEnd).trim());
         }
         //String2.log(stationID1.toString());
         String2.log("n " + lookFor + " Stations=" + table.dataToCSVString());
@@ -460,28 +556,33 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
      * Bob uses this to make the NOS COOPS Active Currents subset file.
      *
      */
-    public static void makeNosActiveCurrentsSubsetFile() throws Exception {
+    public static void makeNosActiveCurrentsSubsetFile(boolean reloadCurrentsStationsFile) throws Exception {
         String2.log("makeNosActiveCurrentsSubsetTable");
 
         StringArray stationID = new StringArray();
         StringArray stationName = new StringArray();
-        FloatArray longitude = new FloatArray();
-        FloatArray latitude = new FloatArray();
+        DoubleArray longitude = new DoubleArray();
+        DoubleArray latitude = new DoubleArray();
+        StringArray dateEstablished = new StringArray();
         Table table = new Table();
         table.addColumn("stationID", stationID);
         table.addColumn("stationName", stationName);
         table.addColumn("longitude", longitude);
         table.addColumn("latitude", latitude);
+        table.addColumn("dateEstablished", dateEstablished);
         String tStationID = null;
         String tStationName = null;
-        Float tLongitude = Float.NaN;
-        Float tLatitude = Float.NaN;
+        Double tLongitude = Double.NaN;
+        Double tLatitude = Double.NaN;
+        String tDateEstablished = null;
 
-        //get xml file by hand from 
-        //http://opendap.co-ops.nos.noaa.gov/axis/webservices/activecurrentstations/index.jsp
-        //save as  
         String fileName = "c:/programs/nos/ActiveCurrentsStations.xml";
-        //last done 2010-11-23
+        if (reloadCurrentsStationsFile) 
+            SSR.downloadFile(
+                "http://opendap.co-ops.nos.noaa.gov/axis/webservices/activecurrentstations/response.jsp?format=xml&Submit=Submit",
+                fileName, true);
+
+        String2.log(String2.readFromFile(fileName)[1].substring(0, 4000));
 
         //read from file
         InputStream in = new FileInputStream(fileName);
@@ -493,31 +594,60 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
             if (tag.equals("/soapenv:Envelope"))
                 break; 
 
-            //<station ID="aa0101" name="OSTEP1">
-            //  <deployment long="-76.308327" deployed="2009-03-24 19:18:00.0" lat="36.8572"/>
+/*
+...
+<station ID="cb0102" name="Cape Henry LB 2CH">
+  <metadata><
+    project>Chesapeake Bay South PORTS</project>
+    <deploymentHistory>
+      <deployment long="-76.01278" deployed="2004-05-14 00:00:00.0" lat="36.95917" recovered="2005-02-08 00:00:00.0"/>
+      <deployment long="-76.01278" deployed="2005-02-09 00:00:00.0" lat="36.95917" recovered="2005-10-17 23:54:00.0"/>
+      <deployment long="-76.01278" deployed="2005-10-18 00:00:00.0" lat="36.95917" recovered="2005-11-07 23:54:00.0"/>
+      ...
+      <deployment long="-76.01302" deployed="2013-08-07 14:00:00.0" lat="36.95922" recovered="2014-01-06 13:00:00.0"/>
+      <deployment long="-76.01302" deployed="2014-01-06 14:00:00.0" lat="36.95922" recovered="2014-06-24 23:00:00.0"/>
+      <deployment long="-76.01302" deployed="2014-06-25 15:00:00.0" lat="36.95922"/>
+    </deploymentHistory>
+  </metadata>
+</station>
+<station ID="cb0301" name="Thimble Shoal LB 18">
+*/
             if (tag.equals("station")) {
                 tStationID   = xmlReader.attributeValue("ID");
                 tStationName = xmlReader.attributeValue("name");
             } else if (tag.equals("/station")) {
                 String2.log(tStationID + " " + tStationName + " " + tLongitude + " " + tLatitude);
                 if (tStationID != null && tStationName != null &&
-                    !Float.isNaN(tLongitude) && !Float.isNaN(tLatitude))
+                    !Double.isNaN(tLongitude) && !Double.isNaN(tLatitude))
                 stationID.add(tStationID);
                 stationName.add(tStationName);
                 longitude.add(tLongitude);
                 latitude.add(tLatitude);
+                dateEstablished.add(tDateEstablished == null? "" : tDateEstablished);
+                tDateEstablished = null;
             } else if (tag.equals("deployment")) {
-                //there are usually several deployments, but only last is remembered
-                //NOT GOOD: if service makes older data available, long lat returned will be slightly off for them
-                tLongitude = String2.parseFloat(xmlReader.attributeValue("long"));
-                tLatitude  = String2.parseFloat(xmlReader.attributeValue("lat"));
+                //there are usually several deployments, 
+                //  so get first deployed date, but last long,lat
+                if (!String2.isSomething(tDateEstablished)) {
+                    tDateEstablished = xmlReader.attributeValue("deployed");
+                    if (tDateEstablished != null && tDateEstablished.length() > 10)
+                        tDateEstablished = tDateEstablished.substring(0, 10);
+                }
+                tLongitude = String2.parseDouble(xmlReader.attributeValue("long"));
+                tLatitude  = String2.parseDouble(xmlReader.attributeValue("lat" ));
             }
         }
         in.close();
         table.leftToRightSort(1);
+
         String dir = "c:/programs/tomcat/content/erddap/subset/";
-        table.saveAsJson(dir + "nosCoopsCA.json",  -1, false); //timeColumn, writeUnits
+        table.saveAsJson(dir + "nosCoopsCA.json",  -1, false); //timeColumn=-1 since already ISO String, writeUnits
         String2.log(table.dataToCSVString());
+
+        String2.getStringFromSystemIn( 
+            "\n*** EDDTableFromAsciiServiceNOS.makeNosActiveCurrentsSubsetTable done.\n" +
+            "nStations=" + table.nRows() + "\n" +
+            "Press ^C to stop or Enter to continue...");         
     }
 
     /**
@@ -534,26 +664,51 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         if (reloadStationsFile)
             reloadStationsFile();
         String dir = "c:/programs/tomcat/content/erddap/subset/";
+        Table table;
+        int c;
 
-        lookForStations("Air Temp"     ).saveAsJson(dir + "nosCoopsMAT.json",  -1, false);
-        lookForStations("Air Pressure" ).saveAsJson(dir + "nosCoopsMBP.json",  -1, false);
-        lookForStations("Conductivity" ).saveAsJson(dir + "nosCoopsMC.json",  -1, false);
-        lookForStations("Humidity"     ).saveAsJson(dir + "nosCoopsMRH.json",  -1, false);
-        lookForStations("Water Temp"   ).saveAsJson(dir + "nosCoopsMWT.json",  -1, false);
-        lookForStations("Winds"        ).saveAsJson(dir + "nosCoopsMW.json",  -1, false);
-        lookForStations("Visibility"   ).saveAsJson(dir + "nosCoopsMV.json",  -1, false);
+        table = lookForStations("Air Temp");
+        int nMAT = table.nRows();
+        table.saveAsJson(dir + "nosCoopsMAT.json",  -1, false); //timeColumn=-1 since already ISO String, writeUnits
+
+        table = lookForStations("Air Pressure");
+        int nMBP = table.nRows();        
+        table.saveAsJson(dir + "nosCoopsMBP.json",  -1, false);
+        
+        table = lookForStations("Conductivity" );
+        int nMC = table.nRows();
+        table.saveAsJson(dir + "nosCoopsMC.json",  -1, false);
+        
+        table = lookForStations("Humidity"     );
+        int nMRH = table.nRows();
+        table.saveAsJson(dir + "nosCoopsMRH.json",  -1, false);
+        
+        table = lookForStations("Water Temp"   );
+        int nMWT = table.nRows();
+        table.saveAsJson(dir + "nosCoopsMWT.json",  -1, false);
+        
+        table = lookForStations("Winds"        );
+        int nMW = table.nRows();
+        table.saveAsJson(dir + "nosCoopsMW.json",  -1, false);
+        
+        table = lookForStations("Visibility"   );
+        int nMV = table.nRows();
+        table.saveAsJson(dir + "nosCoopsMV.json",  -1, false);
 
         //rainfall has no related property
-        //so create from entire station file and just keep stations listed at
+        //so create from entire station file and just keep the 6 stations listed at
         //http://opendap.co-ops.nos.noaa.gov/axis/webservices/rainfall/index.jsp
-        Table table = lookForStations(""); 
+        table = lookForStations(""); 
         int nRows = table.oneStepApplyConstraint(0,
-            "stationID", "=~", "(9752619|9753216|9754228|9757809|9758053|9759394)");
-        table.saveAsJson(dir + "nosCoopsMRF.json",  -1, false);
+            "stationID", "=~", "(9752619|9753216|9754228|9757809|9757112|9759394)");
+        table.saveAsJson(dir + "nosCoopsMRF.json", -1, false);
         Test.ensureEqual(nRows, 6, "Rain Fall");
 
-        String2.log("\n*** Done.");
-        
+        String2.getStringFromSystemIn( 
+            "\n*** EDDTableFromAsciiServiceNOS.makeNosCoopsMetSubsetFiles done.\n" +
+            "nMAT=" + nMAT + " nMBP=" + nMBP + " nMC=" + nMC + 
+            " nMRH=" + nMRH + " nMWT=" + nMWT + " nMW=" + nMW + " n=MV=" + nMV + "\n" +
+            "Press ^C to stop or Enter to continue...");         
     }
 
 
@@ -571,7 +726,13 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         if (reloadStationsFile)
             reloadStationsFile();
 
-        StringArray stationID1 = (StringArray)(lookForStations("Water Level").getColumn(0));       
+        Table fromTable = lookForStations("Water Level");
+        StringArray fromID    = (StringArray)fromTable.getColumn("stationID");
+        StringArray fromName  = (StringArray)fromTable.getColumn("stationName");
+        DoubleArray fromLon   = (DoubleArray)fromTable.getColumn("longitude");
+        DoubleArray fromLat   = (DoubleArray)fromTable.getColumn("latitude");
+        StringArray fromState = (StringArray)fromTable.getColumn("state");
+        StringArray fromDate  = (StringArray)fromTable.getColumn("dateEstablished");
         
         // was based on soap response
         //BufferedInputStream bis = new BufferedInputStream(
@@ -585,29 +746,40 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
         //StringArray stationID1 = (StringArray)table1.getColumn(0);
 
         //for each station, get available datums from the datum service
-        Table table2 = new Table();
-        StringArray stationID = new StringArray();
-        StringArray stationName = new StringArray();
-        FloatArray stationLon = new FloatArray();
-        FloatArray stationLat = new FloatArray();
-        StringArray stationDatum = new StringArray();
+        Table toTable = new Table();
+        StringArray toID    = new StringArray();
+        StringArray toName  = new StringArray();
+        DoubleArray toLon   = new DoubleArray();
+        DoubleArray toLat   = new DoubleArray();
+        StringArray toState = new StringArray();
+        StringArray toDate  = new StringArray();
+        StringArray toDatum = new StringArray();
         //column names are dataset destinationNames
-        table2.addColumn("stationID",   stationID);
-        table2.addColumn("stationName", stationName);
-        table2.addColumn("longitude",   stationLon);
-        table2.addColumn("latitude",    stationLat);
-        table2.addColumn("datum",       stationDatum);
+        toTable.addColumn("stationID",   toID);
+        toTable.addColumn("stationName", toName);
+        toTable.addColumn("longitude",   toLon);
+        toTable.addColumn("latitude",    toLat);
+        toTable.addColumn("state",       toState);
+        toTable.addColumn("dateEstablished", toDate);
+        toTable.addColumn("datum",       toDatum);
 
         HashMap datumsHash = new HashMap();
-        int nStations = stationID1.size();
+        int nStations = fromID.size();
+        int noName = 0, wrongName = 0, wrongLat = 0, wrongLon = 0, noPre = 0, noDatum = 0;
+        int nGoodStations = 0;
         for (int row = 0; row < nStations; row++) {
             try {
-                String tStationID = stationID1.get(row);
-                String url = "http://opendap.co-ops.nos.noaa.gov/axis/webservices/datums/plain/response.jsp?" +
+                String tStationID = fromID.get(row);
+//http://opendap.co-ops.nos.noaa.gov/axis/webservices/datums/plain/response.jsp?stationId=8454000&epoch=A&unit=0&metadata=yes&Submit=Submit
+                String url = 
+                    "http://opendap.co-ops.nos.noaa.gov/axis/webservices/datums/" +
+                    "plain/response.jsp?" +
                     "epoch=A&unit=0&metadata=yes&Submit=Submit&stationId=" + tStationID;
-                String2.log(url);
                 String content[] = SSR.getUrlResponse(url);
+                if (row == 0) 
+                    String2.log(String2.toNewlineString(content));
 /*
+<pre>
    Station Id         :   9414290
    Station Name       :   San Francisco
    State              :   CA
@@ -619,43 +791,69 @@ public class EDDTableFromAsciiServiceNOS extends EDDTableFromAsciiService {
 ...
 <b>Datum          Value          Description</b>
 ==========================================================================================================
-<pre>
-MHHW           3.602          Mean Higher-High Water 
+<pre>MHHW           3.602          Mean Higher-High Water 
 MHW            3.416          Mean High Water 
+HWI            0.48           Greenwich High Water Interval (in Hours) 
+LWI            5.92           Greenwich Low  Water Interval (in Hours) 
+NAVD           1.818          North American Vertical Datum 
+
+Maximum        6.401                 Highest Water Level on Station Datum 
+Max Date       1938-09-21 00:00      Date and Time Of Highest Water Level 
+Minimum        -0.030                Lowest  Water Level on Station Datum 
+Min Date       1959-01-05 21:36      Date and Time Of Lowest Water Level 
+</pre>
+</pre>
 */
                 //no datums? e.g., 8311062
                 int po = String2.lineContaining(content, 
                     "but no Datums data is available from this station", 0);
-                if (po >= 0) {String2.log("  No datums data for this station."); continue;}
+                if (po >= 0) {noDatum++; String2.log("  No datums data for this station."); continue;}
 
-                po = String2.lineContaining(content, "Station Name       :", 0);
-                if (po < 0) {String2.log("Station Name not found"); continue;}
-                String tStationName = content[po].substring(26).trim();
+                int snRow = String2.lineContaining(content, "Station Name       :", 0);
+                if (snRow < 0) {noName++; String2.log("  No name for this station."); continue;}
+                String tName = content[snRow].substring(26).trim();
+                if (!tName.equals(fromName.get(row))) {
+                    wrongName++; 
+                    String2.log("  wrong name"); 
+                    continue;
+                }
 
-                po = String2.lineContaining(content, "Latitude", po + 1);
-                if (po < 0) {String2.log("Latitude not found"); continue;}
-                float tStationLat = String2.parseFloat(content[po].substring(26));
+                po = String2.lineContaining(content, "Latitude", snRow);
+                double tLat = String2.parseDouble(po < 0? "" : content[po].substring(26));
+                if (Math2.roundToInt(tLat*1000) != Math2.roundToInt(fromLat.get(row)*1000)) {
+                    wrongLat++; 
+                    String2.log("  wrong lat " + tLat + " " + fromLat.get(row)); 
+                    continue;
+                }
 
-                po = String2.lineContaining(content, "Longitude", po + 1);
-                if (po < 0) {String2.log("Longitude not found"); continue;}
-                float tStationLon = String2.parseFloat(content[po].substring(26));
+                po = String2.lineContaining(content, "Longitude", snRow);
+                double tLon = String2.parseDouble(po < 0? "" : content[po].substring(26));
+                if (Math2.roundToInt(tLon*1000) != Math2.roundToInt(fromLon.get(row)*1000)) {
+                    wrongLon++; 
+                    String2.log("  wrong lat " + tLon + " " + fromLon.get(row)); 
+                    continue;
+                }
 
-                po = String2.lineContaining(content, "<pre>", po + 1);
-                if (po < 0) {String2.log("<pre> not found"); continue;}
+                po = String2.lineContaining(content, "<pre>", snRow);
+                if (po < 0) {noPre++; String2.log("<pre> not found"); continue;}
                 po++;
                 boolean foundSome = false;
                 while (po < content.length && content[po].length() > 1) {
                     content[po] += "                                        ";
+                    if (content[po].startsWith("<pre>"))
+                        content[po] = content[po].substring(5);
                     String tDatum = content[po].substring(0, 10).trim();
                     String tValue = content[po].substring(15, 20).trim();
                     if (tValue.length() > 0) {
                         String description = content[po].substring(30).trim();
                         datumsHash.put(tDatum, description);
-                        stationID.add(   tStationID);
-                        stationName.add( tStationName);
-                        stationLon.add(  tStationLon);
-                        stationLat.add(  tStationLat);
-                        stationDatum.add(tDatum);
+                        toID.add(   fromID.get(row));
+                        toName.add( fromName.get(row));
+                        toLon.add(  fromLon.get(row));
+                        toLat.add(  fromLat.get(row));
+                        toState.add(fromState.get(row));
+                        toDate.add( fromDate.get(row));
+                        toDatum.add(tDatum);
                         foundSome = true;
                     }
                     po++;
@@ -663,11 +861,16 @@ MHW            3.416          Mean High Water
                 //2010-11-18 email from Mohamed.Chaouchi@noaa.gov says 
                 // "The majority of the station will support STND but not all of them."
                 if (foundSome) {
-                    stationID.add(   tStationID);
-                    stationName.add( tStationName);
-                    stationLon.add(  tStationLon);
-                    stationLat.add(  tStationLat);
-                    stationDatum.add("STND");
+                    toID.add(   fromID.get(row));
+                    toName.add( fromName.get(row));
+                    toLon.add(  fromLon.get(row));
+                    toLat.add(  fromLat.get(row));
+                    toState.add(fromState.get(row));
+                    toDate.add( fromDate.get(row));
+                    toDatum.add("STND");
+                    nGoodStations++;
+                } else {
+                    noDatum++;
                 }
 
             } catch (Throwable t) {
@@ -676,10 +879,10 @@ MHW            3.416          Mean High Water
         }
 
         //sort
-        table2.leftToRightSort(5);
+        toTable.leftToRightSort(5);
 
-        //print a little of table2
-        String2.log(table2.dataToCSVString(30));
+        //print a little of toTable
+        String2.log(toTable.dataToCSVString(30));
 
         //print datumDescriptions
         Table datumDesc = new Table();
@@ -687,21 +890,30 @@ MHW            3.416          Mean High Water
         String2.log(datumDesc.dataToCSVString());
 
         String dir = "c:/programs/tomcat/content/erddap/subset/";
-        table2.saveAsJson(dir + "nosCoopsWLR6.json",  -1, false);
-        table2.saveAsJson(dir + "nosCoopsWLR1.json",  -1, false);
-        table2.saveAsJson(dir + "nosCoopsWLV6.json",  -1, false);
-        table2.saveAsJson(dir + "nosCoopsWLV60.json", -1, false);
-        table2.saveAsJson(dir + "nosCoopsWLVHL.json", -1, false);
-        table2.saveAsJson(dir + "nosCoopsWLVDM.json", -1, false);
+        toTable.saveAsJson(dir + "nosCoopsWLR6.json",  -1, false); //timeColumn=-1 since already ISO String, writeUnits
+        toTable.saveAsJson(dir + "nosCoopsWLR1.json",  -1, false);
+        toTable.saveAsJson(dir + "nosCoopsWLV6.json",  -1, false);
+        toTable.saveAsJson(dir + "nosCoopsWLV60.json", -1, false);
+        toTable.saveAsJson(dir + "nosCoopsWLVHL.json", -1, false);
+        toTable.saveAsJson(dir + "nosCoopsWLVDM.json", -1, false);
+        String2.log(
+            "nStation+Datum combos with any datum=" + toTable.nRows());
 
         //remove datum other than MLLW
-        table2.oneStepApplyConstraint(0, "datum", "=", "MLLW");
-        table2.saveAsJson(dir + "nosCoopsWLTPHL.json",  -1, false);
-        table2.saveAsJson(dir + "nosCoopsWLTP6.json",  -1, false);
-        table2.saveAsJson(dir + "nosCoopsWLTP60.json",  -1, false);
+        toTable.oneStepApplyConstraint(0, "datum", "=", "MLLW");
+        toTable.saveAsJson(dir + "nosCoopsWLTPHL.json",  -1, false);
+        toTable.saveAsJson(dir + "nosCoopsWLTP6.json",  -1, false);
+        toTable.saveAsJson(dir + "nosCoopsWLTP60.json",  -1, false);
 
-        String2.log("\n*** Done.  nRows=" + table2.nRows());
-        
+        String2.getStringFromSystemIn(
+            "\n*** EDDTableFromAsciiServiceNOS.makeNosCoopsWLSubsetFiles Done.\n" +
+            "Of nStations=" + nStations + ", failures: noName=" + noName + 
+                " wrongName=" + wrongName + 
+                " wrongLat=" + wrongLat + " wrongLon=" + wrongLon + 
+                " noPre=" + noPre + " noDatum=" + noDatum + "\n" +
+            "nGoodStations=" + nGoodStations + "\n" +
+            "nStation+Datum combos with datum=MLLW =" + toTable.nRows() + "\n" +
+            "Press ^C to stop or Enter to continue...");         
     }
 
 
@@ -760,7 +972,6 @@ EDD.debugMode=true;
         String daysAhead7 = Calendar2.epochSecondsToIsoStringT(
             Calendar2.backNDays(-7, Double.NaN)).substring(0, 11);
 
-/* */
         //Raw 6 minute          
         if ("nosCoopsWLR6".matches(idRegex)) {
         try {
@@ -772,19 +983,19 @@ EDD.debugMode=true;
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected =   //this changes every day
-"stationID,stationName,longitude,latitude,time,datum,dcp,sensor,waterLevel,sigma,O,F,R,L\n" +
-",,degrees_east,degrees_north,UTC,,,,m,m,count,,,\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:00:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:06:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:12:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:18:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:24:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:30:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:36:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:42:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:48:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:54:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "22:00:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n";
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,datum,dcp,sensor,waterLevel,sigma,O,F,R,L\n" +
+",,,UTC,degrees_east,degrees_north,UTC,,,,m,m,count,,,\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:00:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:06:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:12:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:18:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:24:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:30:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:36:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:42:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:48:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:54:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "22:00:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,4}|NaN),NaN,0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -803,19 +1014,20 @@ EDD.debugMode=true;
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID,stationName,longitude,latitude,time,datum,dcp,sensor,waterLevel\n" +
-",,degrees_east,degrees_north,UTC,,,,m\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:00:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:01:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:02:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:03:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:04:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:05:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:06:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:07:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:08:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:09:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n" +
-"9414290,San Francisco,-122.465,37.8067," + yesterday + "21:10:00Z,MLLW,1,..,([\\-\\.\\d]{1,6}|NaN)\n";
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,datum,dcp,sensor,waterLevel\n" +
+",,,UTC,degrees_east,degrees_north,UTC,,,,m\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:00:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:01:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:02:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:03:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:04:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:05:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:06:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:07:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:08:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:09:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN)\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + yesterday + "21:10:00Z,MLLW,1,WL,([\\-\\.\\d]{1,6}|NaN)\n";
+
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -840,19 +1052,19 @@ EDD.debugMode=true;
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = //changes every day
-"stationID,stationName,longitude,latitude,time,datum,waterLevel,sigma,I,F,R,L\n" +
-",,degrees_east,degrees_north,UTC,,m,m,,,,\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:06:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:12:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:18:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:24:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:30:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:36:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:42:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:48:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "21:54:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
-"9414290,San Francisco,-122.465,37.8067," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n";
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,datum,waterLevel,sigma,I,F,R,L\n" +
+",,,UTC,degrees_east,degrees_north,UTC,,m,m,,,,\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + daysAgo + "21:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + daysAgo + "21:06:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + daysAgo + "21:12:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + daysAgo + "21:18:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + daysAgo + "21:24:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + daysAgo + "21:30:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + daysAgo + "21:36:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + daysAgo + "21:42:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + daysAgo + "21:48:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + daysAgo + "21:54:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n" +
+"9414290,San Francisco,CA,1854-06-30T00:00:00Z,-122.465,37.8067," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -877,18 +1089,18 @@ EDD.debugMode=true;
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID,stationName,longitude,latitude,time,datum,waterLevel,sigma,I,L\n" +
-",,degrees_east,degrees_north,UTC,,m,m,,\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "14:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "15:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "16:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "17:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "18:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "19:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "20:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "21:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "23:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n";
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,datum,waterLevel,sigma,I,L\n" +
+",,,UTC,degrees_east,degrees_north,UTC,,m,m,,\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "14:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "15:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "16:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "17:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "18:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "19:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "20:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "21:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "22:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "23:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN),0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -916,13 +1128,13 @@ EDD.debugMode=true;
             //number of lines in results varies
             String sar[] = String2.split(results, '\n');
             expected = 
-"stationID,stationName,longitude,latitude,time,datum,waterLevel,type,I,L\n" +
-",,degrees_east,degrees_north,UTC,,m,,,\n";
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,datum,waterLevel,type,I,L\n" +
+",,,UTC,degrees_east,degrees_north,UTC,,m,,,\n";
             for (int i = 2; i < sar.length - 1; i++)
                 expected += 
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2},0,0\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2},0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
-           
+
         } catch (Throwable t) {
             String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
                 "\n*** nosCoopsWLVHL" +
@@ -951,13 +1163,13 @@ EDD.debugMode=true;
             //number of lines in results varies
             String sar[] = String2.split(results, '\n');
             expected = 
-"stationID,stationName,longitude,latitude,time,datum,waterLevel,type\n" +
-",,degrees_east,degrees_north,UTC,,m,\n";
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,datum,waterLevel,type\n" +
+",,,UTC,degrees_east,degrees_north,UTC,,m,\n";
             for (int i = 2; i < sar.length - 1; i++)
                 expected += 
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2}\n";
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "..:..:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN),.{1,2}\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
-           
+
         } catch (Throwable t) {
             String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
                 "\n*** nosCoopsWLTPHL results change every day (5-7 days ahead)." +
@@ -985,19 +1197,19 @@ EDD.debugMode=true;
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID,stationName,longitude,latitude,time,datum,predictedWL\n" +
-",,degrees_east,degrees_north,UTC,,m\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:06:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:12:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:18:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:24:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:30:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:36:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:42:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:48:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:54:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "01:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n";
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,datum,predictedWL\n" +
+",,,UTC,degrees_east,degrees_north,UTC,,m\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "00:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "00:06:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "00:12:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "00:18:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "00:24:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "00:30:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "00:36:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "00:42:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "00:48:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "00:54:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "01:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1026,19 +1238,19 @@ EDD.debugMode=true;
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID,stationName,longitude,latitude,time,datum,predictedWL\n" +
-",,degrees_east,degrees_north,UTC,,m\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "00:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "01:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "02:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "03:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "04:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "05:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "06:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "07:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "08:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "09:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAhead + "10:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n";
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,datum,predictedWL\n" +
+",,,UTC,degrees_east,degrees_north,UTC,,m\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "00:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "01:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "02:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "03:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "04:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "05:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "06:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "07:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "08:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "09:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAhead + "10:00:00Z,MLLW,([\\-\\.\\d]{1,6}|NaN)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1063,19 +1275,19 @@ EDD.debugMode=true;
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID,stationName,longitude,latitude,time,dcp,sensor,AT,X,N,R\n" +
-",,degrees_east,degrees_north,UTC,,,degree_C,,,\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:06:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:12:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:18:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:24:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:30:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:36:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:42:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:48:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:54:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,dcp,sensor,AT,X,N,R\n" +
+",,,UTC,degrees_east,degrees_north,UTC,,,degree_C,,,\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:00:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:06:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:12:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:18:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:24:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:30:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:36:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:42:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:48:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:54:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "01:00:00Z,1,AT,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1100,19 +1312,19 @@ EDD.debugMode=true;
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID,stationName,longitude,latitude,time,dcp,sensor,BP,X,N,R\n" +
-",,degrees_east,degrees_north,UTC,,,hPa,,,\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:06:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:12:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:18:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:24:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:30:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:36:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:42:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:48:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:54:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,dcp,sensor,BP,X,N,R\n" +
+",,,UTC,degrees_east,degrees_north,UTC,,,hPa,,,\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:00:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:06:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:12:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:18:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:24:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:30:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:36:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:42:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:48:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:54:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "01:00:00Z,1,BP,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1130,8 +1342,8 @@ EDD.debugMode=true;
         try {
             EDDTable edd = (EDDTable)oneFromDatasetXml("nosCoopsMC"); 
 
-            String id =     "9414290"; //"8454000";
-            String cityLL = ",San Francisco,-122.465,37.8067,"; // ",Providence,-71.4012,41.8071,";
+            String id =     "8452660";
+            String cityLL = ",Newport,RI,1930-09-11T00:00:00Z,-71.3267,41.505,"; 
             String daysAgo = daysAgo40;
             query = "&stationID=\"" + id + "\"&time>=" + daysAgo + 
                                         "00:00&time<=" + daysAgo + "01:00";             
@@ -1139,32 +1351,26 @@ EDD.debugMode=true;
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID,stationName,longitude,latitude,time,dcp,sensor,CN,X,N,R\n" +
-",,degrees_east,degrees_north,UTC,,,mS/cm,,,\n" +
-id + cityLL + daysAgo + "00:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:06:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:12:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:18:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:24:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:30:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:36:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:42:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:48:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "00:54:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
-id + cityLL + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
-            Test.ensureEqual(results, expected, "results=\n" + results);      
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,dcp,sensor,CN,X,N,R\n" +
+",,,UTC,degrees_east,degrees_north,UTC,,,mS/cm,,,\n" +
+id + cityLL + daysAgo + "00:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:06:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:12:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:18:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:24:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:30:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:36:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:42:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:48:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "00:54:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n" +
+id + cityLL + daysAgo + "01:00:00Z,1,CN,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
+            Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
-            if (msg.indexOf("no matching results") >= 0)
-                Test.knownProblem(
-                    "2013-11-01 After trying several variations, I couldn't find data for this dataset.",
-                    msg);
-            else 
                 String2.getStringFromSystemIn("\n" + msg + 
-                    "\n*** 2012-11-14 their example with this station says \"no data is available from this station\"" +
                     "\n*** nosCoopsMC" +
-                    "\nPress ^C to stop or Enter to continue..."); 
+                    "\nUnexpected error. Press ^C to stop or Enter to continue..."); 
         }
         }
 
@@ -1178,29 +1384,30 @@ id + cityLL + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
 
             String daysAgo = yesterday;
             query = "&stationID=\"9752619\"&time>=" + daysAgo + 
-                                     "00:00&time<=" + daysAgo + "01:00";             
+                                     "00:00&time<=" + daysAgo + "00:54";             
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID,stationName,longitude,latitude,time,dcp,sensor,RF,X,R\n" +
-",,degrees_east,degrees_north,UTC,,,mm,,\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525," + daysAgo + "00:00:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525," + daysAgo + "00:06:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525," + daysAgo + "00:12:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525," + daysAgo + "00:18:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525," + daysAgo + "00:24:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525," + daysAgo + "00:30:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525," + daysAgo + "00:36:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525," + daysAgo + "00:42:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525," + daysAgo + "00:48:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525," + daysAgo + "00:54:00Z,1,J1,\\d\\.\\d,0,0\n" +
-"9752619,\"Isabel Segunda, Vieques Island\",-65.4438,18.1525," + daysAgo + "01:00:00Z,1,J1,\\d\\.\\d,0,0\n";
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,dcp,sensor,RF,X,R\n" +
+",,,UTC,degrees_east,degrees_north,UTC,,,mm,,\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,-65.4438,18.1525," + daysAgo + "00:00:00Z,1,J1,\\d\\.\\d,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,-65.4438,18.1525," + daysAgo + "00:06:00Z,1,J1,\\d\\.\\d,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,-65.4438,18.1525," + daysAgo + "00:12:00Z,1,J1,\\d\\.\\d,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,-65.4438,18.1525," + daysAgo + "00:18:00Z,1,J1,\\d\\.\\d,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,-65.4438,18.1525," + daysAgo + "00:24:00Z,1,J1,\\d\\.\\d,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,-65.4438,18.1525," + daysAgo + "00:30:00Z,1,J1,\\d\\.\\d,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,-65.4438,18.1525," + daysAgo + "00:36:00Z,1,J1,\\d\\.\\d,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,-65.4438,18.1525," + daysAgo + "00:42:00Z,1,J1,\\d\\.\\d,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,-65.4438,18.1525," + daysAgo + "00:48:00Z,1,J1,\\d\\.\\d,0,0\n" +
+"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,-65.4438,18.1525," + daysAgo + "00:54:00Z,1,J1,\\d\\.\\d,0,0\n";// +
+//"9752619,\"Isabel Segunda, Vieques Island\",PR,2007-09-13T00:00:00Z,-65.4438,18.1525," + daysAgo + "01:00:00Z,1,J1,\\d\\.\\d,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
                 "\n*** nosCoopsMRF" +
+                "\nCOMMON PROBLEM - one row is missing in the results." +
                 "\nPress ^C to stop or Enter to continue..."); 
         }
         }
@@ -1220,19 +1427,19 @@ id + cityLL + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID,stationName,longitude,latitude,time,dcp,sensor,RH,X,N,R\n" +
-",,degrees_east,degrees_north,UTC,,,percent,,,\n" +
-"9063063,Cleveland,-81.6355,41.5409," + daysAgo + "00:00:00Z,1,..,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,-81.6355,41.5409," + daysAgo + "00:06:00Z,1,..,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,-81.6355,41.5409," + daysAgo + "00:12:00Z,1,..,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,-81.6355,41.5409," + daysAgo + "00:18:00Z,1,..,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,-81.6355,41.5409," + daysAgo + "00:24:00Z,1,..,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,-81.6355,41.5409," + daysAgo + "00:30:00Z,1,..,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,-81.6355,41.5409," + daysAgo + "00:36:00Z,1,..,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,-81.6355,41.5409," + daysAgo + "00:42:00Z,1,..,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,-81.6355,41.5409," + daysAgo + "00:48:00Z,1,..,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,-81.6355,41.5409," + daysAgo + "00:54:00Z,1,..,\\d\\d\\.\\d,0,0,0\n" +
-"9063063,Cleveland,-81.6355,41.5409," + daysAgo + "01:00:00Z,1,..,\\d\\d\\.\\d,0,0,0\n";
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,dcp,sensor,RH,X,N,R\n" +
+",,,UTC,degrees_east,degrees_north,UTC,,,percent,,,\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,-81.6355,41.5409," + daysAgo + "00:00:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,-81.6355,41.5409," + daysAgo + "00:06:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,-81.6355,41.5409," + daysAgo + "00:12:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,-81.6355,41.5409," + daysAgo + "00:18:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,-81.6355,41.5409," + daysAgo + "00:24:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,-81.6355,41.5409," + daysAgo + "00:30:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,-81.6355,41.5409," + daysAgo + "00:36:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,-81.6355,41.5409," + daysAgo + "00:42:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,-81.6355,41.5409," + daysAgo + "00:48:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,-81.6355,41.5409," + daysAgo + "00:54:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n" +
+"9063063,Cleveland,OH,1860-01-01T00:00:00Z,-81.6355,41.5409," + daysAgo + "01:00:00Z,1,RH,\\d\\d\\.\\d,0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1258,19 +1465,19 @@ id + cityLL + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID,stationName,longitude,latitude,time,dcp,sensor,WT,X,N,R\n" +
-",,degrees_east,degrees_north,UTC,,,degree_C,,,\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:00:00Z,1,..,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:06:00Z,1,..,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:12:00Z,1,..,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:18:00Z,1,..,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:24:00Z,1,..,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:30:00Z,1,..,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:36:00Z,1,..,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:42:00Z,1,..,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:48:00Z,1,..,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:54:00Z,1,..,\\d{1,2}.\\d,0,0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "01:00:00Z,1,..,\\d{1,2}.\\d,0,0,0\n";
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,dcp,sensor,WT,X,N,R\n" +
+",,,UTC,degrees_east,degrees_north,UTC,,,degree_C,,,\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:00:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:06:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:12:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:18:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:24:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:30:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:36:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:42:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:48:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:54:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "01:00:00Z,1,WT,\\d{1,2}.\\d,0,0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1295,19 +1502,19 @@ id + cityLL + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID,stationName,longitude,latitude,time,dcp,sensor,WS,WD,WG,X,R\n" +
-",,degrees_east,degrees_north,UTC,,,m s-1,degrees_true,m s-1,,\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:00:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:06:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:12:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:18:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:24:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:30:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:36:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:42:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:48:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "00:54:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
-"8454000,Providence,-71.4012,41.8071," + daysAgo + "01:00:00Z,1,..,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n";
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,dcp,sensor,WS,WD,WG,X,R\n" +
+",,,UTC,degrees_east,degrees_north,UTC,,,m s-1,degrees_true,m s-1,,\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:00:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:06:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:12:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:18:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:24:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:30:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:36:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:42:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:48:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "00:54:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n" +
+"8454000,Providence,RI,1938-06-03T00:00:00Z,-71.4012,41.8071," + daysAgo + "01:00:00Z,1,WS,\\d{1,2}\\.\\d{1,3},\\d{1,3}\\.\\d{1,2},\\d{1,2}\\.\\d{1,2},0,0\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1333,13 +1540,13 @@ id + cityLL + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID,stationName,longitude,latitude,time,Vis\n" +
-",,degrees_east,degrees_north,UTC,nautical_miles\n";
+"stationID,stationName,state,dateEstablished,longitude,latitude,time,Vis\n" +
+",,,UTC,degrees_east,degrees_north,UTC,nautical_miles\n";
             //number of lines in results varies
             String sar[] = String2.split(results, '\n');
             for (int i = 2; i < sar.length - 1; i++)
                 expected += 
-"8737005,Pinto Island,-88.0311,30.6711," + daysAgo + "..:..:00Z,([\\-\\.\\d]{1,6}|NaN)\n";
+"8737005,Pinto Island,AL,2009-12-15T00:00:00Z,-88.0311,30.6711," + daysAgo + "..:..:00Z,([\\-\\.\\d]{1,6}|NaN)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
@@ -1348,7 +1555,6 @@ id + cityLL + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
                 "\nPress ^C to stop or Enter to continue..."); 
         }
         }
-
 
         //Active Currents
         //works http://opendap.co-ops.nos.noaa.gov/axis/webservices/currents/plain/response.jsp?
@@ -1365,24 +1571,25 @@ id + cityLL + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
             results = new String((new ByteArray(EDStatic.fullTestCacheDirectory + tName)).toArray());
             expected = 
-"stationID,stationName,longitude,latitude,time,CS,CD\n" +
-",,degrees_east,degrees_north,UTC,knots,degrees_true\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:03:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:09:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
-//"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:15:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" + //not on 2010-11-21
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:21:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:27:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:33:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:39:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:45:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:51:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
-"db0301,Philadelphia,-75.1397,39.9462," + daysAgo + "00:57:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n";
+"stationID,stationName,dateEstablished,longitude,latitude,time,CS,CD\n" +
+",,UTC,degrees_east,degrees_north,UTC,knots,degrees_true\n" +
+"db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1397,39.9462," + daysAgo + "00:03:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+"db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1397,39.9462," + daysAgo + "00:09:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+//"db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1397,39.9462," + daysAgo + "00:15:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" + //not on 2010-11-21
+"db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1397,39.9462," + daysAgo + "00:21:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+"db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1397,39.9462," + daysAgo + "00:27:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+"db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1397,39.9462," + daysAgo + "00:33:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+"db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1397,39.9462," + daysAgo + "00:39:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+"db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1397,39.9462," + daysAgo + "00:45:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+"db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1397,39.9462," + daysAgo + "00:51:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n" +
+"db0301,Philadelphia,2003-03-25T00:00:00Z,-75.1397,39.9462," + daysAgo + "00:57:00Z,([\\-\\.\\d]{1,6}|NaN),([\\-\\.\\d]{1,6}|NaN)\n";
             Test.ensureLinesMatch(results, expected, "results=\n" + results);      
            
         } catch (Throwable t) {
             String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
                 "\n*** nosCoopsCA" +
                 "\nPress ^C to stop or Enter to continue..."); 
+        }
         }
   
 /*        
@@ -1394,7 +1601,7 @@ id + cityLL + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
         if ("nosCoopsWLVDM".matches(idRegex)) {
         try {
             EDDTable edd = (EDDTable)oneFromDatasetXml("nosCoopsWLVDM"); 
-            query = "&stationID=\"9044020\"&datum=\"IGLD\"&time>=" + daysAgo72 + 
+            query = "&stationID=\"1612340\"&datum=\"MLLW\"&time>=" + daysAgo72 + 
                 "00:00&time<=" + daysAgo70 + "00:00";             
             tName = edd.makeNewFileForDapQuery(null, null, query, EDStatic.fullTestCacheDirectory, 
                 edd.className() + "_" + edd.datasetID(), ".csv"); 
@@ -1406,14 +1613,12 @@ id + cityLL + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
         } catch (Throwable t) {
             String2.getStringFromSystemIn("\n" + MustBe.throwableToString(t) + 
                 "\n*** THIS HAS NEVER WORKED." +
-                "\nnosCoopsWLVDM results change every day (72 - 70 days ago)." +
-                "\nIs the response reasonable?" +
+                "\nResponse says \"Water Level Daily Mean Data is only available for Great Lakes stations," +
+                "\nand not for coastal stations.\" but stations table only lists coastal stations." +   
                 "\nPress ^C to stop or Enter to continue..."); 
         }
         }
 */
-        }
-
         // There is no plain text service for the Survey Currents Survey dataset at
         // http://opendap.co-ops.nos.noaa.gov/axis/text.html
 
@@ -1426,17 +1631,23 @@ id + cityLL + daysAgo + "01:00:00Z,1,..,([\\-\\.\\d]{1,6}|NaN),0,0,0\n";
      *
      * @throws Throwable if trouble
      */
-    public static void test(boolean doAllGraphicsTests) throws Throwable {
+    public static void test(boolean makeSubsetFiles) throws Throwable {
         String2.log("\n****************** EDDTableFromAsciiService.test() *****************\n");
         testVerboseOn();
+
+        //do every 3 months
+        //then copy [tomcat]/content/erddap/subset/nosCoops*.json files 
+        //  to coastwatch ERDDAP /subset
+        if (makeSubsetFiles) {
+            reloadStationsFile();
+            makeNosCoopsWLSubsetFiles(false);  //re-download the stations file
+            makeNosCoopsMetSubsetFiles(false); //re-download the stations file
+            makeNosActiveCurrentsSubsetFile(true); //re-download the currents stations file (a different file)
+        }
 
         //always done  
         testNosCoops(".*");  //test all: ".*"
 
-        //rarely done
-        //makeNosCoopsWLSubsetFiles(true);  //re-download the stations table
-        //makeNosCoopsMetSubsetFiles(false); //re-download the stations table
-        //makeNosActiveCurrentsSubsetFile();
     }
 
 }

@@ -231,7 +231,7 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is good for now
-                probablyHasLonLatTime(dataSourceTable)? "Point" : "Other",
+                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
                 EDStatic.fullCopyDirectory + tDatasetID + "/", 
                 externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
@@ -328,7 +328,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
 "    -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"cdm_data_type\">Other</att>\n" +
+"        <att name=\"cdm_data_type\">Point</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"creator_name\">Kentucky Geological Survey</att>\n" +
 "        <att name=\"creator_url\">http://www.uky.edu/KGS/</att>\n" +

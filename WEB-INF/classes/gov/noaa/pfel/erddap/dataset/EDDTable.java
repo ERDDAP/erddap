@@ -1004,23 +1004,24 @@ public abstract class EDDTable extends EDD {
                         if (reallyVerbose && constraintOp.indexOf('=') >= 0)
                             String2.log("    The constraint with '=' is being expanded because sourceNeedsExpandedFP_EQ=true.");
                         if (constraintOp.equals(">=")) {
-                            constraintValues.set(cv, String2.genEFormat10(constraintValueD - fudge));
+                            constraintValues.set(cv, "" + (constraintValueD - fudge));
                         } else if (constraintOp.equals("<=")) {
-                            constraintValues.set(cv, String2.genEFormat10(constraintValueD + fudge));
+                            constraintValues.set(cv, "" + (constraintValueD + fudge));
                         } else if (constraintOp.equals("=")) {
                             constraintValueD = Math2.roundTo(constraintValueD, 3); //fudge 0.001 -> 3
                             constraintVariables.add(cv + 1, constraintVariable);
                             constraintOps.set(cv,     ">=");
                             constraintOps.add(cv + 1, "<=");
-                            constraintValues.set(cv,     String2.genEFormat10(constraintValueD - fudge));
-                            constraintValues.add(cv + 1, String2.genEFormat10(constraintValueD + fudge)); 
-                        } else if (constraintOp.equals("!=")) {
-                            constraintValueD = Math2.roundTo(constraintValueD, 3); //fudge 0.001 -> 3
-                            constraintVariables.add(cv + 1, constraintVariable);
-                            constraintOps.set(cv,     "<=");
-                            constraintOps.add(cv + 1, ">=");
-                            constraintValues.set(cv,     String2.genEFormat10(constraintValueD - fudge));
-                            constraintValues.add(cv + 1, String2.genEFormat10(constraintValueD + fudge)); 
+                            constraintValues.set(cv,     "" + (constraintValueD - fudge));
+                            constraintValues.add(cv + 1, "" + (constraintValueD + fudge)); 
+                        //2014-11-05 != modifications commented out. Leave constaint as it is.
+                        //} else if (constraintOp.equals("!=")) {
+                        //    constraintValueD = Math2.roundTo(constraintValueD, 3); //fudge 0.001 -> 3
+                        //    constraintVariables.add(cv + 1, constraintVariable);
+                        //    constraintOps.set(cv,     "<=");
+                        //    constraintOps.add(cv + 1, ">=");
+                        //    constraintValues.set(cv,     constraintValueD - fudge);
+                        //    constraintValues.add(cv + 1, constraintValueD + fudge); 
                         }
                     }
                 }
@@ -1406,6 +1407,7 @@ public abstract class EDDTable extends EDD {
         for (int cv = 0; cv < constraintVariables.size(); cv++) { 
             String constraintVariable = constraintVariables.get(cv);
             String constraintOp       = constraintOps.get(cv);
+            String constraintValue    = constraintValues.get(cv);
             int dv = String2.indexOf(dataVariableDestinationNames(), constraintVariable);
             EDV edv = dataVariables[dv];
             Class sourceClass = edv.sourceDataTypeClass();
@@ -1434,9 +1436,14 @@ public abstract class EDDTable extends EDD {
 
                 //constraint source is numeric
                 } else {
+                    double constraintValueD = String2.parseDouble(constraintValue);
                     if (sourceCanConstrainNumericData == CONSTRAIN_NO ||
                         sourceCanConstrainNumericData == CONSTRAIN_PARTIAL ||
-                        constraintOp.equals(PrimitiveArray.REGEX_OP)) { //always do all regex tests here
+                        constraintOp.equals(PrimitiveArray.REGEX_OP) || //always do all regex tests here
+                        (sourceNeedsExpandedFP_EQ && //source did an expanded query. Check it here.
+                          (sourceClass == float.class || sourceClass == double.class) && 
+                          !Double.isNaN(constraintValueD) &&
+                          constraintValueD != Math2.roundToDouble(constraintValueD))) { //if not int
                         //fall through to test below
                     } else {
                         //source did the test
@@ -1446,9 +1453,8 @@ public abstract class EDDTable extends EDD {
             }
 
             //The constraint needs to be tested here. Test it now.
-            //Note that Time and Alt values have been converted to standardized units above.
+            //Note that Timestamp and Alt values have been converted to standardized units above.
             PrimitiveArray dataPa = table.findColumn(constraintVariable); //throws Throwable if not found
-            String constraintValue = constraintValues.get(cv);
             if (reallyVerbose) String2.log("  Handling constraint #" + cv + " here: " + 
                 constraintVariable + " " + constraintOp + " " + constraintValue);
             int nSwitched = 0;
@@ -6675,6 +6681,29 @@ public abstract class EDDTable extends EDD {
             "      <br>Here is an example of a query which includes ISO date/time values:\n" +
             "      <br><a href=\"" + EDStatic.phEncode(fullTimeExample) + "\"><tt>" + 
                                      XML.encodeAsHTML( fullTimeExample) + "</tt></a> .\n" +
+            "      <br><a name=\"lenient\">ERDDAP</a> is \"lenient\" when it parses date/time strings. That means that date/times\n" +
+            "      <br>with the correct format, but with month, date, hour, minute, and/or second values\n" +
+            "      <br>that are too large or too small will be rolled to the appropriate date/times.\n" +
+            "      <br>For example, ERDDAP interprets 2001-12-32 as 2002-01-01, and interprets\n" +
+            "      <br>2002-01-00 as 2001-12-31.\n" +
+            "      <br>(It's not a bug, it's a feature! We understand that you may object to this\n" +
+            "      <br>if you are not familiar with lenient parsing. We understand there are\n" +
+            "      <br>circumstances where some people would prefer strict parsing, but there are also\n" +
+            "      <br>circumstances where some people would prefer lenient parsing. ERDDAP can't\n" +
+            "      <br>have it both ways. This was a conscious choice. Lenient parsing is the default\n" +
+            "      <br>behavior in Java, the language that ERDDAP is written in and arguably the\n" +
+            "      <br>most-used computer language. Also, this behavior is consistent with ERDDAP's\n" +
+            "      <br>conversion of requested grid axis values to the nearest valid grid axis value.\n" +
+            "      <br>And this is consistent with some other places in ERDDAP that try to repair\n" +
+            "      <br>invalid input when the intention is clear, instead of just returning an error\n" +
+            "      <br>message.)\n" +
+            (EDStatic.convertersActive? 
+              "      <br>ERDDAP has a utility to\n" +
+              "        <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
+              "        a Numeric Time to/from a String Time</a>.\n" +
+              "      <br>See also:\n" +
+              "        <a rel=\"help\" href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
+              "        ERDDAP Deals with Time</a>.\n" : "") +
             "    <li><a name=\"now\">tabledap</a> extends the OPeNDAP standard to allow you to specify constraints for\n" +
             "      <br>time and timestamp variables relative to <tt>now</tt>. The constraint can be simply,\n" +
             "      <br>for example, <tt>time&lt;now</tt>, but usually the constraint is in the form\n" +
@@ -9997,6 +10026,9 @@ public abstract class EDDTable extends EDD {
     /** 
      * This returns the subsetVariables data table.
      *
+     * <p>Data from EDVTimeStamp variables are stored as epochSeconds
+     * in the subsetVariables .nc file and data table.
+     *
      * <p>This is thread-safe because the constructor (one thread) calls 
      *     distinctSubsetVariablesDataTable() which calls this and creates .nc file.
      *
@@ -10055,6 +10087,17 @@ public abstract class EDDTable extends EDD {
                         " wasn't found in " + adminSubsetFileName + ".json .");
                 if (tCol > col)
                     table.moveColumn(tCol, col);
+
+                //convert EDVTimeStamp ISO Strings to epochSeconds
+                EDV edv = findDataVariableByDestinationName(tSubsetVars[col]);
+                if (edv instanceof EDVTimeStamp) {
+                    PrimitiveArray oldPa = table.getColumn(col);
+                    int nRows = oldPa.size();
+                    DoubleArray newPa = new DoubleArray(nRows, false);
+                    for (int row = 0; row < nRows; row++)
+                        newPa.add(Calendar2.safeIsoStringToEpochSeconds(oldPa.getString(row)));
+                    table.setColumn(col, newPa);
+                }
             }
             //remove excess columns
             table.removeColumns(tSubsetVars.length, table.nColumns());
@@ -10670,13 +10713,13 @@ public abstract class EDDTable extends EDD {
      * all unique sosObservedProperties.
      */
     /*protected void gatherSosObservedProperties() {
-        HashSet set = new HashSet(Math2.roundToInt(1.4 * dataVariables.length));
+        HashSet<String> set = new HashSet(Math2.roundToInt(1.4 * dataVariables.length));
         for (int dv = 0; dv < dataVariables.length; dv++) {
             String s = dataVariables[dv].combinedAttributes().getString("observedProperty");
             if (s != null)
                set.add(s);
         }
-        sosObservedProperties = String2.toStringArray(set.toArray()); 
+        sosObservedProperties = set.toArray(new String[0]); 
         Arrays.sort(sosObservedProperties);
     }*/
 
@@ -15849,9 +15892,15 @@ if (contributorName != null || contributorRole != null)
 (contributorEmail == null?
 "              <gmd:contactInfo gco:nilReason=\"missing\"/>\n" :
 "              <gmd:contactInfo>\n" +
-"                <gmd:electronicMailAddress>\n" +
-"                  <gco:CharacterString>" + XML.encodeAsXML(contributorEmail) + "</gco:CharacterString>\n" +
-"                </gmd:electronicMailAddress>\n" +
+"                <gmd:CI_Contact>\n" +
+"                  <gmd:address>\n" +
+"                    <gmd:CI_Address>\n" +
+"                      <gmd:electronicMailAddress>\n" +
+"                        <gco:CharacterString>" + XML.encodeAsXML(contributorEmail) + "</gco:CharacterString>\n" +
+"                      </gmd:electronicMailAddress>\n" +
+"                    </gmd:CI_Address>\n" +
+"                  </gmd:address>\n" +
+"                </gmd:CI_Contact>\n" +
 "              </gmd:contactInfo>\n") +
 
 "              <gmd:role>\n" +  

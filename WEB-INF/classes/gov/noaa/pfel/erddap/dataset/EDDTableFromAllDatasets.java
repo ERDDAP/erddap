@@ -152,6 +152,8 @@ public class EDDTableFromAllDatasets extends EDDTable{
     /** 
      * This overrides the superclass to give the on-the-fly distinctSubsetVariables table. 
      *
+     * <p>time columns are epochSeconds.
+     *
      * @param loggedInAs This is used, e.g., for POST data (where the distinct subsetVariables table
      *    is different for each loggedInAs!) and for EDDTableFromAllDatasets.
      * @param loadVars the specific destinationNames to be loaded (or null for all subsetVariables)
@@ -184,6 +186,8 @@ public class EDDTableFromAllDatasets extends EDDTable{
 
     /**
      * This makes a sorted table of the datasets' info.
+     *
+     * <p>time columns are epochSeconds.
      *
      * @param loggedInAs  the name of the logged in user (or null if not logged in).
      *    This is used to ensure that the user sees only datasets they have a 

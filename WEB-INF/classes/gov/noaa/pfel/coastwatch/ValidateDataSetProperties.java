@@ -37,7 +37,7 @@ public class ValidateDataSetProperties {
         String2.log("ValidatDataSetProperties (testing DataSet.properties validDataSets");
 
         //find a browser properties file (e.g., CWBrowser.properties)
-        String contextDirectory = SSR.getContextDirectory();
+        String contextDirectory = SSR.getContextDirectory(); //with / separator and / at the end
         String[] propList = RegexFilenameFilter.list(
             contextDirectory + "WEB-INF/classes/gov/noaa/pfel/coastwatch/", ".+\\.properties");
         int which = -1;

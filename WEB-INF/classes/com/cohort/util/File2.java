@@ -805,6 +805,23 @@ public class File2 {
     }
 
     /**
+     * This converts (if not already done) tDir to use trailing / and with / separator.
+     *
+     * @param tDir The directory, with or without trailing /.  
+     *    With / or \\.
+     * @return The directory with trailing / and with / separator.
+     */
+    public static String forwardSlashDir(String tDir) {
+        StringBuilder sb = new StringBuilder(tDir);
+        String2.replaceAll(sb, '\\', '/');
+        if (sb.length() == 0 || sb.charAt(0) != '/' )
+            sb.append('/');
+        return sb.toString();
+    }
+
+
+
+    /**
      * This adds a slash (matching the other slashes in the dir) 
      * to the end of the dir (if one isn't there already).
      *

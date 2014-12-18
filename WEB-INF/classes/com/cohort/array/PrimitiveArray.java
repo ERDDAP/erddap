@@ -398,10 +398,11 @@ public abstract class PrimitiveArray {
         if (type.equals("long"))   return long.class;
         if (type.equals("int"))    return int.class;
         if (type.equals("short"))  return short.class;
-        if (type.equals("byte"))   return byte.class;
+        if (type.equals("byte") ||
+            type.equals("boolean"))return byte.class; //erddap stores booleans as bytes
         if (type.equals("char"))   return char.class;
         if (type.equals("String")) return String.class;
-        throw new IllegalArgumentException("PrimitiveArray.elementStringToType unsupported type: " + type);
+        throw new IllegalArgumentException("PrimitiveArray.elementStringToClass unsupported type: " + type);
     }
 
     /**
@@ -418,7 +419,8 @@ public abstract class PrimitiveArray {
         if (type.equals("long"))   return 8;
         if (type.equals("int"))    return 4;
         if (type.equals("short"))  return 2;
-        if (type.equals("byte"))   return 1;
+        if (type.equals("byte") ||
+            type.equals("boolean"))return 1; //erddap stores booleans as bytes
         if (type.equals("char"))   return 2;
         if (type.equals("String")) return 20;
         throw new IllegalArgumentException("PrimitiveArray.sizeOf unsupported type: " + type);
@@ -724,6 +726,7 @@ public abstract class PrimitiveArray {
      * This just keeps the rows for the 'true' values in the bitset.
      * Rows that aren't kept are removed.
      * The resulting PrimitiveArray is compacted (i.e., it has a smaller size()).
+     * This doesn't alter the values in bitset.
      *
      * @param bitset
      */

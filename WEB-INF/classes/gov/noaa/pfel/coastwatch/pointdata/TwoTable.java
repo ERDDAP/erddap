@@ -71,7 +71,8 @@ public class TwoTable  {
 
     /** testDir is used for tests. */
     public static String testDir = 
-        String2.getClassPath() + "gov/noaa/pfel/coastwatch/pointdata/";
+        String2.getClassPath() + //with / separator and / at the end
+        "gov/noaa/pfel/coastwatch/pointdata/";
 
 
     /**

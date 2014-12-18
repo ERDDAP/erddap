@@ -350,12 +350,14 @@ public abstract class EDD {
             if (type.equals("EDDTableCopyPost"))        return EDDTableCopyPost.fromXml(xmlReader);
             if (type.equals("EDDTableFromAsciiServiceNOS")) return EDDTableFromAsciiServiceNOS.fromXml(xmlReader);
             //if (type.equals("EDDTableFromBMDE"))        return EDDTableFromBMDE.fromXml(xmlReader); //inactive
+            if (type.equals("EDDTableFromCassandra"))   return EDDTableFromCassandra.fromXml(xmlReader);
             if (type.equals("EDDTableFromDapSequence")) return EDDTableFromDapSequence.fromXml(xmlReader);
             if (type.equals("EDDTableFromDatabase"))    return EDDTableFromDatabase.fromXml(xmlReader);
             if (type.equals("EDDTableFromEDDGrid"))     return EDDTableFromEDDGrid.fromXml(xmlReader);
             if (type.equals("EDDTableFromErddap"))      return EDDTableFromErddap.fromXml(xmlReader);
             //if (type.equals("EDDTableFromMWFS"))        return EDDTableFromMWFS.fromXml(xmlReader); //inactive as of 2009-01-14
             if (type.equals("EDDTableFromAsciiFiles"))  return EDDTableFromAsciiFiles.fromXml(xmlReader);
+            if (type.equals("EDDTableFromColumnarAsciiFiles"))  return EDDTableFromColumnarAsciiFiles.fromXml(xmlReader);
             if (type.equals("EDDTableFromAwsXmlFiles")) return EDDTableFromAwsXmlFiles.fromXml(xmlReader);
             if (type.equals("EDDTableFromHyraxFiles"))  return EDDTableFromHyraxFiles.fromXml(xmlReader);
             if (type.equals("EDDTableFromNcFiles"))     return EDDTableFromNcFiles.fromXml(xmlReader);
@@ -2791,27 +2793,39 @@ public abstract class EDD {
     }
 
     /**
-     * This is used by generateDatasetsXml to find out if a table probably
-     * has longitude, latitude, and time variables.
+     * This is used by generateDatasetsXml to find out if a table 
+     * probably has longitude, latitude, and time variables.
      *
-     * @param table
+     * @param sourceTable  This can't be null.
+     * @param addTable with columns meanings that exactly parallel sourceTable
+     *   (although, often different column names, e.g., lat, latitude).
+     *   This can't be null.
      * @return true if it probably does
      */
-    public static boolean probablyHasLonLatTime(Table table) {
-        boolean hasLon = false, hasLat = false, hasTime = false; 
-        for (int col = 0; col < table.nColumns(); col++) {
-            String colNameLC = table.getColumnName(col).toLowerCase();
-            Attributes atts = table.columnAttributes(col);
-            boolean hasTimeUnits = EDVTimeStamp.hasTimeUnits(atts, null);
-            String units = atts.getString("units");
-            if (colNameLC.equals("lon") || colNameLC.indexOf("longitude") >= 0 || 
+    public static boolean probablyHasLonLatTime(Table sourceTable, Table addTable) {
+        boolean hasLon = false, hasLat = false, hasTime = false;
+        int sn = sourceTable.nColumns();
+        int an = sourceTable.nColumns();
+        if (sn != an)
+            throw new RuntimeException(
+                "sourceTable nColumns=" + sn + " (" + sourceTable.getColumnNamesCSVString() + ")\n" +
+                "!= addTable nColumns=" + an + " (" +    addTable.getColumnNamesCSVString() + ")");
+        for (int col = 0; col < sn; col++) {
+            String colName = addTable.getColumnName(col).toLowerCase();
+            String units = addTable.columnAttributes(col).getString("units");
+            if (units == null)
+                units = sourceTable.columnAttributes(col).getString("units");
+            if (colName.equals("longitude") || 
+                colName.equals("lon") ||
                 "degrees_east".equals(units)) 
                 hasLon = true;
-            if (colNameLC.equals("lat") || colNameLC.indexOf("latitude") >= 0 || 
+            else if (colName.equals("latitude") || 
+                     colName.equals("lat") || 
                 "degrees_north".equals(units)) 
                 hasLat = true;
-            if (colNameLC.equals("time") || hasTimeUnits)
+            else if (colName.equals("time") || EDVTimeStamp.hasTimeUnits(units))
                 hasTime = true;
+            //String2.log(">> colName=" + colName + " units=" + units + " hasLon=" + hasLon + " hasLat=" + hasLat + " hasTime=" + hasTime);
         }
         return hasLon && hasLat && hasTime;
     }
@@ -4485,7 +4499,10 @@ public abstract class EDD {
         }
 
         //common mistakes in UAF
-        if (tUnitsLC.equals("celsius/degree")) 
+        if (tUnitsLC.equals("yyyy.(fractional part of year)")) {
+            addAtts.add("originalUnits", "YYYY.(fractional part of year)");
+            tUnits = "1";
+        } else if (tUnitsLC.equals("celsius/degree")) 
             tUnits = "degree_C";
         else if (tUnitsLC.equals("kelvins")) 
             tUnits = "deg_K";
@@ -6540,8 +6557,7 @@ public abstract class EDD {
         tPositive = tPositive.toLowerCase();
 
         if (tryToFindLLAT) {
-            if (lcSourceName.indexOf("longitude") >= 0 ||            
-                ((lcSourceName.indexOf("lon") >= 0 ||
+            if ((lcSourceName.indexOf("lon") >= 0 ||
                   lcSourceName.equals("x") ||
                   lcSourceName.equals("xax")) &&  //must check, since uCurrent and uWind use degrees_east, too
                  (tUnitsLC.equals("degrees_east") ||
@@ -6550,19 +6566,18 @@ public abstract class EDD {
                   tUnitsLC.equals("degrees_west") || //bizarre, but sometimes used for negative degrees_east values
                   tUnitsLC.equals("degree_west") ||
                   tUnitsLC.equals("degrees") ||
-                  tUnitsLC.equals("degree")))) 
+                  tUnitsLC.equals("degree"))) 
 
                 return "longitude"; 
                  
-            if (lcSourceName.indexOf("latitude") >= 0 ||            
-                ((lcSourceName.indexOf("lat") >= 0 ||
+            if ((lcSourceName.indexOf("lat") >= 0 ||
                   lcSourceName.equals("y") ||
                   lcSourceName.equals("yax")) &&  
                  (tUnitsLC.equals("degrees_north") ||
                   tUnitsLC.equals("degree_north") ||
                   tUnitsLC.equals("degree_n") ||     //incorrect, but exists
                   tUnitsLC.equals("degrees") ||
-                  tUnitsLC.equals("degree")))) 
+                  tUnitsLC.equals("degree"))) 
      
                 return "latitude"; 
 

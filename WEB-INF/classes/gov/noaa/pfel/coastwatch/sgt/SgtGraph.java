@@ -1742,7 +1742,8 @@ public class SgtGraph  {
         long time = System.currentTimeMillis();
         String tempDir = SSR.getTempDirectory();
         SgtGraph sgtGraph = new SgtGraph("Bitstream Vera Sans"); //"SansSerif" is safe choice
-        String imageDir = SSR.getContextDirectory() + "images/";
+        String imageDir = SSR.getContextDirectory() + //with / separator and / at the end
+            "images/";
 
         int width = 800;  //2 graphs wide 
         int height = 1200;  //3 graphs high 
@@ -2141,7 +2142,8 @@ public class SgtGraph  {
         long time = System.currentTimeMillis();
         String tempDir = SSR.getTempDirectory();
         SgtGraph sgtGraph = new SgtGraph("Bitstream Vera Sans"); //"SansSerif" is safe choice
-        String imageDir = SSR.getContextDirectory() + "images/";
+        String imageDir = SSR.getContextDirectory() + //with / separator and / at the end
+            "images/";
 
         int width = 400;  
         int height = 600; 
@@ -2253,7 +2255,8 @@ public class SgtGraph  {
         {  //so garbage collector can clean up at the end of the test
             String tempDir = SSR.getTempDirectory();
             SgtGraph sgtGraph = new SgtGraph("Bitstream Vera Sans"); //"SansSerif" is safe choice
-            String imageDir = SSR.getContextDirectory() + "images/";
+            String imageDir = SSR.getContextDirectory() + //with / separator and / at the end
+                "images/";
 
             int width = 800;  //2 graphs wide
             int height = 900;  //3 graphs high

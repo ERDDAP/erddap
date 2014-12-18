@@ -168,6 +168,8 @@ public class GenerateDatasetsXml {
                     "  EDDGridFromThreddsCatalog\n" +
                     "  EDDTableFromAsciiFiles\n" +                
                     "  EDDTableFromAwsXmlFiles\n" +                
+                    "  EDDTableFromCassandra\n" +
+                    "  EDDTableFromColumnarAsciiFiles\n" +                
                     "  EDDTableFromDapSequence\n" +
                     "  EDDTableFromDatabase\n" +
                     "  EDDTableFromErddap\n" +
@@ -203,9 +205,10 @@ public class GenerateDatasetsXml {
                         String2.parseInt(s2, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), null));
 
                 } else if (eddType.equals("EDDGridFromErddap")) {
-                    s1  = get(args,  1,  s1, "URL of remote ERDDAP (ending in (\"/erddap\")");  
+                    s1 = get(args, 1, s1, "URL of remote ERDDAP (ending in (\"/erddap\")");  
+                    s2 = get(args, 2, s2, "Keep original datasetIDs (true|false)");
                     String2.log("working...");
-                    printToBoth(EDDGridFromErddap.generateDatasetsXml(s1));
+                    printToBoth(EDDGridFromErddap.generateDatasetsXml(s1, String2.parseBoolean(s2)));
 
                 } else if (eddType.equals("EDDGridFromNcFiles")) {
                     s1  = get(args,  1,  s1, "Parent directory");
@@ -280,6 +283,45 @@ public class GenerateDatasetsXml {
                         s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, null));
 
                 //currently no EDDTableFromBMDE  //it is inactive
+
+                } else if (eddType.equals("EDDTableFromCassandra")) {
+                    s1 = get(args,  1,  s1, "URL (without port number, e.g., 127.0.0.1)");
+                    s2 = get(args,  2,  s2, "Connection properties (format: name1|value1|name2|value2)");
+                    s3 = get(args,  3,  s3, "Keyspace (or '!!!LIST!!!')");
+                    s4 = get(args,  4,  s4, "Table name (or '!!!LIST!!!')");
+                    s5 = get(args,  5,  s5, reloadEveryNMinutesMessage);
+                    s6 = get(args,  6,  s6, "infoUrl");
+                    s7 = get(args,  7,  s7, "institution");
+                    s8 = get(args,  8,  s8, "summary");
+                    s9 = get(args,  9,  s9, "title");
+                    String sa2[] = s2.length() == 0? new String[0] : String2.split(s2, '|');
+                    String2.log("working...");
+                    printToBoth(EDDTableFromCassandra.generateDatasetsXml(
+                        s1, sa2, s3, s4, String2.parseInt(s5), s6, s7, s8, s9, null));
+
+                } else if (eddType.equals("EDDTableFromColumnarAsciiFiles")) {
+                    s1  = get(args,  1,  s1, "Starting directory");
+                    s2  = get(args,  2,  s2, "File name regex (e.g., \".*\\.asc\")");
+                    s3  = get(args,  3,  s3, "A sample full file name");                       
+                    s4  = get(args,  4,  s4, "Charset (e.g., ISO-8859-1 (default) or UTF-8)");                     
+                    s5  = get(args,  5,  s5, "Column names row (e.g., 1)");                     
+                    s6  = get(args,  6,  s6, "First data row (e.g., 2)");                          
+                    s7  = get(args,  7,  s7, reloadEveryNMinutesMessage);
+                    s8  = get(args,  8,  s8, "PreExtractRegex");
+                    s9  = get(args,  9,  s9, "PostExtractRegex");
+                    s10 = get(args, 10, s10, "ExtractRegex");
+                    s11 = get(args, 11, s11, "Column name for extract");
+                    //s12 = get(args, 12, s12, "Sorted column source name");
+                    s12 = get(args, 12, s12, "Sort files by sourceName");
+                    s13 = get(args, 13, s13, "infoUrl");
+                    s14 = get(args, 14, s14, "institution");
+                    s15 = get(args, 15, s15, "summary");
+                    s16 = get(args, 16, s16, "title");
+                    String2.log("working...");
+                    printToBoth(EDDTableFromColumnarAsciiFiles.generateDatasetsXml(
+                        s1, s2, s3, s4, String2.parseInt(s5, 1), String2.parseInt(s6, 2), 
+                        String2.parseInt(s7, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
+                        s8, s9, s10, s11, s12, s13, s14, s15, s16, null));
 
                 } else if (eddType.equals("EDDTableFromDapSequence")) {
                     s1  = get(args,  1,  s1, "URL (without trailing .dds or .html)"); 
