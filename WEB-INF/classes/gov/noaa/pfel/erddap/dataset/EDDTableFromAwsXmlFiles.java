@@ -110,7 +110,6 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         }
 
         return table;
-
     }
 
 
@@ -216,7 +215,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataSourceTable)? "Point" : "Other",
+                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
                 tFileDir, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 

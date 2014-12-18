@@ -156,21 +156,18 @@ or Mac server instead.
       title="This link to an external web site does not constitute an endorsement."/></a>)
       <br>&nbsp;
 
-    <li><a name="WindowsMemory">On Windows,</a> run Tomcat Manager and right click on the 
-      Tomcat Manager icon in the system tray; 
-      select <tt>Configure : Java</tt>.
-      <ul>
-      <li>Set the <tt>Java Virtual Machine</tt> directory, e.g.,
-        C:\Program Files\Java\jre8\bin\client\jvm.dll.    <!-- javaVersion -->  
-      <li>Set <tt>Initial Memory Pool</tt> and 
-        <tt>Maximum Memory Pool</tt> to <tt>1200</tt> MB on 32-bit Windows computers or
-        up to 1/2 of physical memory on 64-bit Windows computers. 
-        On 32-bit computers, going much higher than 1200 MB will probably fail.
-        <br>&nbsp;
-      </ul>
-
-    <li>On Linux and Macs, Tomcat is often set up as belonging to 
-      user "tomcat". Set up that account now.  
+    <li>On Linux and Macs, it is best to set up Tomcat (the program) as belonging to 
+      user "tomcat" (a separate user with limited permissions and which <a rel="help" 
+      href="http://unix.stackexchange.com/questions/56765/creating-an-user-without-a-password">has no password</a>.
+      Thus, only the super user can switch to acting as user tomcat.
+      This makes it impossible for hackers to log in to your server as user tomcat.
+      And in any case, you should make it so that the tomcat user has very limited 
+      permissions on the server's file system 
+      (read/write privileges for the apache-tomcat directory tree and 
+      &lt;bigParentDirectory&gt; 
+      and read-only privileges for directories with data that ERDDAP needs access to). 
+      Set up that user account now.  
+      Then change ownership of the apache-tomcat directory tree to the tomcat user.
       From the parent of the apache-tomcat directory, type 
       <br><tt>chown -R tomcat apache-tomcat-<i>8.0.9</i></tt>  <!-- tomcatVersion -->
       <br><tt>chgrp -R tomcat apache-tomcat-<i>8.0.9</i></tt>  <!-- tomcatVersion -->
@@ -180,18 +177,21 @@ or Mac server instead.
       permission to write to its log files.
       <br>&nbsp;
 
-    <li>On <a name="LinuxMemory">Linux</a> and <a name="MacMemory">Macs</a>, 
-      create a file <i>tomcat</i>/bin/setenv.sh 
+    <li><a name="LinuxMemory">Set</a> <a name="WindowsMemory">Tomcat's</a>
+      <a name="MacMemory">Environmental</a> Variables
+      <br>Create a file <i>tomcat</i>/bin/setenv.sh (or \'s and .bat in Windows)
       (or in Red Hat Enterprise Linux (RHEL), edit ~tomcat/conf/tomcat8.conf) <!-- tomcatVersion -->
-      to set environmental variables.
-      This file will be used by <i>tomcat</i>/bin/startup.sh and shutdown.sh.
-      The file should contain<tt>
+      to set Tomcat's environmental variables.
+      This file will be used by <i>tomcat</i>/bin/startup.sh and shutdown.sh 
+      (or \'s and .bat in Windows).
+      The file should contain:<tt>
       <br>export JAVA_HOME=/usr/local/jdk1.8.0_20/jre  <!-- javaVersion -->
       <br>export JAVA_OPTS='-server -Djava.awt.headless=true -Xmx1500M -Xms1500M'
       <br>export TOMCAT_HOME=/usr/local/apache-tomcat-<i>8.0.9</i>         <!-- tomcatVersion -->
       <br>export CATALINA_HOME=/usr/local/apache-tomcat-<i>8.0.9</i></tt>  <!-- tomcatVersion -->
       <br>(but substitute the directory names from your computer).        
       <br>(If you previously set JRE_HOME, you can remove that.)
+      <br>In Windows, use <tt>set</tt> instead of <tt>export</tt> and \'s instead of /'s.
       <br>On Macs, you probably don't need to set JAVA_HOME.
       <br>The -Xmx and -Xms memory settings are important because ERDDAP works better with more 
       memory. Always set -Xms to the same value as -Xmx.
@@ -289,25 +289,28 @@ or Mac server instead.
 
 <li><a name="erddapContent">Set up the <i>tomcat</i>/content/erddap configuration files.</a> 
   <br>On Linux, Mac, and Windows, download
-    <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>    
-     <!-- Use: c:\content\bat\md5.bat erddapContent.zip -->
-     (version 1.52, size=22,132 bytes, MD5=9CFB41D3FA7F6A267B600D629FABBC17) <!-- Dated 2014-10-03) -->
-    and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
+     <!-- Use: c:\content\bat\md5.bat erddapContent1.56.zip -->
+    <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>
+    (version 1.56, size=24,076 bytes, MD5=93E1272069DDF6C858C48F7EDB0CC690, dated 2014-12-17)
 
-  <p>[The <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.46.zip">previous version</a> 
-  is also available  <!--
-     (version 1.38, size=70,836 bytes, MD5=D927E8132F1F19A342274F37375619E6, Dated 2012-05-02) 
-     (version 1.40, size=72,108 bytes, MD5=2D110CC2472F39FF1FC4B27C8C1C720F, Dated 2012-10-25) 
-     (version 1.42, size=72,146 bytes, MD5=4EC605978B939835947A9D551C947E97) Dated 2012-11-26) 
-     (version 1.44, size=72,757 bytes, MD5=39D59EACBA646AEAAA5FF6B5D267D91E) Dated 2013-05-30) -->
-     (version 1.46, size=22,268 bytes, MD5=FE827B9C411ECAC535F8C65392A5CDFD).] <!-- Dated 2013-07-09) 
-     (version 1.50, size=22,132 bytes, MD5=25697F19B1AE7C595EFE0E3F25DFFDE2) Dated 2014-09-06) -->
+    and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
   <p>For Red Hat Enterprise Linux (RHEL), unzip it into ~tomcat
     and set the system property 
     <tt>erddapContentDirectory=~tomcat/content/erddap</tt>
     in ~tomcat/conf/tomcat8.conf <!-- tomcatVersion --> so ERDDAP can find the directory.
     
+  <p>[Some previous versions are also available:  
+     <br><a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.46.zip">1.46</a>
+     (size=22,268 bytes, MD5=FE827B9C411ECAC535F8C65392A5CDFD, dated 2013-07-09) 
+     <br><a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.50.zip">1.50</a>
+     (size=22,132 bytes, MD5=25697F19B1AE7C595EFE0E3F25DFFDE2, dated 2014-09-06)
+     <br><a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.52.zip">1.52</a>
+     (size=22,132 bytes, MD5=9CFB41D3FA7F6A267B600D629FABBC17, dated 2014-10-03) 
+     <br><a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.54.zip">1.54</a>
+     (size=22,132 bytes, MD5=38F003E2E270DA8F01446CB74ABE41E0, dated 2014-10-24) 
+     ]
+
   <p>Then,
   <ul>
   <li><a name="setup.xml">Read</a> the comments in <i>tomcat</i>/content/erddap/<b>setup.xml</b>
@@ -339,25 +342,31 @@ or Mac server instead.
 
 <li><a name="erddap.war">Install</a> the erddap.war file.
   <br>On Linux, Mac, and Windows, download 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    <!-- use: c:\content\bat\md5.bat erddap.war  
-         ver, size, md5 duplicated below -->
-    (version 1.52, size=486,085,688 bytes, MD5=4CDAF259D9E51792D75C6CE66570BF2C)
+    <!-- use: c:\content\bat\md5.bat erddap1.56.war  
+         ver, size, md5 duplicated twice below -->
+    <a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
+    (version 1.56, size=490,780,244 bytes, MD5=B35EB5F1774ECB6F098583E757EF3DBA, dated 2014-12-16)
+
     into <i>tomcat</i>/webapps .  
   The .war file is big because it contains high resolution coastline, boundary, 
   and elevation data needed to create maps.
 
-  <p>[The 
-    <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.46.war">previous version</a> 
-    is also available
-    <!-- 
-    (version 1.38, size=478,799,083 bytes, MD5=7270FB700CAEF85A1F1A3B3326FAFE98) 
-    (version 1.40, size=477,338,971 bytes, MD5=138F354918668AB8414A8174365BD036) 
-    (version 1.42, size=477,356,261 bytes, MD5=EC29F6D9E6185BC71557CF47063E3276) 
-    (version 1.44, size=482,013,960 bytes, MD5=CDFF1E9DD3201F6A5AEB19EB3DB556FC) -->
-    (version 1.46, size=482,115,063 bytes, MD5=26957D4A6866F5DBAF3238E7A39BD0FE).
-<!--(version 1.50, size=486,076,835 bytes, MD5=917B108FDF089B6426027168A2DC2B8A) -->
-    Rename it to erddap.war after you download it.]
+  <p>[Some previous versions are also available. 
+     If you download one of these, rename it erddap.war.
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.46.war">1.46</a> 
+    (size=482,115,063 bytes, MD5=26957D4A6866F5DBAF3238E7A39BD0FE, dated 2013-07-09)
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.50.war">1.50</a> 
+    (size=486,076,835 bytes, MD5=917B108FDF089B6426027168A2DC2B8A, dated 2014-09-06)
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.52.war">1.52</a> 
+    (size=486,085,688 bytes, MD5=4CDAF259D9E51792D75C6CE66570BF2C, dated 2014-10-03)
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.54.war">1.54</a> 
+    (size=486,119,509 bytes, MD5=8118C3C4059C341DFC2488B50DAFCB31, dated 2014-10-24)
+    ]
 
 <li><a name="ProxyPass">Use</a> ProxyPass so users don't have to put the port number, e.g., :8080, in the URL.
   <br>On Linux computers, if Tomcat is running in Apache, please modify the
@@ -372,14 +381,13 @@ or Mac server instead.
   </ol>
 
 <li>Start Tomcat.
-  <br>If Tomcat is already running, use <i>tomcat</i>/bin/shutdown.sh to shut down Tomcat.
-  <br>Use <i>tomcat</i>/bin/startup.sh to start Tomcat.
-  <br>Or, if you use the Tomcat Web Application Manager:
+  <br>(I don't recommend using the Tomcat Web Application Manager. If you don't fully shutdown and startup Tomcat, sooner or later you will have PermGen memory issues.)
   <ul>
-  <li>Download <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-     into a temporary directory on your computer.
-  <li>Use "Select WAR file to upload" to pick the erddap.war file. 
-  <li>Click on "Deploy".
+  <li>If Tomcat is already running, use <i>tomcat</i>/bin/shutdown.sh (or \'s and .bat in Windows) 
+    to shut down Tomcat.
+    <br>On Linux, you may want to use <tt>ps -ef | grep tomcat</tt> to see if/when the
+    process has been stopped.  (It may take a minute or two.)
+  <li>Use <i>tomcat</i>/bin/startup.sh (or \'s and .bat in Windows) to start Tomcat.
     <br>&nbsp;
   </ul>
 
@@ -388,9 +396,12 @@ or Mac server instead.
   <br>ERDDAP starts up without any datasets loaded. 
   Datasets are loaded in a background thread and so become available one-by-one.
 
-  <p>Trouble? Tomcat has to do a lot of work the first time an application like ERDDAP is started.
-  On some servers, the first attempt to view ERDDAP stalls (30 seconds?) until this work is finished.
-  On other servers, the first attempt will fail immediately. But if you wait 30 seconds and try again,
+  <p>Trouble? Tomcat has to do a lot of work the first time an application like 
+  ERDDAP is started.
+  On some servers, the first attempt to view ERDDAP stalls (30 seconds?) until 
+  this work is finished.
+  On other servers, the first attempt will fail immediately. But if you wait 
+  30 seconds and try again,
   it will succeed if ERDDAP was installed correctly.
   <br>If your second attempt to view ERDDAP fails, look for error messages in 
   <br><a rel="help" href="#tomcatLogs">Tomcat's log file</a> (<i>tomcat</i>/logs/catalina.out) and
@@ -444,17 +455,10 @@ or Mac server instead.
   for all of the ERDDAP versions since the version you were using.
   <br>&nbsp;
 
-<li>Download <a href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    <!-- ver, size, md5 duplicated above 
-    (version 1.38, size=478,799,083 bytes, MD5=7270FB700CAEF85A1F1A3B3326FAFE98) 
-    (version 1.40, size=477,338,971 bytes, MD5=138F354918668AB8414A8174365BD036) 
-    (version 1.42, size=477,356,261 bytes, MD5=EC29F6D9E6185BC71557CF47063E3276) 
-    (version 1.44, size=482,013,960 bytes, MD5=CDFF1E9DD3201F6A5AEB19EB3DB556FC) 
-    (version 1.46, size=482,115,063 bytes, MD5=26957D4A6866F5DBAF3238E7A39BD0FE) 
-    (version 1.48, size=486,082,750 bytes, MD5=6DC8DA75FF9DE313B3622854A59564EC) 
-    (version 1.50, size=486,076,835 bytes, MD5=917B108FDF089B6426027168A2DC2B8A) -->
-    (version 1.52, size=486,085,688 bytes, MD5=4CDAF259D9E51792D75C6CE66570BF2C)
-
+<li>Download 
+    <a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
+    (version 1.56, size=490,780,244 bytes, MD5=B35EB5F1774ECB6F098583E757EF3DBA, dated 2014-12-16)
     into a  temporary directory.
   <br>&nbsp;
 
@@ -484,20 +488,19 @@ or Mac server instead.
     <br>&nbsp;
   </ul>
 
-<li>If you use Tomcat Manager:
+<li>Install the new ERDDAP in Tomcat:
   <ol>
-  <li>"Undeploy" ERDDAP.
-  <li>"Deploy" the erddap.war file (it will ask you for the location of the erddap.war file).
-  </ol>
-  <br>If you use a Linux or Mac command line:
-  <ol>
-  <li>Follow the first part of these instructions to 
-     <a rel="help" href="#shutdown">shut down Tomcat and ERDDAP</a>
-     <br>(but don't restart it yet).
+  <li>(Don't use Tomcat Manager. Sooner or later there will be PermGen memory issues. 
+    It is better to actully shutdown and startup Tomcat.)
+  <li>From a command line, use <tt><i>tomcat</i>/bin/shutdown.sh</tt> 
+    (or \'s and .bat in Windows).
+    <br>On Linux, you may want to use <tt>ps -ef | grep tomcat</tt> to see if/when 
+    the process has been stopped.  (It may take a minute or two.)
   <li>In <tt><i>tomcat</i>/webapps</tt>, use <tt>rm -r erddap</tt>
   <li>In <tt><i>tomcat</i>/webapps</tt>, use <tt>rm erddap.war</tt>
   <li>Copy the new erddap.war file from the temporary directory to <tt><i>tomcat</i>/webapps</tt> .
-  <li>In <tt><i>tomcat</i>/bin</tt>, use <tt>./startup.sh</tt> to restart Tomcat and ERDDAP.
+  <li>Use <tt><i>tomcat</i>/bin/startup.sh</tt> (or \'s and .bat in Windows) 
+    to restart Tomcat and ERDDAP.
   <li>View ERDDAP in your browser to check that the restart succeeded.
       (Sometimes, you need to try to load ERDDAP in your browser a few times before it succeeds.)
      <br>&nbsp;
@@ -1481,6 +1484,88 @@ So how can ERDDAP get the data for restricted access datasets? Some options are:
 
 </ul>
 
+<p><a name="defensesAgainstHackers">Defenses Against Hackers</a> - 
+There are bad guy hackers who 
+try to exploit security weaknesses in server software like ERDDAP. 
+ERDDAP follows the common security advice to have several layers of defenses:
+
+<ul>
+<li>Restricted Privileges - One of the most important defenses is to 
+run Tomcat via a user called tomcat that doesn't have a password (so no one
+can log in as that user) and has limited file system privileges (e.g.,
+read-only access to the data).
+See ERDDAP's instructions for <a rel="help" href="#tomcat">setting up tomcat</a>.
+
+<li>Heavy Use -
+In general, ERDDAP is built for heavy use, including by scripts which make 
+tens of thousands of requests, one after another. 
+It is hard for ERDDAP to simultaneously open itself up to heavy legitimate use and
+shield itself from abuse.
+It is sometimes hard to differentiate heavy legitimate use, excessive legitimate use,
+and illegitimate use (and sometimes it is really easy).
+Among other defenses, ERDDAP consciously does not allow a single request to 
+use an inordinate fraction of the system's resources (unless the system is otherwise
+not active). 
+
+<li>Identify Troublesome Users -
+If ERDDAP is slowing down or freezing 
+(perhaps because a naive user or a bot is running multiple
+scripts to submit multiple requests simultaneously 
+or perhaps because of a bad guy's
+<a rel="help" href="http://en.wikipedia.org/wiki/Denial-of-service_attack">Denial-of-service</a>
+attack), you can look at the 
+<a rel="help" href="#dailyReport">Daily Report email</a>
+(and more requent identical information in the 
+<a rel="help" href="#dailyReport">ERDDAP log file</a>)
+which displays the number of requests made by the most active users 
+(see "Requester's IP Address (Allowed)").
+ERDDAP also sends emails to the administrator whenever there is
+<a rel="help" href="#requestsFailed">"Unusual activity: >25% of requests failed"</a>.
+You can then look in the ERDDAP log file to see the nature of their requests.
+If you feel that someone is making too many requests, bizarre
+requests (you wouldn't believe what I've seen, well, maybe you would), 
+or attack-type requests, 
+you can add their IP address to the blacklist.
+
+<li>Blacklist - 
+You can add the IP address of troublesome users, bots, and 
+<a rel="help" href="http://en.wikipedia.org/wiki/Denial-of-service_attack">Denial-of-service</a>
+attackers to the ERDDAP
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#requestBlacklist"
+>blacklist</a>, so that future requests from them will be immediately rejected.
+This setting is in datasets.xml so that you can quickly add an IP address to the list
+and then <a rel="help" href="#flag">flag</a>
+a dataset so that ERDDAP immediately notices and applies the change.
+The error message sent to blacklisted users encourages them to contact the ERDDAP administrator
+if they feel they have been mistakenly put on the blacklist.
+(In our experience, several users have been unaware that they were running
+multiple scripts simultaneously, or that their scripts were making nonsense requests.)
+
+<li>Dataset Security -
+Some types of datasets (notably, EDDTableFromDatabase) present additional security risks
+(e.g., SQL injection)
+and have their own security measures. See the information for those types 
+of datasets in 
+<a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html"
+>Working with the datasets.xml File</a>,
+notably 
+<a rel="help"
+href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#databaseSecurity"
+>EDDTableFromDatabase security</a>.
+
+<li>Security Audit - 
+I (Bob) tried repeatedly for 3+ years to get NOAA IT security to do a security 
+audit of ERDDAP. They have repeatedly refused. At one point, they said they
+only do that for software developed in the DC area.
+Fortunately, in 2012, a group in USGS started to use ERDDAP. 
+In early 2013, they hired the security firm Acunetix to do a security scan of ERDDAP.
+They found some problems.
+I fixed some of them and gave reasons for why the other issues were false alerts. 
+They redid the scan. If you would like to see the report and my reply,
+please email <tt>bob dot simons at noaa dot gov</tt>.
+
+</ul>
+
 <p>Questions? Suggestions? If you have any questions about ERDDAP's security system
 or have any questions, doubts, concerns, or suggestions about how it is set up, 
 please email <tt>bob dot simons at noaa dot gov</tt>.
@@ -1751,7 +1836,7 @@ These are things that only a programmer who intends to work with ERDDAP's Java c
      <li>Our javac and java classpath (including some unnecessary items) is currently
        <!-- Bob: don't forget to update the classpath in the .bat/shell script files in WEB-INF. -->
        <br><tt>
-./classes;../../../lib/servlet-api.jar;lib/axis.jar;lib/commons-compress.jar;lib/commons-discovery.jar;lib/itext-1.3.1.jar;lib/jaxrpc.jar;lib/joid.jar;lib/lucene-core.jar;lib/mail.jar;lib/netcdfAll-latest.jar;lib/postgresql.jdbc.jar;lib/saaj.jar;lib/tsik.jar;lib/wsdl4j.jar</tt>
+./classes;../../../lib/servlet-api.jar;lib/axis.jar;lib/cassandra-driver-core.jar;lib/netty-all.jar;lib/guava.jar;lib/metrics-core.jar;lib/lz4.jar;lib\snappy-java.jar;lib/commons-compress.jar;lib/commons-discovery.jar;lib/itext-1.3.1.jar;lib/jaxrpc.jar;lib/joid.jar;lib/lucene-core.jar;lib/mail.jar;lib/netcdfAll-latest.jar;lib/postgresql.jdbc.jar;lib/saaj.jar;lib/tsik.jar;lib/wsdl4j.jar</tt>
 
      <li>So your javac command line will be something like
        <br><tt>javac -cp (classpath above) classes/gov/noaa/pfel/coastwatch/TestAll.java</tt>
@@ -2083,6 +2168,61 @@ program, and the now defunct POST program.
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a>).
     The driver is Copyright (c) 1997-2010, PostgreSQL Global Development Group. All rights reserved.
+<li> ERDDAP includes  
+     <a rel="help"
+      href="http://cassandra.apache.org/">Cassandra's<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+     <a rel="help"
+      href="http://www.datastax.com/download#dl-datastax-drivers">cassandra-driver-core.jar<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a> 
+     (license: <a rel="bookmark" 
+      href="https://github.com/datastax/java-driver/blob/2.1/LICENSE">Apache 2.0<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>).
+
+    <br>Cassandra's cassandra-driver-core.jar requires (and so ERDDAP includes):
+    <ul>
+    <li><a rel="help" href="http://netty.io/downloads.html">netty-all.jar<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+      (license: <a rel="bookmark" href="http://netty.io/downloads.html">Apache 2.0<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>).
+
+    <li><a rel="help" href="https://code.google.com/p/guava-libraries/">guava.jar<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+      (license: <a rel="bookmark" href="https://code.google.com/p/guava-libraries/">Apache 2.0<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>).
+
+    <li><a rel="help"
+      href="http://mvnrepository.com/artifact/com.codahale.metrics/metrics-core/3.0.2">metrics-core.jar<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+      (license: <a rel="bookmark" href="https://github.com/codahale/metrics/blob/master/LICENSE">MIT<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>).
+
+    <li><a rel="help" href="http://repo1.maven.org/maven2/net/jpountz/lz4/lz4/">lz4.jar<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+      (license: 
+      <a rel="bookmark" href="https://github.com/jpountz/lz4-java/blob/master/LICENSE.txt">Apache 2.0<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>).
+
+    <li><a rel="help" href="http://xerial.org/snappy-java/">snappy-java.jar<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+      (license: 
+      <a rel="bookmark" href="https://github.com/xerial/snappy-java/blob/develop/LICENSE">Apache 2.0<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>).
+    </ul>
+
 <li> For SOAP services, ERDDAP uses: 
   <ul>
   <li><a rel="help" href="http://ws.apache.org/axis/index.html">axis.jar<img 
@@ -2165,7 +2305,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.52
+<p>ERDDAP, Version 1.56
 <br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

@@ -23,7 +23,7 @@ import java.util.Set;
  * ByteArray is a thin shell over a byte[] with methods like ArrayList's 
  * methods; it extends PrimitiveArray.
  * 
- * <p>This class uses Byte.MAX_VALUE to represent a missing value (NaN).
+ * <p>This class uses Byte.MAX_VALUE (127) to represent a missing value (NaN).
  */
 public class ByteArray extends PrimitiveArray {
 
@@ -110,6 +110,50 @@ public class ByteArray extends PrimitiveArray {
             available = stream.available();
         }
         stream.close();
+    }
+
+    /** This constructs a ByteArray from the values of another PrimitiveArray by
+     * considering the incoming pa as boolean which needs to be  
+     * converted to bytes.
+     * <ul>
+     * <li>StringArray uses String2.parseBooleanToByte.
+     * <li>CharArray uses StandardMissingValue-&gt;StandardMissingValue, 
+     *    [0fF]-&gt;false, others-&gt;true.
+     * <li>numeric uses StandardMissingValue-&gt;StandardMissingValue, 
+     *    0-&gt;false, others-&gt;true.
+     * </ul>
+     */
+    public static ByteArray toBooleanToByte(PrimitiveArray pa) {
+        int size = pa.size();
+        ByteArray ba = new ByteArray(size, true); //active
+        byte bar[] = ba.array;
+        byte zero = 0;
+        byte one = 1;
+        if (pa instanceof StringArray) {
+            for (int i = 0; i < size; i++)
+                bar[i] = String2.parseBooleanToByte(pa.getString(i));
+        } else if (pa instanceof CharArray) {
+            CharArray ca = (CharArray)pa;
+            for (int i = 0; i < size; i++) {
+                char c = ca.get(i);
+                bar[i] = c == Character.MAX_VALUE? Byte.MAX_VALUE :
+                    "0fF".indexOf(ca.get(i)) >= 0? zero : one;
+            }
+        } else if (pa instanceof LongArray) {
+            LongArray la = (LongArray)pa;
+            for (int i = 0; i < size; i++) {
+                long tl = la.get(i);
+                bar[i] = tl == Long.MAX_VALUE? Byte.MAX_VALUE :
+                    tl == 0? zero : one;
+            }
+        } else {  //byte, short, int, float, double
+            for (int i = 0; i < size; i++) {
+                double td = pa.getDouble(i);
+                bar[i] = Double.isNaN(td)? Byte.MAX_VALUE :
+                    td == 0? zero : one;
+            }
+        }
+        return ba;
     }
 
     /**

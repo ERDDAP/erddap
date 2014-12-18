@@ -25,6 +25,16 @@ import java.io.RandomAccessFile;
  * This doesn't work for String data (the Strings are treated as doubles internally,
  * so become the values from String2.parseDouble(s)).
  *
+ * <p>[FUTURE: This could be revised to work with Strings:
+ * 1) make isString[nDv]
+ * 2) store isString columns to 2 files: 
+ *   bytes byte[] with utf8 bytes from the string, appended one after another 
+ *      (StringArray.writeDos)
+ *   offset long[] with offset of end of string. (beginning of first string is offset=0)
+ * 3) add  public String getDataValueAsString(int current[], int dv)
+ *   which uses a variant of StringArray.readDis (but from RandomAccessFile).
+ * ]
+ *
  * @author Bob Simons (bob.simons@noaa.gov) 2007-07-06
  */
 public class GridDataRandomAccessor { 

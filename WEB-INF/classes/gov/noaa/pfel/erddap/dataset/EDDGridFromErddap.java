@@ -846,7 +846,7 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
      * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
      *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
-    public static String generateDatasetsXml(String url) 
+    public static String generateDatasetsXml(String url, boolean keepOriginalID) 
         throws Throwable {
 
         String2.log("EDDGridFromErddap.generateDatasetsXml\n  url=" + url);
@@ -882,6 +882,11 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
             Table table = new Table();
             table.readJson(jsonUrl, sourceInfo);   //they are sorted by title
 
+            if (keepOriginalID) {
+                //sort by datasetID 
+                table.ascendingSortIgnoreCase(new int[]{table.findColumnNumber("Dataset ID")});
+            }
+
             PrimitiveArray urlCol = table.findColumn("griddap");
             PrimitiveArray titleCol = table.findColumn("Title");
             PrimitiveArray datasetIdCol = table.findColumn("Dataset ID");
@@ -894,12 +899,10 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
                     continue;
                 //localSourceUrl isn't available (and we generally don't want it)
                 String tPublicSourceUrl = urlCol.getString(row); 
-                //Use unchanged tPublicSourceUrl or via suggestDatasetID?
-                //I guess suggestDatasetID because it ensures a unique name for use in local ERDDAP.
-                //?? Does it cause trouble to use a different datasetID here?
-                String newID = suggestDatasetID(tPublicSourceUrl);
+                if (!keepOriginalID)
+                    id = suggestDatasetID(tPublicSourceUrl);
                 sb.append(
-"<dataset type=\"EDDGridFromErddap\" datasetID=\"" + newID + "\" active=\"true\">\n" +
+"<dataset type=\"EDDGridFromErddap\" datasetID=\"" + id + "\" active=\"true\">\n" +
 "    <!-- " + XML.encodeAsXML(String2.replaceAll(titleCol.getString(row), "--", "- - ")) + " -->\n" +
 "    <sourceUrl>" + XML.encodeAsXML(tPublicSourceUrl) + "</sourceUrl>\n" +
 "</dataset>\n");
@@ -946,13 +949,12 @@ public class EDDGridFromErddap extends EDDGrid implements FromErddap {
 
         //test local generateDatasetsXml
         try {
-            String results = generateDatasetsXml(EDStatic.erddapUrl) + "\n"; //in tests, always non-https url
+            String results = generateDatasetsXml(EDStatic.erddapUrl, false) + "\n"; //in tests, always non-https url
             String2.log("results=\n" + results);
 
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDGridFromErddap",
-                EDStatic.erddapUrl},
+                "EDDGridFromErddap", EDStatic.erddapUrl, "false"},
                 false); //doIt loop?
             Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
 

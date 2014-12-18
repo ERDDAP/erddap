@@ -60,7 +60,8 @@ public class FileNameUtility  {
     public double regionMinX, regionMaxX, regionMinY, regionMaxY;
 
 
-    public static String STANDARD_REGIONS_FILE_NAME = String2.getClassPath() + 
+    public static String STANDARD_REGIONS_FILE_NAME = 
+        String2.getClassPath() + //with / separator and / at the end
         "gov/noaa/pfel/coastwatch/griddata/regions";
 
     public static String getAcknowledgement() {return "NOAA NESDIS COASTWATCH, NOAA SWFSC ERD"; }

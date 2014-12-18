@@ -317,7 +317,7 @@ public class EDDTableFromDatabase extends EDDTable{
      *        (see http://www.onlamp.com/pub/a/onlamp/2001/09/13/aboutSQL.html?page=last).
      *        Even if they were, there are some difficult types, e.g., unsigned integer types.
      *        So you need to explicitly define the dataTypes. 
-     *        <br>For Date, Time, and Timestamp database types, use "String".
+     *        <br>For Date, Time, and Timestamp database types, use "double".
      *    <br>The order of variables you define doesn't have to match the
      *       order in the source.
      *    <p>If there is a time variable,  
@@ -572,7 +572,7 @@ public class EDDTableFromDatabase extends EDDTable{
         if (dataSource == null) {
             //get a connection via DriverManager
             if (verbose) String2.log(
-                "EDDTableFromDatabase.getConnection via DriverManager + datasets.xml info");
+                "EDDTableFromDatabase.makeConnection via DriverManager + datasets.xml info");
             Class.forName(driverName); //to load the jdbc driver
 
             //see example (with SSL info) at http://jdbc.postgresql.org/documentation/80/connect.html
@@ -586,7 +586,7 @@ public class EDDTableFromDatabase extends EDDTable{
         } else {
             //get a connection from the connection pool via DataSource
             if (verbose) String2.log(
-                "EDDTableFromDatabase.getConnection from pool via DataSource + [tomcat]/conf/server.xml info");
+                "EDDTableFromDatabase.makeConnection from pool via DataSource + [tomcat]/conf/server.xml info");
             Connection con = dataSource.getConnection();
             if (verbose) String2.log("  Success! time=" + 
                 (System.currentTimeMillis() - tTime)); //should be very fast
@@ -849,7 +849,7 @@ public class EDDTableFromDatabase extends EDDTable{
                     preStandardizeResultsTable(loggedInAs, table); 
                     if (table.nRows() > 0) {
                         standardizeResultsTable(requestUrl, userDapQuery, table); //changes sourceNames to destinationNames
-                        tableWriter.writeSome(table);
+                        tableWriter.writeSome(table); //okay if 0 rows
                     }
 
                     table = makeEmptySourceTable(resultsEDVs, triggerNRows);
@@ -863,8 +863,10 @@ public class EDDTableFromDatabase extends EDDTable{
             }
             statement.close();
             preStandardizeResultsTable(loggedInAs, table); 
-            standardizeResultsTable(requestUrl, userDapQuery, table);
-            tableWriter.writeSome(table);
+            if (table.nRows() > 0) {
+                standardizeResultsTable(requestUrl, userDapQuery, table);
+                tableWriter.writeSome(table); //okay if 0 rows
+            }
             tableWriter.finish();
 
             //last thing
@@ -1200,7 +1202,7 @@ public class EDDTableFromDatabase extends EDDTable{
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataAddTable)? "Point" : "Other",
+                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
                 "database/" + //fake file dir
                     (catalogName == null? "" : catalogName + "/") +
                     (schemaName  == null? "" : schemaName + "/") +
@@ -1216,7 +1218,7 @@ public class EDDTableFromDatabase extends EDDTable{
         StringBuilder sb = new StringBuilder();
         sb.append(
             directionsForGenerateDatasetsXml() +
-            " *** Since the database doesn't have any metadata, you must add metadata\n" +
+            " *** Since database tables don't have any metadata, you must add metadata\n" +
             "   below, notably 'units' for each of the dataVariables.\n" +
             "-->\n\n" +
             "<dataset type=\"EDDTableFromDatabase\" datasetID=\"" + 
@@ -1384,7 +1386,7 @@ expected =
 " * If you want to change a destinationName, change it.\n" +
 "   But don't change sourceNames.\n" +
 " * You can change the order of the dataVariables or remove any of them.\n" +
-" *** Since the database doesn't have any metadata, you must add metadata\n" +
+" *** Since database tables don't have any metadata, you must add metadata\n" +
 "   below, notably 'units' for each of the dataVariables.\n" +
 "-->\n" +
 "\n" +

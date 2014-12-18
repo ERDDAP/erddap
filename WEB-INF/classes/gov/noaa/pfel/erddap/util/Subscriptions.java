@@ -73,7 +73,7 @@ public class Subscriptions {
     protected int maxMinutesPending;
     protected String erddapUrl; //the non-https url
     protected PersistentTable persistentTable;
-    protected HashSet emailBlacklist = new HashSet();
+    protected HashSet<String> emailBlacklist = new HashSet();
 
     /** key=datasetID, value=HashSet of persistentTable row numbers */
     protected HashMap datasetSubscriptions = new HashMap();  

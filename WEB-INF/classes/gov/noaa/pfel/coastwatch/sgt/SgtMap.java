@@ -118,7 +118,9 @@ public class SgtMap  {
      *    (http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html).
      *    landMaskDir should have slash at end.
      */
-    public static String fullRefDirectory = SSR.getContextDirectory() + "WEB-INF/ref/";
+    public static String fullRefDirectory = 
+        SSR.getContextDirectory() + //with / separator and / at the end
+        "WEB-INF/ref/";
 
     //some of this information is in DataSet.properties too, see BAthymFGDC
     public static final String etopoFileName = "etopo1_ice_g_i2.bin";
@@ -149,8 +151,12 @@ public class SgtMap  {
      * File must be in the gov/noaa/pfel/coastwatch/sgt directory. */
     public static String bathymetryCpt = "Ocean.cpt"; 
     public static String bathymetryCptTrue = "OceanTrue.cpt";  
-    public static String bathymetryCptFullName = String2.getClassPath() + "gov/noaa/pfel/coastwatch/sgt/" + bathymetryCpt;
-    public static String bathymetryCptTrueFullName = String2.getClassPath() + "gov/noaa/pfel/coastwatch/sgt/" + bathymetryCptTrue;
+    public static String bathymetryCptFullName = 
+        String2.getClassPath() + //with / separator and / at the end
+        "gov/noaa/pfel/coastwatch/sgt/" + bathymetryCpt;
+    public static String bathymetryCptTrueFullName = 
+        String2.getClassPath() + //with / separator and / at the end
+        "gov/noaa/pfel/coastwatch/sgt/" + bathymetryCptTrue;
 
     public final static String TOPOGRAPHY_BOLD_TITLE = 
         "Topography, ETOPO1, 0.0166667 degrees, Global (Ice Sheet Surface)"; //grid registered
@@ -164,7 +170,8 @@ public class SgtMap  {
     /** topographyCpt is used to draw bathymetry+topography colors on maps.
      * File must be in the gov/noaa/pfel/coastwatch/sgt directory. */
     public static String topographyCpt = "Topography.cpt"; 
-    public static String topographyCptFullName = String2.getClassPath() + 
+    public static String topographyCptFullName = 
+        String2.getClassPath() + //with / separator and / at the end
         "gov/noaa/pfel/coastwatch/sgt/" + topographyCpt;
 
     public static Boundaries nationalBoundaries = Boundaries.getNationalBoundaries();
@@ -2341,7 +2348,8 @@ public class SgtMap  {
             Grid bathymetryGrid = createTopographyGrid(fullPrivateDirectory,
                 minX, maxX, minY, maxY, graphWidth, graphHeight);
             CompoundColorMap oceanColorMap = new CompoundColorMap(
-                String2.getClassPath() + "gov/noaa/pfel/coastwatch/sgt/" + bathymetryCpt);
+                String2.getClassPath() + //with / separator and / at the end
+                "gov/noaa/pfel/coastwatch/sgt/" + bathymetryCpt);
             graph = new CartesianGraph("", xt, yt);
             layer = new Layer("bathymetryColors", layerDimension2D);
             layerNames.add(layer.getId());
@@ -2603,18 +2611,22 @@ String2.log("err: " + errCatcher.getString());
 
         //describe grid vectors
         ArrayList pointDataList = new ArrayList();        
-        String griddataDir = String2.getClassPath() + "gov/noaa/pfel/coastwatch/griddata/";
+        String griddataDir = String2.getClassPath() + //with / separator and / at the end
+            "gov/noaa/pfel/coastwatch/griddata/";
         /*String fullResultCpt = griddataDir + "TestMakeMap.cpt";
         File2.delete(fullResultCpt);
-        CompoundColorMap.makeCPT(SSR.getContextDirectory() + "WEB-INF/cptfiles/Rainbow.cpt", 
+        CompoundColorMap.makeCPT(SSR.getContextDirectory() + //with / separator and / at the end
+            "WEB-INF/cptfiles/Rainbow.cpt", 
             "Linear", 0, 10, true, fullResultCpt); */
         String vectorCpt = CompoundColorMap.makeCPT(
-            SSR.getContextDirectory() + "WEB-INF/cptfiles/", 
+            SSR.getContextDirectory() + //with / separator and / at the end
+                "WEB-INF/cptfiles/", 
             "Rainbow", 
             "Linear", 0, 10, 5, false, griddataDir);
 
         String gridCpt = CompoundColorMap.makeCPT(
-            SSR.getContextDirectory() + "WEB-INF/cptfiles/", 
+            SSR.getContextDirectory() + //with / separator and / at the end
+                "WEB-INF/cptfiles/", 
             "BlueWhiteRed", //"LightBlueWhite"
             "Linear", -10, 10, 8, true, griddataDir);
 
@@ -2649,7 +2661,8 @@ String2.log("err: " + errCatcher.getString());
             minX, maxX, minY, maxY, imageWidth, imageHeight);
         makeMap(false, 
             SgtUtil.LEGEND_BELOW, "NOAA", "CoastWatch",
-            SSR.getContextDirectory() + "images/", //imageDir
+            SSR.getContextDirectory() + //with / separator and / at the end
+                "images/", //imageDir
             "noaa20.gif", //logoImageFile
             minX, maxX, minY, maxY,
             drawLandAsMask, 
@@ -2723,7 +2736,8 @@ String2.log("err: " + errCatcher.getString());
             minX[region], maxX[region], minY[region], maxY[region]);
         makeMap(false, 
             SgtUtil.LEGEND_BELOW, "NOAA", "CoastWatch",
-            SSR.getContextDirectory() + "images/", //imageDir
+            SSR.getContextDirectory() + //with / separator and / at the end
+                "images/", //imageDir
             "noaa20.gif", //logoImageFile
             minX[region], maxX[region], minY[region], maxY[region],
             bathCpt? true: false,
@@ -3236,7 +3250,7 @@ String2.log("err: " + errCatcher.getString());
             BufferedImage image = SgtUtil.getBufferedImage(imageWidth, imageHeight);
 
             //make the cpt file
-            String contextDir = SSR.getContextDirectory();
+            String contextDir = SSR.getContextDirectory(); //with / separator and / at the end
             DoubleArray dataDA = new DoubleArray(grid.data);
             double stats[] = dataDA.calculateStats();
             double minData = stats[PrimitiveArray.STATS_MIN];
@@ -3354,7 +3368,8 @@ String2.log("err: " + errCatcher.getString());
         double fontScale = 1;  //was 0.9
 
         String cptName = CompoundColorMap.makeCPT(
-            SSR.getContextDirectory() + "WEB-INF/cptfiles/", 
+            SSR.getContextDirectory() + //with / separator and / at the end
+                "WEB-INF/cptfiles/", 
             "Topography", "Linear", -8000, 8000, -1, true, //continuous, 
             SSR.getTempDirectory());
 

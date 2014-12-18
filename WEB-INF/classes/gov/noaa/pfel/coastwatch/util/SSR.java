@@ -1550,13 +1550,13 @@ public class SSR {
         try {
             InputStream is = getUrlInputStream(urlString); 
             BufferedReader in = new BufferedReader(new InputStreamReader(is));
-            ArrayList al = new ArrayList();
+            ArrayList<String> al = new ArrayList();
             String s;
             while ((s = in.readLine()) != null) {
                 al.add(s);
             }
             in.close();
-            return String2.toStringArray(al.toArray());
+            return al.toArray(new String[0]);
         } catch (Exception e) {
             throw new Exception(String2.ERROR + " from url=" + urlString + " : " + e.toString());
         }
@@ -1769,13 +1769,13 @@ public class SSR {
             InputStream is = com.myjavatools.web.ClientHttpRequest.post(new URL(urlString), parameters);
 
             BufferedReader in = new BufferedReader(new InputStreamReader(is));
-            ArrayList al = new ArrayList();
+            ArrayList<String> al = new ArrayList();
             String s;
             while ((s = in.readLine()) != null) {
                 al.add(s);
             }
             in.close();
-            return String2.toStringArray(al.toArray());
+            return al.toArray(new String[0]);
             // */
 
             /* //from java almanac
@@ -1799,14 +1799,14 @@ public class SSR {
             // Get response
             BufferedReader rd = new BufferedReader(new InputStreamReader(
                 socket.getInputStream()));
-            ArrayList al = new ArrayList();
+            ArrayList<String> al = new ArrayList();
             String line;
             while ((line = rd.readLine()) != null) {
                 al.add(line);
             }
             wr.close();
             rd.close();
-            return String2.toStringArray(al.toArray());
+            return al.toArray(new String[0]);
             // */
 /*        } catch (Exception e) {
             return new String[]{null, MustBe.throwable("SSR.postHTMLForm", e)};
@@ -1985,12 +1985,12 @@ public class SSR {
      * underneath Tomcat (with "WEB-INF/" 
      * the start of things to be removed from classPath).
      *
-     * @return the contextDirectory (with a slash at the end)
+     * @return the contextDirectory (with / separator and / at the end)
      * @throws Exception if trouble
      */
     public static String getContextDirectory() {
         if (contextDirectory == null) {
-            String classPath = String2.getClassPath(); 
+            String classPath = String2.getClassPath(); //with / separator and / at the end
             int po = classPath.indexOf("/WEB-INF/");
             contextDirectory = classPath.substring(0, po + 1);
         }

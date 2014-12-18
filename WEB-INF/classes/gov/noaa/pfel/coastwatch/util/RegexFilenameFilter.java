@@ -90,11 +90,11 @@ public class RegexFilenameFilter implements FilenameFilter {
      */
     public static String[] list(String dir, String regex) {
         try {
-            ArrayList list = new ArrayList();
+            ArrayList<String> list = new ArrayList();
             long tTime = System.currentTimeMillis();
             File dirFile = new File(dir);
             if (!dirFile.isDirectory())
-                return String2.toStringArray(list.toArray());
+                return list.toArray(new String[0]);
 
             //get all names    
             String[] allNames = dirFile.list();
@@ -117,7 +117,7 @@ public class RegexFilenameFilter implements FilenameFilter {
             sortTime += System.currentTimeMillis() - tTime;
 
             //return 
-            return String2.toStringArray(list.toArray());
+            return list.toArray(new String[0]);
         } catch (Exception e) {
             String2.log(MustBe.throwableToString(e));
             return null;
@@ -125,13 +125,15 @@ public class RegexFilenameFilter implements FilenameFilter {
     }
 
     /**
+     * DEPRECATED - USE FileVisitorDNLS INSTEAD!
      * This gathers information about all subdirectories (regardless of regex)
      * and all files matching the regex
      * in the specified directory (e.g., "c:/cohort");
      * 
      * @param dir the directory of interest (with or without a trailing slash)
      * @param regex  See regEx documentation in Java Docs for java.util.regex.Pattern.
-     * @return PrimitiveArray[] [0]=dirNames(StringArray), [1]=fileNames(StringArray), 
+     * @return PrimitiveArray[] [0]=dirNames(StringArray) with trailing / or \\, 
+     *   [1]=fileNames(StringArray), 
      *   [2]=fileLastModified(LongArray), [3]=fileSize(LongArray).
      *   dirNames will not include parent ("..") or self (".").
      *   The sizes of [1], [2], [3] will be the same.
@@ -188,7 +190,8 @@ public class RegexFilenameFilter implements FilenameFilter {
      * @param dir the directory of interest (with or without a trailing slash)
      * @param regex  See regEx documentation in Java Docs for java.util.regex.Pattern.
      * @return a sorted list of the matching dir + file names 
-     *     or null if trouble (e.g., dir doesn't exist)
+     *     or null if trouble (e.g., dir doesn't exist).
+     *     The slashes will match the slashes in dir (\\ or /).
      */
     public static String[] fullNameList(String dir, String regex) {
         String list[] = list(dir, regex);
@@ -219,7 +222,7 @@ public class RegexFilenameFilter implements FilenameFilter {
      *    identify them as directories.
      * @throws RuntimeException if trouble
      */
-    public static void recursiveFullNameList(ArrayList arrayList, String dir, 
+    public static void recursiveFullNameList(ArrayList<String> arrayList, String dir, 
         String regex, boolean directoriesToo) {
 
         //add slash to end of dir (if none)
@@ -240,7 +243,7 @@ public class RegexFilenameFilter implements FilenameFilter {
                 if (tName.matches(regex))
                     arrayList.add(dir + tName);
             } else if (tFile.isDirectory()) {
-                String tDir = File2.addSlash(dir + tName);
+                String tDir = File2.addSlash(dir + tName); 
                 if (directoriesToo) arrayList.add(tDir);
                 //String2.log("directory=" + tDir);
                 recursiveFullNameList(arrayList, tDir, regex, directoriesToo);
@@ -269,9 +272,9 @@ public class RegexFilenameFilter implements FilenameFilter {
     public static String[] recursiveFullNameList(String dir, String regex, 
         boolean directoriesToo) {
 
-        ArrayList arrayList = new ArrayList();
+        ArrayList<String> arrayList = new ArrayList();
         recursiveFullNameList(arrayList, dir, regex, directoriesToo);
-        String sar[] = String2.toStringArray(arrayList.toArray());
+        String sar[] = arrayList.toArray(new String[0]);
         Arrays.sort(sar);
         return sar;
     }
@@ -339,17 +342,16 @@ public class RegexFilenameFilter implements FilenameFilter {
      * @param args is ignored
      * @throws Exception if trouble
      */
-    public static void main(String args[]) throws Exception {
-        String2.log("testing RegexFilenameFilter ...");
-        String coastwatchDir = SSR.getContextDirectory() + 
+    public static void test() throws Exception {
+        String2.log("\n* testing RegexFilenameFilter ...");
+        String coastwatchDir = SSR.getContextDirectory() + //with / separator and / at the end
             "WEB-INF/classes/gov/noaa/pfel/coastwatch/";
 
         //test list
         String[] sar = list(coastwatchDir, "S.+\\.java");
         String[] shouldBe = {
             "Screen.java",
-            "Shared.java"
-            };
+            "Shared.java"};
         Test.ensureEqual(sar, shouldBe, "RegexFilenameFilter.list");
 
         //test fullNameList

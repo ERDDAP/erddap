@@ -1361,15 +1361,15 @@ public class EDUnits {
         throws RuntimeException {
         try {
             HashMap ht = new HashMap();
-            StringArray sa = StringArray.fromFile(fileName, charset);
-            int n = sa.size();
+            String[] sar = String2.readLinesFromFile(fileName, charset, 2);
+            int n = sar.length;
             int i = 0;
             while (i < n) {
-                String s = sa.get(i++);
+                String s = sar[i++];
                 if (s.startsWith("#"))
                     continue;
                 while (i < n && s.endsWith("\\")) 
-                    s = s.substring(0, s.length() - 1) + sa.get(i++);
+                    s = s.substring(0, s.length() - 1) + sar[i++];
                 int po = s.indexOf('=');
                 if (po < 0) 
                     continue;

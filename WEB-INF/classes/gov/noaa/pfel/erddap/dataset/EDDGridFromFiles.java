@@ -21,6 +21,7 @@ import com.cohort.util.String2;
 import com.cohort.util.Test;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 
@@ -470,17 +471,17 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         //get tAvailableFiles with available data files
         //and make tDirIndex and tFileList
         long elapsedTime = System.currentTimeMillis();
-        String tAvailableFiles[];
-        if (recursive)
-            tAvailableFiles = RegexFilenameFilter.recursiveFullNameList(fileDir, fileNameRegex, false);
-        else 
-            tAvailableFiles = RegexFilenameFilter.fullNameList(fileDir, fileNameRegex);
-        if (tAvailableFiles == null) 
-            tAvailableFiles = new String[0];
-        String msg = tAvailableFiles.length + " files found in " + fileDir + 
-            " regex=" + fileNameRegex + " recursive=" + recursive + 
+        //was tAvailableFiles with dir+name
+        Table tFileTable = getFileInfo(fileDir, fileNameRegex, recursive);
+        StringArray tFileDirPA     = (StringArray)(tFileTable.getColumn(FileVisitorDNLS.DIR));
+        StringArray tFileNamePA    = (StringArray)(tFileTable.getColumn(FileVisitorDNLS.NAME));
+        LongArray   tFileLastModPA = (LongArray)  (tFileTable.getColumn(FileVisitorDNLS.LASTMOD));
+        tFileTable.removeColumn(FileVisitorDNLS.SIZE);
+        int ntft = tFileNamePA.size();
+        String msg = ntft + " files found in " + fileDir + 
+            "\nregex=" + fileNameRegex + " recursive=" + recursive + 
             " time=" + (System.currentTimeMillis() - elapsedTime) + "ms";
-        if (tAvailableFiles.length == 0)
+        if (ntft == 0)
             //Just exit. Don't delete the dirTable and fileTable files!
             //The problem may be that a drive isn't mounted.
             throw new RuntimeException(msg); 
@@ -489,9 +490,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         //remove "badFiles" if they no longer exist (in tAvailableFiles)
         {
             //make hashset with all tAvailableFiles
-            HashSet tFileSet = new HashSet(Math2.roundToInt(1.4 * tAvailableFiles.length));
-            for (int i = 0; i < tAvailableFiles.length; i++)
-                tFileSet.add(tAvailableFiles[i]);
+            HashSet tFileSet = new HashSet(Math2.roundToInt(1.4 * ntft));
+            for (int i = 0; i < ntft; i++)
+                tFileSet.add(tFileDirPA.get(i) + tFileNamePA.get(i));
 
             Object badFileNames[] = badFileMap.keySet().toArray();
             int nMissing = 0;
@@ -509,38 +510,38 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 "old nBadFiles size=" + nbfn + "   nMissing=" + nMissing);  
         } 
 
-        //make tFileTable from tAvailableFiles
-        Table tFileTable = new Table();
-        ShortArray tDirIndex = new ShortArray();
-        StringArray tFileList = new StringArray();
-        tFileTable.addColumn("dirIndex", tDirIndex);  //position matches main fileTable
-        tFileTable.addColumn("fileList", tFileList);  //position matches main fileTable
-        for (int i = 0; i < tAvailableFiles.length; i++) {
-
-            //ensure the dir is in the dirList
-            String tDir = File2.getDirectory(tAvailableFiles[i]);
-            int po = dirList.indexOf(tDir); //linear search, but should be short list
-            if (po < 0) {
-                po = dirList.size();
-                dirList.add(tDir);
+        //switch to dir indexes
+        ShortArray tFileDirIndexPA = new ShortArray(ntft, false);  
+        tFileTable.removeColumn(0);  //tFileDirPA col
+        tFileTable.addColumn(0, "dirIndex", tFileDirIndexPA); //col 0, matches fileTable
+        tFileTable.setColumnName(1, "fileList"); //col 1, matches fileTable
+        String lastDir = "\u0000";
+        int lastPo = -1;
+        for (int i = 0; i < ntft; i++) {
+            String tDir = tFileDirPA.get(i);
+            int po = lastPo;
+            if (!tDir.equals(lastDir)) {    //rare
+                po = dirList.indexOf(tDir); //linear search, but should be short list
+                if (po < 0) {
+                    po = dirList.size();
+                    dirList.add(tDir);
+                }
+                lastDir = tDir;
+                lastPo = po;
             }
-
-            //add file to tDirIndex and tFileList
-            tDirIndex.addInt(po);
-            tFileList.add(tAvailableFiles[i].substring(tDir.length()));
+            tFileDirIndexPA.addInt(po);
         }
-        tAvailableFiles = null; //allow gc
+        tFileDirPA = null; //allow gc
         
-        //temporarily sort fileTable and tFileTable based on dirIndex and file names
+        //sort fileTable and tFileTable based on dirIndex and file names
         elapsedTime = System.currentTimeMillis();
-        fileTable.sort( new int[]{FT_DIR_INDEX_COL, FT_FILE_LIST_COL}, new boolean[]{true, true});
-        tFileTable.sort(new int[]{FT_DIR_INDEX_COL, FT_FILE_LIST_COL}, new boolean[]{true, true});
+        fileTable.leftToRightSort(2); 
+        tFileTable.leftToRightSort(2);
         if (verbose) String2.log("sortTime=" + (System.currentTimeMillis() - elapsedTime) + "ms");
 
         //remove any files in fileTable not in tFileTable  (i.e., the file was deleted)
         //I can step through fileTable and tFileTable since both sorted same way
         {
-            int nt  = tFileList.size();
             int nft = ftFileList.size();
             BitSet keepFTRow = new BitSet(nft);  //all false
             int nFilesMissing = 0;
@@ -550,17 +551,17 @@ public abstract class EDDGridFromFiles extends EDDGrid{
                 String fileS   = ftFileList.get(ftPo);
 
                 //skip through tDir until it is >= ftDir
-                while (tPo < nt && tDirIndex.get(tPo) < dirI)
+                while (tPo < ntft && tFileDirIndexPA.get(tPo) < dirI)
                     tPo++;
 
                 //if dirs match, skip through tFile until it is >= ftFile
                 boolean keep;
-                if (tPo < nt && tDirIndex.get(tPo) == dirI) {               
-                    while (tPo < nt && tDirIndex.get(tPo) == dirI && 
-                        tFileList.get(tPo).compareTo(fileS) < 0)
+                if (tPo < ntft && tFileDirIndexPA.get(tPo) == dirI) {               
+                    while (tPo < ntft && tFileDirIndexPA.get(tPo) == dirI && 
+                        tFileNamePA.get(tPo).compareTo(fileS) < 0)
                         tPo++;
-                    keep = tPo < nt && tDirIndex.get(tPo) == dirI &&
-                        tFileList.get(tPo).equals(fileS);
+                    keep = tPo < ntft && tFileDirIndexPA.get(tPo) == dirI &&
+                        tFileNamePA.get(tPo).equals(fileS);
                 } else {
                     keep = false;
                 }
@@ -589,9 +590,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
         long removeCumTime = 0;
         int nUnchanged = 0, nRemoved = 0, nDifferentModTime = 0, nNew = 0;
         elapsedTime = System.currentTimeMillis();
-        while (tFileListPo < tFileList.size()) {
-            int tDirI     = tDirIndex.get(tFileListPo);
-            String tFileS = tFileList.get(tFileListPo);
+        while (tFileListPo < tFileNamePA.size()) {
+            int tDirI     = tFileDirIndexPA.get(tFileListPo);
+            String tFileS = tFileNamePA.get(tFileListPo);
             int dirI       = fileListPo < ftFileList.size()? ftDirIndex.get(fileListPo) : Integer.MAX_VALUE;
             String fileS   = fileListPo < ftFileList.size()? ftFileList.get(fileListPo) : "\uFFFF";
             double lastMod = fileListPo < ftFileList.size()? ftLastMod.get(fileListPo)  : Double.MAX_VALUE;
@@ -600,7 +601,7 @@ public abstract class EDDGridFromFiles extends EDDGrid{
 
             //is tLastMod available for tFile?
             long lmcTime = System.currentTimeMillis();
-            long tLastMod = File2.getLastModified(dirList.get(tDirI) + tFileS);
+            long tLastMod = tFileLastModPA.get(tFileListPo);
             lastModCumTime += System.currentTimeMillis() - lmcTime;
             if (tLastMod == 0) { //0=trouble
                 nNoLastMod++;
@@ -883,9 +884,9 @@ public abstract class EDDGridFromFiles extends EDDGrid{
             throw t;
         }
 
-        msg = "\n  tFileList.size=" + tFileList.size() + 
+        msg = "\n  tFileNamePA.size=" + tFileNamePA.size() + 
                  " lastModCumTime=" + Calendar2.elapsedTimeString(lastModCumTime) + 
-                 " avg=" + (lastModCumTime / Math.max(1, tFileList.size())) + "ms" +
+                 " avg=" + (lastModCumTime / Math.max(1, tFileNamePA.size())) + "ms" +
             "\n  dirTable.nRows=" + dirTable.nRows() +
             "\n  fileTable.nRows=" + fileTable.nRows() + 
             "\n    fileTableInMemory=" + fileTableInMemory + 
@@ -1064,6 +1065,22 @@ public abstract class EDDGridFromFiles extends EDDGrid{
     public void update() {
         //Seems like a full reload is needed to do any kind of check:
         //  it efficiently looks for changed files.
+    }
+
+    /**
+     * This is the default implementation of getFileInfo, which
+     * gets file info from a locally accessible directory.
+     * This is called in the middle of the constructor.
+     * Some subclasses override this.
+     *
+     * @param recursive true if the file search should also search subdirectories
+     * @return a table with columns with DIR, NAME, LASTMOD, and SIZE columns;
+     * @throws Throwable if trouble
+     */
+    public Table getFileInfo(String fileDir, String fileNameRegex, boolean recursive) 
+        throws Throwable {
+        //String2.log("EDDTableFromFiles getFileInfo");
+        return FileVisitorDNLS.oneStep(fileDir, fileNameRegex, recursive);
     }
 
     /** 

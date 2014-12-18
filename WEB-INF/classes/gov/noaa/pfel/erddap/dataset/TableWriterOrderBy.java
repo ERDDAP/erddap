@@ -67,11 +67,7 @@ public class TableWriterOrderBy extends TableWriterAll {
 
         Table cumulativeTable = cumulativeTable();
         releaseResources();
-        sort(cumulativeTable);
-        otherTableWriter.writeAllAndFinish(cumulativeTable);
-
-        //clean up
-        otherTableWriter = null;
+        writeAllAndFinish(cumulativeTable);
     }
 
     /**

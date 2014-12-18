@@ -281,7 +281,8 @@ And if you get stuck, please send an email with the details to <tt>bob dot simon
           the one you want.)
         <li>If the Begin and End lines are not found, then those lines and the new content
           are inserted right before &lt;/erddapDatasets&gt;.
-        <li>There is also a -I switch for testing purposes which works the same as -i, 
+        <li>There is also a -I (capital i) switch for testing purposes which 
+          works the same as -i, 
           but creates a file called datasets.xml<i>DateTime</i> and doesn't make 
           changes to datasets.xml.
         <li>Don't run GenerateDatasetsXml with -i in two processes at once. 
@@ -719,6 +720,10 @@ Datasets fall into two categories.  (<a rel="help" href="#dataStructures">Why?</
         handles tabular data from BMDE servers. -->
       <li><a rel="help" href="#EDDTableFromAwsXmlFiles">EDDTableFromAwsXmlFiles</a> 
         aggregates data from a set of Automatic Weather Station (AWS) XML files.
+      <li><a rel="help" href="#EDDTableFromCassandra">EDDTableFromCassandra</a> 
+        handles tabular data from one Cassandra table.
+      <li><a rel="help" href="#EDDTableFromColumnarAsciiFiles">EDDTableFromColumnarAsciiFiles</a>
+      aggregates data from tabular ASCII data files with fixed-width data columns.
       <li><a rel="help" href="#EDDTableFromDapSequence">EDDTableFromDapSequence</a> 
         handles tabular data from DAP sequence servers.
       <li><a rel="help" href="#EDDTableFromDatabase">EDDTableFromDatabase</a> 
@@ -777,7 +782,11 @@ Datasets fall into two categories.  (<a rel="help" href="#dataStructures">Why?</
       src="../images/external.png" align="bottom" alt=" (external link)" 
       title="This link to an external web site does not constitute an endorsement."/></a> servers.
 <ul>
-<li>You can gather the information you need to create the XML for an EDDGridFromDap dataset by looking 
+<li>We strongly recommend using the
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  to make a rough draft of the datasets.xml chunk for this dataset.
+  You can gather the information you need to tweak that or create your own XML 
+  for an EDDGridFromDap dataset by looking 
   at the source dataset's DDS and DAS files in your browser (by adding .das and .dds to the sourceUrl,
   for example, 
 <a href="http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day.dds">http://thredds1.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day.dds<img 
@@ -875,7 +884,7 @@ a remote ERDDAP server.
   See your ERDDAP daily report for a list of setDatasetFlag URLs, but just send the ones for
   EDDGridFromErddap and EDDTableFromErddap datasets to the remote ERDDAP administrator.
 <li>EDDGridFromErddap and EDDTableFromErddap are the basis for
-  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#clusters">clusters and federations</a> 
+  <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#grids">grids/clusters/federations</a> 
   of ERDDAPs, which efficiently distribute the CPU usage (mostly for making maps), memory usage, 
   dataset storage, and bandwidth usage of a large data center.
 <li>EDDGridFromErddap and EDDTableFromErddap can't be used with remote datasets that require logging in
@@ -885,6 +894,10 @@ a remote ERDDAP server.
   See ERDDAP's 
     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html">security system</a>
     for restricting access to some datasets to some users.
+<li>You can use the
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  to make the datasets.xml chunk for this dataset.
+  But you can do these types of datasets easily by hand.
 <li><a name="EDDGridFromErddapSkeletonXML">The</a> skeleton XML for an EDDGridFromErddap dataset 
   is very simple, because the intent is just to mimic
   the remote dataset which is already suitable for use in ERDDAP:
@@ -1002,10 +1015,13 @@ allows fast random access to the data, and is already supported by ERDDAP.
    ERDDAP log.txt file to find the offending time value. 
    Then look in the source files to find the corresponding file 
    (or one before or one after) that doesn't belong in the aggregation.
-<li><b>Directories</b> - The files MAY be in one directory, or in a directory and its subdirectories (recursively).
-  Note that if there are a large number of files (for example, &gt;1000), the operating system (and thus 
-  EDDGridFromFiles) will operate much more efficiently if you store the files in a series of
-  subdirectories.
+<li><b>Directories</b> - The files MAY be in one directory, or in a directory
+  and its subdirectories (recursively).
+  If there are a large number of files (for example, &gt;1,000), the operating system (and thus 
+  EDDGridFromFiles) will operate much more efficiently if you store the files 
+  in a series of
+  subdirectories (one per year, or one per month for datasets with very frequent files),
+  so that there are never a huge number of files in a given directory.
 <li><b>Cached File Information</b> - When an EDDGridFromFiles dataset is first loaded, 
   EDDGridFromFiles reads information from all of the relevant files 
   and creates tables (one row for each file) with information about each valid file 
@@ -1132,6 +1148,10 @@ So the GRIB files must be in a directory where the "user" that ran Tomcat has re
 <p>See this class' superclass, <a rel="help" href="#EDDGridFromFiles">EDDGridFromFiles</a>, for information
 on how this class works and how to use this class.
 
+<p>We strongly recommend using the
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  to make a rough draft of the datasets.xml chunk for this dataset.
+  You can then edit that to fine tune it.
 
 <p><a name="EDDGridSideBySide"><b>EDDGridSideBySide</b></a> 
 aggregates two or more EDDGrid datasets (the children) side by side.
@@ -1463,6 +1483,637 @@ p><a name="EDDTableFromBMDE"><b>EDDTableFromBMDE</b></a> handles data from a
 </pre>
 </ul -->
 
+<p><a name="EDDTableFromCassandra"><b>EDDTableFromCassandra</b></a> 
+handles data from one Cassandra table.
+<!-- or <a rel="help" href="http://en.wikipedia.org/wiki/View_(database)">view<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>. -->
+<ul>
+<li><a name="CassandraOneTable">One Table</a> - 
+  Cassandra doesn't support "joins" in the way that relational databases do.
+  One ERDDAP EDDTableFromCassandra dataset maps to one (perhaps a subset of one)
+  Cassandra table.
+  <br>&nbsp;
+
+<li><a name="CassandraDatasetsXml">datasets.xml</a><br>
+  
+  <!-- It is difficult to create the correct 
+  datasets.xml information needed for ERDDAP to establish
+  a connection to Cassandra.  Be patient. Be methodical. -->
+  <ul>
+  <li>ERDDAP comes with the Cassandra Java driver, so you don't need to install 
+    it separately.
+  <li>Carefully read all of this document's information about EDDTableFromCassandra.
+    Some of the details are very important.
+  <li>The Cassandra Java driver is intended to work with Cassandra 2+.
+     If you are using Cassandra 1.2.x, you must edit the cassandra.yaml file for 
+     each node to set <tt>start_native_transport: true</tt>, then restart each node.
+     <!-- http://www.datastax.com/documentation/developer/java-driver/2.1/common/drivers/introduction/driverDependencies_r.html -->
+  <li>We strongly recommend using the
+    <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+    to make a rough draft of the datasets.xml chunk for this dataset.
+    You can then edit that to fine tune it (especially
+    <a rel="help"
+    href="#CassandraPartitionKeySourceNames">&lt;partitionKeySourceNames&gt;</a>).
+    You can gather most of the information you need to create the XML for an
+    EDDTableFromCassandra dataset by contacting the Cassandra administrator and 
+    by searching the web. 
+    <p>GenerateDatasetsXml has two special options for EDDTableFromCassandra:
+    <ol>
+    <li>If you enter "!!!LIST!!!" (without the quotes) for the keyspace,
+      the program will display a list of keyspaces
+    <li>If you enter a specific keyspace and then enter "!!!LIST!!!" 
+      (without the quotes) for the tablename,
+      the program will display a list of tables in that keyspace and their columns.
+    </ol>
+  <li><a name="CassandraQuotes">Case-insensitive Keyspace and Table Names</a> -
+    <br>Cassandra and ERDDAP treat keyspace and table names 
+    in a case-insensitive way.
+    Because of this, you MUST NEVER use a reserved word (but with a different case)
+    as a Cassandra keyspace or table name.
+  <li>Case-insensitive Column Names - 
+    <br>By default, Cassandra and ERDDAP treat column names in a case-insensitive way.
+    If you use one of Cassandra's reserved words as a column name (please don't!),
+    you MUST use 
+    <br><tt>&lt;columnNameQuotes&gt;"&lt;columnNameQuotes&gt;</tt> 
+    <br>in 
+    datasets.xml for this dataset so that Cassandra and ERDDAP will treat the 
+    column names in a case-sensitive way.
+    This will likely be a massive headache for you, because it is hard to determine
+    the case-sensitive versions of the column names -- Cassandra almost always
+    displays the column names as all lower-case, regardless of the true case.
+  <li>Work closely with the Cassandra administrator, who may have relevant experience.
+    If the dataset fails to load, read the 
+    <a rel="help" href="#errorMessages">error message</a> carefully to find out why.
+  <br>&nbsp;
+  </ul>  
+
+<li><a name="CassandraConnectionProperty">&lt;connectionProperty&gt;</a>   
+    <br>Cassandra has connection properties which can be specified in datasets.xml. 
+    Many of these will affect the performance
+    of the Cassandra-ERDDAP connection. 
+    Unfortunatly, Cassandra properties must be set programmatically in Java,
+    so ERDDAP must have code for each property ERDDAP supports.
+    Currently, ERDDAP supports these properties:
+    <br>(The defaults shown are what we see. Your system's defaults may be different.)
+    <ul>
+    <li><b>General Options</b>
+    <!-- http://www.datastax.com/drivers/java/2.1/com/datastax/driver/core/ProtocolOptions.html -->
+    <br>&lt;connectionProperty 
+    name="<b>compression</b>"&gt;<i>none|LZ4|snappy</i>&lt;/connectionProperty&gt;   (case-insensitive, default=none)
+    <br>(General compression advice: use 'none' if the connection between 
+    Cassandra and ERDDAP is local/fast and use 'LZ4' if the connection is remote/slow.)
+    <br>&lt;connectionProperty 
+    name="<b>credentials</b>"&gt;<i>username/password</i>&lt;/connectionProperty&gt; (that's a literal '/')
+    <br>&lt;connectionProperty 
+    name="<b>metrics</b>"&gt;<i>true|false</i>&lt;/connectionProperty&gt;   (default=true)
+    <br>&lt;connectionProperty 
+    name="<b>port</b>"&gt;<i>anInteger</i>&lt;/connectionProperty&gt;   (default for native binary protocol=9042)
+    <br>&lt;connectionProperty 
+    name="<b>ssl</b>"&gt;<i>true|false</i>&lt;/connectionProperty&gt;   (default=false)
+    <br>(My quick attempt to use ssl failed. If you succeed, please tell me how 
+    you did it.)
+
+    <li><b>Query Options</b>
+    <!-- http://www.datastax.com/drivers/java/2.1/com/datastax/driver/core/QueryOptions.html -->
+    <br>&lt;connectionProperty 
+    name="<b>consistencyLevel</b>"&gt;<i>all|any|each_quorum|local_one|local_quorum|
+    local_serial|one|quorum|serial|three|two</i>&lt;/connectionProperty&gt;   (case-insensitive, default=ONE)
+    <br>&lt;connectionProperty 
+    name="<b>fetchSize</b>"&gt;<i>anInteger</i>&lt;/connectionProperty&gt;  (default=5000)
+    <br>(Do not set fetchSize to a smaller value.)
+    <br>&lt;connectionProperty 
+    name="<b>serialConsistencyLevel</b>"&gt;<i>all|any|each_quorum|local_one|local_quorum|
+    local_serial|one|quorum|serial|three|two</i>&lt;/connectionProperty&gt;   (case-insensitive, default=SERIAL)
+
+    <li><b>Socket Options</b>
+    <!-- http://www.datastax.com/drivers/java/2.1/com/datastax/driver/core/SocketOptions.html -->
+    <br>&lt;connectionProperty
+    name="<b>connectTimeoutMillis</b>"&gt;<i>anInteger</i>&lt;/connectionProperty&gt;  (default=5000)
+    <br>(Do not set connectTimeoutMillis to a smaller value.)
+    <br>&lt;connectionProperty 
+    name="<b>keepAlive</b>"&gt;<i>true|false</i>&lt;/connectionProperty&gt;
+    <br>&lt;connectionProperty 
+    name="<b>readTimeoutMillis</b>"&gt;<i>anInteger</i>&lt;/connectionProperty&gt;   <br>(Cassandra's default readTimeoutMillis is 12000, but ERDDAP changes the default to 120000. If Cassandra is throwing readTimeouts, increasing this may not help, 
+    because Cassandra sometimes throws them before this time. The problem is more
+    likely that you are storing too much data per partitionKey combination.)
+    <br>&lt;connectionProperty 
+    name="<b>receiveBufferSize</b>"&gt;<i>anInteger</i>&lt;/connectionProperty&gt;
+    <br>(It is unclear what the default receiveBufferSize is. Don't set this to a small value.)
+    <br>&lt;connectionProperty 
+    name="<b>soLinger</b>"&gt;<i>anInteger</i>&lt;/connectionProperty&gt;
+    <br>&lt;connectionProperty 
+    name="<b>tcpNoDelay</b>"&gt;<i>true|false</i>&lt;/connectionProperty&gt;   (default=null)
+    <!-- 
+    <li>&lt;connectionProperty 
+    name=""&gt;<i>a</i>&lt;/connectionProperty&gt; -->
+    </ul>
+    <p>If you need to be able to set other connection properties, please 
+    send an email with the details to 
+    <br><tt>bob dot simons at noaa dot gov</tt>. 
+
+    <p>For a given startup of Tomcat, 
+    connectionProperties are only used the first time a dataset
+    is created for a given Cassandra URL. All reloads of that dataset 
+    and all subsequent datasets that share the same URL 
+    will use those original connectionProperties.
+
+<li><a name="CassandraCQL">CQL</a> - 
+    The Cassandra Query Language (CQL) is superficially like SQL, 
+    the query language used by traditional databases.
+    Because OPeNDAP's tabular data requests were designed to mimic SQL tabular data requests,
+    it is possible for ERDDAP to convert tabular data requests into  
+    CQL Bound/PreparedStatements. 
+    ERDDAP logs the statement in 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#log">log.txt</a>
+    as<tt> 
+    <br>&nbsp;&nbsp;statement as text: <i>theStatementAsText</i></tt> 
+    <br>Note that the version of the statement you see
+    will be a text representation of the statement and will 
+    only have "?" where constraint values will be placed.
+  <br>&nbsp;
+  <br>Not so simple - Unfortunately, CQL has many restrictions on which columns can be queried
+    with which types of constraints, e.g., partition key columns can be constrained with = and IN,
+    so ERDDAP sends some constraints to Cassandra and applies all constraints 
+    after the data is received from Cassandra. 
+    To help ERDDAP deal efficiently with Cassandra, you need to specify
+    <a rel="help" href="#CassandraPartitionKeySourceNames">&lt;partitionKeySourceNames&gt;</a>,
+    <a rel="help" href="#CassandraClusterColumnSourceNames">&lt;clusterColumnSourceNames&gt;</a>, and
+    <a rel="help" href="#CassandraIndexColumnSourceNames">&lt;indexColumnSourceNames&gt;</a> 
+    in datasets.xml for this dataset.
+    These are the most important ways to help ERDDAP work efficiently with Cassandra.
+    If you don't tell ERDDAP this information, 
+    the dataset will be painfully slow in ERDDAP and use tons of Cassandra resources.
+  <br>&nbsp;
+
+<li><a name="CassandraPartitionKeySourceNames">&lt;partitionKeySourceNames&gt;</a> -
+  Because partition keys play a central role in Cassandra tables,
+  ERDDAP needs to know their sourceNames and, if relevant, other information about how
+  to work with them.
+  <ul>
+  <li>You MUST specify a comma-separated list of partition key source column names in 
+    datasets.xml via &lt;partitionKeySourceNames&gt;.
+  <br>Simple example,
+    <br><tt>&lt;partitionKeySourceNames&gt;station, deviceid&lt;partitionKeySourceNames&gt;</tt>
+  <br>More complex example,
+    <br><tt>&lt;partitionKeySourceNames&gt;deviceid=1007, date/sampletime/1970-01-01&lt;partitionKeySourceNames&gt;</tt>  
+
+  <li>TimeStamp Partition Keys - If one of the partition key columns is a 
+    timestamp column that 
+    has a coarser version of another timestamp column, specify this via 
+    <br><tt><i>partitionKeySourcName/otherColumnSourceName/time_precision</i></tt>
+    <br>where time_precision is one of the 
+      <a rel="help" href="#time_precision">time_precision</a> strings used 
+      elsewhere in ERDDAP.
+    <br>The trailing Z in the time_precision string is the default, 
+     so it doesn't matter if the time_precision string ends in Z or not. 
+    <br>For example, ERDDAP will interpret 
+      <tt>date/sampletime/1970-01-01</tt> as
+    "Constraints for date can be constructed from constraints on sampletime by using
+    this time_precision." The actual conversion of constraints is more complex,
+    but that is the overview.
+    <br><b>Use this whenever it is relevant.</b> 
+    It enables ERDDAP to work efficiently with Cassandra.
+    If this relationship between columns exists in a Cassandra table 
+    and you don't tell ERDDAP, 
+    the dataset will be painfully slow in ERDDAP and use tons of Cassandra resources.
+
+  <li>Single Value Partition Keys - If you want an ERDDAP dataset to work with only 
+    one value of one partition key, specify <tt><i>partitionKeySourceName=value</i></tt>. 
+    <br>Don't use quotes for a numeric column, e.g., <tt>deviceid=1007</tt> 
+    <br>Do use quotes for a string column, e.g., <tt>stationid="Point Pinos"</tt>
+
+  <li>Dataset Default Sort Order - the order of the partition key &lt;dataVariable&gt;'s
+    in datasets.xml determines the default sort order of the results from Cassandra.
+    Of course, users can request a different sort order for a given set of results
+    by appending <tt>&amp;orderBy("<i>comma-separated list of variables</i>")</tt>
+    to the end of their query.
+
+  <li>By default, Cassandra and ERDDAP treat column names in a case-insensitive way.
+    But if you set <a rel="help" href="#CassandraQuotes">columnNameQuotes</a> to ", 
+    ERDDAP will treat Cassandra column names in case-sensitive way.
+  <br>&nbsp;
+    
+  </ul>
+
+<li><a name="CassandraClusterColumnSourceNames">&lt;clusterColumnSourceNames&gt;</a> -
+  Cassandra accepts SQL-like constraints on cluster columns, 
+  which are the columns that form the second part of the primary key 
+  (after the partition key(s)).
+  So, it is essential that you identify these columns via &lt;clusterColumnSourceNames&gt;.
+  This enables ERDDAP to work efficiently with Cassandra.
+  If there are cluster columns and you don't tell ERDDAP,
+  the dataset will be painfully slow in ERDDAP and use tons of Cassandra resources.
+  <ul>
+  <li>For example, <tt>&lt;clusterColumnSourceNames&gt;<i>myClusterColumn1, myClusterColumn2</i>&lt;/clusterColumnSourceNames&gt;</tt>
+  <li>If a Cassandra table has no cluster columns, either don't specify 
+    &lt;clusterColumnSourceNames&gt;, or specify it with no value.
+  <li>By default, Cassandra and ERDDAP treat column names in a case-insensitive way.
+    But if you set <a rel="help" href="#CassandraQuotes">columnNameQuotes</a> to ", 
+    ERDDAP will treat Cassandra column names in case-sensitive way.
+  <br>&nbsp;
+  </ul>
+
+<li><a name="CassandraIndexColumnSourceNames">&lt;indexColumnSourceNames&gt;</a> -
+  Cassandra accepts '=' constraints on secondary index columns, 
+  which are the columns that you have explicitly created indexes for 
+  via 
+  <br><tt>CREATE INDEX <i>indexName</i> ON <i>keyspace.tableName</i>
+  (<i>columnName</i>);</tt>
+  <br>(Yes, the parentheses are required.) 
+  <br>So, it is very useful if you identify these columns via &lt;indexColumnSourceNames&gt;.
+  This enables ERDDAP to work efficiently with Cassandra.
+  If there are index columns and you don't tell ERDDAP,
+  some queries will be needlessly, painfully slow in ERDDAP and use tons of Cassandra resources.
+  <ul>
+  <li>For example, <tt>&lt;indexColumnSourceNames&gt;<i>myIndexColumn1, myIndexColumn2</i>&lt;/indexColumnSourceNames&gt;</tt>
+  <li>If a Cassandra table has no index columns, either don't specify 
+    &lt;indexColumnSourceNames&gt;, or specify it with no value.
+  <li>WARNING: Cassandra indexes aren't like database indexes.
+    Cassandra indexes only help with '=' constraints. 
+    And they are only 
+    <a rel="help" href="http://www.datastax.com/docs/1.1/ddl/indexes">recommended<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+    for columns that have far fewer distinct values than total values.
+  <li>By default, Cassandra and ERDDAP treat column names in a case-insensitive way.
+    But if you set <a rel="help" href="#CassandraQuotes">columnNameQuotes</a> to ", 
+    ERDDAP will treat Cassandra column names in case-sensitive way.
+  <br>&nbsp;
+  </ul>
+
+<li><a name="maxRequestFraction">&lt;maxRequestFraction&gt;</a> -
+  When ERDDAP (re)loads a dataset, ERDDAP gets from Cassandra the list of 
+  distinct combinations of the partition keys. 
+  For a huge dataset, the number of combinations will be huge.
+  If you want to prevent users requests from requesting most or all of the dataset
+  (or even a request that asks ERDDAP to download most or all of the data 
+  in order to further filter it),
+  you can tell ERDDAP only to allow requests that reduce the number of combinations
+  by some amount via &lt;maxRequestFraction&gt;, which is a floating point number
+  between 1e-10 (which means that the request can't need more than 1 combination 
+  in a billion) and 1 (the default, which means that the request can be for the 
+  entire dataset).
+  <br>For example, if a dataset has 10000 distinct combinations of the partition keys
+  and maxRequestFraction is set to 0.1,
+  <br>then requests which need data from 1001 or more combinations will generate 
+    an error message,
+  <br>but requests which need data from 1000 or fewer combinations will be allowed.
+
+  <p>Generally, the larger the dataset, the lower you should set
+    &lt;maxRequestFraction&gt;. 
+    So you might set it to 1 for a small dataset, 0.1 for a medium-sized dataset,
+    0.01 for a large dataset, and 0.0001 for a huge dataset.
+
+  <p>This approach is far from perfect. It will lead to some reasonable requests being
+  rejected and some too-big requests being allowed. But it is difficult problem 
+  and this solution is much better than nothing.
+
+<li><a rel="help" href="#subsetVariables"><tt>subsetVariables</tt></a> -
+  As with other EDDTable datasets, you can specify a comma-separated
+  list of <tt>&lt;dataVariable&gt;</tt> destinationNames 
+  in a global attribute called "subsetVariables"
+  to identify variables which have a limited number of
+  values.
+  The dataset will then have a .subset web page 
+  and show lists of distinct values for those variables in drop-down
+  lists on many web pages.
+
+  <p>Including just partition key variables and static columns
+  in the list is STRONGLY ENCOURAGED.
+  Cassandra will be able to generate the list of distinct combinations very 
+  quickly and easily each time the dataset is reloaded.
+  One exception is timestamp partition keys that are coarse versions of
+  some other timestamp column -- it is probably best to leave these
+  out of the list of subsetVariables since there are a large number of values
+  and they aren't very useful to users.
+
+  <p>If you include non-partition key, non-static variables in the list, 
+  it will probably be <b>very</b> computationally expensive for Cassandra
+  each time the dataset is reloaded, because ERDDAP has to look though
+  every row of the dataset to generate the information.
+  In fact, the query is likely to fail.
+  So, except for very small datasets, this is STRONGLY DISCOURAGED.   
+
+<li><a name="CassandraDataTypes">Cassandra</a> DataTypes - 
+  Because there is some ambiguity about which
+  <a rel="help" 
+  href="http://www.datastax.com/documentation/cql/3.0/cql/cql_reference/cql_data_types_c.html">Cassandra data types</a>
+  map to which ERDDAP data types, you need to specify a 
+  <a rel="help" href="#dataType"><tt>&lt;dataType&gt;</tt></a> tag
+  for each <a rel="help" href="#dataVariable"><tt>&lt;dataVariable&gt;</tt></a>
+  to tell ERDDAP which dataType to use.
+  The standard ERDDAP dataTypes (and the most common corresponding Cassandra data types) 
+  are: 
+  <ul>
+  <li><a rel="help" href="#booleanData">boolean</a> (boolean), which ERDDAP then stores as bytes
+  <li>byte (int, if the range is +/-127)
+  <li>short (int, if the range is +/-32767)
+  <li>int (int, counter?, varint?)
+  <li>long (bigint, counter?, varint?)
+  <li>float (float)
+  <li>double (double, decimal (with possible loss of precision), timestamp)
+  <li>char (ascii or text, if they never have more than 1 character)
+  <li>String (ascii, text, varchar, inet, uuid, timeuuid, blob, map, set, list?)
+  </ul>
+  <p>Cassandra's <a rel="help" href="CassandraTimeStamp">timestamp</a>
+  is a special case: use ERDDAP's double dataType.
+
+  <p>If you specify a String dataType in ERDDAP for a Cassandra map, set or list,
+  the map, set or list on each Cassandra row will be converted to a single string 
+  on a single row in the ERDDAP table. 
+  ERDDAP has an alternative system for lists; see below. 
+
+  <p><i>type</i>Lists - ERDDAP's &lt;dataType&gt; for Cassandra dataVariables can include the regular 
+  ERDDAP dataTypes (see above) plus several special dataTypes that can be used 
+  for Cassandra list columns: booleanList, 
+  byteList, shortList, intList, longList, floatList, doubleList, 
+  charList, StringList.
+  When one of these list columns is in the results being passed to ERDDAP, 
+  each row of source data will be expanded
+  to list.size() rows of data in ERDDAP; simple dataTypes (e.g., int)
+  in that source data row will be duplicated list.size() times. 
+  If the results contain more than one list variable, all lists on a given 
+  row of data MUST have the same size and MUST be "parallel" lists,
+  or ERDDAP will generate an error message. For example,
+  for currents measurements from an ADCP,
+  <br>&nbsp;&nbsp;depth[0], uCurrent[0], vCurrent[0], and zCurrent[0] are all related, and 
+  <br>&nbsp;&nbsp;depth[1], uCurrent[1], vCurrent[1], and zCurrent[1] are all related, ...  
+  <br>Alternatively, if you don't want ERDDAP to expand a list into multiple
+  rows in the ERDDAP table, specify String as the dataVariable's dataType
+  so the entire list will be represented as one String on one row in ERDDAP.
+
+<li><a name="CassandraTimeStamp">Cassandra</a> TimeStamp Data - 
+  Cassandra's timestamp data is always aware of time zones. 
+  If you enter timestamp data without specifying a timezone, Cassandra assumes
+  the timestamp uses the local time zone. 
+
+  <p>ERDDAP supports timestamp data and always presents the data in the Zulu/GMT time zone.
+  So if you enter timestamp data in Cassandra using a time zone other than Zulu/GMT,
+  remember that you need to do all queries for timestamp data in ERDDAP using the Zulu/GMT time zone.
+  So don't be surprised when the timestamp values that come out of ERDDAP
+  are shifted by several hours because of the time zone switch from local to Zulu/GMT time.
+ 
+  <ul>
+  <li>In ERDDAP's datasets.xml, in the <tt>&lt;dataVariable&gt;</tt> tag for 
+    a timestamp variable, set
+    <br>&nbsp;&nbsp;<tt>&lt;dataType&gt;double&lt;/dataType&gt;</tt> 
+    <br>and in <tt>&lt;addAttributes&gt;</tt> set
+    <br>&nbsp;&nbsp;<tt>&lt;att name="units"&gt;seconds since 1970-01-01T00:00:00Z&lt;/att&gt;</tt> .
+  <li>Suggestion: If the data is a time range, it is useful to have the timestamp values refer to 
+  the center of the implied time range (for example, noon).
+  For example, if a user has data for 2010-03-26T13:00Z from another dataset 
+  and they want the closest data from this Cassandra dataset that has data for each day, 
+  then the data for 2010-03-26T12:00Z (representing Cassandra data for that date) 
+  is obviously the best 
+  (as opposed to the midnight before or after, where it is less obvious which is best).
+  <li>ERDDAP has a utility to 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Convert
+    a Numeric Time to/from a String Time</a>.
+  <li>See <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html#erddap">How
+     ERDDAP Deals with Time</a>.
+     <br>&nbsp;
+  </ul>
+
+<li><a name="CassandraNulls">Integer nulls</a> - 
+  Cassandra supports nulls in Cassandra int (ERDDAP int) and bigint (ERDDAP long) columns, 
+  but ERDDAP doesn't support true nulls for any integer data type.
+  <br>By default, Cassandra integer nulls will be converted in ERDDAP 
+  to 2147483647 for int columns,
+  or 9223372036854775807 for long columns.
+  If you use this default, please identify those missing_values for the dataset's 
+  users in ERDDAP with
+  <br><tt>    &lt;att name="missing_value" <a rel="help" href="#attributeType">type="int"</a>&gt;2147483647&lt;/att&gt;</tt>
+  <br>or
+  <br><tt>    &lt;att name="missing_value" <a rel="help" href="#attributeType">type="long"</a>&gt;9223372036854775807&lt;/att&gt;</tt>
+  <p>If you use some integer value to indicate missing values in your Cassandra 
+    table, please identify that value in datasets.xml:
+  <br><tt>    &lt;att name="missing_value" <a rel="help" href="#attributeType">type="int"</a>&gt;-999&lt;/att&gt;</tt>
+  <p>For Cassandra floating point columns, nulls get converted to NaNs in ERDDAP.
+  <br>For Cassandra data types that are converted to Strings in ERDDAP, 
+    nulls get converted to empty Strings.
+  <br>That shouldn't be a problem.
+
+<li><a name="CassandraRepreparingQuery">"WARNING:</a>
+  Re-preparing already prepared query" 
+  in <i>tomcat</i>/logs/catalina.out (or some other Tomcat log file)
+  <br>Cassandra documentation says there is trouble if the same query is
+  made into a PreparedStatement twice (or more).
+  (See this 
+  <a rel="help" href="https://datastax-oss.atlassian.net/browse/JAVA-236">bug
+  report<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.)
+  To avoid making Cassandra mad, ERDDAP caches all PreparedStatements 
+  so it can reuse them.
+  That cache is lost if/when Tomcat/ERDDAP is restarted, but I think that is
+  okay because the PreparedStatements are associated with a given session
+  (between Java and Cassandra), which is also lost.
+  So, you may see these messages. I know of no other solution.
+  Fortunately, it is a warning, not an error 
+  (although Cassandra threatens that it may lead to performance problems).
+  <p>Cassandra claims that PreparedStatements are good forever,
+  so ERDDAP's cached PreparedStatements should never become out-of-date/invalid. 
+  If that isn't true, and you get errors about certain PreparedStatements
+  being out-of-date/invalid, then you need to restart ERDDAP to clear 
+  ERDDAP's cache of PreparedStatements.
+
+<li><a name="CassandraSecurity">Security</a> 
+  <br>See <a rel="help" 
+  href="http://www.datastax.com/documentation/cassandra/2.0/cassandra/security/secure_intro.html">
+  Securing Cassandra</a>
+
+  <p>When working with Cassandra, you need to do things as safely and securely as
+  possible
+  to avoid allowing a malicious user to damage your Cassandra or gain access to 
+  data they shouldn't have access to.
+  ERDDAP tries to do things in a secure way, too.
+  <ul>
+  <li>We encourage you to set up ERDDAP to connect to Cassandra as a 
+    Cassandra user that only has
+    access to the <b>relevant</b> table(s) and only has READ privileges.
+  <li>We encourage you to set up the connection from ERDDAP to Cassandra so that it 
+    <ul>
+    <li>always uses SSL, 
+    <li>only allows connections from one IP address (or one block of addresses) 
+      and from the one ERDDAP user, and 
+    <li>only transfers passwords in their MD5 hashed form.
+    </ul>
+  <li>[KNOWN PROBLEM] The connectionProperties (including the password!) are
+    stored as plain text in datasets.xml.
+    Only the administrator should have READ and WRITE access to this file!
+    No other users of the computer should have READ or WRITE access to this file!
+    We haven't found a way to allow the administrator to enter the Cassandra password during
+    ERDDAP's startup in Tomcat (which occurs without user input), so the password 
+    must be accessible in a file.
+  <li>When in ERDDAP, the password and other connection properties are stored in
+    "private" Java variables.
+  <li>Requests from clients are parsed and checked for validity before generating 
+    the CQL requests for Cassandra.
+  <li>Requests to Cassandra are made with CQL Bound/PreparedStatements, to prevent
+    CQL injection.
+    In any case, Cassandra is inherently less susceptible to CQL injection
+    than traditional databases are to 
+    <a rel="help" href="http://en.wikipedia.org/wiki/SQL_injection">SQL injection</a>.
+  <br>&nbsp;
+  </ul>
+
+<li><a name="CassandraSpeed">Speed</a> - Cassandra can be fast or slow. 
+ There are some things you can do to make it fast:
+  <ul>
+  <li>In General -
+    <br>The nature of CQL is that queries are 
+    <a rel="help" href="http://en.wikipedia.org/wiki/Declarative_programming">declarative<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>.
+    They just specify what the user wants. 
+    They don't include a specification or hints for how the query is to be handled or optimized.
+    So there is no way for ERDDAP to generate the query in such a way that it helps 
+    Cassandra optimize the query (or in any way specifies how the query is to be handled). 
+    In general, it is up to the Cassandra administrator to set things up 
+    (for example, indexes) to optimize for certain types of queries.
+  <br>&nbsp;
+
+  <li>Specify the timestamp columns that are related to coarser-precision timestamp
+    partition keys is via
+    <a rel="help" href="#CassandraPartitionKeySourceNames">&lt;partitionKeySourceNames&gt;</a> 
+    is the most important way to help ERDDAP work efficiently with Cassandra.
+    If this relationship exists in a Cassandra table and you don't tell ERDDAP, 
+    the dataset will be painfully slow in ERDDAP and use tons of Cassandra resources.
+  <br>&nbsp;
+
+  <li>Specify the cluster columns via
+    <a rel="help" href="#CassandraClusterColumnSourceNames">&lt;clusterColumnSourceNames&gt;</a> 
+    is the second most important way to help ERDDAP work efficiently with Cassandra.
+    If there are cluster columns and you don't tell ERDDAP,
+    a large subset of the possible queries for data 
+    will be needlessly, painfully slow in ERDDAP and use tons of Cassandra resources.
+  <br>&nbsp;
+
+  <li>Make <a rel="help"
+  href="http://www.datastax.com/documentation/cql/3.1/cql/ddl/ddl_when_use_index_c.html">Indexes<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a> 
+    for Commonly Constrained Variables - 
+    <br>You can speed a few queries by creating indexes for Cassandra columns
+    that are often constrained with "=" constraints.  
+
+    <p>Cassandra can't make indexes for list, set, or map columns.
+
+  <li>Specify the index columns via
+    <a rel="help" href="#CassandraIndexColumnSourceNames">&lt;indexColumnSourceNames&gt;</a> 
+    is an important way to help ERDDAP work efficiently with Cassandra.
+    If there are index columns and you don't tell ERDDAP,
+    some queries for data 
+    will be needlessly, painfully slow in ERDDAP and use tons of Cassandra resources.
+  <br>&nbsp;
+
+  <li><a name="CassandraStats">"Cassandra stats"</a> Diagnostic Messages - 
+    For every ERDDAP user query to a Cassandra dataset, 
+    ERDDAP will print a line in the log file, <i>bigParentDirectory</i>/logs/log.txt,
+    with some statistics related to the query, e.g.,
+    <br><tt>* Cassandra stats: partitionKeyTable: 2/10000=2e-4 &lt; 0.1 nCassRows=1200 nErddapRows=12000 nRowsToUser=7405</tt>
+    <br>Using the numbers in the example above, this means:
+    <ul>
+    <li>When ERDDAP last (re)loaded this dataset, Cassandra told ERDDAP that there
+      were 10000 distinct combinations of the partition keys.
+      ERDDAP cached all of the distinct combinations in a file.
+    <li>Due to the user's constraints, ERDDAP identified 2 combinations 
+      out of the 10000 that might
+      have the desired data. So, ERDDAP will make 2 calls to Cassandra, one for each
+      combination of the partition keys. (That's what Cassandra requires.) 
+      Clearly, it is trouble if a large dataset has
+      a large number of combinations of the partition keys
+      and a given request doesn't drastically reduce that.
+      You can require that each request reduce the key space by setting
+      <a rel="help" href="#maxRequestFraction">&lt;maxRequestFraction&gt;</a>.
+      Here, 2/10000=2e-4, which is less than the maxRequestFraction (0.1),
+      so the request was allowed.
+    <li>After applying the constraints on the partition keys, 
+      <a rel="help" href="#CassandraClusterColumnSourceNames">cluster columns</a>, and
+      <a rel="help" href="#CassandraIndexColumnSourceNames">index columns</a>
+      which were sent by ERDDAP, 
+      Cassandra returned 1200 rows of data to ERDDAP in the ResultSet.
+    <li>The ResultSet must have had 
+      <a rel="help" href="#CassandraDataTypes">dataType=<i>sometype</i>List</a> columns
+      (with an average 
+      of 10 items per list), because ERDDAP expanded the 1200 rows from Cassandra
+      into 12000 rows in ERDDAP.
+    <li>ERDDAP always applies all of the user's constraints to the data from 
+      Cassandra. In this case, constraints which Cassandra had not handled
+      reduced the number of rows to 7405. That is the number of rows sent to the user.
+    </ul>
+    The most important use of these diagnostic messages is to make sure that 
+    ERDDAP is doing what you think it is doing.  
+    If it isn't (e.g., is it not reducing the number of distinct combinations as expected?), 
+    then you can use the information to try to figure out what's going wrong.
+    <br>&nbsp;
+
+  <li>Research and experiment to find and set better 
+    <a rel="help" href="#CassandraConnectionProperty">&lt;connectionProperty&gt;</a>'s. 
+  <br>&nbsp;  
+
+  <li>Check the speed of the network connection between Cassandra and ERDDAP.
+    If the connection is slow, see if you can improve it.
+    The best situation is when ERDDAP is running on a server
+    attached to the same (fast) switch as the server running the Cassandra node
+    to which you are connecting. 
+    <br>&nbsp;
+
+  <li>Please be patient. Read the information here and in the Cassandra documentation
+    carefully. Experiment. Check your work.
+    If the Cassandra-ERDDAP connection is still slower than you expect, please
+    email your Cassandra table's schema and your ERDDAP chunk of datasets.xml
+    to <tt>bob dot simons at noaa dot gov</tt>.
+    <br>&nbsp;
+
+  <li>If all else fails, 
+    <br>consider storing the data in a collection of .nc files (especially .nc files that use the 
+    <a href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html#discrete-sampling-geometries"
+    >CF Discrete Sampling Geometries<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a> 
+    Contiguous Ragged Array data structures and so can be handled with ERDDAP's
+    <a rel="help" href="#EDDTableFromNcCFFiles">EDDTableFromNcCFFiles</a>).
+    If they are logically organized (each with data for a chunk of space and time), 
+    ERDDAP can extract data from them very quickly.
+    <br>&nbsp;
+  </ul>
+
+<li><a name="EDDTableFromCassandraSkeletonXML">The</a> skeleton XML for an EDDTableFromCassandra dataset is:
+<pre>
+&lt;dataset type="EDDTableFromCassandra" <a rel="help" href="#datasetID">datasetID</a>="..." <a rel="help" href="#active">active</a>="..." &gt;
+  <a rel="help" href="#sourceUrl">&lt;ipAddress&gt;</a>...&lt;/ipAddress&gt;
+    &lt;!-- The Cassandra URL without the port number, e.g., 127.0.0.1   REQUIRED. --&gt;
+  &lt;<a rel="help" href="#CassandraConnectionProperty">connectionProperty</a> name="<i>name</i>"&gt;<i>value</i>&lt;/connectionProperty&gt;
+    &lt;!-- The names (for example, "readTimeoutMillis") and values of the 
+      Cassandra properties that ERDDAP needs to change.  0 or more. --&gt; 
+  &lt;keyspace&gt;...&lt;/keyspace&gt; &lt;!-- The name of the keyspace that has the table.  REQUIRED. --&gt;
+  &lt;tableName&gt;...&lt;/tableName&gt; &lt;!-- The name of the table, default = "".  REQUIRED. --&gt;
+  <a rel="help" href="#CassandraPartitionKeySourceNames">&lt;partitionKeySourceNames&gt;</a>...&lt;partitionKeySourceNames&gt; &lt;!-- REQUIRED. --&gt;
+  <a rel="help" href="#CassandraClusterColumnSourceNames">&lt;clusterColumnSourceNames&gt;</a>...&lt;clusterColumnSourceNames&gt; &lt;!-- OPTIONAL. --&gt;
+  <a rel="help" href="#CassandraIndexColumnSourceNames">&lt;indexColumnSourceNames&gt;</a>...&lt;indexColumnSourceNames&gt; &lt;!-- OPTIONAL. --&gt;
+  <a rel="help" href="#maxRequestFraction">&lt;maxRequestFraction&gt;</a>...&lt;maxRequestFraction&gt; 
+    &lt;!-- OPTIONAL double between 1e-10 and 1 (the default). --&gt;
+  <a rel="help" href="#CassandraQuotes">&lt;columnNameQuotes&gt;</a>...&lt;columnNameQuotes&gt; &lt;!-- OPTIONAL. Options: [nothing] (the default) or ".
+  <a rel="help" href="#sourceNeedsExpandedFP_EQ">&lt;sourceNeedsExpandedFP_EQ&gt;</a>true(default)|false&lt;/sourceNeedsExpandedFP_EQ&gt;
+  <a rel="help" href="#accessibleTo">&lt;accessibleTo&gt;</a>...&lt;/accessibleTo&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#reloadEveryNMinutes">&lt;reloadEveryNMinutes&gt;</a>...&lt;/reloadEveryNMinutes&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultDataQuery">&lt;defaultDataQuery&gt;</a>...&lt;/defaultDataQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#defaultGraphQuery">&lt;defaultGraphQuery&gt;</a>...&lt;/defaultGraphQuery&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#fgdcFile">&lt;fgdcFile&gt;</a>...&lt;/fgdcFile&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#iso19115File">&lt;iso19115File&gt;</a>...&lt;/iso19115File&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
+  <a rel="help" href="#globalAttributes">&lt;addAttributes&gt;</a>...&lt;/addAttributes&gt; &lt;!-- 0 or 1 --&gt;
+  <a rel="help" href="#dataVariable">&lt;dataVariable&gt;</a>...&lt;/dataVariable&gt; &lt;!-- 1 or more.
+     Each dataVariable MUST include a &lt;dataType&gt; tag. See <a rel="help" href="#CassandraDataTypes">Cassandra DataTypes</a>.
+     For <a rel="help" href="#CassandraDate">Cassandra timestamp columns</a>, set dataType=double and 
+     units=seconds since 1970-01-01T00:00:00Z --&gt;
+&lt;/dataset&gt;
+</pre>
+</ul>
+
+
 
 <p><a name="EDDTableFromDapSequence"><b>EDDTableFromDapSequence</b></a> handles variables within 
 1- and 2-level sequences from 
@@ -1474,7 +2125,11 @@ p><a name="EDDTableFromBMDE"><b>EDDTableFromBMDE</b></a> handles data from a
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
 <ul>
-<li>You can gather the information you need to create the XML for an EDDTableFromDapSequence dataset
+<li><p>We strongly recommend using the
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  to make a rough draft of the datasets.xml chunk for this dataset.
+  You can then edit that to fine tune it.
+  You can gather the information you need 
   by looking at the source dataset's DDS and DAS files in your browser 
   (by adding .das and .dds to the sourceUrl, for example, 
   <a rel="help" href="http://dapper.pmel.noaa.gov/dapper/epic/tao_time_series.cdp.dds"
@@ -1531,6 +2186,20 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
   datasets.xml information needed for ERDDAP to establish
   a connection to the database.  Be patient. Be methodical.
   <ul>
+  <li>We strongly recommend using the
+    <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+    to make a rough draft of the datasets.xml chunk for this dataset.
+    You can then edit that to fine tune it.     
+    <p>GenerateDatasetsXml has three special options for EDDTableFromDatabase:
+    <ol>
+    <li>If you enter "!!!LIST!!!" (without the quotes) for the catalog name,
+      the program will display a list of the catalog names.
+    <li>If you enter "!!!LIST!!!" (without the quotes) for the schema name,
+      the program will display a list of the schema names.
+    <li>If you enter "!!!LIST!!!" (without the quotes) for the tablename,
+      the program will display a list of tables and their columns.
+    </ol>
+    The first "!!!LIST!!!" entry that you make is the one that will be used.
   <li>Carefully read all of this document's information about EDDTableFromDatabase.
   <li>You can gather most of the information you need to create the XML for an EDDTableFromDatabase
     dataset by contacting the database administrator and by searching the web.
@@ -1605,44 +2274,15 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
   the web for "JDBC connection properties <i>databaseType</i>" (for example, Oracle, MySQL, MariaDB, PostgreSQL).
   <br>&nbsp;
 
-<li><a name="databaseQuotes">Quotes for Field/Column Names; Case Sensitivity</a> -
-  EDDTableFromDatabase puts ANSI-SQL-standard double quotes around field/column names 
-  in SELECT statements in case you have used a reserved word as a field/column name.
-  For many databases, using quotes causes the field/column names to be case sensitive.
-  Databases often display file/column names as all upper-case, when in reality the case sensitive form is different.
-  In ERDDAP, always treat database column names as case sensitive.
-  <ul>
-  <li>For MariaDB, you need to run the database with 
-    <a rel="help" href="https://kb.askmonty.org/en/mysqld-options-full-list/">--sql-mode=ANSI_QUOTES<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a> . 
-  <li>For MySQL, you need to run the database with
-    <a rel="help" href="http://dev.mysql.com/doc/refman/5.7/en/server-sql-mode.html">--sql-mode=ANSI_QUOTES<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a> .
-  <li>Oracle supports ANSI-SQL-standard double quotes 
-    <a rel="help" href="http://docs.oracle.com/goldengate/1212/gg-winux/GWURF/gg_parameters180.htm">by default</a>.
-  <li>PostgreSQL supports ANSI-SQL-standard double quotes by default.
-  </ul>  
-  <br>Don't use a reserved word for a database, catalog, schema or table's name.
-    ERDDAP doesn't put quotes around them. 
-  <p>If possible, use all lower-case for database, catalog, schema, table names and field names 
-    when creating the database table (or view) and when referring to the field/column names in datasets.xml in ERDDAP. 
-    Otherwise, you may get an error message saying the database, catalog, schema and/or table wasn't found.
-    If you do get that error message, try using the case-sensitive version, the all upper-case, 
-    and the all lower-case versions of the names in ERDDAP. One of them may work. If not,
-    you need to change the name of database, catalog, schema, and/or table to all lower-case.
-
 <li><a name="databaseOneTable">One Table</a> - 
   If the data you want to serve is in two or more tables (and needs a JOIN to extract data), 
   you need to make one new table (or <a rel="help" href="#databaseViews">view</a>) 
   with the denormalized/JOINed/flattened information. Making the denormalized table for ERDDAP is
   a good opportunity to make a few changes that ERDDAP needs, in a way that doesn't affect your original tables:
   <ul>
-  <li>Change the timestamp fields to use datatype=<a rel="help" href="#databaseDate">timestamp with time zone</a>.
+  <li>Change the date and timestamp fields/columns to use 
+    datatype=<a rel="help" href="#databaseDate">timestamp with time zone</a>.
       <br>Timestamps without time zone information don't work correctly in ERDDAP.
-  <li>Change any <a rel="help" href="#databaseNulls">Integer nulls</a> to be symbolic missing values, for example, -9999.
-      <br>Java/ERDDAP can't handle missing values in integer columns.
   <li>Make indexes for the columns that users often search. 
   <li>Be very aware of <a rel="help" href="#databaseQuotes">the case of the field/column names</a>
     (for example, use all lower case) when you type them.
@@ -1663,11 +2303,80 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
   <ul>
   <li>They simplify queries (since the queries don't have to specify the JOINs, etc.).
   <li>They are efficient (since the database just has to set it up once).
-  <li>They increase abstraction (since the database can be changed without having to change how the
-    VIEW appears to the client).
+  <li>They increase abstraction (since the underlying table can be changed 
+    without having to change how the VIEW appears to the client).
   </ul>
   Unfortunately, accessing data from a view is usually much slower than accessing data from a denormalized table.
   So, we generally recommend making a denormalized table, unless the data changes very frequently.
+  <br>&nbsp;
+
+<li><a name="databaseQuotes">Quotes for Field/Column Names; Case Sensitivity</a> -
+  By default, EDDTableFromDatabase puts ANSI-SQL-standard double
+  quotes around field/column names 
+  in SELECT statements in case you have used a reserved word as a field/column name,
+  or a special character in a field/column name.
+  The double quotes also thwart certain types of SQL injection attacks.
+  You can tell ERDDAP to use ", ', or no quotes via 
+  &lt;columnNameQuotes&gt; in datasets.xml for this dataset.
+
+  <p>For many databases, using any type of quotes causes the database to work with
+  field/column names in a case sensitive way 
+  (instead of the default database case insensitive way).
+  Databases often display file/column names as all upper-case, 
+  when in reality the case sensitive form is different.
+  In ERDDAP, please always treat database column names as case sensitive.
+  <ul>
+  <li>For MariaDB, you need to run the database with 
+    <a rel="help" href="https://kb.askmonty.org/en/mysqld-options-full-list/">--sql-mode=ANSI_QUOTES<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a> . 
+  <li>For MySQL, you need to run the database with
+    <a rel="help" href="http://dev.mysql.com/doc/refman/5.7/en/server-sql-mode.html">--sql-mode=ANSI_QUOTES<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a> .
+  <li>Oracle supports ANSI-SQL-standard double quotes 
+    <a rel="help" href="http://docs.oracle.com/goldengate/1212/gg-winux/GWURF/gg_parameters180.htm">by default</a>.
+  <li>PostgreSQL supports ANSI-SQL-standard double quotes by default.
+  </ul>  
+  <br>Don't use a reserved word for a database, catalog, schema or table's name.
+    ERDDAP doesn't put quotes around them. 
+  <p>If possible, use all lower-case for database, catalog, schema, table names and field names 
+    when creating the database table (or view) and when referring to the field/column names in datasets.xml in ERDDAP. 
+    Otherwise, you may get an error message saying the database, catalog, schema, table,
+    and/or field wasn't found.
+    If you do get that error message, try using the case-sensitive version, the all upper-case, 
+    and the all lower-case versions of the names in ERDDAP. One of them may work. If not,
+    you need to change the name of database, catalog, schema, and/or table to all lower-case.
+
+<li><a name="DatabaseDataTypes">Database</a> DataTypes - 
+  Because there is some ambiguity about which
+  <a rel="help" 
+  href="http://www.w3schools.com/sql/sql_datatypes_general.asp">database data types</a>
+  map to which ERDDAP data types, you need to specify a 
+  <a rel="help" href="#dataType"><tt>&lt;dataType&gt;</tt></a> tag
+  for each <a rel="help" href="#dataVariable"><tt>&lt;dataVariable&gt;</tt></a>
+  to tell ERDDAP which dataType to use.
+  Part of the problem is that different datasets use different terms
+  for the various data types -- so always try to match the definitions, not
+  just the names.
+  The standard ERDDAP dataTypes (and the most common corresponding SQL data types) 
+  are:
+  <ul>
+  <li><a rel="help" href="#booleanData">boolean</a> (boolean), which ERDDAP then stores as bytes
+  <li>byte (tinyint, if the range is +/-127)
+  <li>short (smallint, if the range is +/-32767)
+  <li>int (integer, numeric?)
+  <li>long (bigint, numeric?)
+  <li>float (float?, real, decimal?, numeric?)
+  <li>double (float?, double precision, decimal (with possible loss of precision), 
+     numeric?, date, timestamp)
+  <li>char (character, if it never has more than 1 character)
+  <li>string (character, varchar, character varying, binary, varbinary, interval, 
+    array, multiset, xml, and any other database data type that doesn't fit cleanly
+    with any other ERDDAP data type)
+  </ul>
+  <a rel="help" href="databaseDate">Date and timestamp</a> are special cases: 
+  use ERDDAP's double dataType.
   <br>&nbsp;
 
 <li><a name="databaseDate">Database</a> Date Time Data - 
@@ -1684,14 +2393,17 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
   <li>So, ERDDAP requires that you store all date and date time data in the database table 
     with a database data type that corresponds to the JDBC type "timestamp with time zone" 
     (ideally, that uses the GMT/Zulu time zone). 
-  <li>In ERDDAP's datasets.xml, in the <tt>&lt;dataVariable&gt;</tt> tag for this variable, set
+  <li>In ERDDAP's datasets.xml, in the <tt>&lt;dataVariable&gt;</tt> tag for 
+    a timestamp variable, set
     <br>&nbsp;&nbsp;<tt>&lt;dataType&gt;double&lt;/dataType&gt;</tt> 
     <br>and in <tt>&lt;addAttributes&gt;</tt> set
     <br>&nbsp;&nbsp;<tt>&lt;att name="units"&gt;seconds since 1970-01-01T00:00:00Z&lt;/att&gt;</tt> .
   <li>Suggestion: If the data is a time range, it is useful to have the timestamp values refer to 
   the center of the implied time range (for example, noon).
-  For example, if a user has other data for 2010-03-26T13:00Z and they want the closest database
-  data, then the data for 2010-03-26T12:00Z (representing data for that date) is obviously the best 
+  For example, if a user has data for 2010-03-26T13:00Z from another dataset 
+  and they want the closest data from a database dataset that has data for each day, 
+  then the database data for 2010-03-26T12:00Z (representing data for that date) 
+  is obviously the best 
   (as opposed to the midnight before or after, where it is less obvious which is best).
   <li>ERDDAP has a utility to 
     <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/convert/time.html">Convert
@@ -1704,9 +2416,9 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
 <li><a name="databaseNulls">Integer nulls</a> - 
   Databases support nulls in integer (int, smallint, tinyint) columns, but ERDDAP doesn't.
   <br>By default (at least on PostgreSQL), database nulls will be converted in ERDDAP 
-     to 2147483647 for int columns or 32767 for short columns
-     (both of which may be represented as "NaN" in some ASCII file types).
-     Please identify that missing_value for the dataset's users in ERDDAP with 
+   to 2147483647 for int columns or 32767 for short columns.
+   If you use those defaults, please identify those missing_values for the 
+   dataset's users in ERDDAP with 
   <br><tt>    &lt;att name="missing_value" <a rel="help" href="#attributeType">type="int"</a>&gt;2147483647&lt;/att&gt;</tt>
   <br>or
   <br><tt>    &lt;att name="missing_value" <a rel="help" href="#attributeType">type="short"</a>&gt;32767&lt;/att&gt;</tt>
@@ -1714,8 +2426,9 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
     you need to convert them to some actual number (for example, -32000) 
     and identify that value in datasets.xml:
   <br><tt>    &lt;att name="missing_value" <a rel="help" href="#attributeType">type="int"</a>&gt;-32000&lt;/att&gt;</tt>
-  <p>For floating point columns, nulls get converted to NaNs when they are sent to ERDDAP.
-    That shouldn't be a problem.
+  <p>For database floating point columns, nulls get converted to NaNs in ERDDAP.
+  <br>For database data types that are converted to Strings in ERDDAP, 
+    nulls get converted to empty Strings.
 
 <li><a name="databaseSecurity">Security</a> - 
   When working with databases, you need to do things as safely and securely as possible
@@ -1749,7 +2462,8 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
     Java variables.
   <li>Requests from clients are parsed and checked for validity before generating the SQL requests
     for the database.
-  <li>Requests to the database are made with SQL PreparedStatements, to prevent SQL injection.
+  <li>Requests to the database are made with SQL PreparedStatements, to prevent 
+    <a rel="help" href="http://en.wikipedia.org/wiki/SQL_injection">SQL injection</a>.
   <li>Requests to the database are submitted with executeQuery (not executeStatement) to limit
     requests to be read-only (so attempted SQL injection to alter the database will fail for this
     reason, too).
@@ -1757,7 +2471,8 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
   </ul>
 
 <li><a name="databaseSQL">SQL</a> - 
-    It is easy for ERDDAP to convert user requests into simple SQL PreparedStatements. 
+    Because OPeNDAP's tabular data requests were designed to mimic SQL tabular data requests,
+    it is easy for ERDDAP to convert tabular data requests into simple SQL PreparedStatements. 
     For example, the ERDDAP request<tt>
     <br>&nbsp;&nbsp;time,temperature&amp;time&gt;=2008-01-01T00:00:00Z&amp;time&lt;=2008-02-01T00:00:00Z</tt>
     <br>will be converted into the SQL PreparedStatement<tt>
@@ -1812,7 +2527,7 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
   <li><a name="databaseConnectionProperties">ConnectionProperties</a> - 
     <br>Each database has other connection properties which
     can be specified in datasets.xml. Many of these will affect the performance
-    of the ERDDAP to database connection. Please read the documentation for 
+    of the database to ERDDAP connection. Please read the documentation for 
     your database's JDBC driver to see the options.
     If you find connection properties that are useful, please 
     send an email with the details to <tt>bob dot simons at noaa dot gov</tt>.
@@ -1929,6 +2644,7 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
     schema which has the table, default = "".  OPTIONAL. --&gt;
   &lt;tableName&gt;...&lt;/tableName&gt;  &lt;!-- The name of the 
     table, default = "".  REQUIRED. --&gt;
+  <a rel="help" href="#databaseQuotes">&lt;columnNameQuotes&gt;</a>&lt;columnNameQuotes&gt; &lt;!-- OPTIONAL. Options: " (the default), ', [nothing].
   &lt;orderBy&gt;...&lt;/orderBy&gt;  &lt;!-- A comma-separated list of
     <a rel="help" href="#sourceName">sourceName</a>s to be used in an ORDER BY clause at the end of the 
     every query sent to the database (unless the user's request
@@ -1949,7 +2665,8 @@ database table or <a rel="help" href="http://en.wikipedia.org/wiki/View_(databas
   <a rel="help" href="#onChange">&lt;onChange&gt;</a>...&lt;/onChange&gt; &lt;!-- 0 or more --&gt;
   <a rel="help" href="#globalAttributes">&lt;addAttributes&gt;</a>...&lt;/addAttributes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#dataVariable">&lt;dataVariable&gt;</a>...&lt;/dataVariable&gt; &lt;!-- 1 or more.
-     For <a rel="help" href="#databaseDate">date and timestamp database columns</a>, set dataType=double and 
+     Each dataVariable MUST include a &lt;dataType&gt; tag. See <a rel="help" href="#databaseDataTypes">Database DataTypes</a>.
+     For <a rel="help" href="#databaseDate">database date and timestamp columns</a>, set dataType=double and 
      units=seconds since 1970-01-01T00:00:00Z --&gt;
 &lt;/dataset&gt;
 </pre>
@@ -2011,6 +2728,8 @@ Instead, use a subclass of EDDTableFromFiles to handle the specific file type:
        comma-, tab-, or space-separated tabular ASCII data files.
   <li><a rel="help" href="#EDDTableFromAwsXmlFiles">EDDTableFromAwsXmlFiles</a> aggregates data from 
        a set of Automatic Weather Station (AWS) XML files.
+  <li><a rel="help" href="#EDDTableFromColumnarAsciiFiles">EDDTableFromColumnarAsciiFiles</a> 
+    aggregates data from tabular ASCII data files with fixed-width data columns.
   <li><a rel="help" href="#EDDTableFromHyraxFiles">EDDTableFromHyraxFiles</a> 
     aggregates data with several variables, each with shared dimensions
     (for example, time, altitude (or depth), latitude, longitude), and served by a 
@@ -2063,11 +2782,13 @@ allows fast random access to the data, and is already supported by ERDDAP.
     ERDDAP checks, but it is an imperfect test -- if there are different values, ERDDAP
     doesn't know which is correct and therefore which files are invalid.
   </ul>
-<li><b>Directories</b> - The files can be in one directory, or in a directory and its subdirectories 
-  (recursively).
-  Note that if there are a large number of files (for example, &gt;1000), the operating system
-  (and thus EDDTableFromFiles) will operate much more efficiently if you store the files in a
-  series of subdirectories.
+<li><b>Directories</b> - The files can be in one directory, or in a directory 
+  and its subdirectories (recursively).
+  If there are a large number of files (for example, &gt;1,000), the operating system
+  (and thus EDDTableFromFiles) will operate much more efficiently if you store 
+  the files in a
+  series of subdirectories (one per year, or one per month for datasets with very frequent files),
+  so that there are never a huge number of files in a given directory.
 <li><b>Cached File Information</b> - When an EDDTableFromFiles dataset is first loaded, 
   EDDTableFromFiles reads information from all of the relevant files 
   and creates tables (one row for each file) with information about each valid file and each "bad" 
@@ -2233,7 +2954,7 @@ allows fast random access to the data, and is already supported by ERDDAP.
     postExtractRegex to identify a string to be extracted from the file name (for example, the stationID).
     If the regex isn't matched, the entire file name is used (minus preExtract and postExtract).
     Use ".*" to match the entire file name that is left after preExtractRegex and postExtractRegex.
-  <li><tt>columnNameForExtract</tt> is the data column name for the extracted Strings.
+  <li><tt>columnNameForExtract</tt> is the data column source name for the extracted Strings.
     A dataVariable with this <a rel="help" href="#sourceName">sourceName</a> must be in the dataVariables list (with any data type,
     but usually String).
   </ul>
@@ -2260,7 +2981,8 @@ allows fast random access to the data, and is already supported by ERDDAP.
     <br>The .* regular expression matches all remaining characters
     (for example, the partial file name <tt>Able</tt> becomes the extract for the first file).
   <li><tt>&lt;columnNameForExtract&gt;stationID&lt;/columnNameForExtract&gt;</tt> 
-    <br>This tells ERDDAP to create a new column called <tt>stationID</tt> when reading each file.
+    <br>This tells ERDDAP to create a new source column called <tt>stationID</tt> 
+    when reading each file.
     Every row of data for a given file will have the text extracted 
     from its file name (for example, <tt>Able</tt>) as the value in the <tt>stationID</tt> column.
   </ul>
@@ -2339,16 +3061,19 @@ allows fast random access to the data, and is already supported by ERDDAP.
   &lt;metadataFrom&gt;...&lt;/metadataFrom&gt; &lt;-- The file to get metadata
     from ("first" or "last" (the default) based on file's 
     lastModifiedTime). --&gt;
-  <a name="ETFFcharset">&lt;charset&gt;...&lt;/charset&gt;</a> (For EDDTableFromAsciiFiles only) This OPTIONAL tag
-    specifies the character set (case sensitive!) of the source files, for example,
-    ISO-8859-1 (the default) and UTF-8.  --&gt; 
+  <a name="ETFFcharset">&lt;charset&gt;...&lt;/charset&gt;</a> 
+    &lt;!-- (For EDDTableFromAsciiFiles and EDDTableFromColumnarAsciiFiles only) 
+    This OPTIONAL tag specifies the character set (case sensitive!) of the 
+    source files, for example, ISO-8859-1 (the default) and UTF-8.  --&gt; 
   <a name="columnNamesRow">&lt;columnNamesRow&gt;...&lt;/columnNamesRow&gt;</a> &lt;-- (For EDDTableFromAsciiFiles only) 
     This specifies the number of the row with the column names in the files. 
-    (The first row is "1". Default = 1.)  If you specify 0, ERDDAP will not 
-    look for column names and will assign names: Column#1, Column#2, ... --&gt;
-  &lt;firstDataRow&gt;...&lt;/firstDataRow&gt; &lt;-- (For 
-    EDDTableFromAsciiFiles only) This specifies the number of the first
-    row with data in the files. (The first row is "1". default = 2.) --&gt;
+    (The first row of the file is "1". Default = 1.)  If you specify 0, ERDDAP
+    will not look for column names and will assign names: 
+    Column#1, Column#2, ... --&gt;
+  &lt;firstDataRow&gt;...&lt;/firstDataRow&gt; 
+    &lt;-- (For EDDTableFromAsciiFiles and EDDTableFromColumnarAsciiFiles only) 
+    This specifies the number of the first row with data in the files. 
+    (The first row of the file is "1". Default = 2.) --&gt;
   &lt;-- For the next four tags, see <a rel="help" href="#fileNameExtracts">File Name Extracts</a>. --&gt;
   &lt;preExtractRegex&gt;...&lt;/preExtractRegex&gt;
   &lt;postExtractRegex&gt;...&lt;/postExtractRegex&gt;
@@ -2385,7 +3110,7 @@ allows fast random access to the data, and is already supported by ERDDAP.
   <a rel="help" href="#globalAttributes">&lt;addAttributes&gt;</a>...&lt;/addAttributes&gt; &lt;!-- 0 or 1 --&gt;
   <a rel="help" href="#dataVariable">&lt;dataVariable&gt;</a>...&lt;/dataVariable&gt; &lt;!-- 1 or more --&gt;
     &lt;-- For EDDTableFromHyraxFiles, EDDTableFromNcFiles, and 
-    EDDTableFromThreddsFiles, the axis variables (for example, time) needn't
+    EDDTableFromThreddsFiles, the source's axis variables (for example, time) needn't
     be first or in any specific order. --&gt;
 &lt;/dataset&gt;
 </pre>
@@ -2522,15 +3247,24 @@ tags in the chunk of XML for this dataset:
 <p><a name="EDDTableFromAsciiFiles"><b>EDDTableFromAsciiFiles</b></a> aggregates data from
   comma-, tab-, or space-separated tabular ASCII data files.
 <ul>
-<li>Normally, the files will have column names on the first row and data starting on the second row.
+<li>Most often, the files will have column names on the first row and data 
+  starting on the second row.
   But you can use <tt>&lt;columnNamesRow&gt;</tt> and <tt>&lt;firstDataRow&gt;</tt> 
   in your datasets.xml file to
   a specify different row number.
-<li>Note that ASCII files are not a very efficient way to store/retreive data. 
+<li>ERDDAP allows the rows of data to have different numbers of data values.
+  ERDDAP assumes that the missing data values are the final columns in the row.
+  ERDDAP assigns the standard missing value values for the missing data values. (added v1.56)
+<li>ASCII files are easy to work with, but they are not an efficient way to store/retreive data. 
   For greater efficiency, save the files as .nc files (which one dimension, "row", shared by 
   all variables) instead.
-<li>See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, for information
-on how this class works and how to use this class.
+<li>See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
+  for information on how this class works and how to use this class.
+<li>We strongly recommend using the
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  to make a rough draft of the datasets.xml chunk for this dataset.
+  Because of the total lack of metadata in ASCII files, 
+  you will always need to edit the results of GenerateDatasetsXml.
 </ul>
 
 
@@ -2550,12 +3284,67 @@ on how this class works and how to use this class.
 on how this class works and how to use this class.
 </ul>
 
+<p><a name="EDDTableFromColumnarAsciiFiles"><b>EDDTableFromColumnarAsciiFiles</b></a> 
+  aggregates data from tabular ASCII data files with fixed-width columns.
+<ul>
+<li>Most often, the files will have column names on the first row and data 
+  starting on the second row.
+  The first line/row in the file is called row #1.
+  But you can use <tt>&lt;columnNamesRow&gt;</tt> and <tt>&lt;firstDataRow&gt;</tt> 
+  in your datasets.xml file to
+  a specify different row number.
+
+<li>The &lt;addAttributes&gt; for each &lt;dataVariable&gt; for these datasets
+  MUST include these two special attributes:
+  <ul>
+  <li>&lt;att name="startColumn"&gt;<i>integer</i>&lt;att&gt; - 
+    specifies the character column in each line that is the start of this data variable.
+  <li>&lt;att name="stopColumn"&gt;<i>integer</i>&lt;att&gt; - 
+    specifies the character column in each line that is the 1 after the end of this data variable.
+  </ul>
+  The first character column is called column #0.
+  <br>For example, for this file that has time values abutting temperature values :<pre>
+  0         1         2           &lt;-- character column number 10's digit
+  0123456789012345678901234567    &lt;-- character column number 1's digit
+  time                temp
+  2014-12-01T12:00:00Z12.3
+  2014-12-02T12:00:00Z13.6
+  2014-12-03T12:00:00Z11.0
+  </pre>the time data variable would have <tt>
+  <br>&nbsp;&nbsp;&lt;att name="startColumn"&gt;0&lt;att&gt;
+  <br>&nbsp;&nbsp;&lt;att name="stopColumn"&gt;20&lt;att&gt;  
+  </tt><br>and the time data variable would have <tt>
+  <br>&nbsp;&nbsp;&lt;att name="startColumn"&gt;20&lt;att&gt;
+  <br>&nbsp;&nbsp;&lt;att name="stopColumn"&gt;24&lt;att&gt;  
+  </tt>
+  <br>These attributes MUST be specified for all variables except 
+    <a rel="help" href="#fixedValue">fixed-value</a>
+    and <a rel="help" href="#fileNameExtracts">file-name-extract</a>
+    variables. 
+<li>ASCII files are easy to work with, but they are not an efficient way to store/retreive data. 
+  For greater efficiency, save the files as .nc files (which one dimension, "row", shared by 
+  all variables) instead.
+<li>See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
+  for information on how this class works and how to use this class.
+<li>We strongly recommend using the
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  to make a rough draft of the datasets.xml chunk for this dataset.
+  Because of the difficulty of determining the start and end positions for each
+  data column and the total lack of metadata in ASCII files, 
+  you will always need to edit the results from GenerateDatasetsXml.
+</ul>
+
+
 <p><a name="EDDTableFromHyraxFiles"><b>EDDTableFromHyraxFiles</b></a> aggregates data files with several variables, each with
   one or more shared dimensions (for example, time, altitude (or depth), latitude, longitude), and served by a 
   <a rel="help" href="http://www.opendap.org/download/hyrax.html">Hyrax OPeNDAP server<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
 <ul>
+<li>We strongly recommend using the
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  to make a rough draft of the datasets.xml chunk for this dataset.
+  You can then edit that to fine tune it.
 <li>In most cases, each file has multiple values for the leftmost dimension, e.g. time.
 <li>The files often (but don't have to) have a single value for the other dimensions 
   (for example, altitude (or depth), latitude, longitude).
@@ -2593,6 +3382,10 @@ on how this class works and how to use this class.
   See this class' superclass, <a rel="help" href="#EDDTableFromFiles">EDDTableFromFiles</a>, 
   for information on how this class works and how to use this class.
 <ul>
+<li>We strongly recommend using the
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  to make a rough draft of the datasets.xml chunk for this dataset.
+  You can then edit that to fine tune it.
 <li>1D Example:
   1D files are somewhat different from 2D, 3D, 4D, ... files.
   <ul>
@@ -2660,6 +3453,12 @@ on how this class works and how to use this class.
   we may have missed one (or more). So if this class can't read data from your CF DSG files,
   please email bob.simons at noaa.gov and include a sample file.
 
+  <p>We strongly recommend using the
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  to make a rough draft of the datasets.xml chunk for this dataset.
+  You can then edit that to fine tune it.
+
+
 <p><a name="EDDTableFromNOS"><b>EDDTableFromNOS</b></a> handles data from a NOAA 
 <a rel="help" href="http://opendap.co-ops.nos.noaa.gov/axis/">NOS<img 
         src="../images/external.png" align="bottom" alt=" (external link)" 
@@ -2726,7 +3525,11 @@ Sensor Observation Service
 <li>The stations all serve the same set of variables (although the source for each station doesn't
   have to serve all variables).
 <li>SOS servers expect an XML request and return an XML response.
-<li>It is not easy to generate the dataset XML for SOS datasets.
+<li>We strongly recommend using the
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  to make a rough draft of the datasets.xml chunk for this dataset.
+  You can then edit that to fine tune it.
+  It is not easy to generate the dataset XML for SOS datasets by hand.
   To find the needed information, you must visit 
   sourceUrl+"?service=SOS&amp;request=GetCapabilities" in a browser; 
   look at the XML; make a GetObservation request by hand; 
@@ -2847,6 +3650,10 @@ Sensor Observation Service
         src="../images/external.png" align="bottom" alt=" (external link)" 
         title="This link to an external web site does not constitute an endorsement."/></a>.
 <ul>
+<li>We strongly recommend using the
+  <a rel="help" href="#GenerateDatasetsXml">GenerateDatasetsXml program</a> 
+  to make a rough draft of the datasets.xml chunk for this dataset.
+  You can then edit that to fine tune it.
 <li>In most cases, each file has multiple values for the leftmost dimension, e.g. time.
 <li>The files often (but don't have to) have a single value for the other dimensions 
   (for example, altitude (or depth), latitude, longitude).
@@ -4040,16 +4847,6 @@ for details.
         date_issued is less commonly used than date_created and date_modified. 
         If date_issued is omitted, it is assumed to be the same as the date_created.        
 
-      <li><a name="featureType"><b>featureType</b></a> 
-        (from the
-        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
-        src="../images/external.png" align="bottom" alt=" (external link)" 
-        title="This link to an external web site does not constitute an endorsement."/></a>
-        metadata standard) 
-        is IGNORED and/or REPLACED.  If the dataset's <a rel="help" href="#cdm_data_type"><tt>cdm_data_type</tt></a>
-        is appropriate, ERDDAP will automatically use it to create a
-        <tt>featureType</tt> attribute.  So there is no need for you to add it.
-
       <li><a name="globalDrawLandMask"><b>drawLandMask</b></a> - 
         This is a RECOMMENDED global attribute used by ERDDAP (and no metadata 
         standards) which specifies the default value for the "Draw Land Mask" option on the dataset's
@@ -4074,6 +4871,16 @@ for details.
             <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#setup.xml">setup.xml</a>
           is used.  If none is specified there, <tt>over</tt> is the default.
         </ul>
+
+      <li><a name="featureType"><b>featureType</b></a> 
+        (from the
+        <a rel="help" href="http://cfconventions.org/Data/cf-conventions/cf-conventions-1.6/build/cf-conventions.html">CF<img 
+        src="../images/external.png" align="bottom" alt=" (external link)" 
+        title="This link to an external web site does not constitute an endorsement."/></a>
+        metadata standard) 
+        is IGNORED and/or REPLACED.  If the dataset's <a rel="help" href="#cdm_data_type"><tt>cdm_data_type</tt></a>
+        is appropriate, ERDDAP will automatically use it to create a
+        <tt>featureType</tt> attribute.  So there is no need for you to add it.
 
       <li><a name="history"><b>history</b></a> 
         (from the
@@ -4306,7 +5113,10 @@ for details.
 
       <li><a name="subsetVariables"><b>subsetVariables</b></a> (for EDDTable datasets only) 
         is a RECOMMENDED global attribute that lets you specify
-        a comma-separated list of <a rel="help" href="#destinationName">destinationName</a>s of variables which have a limited number of
+        a comma-separated list of 
+        <a rel="help" href="#dataVariable"><tt>&lt;dataVariable&gt;</tt></a>
+        <a rel="help" href="#destinationName">destinationName</a>s
+        to identify variables which have a limited number of
         values (stated another way: variables for which each of the values has many duplicates).
         For example,
         <br><tt>&lt;att name="subsetVariables"&gt;station_id, longitude, latitude&lt;/att&gt;</tt>
@@ -5241,7 +6051,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.52
+<p>ERDDAP, Version 1.56
 <br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

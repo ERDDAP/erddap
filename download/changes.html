@@ -45,6 +45,66 @@
 <!-- ****************************************************************************** -->
 <tr>
 <td>
+<h2><a name="changes1.56">Changes</a> in ERDDAP version 1.56 (released 2014-12-16)</h2>
+<ul>
+<li><b>New Features (for users):</b> (None)
+
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <ul>
+  <li>You probably already know about 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromErddap">EDDGridFromErddap</a>
+    and 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromErddap">EDDTableFromErddap</a>
+    which let you link to datasets in other ERDDAPs and have them appear
+    in your ERDDAP. User requests for actual data from these datasets get 
+    routed invisibly to the source ERDDAP, so the data doesn't flow through your
+    system or use your bandwidth. There is now a large list of recommended datasets 
+    in the
+    <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">sample datasets.xml in erddapContent.zip</a>.
+    To include them in your ERDDAP, all you have do is copy and paste the 
+    ones you want into your datasets.xml.    
+    Thanks to Conor Delaney.
+  <li>If you compile ERDDAP, you need to add some new .jar files to your 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#developmentEnvironment">classpath 
+    -cp switch</a> for javac and java.
+  <li>The new 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromCassandra">EDDTableFromCassandra</a>
+    handles getting data from 
+    <a rel="help" 
+    href="http://planetcassandra.org/cassandra/">Cassandra<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>.
+    Thanks to Ocean Networks Canada.
+  <li>The new 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromColumnarAsciiFiles">EDDTableFromColumnarAsciiFiles</a>
+    handles getting data from ASCII data files with fixed-width columns.
+    Thanks to Philippe Makowski.
+  <li>All EDDGridFromFiles and EDDTableFromFiles subclasses now use a new 
+    method, FileVisitor (added to Java in 1.7) to gather information about the files.
+    This may have no benefit for the first gathering of file information
+    for a given dataset but seems to have a huge benefit for subsequent gatherings
+    if done soon, while the OS still has the information cached. Thanks to NGDC.
+    <p>We still recommend: If a dataset has a large number of files (e.g., &gt;1,000), 
+    the operating system (and thus EDDGridFromFiles and EDDTableFromFiles)
+    will operate much more efficiently if you 
+    store the files in a series of subdirectories (one per year,
+    or one per month for datasets with very frequent files),
+    so that there are never a huge number of files in a given directory.    
+  <li>Several small improvements to EDDTableFromAsciiFiles.
+  <li>Some improvements to EDDTableFromAsciiServiceNOS, notably to get some
+    additional columns of information from the source.
+    Thanks to Lynn DeWitt.
+  <li>Some small bug fixes related to the ISO 19115 that ERDDAP generates.
+    Thanks to Anna Milan.
+  </ul>
+</ul>
+
+</td>
+</tr>
+
+<!-- ****************************************************************************** -->
+<tr>
+<td>
 <h2><a name="changes1.54">Changes</a> in ERDDAP version 1.54 (released 2014-10-24)</h2>
 <ul>
 <li><b>New Features (for users):</b> 
@@ -2256,7 +2316,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.52
+<p>ERDDAP, Version 1.56
 <br><a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 

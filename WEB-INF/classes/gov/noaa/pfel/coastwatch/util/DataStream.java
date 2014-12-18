@@ -674,7 +674,8 @@ public class DataStream  {
      */
     public static void main(String args[]) throws Exception {
         //write bytes to a file
-        String fileName = String2.getClassPath() + "TestDataStream";
+        String fileName = String2.getClassPath() + //with / separator and / at the end
+            "TestDataStream";
         DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(
             new FileOutputStream(fileName)));
         byte buffer[] = new byte[128];

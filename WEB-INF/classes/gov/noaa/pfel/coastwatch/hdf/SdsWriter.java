@@ -681,7 +681,8 @@ public class SdsWriter  {
         //describe the data
         String2.log("SdsWriter.main gathering data and attributes");  
         int NaN = -999;
-        String dir = String2.getClassPath() + "gov/noaa/pfel/coastwatch/hdf/";
+        String dir = String2.getClassPath() + //with / separator and / at the end
+            "gov/noaa/pfel/coastwatch/hdf/";
         double lonSpacing = 0.25; 
         double latSpacing = 0.5; 
         double lon[] = {0, .25, 0.5, 0.75}; 
@@ -806,7 +807,8 @@ public class SdsWriter  {
         String2.setupLog(true, false, dir + "OQNux10.hdf.dump",
             false, false, 1000000);
         SdsReader.verbose = true;
-        SdsReader.read(String2.getClassPath() + "gov/noaa/pfel/coastwatch/griddata/OQNux101day_20050712_W-135E-105S22N50.hdf");
+        SdsReader.read(String2.getClassPath() + //with / separator and / at the end
+            "gov/noaa/pfel/coastwatch/griddata/OQNux101day_20050712_W-135E-105S22N50.hdf");
         */
 
         String2.log("SdsWriter.main finished successfully");  

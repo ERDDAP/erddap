@@ -567,29 +567,6 @@ public class Erddap extends HttpServlet {
             } else if (protocol.startsWith("index.")) {
                 doIndex(request, response, loggedInAs);
 
-            /*
-            //test directoryListing
-            } else if (endOfRequest.equals("images/")) {
-                String tDir = endOfRequest;
-                PrimitiveArray info[] = RegexFilenameFilter.gatherInfo(
-                    EDStatic.contextDirectory + tDir, ".*");
-                Table table = new Table();
-                table.addColumn("Name", info[1]);
-                table.addColumn("Last modified", info[2]);
-                table.addColumn("Size", info[3]);
-                table.addColumn("Description", 
-                    PrimitiveArray.factory(String.class, info[1].size(), ""));
-
-                OutputStream out = getHtmlOutputStream(request, response);
-                Writer writer = getHtmlWriter(loggedInAs, "Directory Listing", out); 
-                writer.write(
-                    table.directoryListing(tErddapUrl + "/" + tDir, userQuery, 
-                        EDStatic.imageDirUrl(loggedInAs) + "fileIcons/", true, (StringArray)info[0]));
-                endHtmlWriter(out, writer, tErddapUrl, false);
-
-                return;
-            */
-
             } else if (protocol.equals("download") ||
                        protocol.equals("images") ||
                        protocol.equals("public")) {

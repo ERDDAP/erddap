@@ -4634,7 +4634,7 @@ Attributes {
             throw new SimpleException(
                 MessageFormat.format(EDStatic.noXxxBecause2, 
                     ".geotif", EDStatic.noXxxNoLLEvenlySpaced));
-//
+
         //2013-10-21 NO LONGER A LIMITATION: lon and lat are ascending?  
         //  GeotiffWriter now deals with descending.
         //  see test in EDDGridFromDap.testDescendingAxisGeotif
@@ -8193,6 +8193,29 @@ Attributes {
             "     <br>The example below is equivalent (at least at the time of writing this) to the examples above:\n" +
             "     <br><a href=\"" + fullTimeExample + "\"><tt>" + 
                                     fullTimeExample + "</tt></a>\n" +
+            "     <br><a name=\"lenient\">ERDDAP</a> is \"lenient\" when it parses date/time strings. That means that date/times\n" +
+            "     <br>with the correct format, but with month, date, hour, minute, and/or second values\n" +
+            "     <br>that are too large or too small will be rolled to the appropriate date/times.\n" +
+            "     <br>For example, ERDDAP interprets 2001-12-32 as 2002-01-01, and interprets\n" +
+            "     <br>2002-01-00 as 2001-12-31.\n" +
+            "     <br>(It's not a bug, it's a feature! We understand that you may object to this\n" +
+            "     <br>if you are not familiar with lenient parsing. We understand there are\n" +
+            "     <br>circumstances where some people would prefer strict parsing, but there are also\n" +
+            "     <br>circumstances where some people would prefer lenient parsing. ERDDAP can't\n" +
+            "     <br>have it both ways. This was a conscious choice. Lenient parsing is the default\n" +
+            "     <br>behavior in Java, the language that ERDDAP is written in and arguably the\n" +
+            "     <br>most-used computer language. Also, this behavior is consistent with ERDDAP's\n" +
+            "     <br>conversion of requested grid axis values to the nearest valid grid axis value.\n" +
+            "     <br>And this is consistent with some other places in ERDDAP that try to repair\n" +
+            "     <br>invalid input when the intention is clear, instead of just returning an error\n" +
+            "     <br>message.)\n" +
+            (EDStatic.convertersActive? 
+              "     <br>ERDDAP has a utility to\n" +
+              "       <a rel=\"bookmark\" href=\"" + tErddapUrl + "/convert/time.html\">Convert\n" +
+              "       a Numeric Time to/from a String Time</a>.\n" +
+              "     <br>See also:\n" +
+              "       <a rel=\"help\" href=\"" + tErddapUrl + "/convert/time.html#erddap\">How\n" +
+              "       ERDDAP Deals with Time</a>.\n" : "") +
             "   <li><a name=\"lastInParentheses\"><tt>(last)</tt></a> - ERDDAP interprets \n" +
             "       a <tt>start</tt> or <tt>stop</tt> value of <tt>(last)</tt> as the last\n" + 
             "     <br>available index.\n" + 
@@ -11356,9 +11379,15 @@ if (contributorName != null || contributorRole != null)
 (contributorEmail == null?
 "              <gmd:contactInfo gco:nilReason=\"missing\"/>\n" :
 "              <gmd:contactInfo>\n" +
-"                <gmd:electronicMailAddress>\n" +
-"                  <gco:CharacterString>" + XML.encodeAsXML(contributorEmail) + "</gco:CharacterString>\n" +
-"                </gmd:electronicMailAddress>\n" +
+"                <gmd:CI_Contact>\n" +
+"                  <gmd:address>\n" +
+"                    <gmd:CI_Address>\n" +
+"                      <gmd:electronicMailAddress>\n" +
+"                        <gco:CharacterString>" + XML.encodeAsXML(contributorEmail) + "</gco:CharacterString>\n" +
+"                      </gmd:electronicMailAddress>\n" +
+"                    </gmd:CI_Address>\n" +
+"                  </gmd:address>\n" +
+"                </gmd:CI_Contact>\n" +
 "              </gmd:contactInfo>\n") +
 
 "              <gmd:role>\n" +  

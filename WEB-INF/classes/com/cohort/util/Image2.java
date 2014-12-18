@@ -727,7 +727,8 @@ known Java bugs: http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5098176 (now
     public static void test() throws Exception {
         String2.log("\n*********************************************************** test Image2");
 
-        String imageDir = String2.getClassPath() + "com/cohort/util/";
+        String imageDir = String2.getClassPath() + //with / separator and / at the end
+            "com/cohort/util/";
 
         //test ImageIO
         BufferedImage bi = ImageIO.read(new File(imageDir + "testmap.gif"));

@@ -145,7 +145,8 @@ public class Grid  {
 
     /** These are used to access the test files. */
     public static String testDir = 
-        String2.getClassPath() + "gov/noaa/pfel/coastwatch/griddata/";
+        String2.getClassPath() + //with / separator and / at the end
+        "gov/noaa/pfel/coastwatch/griddata/";
     public final static String testName = "OQNux10S1day_20050712_x-135_X-105_y22_Y50"; 
 
 
@@ -4363,7 +4364,8 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
         String2.log("\n*** Grid.testNetCDF");
 
         //***** test composite *******************************************************
-        String dir = String2.getClassPath() + "gov/noaa/pfel/coastwatch/griddata/";
+        String dir = String2.getClassPath() + //with / separator and / at the end
+            "gov/noaa/pfel/coastwatch/griddata/";
         Grid grid1 = new Grid();
         grid1.latSpacing = 0.5; 
         grid1.lonSpacing = 0.25; 

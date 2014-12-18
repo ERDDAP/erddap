@@ -6,6 +6,7 @@ package gov.noaa.pfel.erddap.dataset;
 
 import com.cohort.array.Attributes;
 import com.cohort.array.ByteArray;
+import com.cohort.array.CharArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.PrimitiveArray;
@@ -117,10 +118,17 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         boolean getMetadata, boolean mustGetData) 
         throws Throwable {
 
+        if (!mustGetData) 
+            //Just return an empty table. There is never any metadata.
+            return Table.makeEmptyTable(sourceDataNames.toArray(), sourceDataTypes);
+
         Table table = new Table();
+        table.allowRaggedRightInReadASCII = true;
         table.readASCII(fileDir + fileName, 
-            "ISO-8859-1", columnNamesRow - 1, firstDataRow - 1,
-            null, null, null, null, true); //testColumns, testMin, testMax, loadColumns, simplify);
+            charset, columnNamesRow - 1, firstDataRow - 1,
+            null, null, null, //testColumns, testMin, testMax,
+            sourceDataNames.toArray(), //loadColumns, 
+            false); //don't simplify; just get the strings
 
         //convert to desired sourceDataTypes
         int nCols = table.nColumns();
@@ -128,10 +136,23 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             int sd = sourceDataNames.indexOf(table.getColumnName(tc));
             if (sd >= 0) {
                 PrimitiveArray pa = table.getColumn(tc);
-                if (!sourceDataTypes[sd].equals(pa.elementClassString())) {
-                    PrimitiveArray newPa = PrimitiveArray.factory(
-                        PrimitiveArray.elementStringToClass(sourceDataTypes[sd]), 1, false);
-                    newPa.append(pa);
+                String tType = sourceDataTypes[sd];
+                if (tType.equals("String")) { //do nothing
+                } else if (tType.equals("boolean")) {
+                    table.setColumn(tc, ByteArray.toBooleanToByte(pa));
+                } else { 
+                    PrimitiveArray newPa;
+                    if (tType.equals("char")) {
+                        CharArray ca = new CharArray();
+                        int n = pa.size();
+                        for (int i = 0; i < n; i++)
+                            ca.add(CharArray.firstChar(pa.getString(i)));
+                        newPa = ca;
+                    } else {
+                        newPa = PrimitiveArray.factory(
+                            PrimitiveArray.elementStringToClass(sourceDataTypes[sd]), 1, false);
+                        newPa.append(pa);
+                    }
                     table.setColumn(tc, newPa);
                 }
             }
@@ -247,7 +268,7 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataSourceTable)? "Point" : "Other",
+                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
                 tFileDir, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
@@ -928,10 +949,207 @@ expected =
      *
      * @throws Throwable if trouble
      */
+    public static void testBasic2() throws Throwable {
+        String2.log("\n*** EDDTableFromAsciiFiles.testBasic2() \n");
+        testVerboseOn();
+        String name, tName, results, tResults, expected, userDapQuery, tQuery;
+        String error = "";
+        EDV edv;
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+        String testDir = EDStatic.fullTestCacheDirectory;
+
+        String id = "testTableAscii2";
+        deleteCachedDatasetInfo(id);
+        EDDTable eddTable = (EDDTable)oneFromDatasetXml(id); 
+
+        //does aBoolean know it's a boolean?
+        Test.ensureTrue(eddTable.findVariableByDestinationName("aBoolean").isBoolean(), 
+            "Is aBoolean edv.isBoolean() true?");
+
+        //.csv    for all
+        userDapQuery = "";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
+            eddTable.className() + "_all", ".csv"); 
+        results = new String((new ByteArray(testDir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"fileName,five,aString,aChar,aBoolean,aByte,aShort,anInt,aLong,aFloat,aDouble\n" +
+",,,,,,,,,,\n" +
+"csvAscii,5.0,\"b,d\",65,1,24,24000,24000000,240000000000,2.4,2.412345678987654\n" +
+"csvAscii,5.0,short:,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN\n" +
+"csvAscii,5.0,fg,70,1,11,12001,1200000,12000000000,1.21,1.0E200\n" +
+"csvAscii,5.0,h,72,1,12,12002,120000,1200000000,1.22,2.0E200\n" +
+"csvAscii,5.0,i,73,1,13,12003,12000,120000000,1.23,3.0E200\n" +
+"csvAscii,5.0,j,74,0,14,12004,1200,12000000,1.24,4.0E200\n" +
+"csvAscii,5.0,k,75,0,15,12005,120,1200000,1.25,5.0E200\n" +
+"csvAscii,5.0,l,76,0,16,12006,12,120000,1.26,6.0E200\n" +
+"csvAscii,5.0,m,77,0,17,12007,121,12000,1.27,7.0E200\n" +
+"csvAscii,5.0,n,78,1,18,12008,122,1200,1.28,8.0E200\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+
+        //*** test getting das for entire dataset
+        String2.log("\nEDDTableFromAsciiFiles test das and dds for entire dataset\n");
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", testDir, 
+            eddTable.className() + "_Entire", ".das"); 
+        results = new String((new ByteArray(testDir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Attributes {\n" +
+" s {\n" +
+"  fileName {\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"File Name\";\n" +
+"  }\n" +
+"  five {\n" +
+"    Float32 actual_range 5.0, 5.0;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"Five\";\n" +
+"  }\n" +
+"  aString {\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"A String\";\n" +
+"  }\n" +
+"  aChar {\n" +
+"    Int16 actual_range 65, 78;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"A Char\";\n" +
+"  }\n" +
+"  aBoolean {\n" +
+"    Byte actual_range 0, 1;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"A Boolean\";\n" +
+"  }\n" +
+"  aByte {\n" +
+"    Byte actual_range 11, 24;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"A Byte\";\n" +
+"  }\n" +
+"  aShort {\n" +
+"    Int16 actual_range 12001, 24000;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"A Short\";\n" +
+"  }\n" +
+"  anInt {\n" +
+"    Int32 actual_range 12, 24000000;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"An Int\";\n" +
+"  }\n" +
+"  aLong {\n" +
+"    Float64 actual_range 1200, 240000000000;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"A Long\";\n" +
+"  }\n" +
+"  aFloat {\n" +
+"    Float32 actual_range 1.21, 2.4;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"A Float\";\n" +
+"  }\n" +
+"  aDouble {\n" +
+"    Float64 actual_range 2.412345678987654, 8.0e+200;\n" +
+"    String ioos_category \"Unknown\";\n" +
+"    String long_name \"A Double\";\n" +
+"  }\n" +
+" }\n" +
+"  NC_GLOBAL {\n" +
+"    String cdm_data_type \"Other\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String creator_name \"NOAA NDBC\";\n" +
+"    String creator_url \"http://www.ndbc.noaa.gov/\";\n" +
+"    String history \"" + today;
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+        
+//"2014-12-04T19:15:21Z (local files)
+//2014-12-04T19:15:21Z http://127.0.0.1:8080/cwexperimental/tabledap/testTableAscii.das";
+expected =
+"    String infoUrl \"http://www.ndbc.noaa.gov/\";\n" +
+"    String institution \"NOAA NDBC\";\n" +
+"    String keywords \"boolean, byte, char, double, float, int, long, ndbc, newer, noaa, short, string, title\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    String sourceUrl \"(local files)\";\n" +
+"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String subsetVariables \"five, fileName\";\n" +
+"    String summary \"The new summary!\";\n" +
+"    String title \"The Newer Title!\";\n" +
+"  }\n" +
+"}\n";
+        int tPo = results.indexOf(expected.substring(0, 20));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+        
+        //*** test getting dds for entire dataset
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", testDir, 
+            eddTable.className() + "_Entire", ".dds"); 
+        results = new String((new ByteArray(testDir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Dataset {\n" +
+"  Sequence {\n" +
+"    String fileName;\n" +
+"    Float32 five;\n" +
+"    String aString;\n" +
+"    Int16 aChar;\n" +
+"    Byte aBoolean;\n" +
+"    Byte aByte;\n" +
+"    Int16 aShort;\n" +
+"    Int32 anInt;\n" +
+"    Float64 aLong;\n" +
+"    Float32 aFloat;\n" +
+"    Float64 aDouble;\n" +
+"  } s;\n" +
+"} s;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //only subsetVars
+        userDapQuery = "fileName,five";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
+            eddTable.className() + "_sv", ".csv"); 
+        results = new String((new ByteArray(testDir + tName)).toArray());
+        expected = 
+"fileName,five\n" +
+",\n" +
+"csvAscii,5.0\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        //subset of variables, constrain boolean and five
+        userDapQuery = "anInt,fileName,five,aBoolean&aBoolean=1&five=5";
+        tName = eddTable.makeNewFileForDapQuery(null, null, userDapQuery, testDir, 
+            eddTable.className() + "_conbool", ".csv"); 
+        results = new String((new ByteArray(testDir + tName)).toArray());
+        expected = 
+"anInt,fileName,five,aBoolean\n" +
+",,,\n" +
+"24000000,csvAscii,5.0,1\n" +
+"1200000,csvAscii,5.0,1\n" +
+"120000,csvAscii,5.0,1\n" +
+"12000,csvAscii,5.0,1\n" +
+"122,csvAscii,5.0,1\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+        String2.log("\n*** EDDTableFromAsciiFiles.testBasic2() finished successfully\n");
+    }
+
+
+    /**
+     * This tests the methods in this class.
+     *
+     * @throws Throwable if trouble
+     */
     public static void test(boolean deleteCachedDatasetInfo) throws Throwable {
         testBasic(deleteCachedDatasetInfo);
         testGenerateDatasetsXml();
         testFixedValue();
+        testBasic2();
 
         //not usually run
     }

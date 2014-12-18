@@ -137,7 +137,8 @@ public class CWDataBrowser extends EmaClass  {
         contextDirectory = classRB2.getString("contextDirectory", "");
         int logPo = fullClassName.lastIndexOf('.');
         String logDir = String2.replaceAll(fullClassName.substring(0, logPo + 1), ".", "/");
-        String2.setupLog(false, false, String2.getClassPath() + logDir + "log.txt",
+        String2.setupLog(false, false, 
+            String2.getClassPath() + logDir + "log.txt", //with / separator
             false, true, 1000000);
         String2.log("\n" + String2.makeString('*', 80) +  
             "\nCWDataBrowser.constructor " + constructorDateTime +

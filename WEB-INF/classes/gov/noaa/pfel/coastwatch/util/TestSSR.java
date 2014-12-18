@@ -31,7 +31,7 @@ import java.util.Properties;
  */
 public class TestSSR {
 
-    static String classPath = String2.getClassPath();
+    static String classPath = String2.getClassPath(); //with / separator and / at the end
 
     /**
      * Run all of the tests which are operating system independent.
@@ -96,13 +96,15 @@ public class TestSSR {
 
         //dosShell
         String2.log("test dosShell");
-        String tempGif = SSR.getContextDirectory() + "images/temp.gif";
+        String tempGif = SSR.getContextDirectory() + //with / separator and / at the end
+            "images/temp.gif";
         File2.delete(tempGif);
         try {
             Test.ensureEqual(
                 String2.toNewlineString(SSR.dosShell(
                     "\"C:\\Program Files (x86)\\ImageMagick-6.8.0-Q16\\convert\" " +
-                    SSR.getContextDirectory() + "images/subtitle.jpg " +
+                    SSR.getContextDirectory() + //with / separator and / at the end
+                        "images/subtitle.jpg " +
                     tempGif, 10).toArray()),
                 "", "dosShell a");
             Test.ensureTrue(File2.isFile(tempGif), "dosShell b");
@@ -295,12 +297,15 @@ public class TestSSR {
         Test.ensureTrue(File2.delete(tFileName), "delete " + tFileName);
 
         //getContextDirectory
-        String2.log("test getContextDirectory current=" + SSR.getContextDirectory());
+        String2.log("test getContextDirectory current=" + 
+            SSR.getContextDirectory()); //with / separator and / at the end
         //there is no way to test this and have it work with different installations
         //test for my computer (comment out on other computers):
-        //ensureEqual(String2.getContextDirectory(), "C:/programs/tomcat/webapps/cwexperimental/", "a");
+        //ensureEqual(String2.getContextDirectory(), //with / separator and / at the end
+        //  "C:/programs/tomcat/webapps/cwexperimental/", "a");
         //wimpy test, but works on all computers
-        Test.ensureNotNull(SSR.getContextDirectory(), "contextDirectory");
+        Test.ensureNotNull(SSR.getContextDirectory(), //with / separator and / at the end
+            "contextDirectory");
 
         //getTempDirectory
         String2.log("test getTempDirectory current=" + SSR.getTempDirectory());

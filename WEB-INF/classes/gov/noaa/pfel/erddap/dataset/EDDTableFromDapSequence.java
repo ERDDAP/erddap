@@ -837,7 +837,7 @@ public class EDDTableFromDapSequence extends EDDTable{
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataAddTable)? "Point" : "Other",
+                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
                 tLocalSourceUrl, externalGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
         if (outerSequenceName == null)
