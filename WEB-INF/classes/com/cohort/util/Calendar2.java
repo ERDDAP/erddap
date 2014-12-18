@@ -1011,7 +1011,7 @@ public class Calendar2 {
      * @param time_precision can be "1970", "1970-01", "1970-01-01", "1970-01-01T00Z",
      *    "1970-01-01T00:00Z", "1970-01-01T00:00:00Z" (used if time_precision is null or not matched), 
      *    "1970-01-01T00:00:00.0Z", "1970-01-01T00:00:00.00Z", "1970-01-01T00:00:00.000Z".
-     *    Versions without 'Z' are allowed.
+     *    Versions without 'Z' are allowed here, but ERDDAP requires hours or finer to have 'Z'.
      */
     public static String limitedFormatAsISODateTimeT(String time_precision,
         GregorianCalendar gc) {
@@ -1027,16 +1027,22 @@ public class Calendar2 {
         //build it    
         //Warning: year may be 5 chars, e.g., -0003
         StringBuilder sb = new StringBuilder(formatAsISOYear(gc)); 
-        if (time_precision.equals("1970"))
+        if (time_precision.equals("1970")) {
+            sb.append(zString); 
             return sb.toString();
+        }
 
         sb.append("-" + String2.zeroPad("" + (gc.get(MONTH) + 1), 2));
-        if (time_precision.equals("1970-01"))
+        if (time_precision.equals("1970-01")) {
+            sb.append(zString);
             return sb.toString();
+        }
         
         sb.append("-" + String2.zeroPad("" + gc.get(DATE), 2));
-        if (time_precision.equals("1970-01-01"))
+        if (time_precision.equals("1970-01-01")) {
+            sb.append(zString);
             return sb.toString();
+        }
 
         sb.append("T" + String2.zeroPad("" + gc.get(HOUR_OF_DAY), 2));
         if (time_precision.equals("1970-01-01T00")) {

@@ -8466,9 +8466,8 @@ EDStatic.startBodyHtml(null) + "\n" +
             //String2.getStringFromSystemIn("\nPress ^C to stop or Enter to continue..."); 
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
-                "\nOCCASIONAL ERROR. " +
-                "\nSometimes this test catches the dataset after the dir has been created," + 
-                "\nbut before data files are in it." +
+                "\nFREQUENT ERROR. " +
+                "\nOften, the dataset doesn't load because its URL hasn't be updated recently." + 
                 "\nPress ^C to stop or Enter to continue..."); 
         }
     }

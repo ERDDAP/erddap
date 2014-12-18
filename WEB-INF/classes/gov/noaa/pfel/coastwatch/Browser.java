@@ -717,7 +717,7 @@ public abstract class Browser extends HttpServlet {
 
        
         //String2.log("request.headerNames:");
-        //String attNames[] = String2.toStringArray(String2.toArrayList(request.getHeaderNames()).toArray());
+        //String attNames[] = g2.toStringArray(String2.toArrayList(request.getHeaderNames()).toArray());
         //for (int i = 0; i < attNames.length; i++)
         //    String2.log("  " + attNames[i] + "=" + request.getHeader(attNames[i]));
 

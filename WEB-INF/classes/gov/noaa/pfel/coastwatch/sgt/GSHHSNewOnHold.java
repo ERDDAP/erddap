@@ -61,7 +61,9 @@ public class GSHHS  {
      *    (http://www.ngdc.noaa.gov/mgg/shorelines/gshhs.html).
      *    landMaskDir should have slash at end.
      */
-    public static String gshhsDirectory = SSR.getContextDirectory() + "WEB-INF/ref/";
+    public static String gshhsDirectory = 
+        SSR.getContextDirectory() + //with / separator and / at the end
+        "WEB-INF/ref/";
 
     /**
      * Since GeneralPaths are time-consuming to contruct,

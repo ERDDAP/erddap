@@ -204,8 +204,7 @@ public class OpendapHelper  {
 
             } else {
                 //process a simple attribute
-                String[] sar = String2.toStringArray(
-                    String2.toArrayList(attribute.getValues()).toArray());
+                String[] sar = String2.toStringArray(String2.toArrayList(attribute.getValues()).toArray());
 
                 //remove enclosing quotes from strings
                 for (int i = 0; i < sar.length; i++) {
@@ -285,8 +284,7 @@ public class OpendapHelper  {
                 return new String[] {};
             }   
 
-            String[] sar = String2.toStringArray(
-                String2.toArrayList(attribute.getValues()).toArray());
+            String[] sar = String2.toStringArray(String2.toArrayList(attribute.getValues()).toArray());
             //remove enclosing quotes from strings
             for (int i = 0; i < sar.length; i++) {
                 int sariLength = sar[i].length();

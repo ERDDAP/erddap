@@ -129,8 +129,10 @@ public class EDStatic {
      * <br>1.48 released on 2014-09-04
      * <br>1.50 released on 2014-09-06
      * <br>1.52 released on 2014-10-03
+     * <br>1.54 released on 2014-10-24
+     * <br>1.56 released on 2014-12-16
      */   
-    public static String erddapVersion = "1.54";  
+    public static String erddapVersion = "1.56";  
 
     /** 
      * This is almost always false.  
@@ -155,7 +157,7 @@ public static boolean developmentMode = false;
     public final static String INSTITUTION = "institution";
 
     /* contextDirectory is the local directory on this computer, e.g., [tomcat]/webapps/erddap/ */
-    public static String contextDirectory = SSR.getContextDirectory();
+    public static String contextDirectory = SSR.getContextDirectory(); //with / separator and / at the end
     //fgdc and iso19115XmlDirectory are used for virtual URLs.
     public final static String fgdcXmlDirectory     = "metadata/fgdc/xml/";     //virtual
     public final static String iso19115XmlDirectory = "metadata/iso19115/xml/"; //virtual
@@ -1165,14 +1167,17 @@ public static boolean developmentMode = false;
         errorInMethod = 
             "Couldn't find 'content' directory (<tomcat>/content/erddap/ ?) " +
             "because '" + ecd + "' environment variable not found " +
-            "and couldn't find '/webapps/' in classPath=" + String2.getClassPath() +
+            "and couldn't find '/webapps/' in classPath=" + 
+            String2.getClassPath() + //with / separator and / at the end
             " (and 'content/erddap' should be a sibling of <tomcat>/webapps).";
         contentDirectory = System.getProperty(ecd);        
         if (contentDirectory == null) {
             //Or, it must be sibling of webapps
             //e.g., c:/programs/tomcat/webapps/erddap/WEB-INF/classes/[these classes]
             //On windows, contentDirectory may have spaces as %20(!)
-            contentDirectory = String2.replaceAll(String2.getClassPath(), "%20", " "); 
+            contentDirectory = String2.replaceAll(
+                String2.getClassPath(), //with / separator and / at the end
+                "%20", " "); 
             int po = contentDirectory.indexOf("/webapps/");
             contentDirectory = contentDirectory.substring(0, po) + "/content/erddap/"; //exception if po=-1
         } else {
@@ -1233,6 +1238,7 @@ public static boolean developmentMode = false;
         SSR.reallyVerbose = reallyVerbose;
         Subscriptions.reallyVerbose = reallyVerbose;
         Table.reallyVerbose = reallyVerbose;
+        //Table.debug = reallyVerbose; //for debugging
         TaskThread.reallyVerbose = reallyVerbose;
 
         bigParentDirectory = setup.getNotNothingString("bigParentDirectory", ""); 
@@ -1592,7 +1598,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             //use default messages.xml
             String2.log("Custom messages.xml not found at " + messagesFileName);
             //use String2.getClass(), not ClassLoader.getSystemResource (which fails in Tomcat)
-            messagesFileName = String2.getClassPath() + "gov/noaa/pfel/erddap/util/messages.xml";
+            messagesFileName = String2.getClassPath() + //with / separator and / at the end
+                "gov/noaa/pfel/erddap/util/messages.xml";
             String2.log("Using default messages.xml from  " + messagesFileName);
         }
         errorInMethod = "ERROR while reading messages.xml.";
@@ -3352,6 +3359,9 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             String2.log("\nEDStatic.destroy will try to interrupt nThreads=" + names.length + 
                 "\n  threadNames=" +
                 String2.toCSSVString(names));
+
+            //shutdown Cassandra clusters/sessions
+            EDDTableFromCassandra.shutdown();
 
             //interrupt all of them
             for (int i = 0; i < names.length; i++) {

@@ -259,7 +259,7 @@ public class OneOf {
 
             //get absolute directories
             baseUrl = classRB2.getNotNothingString("baseUrl", errorInMethod);     
-            fullContextDirectory = SSR.getContextDirectory(); //classRB2.getString("contextDirectory", null);
+            fullContextDirectory = SSR.getContextDirectory(); //with / separator and / at the end
             bigParentDirectory = classRB2.getNotNothingString("bigParentDirectory", errorInMethod);      
             File2.addSlash(fullContextDirectory);
             File2.addSlash(bigParentDirectory);

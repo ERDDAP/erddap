@@ -679,7 +679,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             makeReadyToUseAddGlobalAttributesForDatasetsXml(
                 dataSourceTable.globalAttributes(), 
                 //another cdm_data_type could be better; this is ok
-                probablyHasLonLatTime(dataAddTable)? "Point" : "Other",
+                probablyHasLonLatTime(dataSourceTable, dataAddTable)? "Point" : "Other",
                 tLocalDirUrl, externalAddGlobalAttributes, 
                 suggestKeywords(dataSourceTable, dataAddTable)));
 
@@ -1415,24 +1415,24 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  conductivity \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 5.555556E7;\n" + //2013-03-26 new value is nonsense.  was 4.78
-"    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared
-"    Int16 average_length 60;\n" +           //2014-08-11 they returned
-"    String average_method \"average\";\n" +
-"    Float32 centerline_offset -9999.0;\n" +
+//"    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared
+//"    Int16 average_length 60;\n" +           //2014-08-11 they returned
+//"    String average_method \"average\";\n" +
+//"    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 4.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-"    Float32 data_precision -9999.0;\n" +
-"    Float32 distance_from_bow -9999.0;\n" +
-"    Float32 height -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+//"    Float32 data_precision -9999.0;\n" +
+//"    Float32 distance_from_bow -9999.0;\n" +
+//"    Float32 height -9999.0;\n" +
+//"    String instrument \"unknown\";\n" +
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"Conductivity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
-"    String original_units \"siemens meter-1\";\n" +
+//"    String original_units \"siemens meter-1\";\n" +
 "    Int32 qcindex 16;\n" +
-"    Float32 sampling_rate -9999.0;\n" +
-"    Float32 special_value -8888.0;\n" +
+//"    Float32 sampling_rate -9999.0;\n" +
+//"    Float32 special_value -8888.0;\n" +
 "    String standard_name \"sea_water_electrical_conductivity\";\n" +
 "    String units \"siemens meter-1\";\n" +
 "  \\}\n" +
@@ -1463,25 +1463,25 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  salinity \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 7777777.0;\n" + //2013-03-26 nonsense!  was 9672.92
-"    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared
-"    Int16 average_length -9999;\n" +        //2014-08-11 they returned  
-"    String average_method \"average\";\n" +
-"    Float32 centerline_offset -9999.0;\n" +
+//"    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared
+//"    Int16 average_length -9999;\n" +        //2014-08-11 they returned  
+//"    String average_method \"average\";\n" +
+//"    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 37.0;\n" +
 "    Float64 colorBarMinimum 32.0;\n" +
-"    Int32 data_interval 60;\n" +
-"    Float32 data_precision -9999.0;\n" +
-"    Float32 distance_from_bow -9999.0;\n" +
-"    Float32 height -9999.0;\n" +
-"    String instrument \"unknown\";\n" +
+//"    Int32 data_interval 60;\n" +
+//"    Float32 data_precision -9999.0;\n" +  //2014-12-08 several lines disappeared
+//"    Float32 distance_from_bow -9999.0;\n" +
+//"    Float32 height -9999.0;\n" +
+//"    String instrument \"unknown\";\n" +
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"Salinity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"calculated\";\n" +
-"    String original_units \"PSU\";\n" +
+//"    String original_units \"PSU\";\n" +
 "    Int32 qcindex 15;\n" +
-"    Float32 sampling_rate -9999.0;\n" +
-"    Float32 special_value -8888.0;\n" +
+//"    Float32 sampling_rate -9999.0;\n" +
+//"    Float32 special_value -8888.0;\n" +
 "    String standard_name \"sea_water_salinity\";\n" +
 "    String units \"PSU\";\n" +
 "  \\}\n" +

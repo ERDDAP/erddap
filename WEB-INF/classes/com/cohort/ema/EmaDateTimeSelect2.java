@@ -359,10 +359,10 @@ public class EmaDateTimeSelect2 extends EmaAttribute {
                 int optionsLength = options.length;
 
                 //make the y m d t sets
-                HashSet ySet = new HashSet();
-                HashSet mSet = new HashSet();
-                HashSet dSet = new HashSet();
-                HashSet tSet = new HashSet();
+                HashSet<String> ySet = new HashSet();
+                HashSet<String> mSet = new HashSet();
+                HashSet<String> dSet = new HashSet();
+                HashSet<String> tSet = new HashSet();
 
                 //make the year set
                 for (int i = 0; i < optionsLength; i++) {
@@ -389,10 +389,10 @@ public class EmaDateTimeSelect2 extends EmaAttribute {
                 }
 
                 //make y m d t sorted arrays
-                yearOptions  = String2.toStringArray(ySet.toArray()); Arrays.sort(yearOptions);
-                monthOptions = String2.toStringArray(mSet.toArray()); Arrays.sort(monthOptions);
-                dayOptions   = String2.toStringArray(dSet.toArray()); Arrays.sort(dayOptions);
-                timeOptions  = String2.toStringArray(tSet.toArray()); Arrays.sort(timeOptions);
+                yearOptions  = ySet.toArray(new String[0]); Arrays.sort(yearOptions);
+                monthOptions = mSet.toArray(new String[0]); Arrays.sort(monthOptions);
+                dayOptions   = dSet.toArray(new String[0]); Arrays.sort(dayOptions);
+                timeOptions  = tSet.toArray(new String[0]); Arrays.sort(timeOptions);
 
                 //time: ~1ms/1000 items on my computer. Scales ~linearly.
                 //Although 1,000,000 taking 1 sec is annoying, the time to 

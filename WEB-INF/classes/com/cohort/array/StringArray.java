@@ -1516,7 +1516,7 @@ public class StringArray extends PrimitiveArray {
     public static String[] arrayFromCSV(String searchFor) {
         if (searchFor == null)
             return new String[0];
-        ArrayList al = new ArrayList();
+        ArrayList<String> al = new ArrayList();
         int po = 0; //next char to be looked at
         StringBuilder word = new StringBuilder();
         int n = searchFor.length();
@@ -1581,7 +1581,7 @@ public class StringArray extends PrimitiveArray {
         }
         if (word.length() > 0)
             al.add(word.toString().trim());
-        return String2.toStringArray(al.toArray());
+        return al.toArray(new String[0]);
     }
 
     

@@ -96,6 +96,14 @@ public class CharArray extends PrimitiveArray {
     }
 
     /**
+     * This is an alternative way to convert a String to a char:
+     * by getting the first char (else Character.MAX_VALUE)
+     */
+    public static char firstChar(String s) {
+        return s == null || s.length() == 0? Character.MAX_VALUE : s.charAt(0);
+    }
+
+    /**
      * This returns the current capacity (number of elements) of the internal data array.
      * 
      * @return the current capacity (number of elements) of the internal data array.

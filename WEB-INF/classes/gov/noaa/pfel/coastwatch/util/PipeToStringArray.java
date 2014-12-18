@@ -21,7 +21,7 @@ import java.util.ArrayList;
  */
 public class PipeToStringArray extends PipeTo {
     private BufferedReader bufferedReader;
-    private ArrayList arrayList = new ArrayList();
+    private ArrayList<String> arrayList = new ArrayList();
 
     /**
      * This method grabs all the info from inputStream and stores it in 
@@ -57,7 +57,7 @@ public class PipeToStringArray extends PipeTo {
      *
      * @return the ArrayList with the info from the inputStream
      */
-    public ArrayList getArrayList() {
+    public ArrayList<String> getArrayList() {
         return arrayList;
     }
 
@@ -67,7 +67,7 @@ public class PipeToStringArray extends PipeTo {
      * @return the StringArray with the info from the inputStream
      */
     public String[] getStringArray() {
-        return String2.toStringArray(arrayList.toArray());
+        return arrayList.toArray(new String[0]);
     }
 
     /**
@@ -76,6 +76,6 @@ public class PipeToStringArray extends PipeTo {
      * @return a String with the info from the inputStream
      */
     public String getString() {
-        return String2.toNewlineString(arrayList.toArray());
+        return String2.toNewlineString(arrayList.toArray(new String[0]));
     }
 }

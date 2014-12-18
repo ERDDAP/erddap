@@ -193,7 +193,8 @@ public class SdsReader  {
     public static void main(String args[]) throws Exception {
 
         //mini.hdf was made by gov.noaa.pfel.coastwatch/Grid with the HDF libraries
-        String dir = String2.getClassPath() + "gov/noaa/pfel/coastwatch/hdf/";
+        String dir = String2.getClassPath() + //with / separator and / at the end
+            "gov/noaa/pfel/coastwatch/hdf/";
         //Test.ensureEqual(
         //    String2.writeToFile(dir + "mini.hdf.hexDump", File2.hexDump(dir + "mini.hdf", 7262)), 
         //    "", "Grid.miniTestSaveAsHDF error message");
