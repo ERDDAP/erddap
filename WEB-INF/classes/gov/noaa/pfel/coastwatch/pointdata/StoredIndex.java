@@ -111,12 +111,12 @@ public class StoredIndex  {
         //search sorted index in file for first and last rows in range
         long time = System.currentTimeMillis();
         RandomAccessFile raf = new RandomAccessFile(indexFileName, "r");
-        results[0] = (int)PrimitiveArray.rafFirstGAE5(raf, elementClass, //safe since reading an int
+        results[0] = (int)PrimitiveArray.rafFirstGAE(raf, elementClass, //safe since reading an int
             0,  //byte in file that values start at 
-            0, nFinite - 1, desiredMin);
-        results[1] = (int)PrimitiveArray.rafLastLAE5(raf, elementClass,
+            0, nFinite - 1, desiredMin, 5); //precision=5
+        results[1] = (int)PrimitiveArray.rafLastLAE(raf, elementClass,
             0,  //byte in file that values start at 
-            results[0], nFinite - 1, desiredMax);
+            results[0], nFinite - 1, desiredMax, 5); //precision=5
         raf.close();
 
         if (verbose) String2.log("  first=" + results[0] + " last=" + results[1] +

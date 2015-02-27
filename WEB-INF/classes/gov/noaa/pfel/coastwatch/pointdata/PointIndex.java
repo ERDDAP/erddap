@@ -272,14 +272,14 @@ public class PointIndex  {
         //search sorted index0 for first and last rows in range
         long tTime = System.currentTimeMillis();
         RandomAccessFile raf = new RandomAccessFile(indexFileName, "r");
-        int firstIndex0 = (int)PrimitiveArray.rafFirstGAE5(raf, index0ElementType, //safe since reading an int
+        int firstIndex0 = (int)PrimitiveArray.rafFirstGAE(raf, index0ElementType, //safe since reading an int
             0,  //byte in file that values start at 
-            0, lastFiniteSortedIndex0, desiredMin[0]);
+            0, lastFiniteSortedIndex0, desiredMin[0], 5); //precision=5
         if (firstIndex0 < 0)
             return rowOk;
-        int lastIndex0 = (int)PrimitiveArray.rafLastLAE5(raf, index0ElementType, //safe since reading an int
+        int lastIndex0 = (int)PrimitiveArray.rafLastLAE(raf, index0ElementType, //safe since reading an int
             0,  //byte in file that values start at 
-            firstIndex0, lastFiniteSortedIndex0, desiredMax[0]);
+            firstIndex0, lastFiniteSortedIndex0, desiredMax[0], 5); //precision=5
         raf.close();
         boolean fewTimesOk = (lastIndex0 - firstIndex0) < nDataRows / 2;
         String2.log("raf lookup firstIndex0=" + firstIndex0 +
@@ -441,8 +441,8 @@ public class PointIndex  {
         //*** test lots of data
         results = null;
         index = null;
-        Math2.incgc(500);
-        Math2.incgc(500);
+        Math2.incgc(500); //in a test
+        Math2.incgc(500); //in a test
         long memoryInUse = Math2.getMemoryInUse();
         int nGroups = 100;
         int nPerGroup = 10000;
@@ -524,8 +524,8 @@ public class PointIndex  {
         t2=null;
         results = null;
         index = null;
-        Math2.incgc(500);
-        Math2.incgc(500);
+        Math2.incgc(500); //in a test
+        Math2.incgc(500); //in a test
         memoryInUse = Math2.getMemoryInUse() - memoryInUse;
         String2.log("\n***** PointIndex.main finished successfully; memory not freed = " + memoryInUse);
 

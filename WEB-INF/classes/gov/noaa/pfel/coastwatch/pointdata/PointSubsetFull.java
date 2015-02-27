@@ -486,7 +486,7 @@ public class PointSubsetFull  {
 
         //done
         String2.log("\n***** PointSubsetFull.main finished successfully");
-        Math2.incgc(2000);
+        Math2.incgc(2000); //in a test
 
     }
 

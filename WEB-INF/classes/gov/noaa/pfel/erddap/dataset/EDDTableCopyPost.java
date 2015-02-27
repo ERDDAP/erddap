@@ -1,4 +1,4 @@
-/* 
+/* INACTIVE (2015-01-16)
  * EDDTableCopyPost Copyright 2009, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
@@ -31,6 +31,7 @@ import java.util.Enumeration;
 
 
 /** 
+ * INACTIVE (2015-01-16) 
  * This class makes and maintains a local copy of the data from a remote source.
  * This class serves data from the local copy.
  * 
@@ -185,13 +186,14 @@ public class EDDTableCopyPost extends EDDTableCopy {
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             "", "", //tDefaultDataQuery, tDefaultGraphQuery
             tAddGlobalAttributes, 
-            tDataVariables, tReloadEveryNMinutes, 
+            tDataVariables, tReloadEveryNMinutes, 0, //updateEveryNMillis
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, 
             tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames, tSourceNeedsExpandedFP_EQ,
-            tFileTableInMemory); 
+            tFileTableInMemory, 
+            false); //accessibleViaFiles is always false. parent may or may not be.  
     }
 
     /**

@@ -76,6 +76,7 @@ public class EDDTableCopy extends EDDTable{
         boolean tFileTableInMemory = false;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        boolean tAccessibleViaFiles = false;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -117,6 +118,8 @@ public class EDDTableCopy extends EDDTable{
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<accessibleViaFiles>")) {}
+            else if (localTags.equals("</accessibleViaFiles>")) tAccessibleViaFiles = String2.parseBoolean(content); 
             else if (localTags.equals("<dataset>")) {
                 try {
 
@@ -143,7 +146,7 @@ public class EDDTableCopy extends EDDTable{
             tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, 
             tExtractDestinationNames, tOrderExtractBy, tSourceNeedsExpandedFP_EQ,
-            tSourceEdd, tFileTableInMemory);
+            tSourceEdd, tFileTableInMemory, tAccessibleViaFiles);
     }
 
     /**
@@ -195,7 +198,8 @@ public class EDDTableCopy extends EDDTable{
         int tReloadEveryNMinutes,
         String tExtractDestinationNames, String tOrderExtractBy,
         Boolean tSourceNeedsExpandedFP_EQ,
-        EDDTable tSourceEdd, boolean tFileTableInMemory) throws Throwable {
+        EDDTable tSourceEdd, boolean tFileTableInMemory,
+        boolean tAccessibleViaFiles) throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDTableCopy " + tDatasetID + " reallyVerbose=" + reallyVerbose); 
@@ -404,19 +408,21 @@ public class EDDTableCopy extends EDDTable{
         //make localEdd
         //It will fail if 0 local files -- that's okay, TaskThread will continue to work 
         //  and constructor will try again in 15 min.
+        boolean recursive = true;
+        String fileNameRegex = ".*\\.nc";
         localEdd = makeLocalEdd(datasetID, 
             tAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, 
             new Attributes(), //addGlobalAttributes
             tDataVariables,
             tReloadEveryNMinutes,
-            copyDatasetDir, true, ".*\\.nc", //true=recursive            
+            copyDatasetDir, recursive, fileNameRegex, 
             EDDTableFromFiles.MF_LAST,
             "", 1, 2, //columnNamesRow and firstDataRow are irrelevant for .nc files, but must be valid values
             null, null, null, null,  //extract from fileNames
             sortedColumn, 
             tExtractDestinationNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory); 
 
         //copy things from localEdd 
         sourceNeedsExpandedFP_EQ = tSourceNeedsExpandedFP_EQ;
@@ -446,6 +452,13 @@ public class EDDTableCopy extends EDDTable{
         sosMaxLat        = localEdd.sosMaxLat; 
         sosMinLon        = localEdd.sosMinLon; 
         sosMaxLon        = localEdd.sosMaxLon;
+
+        //accessibleViaFiles
+        if (EDStatic.filesActive && tAccessibleViaFiles) {
+            accessibleViaFilesDir = copyDatasetDir;
+            accessibleViaFilesRegex = fileNameRegex;
+            accessibleViaFilesRecursive = recursive;
+        }
 
         //ensure the setup is valid
         ensureValid(); //this ensures many things are set, e.g., sourceUrl
@@ -483,13 +496,14 @@ public class EDDTableCopy extends EDDTable{
             tOnChange, tFgdcFile, tIso19115File, 
             "", "", "", //tSosOfferingPrefix, tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
-            tDataVariables, tReloadEveryNMinutes, 
+            tDataVariables, tReloadEveryNMinutes, 0, //updateEveryNMillis
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, 
             tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory); 
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, 
+            false); //accessibleViaFiles is always false. parent may or may not be.  
     }
 
 

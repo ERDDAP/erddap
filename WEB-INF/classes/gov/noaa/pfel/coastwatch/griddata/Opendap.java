@@ -748,7 +748,7 @@ Dataset {
             //where is center lon?
             double centerAt = lonIsPM180? 0 : 180;
             if (verbose) String2.log(Grid.axisInfoString("  source lon: ", lonDim)); 
-            int centerIndex = Math2.binaryFindFirstGAE5(lonDim, centerAt);  
+            int centerIndex = Math2.binaryFindFirstGAE(lonDim, centerAt, 5);  
             //centerIndex sometimes not exactly as expected: -.75, -.25, .25, .75...
             //offset is usually e.g., 0, but perhaps e.g., .25
             double offset = lonDim[centerIndex] - centerAt; 

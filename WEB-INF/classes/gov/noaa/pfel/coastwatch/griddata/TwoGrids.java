@@ -788,7 +788,7 @@ public class TwoGrids  {
 
         //done
         String2.log("\n***** TwoGrids.test finished successfully");
-        Math2.incgc(2000);
+        Math2.incgc(2000); //in a test
 
     }
 

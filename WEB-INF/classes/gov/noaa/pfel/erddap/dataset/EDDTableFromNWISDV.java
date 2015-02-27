@@ -497,8 +497,9 @@ public class EDDTableFromNWISDV extends EDDTable{
                 if (edv.sourceDataTypeClass() != String.class) {
                     double stats[] = stationPA.calculateStats();
                     if (stats[PrimitiveArray.STATS_N] > 0) {
-                        edv.setDestinationMin(stats[PrimitiveArray.STATS_MIN]);
-                        edv.setDestinationMax(stats[PrimitiveArray.STATS_MAX]); 
+                        edv.setDestinationMinMax(
+                            stats[PrimitiveArray.STATS_MIN],
+                            stats[PrimitiveArray.STATS_MAX]); 
                         edv.setActualRangeFromDestinationMinMax();
                     }
     
@@ -513,8 +514,9 @@ public class EDDTableFromNWISDV extends EDDTable{
                     String nMinMax[] = ((StringArray)stationPA).getNMinMax();
                     //tAddAtt.set("data_min", nMinMax[1]);
                     //tAddAtt.set("data_max", nMinMax[2]); 
-                    edv.setDestinationMin(Calendar2.safeIsoStringToEpochSeconds(nMinMax[1]));
-                    edv.setDestinationMax(Calendar2.safeIsoStringToEpochSeconds(nMinMax[2]));
+                    edv.setDestinationMinMax(
+                        Calendar2.safeIsoStringToEpochSeconds(nMinMax[1]),
+                        Calendar2.safeIsoStringToEpochSeconds(nMinMax[2]));
                     edv.setActualRangeFromDestinationMinMax();
                 }
             }

@@ -360,7 +360,7 @@ public class DataHelper  {
     /**
      * Given nHave and stride, this returns the actual number of points that will be found.
      *
-     * @param nHave the size of the lon array 
+     * @param nHave the size of the array (or sub array, e.g., stop-start+1) 
      * @param stride  (must be >= 1)
      * @return the actual number of points that will be found.
      */
@@ -614,7 +614,7 @@ public class DataHelper  {
 
         //done
         String2.log("\n***** DataHelper.test finished successfully");
-        Math2.incgc(2000);
+        Math2.incgc(2000); //in a test
     } 
 
 

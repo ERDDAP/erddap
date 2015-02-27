@@ -19,6 +19,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.XML;
 
 /** The Java DAP classes.  */
 import dods.dap.*;
@@ -79,13 +80,14 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
-        int tReloadEveryNMinutes,
+        int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
         String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
+        boolean tAccessibleViaFiles) 
         throws Throwable {
 
         super("EDDTableFromHyraxFiles", true, //isLocal is now set to true (copied files)
@@ -93,13 +95,13 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
-            tDataVariables, tReloadEveryNMinutes,
+            tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             EDStatic.fullCopyDirectory + tDatasetID + "/", //force fileDir to be the copyDir 
             tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles);
 
     }
 
@@ -352,7 +354,7 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
      *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(String tLocalDirUrl, 
-        String tFileNameRegex, String oneFileDapUrl, int tReloadEveryNMinutes, 
+        String tFileNameRegex, String oneFileDapUrl, int tReloadEveryNMinutes,  
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
         String tColumnNameForExtract, String tSortedColumnSourceName,
         String tSortFilesBySourceNames, Attributes externalAddGlobalAttributes) 
@@ -362,6 +364,8 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
             "\n  tLocalDirUrl=" + tLocalDirUrl + 
             "\n  oneFileDapUrl=" + oneFileDapUrl);
         String tPublicDirUrl = convertToPublicSourceUrl(tLocalDirUrl);
+        if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
+            tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
 
         //*** basically, make a table to hold the sourceAttributes 
         //and a parallel table to hold the addAttributes
@@ -443,17 +447,19 @@ public class EDDTableFromHyraxFiles extends EDDTableFromFiles {
                 suggestDatasetID(tPublicDirUrl + tFileNameRegex) + 
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
+            "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
             "    <fileDir></fileDir>\n" +
             "    <recursive>true</recursive>\n" +
-            "    <fileNameRegex>" + tFileNameRegex + "</fileNameRegex>\n" +
+            "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
-            "    <preExtractRegex>" + tPreExtractRegex + "</preExtractRegex>\n" +
-            "    <postExtractRegex>" + tPostExtractRegex + "</postExtractRegex>\n" +
-            "    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
+            "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
+            "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
+            "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
             "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n" +
+            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -491,6 +497,7 @@ directionsForGenerateDatasetsXml() +
 "\n" +
 "<dataset type=\"EDDTableFromHyraxFiles\" datasetID=\"nasa_jpl_91f4_69e3_32c9\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>2880</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir></fileDir>\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>pentad.*\\.nc\\.gz</fileNameRegex>\n" +
@@ -502,6 +509,7 @@ directionsForGenerateDatasetsXml() +
 "    <sortedColumnSourceName>time</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>time</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"base_date\" type=\"shortList\">1987 7 5</att>\n" +
 "        <att name=\"Conventions\">COARDS</att>\n" +

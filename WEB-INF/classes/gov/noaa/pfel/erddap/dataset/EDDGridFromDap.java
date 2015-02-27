@@ -425,57 +425,15 @@ public class EDDGridFromDap extends EDDGrid {
                         " not found.  So made from indices 0 - " + dadSize1);
                 } //but other exceptions aren't caught
 
+                //make the axisVariable
                 Attributes tAddAttributes = tAxisVariables == null?
                     new Attributes() : (Attributes)tAxisVariables[av][2];
                 String tDestinationAxisName = tAxisVariables == null? null : 
                     (String)tAxisVariables[av][1];
                 if (tDestinationAxisName == null || tDestinationAxisName.trim().length() == 0)
                     tDestinationAxisName = tSourceAxisName;
-
-                //String2.log(tSourceAxisName + " pa=" + tSourceValues);             
-                //is this the lon axis?
-                if (EDV.LON_NAME.equals(tDestinationAxisName)) {
-                    lonIndex = av;
-                    axisVariables[av] = new EDVLonGridAxis(tSourceAxisName, 
-                        tSourceAttributes, tAddAttributes, tSourceValues);
-
-                //is this the lat axis?
-                } else if (EDV.LAT_NAME.equals(tDestinationAxisName)) {
-                    latIndex = av;
-                    axisVariables[av] = new EDVLatGridAxis(tSourceAxisName, 
-                        tSourceAttributes, tAddAttributes, tSourceValues);
-
-                //is this the alt axis?
-                } else if (EDV.ALT_NAME.equals(tDestinationAxisName)) {
-                    altIndex = av;
-                    axisVariables[av] = new EDVAltGridAxis(tSourceAxisName, 
-                        tSourceAttributes, tAddAttributes, tSourceValues);
-
-                //is this the depth axis?
-                } else if (EDV.DEPTH_NAME.equals(tDestinationAxisName)) {
-                    depthIndex = av;
-                    axisVariables[av] = new EDVDepthGridAxis(tSourceAxisName, 
-                        tSourceAttributes, tAddAttributes, tSourceValues);
-
-                //is this the time axis?
-                } else if (EDV.TIME_NAME.equals(tDestinationAxisName)) {
-                    timeIndex = av;
-                    axisVariables[av] = new EDVTimeGridAxis(tSourceAxisName, 
-                        tSourceAttributes, tAddAttributes, tSourceValues);
-
-                //is this a timestamp axis?
-                } else if (EDVTimeStampGridAxis.hasTimeUnits(tSourceAttributes, tAddAttributes)) {
-                    axisVariables[av] = new EDVTimeStampGridAxis(
-                        tSourceAxisName, tDestinationAxisName,
-                        tSourceAttributes, tAddAttributes, tSourceValues);
-
-                //it is some other axis variable
-                } else {
-                    axisVariables[av] = new EDVGridAxis(
-                        tSourceAxisName, tDestinationAxisName,
-                        tSourceAttributes, tAddAttributes, tSourceValues);
-                    axisVariables[av].setActualRangeFromDestinationMinMax();
-                }
+                axisVariables[av] = makeAxisVariable(av, tSourceAxisName, tDestinationAxisName,
+                    tSourceAttributes, tAddAttributes, tSourceValues);
             }
 
             //create the EDV dataVariable
@@ -526,220 +484,190 @@ public class EDDGridFromDap extends EDDGrid {
     }
 
     /**
-     * This does a quick, incremental update of this dataset (i.e., deal with 
-     * leftmost axis growing). This was COPIED UNCHANGED to EDDGridFromErddap.
-     *
-     * <p>Concurrency issue #1: This avoids 2+ simultaneous updates.
-     *
-     * <p>Concurrency issue #2: The changes are first prepared and 
-     * then applied quickly (but not atomically!).
+     * This does the actual incremental update of this dataset 
+     * (i.e., for real time datasets).
+     * EDDGridFromDap's version deals with the leftmost axis growing.
+     * 
+     * <p>Concurrency issue: The changes here are first prepared and 
+     * then applied as quickly as possible (but not atomically!).
      * There is a chance that another thread will get inconsistent information
      * (from some things updated and some things not yet updated).
      * But I don't want to synchronize all activities of this class.
      *
-     * <p>See &lt;updateEveryNMillis&gt; in constructor. 
-     * Note: It is pointless and counter-productive to set updateEveryNMillis 
-     * to be less than a fairly reliable update time (e.g., 1000 ms).
-     *
-     * <p>For simple failures, this writes to log.txt but doesn't throw an exception.
-     *
-     * @throws Throwable if trouble. 
-     * If the dataset has changed in a serious / incompatible way and needs a full
-     * reload, this throws WaitThenTryAgainException 
-     * (usually, catcher calls LoadDatasets.tryToUnload(...) and EDD.requestReloadASAP(tDatasetID))..
+     * @param msg the start of a log message, e.g., "update(thisDatasetID): ".
+     * @param startUpdateMillis the currentTimeMillis at the start of this update.
+     * @return true if a change was made
+     * @throws Throwable if serious trouble. 
+     *   For simple failures, this writes info to log.txt but doesn't throw an exception.
+     *   If the dataset has changed in a serious / incompatible way and needs a full
+     *     reload, this throws WaitThenTryAgainException 
+     *     (usually, catcher calls LoadDatasets.tryToUnload(...) and EDD.requestReloadASAP(tDatasetID))..
+     *   If the changes needed are probably fine but are too extensive to deal with here, 
+     *     this calls EDD.requestReloadASAP(tDatasetID) and returns without doing anything.
      */
-    public void update() {
-        //return quickly if update system isn't active for this dataset
-        if (updateEveryNMillis <= 0)
-            return;
-
-        //return quickly if dataset doesn't need to be updated
-        long now = System.currentTimeMillis();
-        if (now - lastUpdate < updateEveryNMillis) {
-            if (reallyVerbose) String2.log("update(" + datasetID + "): no need to update:  now-last=" + 
-                (now - lastUpdate) + " < updateEvery=" + updateEveryNMillis);
-            return;
-        }
-
-        //if another thread is currently updating this dataset, wait for it then return
-        String msg = "update(" + datasetID + "): ";
-        if (!updateLock.tryLock()) {
-            updateLock.lock();   //block until other thread's update finishes
-            updateLock.unlock(); //immediately unlock and return
-            if (verbose) String2.log(msg + "waited " + (System.currentTimeMillis() - now) +
-                "ms for other thread to do the update.");
-            return; 
-        }
-
-        //updateLock is locked by this thread.   Do the update!
-        try {
+    public boolean lowUpdate(String msg, long startUpdateMillis) throws Throwable {
                 
-            //read dds
-            DConnect dConnect = new DConnect(localSourceUrl, acceptDeflate, 1, 1);
-            byte ddsBytes[] = SSR.getUrlResponseBytes(localSourceUrl + ".dds");
-            DDS dds = new DDS();
-            dds.parse(new ByteArrayInputStream(ddsBytes));
+        //read dds
+        DConnect dConnect = new DConnect(localSourceUrl, acceptDeflate, 1, 1);
+        byte ddsBytes[] = SSR.getUrlResponseBytes(localSourceUrl + ".dds");
+        DDS dds = new DDS();
+        dds.parse(new ByteArrayInputStream(ddsBytes));
 
-            //has edvga[0] changed size?
-            EDVGridAxis edvga = axisVariables[0];
-            EDVTimeStampGridAxis edvtsga = edvga instanceof EDVTimeStampGridAxis? 
-                (EDVTimeStampGridAxis)edvga : null;
-            PrimitiveArray oldValues = edvga.sourceValues();
-            int oldSize = oldValues.size();
+        //has edvga[0] changed size?
+        EDVGridAxis edvga = axisVariables[0];
+        EDVTimeStampGridAxis edvtsga = edvga instanceof EDVTimeStampGridAxis? 
+            (EDVTimeStampGridAxis)edvga : null;
+        PrimitiveArray oldValues = edvga.sourceValues();
+        int oldSize = oldValues.size();
 
-            //get mainDArray
-            BaseType bt = dds.getVariable(dataVariables[0].sourceName()); //throws NoSuchVariableException
-            DArray mainDArray = null;
-            if (bt instanceof DGrid) {
-                mainDArray = (DArray)((DGrid)bt).getVar(0); //first element is always main array
-            } else if (bt instanceof DArray) {
-                mainDArray = (DArray)bt;
-            } else { 
-                String2.log(msg + String2.ERROR + ": Unexpected " + dataVariables[0].destinationName() + 
-                    " source type=" + bt.getTypeName() + ".");
-                return;
-                //requestReloadASAP()+WaitThenTryAgain might lead to endless cycle of full reloads
-            }
-
-            //get the leftmost dimension
-            DArrayDimension dad = mainDArray.getDimension(0);
-            int newSize = dad.getSize();  
-            if (newSize < oldSize) 
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
-                    "\n(" + msg + "[" + edvga.destinationName() + "] newSize=" + newSize + 
-                    " < oldSize=" + oldSize + ")"); 
-            if (newSize == oldSize) {
-                if (reallyVerbose) String2.log(msg + "no change to leftmost dimension");
-                return;  //finally{} below sets lastUpdate = now
-            }
-
-            //newSize > oldSize, get last old value (for testing below) and new values
-            PrimitiveArray newValues = null;
-            if (edvga.sourceDataTypeClass() == int.class &&                  //not a perfect test
-                "count".equals(edvga.sourceAttributes().getString("units"))) 
-                newValues = new IntArray(oldSize - 1, newSize - 1);  //0 based
-            else {
-                try {
-                    newValues = OpendapHelper.getPrimitiveArray(dConnect, 
-                        "?" + edvga.sourceName() + "[" + (oldSize - 1) + ":" + (newSize - 1) + "]");
-                } catch (NoSuchVariableException nsve) {
-                    //hopefully avoided by testing for units=count and int datatype above
-                    String2.log(msg + "caught NoSuchVariableException for sourceName=" + edvga.sourceName() + 
-                        ". Using index numbers.");
-                    newValues = new IntArray(oldSize - 1, newSize - 1);  //0 based
-                } //but other exceptions aren't caught
-            }
-
-            //ensure newValues is valid
-            if (newValues == null || newValues.size() < (newSize - oldSize + 1)) {
-                String2.log(msg + String2.ERROR + ": Too few " + edvga.destinationName() + 
-                    " values were received (got=" + (newValues == null? "null" : "" + (newValues.size() - 1)) +
-                    "expected=" + (newSize - oldSize) + ").");
-                return;
-            }
-            if (oldValues.elementClass() != newValues.elementClass())  //they're canonical, so != works
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
-                    "\n(" + msg + edvga.destinationName() + " dataType changed: " +
-                       " new=" + newValues.elementClassString() +
-                    " != old=" + oldValues.elementClassString() + ")"); 
-
-            //ensure last old value is unchanged 
-            if (oldValues.getDouble(oldSize - 1) != newValues.getDouble(0))  //they should be exactly equal
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
-                    "\n(" + msg + edvga.destinationName() + "[" + (oldSize - 1) + 
-                      "] changed!  old=" + oldValues.getDouble(oldSize - 1) + 
-                              " != new=" + newValues.getDouble(0)); 
-
-            //prepare changes to update the dataset
-            double newMin = oldValues.getDouble(0);
-            double newMax = newValues.getDouble(newValues.size() - 1);
-            if (edvtsga != null) {
-                newMin = edvtsga.sourceTimeToEpochSeconds(newMin);
-                newMax = edvtsga.sourceTimeToEpochSeconds(newMax);
-            } else if (edvga.scaleAddOffset()) {
-                newMin = newMin * edvga.scaleFactor() + edvga.addOffset();
-                newMax = newMax * edvga.scaleFactor() + edvga.addOffset();
-            }
-
-            //first, calculate newAverageSpacing (destination units, will be negative if isDescending)
-            double newAverageSpacing = (newMax - newMin) / (newSize - 1);
-
-            //second, test for min>max after extractScaleAddOffset, since order may have changed
-            if (newMin > newMax) { 
-                double d = newMin; newMin = newMax; newMax = d;
-            }
-
-            //test isAscending  (having last old value is essential)
-            String error = edvga.isAscending()? newValues.isAscending() : newValues.isDescending();
-            if (error.length() > 0) 
-                throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
-                    "\n(" + edvga.destinationName() + " was " + 
-                    (edvga.isAscending()? "a" : "de") +
-                    "scending, but the newest values aren't (" + error + ").)"); 
-
-            //if was isEvenlySpaced, test that new values are and have same averageSpacing
-            //(having last old value is essential)
-            boolean newIsEvenlySpaced = edvga.isEvenlySpaced();  //here, this is actually oldIsEvenlySpaced
-            if (newIsEvenlySpaced) {  
-                error = newValues.isEvenlySpaced();
-                if (error.length() > 0) {
-                    String2.log(msg + "changing " + edvga.destinationName() + 
-                        ".isEvenlySpaced from true to false: " + error);
-                    newIsEvenlySpaced = false;
-
-                //new spacing != old spacing ?  (precision=5, but times will be exact) 
-                } else if (!Math2.almostEqual(5, newAverageSpacing, edvga.averageSpacing())) {  
-                    String2.log(msg + "changing " + edvga.destinationName() + 
-                        ".isEvenlySpaced from true to false: newSpacing=" + newAverageSpacing +
-                        " oldSpacing=" + edvga.averageSpacing());
-                    newIsEvenlySpaced = false;
-                }
-            }
-
-            //remove the last old value from newValues
-            newValues.remove(0); 
-
-            //ensureCapacity of oldValues (may take time)
-            oldValues.ensureCapacity(newSize); //so oldValues.append below is as fast as possible
-
-            //right before making changes, make doubly sure another thread hasn't already (IMPERFECT TEST)
-            if (oldValues.size() != oldSize) {
-                String2.log(msg + "changes abandoned.  " + 
-                    edvga.destinationName() + ".size changed (new=" + oldValues.size() +
-                    " != old=" + oldSize + ").  (By update() in another thread?)");
-                return;
-            }
-
-            //Swap changes into place quickly to minimize problems.  Better if changes were atomic.
-            //Order of changes is important.
-            //Other threads may be affected by some values being updated before others.
-            //This is an imperfect alternative to synchronizing all uses of this dataset (which is far worse).
-            oldValues.append(newValues);  //should be fast, and new size set at end to minimize concurrency problems
-            edvga.setDestinationMin(newMin);
-            edvga.setDestinationMax(newMax);
-            edvga.setIsEvenlySpaced(newIsEvenlySpaced);
-            edvga.initializeAverageSpacingAndCoarseMinMax();  
-            edvga.setActualRangeFromDestinationMinMax();
-            if (edvga instanceof EDVTimeGridAxis) 
-                combinedGlobalAttributes.set("time_coverage_end",   
-                    Calendar2.epochSecondsToLimitedIsoStringT(
-                        edvga.combinedAttributes().getString(EDV.TIME_PRECISION), newMax, ""));
-            edvga.clearSliderCsvValues();  //do last, to force recreation next time needed
-
-            updateCount++;
-            long thisTime = System.currentTimeMillis() - now;
-            cumulativeUpdateTime += thisTime;
-            if (reallyVerbose)
-                String2.log(msg + "succeeded.  nValuesAdded=" + newValues.size() + 
-                    " time=" + thisTime + " updateCount=" + updateCount +
-                    " avgTime=" + (cumulativeUpdateTime / updateCount));
-        } catch (Throwable t) {
-            String2.log(msg + "failed.  Unexpected " + String2.ERROR + ":\n" +
-                MustBe.throwableToString(t));
-        } finally {  
-            lastUpdate = now;     //say dataset is now up-to-date (or at least tried)
-            updateLock.unlock();  //then ensure updateLock is always unlocked
+        //get mainDArray
+        BaseType bt = dds.getVariable(dataVariables[0].sourceName()); //throws NoSuchVariableException
+        DArray mainDArray = null;
+        if (bt instanceof DGrid) {
+            mainDArray = (DArray)((DGrid)bt).getVar(0); //first element is always main array
+        } else if (bt instanceof DArray) {
+            mainDArray = (DArray)bt;
+        } else { 
+            String2.log(msg + String2.ERROR + ": Unexpected " + dataVariables[0].destinationName() + 
+                " source type=" + bt.getTypeName() + ". So I called requestReloadASAP().");
+            //requestReloadASAP()+WaitThenTryAgain might lead to endless cycle of full reloads
+            requestReloadASAP();
+            return false;
         }
+
+        //get the leftmost dimension
+        DArrayDimension dad = mainDArray.getDimension(0);
+        int newSize = dad.getSize();  
+        if (newSize < oldSize) 
+            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                "\n(" + msg + "[" + edvga.destinationName() + "] newSize=" + newSize + 
+                " < oldSize=" + oldSize + ")"); 
+        if (newSize == oldSize) {
+            if (reallyVerbose) String2.log(msg + "no change to leftmost dimension");
+            return false;  //finally{} below sets lastUpdate = startUpdateMillis
+        }
+
+        //newSize > oldSize, get last old value (for testing below) and new values
+        PrimitiveArray newValues = null;
+        if (edvga.sourceDataTypeClass() == int.class &&                  //not a perfect test
+            "count".equals(edvga.sourceAttributes().getString("units"))) 
+            newValues = new IntArray(oldSize - 1, newSize - 1);  //0 based
+        else {
+            try {
+                newValues = OpendapHelper.getPrimitiveArray(dConnect, 
+                    "?" + edvga.sourceName() + "[" + (oldSize - 1) + ":" + (newSize - 1) + "]");
+            } catch (NoSuchVariableException nsve) {
+                //hopefully avoided by testing for units=count and int datatype above
+                String2.log(msg + "caught NoSuchVariableException for sourceName=" + edvga.sourceName() + 
+                    ". Using index numbers.");
+                newValues = new IntArray(oldSize - 1, newSize - 1);  //0 based
+            } //but other exceptions aren't caught
+        }
+
+        //ensure newValues is valid
+        if (newValues == null || newValues.size() < (newSize - oldSize + 1)) {
+            String2.log(msg + String2.ERROR + ": Too few " + edvga.destinationName() + 
+                " values were received (got=" + (newValues == null? "null" : "" + (newValues.size() - 1)) +
+                "expected=" + (newSize - oldSize) + ").");
+            return false;
+        }
+        if (oldValues.elementClass() != newValues.elementClass())  //they're canonical, so != works
+            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                "\n(" + msg + edvga.destinationName() + " dataType changed: " +
+                   " new=" + newValues.elementClassString() +
+                " != old=" + oldValues.elementClassString() + ")"); 
+
+        //ensure last old value is unchanged 
+        if (oldValues.getDouble(oldSize - 1) != newValues.getDouble(0))  //they should be exactly equal
+            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                "\n(" + msg + edvga.destinationName() + "[" + (oldSize - 1) + 
+                  "] changed!  old=" + oldValues.getDouble(oldSize - 1) + 
+                          " != new=" + newValues.getDouble(0)); 
+
+        //prepare changes to update the dataset
+        double newMin = oldValues.getDouble(0);
+        double newMax = newValues.getDouble(newValues.size() - 1);
+        if (edvtsga != null) {
+            newMin = edvtsga.sourceTimeToEpochSeconds(newMin);
+            newMax = edvtsga.sourceTimeToEpochSeconds(newMax);
+        } else if (edvga.scaleAddOffset()) {
+            newMin = newMin * edvga.scaleFactor() + edvga.addOffset();
+            newMax = newMax * edvga.scaleFactor() + edvga.addOffset();
+        }
+
+        //first, calculate newAverageSpacing (destination units, will be negative if isDescending)
+        double newAverageSpacing = (newMax - newMin) / (newSize - 1);
+
+        //second, test for min>max after extractScaleAddOffset, since order may have changed
+        if (newMin > newMax) { 
+            double d = newMin; newMin = newMax; newMax = d;
+        }
+
+        //test isAscending  (having last old value is essential)
+        String error = edvga.isAscending()? newValues.isAscending() : newValues.isDescending();
+        if (error.length() > 0) 
+            throw new WaitThenTryAgainException(EDStatic.waitThenTryAgain + 
+                "\n(" + edvga.destinationName() + " was " + 
+                (edvga.isAscending()? "a" : "de") +
+                "scending, but the newest values aren't (" + error + ").)"); 
+
+        //if was isEvenlySpaced, test that new values are and have same averageSpacing
+        //(having last old value is essential)
+        boolean newIsEvenlySpaced = edvga.isEvenlySpaced();  //here, this is actually oldIsEvenlySpaced
+        if (newIsEvenlySpaced) {  
+            error = newValues.isEvenlySpaced();
+            if (error.length() > 0) {
+                String2.log(msg + "changing " + edvga.destinationName() + 
+                    ".isEvenlySpaced from true to false: " + error);
+                newIsEvenlySpaced = false;
+
+            //new spacing != old spacing ?  (precision=5, but times will be exact) 
+            } else if (!Math2.almostEqual(5, newAverageSpacing, edvga.averageSpacing())) {  
+                String2.log(msg + "changing " + edvga.destinationName() + 
+                    ".isEvenlySpaced from true to false: newSpacing=" + newAverageSpacing +
+                    " oldSpacing=" + edvga.averageSpacing());
+                newIsEvenlySpaced = false;
+            }
+        }
+
+        //remove the last old value from newValues
+        newValues.remove(0); 
+
+        //ensureCapacity of oldValues (may take time)
+        oldValues.ensureCapacity(newSize); //so oldValues.append below is as fast as possible
+
+        //right before making changes, make doubly sure another thread hasn't already (IMPERFECT TEST)
+        if (oldValues.size() != oldSize) {
+            String2.log(msg + "changes abandoned.  " + 
+                edvga.destinationName() + ".size changed (new=" + oldValues.size() +
+                " != old=" + oldSize + ").  (By update() in another thread?)");
+            return false;
+        }
+
+        //Swap changes into place quickly to minimize problems.  Better if changes were atomic.
+        //Order of changes is important.
+        //Other threads may be affected by some values being updated before others.
+        //This is an imperfect alternative to synchronizing all uses of this dataset (which is far worse).
+        oldValues.append(newValues);  //should be fast, and new size set at end to minimize concurrency problems
+        edvga.setDestinationMinMax(newMin, newMax);
+        edvga.setIsEvenlySpaced(newIsEvenlySpaced);
+        edvga.initializeAverageSpacingAndCoarseMinMax();  
+        edvga.setActualRangeFromDestinationMinMax();
+        if (edvga instanceof EDVTimeGridAxis) 
+            combinedGlobalAttributes.set("time_coverage_end",   
+                Calendar2.epochSecondsToLimitedIsoStringT(
+                    edvga.combinedAttributes().getString(EDV.TIME_PRECISION), newMax, ""));
+        edvga.clearSliderCsvValues();  //do last, to force recreation next time needed
+
+        updateCount++;
+        long thisTime = System.currentTimeMillis() - startUpdateMillis;
+        cumulativeUpdateTime += thisTime;
+        if (reallyVerbose)
+            String2.log(msg + "succeeded. " + Calendar2.getCurrentISODateTimeStringLocal() +
+                " nValuesAdded=" + newValues.size() + 
+                " time=" + thisTime + " updateCount=" + updateCount +
+                " avgTime=" + (cumulativeUpdateTime / updateCount));
+        return true;
     }
 
     /**
@@ -847,8 +775,10 @@ public class EDDGridFromDap extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
-     * @param tDataVariables
-     * @param tConstraints
+     * @param tDataVariables EDV[] with just the requested data variables
+     * @param tConstraints  int[nAxisVariables*3] 
+     *   where av*3+0=startIndex, av*3+1=stride, av*3+2=stopIndex.
+     *   AxisVariables are counted left to right, e.g., sst[0=time][1=lat][2=lon].
      * @return a PrimitiveArray[] where the first axisVariables.length elements
      *   are the axisValues and the next tDataVariables.length elements
      *   are the dataValues.
@@ -1905,7 +1835,8 @@ public class EDDGridFromDap extends EDDGrid {
             "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2011.nc",
             "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2012.nc",
             "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2013.nc",
-            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2014.nc"};
+            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2014.nc",
+            "http://www.esrl.noaa.gov/psd/thredds/dodsC/Datasets/ncep.reanalysis.dailyavgs/surface/air.sig995.2015.nc"};
         Test.ensureEqual(results, expected, "results0=" + String2.toNewlineString(results));
 
         //test no regex
@@ -8505,6 +8436,86 @@ EDStatic.startBodyHtml(null) + "\n" +
     }
 
     /**
+     * This tests fixing an unhelpful error message.
+     */     
+    public static void testTimeErrorMessage() throws Throwable {
+        String2.log("\n*** EDDGridFromDap.testTimeErrorMessage\n");
+        testVerboseOn();
+        EDDGrid gridDataset = (EDDGrid)oneFromDatasetXml("erdSWchla8day"); 
+        String dir = EDStatic.fullTestCacheDirectory;
+        String results = "shouldn't be this", expected;
+
+        //start <
+        try {
+            String dapQuery = "chlorophyll[(1980-12-07)][(0.0)][(-90.0):(-89)][(0):(1)]"; 
+            String tName = gridDataset.makeNewFileForDapQuery(null, null, dapQuery, 
+                dir, gridDataset.className() + "_timeError", ".nc"); 
+            results = "shouldn't get here";
+        } catch (Throwable t) {
+            results = MustBe.throwableToString(t);
+        }
+        expected = 
+"SimpleException: Your query produced no matching results. Query error: " +
+"For variable=chlorophyll axis#0=time Constraint=\"[(1980-12-07)]\": " +
+"Start=\"1980-12-07\" is less than the axis minimum=1997-09-02T00:00:00Z " +
+"(and even 1997-08-28T17:50:30Z).";
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+
+        //start >
+        results = "shouldn't be this";
+        try {
+            String dapQuery = "chlorophyll[(2014-12-07)][(0.0)][(-90.0):(-89)][(0):(1)]"; 
+            String tName = gridDataset.makeNewFileForDapQuery(null, null, dapQuery, 
+                dir, gridDataset.className() + "_timeError", ".nc"); 
+            results = "shouldn't get here";
+        } catch (Throwable t) {
+            results = MustBe.throwableToString(t);
+        }
+        expected = 
+"SimpleException: Your query produced no matching results. Query error: " +
+"For variable=chlorophyll axis#0=time Constraint=\"[(2014-12-07)]\": " +
+"Start=\"2014-12-07\" is greater than the axis maximum=2010-12-07T00:00:00Z " +
+"(and even 2010-12-11T06:09:29Z).";
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+
+        //end <
+        results = "shouldn't be this";
+        try {
+            String dapQuery = 
+                "chlorophyll[(2000-12-07):(1980-12-07)][(0.0)][(-90.0):(-89)][(0):(1)]"; 
+            String tName = gridDataset.makeNewFileForDapQuery(null, null, dapQuery, 
+                dir, gridDataset.className() + "_timeError", ".nc"); 
+            results = "shouldn't get here";
+        } catch (Throwable t) {
+            results = MustBe.throwableToString(t);
+        }
+        expected = 
+"SimpleException: Your query produced no matching results. Query error: " +
+"For variable=chlorophyll axis#0=time Constraint=\"[(2000-12-07):(1980-12-07)]\": " +
+"Stop=\"1980-12-07\" is less than the axis minimum=1997-09-02T00:00:00Z " +
+"(and even 1997-08-28T17:50:30Z).";
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+
+        //end >
+        results = "shouldn't be this";
+        try {
+            String dapQuery = 
+                "chlorophyll[(2000-12-07):(2014-12-07)][(0.0)][(-90.0):(-89)][(0):(1)]"; 
+            String tName = gridDataset.makeNewFileForDapQuery(null, null, dapQuery, 
+                dir, gridDataset.className() + "_timeError", ".nc"); 
+            results = "shouldn't get here";
+        } catch (Throwable t) {
+            results = MustBe.throwableToString(t);
+        }
+        expected = 
+"SimpleException: Your query produced no matching results. Query error: " +
+"For variable=chlorophyll axis#0=time Constraint=\"[(2000-12-07):(2014-12-07)]\": " +
+"Stop=\"2014-12-07\" is greater than the axis maximum=2010-12-07T00:00:00Z " +
+"(and even 2010-12-11T06:09:29Z).";
+        Test.ensureTrue(results.indexOf(expected) >= 0, "results=\n" + results);
+    }
+
+    /**
      * This tests the methods in this class.
      *
      * @throws Throwable if trouble
@@ -8550,6 +8561,7 @@ EDStatic.startBodyHtml(null) + "\n" +
         testDescendingAxisGeotif();
         testMap74to434();
         testMapAntialiasing();
+        testTimeErrorMessage();
         /* */
 
         //not regularly done

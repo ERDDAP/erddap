@@ -239,7 +239,7 @@ public class TestUtil {
         da = new double[1000000];
         String2.log("after allocate = " + Math2.memoryString());
         da = null;
-        Math2.gcAndWait();
+        Math2.gcAndWait(); //in test
         String2.log("after gc = " + Math2.memoryString());
 
         //odd
@@ -867,61 +867,61 @@ public class TestUtil {
         Test.ensureEqual(Math2.binaryFindLastLE(sortedDuplicates, 2.5),  5, "");
         Test.ensureEqual(Math2.binaryFindLastLE(sortedDuplicates, 3.5),  6, "");
 
-        //binaryFindLastLAE9
-        String2.log("test binaryFindLastLAE9");
+        //binaryFindLastLAE   lastParam: precision = 9
+        String2.log("test binaryFindLastLAE");
         //double sorted[] = {1, 7, 14, 21};
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted, -1),             -1, "a");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted,  0.99999999999),  0, "b");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted,  1),              0, "c");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted,  1.00000000001),  0, "d");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted,  6),              0, "e");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted,  6.99999999999),  1, "f");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted,  7),              1, "g");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted,  7.00000000001),  1, "h");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted,  8),              1, "i");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted, 13.99999999999),  2, "j");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted, 14),              2, "k");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted, 14.00000000001),  2, "l");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted, 15),              2, "m");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted, 20.99999999999),  3, "n");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted, 21),              3, "o");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted, 21.00000000001),  3, "p");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sorted, 22),              3, "q");
-        //Test.ensureEqual(Math2.binaryFindLastLAE9(sorted, Double.NaN),     0, "r");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, -1            , 9), -1, "a");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  0.99999999999, 9),  0, "b");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  1            , 9),  0, "c");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  1.00000000001, 9),  0, "d");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  6            , 9),  0, "e");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  6.99999999999, 9),  1, "f");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  7            , 9),  1, "g");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  7.00000000001, 9),  1, "h");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  8            , 9),  1, "i");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 13.99999999999, 9),  2, "j");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 14            , 9),  2, "k");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 14.00000000001, 9),  2, "l");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 15            , 9),  2, "m");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 20.99999999999, 9),  3, "n");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 21            , 9),  3, "o");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 21.00000000001, 9),  3, "p");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 22            , 9),  3, "q");
+        //Test.ensureEqual(Math2.binaryFindLastLAE(sorted, Double.NaN, 9),    0, "r");
 
-        //double sortedDuplicates[] = {1, 2,2,2,2,2, 3};
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sortedDuplicates, 0.5), -1, "");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sortedDuplicates, 1.5),  0, "");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sortedDuplicates, 2.5),  5, "");
-        Test.ensureEqual(Math2.binaryFindLastLAE9(sortedDuplicates, 3.5),  6, "");
+        //double sortedDuplicates[] = {1, 2,2,2,2,2, 3};   lastParam: precision = 9
+        Test.ensureEqual(Math2.binaryFindLastLAE(sortedDuplicates, 0.5, 9), -1, "");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sortedDuplicates, 1.5, 9),  0, "");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sortedDuplicates, 2.5, 9),  5, "");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sortedDuplicates, 3.5, 9),  6, "");
 
-        //binaryFindLastLAE5
-        String2.log("test binaryFindLastLAE5");
+        //binaryFindLastLAE5    lastParam: precision = 5
+        String2.log("test binaryFindLastLAE");
         //double sorted[] = {1, 7, 14, 21};
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted, -1),         -1, "a");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted,  0.9999999),  0, "b");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted,  1),          0, "c");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted,  1.0000001),  0, "d");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted,  6),          0, "e");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted,  6.9999999),  1, "f");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted,  7),          1, "g");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted,  7.0000001),  1, "h");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted,  8),          1, "i");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted, 13.9999999),  2, "j");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted, 14),          2, "k");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted, 14.0000001),  2, "l");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted, 15),          2, "m");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted, 20.9999999),  3, "n");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted, 21),          3, "o");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted, 21.0000001),  3, "p");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sorted, 22),          3, "q");
-        //Test.ensureEqual(Math2.binaryFindLastLAE5(sorted, Double.NaN),0, "r");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, -1        , 5),         -1, "a");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  0.9999999, 5),  0, "b");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  1        , 5),          0, "c");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  1.0000001, 5),  0, "d");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  6        , 5),          0, "e");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  6.9999999, 5),  1, "f");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  7        , 5),          1, "g");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  7.0000001, 5),  1, "h");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted,  8        , 5),          1, "i");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 13.9999999, 5),  2, "j");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 14        , 5),          2, "k");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 14.0000001, 5),  2, "l");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 15        , 5),          2, "m");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 20.9999999, 5),  3, "n");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 21        , 5),          3, "o");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 21.0000001, 5),  3, "p");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sorted, 22        , 5),          3, "q");
+        //Test.ensureEqual(Math2.binaryFindLastLAE(sorted, Double.NaN, 5),0, "r");
 
-        //double sortedDuplicates[] = {1, 2,2,2,2,2, 3};
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sortedDuplicates, 0.5), -1, "");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sortedDuplicates, 1.5),  0, "");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sortedDuplicates, 2.5),  5, "");
-        Test.ensureEqual(Math2.binaryFindLastLAE5(sortedDuplicates, 3.5),  6, "");
+        //double sortedDuplicates[] = {1, 2,2,2,2,2, 3};   lastParam: precision = 5
+        Test.ensureEqual(Math2.binaryFindLastLAE(sortedDuplicates, 0.5, 5), -1, "");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sortedDuplicates, 1.5, 5),  0, "");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sortedDuplicates, 2.5, 5),  5, "");
+        Test.ensureEqual(Math2.binaryFindLastLAE(sortedDuplicates, 3.5, 5),  6, "");
 
         //binaryFindFirstGE
         String2.log("test binaryFindFirstGE");
@@ -951,61 +951,61 @@ public class TestUtil {
         Test.ensureEqual(Math2.binaryFindFirstGE(sortedDuplicates, 2.5),  6, "");
         Test.ensureEqual(Math2.binaryFindFirstGE(sortedDuplicates, 3.5),  7, "");
 
-        //binaryFindFirstGAE9
-        String2.log("test binaryFindFirstGAE9");
+        //binaryFindFirstGAE    lastParam: precision = 9
+        String2.log("test binaryFindFirstGAE");
         //double sorted[] = {1, 7, 14, 21};
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted, -1),              0, "a");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted,  0.99999999999),  0, "b");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted,  1),              0, "c");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted,  1.00000000001),  0, "d");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted,  6),              1, "e");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted,  6.99999999999),  1, "f");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted,  7),              1, "g");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted,  7.00000000001),  1, "h");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted,  8),              2, "i");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted, 13.99999999999),  2, "j");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted, 14),              2, "k");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted, 14.00000000001),  2, "l");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted, 15),              3, "m");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted, 20.99999999999),  3, "n");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted, 21),              3, "o");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted, 21.00000000001),  3, "p");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted, 22),              4, "q");
-        //Test.ensureEqual(Math2.binaryFindFirstGAE9(sorted, Double.NaN),     3, "r");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, -1            , 9),  0, "a");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  0.99999999999, 9),  0, "b");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  1            , 9),  0, "c");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  1.00000000001, 9),  0, "d");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  6            , 9),  1, "e");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  6.99999999999, 9),  1, "f");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  7            , 9),  1, "g");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  7.00000000001, 9),  1, "h");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  8            , 9),  2, "i");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 13.99999999999, 9),  2, "j");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 14            , 9),  2, "k");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 14.00000000001, 9),  2, "l");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 15            , 9),  3, "m");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 20.99999999999, 9),  3, "n");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 21            , 9),  3, "o");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 21.00000000001, 9),  3, "p");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 22            , 9),  4, "q");
+        //Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, Double.NaN, 9),     3, "r");
 
-        //double sortedDuplicates[] = {1, 2,2,2,2,2, 3};
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sortedDuplicates, 0.5),  0, "");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sortedDuplicates, 1.5),  1, "");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sortedDuplicates, 2.5),  6, "");
-        Test.ensureEqual(Math2.binaryFindFirstGAE9(sortedDuplicates, 3.5),  7, "");
+        //double sortedDuplicates[] = {1, 2,2,2,2,2, 3};  lastParam: precision = 9
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sortedDuplicates, 0.5, 9),  0, "");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sortedDuplicates, 1.5, 9),  1, "");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sortedDuplicates, 2.5, 9),  6, "");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sortedDuplicates, 3.5, 9),  7, "");
 
-        //binaryFindFirstGAE5
-        String2.log("test binaryFindFirstGAE5");
+        //binaryFindFirstGAE  lastParam: precision = 5
+        String2.log("test binaryFindFirstGAE");
         //double sorted[] = {1, 7, 14, 21};
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted, -1),          0, "a");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted,  0.9999999),  0, "b");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted,  1),          0, "c");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted,  1.0000001),  0, "d");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted,  6),          1, "e");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted,  6.9999999),  1, "f");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted,  7),          1, "g");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted,  7.0000001),  1, "h");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted,  8),          2, "i");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted, 13.9999999),  2, "j");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted, 14),          2, "k");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted, 14.0000001),  2, "l");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted, 15),          3, "m");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted, 20.9999999),  3, "n");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted, 21),          3, "o");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted, 21.0000001),  3, "p");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted, 22),          4, "q");
-        //Test.ensureEqual(Math2.binaryFindFirstGAE5(sorted, Double.NaN),3, "r");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, -1        ,5), 0, "a");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  0.9999999,5), 0, "b");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  1        ,5), 0, "c");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  1.0000001,5), 0, "d");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  6        ,5), 1, "e");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  6.9999999,5), 1, "f");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  7        ,5), 1, "g");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  7.0000001,5), 1, "h");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted,  8        ,5), 2, "i");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 13.9999999,5), 2, "j");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 14        ,5), 2, "k");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 14.0000001,5), 2, "l");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 15        ,5), 3, "m");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 20.9999999,5), 3, "n");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 21        ,5), 3, "o");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 21.0000001,5), 3, "p");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, 22        ,5), 4, "q");
+        //Test.ensureEqual(Math2.binaryFindFirstGAE(sorted, Double.NaN, 5),3, "r");
 
-        //double sortedDuplicates[] = {1, 2,2,2,2,2, 3};
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sortedDuplicates, 0.5),  0, "");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sortedDuplicates, 1.5),  1, "");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sortedDuplicates, 2.5),  6, "");
-        Test.ensureEqual(Math2.binaryFindFirstGAE5(sortedDuplicates, 3.5),  7, "");
+        //double sortedDuplicates[] = {1, 2,2,2,2,2, 3};   lastParam: precision = 5
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sortedDuplicates, 0.5, 5),  0, "");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sortedDuplicates, 1.5, 5),  1, "");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sortedDuplicates, 2.5, 5),  6, "");
+        Test.ensureEqual(Math2.binaryFindFirstGAE(sortedDuplicates, 3.5, 5),  7, "");
 
         //binaryFindClosest
         String2.log("test binaryFindClosest");
@@ -3700,7 +3700,7 @@ public class TestUtil {
         Test.ensureEqual(Calendar2.epochSecondsToLimitedIsoStringT(
             "1970-01-01T00:00:00.000Z", d, "."), "-0005-08-31T16:01:02.123Z", "");
        
-        Math2.gcAndWait();
+        Math2.gcAndWait(); //in test
     }
 
     /**
@@ -4068,14 +4068,14 @@ public class TestUtil {
 
         for (int loop = 0; loop < 3; loop++) {
             //test Strings
-            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive
+            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive   //in a test
             memoryInUse = Math2.getMemoryInUse();
             time = System.currentTimeMillis();
             String sa[] = new String[n];
             for (int i = 0; i < n; i++)
                 sa[i] = "testABCD" + i;
             time = System.currentTimeMillis() - time;
-            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive
+            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive   //in a test
             String2.log("String memoryUse/item=" + 
                 ((Math2.getMemoryInUse() - memoryInUse) / (n + 0.0)) +   //68.1 bytes
                 " time=" + time); // ~562  (after first time)
@@ -4087,7 +4087,7 @@ public class TestUtil {
             for (int i = 0; i < n; i++)
                 ba[i] = String2.getUTF8Bytes("testABCD" + i);  //usually 14 characters +4length +4pointer
             time = System.currentTimeMillis() - time;
-            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive
+            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive   //in a test
             String2.log("utf8 memoryUse/item=" + 
                 ((Math2.getMemoryInUse() - memoryInUse) / (n + 0.0)) + //36.0 bytes; why so many?
                 " time=" + time); // ~1094
@@ -4099,7 +4099,7 @@ public class TestUtil {
             for (int i = 0; i < n; i++)
                 da[i] = i;  
             time = System.currentTimeMillis() - time;
-            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive
+            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive   //in a test
             String2.log("double memoryUse/item=" + 
                 ((Math2.getMemoryInUse() - memoryInUse) / (n + 0.0)) + //8 bytes
                 " time=" + time); // ~6
@@ -4135,7 +4135,7 @@ public class TestUtil {
             int n = 1000000;
             String sa[] = new String[n];
             long oMemoryInUse = -1;
-            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive preparation
+            Math2.gcAndWait(); Math2.gcAndWait();  //aggressive preparation //in a test
             int canSize = -1;
 
             //for each outer loop, create a different group of 100 canonical strings 
@@ -4150,7 +4150,7 @@ public class TestUtil {
 
                 //ensure that memory use and canonical size don't grow unexpectedly
                 time = System.currentTimeMillis() - time;
-                Math2.gcAndWait(); Math2.gcAndWait();  //aggressive
+                Math2.gcAndWait(); Math2.gcAndWait();  //aggressive //in a test
                 long memoryInUse = Math2.getMemoryInUse();
                 int shouldBe = outer == 0? 550 : 280;
                 String2.log("canonicalSize=" + String2.canonicalSize() + 
@@ -4193,7 +4193,7 @@ public class TestUtil {
             String sar[] = new String[127];
 
             //what is initial memory level?
-            Math2.gcAndWait(); Math2.gcAndWait(); //aggressive
+            Math2.gcAndWait(); Math2.gcAndWait(); //aggressive //in a test
             long oMem = Math2.getMemoryInUse();
 
             //just store first 5 chars large strings
@@ -4203,7 +4203,7 @@ public class TestUtil {
             }            
 
             //what is final memory level?
-            Math2.gcAndWait(); Math2.gcAndWait(); //aggressive
+            Math2.gcAndWait(); Math2.gcAndWait(); //aggressive //in a test
             long cMem = Math2.getMemoryInUse();
             String2.log("oMem=" + oMem + "\n" +
                         "cMem=" + cMem + "\n");

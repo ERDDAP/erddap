@@ -58,6 +58,12 @@ public class EDV {
         ALT_NAME  = "altitude",  ALT_LONGNAME  = "Altitude",  ALT_STANDARD_NAME  = "altitude",  ALT_UNITS  = "m",
         DEPTH_NAME= "depth",     DEPTH_LONGNAME= "Depth",     DEPTH_STANDARD_NAME= "depth",     DEPTH_UNITS= "m",
         TIME_NAME = "time",      TIME_LONGNAME = "Time",      TIME_STANDARD_NAME = "time",      TIME_UNITS = Calendar2.SECONDS_SINCE_1970;
+    public static String[] LON_UNITS_VARIANTS = {
+        LON_UNITS, "degree_east", "degreeE", "degree_E", "degreesE", "degrees_E"};                
+    public static String[] LAT_UNITS_VARIANTS = {
+        LAT_UNITS, "degree_north", "degreeN", "degree_N", "degreesN", "degrees_N"};
+    public static String[] METERS_VARIANTS = {
+        ALT_UNITS, "meter", "meters", "metre", "metres"};
 
     /** */
     public static String TIME_UCUM_UNITS = EDUnits.udunitsToUcum(TIME_UNITS);
@@ -329,14 +335,7 @@ public class EDV {
 
         //extractScaleAddOffset     It sets destinationDataType
         extractScaleAddOffset(); 
-        if (scaleAddOffset) {
-            setDestinationMin(destinationMin * scaleFactor + addOffset);
-            setDestinationMax(destinationMax * scaleFactor + addOffset);
-        }
-        //test for min>max after extractScaleAddOffset, since order may have changed
-        if (destinationMin > destinationMax) { 
-            double d = destinationMin; destinationMin = destinationMax; destinationMax = d;
-        }
+        setDestinationMinMaxFromSource(destinationMin, destinationMax); //ensures order is correct
 
         //after extractScaleAddOffset, get sourceMissingValue and sourceFillValue
         //and convert to destinationDataType (from scaleAddOffset)
@@ -392,14 +391,10 @@ public class EDV {
 
         //min max  from actual_range, data_min, or data_max
         double mm[] = extractActualRange();  //may be low,high or high,low
-        if (Double.isNaN(destinationMin)) 
-            setDestinationMin(mm[0] * scaleFactor + addOffset);
-        if (Double.isNaN(destinationMax)) 
-            setDestinationMax(mm[1] * scaleFactor + addOffset); 
-        if (destinationMin > destinationMax) {
-            double d = destinationMin; destinationMin = destinationMax; destinationMax = d;
-        }
-
+        if (Double.isNaN(destinationMin) && Double.isNaN(destinationMax)) 
+            setDestinationMinMax(
+                mm[0] * scaleFactor + addOffset,
+                mm[1] * scaleFactor + addOffset); 
     }
 
 
@@ -546,9 +541,7 @@ public class EDV {
             setDestinationMin(mm[0] * scaleFactor + addOffset);
         if (Double.isNaN(destinationMax)) 
             setDestinationMax(mm[1] * scaleFactor + addOffset);
-        if (!Double.isNaN(destinationMin) && 
-            !Double.isNaN(destinationMax) &&
-            destinationMin > destinationMax) {
+        if (destinationMin > destinationMax) { //in Java, only true if neither if NaN
             double d = destinationMin; destinationMin = destinationMax; destinationMax = d; }
         setActualRangeFromDestinationMinMax();
     }
@@ -913,6 +906,25 @@ public class EDV {
      * @return the cleaned up destinationMax value for this axis.
      */
     public double destinationMax() {return destinationMax;}
+
+    public void setDestinationMinMaxFromSource(double sourceMin, double sourceMax) {
+        if (scaleAddOffset) 
+            setDestinationMinMax(
+                sourceMin * scaleFactor + addOffset,
+                sourceMax * scaleFactor + addOffset);
+        else setDestinationMinMax(sourceMin, sourceMax);
+    }
+
+    /**
+     * This lets you setDestinationMin and setDestinationMax in one step.
+     * If tMin &gt; tMax, this will swap them.
+     */
+    public void setDestinationMinMax(double tMin, double tMax) {
+        if (tMin > tMax) { //if either is NaN, result in Java is false
+            double d = tMin; tMin = tMax; tMax = d;}
+        setDestinationMin(tMin);
+        setDestinationMax(tMax);
+    }
 
     public void setDestinationMin(double tMin) {
         destinationMin = destinationDataTypeClass() == float.class?

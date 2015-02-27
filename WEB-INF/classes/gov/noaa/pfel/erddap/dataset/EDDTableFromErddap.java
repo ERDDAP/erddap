@@ -526,6 +526,8 @@ public class EDDTableFromErddap extends EDDTable implements FromErddap {
             int nRows = table.nRows();
             for (int row = 0; row < nRows; row++) {
                 String id = datasetIdCol.getString(row);
+                if (EDDTableFromAllDatasets.DATASET_ID.equals(id))
+                    continue;
                 //localSourceUrl isn't available (and we generally don't want it)
                 String tPublicSourceUrl = urlCol.getString(row);
                 //Use unchanged tPublicSourceUrl or via suggestDatasetID?
@@ -1591,23 +1593,13 @@ String tHeader2 =
     public static void testApostrophe() throws Throwable {
         String2.log("\n*** EDDTableFromErddap.testApostrophe");
 
-        try {
-            EDDTable edd = (EDDTableFromErddap)oneFromDatasetXml("testWTEY"); 
-            String2.log("title=" + edd.title());
-            String tName = edd.makeNewFileForDapQuery(null, null, 
-                "longitude,latitude,platformSpeed_kts&time%3E=2013-05-30T00:00:00Z" +
-                "&time%3C=2013-06-06T00:00:00Z&.draw=markers&.marker=5|5&.color=0x000000&.colorBar=|||||",
-                EDStatic.fullTestCacheDirectory, edd.className() + "_Apos", ".png"); 
-            SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
-        } catch (Throwable t) {
-            String msg = MustBe.throwableToString(t);
-            if (msg.indexOf("timed out") >= 0)
-                Test.knownProblem("2013-10-29 This fails because oceanview isn't accessible to my desktop via numeric IP." +
-                    "\n  I reported problem to Roy. He reported to Dave Nordelo. ... Hopefully will be fixed.",
-                    msg);
-            else String2.getStringFromSystemIn(msg + 
-                "\nUnexpected error.  Press ^C to stop or Enter to continue..."); 
-        }
+        EDDTable edd = (EDDTableFromErddap)oneFromDatasetXml("testWTEY"); 
+        String2.log("title=" + edd.title());
+        String tName = edd.makeNewFileForDapQuery(null, null, 
+            "longitude,latitude,platformSpeed_kts&time%3E=2013-05-30T00:00:00Z" +
+            "&time%3C=2013-06-06T00:00:00Z&.draw=markers&.marker=5|5&.color=0x000000&.colorBar=|||||",
+            EDStatic.fullTestCacheDirectory, edd.className() + "_Apos", ".png"); 
+        SSR.displayInBrowser("file://" + EDStatic.fullTestCacheDirectory + tName);
     }
 
     /** This tests dealing with remote not having ioos_category, but local requiring it. */
@@ -1617,6 +1609,18 @@ String tHeader2 =
         //this failed because trajectory didn't have ioos_category
         EDDTable edd = (EDDTable)oneFromDatasetXml("testTableNoIoosCat"); 
 
+    }
+
+    /** This tests quotes in an attribute. */
+    public static void testQuotes() throws Throwable {
+        String2.log("\n*** EDDTableFromErddap.testQuotes");
+
+        EDDTable edd = (EDDTableFromErddap)oneFromDatasetXml("testQuotes"); 
+        String results = edd.defaultGraphQuery;
+        String expected =  
+//backslash was actual character in the string, now just encoding here
+"longitude,latitude,time&scientific_name=\"Sardinops sagax\"&.draw=markers&.marker=5|5&.color=0x000000&.colorBar=|||||";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results); 
     }
 
 
@@ -1637,6 +1641,7 @@ String tHeader2 =
         testGenerateDatasetsXml();
         testApostrophe();
         testTableNoIoosCat();
+        testQuotes();
 
         //not usually done
 

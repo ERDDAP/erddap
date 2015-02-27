@@ -64,25 +64,26 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
-        int tReloadEveryNMinutes,
+        int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
         String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
+        boolean tAccessibleViaFiles) 
         throws Throwable {
 
         super("EDDTableFromWFSFiles", tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
-            tDataVariables, tReloadEveryNMinutes,
+            tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles);
     }
 
     /**
@@ -155,11 +156,13 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
      *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(String tSourceUrl, String tRowElementXPath,
-        int tReloadEveryNMinutes,
+        int tReloadEveryNMinutes, 
         String tInfoUrl, String tInstitution, String tSummary, String tTitle,
         Attributes externalAddGlobalAttributes) throws Throwable {
 
         String2.log("EDDTableFromWFSFiles.generateDatasetsXml");
+        if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
+            tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
 
         //*** basically, make a table to hold the sourceAttributes 
         //and a parallel table to hold the addAttributes
@@ -247,17 +250,19 @@ public class EDDTableFromWFSFiles extends EDDTableFromAsciiFiles {
             "<dataset type=\"EDDTableFromWFSFiles\" datasetID=\"" + tDatasetID +
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
+            "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
             //"    <recursive>false</recursive>\n" +
             //"    <fileDir>" + EDStatic.fullCopyDirectory + tDatasetID + "/</fileDir>\n" +
             //"    <fileNameRegex>.*\\.tsv</fileNameRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n" +
+            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
             //"    <charset>UTF-8</charset>\n" +
             //"    <columnNamesRow>1</columnNamesRow>\n" +
             //"    <firstDataRow>3</firstDataRow>\n" +
-            //"    <preExtractRegex>" + tPreExtractRegex + "</preExtractRegex>\n" +
-            //"    <postExtractRegex>" + tPostExtractRegex + "</postExtractRegex>\n" +
-            //"    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
+            //"    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
+            //"    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
+            //"    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
             //"    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
             //"    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
             //"    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n");
@@ -319,8 +324,10 @@ directionsForGenerateDatasetsXml() +
 "\n" +
 "<dataset type=\"EDDTableFromWFSFiles\" datasetID=\"uky_2ed7_6297_9e6e\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +

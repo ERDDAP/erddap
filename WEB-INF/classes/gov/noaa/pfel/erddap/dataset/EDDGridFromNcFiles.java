@@ -18,6 +18,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.Projects;
 import gov.noaa.pfel.coastwatch.griddata.NcHelper;
@@ -65,9 +66,10 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
         Attributes tAddGlobalAttributes,
         Object[][] tAxisVariables,
         Object[][] tDataVariables,
-        int tReloadEveryNMinutes,
+        int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        boolean tEnsureAxisValuesAreExactlyEqual, boolean tFileTableInMemory) 
+        boolean tEnsureAxisValuesAreExactlyEqual, boolean tFileTableInMemory,
+        boolean tAccessibleViaFiles) 
         throws Throwable {
 
         super("EDDGridFromNcFiles", tDatasetID, tAccessibleTo, 
@@ -76,9 +78,10 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
             tAddGlobalAttributes,
             tAxisVariables,
             tDataVariables,
-            tReloadEveryNMinutes,
+            tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
-            tEnsureAxisValuesAreExactlyEqual, tFileTableInMemory);
+            tEnsureAxisValuesAreExactlyEqual, tFileTableInMemory,
+            tAccessibleViaFiles);
     }
 
 
@@ -307,6 +310,8 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
         String2.log("EDDGridFromNcFiles.generateDatasetsXml" +
             "\n  sampleFileName=" + sampleFileName);
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
+        if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
+            tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
 
         NetcdfFile ncFile = NcHelper.openFile(sampleFileName); //may throw exception
         Table axisSourceTable = new Table();  
@@ -322,7 +327,7 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
             int nGridsAtSource = 0;
             for (int v = 0; v < allVariables.size(); v++) {
                 Variable var = (Variable)allVariables.get(v);
-                String varName = var.getShortName();
+                String varName = var.getFullName();
                 List dimensions = var.getDimensions();
                 if (dimensions == null || dimensions.size() <= 1) 
                     continue;
@@ -331,42 +336,52 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
                 if      (tClass == char.class)    tClass = String.class;
                 else if (tClass == boolean.class) tClass = byte.class; 
                 PrimitiveArray pa = PrimitiveArray.factory(tClass, 1, false);
-                int tDim = dimensions.size() - (tClass == String.class? 1 : 0);
-                if (tDim < maxDim) {
+                int nDim = dimensions.size() - (tClass == String.class? 1 : 0);
+                if (nDim < maxDim) {
                     continue;
-                } else if (tDim > maxDim) {
+                } else if (nDim > maxDim) {
                     //clear previous vars 
                     axisSourceTable.removeAllColumns();
                     dataSourceTable.removeAllColumns();
                     axisAddTable.removeAllColumns();
                     dataAddTable.removeAllColumns();
-                    maxDim = tDim;
+                    maxDim = nDim;
 
                     //store the axis vars
                     for (int avi = 0; avi < maxDim; avi++) {
-                        String axisName = ((Dimension)dimensions.get(avi)).getName();
-                        Variable axisVariable = ncFile.findVariable(axisName);
+                        Dimension tDim = ((Dimension)dimensions.get(avi));
+//String2.log(">>varName=" + varName + " avi=" + avi + " dim=" + tDim.toString());
+//String2.log(">>name=" + tDim.getName()); 
+                        //work-around bug in netcdf-java: for anonymous dim,
+                        //  getName() returns null, but getFullName() throws Exception.
+                        String axisName = tDim.getName();
+                        if (axisName != null) 
+                            axisName = tDim.getFullName();  
                         Attributes sourceAtts = new Attributes();
-                        if (axisVariable != null) //it will be null for dimension without same-named coordinate axis variable
-                            NcHelper.getVariableAttributes(axisVariable, sourceAtts);
+                        if (axisName != null) {
+                            Variable axisVariable = ncFile.findVariable(axisName);
+                            if (axisVariable != null) //it will be null for dimension without same-named coordinate axis variable
+                                NcHelper.getVariableAttributes(axisVariable, sourceAtts);
+                        }
                         axisSourceTable.addColumn(avi, axisName, new DoubleArray(), //type doesn't matter
                             sourceAtts); 
-                        axisAddTable.addColumn(   avi, axisName, new DoubleArray(), //type doesn't matter
+                        String destName = String2.modifyToBeVariableNameSafe(axisName);
+                        axisAddTable.addColumn(   avi, destName, new DoubleArray(), //type doesn't matter
                             makeReadyToUseAddVariableAttributesForDatasetsXml(
-                                sourceAtts, axisName, false, true)); //addColorBarMinMax, tryToFindLLAT
+                                sourceAtts, destName, false, true)); //addColorBarMinMax, tryToFindLLAT
 
                     }
 
                 } else { 
-                    //tDim == maxDim
+                    //nDim == maxDim
                     //if axes are different, reject this var
                     boolean ok = true;
                     for (int avi = 0; avi < maxDim; avi++) {
-                        String axisName = ((Dimension)dimensions.get(avi)).getName();
+                        String axisName = ((Dimension)dimensions.get(avi)).getFullName();
                         String expectedName = axisSourceTable.getColumnName(avi);
                         if (!axisName.equals(expectedName)) {
                             if (verbose) String2.log("variable=" + varName + 
-                                " has the right nDimensions=" + tDim + 
+                                " has the right nDimensions=" + nDim + 
                                 ", but axis#=" + avi + "=" + axisName + 
                                 " != " + expectedName);
                             ok = false;
@@ -379,10 +394,12 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
                 //add the dataVariable
                 Attributes sourceAtts = new Attributes();
                 NcHelper.getVariableAttributes(var, sourceAtts);
-                dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, pa, sourceAtts);
-                dataAddTable.addColumn(   dataAddTable.nColumns(),    varName, pa, 
+                dataSourceTable.addColumn(dataSourceTable.nColumns(), varName, pa, 
+                    sourceAtts);
+                String destName = String2.modifyToBeVariableNameSafe(varName);
+                dataAddTable.addColumn(   dataAddTable.nColumns(),   destName, pa, 
                     makeReadyToUseAddVariableAttributesForDatasetsXml(
-                        sourceAtts, varName, true, false)); //addColorBarMinMax, tryToFindLLAT
+                        sourceAtts, destName, true, false)); //addColorBarMinMax, tryToFindLLAT
             }
 
             //after dataVariables known, add global attributes in the axisAddTable
@@ -408,11 +425,13 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
                 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"" + tDatasetID +                      
                     "\" active=\"true\">\n" +
                 "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
+                "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
                 "    <fileDir>" + tFileDir + "</fileDir>\n" +
                 "    <recursive>true</recursive>\n" +
-                "    <fileNameRegex>" + tFileNameRegex + "</fileNameRegex>\n" +
+                "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
                 "    <metadataFrom>last</metadataFrom>\n" +
-                "    <fileTableInMemory>false</fileTableInMemory>\n");
+                "    <fileTableInMemory>false</fileTableInMemory>\n" +
+                "    <accessibleViaFiles>false</accessibleViaFiles>\n");
 
             sb.append(writeAttsForDatasetsXml(false, axisSourceTable.globalAttributes(), "    "));
             sb.append(writeAttsForDatasetsXml(true,  axisAddTable.globalAttributes(),    "    "));
@@ -449,16 +468,19 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
     public static void testGenerateDatasetsXml() throws Throwable {
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml");
+
         String results = generateDatasetsXml(
-            "c:/u00/cwatch/testData/erdQSwind1day/", ".*_03\\.nc", 
-            "c:/u00/cwatch/testData/erdQSwind1day/erdQSwind1day_20080101_03.nc",
+            EDStatic.unitTestDataDir + "erdQSwind1day/", ".*_03\\.nc", 
+            EDStatic.unitTestDataDir + "erdQSwind1day/erdQSwind1day_20080101_03.nc",
             DEFAULT_RELOAD_EVERY_N_MINUTES, null) + "\n";
+        String suggDatasetID = suggestDatasetID(
+            EDStatic.unitTestDataDir + "erdQSwind1day/.*_03\\.nc");
 
         //GenerateDatasetsXml
         String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
             "EDDGridFromNcFiles",
-            "c:/u00/cwatch/testData/erdQSwind1day/", ".*_03\\.nc", 
-            "c:/u00/cwatch/testData/erdQSwind1day/erdQSwind1day_20080101_03.nc",
+            EDStatic.unitTestDataDir + "erdQSwind1day/", ".*_03\\.nc", 
+            EDStatic.unitTestDataDir + "erdQSwind1day/erdQSwind1day_20080101_03.nc",
             "" + DEFAULT_RELOAD_EVERY_N_MINUTES},
             false); //doIt loop?
         Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt. " + 
@@ -468,13 +490,15 @@ public class EDDGridFromNcFiles extends EDDGridFromFiles {
 directionsForGenerateDatasetsXml() +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"erdQSwind1day_52db_1ed3_22ce\" active=\"true\">\n" +
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
-"    <fileDir>c:/u00/cwatch/testData/erdQSwind1day/</fileDir>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <fileDir>" + EDStatic.unitTestDataDir + "erdQSwind1day/</fileDir>\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*_03\\.nc</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"acknowledgement\">NOAA NESDIS COASTWATCH, NOAA SWFSC ERD</att>\n" +
 "        <att name=\"cdm_data_type\">Grid</att>\n" +
@@ -677,7 +701,7 @@ directionsForGenerateDatasetsXml() +
 
         //ensure it is ready-to-use by making a dataset from it
         EDD edd = oneFromXmlFragment(results);
-        Test.ensureEqual(edd.datasetID(), "erdQSwind1day_52db_1ed3_22ce", "");
+        Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
         Test.ensureEqual(edd.title(), "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)", "");
         Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
             "x_wind, y_wind, mod", "");
@@ -694,24 +718,27 @@ directionsForGenerateDatasetsXml() +
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml2");
         String results = generateDatasetsXml(
-            "/u00/data/geosgrib/", 
-            ".*", 
-            "/u00/data/geosgrib/multi_1.glo_30m.all.grb2",
+            EDStatic.unitTestDataDir + "geosgrib/", ".*", 
+            EDStatic.unitTestDataDir + "geosgrib/multi_1.glo_30m.all.grb2",
             DEFAULT_RELOAD_EVERY_N_MINUTES, null);
+        String suggDatasetID = suggestDatasetID(
+            EDStatic.unitTestDataDir + "geosgrib/.*");
 
         String expected = //as of 2012-02-20. Will change if John Caron fixes bugs I reported.
 directionsForGenerateDatasetsXml() +
-"!!! The source for geosgrib_8224_61af_8ff9 has nGridVariables=13,\n" +
+"!!! The source for " + suggDatasetID + " has nGridVariables=13,\n" +
 "but this dataset will only serve 3 because the others use different dimensions.\n" +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"geosgrib_8224_61af_8ff9\" active=\"true\">\n" +
+"<dataset type=\"EDDGridFromNcFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
-"    <fileDir>/u00/data/geosgrib/</fileDir>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <fileDir>" + EDStatic.unitTestDataDir + "geosgrib/</fileDir>\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"Analysis_or_forecast_generating_process_identifier_defined_by_originating_centre\">Global Multi-Grid Wave Model (Static Grids)</att>\n" +
 "        <att name=\"Conventions\">CF-1.6</att>\n" +
@@ -874,6 +901,8 @@ directionsForGenerateDatasetsXml() +
         String2.log("\nEDDGridFromNcFiles.testGenerateDatasetsXml2 passed the test.");
     }
 
+
+
     /**
      * This tests reading NetCDF .nc files with this class.
      *
@@ -884,14 +913,12 @@ directionsForGenerateDatasetsXml() +
         testVerboseOn();
         String name, tName, results, tResults, expected, userDapQuery, tQuery;
         String error = "";
-        EDV edv;
-        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
-
-        //  /*
+        EDVGridAxis edvga;
         String id = "testGriddedNcFiles";
-        if (deleteCachedDatasetInfo) 
-            deleteCachedDatasetInfo(id);
+        String dataDir = EDStatic.unitTestDataDir + "erdQSwind1day/";
+        deleteCachedDatasetInfo(id);
         EDDGrid eddGrid = (EDDGrid)oneFromDatasetXml(id); 
+        String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
 
         //*** test getting das for entire dataset
         String2.log("\n*** .nc test das dds for entire dataset\n");
@@ -1359,7 +1386,7 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +    
-"    String location \"c:/u00/cwatch/testData/grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
+"    String location \"" + EDStatic.unitTestDataDir + "grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 88.75;\n" +
 "    String Originating_center \"U.K. Met Office - Exeter (RSMC) (74)\";\n" +
@@ -1448,7 +1475,7 @@ expected =
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
 
-        String2.log(NcHelper.dumpString("/u00/data/geosgrib/multi_1.glo_30m.all.grb2", false));
+        String2.log(NcHelper.dumpString(EDStatic.unitTestDataDir + "geosgrib/multi_1.glo_30m.all.grb2", false));
 
         //generateDatasetsXml
         try {   
@@ -2078,7 +2105,7 @@ expected =
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String location \"/u00/cwatch/testData/grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
+"    String location \"" + EDStatic.unitTestDataDir + "grib/HADCM3_A2_wind_1981-1990.grb\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 88.75001;\n" +
 "    String Originating_or_generating_Center \"UK Meteorological Office ­ Exeter (RSMC)\";\n" + //- is #173!
@@ -2173,7 +2200,7 @@ expected =
         String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
 
         //generateDatasetsXml
-        //file dir is C:/u00/cwatch/testData/grib
+        //file dir is EDStatic.unitTestDataDir: /erddapTest/
         try {   
         String id = "testGrib2_43";
         if (deleteCachedDatasetInfo) 
@@ -2831,11 +2858,11 @@ expected =
             15, 15, 109, 8112,            //15, 15, 156, 16875            //15, 15, 547, 18859
             63, 47, 561,                  //63, 47, 2032,                 //93, 31, ...,
             921, 125,                     //6422, 203,                    //9621, 625,  
-            331, 331,                     //2014-09 slower 163->331: java? netcdf-java? unsure //234, 250,   //500, 500, 
+            121, 121,                     //2015-02 faster: 121. 2014-09 slower 163->331: java? netcdf-java? unsure //234, 250,   //500, 500, 
             1248, 811, 811, 811, 1139,    //9547, 6297, 6281, ?, 8625,    //13278, 8766, 8844, ?, 11469, 
-            750, 258,                     //2014-09 kml slower 110->258. why?  656, 110,         //687, 94,  //Java 1.7 was 390r until change to new netcdf-Java
+            750, 10,                      //2015-02 kml faster: 10, 2014-09 kml slower 110->258. why?  656, 110,         //687, 94,  //Java 1.7 was 390r until change to new netcdf-Java
             444, 976, 1178,               //860, 2859, 3438,              //2188, 4063, 3797,   //small varies greatly
-            378, 378, 492,                //2014-09 png slower 212,300->378. why? //438, 468, 1063,               //438, 469, 1188,     //small varies greatly
+            160, 378, 492,                //2015-02 faster: 160, 2014-09 png slower 212,300->378. why? //438, 468, 1063,               //438, 469, 1188,     //small varies greatly
             758};                         //1703                          //2359};
         int bytes[]    = new int[]   {
             5875592, 23734053, 23734063, 23733974, 
@@ -2865,7 +2892,7 @@ expected =
                     extensions[ext] + " speed\n");
                 long time = 0, cLength = 0;
                 for (int chance = 0; chance < 3; chance++) {
-                    Math2.gcAndWait();
+                    Math2.gcAndWait(); //in a test
                     time = System.currentTimeMillis();
                     tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, 
                         dir, eddGrid.className() + 
@@ -2881,7 +2908,7 @@ expected =
 
                     //if not too slow or too fast, break
                     if (time > 1.5 * Math.max(50, expectedMs[ext]) ||
-                        time < (expectedMs[ext] <= 50? 0.1 : 0.5) * expectedMs[ext]) {
+                        time < (expectedMs[ext] <= 50? 0 : 0.5) * expectedMs[ext]) {
                         //give it another chance
                     } else {
                         break;
@@ -3271,7 +3298,7 @@ expected =
         String tName, results, ts, expected;
         int po;
 
-        String2.log(NcHelper.dumpString("/erddapTest/simpleTest.nc", true));
+        String2.log(NcHelper.dumpString(EDStatic.unitTestDataDir + "simpleTest.nc", true));
 
         //all  
         tName = eddGrid.makeNewFileForDapQuery(null, null, "", tDir, 
@@ -3731,7 +3758,7 @@ expected =
         String tName, results, ts, expected;
         int po;
 
-        String2.log(NcHelper.dumpString("/erddapTest/simpleTest.nc", true));
+        String2.log(NcHelper.dumpString(EDStatic.unitTestDataDir + "simpleTest.nc", true));
 
         //.asc  
         tName = eddGrid.makeNewFileForDapQuery(null, null, userDapQuery, tDir, 
@@ -3969,6 +3996,266 @@ expected =
         Test.ensureEqual(results, expected, "\nresults=\n" + results);
     }
 
+    /** This tests working with hdf file. 
+     * @throws Throwable if touble
+     */
+    public static void testRTechHdf() throws Throwable {
+
+        String2.log("\n*** EDDGridFromNcFiles.testRTechHdf");
+        String dir = "c:/data/rtech/";
+        String regex = "MT.*\\.hdf";
+        String fileName = "MT1_L2-FLUX-SCASL1A2-1.06_2015-01-01T01-42-24_V1-00.hdf";
+        String2.log(NcHelper.dumpString(dir + fileName, false));
+
+        String results = generateDatasetsXml(dir, regex, dir + fileName,
+            DEFAULT_RELOAD_EVERY_N_MINUTES, null) + "\n";
+        String expected = 
+directionsForGenerateDatasetsXml() +
+"-->\n" +
+"\n" +
+"zztop\n\n";
+        Test.ensureEqual(results, expected, results.length() + " " + expected.length() + 
+            "\nresults=\n" + results);
+
+        //ensure it is ready-to-use by making a dataset from it
+        EDD edd = oneFromXmlFragment(results);
+        Test.ensureEqual(edd.datasetID(), "erdQSwind1day_52db_1ed3_22ce", "");
+        Test.ensureEqual(edd.title(), "Wind, QuikSCAT, Global, Science Quality (1 Day Composite)", "");
+        Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
+            "x_wind, y_wind, mod", "");
+
+        String2.log("\nEDDGridFromNcFiles.testGenerateDatasetsXml passed the test.");
+    }
+
+    /**
+     * This tests the EDDGridFromFiles.update().
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testUpdate() throws Throwable {
+        String2.log("\n****************** EDDGridFromNcFiles.testUpdate() *****************\n");
+        EDDGridFromNcFiles eddGrid = (EDDGridFromNcFiles)oneFromDatasetXml("testGriddedNcFiles"); 
+        String dataDir = eddGrid.fileDir;
+        String tDir = EDStatic.fullTestCacheDirectory;
+        String axisQuery = "time[]";
+        String dataQuery = "x_wind[][][100][100]";
+        String tName, results, expected;
+
+        //*** read the original data
+        String2.log("\n*** read original data\n");       
+        tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+            eddGrid.className() + "_update_1a", ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        String originalExpectedAxis = 
+"time\n" +
+"UTC\n" +
+"2008-01-01T12:00:00Z\n" +
+"2008-01-02T12:00:00Z\n" +
+"2008-01-03T12:00:00Z\n" +
+"2008-01-04T12:00:00Z\n" +
+"2008-01-05T12:00:00Z\n" +
+"2008-01-06T12:00:00Z\n" +
+"2008-01-07T12:00:00Z\n" +
+"2008-01-08T12:00:00Z\n" +
+"2008-01-09T12:00:00Z\n" +
+"2008-01-10T12:00:00Z\n";      
+        Test.ensureEqual(results, originalExpectedAxis, "\nresults=\n" + results);
+
+        //expected values
+        String oldMinTime   = "2008-01-01T12:00:00Z";
+        String oldMinMillis = "1.1991888E9";
+        String newMinTime   = "2008-01-04T12:00:00Z";
+        String newMinMillis = "1.199448E9";
+        String oldMaxTime   = "2008-01-10T12:00:00Z";
+        String oldMaxMillis = "1.1999664E9";
+
+        tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+            eddGrid.className() + "_update_1d", ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        String originalExpectedData = 
+"time,altitude,latitude,longitude,x_wind\n" +
+"UTC,m,degrees_north,degrees_east,m s-1\n" +
+"2008-01-01T12:00:00Z,0.0,-64.875,25.125,-3.24724\n" +
+"2008-01-02T12:00:00Z,0.0,-64.875,25.125,6.00287\n" +
+"2008-01-03T12:00:00Z,0.0,-64.875,25.125,NaN\n" +
+"2008-01-04T12:00:00Z,0.0,-64.875,25.125,-3.0695\n" +
+"2008-01-05T12:00:00Z,0.0,-64.875,25.125,-7.76223\n" +
+"2008-01-06T12:00:00Z,0.0,-64.875,25.125,-12.8834\n" +
+"2008-01-07T12:00:00Z,0.0,-64.875,25.125,4.782275\n" +
+"2008-01-08T12:00:00Z,0.0,-64.875,25.125,9.80197\n" +
+"2008-01-09T12:00:00Z,0.0,-64.875,25.125,-7.5635605\n" +
+"2008-01-10T12:00:00Z,0.0,-64.875,25.125,-7.974725\n";      
+        Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
+
+        Test.ensureEqual(eddGrid.axisVariables()[0].destinationMinString(), 
+            oldMinTime, "av[0].destinationMin");
+        Test.ensureEqual(eddGrid.axisVariables()[0].destinationMaxString(), 
+            oldMaxTime, "av[0].destinationMax");
+        Test.ensureEqual(eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+            oldMinMillis + ", " + oldMaxMillis, "actual_range");
+        Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+            oldMinTime, "time_coverage_start");
+        Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+            oldMaxTime, "time_coverage_end");
+
+        //*** rename a data file so it doesn't match regex
+        try {
+            String2.log("\n*** rename a data file so it doesn't match regex\n");       
+            File2.rename(dataDir, "erdQSwind1day_20080101_03.nc", "erdQSwind1day_20080101_03.nc2");
+            for (int i = 0; i < 5; i++) {
+                String2.log("after rename .nc to .nc2, update #" + i + " " + eddGrid.update());
+                Math2.sleep(1000);
+            }
+
+            tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+                eddGrid.className() + "_update_2a", ".csv"); 
+            results = new String((new ByteArray(tDir + tName)).toArray());
+            expected = 
+"time\n" +
+"UTC\n" +
+"2008-01-04T12:00:00Z\n" +
+"2008-01-05T12:00:00Z\n" +
+"2008-01-06T12:00:00Z\n" +
+"2008-01-07T12:00:00Z\n" +
+"2008-01-08T12:00:00Z\n" +
+"2008-01-09T12:00:00Z\n" +
+"2008-01-10T12:00:00Z\n";      
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+            tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+                eddGrid.className() + "_update_2d", ".csv"); 
+            results = new String((new ByteArray(tDir + tName)).toArray());
+            expected = 
+"time,altitude,latitude,longitude,x_wind\n" +
+"UTC,m,degrees_north,degrees_east,m s-1\n" +
+"2008-01-04T12:00:00Z,0.0,-64.875,25.125,-3.0695\n" +
+"2008-01-05T12:00:00Z,0.0,-64.875,25.125,-7.76223\n" +
+"2008-01-06T12:00:00Z,0.0,-64.875,25.125,-12.8834\n" +
+"2008-01-07T12:00:00Z,0.0,-64.875,25.125,4.782275\n" +
+"2008-01-08T12:00:00Z,0.0,-64.875,25.125,9.80197\n" +
+"2008-01-09T12:00:00Z,0.0,-64.875,25.125,-7.5635605\n" +
+"2008-01-10T12:00:00Z,0.0,-64.875,25.125,-7.974725\n";      
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+            Test.ensureEqual(eddGrid.axisVariables()[0].destinationMinString(), 
+                newMinTime, "av[0].destinationMin");
+            Test.ensureEqual(eddGrid.axisVariables()[0].destinationMaxString(), 
+                oldMaxTime, "av[0].destinationMax");
+            Test.ensureEqual(eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+                newMinMillis + ", " + oldMaxMillis, "actual_range");
+            Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+                newMinTime, "time_coverage_start");
+            Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+                oldMaxTime, "time_coverage_end");
+
+        } finally {
+            //rename it back to original
+            String2.log("\n*** rename it back to original\n");       
+            File2.rename(dataDir, "erdQSwind1day_20080101_03.nc2", "erdQSwind1day_20080101_03.nc");
+            for (int i = 0; i < 5; i++) {
+                String2.log("after rename .nc2 to .nc, update #" + i + " " + eddGrid.update());
+                Math2.sleep(1000);
+            }
+        }
+
+        //*** back to original
+        String2.log("\n*** after back to original\n");       
+        tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+            eddGrid.className() + "_update_3a", ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        Test.ensureEqual(results, originalExpectedAxis, "\nresults=\n" + results);
+
+        tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+            eddGrid.className() + "_update_3d", ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
+
+        Test.ensureEqual(eddGrid.axisVariables()[0].destinationMinString(), 
+            oldMinTime, "av[0].destinationMin");
+        Test.ensureEqual(eddGrid.axisVariables()[0].destinationMaxString(), 
+            oldMaxTime, "av[0].destinationMax");
+        Test.ensureEqual(eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+            oldMinMillis + ", " + oldMaxMillis, "actual_range");
+        Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+            oldMinTime, "time_coverage_start");
+        Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+            oldMaxTime, "time_coverage_end");
+
+        //*** rename a non-data file so it matches the regex
+        try {
+            String2.log("\n*** rename an invalid file to be a valid name\n");       
+            File2.rename(dataDir, "bad.notnc", "bad.nc");
+            for (int i = 0; i < 5; i++) {
+                String2.log("after rename .notnc to .nc, update #" + i + " " + eddGrid.update());
+                Math2.sleep(1000);
+            }
+
+            tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+                eddGrid.className() + "_update_4a", ".csv"); 
+            results = new String((new ByteArray(tDir + tName)).toArray());
+            Test.ensureEqual(results, originalExpectedAxis, "\nresults=\n" + results);
+
+            tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+                eddGrid.className() + "_update_4d", ".csv"); 
+            results = new String((new ByteArray(tDir + tName)).toArray());
+            Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
+
+            Test.ensureEqual(eddGrid.axisVariables()[0].destinationMinString(), 
+                oldMinTime, "av[0].destinationMin");
+            Test.ensureEqual(eddGrid.axisVariables()[0].destinationMaxString(), 
+                oldMaxTime, "av[0].destinationMax");
+            Test.ensureEqual(eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+                oldMinMillis + ", " + oldMaxMillis, "actual_range");
+            Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+                oldMinTime, "time_coverage_start");
+            Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+                oldMaxTime, "time_coverage_end");
+        } finally {
+            //rename it back to original
+            String2.log("\n*** rename it back to original\n");       
+            File2.rename(dataDir, "bad.nc", "bad.notnc");
+            for (int i = 0; i < 5; i++) {
+                String2.log("after rename .nc to .notnc, update #" + i + " " + eddGrid.update());
+                Math2.sleep(1000);
+            }
+        }
+
+        String2.log("\n*** after back to original again\n");       
+        tName = eddGrid.makeNewFileForDapQuery(null, null, axisQuery, tDir, 
+            eddGrid.className() + "_update_5a", ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        Test.ensureEqual(results, originalExpectedAxis, "\nresults=\n" + results);
+
+        tName = eddGrid.makeNewFileForDapQuery(null, null, dataQuery, tDir, 
+            eddGrid.className() + "_update_5d", ".csv"); 
+        results = new String((new ByteArray(tDir + tName)).toArray());
+        Test.ensureEqual(results, originalExpectedData, "\nresults=\n" + results);
+
+        Test.ensureEqual(eddGrid.axisVariables()[0].destinationMinString(), 
+            oldMinTime, "av[0].destinationMin");
+        Test.ensureEqual(eddGrid.axisVariables()[0].destinationMaxString(), 
+            oldMaxTime, "av[0].destinationMax");
+        Test.ensureEqual(eddGrid.axisVariables()[0].combinedAttributes().get("actual_range").toString(),
+            oldMinMillis + ", " + oldMaxMillis, "actual_range");
+        Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_start"),
+            oldMinTime, "time_coverage_start");
+        Test.ensureEqual(eddGrid.combinedGlobalAttributes().getString("time_coverage_end"),
+            oldMaxTime, "time_coverage_end");
+
+        //test time for update if 0 events
+        long cumTime = 0;
+        for (int i = 0; i < 1000; i++) {
+            long time = System.currentTimeMillis();
+            eddGrid.update();
+            cumTime += (System.currentTimeMillis() - time);
+            Math2.sleep(2); //updateEveryNMillis=1, so always a valid new update()
+        }
+        String2.getStringFromSystemIn("time/update() = " + (cumTime/1000.0) +
+            "ms (diverse results 0.001 - 11.08ms on Bob's M4700)" +
+            "\nNot an error, just FYI. Press ^C to stop or Enter to continue..."); 
+    }
+
+
 
     /**
      * This tests this class.
@@ -3993,6 +4280,8 @@ expected =
         testTimePrecisionMillis();
         testSimpleTestNc();
         testSimpleTestNc2();
+//finish this        testRTechHdf();
+        testUpdate();
         /* */
 
         //one time tests

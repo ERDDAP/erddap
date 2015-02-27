@@ -336,8 +336,8 @@ public class Index  {
         //*** test lots of data
         table = null;
         index = null;
-        Math2.incgc(500);
-        Math2.incgc(500);
+        Math2.incgc(500); //in a test
+        Math2.incgc(500); //in a test
         long memoryInUse = Math2.getMemoryInUse();
         String2.log("addIndex times should be ~2.5 seconds"); //with dataOutputStream ~7500
         int n = 10000000;
@@ -394,8 +394,8 @@ public class Index  {
         ia = null;
         table = null;
         index = null;
-        Math2.incgc(500);
-        Math2.incgc(500);
+        Math2.incgc(500); //in a test
+        Math2.incgc(500); //in a test
         memoryInUse = Math2.getMemoryInUse() - memoryInUse;
         String2.log("\n***** Index.main finished successfully; memory not freed = " + memoryInUse);
 

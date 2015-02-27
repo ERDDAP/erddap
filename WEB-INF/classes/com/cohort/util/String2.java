@@ -279,6 +279,17 @@ public class String2 {
      *
      * @param s
      * @param find
+     * @return the first instance of 'find' at or after fromIndex (0..), ignoring case.
+     */
+    public static int indexOfIgnoreCase(String s, String find) {
+        return indexOfIgnoreCase(s, find, 0);
+    }
+
+    /**
+     * Finds the first instance of 'find' at or after fromIndex (0..), ignoring case.
+     *
+     * @param s
+     * @param find
      * @param fromIndex
      * @return the first instance of 'find' at or after fromIndex (0..), ignoring case.
      */
@@ -570,7 +581,7 @@ public class String2 {
                         log("WARNING #" + attempt + 
                             ": String2.readFromFile is having trouble. It will try again to read " + 
                             fileName);
-                        if (attempt == 1) Math2.gcAndWait(); //give OS/Java a time and gc to deal with trouble
+                        if (attempt == 1) Math2.gcAndWait(); //trouble! Give OS/Java a time and gc to deal with trouble
                         else Math2.sleep(1000);
                     }
                 }

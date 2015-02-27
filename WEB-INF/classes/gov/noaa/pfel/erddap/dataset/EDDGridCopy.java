@@ -85,6 +85,7 @@ public class EDDGridCopy extends EDDGrid {
         boolean tFileTableInMemory = false;
         String tDefaultDataQuery = null;
         String tDefaultGraphQuery = null;
+        boolean tAccessibleViaFiles = false;
 
         //process the tags
         String startOfTags = xmlReader.allTags();
@@ -118,6 +119,8 @@ public class EDDGridCopy extends EDDGrid {
             else if (localTags.equals("</defaultDataQuery>")) tDefaultDataQuery = content; 
             else if (localTags.equals( "<defaultGraphQuery>")) {}
             else if (localTags.equals("</defaultGraphQuery>")) tDefaultGraphQuery = content; 
+            else if (localTags.equals( "<accessibleViaFiles>")) {}
+            else if (localTags.equals("</accessibleViaFiles>")) tAccessibleViaFiles = String2.parseBoolean(content); 
             else if (localTags.equals("<dataset>")) {
 
                 try {
@@ -148,8 +151,9 @@ public class EDDGridCopy extends EDDGrid {
 
         return new EDDGridCopy(tDatasetID, 
             tAccessibleTo, tOnChange, tFgdcFile, tIso19115File,
-            tDefaultDataQuery, tDefaultGraphQuery, tReloadEveryNMinutes, 
-            tSourceEdd, tFileTableInMemory);
+            tDefaultDataQuery, tDefaultGraphQuery, 
+            tReloadEveryNMinutes, 
+            tSourceEdd, tFileTableInMemory, tAccessibleViaFiles);
     }
 
     /**
@@ -181,7 +185,7 @@ public class EDDGridCopy extends EDDGrid {
         StringArray tOnChange, String tFgdcFile, String tIso19115File, 
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         int tReloadEveryNMinutes, EDDGrid tSourceEdd, 
-        boolean tFileTableInMemory) throws Throwable {
+        boolean tFileTableInMemory, boolean tAccessibleViaFiles) throws Throwable {
 
         if (verbose) String2.log(
             "\n*** constructing EDDGridCopy " + tDatasetID); 
@@ -370,6 +374,8 @@ public class EDDGridCopy extends EDDGrid {
         //make localEDD
         //It will fail if 0 local files -- that's okay, taskThread will continue to work 
         //  and constructor will try again in 15 min.
+        boolean recursive = false; //false=notRecursive   since always just 1 directory
+        String fileNameRegex = ".*\\.nc";
         localEdd = new EDDGridFromNcFiles(datasetID, 
             tAccessibleTo,
             tOnChange, tFgdcFile, tIso19115File, 
@@ -377,11 +383,11 @@ public class EDDGridCopy extends EDDGrid {
             new Attributes(), //addGlobalAttributes
             tAxisVariables,
             tDataVariables,
-            tReloadEveryNMinutes,
-            copyDatasetDir, false, ".*\\.nc", //false=notRecursive   since always just 1 directory
+            tReloadEveryNMinutes, 0, //updateEveryNMillis
+            copyDatasetDir, recursive, fileNameRegex, 
             EDDGridFromFiles.MF_LAST,
             true, //tEnsureAxisValuesAreExactlyEqual,  sourceEdd should have made them consistent
-            tFileTableInMemory);
+            tFileTableInMemory, false); //accessibleViaFiles false here
 
         //copy things from localEdd 
         //remove last 2 lines from history (will be redundant)
@@ -407,6 +413,13 @@ public class EDDGridCopy extends EDDGrid {
         depthIndex    = localEdd.depthIndex;
         timeIndex     = localEdd.timeIndex;
 
+        //accessibleViaFiles
+        if (EDStatic.filesActive && tAccessibleViaFiles) {
+            accessibleViaFilesDir = copyDatasetDir;
+            accessibleViaFilesRegex = fileNameRegex;
+            accessibleViaFilesRecursive = recursive;
+        }
+
         //ensure the setup is valid
         ensureValid(); //this ensures many things are set, e.g., sourceUrl
 
@@ -425,8 +438,10 @@ public class EDDGridCopy extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
-     * @param tDataVariables
-     * @param tConstraints
+     * @param tDataVariables EDV[] with just the requested data variables
+     * @param tConstraints  int[nAxisVariables*3] 
+     *   where av*3+0=startIndex, av*3+1=stride, av*3+2=stopIndex.
+     *   AxisVariables are counted left to right, e.g., sst[0=time][1=lat][2=lon].
      * @return a PrimitiveArray[] where the first axisVariables.length elements
      *   are the axisValues and the next tDataVariables.length elements
      *   are the dataValues.

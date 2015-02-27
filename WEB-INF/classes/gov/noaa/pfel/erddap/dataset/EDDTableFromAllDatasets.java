@@ -40,8 +40,8 @@ public class EDDTableFromAllDatasets extends EDDTable{
     public final static String DATASET_ID = "allDatasets";
 
     /** set by the constructor */
-    private ConcurrentHashMap gridDatasetHashMap; 
-    private ConcurrentHashMap tableDatasetHashMap; 
+    private ConcurrentHashMap<String,EDDGrid> gridDatasetHashMap; 
+    private ConcurrentHashMap<String,EDDTable> tableDatasetHashMap; 
 
 
     /**
@@ -302,32 +302,32 @@ public class EDDTableFromAllDatasets extends EDDTable{
         table.columnAttributes(col)
             .add("ioos_category", "Location")
             .add("long_name", EDStatic.advl_minLongitude)
-            .add("units", "degrees_east");
+            .add("units", EDV.LON_UNITS);
         col = table.addColumn("maxLongitude", maxLongitude); 
         table.columnAttributes(col)
             .add("ioos_category", "Location")
             .add("long_name", EDStatic.advl_maxLongitude)
-            .add("units", "degrees_east");
+            .add("units", EDV.LON_UNITS);
         col = table.addColumn("longitudeSpacing", longitudeSpacing); 
         table.columnAttributes(col)
             .add("ioos_category", "Location")
             .add("long_name", EDStatic.advl_longitudeSpacing)
-            .add("units", "degrees_east");
+            .add("units", EDV.LON_UNITS);
         col = table.addColumn("minLatitude", minLatitude); 
         table.columnAttributes(col)
             .add("ioos_category", "Location")
             .add("long_name", EDStatic.advl_minLatitude)
-            .add("units", "degrees_north");
+            .add("units", EDV.LAT_UNITS);
         col = table.addColumn("maxLatitude", maxLatitude); 
         table.columnAttributes(col)
             .add("ioos_category", "Location")
             .add("long_name", EDStatic.advl_maxLatitude)
-            .add("units", "degrees_north");
+            .add("units", EDV.LAT_UNITS);
         col = table.addColumn("latitudeSpacing", latitudeSpacing); 
         table.columnAttributes(col)
             .add("ioos_category", "Location")
             .add("long_name", EDStatic.advl_latitudeSpacing)
-            .add("units", "degrees_north");
+            .add("units", EDV.LAT_UNITS);
         col = table.addColumn("minAltitude", minAltitude); 
         table.columnAttributes(col)
             .add("ioos_category", "Location")
@@ -428,13 +428,13 @@ public class EDDTableFromAllDatasets extends EDDTable{
         //add each dataset's information
         for (int i = 0; i < datasetIDs.size(); i++) {
             String tId = datasetIDs.get(i);
-            EDD edd = (EDD)gridDatasetHashMap.get(tId);
-            EDDGrid eddGrid = null;
+            EDDGrid eddGrid = gridDatasetHashMap.get(tId);
             EDDTable eddTable = null;
+            EDD edd = eddGrid;
             boolean isGrid = true;
             if (edd == null) {
-                edd = (EDD)tableDatasetHashMap.get(tId);
-                eddTable = (EDDTable)edd;
+                eddTable = tableDatasetHashMap.get(tId);
+                edd = eddTable;
                 isGrid = false;
             } else {
                 eddGrid = (EDDGrid)edd;

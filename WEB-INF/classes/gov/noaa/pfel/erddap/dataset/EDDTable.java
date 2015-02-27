@@ -32,6 +32,7 @@ import gov.noaa.pfel.coastwatch.griddata.OpendapHelper;
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.coastwatch.util.FileVisitorDNLS;
 import gov.noaa.pfel.coastwatch.sgt.CompoundColorMap;
 import gov.noaa.pfel.coastwatch.sgt.GraphDataLayer;
 import gov.noaa.pfel.coastwatch.sgt.SgtGraph;
@@ -588,8 +589,7 @@ public abstract class EDDTable extends EDD {
                 int nMinMax[] = pa.getNMinMaxIndex();
                 if (nMinMax[0] == 0)
                     continue;
-                edv.setDestinationMin(pa.getDouble(nMinMax[1]));
-                edv.setDestinationMax(pa.getDouble(nMinMax[2]));
+                edv.setDestinationMinMax(pa.getDouble(nMinMax[1]), pa.getDouble(nMinMax[2]));
                 edv.setActualRangeFromDestinationMinMax();
             }
         }
@@ -2037,7 +2037,8 @@ public abstract class EDDTable extends EDD {
             //This presumes that destMin and Max are reliable values and 
             //  won't have changed before this data request.
             //For timestamp variables, all numeric tests here are epochSeconds.
-            //This presumes that timestamp's destMax is NaN for times close to NOW 
+            //This DOESN'T (changed 2015-02-24) presume that timestamp's destMax 
+            //  is NaN for times close to NOW 
             //  (since it changes often), e.g., cwwcNDBCMet data from (changing) files.
             //This presumes that other variables in near-real-time datasets 
             //  are unlikely to have just now exceeded the previous
@@ -2046,6 +2047,12 @@ public abstract class EDDTable extends EDD {
                 boolean tPassed = true;
                 double destMin = conEdv.destinationMin();
                 double destMax = conEdv.destinationMax();
+                //if edvTimeStamp and destMax is recent, treat destMax as NaN
+                if (conEdvIsTimeStamp && //destMax is epochSeconds
+                    destMax > System.currentTimeMillis()/1000.0 - 2.0 * Calendar2.SECONDS_PER_DAY) {
+                    //maxTime is within last 48hrs, so setting maxTime to NaN (i.e., Now).
+                    destMax = Double.NaN;
+                }
                 String constraintOp = OPERATORS[op];
                 //non-timestamp tests are troubled by float/double/slight differences                
                 if (tPassed && Math2.isFinite(destMin)) {
@@ -2358,7 +2365,7 @@ public abstract class EDDTable extends EDD {
             }
             return;
         }
-        
+
         if (fileTypeName.equals(".graph")) {
             respondToGraphQuery(request, loggedInAs, requestUrl, userDapQuery, outputStreamSource,
                 dir, fileName, fileTypeName);
@@ -2388,7 +2395,8 @@ public abstract class EDDTable extends EDD {
                     "<p>" + EDStatic.EDDTableDownloadDataHtml +
                     "</ol>\n" +
                     EDStatic.dafTableBypass));
-                writeHtmlDatasetInfo(loggedInAs, writer, true, false, true, userDapQuery, "");
+                writeHtmlDatasetInfo(loggedInAs, writer, true, false, true, true, 
+                    userDapQuery, "");
                 if (userDapQuery.length() == 0) 
                     userDapQuery = defaultDataQuery(); //after writeHtmlDatasetInfo and before writeDapHtmlForm
                 writeDapHtmlForm(loggedInAs, userDapQuery, writer);
@@ -4168,6 +4176,7 @@ public abstract class EDDTable extends EDD {
                     ncOffset += bufferSize;
                     //String2.log("col=" + col + " bufferSize=" + bufferSize + " isString?" + (colType == String.class));
                 }
+                dis.close();
             }
 
             //if close throws Throwable, it is trouble
@@ -5393,8 +5402,9 @@ public abstract class EDDTable extends EDD {
                     Double.isNaN(edv.destinationMin()) &&
                     Double.isNaN(edv.destinationMax())) {
 
-                    edv.setDestinationMin(twawm.columnMinValue[col] * edv.scaleFactor() + edv.addOffset());
-                    edv.setDestinationMax(twawm.columnMaxValue[col] * edv.scaleFactor() + edv.addOffset());
+                    edv.setDestinationMinMax(
+                        twawm.columnMinValue[col] * edv.scaleFactor() + edv.addOffset(),
+                        twawm.columnMaxValue[col] * edv.scaleFactor() + edv.addOffset());
                     edv.setActualRangeFromDestinationMinMax();
                 }
             }
@@ -5440,8 +5450,7 @@ public abstract class EDDTable extends EDD {
             (Double.isNaN(tMin)? "" : Calendar2.epochSecondsToIsoStringT(tMin)) + 
             " max=" + tMax + "=" +
             (Double.isNaN(tMax)? "" : Calendar2.epochSecondsToIsoStringT(tMax)));
-        if (!Double.isNaN(tMin)) dataVariables[timeIndex].setDestinationMin(tMin); //scaleFactor,addOffset not supported
-        if (!Double.isNaN(tMax)) dataVariables[timeIndex].setDestinationMax(tMax);
+        dataVariables[timeIndex].setDestinationMinMax(tMin, tMax); //scaleFactor,addOffset not supported
         dataVariables[timeIndex].setActualRangeFromDestinationMinMax();
     }
 
@@ -6454,7 +6463,7 @@ public abstract class EDDTable extends EDD {
             "<br>ERDDAP URL in your browser, sitting and waiting for each file to download. \n" +
             "<br>If you are comfortable writing computer programs (e.g., with C, Java, Python, Matlab, r)\n" +
             "<br>you can write a program with a loop that imports all of the desired data files.\n" +
-            "<br>Or, if are comfortable with command line programs (just running a program, or using bash or tcsh\n" +
+            "<br>Or, if you are comfortable with command line programs (just running a program, or using bash or tcsh\n" +
             "<br>scripts in Linux or Mac OS X, or batch files in Windows), you can use curl to save results files\n" +
             "<br>from ERDDAP into files on your hard drive, without using a browser or writing a computer program.\n" +
             "<br>ERDDAP+curl is amazingly powerful and allows you to use ERDDAP in many new ways.\n" +
@@ -6462,9 +6471,10 @@ public abstract class EDDTable extends EDD {
             "<br>On Windows, or if your computer doesn't have curl already, you need to \n" +
             "  <a rel=\"bookmark\" href=\"http://curl.haxx.se/download.html\">download curl" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "<br>and install it.  To get to a command line in Windows, use \"Start : Run\" and type in \"cmd\".\n" +
-            "<br>(\"Win32 - Generic, Win32, binary (without SSL)\" worked for me on Windows XP and Windows 7.)\n" +
-            "<br><b>Please be kind to other ERDDAP users: run just one script at a time.</b>\n" +
+            "<br>and install it.  To get to a command line in Windows, click on \"Start\" and type\n" + 
+            "<br>\"cmd\" into the search textfield.\n" +
+            "<br>(\"Win32 - Generic, Win32, binary (without SSL)\" worked for me in Windows 7.)\n" +
+            "<br><b>Please be kind to other ERDDAP users: run just one script or curl command at a time.</b>\n" +
             "<br>Instructions for using curl are on the \n" +
                 "<a rel=\"help\" href=\"http://curl.haxx.se/download.html\">curl man page" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> and in this\n" +
@@ -6497,7 +6507,7 @@ public abstract class EDDTable extends EDD {
               "them in the erddapURL as &#37;5B, &#37;5D, &#37;7B, &#37;7D, respectively.\n" +
             "  <br>Fortunately, these are rare in tabledap URLs.\n" +
             "  <br>Then, in the erddapUrl, replace a zero-padded number (for example <tt>01</tt>) with a range\n" +
-            "  <br>of values (for example, <tt>[01-05]</tt> ),\n" +
+            "  <br>of values (for example, <tt>[01-15]</tt> ),\n" +
             "  <br>or replace a substring (for example <tt>TAML1</tt>) with a list of values (for example,\n" +
             "  <br><tt>{TAML1,41009,46088}</tt> ).\n" +
             "  <br>The <tt>#1</tt> within the output fileName causes the current value of the range or list\n" +
@@ -6592,7 +6602,7 @@ public abstract class EDDTable extends EDD {
             "          <br>floating point numbers. For example, a search for <tt>longitude=220.2</tt> may\n" +
             "          <br>fail if the value is stored as 220.20000000000001. This problem arises because\n" +
             "          <br>floating point numbers are " +
-            "            <a rel=\"help\" href=\"http://www.cygnus-software.com/papers/comparingfloats/comparingfloats.htm\">not represented exactly within computers" +
+            "            <a rel=\"help\" href=\"http://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/\">not represented exactly within computers" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>.\n" +
             "          <br>When ERDDAP performs these tests, it allows for minor variations and tries\n" +
             "          <br>to avoid the problem. But it is possible that some datasets will still\n" +
@@ -7128,7 +7138,8 @@ public abstract class EDDTable extends EDD {
             writer.write(EDStatic.youAreHereWithHelp(loggedInAs, "tabledap", 
                 EDStatic.mag, 
                 EDStatic.magTableHtml));
-            writeHtmlDatasetInfo(loggedInAs, writer, true, true, false, userDapQuery, otherRows);
+            writeHtmlDatasetInfo(loggedInAs, writer, true, true, true, false, 
+                userDapQuery, otherRows);
             if (userDapQuery.length() == 0) 
                 userDapQuery = defaultGraphQuery(); //after writeHtmlDatasetInfo and before parseUserDapQuery
             writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
@@ -9225,7 +9236,8 @@ public abstract class EDDTable extends EDD {
                     diQuery.append("&" + qp);
                 }
             }
-            writeHtmlDatasetInfo(loggedInAs, writer, false, true, true, diQuery.toString(), "");
+            writeHtmlDatasetInfo(loggedInAs, writer, false, true, true, 
+                true, diQuery.toString(), "");
             writer.write(HtmlWidgets.ifJavaScriptDisabled);
             
             //if noData/invalid request tell user and reset all
@@ -13948,7 +13960,7 @@ public abstract class EDDTable extends EDD {
 
         //*** html body content
         writer.write(EDStatic.youAreHere(loggedInAs, "sos", datasetID)); //sos must be lowercase for link to work
-        writeHtmlDatasetInfo(loggedInAs, writer, true, true, true, "", "");
+        writeHtmlDatasetInfo(loggedInAs, writer, true, true, true, true, "", "");
 
         String makeAGraphRef = "<a href=\"" + tErddapUrl + "/tabledap/" + datasetID + ".graph\">" +
             EDStatic.mag + "</a>";

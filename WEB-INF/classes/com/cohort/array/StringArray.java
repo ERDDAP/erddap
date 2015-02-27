@@ -63,7 +63,7 @@ public class StringArray extends PrimitiveArray {
      * @param primitiveArray a primitiveArray of any type 
      */
     public StringArray(PrimitiveArray primitiveArray) {
-        array = new String[8];
+        array = new String[primitiveArray.size()]; //exact size
         append(primitiveArray);
     }
 
@@ -561,14 +561,20 @@ public class StringArray extends PrimitiveArray {
     public void move(int first, int last, int destination) {
         String errorIn = String2.ERROR + " in StringArray.move:\n";
 
-        Test.ensureTrue(first >= 0, 
-            errorIn + "first (" + first + ") must be >= 0.");
-        Test.ensureTrue(last >= first && last <= size, 
-            errorIn + "last (" + last + ") must be >= first (" + first + ") and <= size (" + size + ").");
-        Test.ensureTrue(destination >= 0 && destination <= size, 
-            errorIn + "destination (" + destination + ") must be between 0 and size (" + size + ").");
-        Test.ensureTrue(destination <= first || destination >= last, 
-            errorIn + "destination (" + destination + ") must be <= first (" + first + ") or >= last (" + last + ").");
+        if (first < 0) 
+            throw new RuntimeException(errorIn + "first (" + first + ") must be >= 0.");
+        if (last < first || last > size)
+            throw new RuntimeException( 
+                errorIn + "last (" + last + ") must be >= first (" + first + 
+                ") and <= size (" + size + ").");
+        if (destination < 0 || destination > size)
+            throw new RuntimeException( 
+                errorIn + "destination (" + destination + 
+                ") must be between 0 and size (" + size + ").");
+        if (destination > first && destination < last)
+            throw new RuntimeException(
+              errorIn + "destination (" + destination + ") must be <= first (" + 
+              first + ") or >= last (" + last + ").");
         if (first == last || destination == first || destination == last) 
             return; //nothing to do
         //String2.log("move first=" + first + " last=" + last + " dest=" + destination);
@@ -1351,7 +1357,9 @@ public class StringArray extends PrimitiveArray {
         int count = 0;
         while (iterator.hasNext())
             unique[count++] = (String)iterator.next();
-        Test.ensureEqual(nUnique, count, "StringArray.makeRankArray nUnique != count!");
+        if (nUnique != count)
+            throw new RuntimeException("StringArray.makeRankArray nUnique(" + nUnique +
+                ") != count(" + count + ")!");
 
         //sort them
         Arrays.sort(unique); //a variant could use new StringComparatorIgnoreCase());

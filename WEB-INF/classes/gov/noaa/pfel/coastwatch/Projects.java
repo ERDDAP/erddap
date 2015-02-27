@@ -3530,7 +3530,7 @@ public static void testJanino() throws Exception {
         for (int row = 0; row < depthPa.size(); row++) {
             if (depthPa.getString(row).length() == 0) {
                 String2.log("!!! row=" + row + " has no depth_or_pressure.  Removing it...");
-                dataTable.removeRows(row, row+1);
+                dataTable.removeRow(row);
             }
         }
         String2.log("");
@@ -3787,7 +3787,7 @@ public static void testJanino() throws Exception {
         for (int row = 0; row < tPa.size(); row++) {
             if (tPa.getString(row).length() == 0) {
                 String2.log("!!! data row=" + row + " has no marCat.  Removing it...");
-                dataTable.removeRows(row, row+1);
+                dataTable.removeRow(row);
             }
         }
         String2.log("");
@@ -8763,6 +8763,151 @@ towTypesDescription);
             }
         }
     }
+
+    /** Make VH2 1day .ncml files. */
+    public static void makeVH21dayNcmlFiles(int startYear, int endYear) throws Throwable {
+        String varDirNames[] = new String[]{
+            "chla",       "k490",        "r671",       "par",    "pic",    "poc"};
+        String jplFileNames[]    = new String[]{
+            "CHL_chlor_a","KD490_Kd_490","RRS_Rrs_671","PAR_par","PIC_pic","POC_poc"};
+        String jplVarNames[]    = new String[]{
+            "chlor_a",    "Kd_490",      "Rrs_671",    "par",    "pic",    "poc"};
+
+        for (int year = startYear; year <= endYear; year++) {
+            int nDays = year % 4 == 0? 366 : 365;
+            for (int jDate = 1; jDate <= nDays; jDate++) {
+                String yj = year + String2.zeroPad("" + jDate, 3);
+                int daysSince = Math2.roundToInt(
+                    Calendar2.epochSecondsToUnitsSince(0, Calendar2.SECONDS_PER_DAY,
+                        Calendar2.newGCalendarZulu(year, jDate).getTimeInMillis()/1000));
+                String2.log(yj + " " + daysSince);      
+                for (int var = 0; var < varDirNames.length; var++) {
+                    FileWriter w = new FileWriter("/content/scripts/VH2ncml/" +
+                        varDirNames[var] + "/ncml1day/V" + yj + ".ncml");
+                    w.write(
+/* C:/content/scripts/VH2ncml/chla/ncml1day/V2014365.ncml is
+<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+   <variable name='time' type='int' shape='time' />
+   <aggregation dimName='time' type='joinNew'>
+     <variableAgg name='l3m_data'/>
+     <netcdf location='V2014365.L3m_DAY_NPP_CHL_chlor_a_4km' coordValue='16435'/>
+   </aggregation>
+ </netcdf> */
+"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"  <variable name='time' type='int' shape='time' />\n" +
+"  <aggregation dimName='time' type='joinNew'>\n" +
+"    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
+"    <netcdf location='V" + yj + ".L3m_DAY_NPP_" + jplFileNames[var] + "_4km.nc' " +
+            "coordValue='" + daysSince + "'/>\n" +
+"  </aggregation>\n" +
+"</netcdf>\n");
+                    w.close();
+                }
+            }
+        }
+    }
+
+    /** Make VH2 8day .ncml files. 
+     * coordValue is firstDay. First 3 of 2012 are 15340, 15348, 15356. 
+     * Every year, start again Jan 1-8, 9-16, ...
+     * End of year, 
+     */
+    public static void makeVH28dayNcmlFiles(int startYear, int endYear) throws Throwable {
+        String varDirNames[] = new String[]{
+            "chla",       "k490",        "r671",       "par",    "pic",    "poc"};
+        String jplFileNames[]    = new String[]{
+            "CHL_chlor_a","KD490_Kd_490","RRS_Rrs_671","PAR_par","PIC_pic","POC_poc"};
+        String jplVarNames[]    = new String[]{
+            "chlor_a",    "Kd_490",      "Rrs_671",    "par",    "pic",    "poc"};
+
+        for (int year = startYear; year <= endYear; year++) {
+            int nDays = year % 4 == 0? 366 : 365;
+            for (int day1 = 1; day1 <= nDays; day1 += 8) {
+                GregorianCalendar firstDay = Calendar2.newGCalendarZulu(year, day1);
+                GregorianCalendar lastDay  = Calendar2.newGCalendarZulu(year, 
+                    Math.min(nDays, day1+7));
+                String yj1 = Calendar2.formatAsYYYYDDD(firstDay);
+                String yj2 = Calendar2.formatAsYYYYDDD(lastDay);
+                int daysSince = Math2.roundToInt(
+                    Calendar2.epochSecondsToUnitsSince(0, Calendar2.SECONDS_PER_DAY,
+                        firstDay.getTimeInMillis()/1000));
+                if (day1+7 > nDays)
+                    daysSince--; //imperfect
+                String2.log(yj1 + " " + yj2 + " " + daysSince);
+                for (int var = 0; var < varDirNames.length; var++) {
+                    FileWriter w = new FileWriter("/content/scripts/VH2ncml/" +
+                        varDirNames[var] + "/ncml8day/V" + yj1 + yj2 + ".ncml");
+                    w.write(
+/* C:/content/scripts/VH2ncml/chla/ncml8day/V20120012012008.ncml is
+ <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+   <variable name='time' type='int' shape='time' />
+   <aggregation dimName='time' type='joinNew'>
+     <variableAgg name='l3m_data'/>
+     <netcdf location='V20120012012008.L3m_8D_NPP_CHL_chlor_a_4km' coordValue='15340'/>
+   </aggregation>
+ </netcdf> */
+"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"  <variable name='time' type='int' shape='time' />\n" +
+"  <aggregation dimName='time' type='joinNew'>\n" +
+"    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
+"    <netcdf location='V" + yj1 + yj2 + ".L3m_8D_NPP_" + jplFileNames[var] + "_4km.nc' " +
+            "coordValue='" + daysSince + "'/>\n" +
+"  </aggregation>\n" +
+"</netcdf>\n");
+                    w.close();
+                }
+            }
+        }
+    }
+
+    /** Make VH2 mday .ncml files. 
+     * coordValue is firstDay of the month. First 3 of 2012 are 15340, 15371, 15400. 
+     */
+    public static void makeVH2mdayNcmlFiles(int startYear, int endYear) throws Throwable {
+        String varDirNames[] = new String[]{
+            "chla",       "k490",        "r671",       "par",    "pic",    "poc"};
+        String jplFileNames[]    = new String[]{
+            "CHL_chlor_a","KD490_Kd_490","RRS_Rrs_671","PAR_par","PIC_pic","POC_poc"};
+        String jplVarNames[]    = new String[]{
+            "chlor_a",    "Kd_490",      "Rrs_671",    "par",    "pic",    "poc"};
+
+        for (int year = startYear; year <= endYear; year++) {
+            for (int month = 1; month <= 12; month++) {
+                GregorianCalendar firstDay = Calendar2.newGCalendarZulu(year, month, 1);
+                GregorianCalendar lastDay  = Calendar2.newGCalendarZulu(year, month+1, 0);
+                String yj1 = Calendar2.formatAsYYYYDDD(firstDay);
+                String yj2 = Calendar2.formatAsYYYYDDD(lastDay);
+                int daysSince = Math2.roundToInt(
+                    Calendar2.epochSecondsToUnitsSince(0, Calendar2.SECONDS_PER_DAY,
+                        firstDay.getTimeInMillis()/1000));
+                String2.log(yj1 + " " + yj2 + " " + daysSince);
+                for (int var = 0; var < varDirNames.length; var++) {
+                    FileWriter w = new FileWriter("/content/scripts/VH2ncml/" +
+                        varDirNames[var] + "/ncmlmon/V" + yj1 + yj2 + ".ncml");
+                    w.write(
+/* C:/content/scripts/VH2ncml/chla/ncmlmon/V20120012012031.ncml is
+ <netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>
+   <variable name='time' type='int' shape='time' />
+   <aggregation dimName='time' type='joinNew'>
+     <variableAgg name='l3m_data'/>
+     <netcdf location='V20120012012031.L3m_MO_NPP_CHL_chlor_a_4km' coordValue='15340'/>
+   </aggregation>
+ </netcdf>
+ */
+"<netcdf xmlns='http://www.unidata.ucar.edu/namespaces/netcdf/ncml-2.2'>\n" +
+"  <variable name='time' type='int' shape='time' />\n" +
+"  <aggregation dimName='time' type='joinNew'>\n" +
+"    <variableAgg name='" + jplVarNames[var] + "'/>\n" +
+"    <netcdf location='V" + yj1 + yj2 + ".L3m_MO_NPP_" + jplFileNames[var] + "_4km.nc' " +
+            "coordValue='" + daysSince + "'/>\n" +
+"  </aggregation>\n" +
+"</netcdf>\n");
+                    w.close();
+                }
+            }
+        }
+    }
+
 
 }
 
