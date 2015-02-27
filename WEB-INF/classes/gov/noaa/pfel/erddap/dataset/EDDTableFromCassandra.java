@@ -1527,7 +1527,7 @@ public class EDDTableFromCassandra extends EDDTable{
         int tReloadEveryNMinutes = -1;
         String tInfoUrl = "http://www.oceannetworks.ca/";
         String tInstitution = "Ocean Networks Canada";
-        String tSummary = "The summary for Bob's test data.";
+        String tSummary = "The summary for Bob's Cassandra test data.";
         String tTitle = "Bob's Test Data";
         //addGlobalAtts.
         String results, expected;
@@ -1677,7 +1677,7 @@ expected =
 "        <att name=\"sourceUrl\">(local Cassandra)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
 "        <att name=\"subsetVariables\">deviceid, date</att>\n" +
-"        <att name=\"summary\">The summary for Bob&#39;s test data.</att>\n" +
+"        <att name=\"summary\">The summary for Bob&#39;s Cassandra test data.</att>\n" +
 "        <att name=\"title\">Bob&#39;s Test Data</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
@@ -1980,7 +1980,7 @@ expected =
 "        <att name=\"sourceUrl\">(local Cassandra)</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
 "        <att name=\"subsetVariables\">deviceid, date, latitude, longitude</att>\n" +
-"        <att name=\"summary\">The summary for Bob&#39;s test data.</att>\n" +
+"        <att name=\"summary\">The summary for Bob&#39;s Cassandra test data.</att>\n" +
 "        <att name=\"title\">Cassandra Static Test</att>\n" +
 "    </addAttributes>\n" +
 "    <dataVariable>\n" +
@@ -2280,8 +2280,8 @@ expected =
 "    String sourceUrl \"(Cassandra)\";\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String subsetVariables \"deviceid, date\";\n" +
-"    String summary \"The summary for Bob's test data.\";\n" +
-"    String title \"Bob's Test Data\";\n" +
+"    String summary \"The summary for Bob's Cassandra test data.\";\n" +
+"    String title \"Bob's Cassandra Test Data\";\n" +
 "  }\n" +
 "}\n";
             po = results.indexOf(expected.substring(0, 14));
@@ -2481,6 +2481,96 @@ expected =
                 String2.getStringFromSystemIn(
                     "\nTest: no matching data (no matching keys)\n" +
                     "query=" + query + "\n" +
+                    "Paused to allow you to check the stats.\n" + 
+                    "Press ^C to stop or Enter to continue..."); 
+
+            //subset cint=NaN
+            query = "&cint=NaN";
+            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+                tedd.className() + "_intNaN", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+            expected =  
+"deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
+",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-0.11,-99.0,-0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,-99.0,0.0,0.0\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n" +
+"1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            if (pauseBetweenTests)
+                String2.getStringFromSystemIn(
+                    "\nTest query=" + query + "\n" +
+                    "Paused to allow you to check the stats.\n" + 
+                    "Press ^C to stop or Enter to continue..."); 
+
+            //subset cfloat=NaN
+            query = "&cfloat=NaN";
+            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+                tedd.className() + "_floatNaN", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+            expected =  
+"deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
+",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-0.11,-99.0,-0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,-99.0,0.0,0.0\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n" +
+"1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            if (pauseBetweenTests)
+                String2.getStringFromSystemIn(
+                    "\nTest query=" + query + "\n" +
+                    "Paused to allow you to check the stats.\n" + 
+                    "Press ^C to stop or Enter to continue..."); 
+
+            //subset cboolean=NaN
+            query = "&cboolean=NaN";
+            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+                tedd.className() + "_booleanNaN", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+            expected =  
+"deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
+",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
+"1009,2014-11-09T00:00:00Z,2014-11-09T01:02:03Z,,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,NaN,,,NaN,NaN,NaN,NaN\n"; 
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            if (pauseBetweenTests)
+                String2.getStringFromSystemIn(
+                    "\nTest query=" + query + "\n" +
+                    "Paused to allow you to check the stats.\n" + 
+                    "Press ^C to stop or Enter to continue..."); 
+
+            //subset cboolean=1     
+            query = "&cboolean=1";
+            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+                tedd.className() + "_boolean1", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+            expected =  
+"deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
+",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,10.2,-0.11,-99.0,-0.13\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,20.2,-99.0,0.0,0.0\n" +
+"1001,2014-11-02T00:00:00Z,2014-11-02T02:02:03Z,,1,NaN,NaN,NaN,NaN,NaN,NaN,\"{=1.2, map11=-99.0, map13=1.3, map14=1.4}\",\"[, set11, set13, set14, set15]\",NaN,,,-99.0,0.11,0.12,-99.0\n";
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            if (pauseBetweenTests)
+                String2.getStringFromSystemIn(
+                    "\nTest query=" + query + "\n" +
+                    "Paused to allow you to check the stats.\n" + 
+                    "Press ^C to stop or Enter to continue..."); 
+
+            //subset regex on set
+            query = "&cset=~\".*set73.*\"";
+            tName = tedd.makeNewFileForDapQuery(null, null, query, dir, 
+                tedd.className() + "_set73", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+            expected =  
+"deviceid,date,sampletime,cascii,cboolean,cbyte,cdecimal,cdouble,cfloat,cint,clong,cmap,cset,cshort,ctext,cvarchar,depth,u,v,w\n" +
+",UTC,UTC,,,,,,,,,,,,,,m,,,\n" +
+"1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,cvarchar7,10.7,-7.11,-7.12,-7.13\n" +
+"1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,cvarchar7,20.7,0.0,NaN,0.0\n" +
+"1007,2014-11-07T00:00:00Z,2014-11-07T01:02:03Z,ascii7,0,7,7.00001,7.001,7.1,7000000,7000000000000,\"{map71=7.1, map72=7.2, map73=7.3, map74=7.4}\",\"[set71, set72, set73, set74, set75]\",7000,text7,cvarchar7,30.7,7.11,7.12,7.13\n"; 
+            Test.ensureEqual(results, expected, "\nresults=\n" + results);
+            if (pauseBetweenTests)
+                String2.getStringFromSystemIn(
+                    "\nTest query=" + query + "\n" +
                     "Paused to allow you to check the stats.\n" + 
                     "Press ^C to stop or Enter to continue..."); 
 
@@ -2858,8 +2948,8 @@ expected =
 "    String sourceUrl \"(Cassandra)\";\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String subsetVariables \"deviceid, date\";\n" +
-"    String summary \"The summary for Bob's test data.\";\n" +
-"    String title \"Bob's Test Data\";\n" +
+"    String summary \"The summary for Bob's Cassandra test data.\";\n" +
+"    String title \"Bob's Cassandra Test Data\";\n" +
 "  }\n" +
 "}\n";
             po = results.indexOf(expected.substring(0, 14));
@@ -3229,7 +3319,7 @@ expected =
 "    Float64 Southernmost_Northing 33.0;\n" +
 "    String standard_name_vocabulary \"CF-12\";\n" +
 "    String subsetVariables \"deviceid, date, latitude, longitude\";\n" +
-"    String summary \"The summary for Bob's test data.\";\n" +
+"    String summary \"The summary for Bob's Cassandra test data.\";\n" +
 "    String title \"Cassandra Static Test\";\n" +
 "    Float64 Westernmost_Easting -124.0;\n" +
 "  }\n" +

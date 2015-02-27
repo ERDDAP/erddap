@@ -131,8 +131,9 @@ public class EDStatic {
      * <br>1.52 released on 2014-10-03
      * <br>1.54 released on 2014-10-24
      * <br>1.56 released on 2014-12-16
+     * <br>1.58 released on 2015-02-25
      */   
-    public static String erddapVersion = "1.56";  
+    public static String erddapVersion = "1.58";  
 
     /** 
      * This is almost always false.  
@@ -191,6 +192,7 @@ public static boolean developmentMode = false;
     public static StringBuffer failureTimesLoadDatasetsSB  = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
     public static StringBuffer responseTimesLoadDatasetsSB = new StringBuffer(""); //thread-safe (1 thread writes but others may read)
     public static HashSet requestBlacklist = null;
+    public static long startupMillis = System.currentTimeMillis();
     public static String startupLocalDateTime = Calendar2.getCurrentISODateTimeStringLocal();
     public static int nGridDatasets = 0;  
     public static int nTableDatasets = 0;
@@ -321,6 +323,7 @@ public static boolean developmentMode = false;
         baseUrl,
         baseHttpsUrl, //won't be null
         bigParentDirectory,
+        unitTestDataDir,
 
         EDDGridIdExample,
         EDDGridDimensionExample,
@@ -415,7 +418,8 @@ public static boolean developmentMode = false;
         reallyVerbose,
         postShortDescriptionActive, //if true, PostIndexHtml is on home page and /post/index.html redirects there        
         subscriptionSystemActive,  convertersActive, slideSorterActive,
-        fgdcActive, iso19115Active, geoServicesRestActive, sosActive, wcsActive, wmsActive,
+        fgdcActive, iso19115Active, geoServicesRestActive, 
+        filesActive, sosActive, wcsActive, wmsActive,
         quickRestart,
         useOriginalSearchEngine, useLuceneSearchEngine,  //exactly one will be true
         variablesMustHaveIoosCategory,
@@ -593,6 +597,7 @@ public static boolean developmentMode = false;
         dtLogIn,
         dtDAF1,
         dtDAF2,
+        dtFiles,
         dtMAG,
         dtSOS,
         dtSubset,
@@ -602,6 +607,7 @@ public static boolean developmentMode = false;
         EDDDatasetID,
         EDDFgdc,
         EDDFgdcMetadata,
+        EDDFiles,
         EDDIso19115,
         EDDIso19115Metadata,
         EDDMetadata,
@@ -748,6 +754,10 @@ public static boolean developmentMode = false;
         fileHelp_png,
         fileHelp_largePng,
         fileHelp_transparentPng,
+        filesDescription,
+        filesDocumentation,
+        filesSort,
+        filesWarning,
         functions,
         functionHtml,
         functionDistinctCheck,
@@ -772,6 +782,8 @@ public static boolean developmentMode = false;
         indexDatasets,
         indexDocumentation,
         indexRESTfulSearch,        
+        indexAllDatasetsSearch,        
+        indexOpenSearch,        
         indexServices,
         indexDescribeServices,
         indexMetadata,
@@ -1123,6 +1135,7 @@ public static boolean developmentMode = false;
         unsupportedFileType,
         viewAllDatasetsHtml,
         waitThenTryAgain,
+        warning,
 
         sosDescriptionHtml,
         sosLongDescriptionHtml,
@@ -1245,7 +1258,7 @@ public static boolean developmentMode = false;
         File2.addSlash(bigParentDirectory);
         Test.ensureTrue(File2.isDirectory(bigParentDirectory),  
             "bigParentDirectory (" + bigParentDirectory + ") doesn't exist.");
-
+        unitTestDataDir = setup.getString("unitTestDataDir", "[specify <unitTestDataDir> in setup.xml]"); 
 
         //email  (do early on so email can be sent if trouble later in this method)
         emailSmtpHost          = setup.getString("emailSmtpHost",  null);
@@ -1458,6 +1471,7 @@ public static boolean developmentMode = false;
 //until it is finished, it is always inactive
 geoServicesRestActive      = false; //setup.getBoolean(         "geoServicesRestActive",      false); 
 //until it is finished, it is always inactive
+        filesActive                = setup.getBoolean(         "filesActive",                true); 
         sosActive          = false; //setup.getBoolean(         "sosActive",                  false); 
         if (sosActive) {
             sosFeatureOfInterest   = setup.getNotNothingString("sosFeatureOfInterest",       "");
@@ -1750,6 +1764,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         dtLogIn                    = messages.getNotNothingString("dtLogIn",                    "");
         dtDAF1                     = messages.getNotNothingString("dtDAF1",                     "");
         dtDAF2                     = messages.getNotNothingString("dtDAF2",                     "");
+        dtFiles                    = messages.getNotNothingString("dtFiles",                    "");
         dtMAG                      = messages.getNotNothingString("dtMAG",                      "");
         dtSOS                      = messages.getNotNothingString("dtSOS",                      "");
         dtSubset                   = messages.getNotNothingString("dtSubset",                   "");
@@ -1759,6 +1774,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         EDDDatasetID               = messages.getNotNothingString("EDDDatasetID",               "");
         EDDFgdc                    = messages.getNotNothingString("EDDFgdc",                    "");
         EDDFgdcMetadata            = messages.getNotNothingString("EDDFgdcMetadata",            "");
+        EDDFiles                   = messages.getNotNothingString("EDDFiles",                   "");
         EDDIso19115                = messages.getNotNothingString("EDDIso19115",                "");
         EDDIso19115Metadata        = messages.getNotNothingString("EDDIso19115Metadata",        "");
         EDDMetadata                = messages.getNotNothingString("EDDMetadata",                "");
@@ -1906,6 +1922,10 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         fileHelp_png               = messages.getNotNothingString("fileHelp_png",               "");
         fileHelp_largePng          = messages.getNotNothingString("fileHelp_largePng",          "");
         fileHelp_transparentPng    = messages.getNotNothingString("fileHelp_transparentPng",    "");
+        filesDescription           = messages.getNotNothingString("filesDescription",           "");
+        filesDocumentation         = messages.getNotNothingString("filesDocumentation",         "");
+        filesSort                  = messages.getNotNothingString("filesSort",                  "");
+        filesWarning               = messages.getNotNothingString("filesWarning",               "");
         functions                  = messages.getNotNothingString("functions",                  "");
         functionHtml               = messages.getNotNothingString("functionHtml",               "");
         functionDistinctCheck      = messages.getNotNothingString("functionDistinctCheck",      "");
@@ -1933,6 +1953,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         indexDatasets              = messages.getNotNothingString("indexDatasets",              "");
         indexDocumentation         = messages.getNotNothingString("indexDocumentation",         "");
         indexRESTfulSearch         = messages.getNotNothingString("indexRESTfulSearch",         "");
+        indexAllDatasetsSearch     = messages.getNotNothingString("indexAllDatasetsSearch",     "");
+        indexOpenSearch            = messages.getNotNothingString("indexOpenSearch",            "");
         indexServices              = messages.getNotNothingString("indexServices",              "");
         indexDescribeServices      = messages.getNotNothingString("indexDescribeServices",      "");
         indexMetadata              = messages.getNotNothingString("indexMetadata",              "");
@@ -2297,6 +2319,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         viewAllDatasetsHtml        = messages.getNotNothingString("viewAllDatasetsHtml",        "");
         waitThenTryAgain           = messages.getNotNothingString("waitThenTryAgain",           "");
         gov.noaa.pfel.erddap.dataset.WaitThenTryAgainException.waitThenTryAgain = waitThenTryAgain;
+        warning                    = messages.getNotNothingString("warning",                    "");
         sosDescriptionHtml         = messages.getNotNothingString("sosDescriptionHtml",         "");
         sosLongDescriptionHtml     = messages.getNotNothingString("sosLongDescriptionHtml",     ""); 
         wcsDescriptionHtml         = messages.getNotNothingString("wcsDescriptionHtml",         "");
@@ -2336,7 +2359,8 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
         //standardContact is used by legal
         String tEmail = String2.replaceAll(adminEmail, "@", " at ");
         tEmail        = String2.replaceAll(tEmail,     ".", " dot ");
-        standardContact = String2.replaceAll(standardContact, "&adminEmail;", tEmail);
+        filesDocumentation = String2.replaceAll(filesDocumentation, "&adminEmail;", tEmail); 
+        standardContact    = String2.replaceAll(standardContact,    "&adminEmail;", tEmail);
         legal = String2.replaceAll(legal,"[standardContact]",                   standardContact                   + "\n\n"); 
         legal = String2.replaceAll(legal,"[standardDataLicenses]",              standardDataLicenses              + "\n\n"); 
         legal = String2.replaceAll(legal,"[standardDisclaimerOfExternalLinks]", standardDisclaimerOfExternalLinks + "\n\n"); 
@@ -2463,8 +2487,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
      */
     public static String youAreHere() {
         return 
-            "\n<h1>" + ProgramName + 
-            "\n</h1>\n";
+            "\n<h1>" + ProgramName + "</h1>\n";
     }
 
     /**
@@ -2478,15 +2501,15 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
     public static String youAreHere(String loggedInAs, String protocol) {
         return 
             "\n<h1>" + erddapHref(erddapUrl(loggedInAs)) +
-            "\n &gt; " + protocol + 
-            "\n</h1>\n";
+            " &gt; " + protocol + "</h1>\n";
     }
 
     /** This returns a not-yet-HTML-encoded protocol URL.
      * You may want to encode it with XML.encodeAsHTML(url)
      */
     public static String protocolUrl(String tErddapUrl, String protocol) {
-        return tErddapUrl + "/" + protocol + "/index.html" +
+        return tErddapUrl + "/" + protocol + 
+            (protocol.equals("files")? "/" : "/index.html") +
             (protocol.equals("tabledap") || protocol.equals("griddap")    ||
              protocol.equals("wms")      || protocol.equals("wcs")        ||
              protocol.equals("info")     || protocol.equals("categorize")? 
@@ -2509,8 +2532,7 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             "\n &gt; <a rel=\"contents\" rev=\"chapter\" " +
                 "href=\"" + XML.encodeAsHTMLAttribute(protocolUrl(tErddapUrl, protocol)) +
                 "\">" + protocol + "</a>" +
-            "\n &gt; " + datasetID + 
-            "\n</h1>\n";
+            "\n &gt; " + datasetID + "</h1>\n";
     }
 
     /**
@@ -2838,14 +2860,14 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
 
         //lots of memory is in use
         //is the request is too big for right now?
-        Math2.gcAndWait();
+        Math2.gcAndWait();  //part of ensureMemoryAvailable: lots of memory in use
         memoryInUse = Math2.getMemoryInUse();
         if (memoryInUse + nBytes > Math2.maxSafeMemory) {
             //eek! not enough memory! 
             //Wait, then try gc again and hope that some other request requiring lots of memory will finish.
             //If nothing else, this 1 second delay will delay another request by same user (e.g., programmatic re-request)
             Math2.sleep(1000);
-            Math2.gcAndWait(); 
+            Math2.gcAndWait(); //in ensureMemoryIsAvailable, lots of memory in use
             memoryInUse = Math2.getMemoryInUse();
         }
         if (memoryInUse > Math2.maxSafeMemory) { 
@@ -3219,8 +3241,10 @@ wcsActive                  = false; //setup.getBoolean(         "wcsActive",    
             */
             
             //all other authentication types, e.g., custom, openid
-            response.sendRedirect(erddapHttpsUrl + "/login.html" +  //always https url
-                "?message=" + SSR.minimalPercentEncode("Error: " + message));
+            String msg = erddapHttpsUrl + "/login.html" +  //always https url
+                "?message=" + SSR.minimalPercentEncode("Error: " + message);
+            if (verbose) String2.log(msg);
+            response.sendRedirect(msg);
             return;
 
         } catch (Throwable t2) {

@@ -1496,7 +1496,7 @@ switch to finally clause
         File2.delete(testDir + "temp.grd");
 
         //********************  test of GMT 4 file
-        String dir4 = "c:\\u00\\cwatch\\testData\\gmt\\";
+        String dir4 = "/erddapTest/gmt/";
         String name4= "TestGMT4";
         grdDump = 
 "netcdf TestGMT4.grd {\n" +  //2013-03-20 changed with ncdumpW: had dir, too
@@ -2456,7 +2456,7 @@ try {
             //If there is duplicate data for first and last lon (maybe more)
             //  (which will become 0 and 0, hence trouble)
             //  remove excess data
-            int keepNLon = Math2.binaryFindFirstGAE5(lon, lon[0] + 360);
+            int keepNLon = Math2.binaryFindFirstGAE(lon, lon[0] + 360, 5);
             if (keepNLon < nLon) {
                 //String2.log("Grid.makeLonPM180 lat range is -180 - 180!");
                 double tData[] = new double[nLat * keepNLon];
@@ -2543,7 +2543,7 @@ try {
             //If there is duplicate data for first and last lon (maybe more)
             //  (which will become 0 and 0, hence trouble)
             //  remove excess data
-            int keepNLon = Math2.binaryFindFirstGAE5(lon, lon[0] + 360);
+            int keepNLon = Math2.binaryFindFirstGAE(lon, lon[0] + 360, 5);
             if (keepNLon < nLon) {
                 //String2.log("Grid.makeLonPM180 lat range is -180 - 180!");
                 double tData[] = new double[nLat * keepNLon];
@@ -6021,7 +6021,7 @@ String2.log("et_affine=" + globalAttributes.get("et_affine"));
 
         //done
         String2.log("\n***** Grid.main finished successfully");
-        Math2.incgc(2000);
+        Math2.incgc(2000); //in a test
 
     }
 

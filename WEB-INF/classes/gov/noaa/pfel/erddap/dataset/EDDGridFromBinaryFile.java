@@ -201,65 +201,18 @@ public class EDDGridFromBinaryFile extends EDDGrid {
         //create axisVariables
         axisVariables = new EDVGridAxis[tAxisVariables.length];
         for (int av = 0; av < tAxisVariables.length; av++) {
-            String tSourceAxisName = (String)tAxisVariables[av][0];
-            String tDestinationAxisName = (String)tAxisVariables[av][1];
-            Attributes tSourceAttributes = new Attributes();
-            Attributes tAddAttributes = (Attributes)tAxisVariables[av][2];
+            String tSourceName = (String)tAxisVariables[av][0];
+            String tDestName = (String)tAxisVariables[av][1];
+            if (tDestName != null)
+                tDestName = tDestName.trim();
+            if (!String2.isSomething(tDestName)) 
+                tDestName = tSourceName;
+            Attributes tSourceAtts = new Attributes();
+            Attributes tAddAtts = (Attributes)tAxisVariables[av][2];
 ...            PrimitiveArray tSourceValues = new DoubleArray(DataHelper.getRegularArray(5401, -90, 1/30.0))
 
-            //is this the lon axis?
-            if (EDV.LON_NAME.equals(tDestinationAxisName) ||
-                ((tDestinationAxisName == null || tDestinationAxisName.trim().length() == 0) && 
-                    EDV.LON_NAME.equals(tSourceAxisName)) {
-                lonIndex = av;
-                axisVariables[av] = new EDVLonGridAxis(tSourceAxisName, 
-                    tSourceAttributes, tAddAttributes, tSourceValues);
-
-            //is this the lat axis?
-            } else if (EDV.LAT_NAME.equals(tDestinationAxisName) ||
-                       ((tDestinationAxisName == null || tDestinationAxisName.trim().length() == 0) && 
-                            EDV.LAT_NAME.equals(tSourceAxisName))) {
-                latIndex = av;
-                axisVariables[av] = new EDVLatGridAxis(tSourceAxisName, 
-                    tSourceAttributes, tAddAttributes, tSourceValues);
-
-            //is this the alt axis?
-            } else if (EDV.ALT_NAME.equals(tDestinationAxisName) ||
-                       ((tDestinationAxisName == null || tDestinationAxisName.trim().length() == 0) && 
-                            EDV.ALT_NAME.equals(tSourceAxisName)) {
-                altIndex = av;
-                axisVariables[av] = new EDVAltGridAxis(tSourceAxisName, 
-                    tSourceAttributes, tAddAttributes, tSourceValues);
-
-            //is this the depth axis?
-            } else if (EDV.DEPTH_NAME.equals(tDestinationAxisName) ||
-                       ((tDestinationAxisName == null || tDestinationAxisName.trim().length() == 0) && 
-                            EDV.DEPTH_NAME.equals(tSourceAxisName)) {
-                depthIndex = av;
-                axisVariables[av] = new EDVDepthGridAxis(tSourceAxisName, 
-                    tSourceAttributes, tAddAttributes, tSourceValues);
-
-            //is this the time axis?
-            } else if (EDV.TIME_NAME.equals(tDestinationAxisName) ||
-                       ((tDestinationAxisName == null || tDestinationAxisName.trim().length() == 0) && 
-                            EDV.TIME_NAME.equals(tSourceAxisName)) {
-                timeIndex = av;
-                axisVariables[av] = new EDVTimeGridAxis(tSourceAxisName, 
-                    tSourceAttributes, tAddAttributes, tSourceValues);
-
-            //is it a timestamp axis?
-            } else if (EDVTimeStampGridAxis.hasTimeUnits(tSourceAttributes, tAddAttributes)) {
-                axisVariables[av] = new EDVTimestampGridAxis(
-                    tSourceAxisName, tDestinationName,
-                    tSourceAttributes, tAddAttributes, tSourceValues);
-
-            //it is some other axis variable
-            } else {
-                axisVariables[av] = new EDVGridAxis(
-                    tSourceAxisName, tDestinationAxisName,
-                    tSourceAttributes, tAddAttributes, tSourceValues);
-                axisVariables[av].setActualRangeFromDestinationMinMax();
-            }
+            axisVariables[av] = makeAxisVariable(av, tSourceName, tDestName,
+                tSourceAtts, tAddAtts, tSourceValues);
         }
 
         //create dataVariable
@@ -314,8 +267,10 @@ public class EDDGridFromBinaryFile extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
-     * @param tDataVariables
-     * @param tConstraints
+     * @param tDataVariables EDV[] with just the requested data variables
+     * @param tConstraints  int[nAxisVariables*3] 
+     *   where av*3+0=startIndex, av*3+1=stride, av*3+2=stopIndex.
+     *   AxisVariables are counted left to right, e.g., sst[0=time][1=lat][2=lon].
      * @return a PrimitiveArray[] where the first axisVariables.length elements
      *   are the axisValues and the next tDataVariables.length elements
      *   are the dataValues.

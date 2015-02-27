@@ -1441,6 +1441,7 @@ return new String[]{sb0.toString(), sb1.toString(), sb2.toString()};
      * This makes a test document and displays it in the browser.
      */
     public static void test() throws Throwable {
+        boolean oDebugMode = debugMode;
         debugMode = true;
         String fullName = SSR.getTempDirectory() + "TestHtmlWidgets.html";
         String imageDir = "file://c:/programs/tomcat/webapps/cwexperimental/images/";
@@ -1670,8 +1671,7 @@ writer.write(twoClickMap[2]);
 
 
         SSR.displayInBrowser("file://" + fullName);
-
-
+        debugMode = oDebugMode;
     }
 
 

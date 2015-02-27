@@ -376,7 +376,7 @@ public class GSHHS  {
                  (resolution == 'l' && n < lakeMinN / 2));
             
             //can I use the object?   
-if (true) { //(useStandard || useShiftedLeft || useShiftedRight) && !skip) {
+            if ((useStandard || useShiftedLeft || useShiftedRight) && !skip) {
                 int cShift = 0;
                 if (useShiftedLeft) cShift = -intShift;
                 else if (useShiftedRight) cShift = intShift;
@@ -547,6 +547,7 @@ if (true) { //(useStandard || useShiftedLeft || useShiftedRight) && !skip) {
             }
 
         }
+        dis.close();
         if (reallyVerbose) String2.log("  GSHHS.getPathInfo done. res=" + resolution +
             " level=" + (desiredLevel==1? "land" : desiredLevel==2? "lake" : "" + desiredLevel) + 
             " TIME=" + (System.currentTimeMillis() - time));

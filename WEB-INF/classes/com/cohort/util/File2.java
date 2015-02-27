@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -29,16 +30,16 @@ public class File2 {
      * This indicates if the named file is indeed an existing file.
      * If dir="", it just says it isn't a file.
      *
-     * @param dirName the full name of the file
+     * @param fullName the full name of the file
      * @return true if the file exists
      */
-    public static boolean isFile(String dirName) {
+    public static boolean isFile(String fullName) {
         try {
-            //String2.log("File2.isFile: " + dirName);
-            File file = new File(dirName);
+            //String2.log("File2.isFile: " + fullName);
+            File file = new File(fullName);
             return file.isFile();
         } catch (Exception e) {
-            if (verbose) String2.log(MustBe.throwable("File2.isFile(" + dirName + ")", e));
+            if (verbose) String2.log(MustBe.throwable("File2.isFile(" + fullName + ")", e));
             return false;
         }
     }
@@ -47,14 +48,14 @@ public class File2 {
      * For newly created files, this tries a few times to wait for the file
      * to be accessible via the operating system.
      *
-     * @param dirName the full name of the file
+     * @param fullName the full name of the file
      * @param nTimes the number of times to try (e.g., 5) with 200ms sleep between tries
      * @return true if the file exists
      */
-    public static boolean isFile(String dirName, int nTimes) {
+    public static boolean isFile(String fullName, int nTimes) {
         try {
-            //String2.log("File2.isFile: " + dirName);
-            File file = new File(dirName);
+            //String2.log("File2.isFile: " + fullName);
+            File file = new File(fullName);
             boolean b = false;
             nTimes = Math.max(1, nTimes);
 
@@ -68,7 +69,7 @@ public class File2 {
             }
             return b;
         } catch (Exception e) {
-            if (verbose) String2.log(MustBe.throwable("File2.isFile(" + dirName + ")", e));
+            if (verbose) String2.log(MustBe.throwable("File2.isFile(" + fullName + ")", e));
             return false;
         }
     }
@@ -81,7 +82,7 @@ public class File2 {
      */
     public static boolean isDirectory(String dir) {
         try {
-            //String2.log("File2.isFile: " + dirName);
+            //String2.log("File2.isFile: " + dir);
             File d = new File(dir);
             return d.isDirectory();
         } catch (Exception e) {
@@ -93,18 +94,18 @@ public class File2 {
     /**
      * This deletes the specified file or directory (must be empty).
      *
-     * @param dirName the full name of the file
+     * @param fullName the full name of the file
      * @return true if the file existed and was successfully deleted; 
      *    otherwise returns false.
      */
-    public static boolean delete(String dirName) {
+    public static boolean delete(String fullName) {
         //This can have problems if another thread is reading the file, so try repeatedly.
         //Unlike other places, this is often part of delete/rename, 
         //  so we want to know when it is done ASAP.
         int maxAttempts = String2.OSIsWindows? 11 : 4;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
-                File file = new File(dirName);
+                File file = new File(fullName);
                 if (!file.exists())
                     return attempt > 1; //if attempt=1, nothing to delete; if attempt>1, there was something
                 //I think Linux deletes no matter what.
@@ -125,18 +126,19 @@ public class File2 {
                     //  But I think the files I'm working with have been closed.
                     //Solution? call Math2.gc instead of Math2.sleep
                     if (attempt == maxAttempts) {
-                        String2.log(String2.ERROR + ": File2.delete was unable to delete " + dirName);
+                        String2.log(String2.ERROR + ": File2.delete was unable to delete " + fullName +
+                            "\n" + MustBe.getStackTrace());
                         return result;
                     }
                     String2.log("WARNING #" + attempt + 
-                        ": File2.delete is having trouble. It will try again to delete " + dirName);
+                        ": File2.delete is having trouble. It will try again to delete " + fullName);
                     if (attempt % 4 == 1)
-                        Math2.gcAndWait(); //by experiment: gc works better than sleep
+                        Math2.gcAndWait(); //wait before retry delete. By experiment, gc works better than sleep.
                     else Math2.sleep(1000);
                 }
 
             } catch (Exception e) {
-                if (verbose) String2.log(MustBe.throwable("File2.delete(" + dirName + ")", e));
+                if (verbose) String2.log(MustBe.throwable("File2.delete(" + fullName + ")", e));
                 return false;
             }
         }
@@ -146,23 +148,23 @@ public class File2 {
     /**
      * This just tries once to delete the file or directory (must be empty).
      *
-     * @param dirName the full name of the file
+     * @param fullName the full name of the file
      * @return true if the file existed and was successfully deleted; 
      *    otherwise returns false.
      */
-    public static boolean simpleDelete(String dirName) {
+    public static boolean simpleDelete(String fullName) {
         //This can have problems if another thread is reading the file, so try repeatedly.
         //Unlike other places, this is often part of delete/rename, 
         //  so we want to know when it is done ASAP.
         try {
-            File file = new File(dirName);
+            File file = new File(fullName);
             if (!file.exists())
                 return false; //it didn't exist
             //I think Linux deletes no matter what.
             //I think Windows won't delete file if in use by another thread or pending action(?).
             return file.delete();  
         } catch (Exception e) {
-            if (verbose) String2.log(MustBe.throwable("File2.simpleDelete(" + dirName + ")", e));
+            if (verbose) String2.log(MustBe.throwable("File2.simpleDelete(" + fullName + ")", e));
             return false;
         }
     }
@@ -298,11 +300,14 @@ public class File2 {
         }
 
         //rename
-        if (oldFile.renameTo(newFile))  
+        if (oldFile.renameTo(newFile))
             return;
 
-        throw new RuntimeException(
-            "Unable to rename\n" + fullOldName + " to\n" + fullNewName);
+        //failed? give it a second try. This fixed a problem in a test on Windows.
+        Math2.gcAndWait();  //wait before giving it a second try      
+        if (oldFile.renameTo(newFile))
+            return;
+        throw new RuntimeException("Unable to rename\n" + fullOldName + " to\n" + fullNewName);
     }
 
     /**
@@ -345,12 +350,12 @@ public class File2 {
      * date and time.  
      * (The name comes from the Unix "touch" program.)
      *
-     * @param dirName the full name of the file
+     * @param fullName the full name of the file
      * @return true if the directory or file exists 
      *    and if the modification was successful
      */
-    public static boolean touch(String dirName) {
-        return touch(dirName, 0);
+    public static boolean touch(String fullName) {
+        return touch(fullName, 0);
     }
 
     /**
@@ -359,14 +364,14 @@ public class File2 {
      * date and time minus millisInPast.  
      * (The name comes from the Unix "touch" program.)
      *
-     * @param dirName the full name of the file
+     * @param fullName the full name of the file
      * @param millisInPast
      * @return true if the directory or file exists 
      *    and if the modification was successful
      */
-    public static boolean touch(String dirName, long millisInPast) {
+    public static boolean touch(String fullName, long millisInPast) {
         try {
-            File file = new File(dirName);
+            File file = new File(fullName);
             //The Java documentation for setLastModified doesn't state
             //if the method returns false if the file doesn't exist 
             //or if the method creates a 0 byte file (as does Unix's touch).
@@ -374,7 +379,7 @@ public class File2 {
             //if (!file.exists()) return false;
             return file.setLastModified(System.currentTimeMillis() - millisInPast);
         } catch (Exception e) {
-            if (verbose) String2.log(MustBe.throwable("File2.touch(" + dirName + ")", e));
+            if (verbose) String2.log(MustBe.throwable("File2.touch(" + fullName + ")", e));
             return false;
         }
     }
@@ -384,14 +389,14 @@ public class File2 {
      * this changes its lastModification date/time to millis  
      * (The name comes from the Unix "touch" program.)
      *
-     * @param dirName the full name of the file
+     * @param fullName the full name of the file
      * @param millis
      * @return true if the directory or file exists 
      *    and if the modification was successful
      */
-    public static boolean setLastModified(String dirName, long millis) {
+    public static boolean setLastModified(String fullName, long millis) {
         try {
-            File file = new File(dirName);
+            File file = new File(fullName);
             //The Java documentation for setLastModified doesn't state
             //if the method returns false if the file doesn't exist 
             //or if the method creates a 0 byte file (as does Unix's touch).
@@ -399,7 +404,7 @@ public class File2 {
             //if (!file.exists()) return false;
             return file.setLastModified(millis);
         } catch (Exception e) {
-            if (verbose) String2.log(MustBe.throwable("File2.setLastModified(" + dirName + ")", e));
+            if (verbose) String2.log(MustBe.throwable("File2.setLastModified(" + fullName + ")", e));
             return false;
         }
     }
@@ -407,17 +412,17 @@ public class File2 {
     /**
      * This returns the length of the named file (or -1 if trouble).
      *
-     * @param dirName the full name of the file
+     * @param fullName the full name of the file
      * @return the length of the named file (or -1 if trouble).
      */
-    public static long length(String dirName) {
+    public static long length(String fullName) {
         try {
-            //String2.log("File2.isFile: " + dirName);
-            File file = new File(dirName);
+            //String2.log("File2.isFile: " + fullName);
+            File file = new File(fullName);
             if (!file.isFile()) return -1;
             return file.length();
         } catch (Exception e) {
-            if (verbose) String2.log(MustBe.throwable("File2.length(" + dirName + ")", e));
+            if (verbose) String2.log(MustBe.throwable("File2.length(" + fullName + ")", e));
             return -1;
         }
     }
@@ -426,58 +431,58 @@ public class File2 {
      * Get the number of millis since the start of the Unix epoch
      * when the file was last modified.
      *
-     * @param dirName the full name of the file
+     * @param fullName the full name of the file
      * @return the time (millis since the start of the Unix epoch) 
      *    the file was last modified 
      *    (or 0 if trouble)
      */
-    public static long getLastModified(String dirName) {
+    public static long getLastModified(String fullName) {
         try {
-            File file = new File(dirName);
+            File file = new File(fullName);
             return file.lastModified();
         } catch (Exception e) {
             //pause and try again
             try {
                 Math2.gcAndWait(); //if trouble getting lastModified: gc encourages success
-                File file = new File(dirName);
+                File file = new File(fullName);
                 return file.lastModified();
             } catch (Exception e2) {
-                if (verbose) String2.log(MustBe.throwable("File2.getLastModified(" + dirName + ")", e2));
+                if (verbose) String2.log(MustBe.throwable("File2.getLastModified(" + fullName + ")", e2));
                 return 0;
             }
         }
     }
 
     /** This returns the name of the oldest file in the list. 
-     * Error if dirNames.length == 0.
+     * Error if fullNames.length == 0.
      */
-    public static String getOldest(String dirNames[]) {
+    public static String getOldest(String fullNames[]) {
         int ti = 0;
-        long tm = getLastModified(dirNames[0]);
-        for (int i = 1; i < dirNames.length; i++) {
-            long ttm = getLastModified(dirNames[i]);
+        long tm = getLastModified(fullNames[0]);
+        for (int i = 1; i < fullNames.length; i++) {
+            long ttm = getLastModified(fullNames[i]);
             if (ttm != 0 && ttm < tm) {
                 ti = i;
                 tm = ttm;
             }
         }
-        return dirNames[ti];
+        return fullNames[ti];
     }
 
     /** This returns the name of the youngest file in the list. 
-     * Error if dirNames.length == 0.
+     * Error if fullNames.length == 0.
      */
-    public static String getYoungest(String dirNames[]) {
+    public static String getYoungest(String fullNames[]) {
         int ti = 0;
-        long tm = getLastModified(dirNames[0]);
-        for (int i = 1; i < dirNames.length; i++) {
-            long ttm = getLastModified(dirNames[i]);
+        long tm = getLastModified(fullNames[0]);
+        for (int i = 1; i < fullNames.length; i++) {
+            long ttm = getLastModified(fullNames[i]);
             if (ttm != 0 && ttm > tm) {
                 ti = i;
                 tm = ttm;
             }
         }
-        return dirNames[ti];
+        return fullNames[ti];
     }
 
     /**
@@ -513,17 +518,17 @@ public class File2 {
     }
 
     /**
-     * This returns the directory info (with a trailing slash) from the dirName).
+     * This returns the directory info (with a trailing slash) from the fullName).
      *
-     * @param dirName the full name of the file.
+     * @param fullName the full name of the file.
      *   It can have forward or backslashes.
      * @return the directory (or currentDirectory if none)
      */
-    public static String getDirectory(String dirName) {
-        int po = dirName.lastIndexOf('/');
+    public static String getDirectory(String fullName) {
+        int po = fullName.lastIndexOf('/');
         if (po < 0)
-            po = dirName.lastIndexOf('\\');
-        return po > 0? dirName.substring(0, po + 1) : getCurrentDirectory();
+            po = fullName.lastIndexOf('\\');
+        return po > 0? fullName.substring(0, po + 1) : getCurrentDirectory();
     }
 
     /**
@@ -543,65 +548,60 @@ public class File2 {
     }
 
     /**
-     * This removes the directory info (if any) from the dirName,
+     * This removes the directory info (if any) from the fullName,
      * and so returns just the name and extension.
      *
-     * @param dirName the full name of the file.
+     * @param fullName the full name of the file.
      *   It can have forward or backslashes.
      * @return the name and extension of the file  (may be "")
      */
-    public static String getNameAndExtension(String dirName) {
-        int po = dirName.lastIndexOf('/');
+    public static String getNameAndExtension(String fullName) {
+        int po = fullName.lastIndexOf('/');
         if (po >= 0)
-            return dirName.substring(po + 1);
+            return fullName.substring(po + 1);
 
-        po = dirName.lastIndexOf('\\');
-        if (po >= 0)
-            return dirName.substring(po + 1);
-
-        return dirName;
+        po = fullName.lastIndexOf('\\');
+        return po >= 0? fullName.substring(po + 1) : fullName;
     }
 
     /**
      * This returns just the extension from the file's name 
      * (the last "." and anything after, e.g., ".asc").
      *
-     * @param dirName the full name or just name of the file.
+     * @param fullName the full name or just name of the file.
      *   It can have forward or backslashes.
-     * @return the name and extension of the file
+     * @return the extension of the file (perhaps "")
      */
-    public static String getExtension(String dirName) {
-        String name = getNameAndExtension(dirName);
+    public static String getExtension(String fullName) {
+        String name = getNameAndExtension(fullName);
         int po = name.lastIndexOf('.');
-        if (po >= 0)
-            return name.substring(po);
-        else return "";
+        return po >= 0? name.substring(po) : "";
     }
 
     /**
      * This replaces the existing extension (if any) with ext.
      *
-     * @param dirName the full name or just name of the file.
+     * @param fullName the full name or just name of the file.
      *   It can have forward or backslashes.
      * @param ext the new extension (e.g., ".das")
-     * @return the dirName with the new ext
+     * @return the fullName with the new ext
      */
-    public static String forceExtension(String dirName, String ext) {
-        String oldExt = getExtension(dirName);
-        return dirName.substring(0, dirName.length() - oldExt.length()) + ext;
+    public static String forceExtension(String fullName, String ext) {
+        String oldExt = getExtension(fullName);
+        return fullName.substring(0, fullName.length() - oldExt.length()) + ext;
     }
 
     /**
      * This removes the directory info (if any) and extension (after the last ".", if any) 
-     * from the dirName, and so returns just the name.
+     * from the fullName, and so returns just the name.
      *
-     * @param dirName the full name of the file.
+     * @param fullName the full name of the file.
      *   It can have forward or backslashes.
      * @return the name of the file
      */
-    public static String getNameNoExtension(String dirName) {
-        String name = getNameAndExtension(dirName);
-        String extension = getExtension(dirName);
+    public static String getNameNoExtension(String fullName) {
+        String name = getNameAndExtension(fullName);
+        String extension = getExtension(fullName);
         return name.substring(0, name.length() - extension.length());
     }
 

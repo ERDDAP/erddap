@@ -1735,39 +1735,6 @@ public class Math2 {
     }
 
     /**
-     * Find the last element which is &lt;x or almostEqual(9, ) in an ascending sorted array.
-     *
-     * <p>If firstGE &gt; lastLE, there are no matching elements (because
-     * the requested range is less than or greater than all the values,
-     * or between two adjacent values).
-     *
-     * @param dar an ascending sorted double[] which may have duplicate values
-     * @param x
-     * @return the index of the last element which is &lt;= x in an ascending sorted array.
-     *   If x &lt; the smallest element, this returns -1  (no element is appropriate).
-     *   If x &gt; the largest element, this returns dar.length-1.
-     *   If x is NaN, this is currently undefined.
-     */
-    public static int binaryFindLastLAE9(double[] dar, double x) {
-        int i = Arrays.binarySearch(dar, x);
-        //an exact match; look for duplicates
-        if (i >= 0) { 
-            while (i < dar.length - 1 && 
-                   (dar[i + 1] <= x || almostEqual(9, dar[i + 1], x)))
-                i++;
-            return i; 
-        }
-
-        //is the value at insertion point almostEqual(9)?
-        int insertionPoint = -i - 1;  //0.. dar.length
-        if (insertionPoint < dar.length &&
-            almostEqual(9, dar[insertionPoint], x))
-            return insertionPoint;
-
-        return insertionPoint - 1;
-    }
-
-    /**
      * Find the last element which is &lt;x or almostEqual(5, x) in an ascending sorted array.
      *
      * <p>If firstGE &gt; lastLE, there are no matching elements (because
@@ -1776,26 +1743,27 @@ public class Math2 {
      *
      * @param dar an ascending sorted double[] which may have duplicate values
      * @param x
+     * @param precision e.g., 5 for floats and 9 for doubles     
      * @return the index of the last element which is &lt;= x in an ascending sorted array.
      *   If x &lt; the smallest element, this returns -1  (no element is appropriate).
      *   If x &gt; the largest element, this returns dar.length-1.
      *   If x is NaN, this is currently undefined.
      */
-    public static int binaryFindLastLAE5(double[] dar, double x) {
+    public static int binaryFindLastLAE(double[] dar, double x, int precision) {
         int i = Arrays.binarySearch(dar, x);
 
         //an exact match; look for duplicates
         if (i >= 0) { 
             while (i < dar.length - 1 && 
-                   (dar[i + 1] <= x || almostEqual(5, dar[i + 1], x)))
+                   (dar[i + 1] <= x || almostEqual(precision, dar[i + 1], x)))
                 i++;
             return i; 
         }
 
-        //is the value at insertion point almostEqual(5, x)?
+        //is the value at insertion point almostEqual(precision, x)?
         int insertionPoint = -i - 1;  //0.. dar.length
         if (insertionPoint < dar.length &&
-            almostEqual(5, dar[insertionPoint], x))
+            almostEqual(precision, dar[insertionPoint], x))
             return insertionPoint;
 
         return insertionPoint - 1;
@@ -1829,7 +1797,7 @@ public class Math2 {
     }
 
     /**
-     * Find the first element which is &gt;x or almostEqual(9) in an ascending sorted array.
+     * Find the first element which is &gt;x or almostEqual(precision, x) in an ascending sorted array.
      *
      * <p>If firstGE &gt; lastLE, there are no matching elements (because
      * the requested range is less than or greater than all the values,
@@ -1837,60 +1805,27 @@ public class Math2 {
      *
      * @param dar an ascending sorted double[] which currently may not have duplicate values
      * @param x
+     * @param precision e.g., 5 for floats and 9 for doubles     
      * @return the index of the first element which is &gt;= x in an ascending sorted array.
      *   If x &lt; the smallest element, this returns 0.
      *   If x &gt; the largest element, this returns dar.length (no element is appropriate).
      *   If x is NaN, this is currently undefined.
      */
-    public static int binaryFindFirstGAE9(double[] dar, double x) {
+    public static int binaryFindFirstGAE(double[] dar, double x, int precision) {
         int i = Arrays.binarySearch(dar, x);
 
         //an exact match; look for duplicates
         if (i >= 0) {
             while (i > 0 && 
-                   (dar[i - 1] >= x || almostEqual(9, dar[i - 1], x)))
+                   (dar[i - 1] >= x || almostEqual(precision, dar[i - 1], x)))
                 i--;
             return i; 
         }
 
-        //is the value at insertion point-1 almostEqual(9)?
+        //is the value at insertion point-1 almostEqual(precision, x)?
         int insertionPoint = -i - 1;  //0.. dar.length
         if (insertionPoint > 0 &&
-            almostEqual(9, dar[insertionPoint - 1], x))
-            return insertionPoint - 1;
-
-        return insertionPoint;
-    }
-
-    /**
-     * Find the first element which is &gt;x or almostEqual(5, x) in an ascending sorted array.
-     *
-     * <p>If firstGE &gt; lastLE, there are no matching elements (because
-     * the requested range is less than or greater than all the values,
-     * or between two adjacent values).
-     *
-     * @param dar an ascending sorted double[] which currently may not have duplicate values
-     * @param x
-     * @return the index of the first element which is &gt;= x in an ascending sorted array.
-     *   If x &lt; the smallest element, this returns 0.
-     *   If x &gt; the largest element, this returns dar.length (no element is appropriate).
-     *   If x is NaN, this is currently undefined.
-     */
-    public static int binaryFindFirstGAE5(double[] dar, double x) {
-        int i = Arrays.binarySearch(dar, x);
-
-        //an exact match; look for duplicates
-        if (i >= 0) {
-            while (i > 0 && 
-                   (dar[i - 1] >= x || almostEqual(5, dar[i - 1], x)))
-                i--;
-            return i; 
-        }
-
-        //is the value at insertion point-1 almostEqual(5, x)?
-        int insertionPoint = -i - 1;  //0.. dar.length
-        if (insertionPoint > 0 &&
-            almostEqual(5, dar[insertionPoint - 1], x))
+            almostEqual(precision, dar[insertionPoint - 1], x))
             return insertionPoint - 1;
 
         return insertionPoint;

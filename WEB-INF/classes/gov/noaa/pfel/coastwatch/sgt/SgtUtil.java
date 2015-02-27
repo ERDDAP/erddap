@@ -479,7 +479,6 @@ public class SgtUtil  {
         Graphics g = bi.getGraphics();
         g.drawImage(image, 0, 0, bi.getWidth(), bi.getHeight(), null);
         image = null; //encourage garbage collection
-        //Math2.gcAndWait(); //commented out to let Java handle gc
         
         //save as png
         int random = Math2.random(Integer.MAX_VALUE);
@@ -1097,7 +1096,7 @@ public class SgtUtil  {
         Test.ensureEqual(suggestPaletteScale(.11, 890), "Log", ""); //typical Rainbow Log
         Test.ensureEqual(suggestPaletteScale(-7, 8), "Linear", ""); //typical BlueWhiteRed Linear symmetric
 
-        BufferedImage bi = ImageIO.read(new File("c:/u00/cwatch/testData/graphs/erdBAssta5day.png"));
+        BufferedImage bi = ImageIO.read(new File("/erddapTest/graphs/erdBAssta5day.png"));
         long time = System.currentTimeMillis();
         Test.ensureEqual(findGraph(bi), new int[]{24, 334, 150, 21}, "");
         String2.log("findGraph time=" + (System.currentTimeMillis() - time));

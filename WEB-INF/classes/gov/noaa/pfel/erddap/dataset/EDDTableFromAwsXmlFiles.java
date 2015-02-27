@@ -17,6 +17,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
@@ -54,25 +55,27 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
-        int tReloadEveryNMinutes,
+        int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
         String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
+        boolean tSourceNeedsExpandedFP_EQ, 
+        boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
         throws Throwable {
 
         super("EDDTableFromAwsXmlFiles", true, tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
-            tDataVariables, tReloadEveryNMinutes,
+            tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
+            tSourceNeedsExpandedFP_EQ, 
+            tFileTableInMemory, tAccessibleViaFiles);
 
     }
 
@@ -144,7 +147,7 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
      */
     public static String generateDatasetsXml(String tFileDir, String tFileNameRegex, 
         String sampleFileName, 
-        int columnNamesRow, int firstDataRow, int tReloadEveryNMinutes,
+        int columnNamesRow, int firstDataRow, int tReloadEveryNMinutes, 
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
         String tColumnNameForExtract, String tSortedColumnSourceName,
         String tSortFilesBySourceNames, 
@@ -154,6 +157,8 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
         String2.log("EDDTableFromAwsXmlFiles.generateDatasetsXml" +
             "\n  sampleFileName=" + sampleFileName);
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
+        if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
+            tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
 
         //*** basically, make a table to hold the sourceAttributes 
         Table dataSourceTable = new Table();
@@ -233,19 +238,21 @@ public class EDDTableFromAwsXmlFiles extends EDDTableFromFiles {
                 suggestDatasetID(tFileDir + tFileNameRegex) + 
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
+            "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
             "    <fileDir>" + tFileDir + "</fileDir>\n" +
             "    <recursive>true</recursive>\n" +
-            "    <fileNameRegex>" + tFileNameRegex + "</fileNameRegex>\n" +
+            "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <columnNamesRow>" + columnNamesRow + "</columnNamesRow>\n" +
             "    <firstDataRow>" + firstDataRow + "</firstDataRow>\n" +
-            "    <preExtractRegex>" + tPreExtractRegex + "</preExtractRegex>\n" +
-            "    <postExtractRegex>" + tPostExtractRegex + "</postExtractRegex>\n" +
-            "    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
+            "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
+            "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
+            "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
             "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n" +
+            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -300,6 +307,7 @@ directionsForGenerateDatasetsXml() +
 "\n" +
 "<dataset type=\"EDDTableFromAwsXmlFiles\" datasetID=\"xml_fa11_d004_6990\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir>c:/data/aws/xml/</fileDir>\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*\\.xml</fileNameRegex>\n" +
@@ -313,6 +321,7 @@ directionsForGenerateDatasetsXml() +
 "    <sortedColumnSourceName>ob-date</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>station-id ob-date</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
@@ -334,7 +343,7 @@ directionsForGenerateDatasetsXml() +
 "Atmosphere &gt; Atmospheric Water Vapor &gt; Dew Point Temperature,\n" +
 "Atmosphere &gt; Atmospheric Water Vapor &gt; Humidity,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"atmospheric, aux, aux-temp, aux-temp-rate, bulb, city, city-state, city-state-zip, currents, dew point, dew_point_temperature, direction, exploratorium, feels, feels-like, file, gust, gust-direction, height, high, humidity, humidity-rate, identifier, img, indoor, indoor-temp, indoor-temp-rate, light, light-rate, like, low, max, meteorology, month, moon, moon-phase, moon-phase-moon-phase-img, name, newer, phase, pressure, pressure-high, pressure-low, pressure-rate, rain, rain-month, rain-rate, rain-rate-max, rain-today, rain-year, rate, relative, relative_humidity, site, site-url, speed, state, station, station-id, surface, temp-high, temp-low, temp-rate, temperature, time, title, today, URL, vapor, water, wet, wet_bulb_temperature, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, year, zip</att>\n" +
+"atmospheric, aux, aux-temp, aux-temp-rate, bulb, city, city-state, city-state-zip, currents, dew point, dew_point_temperature, direction, exploratorium, feels, feels-like, file, gust, gust-direction, height, high, humidity, humidity-rate, img, indoor, indoor-temp, indoor-temp-rate, light, light-rate, like, low, max, meteorology, month, moon, moon-phase, moon-phase-moon-phase-img, name, newer, phase, pressure, pressure-high, pressure-low, pressure-rate, rain, rain-month, rain-rate, rain-rate-max, rain-today, rain-year, rate, relative, relative_humidity, site, site-url, speed, state, station, station-id, surface, temp-high, temp-low, temp-rate, temperature, time, title, today, URL, vapor, water, wet, wet_bulb_temperature, wind, wind_from_direction, wind_speed, wind_speed_of_gust, winds, year, zip</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
@@ -931,7 +940,6 @@ directionsForGenerateDatasetsXml() +
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n\n";
-
             Test.ensureEqual(results, expected, "results=\n" + results);
 
             //ensure it is ready-to-use by making a dataset from it

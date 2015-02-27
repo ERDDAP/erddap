@@ -140,7 +140,37 @@ public class GenerateDatasetsXml {
         OpendapHelper.verbose = reallyVerbose;
         Table.verbose = reallyVerbose;
         Table.reallyVerbose = reallyVerbose;
-
+        String eddTypes[] = {
+            "EDDGridAggregateExistingDimension",
+            "EDDGridFromDap",
+            "EDDGridFromEDDTable",
+            "EDDGridFromErddap",
+            "EDDGridFromMergeIRFiles",
+            "EDDGridFromNcFiles",
+            "EDDGridFromThreddsCatalog",
+            "EDDTableFromAsciiFiles",
+            "EDDTableFromAwsXmlFiles",
+            "EDDTableFromCassandra",
+            "EDDTableFromColumnarAsciiFiles",
+            "EDDTableFromDapSequence",
+            "EDDTableFromDatabase",
+            "EDDTableFromErddap",
+            "EDDTableFromFileNames",
+            "EDDTableFromIoosSOS",
+            "EDDTableFromNcFiles",
+            "EDDTableFromNcCFFiles",
+            "EDDTableFromOBIS",
+            "EDDTableFromSOS",
+            "EDDTableFromThreddsFiles",
+            "EDDTableFromWFSFiles"};
+        StringBuilder sb = new StringBuilder();
+        int net = eddTypes.length;
+        int net2 = Math2.hiDiv(net, 2);
+        for (int i = 0; i < net2; i++)
+            sb.append(String2.left(eddTypes[i], 36) +
+                (net2 + i >= net? "" : eddTypes[net2 + i]) + "\n");
+        String eddTypesString = sb.toString();
+        sb = null;
 
         do {
             try {
@@ -161,27 +191,8 @@ public class GenerateDatasetsXml {
                     "http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html\n" +
                     "\n" +
                     "The EDDType options are:\n" +
-                    "  EDDGridAggregateExistingDimension\n" +
-                    "  EDDGridFromDap\n" +
-                    "  EDDGridFromErddap\n" +
-                    "  EDDGridFromNcFiles\n" +
-                    "  EDDGridFromThreddsCatalog\n" +
-                    "  EDDTableFromAsciiFiles\n" +                
-                    "  EDDTableFromAwsXmlFiles\n" +                
-                    "  EDDTableFromCassandra\n" +
-                    "  EDDTableFromColumnarAsciiFiles\n" +                
-                    "  EDDTableFromDapSequence\n" +
-                    "  EDDTableFromDatabase\n" +
-                    "  EDDTableFromErddap\n" +
-                    "  EDDTableFromIoosSOS\n" +
-                    "  EDDTableFromNcFiles\n" +
-                    "  EDDTableFromNcCFFiles\n" +
-                    "  EDDTableFromOBIS\n" +
-                    "  EDDTableFromSOS\n" +           
-                    "  EDDTableFromThreddsFiles\n" +
-                    "  EDDTableFromWFSFiles\n" +
+                    eddTypesString + "\n" +
                     "Which EDDType");
-
 
                 //EDDGrid
                 if (eddType.equals("EDDGridAggregateExistingDimension")) {
@@ -204,11 +215,29 @@ public class GenerateDatasetsXml {
                         s1, null, null, null, 
                         String2.parseInt(s2, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), null));
 
+                } else if (eddType.equals("EDDGridFromEDDTable")) {
+                    s1  = get(args,  1,  s1, "datasetID of underlying EDDTable");         
+                    s2  = get(args,  2,  s2, "ReloadEveryNMinutes (e.g., " + 
+                        EDD.DEFAULT_RELOAD_EVERY_N_MINUTES);
+                    String2.log("working...");
+                    printToBoth(EDDGridFromEDDTable.generateDatasetsXml(s1, 
+                        String2.parseInt(s2, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), null));
+
                 } else if (eddType.equals("EDDGridFromErddap")) {
                     s1 = get(args, 1, s1, "URL of remote ERDDAP (ending in (\"/erddap\")");  
                     s2 = get(args, 2, s2, "Keep original datasetIDs (true|false)");
                     String2.log("working...");
                     printToBoth(EDDGridFromErddap.generateDatasetsXml(s1, String2.parseBoolean(s2)));
+
+                } else if (eddType.equals("EDDGridFromMergeIRFiles")) {
+                    s1  = get(args,  1,  s1, "Parent directory");
+                    s2  = get(args,  2,  "merg_[0-9]{10}_4km-pixel\\.gz", 
+                        "File name regex (merg_[0-9]{10}_4km-pixel\\.gz)");              
+                    s3  = get(args,  3,  Integer.toString(EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
+                        reloadEveryNMinutesMessage);
+                    String2.log("working...");
+                    printToBoth(EDDGridFromMergeIRFiles.generateDatasetsXml(s1, s2,
+                        String2.parseInt(s3, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES)));
 
                 } else if (eddType.equals("EDDGridFromNcFiles")) {
                     s1  = get(args,  1,  s1, "Parent directory");
@@ -355,6 +384,22 @@ public class GenerateDatasetsXml {
                     s2 = get(args, 2, s2, "Keep original datasetIDs (true|false)");
                     String2.log("working...");
                     printToBoth(EDDTableFromErddap.generateDatasetsXml(s1, String2.parseBoolean(s2)));
+
+                } else if (eddType.equals("EDDTableFromFileNames")) {
+                    s1 = get(args,  1,  s1, "Starting directory");
+                    s2 = get(args,  2,  s2, "File name regex (e.g., \".*\\.nc\")");
+                    s3 = get(args,  3,  s3, "Recursive (true|false)");                       
+                    s4 = get(args,  4,  s4, reloadEveryNMinutesMessage);
+                    s5 = get(args,  5,  s5, "infoUrl");
+                    s6 = get(args,  6,  s6, "institution");
+                    s7 = get(args,  7,  s7, "summary");
+                    s8 = get(args,  8,  s8, "title");
+                    String2.log("working...");
+                    printToBoth(EDDTableFromFileNames.generateDatasetsXml(
+                        s1, s2, String2.parseBoolean(s3), 
+                        String2.parseInt(s4, EDD.DEFAULT_RELOAD_EVERY_N_MINUTES), 
+                        s5, s6, s7, s8, null));
+
 
                 //INACTIVE: "EDDTableFromHyraxFiles"
 

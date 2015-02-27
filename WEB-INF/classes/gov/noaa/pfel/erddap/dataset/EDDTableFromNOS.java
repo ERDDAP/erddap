@@ -1616,7 +1616,7 @@ webservices/xmldatarequest.cfc?wsdl">
 
         boolean testMode = true;
         String xmlns = "";
-        String stationCodesFileName = "c:/u00/cwatch/testData/nerrs/stationCodes.xml";
+        String stationCodesFileName = EDStatic.unitTestDataDir + "nerrs/stationCodes.xml";
         InputStream is = null;
 
         if (testMode && getWhat.equals("exportStationCodesXML")) {

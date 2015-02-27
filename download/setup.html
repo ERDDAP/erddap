@@ -289,9 +289,9 @@ or Mac server instead.
 
 <li><a name="erddapContent">Set up the <i>tomcat</i>/content/erddap configuration files.</a> 
   <br>On Linux, Mac, and Windows, download
-     <!-- Use: c:\content\bat\md5.bat erddapContent1.56.zip -->
+     <!-- Use: c:\content\bat\md5.bat erddapContent1.58.zip -->
     <a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent.zip">erddapContent.zip</a>
-    (version 1.56, size=24,076 bytes, MD5=93E1272069DDF6C858C48F7EDB0CC690, dated 2014-12-17)
+    (version 1.58, size=25,000 bytes, MD5=620A54B6A52D7C95C0D1635A9FF39DC6, dated 2015-02-25)
 
     and unzip it into <i>tomcat</i>, creating <i>tomcat</i>/content/erddap .
 
@@ -309,6 +309,8 @@ or Mac server instead.
      (size=22,132 bytes, MD5=9CFB41D3FA7F6A267B600D629FABBC17, dated 2014-10-03) 
      <br><a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.54.zip">1.54</a>
      (size=22,132 bytes, MD5=38F003E2E270DA8F01446CB74ABE41E0, dated 2014-10-24) 
+     <br><a rel="bookmark"  href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddapContent1.56.zip">1.56</a>
+     (size=24,076 bytes, MD5=93E1272069DDF6C858C48F7EDB0CC690, dated 2014-12-17)
      ]
 
   <p>Then,
@@ -342,11 +344,11 @@ or Mac server instead.
 
 <li><a name="erddap.war">Install</a> the erddap.war file.
   <br>On Linux, Mac, and Windows, download 
-    <!-- use: c:\content\bat\md5.bat erddap1.56.war  
-         ver, size, md5 duplicated twice below -->
+    <!-- use: c:\content\bat\md5.bat erddap1.58.war  
+         ver, size, md5 duplicated below -->
     <a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    (version 1.56, size=490,780,244 bytes, MD5=B35EB5F1774ECB6F098583E757EF3DBA, dated 2014-12-16)
+    (version 1.58, size=490,902,857 bytes, MD5=B4D1BBDA2FADD88FDCA29461C2578D3D, dated 2015-02-25)
 
     into <i>tomcat</i>/webapps .  
   The .war file is big because it contains high resolution coastline, boundary, 
@@ -366,6 +368,9 @@ or Mac server instead.
     <br><a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.54.war">1.54</a> 
     (size=486,119,509 bytes, MD5=8118C3C4059C341DFC2488B50DAFCB31, dated 2014-10-24)
+    <br><a rel="bookmark"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap1.56.war">erddap.war</a> 
+    (size=490,780,244 bytes, MD5=B35EB5F1774ECB6F098583E757EF3DBA, dated 2014-12-16)
     ]
 
 <li><a name="ProxyPass">Use</a> ProxyPass so users don't have to put the port number, e.g., :8080, in the URL.
@@ -458,7 +463,7 @@ or Mac server instead.
 <li>Download 
     <a rel="bookmark"
     href="http://coastwatch.pfeg.noaa.gov/erddap/download/erddap.war">erddap.war</a> 
-    (version 1.56, size=490,780,244 bytes, MD5=B35EB5F1774ECB6F098583E757EF3DBA, dated 2014-12-16)
+    (version 1.58, size=490,902,857 bytes, MD5=B4D1BBDA2FADD88FDCA29461C2578D3D, dated 2015-02-25)
     into a  temporary directory.
   <br>&nbsp;
 
@@ -1145,6 +1150,7 @@ Blacklist the new IP number and hope that they will eventually get the message.
   <br>If you are creating a new robots.txt file, this is a good start:
     <pre>
 User-Agent: *
+Disallow: /files/ 
 Disallow: /images/ 
 Disallow: /*?
 Disallow: /*?*
@@ -2255,21 +2261,20 @@ program, and the now defunct POST program.
       title="This link to an external web site does not constitute an endorsement."/></a>)
   </ul>
 
+<li>EDDGridFromMergeIRFiles.java was written and contributed by
+   Jonathan Lafite and Philippe Makowski of 
+   <a rel="bookmark" href="http://rtech-engineering.com/?lang=en">R.Tech Engineering<img 
+      src="../images/external.png" align="bottom" alt=" (external link)" 
+      title="This link to an external web site does not constitute an endorsement."/></a>
+   (license: copyrighted open source).
+
 <li> ERDDAP uses code from the 
-    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a> 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowser.jsp">CoastWatch Browser</a> 
     project from the
-    <a rel="bookmark" href="http://coastwatch.noaa.gov">NOAA CoastWatch<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>
-    <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/">West Coast Regional Node<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>
+    <a rel="bookmark" href="http://coastwatch.noaa.gov">NOAA CoastWatch</a>
+    <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/">West Coast Regional Node</a>
     (license:  
-    <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowserInfo.html#Credits">copyrighted open source<img 
-      src="../images/external.png" align="bottom" alt=" (external link)" 
-      title="This link to an external web site does not constitute an endorsement."/></a>).
+    <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/coastwatch/CWBrowserInfo.html#Credits">copyrighted open source</a>).
   That project was initiated and managed by Dave Foley, the Coordinator of the NOAA CoastWatch 
   West Coast Regional Node.  
   The CoastWatch Browser code was written by Bob Simons.

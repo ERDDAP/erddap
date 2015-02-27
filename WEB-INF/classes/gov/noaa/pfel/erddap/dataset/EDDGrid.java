@@ -102,7 +102,10 @@ public abstract class EDDGrid extends EDD {
 
     public final static String dapProtocol = "griddap";
 
-    /** The constructor must set these. */
+    /** 
+     * The constructor must set this.
+     * AxisVariables are counted left to right, e.g., sst[0=time][1=lat][2=lon]. 
+     */
     protected EDVGridAxis axisVariables[];
 
     /** These are needed for EDD-required methods of the same name. */
@@ -271,6 +274,56 @@ public abstract class EDDGrid extends EDD {
     /** These are created as needed (in the constructor) from axisVariables. */
     protected String[] axisVariableSourceNames, axisVariableDestinationNames;
     protected String allDimString = null;
+
+    /** 
+     * This is used by many constructors (and EDDGridFromFiles.lowUpdate)
+     * to make an EDVGridAxis axisVariable.
+     *
+     * @param av If av >= 0, this will used to set lonIndex, latIndex, ... if appropriate.
+     *    If av < 0, this does nothing.
+     */
+    public EDVGridAxis makeAxisVariable(int av, 
+        String tSourceName, String tDestName, 
+        Attributes tSourceAtt, Attributes tAddAtt,
+        PrimitiveArray sourceAxisValues) throws Throwable {
+
+        if (EDV.LON_NAME.equals(tDestName)) {
+            if (av >= 0) 
+                lonIndex = av;
+            return new EDVLonGridAxis(tSourceName,
+                tSourceAtt, tAddAtt, sourceAxisValues); 
+        } else if (EDV.LAT_NAME.equals(tDestName)) {
+            if (av >= 0) 
+                latIndex = av;
+            return new EDVLatGridAxis(tSourceName,
+                tSourceAtt, tAddAtt, sourceAxisValues); 
+        } else if (EDV.ALT_NAME.equals(tDestName)) {
+            if (av >= 0) 
+                altIndex = av;
+            return new EDVAltGridAxis(tSourceName,
+                tSourceAtt, tAddAtt, sourceAxisValues);
+        } else if (EDV.DEPTH_NAME.equals(tDestName)) {
+            if (av >= 0) 
+                depthIndex = av;
+            return new EDVDepthGridAxis(tSourceName,
+                tSourceAtt, tAddAtt, sourceAxisValues);
+        } else if (EDV.TIME_NAME.equals(tDestName)) {
+            if (av >= 0) 
+                timeIndex = av;
+            return new EDVTimeGridAxis(tSourceName,
+                tSourceAtt, tAddAtt, sourceAxisValues);
+        } else if (EDVTimeStampGridAxis.hasTimeUnits(tSourceAtt, tAddAtt)) {
+            return new EDVTimeStampGridAxis(
+                tSourceName, tDestName,
+                tSourceAtt, tAddAtt, sourceAxisValues);
+        } else {
+            EDVGridAxis edvga = new EDVGridAxis(tSourceName, tDestName, 
+                tSourceAtt, tAddAtt, sourceAxisValues); 
+            edvga.setActualRangeFromDestinationMinMax();
+            return edvga;
+        }
+    }
+
 
     /**
      * This makes the searchString (mixed case) used to create searchBytes or searchDocument.
@@ -1530,20 +1583,20 @@ public abstract class EDDGrid extends EDD {
                     else throw new SimpleException(MustBe.THERE_IS_NO_DATA + " " +
                         EDStatic.queryError + diagnostic + ": " +
                         MessageFormat.format(EDStatic.queryErrorGridLessMin,
-                            EDStatic.EDDGridStart, "" + startDestD, 
-                            "" + av.destinationMin(),
-                            "" + av.destinationCoarseMin()));
+                            EDStatic.EDDGridStart, startS, 
+                            av.destinationMinString(),
+                            av.destinationToString(av.destinationCoarseMin())));
                 }
 
                 if (Math2.lessThanAE(precision, startDestD, av.destinationCoarseMax())) {
                 } else {
                     if (repair) startDestD = av.lastDestinationValue();
-                    else throw new SimpleException(MustBe.THERE_IS_NO_DATA +
-                        diagnostic + ": " +
+                    else throw new SimpleException(MustBe.THERE_IS_NO_DATA + " " +
+                        EDStatic.queryError + diagnostic + ": " +
                         MessageFormat.format(EDStatic.queryErrorGridGreaterMax,
-                            EDStatic.EDDGridStart, "" + startDestD, 
-                            "" + av.destinationMax(),
-                            "" + av.destinationCoarseMax()));
+                            EDStatic.EDDGridStart, startS, 
+                            av.destinationMaxString(),
+                            av.destinationToString(av.destinationCoarseMax())));
                 }
 
                 startI = av.destinationToClosestSourceIndex(startDestD);
@@ -1553,8 +1606,8 @@ public abstract class EDDGrid extends EDD {
                 //it must be a >= 0 integer index
                 if (!startS.matches("[0-9]+")) {
                     if (repair) startS = "0";
-                    else throw new SimpleException(EDStatic.queryError + 
-                        diagnostic + ": " +
+                    else throw new SimpleException(
+                        EDStatic.queryError + diagnostic + ": " +
                         MessageFormat.format(EDStatic.queryErrorGridBetween, 
                             EDStatic.EDDGridStart, startS, "" + (nAvSourceValues - 1)));
                 }
@@ -1563,8 +1616,8 @@ public abstract class EDDGrid extends EDD {
 
                 if (startI < 0 || startI > nAvSourceValues - 1) {
                     if (repair) startI = 0;
-                    else throw new SimpleException(EDStatic.queryError + 
-                        diagnostic + ": " +
+                    else throw new SimpleException(
+                        EDStatic.queryError + diagnostic + ": " +
                         MessageFormat.format(EDStatic.queryErrorGridBetween, 
                             EDStatic.EDDGridStart, startS, "" + (nAvSourceValues - 1)));
                 }
@@ -1599,23 +1652,23 @@ public abstract class EDDGrid extends EDD {
                 if (Math2.greaterThanAE(precision, stopDestD, av.destinationCoarseMin())) {
                 } else {
                     if (repair) stopDestD = av.firstDestinationValue();
-                    else throw new SimpleException(MustBe.THERE_IS_NO_DATA +
-                        diagnostic + ": " +
+                    else throw new SimpleException(MustBe.THERE_IS_NO_DATA + " " +
+                        EDStatic.queryError + diagnostic + ": " +
                         MessageFormat.format(EDStatic.queryErrorGridLessMin,
-                            EDStatic.EDDGridStop, "" + stopDestD, 
-                            "" + av.destinationMin(),
-                            "" + av.destinationCoarseMin()));
+                            EDStatic.EDDGridStop, stopS, 
+                            av.destinationMinString(),
+                            av.destinationToString(av.destinationCoarseMin())));
                 }
 
                 if (Math2.lessThanAE(   precision, stopDestD, av.destinationCoarseMax())) {
                 } else {
                     if (repair) stopDestD = av.lastDestinationValue();
-                    else throw new SimpleException(MustBe.THERE_IS_NO_DATA +
-                        diagnostic + ": " +
+                    else throw new SimpleException(MustBe.THERE_IS_NO_DATA + " " +
+                        EDStatic.queryError + diagnostic + ": " +
                         MessageFormat.format(EDStatic.queryErrorGridGreaterMax,
-                            EDStatic.EDDGridStop, "" + stopDestD, 
-                            "" + av.destinationMax(),
-                            "" + av.destinationCoarseMax()));
+                            EDStatic.EDDGridStop, stopS, 
+                            av.destinationMaxString(),
+                            av.destinationToString(av.destinationCoarseMax())));
                 }
 
                 stopI = av.destinationToClosestSourceIndex(stopDestD);
@@ -1626,8 +1679,8 @@ public abstract class EDDGrid extends EDD {
                 stopS = stopS.trim();
                 if (!stopS.matches("[0-9]+")) {
                     if (repair) stopS = "" + (nAvSourceValues - 1);
-                    else throw new SimpleException(EDStatic.queryError + 
-                        diagnostic + ": " +
+                    else throw new SimpleException(
+                        EDStatic.queryError + diagnostic + ": " +
                         MessageFormat.format(EDStatic.queryErrorGridBetween, 
                             EDStatic.EDDGridStop, stopS, "" + (nAvSourceValues - 1)));
                 }
@@ -1782,8 +1835,10 @@ public abstract class EDDGrid extends EDD {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
-     * @param tDataVariables
-     * @param tConstraints
+     * @param tDataVariables EDV[] with just the requested data variables
+     * @param tConstraints  int[nAxisVariables*3] 
+     *   where av*3+0=startIndex, av*3+1=stride, av*3+2=stopIndex.
+     *   AxisVariables are counted left to right, e.g., sst[0=time][1=lat][2=lon].
      * @return a PrimitiveArray[] where the first axisVariables.length elements
      *   are the axisValues and the next tDataVariables.length elements
      *   are the dataValues.
@@ -2148,7 +2203,8 @@ public abstract class EDDGrid extends EDD {
                     "<p>" + EDStatic.EDDGridDownloadDataHtml +
                     "</ol>\n" +
                     EDStatic.dafGridBypass));
-                writeHtmlDatasetInfo(loggedInAs, writer, true, false, true, userDapQuery, "");
+                writeHtmlDatasetInfo(loggedInAs, writer, true, false, true, true, 
+                    userDapQuery, "");
                 if (userDapQuery.length() == 0) 
                     userDapQuery = defaultDataQuery(); //after writeHtmlDatasetInfo and before writeDapHtmlForm
                 writeDapHtmlForm(loggedInAs, userDapQuery, writer);
@@ -2396,7 +2452,8 @@ public abstract class EDDGrid extends EDD {
             writer.write(EDStatic.youAreHereWithHelp(loggedInAs, "griddap", 
                 EDStatic.mag, 
                 EDStatic.magGridHtml));
-            writeHtmlDatasetInfo(loggedInAs, writer, true, true, false, userDapQuery, "");
+            writeHtmlDatasetInfo(loggedInAs, writer, true, true, true, false, 
+                userDapQuery, "");
             if (userDapQuery.length() == 0) 
                 userDapQuery = defaultGraphQuery(); //after writeHtmlDatasetInfo and before getUserQueryParts
             writer.write(HtmlWidgets.ifJavaScriptDisabled + "\n");
@@ -8018,7 +8075,7 @@ Attributes {
             "<br>ERDDAP URL in your browser, sitting and waiting for each file to download. \n" +
             "<br>If you are comfortable writing computer programs (e.g., with C, Java, Python, Matlab, r)\n" +
             "<br>you can write a program with a loop that imports all of the desired data files.\n" +
-            "<br>Or, if are comfortable with command line programs (just running a program, or using bash or tcsh\n" +
+            "<br>Or, if you are comfortable with command line programs (just running a program, or using bash or tcsh\n" +
             "<br>scripts in Linux or Mac OS X, or batch files in Windows), you can use curl to save results files\n" +
             "<br>from ERDDAP into files on your hard drive, without using a browser or writing a computer program.\n" +
             "<br>ERDDAP+curl is amazingly powerful and allows you to use ERDDAP in many new ways.\n" +
@@ -8026,9 +8083,10 @@ Attributes {
             "<br>On Windows, or if your computer doesn't have curl already, you need to \n" +
             "  <a rel=\"bookmark\" href=\"http://curl.haxx.se/download.html\">download curl" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a>\n" +
-            "<br>and install it.  To get to a command line in Windows, use \"Start : Run\" and type in \"cmd\".\n" +
-            "<br>(\"Win32 - Generic, Win32, binary (without SSL)\" worked for me on Windows XP and Windows 7.)\n" +            
-            "<br><b>Please be kind to other ERDDAP users: run just one script at a time.</b>\n" +
+            "<br>and install it.  To get to a command line in Windows, click on \"Start\" and type\n" + 
+            "<br>\"cmd\" into the search textfield.\n" +
+            "<br>(\"Win32 - Generic, Win32, binary (without SSL)\" worked for me in Windows 7.)\n" +            
+            "<br><b>Please be kind to other ERDDAP users: run just one script or curl command at a time.</b>\n" +
             "<br>Instructions for using curl are on the \n" +
                 "<a rel=\"help\" href=\"http://curl.haxx.se/download.html\">curl man page" +
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> and in this\n" +
@@ -8060,7 +8118,7 @@ Attributes {
                     EDStatic.externalLinkHtml(tErddapUrl) + "</a> \n" +
               "them in the erddapURL as &#37;5B, &#37;5D, &#37;7B, &#37;7D, respectively.\n" +
             "  <br>Then, in the erddapUrl, replace a zero-padded number (for example <tt>01</tt>) with a range\n" +
-            "  <br>of values (for example, <tt>[01-05]</tt> ),\n" +
+            "  <br>of values (for example, <tt>[01-15]</tt> ),\n" +
             "  <br>or replace a substring (for example <tt>5day</tt>) with a list of values (for example,\n" +
             "  <br><tt>{5day,8day,mday}</tt> ).\n" +
             "  <br>The <tt>#1</tt> within the output fileName causes the current value of the range or list\n" +
@@ -9547,7 +9605,7 @@ Attributes {
 
         //*** html body content
         writer.write(EDStatic.youAreHere(loggedInAs, "wcs", datasetID)); //wcs must be lowercase for link to work
-        writeHtmlDatasetInfo(loggedInAs, writer, true, true, true, "", "");
+        writeHtmlDatasetInfo(loggedInAs, writer, true, true, true, true, "", "");
 
         String makeAGraphRef = "<a href=\"" + tErddapUrl + "/griddap/" + datasetID + ".graph\">" +
             EDStatic.mag + "</a>";

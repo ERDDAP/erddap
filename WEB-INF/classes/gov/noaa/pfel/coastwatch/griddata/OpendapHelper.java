@@ -211,7 +211,7 @@ public class OpendapHelper  {
                     int sariLength = sar[i].length();
                     if (sariLength >= 2 && 
                         sar[i].charAt(0) == '"' && sar[i].charAt(sariLength - 1) == '"')
-                        sar[i] = sar[i].substring(1, sariLength - 1);
+                        sar[i] = String2.fromJson(sar[i]);
                 }
                 StringArray sa = new StringArray(sar);
 
@@ -290,7 +290,7 @@ public class OpendapHelper  {
                 int sariLength = sar[i].length();
                 if (sariLength >= 2 && 
                     sar[i].charAt(0) == '"' && sar[i].charAt(sariLength - 1) == '"')
-                    sar[i] = sar[i].substring(1, sariLength - 1);
+                    sar[i] = String2.fromJson(sar[i]);
             }
             return sar;
         } catch (Exception e) {
@@ -2915,7 +2915,7 @@ expected2 =
         testAllDapToNc(-1);  //-1 for all tests, or 0.. for specific test
 
         String2.log("\n***** OpendapHelper.test finished successfully");
-        Math2.incgc(2000);
+        Math2.incgc(2000); //in a test
     } 
 
 

@@ -214,8 +214,10 @@ public class EDDGridFromEtopo extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
-     * @param tDataVariables
-     * @param tConstraints
+     * @param tDataVariables EDV[] with just the requested data variables
+     * @param tConstraints  int[nAxisVariables*3] 
+     *   where av*3+0=startIndex, av*3+1=stride, av*3+2=stopIndex.
+     *   AxisVariables are counted left to right, e.g., sst[0=time][1=lat][2=lon].
      * @return a PrimitiveArray[] where the first axisVariables.length elements
      *   are the axisValues and the next tDataVariables.length elements
      *   are the dataValues.

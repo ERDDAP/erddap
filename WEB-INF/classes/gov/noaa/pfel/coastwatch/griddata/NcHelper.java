@@ -695,7 +695,7 @@ public class NcHelper  {
                     mainDimension = tDimension;
                     if (reallyVerbose) 
                         String2.log("NcHelper.findVariables found an unlimited dimension: " + 
-                            mainDimension.getName());
+                            mainDimension.getFullName());
                     break;
                 }
             }
@@ -712,7 +712,7 @@ public class NcHelper  {
                     mainDimension = (Dimension)dimensions.get(0);
                     if (reallyVerbose) 
                         String2.log("NcHelper.findVariables found a time variable with dimension: " + 
-                            mainDimension.getName());
+                            mainDimension.getFullName());
                     break;
                 }
             }
@@ -726,7 +726,7 @@ public class NcHelper  {
                 if (dimensions.size() > 0) {
                     mainDimension = (Dimension)dimensions.get(0);
                     if (reallyVerbose) String2.log("NcHelper.findVariables found an outer dimension: " + 
-                        mainDimension.getName());
+                        mainDimension.getFullName());
                     break;
                 }
             }
@@ -742,7 +742,7 @@ public class NcHelper  {
             Variable tVariable = (Variable)rootGroupVariables.get(i);
             List tDimensions = tVariable.getDimensions();
             int nDimensions = tDimensions.size();
-            //if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getName() + 
+            //if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getFullName() + 
             //    " type=" + tVariable.getDataType());
             if ((nDimensions == 1 && tDimensions.get(0).equals(mainDimension)) ||
                 (nDimensions == 2 && tDimensions.get(0).equals(mainDimension) && 
@@ -774,12 +774,12 @@ public class NcHelper  {
                 loadVariables.add(variable);
                 dimNames = new String[tnDim];
                 for (int d = 0; d < tnDim; d++)
-                    dimNames[d] = variable.getDimension(d).getName();
+                    dimNames[d] = variable.getDimension(d).getFullName();
             } else if (tnDim > 0 && tnDim == dimNames.length) {
                 //a similar variable?
                 boolean ok = true;
                 for (int d = 0; d < tnDim; d++) {
-                    if (!dimNames[d].equals(variable.getDimension(d).getName())) {
+                    if (!dimNames[d].equals(variable.getDimension(d).getFullName())) {
                         ok = false;
                         break;
                     }
@@ -850,13 +850,13 @@ public class NcHelper  {
                 if (foundDimensionNames == null) {
                     foundDimensionNames = new String[4];
                     for (int i = 0; i < 4; i++)
-                       foundDimensionNames[i] = ((Dimension)dimensions.get(i)).getName();               
+                       foundDimensionNames[i] = ((Dimension)dimensions.get(i)).getFullName();               
                 }
 
                 //does it match foundDimensions
                 boolean matches = true;
                 for (int i = 0; i < 4; i++) {
-                    if (!foundDimensionNames[i].equals(((Dimension)dimensions.get(i)).getName())) {
+                    if (!foundDimensionNames[i].equals(((Dimension)dimensions.get(i)).getFullName())) {
                         matches = false;
                         break;
                     }
@@ -927,20 +927,20 @@ public class NcHelper  {
             if (reallyVerbose)
                 String2.log("Warning: NcHelper.getAttributePA " + varName + " att=null");
             return null;
-        } else if (String2.isSomething(att.getName())) {
+        } else if (String2.isSomething(att.getFullName())) {
             try {
                 //decodeAttribute added with switch to netcdf-java 4.0
                 return PrimitiveArray.factory(decodeAttribute(getArray(att.getValues()))); 
             } catch (Throwable t) {
                 String2.log("Warning: NcHelper caught an exception while reading '" + 
-                    varName + "' attribute=" + att.getName() + "\n" +
+                    varName + "' attribute=" + att.getFullName() + "\n" +
                     MustBe.throwableToString(t));
                 return null;
             }
         } else {
             if (reallyVerbose)
                 String2.log("Warning: NcHelper.getAttributePA " + varName + 
-                    " att.getName()=" + String2.annotatedString(att.getName()));
+                    " att.getFullName()=" + String2.annotatedString(att.getFullName()));
             return null;
         }
     }
@@ -953,7 +953,7 @@ public class NcHelper  {
      * @return the attribute (or null if none)
      */
     public static PrimitiveArray getVariableAttribute(Variable variable, String attributeName) {
-        return getAttributePA(variable.getName(), variable.findAttribute(attributeName)); 
+        return getAttributePA(variable.getFullName(), variable.findAttribute(attributeName)); 
     }
 
 
@@ -979,13 +979,13 @@ public class NcHelper  {
                 String2.log("Warning: NcHelper.addAttribute " + varName + " att=null");
             return;
         }
-        if (String2.isSomething(att.getName())) {
+        if (String2.isSomething(att.getFullName())) {
             //attributes.set calls String2.canonical (useful since many names are in many datasets)
-            attributes.set(att.getName(), getAttributePA(varName, att));
+            attributes.set(att.getFullName(), getAttributePA(varName, att));
         } else {
             if (reallyVerbose)
                 String2.log("Warning: NcHelper.addAttribute " + varName + 
-                    " att.getName()=" + String2.annotatedString(att.getName()));
+                    " att.getFullName()=" + String2.annotatedString(att.getFullName()));
         }
     }
 
@@ -1024,7 +1024,7 @@ public class NcHelper  {
     public static void getVariableAttributes(Variable variable, Attributes attributes) {
         if (variable == null)
             return;
-        String variableName = variable.getName();
+        String variableName = variable.getFullName();
         List variableAttList = variable.getAttributes();
         if (variableAttList == null) 
             return;
@@ -1414,7 +1414,7 @@ public class NcHelper  {
         Array array = variable.read(rowOrigin, rowShape); 
         PrimitiveArray pa = PrimitiveArray.factory(getArray(array)); 
         Test.ensureEqual(pa.size(), lastT - firstT + 1, "NcHelper.getValues nFound!=nExpected.\n" +
-            " name=" + variable.getName() +
+            " name=" + variable.getFullName() +
             " xIndex=" + xIndex + 
             " yIndex=" + yIndex + 
             " zIndex=" + zIndex + 
@@ -1456,7 +1456,7 @@ public class NcHelper  {
         Array array = variable.read(rowOrigin, rowShape); 
         PrimitiveArray pa = PrimitiveArray.factory(getArray(array)); 
         Test.ensureEqual(pa.size(), nX*nY*nZ*nT, "NcHelper.get4DValues nFound!=nExpected.\n" +
-            " name=" + variable.getName() +
+            " name=" + variable.getFullName() +
             " firstX=" + firstX + " nX=" + nX +
             " firstY=" + firstY + " nT=" + nY +
             " firstZ=" + firstZ + " nZ=" + nZ +
@@ -1479,7 +1479,7 @@ public class NcHelper  {
             Variable loadVariables[] = findVariables(netcdfFile, null);
             tColumnNames = new String[loadVariables.length];
             for (int i = 0; i < loadVariables.length; i++)
-                tColumnNames[i] = loadVariables[i].getShortName(); //short implies not in a structure
+                tColumnNames[i] = loadVariables[i].getFullName(); 
 
             //I care about this exception
             netcdfFile.close();
@@ -1820,11 +1820,11 @@ public class NcHelper  {
                         " (loadVarNames=" + String2.toCSSVString(loadVarNames) + ").");
                 List tDimensions = tVariable.getDimensions();
                 int nDimensions = tDimensions.size();
-                //if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getName() + 
+                //if (reallyVerbose) String2.log("i=" + i + " name=" + tVariable.getFullName() + 
                 //    " type=" + tVariable.getDataType());
                 if (nDimensions == 1 ||
                     (nDimensions == 2 && tVariable.getDataType() == DataType.CHAR)) {
-                    varNames.add(tVariable.getName());
+                    varNames.add(tVariable.getFullName());
                     PrimitiveArray pa = getPrimitiveArray(tVariable);
 
                     //decode the pa?
@@ -1999,7 +1999,7 @@ String2.log(pas13.toString());
         try {
             Variable vars[] = findAllVariablesWithDims(ncFile);
             for (int v = 0; v < vars.length; v++)
-                sa.add(vars[v].getShortName());
+                sa.add(vars[v].getFullName());
             sa.sort();
             ncFile.close();
         } catch (Exception e) {
@@ -2480,7 +2480,7 @@ String2.log(pas13.toString());
  
         //done
         String2.log("\n***** NcHelper.test finished successfully");
-        Math2.incgc(2000);
+        Math2.incgc(2000); //in a test
     } 
 
 }

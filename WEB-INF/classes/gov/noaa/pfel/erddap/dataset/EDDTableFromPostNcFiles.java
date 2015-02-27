@@ -77,25 +77,26 @@ public class EDDTableFromPostNcFiles extends EDDTableFromNcFiles {
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
-        int tReloadEveryNMinutes,
+        int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
         String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
+        boolean tAccessibleViaFiles) 
         throws Throwable {
 
         super(tDatasetID, tAccessibleTo, tOnChange, tFgdcFile, tIso19115File, 
             tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
-            tDataVariables, tReloadEveryNMinutes,
+            tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles);
         className = "EDDTableFromPostNcFiles";
 
     }

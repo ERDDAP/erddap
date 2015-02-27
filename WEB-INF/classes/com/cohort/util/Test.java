@@ -306,11 +306,12 @@ public class Test {
         String lineString = "line=" + line + ": ";
         return "\n" + String2.ERROR + " in Test.ensureEqual(Strings) line=" + 
             line + " col=" + (po - lastNewlinePo) + " '" + c1 + "'!='" + c2+ "':\n" + 
-            message + "\nSpecifically:\n" +                 
+            message + "\n" +
+            (line > 1? "\"" + annS1 + "\" != \n\"" + annS2 + "\""  : "") + 
+            "\n\nSpecifically:\n" +                 
             "s1 " + lineString + line1Sample + "\n" +
-            "s2 " + lineString + line2Sample + "\n" +
-            String2.makeString(' ', (3 + lineString.length() + po - lastNewlinePo - 1)) + "^" + "\n" +
-            (line > 1? "\"" + annS1 + "\" != \n\"" + annS2 + "\""  : "");
+            "s2 " + lineString + line2Sample+ "\n" +
+            String2.makeString(' ', (3 + lineString.length() + po - lastNewlinePo - 1)) + "^" + "\n";
     }  
 
     /** 

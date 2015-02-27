@@ -247,9 +247,9 @@ public class LoadDatasets extends Thread {
                                 " because it was in flag directory.");
                         } else {
                             //does the dataset already exist and is young?
-                            EDD oldEdd = (EDD)erddap.gridDatasetHashMap.get(tId);
+                            EDD oldEdd = erddap.gridDatasetHashMap.get(tId);
                             if (oldEdd == null)
-                                oldEdd = (EDD)erddap.tableDatasetHashMap.get(tId);
+                                oldEdd = erddap.tableDatasetHashMap.get(tId);
                             if (oldEdd != null) {
                                 long minutesOld = oldEdd.creationTimeMillis() <= 0?  //see edd.setCreationTimeTo0
                                     Long.MAX_VALUE :
@@ -317,9 +317,9 @@ public class LoadDatasets extends Thread {
                             //(??? synchronize on (?) if really need avoid inconsistency)
 
                             //was there a dataset with the same datasetID?
-                            oldDataset = (EDD)(erddap.gridDatasetHashMap.get(tId));
+                            oldDataset = erddap.gridDatasetHashMap.get(tId);
                             if (oldDataset == null)
-                                oldDataset = (EDD)(erddap.tableDatasetHashMap.get(tId));
+                                oldDataset = erddap.tableDatasetHashMap.get(tId);
 
                             //if oldDataset existed, remove its info from categoryInfo
                             //(check now, before put dataset in place, in case EDDGrid <--> EDDTable)
@@ -332,21 +332,21 @@ public class LoadDatasets extends Thread {
                             //(hashMap.put atomically replaces old version with new)
                             if ((oldDataset == null || oldDataset instanceof EDDGrid) &&
                                                           dataset instanceof EDDGrid) {
-                                erddap.gridDatasetHashMap.put(tId, dataset);  //was/is grid
+                                erddap.gridDatasetHashMap.put(tId, (EDDGrid)dataset);  //was/is grid
 
                             } else if ((oldDataset == null || oldDataset instanceof EDDTable) &&
                                                                  dataset instanceof EDDTable) {
-                                erddap.tableDatasetHashMap.put(tId, dataset); //was/is table 
+                                erddap.tableDatasetHashMap.put(tId, (EDDTable)dataset); //was/is table 
 
                             } else if (dataset instanceof EDDGrid) {
                                 if (oldDataset != null)
                                     erddap.tableDatasetHashMap.remove(tId);   //was table
-                                erddap.gridDatasetHashMap.put(tId, dataset);  //now grid
+                                erddap.gridDatasetHashMap.put(tId, (EDDGrid)dataset);  //now grid
 
                             } else if (dataset instanceof EDDTable) {
                                 if (oldDataset != null)
                                     erddap.gridDatasetHashMap.remove(tId);    //was grid
-                                erddap.tableDatasetHashMap.put(tId, dataset); //now table
+                                erddap.tableDatasetHashMap.put(tId, (EDDTable)dataset); //now table
                             }
 
                             //add new info to categoryInfo
@@ -378,9 +378,9 @@ public class LoadDatasets extends Thread {
 
 
                             //actually remove old dataset (if any existed)
-                            EDD tDataset = (EDD)erddap.gridDatasetHashMap.remove(tId); //always ensure it was removed
+                            EDD tDataset = erddap.gridDatasetHashMap.remove(tId); //always ensure it was removed
                             if (tDataset == null)
-                                tDataset = (EDD)erddap.tableDatasetHashMap.remove(tId);
+                                tDataset = erddap.tableDatasetHashMap.remove(tId);
                             if (oldDataset == null)
                                 oldDataset = tDataset;
 
@@ -495,50 +495,8 @@ public class LoadDatasets extends Thread {
 
                         //trigger RSS action 
                         // (after new dataset is in place and if there is either a current or older dataset)
-                        if (cooDataset != null && change.length() > 0) {
-                            try {
-                                //generate the rss xml
-                                //See general info: http://en.wikipedia.org/wiki/RSS_(file_format)
-                                //  background: http://www.mnot.net/rss/tutorial/
-                                //  rss 2.0 spec: http://cyber.law.harvard.edu/rss/rss.html
-                                //I chose rss 2.0 for no special reason (most modern version of that fork; I like "simple").
-                                //The feed programs didn't really care if just pubDate changed.
-                                //  They care about item titles changing.
-                                //  So this treats every change as a new item with a different title, 
-                                //    replacing the previous item.
-                                StringBuilder rss = new StringBuilder();
-                                GregorianCalendar gc = Calendar2.newGCalendarZulu();
-                                String pubDate = 
-                                    "    <pubDate>" + Calendar2.formatAsRFC822GMT(gc) + "</pubDate>\n";
-                                String link = 
-                                    "    <link>" + EDStatic.publicErddapUrl(cooDataset.getAccessibleTo() == null) +
-                                        "/" + cooDataset.dapProtocol() + "/" + tId;
-                                rss.append(
-                                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                                    "<rss version=\"2.0\" xmlns=\"http://backend.userland.com/rss2\">\n" +
-                                    "  <channel>\n" +
-                                    "    <title>ERDDAP: " + XML.encodeAsXML(cooDataset.title()) + "</title>\n" +
-                                    "    <description>This RSS feed changes when the dataset changes.</description>\n" +      
-                                    link + ".html</link>\n" +
-                                    pubDate +
-                                    "    <item>\n" +
-                                    "      <title>This dataset changed " + Calendar2.formatAsISODateTimeT(gc) + "Z</title>\n" +
-                                    "  " + link + ".html</link>\n" +
-                                    "      <description>" + XML.encodeAsXML(change) + "</description>\n" +      
-                                    "    </item>\n" +
-                                    "  </channel>\n" +
-                                    "</rss>\n");
-
-                                //store the xml
-                                erddap.rssHashMap.put(tId, String2.getUTF8Bytes(rss.toString()));
-
-                            } catch (Throwable rssT) {
-                                String subject = startError + xmlReader.lineNumber() + " with RSS";
-                                String content = MustBe.throwableToString(rssT); 
-                                String2.log(subject + ":\n" + content);
-                                EDStatic.email(EDStatic.emailEverythingToCsv, subject, content);
-                            }
-                        }
+                        if (cooDataset != null && change.length() > 0) 
+                            cooDataset.updateRSS(erddap, change);
                     }
 
                 } else if (tags.equals("<erddapDatasets><subscriptionEmailBlacklist>")) {
@@ -706,6 +664,8 @@ public class LoadDatasets extends Thread {
                     EDStatic.tally.remove("Categorize Attribute = Value (since last daily report)");
                     EDStatic.tally.remove("Categorize File Type (since last daily report)");
                     EDStatic.tally.remove("Convert (since last daily report)");
+                    EDStatic.tally.remove("files browse DatasetID (since last daily report)");
+                    EDStatic.tally.remove("files download DatasetID (since last daily report)");
                     EDStatic.tally.remove("griddap DatasetID (since last daily report)");
                     EDStatic.tally.remove("griddap File Type (since last daily report)");
                     EDStatic.tally.remove("Home Page (since last daily report)");
@@ -881,9 +841,9 @@ public class LoadDatasets extends Thread {
                 long tTime = System.currentTimeMillis();
                 for (int idi = 0; idi < nDatasetIDs; idi++) {
                     String tDatasetID = datasetIDs.get(idi); 
-                    EDD edd = (EDD)erddap.gridDatasetHashMap.get(tDatasetID);
+                    EDD edd = erddap.gridDatasetHashMap.get(tDatasetID);
                     if (edd == null) 
-                        edd = (EDD)erddap.tableDatasetHashMap.get(tDatasetID);
+                        edd = erddap.tableDatasetHashMap.get(tDatasetID);
                     if (edd == null) {
                         //remove it from Lucene     luceneIndexWriter is thread-safe
                         EDStatic.luceneIndexWriter.deleteDocuments( 
@@ -968,9 +928,9 @@ public class LoadDatasets extends Thread {
     public static boolean tryToUnload(Erddap erddap, String tId, StringArray changedDatasetIDs, 
         boolean needToUpdateLucene) {
 
-        EDD oldEdd = (EDD)erddap.gridDatasetHashMap.remove(tId);
+        EDD oldEdd = erddap.gridDatasetHashMap.remove(tId);
         if (oldEdd == null) {
-            oldEdd = (EDD)erddap.tableDatasetHashMap.remove(tId);
+            oldEdd = erddap.tableDatasetHashMap.remove(tId);
             if (oldEdd == null)  
                 return false;
         }

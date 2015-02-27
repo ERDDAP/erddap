@@ -918,7 +918,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"creator_url\">http://cimt.dyndns.org:8080/dods/drds/vCTD</att>\n" +
 "        <att name=\"infoUrl\">http://cimt.dyndns.org:8080/dods/drds/vCTD</att>\n" +
 "        <att name=\"institution\">DYNDNS CIMT</att>\n" +
-"        <att name=\"keywords\">acceleration, anomaly, avg, cimt, cimt.dyndns.org, currents, data, density, depth, dods, drds, dyndns, fluorescence, geopotential, identifier, oceans,\n" +
+"        <att name=\"keywords\">acceleration, anomaly, avg, cimt, cimt.dyndns.org, currents, data, density, depth, dods, drds, dyndns, fluorescence, geopotential, oceans,\n" +
 "Oceans &gt; Salinity/Density &gt; Salinity,\n" +
 "optical, optical properties, properties, salinity, sea, sea_water_salinity, seawater, sigma, sound, station, temperature, time, vctd.das, velocity, water</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
@@ -998,6 +998,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Depth</att>\n" +
 "            <att name=\"standard_name\">depth</att>\n" +
+"            <att name=\"units\">m</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +

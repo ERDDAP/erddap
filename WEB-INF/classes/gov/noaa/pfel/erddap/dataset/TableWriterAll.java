@@ -52,6 +52,9 @@ public class TableWriterAll extends TableWriter {
     protected String dir;
     protected String fileNameNoExt;
 
+    //may be changed after construction
+    public boolean normalFinish = true;
+
     //set firstTime
     //POLICY: because this procedure may be used in more than one thread,
     //do work on unique temp files names using randomInt, then rename to proper file name.
@@ -140,6 +143,16 @@ public class TableWriterAll extends TableWriter {
      * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
      */
     public void finish() throws Throwable {
+        if (normalFinish) 
+            doNormalFinish();
+    }
+
+    /**
+     * This writes any end-of-file info to the stream and flushes the stream.
+     *
+     * @throws Throwable if trouble (e.g., MustBe.THERE_IS_NO_DATA if there is no data)
+     */
+    public void doNormalFinish() throws Throwable {
         //check for MustBe.THERE_IS_NO_DATA
         if (columnStreams == null)
             throw new SimpleException(MustBe.THERE_IS_NO_DATA + " (nRows = 0)");
@@ -187,6 +200,15 @@ public class TableWriterAll extends TableWriter {
     }
 
     /**
+     * This returns an empty PA (of suitable type, with capacity = 1) for a column. 
+     *
+     * @param col   0..
+     */
+    public PrimitiveArray columnEmptyPA(int col) {
+        return PrimitiveArray.factory(columnType(col), 1, false);  //safe since checked above
+    }
+
+    /**
      * This is like the other column(col), but just gets up to the firstNRows. 
      *
      * @param col   0..
@@ -212,6 +234,7 @@ public class TableWriterAll extends TableWriter {
     /**
      * Call this after finish() to get the data from a DataInputStream 
      * with all of the data for one of the columns.
+     * IT IS UP TO THE CALLER TO COSE THE DataInputStream.
      * THIS USES ALMOST NO MEMORY.
      * 
      * <p>Missing values are still represented as destinationMissingValue or

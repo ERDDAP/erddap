@@ -148,11 +148,10 @@ public class EDVTimeStampGridAxis extends EDVGridAxis {
         //extractScaleAddOffset     It sets destinationDataType
         extractScaleAddOffset(); 
         if (scaleAddOffset) {
-            setDestinationMin(destinationMin * scaleFactor + addOffset);
-            setDestinationMax(destinationMax * scaleFactor + addOffset);
-        }
-        //test for min>max after extractScaleAddOffset, since order may have changed
-        if (destinationMin > destinationMax) { 
+            setDestinationMinMax(
+                destinationMin * scaleFactor + addOffset,
+                destinationMax * scaleFactor + addOffset);
+        } else if (destinationMin > destinationMax) { //in Java, only true if neither is NaN      
             double d = destinationMin; destinationMin = destinationMax; destinationMax = d;
         }
 

@@ -451,7 +451,7 @@ public class SaveOpendap  {
         
         //done
         String2.log("\n***** SaveOpendap.main finished successfully");
-        Math2.incgc(2000);
+        Math2.incgc(2000); //in a test
 
     }
 
