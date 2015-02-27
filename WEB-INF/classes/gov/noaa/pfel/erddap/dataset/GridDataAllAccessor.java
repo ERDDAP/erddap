@@ -91,6 +91,7 @@ public class GridDataAllAccessor {
 
     /**
      * Get all of the destination values for one dataVariable as a DataInputStream.
+     * IT IS THE CALLERS RESPONSIBILITY TO CLOSE THESE!
      *
      * @param dv a dataVariable number (within the request, not the EDD dataVariable number).
      * @return a DataInputStream
@@ -118,7 +119,9 @@ public class GridDataAllAccessor {
         long n = gridDataAccessor.totalIndex.size();
         EDStatic.ensureArraySizeOkay(n, "GridDataAllAccessor");
         PrimitiveArray pa = PrimitiveArray.factory(dataClass[dv], (int)n, false);
-        pa.readDis(getDataInputStream(dv), (int)n);
+        DataInputStream dis = getDataInputStream(dv);
+        pa.readDis(dis, (int)n);
+        dis.close();
         return pa;
     }
 

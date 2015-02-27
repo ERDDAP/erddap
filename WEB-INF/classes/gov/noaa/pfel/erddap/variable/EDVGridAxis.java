@@ -97,13 +97,20 @@ public class EDVGridAxis extends EDV {
                 " both equal " + sourceValues.getNiceDouble(firstTie) + ".");
 
         //test if evenly spaced
-        error = sourceValues.isEvenlySpaced();
+        resetIsEvenlySpaced();
+
+        initializeAverageSpacingAndCoarseMinMax();
+    }
+
+    /**
+     * This resets isEvenlySpaced.
+     */
+    public void resetIsEvenlySpaced() {
+        String error = sourceValues.isEvenlySpaced();
         if (verbose && error.length() > 0)
             String2.log("  " + destinationName + ": " + error + "\n" + 
                 sourceValues.smallestBiggestSpacing());
         isEvenlySpaced = error.length() == 0;
-
-        initializeAverageSpacingAndCoarseMinMax();
     }
 
     /** Some constructors call this to set destinationCoarseMin/Max
@@ -189,7 +196,8 @@ public class EDVGridAxis extends EDV {
     }
 
 
-    /** This returns the PrimitiveArray with the values for this axis 
+    /** 
+     * This returns the PrimitiveArray with the values for this axis 
      * as stored in the source. 
      * Don't change these values.
      */

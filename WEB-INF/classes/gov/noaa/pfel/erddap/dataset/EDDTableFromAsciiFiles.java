@@ -17,6 +17,7 @@ import com.cohort.util.Math2;
 import com.cohort.util.MustBe;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
@@ -55,25 +56,28 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
-        int tReloadEveryNMinutes,
-        String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
+        int tReloadEveryNMinutes, int tUpdateEveryNMillis,
+        String tFileDir, boolean tRecursive, String tFileNameRegex,
+        String tMetadataFrom,
         String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
+        boolean tSourceNeedsExpandedFP_EQ, 
+        boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
         throws Throwable {
 
         super("EDDTableFromAsciiFiles", true, tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
-            tDataVariables, tReloadEveryNMinutes,
+            tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
+            tSourceNeedsExpandedFP_EQ, 
+            tFileTableInMemory, tAccessibleViaFiles);
     }
 
     /** The constructor for subclasses. */
@@ -82,25 +86,29 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
-        int tReloadEveryNMinutes,
-        String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
+        int tReloadEveryNMinutes, int tUpdateEveryNMillis,
+        String tFileDir, boolean tRecursive, String tFileNameRegex, 
+        String tMetadataFrom,
         String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
+        boolean tSourceNeedsExpandedFP_EQ, 
+        boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
         throws Throwable {
 
         super(tClassName, true, tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix,
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
-            tDataVariables, tReloadEveryNMinutes,
-            tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
+            tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
+            tFileDir, tRecursive, tFileNameRegex, 
+            tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
+            tSourceNeedsExpandedFP_EQ, 
+            tFileTableInMemory, tAccessibleViaFiles);
 
     }
 
@@ -193,7 +201,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
      */
     public static String generateDatasetsXml(String tFileDir, String tFileNameRegex, 
         String sampleFileName, 
-        String charset, int columnNamesRow, int firstDataRow, int tReloadEveryNMinutes,
+        String charset, int columnNamesRow, int firstDataRow, 
+        int tReloadEveryNMinutes, 
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
         String tColumnNameForExtract, String tSortedColumnSourceName,
         String tSortFilesBySourceNames, 
@@ -203,6 +212,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         String2.log("EDDTableFromAsciiFiles.generateDatasetsXml" +
             "\n  sampleFileName=" + sampleFileName);
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
+        if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
+            tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
 
         //*** basically, make a table to hold the sourceAttributes 
         //and a parallel table to hold the addAttributes
@@ -286,20 +297,22 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
                 suggestDatasetID(tFileDir + tFileNameRegex) + 
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
+            "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
             "    <fileDir>" + tFileDir + "</fileDir>\n" +
             "    <recursive>true</recursive>\n" +
-            "    <fileNameRegex>" + tFileNameRegex + "</fileNameRegex>\n" +
+            "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <charset>" + charset + "</charset>\n" +
             "    <columnNamesRow>" + columnNamesRow + "</columnNamesRow>\n" +
             "    <firstDataRow>" + firstDataRow + "</firstDataRow>\n" +
-            "    <preExtractRegex>" + tPreExtractRegex + "</preExtractRegex>\n" +
-            "    <postExtractRegex>" + tPostExtractRegex + "</postExtractRegex>\n" +
-            "    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
+            "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
+            "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
+            "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
             "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n" +
+            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -325,9 +338,11 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
         try {
             Attributes externalAddAttributes = new Attributes();
             externalAddAttributes.add("title", "New Title!");
+            String suggDatasetID = suggestDatasetID(
+                EDStatic.unitTestDataDir + "asciiNdbc/.*\\.csv");
             String results = generateDatasetsXml(
-                "c:/u00/cwatch/testData/asciiNdbc/",  ".*\\.csv",
-                "c:/u00/cwatch/testData/asciiNdbc/31201_2009.csv", 
+                EDStatic.unitTestDataDir + "asciiNdbc/",  ".*\\.csv",
+                EDStatic.unitTestDataDir + "asciiNdbc/31201_2009.csv", 
                 "ISO-8859-1", 1, 3, 1440,
                 "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
                 "time", "station time", 
@@ -337,8 +352,8 @@ public class EDDTableFromAsciiFiles extends EDDTableFromFiles {
             //GenerateDatasetsXml
             String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
                 "EDDTableFromAsciiFiles",
-                "c:/u00/cwatch/testData/asciiNdbc/",  ".*\\.csv",
-                "c:/u00/cwatch/testData/asciiNdbc/31201_2009.csv", 
+                EDStatic.unitTestDataDir + "asciiNdbc/",  ".*\\.csv",
+                EDStatic.unitTestDataDir + "asciiNdbc/31201_2009.csv", 
                 "ISO-8859-1", "1", "3", "1440",
                 "", "_.*$", ".*", "stationID",  //just for test purposes; station is already a column in the file
                 "time", "station time", 
@@ -352,9 +367,10 @@ directionsForGenerateDatasetsXml() +
 "   below, notably 'units' for each of the dataVariables.\n" +
 "-->\n" +
 "\n" +
-"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"asciiNdbc_8443_4c8b_d0e1\" active=\"true\">\n" +
+"<dataset type=\"EDDTableFromAsciiFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <fileDir>c:/u00/cwatch/testData/asciiNdbc/</fileDir>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <fileDir>" + EDStatic.unitTestDataDir + "asciiNdbc/</fileDir>\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*\\.csv</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
@@ -368,6 +384,7 @@ directionsForGenerateDatasetsXml() +
 "    <sortedColumnSourceName>time</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>station time</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
@@ -384,7 +401,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"keywords\">altitude, atmosphere,\n" +
 "Atmosphere &gt; Altitude &gt; Station Height,\n" +
 "Atmosphere &gt; Atmospheric Winds &gt; Surface Winds,\n" +
-"atmospheric, atmp, direction, height, identifier, ndbc, newer, noaa, speed, station, surface, temperature, time, title, wind, wind_from_direction, wind_speed, winds, wtmp</att>\n" +
+"atmospheric, atmp, direction, height, ndbc, newer, noaa, speed, station, surface, temperature, time, title, wind, wind_from_direction, wind_speed, winds, wtmp</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
@@ -444,6 +461,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"ioos_category\">Location</att>\n" +
 "            <att name=\"long_name\">Altitude</att>\n" +
 "            <att name=\"standard_name\">altitude</att>\n" +
+"            <att name=\"units\">m</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -528,24 +546,24 @@ directionsForGenerateDatasetsXml() +
             //    expected, "");
 
             //ensure it is ready-to-use by making a dataset from it
-            //!!! actually this will fail with a specific error which is caught below
+            //2014-12-24 no longer: this will fail with a specific error which is caught below
             EDD edd = oneFromXmlFragment(results);
-            //these won't actually be tested...
-            Test.ensureEqual(edd.datasetID(), "asciiNdbc_8443_4c8b_d0e1", "");
+            Test.ensureEqual(edd.datasetID(), suggDatasetID, "");
             Test.ensureEqual(edd.title(), "The Newer Title!", "");
-            //If it does get here, this will fail on purpose...
             Test.ensureEqual(String2.toCSSVString(edd.dataVariableDestinationNames()), 
-                "zztop???", "");
+                "stationID, longitude, latitude, altitude, time, station, wd, wspd, atmp, wtmp",
+                "");
 
         } catch (Throwable t) {
             String msg = MustBe.throwableToString(t);
-            if (msg.indexOf(
-"When a variable's destinationName is \"altitude\", the sourceAttributes or addAttributes " +
-"\"units\" MUST be \"m\" (not \"null\").\n" +
-"If needed, use \"scale_factor\" to convert the source values to meters (positive=up),\n" +
-"use a different destinationName for this variable.") >= 0) {
-                String2.log("EXPECTED ERROR while creating the edd: altitude's units haven't been set.\n");
-            } else 
+//2014-12-24 no longer occurs
+//            if (msg.indexOf(
+//"When a variable's destinationName is \"altitude\", the sourceAttributes or addAttributes " +
+//"\"units\" MUST be \"m\" (not \"null\").\n" +
+//"If needed, use \"scale_factor\" to convert the source values to meters (positive=up),\n" +
+//"use a different destinationName for this variable.") >= 0) {
+//                String2.log("EXPECTED ERROR while creating the edd: altitude's units haven't been set.\n");
+//            } else 
                 String2.getStringFromSystemIn(msg + 
                     "\nUnexpected error using generateDatasetsXml." + 
                     "\nPress ^C to stop or Enter to continue..."); 

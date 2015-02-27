@@ -217,8 +217,9 @@ public abstract class PrimitiveArray {
      * @return a PrimitiveArray with size constantValues.
      */
     public static PrimitiveArray factory(Class elementClass, int size, String constantValue) {
-        Test.ensureNotNull(constantValue, 
-            String2.ERROR + " in PrimitiveArray.factory: constantValue is null.");
+        if (constantValue == null)
+            throw new RuntimeException(String2.ERROR + 
+                " in PrimitiveArray.factory: constantValue is null.");
 
         if (elementClass == double.class) {
             Math2.ensureMemoryAvailable(size * 8L, "PrimitiveArray.factory(double, " + size + ")");
@@ -1452,8 +1453,10 @@ public abstract class PrimitiveArray {
         
         //ensure lowPo <= highPo
         //lowPo == highPo is handled by the following two chunks of code
-        Test.ensureTrue(lowPo <= highPo,  
-            String2.ERROR + "in PrimitiveArray.rafBinarySearch: lowPo > highPo.");
+        if (lowPo > highPo)
+            throw new RuntimeException(String2.ERROR + 
+                " in PrimitiveArray.rafBinarySearch: lowPo(" + lowPo + 
+                ") > highPo(" + highPo + ").");
         
         double tValue = rafReadDouble(raf, type, start, lowPo);
         //String2.log("rafBinarySearch value=" + value + " po=" + lowPo + " tValue=" + tValue);
@@ -1541,12 +1544,13 @@ public abstract class PrimitiveArray {
      * @param highPo the high index to start with, usually 
      *  (originalPrimitiveArray.size() - 1)
      * @param value the value you are searching for
+     * @param precision e.g., 5 for floats and 9 for doubles     
      * @return the index of the first element &gt; or Math2.almostEqual5 to value 
      *     (or highPo + 1, if there are none)
      * @throws Exception if trouble
      */
-    public static long rafFirstGAE5(RandomAccessFile raf, Class type,
-        long start, long lowPo, long highPo, double value) throws Exception {
+    public static long rafFirstGAE(RandomAccessFile raf, Class type,
+        long start, long lowPo, long highPo, double value, int precision) throws Exception {
 
         if (lowPo > highPo)
             return highPo + 1;
@@ -1560,7 +1564,7 @@ public abstract class PrimitiveArray {
             po = -po -1;
 
         //find the first GAE
-        while (po > lowPo && Math2.almostEqual(5, rafReadDouble(raf, type, start, po - 1), value))
+        while (po > lowPo && Math2.almostEqual(precision, rafReadDouble(raf, type, start, po - 1), value))
             po--;
 
         return po;
@@ -1607,7 +1611,7 @@ public abstract class PrimitiveArray {
 
     /**
      * Given a sorted PrimitiveArray, stored to a randomAccessFile,
-     * this finds the index of the last element &lt; or almostEqual5 to value. 
+     * this finds the index of the last element &lt; or almostEqual to value. 
      *
      * <p>If firstGE &gt; lastLE, there are no matching elements (because
      * the requested range is less than or greater than all the values,
@@ -1620,12 +1624,13 @@ public abstract class PrimitiveArray {
      * @param highPo the high index to start with, usually 
      *  (originalPrimitiveArray.size() - 1)
      * @param value the value you are searching for
-     * @return the index of the first element &lt; or Math2.almostEqual5 to value 
+     * @param precision e.g., 5 for floats and 9 for doubles     
+     * @return the index of the first element &lt; or Math2.almostEqual to value 
      *     (or -1, if there are none)
      * @throws Exception if trouble
      */
-    public static long rafLastLAE5(RandomAccessFile raf, Class type,
-        long start, long lowPo, long highPo, double value) throws Exception {
+    public static long rafLastLAE(RandomAccessFile raf, Class type,
+        long start, long lowPo, long highPo, double value, int precision) throws Exception {
 
         if (lowPo > highPo)
             return -1;
@@ -1638,7 +1643,8 @@ public abstract class PrimitiveArray {
             po = -po -1 -1;
 
         //look for last almost equal value
-        while (po < highPo && Math2.almostEqual(5, rafReadDouble(raf, type, start, po + 1), value))
+        while (po < highPo && 
+            Math2.almostEqual(precision, rafReadDouble(raf, type, start, po + 1), value))
             po++;
 
         return po;
@@ -1658,14 +1664,17 @@ public abstract class PrimitiveArray {
      *     (not necessarily the first or last instance)
      *     (or -index-1 where it should be inserted, with extremes of
      *     -lowPo-1 and -(highPo+1)-1).
+     *     [So insert at -response-1.]
      * @throws Exception if lowPo > highPo.
      */
     public int binarySearch(int lowPo, int highPo, double value) {
         
         //ensure lowPo <= highPo
         //lowPo == highPo is handled by the following two chunks of code
-        Test.ensureTrue(lowPo <= highPo, 
-            String2.ERROR + " in PrimitiveArray.binarySearch: lowPo > highPo.");
+        if (lowPo > highPo)
+            throw new RuntimeException(String2.ERROR + 
+                " in PrimitiveArray.binarySearch: lowPo(" + lowPo + 
+                ") > highPo(" + highPo + ").");
         
         double tValue = getDouble(lowPo);
         if (tValue == value)
@@ -1732,7 +1741,7 @@ public abstract class PrimitiveArray {
 
     /**
      * Given an ascending sorted PrimitiveArray,
-     * this finds the index of the first element &gt; or almostEqual5 to value. 
+     * this finds the index of the first element &gt; or almostEqual to value. 
      *
      * <p>If firstGE &gt; lastLE, there are no matching elements (because
      * the requested range is less than or greater than all the values,
@@ -1741,10 +1750,11 @@ public abstract class PrimitiveArray {
      * @param lowPo the low index to start with, usually 0
      * @param highPo the high index to start with, usually (size - 1)
      * @param value the value you are searching for
-     * @return the index of the first element &gt; or Math2.almostEqual5 to value 
+     * @param precision e.g., 5 for floats and 9 for doubles
+     * @return the index of the first element &gt; or Math2.almostEqual to value 
      *     (or highPo + 1, if there are none)
      */
-    public int binaryFindFirstGAE5(int lowPo, int highPo, double value) {
+    public int binaryFindFirstGAE(int lowPo, int highPo, double value, int precision) {
 
         if (lowPo > highPo)
             return highPo + 1;
@@ -1756,7 +1766,7 @@ public abstract class PrimitiveArray {
             po = -po -1;
 
         //find the first match
-        while (po > lowPo && Math2.almostEqual(5, getDouble(po - 1), value))
+        while (po > lowPo && Math2.almostEqual(precision, getDouble(po - 1), value))
             po--;
 
         return po;
@@ -1800,7 +1810,7 @@ public abstract class PrimitiveArray {
 
     /**
      * Given an ascending sorted PrimitiveArray,
-     * this finds the index of the last element &lt; or almostEqual5 to value. 
+     * this finds the index of the last element &lt; or almostEqual to value. 
      *
      * <p>If firstGE &gt; lastLE, there are no matching elements (because
      * the requested range is less than or greater than all the values,
@@ -1810,10 +1820,11 @@ public abstract class PrimitiveArray {
      * @param highPo the high index to start with, usually 
      *  (originalPrimitiveArray.size() - 1)
      * @param value the value you are searching for
-     * @return the index of the first element &lt; or Math2.almostEqual5 to value 
+     * @param precision e.g., 5 for floats and 9 for doubles
+     * @return the index of the first element &lt; or Math2.almostEqual to value 
      *     (or -1, if there are none)
      */
-    public int binaryFindLastLAE5(int lowPo, int highPo, double value) {
+    public int binaryFindLastLAE(int lowPo, int highPo, double value, int precision) {
 
         if (lowPo > highPo)
             return -1;
@@ -1825,7 +1836,7 @@ public abstract class PrimitiveArray {
             po = -po -1 -1;
 
         //find the first match
-        while (po < highPo && Math2.almostEqual(5, getDouble(po + 1), value))
+        while (po < highPo && Math2.almostEqual(precision, getDouble(po + 1), value))
             po++;
 
         return po;
@@ -3425,22 +3436,22 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(rafFirstGE(raf, float.class, farStart, 0, 5, 7), 5, "");
         Test.ensureEqual(rafFirstGE(raf, float.class, farStart, 0, 5, 9), 6, "");
 
-        //test rafFirstGAE5
-        Test.ensureEqual(rafFirstGAE5(raf, float.class, farStart, 0, 5, 2), 0, "");
-        Test.ensureEqual(rafFirstGAE5(raf, float.class, farStart, 0, 5, 2.0000001), 0, "");
-        Test.ensureEqual(rafFirstGAE5(raf, float.class, farStart, 0, 5, 1.9999999), 0, "");
-        Test.ensureEqual(rafFirstGAE5(raf, float.class, farStart, 0, 5, 4), 1, "");
-        Test.ensureEqual(rafFirstGAE5(raf, float.class, farStart, 0, 5, 6), 2, ""); //first
-        Test.ensureEqual(rafFirstGAE5(raf, float.class, farStart, 0, 5, 6.0000001), 2, ""); 
-        Test.ensureEqual(rafFirstGAE5(raf, float.class, farStart, 0, 5, 5.9999999), 2, ""); 
-        Test.ensureEqual(rafFirstGAE5(raf, float.class, farStart, 0, 5, 8), 5, "");
-        Test.ensureEqual(rafFirstGAE5(raf, float.class, farStart, 0, 5, 1), 0, "");
-        Test.ensureEqual(rafFirstGAE5(raf, float.class, farStart, 0, 5, 3), 1, "");
-        Test.ensureEqual(rafFirstGAE5(raf, float.class, farStart, 0, 5, 3.0000001), 1, "");
-        Test.ensureEqual(rafFirstGAE5(raf, float.class, farStart, 0, 5, 2.9999999), 1, "");
-        Test.ensureEqual(rafFirstGAE5(raf, float.class, farStart, 0, 5, 5), 2, "");
-        Test.ensureEqual(rafFirstGAE5(raf, float.class, farStart, 0, 5, 7), 5, "");
-        Test.ensureEqual(rafFirstGAE5(raf, float.class, farStart, 0, 5, 9), 6, "");
+        //test rafFirstGAE         lastParam: precision = 5
+        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 2        , 5), 0, "");
+        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 2.0000001, 5), 0, "");
+        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 1.9999999, 5), 0, "");
+        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 4        , 5), 1, "");
+        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 6        , 5), 2, ""); //first
+        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 6.0000001, 5), 2, ""); 
+        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 5.9999999, 5), 2, ""); 
+        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 8        , 5), 5, "");
+        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 1        , 5), 0, "");
+        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 3        , 5), 1, "");
+        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 3.0000001, 5), 1, "");
+        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 2.9999999, 5), 1, "");
+        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 5        , 5), 2, "");
+        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 7        , 5), 5, "");
+        Test.ensureEqual(rafFirstGAE(raf, float.class, farStart, 0, 5, 9        , 5), 6, "");
 
         //test rafLastLE
         Test.ensureEqual(rafLastLE(raf, float.class, farStart, 0, 5, 2), 0, "");
@@ -3453,22 +3464,22 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(rafLastLE(raf, float.class, farStart, 0, 5, 7), 4, "");
         Test.ensureEqual(rafLastLE(raf, float.class, farStart, 0, 5, 9), 5, "");
 
-        //test rafLastLAE5
-        Test.ensureEqual(rafLastLAE5(raf, float.class, farStart, 0, 5, 2), 0, "");
-        Test.ensureEqual(rafLastLAE5(raf, float.class, farStart, 0, 5, 2.0000001), 0, "");
-        Test.ensureEqual(rafLastLAE5(raf, float.class, farStart, 0, 5, 1.9999999), 0, "");
-        Test.ensureEqual(rafLastLAE5(raf, float.class, farStart, 0, 5, 4), 1, "");
-        Test.ensureEqual(rafLastLAE5(raf, float.class, farStart, 0, 5, 6), 4, ""); //last
-        Test.ensureEqual(rafLastLAE5(raf, float.class, farStart, 0, 5, 6.0000001), 4, ""); 
-        Test.ensureEqual(rafLastLAE5(raf, float.class, farStart, 0, 5, 5.9999999), 4, "");
-        Test.ensureEqual(rafLastLAE5(raf, float.class, farStart, 0, 5, 8), 5, "");
-        Test.ensureEqual(rafLastLAE5(raf, float.class, farStart, 0, 5, 1), -1, "");
-        Test.ensureEqual(rafLastLAE5(raf, float.class, farStart, 0, 5, 3), 0, "");
-        Test.ensureEqual(rafLastLAE5(raf, float.class, farStart, 0, 5, 3.0000001), 0, "");
-        Test.ensureEqual(rafLastLAE5(raf, float.class, farStart, 0, 5, 2.9999999), 0, "");
-        Test.ensureEqual(rafLastLAE5(raf, float.class, farStart, 0, 5, 5), 1, "");
-        Test.ensureEqual(rafLastLAE5(raf, float.class, farStart, 0, 5, 7), 4, "");
-        Test.ensureEqual(rafLastLAE5(raf, float.class, farStart, 0, 5, 9), 5, "");
+        //test rafLastLAE   lastParam: precision = 5
+        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 2        , 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 2.0000001, 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 1.9999999, 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 4        , 5), 1, "");
+        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 6        , 5), 4, ""); //last
+        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 6.0000001, 5), 4, ""); 
+        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 5.9999999, 5), 4, "");
+        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 8        , 5), 5, "");
+        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 1        , 5), -1, "");
+        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 3        , 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 3.0000001, 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 2.9999999, 5), 0, "");
+        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 5        , 5), 1, "");
+        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 7        , 5), 4, "");
+        Test.ensureEqual(rafLastLAE(raf, float.class, farStart, 0, 5, 9        , 5), 5, "");
         raf.close();
 
         //test binarySearch
@@ -3502,22 +3513,22 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(far.binaryFindFirstGE(0, 5, 7), 5, "");
         Test.ensureEqual(far.binaryFindFirstGE(0, 5, 9), 6, "");
 
-        //test binaryFindFirstGAE5
-        Test.ensureEqual(far.binaryFindFirstGAE5(0, 5, 2), 0, "");
-        Test.ensureEqual(far.binaryFindFirstGAE5(0, 5, 2.0000001), 0, "");
-        Test.ensureEqual(far.binaryFindFirstGAE5(0, 5, 1.9999999), 0, "");
-        Test.ensureEqual(far.binaryFindFirstGAE5(0, 5, 4), 1, "");
-        Test.ensureEqual(far.binaryFindFirstGAE5(0, 5, 6), 2, ""); //first
-        Test.ensureEqual(far.binaryFindFirstGAE5(0, 5, 6.0000001), 2, ""); 
-        Test.ensureEqual(far.binaryFindFirstGAE5(0, 5, 5.9999999), 2, ""); 
-        Test.ensureEqual(far.binaryFindFirstGAE5(0, 5, 8), 5, "");
-        Test.ensureEqual(far.binaryFindFirstGAE5(0, 5, 1), 0, "");
-        Test.ensureEqual(far.binaryFindFirstGAE5(0, 5, 3), 1, "");
-        Test.ensureEqual(far.binaryFindFirstGAE5(0, 5, 3.0000001), 1, "");
-        Test.ensureEqual(far.binaryFindFirstGAE5(0, 5, 2.9999999), 1, "");
-        Test.ensureEqual(far.binaryFindFirstGAE5(0, 5, 5), 2, "");
-        Test.ensureEqual(far.binaryFindFirstGAE5(0, 5, 7), 5, "");
-        Test.ensureEqual(far.binaryFindFirstGAE5(0, 5, 9), 6, "");
+        //test binaryFindFirstGAE last param: precision=5
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 2,         5), 0, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 2.0000001, 5), 0, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 1.9999999, 5), 0, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 4,         5), 1, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 6,         5), 2, ""); //first
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 6.0000001, 5), 2, ""); 
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 5.9999999, 5), 2, ""); 
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 8,         5), 5, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 1,         5), 0, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 3,         5), 1, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 3.0000001, 5), 1, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 2.9999999, 5), 1, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 5,         5), 2, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 7,         5), 5, "");
+        Test.ensureEqual(far.binaryFindFirstGAE(0, 5, 9,         5), 6, "");
 
         //test binaryFindLastLE
         //FloatArray  far = new FloatArray(new float[]{2,4,6,6,6,8});
@@ -3531,22 +3542,22 @@ public abstract class PrimitiveArray {
         Test.ensureEqual(far.binaryFindLastLE(0, 5, 7), 4, "");
         Test.ensureEqual(far.binaryFindLastLE(0, 5, 9), 5, "");
 
-        //test binaryFindLastLAE5
-        Test.ensureEqual(far.binaryFindLastLAE5(0, 5, 2), 0, "");
-        Test.ensureEqual(far.binaryFindLastLAE5(0, 5, 2.0000001), 0, "");
-        Test.ensureEqual(far.binaryFindLastLAE5(0, 5, 1.9999999), 0, "");
-        Test.ensureEqual(far.binaryFindLastLAE5(0, 5, 4), 1, "");
-        Test.ensureEqual(far.binaryFindLastLAE5(0, 5, 6), 4, ""); //last
-        Test.ensureEqual(far.binaryFindLastLAE5(0, 5, 6.0000001), 4, ""); 
-        Test.ensureEqual(far.binaryFindLastLAE5(0, 5, 5.9999999), 4, ""); 
-        Test.ensureEqual(far.binaryFindLastLAE5(0, 5, 8), 5, "");
-        Test.ensureEqual(far.binaryFindLastLAE5(0, 5, 1), -1, "");
-        Test.ensureEqual(far.binaryFindLastLAE5(0, 5, 3), 0, "");
-        Test.ensureEqual(far.binaryFindLastLAE5(0, 5, 3.0000001), 0, "");
-        Test.ensureEqual(far.binaryFindLastLAE5(0, 5, 2.9999999), 0, "");
-        Test.ensureEqual(far.binaryFindLastLAE5(0, 5, 5), 1, "");
-        Test.ensureEqual(far.binaryFindLastLAE5(0, 5, 7), 4, "");
-        Test.ensureEqual(far.binaryFindLastLAE5(0, 5, 9), 5, "");
+        //test binaryFindLastLAE5  lastParam: precision = 5
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 2        , 5), 0, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 2.0000001, 5), 0, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 1.9999999, 5), 0, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 4        , 5), 1, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 6        , 5), 4, ""); //last
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 6.0000001, 5), 4, ""); 
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 5.9999999, 5), 4, ""); 
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 8        , 5), 5, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 1        , 5), -1, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 3        , 5), 0, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 3.0000001, 5), 0, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 2.9999999, 5), 0, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 5        , 5), 1, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 7        , 5), 4, "");
+        Test.ensureEqual(far.binaryFindLastLAE(0, 5, 9        , 5), 5, "");
 
         //test binaryFindClosest
         //FloatArray  far = new FloatArray(new float[]{2,4,6,6,6,8});

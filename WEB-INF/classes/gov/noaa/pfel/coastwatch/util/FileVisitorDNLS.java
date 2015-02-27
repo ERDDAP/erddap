@@ -19,6 +19,9 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.FileVisitResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 /**
  * This class gathers basic information about a group of files.
@@ -36,23 +39,24 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     public static boolean reallyVerbose = false; 
 
     /** The names of the columns in the table. */
-    public final static String DIR     = "dir";
-    public final static String NAME    = "name";
-    public final static String LASTMOD = "lastMod";
-    public final static String SIZE    = "size";
+    public final static String DIRECTORY    = "directory";
+    public final static String NAME         = "name";
+    public final static String LASTMODIFIED = "lastModified";
+    public final static String SIZE         = "size";
 
     /** things set by constructor */
     public String dir;  //with \\ or / separators. With trailing slash (to match).
     private char fromSlash, toSlash;
     public String regex;
-    public boolean recursive;
+    public Pattern pattern; //from regex
+    public boolean recursive, directoriesToo;
     static boolean OSIsWindows = String2.OSIsWindows;
     public Table table = new Table();
     /** dirs will have \\ or / like original constructor tDir, and a matching trailing slash. */
-    public StringArray dirPA    = new StringArray();
-    public StringArray namePA   = new StringArray();
-    public LongArray lastModPA  = new LongArray();
-    public LongArray sizePA     = new LongArray();
+    public StringArray directoryPA    = new StringArray();
+    public StringArray namePA         = new StringArray();
+    public LongArray   lastModifiedPA = new LongArray();
+    public LongArray   sizePA         = new LongArray();
 
 
     /** 
@@ -61,8 +65,10 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
      *
      * @param tDir The starting directory, with \\ or /, with or without trailing /.  
      *    The resulting dirPA will contain dirs with matching slashes.
+     * @param tDirectoriesToo
      */
-    public FileVisitorDNLS(String tDir, String tRegex, boolean tRecursive) {
+    public FileVisitorDNLS(String tDir, String tRegex, boolean tRecursive,
+        boolean tDirectoriesToo) {
         super();
 
         dir = File2.addSlash(tDir);
@@ -70,10 +76,12 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         fromSlash = toSlash == '/'? '\\' : '/';        
         recursive = tRecursive;
         regex = tRegex;
-        table.addColumn(DIR,     dirPA);
-        table.addColumn(NAME,    namePA);
-        table.addColumn(LASTMOD, lastModPA);
-        table.addColumn(SIZE,    sizePA);
+        pattern = Pattern.compile(regex);
+        directoriesToo = tDirectoriesToo;
+        table.addColumn(DIRECTORY,    directoryPA);
+        table.addColumn(NAME,         namePA);
+        table.addColumn(LASTMODIFIED, lastModifiedPA);
+        table.addColumn(SIZE,         sizePA);
     }
 
     /** Invoked before entering a directory. */
@@ -81,7 +89,17 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         throws IOException {
         
         String ttDir = String2.replaceAll(tDir.toString(), fromSlash, toSlash) + toSlash;
-        return recursive || ttDir.equals(dir)? FileVisitResult.CONTINUE : 
+        if (ttDir.equals(dir)) //initial dir
+            return FileVisitResult.CONTINUE;
+
+        if (directoriesToo) {
+            directoryPA.add(ttDir);
+            namePA.add("");
+            lastModifiedPA.add(attrs.lastModifiedTime().toMillis());
+            sizePA.add(0);
+        }
+
+        return recursive? FileVisitResult.CONTINUE : 
             FileVisitResult.SKIP_SUBTREE;    
     }
 
@@ -89,28 +107,29 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) 
         throws IOException {
 
-        String name = file.getFileName().toString();
-        if (!(name.matches(regex))) 
-            return FileVisitResult.CONTINUE;    
-
-        int oSize = dirPA.size();
+        int oSize = directoryPA.size();
         try {
+            String name = file.getFileName().toString();
+            Matcher matcher = pattern.matcher(name);
+            if (!matcher.matches()) 
+                return FileVisitResult.CONTINUE;    
+
             //getParent returns \\ or /, without trailing /
             String ttDir = String2.replaceAll(file.getParent().toString(), fromSlash, toSlash) +
                 toSlash;
-            dirPA.add(    ttDir);
-            namePA.add(   name);
-            lastModPA.add(attrs.lastModifiedTime().toMillis());
-            sizePA.add(   attrs.size());
+            directoryPA.add(ttDir);
+            namePA.add(name);
+            lastModifiedPA.add(attrs.lastModifiedTime().toMillis());
+            sizePA.add(attrs.size());
             //for debugging only:
             //String2.log(ttDir + name + 
             //    " mod=" + attrs.lastModifiedTime().toMillis() +
             //    " size=" + attrs.size());
         } catch (Throwable t) {
-            if (dirPA.size()     > oSize) dirPA.remove(oSize);
-            if (namePA.size()    > oSize) namePA.remove(oSize);
-            if (lastModPA.size() > oSize) lastModPA.remove(oSize);
-            if (sizePA.size()    > oSize) sizePA.remove(oSize);
+            if (directoryPA.size()    > oSize) directoryPA.remove(oSize);
+            if (namePA.size()         > oSize) namePA.remove(oSize);
+            if (lastModifiedPA.size() > oSize) lastModifiedPA.remove(oSize);
+            if (sizePA.size()         > oSize) sizePA.remove(oSize);
             String2.log(MustBe.throwableToString(t));
         }
     
@@ -121,16 +140,19 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
      * The results are in the global table and in the PA variables.
      *
      * @param tDir The starting directory, with \\ or /, with or without trailing slash.  
-     *    The resulting dirPA will contain dirs with matching slashes and trailing slash.
-     * @return a table with columns with DIR, NAME, LASTMOD, and SIZE columns;
+     *    The resulting directoryPA will contain dirs with matching slashes and trailing slash.
+     * @return a table with columns with DIRECTORY, NAME, LASTMODIFIED, and SIZE columns.
+     *    If directoriesToo=true, the original dir won't be included and any 
+     *    directory's name will be "".
      */
-    public static Table oneStep(String tDir, String tRegex, boolean tRecursive) 
-        throws IOException {
+    public static Table oneStep(String tDir, String tRegex, boolean tRecursive,
+        boolean tDirectoriesToo) throws IOException {
         long time = System.currentTimeMillis();
-        FileVisitorDNLS fv = new FileVisitorDNLS(tDir, tRegex, tRecursive);
+        FileVisitorDNLS fv = new FileVisitorDNLS(tDir, tRegex, tRecursive, 
+            tDirectoriesToo);
         Files.walkFileTree(FileSystems.getDefault().getPath(tDir), fv);
         if (verbose) String2.log("FileVisitorDNLS.oneStep finished successfully. n=" + 
-            fv.dirPA.size() + " time=" +
+            fv.directoryPA.size() + " time=" +
             (System.currentTimeMillis() - time));
         return fv.table;
     }
@@ -150,15 +172,49 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         Table table;
         long time;
         int n;
+        String results, expected;
 
-        table = oneStep(contextDir + "WEB-INF/fonts", ".*BI\\.ttf", false); 
-        String results = table.dataToCSVString();
-        String expected = 
-"dir,name,lastMod,size\n" +
-"C:/programs/tomcat/webapps/cwexperimental/WEB-INF/fonts/,VeraBI.ttf,1050501734000,63208\n" +
-"C:/programs/tomcat/webapps/cwexperimental/WEB-INF/fonts/,VeraMoBI.ttf,1050501734000,55032\n";
+        //recursive and dirToo
+        table = oneStep("c:/erddapTest/fileNames", ".*\\.png", true, true); 
+        results = table.dataToCSVString();
+        expected = 
+"directory,name,lastModified,size\n" +
+"c:/erddapTest/fileNames/,jplMURSST20150103090000.png,1421276044628,46482\n" +
+"c:/erddapTest/fileNames/,jplMURSST20150104090000.png,1420669338436,46586\n" +
+"c:/erddapTest/fileNames/sub/,,1420735700318,0\n" +
+"c:/erddapTest/fileNames/sub/,jplMURSST20150105090000.png,1420669304917,46549\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
 
+        //recursive and !dirToo
+        table = oneStep("c:/erddapTest/fileNames", ".*\\.png", true, false);
+        results = table.dataToCSVString();
+        expected = 
+"directory,name,lastModified,size\n" +
+"c:/erddapTest/fileNames/,jplMURSST20150103090000.png,1421276044628,46482\n" +
+"c:/erddapTest/fileNames/,jplMURSST20150104090000.png,1420669338436,46586\n" +
+"c:/erddapTest/fileNames/sub/,jplMURSST20150105090000.png,1420669304917,46549\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //!recursive and dirToo
+        table = oneStep("c:/erddapTest/fileNames", ".*\\.png", false, true);
+        results = table.dataToCSVString();
+        expected = 
+"directory,name,lastModified,size\n" +
+"c:/erddapTest/fileNames/,jplMURSST20150103090000.png,1421276044628,46482\n" +
+"c:/erddapTest/fileNames/,jplMURSST20150104090000.png,1420669338436,46586\n" +
+"c:/erddapTest/fileNames/sub/,,1420735700318,0\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //!recursive and !dirToo
+        table = oneStep("c:/erddapTest/fileNames", ".*\\.png", false, false);
+        results = table.dataToCSVString();
+        expected = 
+"directory,name,lastModified,size\n" +
+"c:/erddapTest/fileNames/,jplMURSST20150103090000.png,1421276044628,46482\n" +
+"c:/erddapTest/fileNames/,jplMURSST20150104090000.png,1420669338436,46586\n";
+        Test.ensureEqual(results, expected, "results=\n" + results);
+
+        //huge dir
         String unexpected = 
             "\nUnexpected FileVisitorDNLS error (but /data/gtspp/temp dir has variable nFiles):\n";
 
@@ -166,17 +222,17 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             try {
                 //forward slash in huge directory
                 time = System.currentTimeMillis();
-                table = oneStep("/data/gtspp/temp", ".*\\.nc", false); 
+                table = oneStep("/data/gtspp/temp", ".*\\.nc", false, false); 
                 time = System.currentTimeMillis() - time;
                 //2014-11-25 98436 files in 410ms
-                StringArray dirPA = (StringArray)table.getColumn(DIR);
-                String2.log("forward test: n=" + dirPA.size() + " time=" + time);
-                if (dirPA.size() < 1000) {
-                    String2.log(dirPA.size() + " files. Not a good test.");
+                StringArray directoryPA = (StringArray)table.getColumn(DIRECTORY);
+                String2.log("forward test: n=" + directoryPA.size() + " time=" + time);
+                if (directoryPA.size() < 1000) {
+                    String2.log(directoryPA.size() + " files. Not a good test.");
                 } else {
-                    Test.ensureBetween(time / (double)dirPA.size(), 2e-3, 8e-3, 
+                    Test.ensureBetween(time / (double)directoryPA.size(), 2e-3, 8e-3, 
                         "ms/file (4.1e-3 expected)");
-                    String dir0 = dirPA.get(0);
+                    String dir0 = directoryPA.get(0);
                     String2.log("forward slash test: dir0=" + dir0);
                     Test.ensureTrue(dir0.indexOf('\\') < 0, "");
                     Test.ensureTrue(dir0.endsWith("/"), "");
@@ -192,17 +248,17 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
             try {
                 //backward slash in huge directory
                 time = System.currentTimeMillis();
-                table = oneStep("\\data\\gtspp\\temp", ".*\\.nc", false); 
+                table = oneStep("\\data\\gtspp\\temp", ".*\\.nc", false, false); 
                 time = System.currentTimeMillis() - time;
                 //2014-11-25 98436 files in 300ms
-                StringArray dirPA = (StringArray)table.getColumn(DIR);
-                String2.log("backward test: n=" + dirPA.size() + " time=" + time);
-                if (dirPA.size() < 1000) {
-                    String2.log(dirPA.size() + " files. Not a good test.");
+                StringArray directoryPA = (StringArray)table.getColumn(DIRECTORY);
+                String2.log("backward test: n=" + directoryPA.size() + " time=" + time);
+                if (directoryPA.size() < 1000) {
+                    String2.log(directoryPA.size() + " files. Not a good test.");
                 } else {
-                    Test.ensureBetween(time / (double)dirPA.size(), 1.5e-3, 8e-3,
+                    Test.ensureBetween(time / (double)directoryPA.size(), 1.5e-3, 8e-3,
                         "ms/file (3e-3 expected)");
-                    String dir0 = dirPA.get(0);
+                    String dir0 = directoryPA.get(0);
                     String2.log("backward slash test: dir0=" + dir0);
                     Test.ensureTrue(dir0.indexOf('/') < 0, "");
                     Test.ensureTrue(dir0.endsWith("\\"), "");

@@ -9,6 +9,7 @@ import com.cohort.array.ByteArray;
 import com.cohort.array.DoubleArray;
 import com.cohort.array.IntArray;
 import com.cohort.array.PrimitiveArray;
+import com.cohort.array.ShortArray;
 import com.cohort.array.StringArray;
 import com.cohort.array.StringComparatorIgnoreCase;
 import com.cohort.util.Calendar2;
@@ -31,6 +32,7 @@ import gov.noaa.pfel.coastwatch.sgt.SgtGraph;
 import gov.noaa.pfel.coastwatch.sgt.SgtMap;
 import gov.noaa.pfel.coastwatch.util.SimpleXMLReader;
 import gov.noaa.pfel.coastwatch.util.SSR;
+import gov.noaa.pfel.erddap.Erddap;
 import gov.noaa.pfel.erddap.util.*;
 import gov.noaa.pfel.erddap.variable.*;
 
@@ -48,6 +50,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -304,9 +307,13 @@ public abstract class EDD {
     protected String id, title, summary, extendedSummaryPartB, institution, 
         infoUrl, cdmDataType;
     /** These are created as needed (in the constructor) by accessibleVia...(). */
-    protected String accessibleViaMAG, accessibleViaSubset, accessibleViaGeoServicesRest, 
+    protected String 
+        accessibleViaMAG, accessibleViaSubset, accessibleViaGeoServicesRest, 
         accessibleViaSOS, accessibleViaWCS, accessibleViaWMS, accessibleViaNcCF, 
         accessibleViaFGDC, accessibleViaISO19115; 
+    protected String  accessibleViaFilesDir = ""; //default=inactive   EDStatic.filesActive must be true
+    protected String  accessibleViaFilesRegex = ""; 
+    protected boolean accessibleViaFilesRecursive = false;
     protected String fgdcFile, iso19115File;  //the names of pre-made, external files; or null
     protected byte[] searchBytes;
     /** These are created as needed (in the constructor) from dataVariables[]. */
@@ -341,13 +348,15 @@ public abstract class EDD {
                 return EDDGridAggregateExistingDimension.fromXml(xmlReader);
             if (type.equals("EDDGridCopy"))             return EDDGridCopy.fromXml(xmlReader);
             if (type.equals("EDDGridFromDap"))          return EDDGridFromDap.fromXml(xmlReader);
+            if (type.equals("EDDGridFromEDDTable"))     return EDDGridFromEDDTable.fromXml(xmlReader);
             if (type.equals("EDDGridFromErddap"))       return EDDGridFromErddap.fromXml(xmlReader);
             if (type.equals("EDDGridFromEtopo"))        return EDDGridFromEtopo.fromXml(xmlReader);
+            if (type.equals("EDDGridFromMergeIRFiles")) return EDDGridFromMergeIRFiles.fromXml(xmlReader);
             if (type.equals("EDDGridFromNcFiles"))      return EDDGridFromNcFiles.fromXml(xmlReader);
             if (type.equals("EDDGridSideBySide"))       return EDDGridSideBySide.fromXml(xmlReader);
 
             if (type.equals("EDDTableCopy"))            return EDDTableCopy.fromXml(xmlReader);
-            if (type.equals("EDDTableCopyPost"))        return EDDTableCopyPost.fromXml(xmlReader);
+            //if (type.equals("EDDTableCopyPost"))        return EDDTableCopyPost.fromXml(xmlReader); //inactive
             if (type.equals("EDDTableFromAsciiServiceNOS")) return EDDTableFromAsciiServiceNOS.fromXml(xmlReader);
             //if (type.equals("EDDTableFromBMDE"))        return EDDTableFromBMDE.fromXml(xmlReader); //inactive
             if (type.equals("EDDTableFromCassandra"))   return EDDTableFromCassandra.fromXml(xmlReader);
@@ -355,6 +364,7 @@ public abstract class EDD {
             if (type.equals("EDDTableFromDatabase"))    return EDDTableFromDatabase.fromXml(xmlReader);
             if (type.equals("EDDTableFromEDDGrid"))     return EDDTableFromEDDGrid.fromXml(xmlReader);
             if (type.equals("EDDTableFromErddap"))      return EDDTableFromErddap.fromXml(xmlReader);
+            if (type.equals("EDDTableFromFileNames"))   return EDDTableFromFileNames.fromXml(xmlReader);
             //if (type.equals("EDDTableFromMWFS"))        return EDDTableFromMWFS.fromXml(xmlReader); //inactive as of 2009-01-14
             if (type.equals("EDDTableFromAsciiFiles"))  return EDDTableFromAsciiFiles.fromXml(xmlReader);
             if (type.equals("EDDTableFromColumnarAsciiFiles"))  return EDDTableFromColumnarAsciiFiles.fromXml(xmlReader);
@@ -792,7 +802,66 @@ public abstract class EDD {
         return diff.toString();    
     }
 
-    
+    /**
+     * Update rss.
+     * If there is an error, this just writes error to log file and returns "". This won't throw an exception.
+     *
+     * @param erddap if not null, new rss doc will be put in erddap.rssHashMap
+     * @param change a description of what changed 
+     *    (if null or "", nothing will be done and this returns "")
+     * @return the rss document
+     */
+    public String updateRSS(Erddap erddap, String change) {
+        if (change == null || change.length() == 0)
+            return "";
+        try {
+            //generate the rss xml
+            //See general info: http://en.wikipedia.org/wiki/RSS_(file_format)
+            //  background: http://www.mnot.net/rss/tutorial/
+            //  rss 2.0 spec: http://cyber.law.harvard.edu/rss/rss.html
+            //I chose rss 2.0 for no special reason (most modern version of that fork; I like "simple").
+            //The feed programs didn't really care if just pubDate changed.
+            //  They care about item titles changing.
+            //  So this treats every change as a new item with a different title, 
+            //    replacing the previous item.
+            StringBuilder rss = new StringBuilder();
+            GregorianCalendar gc = Calendar2.newGCalendarZulu();
+            String pubDate = 
+                "    <pubDate>" + Calendar2.formatAsRFC822GMT(gc) + "</pubDate>\n";
+            String link = 
+                "    <link>" + EDStatic.publicErddapUrl(getAccessibleTo() == null) +
+                    "/" + dapProtocol() + "/" + datasetID();
+            rss.append(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<rss version=\"2.0\" xmlns=\"http://backend.userland.com/rss2\">\n" +
+                "  <channel>\n" +
+                "    <title>ERDDAP: " + XML.encodeAsXML(title()) + "</title>\n" +
+                "    <description>This RSS feed changes when the dataset changes.</description>\n" +      
+                link + ".html</link>\n" +
+                pubDate +
+                "    <item>\n" +
+                "      <title>This dataset changed " + Calendar2.formatAsISODateTimeT(gc) + "Z</title>\n" +
+                "  " + link + ".html</link>\n" +
+                "      <description>" + XML.encodeAsXML(change) + "</description>\n" +      
+                "    </item>\n" +
+                "  </channel>\n" +
+                "</rss>\n");
+
+            //store the xml
+            String rssString = rss.toString();
+            if (erddap != null)
+                erddap.rssHashMap.put(datasetID(), String2.getUTF8Bytes(rssString));
+            return rssString;
+
+        } catch (Throwable rssT) {
+            String2.log(String2.ERROR + " in updateRSS for " + datasetID() + ":\n" + 
+                MustBe.throwableToString(rssT));
+            return "";
+        }
+
+    }
+
+
     /**
      * The directory in which information for this dataset (e.g., fileTable.nc) is stored.
      *
@@ -1278,6 +1347,29 @@ public abstract class EDD {
      * (or "" if it is).
      */
     public abstract String accessibleViaWMS();
+
+    /** 
+     * This indicates the base directory if the dataset is accessible via the 
+     * /files/ service (or "" if it isn't available).
+     */
+    public String accessibleViaFilesDir() {
+        return accessibleViaFilesDir;
+    }
+
+    /** 
+     * This indicates the file name regex if accessibleViaFilesDir != "".
+     */
+    public String accessibleViaFilesRegex() {
+        return accessibleViaFilesRegex;
+    }
+
+    /** 
+     * If accessibleViaFiles isn't "", this indicates if subdirectories
+     * are available via the /files/ service.
+     */
+    public boolean accessibleViaFilesRecursive() {
+        return accessibleViaFilesRecursive;
+    }
 
     /** 
      * This indicates why the dataset isn't accessible via the FGDC service
@@ -1931,17 +2023,85 @@ public abstract class EDD {
     }
 
     /**
-     * Subclasses (like EDDGridFromDap) overwrite this to do a quick, 
-     * incremental update of this dataset (i.e., for real time deal datasets).
+     * This provides the framework for the updateEveryNMillis system 
+     * to do a quick incremental update of this dataset (i.e., for real time datasets),
+     * but leaves the class specific work to lowUpdate() (which here does nothing,
+     * but which subclasses like EDDGridFromDap overwrite).
      * 
-     * <p>For simple failures, this writes into to log.txt but doesn't throw an exception.
+     * <p>Concurrency issue: This avoids 2+ simultaneous updates.
      *
-     * @throws Throwable if trouble. 
-     * If the dataset has changed in a serious / incompatible way and needs a full
-     * reload, this throws WaitThenTryAgainException 
-     * (usually, catcher calls LoadDatasets.tryToUnload(...) and EDD.requestReloadASAP(tDatasetID))..
+     * <p>See &lt;updateEveryNMillis&gt; in constructor. 
+     * Note: It is pointless and counter-productive to set updateEveryNMillis 
+     * to be less than a fairly reliable update time (e.g., 1000 ms).
+     *
+     * @return true if a change was made
+     * @throws Throwable if serious trouble. 
+     *   For simple failures, this writes info to log.txt but doesn't throw an exception.
+     *   If the dataset has changed in a serious / incompatible way and needs a full
+     *     reload, this throws WaitThenTryAgainException 
+     *     (usually, catcher calls LoadDatasets.tryToUnload(...) and EDD.requestReloadASAP(tDatasetID))..
+     *   If the changes needed are probably fine but are too extensive to deal with here, 
+     *     this calls EDD.requestReloadASAP(tDatasetID) and returns without doing anything.
      */
-    public void update() {
+    public boolean update() throws Throwable {
+        //return quickly if update system isn't active for this dataset
+        if (updateEveryNMillis <= 0)
+            return false;
+
+        //return quickly if dataset doesn't need to be updated
+        long startUpdateMillis = System.currentTimeMillis();
+        if (startUpdateMillis - lastUpdate < updateEveryNMillis) {
+            if (reallyVerbose) String2.log("update(" + datasetID + 
+                "): no need to update:  startUpdateMillis-last=" + 
+                (startUpdateMillis - lastUpdate) + " < updateEvery=" + updateEveryNMillis);
+            return false;
+        }
+
+        //if another thread is currently updating this dataset, wait for it then return
+        String msg = "update(" + datasetID + "): ";
+        if (!updateLock.tryLock()) {
+            updateLock.lock();   //block until other thread's update finishes and I get the lock
+            updateLock.unlock(); //immediately unlock and return (since other thread did the update)
+            if (verbose) String2.log(msg + "waited " + 
+                (System.currentTimeMillis() - startUpdateMillis) +
+                "ms for another thread to do the update.");
+            return false; 
+        }
+
+        //updateLock is locked by this thread.   Do the update!
+        try {
+            return lowUpdate(msg, startUpdateMillis);
+
+        } finally {  
+            lastUpdate = startUpdateMillis;     //say dataset is now up-to-date (or at least tried)
+            updateLock.unlock();  //then ensure updateLock is always unlocked
+        }
+    }
+
+    /**
+     * This does the actual incremental update of this dataset 
+     * (i.e., for real time datasets).
+     * This stub in EDD does nothing, but subclasses (like EDDGridFromDap) overwrite this
+     * 
+     * <p>Concurrency issue: The changes here are first prepared and 
+     * then applied as quickly as possible (but not atomically!).
+     * There is a chance that another thread will get inconsistent information
+     * (from some things updated and some things not yet updated).
+     * But I don't want to synchronize all activities of this class.
+     *
+     * @param msg the start of a log message, e.g., "update(thisDatasetID): ".
+     * @param startUpdateMillis the currentTimeMillis at the start of this update.
+     * @return true if a change was made
+     * @throws Throwable if serious trouble. 
+     *   For simple failures, this writes info to log.txt but doesn't throw an exception.
+     *   If the dataset has changed in a serious / incompatible way and needs a full
+     *     reload, this throws WaitThenTryAgainException 
+     *     (usually, catcher calls LoadDatasets.tryToUnload(...) and EDD.requestReloadASAP(tDatasetID))..
+     *   If the changes needed are probably fine but are too extensive to deal with here, 
+     *     this calls EDD.requestReloadASAP(tDatasetID) and returns without doing anything.
+     */
+    public boolean lowUpdate(String msg, long startUpdateMillis) throws Throwable {
+        return false;
     }
 
     /**
@@ -2016,6 +2176,9 @@ public abstract class EDD {
             //  then the quality of those found.
             //rank += po < 0? penalty : po;  
         }
+        //special case of deprecated datasets
+        if (title().indexOf("DEPRECATED") >= 0)
+            rank += 400;
         return rank;
 
         //standardize to 0..1000
@@ -2599,6 +2762,8 @@ public abstract class EDD {
      * @param showDafLink if true, a link is shown to this dataset's Data Access Form
      * @param showSubsetLink if true, a link is shown to this dataset's .subset form
      *    (if accessibleViaSubset() is "").
+     * @param showFilesLink if true, a link is shown to this dataset's /files/ page
+     *    (if accessibleViaFiles() is "").
      * @param showGraphLink if true, a link is shown to this dataset's Make A Graph form
      *    (if accessibleViaMAG() is "").
      * @param userDapQuery  the part of the user's request after the '?', still percentEncoded, may be null.
@@ -2607,7 +2772,7 @@ public abstract class EDD {
      */
     public void writeHtmlDatasetInfo(
         String loggedInAs, Writer writer, 
-        boolean showSubsetLink, boolean showDafLink, boolean showGraphLink,
+        boolean showSubsetLink, boolean showDafLink, boolean showFilesLink, boolean showGraphLink,
         String userDapQuery, String otherRows) 
         throws Throwable {
         //String type = this instanceof EDDGrid? "Gridded" :
@@ -2621,7 +2786,7 @@ public abstract class EDD {
             //See Tomcat (Definitive Guide) pg 147...
             XML.encodeAsHTMLAttribute("?" + userDapQuery); 
         String dapUrl = tErddapUrl + "/" + dapProtocol() + "/" + datasetID;
-        String dapLink = "", subsetLink = "", graphLink = "";
+        String dapLink = "", subsetLink = "", graphLink = "", filesLink = "";
         if (showDafLink) 
             dapLink = 
                 "     | <a rel=\"alternate\" rev=\"alternate\" " +  
@@ -2636,6 +2801,16 @@ public abstract class EDD {
                     tQuery + 
                     (tQuery.length() == 0? "" : XML.encodeAsHTMLAttribute(EDDTable.DEFAULT_SUBSET_VIEWS)) + 
                     "\">" + EDStatic.subset + "</a>\n";
+        if (showFilesLink && accessibleViaFilesDir().length() > 0) //> because it has sourceDir
+            filesLink = 
+                "     | <a rel=\"alternate\" rev=\"alternate\" " +
+                    "title=\"" + 
+                    XML.encodeAsHTMLAttribute(EDStatic.filesDescription +
+                        (this instanceof EDDTableFromFileNames? "" : 
+                            " " + EDStatic.warning + " " + EDStatic.filesWarning)) +
+                    "\" \n" +
+                "         href=\"" + tErddapUrl + "/files/" + datasetID + "/\">" + 
+                EDStatic.EDDFiles + "</a>\n";
         if (showGraphLink && accessibleViaMAG().length() == 0) 
             graphLink = 
                 "     | <a rel=\"alternate\" rev=\"alternate\" " +
@@ -2667,7 +2842,7 @@ public abstract class EDD {
             "    <td>" + XML.encodeAsHTML(institution()) + "&nbsp;&nbsp;\n" +
             "    (" + EDStatic.EDDDatasetID + ": " + XML.encodeAsHTML(datasetID) + ")</td>\n" +
             "  </tr>\n" +
-            otherRows +
+            otherRows + "\n" +
             "  <tr>\n" +
             "    <td nowrap valign=\"top\">" + EDStatic.EDDInformation + ":&nbsp;</td>\n" +
             "    <td>" + EDStatic.EDDSummary + " " + 
@@ -2693,6 +2868,7 @@ public abstract class EDD {
                 "</a>\n" +
                 subsetLink + "\n" +
                 dapLink + "\n" +
+                filesLink + "\n" +
                 graphLink + "</td>\n" +
             "  </tr>\n" +
             "</table>\n");
@@ -2805,7 +2981,7 @@ public abstract class EDD {
     public static boolean probablyHasLonLatTime(Table sourceTable, Table addTable) {
         boolean hasLon = false, hasLat = false, hasTime = false;
         int sn = sourceTable.nColumns();
-        int an = sourceTable.nColumns();
+        int an =    addTable.nColumns();
         if (sn != an)
             throw new RuntimeException(
                 "sourceTable nColumns=" + sn + " (" + sourceTable.getColumnNamesCSVString() + ")\n" +
@@ -2815,20 +2991,119 @@ public abstract class EDD {
             String units = addTable.columnAttributes(col).getString("units");
             if (units == null)
                 units = sourceTable.columnAttributes(col).getString("units");
-            if (colName.equals("longitude") || 
+            if (colName.equals(EDV.LON_NAME) || 
                 colName.equals("lon") ||
-                "degrees_east".equals(units)) 
+                EDV.LON_UNITS.equals(units)) 
                 hasLon = true;
-            else if (colName.equals("latitude") || 
+            else if (colName.equals(EDV.LAT_NAME) || 
                      colName.equals("lat") || 
-                "degrees_north".equals(units)) 
+                EDV.LAT_UNITS.equals(units)) 
                 hasLat = true;
-            else if (colName.equals("time") || EDVTimeStamp.hasTimeUnits(units))
+            else if (colName.equals(EDV.TIME_NAME) || EDVTimeStamp.hasTimeUnits(units))
                 hasTime = true;
             //String2.log(">> colName=" + colName + " units=" + units + " hasLon=" + hasLon + " hasLat=" + hasLat + " hasTime=" + hasTime);
         }
         return hasLon && hasLat && hasTime;
     }
+
+    /**
+     * This is used by generateDatasetsXml to change the 
+     * names in the addTable to longitude, latitude, altitude/depth, and time,
+     * if warranted.
+     *
+     * @param sourceTable  May be be null.
+     * @param addTable with columns meanings that exactly parallel sourceTable
+     *   (although, often different column names, e.g., lat, latitude).
+     *   This can't be null.
+     *   If a suitable column is found for LLAT, its column name is changed in addTable.
+     * @return true if it found LLT (altitude/depth is ignored)
+     */
+    public static boolean tryToFindLLAT(Table sourceTable, Table addTable) {
+        boolean hasLon = false, hasLat = false, hasAltDepth = false, hasTime = false;
+        int an = addTable.nColumns();
+        int sn = sourceTable == null? an : sourceTable.nColumns();
+        if (sn != an)
+            throw new RuntimeException(
+                "sourceTable nColumns=" + sn + " (" + sourceTable.getColumnNamesCSVString() + ")\n" +
+                "!= addTable nColumns=" + an + " (" +    addTable.getColumnNamesCSVString() + ")");
+
+        //simple search for existing LLAT
+        //Does it have the correct name and correct units (or units="")?
+        for (int col = 0; col < sn; col++) {
+            String colName = addTable.getColumnName(col);
+            String colNameLC = colName.toLowerCase();
+            String units = addTable.columnAttributes(col).getString("units");
+            if (units == null && sourceTable != null)
+                units = sourceTable.columnAttributes(col).getString("units");
+            if (!hasLon && colNameLC.equals(EDV.LON_NAME)) {
+                if (units == null || units.length() == 0 || 
+                    String2.caseInsensitiveIndexOf(EDV.LON_UNITS_VARIANTS, units) >= 0) {
+                    addTable.setColumnName(col, colNameLC);
+                    if (!EDV.LON_UNITS.equals(units))
+                        addTable.columnAttributes(col).set("units", EDV.LON_UNITS);
+                    hasLon = true;
+                } else if (colName.equals(colNameLC)) {
+                    addTable.setColumnName(col, colName + "_");
+                }
+            } else if (!hasLat && colNameLC.equals(EDV.LAT_NAME)) {
+                if (units == null || units.length() == 0 || 
+                    String2.caseInsensitiveIndexOf(EDV.LAT_UNITS_VARIANTS, units) >= 0) {
+                    addTable.setColumnName(col, colNameLC);
+                    if (!EDV.LAT_UNITS.equals(units))
+                        addTable.columnAttributes(col).set("units", EDV.LAT_UNITS);
+                    hasLat = true;
+                } else if (colName.equals(colNameLC)) {
+                    addTable.setColumnName(col, colName + "_");
+                }
+            } else if (!hasAltDepth && 
+                       (colNameLC.equals(EDV.ALT_NAME) || colNameLC.equals(EDV.DEPTH_NAME))) {
+                if (units == null || units.length() == 0 || 
+                    String2.indexOf(EDV.METERS_VARIANTS, units) >= 0) { //case sensitive
+                    addTable.setColumnName(col, colNameLC);
+                    if (!EDV.ALT_UNITS.equals(units))
+                        addTable.columnAttributes(col).set("units", EDV.ALT_UNITS);
+                    hasAltDepth = true;
+                } else if (colName.equals(colNameLC)) {
+                    addTable.setColumnName(col, colName + "_");
+                }
+            } else if (!hasTime && colNameLC.equals(EDV.TIME_NAME)) {
+                if (EDVTimeStamp.hasTimeUnits(units)) {
+                    addTable.setColumnName(col, colNameLC);
+                    hasTime = true;
+                } else if (colName.equals(colNameLC)) {
+                    addTable.setColumnName(col, colName + "_");
+                }
+            }
+        }
+
+        //search for compatible units for LLT
+        for (int col = 0; col < sn; col++) {
+            String colName = addTable.getColumnName(col);
+            String colNameLC = colName.toLowerCase();
+            String units = addTable.columnAttributes(col).getString("units");
+            if (units == null && sourceTable != null)
+                units = sourceTable.columnAttributes(col).getString("units");
+            if (!hasLon && 
+                String2.caseInsensitiveIndexOf(EDV.LON_UNITS_VARIANTS, units) >= 0) {
+                addTable.setColumnName(col, EDV.LON_NAME);
+                if (!EDV.LON_UNITS.equals(units))
+                        addTable.columnAttributes(col).set("units", EDV.LON_UNITS);
+                hasLon = true;
+            } else if (!hasLat && 
+                String2.caseInsensitiveIndexOf(EDV.LAT_UNITS_VARIANTS, units) >= 0) {
+                addTable.setColumnName(col, EDV.LAT_NAME);
+                if (!EDV.LAT_UNITS.equals(units))
+                        addTable.columnAttributes(col).set("units", EDV.LAT_UNITS);
+                hasLat = true;
+            } else if (!hasTime && EDVTimeStamp.hasTimeUnits(units)) {
+                addTable.setColumnName(col, EDV.TIME_NAME);
+                hasTime = true;
+            }
+            //String2.log(">> hasTime=" + hasTime + " col=" + addTable.getColumnName(col) + " units=" + units + " timeUnits=" + EDVTimeStamp.hasTimeUnits(units));             
+        }
+        return hasLon && hasLat && hasTime;
+    }
+
 
     /**
      * This chops phrase.toLowerCase into words and adds words[i] to hashSet.
@@ -2839,6 +3114,8 @@ public abstract class EDD {
     public static void chopUpAndAdd(String phrase, HashSet hashSet) {
         //String2.log("chopUpAndAdd " + phrase);
         //remove . at end of sentence or abbreviation, but not within number or word.word
+        if (phrase == null || phrase.length() == 0)
+            return;
         phrase = String2.replaceAll(phrase, ". ", " ");         //too aggressive?
         if (phrase.endsWith(".") && phrase.indexOf(' ') > 0)    //too aggressive?
             phrase = phrase.substring(0, phrase.length() - 1);
@@ -2904,6 +3181,14 @@ public abstract class EDD {
 
         HashSet keywordHashSet = new HashSet(128);
 
+        //from the global metadata
+        Attributes sourceGAtt = dataSourceTable.globalAttributes();
+        Attributes addGAtt    = dataAddTable.globalAttributes();
+        chopUpAndAdd(sourceGAtt.getString("institution"), keywordHashSet);
+        chopUpAndAdd(   addGAtt.getString("institution"), keywordHashSet);
+        chopUpAndAdd(sourceGAtt.getString("title"),       keywordHashSet);
+        chopUpAndAdd(   addGAtt.getString("title"),       keywordHashSet);
+
         //from the data variables
         for (int addCol = 0; addCol < dataAddTable.nColumns(); addCol++) {
             int sourceCol = dataSourceTable.findColumnNumber(
@@ -2960,6 +3245,218 @@ public abstract class EDD {
 
         return keywordHashSet;
     }
+
+    /**
+     * This cleans the keywords hashset (e.g., removes common words like 'from').
+     *
+     * @param suggestedKeywords
+     */
+    public static void cleanSuggestedKeywords(HashSet keywords) {
+
+        //add expanded common abbreviations and acronyms    
+        //use contains() so original isn't removed
+        if (keywords.contains("co2"))  
+            keywords.add(     "carbon dioxide");
+        if (keywords.contains("carbon dioxide"))  
+            keywords.add(     "co2");
+        if (keywords.contains("co3"))  
+            keywords.add(     "carbonate");
+        if (keywords.contains("carbonate"))  
+            keywords.add(     "co3");
+        if (keywords.contains("nh4"))
+            keywords.add(     "ammonium");
+        if (keywords.contains("ammonium"))
+            keywords.add(     "nh4");
+        if (keywords.contains("no2"))
+            keywords.add(     "nitrite");
+        if (keywords.contains("nitrate"))
+            keywords.add(     "n02");
+        if (keywords.contains("no3"))
+            keywords.add(     "nitrate");
+        if (keywords.contains("nitrate"))
+            keywords.add(     "no3");
+        if (keywords.contains("o2"))
+            keywords.add(     "oxygen");
+        if (keywords.contains("oxygen"))
+            keywords.add(     "o2");
+        if (keywords.contains("po4"))
+            keywords.add(     "phosphate");
+        if (keywords.contains("phosphate"))
+            keywords.add(     "po4");
+
+        if (keywords.contains("dew") &&
+            keywords.contains("point")) {
+            keywords.remove(  "dew"); 
+            keywords.remove(  "point"); 
+            keywords.add(     "dew point");
+        }
+        if (keywords.contains("eur"))  
+            keywords.add(     "europe");
+        if (keywords.contains("hfr")) { 
+            keywords.add(     "hf radar");
+            keywords.add(     "radar");
+        }
+        if (keywords.contains("hf") &&
+            keywords.contains("radar"))  
+            keywords.add(     "hf radar");
+        if (keywords.contains("hf") &&
+            keywords.contains("radio"))  
+            keywords.add(     "hf radio");
+        if (keywords.contains("glob"))  
+            keywords.add(     "global");  //usually
+        if (keywords.contains("mod")) 
+            keywords.add(     "modulus"); //usually
+        if (keywords.contains("aoml") ||
+            keywords.contains("coastwatch") ||
+            keywords.contains("esrl") ||
+            keywords.contains("gfdl") ||
+            keywords.contains("glerl") ||
+            keywords.contains("ncdc") ||
+            keywords.contains("ndbc") ||
+            keywords.contains("nesdis") ||
+            keywords.contains("ngdc") ||
+            keywords.contains("nmfs") ||
+            keywords.contains("nodc") ||
+            keywords.contains("nws") ||
+            keywords.contains("osdpd") ||
+            keywords.contains("pfeg") ||
+            keywords.contains("pfel") ||
+            keywords.contains("pmel")) 
+            keywords.add(     "noaa");
+        if (keywords.contains("ncom")) {
+            keywords.add(     "navy coastal ocean model");
+            keywords.add(     "navy");
+            keywords.add(     "coastal");
+            keywords.add(     "ocean");
+            keywords.add(     "model");
+        }
+        if (keywords.contains("roms")) {
+            keywords.add(     "regional ocean model");
+            keywords.add(     "regional");
+            keywords.add(     "ocean");
+            keywords.add(     "model");
+            keywords.add(     "modeling");
+            keywords.add(     "system");
+        }
+        if (keywords.contains("sea") && 
+            keywords.contains("water"))
+            keywords.add(     "seawater");
+
+        //replace with expanded common abbreviations and acronyms   use remove() so original is removed
+        if (keywords.remove("anal")) 
+            keywords.add(   "analysis");
+        if (keywords.remove("ann")) 
+            keywords.add(   "annual");
+        if (keywords.remove("atmos")) 
+            keywords.add(   "atmosphere");
+        if (keywords.remove("chl")) 
+            keywords.add(   "chlorophyll");
+        if (keywords.remove("chla")) 
+            keywords.add(   "chlorophyll");
+        if (keywords.remove("chlor")) 
+            keywords.add(   "chlorophyll");
+        if (keywords.remove("chlora")) 
+            keywords.add(   "chlorophyll");
+        if (keywords.remove("coef.")) 
+            keywords.add(   "coefficient");
+        if (keywords.remove("climatologymeteorologyatmosphere")) {
+            keywords.add(   "atmosphere");
+            keywords.add(   "climatology");
+            keywords.add(   "meteorology");
+        }            
+        if (keywords.remove("dewpoint")) 
+            keywords.add(   "dew point");
+        if (keywords.remove("dewpt")) 
+            keywords.add(   "dew point");
+        if (keywords.remove("geoscientificinformation")) {
+            keywords.add(   "geoscientific");
+            keywords.add(   "information");
+        }                        
+        if (keywords.remove("merid.")) 
+            keywords.add(   "meridional");
+        if (keywords.remove("mon")) 
+            keywords.add(   "monthly");
+        if (keywords.remove("near-real")) 
+            keywords.add(   "near real time");
+        if (keywords.remove("nseabaltic")) {
+            keywords.add(   "north sea");
+            keywords.add(   "baltic sea");
+        }                        
+        if (keywords.remove("obs")) 
+            keywords.add(   "observations");
+        if (keywords.remove("phos")) 
+            keywords.add(   "phosphate");
+        if (keywords.remove("real-time")) 
+            keywords.add(   "real time");
+        if (keywords.remove("sili")) 
+            keywords.add(   "silicate");
+        if (keywords.remove("temp")) 
+            keywords.add(   "temperature");
+        if (keywords.remove("u-veloc.")) 
+            keywords.add(   "u-velocity");
+        if (keywords.remove("uri")) 
+            keywords.add(   "URI");
+        if (keywords.remove("url")) 
+            keywords.add(   "URL");
+        if (keywords.remove("v-veloc.")) 
+            keywords.add(   "v-velocity");
+        if (keywords.remove("veloc.")) 
+            keywords.add(   "velocity");
+        if (keywords.remove("w-veloc.")) 
+            keywords.add(   "w-velocity");
+        
+        //remove common uninteresting keywords >=3 chars
+        keywords.remove("alt");
+        keywords.remove("and");
+        keywords.remove("apr");
+        keywords.remove("april");
+        keywords.remove("aug");
+        keywords.remove("august");
+        keywords.remove("dec");
+        keywords.remove("december");
+        keywords.remove("dodsc");
+        keywords.remove("feb");
+        keywords.remove("february");
+        keywords.remove("for");
+        keywords.remove("from");
+        keywords.remove("gmt");
+        keywords.remove("http");
+        keywords.remove("identifier");
+        keywords.remove("jan");
+        keywords.remove("january");
+        keywords.remove("jul");
+        keywords.remove("july");
+        keywords.remove("jun");
+        keywords.remove("june");
+        keywords.remove("last");
+        keywords.remove("location");
+        keywords.remove("lon");
+        keywords.remove("longitude");
+        keywords.remove("lat");
+        keywords.remove("latitude");
+        keywords.remove("mar");
+        keywords.remove("march");
+        keywords.remove("may");
+        keywords.remove("m/s");
+        keywords.remove("netcdf");
+        keywords.remove("nov");
+        keywords.remove("november");
+        keywords.remove("oct");
+        keywords.remove("october");
+        keywords.remove("other");
+        keywords.remove("precision");
+        keywords.remove("processing");
+        keywords.remove("prof.");  //professor, profile?
+        keywords.remove("sep");
+        keywords.remove("september");
+        keywords.remove("the");
+        keywords.remove("unknown");
+        keywords.remove("utc");
+        keywords.remove("vars");
+        keywords.remove("variables");
+        keywords.remove("ver");  //usually version, but could be vertical or ...
+    }
+
 
     private static void addIfNoAddOrSourceAtt(Attributes addAtts, Attributes sourceAtts, 
         String name, String value) {
@@ -3964,205 +4461,7 @@ public abstract class EDD {
             if (tt.indexOf(              "west coast") >= 0) 
                 suggestedKeywords.add(   "west coast");
 
-            //add expanded common abbreviations and acronyms    use contains() so original not remove
-            if (suggestedKeywords.contains("co2"))  
-                suggestedKeywords.add(     "carbon dioxide");
-            if (suggestedKeywords.contains("carbon dioxide"))  
-                suggestedKeywords.add(     "co2");
-            if (suggestedKeywords.contains("co3"))  
-                suggestedKeywords.add(     "carbonate");
-            if (suggestedKeywords.contains("carbonate"))  
-                suggestedKeywords.add(     "co3");
-            if (suggestedKeywords.contains("nh4"))
-                suggestedKeywords.add(     "ammonium");
-            if (suggestedKeywords.contains("ammonium"))
-                suggestedKeywords.add(     "nh4");
-            if (suggestedKeywords.contains("no2"))
-                suggestedKeywords.add(     "nitrite");
-            if (suggestedKeywords.contains("nitrate"))
-                suggestedKeywords.add(     "n02");
-            if (suggestedKeywords.contains("no3"))
-                suggestedKeywords.add(     "nitrate");
-            if (suggestedKeywords.contains("nitrate"))
-                suggestedKeywords.add(     "no3");
-            if (suggestedKeywords.contains("o2"))
-                suggestedKeywords.add(     "oxygen");
-            if (suggestedKeywords.contains("oxygen"))
-                suggestedKeywords.add(     "o2");
-            if (suggestedKeywords.contains("po4"))
-                suggestedKeywords.add(     "phosphate");
-            if (suggestedKeywords.contains("phosphate"))
-                suggestedKeywords.add(     "po4");
-
-            if (suggestedKeywords.contains("dew") &&
-                suggestedKeywords.contains("point")) {
-                suggestedKeywords.remove(  "dew"); 
-                suggestedKeywords.remove(  "point"); 
-                suggestedKeywords.add(     "dew point");
-            }
-            if (suggestedKeywords.contains("eur"))  
-                suggestedKeywords.add(     "europe");
-            if (suggestedKeywords.contains("hfr")) { 
-                suggestedKeywords.add(     "hf radar");
-                suggestedKeywords.add(     "radar");
-            }
-            if (suggestedKeywords.contains("hf") &&
-                suggestedKeywords.contains("radar"))  
-                suggestedKeywords.add(     "hf radar");
-            if (suggestedKeywords.contains("hf") &&
-                suggestedKeywords.contains("radio"))  
-                suggestedKeywords.add(     "hf radio");
-            if (suggestedKeywords.contains("glob"))  
-                suggestedKeywords.add(     "global");  //usually
-            if (suggestedKeywords.contains("mod")) 
-                suggestedKeywords.add(     "modulus"); //usually
-            if (suggestedKeywords.contains("aoml") ||
-                suggestedKeywords.contains("coastwatch") ||
-                suggestedKeywords.contains("esrl") ||
-                suggestedKeywords.contains("gfdl") ||
-                suggestedKeywords.contains("glerl") ||
-                suggestedKeywords.contains("ncdc") ||
-                suggestedKeywords.contains("ndbc") ||
-                suggestedKeywords.contains("nesdis") ||
-                suggestedKeywords.contains("ngdc") ||
-                suggestedKeywords.contains("nmfs") ||
-                suggestedKeywords.contains("nodc") ||
-                suggestedKeywords.contains("nws") ||
-                suggestedKeywords.contains("osdpd") ||
-                suggestedKeywords.contains("pfeg") ||
-                suggestedKeywords.contains("pfel") ||
-                suggestedKeywords.contains("pmel")) 
-                suggestedKeywords.add(     "noaa");
-            if (suggestedKeywords.contains("ncom")) {
-                suggestedKeywords.add(     "navy coastal ocean model");
-                suggestedKeywords.add(     "navy");
-                suggestedKeywords.add(     "coastal");
-                suggestedKeywords.add(     "ocean");
-                suggestedKeywords.add(     "model");
-            }
-            if (suggestedKeywords.contains("roms")) {
-                suggestedKeywords.add(     "regional ocean model");
-                suggestedKeywords.add(     "regional");
-                suggestedKeywords.add(     "ocean");
-                suggestedKeywords.add(     "model");
-                suggestedKeywords.add(     "modeling");
-                suggestedKeywords.add(     "system");
-            }
-            if (suggestedKeywords.contains("sea") && 
-                suggestedKeywords.contains("water"))
-                suggestedKeywords.add(     "seawater");
-
-            //replace with expanded common abbreviations and acronyms   use remove() so original is removed
-            if (suggestedKeywords.remove("anal")) 
-                suggestedKeywords.add(   "analysis");
-            if (suggestedKeywords.remove("ann")) 
-                suggestedKeywords.add(   "annual");
-            if (suggestedKeywords.remove("atmos")) 
-                suggestedKeywords.add(   "atmosphere");
-            if (suggestedKeywords.remove("chl")) 
-                suggestedKeywords.add(   "chlorophyll");
-            if (suggestedKeywords.remove("chla")) 
-                suggestedKeywords.add(   "chlorophyll");
-            if (suggestedKeywords.remove("chlor")) 
-                suggestedKeywords.add(   "chlorophyll");
-            if (suggestedKeywords.remove("chlora")) 
-                suggestedKeywords.add(   "chlorophyll");
-            if (suggestedKeywords.remove("coef.")) 
-                suggestedKeywords.add(   "coefficient");
-            if (suggestedKeywords.remove("climatologymeteorologyatmosphere")) {
-                suggestedKeywords.add(   "atmosphere");
-                suggestedKeywords.add(   "climatology");
-                suggestedKeywords.add(   "meteorology");
-            }            
-            if (suggestedKeywords.remove("dewpoint")) 
-                suggestedKeywords.add(   "dew point");
-            if (suggestedKeywords.remove("dewpt")) 
-                suggestedKeywords.add(   "dew point");
-            if (suggestedKeywords.remove("geoscientificinformation")) {
-                suggestedKeywords.add(   "geoscientific");
-                suggestedKeywords.add(   "information");
-            }                        
-            if (suggestedKeywords.remove("merid.")) 
-                suggestedKeywords.add(   "meridional");
-            if (suggestedKeywords.remove("mon")) 
-                suggestedKeywords.add(   "monthly");
-            if (suggestedKeywords.remove("near-real")) 
-                suggestedKeywords.add(   "near real time");
-            if (suggestedKeywords.remove("nseabaltic")) {
-                suggestedKeywords.add(   "north sea");
-                suggestedKeywords.add(   "baltic sea");
-            }                        
-            if (suggestedKeywords.remove("obs")) 
-                suggestedKeywords.add(   "observations");
-            if (suggestedKeywords.remove("phos")) 
-                suggestedKeywords.add(   "phosphate");
-            if (suggestedKeywords.remove("real-time")) 
-                suggestedKeywords.add(   "real time");
-            if (suggestedKeywords.remove("sili")) 
-                suggestedKeywords.add(   "silicate");
-            if (suggestedKeywords.remove("temp")) 
-                suggestedKeywords.add(   "temperature");
-            if (suggestedKeywords.remove("u-veloc.")) 
-                suggestedKeywords.add(   "u-velocity");
-            if (suggestedKeywords.remove("uri")) 
-                suggestedKeywords.add(   "URI");
-            if (suggestedKeywords.remove("url")) 
-                suggestedKeywords.add(   "URL");
-            if (suggestedKeywords.remove("v-veloc.")) 
-                suggestedKeywords.add(   "v-velocity");
-            if (suggestedKeywords.remove("veloc.")) 
-                suggestedKeywords.add(   "velocity");
-            if (suggestedKeywords.remove("w-veloc.")) 
-                suggestedKeywords.add(   "w-velocity");
-            
-            //remove common uninteresting keywords >=3 chars
-            suggestedKeywords.remove("alt");
-            suggestedKeywords.remove("and");
-            suggestedKeywords.remove("apr");
-            suggestedKeywords.remove("april");
-            suggestedKeywords.remove("aug");
-            suggestedKeywords.remove("august");
-            suggestedKeywords.remove("dec");
-            suggestedKeywords.remove("december");
-            suggestedKeywords.remove("dodsc");
-            suggestedKeywords.remove("feb");
-            suggestedKeywords.remove("february");
-            suggestedKeywords.remove("for");
-            suggestedKeywords.remove("from");
-            suggestedKeywords.remove("gmt");
-            suggestedKeywords.remove("http");
-            suggestedKeywords.remove("jan");
-            suggestedKeywords.remove("january");
-            suggestedKeywords.remove("jul");
-            suggestedKeywords.remove("july");
-            suggestedKeywords.remove("jun");
-            suggestedKeywords.remove("june");
-            suggestedKeywords.remove("location");
-            suggestedKeywords.remove("lon");
-            suggestedKeywords.remove("longitude");
-            suggestedKeywords.remove("lat");
-            suggestedKeywords.remove("latitude");
-            suggestedKeywords.remove("mar");
-            suggestedKeywords.remove("march");
-            suggestedKeywords.remove("may");
-            suggestedKeywords.remove("m/s");
-            suggestedKeywords.remove("netcdf");
-            suggestedKeywords.remove("nov");
-            suggestedKeywords.remove("november");
-            suggestedKeywords.remove("oct");
-            suggestedKeywords.remove("october");
-            suggestedKeywords.remove("other");
-            suggestedKeywords.remove("precision");
-            suggestedKeywords.remove("processing");
-            suggestedKeywords.remove("prof.");  //professor, profile?
-            suggestedKeywords.remove("sep");
-            suggestedKeywords.remove("september");
-            suggestedKeywords.remove("the");
-            suggestedKeywords.remove("unknown");
-            suggestedKeywords.remove("utc");
-            suggestedKeywords.remove("vars");
-            suggestedKeywords.remove("variables");
-            suggestedKeywords.remove("ver");  //usually version, but could be vertical or ...
+            cleanSuggestedKeywords(suggestedKeywords);
             
             //build new keywords String
             StringBuilder sb = new StringBuilder("");
@@ -4430,6 +4729,10 @@ public abstract class EDD {
             //convert possible standard_name to Title Case   (also rtofs grads)
             tLongName = String2.toTitleCase(String2.replaceAll(tLongName, '_', ' '));
         }
+        if (String2.caseInsensitiveIndexOf(EDV.LON_UNITS_VARIANTS, tUnits) >= 0)
+            tUnits = EDV.LON_UNITS;
+        if (String2.caseInsensitiveIndexOf(EDV.LAT_UNITS_VARIANTS, tUnits) >= 0)
+            tUnits = EDV.LAT_UNITS;
         String tUnitsLC      = tUnits.toLowerCase();
         
         //scale_factor or add_offset are strings?!
@@ -4450,10 +4753,7 @@ public abstract class EDD {
         testUnits = String2.replaceAll(testUnits, '=', '|');
         testUnits = String2.replaceAll(testUnits, ',', '|');
         testUnits = String2.replaceAll(testUnits, '/', '|');
-        boolean isMeters = 
-            tUnits.equals("m")       ||
-            tUnits.equals("meter")   ||
-            tUnits.equals("meters"); 
+        boolean isMeters = String2.indexOf(EDV.METERS_VARIANTS, tUnits) >= 0; // case sensitive
 
         //convert feet to meters
         boolean isFeet = 
@@ -4477,25 +4777,25 @@ public abstract class EDD {
         //do LLAT vars already exist? 
         String tDestName = suggestDestinationName(tSourceName, tUnits, oPositive,
             Math2.doubleToFloatNaN(tScaleFactor), tryToFindLLAT);
-        if (tDestName.equals("longitude")) {
+        if (tDestName.equals(EDV.LON_NAME)) {
             tLongName = isSomething(tLongName) && 
-               !tLongName.toLowerCase().equals("longitude")? tLongName : "Longitude";
-            tStandardName = "longitude";
-            tUnits = "degrees_east";
-        } else if (tDestName.equals("latitude")) {
+               !tLongName.toLowerCase().equals(EDV.LON_NAME)? tLongName : "Longitude";
+            tStandardName = EDV.LON_NAME;
+            tUnits = EDV.LON_UNITS;
+        } else if (tDestName.equals(EDV.LAT_NAME)) {
             tLongName = isSomething(tLongName) && 
-               !tLongName.toLowerCase().equals("latitude")? tLongName : "Latitude";
-            tStandardName = "latitude";
-            tUnits = "degrees_north";
-        } else if (tDestName.equals("altitude")) {
+               !tLongName.toLowerCase().equals(EDV.LAT_NAME)? tLongName : "Latitude";
+            tStandardName = EDV.LAT_NAME;
+            tUnits = EDV.LAT_UNITS;
+        } else if (tDestName.equals(EDV.ALT_NAME)) {
             //let tLongName be set below
-            tStandardName = "altitude";
-        } else if (tDestName.equals("depth")) {
+            tStandardName = EDV.ALT_NAME;
+        } else if (tDestName.equals(EDV.DEPTH_NAME)) {
             //let tLongName be set below
-            tStandardName = "depth";
-        } else if (tDestName.equals("time")) {
+            tStandardName = EDV.DEPTH_NAME;
+        } else if (tDestName.equals(EDV.TIME_NAME)) {
             //let tLongName be set below
-            tStandardName = "time";
+            tStandardName = EDV.TIME_NAME;
         }
 
         //common mistakes in UAF
@@ -4544,9 +4844,6 @@ public abstract class EDD {
                 addAtts.add(gradsStrings[i], "null");
             }
         }
-
-
-
        
         //moles (more distinctive than looking for g for grams)
         boolean moleUnits = tUnits.indexOf("mol") >= 0 || 
@@ -5498,10 +5795,8 @@ public abstract class EDD {
             else if (lcu.indexOf("|w/m^2|") >= 0                        )  {tMin = -500; tMax = 500;}
             else if (lcu.indexOf("|heat|") >= 0 && lcu.indexOf("|flux|") >= 0
                                                                         )  {tMin = -250; tMax = 250;}
-            else if (tUnits.equals("degrees_east") ||
-                     tUnits.equals("degree_east")                       )  {tMin = -180; tMax = 180;}
-            else if (tUnits.equals("degrees_north") ||
-                     tUnits.equals("degree_north")                      )  {tMin = -90;  tMax = 90;}
+            else if (tUnits.equals(EDV.LON_UNITS)                       )  {tMin = -180; tMax = 180;}
+            else if (tUnits.equals(EDV.LAT_UNITS)                       )  {tMin = -90;  tMax = 90;}
             else if (tUnits.equals("radians")                           )  {tMin = -3.2; tMax = 3.2;}
             else if (tUnits.startsWith("kg")) {
                 if (tUnits.endsWith("s-1")) {tMin = 0;  tMax = 1;   } 
@@ -6357,6 +6652,9 @@ public abstract class EDD {
                 "The number of columns in sourceTable and addTable isn't equal!");
         String indent = "    ";
         StringBuilder sb = new StringBuilder();
+        if (tryToFindLLAT)
+            tryToFindLLAT(sourceTable, addTable);
+
         //e.g., don't change "lon" to "longitude" if there is already a "longitude" variable
         int sLongitude  = addTable.findColumnNumber("longitude"), 
             sLatitude   = addTable.findColumnNumber("latitude"), 
@@ -6370,9 +6668,7 @@ public abstract class EDD {
             String tUnits = addAtts.getString("units");  
             if (tUnits == null && sourceTable != null) 
                 tUnits = sourceTable.columnAttributes(sTime).getString("units");
-            String suggestDestName = suggestDestinationName("time", tUnits, null, 
-                Float.NaN, tryToFindLLAT);
-            if (!suggestDestName.equals("time")) {
+            if (!EDVTimeStamp.hasTimeUnits(tUnits)) {
                 addTable.setColumnName(sTime, "time_");
                 sTime = -1;
             }
@@ -6398,7 +6694,7 @@ public abstract class EDD {
                 tPositive = sourceAtts.getString("positive");
             float tScaleFactor = sourceAtts.getFloat("scale_factor");
             String suggestDestName = suggestDestinationName(tSourceName, tUnits, 
-                tPositive, tScaleFactor, tryToFindLLAT);
+                tPositive, tScaleFactor, tryToFindLLAT); 
             String tDestName = null;
             //String2.log("col=" + col + " sourceName=" + tSourceName + " units=" + tUnits + " suggestDestName=" + suggestDestName);
 
@@ -6549,8 +6845,7 @@ public abstract class EDD {
         if (po >= 0)
             tUnits = tUnits.substring(po + 3);  
         String tUnitsLC = tUnits.toLowerCase();
-        boolean unitsAreMeters = 
-            "|m|meter|meters|metre|metres|".indexOf("|" + tUnitsLC + "|") >= 0;
+        boolean unitsAreMeters = String2.indexOf(EDV.METERS_VARIANTS, tUnitsLC) >= 0; //case sensitive
 
         if (tPositive == null) 
             tPositive = "";
@@ -6560,10 +6855,8 @@ public abstract class EDD {
             if ((lcSourceName.indexOf("lon") >= 0 ||
                   lcSourceName.equals("x") ||
                   lcSourceName.equals("xax")) &&  //must check, since uCurrent and uWind use degrees_east, too
-                 (tUnitsLC.equals("degrees_east") ||
-                  tUnitsLC.equals("degree_east") ||
-                  tUnitsLC.equals("degree_e") ||     //incorrect, but exists
-                  tUnitsLC.equals("degrees_west") || //bizarre, but sometimes used for negative degrees_east values
+                 (String2.caseInsensitiveIndexOf(EDV.LON_UNITS_VARIANTS, tUnitsLC) >= 0 ||    
+                  tUnitsLC.equals("degrees_west") || //bizarre, but sometimes used for postive or negative degrees_east values
                   tUnitsLC.equals("degree_west") ||
                   tUnitsLC.equals("degrees") ||
                   tUnitsLC.equals("degree"))) 
@@ -6573,9 +6866,7 @@ public abstract class EDD {
             if ((lcSourceName.indexOf("lat") >= 0 ||
                   lcSourceName.equals("y") ||
                   lcSourceName.equals("yax")) &&  
-                 (tUnitsLC.equals("degrees_north") ||
-                  tUnitsLC.equals("degree_north") ||
-                  tUnitsLC.equals("degree_n") ||     //incorrect, but exists
+                 (String2.caseInsensitiveIndexOf(EDV.LAT_UNITS_VARIANTS, tUnitsLC) >= 0 ||
                   tUnitsLC.equals("degrees") ||
                   tUnitsLC.equals("degree"))) 
      
@@ -6591,7 +6882,7 @@ public abstract class EDD {
      
                 return "depth"; 
 
-            if (tUnitsLC.indexOf(" since ") > 0) {
+            if (tUnitsLC.indexOf(" since ") > 0) { //simple test; definitive test is below
                 try {
                     Calendar2.getTimeBaseAndFactor(tUnits); //just to throw exception if trouble
                     return "time"; 
@@ -6838,7 +7129,7 @@ public abstract class EDD {
      * @param badFileMap
      * @param dirIndex   
      * @param fileName   the fileName, for example  AG20090109.nc
-     * @param lastMod   the lastModified time of the file
+     * @param lastMod   the lastModified time (millis) of the file 
      * @param reason
      */
     public void addBadFile(ConcurrentHashMap badFileMap, int dirIndex, String fileName, 
@@ -6854,7 +7145,7 @@ public abstract class EDD {
      *
      * @param dirIndex   
      * @param fileName   the fileName, for example  AG20090109.nc
-     * @param lastMod   the lastModified time of the file
+     * @param lastMod   the lastModified time (millis) of the file
      * @param reason
      * @return an error string ("" if no error).
      */
@@ -6912,6 +7203,93 @@ public abstract class EDD {
         return sb.toString();
     }
 
+    /** 
+     * This is used by EDDGridFromFiles and EDDTableFromFiles to 
+     * find a file from the fileTable (via linear search).
+     *
+     * @return the row number if it was in the fileTable (else -1)
+     */     
+    public static int findInFileTable(int dirIndex, String fileName, 
+        Table tFileTable, ShortArray ftDirIndex, StringArray ftFileList) {
+
+        int fileListPo = 0;
+        int nFiles = ftDirIndex.size();
+        while (fileListPo < nFiles) {
+            if (dirIndex == ftDirIndex.get(fileListPo) && 
+                fileName.equals(ftFileList.get(fileListPo))) {
+                return fileListPo;
+            }
+            fileListPo++;
+        }
+        return -1;
+    }
+
+    /** 
+     * This is used by EDDGridFromFiles and EDDTableFromFiles to remove
+     * a file from the fileTable (via linear search).
+     *
+     * @return true if it was in the fileTable and thus was removed
+     */     
+    public static boolean removeFromFileTable(int dirIndex, String fileName, 
+        Table tFileTable, ShortArray ftDirIndex, StringArray ftFileList) {
+
+        int fileListPo = findInFileTable(dirIndex, fileName, 
+            tFileTable, ftDirIndex, ftFileList);
+        if (fileListPo >= 0) {
+            tFileTable.removeRow(fileListPo);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /** 
+     * This is used by EDDGridFromFiles and EDDTableFromFiles to save 
+     * all the file information to disk.
+     *
+     * @throws Throwable if trouble
+     */
+    public void saveDirTableFileTableBadFiles(Table dirTable, Table fileTable, 
+        ConcurrentHashMap badFileMap) throws Throwable {
+
+        String dirTableFileName  = datasetDir() +  DIR_TABLE_FILENAME;
+        String fileTableFileName = datasetDir() + FILE_TABLE_FILENAME;
+        String badFilesFileName  = badFileMapFileName();
+        int random = Math2.random(Integer.MAX_VALUE);
+
+        try {
+            //*** It is important that the 3 files are swapped into place as atomically as possible
+            //So save all first, then rename all.
+            dirTable.saveAsFlatNc(  dirTableFileName + random, "row"); //throws exceptions
+            fileTable.saveAsFlatNc(fileTableFileName + random, "row"); //throws exceptions
+            if (!badFileMap.isEmpty()) //only create badMapFile if there are some bad files
+                writeBadFileMap(    badFilesFileName + random, badFileMap);
+            //if Windows, give OS file system time to settle
+            if (String2.OSIsWindows) Math2.gc(1000); //so things below go quickly
+            
+            //Integrity of these files is important. Rename is less likely to have error.
+            if (badFileMap.isEmpty())
+                File2.delete(badFilesFileName);
+            else File2.rename(badFilesFileName + random, badFilesFileName);
+            File2.rename(     dirTableFileName + random, dirTableFileName);
+            //do fileTable last: more changes, more important
+            File2.rename(    fileTableFileName + random, fileTableFileName); 
+            if (reallyVerbose) String2.log("save fileTable(first 5 rows)=\n" + 
+                fileTable.dataToCSVString(5));
+        } catch (Throwable t) {
+            String subject = String2.ERROR + 
+                " while saving dirTable, fileTable, or badFiles for " + datasetID;
+            String msg = MustBe.throwableToString(t);
+            String2.log(subject + "\n" + msg);
+            EDStatic.email(EDStatic.emailEverythingToCsv, subject, msg);
+
+            File2.delete( dirTableFileName + random);
+            File2.delete(fileTableFileName + random);
+            File2.delete( badFilesFileName + random);
+
+            throw t;
+        }
+    }
 
     /**
      * This returns list of &amp;-separated parts, in their original order, from a percent encoded userQuery.

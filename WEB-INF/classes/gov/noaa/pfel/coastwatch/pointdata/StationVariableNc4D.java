@@ -210,8 +210,8 @@ public class StationVariableNc4D extends GroupVariableWithDepthLevels {
         }
 
         //find firstZ and lastZ
-        int firstZ = depthLevels.binaryFindFirstGAE5(0, depthLevels.size() - 1, minDepth);
-        int lastZ  = depthLevels.binaryFindLastLAE5( 0, depthLevels.size() - 1, maxDepth);
+        int firstZ = depthLevels.binaryFindFirstGAE(0, depthLevels.size() - 1, minDepth, 5);
+        int lastZ  = depthLevels.binaryFindLastLAE( 0, depthLevels.size() - 1, maxDepth, 5);
 
         //reject because z range is between 2 z levels or no valid depths?
         if (firstZ > lastZ) {

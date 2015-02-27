@@ -292,29 +292,8 @@ public class EDDGridSideBySide extends EDDGrid {
         System.arraycopy(firstChild.axisVariables, 1, axisVariables, 1, nAV - 1);
         //but make new axisVariables[0] with newAxis0Values
         EDVGridAxis fav = firstChild.axisVariables[0];
-        if (lonIndex == 0)
-            axisVariables[0] = new EDVLonGridAxis(fav.sourceName(), 
+        axisVariables[0] = makeAxisVariable(0, fav.sourceName(), fav.destinationName(),
                 fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
-        else if (latIndex == 0)
-            axisVariables[0] = new EDVLatGridAxis(fav.sourceName(), 
-                fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
-        else if (altIndex == 0)
-            axisVariables[0] = new EDVAltGridAxis(fav.sourceName(), 
-                fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
-        else if (depthIndex == 0)
-            axisVariables[0] = new EDVDepthGridAxis(fav.sourceName(), 
-                fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
-        else if (timeIndex == 0)
-            axisVariables[0] = new EDVTimeGridAxis(fav.sourceName(), 
-                fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
-        else if (fav instanceof EDVTimeStampGridAxis) 
-            axisVariables[0] = new EDVTimeStampGridAxis(
-                fav.sourceName(), fav.destinationName(),
-                fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
-        else {axisVariables[0] = new EDVGridAxis(fav.sourceName(), fav.destinationName(),
-                fav.sourceAttributes(), fav.addAttributes(), newAxis0Values); 
-              axisVariables[0].setActualRangeFromDestinationMinMax();
-        }
 
         //make combined dataVariables
         int nDv = childStopsAt[nChildren - 1] + 1;
@@ -337,23 +316,37 @@ public class EDDGridSideBySide extends EDDGrid {
     }
 
     /**
-     * Subclasses (like EDDGridFromDap) overwrite this to do a quick, 
-     * incremental update of this dataset (i.e., for real time deal datasets).
+     * This does the actual incremental update of this dataset 
+     * (i.e., for real time datasets).
      * 
-     * <p>For simple failures, this writes into to log.txt but doesn't throw an exception.
+     * <p>Concurrency issue: The changes here are first prepared and 
+     * then applied as quickly as possible (but not atomically!).
+     * There is a chance that another thread will get inconsistent information
+     * (from some things updated and some things not yet updated).
+     * But I don't want to synchronize all activities of this class.
      *
-     * @throws Throwable if trouble. 
-     * If the dataset has changed in a serious / incompatible way and needs a full
-     * reload, this throws WaitThenTryAgainException 
-     * (usually, catcher calls LoadDatasets.tryToUnload(...) and EDD.requestReloadASAP(tDatasetID))..
+     * @param msg the start of a log message, e.g., "update(thisDatasetID): ".
+     * @param startUpdateMillis the currentTimeMillis at the start of this update.
+     * @return true if a change was made
+     * @throws Throwable if serious trouble. 
+     *   For simple failures, this writes info to log.txt but doesn't throw an exception.
+     *   If the dataset has changed in a serious / incompatible way and needs a full
+     *     reload, this throws WaitThenTryAgainException 
+     *     (usually, catcher calls LoadDatasets.tryToUnload(...) and EDD.requestReloadASAP(tDatasetID))..
+     *   If the changes needed are probably fine but are too extensive to deal with here, 
+     *     this calls EDD.requestReloadASAP(tDatasetID) and returns without doing anything.
      */
-    public void update() {
+    public boolean lowUpdate(String msg, long startUpdateMillis) throws Throwable {
+
         //NOT FINISHED. NOT SIMPLE.
-        //for (int i = 0; i < childDatasets.length; i++)
-        //    childDatasets[i].update();
+        boolean anyChanged = false;
+        //for (int i = 0; i < childDatasets.length; i++) {
+        //    if (childDatasets[i].update())
+        //        anyChanged = true;
         //
         //rebuild indexOfAxis0Value 
         //protected IntArray indexOfAxis0Value[]; //an IntArray for each child; a row for each axis0 value
+        return anyChanged;
     }
 
 
@@ -391,8 +384,10 @@ public class EDDGridSideBySide extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
-     * @param tDataVariables
-     * @param tConstraints
+     * @param tDataVariables EDV[] with just the requested data variables
+     * @param tConstraints  int[nAxisVariables*3] 
+     *   where av*3+0=startIndex, av*3+1=stride, av*3+2=stopIndex.
+     *   AxisVariables are counted left to right, e.g., sst[0=time][1=lat][2=lon].
      * @return a PrimitiveArray[] where the first axisVariables.length elements
      *   are the axisValues and the next tDataVariables.length elements
      *   are the dataValues.

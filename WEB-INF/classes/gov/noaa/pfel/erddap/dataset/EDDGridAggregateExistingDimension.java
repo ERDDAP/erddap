@@ -259,6 +259,7 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         combinedGlobalAttributes = firstChild.combinedGlobalAttributes();
         //and clear searchString of children?
 
+        //make the local axisVariables
         int nAv = firstChild.axisVariables.length;
         axisVariables = new EDVGridAxis[nAv];
         System.arraycopy(firstChild.axisVariables, 0, axisVariables, 0, nAv);
@@ -267,22 +268,15 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
         altIndex   = firstChild.altIndex;
         depthIndex = firstChild.depthIndex;
         timeIndex  = firstChild.timeIndex;
+        //make the combined axisVariable[0]
         EDVGridAxis av0 = axisVariables[0];
         String sn = av0.sourceName();
+        String dn = av0.destinationName();
         Attributes sa = av0.sourceAttributes();
         Attributes aa = av0.addAttributes();
-        if      (lonIndex    == 0) axisVariables[0] = new EDVLonGridAxis(  sn, sa, aa, cumSV);
-        else if (latIndex    == 0) axisVariables[0] = new EDVLatGridAxis(  sn, sa, aa, cumSV);
-        else if (altIndex    == 0) axisVariables[0] = new EDVAltGridAxis(  sn, sa, aa, cumSV);
-        else if (depthIndex  == 0) axisVariables[0] = new EDVDepthGridAxis(sn, sa, aa, cumSV);
-        else if (timeIndex   == 0) axisVariables[0] = new EDVTimeGridAxis( sn, sa, aa, cumSV);
-        else if (av0 instanceof EDVTimeStampGridAxis)
-            axisVariables[0] = 
-                        new EDVTimeStampGridAxis(sn, av0.destinationName(),    sa, aa, cumSV);
-        else {axisVariables[0] = new EDVGridAxis(sn, av0.destinationName(),    sa, aa, cumSV);
-              axisVariables[0].setActualRangeFromDestinationMinMax();
-        }
+        axisVariables[0] = makeAxisVariable(0, sn, dn, sa, aa, cumSV); 
 
+        //make the local dataVariables
         int nDv = firstChild.dataVariables.length;
         dataVariables = new EDV[nDv];
         System.arraycopy(firstChild.dataVariables, 0, dataVariables, 0, nDv);
@@ -415,8 +409,10 @@ public class EDDGridAggregateExistingDimension extends EDDGrid {
      * full user's request, but will be a partial request (for less than
      * EDStatic.partialRequestMaxBytes).
      * 
-     * @param tDataVariables
-     * @param tConstraints
+     * @param tDataVariables EDV[] with just the requested data variables
+     * @param tConstraints  int[nAxisVariables*3] 
+     *   where av*3+0=startIndex, av*3+1=stride, av*3+2=stopIndex.
+     *   AxisVariables are counted left to right, e.g., sst[0=time][1=lat][2=lon].
      * @return a PrimitiveArray[] where the first axisVariables.length elements
      *   are the axisValues and the next tDataVariables.length elements
      *   are the dataValues.

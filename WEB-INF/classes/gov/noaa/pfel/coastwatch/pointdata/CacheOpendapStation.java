@@ -924,7 +924,7 @@ public class CacheOpendapStation {
             //adcp stations chosen because I think they give gibberish answers sometimes (ascii and opendap)
             String2.log("\n*** CacheOpendapStation.test rep=" + rep + " " + 
                 Calendar2.getCurrentISODateTimeStringLocal());
-            if (rep > 0) Math2.incgc(5000); //5 seconds
+            if (rep > 0) Math2.incgc(5000); //5 seconds    //in a test
             //first time, ensure there are at least 3000 time points; then pick time randomly
             int randomInt = rep == 0? 3000 : random.nextInt(3000); 
             rep++;

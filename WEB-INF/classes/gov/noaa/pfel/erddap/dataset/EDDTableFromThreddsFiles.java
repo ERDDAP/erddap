@@ -90,27 +90,27 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
-        int tReloadEveryNMinutes,
+        int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
         String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) throws Throwable {
+        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory, 
+        boolean tAccessibleViaFiles) throws Throwable {
 
         super("EDDTableFromThreddsFiles", true, //isLocal is now set to true (copied files)
             tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
-            tDataVariables, tReloadEveryNMinutes,
+            tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             EDStatic.fullCopyDirectory + tDatasetID + "/", //force fileDir to be the copyDir 
             tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
-
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles);
     }
 
     /**
@@ -608,7 +608,7 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
      *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
     public static String generateDatasetsXml(String tLocalDirUrl, 
-        String tFileNameRegex, String oneFileDapUrl, int tReloadEveryNMinutes, 
+        String tFileNameRegex, String oneFileDapUrl, int tReloadEveryNMinutes,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
         String tColumnNameForExtract, String tSortedColumnSourceName,
         String tSortFilesBySourceNames, Attributes externalAddGlobalAttributes) 
@@ -617,6 +617,8 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
         String2.log("EDDTableFromThreddsFiles.generateDatasetsXml" +
             "\n  dirUrl=" + tLocalDirUrl + 
             "\n  oneFileDapUrl=" + oneFileDapUrl);
+        if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
+            tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
 
         String tPublicDirUrl = convertToPublicSourceUrl(tLocalDirUrl);
         String tPublicDirUrlHtml = tPublicDirUrl;
@@ -694,17 +696,19 @@ public class EDDTableFromThreddsFiles extends EDDTableFromFiles {
             "<dataset type=\"EDDTableFromThreddsFiles\" datasetID=\"" + 
                 tDatasetID + "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
+            "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
             "    <fileDir></fileDir>  <!-- automatically set to [bigParentDirectory]/copy/" + tDatasetID + "/ -->\n" +
             "    <recursive>true</recursive>\n" +
-            "    <fileNameRegex>" + tFileNameRegex + "</fileNameRegex>\n" +
+            "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
-            "    <preExtractRegex>" + tPreExtractRegex + "</preExtractRegex>\n" +
-            "    <postExtractRegex>" + tPostExtractRegex + "</postExtractRegex>\n" +
-            "    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
+            "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
+            "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
+            "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
             "    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n" +
+            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -757,6 +761,7 @@ directionsForGenerateDatasetsXml() +
 "\n" +
 "<dataset type=\"EDDTableFromThreddsFiles\" datasetID=\"noaa_nodc_8fcf_be37_cbe4\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
 "    <fileDir></fileDir>  <!-- automatically set to [bigParentDirectory]/copy/noaa_nodc_8fcf_be37_cbe4/ -->\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*MTBD.*\\.nc</fileNameRegex>\n" +
@@ -768,6 +773,7 @@ directionsForGenerateDatasetsXml() +
 "    <sortedColumnSourceName>Time</sortedColumnSourceName>\n" +
 "    <sortFilesBySourceNames>stationID Time</sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "        <att name=\"Conventions\">CF-1.4</att>\n" +                                                 //dates below change
 "        <att name=\"History\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2012/31/11 20:31 CST. Original dataset URL:</att>\n" +
@@ -787,7 +793,7 @@ directionsForGenerateDatasetsXml() +
 "        <att name=\"history\">created by the NCDDC PISCO Temperature Profile to NetCDF converter on 2012/31/11 20:31 CST. Original dataset URL:</att>\n" +
 "        <att name=\"infoUrl\">http://data.nodc.noaa.gov/thredds/catalog/nmsp/wcos/WES001/2008/catalog.html</att>\n" +
 "        <att name=\"institution\">NOAA NODC</att>\n" +
-"        <att name=\"keywords\">altitudes, catalog, data, data.nodc.noaa.gov, day, depth, expressed, flag, identifier, negative, nmsp, noaa, nodc, ocean, oceans,\n" +
+"        <att name=\"keywords\">altitudes, catalog, data, data.nodc.noaa.gov, day, depth, expressed, flag, negative, nmsp, noaa, nodc, ocean, oceans,\n" +
 "Oceans &gt; Ocean Temperature &gt; Water Temperature,\n" +
 "quality, sea, sea_water_temperature, sea_water_temperature status_flag, seawater, station, status, temperature, thredds, time, water, wcos, wes0, year, yearday</att>\n" +
 "        <att name=\"keywords_vocabulary\">GCMD Science Keywords</att>\n" +
@@ -840,6 +846,7 @@ directionsForGenerateDatasetsXml() +
 "            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
 "            <att name=\"colorBarPalette\">OceanDepth</att>\n" +
 "            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"units\">m</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
@@ -936,7 +943,6 @@ directionsForGenerateDatasetsXml() +
 "    </dataVariable>\n" +
 "</dataset>\n" +
 "\n\n";
-
             Test.ensureEqual(results, expected, "results=\n" + results);
             //Test.ensureEqual(results.substring(0, Math.min(results.length(), expected.length())), 
             //    expected, "");
@@ -1415,24 +1421,24 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  conductivity \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 5.555556E7;\n" + //2013-03-26 new value is nonsense.  was 4.78
-//"    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared
-//"    Int16 average_length 60;\n" +           //2014-08-11 they returned
-//"    String average_method \"average\";\n" +
-//"    Float32 centerline_offset -9999.0;\n" +
+"    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared
+"    Int16 average_length 60;\n" +           //2014-08-11 they returned
+"    String average_method \"average\";\n" +
+"    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 4.0;\n" +
 "    Float64 colorBarMinimum 0.0;\n" +
-//"    Float32 data_precision -9999.0;\n" +
-//"    Float32 distance_from_bow -9999.0;\n" +
-//"    Float32 height -9999.0;\n" +
-//"    String instrument \"unknown\";\n" +
+"    Float32 data_precision -9999.0;\n" +
+"    Float32 distance_from_bow -9999.0;\n" +
+"    Float32 height -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"Conductivity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"measured\";\n" +
-//"    String original_units \"siemens meter-1\";\n" +
+"    String original_units \"siemens meter-1\";\n" +
 "    Int32 qcindex 16;\n" +
-//"    Float32 sampling_rate -9999.0;\n" +
-//"    Float32 special_value -8888.0;\n" +
+"    Float32 sampling_rate -9999.0;\n" +
+"    Float32 special_value -8888.0;\n" +
 "    String standard_name \"sea_water_electrical_conductivity\";\n" +
 "    String units \"siemens meter-1\";\n" +
 "  \\}\n" +
@@ -1463,25 +1469,25 @@ Upwards           DGrid [Time,Depth,Latitude,Longitude]
 "  salinity \\{\n" +
 "    Float32 _FillValue -8888.0;\n" +
 "    Float32 actual_range 0.0, 7777777.0;\n" + //2013-03-26 nonsense!  was 9672.92
-//"    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared
-//"    Int16 average_length -9999;\n" +        //2014-08-11 they returned  
-//"    String average_method \"average\";\n" +
-//"    Float32 centerline_offset -9999.0;\n" +
+"    String average_center \"unknown\";\n" + //2014-01-09 several lines disappeared
+"    Int16 average_length -9999;\n" +        //2014-08-11 they returned  
+"    String average_method \"average\";\n" +
+"    Float32 centerline_offset -9999.0;\n" +
 "    Float64 colorBarMaximum 37.0;\n" +
 "    Float64 colorBarMinimum 32.0;\n" +
-//"    Int32 data_interval 60;\n" +
-//"    Float32 data_precision -9999.0;\n" +  //2014-12-08 several lines disappeared
-//"    Float32 distance_from_bow -9999.0;\n" +
-//"    Float32 height -9999.0;\n" +
-//"    String instrument \"unknown\";\n" +
+"    Int32 data_interval 60;\n" +
+"    Float32 data_precision -9999.0;\n" +  //2014-12-08 several lines disappeared
+"    Float32 distance_from_bow -9999.0;\n" +
+"    Float32 height -9999.0;\n" +
+"    String instrument \"unknown\";\n" +
 "    String ioos_category \"Salinity\";\n" +
 "    String long_name \"Salinity\";\n" +
 "    Float32 missing_value -9999.0;\n" +
 "    String observation_type \"calculated\";\n" +
-//"    String original_units \"PSU\";\n" +
+"    String original_units \"PSU\";\n" +
 "    Int32 qcindex 15;\n" +
-//"    Float32 sampling_rate -9999.0;\n" +
-//"    Float32 special_value -8888.0;\n" +
+"    Float32 sampling_rate -9999.0;\n" +
+"    Float32 special_value -8888.0;\n" +
 "    String standard_name \"sea_water_salinity\";\n" +
 "    String units \"PSU\";\n" +
 "  \\}\n" +

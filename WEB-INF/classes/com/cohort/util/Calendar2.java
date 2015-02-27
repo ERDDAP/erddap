@@ -189,8 +189,8 @@ public class Calendar2 {
         int sincePo = tsUnits.toLowerCase().indexOf(" since ");
         if (sincePo <= 0)
             throw new SimpleException(errorInMethod + "units string doesn't contain \" since \".");
-        double factorToGetSeconds = factorToGetSeconds(tsUnits.substring(0, sincePo));
-        GregorianCalendar baseGC = parseISODateTimeZulu(tsUnits.substring(sincePo + 7));
+        double factorToGetSeconds = factorToGetSeconds(tsUnits.substring(0, sincePo)); //it is trimmed
+        GregorianCalendar baseGC = parseISODateTimeZulu(tsUnits.substring(sincePo + 7)); //it is trimmed
         double baseSeconds = baseGC.getTimeInMillis() / 1000.0;
         //String2.log("  time unitsString (" + tsUnits + 
         //    ") converted to factorToGetSeconds=" + factorToGetSeconds +
@@ -1442,6 +1442,7 @@ public class Calendar2 {
 
         if (s == null)
             s = "";
+        s = s.trim();
         boolean negative = s.startsWith("-");
         if (negative) 
             s = s.substring(1);

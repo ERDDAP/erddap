@@ -1,5 +1,5 @@
 /* 
- * EDDGridFromMatFiles Copyright 2014, NOAA.
+ * THIS CLASS IS UNFINISHED AND INACTIVE. EDDGridFromMatFiles Copyright 2014, NOAA.
  * See the LICENSE.txt file in this file's directory.
  */
 package gov.noaa.pfel.erddap.dataset;
@@ -32,6 +32,7 @@ import java.util.List;
 
 
 /** 
+ * THIS CLASS IS UNFINISHED AND INACTIVE.  
  * This class represents gridded data aggregated from a collection of 
  * Matlab .mat data files
  * (as read by JMatIO http://sourceforge.net/projects/jmatio/).
@@ -48,9 +49,10 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
         Attributes tAddGlobalAttributes,
         Object[][] tAxisVariables,
         Object[][] tDataVariables,
-        int tReloadEveryNMinutes,
-        String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
-        boolean tEnsureAxisValuesAreExactlyEqual, boolean tFileTableInMemory) 
+        int tReloadEveryNMinutes, int tUpdateEveryNMillis,
+        String tFileDir, boolean tRecursive, String tFileNameRegex, 
+        String tMetadataFrom, boolean tEnsureAxisValuesAreExactlyEqual, 
+        boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
         throws Throwable {
 
         super("EDDGridFromMatFiles", tDatasetID, tAccessibleTo, 
@@ -59,9 +61,10 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
             tAddGlobalAttributes,
             tAxisVariables,
             tDataVariables,
-            tReloadEveryNMinutes,
+            tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
-            tEnsureAxisValuesAreExactlyEqual, tFileTableInMemory);
+            tEnsureAxisValuesAreExactlyEqual, 
+            tFileTableInMemory, tAccessibleViaFiles);
     }
 
 
@@ -290,6 +293,8 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
         String2.log("EDDGridFromMatFiles.generateDatasetsXml" +
             "\n  sampleFileName=" + sampleFileName);
         tFileDir = File2.addSlash(tFileDir); //ensure it has trailing slash
+        if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
+            tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
 
         NetcdfFile ncFile = NcHelper.openFile(sampleFileName); //may throw exception
         Table axisSourceTable = new Table();  
@@ -391,9 +396,10 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
                 "<dataset type=\"EDDGridFromMatFiles\" datasetID=\"" + tDatasetID +                      
                     "\" active=\"true\">\n" +
                 "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
+                "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
                 "    <fileDir>" + tFileDir + "</fileDir>\n" +
                 "    <recursive>true</recursive>\n" +
-                "    <fileNameRegex>" + tFileNameRegex + "</fileNameRegex>\n" +
+                "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
                 "    <metadataFrom>last</metadataFrom>\n" +
                 "    <fileTableInMemory>false</fileTableInMemory>\n");
 
@@ -433,15 +439,15 @@ public class EDDGridFromMatFiles extends EDDGridFromFiles {
 
         String2.log("\n*** EDDGridFromMatFiles.testGenerateDatasetsXml");
         String results = generateDatasetsXml(
-            "c:/u00/cwatch/testData/erdQSwind1day/", ".*_03\\.nc", 
-            "c:/u00/cwatch/testData/erdQSwind1day/erdQSwind1day_20080101_03.nc",
+            EDStatic.unitTestDataDir + "erdQSwind1day/", ".*_03\\.nc", 
+            EDStatic.unitTestDataDir + "erdQSwind1day/erdQSwind1day_20080101_03.nc",
             DEFAULT_RELOAD_EVERY_N_MINUTES, null);
 
         //GenerateDatasetsXml
         String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
             "EDDGridFromMatFiles",
-            "c:/u00/cwatch/testData/erdQSwind1day/", ".*_03\\.nc", 
-            "c:/u00/cwatch/testData/erdQSwind1day/erdQSwind1day_20080101_03.nc",
+            EDStatic.unitTestDataDir + "erdQSwind1day/", ".*_03\\.nc", 
+            EDStatic.unitTestDataDir + "erdQSwind1day/erdQSwind1day_20080101_03.nc",
             "" + DEFAULT_RELOAD_EVERY_N_MINUTES},
             false); //doIt loop?
         Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
@@ -453,7 +459,7 @@ directionsForGenerateDatasetsXml() +
 "\n" +
 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"erdQSwind1day_52db_1ed3_22ce\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
-"    <fileDir>c:/u00/cwatch/testData/erdQSwind1day/</fileDir>\n" +
+"    <fileDir>" + EDStatic.unitTestDataDir + "erdQSwind1day/</fileDir>\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*_03\\.nc</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
@@ -1030,9 +1036,9 @@ tsvExpected;
      * @throws Throwable if trouble
      */
     public static void test(boolean deleteCachedDatasetInfo) throws Throwable {
-        /* 
-*/        testNc(deleteCachedDatasetInfo);
-/*        testCwHdf(deleteCachedDatasetInfo);
+        /* THIS CLASS IS UNFINISHED AND INACTIVE.
+        testNc(deleteCachedDatasetInfo);
+        testCwHdf(deleteCachedDatasetInfo);
         testHdf();
         testNcml();
         testGrib_43(deleteCachedDatasetInfo);  //42 or 43 for netcdfAll 4.2- or 4.3+
@@ -1042,11 +1048,6 @@ tsvExpected;
         testSpeed(-1);  //-1 = all
         /* */
 
-        //one time tests
-        //String fiName = "c:/u00/data/geosgrib/multi_1.glo_30m.all.grb2";
-        //String2.log(NcHelper.dumpString(fiName, false));
-        //NetcdfDataset in = NetcdfDataset.openDataset(fiName);
-        //in.close();
 
     }
 

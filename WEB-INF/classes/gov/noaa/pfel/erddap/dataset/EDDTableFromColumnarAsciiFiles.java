@@ -17,6 +17,7 @@ import com.cohort.util.MustBe;
 import com.cohort.util.SimpleException;
 import com.cohort.util.String2;
 import com.cohort.util.Test;
+import com.cohort.util.XML;
 
 import gov.noaa.pfel.coastwatch.pointdata.Table;
 import gov.noaa.pfel.coastwatch.util.RegexFilenameFilter;
@@ -57,25 +58,26 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         String tDefaultDataQuery, String tDefaultGraphQuery, 
         Attributes tAddGlobalAttributes,
         Object[][] tDataVariables,
-        int tReloadEveryNMinutes,
+        int tReloadEveryNMinutes, int tUpdateEveryNMillis,
         String tFileDir, boolean tRecursive, String tFileNameRegex, String tMetadataFrom,
         String tCharset, int tColumnNamesRow, int tFirstDataRow,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex, 
         String tColumnNameForExtract,
         String tSortedColumnSourceName, String tSortFilesBySourceNames,
-        boolean tSourceNeedsExpandedFP_EQ, boolean tFileTableInMemory) 
+        boolean tSourceNeedsExpandedFP_EQ, 
+        boolean tFileTableInMemory, boolean tAccessibleViaFiles) 
         throws Throwable {
 
         super("EDDTableFromColumnarAsciiFiles", true, tDatasetID, tAccessibleTo, 
             tOnChange, tFgdcFile, tIso19115File, tSosOfferingPrefix, 
             tDefaultDataQuery, tDefaultGraphQuery,
             tAddGlobalAttributes, 
-            tDataVariables, tReloadEveryNMinutes,
+            tDataVariables, tReloadEveryNMinutes, tUpdateEveryNMillis,
             tFileDir, tRecursive, tFileNameRegex, tMetadataFrom,
             tCharset, tColumnNamesRow, tFirstDataRow,
             tPreExtractRegex, tPostExtractRegex, tExtractRegex, tColumnNameForExtract,
             tSortedColumnSourceName, tSortFilesBySourceNames,
-            tSourceNeedsExpandedFP_EQ, tFileTableInMemory);
+            tSourceNeedsExpandedFP_EQ, tFileTableInMemory, tAccessibleViaFiles);
     }
 
     /**
@@ -154,7 +156,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
      */
     public static String generateDatasetsXml(String tFileDir, String tFileNameRegex, 
         String sampleFileName, 
-        String charset, int columnNamesRow, int firstDataRow, int tReloadEveryNMinutes,
+        String charset, int columnNamesRow, int firstDataRow, 
+        int tReloadEveryNMinutes,
         String tPreExtractRegex, String tPostExtractRegex, String tExtractRegex,
         String tColumnNameForExtract, //String tSortedColumnSourceName,
         String tSortFilesBySourceNames, 
@@ -167,6 +170,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         firstDataRow = Math.max(1, firstDataRow); //1..
         if (charset == null || charset.length() == 0)
             charset = "ISO-8859-1";
+        if (tReloadEveryNMinutes <= 0 || tReloadEveryNMinutes == Integer.MAX_VALUE)
+            tReloadEveryNMinutes = 1440; //1440 works well with suggestedUpdateEveryNMillis
 
         //read the lines of the sample file
         String lines[] = String2.readLinesFromFile(sampleFileName, charset, 2);
@@ -334,20 +339,22 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
                 suggestDatasetID(tFileDir + tFileNameRegex) + 
                 "\" active=\"true\">\n" +
             "    <reloadEveryNMinutes>" + tReloadEveryNMinutes + "</reloadEveryNMinutes>\n" +  
+            "    <updateEveryNMillis>" + suggestedUpdateEveryNMillis + "</updateEveryNMillis>\n" +  
             "    <fileDir>" + tFileDir + "</fileDir>\n" +
             "    <recursive>true</recursive>\n" +
-            "    <fileNameRegex>" + tFileNameRegex + "</fileNameRegex>\n" +
+            "    <fileNameRegex>" + XML.encodeAsXML(tFileNameRegex) + "</fileNameRegex>\n" +
             "    <metadataFrom>last</metadataFrom>\n" +
             "    <charset>" + charset + "</charset>\n" +
             "    <columnNamesRow>" + columnNamesRow + "</columnNamesRow>\n" +
             "    <firstDataRow>" + firstDataRow + "</firstDataRow>\n" +
-            "    <preExtractRegex>" + tPreExtractRegex + "</preExtractRegex>\n" +
-            "    <postExtractRegex>" + tPostExtractRegex + "</postExtractRegex>\n" +
-            "    <extractRegex>" + tExtractRegex + "</extractRegex>\n" +
+            "    <preExtractRegex>" + XML.encodeAsXML(tPreExtractRegex) + "</preExtractRegex>\n" +
+            "    <postExtractRegex>" + XML.encodeAsXML(tPostExtractRegex) + "</postExtractRegex>\n" +
+            "    <extractRegex>" + XML.encodeAsXML(tExtractRegex) + "</extractRegex>\n" +
             "    <columnNameForExtract>" + tColumnNameForExtract + "</columnNameForExtract>\n" +
             //"    <sortedColumnSourceName>" + tSortedColumnSourceName + "</sortedColumnSourceName>\n" +
             "    <sortFilesBySourceNames>" + tSortFilesBySourceNames + "</sortFilesBySourceNames>\n" +
-            "    <fileTableInMemory>false</fileTableInMemory>\n");
+            "    <fileTableInMemory>false</fileTableInMemory>\n" +
+            "    <accessibleViaFiles>false</accessibleViaFiles>\n");
         sb.append(writeAttsForDatasetsXml(false, dataSourceTable.globalAttributes(), "    "));
         sb.append(cdmSuggestion());
         sb.append(writeAttsForDatasetsXml(true,     dataAddTable.globalAttributes(), "    "));
@@ -380,8 +387,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         //    String tInfoUrl, String tInstitution, String tSummary, String tTitle,
         //    Attributes externalAddGlobalAttributes)
         String results = generateDatasetsXml(
-            "/erddapTest/",  "columnar.*\\.txt",
-            "/erddapTest/columnarAscii.txt", 
+            EDStatic.unitTestDataDir,  "columnar.*\\.txt",
+            EDStatic.unitTestDataDir + "columnarAscii.txt", 
             null, 3, 4, 1440,
             "", "", "", "",  
             "", 
@@ -391,8 +398,8 @@ public class EDDTableFromColumnarAsciiFiles extends EDDTableFromFiles {
         //GenerateDatasetsXml
         String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
             "EDDTableFromColumnarAsciiFiles",
-            "/erddapTest/",  "columnar.*\\.txt",
-            "/erddapTest/columnarAscii.txt", 
+            EDStatic.unitTestDataDir,  "columnar.*\\.txt",
+            EDStatic.unitTestDataDir + "columnarAscii.txt", 
             "", "3", "4", "1440",
             "", "", "", "",  
             "", 
@@ -408,7 +415,8 @@ directionsForGenerateDatasetsXml() +
 "\n" +
 "<dataset type=\"EDDTableFromColumnarAsciiFiles\" datasetID=\"erddapTest_4df3_40f4_29c6\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
-"    <fileDir>/erddapTest/</fileDir>\n" +
+"    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
+"    <fileDir>" + EDStatic.unitTestDataDir + "</fileDir>\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>columnar.*\\.txt</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
@@ -421,6 +429,7 @@ directionsForGenerateDatasetsXml() +
 "    <columnNameForExtract></columnNameForExtract>\n" +
 "    <sortFilesBySourceNames></sortFilesBySourceNames>\n" +
 "    <fileTableInMemory>false</fileTableInMemory>\n" +
+"    <accessibleViaFiles>false</accessibleViaFiles>\n" +
 "    <!-- sourceAttributes>\n" +
 "    </sourceAttributes -->\n" +
 "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +

@@ -242,15 +242,15 @@ public class EDVTimeStamp extends EDV {
 
     /**
      * This determines if a variable is a TimeStamp variable by looking
-     * for " since " (used for UDUNITS numeric times) or 
+     * for "[a-zA-Z]+ +since +[0-9].*" (used for UDUNITS numeric times) or 
      * "yy" or "YY" (a formatting string which has the year designator) in the units attribute.
      */
     public static boolean hasTimeUnits(String tUnits) {
         if (tUnits == null)
             return false;
-        return tUnits.indexOf(" since ") > 0 ||
-               tUnits.indexOf("yy") >= 0 ||
-               tUnits.indexOf("YY") >= 0;
+        tUnits = tUnits.toLowerCase();
+        return tUnits.indexOf("yy") >= 0 ||
+               tUnits.matches(" *[a-z]+ +since +[0-9].+");
     }
 
     /**
@@ -648,6 +648,27 @@ public class EDVTimeStamp extends EDV {
         d = eta.sourceTimeToEpochSeconds(t4);
         Test.ensureEqual(Calendar2.epochSecondsToIsoStringT3(d)+"Z", t13, "b1");
         Test.ensureEqual(eta.epochSecondsToSourceTimeString( d)+"Z", t13, "b2");
+
+        //hasTimeUnits
+        String s;
+        s = "mm-dd-yy";    Test.ensureTrue(hasTimeUnits(s), s);
+        s = "mm-dd-YY";    Test.ensureTrue(hasTimeUnits(s), s);
+        s = "d since 1-";  Test.ensureTrue(hasTimeUnits(s), s);
+        s = "d  since 1-"; Test.ensureTrue(hasTimeUnits(s), s);
+        s = "d since  1-"; Test.ensureTrue(hasTimeUnits(s), s);
+        s = " hours since 1970-01-01T00:00:00Z "; Test.ensureTrue(hasTimeUnits(s), s);
+        s = "millis since 1970-01-01";            Test.ensureTrue(hasTimeUnits(s), s);
+        s = "d SiNCE 2001";                       Test.ensureTrue(hasTimeUnits(s), s);
+
+        s = null;               Test.ensureTrue(!hasTimeUnits(s), s);
+        s = "";                 Test.ensureTrue(!hasTimeUnits(s), s);
+        s = " ";                Test.ensureTrue(!hasTimeUnits(s), s);
+        s = "m-d-y";            Test.ensureTrue(!hasTimeUnits(s), s);
+        s = "m-d-Y";            Test.ensureTrue(!hasTimeUnits(s), s);
+        s = " since 2001";      Test.ensureTrue(!hasTimeUnits(s), s);
+        s = "d1 since 2001";    Test.ensureTrue(!hasTimeUnits(s), s);
+        s = "d since analysis"; Test.ensureTrue(!hasTimeUnits(s), s);
+        s = "d since2001";      Test.ensureTrue(!hasTimeUnits(s), s);
 
     }
 }

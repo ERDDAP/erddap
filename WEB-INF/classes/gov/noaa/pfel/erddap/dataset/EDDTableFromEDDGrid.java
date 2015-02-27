@@ -249,19 +249,31 @@ public class EDDTableFromEDDGrid extends EDDTable{
     }
 
 
-     /**
-     * Subclasses (like EDDGridFromDap) overwrite this to do a quick, 
-     * incremental update of this dataset (i.e., for real time deal datasets).
+    /**
+     * This does the actual incremental update of this dataset 
+     * (i.e., for real time datasets).
      * 
-     * <p>For simple failures, this writes into to log.txt but doesn't throw an exception.
+     * <p>Concurrency issue: The changes here are first prepared and 
+     * then applied as quickly as possible (but not atomically!).
+     * There is a chance that another thread will get inconsistent information
+     * (from some things updated and some things not yet updated).
+     * But I don't want to synchronize all activities of this class.
      *
-     * @throws Throwable if trouble. 
-     * If the dataset has changed in a serious / incompatible way and needs a full
-     * reload, this throws WaitThenTryAgainException 
-     * (usually, catcher calls LoadDatasets.tryToUnload(...) and EDD.requestReloadASAP(tDatasetID))..
+     * @param msg the start of a log message, e.g., "update(thisDatasetID): ".
+     * @param startUpdateMillis the currentTimeMillis at the start of this update.
+     * @return true if a change was made
+     * @throws Throwable if serious trouble. 
+     *   For simple failures, this writes info to log.txt but doesn't throw an exception.
+     *   If the dataset has changed in a serious / incompatible way and needs a full
+     *     reload, this throws WaitThenTryAgainException 
+     *     (usually, catcher calls LoadDatasets.tryToUnload(...) and EDD.requestReloadASAP(tDatasetID))..
+     *   If the changes needed are probably fine but are too extensive to deal with here, 
+     *     this calls EDD.requestReloadASAP(tDatasetID) and returns without doing anything.
      */
-    public void update() {
-        eddGrid.update();
+    public boolean lowUpdate(String msg, long startUpdateMillis) throws Throwable {
+
+        //update the internal eddGrid
+        return eddGrid.lowUpdate(msg, startUpdateMillis);
     }
 
    /** 
@@ -556,7 +568,8 @@ public class EDDTableFromEDDGrid extends EDDTable{
     public static void testBasic() throws Throwable {
         String2.log("\nEDDTableFromEDDGrid.testBasic()");
         testVerboseOn();
-debugMode = true; //normally false.  Set it to true if need help.
+        boolean oDebugMode = debugMode;
+        debugMode = false; //normally false.  Set it to true if need help.
         String results, query, tName, expected, expected2;
         String id = "testEDDTableFromEDDGrid";
         EDDTable tedd = (EDDTable)oneFromDatasetXml(id);
@@ -1042,7 +1055,7 @@ expected2 =
 "35.1\n";
         Test.ensureEqual(results, expected, "results=\n" + results);      
            
-
+        debugMode = oDebugMode;
     }
 
     /**

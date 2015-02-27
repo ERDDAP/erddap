@@ -561,8 +561,8 @@ public abstract class PointDataSet implements Comparable {
                 //firstGE and lastLE identify the section of relevant time periods
                 //this is tricky; draw a diagram
                 double tTime = timePA.getDouble(row);
-                int first = Math2.binaryFindFirstGAE9(timePeriodEndTime, tTime);  //first of interest
-                int last  = Math2.binaryFindLastLAE9(timePeriodBeginTime, tTime); //last of interest
+                int first = Math2.binaryFindFirstGAE(timePeriodEndTime,   tTime, 9); //first of interest
+                int last  = Math2.binaryFindLastLAE( timePeriodBeginTime, tTime, 9); //last of interest
                 /*
                 if (first > last) 
                     String2.log(String2.ERROR + " in " + info + ":\n  firstGE or lastLE error:\n " +

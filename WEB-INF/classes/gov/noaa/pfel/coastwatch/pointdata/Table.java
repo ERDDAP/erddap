@@ -671,8 +671,8 @@ public class Table  {
      */
     /*public static void testMA() {
         String2.log("testMA");
-        Math2.incgc(200);
-        Math2.incgc(200);
+        Math2.incgc(200); //in a test
+        Math2.incgc(200); //in a test
         int n = 10000000;
         int j;
         double d;
@@ -743,6 +743,16 @@ public class Table  {
         int nCols = nColumns();
         for (int col = 0; col < nCols; col++) 
             getColumn(col).addString(index, "");
+    }
+
+    /**
+     * This removes 1 row.
+     *
+     * @param row, 0 ... size-1. 
+     * @throws Exception if trouble
+     */
+    public void removeRow(int row) {
+        removeRows(row, row + 1);
     }
 
     /**
@@ -5082,11 +5092,11 @@ Dataset {
                         PrimitiveArray cpa = axisPAs[constraintCol];
                         String asc = cpa.isAscending();
                         if (asc.length() == 0) {
-                            constraintFirst = cpa.binaryFindFirstGAE5(0, cpa.size() - 1, constraintMin);
+                            constraintFirst = cpa.binaryFindFirstGAE(0, cpa.size() - 1, constraintMin, 5);
                             if (constraintFirst >= cpa.size())
                                 constraintFirst = -1;
-                            else constraintLast  = cpa.binaryFindLastLAE5(constraintFirst, 
-                                cpa.size() - 1, constraintMax);
+                            else constraintLast  = cpa.binaryFindLastLAE(constraintFirst, 
+                                cpa.size() - 1, constraintMax, 5);
                             if (debug) String2.log("  constraintAxisVar=" + constraintAxisVarName + 
                                 " is ascending.  first=" + constraintFirst + 
                                 " last(inclusive)=" + constraintLast);
@@ -5215,11 +5225,11 @@ Dataset {
                         PrimitiveArray cpa = axisPAs[constraintCol];
                         String asc = cpa.isAscending();
                         if (asc.length() == 0) {
-                            constraintFirst = cpa.binaryFindFirstGAE5(0, cpa.size() - 1, constraintMin);
+                            constraintFirst = cpa.binaryFindFirstGAE(0, cpa.size() - 1, constraintMin, 5);
                             if (constraintFirst >= cpa.size())
                                 constraintFirst = -1;
-                            else constraintLast  = cpa.binaryFindLastLAE5(constraintFirst, 
-                                cpa.size() - 1, constraintMax);
+                            else constraintLast  = cpa.binaryFindLastLAE(constraintFirst, 
+                                cpa.size() - 1, constraintMax, 5);
                             if (debug) String2.log("  constraintAxisVar=" + constraintAxisVarName + 
                                 " is ascending.  first=" + constraintFirst + 
                                 " last(inclusive)=" + constraintLast);
@@ -7786,6 +7796,7 @@ String2.log(table.toCSVString());
         String2.log(NcHelper.dumpString(fileName, false));
         table.readNcCF(fileName, null, null, null, null);
         String2.log(table.toCSVString());
+        debug = oDebug;
     }
 
     /** This tests readNcCF nLevels=2. */
@@ -15033,14 +15044,17 @@ touble: because table is JsonObject, info may not be in expected order
     /**
      * This mimics the a simple directory listing web page created by Apache.
      * <br>It mimics http://www.ngdc.noaa.gov/metadata/published/NOAA/NESDIS/NGDC/MGG/Hazard_Photos/fgdc/xml/
-     * stored on Bob's computer as f:/programs/apache/listing.html
-     * <br>The URL for this page MUST be a directoryURL ending in '/', or the links don't work!
+     * stored on Bob's computer as c:/programs/apache/listing.html
+     *  See also http://www.ndbc.noaa.gov/data/realtime2/?C=N;O=A
+     * <br>***WARNING*** The URL for that got the user to this page MUST be a 
+     *   directoryURL ending in '/', or the links don't work (since they are implied
+     *   to be relative to the current URL, not explicit)!
      * <br>This just writes the part inside the 'body' tag.
      * <br>If there is a parentDirectory, its link will be at the top of the list.
      * <br>The table need not be sorted initially. This method handles sorting.
      * <br>The table should have 4 columns: "Name" (String), "Last modified" (long), 
      *    "Size" (long), and "Description" (String)
-     * <br>The displayed Last Modified time will be some Zulu timezone.
+     * <br>The displayed Last Modified time will be Zulu timezone.
      * <br>The displayed size will be some number of bytes, or truncated to some
      *    number of K (1024), M (1024^2), G (1024^3), or T (1024^4), 
      *
@@ -15067,10 +15081,11 @@ touble: because table is JsonObject, info may not be in expected order
      * @param addParentDir if true, this shows a link to the parent directory
      * @param dirNames is the list of subdirectories in the directory (without trailing '/'). 
      *   It will be sorted within directoryListing.
+     * @param dirDescriptions may be null
      */
     public String directoryListing(String showUrlDir, String userQuery,
         String iconUrlDir, boolean addParentDir, 
-        StringArray dirNames) throws Exception {
+        StringArray dirNames, StringArray dirDescriptions) throws Exception {
 
         int nameSpaces = 51; //with " " after it to ensure separation
         int dateSpaces = 17; //with " " after it to ensure separation
@@ -15081,9 +15096,7 @@ touble: because table is JsonObject, info may not be in expected order
         //    "\n  iconUrlDir=" + iconUrlDir +
         //    "\n  nDirNames=" + dirNames.size() + " table.nRows=" + nRows());
 
-        String xmlShowUrlDir = XML.encodeAsXML(showUrlDir);
-
-        //ensure column names are as expected
+        //en/sure column names are as expected
         String ncssv = getColumnNamesCSSVString();
         String ncssvMust = "Name, Last modified, Size, Description";
         if (!ncssvMust.equals(ncssv))
@@ -15123,12 +15136,10 @@ touble: because table is JsonObject, info may not be in expected order
         //Order=A|D in column links will be 'A', 
         //  except currently selected column will offer !currentAscending
         char linkAD[] = {'A','A','A','A'};
-        linkAD[keyColumns[0]] = ascending[0]? 'D' : 'A'; // !currentAscending
-        
+        linkAD[keyColumns[0]] = ascending[0]? 'D' : 'A'; // !currentAscending        
 
         //and sort the table (while lastModified and size are still the raw values) 
         sortIgnoreCase(keyColumns, ascending);
-
 
         //convert LastModified to string  (after sorting)
         int tnRows = nRows();
@@ -15166,15 +15177,12 @@ touble: because table is JsonObject, info may not be in expected order
         }
         sizePA = newSizePA;
 
-
 //<pre>
 //<img src="/icons/blank.gif" alt="Icon "> <a href="?C=N;O=D">Name</a>                                                <a href="?C=M;O=A">Last modified</a>      <a href="?C=S;O=A">Size</a>  <a href="?C=D;O=A">Description</a><hr><img src="/icons/back.gif" alt="[DIR]"> <a href="/published/NOAA/NESDIS/NGDC/MGG/Hazard_Photos/fgdc/">Parent Directory</a>                                                         -   
 //<img src="/icons/text.gif" alt="[TXT]"> <a href="G01194.xml">G01194.xml</a>                                          05-Aug-2011 15:41   20K  
 
         //write showUrlDir
         StringBuilder sb = new StringBuilder();
-        sb.append(
-            "<h1>Index of " + XML.encodeAsXML(showUrlDir) + "</h1>\n");
 
         //write column names
         sb.append(
@@ -15188,16 +15196,30 @@ touble: because table is JsonObject, info may not be in expected order
 
 
         //display the directories
-        dirNames.sortIgnoreCase();
-        if (keyColumns[0] == 0 && !ascending[0])  //if sorted by Names, descending order
-            dirNames.reverse();
         //if shown, parentDir always at top
-        if (addParentDir && dirNames.indexOf("..") < 0) 
+        if (dirDescriptions == null) {
+            dirNames.sortIgnoreCase();
+        } else {
+            Table dirTable = new Table();
+            dirTable.addColumn("names", dirNames);
+            dirTable.addColumn("desc", dirDescriptions);
+            dirTable.leftToRightSortIgnoreCase(1);
+        }
+        if (keyColumns[0] == 0 && !ascending[0]) { //if sorted by Names, descending order
+            dirNames.reverse();
+            if (dirDescriptions != null)
+                dirDescriptions.reverse();
+        }
+        if (addParentDir && dirNames.indexOf("..") < 0) { //.. always at top
             dirNames.add(0, "..");
+            if (dirDescriptions != null)
+                dirDescriptions.add(0, "");
+        }
         int nDir = dirNames.size();
         for (int row = 0; row < nDir; row++) {
             try {
                 String dirName = dirNames.get(row); 
+                String dirDes = dirDescriptions == null? "" : dirDescriptions.get(row);
                 String showDirName = dirName;
                 String iconFile = "dir.gif"; //default
                 String iconAlt  = "DIR";  //always 3 characters
@@ -15213,7 +15235,8 @@ touble: because table is JsonObject, info may not be in expected order
                     "\">" + XML.encodeAsXML(showDirName) + "</a>" +
                     String2.makeString(' ',  nameSpaces - showDirName.length()) + " " +
                     String2.left("", dateSpaces) + " " +
-                    String2.right("- ", sizeSpaces) + "  \n"); 
+                    String2.right("- ", sizeSpaces) + "  " +
+                    XML.encodeAsXML(dirDes) +"\n"); 
             } catch (Throwable t) {
                 String2.log(String2.ERROR + " for directoryListing(" +
                     showUrlDir + ")\n" +
@@ -16077,7 +16100,7 @@ touble: because table is JsonObject, info may not be in expected order
         Test.ensureEqual(table2.getStringData(2, 0), "degrees_north", "");
 
         //remove units row
-        table2.removeRows(0, 1);
+        table2.removeRow(0);
         table2.simplify();
 
         //are they the same (but column types may be different)?
@@ -17128,7 +17151,7 @@ touble: because table is JsonObject, info may not be in expected order
 
             for (int attempt = 0; attempt < 3; attempt++) {
                 String2.log("\n*** Table.testReadASCIISpeed attempt #" + attempt + "\n");
-                Math2.gcAndWait();
+                Math2.gcAndWait(); //in a test
                 //time it
                 long fileLength = File2.length(fileName); //was 1335204
                 Test.ensureTrue(fileLength > 1335000, "fileName=" + fileName + " length=" + fileLength); 
@@ -17168,12 +17191,12 @@ touble: because table is JsonObject, info may not be in expected order
 
         try {
             //warmup
-            String fileName = "c:/u00/cwatch/testData/cPostDet3.files.json"; 
+            String fileName = "/erddapTest/cPostDet3.files.json"; 
             long time = 0;
 
             for (int attempt = 0; attempt < 3; attempt++) {
                 String2.log("\n*** Table.testReadJsonSpeed attempt#" + attempt + "\n");
-                Math2.gcAndWait();
+                Math2.gcAndWait(); //in a test
 
                 //time it
                 time = System.currentTimeMillis();
@@ -17221,7 +17244,7 @@ touble: because table is JsonObject, info may not be in expected order
 
             for (int attempt = 0; attempt < 3; attempt++) {
                 String2.log("\n*** Table.testReadNDNcSpeed attempt+" + attempt + "\n");
-                Math2.gcAndWait();
+                Math2.gcAndWait(); //in a test
 
                 //time it
                 time = System.currentTimeMillis();
@@ -17267,7 +17290,7 @@ touble: because table is JsonObject, info may not be in expected order
 
             for (int attempt = 0; attempt < 3; attempt++) {
                 String2.log("\n*** Table.testReadOpendapSequenceSpeed\n");
-                Math2.gcAndWait();
+                Math2.gcAndWait(); //in a test
 
                 //time it
                 time = System.currentTimeMillis();
@@ -18053,6 +18076,7 @@ expected =
 "1463500.0,40.22166667,-74.7780556,2076.604166666628,5436.834624\n" +
 "1463500.0,40.22166667,-74.7780556,2076.6145833332557,5408.517777\n";
         Test.ensureEqual(results, expected, "results=\n" + results);
+        debug = oDebug;
 
     }
 

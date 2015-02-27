@@ -45,6 +45,107 @@
 <!-- ****************************************************************************** -->
 <tr>
 <td>
+<h2><a name="changes1.58">Changes</a> in ERDDAP version 1.58 (released 2015-02-25)</h2>
+<ul>
+<li><b>New Features (for users):</b> 
+  <ul>
+  <li>The new 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/files/documentation.html">"files"</a>
+    system lets you browse a virtual file system and download source 
+    data files from many ERDDAP datasets. 
+    The "files" system is active by default, 
+    but ERDDAP administrators can disable it by putting
+    <br>&lt;filesActive&gt;false&lt;/filesActive&gt;
+    <br>in the ERDDAP setup.xml file.
+    Special thanks to Philippe Makowski, who persisted when I was
+    slow to appreciate the beauty of this idea.
+  <li>time destinationMax - 
+    Previously, the time variable of EDDTable datasets with near 
+    real time data had a destinationMax of NaN, which implied that the 
+    maximum time value for the dataset is recent, but not precisely known and 
+    changing frequently.
+    Now, the destinationMax has a real value, indicating the currently-known last time. Many datasets, have continuously updated data.
+    ERDDAP supports accessing the latest data, 
+    even if it is after the currently-known last time.
+    Note that the new 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateFiles">&lt;updateEveryNMillis&gt;</a>
+    support in EDDGridFromFiles and EDDTableFromFiles datasets 
+    updates the time variable's destinationMax.
+    Another consequence of this change is that the datasetID=allDatasets dataset
+    now includes the currently-known last time in the maxTime columns.
+    Thanks to John Kerfoot.
+  </ul>
+
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <ul>
+  <li>STRONGLY RECOMMENDED: Update your server's <a rel="help"
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setup.html#robots">robots.txt</a> file to include:
+    <br><tt>Disallow: /files/</tt>
+  <li>Sample datasets.xml - Last year, we recommended several excellent datasets
+    in the coastwatch ERDDAP that you could add to your ERDDAP just by adding 
+    a few lines to your datasets.xml. If you added the erdVH datasets, please
+    switch to the newer erdVH2 datasets:
+    <ul>
+    <li>Make a copy of all the erdVH datasets and change the copied datasetID's 
+      from erdVH... to erdVH2... and change the referenced sourceUrl from erdVH... to erdVH2....
+    <li>Set the erdVH... datasets to <tt>active="false"</tt>.
+    </ul>
+  <li>All EDDGridFromFiles and EDDTableFromFiles subclasses now support 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#accessibleViaFiles">&lt;accessibleViaFiles&gt;</a> to make the source data files
+    accessible via the "files" systems.
+    By default, this system is off for each dataset. 
+    You need to add the tag to enable it.
+    Thanks to Philippe Makowski.
+  <li>All EDDGridFromFiles and EDDTableFromFiles subclasses now support
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#updateFiles">&lt;updateEveryNMillis&gt;</a>. 
+    By default, this system is off for each dataset. 
+    You need to add the tag to enable it.
+    Thanks to Dominic Fuller-Rowell and NGDC.
+  <li>The new <a rel="help" 
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDTableFromFileNames">EDDTableFromFileNames</a> 
+    creates a dataset from information about a group of files 
+    in the server's file system, 
+    but it doesn't serve data from within the files.
+    For example, this is useful for distributing collections 
+    of image files, audio files, 
+    video files, word-processing files, and spreadsheet files.
+    This works hand-in-hand with the new 
+    <a rel="help" href="http://coastwatch.pfeg.noaa.gov/erddap/files/documentation.html">"files"</a>
+    system, so that users can download the files.
+    Special thanks to Philippe Makowski, who persisted when I was
+    slow to appreciate the beauty of this idea.
+  <li>The new <a rel="help" 
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromEDDTable">EDDGridFromEDDTable</a> 
+    lets you convert a tabular dataset into a gridded dataset.
+    Thanks to Ocean Networks Canada.
+  <li>The new <a rel="help" 
+    href="http://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#EDDGridFromMergeIRFiles">EDDGridFromMergeIRFiles</a> 
+    aggregates data from a group of local MergeIR .gz files.
+    EDDGridFromMergeIRFiles has the distinction of being the first chunk
+    of code contributed to ERDDAP.
+    It was done entirely without our help.
+    Three cheers and special thanks to 
+    Jonathan Lafite and Philippe Makowski of 
+    <a rel="help" 
+    href="http://rtech-engineering.com/?lang=en">R.Tech Engineering</a>.
+  <li>There is a new, optional setup.xml tag, &lt;unitTestDataDir&gt;,
+    which specifies the directory with the unit test data files
+    which will soon be available via a new GitHub repository.
+    For example: 
+    <br>&lt;unitTestDataDir&gt;/erddapTest/&lt;/unitTestDataDir&gt; 
+    <br>This is part of the move toward making as many of the unit tests
+    runnable by other people as possible, but it isn't useful yet.
+    Thanks to Terry Rankine.
+  <li>Many small improvements, changes, and bug fixes.
+  </ul>
+</ul>
+
+</td>
+</tr>
+
+<!-- ****************************************************************************** -->
+<tr>
+<td>
 <h2><a name="changes1.56">Changes</a> in ERDDAP version 1.56 (released 2014-12-16)</h2>
 <ul>
 <li><b>New Features (for users):</b> (None)

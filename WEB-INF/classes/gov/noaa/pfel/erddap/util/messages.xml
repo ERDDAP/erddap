@@ -1198,6 +1198,7 @@ But some things you might not have considered are:
 <dtLogIn>Click to log in and try to make this dataset accessible.</dtLogIn>
 <dtDAF1>Click to see a</dtDAF1>
 <dtDAF2>Data Access Form for this dataset so that you can request data.</dtDAF2>
+<dtFiles>Click to browse and download the source data files for this dataset.</dtFiles>
 <dtMAG>Click to see Make A Graph for this dataset.</dtMAG>
 <dtSOS>Click to find out about getting data and/or maps via this dataset's Sensor Observation Service.</dtSOS>
 <dtSubset>Click to select and view subsets of this dataset via faceted search.</dtSubset>
@@ -1209,6 +1210,7 @@ But some things you might not have considered are:
 <EDDDatasetID>Dataset ID</EDDDatasetID>
 <EDDFgdc>FGDC</EDDFgdc>
 <EDDFgdcMetadata>FGDC Metadata</EDDFgdcMetadata>
+<EDDFiles>Files</EDDFiles>
 <EDDIso19115>ISO 19115</EDDIso19115>
 <EDDIso19115Metadata>ISO 19115-2/19139 Metadata</EDDIso19115Metadata>
 <EDDMetadata>Metadata</EDDMetadata>
@@ -1495,6 +1497,137 @@ This constraint variable has a limited number of values. They are listed here.
 <fileHelp_largePng>View a large .png image file with a graph or map.</fileHelp_largePng>
 <fileHelp_transparentPng>View a .png image file (just the data, without axes, landmask, or legend).</fileHelp_transparentPng>
 
+<!-- The Description and Warning wording is vague to allow for one or many datasets. -->
+<filesDescription>ERDDAP's "files" system lets you browse a virtual file system and download source data files.</filesDescription>
+<filesSort>Click on a heading (e.g., Name, Last modified, Size) to change the sort order.  "Last modified" uses the Zulu time zone.</filesSort>
+<filesWarning>The dataset's metadata and variable names in these source files may be different than elsewhere in ERDDAP! You might prefer using the dataset's Data Access Form instead.</filesWarning>
+<filesDocumentation><![CDATA[
+ERDDAP's "files" system lets you browse a virtual file system and download 
+source
+<br>data files. Hopefully, this is a familiar, easy system that you can use with your
+<br>favorite web browser or, if you prefer, from a command line program like 
+  <a rel="help" href="#curl">curl</a>.
+
+<p>ERDDAP was designed around the idea that most datasets are huge, so most users
+<br>just need or want a subset of the dataset that they are interested in (e.g., a smaller <br>geographic area, a smaller time range, or not all of the data variables). But we 
+<br>understand that some users actually do want an entire dataset, or at least the subset
+<br>which is found in a subset of the source data files.  If that's you, then the "files"
+<br>system may be for you. One advantage of the "files" system is that you can see each
+<br>file's Last Modified time (Zulu time zone), so it is easy to see if a file has been
+<br>changed.
+<br>&nbsp;
+
+<h3>Click</h3>
+To use the "files" system, just click. On any "files" web page, you can:
+<ul>
+<li>Click on a heading (Name, Last modified, Size, or Description) to sort the items
+  <br>by that attribute. Clicking repeatedly on one heading toggles the sort order <br>(ascending or descending).  Note that "Last modified" uses the Zulu time zone.
+<li>Click on a directory name to go to that directory. 
+<li>Click on a file name to download that file.
+  <br>&nbsp;
+</ul>
+
+<h3><font class="warningColor"><a name="warning">WARNING!</a></font> Different Metadata and Variable Names</h3>
+For datasets available via ERDDAP's tabledap or griddap, ERDDAP administrators
+<br>can set up ERDDAP to change a dataset's metadata and variable names on-the-fly 
+<br>so that you, the user, see an improved version of the dataset's metadata. But in
+<br>"files", you will see the original metadata and variable names, so don't be surprised
+<br>if they are different! If you aren't comfortable dealing with the different metadata
+<br>and variable names, you might prefer using the dataset's Data Access Form instead.
+
+<p>Similarly, when you request a subset of data from one of ERDDAP's Data Access Forms, 
+<br>you can specify the file type (e.g., .nc, .csv, .json, .mat) that you want to receive in
+<br>response. Naturally, the source data files available via "files" are just available in
+<br>one file type. If you aren't happy with the source file's file type, you might prefer
+<br>using the dataset's Data Access Forms instead.
+<br>&nbsp;
+
+<h3><a name="notAllDatasets">Not All Datasets</a></h3>
+Some datasets in this ERDDAP aren't available via the "files" system. Common reasons
+<br>include:
+<ul>
+<li>The dataset's data doesn't come from files (e.g., it comes from a database
+  <br>or Cassandra, or from a remote ERDDAP, THREDDS, or GRADS data server).
+<li>The immediate source files are .ncml files which specify how to modify the
+  <br>actual data files on-the-fly.
+<li>The ERDDAP administrator chose not to make the source data files available.
+</ul>
+If the source files for a dataset that you want aren't available, you can email 
+<br>the administrator of this ERDDAP, &adminEmail;,
+<br>to request that they be made available, but there is usually a reason why they aren't
+<br>already available.
+<br>&nbsp;
+
+<h3><a name="notFtp">Not FTP</a></h3>
+We understand that some users might prefer that ERDDAP offer files via FTP instead
+<br>of HTTP as is done by "files". Sorry. Hopefully, you'll be able to do what you need
+<br>to do with the current "files" system.
+<br>&nbsp;
+
+<h3><a name="curl">Command Line Downloads with curl</a></h3>
+If you want to download a series of files from ERDDAP, you don't have to request each
+<br>file's ERDDAP URL in your browser, sitting and waiting for each file to download. If
+<br>you are comfortable writing computer programs (e.g., with C, Java, Python, Matlab, r)
+<br>you can write a program with a loop that imports all of the desired data files. Or, if
+<br>you are comfortable with command line programs (just running a program, or using bash
+<br>or tcsh scripts in Linux or Mac OS X, or batch files in Windows), you can use curl to
+<br>save results files from ERDDAP into files on your hard drive, without using a browser 
+<br>or writing a computer program. ERDDAP+curl is amazingly powerful and allows you to 
+<br>use ERDDAP in many new ways.
+<br>On Linux and Mac OS X, curl is probably already installed as /usr/bin/curl.
+<br>On Windows, or if your computer doesn't have curl already, you need to 
+  <a rel="bookmark" href="http://curl.haxx.se/download.html">download curl<img
+    src="http://coastwatch.pfeg.noaa.gov/erddap/images/external.png" align="bottom" alt=" (external link)"
+    title="This link to an external web site does not constitute an endorsement."/></a>
+<br>and install it.  To get to a command line in Windows, click on "Start" and type 
+<br>"cmd" into the search textfield.
+<br>("Win32 - Generic, Win32, binary (without SSL)" worked for me in Windows 7.)
+<br><b>Please be kind to other ERDDAP users: run just one script or curl command at a time.</b>
+
+<p>Instructions for using curl are on the 
+<a rel="help" href="http://curl.haxx.se/download.html">curl man page<img
+    src="http://coastwatch.pfeg.noaa.gov/erddap/images/external.png" align="bottom" alt=" (external link)"
+    title="This link to an external web site does not constitute an endorsement."/></a> and in this
+<a rel="help" href="http://curl.haxx.se/docs/httpscripting.html">curl tutorial<img
+    src="http://coastwatch.pfeg.noaa.gov/erddap/images/external.png" align="bottom" alt=" (external link)"
+    title="This link to an external web site does not constitute an endorsement."/></a>.
+<br>But here is a quick tutorial related to using curl with ERDDAP:
+<ul>
+<li>To download and save one file, use 
+  <br><tt>curl -g "<i>erddapUrl</i>" -o <i>fileDir/fileName.ext</i></tt>
+  <br>where <tt>-g</tt> disables curl's globbing feature,
+  <br>&nbsp;&nbsp;<tt><i>erddapUrl</i></tt> is any ERDDAP URL that requests a data or image file, and
+  <br>&nbsp;&nbsp;<tt>-o <i>fileDir/fileName.ext</i></tt> specifies the name for the file that will be created.
+  <br>For example,
+<pre>curl -g "http://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/NDBC_41004_met.nc" -o ndbc/41004.nc</pre>
+The erddapUrl must be <a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encoded<img
+    src="http://coastwatch.pfeg.noaa.gov/erddap/images/external.png" align="bottom" alt=" (external link)"
+    title="This link to an external web site does not constitute an endorsement."/></a>.
+  <br>If you get the URL from your browser's address textfield, this may be already done.
+  <br>If not, in practice, this can be very minimal percent encoding: all you usually have 
+  <br>to do is convert % into %25, &amp; into %26, " into %22, + into %2B, 
+  <br>space into %20 (or +), &lt; into %3C, &gt; into %3E, = into %3D, ~ into %7E, and convert
+  <br>all characters above #126 to their %HH form (where HH is the 2-digit hex value).
+  <br>Unicode characters above #255 must be UTF-8 encoded and then each byte must be 
+  <br>converted to %HH form (ask a programmer for help).
+  <br>&nbsp;
+<li>To download and save many files in one step, use curl with the globbing feature
+  <br>enabled:
+  <br><tt>curl "<i>erddapUrl</i>" -o <i>fileDir/fileName#1.ext</i></tt>
+  <br>Since the globbing feature treats the characters [, ], {, and } as special, you must also
+  <br><a rel="help" href="http://en.wikipedia.org/wiki/Percent-encoding">percent encode<img
+    src="http://coastwatch.pfeg.noaa.gov/erddap/images/external.png" align="bottom" alt=" (external link)"
+    title="This link to an external web site does not constitute an endorsement."/></a> 
+    them in the erddapURL as &#37;5B, &#37;5D, &#37;7B, &#37;7D, respectively.
+  <br>Fortunately, these are almost never in "files" file names.
+  <br>Then, in the erddapUrl, replace a zero-padded number (for example <tt>01</tt>) with a 
+  <br>range of values (for example, <tt>[01-15]</tt> ), or replace a substring (for example <br><tt>41004</tt>) with a list of values (for example, <tt>{41004,41009,41010}</tt> ).
+  <br>The <tt>#1</tt> within the output fileName causes the current value of the range or 
+  <br>list to be put into the output fileName. For example, 
+<pre>curl "http://coastwatch.pfeg.noaa.gov/erddap/files/cwwcNDBCMet/NDBC_{41004,41009,41010}_met.nc" -o ndbc/#1.nc</pre>
+</ul>
+]]></filesDocumentation>
+
 <functions>Server-side Functions</functions>
 
 <functionHtml><![CDATA[
@@ -1632,6 +1765,8 @@ can search for datasets via</indexDevelopersSearch>
 <indexDatasets><![CDATA[{0}<br>datasets]]></indexDatasets>
 <indexDocumentation><![CDATA[{0}&nbsp;documentation]]></indexDocumentation>
 <indexRESTfulSearch>ERDDAP's RESTful search services</indexRESTfulSearch>
+<indexAllDatasetsSearch>ERDDAP's allDatasets tabular dataset that has a row of information for each dataset</indexAllDatasetsSearch>
+<indexOpenSearch>ERDDAP's OpenSearch 1.1 Service</indexOpenSearch>
 <indexMetadata>Metadata</indexMetadata>
 <!-- {0} is link to just one of FGDC or ISO 19115 WAF -->
 <indexWAF1>ERDDAP has a Web Accessible Folder (WAF) with {0} .xml metadata files
@@ -3620,6 +3755,8 @@ and include the ERDDAP URL directly related to your question or comment.
 <viewAllDatasetsHtml>View a List of All Datasets</viewAllDatasetsHtml>
 
 <waitThenTryAgain>There was a (temporary?) problem.  Wait a minute, then try again.  (In a browser, click the Reload button.)</waitThenTryAgain>
+
+<warning>WARNING!</warning>
 
 <sosDescriptionHtml>The Sensor Observation Service (SOS) lets you request data via the SOS protocol.  This is an EXPERIMENTAL WORK-IN-PROGRESS.</sosDescriptionHtml>
 

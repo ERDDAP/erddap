@@ -93,9 +93,7 @@ public class EDVAlt extends EDV {
      */
     public static void ensureUnitsAreM(String cUnits, String altitudeDepth, String upDown) {
         if (cUnits != null &&
-            (cUnits.equals("m") || 
-             cUnits.equals("meter") || cUnits.equals("meters") || 
-             cUnits.equals("metre") || cUnits.equals("metres"))) 
+            String2.indexOf(EDV.METERS_VARIANTS, cUnits) >= 0) 
             return;
 
         throw new SimpleException(
