@@ -136,6 +136,20 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
         return FileVisitResult.CONTINUE;    
     }
 
+    /** Invoked for a file that could not be visited. */
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        //2015-03-10 I added this method to override the superclass
+        //which apparently throws the exception and stops the parent
+        //SimpleFileVisitor. This class just ignores the error.
+        //Partial test that this change solves the problem: call
+        //    new FileVisitorSubdir("/") 
+        //  on my Windows computer with message analogous to below enabled.
+        //  It shows several files where visitFileFailed.
+        //Always show message here. It is useful information.     (message is just filename)
+        String2.log("WARNING: FileVisitorDNLS.visitFileFailed: " + exc.getMessage());
+        return FileVisitResult.CONTINUE;    
+    }
+
     /** A convenience method for using this class. 
      * The results are in the global table and in the PA variables.
      *
@@ -256,7 +270,7 @@ public class FileVisitorDNLS extends SimpleFileVisitor<Path> {
                 if (directoryPA.size() < 1000) {
                     String2.log(directoryPA.size() + " files. Not a good test.");
                 } else {
-                    Test.ensureBetween(time / (double)directoryPA.size(), 1.5e-3, 8e-3,
+                    Test.ensureBetween(time / (double)directoryPA.size(), 1e-3, 8e-3,
                         "ms/file (3e-3 expected)");
                     String dir0 = directoryPA.get(0);
                     String2.log("backward slash test: dir0=" + dir0);

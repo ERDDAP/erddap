@@ -4236,7 +4236,7 @@ expected =
 " \\}\n" +
 "  NC_GLOBAL \\{\n" +  
 "    String acknowledgment \"These data were acquired from the US NOAA National Oceanographic " +
-    "Data Center \\(NODC\\) on 2015-02-10 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
+    "Data Center (NODC) on 2015-03-11 from http://www.nodc.noaa.gov/GTSPP/.\";\n" + //changes monthly
 "    String cdm_altitude_proxy \"depth\";\n" +
 "    String cdm_data_type \"TrajectoryProfile\";\n" +
 "    String cdm_profile_variables \"station_id, longitude, latitude, time\";\n" +
@@ -11156,10 +11156,11 @@ expected =
 "    Float64 geospatial_vertical_max -3.0;\n" +
 "    Float64 geospatial_vertical_min -8.0;\n" +
 "    String geospatial_vertical_positive \"down\";\n" +
-"    String geospatial_vertical_units \"m\";\n" + //date on line below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
+"    String geospatial_vertical_units \"m\";\n" + 
 "    String history \"This dataset has data from the TAO/TRITON, RAMA, and PIRATA projects.\n" +
 "This dataset is a product of the TAO Project Office at NOAA/PMEL.\n" +
-"2015-02-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
+//The date on line below changes monthly  DON'T REGEX THIS. I WANT TO SEE THE CHANGES.
+"2015-03-02 Bob Simons at NOAA/NMFS/SWFSC/ERD \\(bob.simons@noaa.gov\\) fully refreshed ERD's copy of this dataset by downloading all of the .cdf files from the PMEL TAO FTP site.  Since then, the dataset has been partially refreshed everyday by downloading and merging the latest version of the last 25 days worth of data\\.";
         int tPo = results.indexOf("worth of data.");
         Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
         Test.ensureLinesMatch(results.substring(0, tPo + 14), expected, "\nresults=\n" + results);

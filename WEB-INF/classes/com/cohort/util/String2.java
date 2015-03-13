@@ -1159,6 +1159,8 @@ public class String2 {
 
     /**
      * This indicates if s has just file-name-safe characters (0-9, A-Z, a-z, _, -, .).
+     * Note, this does not check for filenames that are too long
+     * (Windows has a path+fileName max length of 255 chars).
      *
      * @param s a string, usually a file name
      * @return true if s has just file-name-safe characters (0-9, A-Z, a-z, _, -, .).
@@ -1184,6 +1186,8 @@ public class String2 {
      * See javadocs for java.net.URLEncoder, which describes valid characters
      *  (but deals with encoding, whereas this method alters or removes).
      * The result may be shorter than s.
+     * Note, this does not check for filenames that are too long
+     * (Windows has a path+fileName max length of 255 chars).
      *
      * @param s  If s is null, this returns "_null".
      *    If s is "", this returns "_".
@@ -1299,6 +1303,8 @@ public class String2 {
      * <ul>
      * Note that Java allows Unicode characters, but this does not.
      * See also the safer encodeVariableNameSafe(String s).
+     * Note, this does not check for names that are too long
+     * (many system have an 80 or 255 char limit).
      *
      * @param s
      * @return a safe variable name (but perhaps two s's lead to the same result)

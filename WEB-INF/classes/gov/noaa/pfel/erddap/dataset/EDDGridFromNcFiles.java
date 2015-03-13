@@ -718,11 +718,11 @@ directionsForGenerateDatasetsXml() +
 
         String2.log("\n*** EDDGridFromNcFiles.testGenerateDatasetsXml2");
         String results = generateDatasetsXml(
-            EDStatic.unitTestDataDir + "geosgrib/", ".*", 
-            EDStatic.unitTestDataDir + "geosgrib/multi_1.glo_30m.all.grb2",
+            "/erddapTestBig/geosgrib/", ".*", 
+            "/erddapTestBig/geosgrib/multi_1.glo_30m.all.grb2",
             DEFAULT_RELOAD_EVERY_N_MINUTES, null);
         String suggDatasetID = suggestDatasetID(
-            EDStatic.unitTestDataDir + "geosgrib/.*");
+            "/erddapTestBig/geosgrib/.*");
 
         String expected = //as of 2012-02-20. Will change if John Caron fixes bugs I reported.
 directionsForGenerateDatasetsXml() +
@@ -733,7 +733,7 @@ directionsForGenerateDatasetsXml() +
 "<dataset type=\"EDDGridFromNcFiles\" datasetID=\"" + suggDatasetID + "\" active=\"true\">\n" +
 "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <updateEveryNMillis>10000</updateEveryNMillis>\n" +
-"    <fileDir>" + EDStatic.unitTestDataDir + "geosgrib/</fileDir>\n" +
+"    <fileDir>/erddapTestBig/geosgrib/</fileDir>\n" +
 "    <recursive>true</recursive>\n" +
 "    <fileNameRegex>.*</fileNameRegex>\n" +
 "    <metadataFrom>last</metadataFrom>\n" +
@@ -1475,7 +1475,7 @@ expected =
         EDV edv;
         String today = Calendar2.getCurrentISODateTimeStringLocal().substring(0, 10);
 
-        String2.log(NcHelper.dumpString(EDStatic.unitTestDataDir + "geosgrib/multi_1.glo_30m.all.grb2", false));
+        String2.log(NcHelper.dumpString("/erddapTestBig/geosgrib/multi_1.glo_30m.all.grb2", false));
 
         //generateDatasetsXml
         try {   
@@ -1809,7 +1809,7 @@ expected=
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String location \"/u00/data/geosgrib/multi_1.glo_30m.all.grb2\";\n" +
+"    String location \"/erddapTestBig/geosgrib/multi_1.glo_30m.all.grb2\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 90.0;\n" +
 "    String Originating_center \"US National Weather Service - NCEP(WMC) (7)\";\n" +
@@ -2458,7 +2458,7 @@ expected=
 "implied, including warranties of merchantability and fitness for a\n" +
 "particular purpose, or assumes any legal liability for the accuracy,\n" +
 "completeness, or usefulness, of this information.\";\n" +
-"    String location \"/u00/data/geosgrib/multi_1.glo_30m.all.grb2\";\n" +
+"    String location \"/erddapTestBig/geosgrib/multi_1.glo_30m.all.grb2\";\n" +
 "    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
 "    Float64 Northernmost_Northing 90.0;\n" +
 "    String Originating_generating_Center \"US National Weather Service, National Centres for Environmental Prediction (NCEP)\";\n" +
@@ -4285,7 +4285,7 @@ directionsForGenerateDatasetsXml() +
         /* */
 
         //one time tests
-        //String fiName = "c:/u00/data/geosgrib/multi_1.glo_30m.all.grb2";
+        //String fiName = "/erddapTestBig/geosgrib/multi_1.glo_30m.all.grb2";
         //String2.log(NcHelper.dumpString(fiName, false));
         //NetcdfDataset in = NetcdfDataset.openDataset(fiName);
         //in.close();

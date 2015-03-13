@@ -65,6 +65,19 @@ public class FileVisitorSubdir extends SimpleFileVisitor<Path> {
     }
 
 
+    /** Invoked for a file that could not be visited. */
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
+        //2015-03-10 I added this method to override the superclass
+        //which apparently throws the exception and stops the parent
+        //SimpleFileVisitor. This class just ignores the error.
+        //A one time test that this change solves the problem: call
+        //    new FileVisitorSubdir("/") 
+        //  on my Windows computer with message below enabled.
+        //Always show message here. It is useful information.     (message is just filename)
+        String2.log("WARNING: FileVisitorSubdir.visitFileFailed: " + exc.getMessage());
+        return FileVisitResult.CONTINUE;    
+    }
+
     /** 
      * A convenience method for using this class. 
      *

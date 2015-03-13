@@ -13698,7 +13698,7 @@ jsonp + "(" +
                 (EDStatic.sosActive? "\"\", " : "") + //currently, it isn't made available via sos
                 (EDStatic.wcsActive? "\"\", " : "") +
                 (EDStatic.wmsActive? "\"\", " : "") +
-                (EDStatic.filesActive? "\"\", " : "") +
+                (EDStatic.filesActive? "\"http://127.0.0.1:8080/cwexperimental/files/erdGlobecBottle/\", " : "") +
                 (EDStatic.authentication.length() > 0? "\"public\", " : "") +
                 "\"GLOBEC NEP Rosette Bottle Data (2002)\", \"GLOBEC (GLOBal " +
                 "Ocean ECosystems Dynamics) NEP (Northeast Pacific)\\nRosette Bottle Data from " +
@@ -13816,7 +13816,7 @@ jsonp + "(" +
 
             //files
             results = SSR.getUrlResponseString(EDStatic.erddapUrl + "/files/");
-            Test.ensureTrue(results.indexOf("You can browse and download source data files.") >= 0, "results=\n" + results);
+            Test.ensureTrue(results.indexOf("ERDDAP's \"files\" system lets you browse a virtual file system and download source data files.") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("WARNING!") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("Last modified") >= 0, "results=\n" + results);
             Test.ensureTrue(results.indexOf("Parent Directory") >= 0, "results=\n" + results);

@@ -45,6 +45,43 @@
 <!-- ****************************************************************************** -->
 <tr>
 <td>
+<h2><a name="changes1.60">Changes</a> in ERDDAP version 1.60 (released 2015-03-12)</h2>
+<ul>
+<li><b>New Features (for users):</b> none
+
+<li><b>Things ERDDAP Administrators Need to Know and Do:</b> 
+  <ul>
+  <li>INotify Problem and Solution:
+    <br>On Linux computers, 
+    if you are using &lt;updateEveryNMillis&gt; with datasets with 
+    type=EDDGridFromFiles, 
+    EDDTableFromFiles, EDDGridCopy, EDDTableCopy, or their subclasses,
+    you may see a problem where a dataset fails to load 
+    (occasionally or consistently) with the error message:
+    "IOException: User limit of inotify instances reached or too many open files".
+    If so, you can fix this problem by calling (as root):<tt>
+    <br>    echo 10000 > /proc/sys/fs/inotify/max_user_watches
+    <br>    echo 10000 > /proc/sys/fs/inotify/max_user_instances</tt>
+    <br>Or, use higher numbers if the problem persists.
+    The default for watches is 8192. The default for instances is 128.
+  <li>NoSuchFileException Bug Fix: 
+    <br>There was a bug that could cause datasets of type=EDDGridFromFiles, 
+    EDDTableFromFiles, EDDGridCopy, EDDTableCopy, or their subclasses
+    to not load occasionally with 
+    the error "NoSuchFileException: <i>someFileName</i>".
+    The bug is related to uses of FileVisitor and was introduced in ERDDAP v1.56.
+    The problem is rare and is most likely to affect datasets with a large
+    number of frequently changing data files.
+  <li>There were some small improvements, changes, and bug fixes.
+  </ul>
+</ul>
+
+</td>
+</tr>
+
+<!-- ****************************************************************************** -->
+<tr>
+<td>
 <h2><a name="changes1.58">Changes</a> in ERDDAP version 1.58 (released 2015-02-25)</h2>
 <ul>
 <li><b>New Features (for users):</b> 
@@ -130,13 +167,16 @@
     href="http://rtech-engineering.com/?lang=en">R.Tech Engineering</a>.
   <li>There is a new, optional setup.xml tag, &lt;unitTestDataDir&gt;,
     which specifies the directory with the unit test data files
-    which will soon be available via a new GitHub repository.
+    which are available via a new GitHub repository:
+    <a rel="bookmark"
+    href="https://github.com/BobSimons/erddapTest">https://github.com/BobSimons/erddapTest</a> .
     For example: 
     <br>&lt;unitTestDataDir&gt;/erddapTest/&lt;/unitTestDataDir&gt; 
-    <br>This is part of the move toward making as many of the unit tests
-    runnable by other people as possible, but it isn't useful yet.
+    <br>This isn't useful yet, 
+    but is part of the move toward making as many of the unit tests
+    runnable by other people as possible.
     Thanks to Terry Rankine.
-  <li>Many small improvements, changes, and bug fixes.
+  <li>There were many small improvements, changes, and bug fixes.
   </ul>
 </ul>
 
@@ -2417,7 +2457,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.56
+<p>ERDDAP, Version 1.60
 <br><a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 
