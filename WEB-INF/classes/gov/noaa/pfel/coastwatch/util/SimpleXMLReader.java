@@ -491,6 +491,19 @@ public class SimpleXMLReader {
     }
 
     /**
+     * This skips efficiently until the stackSize is toStackSize.
+     * E.g., call this after an opening tag is read in order to skip efficiently 
+     * to the matching closing tag by calling skipToStackSize(stackSize()).
+     */
+    public void skipToStackSize(int toStackSize) throws Exception {
+        while (true) {
+            nextTag();
+            if (stack.size() == toStackSize)
+                return;
+        }
+    }
+
+    /**
      * This throws the standard "Unexpected tag" Exception.
      * This also calls close().
      *
@@ -539,10 +552,11 @@ public class SimpleXMLReader {
      *
      * @param args is ignored
      */
-    public static void main(String args[]) throws Exception {
+    public static void test() throws Exception {
 
         SimpleXMLReader xmlReader;
         String2.log("SimpleXMLReader will now intentionally throw and catch several exceptions.");
+        String expected;
         
         //test invalid start of xml
         String error = "";
@@ -596,6 +610,28 @@ public class SimpleXMLReader {
         }
         Test.ensureTrue(error.indexOf(" End tag </bob> doesn't have a matching start tag.") > 0, "error=" + error);
 
+        //test no end tag
+        error = "";
+        try {
+            xmlReader = new SimpleXMLReader(new ByteArrayInputStream(String2.toByteArray(
+                "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n" +
+                "<testc>\n" +
+                "")));
+            xmlReader.nextTag();
+            xmlReader.nextTag();
+        } catch (Exception e) {
+            error = e.toString();
+        }
+expected = 
+"java.lang.Exception: ERROR in XML file on line #3: Unexpected end of file with non-empty stack: <testc>\n" +
+"  tag = \n" +
+"  content = \n" +
+"  exception = SimpleXMLReader.getNextTag:\n" +
+"ERROR:\n" +
+"\n" +
+"java.lang.Exception: end of file";
+        Test.ensureEqual(error.substring(0, expected.length()), expected, "error=" + error);
+
         //test un-closed comment
         error = "";
         try {
@@ -611,7 +647,7 @@ public class SimpleXMLReader {
         String2.log("That was the last Expected Exception.");
 
         //test valid xml
-        xmlReader = new SimpleXMLReader(new ByteArrayInputStream(String2.toByteArray(
+        String testXml = 
             "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\n" +
             "<testr>\n" +
             "  <level1 att1=value1 att2=\"value 2\" > \n level 1 \r&amp; <!-- comment < > -->text  \r\n" +
@@ -621,7 +657,9 @@ public class SimpleXMLReader {
             "\n" +
             "\n" +
             "\n" +
-            "</testr>")));
+            "</testr attr=\"valr\">";
+        xmlReader = new SimpleXMLReader(new ByteArrayInputStream(
+            String2.toByteArray(testXml)));
         Test.ensureEqual(xmlReader.stackSize(), 0, "a");
         xmlReader.nextTag();
         Test.ensureEqual(xmlReader.stackSize(), 1, "a");
@@ -674,17 +712,31 @@ public class SimpleXMLReader {
         Test.ensureEqual(xmlReader.topTag(), "/testr", "f");
         Test.ensureEqual(xmlReader.content(), "", "f");
         Test.ensureEqual(xmlReader.allTags(), "</testr>", "f");
+        Test.ensureEqual(xmlReader.attributeValue("attr"), "valr", "b");
 
         xmlReader.nextTag();
         Test.ensureEqual(xmlReader.stackSize(), 0, "g");
         Test.ensureEqual(xmlReader.topTag(), null, "g");
         Test.ensureEqual(xmlReader.content(), "", "g");
         Test.ensureEqual(xmlReader.allTags(), "", "g");
+        xmlReader.close();
 
-        String2.log("SimpleXMLReader.main's tests finished successfully.\n");
+        //skipToStackSize();
+        //"<testr>\n" +
+        //"  <level1 att1=value1 att2=\"value 2\" > \n level 1 \r&amp; <!-- comment < > -->text  \r\n" +
+        //"  </level1>\n" +
+        String2.log("test skipToClosingTag()");
+        xmlReader = new SimpleXMLReader(new ByteArrayInputStream(
+            String2.toByteArray(testXml)));
+        xmlReader.nextTag();
+        Test.ensureEqual(xmlReader.topTag(), "testr", "k");
+        xmlReader.skipToStackSize(xmlReader.stackSize());
+        Test.ensureEqual(xmlReader.topTag(), "/testr", "f");
+        Test.ensureEqual(xmlReader.content(), "", "f");
+        Test.ensureEqual(xmlReader.allTags(), "</testr>", "f");
+        Test.ensureEqual(xmlReader.attributeValue("attr"), "valr", "b");
+        xmlReader.close();
 
- 
+        String2.log("SimpleXMLReader.tests's tests finished successfully.\n"); 
     }
-
-
 }

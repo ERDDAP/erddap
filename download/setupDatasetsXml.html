@@ -4966,6 +4966,17 @@ for more information.
     <li>Our generic recommendation is to use:
       <br><tt>&lt;reloadEveryNMinutes&gt;1440&lt;/reloadEveryNMinutes&gt;
       <br>&lt;updateEveryNMillis&gt;10000&lt;/updateEveryNMillis&gt;</tt>
+    <li>TROUBLE? 
+      On Linux computers, 
+      if you are using &lt;updateEveryNMillis&gt; with EDDGridFromFiles or EDDTableFromFiles
+      classes, you may see a problem where a dataset fails to load (occasionally or
+      consistently) with the error message:
+      "IOException: User limit of inotify instances reached or too many open files".
+      If so, you can fix this problem by calling (as root):<tt>
+      <br>echo 10000 > /proc/sys/fs/inotify/max_user_watches
+      <br>echo 10000 > /proc/sys/fs/inotify/max_user_instances</tt>
+      <br>Or, use higher numbers if the problem persists.
+      The default for watches is 8192. The default for instances is 128.
     </ul>
   <li>For Curious Programmers - these incremental updates, unlike ERDDAP's full
     <a rel="help" href="#reloadEveryNMinutes">reloadEveryNMinutes</a>
@@ -6728,7 +6739,7 @@ and include the ERDDAP URL directly related to your question or comment.
 
 <br>&nbsp;
 <hr>
-<p>ERDDAP, Version 1.56
+<p>ERDDAP, Version 1.60
 <br><a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html">Disclaimers</a> | 
     <a rel="bookmark" href="http://coastwatch.pfeg.noaa.gov/erddap/legal.html#privacyPolicy">Privacy Policy</a>
 
