@@ -246,6 +246,33 @@ public class WatchDirectory {
         }
         Test.ensureBetween(n, 4, 5, ""); //sometimes the dir event isn't caught
 
+        //*** test creating a huge number 
+        //This is allowed on Windows. It doesn't appear to have max number.
+// ADVICE TO ADMINS: 2015-03-10
+//  On Linux computers, 
+//  if you are using <updateEveryNMillis> with EDDGridFromFiles or EDDTableFromFiles
+//  classes, you may see a problem where a dataset fails to load with the 
+//  error message:
+//  "IOException: User limit of inotify instances reached or too many open files".
+//  If so, you can fix this problem by calling (as root):
+//    echo 10000 > /proc/sys/fs/inotify/max_user_watches
+//    echo 10000 > /proc/sys/fs/inotify/max_user_instances
+//  Or, use higher numbers if the problem persists.
+//  The default for watches is 8192. The default for instances is 128.
+        //VERY SLOW! NOT USUALLY DONE:
+        //String2.log("test all dirs on this computer: watchDirectoryAll(\"/\", true)");
+        //wd = watchDirectoryAll("/", true);
+
+        //never finished this test since Windows allows large number of watches.
+        //n = 10000;
+        //String2.log("test huge number=" + n);
+        //WatchDirectory wdar[] = new WatchDirectory[n];
+        //for (int i = 0; i < n; i++) {
+//            if (i % 10 == 0) Math2.gc(100); //does gc make the error go away?
+        //    wdar[i] = watchDirectoryAll(watchDir, true);
+        //}         
+
+
         //*** interactive test
         RegexFilenameFilter.regexDelete(watchDir, ".*", true);       
         Math2.sleep(sleep);

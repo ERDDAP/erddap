@@ -77,23 +77,6 @@ public class Calendar2 {
     public final static int ZONE_OFFSET = Calendar.ZONE_OFFSET; //millis
     public final static int DST_OFFSET  = Calendar.DST_OFFSET;  //millis
 
-    /*
-    //for thread safety, always use:  synchronized(<itself>) {<use...>}
-    //do before defaultValue=  (below)
-    private static SimpleDateFormat isoDateTimeFormat = 
-        new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
-    private static SimpleDateFormat isoDateFormat = 
-        new SimpleDateFormat("yyyy-MM-dd");
-    private static SimpleDateFormat isoDateHMFormat = 
-        new SimpleDateFormat("yyyy-MM-dd HH:mm");
-    private static SimpleDateFormat compactDateTimeFormat = 
-        new SimpleDateFormat("yyyyMMddHHmmss");
-    private static SimpleDateFormat YYYYDDDFormat = 
-        new SimpleDateFormat("yyyyDDD");
-    private static SimpleDateFormat YYYYMMFormat = 
-        new SimpleDateFormat("yyyyMM");
-    */
-
     public final static int MINUTES_PER_DAY    = 1440;
     public final static int MINUTES_PER_7DAYS  =  7 * MINUTES_PER_DAY; //10080
     public final static int MINUTES_PER_30DAYS = 30 * MINUTES_PER_DAY; //43200

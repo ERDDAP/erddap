@@ -132,8 +132,9 @@ public class EDStatic {
      * <br>1.54 released on 2014-10-24
      * <br>1.56 released on 2014-12-16
      * <br>1.58 released on 2015-02-25
+     * <br>1.60 released on 2015-03-12
      */   
-    public static String erddapVersion = "1.58";  
+    public static String erddapVersion = "1.60";  
 
     /** 
      * This is almost always false.  
@@ -1468,11 +1469,11 @@ public static boolean developmentMode = false;
 
         fgdcActive                 = setup.getBoolean(         "fgdcActive",                 true); 
         iso19115Active             = setup.getBoolean(         "iso19115Active",             true); 
-//until it is finished, it is always inactive
+//until geoServicesRest is finished, it is always inactive
 geoServicesRestActive      = false; //setup.getBoolean(         "geoServicesRestActive",      false); 
-//until it is finished, it is always inactive
         filesActive                = setup.getBoolean(         "filesActive",                true); 
-        sosActive          = false; //setup.getBoolean(         "sosActive",                  false); 
+//until SOS is finished, it is always inactive
+sosActive = false;//        sosActive                  = setup.getBoolean(         "sosActive",                  false); 
         if (sosActive) {
             sosFeatureOfInterest   = setup.getNotNothingString("sosFeatureOfInterest",       "");
             sosStandardNamePrefix  = setup.getNotNothingString("sosStandardNamePrefix",      "");

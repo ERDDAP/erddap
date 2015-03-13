@@ -511,7 +511,9 @@ public class TestAll  {
 //         Temporarily switching off parts of McAfee : Virus Scan Console  (2X speedup!)
 //           On Access Scanner : All Processes
 //             Scan Items: check: specified file types only (instead of usual All Files) 
-//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2014, 11, 2015, 1, false);  //first/last year(1990..)/month(1..), testMode
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(1970,  1, 1970, 1, false);  //first/last year(1990..)/month(1..), testMode
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2005,  4, 2005, 4, false);  //first/last year(1990..)/month(1..), testMode
+//       EDDTableFromNcFiles.bobConsolidateGtsppTgz(2012,  2, 2015, 2, false);  //first/last year(1990..)/month(1..), testMode
 //       log file is c:/data/gtspp/log.txt 
 //      2b) Email the "good" but "impossible" stations to Charles Sun
 //       [was Melanie Hamilton, now retired]
@@ -553,8 +555,8 @@ public class TestAll  {
 //       http://coastwatch.pfeg.noaa.gov/erddap/setDatasetFlag.txt?datasetID=erdGtsppBest&flagKey=2369414249
 //       and make sure the new data and metadata are visible (hence, new dataset has loaded)
 
-//    String2.log(EDDTableFromSOS.generateDatasetsXmlFromIOOS(
-//        "http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos/SOS"));
+//    String2.log(EDDTableFromSOS.generateDatasetsXml(
+//        "http://data.gcoos.org:8080/52nSOS/sos/kvp", "1.0.0", "IOOS_52N"));
 //    EDDTableFromSOS.testErddapSos();
 
 //** To update pmelTAO data on/after 9am 2nd day of every month:
@@ -608,7 +610,7 @@ public class TestAll  {
          EDDTableFromHyraxFiles.testGenerateDatasetsXml(); 
          EDDTableFromNcFiles.testGenerateDatasetsXml();
          EDDTableFromOBIS.testGenerateDatasetsXml();
-         //EDDTableFromSOS.testGenerateDatasetsXml(); //not up-to-date
+         EDDTableFromSOS.testGenerateDatasetsXml(true);
          EDDTableFromSOS.testGenerateDatasetsXmlFromOneIOOS();
          EDDTableFromSOS.testGenerateDatasetsXmlFromIOOS();
          EDDTableFromThreddsFiles.testGenerateDatasetsXml();
@@ -1138,7 +1140,7 @@ WaitThenTryAgainException wttae;
 
         //data
         DataStream.main(null);
-        SimpleXMLReader.main(null);
+        SimpleXMLReader.test();
         TimePeriods.test();
         FileNameUtility.main(null);
         ParseJSON.test();
@@ -1300,7 +1302,7 @@ WaitThenTryAgainException wttae;
         //EDDTableFromNWISDV.test();  //INACTIVE as of 2011-12-16.
         EDDTableFromOBIS.test();
         //EDDTableFromBMDE.test(); //INACTIVE
-        EDDTableFromSOS.test();
+        EDDTableFromSOS.test(true); //useCachedInfo
         EDDTableFromWFSFiles.test();
         EDDTableCopy.test();
         //EDDTableCopyPost.test(); INACTIVE

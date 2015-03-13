@@ -63,6 +63,7 @@ import java.util.HashSet;
  *      (sourceUrl + "?service=SOS&request=GetCapabilities"), 
  *      you get an xml result
  *      with a list of stations and the observedProperties that they have data for.
+ *      e.g., 
  *   <li>An observedProperty is a formal URI reference to a property
  *      e.g., urn:ogc:phenomenon:longitude:wgs84 or http://marinemetadata.org/cf#sea_water_temperature
  *   <li>An observedProperty isn't a variable.
@@ -121,6 +122,7 @@ public class EDDTableFromSOS extends EDDTable{
     protected final static int stationProcedureCol = 5; 
     protected final static String defaultStationIdSourceName = "station_id";
     protected final static String stationIdDestinationName = "station_id";
+    static String sosCopyDir = EDStatic.fullCopyDirectory + "_SOS_cache/";
 
     /** The first nFixedVariables dataVariables are always created automatically 
      * (don't include in constructor tDataVariables): 
@@ -143,14 +145,21 @@ public class EDDTableFromSOS extends EDDTable{
     protected Table stationTable;
     protected boolean[][] stationHasObsProp; //[station#][uniqueSourceObservedProperties index]
     protected String sosServerType = "";     //may be "".   This variable will be lowercased.
+    public final static String SosServerTypeIoos52N   = "IOOS_52N";
     public final static String SosServerTypeIoosNdbc  = "IOOS_NDBC";
+    public final static String SosServerTypeIoosNcSOS = "IOOS_NcSOS";
     public final static String SosServerTypeIoosNos   = "IOOS_NOS";
     public final static String SosServerTypeOostethys = "OOSTethys";
     public final static String SosServerTypeWhoi      = "WHOI";
-    protected boolean ndbcIoosServer = false;  
-    protected boolean nosIoosServer = false;   
+    public final static String[] SosServerTypes = { //order not important
+         SosServerTypeIoos52N, SosServerTypeIoosNdbc, SosServerTypeIoosNcSOS,
+         SosServerTypeIoosNos, SosServerTypeOostethys, SosServerTypeWhoi};
+    protected boolean ioos52NServer = false;  
+    protected boolean ioosNdbcServer = false;  
+    protected boolean ioosNcSOSServer = false;   
+    protected boolean ioosNosServer = false;   
     protected boolean oostethysServer = false; 
-    protected boolean whoiServer = false;       //required to be specified
+    protected boolean whoiServer = false;       //one must be specified
 
     /**
      * This constructs an EDDTableFromSOS based on the information in an .xml file.
@@ -209,6 +218,8 @@ public class EDDTableFromSOS extends EDDTable{
             //try to make the tag names as consistent, descriptive and readable as possible
             if      (localTags.equals("<addAttributes>"))
                 tGlobalAttributes = getAttributesFromXml(xmlReader);
+            else if (localTags.equals( "<sosVersion>")) {}
+            else if (localTags.equals("</sosVersion>")) tSosVersion = content; 
             else if (localTags.equals( "<sosServerType>")) {}
             else if (localTags.equals("</sosServerType>")) tSosServerType = content; 
             else if (localTags.equals( "<stationIdSourceName>")) {}
@@ -230,8 +241,6 @@ public class EDDTableFromSOS extends EDDTable{
             else if (localTags.equals("</timeSourceName>"))   tTimeSourceName = content; 
             else if (localTags.equals( "<timeSourceFormat>")) {}
             else if (localTags.equals("</timeSourceFormat>")) tTimeSourceFormat = content; 
-            else if (localTags.equals( "<sosVersion>")) {}
-            else if (localTags.equals("</sosVersion>")) tSosVersion = content; 
             else if (localTags.equals( "<dataVariable>")) 
                 tDataVariables.add(getSDADVariableFromXml(xmlReader));           
             else if (localTags.equals( "<accessibleTo>")) {}
@@ -429,11 +438,19 @@ public class EDDTableFromSOS extends EDDTable{
         addGlobalAttributes = tAddGlobalAttributes;
         addGlobalAttributes.set("sourceUrl", convertToPublicSourceUrl(tLocalSourceUrl));
 
-        sosServerType = tSosServerType == null? "" : tSosServerType.toLowerCase().trim();
-        ndbcIoosServer  = sosServerType.equals(SosServerTypeIoosNdbc.toLowerCase());
-        nosIoosServer   = sosServerType.equals(SosServerTypeIoosNos.toLowerCase());
-        oostethysServer = sosServerType.equals(SosServerTypeOostethys.toLowerCase());
-        whoiServer      = sosServerType.equals(SosServerTypeWhoi.toLowerCase()); //required
+        sosServerType = tSosServerType == null? "" : tSosServerType.trim();
+        tSosServerType = sosServerType.toLowerCase();
+        ioos52NServer   = tSosServerType.equals(SosServerTypeIoos52N.toLowerCase());
+        ioosNdbcServer  = tSosServerType.equals(SosServerTypeIoosNdbc.toLowerCase());
+        ioosNcSOSServer = tSosServerType.equals(SosServerTypeIoosNcSOS.toLowerCase());
+        ioosNosServer   = tSosServerType.equals(SosServerTypeIoosNos.toLowerCase());
+        oostethysServer = tSosServerType.equals(SosServerTypeOostethys.toLowerCase());
+        whoiServer      = tSosServerType.equals(SosServerTypeWhoi.toLowerCase()); //required
+        if (String2.caseInsensitiveIndexOf(SosServerTypes, sosServerType) < 0)
+            throw new RuntimeException("<sosServerType>=" + sosServerType +
+                " must be one of " + String2.toCSSVString(SosServerTypes));
+        if (ioos52NServer) 
+            tSosVersion = "1.0.0"; //server supports 2.0.0, but this class doesn't yet.
 
         localSourceUrl = tLocalSourceUrl;
         String tSummary = addGlobalAttributes.getString("summary");
@@ -474,11 +491,11 @@ public class EDDTableFromSOS extends EDDTable{
         sourceCanConstrainNumericData = CONSTRAIN_PARTIAL; //just lat and lon
         sourceCanConstrainStringData  = CONSTRAIN_PARTIAL; //time (but not != or regex), station_id (even REGEX_OP), but nothing else
         sourceCanConstrainStringRegex = PrimitiveArray.REGEX_OP; //just for station_id
-
       
         //set source attributes (none available from source)
         sourceGlobalAttributes = new Attributes();
-        sourceGlobalAttributes.add("subsetVariables", "station_id, longitude, latitude");
+        if (addGlobalAttributes.getString("subsetVariables") == null)
+            addGlobalAttributes.add("subsetVariables", "station_id, longitude, latitude");
         combinedGlobalAttributes = new Attributes(addGlobalAttributes, sourceGlobalAttributes); //order is important
         String tLicense = combinedGlobalAttributes.getString("license");
         if (tLicense != null)
@@ -526,8 +543,14 @@ public class EDDTableFromSOS extends EDDTable{
         //use KVP (KeyValuePair) HTTP GET request to getCapabilities
         //see section 7.2.3 of OGC 06-121r3 (OGC Web Services Common Specification) ver 1.1.0
         String tUrl = localSourceUrl + "?service=SOS&request=GetCapabilities"; 
-        if (sosVersion != null && sosVersion.length() > 0)
-            tUrl += "&version=" + sosVersion;
+        if (sosVersion != null && sosVersion.length() > 0) {
+            if (whoiServer) //ioosNcbcServer || ioosNosServer) //not needed. 1.0.0 is default and only.
+                tUrl += "&version=" + sosVersion;
+            if (ioos52NServer) //AcceptVersions needed. This class only supports 1.0.0 currently.
+                tUrl += "&AcceptVersions=" + sosVersion;
+        }
+        if (reallyVerbose) String2.log("  GetCapUrl=" + tUrl);
+               
         //if (debugMode)
         //    String2.log(SSR.getUrlResponseString(tUrl));
         //String2.writeToFile("f:/programs/sos/ndbcSosWind_capabilities_90721.xml", SSR.getUrlResponseString(tUrl));
@@ -549,6 +572,7 @@ public class EDDTableFromSOS extends EDDTable{
             if (verbose)
                 String2.log("  using getCapabilities from quickRestartFile " +
                     Calendar2.millisToIsoZuluString(creationTimeMillis) + "Z");
+            if (reallyVerbose) String2.log("    " + quickRestartFileName);
 
             //Ensure quickRestart information is recent.
             //If too old: abandon construction, delete quickRestart file, flag dataset reloadASAP
@@ -574,11 +598,9 @@ public class EDDTableFromSOS extends EDDTable{
         String sosPrefix = "";
         if (xmlReader.tag(0).equals("Capabilities")) {
             sosPrefix = "";          
-            if (sosServerType.length() == 0) //if not explicitly declared
-                nosIoosServer = true;
         } else if (xmlReader.tag(0).equals("sos:Capabilities")) {
             sosPrefix = "sos:"; 
-            //oostethys or ndbcIoosServer?
+            //oostethys or ioosNdbcServer?
         } else {
             xmlReader.close();
             if (debugMode) {
@@ -603,6 +625,20 @@ public class EDDTableFromSOS extends EDDTable{
             sosPrefix + "Contents><" + 
             sosPrefix + "ObservationOfferingList></" + 
             sosPrefix + "ObservationOffering>";
+        /*if (ioos52NServer) {
+            offeringTag = 
+                "<sos:Capabilities>" + 
+                "<sos:contents>" + 
+                "<sos:Contents>" + 
+                "<swes:offering>" + 
+                "<sos:ObservationOffering>";
+            offeringEndTag =  
+                "<sos:Capabilities>" + 
+                "<sos:contents>" + 
+                "<sos:Contents>" + 
+                "<swes:offering>" + 
+                "</sos:ObservationOffering>";
+        }*/
 
         //default beginTime: a year ago      tamuSos needs this
         GregorianCalendar dbt = Calendar2.newGCalendarZulu();
@@ -614,10 +650,9 @@ public class EDDTableFromSOS extends EDDTable{
             //String2.log("tags=" + tags + xmlReader.content());
 
             if (tags.endsWith("<ows:ServiceIdentification></ows:ServiceTypeVersion>")) {
-                if (debugMode) String2.log(">>ServiceTypeVersion=" + xmlReader.content());
                 if (sosVersion == null || sosVersion.length() == 0) {
                     sosVersion = xmlReader.content(); //e.g., "0.0.31" or "1.0.0"
-                    if (debugMode) String2.log(">>Setting sosVersion=" + xmlReader.content());
+                    if (reallyVerbose) String2.log("  sosVersion(from ows:ServiceTypeVersion)=" + sosVersion);
                 }
 
             } else if (tags.startsWith(offeringTag)) {
@@ -668,13 +703,22 @@ public class EDDTableFromSOS extends EDDTable{
                 //    if (ioosServer) tStationID = xmlReader.attributeValue("gml:id");
 
                 if (endOfTag.length() == 0) {
-                    if (whoiServer)
+                    if (whoiServer) {
                         tStationID = xmlReader.attributeValue("gml:id");
+                        if (reallyVerbose) String2.log(
+                            "  stationID(from gml:id)=" + tStationID);
+                    } else if (reallyVerbose) {
+                        String2.log("  start of offeringTag");
+                    }
 
-                } else if (endOfTag.equals("</gml:name>")) { //ioosServer and OOSTethys have this
+                } else if (endOfTag.equals("</gml:name>")) { //ioos_53N, OOSTethys have this
                     //e.g., 44004
-                    if (!whoiServer) 
+                    if (!whoiServer) {
                         tStationID = content;
+                        if (reallyVerbose) String2.log(
+                            "  stationID(from </gml:name>)=" + tStationID);
+                    }
+
 
                     //if (ioosServer) { 
                     //    //remove 
@@ -684,20 +728,22 @@ public class EDDTableFromSOS extends EDDTable{
                     //        tStationID = tStationID.substring(prePo + pre.length());
                     //}
 
-                } else if (endOfTag.equals(               "<gml:boundedBy><gml:Envelope></gml:lowerCorner>") || //OOSTethys has this
-                           endOfTag.equals("<gml:boundedBy><gml:boundedBy><gml:Envelope></gml:lowerCorner>")) { //VAST does this
+                } else if (endOfTag.equals(               "<gml:boundedBy><gml:Envelope></gml:lowerCorner>") || //IOOS_52N, OOSTethys
+                           endOfTag.equals("<gml:boundedBy><gml:boundedBy><gml:Envelope></gml:lowerCorner>")) { //VAST 
                     //e.g., 38.48 -70.43    order is lat lon [alt/depth]
                     StringArray lla = StringArray.wordsAndQuotedPhrases(content);
                     if (lla.size() >= 2) {
                         tLat = String2.parseDouble(lla.get(0));
                         tLon = String2.parseDouble(lla.get(1));
+                        if (reallyVerbose) String2.log(
+                            "    lat lon(from </gml:lowerCorner>)=" + tLat + " " + tLon);
+                        //for now, ignore alt/depth
+                        if (Double.isNaN(tLon) || Double.isNaN(tLat))
+                            String2.log("Warning while parsing gml: Invalid <gml:lowerCorner>=" + content);
                     }
-                    //for now, ignore alt/depth
-                    if (Double.isNaN(tLon) || Double.isNaN(tLat))
-                        String2.log("Warning while parsing gml: Invalid <gml:lowerCorner>=" + content);
 
-                } else if (endOfTag.equals(               "<gml:boundedBy><gml:Envelope></gml:upperCorner>") || //OOSTethys has this
-                           endOfTag.equals("<gml:boundedBy><gml:boundedBy><gml:Envelope></gml:upperCorner>")) { //VAST has this
+                } else if (endOfTag.equals(               "<gml:boundedBy><gml:Envelope></gml:upperCorner>") || //IOOS_52N, OOSTethys
+                           endOfTag.equals("<gml:boundedBy><gml:boundedBy><gml:Envelope></gml:upperCorner>")) { //VAST
                     //ensure upperCorner = lowerCorner
                     //e.g., 38.48 -70.43    order is lat lon [alt/depth]
                     StringArray lla = StringArray.wordsAndQuotedPhrases(content);
@@ -717,12 +763,15 @@ public class EDDTableFromSOS extends EDDTable{
                             " tLon=" + tLon + " ttLon=" + ttLon);
                         tLon = Double.NaN; tLat = Double.NaN; //invalidate this station
                     }                   
+
                 } else if (endOfTag.equals("<" + sosPrefix + "time><gml:TimePeriod></gml:beginPosition>") || //ioosServer and OOSTethys 
                            endOfTag.equals(        "<sos:eventTime><gml:TimePeriod></gml:beginPosition>")) { //VAST
                     //e.g., 2001-07-10T06:30:00Z
                     //This is workaround for invalid value "TZ" in NOS SOS GetCapabilities.
                     try {
                         tBeginTime = Calendar2.isoStringToEpochSeconds(content);
+                        if (reallyVerbose) String2.log(
+                            "    beginTime(from <gml:TimePeriod></gml:beginPosition>)=" + tBeginTime);
                     } catch (Throwable t) {
                         String2.log("Warning while parsing gml:beginPosition ISO time: " + t.toString());
                         tBeginTime = defaultBeginTime;
@@ -731,6 +780,8 @@ public class EDDTableFromSOS extends EDDTable{
                 } else if (endOfTag.equals("<" + sosPrefix + "time><gml:TimePeriod><gml:endPosition>") || //ioosServer and OOSTethys
                            endOfTag.equals(        "<sos:eventTime><gml:TimePeriod><gml:endPosition>")) { //VAST has this
                     tIndeterminateEnd = xmlReader.attributeValue("indeterminatePosition");
+                    if (reallyVerbose) String2.log(
+                        "    indeterminateEnd time=" + tIndeterminateEnd);
 
                 } else if (endOfTag.equals("<" + sosPrefix + "time><gml:TimePeriod></gml:endPosition>") || //ioosServer and OOSTethys
                            endOfTag.equals(        "<sos:eventTime><gml:TimePeriod></gml:endPosition>")) { //VAST has this) {
@@ -758,6 +809,8 @@ public class EDDTableFromSOS extends EDDTable{
                             tIndeterminateEnd);
                         tBeginTime = Double.NaN; //mark as invalid; use tBeginTime since tIndeterminateEnd isn't required.
                     }
+                    if (reallyVerbose) String2.log(
+                        "    endTime(from <gml:TimePeriod></gml:endPosition>)=" + tEndTime);
 
                 } else if (endOfTag.equals("<" + sosPrefix + "procedure>")) {
                     //<sos:procedure xlink:href="urn:gomoos.org:source.mooring#A01"/>
@@ -767,6 +820,7 @@ public class EDDTableFromSOS extends EDDTable{
                         String2.log("Warning while parsing 'procedure': no xlink:href attribute!");
                     else 
                         tStationProcedure = tXlink;                    
+                    if (reallyVerbose) String2.log("    procedure>=" + tStationProcedure);
 
                 } else if (endOfTag.equals("<" + sosPrefix + "observedProperty>")) {
                     //handle non-composite observedProperty
@@ -776,10 +830,8 @@ public class EDDTableFromSOS extends EDDTable{
                         int opPo = uniqueSourceObservedProperties.indexOf(tXlink);   
                         if (opPo >= 0) 
                             tStationHasObsProp[opPo] = true;
-                        else if (reallyVerbose) {
-                            //String2.log("  Warning: tStationID=" + tStationID + 
-                            //    " unexpected <observedProperty>=" + tXlink);
-                        }
+                        if (reallyVerbose) String2.log(
+                            "    has observedProperty> #" + opPo + " " + tXlink);
                     }
                 } else if (endOfTag.equals("<" + sosPrefix + "observedProperty><swe:CompositePhenomenon>")) {
                     //handle composite observedProperty
@@ -789,10 +841,8 @@ public class EDDTableFromSOS extends EDDTable{
                         int opPo = uniqueSourceObservedProperties.indexOf(tid);   
                         if (opPo >= 0) 
                             tStationHasObsProp[opPo] = true;
-                        else if (reallyVerbose) {
-                            //String2.log("  Warning: tStationID=" + tStationID + 
-                            //" unexpected <observedProperty><swe:CompositePhenomenon>=" + tid);
-                        }
+                        if (reallyVerbose) String2.log(
+                            "    has composite observedProperty> #" + opPo + " " + tid);
                     }
                 }
 
@@ -856,17 +906,6 @@ public class EDDTableFromSOS extends EDDTable{
                 tStationProcedure = "";                
                 tStationHasObsProp = new boolean[uniqueSourceObservedProperties.size()];
 
-            } else if (!nosIoosServer && 
-                       !ndbcIoosServer &&
-                       tags.endsWith("<ows:Parameter><ows:AllowedValues></ows:Value>")) {
-                //<ows:Value>text/xml;schema="ioos/0.6.1"</ows:Value>
-                //<ows:Value>application/ioos+xml;version=0.6.1</ows:Value>
-                //It's an ioosServer and we know it isn't a nosIoosServer.
-                String content = xmlReader.content();
-                if (content.indexOf("\"ioos/") > 0 ||
-                    content.indexOf("/ioos+") > 0) 
-                    if (sosServerType.length() == 0) //if not explicitly declared
-                        ndbcIoosServer = true;
             }
 
             //get the next tag
@@ -878,11 +917,6 @@ public class EDDTableFromSOS extends EDDTable{
         xmlReader.close();      
         if (sosVersion == null || sosVersion.length() == 0)
             sosVersion = "1.0.0"; //default
-        if (verbose) String2.log(
-            "ndbcIoosServer=" + ndbcIoosServer + 
-            " nosIoosServer=" + nosIoosServer +
-            " whoiServer=" + whoiServer +
-            " sosVersion=" + sosVersion);
 
         if (stationTable.nRows() == 0)
             throw new RuntimeException(datasetID + " has no valid stations.");
@@ -1314,7 +1348,7 @@ public class EDDTableFromSOS extends EDDTable{
                     }
                 }
 
-                if (ndbcIoosServer || nosIoosServer) {
+                if (ioosNdbcServer || ioosNosServer) {
                  
                     //make kvp   -- no examples or info for XML request
                     //example from http://sdf.ndbc.noaa.gov/sos/
@@ -1697,7 +1731,7 @@ public class EDDTableFromSOS extends EDDTable{
         String tStationLonString, String tStationLatString, String tStationAltString, String tStationID) 
         throws Throwable {
 
-if (debugMode) String2.log("* readFromWhoiServer tStationID=" + tStationID);
+        if (debugMode) String2.log("* readFromWhoiServer tStationID=" + tStationID);
 
         int tableLonCol       = table.findColumnNumber(lonSourceName);
         int tableLatCol       = table.findColumnNumber(latSourceName);
@@ -1981,8 +2015,8 @@ if (debugMode) String2.log("* readFromWhoiServer tStationID=" + tStationID);
      * @return the same table or a new table
      */
     protected void readFromOostethys(String kvp, Table table, HashMap llatHash,
-        String tStationLonString, String tStationLatString, String tStationAltString, String tStationID) 
-        throws Throwable {
+        String tStationLonString, String tStationLatString, String tStationAltString, 
+        String tStationID) throws Throwable {
 
         int tableLonCol       = table.findColumnNumber(lonSourceName);
         int tableLatCol       = table.findColumnNumber(latSourceName);
@@ -2383,6 +2417,184 @@ http://schemas.opengis.net/om/1.0 http://schemas.opengis.net/om/1.0.0/observatio
         }
     }
 
+    public static Table readIoos52NXmlDataTable(InputStream inputStream) throws Exception {
+        SimpleXMLReader xmlReader = new SimpleXMLReader(inputStream);
+        xmlReader.nextTag();
+        String tags = xmlReader.allTags();
+
+        if (!xmlReader.tag(0).equals("om:ObservationCollection")) {
+            xmlReader.close();
+            throw new IllegalArgumentException(
+                "For IOOS 52N SOS servers, the first SOS tag should have been " +
+                "<om:ObservationCollection>, not " + tags + ".");
+        }
+        Table table = new Table();
+/* */
+//<om:ObservationCollection><om:member><om:Observation><om:result>
+//<swe2:DataRecord>
+//<swe2:field name="observationData">  //there are lots of fields; only this matters
+//<swe2:DataArray definition="http://mmisw.org/ont/ioos/swe_element_type/sensorObservationCollection">
+//  <swe2:elementCount><swe2:Count><swe2:value>5312</swe2:value>
+//  <swe2:elementType name="observations">
+//    <swe2:DataRecord definition="http://mmisw.org/ont/ioos/swe_element_type/sensorObservations">
+//      <swe2:field name="time">
+//      ... other fields
+
+//        <swe2:DataChoice definition="http://mmisw.org/ont/ioos/swe_element_type/sensors">
+//          <swe2:item name="comps_42013_airpressure">
+//            <swe2:DataRecord definition="http://mmisw.org/ont/ioos/swe_element_type/sensor">
+//              <swe2:field name="air_pressure">
+//                <swe2:Quantity definition="http://mmisw.org/ont/cf/parameter/air_pressure">
+//                  <swe2:uom xlink:href="urn:ogc:def:uom:udunits:2:hPa"/>
+
+//        <swe2:encoding>
+//          <swe2:TextEncoding decimalSeparator="." tokenSeparator="," blockSeparator="&#10;"/>
+
+        int capacity = 128;
+        String obsDataTags = //but only if attribute name="observationData"
+            "<om:ObservationCollection><om:member><om:Observation><om:result>" +
+            "<swe2:DataRecord><swe2:field>"; 
+        String dataArrayTags = obsDataTags + "<swe2:DataArray>";
+        String elementCountTags = dataArrayTags + 
+            "<swe2:elementCount><swe2:Count></swe2:value>";
+        String fieldName1Tags = dataArrayTags + 
+            "<swe2:elementType><swe2:DataRecord><swe2:field>"; // name="time" or "sensor">
+        String fieldName2Tags = fieldName1Tags + 
+            "<swe2:DataChoice><swe2:item><swe2:DataRecord><swe2:field>"; // name="air_pressure">
+        String unitsTags = fieldName2Tags +
+            "<swe2:Quantity><swe2:uom>"; // xlink:href="urn:ogc:def:uom:udunits:2:hPa"
+        String endDataRecordTags = fieldName1Tags + 
+            "<swe2:DataChoice><swe2:item></swe2:DataRecord>"; 
+        String textEncodingTags = dataArrayTags +
+            "<swe2:encoding><swe2:TextEncoding>";
+        String csvTags = dataArrayTags + 
+            "</swe2:values>";
+        char tokenSeparator = ',';
+        String blockSeparator = "\n";
+
+        //skip quickly to obsDataTags with name=observationData
+        while (true) {
+            xmlReader.nextTag();
+            //uninteresting <swe2:field>?
+            if (xmlReader.stackSize() == 0) 
+                throw new RuntimeException("Expected tag not found: " + obsDataTags);
+            if (xmlReader.stackSize() == 6 &&
+                xmlReader.topTag().equals("swe2:field") &&
+                xmlReader.allTags().equals(obsDataTags) && 
+                "observationData".equals(xmlReader.attributeValue("name"))) 
+                break;
+        }
+       
+        xmlReader.nextTag();
+        tags = xmlReader.allTags();
+        do {
+            //process the tags
+            if (debugMode) String2.log("tags=" + tags + xmlReader.content());
+
+            //elementCount
+            if (tags.equals(elementCountTags)) {
+                int ti = String2.parseInt(xmlReader.content());
+                if (ti > 0 && ti < Integer.MAX_VALUE) {
+                    capacity = ti;
+                    if (debugMode) String2.log("  elementCount=" + ti);
+                }
+
+            //primary fieldName
+            } else if (tags.equals(fieldName1Tags)) {
+                String ts = xmlReader.attributeValue("name");
+                if (String2.isSomething(ts)) {
+                    table.addColumn(
+                        ts.equals("sensor")? stationIdDestinationName : ts,
+                        PrimitiveArray.factory(
+                            ts.equals("time") || ts.equals("sensor")? String.class : double.class,
+                            capacity, false)); //active?
+                }
+
+            //secondary fieldName
+            } else if (tags.equals(fieldName2Tags)) {
+                String ts = xmlReader.attributeValue("name");
+                if (String2.isSomething(ts)) {
+                    table.addColumn(ts, 
+                        PrimitiveArray.factory(double.class, capacity, false)); //active?
+                }
+
+            //units (for last created column)
+            } else if (tags.equals(unitsTags)) {
+                String ts = xmlReader.attributeValue("xlink:href");
+                if (String2.isSomething(ts)) {
+                    table.columnAttributes(table.nColumns() - 1).add("units",
+                        ts.substring(ts.lastIndexOf(":") + 1));
+                }
+
+            //end of secondary fieldNames and units 
+            } else if (tags.equals(endDataRecordTags)) {
+                xmlReader.skipToStackSize(8);
+                //should be at </swe2:elementType> after outer </swe2:DataRecord>
+                Test.ensureEqual(xmlReader.topTag(), "/swe2:elementType", 
+                    "skipToStacksize is wrong");
+
+            //encoding 
+            } else if (tags.equals(textEncodingTags)) {
+                String ts = xmlReader.attributeValue("tokenSeparator");
+                if (String2.isSomething(ts)) {
+                    tokenSeparator = ts.charAt(0);
+                    if (reallyVerbose) 
+                        String2.log("  tokenSeparator=" + String2.annotatedString("" + ts));
+                }
+                ts = xmlReader.attributeValue("blockSeparator");
+                if (String2.isSomething(ts)) {
+                    blockSeparator = ts;
+                    if (reallyVerbose) 
+                        String2.log("  blockSeparator=" + String2.annotatedString(ts));
+                }
+
+            //data
+            } else if (tags.equals(csvTags)) {
+                String content = xmlReader.content();
+                int start = 0;
+                int stop = content.indexOf(blockSeparator);
+                boolean isCsv = ",".equals(tokenSeparator);
+                int nCols = table.nColumns();
+                int stationCol = table.findColumnNumber(stationIdDestinationName);
+                PrimitiveArray pa[] = new PrimitiveArray[nCols];
+                for (int col = 0; col < nCols; col++)
+                    pa[col] = table.getColumn(col);
+                while (true) {
+                    //get the items on one line
+                    String oneLine = content.substring(start, 
+                        stop == -1? content.length() : stop).trim();
+                    String items[] = isCsv?
+                        StringArray.arrayFromCSV(oneLine) :  //does handle "'d phrases
+                        String2.split(oneLine, tokenSeparator);
+                    if (items.length > stationCol) {
+                        int po = items[stationCol].lastIndexOf("_");
+                        if (po >= 0)
+                            items[stationCol] = items[stationCol].substring(0, po);
+                    }
+
+                    //store the items
+                    for (int col = 0; col < nCols; col++) { 
+                        //so always fill each column in table
+                        pa[col].addString(col < items.length? items[col] : "");
+                    }
+
+                    //get the next start stop
+                    if (stop == -1 || stop >= content.length() - 1)
+                        break;
+                    start = stop + 1;
+                    stop = content.indexOf(blockSeparator, start);
+                }
+            }
+
+            //read next tag
+            xmlReader.nextTag();
+            tags = xmlReader.allTags();
+
+        } while (!tags.startsWith("</")); //end of file
+
+        xmlReader.close();      
+        return table;
+    }
 
 private static String standardSummary = //from http://www.oostethys.org/ogc-oceans-interoperability-experiment 
 "The OCEANS IE -- formally approved as an OGC Interoperability\n" +
@@ -5292,11 +5504,15 @@ datasetIdPrefix + "ndbcSosWaves.das\";\n" +
 
 //Their bug: (see constraint above) Starting with switch to text/csv 2010-06-07, calculation_method became UNKNOWN!
 //Fixed 2010-06-22
-"longitude,latitude,station_id,altitude,time,sensor_id,sea_surface_wave_significant_height,sea_surface_wave_peak_period,sea_surface_wave_mean_period,sea_surface_swell_wave_significant_height,sea_surface_swell_wave_period,sea_surface_wind_wave_significant_height,sea_surface_wind_wave_period,sea_water_temperature,sea_surface_wave_to_direction,sea_surface_swell_wave_to_direction,sea_surface_wind_wave_to_direction,number_of_frequencies,center_frequencies,bandwidths,spectral_energy,mean_wave_direction,principal_wave_direction,polar_coordinate_r1,polar_coordinate_r2,calculation_method,sampling_rate\n" +
-"degrees_east,degrees_north,,m,UTC,,m,s,s,m,s,m,s,degree_C,degrees_true,degrees_true,degrees_true,count,Hz,Hz,m^2/Hz,degrees_true,degrees_true,1,1,,Hz\n" +
-"-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T14:50:00Z,urn:ioos:sensor:wmo:46013::wpm1,1.62,14.81,5.21,1.12,14.8,1.17,4.3,NaN,176.0,176.0,312.0,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.779157;0.372876;2.02274;0.714328;0.675131;0.296029;0.138154;0.605274;1.96737;1.16217;0.884235;0.462599;0.57436;0.504724;0.218129;0.38115;0.504237;0.45285;0.708456;0.626689;0.747685;0.883292;0.632856;0.448383;0.331531;0.123811;0.265022;0.214203;0.208534;0.21145;0.223251;0.114582;0.10544;0.130131;0.118191;0.0652535;0.0604571;0.0167055;0.0158453;0.00866108;0.00483522,158.0;336.0;188.0;11.0;78.0;263.0;189.0;176.0;196.0;212.0;249.0;182.0;267.0;292.0;299.0;306.0;290.0;299.0;304.0;294.0;301.0;304.0;320.0;314.0;311.0;303.0;312.0;317.0;315.0;307.0;316.0;314.0;305.0;317.0;306.0;311.0;310.0;303.0;294.0;308.0;298.0;302.0;303.0;113.0;127.0;113.0,183.0;8.0;181.0;7.0;3.0;301.0;275.0;134.0;123.0;262.0;279.0;92.0;281.0;293.0;299.0;308.0;292.0;306.0;310.0;300.0;304.0;306.0;326.0;317.0;310.0;303.0;312.0;318.0;316.0;309.0;319.0;318.0;306.0;319.0;307.0;313.0;309.0;305.0;286.0;309.0;271.0;296.0;254.0;111.0;99.0;92.0,0.212213;0.112507;0.304966;0.35902;0.254397;0.488626;0.263791;0.515939;0.462758;0.430386;0.497566;0.12097;0.497566;0.653071;0.826652;0.841777;0.702193;0.768824;0.797214;0.741445;0.797214;0.797214;0.826652;0.841777;0.857178;0.841777;0.938514;0.921652;0.905092;0.8118;0.826652;0.826652;0.78289;0.872861;0.905092;0.857178;0.88883;0.841777;0.768824;0.857178;0.677187;0.826652;0.629814;0.797214;0.677187;0.715041,0.768824;0.78289;0.826652;0.497566;0.220049;0.263791;0.488626;0.372277;0.125437;0.386024;0.304966;0.278536;0.310546;0.365588;0.653071;0.66502;0.607386;0.488626;0.525379;0.430386;0.462758;0.446279;0.585756;0.544779;0.564896;0.534991;0.78289;0.768824;0.66502;0.43826;0.525379;0.462758;0.379088;0.715041;0.689577;0.585756;0.641337;0.544779;0.333904;0.554746;0.137339;0.564896;0.134872;0.372277;0.108501;0.340013,Longuet-Higgins (1964),NaN\n" +
-"-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T15:50:00Z,urn:ioos:sensor:wmo:46013::wpm1,1.52,9.09,4.98,1.0,9.1,1.15,5.6,NaN,291.0,291.0,297.0,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.244172;0.874391;0.950049;0.992051;0.292122;0.416385;0.116264;0.32567;1.0886;1.49577;0.707195;0.412901;0.383;0.336784;0.162325;0.507266;0.721374;0.521185;0.317616;0.580232;0.620904;0.720338;0.544952;0.400361;0.457406;0.340211;0.190368;0.295531;0.258054;0.13138;0.178793;0.207494;0.162191;0.0901461;0.101774;0.0468724;0.036226;0.0442694;0.0218615;0.0143249;0.00447678,245.0;180.0;16.0;1.0;157.0;253.0;192.0;221.0;234.0;193.0;171.0;182.0;331.0;297.0;291.0;287.0;304.0;296.0;295.0;307.0;306.0;297.0;309.0;309.0;310.0;301.0;321.0;300.0;296.0;315.0;295.0;305.0;311.0;311.0;312.0;312.0;311.0;309.0;305.0;310.0;317.0;304.0;303.0;125.0;132.0;122.0,179.0;190.0;1.0;1.0;176.0;292.0;110.0;311.0;321.0;118.0;143.0;131.0;335.0;305.0;296.0;290.0;313.0;310.0;298.0;321.0;306.0;298.0;308.0;308.0;310.0;301.0;323.0;300.0;294.0;320.0;295.0;308.0;312.0;313.0;315.0;311.0;311.0;310.0;305.0;311.0;316.0;309.0;298.0;121.0;132.0;109.0,0.153123;0.340013;0.288822;0.254397;0.372277;0.379088;0.400278;0.430386;0.299487;0.14767;0.228175;0.393087;0.534991;0.741445;0.78289;0.857178;0.702193;0.741445;0.797214;0.689577;0.857178;0.921652;0.905092;0.768824;0.905092;0.88883;0.921652;0.88883;0.872861;0.872861;0.872861;0.872861;0.921652;0.88883;0.857178;0.857178;0.88883;0.857178;0.78289;0.797214;0.728123;0.741445;0.826652;0.8118;0.872861;0.728123,0.768824;0.575231;0.564896;0.689577;0.575231;0.497566;0.150371;0.259051;0.259051;0.728123;0.400278;0.393087;0.728123;0.689577;0.66502;0.677187;0.607386;0.400278;0.575231;0.534991;0.677187;0.8118;0.75501;0.365588;0.741445;0.741445;0.8118;0.689577;0.653071;0.653071;0.629814;0.618498;0.768824;0.689577;0.585756;0.596473;0.66502;0.629814;0.454444;0.415059;0.283632;0.216095;0.488626;0.488626;0.618498;0.236601,Longuet-Higgins (1964),NaN\n" +
-"-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T16:50:00Z,urn:ioos:sensor:wmo:46013::wpm1,1.49,14.81,5.11,1.01,14.8,1.1,4.8,NaN,175.0,175.0,309.0,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.724702;0.909481;2.34661;0.698133;0.516662;0.499779;0.284884;0.407779;0.94326;1.08406;0.29313;0.464502;0.346171;0.393304;0.327266;0.531525;0.423195;0.328752;0.332852;0.702979;0.627516;0.379029;0.603016;0.337529;0.385623;0.308393;0.266641;0.207837;0.0681764;0.212742;0.18737;0.138199;0.122643;0.130927;0.0889706;0.0656523;0.0608267;0.0359928;0.0115031;0.0100742;0.00469153,287.0;208.0;76.0;353.0;123.0;193.0;205.0;175.0;198.0;155.0;196.0;246.0;285.0;304.0;297.0;324.0;298.0;296.0;299.0;303.0;299.0;298.0;304.0;306.0;309.0;304.0;311.0;299.0;317.0;301.0;308.0;314.0;314.0;325.0;315.0;301.0;312.0;322.0;306.0;305.0;324.0;302.0;326.0;119.0;139.0;137.0,350.0;193.0;12.0;13.0;171.0;135.0;151.0;161.0;162.0;158.0;143.0;301.0;313.0;303.0;304.0;321.0;320.0;303.0;302.0;306.0;299.0;300.0;307.0;305.0;311.0;302.0;316.0;299.0;317.0;299.0;308.0;317.0;320.0;346.0;313.0;304.0;312.0;327.0;305.0;306.0;331.0;299.0;333.0;115.0;139.0;143.0,0.177024;0.224075;0.333904;0.393087;0.273532;0.310546;0.299487;0.534991;0.506669;0.43826;0.249826;0.327905;0.340013;0.8118;0.78289;0.585756;0.653071;0.741445;0.826652;0.826652;0.857178;0.797214;0.841777;0.857178;0.905092;0.88883;0.872861;0.921652;0.905092;0.88883;0.872861;0.872861;0.8118;0.728123;0.872861;0.905092;0.857178;0.8118;0.872861;0.826652;0.841777;0.826652;0.857178;0.78289;0.797214;0.8118,0.596473;0.544779;0.488626;0.228175;0.316228;0.506669;0.479847;0.415059;0.372277;0.236601;0.228175;0.346234;0.479847;0.66502;0.534991;0.534991;0.288822;0.554746;0.728123;0.641337;0.728123;0.525379;0.653071;0.575231;0.768824;0.702193;0.618498;0.741445;0.741445;0.689577;0.629814;0.618498;0.430386;0.400278;0.629814;0.75501;0.629814;0.446279;0.641337;0.488626;0.585756;0.454444;0.618498;0.340013;0.454444;0.422653,Longuet-Higgins (1964),NaN\n";
+  "longitude,latitude,station_id,altitude,time,sensor_id,sea_surface_wave_significant_height,sea_surface_wave_peak_period,sea_surface_wave_mean_period,sea_surface_swell_wave_significant_height,sea_surface_swell_wave_period,sea_surface_wind_wave_significant_height,sea_surface_wind_wave_period,sea_water_temperature,sea_surface_wave_to_direction,sea_surface_swell_wave_to_direction,sea_surface_wind_wave_to_direction,number_of_frequencies,center_frequencies,bandwidths,spectral_energy,mean_wave_direction,principal_wave_direction,polar_coordinate_r1,polar_coordinate_r2,calculation_method,sampling_rate\n" +
+  "degrees_east,degrees_north,,m,UTC,,m,s,s,m,s,m,s,degree_C,degrees_true,degrees_true,degrees_true,count,Hz,Hz,m^2/Hz,degrees_true,degrees_true,1,1,,Hz\n" +
+//2015-03-10 was 
+//"-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T14:50:00Z,urn:ioos:sensor:wmo:46013::wpm1,1.62,14.81,5.21,1.12,14.8,1.17,4.3,NaN,176.0,176.0,312.0,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.779157;0.372876;2.02274;0.714328;0.675131;0.296029;0.138154;0.605274;1.96737;1.16217;0.884235;0.462599;0.57436;0.504724;0.218129;0.38115;0.504237;0.45285;0.708456;0.626689;0.747685;0.883292;0.632856;0.448383;0.331531;0.123811;0.265022;0.214203;0.208534;0.21145;0.223251;0.114582;0.10544;0.130131;0.118191;0.0652535;0.0604571;0.0167055;0.0158453;0.00866108;0.00483522,158.0;336.0;188.0;11.0;78.0;263.0;189.0;176.0;196.0;212.0;249.0;182.0;267.0;292.0;299.0;306.0;290.0;299.0;304.0;294.0;301.0;304.0;320.0;314.0;311.0;303.0;312.0;317.0;315.0;307.0;316.0;314.0;305.0;317.0;306.0;311.0;310.0;303.0;294.0;308.0;298.0;302.0;303.0;113.0;127.0;113.0,183.0;8.0;181.0;7.0;3.0;301.0;275.0;134.0;123.0;262.0;279.0;92.0;281.0;293.0;299.0;308.0;292.0;306.0;310.0;300.0;304.0;306.0;326.0;317.0;310.0;303.0;312.0;318.0;316.0;309.0;319.0;318.0;306.0;319.0;307.0;313.0;309.0;305.0;286.0;309.0;271.0;296.0;254.0;111.0;99.0;92.0,0.212213;0.112507;0.304966;0.35902;0.254397;0.488626;0.263791;0.515939;0.462758;0.430386;0.497566;0.12097;0.497566;0.653071;0.826652;0.841777;0.702193;0.768824;0.797214;0.741445;0.797214;0.797214;0.826652;0.841777;0.857178;0.841777;0.938514;0.921652;0.905092;0.8118;0.826652;0.826652;0.78289;0.872861;0.905092;0.857178;0.88883;0.841777;0.768824;0.857178;0.677187;0.826652;0.629814;0.797214;0.677187;0.715041,0.768824;0.78289;0.826652;0.497566;0.220049;0.263791;0.488626;0.372277;0.125437;0.386024;0.304966;0.278536;0.310546;0.365588;0.653071;0.66502;0.607386;0.488626;0.525379;0.430386;0.462758;0.446279;0.585756;0.544779;0.564896;0.534991;0.78289;0.768824;0.66502;0.43826;0.525379;0.462758;0.379088;0.715041;0.689577;0.585756;0.641337;0.544779;0.333904;0.554746;0.137339;0.564896;0.134872;0.372277;0.108501;0.340013,Longuet-Higgins (1964),NaN\n" +
+//"-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T15:50:00Z,urn:ioos:sensor:wmo:46013::wpm1,1.52,9.09,4.98,1.0,9.1,1.15,5.6,NaN,291.0,291.0,297.0,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.244172;0.874391;0.950049;0.992051;0.292122;0.416385;0.116264;0.32567;1.0886;1.49577;0.707195;0.412901;0.383;0.336784;0.162325;0.507266;0.721374;0.521185;0.317616;0.580232;0.620904;0.720338;0.544952;0.400361;0.457406;0.340211;0.190368;0.295531;0.258054;0.13138;0.178793;0.207494;0.162191;0.0901461;0.101774;0.0468724;0.036226;0.0442694;0.0218615;0.0143249;0.00447678,245.0;180.0;16.0;1.0;157.0;253.0;192.0;221.0;234.0;193.0;171.0;182.0;331.0;297.0;291.0;287.0;304.0;296.0;295.0;307.0;306.0;297.0;309.0;309.0;310.0;301.0;321.0;300.0;296.0;315.0;295.0;305.0;311.0;311.0;312.0;312.0;311.0;309.0;305.0;310.0;317.0;304.0;303.0;125.0;132.0;122.0,179.0;190.0;1.0;1.0;176.0;292.0;110.0;311.0;321.0;118.0;143.0;131.0;335.0;305.0;296.0;290.0;313.0;310.0;298.0;321.0;306.0;298.0;308.0;308.0;310.0;301.0;323.0;300.0;294.0;320.0;295.0;308.0;312.0;313.0;315.0;311.0;311.0;310.0;305.0;311.0;316.0;309.0;298.0;121.0;132.0;109.0,0.153123;0.340013;0.288822;0.254397;0.372277;0.379088;0.400278;0.430386;0.299487;0.14767;0.228175;0.393087;0.534991;0.741445;0.78289;0.857178;0.702193;0.741445;0.797214;0.689577;0.857178;0.921652;0.905092;0.768824;0.905092;0.88883;0.921652;0.88883;0.872861;0.872861;0.872861;0.872861;0.921652;0.88883;0.857178;0.857178;0.88883;0.857178;0.78289;0.797214;0.728123;0.741445;0.826652;0.8118;0.872861;0.728123,0.768824;0.575231;0.564896;0.689577;0.575231;0.497566;0.150371;0.259051;0.259051;0.728123;0.400278;0.393087;0.728123;0.689577;0.66502;0.677187;0.607386;0.400278;0.575231;0.534991;0.677187;0.8118;0.75501;0.365588;0.741445;0.741445;0.8118;0.689577;0.653071;0.653071;0.629814;0.618498;0.768824;0.689577;0.585756;0.596473;0.66502;0.629814;0.454444;0.415059;0.283632;0.216095;0.488626;0.488626;0.618498;0.236601,Longuet-Higgins (1964),NaN\n" +
+//"-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T16:50:00Z,urn:ioos:sensor:wmo:46013::wpm1,1.49,14.81,5.11,1.01,14.8,1.1,4.8,NaN,175.0,175.0,309.0,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.724702;0.909481;2.34661;0.698133;0.516662;0.499779;0.284884;0.407779;0.94326;1.08406;0.29313;0.464502;0.346171;0.393304;0.327266;0.531525;0.423195;0.328752;0.332852;0.702979;0.627516;0.379029;0.603016;0.337529;0.385623;0.308393;0.266641;0.207837;0.0681764;0.212742;0.18737;0.138199;0.122643;0.130927;0.0889706;0.0656523;0.0608267;0.0359928;0.0115031;0.0100742;0.00469153,287.0;208.0;76.0;353.0;123.0;193.0;205.0;175.0;198.0;155.0;196.0;246.0;285.0;304.0;297.0;324.0;298.0;296.0;299.0;303.0;299.0;298.0;304.0;306.0;309.0;304.0;311.0;299.0;317.0;301.0;308.0;314.0;314.0;325.0;315.0;301.0;312.0;322.0;306.0;305.0;324.0;302.0;326.0;119.0;139.0;137.0,350.0;193.0;12.0;13.0;171.0;135.0;151.0;161.0;162.0;158.0;143.0;301.0;313.0;303.0;304.0;321.0;320.0;303.0;302.0;306.0;299.0;300.0;307.0;305.0;311.0;302.0;316.0;299.0;317.0;299.0;308.0;317.0;320.0;346.0;313.0;304.0;312.0;327.0;305.0;306.0;331.0;299.0;333.0;115.0;139.0;143.0,0.177024;0.224075;0.333904;0.393087;0.273532;0.310546;0.299487;0.534991;0.506669;0.43826;0.249826;0.327905;0.340013;0.8118;0.78289;0.585756;0.653071;0.741445;0.826652;0.826652;0.857178;0.797214;0.841777;0.857178;0.905092;0.88883;0.872861;0.921652;0.905092;0.88883;0.872861;0.872861;0.8118;0.728123;0.872861;0.905092;0.857178;0.8118;0.872861;0.826652;0.841777;0.826652;0.857178;0.78289;0.797214;0.8118,0.596473;0.544779;0.488626;0.228175;0.316228;0.506669;0.479847;0.415059;0.372277;0.236601;0.228175;0.346234;0.479847;0.66502;0.534991;0.534991;0.288822;0.554746;0.728123;0.641337;0.728123;0.525379;0.653071;0.575231;0.768824;0.702193;0.618498;0.741445;0.741445;0.689577;0.629814;0.618498;0.430386;0.400278;0.629814;0.75501;0.629814;0.446279;0.641337;0.488626;0.585756;0.454444;0.618498;0.340013;0.454444;0.422653,Longuet-Higgins (1964),NaN\n";
+  "-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T14:50:00Z,urn:ioos:sensor:wmo:46013::wpm1,1.62,14.81,5.21,1.12,14.8,1.17,4.3,NaN,356.0,356.0,132.0,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.779157;0.372876;2.02274;0.714328;0.675131;0.296029;0.138154;0.605274;1.96737;1.16217;0.884235;0.462599;0.57436;0.504724;0.218129;0.38115;0.504237;0.45285;0.708456;0.626689;0.747685;0.883292;0.632856;0.448383;0.331531;0.123811;0.265022;0.214203;0.208534;0.21145;0.223251;0.114582;0.10544;0.130131;0.118191;0.0652535;0.0604571;0.0167055;0.0158453;0.00866108;0.00483522,158.0;336.0;188.0;11.0;78.0;263.0;189.0;176.0;196.0;212.0;249.0;182.0;267.0;292.0;299.0;306.0;290.0;299.0;304.0;294.0;301.0;304.0;320.0;314.0;311.0;303.0;312.0;317.0;315.0;307.0;316.0;314.0;305.0;317.0;306.0;311.0;310.0;303.0;294.0;308.0;298.0;302.0;303.0;113.0;127.0;113.0,183.0;8.0;181.0;7.0;3.0;301.0;275.0;134.0;123.0;262.0;279.0;92.0;281.0;293.0;299.0;308.0;292.0;306.0;310.0;300.0;304.0;306.0;326.0;317.0;310.0;303.0;312.0;318.0;316.0;309.0;319.0;318.0;306.0;319.0;307.0;313.0;309.0;305.0;286.0;309.0;271.0;296.0;254.0;111.0;99.0;92.0,0.212213;0.112507;0.304966;0.35902;0.254397;0.488626;0.263791;0.515939;0.462758;0.430386;0.497566;0.12097;0.497566;0.653071;0.826652;0.841777;0.702193;0.768824;0.797214;0.741445;0.797214;0.797214;0.826652;0.841777;0.857178;0.841777;0.938514;0.921652;0.905092;0.8118;0.826652;0.826652;0.78289;0.872861;0.905092;0.857178;0.88883;0.841777;0.768824;0.857178;0.677187;0.826652;0.629814;0.797214;0.677187;0.715041,0.768824;0.78289;0.826652;0.497566;0.220049;0.263791;0.488626;0.372277;0.125437;0.386024;0.304966;0.278536;0.310546;0.365588;0.653071;0.66502;0.607386;0.488626;0.525379;0.430386;0.462758;0.446279;0.585756;0.544779;0.564896;0.534991;0.78289;0.768824;0.66502;0.43826;0.525379;0.462758;0.379088;0.715041;0.689577;0.585756;0.641337;0.544779;0.333904;0.554746;0.137339;0.564896;0.134872;0.372277;0.108501;0.340013,Longuet-Higgins (1964),NaN\n" +
+  "-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T15:50:00Z,urn:ioos:sensor:wmo:46013::wpm1,1.52,9.09,4.98,1.0,9.1,1.15,5.6,NaN,111.0,111.0,117.0,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.244172;0.874391;0.950049;0.992051;0.292122;0.416385;0.116264;0.32567;1.0886;1.49577;0.707195;0.412901;0.383;0.336784;0.162325;0.507266;0.721374;0.521185;0.317616;0.580232;0.620904;0.720338;0.544952;0.400361;0.457406;0.340211;0.190368;0.295531;0.258054;0.13138;0.178793;0.207494;0.162191;0.0901461;0.101774;0.0468724;0.036226;0.0442694;0.0218615;0.0143249;0.00447678,245.0;180.0;16.0;1.0;157.0;253.0;192.0;221.0;234.0;193.0;171.0;182.0;331.0;297.0;291.0;287.0;304.0;296.0;295.0;307.0;306.0;297.0;309.0;309.0;310.0;301.0;321.0;300.0;296.0;315.0;295.0;305.0;311.0;311.0;312.0;312.0;311.0;309.0;305.0;310.0;317.0;304.0;303.0;125.0;132.0;122.0,179.0;190.0;1.0;1.0;176.0;292.0;110.0;311.0;321.0;118.0;143.0;131.0;335.0;305.0;296.0;290.0;313.0;310.0;298.0;321.0;306.0;298.0;308.0;308.0;310.0;301.0;323.0;300.0;294.0;320.0;295.0;308.0;312.0;313.0;315.0;311.0;311.0;310.0;305.0;311.0;316.0;309.0;298.0;121.0;132.0;109.0,0.153123;0.340013;0.288822;0.254397;0.372277;0.379088;0.400278;0.430386;0.299487;0.14767;0.228175;0.393087;0.534991;0.741445;0.78289;0.857178;0.702193;0.741445;0.797214;0.689577;0.857178;0.921652;0.905092;0.768824;0.905092;0.88883;0.921652;0.88883;0.872861;0.872861;0.872861;0.872861;0.921652;0.88883;0.857178;0.857178;0.88883;0.857178;0.78289;0.797214;0.728123;0.741445;0.826652;0.8118;0.872861;0.728123,0.768824;0.575231;0.564896;0.689577;0.575231;0.497566;0.150371;0.259051;0.259051;0.728123;0.400278;0.393087;0.728123;0.689577;0.66502;0.677187;0.607386;0.400278;0.575231;0.534991;0.677187;0.8118;0.75501;0.365588;0.741445;0.741445;0.8118;0.689577;0.653071;0.653071;0.629814;0.618498;0.768824;0.689577;0.585756;0.596473;0.66502;0.629814;0.454444;0.415059;0.283632;0.216095;0.488626;0.488626;0.618498;0.236601,Longuet-Higgins (1964),NaN\n" +
+  "-123.32,38.23,urn:ioos:station:wmo:46013,NaN,2008-08-01T16:50:00Z,urn:ioos:sensor:wmo:46013::wpm1,1.49,14.81,5.11,1.01,14.8,1.1,4.8,NaN,355.0,355.0,129.0,46,0.0325;0.0375;0.0425;0.0475;0.0525;0.0575;0.0625;0.0675;0.0725;0.0775;0.0825;0.0875;0.0925;0.1000;0.1100;0.1200;0.1300;0.1400;0.1500;0.1600;0.1700;0.1800;0.1900;0.2000;0.2100;0.2200;0.2300;0.2400;0.2500;0.2600;0.2700;0.2800;0.2900;0.3000;0.3100;0.3200;0.3300;0.3400;0.3500;0.3650;0.3850;0.4050;0.4250;0.4450;0.4650;0.4850,0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0050;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0100;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200;0.0200,0;0;0;0;0;0.724702;0.909481;2.34661;0.698133;0.516662;0.499779;0.284884;0.407779;0.94326;1.08406;0.29313;0.464502;0.346171;0.393304;0.327266;0.531525;0.423195;0.328752;0.332852;0.702979;0.627516;0.379029;0.603016;0.337529;0.385623;0.308393;0.266641;0.207837;0.0681764;0.212742;0.18737;0.138199;0.122643;0.130927;0.0889706;0.0656523;0.0608267;0.0359928;0.0115031;0.0100742;0.00469153,287.0;208.0;76.0;353.0;123.0;193.0;205.0;175.0;198.0;155.0;196.0;246.0;285.0;304.0;297.0;324.0;298.0;296.0;299.0;303.0;299.0;298.0;304.0;306.0;309.0;304.0;311.0;299.0;317.0;301.0;308.0;314.0;314.0;325.0;315.0;301.0;312.0;322.0;306.0;305.0;324.0;302.0;326.0;119.0;139.0;137.0,350.0;193.0;12.0;13.0;171.0;135.0;151.0;161.0;162.0;158.0;143.0;301.0;313.0;303.0;304.0;321.0;320.0;303.0;302.0;306.0;299.0;300.0;307.0;305.0;311.0;302.0;316.0;299.0;317.0;299.0;308.0;317.0;320.0;346.0;313.0;304.0;312.0;327.0;305.0;306.0;331.0;299.0;333.0;115.0;139.0;143.0,0.177024;0.224075;0.333904;0.393087;0.273532;0.310546;0.299487;0.534991;0.506669;0.43826;0.249826;0.327905;0.340013;0.8118;0.78289;0.585756;0.653071;0.741445;0.826652;0.826652;0.857178;0.797214;0.841777;0.857178;0.905092;0.88883;0.872861;0.921652;0.905092;0.88883;0.872861;0.872861;0.8118;0.728123;0.872861;0.905092;0.857178;0.8118;0.872861;0.826652;0.841777;0.826652;0.857178;0.78289;0.797214;0.8118,0.596473;0.544779;0.488626;0.228175;0.316228;0.506669;0.479847;0.415059;0.372277;0.236601;0.228175;0.346234;0.479847;0.66502;0.534991;0.534991;0.288822;0.554746;0.728123;0.641337;0.728123;0.525379;0.653071;0.575231;0.768824;0.702193;0.618498;0.741445;0.741445;0.689577;0.629814;0.618498;0.430386;0.400278;0.629814;0.75501;0.629814;0.446279;0.641337;0.488626;0.585756;0.454444;0.618498;0.340013;0.454444;0.422653,Longuet-Higgins (1964),NaN\n";
             Test.ensureEqual(results, expected, "RESULTS=\n" + results);
 
             //same test, but with  superfluous string data regex test
@@ -6172,14 +6388,18 @@ So I will make ERDDAP able to read
      * <br>This generates a rough draft of the datasets.xml entry for an EDDTableFromSOS.
      * <br>The XML can then be edited by hand and added to the datasets.xml file.
      *
+     * @param useCachedInfo for testing purposes, this uses a cached GetCapabilities
+     *   document if possible (else caches what it gets)
      * @param tLocalSourceUrl
-     * @param version may be null or "" if not needed
-     * @param sosServerType may be "", or one of IOOS_NDBC, IOOS_NOS, OOSTethys, WHOI (case insensitive)
+     * @param sosVersion e.g., 1.0.0 (or null or "")
+     * @param sosServerType may be "", or one of  IOOS_52N, IOOS_NcSOS, 
+     *   IOOS_NDBC, IOOS_NOS, OOSTethys, WHOI  (case insensitive)
      * @return a suggested chunk of xml for this dataset for use in datasets.xml 
      * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
      *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
-    public static String generateDatasetsXml(String tLocalSourceUrl, String sosVersion, 
+    public static String generateDatasetsXml(boolean useCachedInfo,
+        String tLocalSourceUrl, String sosVersion, 
         String sosServerType) throws Throwable {
 
         String2.log("EDDTableFromSos.generateDatasetsXml" +
@@ -6188,16 +6408,34 @@ So I will make ERDDAP able to read
         String tPublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
         sosServerType = sosServerType == null? "" : sosServerType.trim();
         String sstlc = sosServerType.toLowerCase();
-        boolean ndbcIoosServer  = sstlc.equals(SosServerTypeIoosNdbc.toLowerCase());
-        boolean nosIoosServer   = sstlc.equals(SosServerTypeIoosNos.toLowerCase());
+        boolean ioos52NServer   = sstlc.equals(SosServerTypeIoos52N.toLowerCase()); 
+        boolean ioosNdbcServer  = sstlc.equals(SosServerTypeIoosNdbc.toLowerCase());
+        boolean ioosNcSOSServer = sstlc.equals(SosServerTypeIoosNcSOS.toLowerCase());
+        boolean ioosNosServer   = sstlc.equals(SosServerTypeIoosNos.toLowerCase());
         boolean oostethysServer = sstlc.equals(SosServerTypeOostethys.toLowerCase());
-        boolean whoiServer      = sstlc.equals(SosServerTypeWhoi.toLowerCase()); //required
- 
-        String tUrl = tLocalSourceUrl + "?service=SOS&request=GetCapabilities"; 
-        if (sosVersion != null && sosVersion.length() > 0)
-            tUrl += "&version=" + sosVersion; 
+        boolean whoiServer      = sstlc.equals(SosServerTypeWhoi.toLowerCase());  
+        
+        String tUrl = tLocalSourceUrl + "?service=SOS&request=GetCapabilities";
+        if (sosVersion != null && sosVersion.length() > 0) {
+            //if (ioosNcbcServer || ioosNosServer) //not needed. 1.0.0 is default and only.
+            //    tUrl += "&version=" + sosVersion;
+            if (ioos52NServer) //AcceptVersions needed. This class only supports 1.0.0 currently.
+                tUrl += "&AcceptVersions=" + sosVersion;
+        }
         //if (reallyVerbose) String2.log(SSR.getUrlResponseString(tUrl));
-        SimpleXMLReader xmlReader = new SimpleXMLReader(SSR.getUrlInputStream(tUrl));
+        File2.makeDirectory(sosCopyDir);
+        String safeFileName = sosCopyDir + String2.md5Hex12(tUrl);
+        if (!useCachedInfo || !File2.isFile(safeFileName)) {
+            String2.log("downloading GetCapabilities" +
+                "\n  from: " + tUrl +
+                "\n  to: " + safeFileName);
+            SSR.downloadFile(tUrl, safeFileName, false); //tryToUseCompression
+        } else {
+            String2.log("using cached GetCapabilities" +
+                "\n  from file: " + safeFileName + 
+                "\n  from URL: " + tUrl);
+        }
+        SimpleXMLReader xmlReader = new SimpleXMLReader(new FileInputStream(safeFileName));
         xmlReader.nextTag();
         String tags = xmlReader.allTags();
         String sosPrefix = "";
@@ -6207,7 +6445,7 @@ So I will make ERDDAP able to read
             if (sosServerType.length() == 0) //not explicitly declared
                 ioosServer = true;
         } else if (xmlReader.tag(0).equals("sos:Capabilities")) {
-            sosPrefix = "sos:"; //oostethys
+            sosPrefix = "sos:"; //oostethys, ioos52N
         } else {
             xmlReader.close();
             String2.log(SSR.getUrlResponseString(tUrl));
@@ -6234,36 +6472,54 @@ So I will make ERDDAP able to read
         String institution = "???";
         String summary = "???";
         String title = "???";
+        String license = "[standard]";
         String tStationID = "";
         StringBuilder tStationObsPropList = new StringBuilder();
+        int offeringTagCount = 0;
 
         do {
             //process the tags
-            //String2.log("tags=" + tags + xmlReader.content());
+            if (debugMode) String2.log("tags=" + tags + xmlReader.content());
 
             if (tags.endsWith("<ows:ServiceIdentification></ows:ServiceTypeVersion>")) {
-                if (verbose) String2.log("ServiceTypeVersion=" + xmlReader.content());
-                if (sosVersion == null || sosVersion.length() == 0) {
-                    sosVersion = xmlReader.content(); //e.g., "0.0.31" or "1.0.0"
-                    if (verbose) String2.log("Setting sosVersion=" + sosVersion);
+                String s = xmlReader.content();
+                if (verbose) String2.log("  ServiceTypeVersion=" + s);
+                if (sosVersion == null || sosVersion.length() == 0 ||
+                    s.equals("1.0.0")) { //preference to 1.0.0 (ioos52N also offers 2.0.0)
+                    sosVersion = s; //e.g., "0.0.31" or "1.0.0"
+                    if (verbose) String2.log("  sosVersion(from ServiceTypeVersion)=" + s);
                 }
             } else if (tags.endsWith("<ows:ServiceIdentification></ows:Title>")) {
                 title = xmlReader.content();
+                if (verbose) String2.log("  title(from Title)=" + title);
 
             } else if (tags.endsWith("<ows:ServiceIdentification></ows:Abstract>")) {
                 summary = xmlReader.content();
+                if (verbose) String2.log("  summary(from Abstract)=" + summary);
+
+            } else if (tags.endsWith("<ows:ServiceIdentification></ows:AccessConstraints>")) {
+                String s = xmlReader.content();
+                if (s.length() >= 0 &&
+                    !s.toLowerCase().equals("none")) {
+                    license = s;
+                    if (verbose) String2.log("  license(from AccessConstraints)=" + license);
+                }
 
             } else if (tags.endsWith("<ows:ServiceProvider></ows:ProviderName>")) {
                 institution = xmlReader.content();
+                if (verbose) String2.log("  institution(from ProviderName)=" + institution);
 
             } else if (tags.endsWith("<ows:ServiceProvider><ows:ProviderSite>")) {
                 infoUrl = xmlReader.attributeValue("xlink:href");
+                if (verbose) String2.log("  infoUrl(from ProviderSite)=" + infoUrl);
 
             } else if (tags.startsWith(offeringTag)) {
                 String endOfTag = tags.substring(offeringTag.length());
                 String content = xmlReader.content();
                 String error = null;
-//String2.log("endOfTag=" + endOfTag + xmlReader.content());
+                if (tags.equals(offeringTag))
+                    offeringTagCount++;
+                //if (debugMode) String2.log("offering=" + endOfTag + xmlReader.content());
 
 
 /* separate phenomena
@@ -6303,27 +6559,25 @@ So I will make ERDDAP able to read
 */
 
                 if (endOfTag.equals("")) {
-                    //String2.log("startTag");
                     tStationID = "";
                     tStationObsPropList.setLength(0);
 
                 } else if (endOfTag.equals("</gml:name>")) { //ioosServer and OOSTethys have this
                     //e.g., 44004
                     tStationID = content;
-
-                    if (ioosServer) { 
-                        //remove  so names are shorter on table below
-                        String pre = ":station:";
-                        int prePo = tStationID.indexOf(pre);
-                        if (prePo >= 0)
-                            tStationID = tStationID.substring(prePo + pre.length());
-                    }
+                    //remove  so names are shorter on table below
+                    String pre = ":station:";
+                    int prePo = tStationID.indexOf(pre);
+                    if (prePo >= 0)
+                        tStationID = tStationID.substring(prePo + pre.length());
+                    if (reallyVerbose) String2.log("  tStationID=" + tStationID);
 
                 } else if (endOfTag.equals("<" + sosPrefix + "observedProperty>")) {
                     //handle non-composite observedProperty
                     //<sos:observedProperty xlink:href="http://marinemetadata.org/cf#sea_water_temperature"/>
                     String tXlink = xmlReader.attributeValue("xlink:href"); //without quotes
-                    if (tXlink != null) {
+                    if (tXlink != null && !tXlink.toLowerCase().equals("none")) {
+                        if (reallyVerbose) String2.log("  observedProperty=" + tXlink);
                         int opPo = uniqueObsProp.indexOf(tXlink);   
                         if (opPo < 0) {
                             opPo = uniqueObsProp.size();
@@ -6338,7 +6592,8 @@ So I will make ERDDAP able to read
                     //handle composite observedProperty
                     //<swe:CompositePhenomenon gml:id="WEATHER_OBSERVABLES">
                     String tXlink = xmlReader.attributeValue("gml:id"); //without quotes
-                    if (tXlink != null) {
+                    if (tXlink != null && !tXlink.toLowerCase().equals("none")) {
+                        if (reallyVerbose) String2.log("  composite observedProperty=" + tXlink);
                         int opPo = uniqueObsProp.indexOf(tXlink);   
                         if (opPo < 0) {
                             opPo = uniqueObsProp.size();
@@ -6377,10 +6632,17 @@ So I will make ERDDAP able to read
         } while (!tags.startsWith("</"));
 
         xmlReader.close();      
+        if (verbose) String2.log("\n" +
+            "sosPrefix=" + sosPrefix + "\n" +
+            "offeringTag=" + offeringTag + " count=" + offeringTagCount);
         if (sosVersion == null || sosVersion.length() == 0) 
             sosVersion = "1.0.0"; //default
 
         //write the station/obsProp info
+        if (stationIDs.size() == 0) 
+            throw new RuntimeException("No stations found! Try a different sosServerType.\n" +
+                "  offeringTag=" + offeringTag +
+                "  stationID name tag=" + "<gml:name>");
         sb.append("You have to choose which observedProperties will be used for this dataset.\n\n");
         int longestStationID = Math.max(19, stationIDs.maxStringLength());
         int longestHasProp = stationHasObsProp.maxStringLength(); 
@@ -6394,8 +6656,12 @@ So I will make ERDDAP able to read
                 String2.left(stationIDs.get(si), longestStationID) + "  " + 
                 stationHasObsProp.get(si) + "\n");
         }
-
+        
         //list the props
+        if (uniqueObsProp.size() == 0) 
+            throw new RuntimeException("No observedProperties found! Try a different sosServerType.\n" +
+                "  offeringTag=" + offeringTag + "\n" +
+                "  observedPropertyTag=" + "<" + sosPrefix + "observedProperty>");
         sb.append("\n id  ObservedProperty\n" +
                     "---  --------------------------------------------------\n");
         for (int op = 0; op < uniqueObsProp.size(); op++) 
@@ -6403,13 +6669,21 @@ So I will make ERDDAP able to read
 
         //generate a table with the datasets information       
         Table table = new Table();
+        Attributes sgAtts = new Attributes(); //source global atts
+        sgAtts.add("infoUrl", infoUrl);
+        sgAtts.add("institution", institution);
+        sgAtts.add("summary", summary);
+        sgAtts.add("title", title);
+        sgAtts.add("license", license);
+        sgAtts.add("cdm_timeseries_variables", "station_id, longitude, latitude");
+        sgAtts.add("subsetVariables",          "station_id, longitude, latitude");
+
         Attributes gAtts = table.globalAttributes();
-        addDummyRequiredGlobalAttributesForDatasetsXml(gAtts, "Station", tLocalSourceUrl);
-        gAtts.add("infoUrl", infoUrl);
-        gAtts.add("institution", institution);
-        //gAtts.add("subsetVariables", "???"); //Don't, because SOS does it automatically
-        gAtts.add("summary", summary);
-        gAtts.add("title", title);
+        gAtts.add(makeReadyToUseAddGlobalAttributesForDatasetsXml(sgAtts, 
+            "TimeSeries", tLocalSourceUrl, new Attributes(), //externalAtts
+            new HashSet())); //suggestedKeywords
+        gAtts.remove("original_institution");
+        gAtts.add(sgAtts); //since only addAtts will be printed
         for (int op = 0; op < uniqueObsProp.size(); op++) {
             String prop = uniqueObsProp.get(op);
             String dvName = prop;
@@ -6420,13 +6694,15 @@ So I will make ERDDAP able to read
                po = dvName.lastIndexOf(":");
             if (po >= 0)
                 dvName = dvName.substring(po + 1);                
-            Attributes varAtts = new Attributes();
-            //addDummy before add "standard_name"
-            addDummyRequiredVariableAttributesForDatasetsXml(varAtts, dvName, false); 
-            varAtts.add("observedProperty", prop);
-            varAtts.add("standard_name", dvName);
-            //varAtts.set("long_name", EDV.suggestLongName(null, dvName, null));
-            table.addColumn(op, dvName, new DoubleArray(), varAtts);
+            Attributes sourceAtts = new Attributes();
+            sourceAtts.add("standard_name", dvName);
+            Attributes addAtts = makeReadyToUseAddVariableAttributesForDatasetsXml(
+               sourceAtts, dvName, true, false); //addColorBarMinMax, tryToFindLLAT
+            //then add the sourceAtts to the addAtts (since addAtts is all that will be shown)
+            addAtts.add("observedProperty", prop);
+            addAtts.add("standard_name", dvName);
+            addAtts.add("units", "???");
+            table.addColumn(op, dvName, new DoubleArray(), addAtts);
         }
 
         //*** generate the datasets.xml       
@@ -6443,8 +6719,8 @@ So I will make ERDDAP able to read
             "<dataset type=\"EDDTableFromSOS\" datasetID=\"" + suggestDatasetID(tPublicSourceUrl) + 
                     "\" active=\"true\">\n" +
             "    <sourceUrl>" + tLocalSourceUrl + "</sourceUrl>\n" +
-            "    <sosServerType>" + sosServerType + "</sosServerType>\n" +
             "    <sosVersion>" + sosVersion + "</sosVersion>\n" +
+            "    <sosServerType>" + sosServerType + "</sosServerType>\n" +
             "    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
             "    <observationOfferingIdRegex>.+</observationOfferingIdRegex>\n" +
             "    <requestObservedPropertiesSeparately>false</requestObservedPropertiesSeparately>\n" +
@@ -6453,9 +6729,13 @@ So I will make ERDDAP able to read
             "    <altitudeSourceName>???depth???ioos:VerticalPosition</altitudeSourceName>\n" +
             "    <altitudeMetersPerSourceUnit>-1</altitudeMetersPerSourceUnit>\n" +
             "    <timeSourceName>time</timeSourceName>\n" +
-            "    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ssZ</timeSourceFormat>\n");
+            "    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ss" +
+                (ioos52NServer? ".000" : "") +
+                "Z</timeSourceFormat>\n" +
+            "    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below,\n" +
+            "      notably, cdm_timeseries_variables, subsetVariables.\n" +
+            "    -->\n");
         sb.append(writeAttsForDatasetsXml(true, table.globalAttributes(), "    "));
-        sb.append(cdmSuggestion());
         //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
         sb.append(writeVariablesForDatasetsXml(null, table, "dataVariable", true, true, false));
         sb.append(
@@ -6468,21 +6748,14 @@ So I will make ERDDAP able to read
     /**
      * testGenerateDatasetsXml
      */
-    public static void testGenerateDatasetsXml() throws Throwable {
+    public static void testGenerateDatasetsXml(boolean useCachedInfo) throws Throwable {
         testVerboseOn();
         String2.log("\n*** EDDTableFromSOS.testGenerateDatasetsXml");
 
         try {
-            String results = generateDatasetsXml(
-                "http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", "IOOS_NDBC") + "\n";
-
-            //GenerateDatasetsXml
-            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
-                "EDDTableFromSOS",
-                "http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", "IOOS_NDBC"},
-                false); //doIt loop?
-            Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
-
+            String results = generateDatasetsXml(useCachedInfo, 
+                "http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", "IOOS_NDBC") + 
+                "\n";
 
 String expected1 = 
 "You have to choose which observedProperties will be used for this dataset.\n" +
@@ -6491,7 +6764,8 @@ String expected1 =
 "  n  Station (shortened)                 Has ObservedProperty\n" +
 "---  ----------------------------------  ------------------------------------------------------------\n" +
 "  0  urn:ioos:network:noaa.nws.ndbc:all  ABCDEFGHI\n" +
-"  1  wmo:21401                           ";
+"  1  wmo:0y2w3                           AB    G I\n" +
+"  2  wmo:18ci3                            B    G\n";
 
             Test.ensureEqual(results.substring(0, expected1.length()), expected1, 
                 "results=\n" + results);
@@ -6527,7 +6801,7 @@ String expected2 =
 "   ERDDAP combines sourceAttributes and addAttributes (which have\n" +
 "   precedence) to make the combinedAttributes that are shown to the user.\n" +
 "   (And other attributes are automatically added to longitude, latitude,\n" +
-"   altitude, and time variables).\n" +
+"   altitude, depth, and time variables).\n" +
 " * If you don't like a sourceAttribute, override it by adding an\n" +
 "   addAttribute with the same name but a different value\n" +
 "   (or no value, if you want to remove it).\n" +
@@ -6546,7 +6820,9 @@ String expected2 =
 "\n" +
 "<dataset type=\"EDDTableFromSOS\" datasetID=\"noaa_ndbc_ba12_4f37_91da\" active=\"true\">\n" +
 "    <sourceUrl>http://sdf.ndbc.noaa.gov/sos/server.php</sourceUrl>\n" +
-"    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
+"    <sosVersion>1.0.0</sosVersion>\n" +
+"    <sosServerType>IOOS_NDBC</sosServerType>\n" +
+"    <reloadEveryNMinutes>10080</reloadEveryNMinutes>\n" +
 "    <observationOfferingIdRegex>.+</observationOfferingIdRegex>\n" +
 "    <requestObservedPropertiesSeparately>false</requestObservedPropertiesSeparately>\n" +
 "    <longitudeSourceName>longitude</longitudeSourceName>\n" +
@@ -6554,29 +6830,35 @@ String expected2 =
 "    <altitudeSourceName>???depth???ioos:VerticalPosition</altitudeSourceName>\n" +
 "    <altitudeMetersPerSourceUnit>-1</altitudeMetersPerSourceUnit>\n" +
 "    <timeSourceName>time</timeSourceName>\n" +
-"    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ss'Z'</timeSourceFormat>\n" +
+"    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ssZ</timeSourceFormat>\n" +
+"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below,\n" +
+"      notably, cdm_timeseries_variables, subsetVariables.\n" +
+"    -->\n" +
 "    <addAttributes>\n" +
-"        <att name=\"cdm_data_type\">Point</att>\n" +
-"        <att name=\"Conventions\">???COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"creator_name\">NOAA NDBC</att>\n" +
+"        <att name=\"creator_url\">http://sdf.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"infoUrl\">http://sdf.ndbc.noaa.gov/</att>\n" +
 "        <att name=\"institution\">National Data Buoy Center</att>\n" +
-"        <att name=\"license\">???[standard]</att>\n" +
-"        <att name=\"Metadata_Conventions\">???COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
-"        <att name=\"standard_name_vocabulary\">???CF-12</att>\n" +
+"        <att name=\"keywords\">buoy, center, data, national, ndbc, noaa, sos</att>\n" +
+"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
+"        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "        <att name=\"summary\">National Data Buoy Center SOS</att>\n" +
 "        <att name=\"title\">National Data Buoy Center SOS</att>\n" +
 "    </addAttributes>\n" +
-"    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...\n" +
-"        <att name=\"cdm_timeseries_variables\">station, longitude, latitude</att>\n" +
-"        <att name=\"subsetVariables\">station, longitude, latitude</att>\n" +
-"    -->\n" +
 "    <dataVariable>\n" +
 "        <sourceName>air_temperature</sourceName>\n" +
 "        <destinationName>air_temperature</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">???Temperature</att>\n" +
-"            <att name=\"long_name\">???Air Temperature</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"long_name\">Air Temperature</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/air_temperature</att>\n" +
 "            <att name=\"standard_name\">air_temperature</att>\n" +
 "            <att name=\"units\">???</att>\n" +
@@ -6587,8 +6869,10 @@ String expected2 =
 "        <destinationName>air_pressure_at_sea_level</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">???Pressure</att>\n" +
-"            <att name=\"long_name\">???Air Pressure</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">1050.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">950.0</att>\n" +
+"            <att name=\"ioos_category\">Pressure</att>\n" +
+"            <att name=\"long_name\">Air Pressure At Sea Level</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/air_pressure_at_sea_level</att>\n" +
 "            <att name=\"standard_name\">air_pressure_at_sea_level</att>\n" +
 "            <att name=\"units\">???</att>\n" +
@@ -6599,8 +6883,10 @@ String expected2 =
 "        <destinationName>sea_water_electrical_conductivity</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">???Salinity</att>\n" +
-"            <att name=\"long_name\">???Sea Water Electrical Conductivity</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">30.0</att>\n" +
+"            <att name=\"ioos_category\">Salinity</att>\n" +
+"            <att name=\"long_name\">Sea Water Electrical Conductivity</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/sea_water_electrical_conductivity</att>\n" +
 "            <att name=\"standard_name\">sea_water_electrical_conductivity</att>\n" +
 "            <att name=\"units\">???</att>\n" +
@@ -6611,8 +6897,8 @@ String expected2 =
 "        <destinationName>currents</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">???Currents</att>\n" +
-"            <att name=\"long_name\">???Currents</att>\n" +
+"            <att name=\"ioos_category\">Currents</att>\n" +
+"            <att name=\"long_name\">Currents</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/currents</att>\n" +
 "            <att name=\"standard_name\">currents</att>\n" +
 "            <att name=\"units\">???</att>\n" +
@@ -6623,8 +6909,10 @@ String expected2 =
 "        <destinationName>sea_water_salinity</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">???Salinity</att>\n" +
-"            <att name=\"long_name\">???Sea Water Salinity</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">37.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">32.0</att>\n" +
+"            <att name=\"ioos_category\">Salinity</att>\n" +
+"            <att name=\"long_name\">Sea Water Salinity</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/sea_water_salinity</att>\n" +
 "            <att name=\"standard_name\">sea_water_salinity</att>\n" +
 "            <att name=\"units\">???</att>\n" +
@@ -6635,8 +6923,11 @@ String expected2 =
 "        <destinationName>sea_floor_depth_below_sea_surface</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">???Location</att>\n" +
-"            <att name=\"long_name\">???Sea Floor Depth Below Sea Surface</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">8000.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"colorBarPalette\">OceanDepth</att>\n" +
+"            <att name=\"ioos_category\">Location</att>\n" +
+"            <att name=\"long_name\">Sea Floor Depth Below Sea Surface</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/sea_floor_depth_below_sea_surface</att>\n" +
 "            <att name=\"standard_name\">sea_floor_depth_below_sea_surface</att>\n" +
 "            <att name=\"units\">???</att>\n" +
@@ -6647,8 +6938,10 @@ String expected2 =
 "        <destinationName>sea_water_temperature</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">???Temperature</att>\n" +
-"            <att name=\"long_name\">???Sea Water Temperature</att>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">32.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">0.0</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"long_name\">Sea Water Temperature</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/sea_water_temperature</att>\n" +
 "            <att name=\"standard_name\">sea_water_temperature</att>\n" +
 "            <att name=\"units\">???</att>\n" +
@@ -6659,8 +6952,8 @@ String expected2 =
 "        <destinationName>waves</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">???Surface Waves</att>\n" +
-"            <att name=\"long_name\">???Waves</att>\n" +
+"            <att name=\"ioos_category\">Surface Waves</att>\n" +
+"            <att name=\"long_name\">Waves</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/waves</att>\n" +
 "            <att name=\"standard_name\">waves</att>\n" +
 "            <att name=\"units\">???</att>\n" +
@@ -6671,8 +6964,8 @@ String expected2 =
 "        <destinationName>winds</destinationName>\n" +
 "        <dataType>double</dataType>\n" +
 "        <addAttributes>\n" +
-"            <att name=\"ioos_category\">???Wind</att>\n" +
-"            <att name=\"long_name\">???Winds</att>\n" +
+"            <att name=\"ioos_category\">Wind</att>\n" +
+"            <att name=\"long_name\">Winds</att>\n" +
 "            <att name=\"observedProperty\">http://mmisw.org/ont/cf/parameter/winds</att>\n" +
 "            <att name=\"standard_name\">winds</att>\n" +
 "            <att name=\"units\">???</att>\n" +
@@ -6685,6 +6978,14 @@ String expected2 =
                 results.substring(po, Math.min(results.length(), po + expected2.length())), 
                 expected2, 
                 "results=\n" + results);
+
+            //GenerateDatasetsXml
+            String gdxResults = (new GenerateDatasetsXml()).doIt(new String[]{"-verbose", 
+                "EDDTableFromSOS",
+                "http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", "IOOS_NDBC"},
+                false); //doIt loop?
+            Test.ensureEqual(gdxResults, results, "Unexpected results from GenerateDatasetsXml.doIt.");
+
 
         } catch (Throwable t) {
             String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
@@ -6701,21 +7002,43 @@ String expected2 =
      * <br>The XML can then be edited by hand and added to the datasets.xml file.
      *
      * @param tLocalSourceUrl  with no '?', e.g., http://sdf.ndbc.noaa.gov/sos/server.php
+     * @param sosVersion e.g., "1.0.0" (or "" or null)
      * @return a suggested chunk of xml for this dataset for use in datasets.xml 
      * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
      *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
-    public static String generateDatasetsXmlFromIOOS(String tLocalSourceUrl, 
+    public static String generateDatasetsXmlFromIOOS(boolean useCachedInfo,
+        String tLocalSourceUrl, String sosVersion, 
         String sosServerType) throws Throwable {
 
         String2.log("EDDTableFromSos.generateDatasetsXmlFromIOOS" +
             "\n  tLocalSourceUrl=" + tLocalSourceUrl);
         String tPbublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
         sosServerType = sosServerType == null? "" : sosServerType.trim();
+        boolean isIoos52N = sosServerType.toLowerCase().equals(
+            SosServerTypeIoos52N.toLowerCase());
 
-        String tUrl = tLocalSourceUrl + "?service=SOS&request=GetCapabilities"; 
+        String tUrl = tLocalSourceUrl + "?service=SOS&request=GetCapabilities";
+        if (sosVersion != null && sosVersion.length() > 0) {
+            //if (ioosNcbcServer || ioosNosServer) //not needed. 1.0.0 is default and only.
+            //    tUrl += "&version=" + sosVersion;
+            if (isIoos52N) //AcceptVersions needed. This class only supports 1.0.0 currently.
+                tUrl += "&AcceptVersions=" + sosVersion;
+        }
         //if (reallyVerbose) String2.log(SSR.getUrlResponseString(tUrl));
-        SimpleXMLReader xmlReader = new SimpleXMLReader(SSR.getUrlInputStream(tUrl));
+        File2.makeDirectory(sosCopyDir);
+        String safeFileName = sosCopyDir + String2.md5Hex12(tUrl);
+        if (!useCachedInfo || !File2.isFile(safeFileName)) {
+            String2.log("downloading GetCapabilities" +
+                "\n  from: " + tUrl +
+                "\n  to: " + safeFileName);
+            SSR.downloadFile(tUrl, safeFileName, false); //tryToUseCompression
+        } else {
+            String2.log("using cached GetCapabilities" +
+                "\n  from file: " + safeFileName + 
+                "\n  from URL: " + tUrl);
+        }
+        SimpleXMLReader xmlReader = new SimpleXMLReader(new FileInputStream(safeFileName));
         xmlReader.nextTag();
         String tags = xmlReader.allTags();
         String sosPrefix = "";
@@ -6728,7 +7051,7 @@ String expected2 =
             sosPrefix = "sos:"; //oostethys
         } else {
             xmlReader.close();
-            String2.log(SSR.getUrlResponseString(tUrl));
+            String2.log(String2.readFromFile(safeFileName, "UTF-8")[1]);
             throw new RuntimeException("The first SOS capabilities tag=\"" + 
                 tags + "\" should have been <Capabilities> or <sos:Capabilities>.");
         }
@@ -6752,28 +7075,40 @@ String expected2 =
 
         String tInfoUrl = null;
         String tInstitution = null;
+        String tLicense = "[standard]";
         String tSummary = null;
         String tTitle = null;
         String tOfferingAll = null;
         String tStationID = "";
         StringBuilder tStationObsPropList = new StringBuilder();
+        int offeringTagCount = 0;
 
         do {
             //process the tags
-            //String2.log("tags=" + tags + xmlReader.content());
+            if (debugMode) String2.log("tags=" + tags + xmlReader.content());
 
             if (tags.endsWith("<ows:ServiceIdentification></ows:ServiceTypeVersion>")) {
                 if (verbose) String2.log("ServiceTypeVersion=" + xmlReader.content());
                 if (tSosVersion == null || tSosVersion.length() == 0) {
                     tSosVersion = xmlReader.content(); //e.g., "0.0.31" or "1.0.0"
-                    if (verbose) String2.log("Setting sosVersion=" + tSosVersion);
+                    if (verbose) String2.log("  sosVersion(from ServiceTypeVersion)=" + tSosVersion);
                 }
 
             } else if (tags.endsWith("<ows:ServiceIdentification></ows:Title>")) {
                 tTitle = xmlReader.content();
+                if (verbose) String2.log("  title(from Title)=" + tTitle);
 
             } else if (tags.endsWith("<ows:ServiceIdentification></ows:Abstract>")) {
                 tSummary = xmlReader.content();
+                if (verbose) String2.log("  summary(from Abstract)=" + tTitle);
+
+            } else if (tags.endsWith("<ows:ServiceIdentification></ows:AccessConstraints>")) {
+                String s = xmlReader.content();
+                if (s.length() >= 0 &&
+                    !s.toLowerCase().equals("none")) {
+                    tLicense = s;
+                    if (verbose) String2.log("  license(from AccessConstraints)=" + tLicense);
+                }
 
             } else if (tags.endsWith("<ows:ServiceProvider></ows:ProviderName>")) {
                 tInstitution = xmlReader.content();
@@ -6781,14 +7116,18 @@ String expected2 =
                     tInstitution = "NOAA NDBC";
                 else if (tInstitution.equals("National Ocean Service"))
                     tInstitution = "NOAA NOS";
+                if (verbose) String2.log("  institution(from ProviderName)=" + tInstitution);
 
             } else if (tags.endsWith("<ows:ServiceProvider><ows:ProviderSite>")) {
                 tInfoUrl = xmlReader.attributeValue("xlink:href");
+                if (verbose) String2.log("  infoUrl(from ProviderSite)=" + tInfoUrl);
 
             } else if (tags.startsWith(offeringTag)) {
                 String endOfTag = tags.substring(offeringTag.length());
                 String content = xmlReader.content();
                 String error = null;
+                if (tags.equals(offeringTag))
+                    offeringTagCount++;
 //String2.log("endOfTag=" + endOfTag + xmlReader.content());
 
 
@@ -6822,12 +7161,13 @@ String expected2 =
                     tStationID = "";
                     tStationObsPropList.setLength(0);
 
-                } else if (endOfTag.equals("</gml:name>")) { //ioosServer and OOSTethys have this
+                } else if (endOfTag.equals("</gml:name>")) { //ioosServer, OOSTethys, ioos52N have this
                     //e.g., 44004
                     tStationID = content;
 
-                    if (tStationID.endsWith(":all"))
+                    if (tStationID.endsWith(":all")) {
                         tOfferingAll = tStationID;
+                    }
 
                     if (ioosServer) { 
                         //remove  so names are shorter on table below
@@ -6845,15 +7185,17 @@ String expected2 =
                     //more recently http://mmisw.org/ont/cf/parameter/sea_water_salinity
                     //
                     String tXlink = xmlReader.attributeValue("xlink:href"); //without quotes
-                    if (tXlink != null) {
-                        //shorten it?
-                        int po = tXlink.lastIndexOf("#");
-                        if (po < 0)
-                           po = tXlink.lastIndexOf("/");
-                        if (po < 0)
-                           po = tXlink.lastIndexOf(":");
-                        if (po >= 0)
-                            tXlink = tXlink.substring(po + 1);                
+                    if (tXlink != null && !tXlink.toLowerCase().equals("none")) {
+                        if (!isIoos52N) {
+                            //shorten it
+                            int po = tXlink.lastIndexOf("#");
+                            if (po < 0)
+                               po = tXlink.lastIndexOf("/");
+                            if (po < 0)
+                               po = tXlink.lastIndexOf(":");
+                            if (po >= 0)
+                                tXlink = tXlink.substring(po + 1);                
+                        }
 
                         //insert in list if not there already
                         int opPo = uniqueObsProp.indexOf(tXlink);   
@@ -6870,7 +7212,7 @@ String expected2 =
                     //handle composite observedProperty
                     //<swe:CompositePhenomenon gml:id="WEATHER_OBSERVABLES">
                     String tXlink = xmlReader.attributeValue("gml:id"); //without quotes
-                    if (tXlink != null) {
+                    if (tXlink != null && !tXlink.toLowerCase().equals("none")) {
                         int opPo = uniqueObsProp.indexOf(tXlink);   
                         if (opPo < 0) {
                             opPo = uniqueObsProp.size();
@@ -6911,6 +7253,10 @@ String expected2 =
         xmlReader.close();      
         if (tSosVersion == null || tSosVersion.length() == 0) 
             tSosVersion = "1.0.0"; //default
+        if (stationIDs.size() == 0) 
+            throw new RuntimeException("No stations found! Try a different sosServerType.\n" +
+                "  offeringTag=" + offeringTag +
+                "  stationID name tag=" + "<gml:name>");
 
         //write the station/obsProp info
         StringBuilder sb = new StringBuilder();
@@ -6938,6 +7284,10 @@ String expected2 =
         }
 
         //list the observed_property
+        if (uniqueObsProp.size() == 0) 
+            throw new RuntimeException("No observedProperties found! Try a different sosServerType.\n" +
+                "  offeringTag=" + offeringTag + "\n" +
+                "  observedPropertyTag=" + "<" + sosPrefix + "observedProperty>");
         sb.append("\n id  observed_property\n" +
                     "___  __________________________________________________\n");
         for (int op = 0; op < uniqueObsProp.size(); op++) 
@@ -6957,12 +7307,16 @@ String expected2 =
             "&request=GetObservation&offering=" + tOfferingAll +
             "&observedProperty=";
         String post =
-            "&responseFormat=text/csv&eventTime=" + time1 + "/" + time2 +
-            "&featureofinterest=BBOX:-180,-90,180,90";
-        for (int op = 0; op < uniqueObsProp.size(); op++) {
+            "&responseFormat=" + 
+            (isIoos52N? "text/xml;+subtype=\"om/1.0.0/profiles/ioos_sos/1.0\"": "text/csv") + 
+            "&eventTime=" + time1 + "/" + time2 +
+            (isIoos52N? "" : "&featureofinterest=BBOX:-180,-90,180,90");
+int nUniqueObsProp = 1; //uniqueObsProp.size();  // 1 for testing !!!
+        for (int op = 0; op < nUniqueObsProp; op++) {
             try {
-                sb.append(generateDatasetsXmlFromOneIOOS(pre + uniqueObsProp.get(op) + post, 
-                    sosServerType, tInfoUrl, tInstitution));
+                sb.append(generateDatasetsXmlFromOneIOOS(useCachedInfo,
+                    pre + uniqueObsProp.get(op) + post, 
+                    sosVersion, sosServerType, tInfoUrl, tInstitution, tLicense));
             } catch (Throwable t) {
                 sb.append("\n<!-- ERROR for " + pre + uniqueObsProp.get(op) + post + "\n" + 
                     MustBe.throwableToString(t) + "-->\n\n");
@@ -6978,7 +7332,7 @@ String expected2 =
      * This generates a readyToUse datasets.xml entry for an IOOS EDDTableFromSOS.
      * <br>The XML can then be edited by hand and added to the datasets.xml file.
      *
-     * @param tLocalSourceUrl a URL to get data for responseFormat=text/csv, 
+     * @param tUrl a URL to get data for responseFormat=text/csv, 
      *   for a single observedProperty and, for a BoundingBox
      *   e.g.,
 http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
@@ -6988,69 +7342,111 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
 &featureofinterest=BBOX:-151.719,17.93,-65.927,60.8
      * @param tInfoUrl  the suggested infoUrl (use null or "" if nothing to suggest)
      * @param tInstitution  the suggested institution (use null or "" if nothing to suggest)
+     * @param tLicense  the suggested license (use null or "" for the default)
      * @return a suggested chunk of xml for this dataset for use in datasets.xml 
      * @throws Throwable if trouble, e.g., if no Grid or Array variables are found.
      *    If no trouble, then a valid dataset.xml chunk has been returned.
      */
-    public static String generateDatasetsXmlFromOneIOOS(String tLocalSourceUrl, 
-        String sosServerType, String tInfoUrl, String tInstitution) throws Throwable {
+    public static String generateDatasetsXmlFromOneIOOS(boolean useCachedInfo,
+        String tUrl, String sosVersion, String sosServerType, String tInfoUrl, 
+        String tInstitution, String tLicense) throws Throwable {
 
-        String2.log("EDDTableFromSos.generateDatasetsXmlFromOneIOOS" +
-            "\n  tLocalSourceUrl=" + tLocalSourceUrl);
-        String tPublicSourceUrl = convertToPublicSourceUrl(tLocalSourceUrl);
+        sosVersion    = sosVersion    == null? "" : sosVersion.trim();
         sosServerType = sosServerType == null? "" : sosServerType.trim();
+        boolean isIoos52N = sosServerType.toLowerCase().equals(
+            SosServerTypeIoos52N.toLowerCase());
+        String2.log("\nEDDTableFromSos.generateDatasetsXmlFromOneIOOS isIoos52N=" + isIoos52N + 
+            "\n  tUrl=" + tUrl);
+
+        if (!String2.isSomething(tLicense))
+            tLicense = "[standard]";
         StringBuilder sb = new StringBuilder();
         int po, po1;
 
         //get the response
-        String grabFileName = EDStatic.fullTestCacheDirectory + 
-            "ioosSOS_" + Math2.random(Integer.MAX_VALUE);
-        SSR.downloadFile(tLocalSourceUrl, grabFileName, true);
+        File2.makeDirectory(sosCopyDir);
+        String safeFileName = sosCopyDir + String2.md5Hex12(tUrl);
+        if (!useCachedInfo || !File2.isFile(safeFileName)) {
+            String2.log("downloading GetObservation" +
+                "\n  from: " + tUrl +
+                "\n  to: " + safeFileName);
+            SSR.downloadFile(tUrl, safeFileName, false); //tryToUseCompression
+        } else {
+            String2.log("using cached GetObservation" +
+                "\n  from file: " + safeFileName + 
+                "\n  from URL: " + tUrl);
+        }
 
-        //read the file
-        String sar[] = String2.readFromFile(grabFileName, null, 2);
-        //an error message from String2.readFromFile?
-        if (sar[0].length() > 0) 
-            throw new SimpleException(sar[0]);
-        if (reallyVerbose) String2.log("ASCII response=\n" + 
-            sar[1].substring(0, Math.min(5000, sar[1].length())) + " ...\n");
-        
-        //is it an xml file (presumably an error report)?
-        if (sar[1].startsWith("<?xml")) 
-            throw new SimpleException(sar[1]);
+        //parse the response into a data table
+        Table sosTable;
+        String timeSourceName, longitudeSourceName, latitudeSourceName, 
+            altitudeSourceName; 
+        double altitudeMPSU; //<altitudeMetersPerSourceUnit>
+        if (isIoos52N) {
+            //xml with csv payload
+            sosTable = readIoos52NXmlDataTable(new FileInputStream(safeFileName));
+            timeSourceName = "time";
+            longitudeSourceName = "longitude";
+            latitudeSourceName = "latitude";
+            altitudeSourceName = "altitude";
+            altitudeMPSU = 1;
 
-        //read into sosTable
-        Table sosTable = new Table();
-        boolean simplify = true;
-        sosTable.readASCII(grabFileName, String2.splitNoTrim(sar[1], '\n'), 
-            0, 1, null, null, null, null, simplify); 
+        } else {
+
+            //read the file
+            String sar[] = String2.readFromFile(safeFileName, null, 2);
+            //an error message from String2.readFromFile?
+            if (sar[0].length() > 0) 
+                throw new SimpleException(sar[0]);
+            if (reallyVerbose) String2.log("ASCII response=\n" + 
+                sar[1].substring(0, Math.min(5000, sar[1].length())) + " ...\n");
+            
+            //is it an xml file (presumably an error report)?
+            if (sar[1].startsWith("<?xml")) 
+                throw new SimpleException(sar[1]);
+
+            //read into sosTable
+            boolean simplify = true;
+            sosTable = new Table();
+            sosTable.readASCII(safeFileName, String2.splitNoTrim(sar[1], '\n'), 
+                0, 1, null, null, null, null, simplify); 
+            timeSourceName = "date_time";
+            longitudeSourceName = "longitude (degree)";
+            latitudeSourceName  = "latitude (degree)";
+            altitudeSourceName  = "depth (m)";
+            altitudeMPSU = -1;
+
+        }
+        if (reallyVerbose)
+            String2.log("response table=\n" + sosTable.toCSVString(4) + "...");
+
 
         //tBaseUrl  http://sdf.ndbc.noaa.gov/sos/server.php
-        po = tLocalSourceUrl.indexOf('?');
+        po = tUrl.indexOf('?');
         if (po < 0)
             throw new SimpleException(String2.ERROR + 
-                ": '?' not found in tLocalSourceUrl=" + tLocalSourceUrl);
-        String tLocalBaseUrl = tLocalSourceUrl.substring(0, po);
+                ": '?' not found in tUrl=" + tUrl);
+        String tLocalBaseUrl = tUrl.substring(0, po);
         String tPublicBaseUrl = convertToPublicSourceUrl(tLocalBaseUrl);
 
         //tBBoxOffering  urn:ioos:network:noaa.nws.ndbc:all
-        po = tLocalSourceUrl.indexOf("&offering=");
+        po = tUrl.indexOf("&offering=");
         if (po < 0)
             throw new SimpleException(String2.ERROR + 
-                ": '&offering=' not found in tLocalSourceUrl=" + tLocalSourceUrl);
-        po1 = tLocalSourceUrl.indexOf("&", po + 1);
-        if (po1 < 0) po1 = tLocalSourceUrl.length();
-        String tBBoxOffering = tLocalSourceUrl.substring(po + 1, po1);
+                ": '&offering=' not found in tUrl=" + tUrl);
+        po1 = tUrl.indexOf("&", po + 1);
+        if (po1 < 0) po1 = tUrl.length();
+        String tBBoxOffering = tUrl.substring(po + 10, po1);
 
         //shortObservedProperty   sea_water_salinity
         //from &observedProperty=http://mmisw.org/ont/cf/parameter/sea_water_salinity
-        po = tLocalSourceUrl.indexOf("&observedProperty=");
+        po = tUrl.indexOf("&observedProperty=");
         if (po < 0)
             throw new SimpleException(String2.ERROR + 
-                ": '&observedProperty=' not found in sourceUrl=" + tLocalSourceUrl);
-        po1 = tLocalSourceUrl.indexOf("&", po + 18);
-        if (po1 < 0) po1 = tLocalSourceUrl.length();
-        String tObservedProperty = tLocalSourceUrl.substring(po + 18, po1);
+                ": '&observedProperty=' not found in sourceUrl=" + tUrl);
+        po1 = tUrl.indexOf("&", po + 18);
+        if (po1 < 0) po1 = tUrl.length();
+        String tObservedProperty = tUrl.substring(po + 18, po1);
         po = tObservedProperty.lastIndexOf('/');  //ok if -1
         String shortObservedProperty = tObservedProperty.substring(po + 1);
 
@@ -7067,44 +7463,49 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
 
         //remove LLATI columns
         //they are identified below
-        boolean hasDepth = false;
-        po = sosTable.findColumnNumber("longitude (degree)");  if (po >= 0) sosTable.removeColumn(po);
-        po = sosTable.findColumnNumber("latitude (degree)");   if (po >= 0) sosTable.removeColumn(po);
-        po = sosTable.findColumnNumber("depth (m)");           if (po >= 0){sosTable.removeColumn(po); hasDepth=true;}
-        po = sosTable.findColumnNumber("date_time");           if (po >= 0) sosTable.removeColumn(po);
+        po = sosTable.findColumnNumber(longitudeSourceName);   if (po >= 0) sosTable.removeColumn(po);
+        po = sosTable.findColumnNumber(latitudeSourceName);    if (po >= 0) sosTable.removeColumn(po);
+        po = sosTable.findColumnNumber(altitudeSourceName);    if (po >= 0) sosTable.removeColumn(po); 
+        po = sosTable.findColumnNumber(timeSourceName);        if (po >= 0) sosTable.removeColumn(po);
         po = sosTable.findColumnNumber("station_id");          if (po >= 0) sosTable.removeColumn(po);
 
         //write the main parts
+
         sb.append(        
 "<dataset type=\"EDDTableFromSOS\" datasetID=\"" + tDatasetID + "\" active=\"true\">\n" +
 "    <sourceUrl>" + tLocalBaseUrl + "</sourceUrl>\n" +
+"    <sosVersion>" + sosVersion + "</sosVersion>\n" +
 "    <sosServerType>" + sosServerType + "</sosServerType>\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <observationOfferingIdRegex>.+</observationOfferingIdRegex>\n" +
 "    <requestObservedPropertiesSeparately>true</requestObservedPropertiesSeparately>\n" +
 "    <bboxOffering>" + tBBoxOffering + "</bboxOffering>\n" +
-"    <bboxParameter>featureofinterest=BBOX:</bboxParameter>\n" +
+"    <bboxParameter>" + 
+    (isIoos52N? "BBOX=" : "featureofinterest=BBOX:") + 
+    "</bboxParameter>\n" +
 "    <addAttributes>\n" +
-"        <att name=\"cdm_data_type\">Station</att>\n" +
+"        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"infoUrl\">" + tInfoUrl + "</att>\n" +
 "        <att name=\"institution\">" + tInstitution + "</att>\n" +
-"        <att name=\"license\">[standard]</att>\n" +
+"        <att name=\"license\">" + tLicense + "</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
 "        <att name=\"summary\">This SOS server is part of the IOOS DIF SOS Project.  " +
 "The stations in this dataset have " + shortObservedProperty + " data.\n" +
 "\n" +
 "Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.</att>\n" +
 "        <att name=\"title\">" + tInstitution + " SOS - " + shortObservedProperty + "</att>\n" +
 "    </addAttributes>\n" +
-"    <longitudeSourceName>longitude (degree)</longitudeSourceName>\n" +
-"    <latitudeSourceName>latitude (degree)</latitudeSourceName>\n" +
-(hasDepth? 
-"    <altitudeSourceName>depth (m)</altitudeSourceName>\n" +
-"    <altitudeMetersPerSourceUnit>-1</altitudeMetersPerSourceUnit>\n" : "") +
-"    <timeSourceName>date_time</timeSourceName>\n" +
-"    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ss'Z'</timeSourceFormat>\n");
+"    <longitudeSourceName>" + longitudeSourceName + "</longitudeSourceName>\n" +
+"    <latitudeSourceName>" + latitudeSourceName + "</latitudeSourceName>\n" +
+"    <altitudeSourceName>" + altitudeSourceName + "</altitudeSourceName>\n" +
+"    <altitudeMetersPerSourceUnit>" + altitudeMPSU + "</altitudeMetersPerSourceUnit>\n" +
+"    <timeSourceName>" + timeSourceName + "</timeSourceName>\n" +
+"    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ss" + (isIoos52N? ".sss" : "") + 
+    "Z</timeSourceFormat>\n");
 
         //make addTable with destinationNames and addAttributes
         Table addTable = new Table();
@@ -7112,13 +7513,14 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
         for (int col = 0; col < nCol; col++) {
             String colName = sosTable.getColumnName(col);
             String colNameNoParen = colName;
-            String tUnits = null;
-            po = colName.indexOf(" (");
-            if (po > 0) {
-                colNameNoParen = colName.substring(0, po);
-                tUnits = EDUnits.safeUcumToUdunits(
-                    colName.substring(po + 2, colName.length() - 1));
-
+            String tUnits = sosTable.columnAttributes(col).getString("units");
+            if (tUnits == null) {
+                po = colName.indexOf(" (");
+                if (po > 0) {
+                    colNameNoParen = colName.substring(0, po);
+                    tUnits = EDUnits.safeUcumToUdunits(
+                        colName.substring(po + 2, colName.length() - 1));
+                }
             }
 
             //make addAtts
@@ -7140,22 +7542,23 @@ http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0
 
         }
 
-for (int col = 0; col < nCol; col++) 
-    String2.log(String2.left(sosTable.getColumn(col).elementClassString(), 10) + sosTable.getColumnName(col));
-
         //writeVariablesForDatasetsXml
         //last 3 params: includeDataType, tryToFindLLAT, questionDestinationName
-String2.log("sosTable columnNames=" + String2.toCSSVString(sosTable.getColumnNames()));
+        if (reallyVerbose) {
+            for (int col = 0; col < nCol; col++) 
+                String2.log(
+                    String2.left(sosTable.getColumn(col).elementClassString(), 10) + 
+                    String2.left(sosTable.getColumnName(col), 15) + 
+                    " units=" + sosTable.columnAttributes(col).getString("units"));
+        }
         sb.append(
             writeVariablesForDatasetsXml(sosTable, addTable, 
                 "dataVariable", true, false, false));
-
         sb.append(
 "</dataset>\n\n");
 
         String2.log("\n\n*** generateDatasetsXmlFromOneIOOS finished successfully.\n\n");
         return sb.toString();
-
     }
 
 
@@ -7167,19 +7570,20 @@ String2.log("sosTable columnNames=" + String2.toCSSVString(sosTable.getColumnNam
      *
      * @throws Throwable if trouble
      */
-    public static void testGenerateDatasetsXmlFromIOOS() throws Throwable {
-        String results = generateDatasetsXmlFromIOOS(
-            "http://sdf.ndbc.noaa.gov/sos/server.php", "IOOS_NDBC");
+    public static void testGenerateDatasetsXmlFromIOOS(boolean useCachedInfo) 
+        throws Throwable {
+        String results = generateDatasetsXmlFromIOOS(useCachedInfo,
+            "http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", "IOOS_NDBC");
         String expected = expectedTestGenerateDatasetsXml(
-            "http://sdf.ndbc.noaa.gov/", "IOOS_NDBC", "NOAA NDBC");
+            "http://sdf.ndbc.noaa.gov/", "1.0.0", "IOOS_NDBC", "NOAA NDBC");
         int po = results.indexOf(expected.substring(0, 80));
         if (po < 0) {
             String2.log("\nRESULTS=\n" + results);
             throw new SimpleException("'expected' string not found in 'results' string.");
         }
-        String tResults = results.substring(po, po + expected.length());
+        String tResults = results.substring(po, 
+            Math.min(results.length(), po + expected.length()));
         Test.ensureEqual(tResults, expected, "\nresults=\n" + results + "\n\ntresults=\n" + tResults);
-
     }
 
 
@@ -7190,51 +7594,64 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 &observedproperty=sea_water_temperature&responseformat=text/csv
 &eventtime=2008-08-01T00:00Z/2008-08-02T00:00Z
      */
-    public static void testGenerateDatasetsXmlFromOneIOOS() throws Throwable {
-        String results = generateDatasetsXmlFromOneIOOS(
+    public static void testGenerateDatasetsXmlFromOneIOOS(boolean useCachedInfo) 
+        throws Throwable {
+        String results = generateDatasetsXmlFromOneIOOS(useCachedInfo,
             "http://sdf.ndbc.noaa.gov/sos/server.php?service=SOS&version=1.0.0" + 
             "&request=GetObservation" +
             "&observedProperty=sea_water_salinity" + 
             "&offering=urn:ioos:network:noaa.nws.ndbc:all" + 
             "&responseFormat=text/csv&eventTime=2010-05-27T00:00:00Z/2010-05-27T01:00:00Z" + 
-            "&featureofinterest=BBOX:-180,-90,180,90", "IOOS_NDBC", "", "");
+            "&featureofinterest=BBOX:-180,-90,180,90", "1.0.0", "IOOS_NDBC", "", "", "");
         String expected = expectedTestGenerateDatasetsXml(
-            "http://sdf.ndbc.noaa.gov/sos/", "IOOS_NDBC", "NOAA NDBC");
+            "http://sdf.ndbc.noaa.gov/sos/", "1.0.0", "IOOS_NDBC", "NOAA NDBC");
         Test.ensureEqual(results, expected, "results=\n" + results);
         
     }
 
     private static String expectedTestGenerateDatasetsXml(String tInfoUrl, 
-        String tSosServerType, String tInstitution) { 
-        
+        String tSosVersion, String tSosServerType, String tInstitution) { 
+     
+        tSosServerType = tSosServerType == null? "" : tSosServerType.trim();
+        boolean isIoos52N = tSosServerType.toLowerCase().equals(
+            SosServerTypeIoos52N.toLowerCase());
         return
 "<dataset type=\"EDDTableFromSOS\" datasetID=\"noaa_ndbc_ed62_eec8_862e\" active=\"true\">\n" +
 "    <sourceUrl>http://sdf.ndbc.noaa.gov/sos/server.php</sourceUrl>\n" +
+"    <sosVersion>"    + (tSosVersion    == null? "" : tSosVersion.trim())    + "</sosVersion>\n" +
 "    <sosServerType>" + (tSosServerType == null? "" : tSosServerType.trim()) + "</sosServerType>\n" +
 "    <reloadEveryNMinutes>1440</reloadEveryNMinutes>\n" +
 "    <observationOfferingIdRegex>.+</observationOfferingIdRegex>\n" +
 "    <requestObservedPropertiesSeparately>true</requestObservedPropertiesSeparately>\n" +
-"    <bboxOffering>offering=urn:ioos:network:noaa.nws.ndbc:all</bboxOffering>\n" +
-"    <bboxParameter>featureofinterest=BBOX:</bboxParameter>\n" +
+"    <bboxOffering>urn:ioos:network:noaa.nws.ndbc:all</bboxOffering>\n" +
+"    <bboxParameter>" + 
+    (isIoos52N? "BBOX=" : "featureofinterest=BBOX:") + 
+    "</bboxParameter>\n" +
 "    <addAttributes>\n" +
-"        <att name=\"cdm_data_type\">Station</att>\n" +
+"        <att name=\"cdm_data_type\">TimeSeries</att>\n" +
+"        <att name=\"cdm_timeseries_variables\">station_id, longitude, latitude</att>\n" +
 "        <att name=\"Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"Metadata_Conventions\">COARDS, CF-1.6, Unidata Dataset Discovery v1.0</att>\n" +
 "        <att name=\"infoUrl\">" + tInfoUrl + "</att>\n" +
 "        <att name=\"institution\">" + tInstitution + "</att>\n" +
 "        <att name=\"license\">[standard]</att>\n" +
 "        <att name=\"standard_name_vocabulary\">CF-12</att>\n" +
-"        <att name=\"summary\">This SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have sea_water_salinity data.\n" +
+"        <att name=\"subsetVariables\">station_id, longitude, latitude</att>\n" +
+"        <att name=\"summary\">This SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have air_temperature data.\n" +
 "\n" +
 "Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.</att>\n" +
-"        <att name=\"title\">NOAA NDBC SOS - sea_water_salinity</att>\n" +
+"        <att name=\"title\">NOAA NDBC SOS - air_temperature</att>\n" +
 "    </addAttributes>\n" +
 "    <longitudeSourceName>longitude (degree)</longitudeSourceName>\n" +
 "    <latitudeSourceName>latitude (degree)</latitudeSourceName>\n" +
-"    <altitudeSourceName>depth (m)</altitudeSourceName>\n" +
-"    <altitudeMetersPerSourceUnit>-1</altitudeMetersPerSourceUnit>\n" +
+"    <altitudeSourceName>" + 
+     (isIoos52N? "altitude" : "depth (m)") + 
+     "</altitudeSourceName>\n" +
+"    <altitudeMetersPerSourceUnit>" + 
+     (isIoos52N? "1.0" : "-1.0") + 
+     "</altitudeMetersPerSourceUnit>\n" +
 "    <timeSourceName>date_time</timeSourceName>\n" +
-"    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ss'Z'</timeSourceFormat>\n" +
+"    <timeSourceFormat>yyyy-MM-dd'T'HH:mm:ssZ</timeSourceFormat>\n" +
 "    <dataVariable>\n" +
 "        <sourceName>sensor_id</sourceName>\n" +
 "        <destinationName>sensor_id</destinationName>\n" +
@@ -7244,11 +7661,27 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 "        <addAttributes>\n" +
 "            <att name=\"ioos_category\">Identifier</att>\n" +
 "            <att name=\"long_name\">Sensor Id</att>\n" +
-"            <att name=\"observedProperty\">sea_water_salinity</att>\n" +
+"            <att name=\"observedProperty\">air_temperature</att>\n" +
 "            <att name=\"standard_name\">sensor_id</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
 "    <dataVariable>\n" +
+"        <sourceName>air_temperature (C)</sourceName>\n" +
+"        <destinationName>air_temperature</destinationName>\n" +
+"        <dataType>float</dataType>\n" +
+"        <!-- sourceAttributes>\n" +
+"        </sourceAttributes -->\n" +
+"        <addAttributes>\n" +
+"            <att name=\"colorBarMaximum\" type=\"double\">40.0</att>\n" +
+"            <att name=\"colorBarMinimum\" type=\"double\">-10.0</att>\n" +
+"            <att name=\"ioos_category\">Temperature</att>\n" +
+"            <att name=\"long_name\">Air Temperature</att>\n" +
+"            <att name=\"observedProperty\">air_temperature</att>\n" +
+"            <att name=\"standard_name\">air_temperature</att>\n" +
+"            <att name=\"units\">C</att>\n" +
+"        </addAttributes>\n" +
+"    </dataVariable>\n" +
+/*"    <dataVariable>\n" +
 "        <sourceName>sea_water_salinity (psu)</sourceName>\n" +
 "        <destinationName>sea_water_salinity</destinationName>\n" +
 "        <dataType>float</dataType>\n" +
@@ -7264,6 +7697,7 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
 "            <att name=\"units\">psu</att>\n" +
 "        </addAttributes>\n" +
 "    </dataVariable>\n" +
+*/
 "</dataset>\n" +
 "\n";
     }
@@ -7939,15 +8373,377 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
     }
 
     /**
+     * GCOOS SOS sample URLs: http://data.gcoos.org/52N_SOS.php
+     *
+     * @throws Throwable if trouble
+     */
+    public static void testGcoos52N(boolean useCachedInfo) throws Throwable {
+        boolean oDebugMode = debugMode;
+debugMode = false;
+        testVerboseOn();
+        String dir = EDStatic.fullTestCacheDirectory;
+        EDDTable eddTable;               
+        String name, tName, results, tResults, expected, userDapQuery;
+        String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+
+        try { 
+
+        //one time 
+        String tSourceUrl = "http://data.gcoos.org:8080/52nSOS/sos/kvp";
+        //String2.log(generateDatasetsXml(useCachedInfo,
+        //    tSourceUrl, "1.0.0", "IOOS_52N"));
+        //String2.log(generateDatasetsXmlFromIOOS(useCachedInfo,
+        //    tSourceUrl, "1.0.0", "IOOS_52N"));
+        String oneIoosUrl = tSourceUrl + 
+            "?service=SOS&version=1.0.0&request=GetObservation" + 
+            //"&offering=urn:ioos:network:gcoos:all" + SSR times out after 10 minutes
+            "&offering=urn:ioos:station:comps:42022" + //gml:id has '_', name has ':'
+            "&observedProperty=" +
+            "http://mmisw.org/ont/cf/parameter/air_temperature," +
+            "http://mmisw.org/ont/cf/parameter/air_pressure," +
+            "http://mmisw.org/ont/cf/parameter/wind_speed," +
+            "http://mmisw.org/ont/cf/parameter/wind_speed_of_gust," +
+            "http://mmisw.org/ont/cf/parameter/wind_to_direction" + 
+            "&responseFormat=text/xml;+subtype=\"om/1.0.0/profiles/ioos_sos/1.0\"" +
+            "&eventTime=2015-02-25T00:00:00Z/2015-02-25T01:00:00Z";
+            //csv part of response has interlaced info! e.g., for just 2 properties:
+            //2015-02-25T00:05:00.000Z,comps_42022_airpressure,1013.98
+            //2015-02-25T00:05:00.000Z,comps_42022_airtemperature,18.94
+            //2015-02-25T00:35:00.000Z,comps_42022_airpressure,1013.99
+            //2015-02-25T00:35:00.000Z,comps_42022_airtemperature,18.53
+
+        String2.log(generateDatasetsXmlFromOneIOOS(useCachedInfo,
+            oneIoosUrl, "1.0.0", "IOOS_52N", 
+            "http://data.gcoos.org/", "GCOOS", "[standard]"));// infoUrl, institution, licence
+
+/*
+        //test readIoos52NXmlDataTable() 
+        Table table = readIoos52NXmlDataTable(new FileInputStream(
+            "/programs/sos/ioos52NgcoosAirPressure.xml"));
+        results = table.toCSVString(5);
+        expected = 
+"{\n" +
+"dimensions:\n" +
+"\trow = 5312 ;\n" +
+"\ttime_strlen = 24 ;\n" +
+"\tstation_id_strlen = 14 ;\n" +
+"variables:\n" +
+"\tchar time(row, time_strlen) ;\n" +
+"\tchar station_id(row, station_id_strlen) ;\n" +
+"\tdouble air_pressure(row) ;\n" +
+"\n" +
+"// global attributes:\n" +
+"}\n" +
+"row,time,station_id,air_pressure\n" +
+"0,2015-02-25T00:05:00.000Z,comps_42013,1013.93\n" +
+"1,2015-02-25T00:05:00.000Z,comps_42022,1013.98\n" +
+"2,2015-02-25T00:05:00.000Z,comps_42023,1014.55\n" +
+"3,2015-02-25T00:06:00.000Z,comps_fhpf1,1016.0\n" +
+"4,2015-02-25T00:06:00.000Z,comps_nfbf1,1016.56\n";
+        Test.ensureEqual(results, expected, "results=" + results);
+        Test.ensureEqual(table.nRows(), 5312, "results=" + results);
+        Test.ensureEqual(table.getStringData(0, 5311), "2015-02-26T00:00:00.000Z", "data(0, 5311)");
+        Test.ensureEqual(table.getStringData(1, 5311), "nos_8771341", "data(1, 5311)");
+        Test.ensureEqual(table.getDoubleData(2, 5311), 1009.10, "data(2, 5311)");
+
+
+testQuickRestart = true;
+            eddTable = (EDDTable)oneFromDatasetXml("gcoosSosAirPressure");  
+
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+            "gcoosSosAirPressure_Entire", ".das"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Attributes {\n" +
+" s {\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 actual_range -97.492, -80.033;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float64 actual_range 16.834, 30.766;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  station_id {\n" +
+"    String cf_role \"timeseries_id\";\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"Station ID\";\n" +
+"  }\n" +
+"  altitude {\n" +
+"    String _CoordinateAxisType \"Height\";\n" +
+"    String _CoordinateZisPositive \"up\";\n" +
+"    String axis \"Z\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Altitude\";\n" +
+"    String positive \"up\";\n" +
+"    String standard_name \"altitude\";\n" +
+"    String units \"m\";\n" +
+"  }\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range 9.08541e+8, NaN;\n" +
+"    String axis \"T\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  air_pressure {\n" +
+"    Float64 colorBarMaximum 1050.0;\n" +
+"    Float64 colorBarMinimum 950.0;\n" +
+"    String ioos_category \"Pressure\";\n" +
+"    String long_name \"Air Pressure\";\n" +
+"    String observedProperty \"http://mmisw.org/ont/cf/parameter/air_pressure\";\n" +
+"    String standard_name \"air_pressure\";\n" +
+"    String units \"hPa\";\n" +
+"  }\n" +
+" }\n" +
+"  NC_GLOBAL {\n" +
+"    String cdm_data_type \"TimeSeries\";\n" +
+"    String cdm_timeseries_variables \"station_id, longitude, latitude\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    Float64 Easternmost_Easting -80.033;\n" +
+"    String featureType \"TimeSeries\";\n" +
+"    Float64 geospatial_lat_max 30.766;\n" +
+"    Float64 geospatial_lat_min 16.834;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max -80.033;\n" +
+"    Float64 geospatial_lon_min -97.492;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String geospatial_vertical_positive \"up\";\n" +
+"    String geospatial_vertical_units \"m\";\n" +
+"    String history \"" + today;       
+//T15:47:07Z http://data.gcoos.org:8080/52nSOS/sos/kvp
+//2015-03-09T15:47:07Z http://127.0.0.1:8080/cwexperimental/tabledap/gcoosSosAirPressure.das
+        tResults = results.substring(0, Math.min(results.length(), expected.length()));
+        Test.ensureEqual(tResults, expected, "\nresults=\n" + results);
+
+expected =
+"    String infoUrl \"http://data.gcoos.org/\";\n" +
+"    String institution \"GCOOS\";\n" +
+"    String license \"The data may be used and redistributed for free but is not intended\n" +
+"for legal use, since it may contain inaccuracies. Neither the data\n" +
+"Contributor, ERD, NOAA, nor the United States Government, nor any\n" +
+"of their employees or contractors, makes any warranty, express or\n" +
+"implied, including warranties of merchantability and fitness for a\n" +
+"particular purpose, or assumes any legal liability for the accuracy,\n" +
+"completeness, or usefulness, of this information.\";\n" +
+"    String Metadata_Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    Float64 Northernmost_Northing 30.766;\n" +
+"    String sourceUrl \"http://data.gcoos.org:8080/52nSOS/sos/kvp\";\n" +
+"    Float64 Southernmost_Northing 16.834;\n" +
+"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String subsetVariables \"station_id, longitude, latitude\";\n" +
+"    String summary \"This SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have air_pressure data.\n" +
+"\n" +
+"Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.\";\n" +
+"    String time_coverage_start \"1998-10-16T12:30:00Z\";\n" +
+"    String title \"GCOOS SOS - air_pressure\";\n" +
+"    Float64 Westernmost_Easting -97.492;\n" +
+"  }\n" +
+"}\n";
+        int tPo = results.indexOf(expected.substring(0, 20));
+        Test.ensureTrue(tPo >= 0, "tPo=-1 results=\n" + results);
+        Test.ensureEqual(
+            results.substring(tPo, Math.min(results.length(), tPo + expected.length())),
+            expected, "results=\n" + results);
+        
+        //*** test getting dds for entire dataset
+        tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+            "gcoosSosAirPressure_Entire", ".dds"); 
+        results = new String((new ByteArray(dir + tName)).toArray());
+        //String2.log(results);
+        expected = 
+"Dataset {\n" +
+"  Sequence {\n" +
+"    Float64 longitude;\n" +
+"    Float64 latitude;\n" +
+"    String station_id;\n" +
+"    Float64 altitude;\n" +
+"    Float64 time;\n" +
+"    Float64 air_pressure;\n" +
+"  } s;\n" +
+"} s;\n";
+        Test.ensureEqual(results, expected, "\nresults=\n" + results);
+
+            String2.log("\n*** EDDTableFromSOS nos AirTemperature test get one station .CSV data\n");
+            tName = eddTable.makeNewFileForDapQuery(null, null,
+                "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:8419317\"&time>=2006-01-01T00&time<=2006-01-01T01", 
+                dir, eddTable.className() + "_nosSosATemp", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+            expected = 
+"longitude,latitude,station_id,altitude,time,sensor_id,air_temperature\n" +
+"degrees_east,degrees_north,,m,UTC,,degree_C\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-3.9\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-3.9\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-3.9\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-3.9\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-3.9\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-3.9\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-3.9\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-4.0\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-4.0\n" +
+"-70.5633,43.32,urn:ioos:station:NOAA.NOS.CO-OPS:8419317,NaN,2006-01-01T01:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:8419317:D1,-4.1\n";
+            Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+            
+/*
+
+            String2.log("\n*** EDDTableFromSOS nos AirTemperature test get one station .CSV data\n");
+            tName = eddTable.makeNewFileForDapQuery(null, null,  //1612340, NaN, 2008-10-26
+                "&station_id=\"urn:ioos:station:NOAA.NOS.CO-OPS:1612340\"&time>=2008-10-26T00&time<2008-10-26T01", 
+                dir, eddTable.className() + "_nosSosATemp", ".csv"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+            expected = 
+"longitude,latitude,station_id,altitude,time,sensor_id,air_temperature\n" +
+"degrees_east,degrees_north,,m,UTC,,degree_C\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:00:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.9\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:06:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:12:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.7\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:18:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:24:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.7\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:30:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:36:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.7\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:42:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:48:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.8\n" +
+"-157.867,21.3067,urn:ioos:station:NOAA.NOS.CO-OPS:1612340,NaN,2008-10-26T00:54:00Z,urn:ioos:sensor:NOAA.NOS.CO-OPS:1612340:D1,24.7\n";
+            Test.ensureEqual(results, expected, "RESULTS=\n" + results);
+
+            String2.log("\n*** EDDTableFromSOS nos AirTemperature .das\n");
+            String today = Calendar2.getCurrentISODateTimeStringZulu().substring(0, 14); //14 is enough to check hour. Hard to check min:sec.
+            tName = eddTable.makeNewFileForDapQuery(null, null, "", dir, 
+                eddTable.className() + "_nosSosATemp", ".das"); 
+            results = new String((new ByteArray(dir + tName)).toArray());
+            expected = 
+"Attributes {\n" +
+" s {\n" +
+"  longitude {\n" +
+"    String _CoordinateAxisType \"Lon\";\n" +
+"    Float64 actual_range -177.36, 166.618;\n" +
+"    String axis \"X\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Longitude\";\n" +
+"    String standard_name \"longitude\";\n" +
+"    String units \"degrees_east\";\n" +
+"  }\n" +
+"  latitude {\n" +
+"    String _CoordinateAxisType \"Lat\";\n" +
+"    Float64 actual_range -14.28, 70.4;\n" +
+"    String axis \"Y\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Latitude\";\n" +
+"    String standard_name \"latitude\";\n" +
+"    String units \"degrees_north\";\n" +
+"  }\n" +
+"  station_id {\n" +
+"    String cf_role \"timeseries_id\";\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"Station ID\";\n" +
+"  }\n" +
+"  altitude {\n" +
+"    String _CoordinateAxisType \"Height\";\n" +
+"    String _CoordinateZisPositive \"up\";\n" +
+"    String axis \"Z\";\n" +
+"    String ioos_category \"Location\";\n" +
+"    String long_name \"Altitude\";\n" +
+"    String positive \"up\";\n" +
+"    String standard_name \"altitude\";\n" +
+"    String units \"m\";\n" +
+"  }\n" +
+"  time {\n" +
+"    String _CoordinateAxisType \"Time\";\n" +
+"    Float64 actual_range -3.6757152e+9, NaN;\n" +
+"    String axis \"T\";\n" +
+"    String ioos_category \"Time\";\n" +
+"    String long_name \"Time\";\n" +
+"    String standard_name \"time\";\n" +
+"    String time_origin \"01-JAN-1970 00:00:00\";\n" +
+"    String units \"seconds since 1970-01-01T00:00:00Z\";\n" +
+"  }\n" +
+"  sensor_id {\n" +
+"    String ioos_category \"Identifier\";\n" +
+"    String long_name \"Sensor ID\";\n" +
+"    String observedProperty \"http://mmisw.org/ont/cf/parameter/air_temperature\";\n" +
+"  }\n" +
+"  air_temperature {\n" +
+"    Float64 colorBarMaximum 40.0;\n" +
+"    Float64 colorBarMinimum -10.0;\n" +
+"    String ioos_category \"Temperature\";\n" +
+"    String long_name \"Air Temperature\";\n" +
+"    String observedProperty \"http://mmisw.org/ont/cf/parameter/air_temperature\";\n" +
+"    String standard_name \"air_temperature\";\n" +
+"    String units \"degree_C\";\n" +
+"  }\n" +
+" }\n" +
+"  NC_GLOBAL {\n" +
+"    String cdm_data_type \"TimeSeries\";\n" +
+"    String cdm_timeseries_variables \"station_id, longitude, latitude, sensor_id\";\n" +
+"    String Conventions \"COARDS, CF-1.6, Unidata Dataset Discovery v1.0\";\n" +
+"    Float64 Easternmost_Easting 166.618;\n" +
+"    String featureType \"TimeSeries\";\n" +
+"    Float64 geospatial_lat_max 70.4;\n" +
+"    Float64 geospatial_lat_min -14.28;\n" +
+"    String geospatial_lat_units \"degrees_north\";\n" +
+"    Float64 geospatial_lon_max 166.618;\n" +
+"    Float64 geospatial_lon_min -177.36;\n" +
+"    String geospatial_lon_units \"degrees_east\";\n" +
+"    String geospatial_vertical_positive \"up\";\n" +
+"    String geospatial_vertical_units \"m\";\n" +
+"    String history \"" + today;
+//+ " http://opendap.co-ops.nos.noaa.gov/ioos-dif-sos"; //"-test"
+            Test.ensureEqual(results.substring(0, expected.length()), expected, "RESULTS=\n" + results);
+
+expected = 
+"    Float64 Southernmost_Northing -14.28;\n" +
+"    String standard_name_vocabulary \"CF-12\";\n" +
+"    String subsetVariables \"station_id, longitude, latitude\";\n" +
+"    String summary \"The NOAA NOS SOS server is part of the IOOS DIF SOS Project.  The stations in this dataset have air temperature data.  ****These services are for testing and evaluation use only****\n" +
+"\n" +
+"Because of the nature of SOS requests, requests for data MUST include constraints for the longitude, latitude, time, and/or station_id variables.\";\n" +
+"    String time_coverage_start \"1853-07-10T00:00:00Z\";\n" +
+"    String title \"NOAA NOS SOS, EXPERIMENTAL - Air Temperature\";\n" +
+"    Float64 Westernmost_Easting -177.36;\n" +
+"  }\n" +
+"}\n";
+            int po = Math.max(0, results.indexOf(expected.substring(0, 30)));
+            Test.ensureEqual(results.substring(po), expected, "RESULTS=\n" + results);
+    /* */
+
+        } catch (Throwable t) {
+            String2.getStringFromSystemIn(MustBe.throwableToString(t) + 
+                "\nUnexpected error gcoosSosAirPressure." +
+                "\nPress ^C to stop or Enter to continue..."); 
+        }
+
+        debugMode = oDebugMode;
+    }
+
+
+    /**
      * This runs all of the tests for this class.
      */
-    public static void test() throws Throwable {
+    public static void test(boolean useCachedInfo) throws Throwable {
         String2.log("\n****************** EDDTableFromSos.test() *****************\n");
         testVerboseOn();
         testQuickRestart = false;  //normally false. Only true when actively testing quickRestart.
  
         // usually run
         /* */
+        testGenerateDatasetsXml(useCachedInfo); 
+        testGenerateDatasetsXmlFromOneIOOS(useCachedInfo);
+        testGenerateDatasetsXmlFromIOOS(useCachedInfo);
+
         testOostethys(); //gomoosBuoy    //TimeSeriesProfile
         testNeracoos(); 
 
@@ -7983,8 +8779,8 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         testNosSosWind("");
         testWhoiSos();        
 
-        testGenerateDatasetsXmlFromOneIOOS();
-        testGenerateDatasetsXmlFromIOOS();
+//  testGcoos52N(useCachedInfo);   not finished
+
         // */
         
         
@@ -7993,7 +8789,8 @@ http://sdf.ndbc.noaa.gov/sos/server.php?request=GetObservation&service=SOS
         //testGetStationTable(); inactive
         //testNdbcTestServer();
         //testGetPhenomena();
-        //String2.log(generateDatasetsXml("http://sdf.ndbc.noaa.gov/sos/server.php", "1.0.0", false));
+        //String2.log(generateDatasetsXml("http://sdf.ndbc.noaa.gov/sos/server.php", 
+        //  "1.0.0", "IOOS_NDBC", false));
         //testVast(); //not working;
         //testTamu(); //not working;
 
